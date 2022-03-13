@@ -1,6 +1,6 @@
 import axios from "axios";
 import { URL } from "..";
-import { User } from "@oauth2/types";
+import { User } from "@monitor/types";
 
 export default class Client {
   token = localStorage.getItem("access_token");

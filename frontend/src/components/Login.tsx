@@ -1,11 +1,11 @@
 import { Component } from "solid-js";
-import { loginGithub, loginGoogle } from "../util/helpers";
+import { loginGithub } from "../util/helpers";
 import Input from "./util/Input";
 import Grid from "./util/layout/Grid";
 import { createStore } from "solid-js/store";
 import Flex from "./util/layout/Flex";
 import { client, pushNotification } from "..";
-import { User } from "@oauth2/types";
+import { User } from "@monitor/types";
 
 const Login: Component<{ setUser: (user: User | false) => void }> = (p) => {
   const [info, set] = createStore({
@@ -60,7 +60,6 @@ const Login: Component<{ setUser: (user: User | false) => void }> = (p) => {
         <button onClick={signup}>sign up</button>
       </Flex>
       <button onClick={loginGithub}>log in with github</button>
-      <button onClick={loginGoogle}>log in with google</button>
     </Grid>
   );
 };

@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "mbecker20",
   "license": "MIT",
+  "scripts": {
+    "start": "tsc && node build/main.js"
+  },
   "devDependencies": {
     "@types/dockerode": "^3.3.3",
     "@types/fs-extra": "^9.0.13",

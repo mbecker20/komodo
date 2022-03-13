@@ -1,18 +1,12 @@
-import { Component, createEffect, createResource, Match, Switch } from "solid-js";
-import { client, redirectTo } from "../..";
+import { Component, createResource, Match, Switch } from "solid-js";
+import { client } from "../..";
 import styles from "./App.module.css";
 import UserInfo from "../UserInfo";
-import { User } from "@oauth2/types"
+import { User } from "@monitor/types"
 import Login from "../Login";
 
 const App: Component = () => {
   const [user, { mutate }] = createResource(() => client.getUser());
-
-  createEffect(() => {
-    if (redirectTo && user()) {
-      location.replace(`${redirectTo.url}/?token=${client.token}`)
-    }
-  })
 
   return (
     <div class={styles.App}>
