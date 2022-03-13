@@ -11,6 +11,7 @@
     "@types/bcrypt": "^5.0.0",
     "@types/dockerode": "^3.3.3",
     "@types/fs-extra": "^9.0.13",
+    "@types/ws": "^8.5.3",
     "typescript": "^4.6.2"
   },
   "dependencies": {
@@ -22,6 +23,7 @@
     "fastify-oauth2": "^4.5.0",
     "fastify-plugin": "^3.0.1",
     "fastify-static": "^4.5.0",
+    "fastify-websocket": "^4.2.0",
     "fs-extra": "^10.0.1",
     "mongoose": "^6.2.6"
   }
