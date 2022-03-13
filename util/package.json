@@ -1,0 +1,11 @@
+{
+  "name": "@monitor/util",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "author": "mbecker20",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  }
+}

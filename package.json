@@ -1,0 +1,18 @@
+{
+  "name": "monitor",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "mbecker20",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "types",
+    "util",
+    "core",
+    "periphery",
+    "frontend"
+  ],
+  "devDependencies": {
+    "typescript": "^4.6.2"
+  }
+}

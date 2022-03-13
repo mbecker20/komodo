@@ -1,0 +1,9 @@
+.Flex {
+	display: flex;
+	gap: 1rem;
+}
+
+.Grid {
+	display: grid;
+	gap: 1rem;
+}

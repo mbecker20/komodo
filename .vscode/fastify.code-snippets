@@ -1,0 +1,17 @@
+{
+	"service": {
+		"scope": "typescript",
+		"prefix": "plugin",
+		"body": [
+			"import { FastifyInstance } from \"fastify\";",
+			"import fp from \"fastify-plugin\";",
+			"",
+			"const ${1:$TM_FILENAME_BASE} = fp((app: FastifyInstance, _: {}, done: () => void) => {",
+			"\t${0}",
+			"\tdone();",
+			"});",
+			"",
+			"export default ${1:$TM_FILENAME_BASE};"
+		]
+	}
+}

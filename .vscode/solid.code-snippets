@@ -1,0 +1,70 @@
+{
+	"component": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "comp",
+		"body": [
+			"import { Component } from \"solid-js\";",
+			"",
+			"const ${1:$TM_FILENAME_BASE}: Component<{}> = (p) => {",
+			"\treturn (",
+			"\t\t<div>",
+			"\t\t\t${0}",
+			"\t\t</div>",
+			"\t)",
+			"}",
+			"",
+			"export default ${1:$TM_FILENAME_BASE};"
+		]
+	},
+	"component-with-css": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "css-comp",
+		"body": [
+			"import { Component } from \"solid-js\";",
+			"import s from \"./${1:$TM_FILENAME_BASE}.module.css\";",
+			"",
+			"const ${1:$TM_FILENAME_BASE}: Component<{}> = (p) => {",
+			"\treturn (",
+			"\t\t<div class={s.${1:$TM_FILENAME_BASE}} >",
+			"\t\t\t${0}",
+			"\t\t</div>",
+			"\t)",
+			"}",
+			"",
+			"export default ${1:$TM_FILENAME_BASE};"
+		]
+	},
+	"context": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "context",
+		"body": [
+			"import { Component, createContext, useContext } from \"solid-js\";",
+			"",
+			"export type State = {",
+			"\t",
+			"}",
+			"",
+			"const Context = createContext<State>()",
+			"",
+			"export const Provider: Component = (p) => {",
+			"\tconst context: State = {",
+			"\t\t",
+			"\t}",
+			"\treturn (",
+			"\t\t<Context.Provider value={context}>",
+			"\t\t\t{p.children}",
+			"\t\t</Context.Provider>",
+			"\t)",
+			"}",
+			"",
+			"export function useContxt() {",
+			"\treturn useContext(Context) as State;",
+			"}"
+		]
+	},
+	"create-store": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "create-store",
+		"body": "import { createStore } from \"solid-js/store\";"
+	}
+}

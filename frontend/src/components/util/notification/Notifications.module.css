@@ -1,0 +1,24 @@
+.NotificationProvider {
+  position: absolute;
+  left: 50vw;
+  top: 5px;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  z-index: 9000;
+}
+
+.Notification {
+	position: absolute;
+  transform: translateX(-50%);
+  left: 0;
+  white-space: nowrap;
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  transition: opacity 500ms ease-out, top 500ms;
+  font-size: 1.25rem;
+}
