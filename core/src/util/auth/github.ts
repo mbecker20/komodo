@@ -2,7 +2,7 @@ import axios from "axios";
 import { FastifyInstance } from "fastify";
 import fastifyOauth2, { OAuth2Namespace } from "fastify-oauth2";
 import fp from "fastify-plugin";
-import { HOST, SECRETS, TOKEN_EXPIRES_IN } from "../config";
+import { HOST, SECRETS, TOKEN_EXPIRES_IN } from "../../config";
 
 declare module "fastify" {
   interface FastifyInstance {

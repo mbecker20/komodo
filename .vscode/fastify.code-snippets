@@ -13,5 +13,27 @@
 			"",
 			"export default ${1:$TM_FILENAME_BASE};"
 		]
+	},
+
+	"schema": {
+		"scope": "typescript",
+		"prefix": "schema",
+		"body": [
+			"import { FastifyInstance } from \"fastify\";",
+			"import fp from \"fastify-plugin\";",
+			"import { Schema } from \"mongoose\";",
+			"",
+			"const ${2:$TM_FILENAME_BASE} = fp((app: FastifyInstance, _: {}, done: () => void) => {",
+			"\tconst schema = new Schema({",
+			"\t\t${0}",
+			"\t});",
+			"\t",
+			"\tapp.decorate(\"${2:$TM_FILENAME_BASE}\", app.mongoose.model(\"${1}\", schema));",
+			"\t",
+			"\tdone();",
+			"});",
+			"",
+			"export default ${2:$TM_FILENAME_BASE};"
+		]
 	}
 }

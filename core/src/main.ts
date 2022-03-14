@@ -1,9 +1,9 @@
 import fastify from "fastify";
 import fastifyCors from "fastify-cors";
-import auth from "./auth";
+import auth from "./util/auth";
 import { LOG, PORT } from "./config";
-import db from "./db";
-import ws from "./ws";
+import db from "./util/db";
+import ws from "./util/ws";
 
 const app = fastify({ logger: LOG })
 	.register(fastifyCors)

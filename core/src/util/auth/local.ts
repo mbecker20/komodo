@@ -2,7 +2,7 @@ import { User } from "@monitor/types";
 import { compare, hash } from "bcrypt";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
-import { PASSWORD_SALT_ROUNDS, TOKEN_EXPIRES_IN } from "../config";
+import { PASSWORD_SALT_ROUNDS, TOKEN_EXPIRES_IN } from "../../config";
 
 const local = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post(
