@@ -1,10 +1,11 @@
+import { Update } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
 import { Log } from "./misc";
 
 const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
-	const schema = new Schema({
+	const schema = new Schema<Update>({
     buildID: { type: String, index: true },
     deploymentID: { type: String, index: true },
     serverID: { type: String, index: true },

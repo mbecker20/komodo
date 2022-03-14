@@ -6,7 +6,8 @@
       "es2019",
       "es2020.promise",
       "es2020.bigint",
-      "es2020.string"
+      "es2020.string",
+      "ESNext"
     ],
     "module": "commonjs",
     "target": "es2019",

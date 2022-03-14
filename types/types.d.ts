@@ -86,7 +86,7 @@ export type Deployment = {
   /* to manage repo for static frontend, mounted as a volume */
   repo?: string;
   accessToken?: string;
-  pullName?: string; // for auto pull of repo
+  containerName?: string; // also for auto pull of frontend repo
   containerMount?: string; // the file path to mount repo on inside the container
 };
 

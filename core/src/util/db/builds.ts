@@ -1,9 +1,10 @@
+import { Build } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
 
 const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
-  const schema = new Schema({
+  const schema = new Schema<Build>({
     name: { type: String, unique: true, index: true },
     /* repo related */
     repo: String,

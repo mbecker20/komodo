@@ -1,11 +1,13 @@
+import { Deployment } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
 import { Conversion, EnvironmentVar, Volume } from "./misc";
 
 const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
-	const schema = new Schema({
+	const schema = new Schema<Deployment>({
     name: { type: String, unique: true, index: true },
+    containerName: { type: String, unique: true, index: true }, // for auto pull of frontend repo as well
     owner: { type: String, index: true },
     serverID: { type: String, index: true },
     buildID: { type: String, index: true }, // if deploying a monitor build
@@ -22,7 +24,6 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     /* to manage repo for static frontend, mounted as a volume */
     repo: String,
     accessToken: String,
-    pullName: { type: String, index: true }, // for auto pull of repo
     containerMount: String, // the file path to mount repo on inside the container
   });
 

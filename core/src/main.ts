@@ -4,10 +4,12 @@ import auth from "./util/auth";
 import { LOG, PORT } from "./config";
 import db from "./util/db";
 import ws from "./util/ws";
+import docker from "./util/docker";
 
 const app = fastify({ logger: LOG })
-	.register(fastifyCors)
+  .register(fastifyCors)
   .register(db)
+  .register(docker)
   .register(auth)
   .register(ws);
 

@@ -1,3 +1,4 @@
+import { Collection } from "@monitor/types";
 import { readFileSync } from "fs";
 
 export function readJSONFile<T = any>(path: string): T {
@@ -18,4 +19,12 @@ export function getBooleanFromEnv(varName: string, defaultValue: boolean) {
   if (variable === "true") return true;
   else if (variable === "false") return false;
   else return defaultValue;
+}
+
+export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T> {
+  return Object.fromEntries(
+    keys.map((id, index) => {
+      return [id, entries[index]];
+    })
+  );
 }

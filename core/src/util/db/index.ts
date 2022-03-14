@@ -2,11 +2,12 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import mongoose, { Model } from "mongoose";
 import { MONGO_URL } from "../../config";
-import { Build, Deployment, Update, User } from "@monitor/types";
+import { Build, Deployment, Server, Update, User } from "@monitor/types";
 import users from "./users";
 import updates from "./updates";
 import deployments from "./deployments";
 import builds from "./builds";
+import servers from "./servers";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -15,6 +16,7 @@ declare module "fastify" {
     deployments: Model<Deployment>;
     builds: Model<Build>;
     updates: Model<Update>;
+    servers: Model<Server>;
   }
 }
 
@@ -25,6 +27,7 @@ const db = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   app
     .register(users)
+    .register(servers)
     .register(deployments)
     .register(builds)
     .register(updates);
