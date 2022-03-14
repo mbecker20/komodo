@@ -1,4 +1,3 @@
-import { Build, Deployment } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import { HOST } from "../config";
 
@@ -10,17 +9,17 @@ export async function getBuildGithubListenerURL(
   app: FastifyInstance,
   buildID: string
 ) {
-  const build = (await app.builds.findById(buildID, "pullName")) as Build;
-  return `${HOST}/githubListener?pullName=${build.pullName}`;
+  const build = await app.builds.findById(buildID, "pullName");
+  return `${HOST}/githubListener?pullName=${build?.pullName}`;
 }
 
 export async function getDeploymentGithubListenerURL(
   app: FastifyInstance,
   deploymentID: string
 ) {
-  const deployment = (await app.deployments.findById(
+  const deployment = await app.deployments.findById(
     deploymentID,
     "containerName"
-  )) as Deployment;
-  return `${HOST}/githubListener?containerName=${deployment.containerName}`;
+  );
+  return `${HOST}/githubListener?containerName=${deployment?.containerName}`;
 }

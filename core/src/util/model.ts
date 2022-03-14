@@ -13,14 +13,14 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
     },
     find: async (
       filter: FilterQuery<T> = {},
-      projection?: object,
+      projection?: string | object,
       options?: QueryOptions
     ) => {
       return (await model.find(filter, projection, options)) as T[];
     },
     findById: async (
       id: string,
-      projection?: object,
+      projection?: string | object,
       options?: QueryOptions
     ) => {
       return (await model.findById(id, projection, options)) as T | undefined;
@@ -28,7 +28,7 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
     findByField: async <Target>(
       field: string,
       expr: Target,
-      projection?: object,
+      projection?: string | object,
       options?: QueryOptions
     ) => {
       return (await model.find(
@@ -39,15 +39,17 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
     },
     findOne: async (
       filter: FilterQuery<T> = {},
-      projection?: object,
+      projection?: string | object,
       options?: QueryOptions
     ) => {
-			return await model.findOne(filter, projection, options) as T | undefined;
-		},
+      return (await model.findOne(filter, projection, options)) as
+        | T
+        | undefined;
+    },
     getMostRecent: async (
       limit: number,
       filter: FilterQuery<T>,
-      projection?: object,
+      projection?: string | object,
       options?: QueryOptions
     ) => {
       return (await model
@@ -57,7 +59,7 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
     },
     findCollection: async (
       filter: FilterQuery<T>,
-      projection?: object,
+      projection?: string | object,
       options?: QueryOptions
     ) => {
       const docs = await model.find(filter, projection, options);
