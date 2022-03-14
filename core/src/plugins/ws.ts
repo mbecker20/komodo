@@ -27,7 +27,7 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.get("/ws", { websocket: true, onRequest: [app.auth] }, (connection) => {
     const unsub = messages.subscribe((msg) => connection.socket.send(msg));
 
-    connection.socket.on("message", (msg) => handleMessage(app, msg));
+    connection.socket.on("message", (msg) => handleMessage(app, connection.socket, JSON.parse(msg.toString())));
 
     connection.socket.on("close", unsub);
   });

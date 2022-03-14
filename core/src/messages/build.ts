@@ -1,4 +1,6 @@
+import { Action } from "@monitor/types";
 import { FastifyInstance } from "fastify";
+import { WebSocket } from "ws";
 
 const CREATE_BUILD = "CREATE_BUILD";
 const DELETE_BUILD = "DELETE_BUILD";
@@ -6,8 +8,8 @@ const UPDATE_BUILD = "UPDATE_BUILD";
 const PULL = "PULL";
 const BUILD = "BUILD";
 
-async function buildMessages(app: FastifyInstance, type: string, message: any, permissions: number) {
-	switch (type) {
+async function buildMessages(app: FastifyInstance, client: WebSocket, message: Action & object, permissions: number) {
+	switch (message.type) {
     case CREATE_BUILD:
       return true;
 

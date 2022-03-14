@@ -1,7 +1,7 @@
 import fastify from "fastify";
 import fastifyCors from "fastify-cors";
-import auth from "./plugins/auth";
 import { LOG, PORT } from "./config";
+import auth from "./plugins/auth";
 import db from "./plugins/db";
 import ws from "./plugins/ws";
 import docker from "./plugins/docker";

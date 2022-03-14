@@ -1,4 +1,6 @@
+import { Action } from "@monitor/types";
 import { FastifyInstance } from "fastify";
+import { WebSocket } from "ws";
 
 const CREATE_DEPLOYMENT = "CREATE_DEPLOYMENT";
 const DELETE_DEPLOYMENT = "DELETE_DEPLOYMENT";
@@ -16,11 +18,11 @@ const DEPLOY_RECHECK_TIMEOUT = 3000;
 
 async function deploymentMessages(
   app: FastifyInstance,
-  type: string,
-  message: any,
+  client: WebSocket,
+  message: Action & object,
   permissions: number
 ) {
-	switch (type) {
+	switch (message.type) {
     case CREATE_DEPLOYMENT:
       return true;
 

@@ -1,4 +1,6 @@
+import { Action } from "@monitor/types";
 import { FastifyInstance } from "fastify";
+import { WebSocket } from "ws";
 
 const ADD_SERVER = "ADD_SERVER";
 const REMOVE_SERVER = "REMOVE_SERVER";
@@ -8,11 +10,11 @@ const GET_SERVER_STATS = "GET_SERVER_STATS";
 
 async function serverMessages(
   app: FastifyInstance,
-  type: string,
-  message: any,
+  client: WebSocket,
+  message: Action & object,
   permissions: number
 ) {
-  switch (type) {
+  switch (message.type) {
     case ADD_SERVER:
       return true;
 
