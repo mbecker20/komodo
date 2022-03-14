@@ -1,3 +1,10 @@
+import { readFileSync } from "fs";
+
+export function readJSONFile<T = any>(path: string): T {
+  const raw = readFileSync(path);
+  return JSON.parse(raw as any);
+}
+
 export function getStringFromEnv(varName: string, defaultValue: string) {
   return process.env[varName] ? process.env[varName]! : defaultValue;
 }

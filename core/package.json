@@ -12,9 +12,11 @@
     "@types/dockerode": "^3.3.3",
     "@types/fs-extra": "^9.0.13",
     "@types/ws": "^8.5.3",
-    "typescript": "^4.6.2"
+    "typescript": "^4.6.2",
+    "@monitor/types": "1.0.0"
   },
   "dependencies": {
+    "axios": "^0.26.1",
     "bcrypt": "^5.0.1",
     "dockerode": "^3.3.1",
     "fastify": "^3.27.4",
