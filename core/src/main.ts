@@ -3,11 +3,13 @@ import fastifyCors from "fastify-cors";
 import auth from "./auth";
 import { LOG, PORT } from "./config";
 import db from "./db";
+import ws from "./ws";
 
 const app = fastify({ logger: LOG })
-	.register(fastifyCors, { origin: "*" })
+	.register(fastifyCors)
   .register(db)
-  .register(auth);
+  .register(auth)
+  .register(ws);
 
 app.listen(PORT, (err, address) => {
   if (err) {
