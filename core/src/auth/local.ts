@@ -14,7 +14,10 @@ const local = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const password = (req.body as User).password!;
       const hashedPass = await hash(password, PASSWORD_SALT_ROUNDS);
       try {
-        const user = await app.users.create({ username, password: hashedPass });
+        const user = await app.users.create({
+          username,
+          password: hashedPass,
+        });
         const jwt = app.jwt.sign(
           { id: user._id.toString() },
           { expiresIn: TOKEN_EXPIRES_IN }
