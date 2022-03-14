@@ -70,6 +70,7 @@ export type Build = {
 export type Deployment = {
   _id?: string;
   name: string;
+  containerName?: string; // also for auto pull of frontend repo
   owner: string;
   serverID: string;
   buildID?: string; // if deploying a monitor build
@@ -86,7 +87,6 @@ export type Deployment = {
   /* to manage repo for static frontend, mounted as a volume */
   repo?: string;
   accessToken?: string;
-  containerName?: string; // also for auto pull of frontend repo
   containerMount?: string; // the file path to mount repo on inside the container
 };
 
