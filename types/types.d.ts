@@ -17,6 +17,10 @@ export type User = {
   avatar?: string;
 };
 
+export type Action = {
+  type: string;
+};
+
 export type Log = {
   stdout?: string;
   stderr?: string;
@@ -93,7 +97,7 @@ export type Conversion = {
 
 export interface Volume extends Conversion {
   useSystemRoot?: boolean;
-};
+}
 
 export type EnvironmentVar = {
   variable: string;

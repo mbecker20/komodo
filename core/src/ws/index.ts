@@ -3,10 +3,11 @@ import fp from "fastify-plugin";
 import fastifyWebsocket from "fastify-websocket";
 import { createObservable } from "@monitor/util";
 import handleMessage from "./messages";
+import { Action } from "@monitor/types";
 
 declare module "fastify" {
   interface FastifyInstance {
-    broadcast: (message: object) => void;
+    broadcast: <MessageType>(type: string, message: MessageType) => void;
   }
 }
 
@@ -15,7 +16,13 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   const messages = createObservable();
 
-  app.decorate("broadcast", (msg: object) => messages.publish(msg));
+  app.decorate(
+    "broadcast",
+    <MessageType>(type: string, msg: Action & MessageType) => {
+      msg.type = type;
+      messages.publish(msg);
+    }
+  );
 
   app.get("/ws", { websocket: true, onRequest: [app.auth] }, (connection) => {
     const unsub = messages.subscribe((msg) => connection.socket.send(msg));
