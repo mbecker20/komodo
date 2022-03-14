@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import fastifyWebsocket from "fastify-websocket";
 import { createObservable } from "@monitor/util";
-import handleMessage from "./messages";
+import handleMessage from "../messages";
 import { Action } from "@monitor/types";
 
 declare module "fastify" {

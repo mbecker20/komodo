@@ -1,10 +1,10 @@
 import fastify from "fastify";
 import fastifyCors from "fastify-cors";
-import auth from "./util/auth";
+import auth from "./plugins/auth";
 import { LOG, PORT } from "./config";
-import db from "./util/db";
-import ws from "./util/ws";
-import docker from "./util/docker";
+import db from "./plugins/db";
+import ws from "./plugins/ws";
+import docker from "./plugins/docker";
 
 const app = fastify({ logger: LOG })
   .register(fastifyCors)

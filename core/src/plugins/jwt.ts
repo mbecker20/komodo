@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { FastifyInstance } from "fastify";
 import fastifyJwt from "fastify-jwt";
 import fp from "fastify-plugin";
-import { SECRETS } from "../../config";
+import { SECRETS } from "../config";
 
 declare module "fastify" {
   interface FastifyInstance {
