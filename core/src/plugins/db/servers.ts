@@ -2,6 +2,7 @@ import { Server } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
+import model from "../../util/model";
 
 const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
   const schema = new Schema<Server>({
@@ -14,7 +15,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     useHTTP: Boolean,
   });
 
-  app.decorate("servers", app.mongoose.model("Server", schema));
+  app.decorate("servers", model(app, "Server", schema));
 
   done();
 });

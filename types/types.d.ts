@@ -9,11 +9,11 @@ export type Builds = Collection<Build>;
 export type Deployments = Collection<Deployment>;
 
 export type User = {
-  _id: string;
+  _id?: string;
   username: string;
-  permissions: number;
+  permissions?: number;
   password?: string;
-  githubID?: string;
+  githubID?: number;
   avatar?: string;
 };
 
@@ -27,7 +27,7 @@ export type Log = {
 };
 
 export type Update = {
-  _id: string;
+  _id?: string;
   buildID?: string;
   deploymentID?: string;
   serverID?: string;

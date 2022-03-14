@@ -2,6 +2,7 @@ import { Build } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
+import model from "../../util/model";
 
 const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
   const schema = new Schema<Build>({
@@ -18,7 +19,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
     owner: { type: String, index: true }, // userID / username
   });
 
-  app.decorate("builds", app.mongoose.model("Build", schema));
+  app.decorate("builds", model(app, "Build", schema));
 
   done();
 });

@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import mongoose, { Model } from "mongoose";
+import mongoose from "mongoose";
 import { MONGO_URL } from "../../config";
 import { Build, Deployment, Server, Update, User } from "@monitor/types";
 import users from "./users";
@@ -8,6 +8,7 @@ import updates from "./updates";
 import deployments from "./deployments";
 import builds from "./builds";
 import servers from "./servers";
+import { Model } from "../../util/model";
 
 declare module "fastify" {
   interface FastifyInstance {

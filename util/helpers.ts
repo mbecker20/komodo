@@ -28,3 +28,7 @@ export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T> {
     })
   );
 }
+
+export function timestamp() {
+  return Math.floor(Date.now() / 1000);
+}

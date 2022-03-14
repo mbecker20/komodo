@@ -19,7 +19,7 @@ const local = fp((app: FastifyInstance, _: {}, done: () => void) => {
           password: hashedPass,
         });
         const jwt = app.jwt.sign(
-          { id: user._id.toString() },
+          { id: user._id!.toString() },
           { expiresIn: TOKEN_EXPIRES_IN }
         );
         res.send(jwt);
@@ -43,7 +43,7 @@ const local = fp((app: FastifyInstance, _: {}, done: () => void) => {
           const result = await compare(password, user.password);
           if (result) {
             const jwt = app.jwt.sign(
-              { id: user._id.toString() },
+              { id: user._id!.toString() },
               { expiresIn: 3000 }
             );
             res.send(jwt);

@@ -2,6 +2,7 @@ import { Deployment } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
+import model from "../../util/model";
 import { Conversion, EnvironmentVar, Volume } from "./misc";
 
 const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
@@ -27,7 +28,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     containerMount: String, // the file path to mount repo on inside the container
   });
 
-	app.decorate("deployments", app.mongoose.model("Deployment", schema));
+	app.decorate("deployments", model(app, "Deployment", schema));
 
 	done();
 });

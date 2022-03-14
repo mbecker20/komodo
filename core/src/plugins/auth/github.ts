@@ -35,7 +35,7 @@ const github = fp((app: FastifyInstance, _: {}, done: () => void) => {
     });
     if (existingUser) {
       const jwt = app.jwt.sign(
-        { id: existingUser._id.toString() },
+        { id: existingUser._id!.toString() },
         { expiresIn: token.expires_in }
       );
       res.redirect(
@@ -44,7 +44,7 @@ const github = fp((app: FastifyInstance, _: {}, done: () => void) => {
     } else {
       const createdUser = await app.users.create(profile);
       const jwt = app.jwt.sign(
-        { id: createdUser._id.toString() },
+        { id: createdUser._id!.toString() },
         { expiresIn: TOKEN_EXPIRES_IN }
       );
       res.redirect(

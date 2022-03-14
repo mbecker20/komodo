@@ -2,6 +2,7 @@ import { Update } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
+import model from "../../util/model";
 import { Log } from "./misc";
 
 const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
@@ -18,7 +19,7 @@ const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
     operator: { type: String, index: true }, // the userID or username
   });
 	
-	app.decorate("updates", app.mongoose.model("Update", schema));
+	app.decorate("updates", model(app, "Update", schema));
 	
 	done();
 });
