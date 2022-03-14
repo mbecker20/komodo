@@ -7,6 +7,7 @@ import db from "./plugins/db";
 import ws from "./plugins/ws";
 import docker from "./plugins/docker";
 import frontend from "./plugins/frontend";
+import githubListener from "./plugins/github-listener";
 
 const app = fastify({ logger: LOG })
   .register(fastifyCors)
@@ -15,7 +16,8 @@ const app = fastify({ logger: LOG })
   .register(docker)
   .register(auth)
   .register(ws)
-  .register(frontend);
+  .register(frontend)
+  .register(githubListener);
 
 app.listen(PORT, (err, address) => {
   if (err) {

@@ -21,4 +21,5 @@ export const ROOT = getStringFromEnv("ROOT", "/rootDir/"); // the root folder in
 export const DEPLOYDATA_ROOT = "deployments/";
 export const REPO_PATH = ROOT + "builds/";
 export const REGISTRY_URL = getStringFromEnv("REGISTRY_URL", "localhost:5000/");
-export const FRONTEND_PATH = getStringFromEnv("FRONTEND_PATH", "/frontend")
+export const FRONTEND_PATH = getStringFromEnv("FRONTEND_PATH", "/frontend");
+export const SYSTEM_OPERATOR = "Monitor";

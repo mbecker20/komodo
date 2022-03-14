@@ -86,6 +86,7 @@ export type Deployment = {
   containerUser?: string; // after -u in the run command
   /* to manage repo for static frontend, mounted as a volume */
   repo?: string;
+  branch?: string;
   accessToken?: string;
   containerMount?: string; // the file path to mount repo on inside the container
 };

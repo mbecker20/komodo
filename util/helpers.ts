@@ -1,4 +1,4 @@
-import { Collection } from "@monitor/types";
+import { Collection, Log } from "@monitor/types";
 import { readFileSync } from "fs";
 
 export function readJSONFile<T = any>(path: string): T {
@@ -31,4 +31,17 @@ export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T> {
 
 export function timestamp() {
   return Math.floor(Date.now() / 1000);
+}
+
+export function combineLogs(log0: Log, log1: Log): Log {
+  return {
+    stdout:
+      (log0.stdout ? log0.stdout : "") +
+      (log0.stdout && log1.stdout ? ", " : "") +
+      (log1.stdout ? log1.stdout : ""),
+    stderr:
+      (log0.stderr ? log0.stderr : "") +
+      (log0.stderr && log1.stderr ? ", " : "") +
+      (log1.stderr ? log1.stderr : ""),
+  };
 }

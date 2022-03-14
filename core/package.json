@@ -28,6 +28,7 @@
     "fastify-static": "^4.5.0",
     "fastify-websocket": "^4.2.0",
     "fs-extra": "^10.0.1",
-    "mongoose": "^6.2.6"
+    "mongoose": "^6.2.6",
+    "@monitor/util": "1.0.0"
   }
 }
