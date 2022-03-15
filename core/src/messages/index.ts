@@ -1,8 +1,8 @@
 import { Action, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
-import buildMessages from "./build";
-import deploymentMessages from "./deployment";
+import buildMessages from "./builds";
+import deploymentMessages from "./deployments";
 import serverMessages from "./server";
 
 export default async function handleMessage(

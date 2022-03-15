@@ -7,6 +7,24 @@ import {
 } from "@monitor/types";
 import { execute } from "./execute";
 
+/* Container */
+
+export async function startContainer(containerName: string) {
+  const command = `docker start ${containerName}`;
+  return {
+    command,
+    ...(await execute(command)),
+  }
+}
+
+export async function deleteContainer(containerName: string) {
+  const command = `docker stop ${containerName} && docker container rm ${containerName}`;
+  return {
+    command,
+    ...(await execute(command)),
+  }
+}
+
 /* Docker Build */
 
 export async function dockerBuild(
