@@ -3,7 +3,7 @@ import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import buildMessages from "./builds";
 import deploymentMessages from "./deployments";
-import serverMessages from "./server";
+import serverMessages from "./servers";
 
 export default async function handleMessage(
   app: FastifyInstance,

@@ -53,6 +53,7 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
         }
       }
     } else if (query.containerName) {
+      // needs to be updated to support remote repos attached to deployments (for static frontend)
       const deployment = await app.deployments.findOne({
         containerName: query.containerName,
       });

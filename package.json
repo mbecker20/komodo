@@ -12,6 +12,13 @@
     "periphery",
     "frontend"
   ],
+  "scripts": {
+    "start-core": "cd core && yarn start",
+    "start-periphery": "cd periphery && yarn start",
+    "start-frontend": "cd frontend && yarn start",
+    "build-frontend": "cd frontend && yarn build",
+    "run-mongo": "docker run -d --name mongo -p 27017:27017 mongo:latest"
+  },
   "devDependencies": {
     "typescript": "^4.6.2"
   }
