@@ -14,7 +14,7 @@ export async function startContainer(containerName: string) {
   return {
     command,
     ...(await execute(command)),
-  }
+  };
 }
 
 export async function deleteContainer(containerName: string) {
@@ -22,7 +22,7 @@ export async function deleteContainer(containerName: string) {
   return {
     command,
     ...(await execute(command)),
-  }
+  };
 }
 
 /* Docker Build */
@@ -58,14 +58,16 @@ export async function dockerRun(
     containerName,
     containerUser,
   }: DockerRunArgs,
-  sysRoot: string
+  sysRoot: string,
+  repoMount?: { repoFolder: string; containerMount: string }
 ) {
   const command =
-    `docker pull ${image}${latest && ":latest"} && ` +
-    `docker run -d --name ${containerName}` +
+    `docker pull ${image}${latest && ":latest"} && docker run -d` +
+    name(containerName) +
     containerUserString(containerUser) +
     portsString(ports) +
     volsString(containerName!, sysRoot, volumes) +
+    repoVolume(containerName, repoMount) +
     envString(environment) +
     restartString(restart) +
     networkString(network) +
@@ -75,6 +77,10 @@ export async function dockerRun(
     command,
     ...(await execute(command)),
   };
+}
+
+function name(containerName?: string) {
+  return containerName && ` --name ${containerName}`;
 }
 
 function portsString(ports?: Conversion[]) {
@@ -100,6 +106,17 @@ function volsString(folderName: string, sysRoot: string, volumes?: Volume[]) {
         })
         .reduce((prev, curr) => prev + curr)
     : "";
+}
+
+function repoVolume(
+  containerName?: string,
+  repoMount?: { repoFolder: string; containerMount: string }
+) {
+  // repo root should be SYSROOT + "repos/"
+  return (
+    repoMount &&
+    ` -v ${repoMount.repoFolder + containerName}:${repoMount.containerMount}`
+  );
 }
 
 function restartString(restart?: string) {

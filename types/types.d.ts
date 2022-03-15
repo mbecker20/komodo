@@ -66,11 +66,11 @@ export interface Build extends DockerBuildArgs {
   branch?: string;
   accessToken?: string; // to gain access to private repos
   owner: string; // userID / username
-};
+}
 
 export type DockerRunArgs = {
   image: string;
-  containerName: string;
+  containerName?: string; // also for auto pull of repo, will be set by time deployment created
   latest?: boolean; // if custom image, use this to add :latest
   ports?: Conversion[];
   environment?: EnvironmentVar[];
@@ -84,12 +84,11 @@ export type DockerRunArgs = {
 export interface Deployment extends DockerRunArgs {
   _id?: string;
   name: string;
-  containerName?: string; // also for auto pull of frontend repo
   owner: string;
   serverID: string;
   buildID?: string; // if deploying a monitor build
-  /* to manage repo for static frontend, mounted as a volume */
-  repo?: string;
+  /* to manage repo for static frontend, mounted as a volume. locally in REPO_ROOT/containerName */
+  repo?: string; 
   branch?: string;
   accessToken?: string;
   containerMount?: string; // the file path to mount repo on inside the container
