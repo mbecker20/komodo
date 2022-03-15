@@ -24,48 +24,45 @@ async function deleteDeployment(
 ) {
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
-  if (user.permissions! >= 2 || user.username === deployment.owner) {
-    try {
-      const stopLog = (deployment.image || deployment.buildID) && ""; // stop container, either locally or remote
-      if (deployment.image || deployment.buildID) {
-        // stop container, either locally or remote
-      }
-      addSystemUpdate(
-        app,
-        DELETE_DEPLOYMENT,
-        "Delete Deployment",
-        {
-          stdout:
-            "Removed:\n\n" +
-            deploymentViewFields
-              .map((field) => {
-                return `${field}: ${JSON.stringify(deployment[field])}\n`;
-              })
-              .reduce((prev, curr) => prev + curr) +
-            (stopLog && `\n\nDocker Stop Log:\n\n${JSON.stringify(stopLog)}`),
-        },
-        user.username,
-        note
-      );
-      return true;
-    } catch (error) {
-      addSystemUpdate(
-        app,
-        DELETE_DEPLOYMENT,
-        "Delete Deployment (ERROR)",
-        { stderr: JSON.stringify(error) },
-        user.username,
-        note,
-        true
-      );
-    }
-  } else {
+  if (user.permissions! < 2 && user.username !== deployment.owner) {
     addDeploymentUpdate(
       app,
       deploymentID,
       DELETE_DEPLOYMENT,
       "Delete Deployment (DENIED)",
       PERMISSIONS_DENY_LOG,
+      user.username,
+      note,
+      true
+    );
+    return;
+  }
+  try {
+    const stopLog = (deployment.image || deployment.buildID) && ""; // stop container, either locally or remote
+    addSystemUpdate(
+      app,
+      DELETE_DEPLOYMENT,
+      "Delete Deployment",
+      {
+        stdout:
+          "Removed:\n\n" +
+          deploymentViewFields
+            .map((field) => {
+              return `${field}: ${JSON.stringify(deployment[field])}\n`;
+            })
+            .reduce((prev, curr) => prev + curr) +
+          (stopLog && `\n\nDocker Stop Log:\n\n${JSON.stringify(stopLog)}`),
+      },
+      user.username,
+      note
+    );
+    return true;
+  } catch (error) {
+    addSystemUpdate(
+      app,
+      DELETE_DEPLOYMENT,
+      "Delete Deployment (ERROR)",
+      { stderr: JSON.stringify(error) },
       user.username,
       note,
       true

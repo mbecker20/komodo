@@ -10,22 +10,7 @@ async function createDeployment(
   user: User,
   { deployment }: { deployment: Deployment }
 ) {
-  if (user.permissions! >= 1) {
-    const created = await app.deployments.create({
-      ...deployment,
-      containerName: toDashedName(deployment.name),
-			owner: user.username,
-    });
-    app.deployActionStates.add(created._id!);
-    addDeploymentUpdate(
-      app,
-      created._id!,
-      CREATE_DEPLOYMENT,
-      "Create Deployment",
-      { stdout: "Deployment Created: " + deployment.name },
-      user.username
-    );
-  } else {
+  if (user.permissions! < 1) {
     addSystemUpdate(
       app,
       CREATE_DEPLOYMENT,
@@ -35,7 +20,22 @@ async function createDeployment(
       "",
       true
     );
+    return;
   }
+  const created = await app.deployments.create({
+    ...deployment,
+    containerName: toDashedName(deployment.name),
+    owner: user.username,
+  });
+  app.deployActionStates.add(created._id!);
+  addDeploymentUpdate(
+    app,
+    created._id!,
+    CREATE_DEPLOYMENT,
+    "Create Deployment",
+    { stdout: "Deployment Created: " + deployment.name },
+    user.username
+  );
 }
 
 export default createDeployment;

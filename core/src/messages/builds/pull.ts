@@ -13,42 +13,7 @@ async function pullRepo(
 ) {
   const build = await app.builds.findById(buildID);
   if (!build) return;
-  if (user.permissions! >= 2 || build.owner === user.username) {
-    if (!app.buildActionStates.get(buildID, PULLING)) {
-      app.buildActionStates.set(buildID, PULLING, true);
-      app.broadcast(PULL, { complete: false, buildID });
-      try {
-        const { imageName, branch } = build;
-        const { command, log, isError } = await pull(
-          REPO_PATH + imageName,
-          branch
-        );
-        addBuildUpdate(
-          app,
-          buildID,
-          PULL,
-          command,
-          log,
-          user.username,
-          note,
-          isError
-        );
-      } catch (error) {
-        addBuildUpdate(
-          app,
-          buildID,
-          PULL,
-          "Pull (ERROR)",
-          { stderr: JSON.stringify(error) },
-          user.username,
-          note,
-          true
-        );
-      }
-      app.broadcast(PULL, { complete: true, buildID });
-      app.buildActionStates.set(buildID, PULLING, false);
-    }
-  } else {
+  if (user.permissions! < 2 && user.username !== build.owner) {
     addBuildUpdate(
       app,
       buildID,
@@ -59,6 +24,41 @@ async function pullRepo(
       note,
       true
     );
+    return;
+  }
+  if (!app.buildActionStates.get(buildID, PULLING)) {
+    app.buildActionStates.set(buildID, PULLING, true);
+    app.broadcast(PULL, { complete: false, buildID });
+    try {
+      const { imageName, branch } = build;
+      const { command, log, isError } = await pull(
+        REPO_PATH + imageName,
+        branch
+      );
+      addBuildUpdate(
+        app,
+        buildID,
+        PULL,
+        command,
+        log,
+        user.username,
+        note,
+        isError
+      );
+    } catch (error) {
+      addBuildUpdate(
+        app,
+        buildID,
+        PULL,
+        "Pull (ERROR)",
+        { stderr: JSON.stringify(error) },
+        user.username,
+        note,
+        true
+      );
+    }
+    app.broadcast(PULL, { complete: true, buildID });
+    app.buildActionStates.set(buildID, PULLING, false);
   }
 }
 

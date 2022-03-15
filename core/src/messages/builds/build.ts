@@ -13,7 +13,20 @@ async function build(
 ) {
   const build = await app.builds.findById(buildID);
   if (!build) return;
-  if (user.permissions! >= 2 || build.owner === user.username) {
+  if (user.permissions! < 2 && build.owner !== user.username) {
+    addBuildUpdate(
+      app,
+      buildID,
+      BUILD,
+      "Build (DENIED)",
+      PERMISSIONS_DENY_LOG,
+      user.username,
+      note,
+      true
+    );
+    return;
+  }
+  if (app.buildActionStates.get(buildID, BUILDING)) {
     app.buildActionStates.set(buildID, BUILDING, true);
     app.broadcast(BUILD, { complete: false, buildID });
     try {
@@ -46,17 +59,6 @@ async function build(
     }
     app.broadcast(BUILD, { complete: true, buildID });
     app.buildActionStates.set(buildID, BUILDING, false);
-  } else {
-    addBuildUpdate(
-      app,
-      buildID,
-      BUILD,
-      "Build (DENIED)",
-      PERMISSIONS_DENY_LOG,
-      user.username,
-      note,
-      true
-    );
   }
 }
 
