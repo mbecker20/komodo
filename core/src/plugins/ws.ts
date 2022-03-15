@@ -24,12 +24,17 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
   );
 
-  app.get("/ws", { websocket: true, onRequest: [app.auth] }, (connection) => {
-    const unsub = messages.subscribe((msg) => connection.socket.send(msg));
-
-    connection.socket.on("message", (msg) => handleMessage(app, connection.socket, JSON.parse(msg.toString())));
-
-    connection.socket.on("close", unsub);
+  app.get("/ws", { websocket: true, onRequest: [app.auth] }, async (connection, req) => {
+    const user = await app.users.findById(req.user.id);
+    if (user) {
+      const unsub = messages.subscribe((msg) => connection.socket.send(msg));
+      connection.socket.on("message", (msg) =>
+        handleMessage(app, connection.socket, JSON.parse(msg.toString()), user)
+      );
+      connection.socket.on("close", unsub);
+    } else {
+      connection.socket.close(403);
+    }
   });
 
   done();

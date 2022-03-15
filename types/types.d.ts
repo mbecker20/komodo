@@ -1,5 +1,5 @@
 export interface Collection<T> {
-  [index: string]: T
+  [index: string]: T;
 }
 
 export type BuildActionStates = Collection<BuildActionState>;
@@ -19,6 +19,7 @@ export type User = {
 
 export type Action = {
   type: string;
+  userID: string;
 };
 
 export type Log = {
@@ -52,44 +53,47 @@ export type Server = {
   useHTTP?: boolean;
 };
 
-export type Build = {
+export type DockerBuildArgs = {
+  buildPath: string; // build folder relative to repo root
+  dockerfilePath: string; // relative to buildPath
+  imageName: string;
+};
+
+export interface Build extends DockerBuildArgs {
   _id?: string;
   name: string;
-  /* repo related */
   repo?: string;
   branch?: string;
   accessToken?: string; // to gain access to private repos
-  /* build related */
-  buildPath?: string; // build folder relative to repo root
-  dockerfilePath?: String; // relative to buildPath
-  pullName?: string; // derived on build creation
-  imageName?: string; // derived on build creation
   owner: string; // userID / username
 };
 
-export type Deployment = {
+export type DockerRunArgs = {
+  image: string;
+  containerName: string;
+  latest?: boolean; // if custom image, use this to add :latest
+  ports?: Conversion[];
+  environment?: EnvironmentVar[];
+  network?: string;
+  volumes?: Volume[];
+  restart?: string;
+  postImage?: string; // interpolated into run command after the image string
+  containerUser?: string; // after -u in the run command
+};
+
+export interface Deployment extends DockerRunArgs {
   _id?: string;
   name: string;
   containerName?: string; // also for auto pull of frontend repo
   owner: string;
   serverID: string;
   buildID?: string; // if deploying a monitor build
-  /* to create docker run command */
-  image?: string; // used if deploying an external image (from docker hub)
-  latest?: boolean; // if custom image, use this to add :latest
-  ports?: Conversion[];
-  volumes?: Volume[];
-  environment?: EnvironmentVar[];
-  network?: string;
-  restart?: string;
-  postImage?: string; // interpolated into run command after the image string
-  containerUser?: string; // after -u in the run command
   /* to manage repo for static frontend, mounted as a volume */
   repo?: string;
   branch?: string;
   accessToken?: string;
   containerMount?: string; // the file path to mount repo on inside the container
-};
+}
 
 export type Conversion = {
   local: string;

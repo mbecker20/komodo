@@ -1,4 +1,4 @@
-import { Action } from "@monitor/types";
+import { Action, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import buildMessages from "./build";
@@ -8,12 +8,10 @@ import serverMessages from "./server";
 export default async function handleMessage(
   app: FastifyInstance,
   client: WebSocket,
-  message: Action & object
+  message: Action & object,
+  user: User
 ) {
-  // handle permissions here
-  const permissions = 0;
-  
-  (await buildMessages(app, client, message, permissions)) ||
-    (await deploymentMessages(app, client, message, permissions)) ||
-    (await serverMessages(app, client, message, permissions));
+  (await buildMessages(app, client, message, user)) ||
+    (await deploymentMessages(app, client, message, user)) ||
+    (await serverMessages(app, client, message, user));
 }

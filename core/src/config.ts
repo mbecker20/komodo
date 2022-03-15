@@ -23,3 +23,6 @@ export const REPO_PATH = ROOT + "builds/";
 export const REGISTRY_URL = getStringFromEnv("REGISTRY_URL", "localhost:5000/");
 export const FRONTEND_PATH = getStringFromEnv("FRONTEND_PATH", "/frontend");
 export const SYSTEM_OPERATOR = "Monitor";
+export const PERMISSIONS_DENY_LOG = {
+  stderr: "Someone tried to access this route without appropriate permissions",
+};

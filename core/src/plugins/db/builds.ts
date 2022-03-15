@@ -14,8 +14,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
     /* build related */
     buildPath: String, // build folder relative to repo root
     dockerfilePath: String, // relative to buildPath
-    pullName: { type: String, index: true }, // derived on build creation
-    imageName: String, // derived on build creation
+    imageName: { type: String, index: true }, // derived on build creation
     owner: { type: String, index: true }, // userID / username
   });
 

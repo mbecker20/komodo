@@ -1,11 +1,34 @@
-import { Build, Conversion, Deployment, EnvironmentVar, Volume } from "@monitor/types";
-import { FastifyInstance } from "fastify";
-import { DEPLOYDATA_ROOT, REGISTRY_URL, SYSROOT } from "../../config";
+import {
+  Conversion,
+  DockerBuildArgs,
+  DockerRunArgs,
+  EnvironmentVar,
+  Volume,
+} from "@monitor/types";
+import { execute } from "./execute";
 
-export async function createDockerRun(
-	app: FastifyInstance,
+/* Docker Build */
+
+export async function dockerBuild(
+  { buildPath, dockerfilePath, imageName }: DockerBuildArgs,
+  repoPath: string,
+  registryUrl: string
+) {
+  const command = `cd ${repoPath}${imageName}${
+    buildPath && (buildPath[0] === "/" ? buildPath : "/" + buildPath)
+  } && docker build -t ${
+    registryUrl + imageName
+  } -f ${dockerfilePath} . && docker push ${registryUrl + imageName}`;
+  return {
+    command,
+    ...(await execute(command)),
+  };
+}
+
+/* Docker Run */
+
+export async function dockerRun(
   {
-    buildID,
     image,
     latest,
     ports,
@@ -16,25 +39,24 @@ export async function createDockerRun(
     postImage,
     containerName,
     containerUser,
-  }: Deployment,
+  }: DockerRunArgs,
+  sysRoot: string
 ) {
-  const _image = buildID
-    ? REGISTRY_URL +
-      ((await app.builds.findById(buildID)) as any as Build).imageName
-    : image;
-  return (
-    `docker pull ${_image}${buildID || latest ? ":latest" : ""} && ` +
+  const command =
+    `docker pull ${image}${latest && ":latest"} && ` +
     `docker run -d --name ${containerName}` +
     containerUserString(containerUser) +
     portsString(ports) +
-    volsString(containerName!, volumes) +
+    volsString(containerName!, sysRoot, volumes) +
     envString(environment) +
     restartString(restart) +
     networkString(network) +
-    ` ${_image}${buildID || latest ? ":latest" : ""}${
-      postImage ? " " + postImage : ""
-    }`
-  );
+    ` ${image}${latest && ":latest"}${postImage && " " + postImage}`;
+
+  return {
+    command,
+    ...(await execute(command)),
+  };
 }
 
 function portsString(ports?: Conversion[]) {
@@ -45,18 +67,18 @@ function portsString(ports?: Conversion[]) {
     : "";
 }
 
-function volsString(folderName: string, volumes?: Volume[]) {
+function volsString(folderName: string, sysRoot: string, volumes?: Volume[]) {
   return volumes && volumes.length > 0
     ? volumes
         .map(({ local, container, useSystemRoot }) => {
-          const mid = useSystemRoot ? "" : `${DEPLOYDATA_ROOT}${folderName}/`;
+          const mid = !useSystemRoot && `${folderName}/`;
           const localString =
             local.length > 0
               ? local[0] === "/"
                 ? local.slice(1, local.length)
                 : local
               : "";
-          return ` -v ${SYSROOT + mid + localString}:${container}`;
+          return ` -v ${sysRoot + mid + localString}:${container}`;
         })
         .reduce((prev, curr) => prev + curr)
     : "";

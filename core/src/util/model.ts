@@ -1,7 +1,13 @@
 import { Collection } from "@monitor/types";
 import { objFrom2Arrays } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { Schema, FilterQuery, QueryOptions } from "mongoose";
+import {
+  Schema,
+  FilterQuery,
+  QueryOptions,
+  UpdateQuery,
+  UpdateWithAggregationPipeline,
+} from "mongoose";
 
 // a custom api on top of mongoose models with assumptive types / custom convenience queries
 const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
@@ -67,6 +73,23 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
         docs.map((doc) => doc._id),
         docs
       ) as Collection<T>;
+    },
+    findByIdAndDelete: async (id: string) => {
+      return (await model.findByIdAndDelete(id)) as T | undefined;
+    },
+    updateMany: async (
+      filter: FilterQuery<T>,
+      update: UpdateQuery<T> | UpdateWithAggregationPipeline,
+      options?: QueryOptions
+    ) => {
+      return await model.updateMany(filter, update, options);
+    },
+    updateOne: async (
+      filter: FilterQuery<T>,
+      update: UpdateQuery<T> | UpdateWithAggregationPipeline,
+      options?: QueryOptions
+    ) => {
+      return await model.updateOne(filter, update, options);
     },
   };
 };

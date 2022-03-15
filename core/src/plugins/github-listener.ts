@@ -1,8 +1,7 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { REPO_PATH, SYSTEM_OPERATOR } from "../config";
-import { execute } from "@monitor/util";
-import { createDockerBuild } from "../util/docker/build";
+import { REGISTRY_URL, REPO_PATH, SYSTEM_OPERATOR } from "../config";
+import { pull, dockerBuild } from "@monitor/util";
 import { addBuildUpdate, addDeploymentUpdate } from "../util/updates";
 
 const AUTO_PULL = "Auto Pull";
@@ -10,22 +9,22 @@ const AUTO_BUILD = "Auto Build";
 
 const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/githubListener", async (req, res) => {
-    const query = req.params as { pullName?: string; containerName?: string };
-    if (query.pullName) {
-      const build = await app.builds.findOne({ pullName: query.pullName });
+    const query = req.params as { imageName?: string; containerName?: string };
+    if (query.imageName) {
+      const build = await app.builds.findOne({ imageName: query.imageName });
       if (build) {
-        const { _id, buildPath, dockerfilePath, branch, pullName } = build;
-        const pullCommand = `cd ${REPO_PATH}${pullName} && git pull origin ${
-          branch ? branch : "master"
-        }`;
-        const { log: pullLog, success: pullSuccess } = await execute(
-          pullCommand
-        );
-        if (buildPath && dockerfilePath) {
-          const buildCommand = createDockerBuild(build);
-          const { log: buildLog, success: buildSuccess } = await execute(
-            buildCommand
-          );
+        const { _id, buildPath, dockerfilePath, branch, imageName } = build;
+        const {
+          command: pullCommand,
+          log: pullLog,
+          isError: pullIsError,
+        } = await pull(REPO_PATH + imageName, branch);
+        if (!pullIsError && buildPath && dockerfilePath) {
+          const {
+            command: buildCommand,
+            log: buildLog,
+            isError: buildIsError,
+          } = await dockerBuild(build, REPO_PATH, REGISTRY_URL);
           await addBuildUpdate(
             app,
             _id!,
@@ -37,7 +36,7 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
             },
             SYSTEM_OPERATOR,
             "",
-            !(pullSuccess && buildSuccess)
+            pullIsError || buildIsError
           );
         } else {
           // no docker build associated
@@ -49,7 +48,7 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
             pullLog,
             SYSTEM_OPERATOR,
             "",
-            !pullSuccess
+            pullIsError
           );
         }
       }
@@ -59,10 +58,10 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
       });
       if (deployment) {
         const { _id, containerName, branch } = deployment;
-        const command = `cd ${REPO_PATH}${containerName} && git pull origin ${
-          branch ? branch : "master"
-        }`;
-        const { log, success } = await execute(command);
+        const { command, log, isError } = await pull(
+          REPO_PATH + containerName,
+          branch
+        );
         await addDeploymentUpdate(
           app,
           _id!,
@@ -71,7 +70,7 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
           log,
           SYSTEM_OPERATOR,
           "",
-          !success
+          isError
         );
       }
     }

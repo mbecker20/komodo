@@ -1,4 +1,4 @@
-import { Action } from "@monitor/types";
+import { Action, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 
@@ -20,7 +20,7 @@ async function deploymentMessages(
   app: FastifyInstance,
   client: WebSocket,
   message: Action & object,
-  permissions: number
+  user: User
 ) {
 	switch (message.type) {
     case CREATE_DEPLOYMENT:
