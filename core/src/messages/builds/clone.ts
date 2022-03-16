@@ -2,6 +2,7 @@ import { Build, User } from "@monitor/types";
 import { clone } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { CLONE_REPO } from ".";
+import { BUILD_REPO_PATH } from "../../config";
 import { addBuildUpdate } from "../../util/updates";
 
 async function cloneRepo(
@@ -11,7 +12,7 @@ async function cloneRepo(
 ) {
   const { command, log, isError } = await clone(
     repo!,
-    imageName!,
+    BUILD_REPO_PATH + imageName!,
     branch,
     accessToken
   );

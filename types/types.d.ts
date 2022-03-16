@@ -45,12 +45,10 @@ export type Server = {
   _id?: string;
   name: string;
   address: string;
-  password: string;
+  passkey: string;
   port: string;
-  rootDirectory: string;
   status: "OK" | "Incorrect Password" | "Could Not Be Reached";
   enabled: boolean;
-  useHTTP?: boolean;
 };
 
 export type DockerBuildArgs = {
@@ -85,7 +83,7 @@ export interface Deployment extends DockerRunArgs {
   _id?: string;
   name: string;
   owner: string;
-  serverID: string;
+  serverID?: string; // only added if running on periphery server
   buildID?: string; // if deploying a monitor build
   /* to manage repo for static frontend, mounted as a volume. locally in REPO_ROOT/containerName */
   repo?: string; 

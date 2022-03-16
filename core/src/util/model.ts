@@ -91,6 +91,13 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
     ) => {
       return await model.updateOne(filter, update, options);
     },
+    updateById: async (
+      _id: string,
+      update: UpdateQuery<T> | UpdateWithAggregationPipeline,
+      options?: QueryOptions
+    ) => {
+      return await model.updateOne({ _id }, update, options);
+    },
   };
 };
 
