@@ -8,14 +8,15 @@
     "start": "tsc && node build/main.js"
   },
   "devDependencies": {
+    "@monitor/types": "1.0.0",
     "@types/dockerode": "^3.3.3",
-    "typescript": "^4.6.2",
-    "@monitor/types": "1.0.0"
+    "typescript": "^4.6.2"
   },
   "dependencies": {
+    "@monitor/util": "1.0.0",
     "dockerode": "^3.3.1",
     "fastify": "^3.27.4",
     "fastify-plugin": "^3.0.1",
-    "@monitor/util": "1.0.0"
+    "fs-extra": "^10.0.1"
   }
 }

@@ -134,3 +134,9 @@ export type EntityCollection = {
   buildIDs: string[];
   owner: string; // userID
 };
+
+export type CommandLogError = {
+  command: string;
+  log: Log;
+  isError: boolean;
+}

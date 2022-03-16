@@ -35,5 +35,25 @@
 			"",
 			"export default ${2:$TM_FILENAME_BASE};"
 		]
+	},
+
+	"get-auth": {
+		"scope": "typescript",
+		"prefix": "get-auth",
+		"body": [
+			"app.get(\"/${1}\", { onRequest: [app.auth] }, async (req, res) => {",
+			"\t${0}",
+			"});"
+		]
+	},
+
+	"post-auth": {
+		"scope": "typescript",
+		"prefix": "post-auth",
+		"body": [
+			"app.post(\"/${1}\", { onRequest: [app.auth] }, async (req, res) => {",
+			"\t${0}",
+			"});"
+		]
 	}
 }

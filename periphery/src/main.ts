@@ -1,9 +1,13 @@
 import fastify from "fastify";
 import { LOG, PORT } from "./config";
 import docker from "./plugins/docker";
+import auth from "./plugins/auth";
+import routes from "./routes";
 
 const app = fastify({ logger: LOG })
-	.register(docker);
+	.register(docker)
+  .register(auth)
+  .register(routes);
 
 app.listen(PORT, (err, address) => {
   if (err) {
