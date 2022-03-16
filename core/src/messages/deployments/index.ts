@@ -3,6 +3,7 @@ import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import createDeployment from "./create";
 import deleteDeployment from "./delete";
+import deployDeployment from "./deploy";
 import updateDeployment from "./update";
 
 export const CREATE_DEPLOYMENT = "CREATE_DEPLOYMENT";
@@ -54,6 +55,7 @@ async function deploymentMessages(
       return true;
 
     case DEPLOY:
+      await deployDeployment(app, user, message);
       return true;
 
     case REDEPLOY:
