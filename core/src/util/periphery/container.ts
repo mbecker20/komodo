@@ -1,8 +1,8 @@
-import { Collection, CommandLogError, ContainerStatus, Log } from "@monitor/types";
+import { Collection, CommandLogError, ContainerStatus, Log, Server } from "@monitor/types";
 import axios from "axios";
 
-export async function getPeripheryContainers(url: string, passkey: string) {
-  return (await axios.get(`${url}/containers`, {
+export async function getPeripheryContainers({ address, passkey }: Server) {
+  return (await axios.get(`http://${address}/containers`, {
     headers: {
       Authorization: passkey,
     },
@@ -10,11 +10,10 @@ export async function getPeripheryContainers(url: string, passkey: string) {
 }
 
 export async function getPeripheryContainer(
-  url: string,
-  passkey: string,
+  { address, passkey }: Server,
   name: string
 ) {
-	return (await axios.get(`${url}/container/${name}`, {
+	return (await axios.get(`http://${address}/container/${name}`, {
     headers: {
       Authorization: passkey,
     },
@@ -22,11 +21,10 @@ export async function getPeripheryContainer(
 }
 
 export async function getPeripheryContainerLog(
-  url: string,
-  passkey: string,
+  { address, passkey }: Server,
   name: string
 ) {
-  return (await axios.get(`${url}/container/log/${name}`, {
+  return (await axios.get(`http://${address}/container/log/${name}`, {
     headers: {
       Authorization: passkey,
     },
@@ -34,11 +32,10 @@ export async function getPeripheryContainerLog(
 }
 
 export async function startPeripheryContainer(
-  url: string,
-  passkey: string,
+  { address, passkey }: Server,
   name: string
 ) {
-	return (await axios.get(`${url}/container/start/${name}`, {
+  return (await axios.get(`http://${address}/container/start/${name}`, {
     headers: {
       Authorization: passkey,
     },
@@ -46,11 +43,10 @@ export async function startPeripheryContainer(
 }
 
 export async function stopPeripheryContainer(
-  url: string,
-  passkey: string,
+  { address, passkey }: Server,
   name: string
 ) {
-  return (await axios.get(`${url}/container/stop/${name}`, {
+  return (await axios.get(`http://${address}/container/stop/${name}`, {
     headers: {
       Authorization: passkey,
     },
@@ -58,11 +54,10 @@ export async function stopPeripheryContainer(
 }
 
 export async function deletePeripheryContainer(
-  url: string,
-  passkey: string,
+  { address, passkey }: Server,
   name: string
 ) {
-  return (await axios.get(`${url}/container/delete/${name}`, {
+  return (await axios.get(`http://${address}/container/delete/${name}`, {
     headers: {
       Authorization: passkey,
     },

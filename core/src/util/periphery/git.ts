@@ -1,13 +1,12 @@
-import { CommandLogError, Deployment } from "@monitor/types";
+import { CommandLogError, Deployment, Server } from "@monitor/types";
 import axios from "axios";
 
 export async function clonePeriphery(
-  url: string,
-  passkey: string,
+  { address, passkey }: Server,
   deployment: Deployment
 ) {
   return (await axios.post(
-    `${url}/repo/clone`,
+    `http://${address}/repo/clone`,
     { deployment },
     {
       headers: {
@@ -18,12 +17,11 @@ export async function clonePeriphery(
 }
 
 export async function pullPeriphery(
-  url: string,
-  passkey: string,
+  { address, passkey }: Server,
   deployment: Deployment
 ) {
   return (await axios.post(
-    `${url}/repo/pull`,
+    `http://${address}/repo/pull`,
     { deployment },
     {
       headers: {
@@ -34,12 +32,11 @@ export async function pullPeriphery(
 }
 
 export async function deleteRepoPeriphery(
-  url: string,
-  passkey: string,
+  { address, passkey }: Server,
   deployment: Deployment
 ) {
   return (await axios.post(
-    `${url}/repo/delete`,
+    `http://${address}/repo/delete`,
     { deployment },
     {
       headers: {
