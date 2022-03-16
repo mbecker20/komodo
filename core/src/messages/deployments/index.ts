@@ -3,6 +3,7 @@ import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import createDeployment from "./create";
 import deleteDeployment from "./delete";
+import updateDeployment from "./update";
 
 export const CREATE_DEPLOYMENT = "CREATE_DEPLOYMENT";
 export const DELETE_DEPLOYMENT = "DELETE_DEPLOYMENT";
@@ -44,6 +45,11 @@ async function deploymentMessages(
       return true;
 
     case UPDATE_DEPLOYMENT:
+      const updated =
+        message.deploymentID && (await updateDeployment(app, user, message));
+      if (updated) {
+        app.broadcast(UPDATE_DEPLOYMENT, { deployment: updated });
+      }
       return true;
 
     case DEPLOY:

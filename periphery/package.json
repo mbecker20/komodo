@@ -15,6 +15,7 @@
   "dependencies": {
     "dockerode": "^3.3.1",
     "fastify": "^3.27.4",
-    "fastify-plugin": "^3.0.1"
+    "fastify-plugin": "^3.0.1",
+    "@monitor/util": "1.0.0"
   }
 }

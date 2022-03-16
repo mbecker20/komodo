@@ -6,11 +6,58 @@ import {
   Volume,
 } from "@monitor/types";
 import { execute } from "./execute";
+import { objFrom2Arrays } from "./helpers";
+import Dockerode from "dockerode";
 
 /* Container */
 
+export async function allContainerStatus(dockerode: Dockerode) {
+  const statusAr = await dockerode.listContainers({ all: true });
+  const statusNames = statusAr.map((stat) =>
+    stat.Names[0].slice(1, stat.Names[0].length)
+  ); // they all start with '/'
+  return objFrom2Arrays(
+    statusNames,
+    statusAr.map((stat, i) => ({
+      name: statusNames[i],
+      Status: stat.Status,
+      State: stat.State,
+    }))
+  );
+}
+
+export async function getContainerStatus(dockerode: Dockerode, name: string) {
+  const status = (await dockerode.listContainers({ all: true })).filter(
+    ({ Names }) => Names[0] === "/" + name
+  );
+  return status[0]
+    ? {
+        State: status[0].State,
+        Status: status[0].Status,
+        name,
+      }
+    : "not created";
+}
+
+export async function getContainerLog(containerName: string, logTail?: number) {
+  return (
+    await execute(
+      `docker logs ${containerName}${logTail ? ` --tail ${logTail}` : ""}`
+    )
+  ).log;
+}
+
+
 export async function startContainer(containerName: string) {
   const command = `docker start ${containerName}`;
+  return {
+    command,
+    ...(await execute(command)),
+  };
+}
+
+export async function stopContainer(containerName: string) {
+  const command = `docker stop ${containerName}`;
   return {
     command,
     ...(await execute(command)),
