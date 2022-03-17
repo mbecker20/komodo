@@ -11,6 +11,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     passkey: String,
     port: String,
     enabled: Boolean,
+    isCore: Boolean,
   });
 
   app.decorate("servers", model(app, "Server", schema));

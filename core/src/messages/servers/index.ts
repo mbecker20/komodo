@@ -2,6 +2,7 @@ import { Action, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import addServer from "./add";
+import pruneServer from "./prune";
 import removeServer from "./remove";
 import updateServer from "./update";
 
@@ -42,6 +43,7 @@ async function serverMessages(
       return true;
 
     case PRUNE_SERVER:
+      await pruneServer(app, user, message);
       return true;
 
     case GET_SERVER_STATS:

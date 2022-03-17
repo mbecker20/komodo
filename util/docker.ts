@@ -9,6 +9,14 @@ import { execute } from "./execute";
 import { objFrom2Arrays } from "./helpers";
 import Dockerode from "dockerode";
 
+export async function prune() {
+  const command = "docker image prune -a -f";
+  return {
+    command,
+    ...(await execute(command)),
+  };
+}
+
 /* Container */
 
 export async function allContainerStatus(dockerode: Dockerode) {

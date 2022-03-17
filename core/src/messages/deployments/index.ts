@@ -1,6 +1,7 @@
 import { Action, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
+import { deleteDeploymentContainer, startDeploymentContainer, stopDeploymentContainer } from "./container";
 import createDeployment from "./create";
 import deleteDeployment from "./delete";
 import deployDeployment from "./deploy";
@@ -10,7 +11,6 @@ export const CREATE_DEPLOYMENT = "CREATE_DEPLOYMENT";
 export const DELETE_DEPLOYMENT = "DELETE_DEPLOYMENT";
 export const UPDATE_DEPLOYMENT = "UPDATE_DEPLOYMENT";
 export const DEPLOY = "DEPLOY";
-export const REDEPLOY = "REDEPLOY";
 export const START_CONTAINER = "START_CONTAINER";
 export const STOP_CONTAINER = "STOP_CONTAINER";
 export const DELETE_CONTAINER = "DELETE_CONTAINER";
@@ -58,19 +58,16 @@ async function deploymentMessages(
       await deployDeployment(app, user, message);
       return true;
 
-    case REDEPLOY:
-      return true;
-
     case START_CONTAINER:
+      await startDeploymentContainer(app, user, message);
       return true;
 
     case STOP_CONTAINER:
-      return true;
-
-    case UPDATE_DEPLOYMENT:
+      await stopDeploymentContainer(app, user, message);
       return true;
 
     case DELETE_CONTAINER:
+      await deleteDeploymentContainer(app, user, message);
       return true;
 
     case REFRESH_CONTAINER_STATUS:

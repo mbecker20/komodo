@@ -49,6 +49,7 @@ export type Server = {
   port: string;
   status: "OK" | "Incorrect Password" | "Could Not Be Reached";
   enabled: boolean;
+  isCore?: boolean;
 };
 
 export type DockerBuildArgs = {

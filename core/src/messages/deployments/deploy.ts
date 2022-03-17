@@ -11,7 +11,7 @@ import { addDeploymentUpdate } from "../../util/updates";
 async function deployDeployment(
   app: FastifyInstance,
   user: User,
-  { deploymentID, note }: { deploymentID: string; note?: string }
+  { deploymentID, note }: { deploymentID: string; note?: string },
 ) {
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
