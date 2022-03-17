@@ -46,7 +46,6 @@ export type Server = {
   name: string;
   address: string;
   passkey: string;
-  port: string;
   status: "OK" | "Incorrect Password" | "Could Not Be Reached";
   enabled: boolean;
   isCore?: boolean;

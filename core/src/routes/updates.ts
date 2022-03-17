@@ -13,6 +13,7 @@ const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
     const updates = await app.updates.getMostRecent(10, { buildID, serverID, deploymentID }, offset);
 		res.send(updates);
   });
+  done();
 });
 
 export default updates;

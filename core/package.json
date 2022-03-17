@@ -6,7 +6,9 @@
   "license": "MIT",
   "scripts": {
     "start": "tsc && node build/main.js",
-    "build": "vite build && node transform.mjs && docker build -t mbecker2020/monitor-core ."
+    "build": "vite build && node transform.mjs && docker build -t mbecker2020/monitor-core .",
+    "docker-run": "docker run -d --name monitor-core --network=\"host\" -v /Users/max/GitHub/monitor/core/secrets:/secrets mbecker2020/monitor-core",
+    "docker-remove": "docker stop monitor-core && docker container rm monitor-core"
   },
   "devDependencies": {
     "@monitor/types": "1.0.0",

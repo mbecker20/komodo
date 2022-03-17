@@ -23,7 +23,7 @@ declare module "fastify" {
 }
 
 const db = fp(async (app: FastifyInstance, _: {}, done: () => void) => {
-	mongoose.connect(MONGO_URL);
+	await mongoose.connect(MONGO_URL);
 
 	app.decorate("mongoose", mongoose);
 
@@ -33,8 +33,6 @@ const db = fp(async (app: FastifyInstance, _: {}, done: () => void) => {
     .register(deployments)
     .register(builds)
     .register(updates);
-
-  app.decorate("core", await app.servers.findOne({ isCore: true }));
 
 	done();
 });

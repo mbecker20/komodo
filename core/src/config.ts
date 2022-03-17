@@ -7,12 +7,12 @@ import {
 
 export const CORE_SERVER_NAME = getStringFromEnv("CORE_SERVER_NAME", "Monitor Core");
 export const SECRETS = readJSONFile("/secrets/secrets.json");
-export const LOG = getBooleanFromEnv("LOG", false);
+export const LOGGER = getBooleanFromEnv("LOGGER", true);
 export const PORT = getNumberFromEnv("PORT", 8000);
 export const HOST = getStringFromEnv("HOST", "http://localhost:" + PORT);
 export const MONGO_URL = getStringFromEnv(
   "MONGO_URL",
-  "mongodb://localhost:27017/monitor"
+  "mongodb://127.0.0.1:27017/monitor"
 );
 export const TOKEN_EXPIRES_IN = getNumberFromEnv("TOKEN_EXPIRES_IN", 3000);
 export const PASSWORD_SALT_ROUNDS = getNumberFromEnv("PASSWORD_SALT_ROUNDS", 8);

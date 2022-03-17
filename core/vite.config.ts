@@ -5,5 +5,8 @@ export default defineConfig({
     outDir: "build",
     target: "esnext",
     ssr: "./src/main.ts",
+    rollupOptions: {
+      input: "./src/main.ts"
+    }
   },
 });

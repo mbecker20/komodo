@@ -9,12 +9,15 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     name: { type: String, unique: true },
     address: String,
     passkey: String,
-    port: String,
-    enabled: Boolean,
+    enabled: { type: Boolean, default: true },
     isCore: Boolean,
   });
 
   app.decorate("servers", model(app, "Server", schema));
+
+  app.after(async () => {
+    app.decorate("core", await app.servers.findOne({ isCore: true }));
+  });
 
   done();
 });

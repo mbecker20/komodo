@@ -9,6 +9,6 @@ COPY ./build/package.json ./
 
 RUN npm i
 
-COPY ./build ./build
+COPY ./build/main.js ./
 
-CMD node build/main.js
+CMD node main.js

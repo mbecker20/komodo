@@ -14,11 +14,12 @@
   ],
   "scripts": {
     "build-core": "cd core && yarn build",
+    "docker-run-core": "cd core && yarn docker-run",
     "build-periphery": "cd periphery && yarn build",
     "start-frontend": "cd frontend && yarn start",
     "build-frontend": "cd frontend && yarn build",
     "run-mongo": "docker run -d --name mongo -p 27017:27017 mongo:latest",
-    "run-registry": "docker run -d --name registry -p 5000:5000 registry:2"
+    "run-registry": "docker run -d --name registry --network=\"host\" registry:2"
   },
   "devDependencies": {
     "typescript": "^4.6.2"
