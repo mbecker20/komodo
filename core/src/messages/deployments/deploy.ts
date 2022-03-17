@@ -2,7 +2,7 @@ import { User } from "@monitor/types";
 import { deleteContainer, dockerRun } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { DEPLOY } from ".";
-import { PERMISSIONS_DENY_LOG, SYSROOT } from "../../config";
+import { PERMISSIONS_DENY_LOG, REGISTRY_URL, SYSROOT } from "../../config";
 import { DEPLOYING } from "../../plugins/actionStates";
 import { deletePeripheryContainer } from "../../util/periphery/container";
 import { deployPeriphery } from "../../util/periphery/deploy";
@@ -11,7 +11,7 @@ import { addDeploymentUpdate } from "../../util/updates";
 async function deployDeployment(
   app: FastifyInstance,
   user: User,
-  { deploymentID, note }: { deploymentID: string; note?: string },
+  { deploymentID, note }: { deploymentID: string; note?: string }
 ) {
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
@@ -42,17 +42,27 @@ async function deployDeployment(
       // delete the container on core
       await deleteContainer(deployment.containerName!);
     }
+    const build = deployment.buildID
+      ? await app.builds.findById(deployment.buildID)
+      : undefined;
+    const image = build && build.imageName;
+    const containerMount =
+      deployment.repo && deployment.containerMount
+        ? {
+            repoFolder: SYSROOT + "/repos",
+            containerMount: deployment.containerMount,
+          }
+        : undefined;
     const { command, log, isError } = server
-      ? await deployPeriphery(server, deployment)
+      ? await deployPeriphery(server, deployment, image)
       : await dockerRun(
-          deployment,
+          {
+            ...deployment,
+            image: image ? REGISTRY_URL + image : deployment.image,
+            latest: image ? true : deployment.latest,
+          },
           SYSROOT,
-          deployment.repo && deployment.containerMount
-            ? {
-                repoFolder: SYSROOT + "/repos",
-                containerMount: deployment.containerMount,
-              }
-            : undefined
+          containerMount
         );
     addDeploymentUpdate(
       app,
