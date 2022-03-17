@@ -10,11 +10,7 @@ import { objFrom2Arrays } from "./helpers";
 import Dockerode from "dockerode";
 
 export async function prune() {
-  const command = "docker image prune -a -f";
-  return {
-    command,
-    ...(await execute(command)),
-  };
+  return await execute("docker image prune -a -f");
 }
 
 /* Container */
@@ -55,29 +51,18 @@ export async function getContainerLog(containerName: string, logTail?: number) {
   ).log;
 }
 
-
 export async function startContainer(containerName: string) {
-  const command = `docker start ${containerName}`;
-  return {
-    command,
-    ...(await execute(command)),
-  };
+  return await execute(`docker start ${containerName}`);
 }
 
 export async function stopContainer(containerName: string) {
-  const command = `docker stop ${containerName}`;
-  return {
-    command,
-    ...(await execute(command)),
-  };
+  return await execute(`docker stop ${containerName}`);
 }
 
 export async function deleteContainer(containerName: string) {
-  const command = `docker stop ${containerName} && docker container rm ${containerName}`;
-  return {
-    command,
-    ...(await execute(command)),
-  };
+  return await execute(
+    `docker stop ${containerName} && docker container rm ${containerName}`
+  );
 }
 
 /* Docker Build */
@@ -87,15 +72,18 @@ export async function dockerBuild(
   repoPath: string,
   registryUrl: string
 ) {
-  const command = `cd ${repoPath}${imageName}${
+  const cd = `cd ${repoPath}${imageName}${
     buildPath && (buildPath[0] === "/" ? buildPath : "/" + buildPath)
-  } && docker build -t ${
+  }`;
+
+  const build = `docker build -t ${
     registryUrl + imageName
-  } -f ${dockerfilePath} . && docker push ${registryUrl + imageName}`;
-  return {
-    command,
-    ...(await execute(command)),
-  };
+  } -f ${dockerfilePath} .`;
+
+  const push = `docker push ${registryUrl + imageName}`;
+
+  const command = `${cd} && ${build} && ${push}`;
+  return await execute(command);
 }
 
 /* Docker Run */
@@ -128,10 +116,7 @@ export async function dockerRun(
     networkString(network) +
     ` ${image}${latest && ":latest"}${postImage && " " + postImage}`;
 
-  return {
-    command,
-    ...(await execute(command)),
-  };
+  return await execute(command);
 }
 
 function name(containerName?: string) {

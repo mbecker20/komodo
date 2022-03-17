@@ -18,10 +18,11 @@ declare module "fastify" {
     builds: Model<Build>;
     updates: Model<Update>;
     servers: Model<Server>;
+    core: Server;
   }
 }
 
-const db = fp((app: FastifyInstance, _: {}, done: () => void) => {
+const db = fp(async (app: FastifyInstance, _: {}, done: () => void) => {
 	mongoose.connect(MONGO_URL);
 
 	app.decorate("mongoose", mongoose);
@@ -32,6 +33,8 @@ const db = fp((app: FastifyInstance, _: {}, done: () => void) => {
     .register(deployments)
     .register(builds)
     .register(updates);
+
+  app.decorate("core", await app.servers.findOne({ isCore: true }));
 
 	done();
 });

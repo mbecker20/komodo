@@ -15,21 +15,23 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
 
   return {
     create: async (item: T) => {
-      return (await model.create(item)) as T;
+      return (await model.create(item)).toObject() as T;
     },
     find: async (
       filter: FilterQuery<T> = {},
       projection?: string | object,
       options?: QueryOptions
     ) => {
-      return (await model.find(filter, projection, options)) as T[];
+      return (await model.find(filter, projection, options).lean().exec()) as T[];
     },
     findById: async (
       id: string,
       projection?: string | object,
       options?: QueryOptions
     ) => {
-      return (await model.findById(id, projection, options)) as T | undefined;
+      return (await model.findById(id, projection, options).lean().exec()) as
+        | T
+        | undefined;
     },
     findByField: async <Target>(
       field: string,
@@ -37,66 +39,70 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
       projection?: string | object,
       options?: QueryOptions
     ) => {
-      return (await model.find(
-        { [field]: expr } as FilterQuery<T>,
-        projection,
-        options
-      )) as T[];
+      return (await model
+        .find({ [field]: expr } as FilterQuery<T>, projection, options)
+        .lean()
+        .exec()) as T[];
     },
     findOne: async (
       filter: FilterQuery<T> = {},
       projection?: string | object,
       options?: QueryOptions
     ) => {
-      return (await model.findOne(filter, projection, options)) as
-        | T
-        | undefined;
+      return (await model
+        .findOne(filter, projection, options)
+        .lean()
+        .exec()) as T | undefined;
     },
     getMostRecent: async (
       limit: number,
       filter: FilterQuery<T>,
+      offset = 0,
       projection?: string | object,
       options?: QueryOptions
     ) => {
       return (await model
         .find(filter, projection, options)
         .sort({ createdAt: -1 })
-        .limit(limit)) as T[];
+        .skip(offset)
+        .limit(limit)
+        .lean()
+        .exec()) as T[];
     },
     findCollection: async (
       filter: FilterQuery<T>,
       projection?: string | object,
       options?: QueryOptions
     ) => {
-      const docs = await model.find(filter, projection, options);
+      const docs = await model.find(filter, projection, options).lean().exec();
       return objFrom2Arrays(
         docs.map((doc) => doc._id),
-        docs
+        docs as T[]
       ) as Collection<T>;
     },
     findByIdAndDelete: async (id: string) => {
-      return (await model.findByIdAndDelete(id)) as T | undefined;
+      return (await model.findByIdAndDelete(id).lean().exec()) as T | undefined;
     },
     updateMany: async (
       filter: FilterQuery<T>,
       update: UpdateQuery<T> | UpdateWithAggregationPipeline,
       options?: QueryOptions
     ) => {
-      return await model.updateMany(filter, update, options);
+      return await model.updateMany(filter, update, options).lean().exec();
     },
     updateOne: async (
       filter: FilterQuery<T>,
       update: UpdateQuery<T> | UpdateWithAggregationPipeline,
       options?: QueryOptions
     ) => {
-      return await model.updateOne(filter, update, options);
+      return await model.updateOne(filter, update, options).lean().exec();
     },
     updateById: async (
       _id: string,
       update: UpdateQuery<T> | UpdateWithAggregationPipeline,
       options?: QueryOptions
     ) => {
-      return await model.updateOne({ _id }, update, options);
+      return await model.updateOne({ _id }, update, options).lean().exec();
     },
   };
 };

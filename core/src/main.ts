@@ -9,6 +9,7 @@ import docker from "./plugins/docker";
 import frontend from "./plugins/frontend";
 import githubListener from "./plugins/github-listener";
 import actionStates from "./plugins/actionStates";
+import routes from "./routes";
 
 const app = fastify({ logger: LOG })
   .register(fastifyCors)
@@ -19,7 +20,8 @@ const app = fastify({ logger: LOG })
   .register(ws)
   .register(frontend)
   .register(githubListener)
-  .register(actionStates);
+  .register(actionStates)
+  .register(routes);
 
 app.listen(PORT, (err, address) => {
   if (err) {
