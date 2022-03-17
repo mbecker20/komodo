@@ -10,9 +10,12 @@
     "util",
     "core",
     "periphery",
-    "frontend"
+    "frontend",
+    "cli"
   ],
   "scripts": {
+    "start-cli": "cd cli && yarn start",
+    "build-cli": "cd cli && yarn build",
     "build-core": "cd core && yarn build",
     "docker-run-core": "cd core && yarn docker-run",
     "build-periphery": "cd periphery && yarn build",
