@@ -1,5 +1,5 @@
 import { Collection, Log } from "@monitor/types";
-import { readFileSync } from "fs";
+import { readFileSync } from "fs-extra";
 
 export function readJSONFile<T = any>(path: string): T {
   const raw = readFileSync(path);

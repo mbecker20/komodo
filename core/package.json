@@ -5,17 +5,21 @@
   "author": "mbecker20",
   "license": "MIT",
   "scripts": {
-    "start": "tsc && node build/main.js"
+    "start": "tsc && node build/main.js",
+    "build": "vite build && node transform.mjs && docker build -t mbecker2020/monitor ."
   },
   "devDependencies": {
     "@monitor/types": "1.0.0",
+    "@swc/core": "^1.2.156",
     "@types/bcrypt": "^5.0.0",
     "@types/dockerode": "^3.3.3",
     "@types/fs-extra": "^9.0.13",
     "@types/ws": "^8.5.3",
-    "typescript": "^4.6.2"
+    "typescript": "^4.6.2",
+    "vite": "^2.8.6"
   },
   "dependencies": {
+    "@monitor/util": "1.0.0",
     "axios": "^0.26.1",
     "bcrypt": "^5.0.1",
     "dockerode": "^3.3.1",
@@ -28,7 +32,6 @@
     "fastify-static": "^4.5.0",
     "fastify-websocket": "^4.2.0",
     "fs-extra": "^10.0.1",
-    "mongoose": "^6.2.6",
-    "@monitor/util": "1.0.0"
+    "mongoose": "^6.2.6"
   }
 }

@@ -5,7 +5,8 @@ import { CommandLogError } from "@monitor/types";
 export const pExec = promisify(exec);
 
 export async function execute(
-  command: string
+  command: string,
+  commandForLog?: string
 ): Promise<CommandLogError> {
   try {
     return {
@@ -15,7 +16,7 @@ export async function execute(
     };
   } catch (err) {
     return {
-      command,
+      command: commandForLog || command,
       log: { stderr: JSON.stringify(err) },
       isError: true,
     };

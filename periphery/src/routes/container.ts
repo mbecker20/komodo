@@ -9,32 +9,33 @@ const container = fp((app: FastifyInstance, _: {}, done: () => void) => {
   });
 
   app.get("/container/:name", { onRequest: [app.auth] }, async (req, res) => {
-    const params = req.params as any;
-    const container = await getContainerStatus(app.dockerode, params.name);
+    const { name } = req.params as { name: string };
+    const container = await getContainerStatus(app.dockerode, name);
     return res.send(container);
   });
 
   app.get("/container/log/:name", { onRequest: [app.auth] }, async (req, res) => {
-    const params = req.params as any;
-    const log = await getContainerLog(params.name, params.tail);
+    const { name } = req.params as { name: string };
+    const { tail } = req.query as { tail: number };
+    const log = await getContainerLog(name, tail);
     res.send(log);
   });
 
   app.get("/container/start/:name", { onRequest: [app.auth] }, async (req, res) => {
-    const params = req.params as any;
-    const log = await startContainer(params.name);
+    const { name } = req.params as { name: string };
+    const log = await startContainer(name);
     res.send(log);
   });
 
   app.get("/container/stop/:name", { onRequest: [app.auth] }, async (req, res) => {
-    const params = req.params as any;
-    const log = await stopContainer(params.name);
+    const { name } = req.params as { name: string };
+    const log = await stopContainer(name);
     res.send(log);
   });
 
   app.get("/container/delete/:name", { onRequest: [app.auth] }, async (req, res) => {
-    const params = req.params as any;
-    const log = await deleteContainer(params.name);
+    const { name } = req.params as { name: string };
+    const log = await deleteContainer(name);
     res.send(log);
   });
 

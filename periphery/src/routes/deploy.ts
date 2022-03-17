@@ -6,10 +6,9 @@ import { REGISTRY_URL, SYSROOT, SYS_REPO_ROOT } from "../config";
 
 const deploy = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/deploy", { onRequest: [app.auth] }, async (req, res) => {
-    const body = req.body as { deployment: Deployment };
-    const deployment = body.deployment;
-    // send the image name in the params if deployment is of a monitor build
-    const image = (req.params as any).image as string | undefined;
+    const { deployment } = req.body as { deployment: Deployment };
+    // send the image name in the query if deployment is of a monitor build
+    const { image } = req.query as { image?: string };
     const repoMount =
       deployment.repo && deployment.containerMount
         ? {

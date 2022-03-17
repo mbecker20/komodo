@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { REGISTRY_URL, REPO_PATH, SYSTEM_OPERATOR } from "../config";
+import { REGISTRY_URL, BUILD_REPO_PATH, DEPLOYMENT_REPO_PATH, SYSTEM_OPERATOR } from "../config";
 import { pull, dockerBuild } from "@monitor/util";
 import { addBuildUpdate, addDeploymentUpdate } from "../util/updates";
 
@@ -9,7 +9,7 @@ const AUTO_BUILD = "Auto Build";
 
 const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/githubListener", async (req, res) => {
-    const query = req.params as { imageName?: string; containerName?: string };
+    const query = req.query as { imageName?: string; containerName?: string };
     if (query.imageName) {
       const build = await app.builds.findOne({ imageName: query.imageName });
       if (build) {
@@ -18,13 +18,13 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
           command: pullCommand,
           log: pullLog,
           isError: pullIsError,
-        } = await pull(REPO_PATH + imageName, branch);
+        } = await pull(BUILD_REPO_PATH + imageName, branch);
         if (!pullIsError && buildPath && dockerfilePath) {
           const {
             command: buildCommand,
             log: buildLog,
             isError: buildIsError,
-          } = await dockerBuild(build, REPO_PATH, REGISTRY_URL);
+          } = await dockerBuild(build, BUILD_REPO_PATH, REGISTRY_URL);
           await addBuildUpdate(
             app,
             _id!,
@@ -60,7 +60,7 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
       if (deployment) {
         const { _id, containerName, branch } = deployment;
         const { command, log, isError } = await pull(
-          REPO_PATH + containerName,
+          DEPLOYMENT_REPO_PATH + containerName,
           branch
         );
         await addDeploymentUpdate(

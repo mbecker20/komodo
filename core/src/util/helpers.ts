@@ -9,8 +9,8 @@ export async function getBuildGithubListenerURL(
   app: FastifyInstance,
   buildID: string
 ) {
-  const build = await app.builds.findById(buildID, "pullName");
-  return `${HOST}/githubListener?pullName=${build?.pullName}`;
+  const build = await app.builds.findById(buildID, "imageName");
+  return `${HOST}/githubListener?imageName=${build?.imageName}`;
 }
 
 export async function getDeploymentGithubListenerURL(

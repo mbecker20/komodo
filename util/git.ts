@@ -16,16 +16,10 @@ export async function clone(
   }github.com/${repo}.git ${folder}${
     branch && branch !== "master" ? ` -b ${branch}` : ""
   }`;
-  return {
-    command: cloneForLog,
-    ...(await execute(clone)),
-  };
+  return await execute(clone, cloneForLog);
 }
 
 export async function pull(folder: string, branch = "master") {
   const command = `cd ${folder} && git pull origin ${branch}`;
-  return {
-    command,
-    ...(await execute(command)) 
-  }
+  return await execute(command);
 }
