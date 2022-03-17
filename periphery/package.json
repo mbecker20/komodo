@@ -5,12 +5,14 @@
   "author": "mbecker20",
   "license": "MIT",
   "scripts": {
-    "start": "tsc && node build/main.js"
+    "start": "tsc && node build/main.js",
+    "build": "vite build && node transform.mjs && docker build -t mbecker2020/monitor-periphery ."
   },
   "devDependencies": {
     "@monitor/types": "1.0.0",
     "@types/dockerode": "^3.3.3",
-    "typescript": "^4.6.2"
+    "typescript": "^4.6.2",
+    "vite": "^2.8.6"
   },
   "dependencies": {
     "@monitor/util": "1.0.0",

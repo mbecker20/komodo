@@ -3,21 +3,23 @@
   "display": "Node 12",
   "compilerOptions": {
     "lib": [
-      "es2019",
-      "es2020.promise",
-      "es2020.bigint",
-      "es2020.string"
+      "ESNext"
     ],
-    "module": "commonjs",
-    "target": "es2019",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "target": "ESNext",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowJs": true,
     "noImplicitAny": false,
-    "rootDir": "src",
+    "rootDir": "/",
     "outDir": "build",
-    "resolveJsonModule": true
-  }
+    "resolveJsonModule": true,
+    "noEmit": true
+  },
+  "include": [
+    "src"
+  ]
 }

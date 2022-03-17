@@ -13,9 +13,8 @@
     "frontend"
   ],
   "scripts": {
-    "start-core": "cd core && yarn start",
     "build-core": "cd core && yarn build",
-    "start-periphery": "cd periphery && yarn start",
+    "build-periphery": "cd periphery && yarn build",
     "start-frontend": "cd frontend && yarn start",
     "build-frontend": "cd frontend && yarn build",
     "run-mongo": "docker run -d --name mongo -p 27017:27017 mongo:latest",
