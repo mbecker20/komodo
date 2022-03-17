@@ -1,6 +1,6 @@
 import { Server, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
-import { ADD_SERVER } from ".";
+import { ADD_SERVER } from "@monitor/util";
 import { addServerUpdate } from "../../util/updates";
 
 async function addServer(app: FastifyInstance, user: User, { server }: { server: Server }) {

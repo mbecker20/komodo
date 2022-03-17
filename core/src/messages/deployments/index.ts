@@ -1,22 +1,26 @@
-import { Action, User } from "@monitor/types";
+import { User } from "@monitor/types";
+import {
+  COPY_ENV,
+  CREATE_DEPLOYMENT,
+  DELETE_CONTAINER,
+  DELETE_DEPLOYMENT,
+  DEPLOY,
+  REFRESH_CONTAINER_STATUS,
+  START_CONTAINER,
+  STOP_CONTAINER,
+  UPDATE_DEPLOYMENT,
+} from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
-import { deleteDeploymentContainer, startDeploymentContainer, stopDeploymentContainer } from "./container";
+import {
+  deleteDeploymentContainer,
+  startDeploymentContainer,
+  stopDeploymentContainer,
+} from "./container";
 import createDeployment from "./create";
 import deleteDeployment from "./delete";
 import deployDeployment from "./deploy";
 import updateDeployment from "./update";
-
-export const CREATE_DEPLOYMENT = "CREATE_DEPLOYMENT";
-export const DELETE_DEPLOYMENT = "DELETE_DEPLOYMENT";
-export const UPDATE_DEPLOYMENT = "UPDATE_DEPLOYMENT";
-export const DEPLOY = "DEPLOY";
-export const START_CONTAINER = "START_CONTAINER";
-export const STOP_CONTAINER = "STOP_CONTAINER";
-export const DELETE_CONTAINER = "DELETE_CONTAINER";
-export const REFRESH_CONTAINER_STATUS = "REFRESH_CONTAINER_STATUS";
-export const COPY_ENV = "COPY_ENV";
-export const CLONE_REPO = "CLONE_REPO";
 
 const DEPLOY_TIMEOUT = 1000;
 const DEPLOY_RECHECK_TIMEOUT = 3000;

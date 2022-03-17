@@ -1,6 +1,6 @@
 import { Build, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
-import { CREATE_BUILD } from ".";
+import { CREATE_BUILD } from "@monitor/util";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { toDashedName } from "../../util/helpers";
 import { addBuildUpdate, addSystemUpdate } from "../../util/updates";

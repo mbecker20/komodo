@@ -1,7 +1,6 @@
 import { User } from "@monitor/types";
-import { dockerBuild } from "@monitor/util";
+import { dockerBuild, BUILD } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { BUILD } from ".";
 import { PERMISSIONS_DENY_LOG, REGISTRY_URL, BUILD_REPO_PATH } from "../../config";
 import { BUILDING } from "../../plugins/actionStates";
 import { addBuildUpdate } from "../../util/updates";

@@ -1,7 +1,7 @@
 import { Deployment, User } from "@monitor/types";
 import { clone } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { CLONE_REPO } from ".";
+import { CLONE_DEPLOYMENT_REPO } from "@monitor/util";
 import { DEPLOYMENT_REPO_PATH } from "../../config";
 import { clonePeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
@@ -25,7 +25,7 @@ async function cloneRepo(
   addDeploymentUpdate(
     app,
     _id!,
-    CLONE_REPO,
+    CLONE_DEPLOYMENT_REPO,
     command,
     log,
     user.username,

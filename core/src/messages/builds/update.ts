@@ -1,9 +1,8 @@
 import { Build, User } from "@monitor/types";
-import { buildChangelog } from "@monitor/util";
+import { buildChangelog, UPDATE_BUILD } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { move, pathExists, remove } from "fs-extra";
-import { UPDATE_BUILD } from ".";
-import { PERMISSIONS_DENY_LOG, REPO_PATH } from "../../config";
+import { PERMISSIONS_DENY_LOG, BUILD_REPO_PATH } from "../../config";
 import { toDashedName } from "../../util/helpers";
 import { addBuildUpdate } from "../../util/updates";
 import cloneRepo from "./clone";
@@ -32,13 +31,13 @@ async function updateBuild(
     build.imageName = toDashedName(build.name);
     if (build.repo !== preBuild.repo || build.branch !== preBuild.branch) {
       // reclone repo if repo is changed
-      await remove(REPO_PATH + preBuild.imageName).catch();
+      await remove(BUILD_REPO_PATH + preBuild.imageName).catch();
       if (build.repo) {
         await cloneRepo(app, user, build);
       }
     } else if (build.imageName !== preBuild.imageName) {
-      if (await pathExists(REPO_PATH + preBuild.imageName)) {
-        await move(REPO_PATH + preBuild.imageName, REPO_PATH + build.imageName);
+      if (await pathExists(BUILD_REPO_PATH + preBuild.imageName)) {
+        await move(BUILD_REPO_PATH + preBuild.imageName, BUILD_REPO_PATH + build.imageName);
       }
       // maybe do something more with deployments
     }

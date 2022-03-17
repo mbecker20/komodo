@@ -1,7 +1,6 @@
 import { Server, User } from "@monitor/types";
-import { serverChangelog } from "@monitor/util";
+import { serverChangelog, UPDATE_SERVER } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { UPDATE_SERVER } from ".";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { addServerUpdate } from "../../util/updates";
 

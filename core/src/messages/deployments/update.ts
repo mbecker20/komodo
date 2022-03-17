@@ -1,7 +1,6 @@
 import { Deployment, User } from "@monitor/types";
-import { deploymentChangelog } from "@monitor/util";
+import { deploymentChangelog, UPDATE_DEPLOYMENT } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { UPDATE_DEPLOYMENT } from ".";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { addDeploymentUpdate } from "../../util/updates";
 import cloneRepo from "./clone";

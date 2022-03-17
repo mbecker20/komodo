@@ -1,16 +1,11 @@
 import { Action, User } from "@monitor/types";
+import { ADD_SERVER, GET_SERVER_STATS, PRUNE_SERVER, REMOVE_SERVER, UPDATE_SERVER } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import addServer from "./add";
 import pruneServer from "./prune";
 import removeServer from "./remove";
 import updateServer from "./update";
-
-export const ADD_SERVER = "ADD_SERVER";
-export const REMOVE_SERVER = "REMOVE_SERVER";
-export const UPDATE_SERVER = "UPDATE_SERVER";
-export const PRUNE_SERVER = "PRUNE_SERVER";
-export const GET_SERVER_STATS = "GET_SERVER_STATS";
 
 async function serverMessages(
   app: FastifyInstance,

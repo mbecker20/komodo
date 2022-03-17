@@ -1,7 +1,6 @@
 import { User } from "@monitor/types";
-import { deleteContainer } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { REMOVE_SERVER } from ".";
+import { REMOVE_SERVER } from "@monitor/util";
 import { deletePeripheryContainer } from "../../util/periphery/container";
 import { addSystemUpdate } from "../../util/updates";
 

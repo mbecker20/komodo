@@ -1,7 +1,6 @@
 import { User } from "@monitor/types";
-import { deleteContainer, dockerRun } from "@monitor/util";
+import { deleteContainer, dockerRun, DEPLOY } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { DEPLOY } from ".";
 import { PERMISSIONS_DENY_LOG, REGISTRY_URL, SYSROOT } from "../../config";
 import { DEPLOYING } from "../../plugins/actionStates";
 import { deletePeripheryContainer } from "../../util/periphery/container";

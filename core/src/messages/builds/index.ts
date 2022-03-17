@@ -1,4 +1,5 @@
 import { User } from "@monitor/types";
+import { BUILD, CREATE_BUILD, DELETE_BUILD, PULL, UPDATE_BUILD } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import build from "./build";
@@ -6,13 +7,6 @@ import createBuild from "./create";
 import deleteBuild from "./delete";
 import pullRepo from "./pull";
 import updateBuild from "./update";
-
-export const CREATE_BUILD = "CREATE_BUILD";
-export const DELETE_BUILD = "DELETE_BUILD";
-export const UPDATE_BUILD = "UPDATE_BUILD";
-export const PULL = "PULL";
-export const BUILD = "BUILD";
-export const CLONE_REPO = "CLONE_REPO";
 
 async function buildMessages(
   app: FastifyInstance,

@@ -1,6 +1,6 @@
 import { User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
-import { DELETE_DEPLOYMENT } from ".";
+import { DELETE_DEPLOYMENT } from "@monitor/util";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { addDeploymentUpdate, addSystemUpdate } from "../../util/updates";
 

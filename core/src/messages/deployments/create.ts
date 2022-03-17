@@ -1,6 +1,6 @@
 import { Deployment, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
-import { CREATE_DEPLOYMENT } from ".";
+import { CREATE_DEPLOYMENT } from "@monitor/util";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { toDashedName } from "../../util/helpers";
 import { addDeploymentUpdate, addSystemUpdate } from "../../util/updates";

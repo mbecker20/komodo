@@ -1,7 +1,6 @@
 import { Build, User } from "@monitor/types";
-import { clone } from "@monitor/util";
+import { clone, CLONE_BUILD_REPO } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { CLONE_REPO } from ".";
 import { BUILD_REPO_PATH } from "../../config";
 import { addBuildUpdate } from "../../util/updates";
 
@@ -19,7 +18,7 @@ async function cloneRepo(
   addBuildUpdate(
     app,
     _id!,
-    CLONE_REPO,
+    CLONE_BUILD_REPO,
     command,
     log,
     user.username,

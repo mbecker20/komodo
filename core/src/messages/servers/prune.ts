@@ -1,7 +1,6 @@
 import { User } from "@monitor/types";
-import { prune } from "@monitor/util";
+import { prune, PRUNE_SERVER } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { PRUNE_SERVER } from ".";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { prunePeriphery } from "../../util/periphery/server";
 import { addServerUpdate } from "../../util/updates";

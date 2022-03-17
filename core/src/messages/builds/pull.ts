@@ -1,8 +1,7 @@
 import { User } from "@monitor/types";
-import { pull } from "@monitor/util";
+import { pull, PULL } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { PULL } from ".";
-import { PERMISSIONS_DENY_LOG, REPO_PATH } from "../../config";
+import { PERMISSIONS_DENY_LOG, BUILD_REPO_PATH } from "../../config";
 import { PULLING } from "../../plugins/actionStates";
 import { addBuildUpdate } from "../../util/updates";
 
@@ -32,7 +31,7 @@ async function pullRepo(
     try {
       const { imageName, branch } = build;
       const { command, log, isError } = await pull(
-        REPO_PATH + imageName,
+        BUILD_REPO_PATH + imageName,
         branch
       );
       addBuildUpdate(
