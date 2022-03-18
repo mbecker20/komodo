@@ -1,15 +1,23 @@
 import { CommandLogError } from "@monitor/types";
 import { Box, Newline, Text, useInput } from "ink";
-import React, { useState } from "react";
-import { startMongo } from "../helpers/mongo";
-import { useBlinker } from "../hooks";
-import Selector from "./util/Selector";
+import React, { Fragment, useState } from "react";
+import { startMongo } from "../../helpers/mongo";
+import { useBlinker } from "../../hooks";
+import LabelledSelector from "../util/LabelledSelector";
+import Selector from "../util/Selector";
+import YesNo from "../util/YesNo";
 
 const RESTART_MODES = ["no", "on-failure", "always", "unless-stopped"];
 
-const SetupMongo = ({}: {}) => {
+const SetupMongo = ({
+  onFinished,
+  blinker,
+}: {
+  onFinished: (mongoURL: string) => void;
+  blinker: boolean;
+}) => {
   const [stage, setStage] = useState<
-    "name" | "port" | "volume" | "restart" | "confirm"
+    "name" | "port" | "volume" | "restart" | "confirm" | "finish"
   >("name"); // 0: name, 1: port, 2: volume, 3: restart
   const [name, setName] = useState("mongo-db");
   const [port, setPort] = useState<string>();
@@ -17,7 +25,6 @@ const SetupMongo = ({}: {}) => {
   const [restart, setRestart] = useState<string>();
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<CommandLogError>();
-  const blinker = useBlinker();
   useInput((input, key) => {
     if (key.return) {
       switch (stage) {
@@ -34,7 +41,6 @@ const SetupMongo = ({}: {}) => {
 
         case "volume":
           if (volume) {
-            setRestart("");
             setStage("restart");
           }
           break;
@@ -47,15 +53,22 @@ const SetupMongo = ({}: {}) => {
 
         case "confirm":
           setRunning(true);
-          startMongo(name, Number(port!), volume!, restart!).then((res) =>
-            setResult(res)
-          );
+          startMongo(name, Number(port!), volume!, restart!).then((res) => {
+            setResult(res);
+            setStage("finish");
+          });
+          break;
+
+        case "finish":
+          if (!result?.isError) {
+            onFinished(`mongodb://127.0.0.1:${port}/monitor`);
+          }
           break;
 
         default:
           break;
       }
-    } else if (key.escape) {
+    } else if (key.leftArrow) {
       switch (stage) {
         case "port":
           setPort(undefined);
@@ -76,8 +89,8 @@ const SetupMongo = ({}: {}) => {
           break;
 
         case "confirm":
+          setRestart(undefined);
           setStage("restart");
-          setRestart("");
           break;
 
         default:
@@ -125,7 +138,13 @@ const SetupMongo = ({}: {}) => {
   });
   return (
     <Box flexDirection="column">
-      <Text color="cyan">start mongo</Text>
+      <Text color="cyan" bold>
+        Mongo Setup Helper
+      </Text>
+      <Newline />
+      <Text>
+        press your keyboard back arrow ({"<-"}) to go back to the previous field
+      </Text>
       <Newline />
       <Text color="green">
         container name:{" "}
@@ -144,71 +163,111 @@ const SetupMongo = ({}: {}) => {
         </Text>
       )}
       {stage === "volume" && volume === undefined && (
-        <Box>
-          <Text color="green">use volume? </Text>
-          <Selector
-            items={["yes", "no"]}
-            onSelect={(use) => {
-              if (use === "yes") {
-                setVolume("~/mongo");
-              } else {
-                setVolume(false);
-                setRestart(""); /*  */
-                setStage("restart");
-              }
-            }}
-          />
-        </Box>
+        <LabelledSelector
+          label="use volume:"
+          items={["yes", "no"]}
+          onSelect={(use) => {
+            if (use === "yes") {
+              setVolume("~/mongo");
+            } else {
+              setVolume(false);
+              setStage("restart");
+            }
+          }}
+        />
       )}
       {(volume || volume === false) && (
         <Text color="green">
           volume:{" "}
           <Text color="white">
-            {volume || "false"}
+            {volume || "no"}
             {stage === "volume" && blinker ? "|" : ""}
           </Text>
         </Text>
       )}
-      {restart !== undefined && (
-        <Box>
-          <Text color="green">restart: </Text>
-          {restart.length === 0 ? (
-            <Selector
-              items={RESTART_MODES}
-              onSelect={(mode) => {
-                setRestart(mode);
-                setStage("confirm");
-              }}
-            />
-          ) : (
-            <Text>{restart}</Text>
-          )}
-        </Box>
+      {stage === "restart" && restart === undefined && (
+        <LabelledSelector
+          label="restart:"
+          items={RESTART_MODES}
+          onSelect={(mode) => {
+            setRestart(mode);
+            setStage("confirm");
+          }}
+        />
       )}
-      {stage === "confirm" && (
+      {restart !== undefined && (
+        <Text color="green">
+          restart: <Text color="white">{restart}</Text>
+        </Text>
+      )}
+      {/* {stage === "confirm" && (
         <Box flexDirection="column">
           <Newline />
-          <Text color="green">press enter to start mongo...</Text>
-          {running ? <Text color="cyan">running...</Text> : undefined}
+          {running ? (
+            <Text color="cyan">running...</Text>
+          ) : (
+            <Text color="green">press enter to start mongo...</Text>
+          )}
         </Box>
+      )} */}
+      {stage === "confirm" && (
+        <Fragment>
+          <Newline />
+          {running ? (
+            <Text color="cyan">running...</Text>
+          ) : (
+            <Text>
+              press <Text color="green">enter</Text> to start mongo...
+            </Text>
+          )}
+        </Fragment>
       )}
       {result && (
-        <Box flexDirection="column">
+        <Fragment>
           <Newline />
           <Text>command: {result.command}</Text>
-          {result.log.stdout && (
-            <Box flexDirection="column">
+          {result.log.stdout ? (
+            <Fragment>
               <Newline />
               <Text>stdout: {result.log.stdout}</Text>
-            </Box>
-          )}
+            </Fragment>
+          ) : undefined}
           {result.log.stderr ? (
-            <Box flexDirection="column">
+            <Fragment>
               <Newline />
               <Text>stderr: {result.log.stderr}</Text>
-            </Box>
+            </Fragment>
           ) : undefined}
-        </Box>
+        </Fragment>
+      )}
+      {stage === "finish" && result && !result.isError && (
+        <Text>
+          press{" "}
+          <Text color="green" bold>
+            enter
+          </Text>{" "}
+          to continue
+        </Text>
+      )}
+      {stage === "finish" && result && result.isError && (
+        <Fragment>
+          <Newline />
+          <YesNo
+            label="looks like that failed, would you like to retry?"
+            labelColor="white"
+            onYes={() => {
+              setPort(undefined);
+              setVolume(undefined);
+              setRestart(undefined);
+              setResult(undefined);
+              setStage("name");
+            }}
+            onNo={() => {
+              onFinished(`mongodb://127.0.0.1:${port}/monitor`);
+            }}
+            direction="vertical"
+          />
+        </Fragment>
       )}
     </Box>
   );

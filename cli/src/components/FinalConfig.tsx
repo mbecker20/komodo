@@ -30,6 +30,12 @@ const FinalConfig = (p: {
         <Newline />
         <Box flexDirection="column" borderColor="green" borderStyle="round">
           <Text>
+            mongo url:{" "}
+            <Text color="green" bold>
+              {p.config.mongoURL}
+            </Text>
+          </Text>
+          <Text>
             use builds:{" "}
             <Text color={p.config.useBuilds ? "green" : "red"} bold>
               {p.config.useBuilds ? "yes" : "no"}
