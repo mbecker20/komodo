@@ -1,20 +1,18 @@
 import React, { Fragment, useState } from "react";
 import { Box, Newline, Text, useInput } from "ink";
-import { Next, SetConfig } from "../../types";
+import { Next } from "../../types";
 import YesNo from "../util/YesNo";
 import { installDockerUbuntu, InstallLog } from "../../helpers/docker";
 
 const InstallDocker = ({ next }: { next: Next }) => {
   const [stage, setStage] = useState<
-    | "userGroup"
     | "sysCtlEnable"
     | "confirm"
     | "install"
     | "installing"
     | "finish"
     | "error"
-  >("userGroup");
-  const [addToUG, setAddToUG] = useState<"yes" | "no">();
+  >("sysCtlEnable");
   const [sysCtlEnable, setSysCtlEnable] = useState<"yes" | "no">();
   const [logs, setLogs] = useState<InstallLog[]>([]);
   useInput(async (_, key) => {
@@ -23,7 +21,6 @@ const InstallDocker = ({ next }: { next: Next }) => {
         case "confirm":
           const log = await installDockerUbuntu(
             (log) => setLogs((logs) => [...logs, log]),
-            addToUG === "yes",
             sysCtlEnable === "yes"
           );
           if (log) {
@@ -40,9 +37,8 @@ const InstallDocker = ({ next }: { next: Next }) => {
           break;
 
 				case "error":
-					setAddToUG(undefined);
 					setSysCtlEnable(undefined);
-					setStage("userGroup");
+					setStage("sysCtlEnable");
 					break;
 
         default:
@@ -50,11 +46,6 @@ const InstallDocker = ({ next }: { next: Next }) => {
       }
     } else if (key.leftArrow) {
 			switch (stage) {
-				case "sysCtlEnable":
-					setAddToUG(undefined);
-					setStage("userGroup");
-					break;
-
 				case "confirm":
 					setSysCtlEnable(undefined);
 					setStage("sysCtlEnable");
@@ -71,22 +62,6 @@ const InstallDocker = ({ next }: { next: Next }) => {
         Docker Install Helper
       </Text>
       <Newline />
-      {addToUG === undefined && (
-        <YesNo
-          label="add to user group? this will allow for the use of docker without sudo."
-          labelColor="white"
-          onSelect={(res) => {
-            setAddToUG(res);
-            setStage("sysCtlEnable");
-          }}
-          direction="vertical"
-        />
-      )}
-      {addToUG !== undefined && (
-        <Text color="green">
-          add to user group: <Text color="white">{addToUG}</Text>
-        </Text>
-      )}
       {stage === "sysCtlEnable" && sysCtlEnable === undefined && (
         <YesNo
           label="start docker on system start (boot)?"

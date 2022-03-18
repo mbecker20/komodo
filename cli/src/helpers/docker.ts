@@ -8,10 +8,9 @@ export type InstallLog = {
 
 export async function installDockerUbuntu(
   onCommandEnd: (log: InstallLog) => void,
-  addToUserGroup?: boolean,
   systemCtlEnable?: boolean
 ) {
-  const total = 5 + (addToUserGroup ? 1 : 0) + (systemCtlEnable ? 1 : 0);
+  const total = 6 + (systemCtlEnable ? 1 : 0);
   const update = await execute("sudo apt-get update");
   if (update.isError) return {
 		stage: "error updating system",
@@ -79,19 +78,18 @@ export async function installDockerUbuntu(
     log: installDocker,
   });
 
-  if (addToUserGroup) {
-    const addUser = await execute(
-      "sudo groupadd docker && sudo usermod -aG docker $USER && newgrp docker"
-    );
-    if (addUser.isError) return {
-			stage: "error adding user to docker group",
+  const addUser = await execute(
+    "sudo groupadd docker && sudo usermod -aG docker $USER && newgrp docker"
+  );
+  if (addUser.isError)
+    return {
+      stage: "error adding user to docker group",
       log: addUser,
     };
-    onCommandEnd({
-      stage: `added user to docker user group (6 of ${total})`,
-      log: addUser,
-    });
-  }
+  onCommandEnd({
+    stage: `added user to docker user group (6 of ${total})`,
+    log: addUser,
+  });
 
   if (systemCtlEnable) {
     const startOnBoot = await execute(
