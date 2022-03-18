@@ -3,9 +3,9 @@ import React, { useState } from "react";
 import { useBlinker } from "../../hooks";
 import { SetConfig } from "../../types";
 import YesNo from "../util/YesNo";
-import SetupMongo from "./SetupMongo";
+import SetupRegistry from "./SetupRegistry";
 
-const Mongo = ({
+const Registry = ({
   setConfig,
   next,
 }: {
@@ -13,7 +13,7 @@ const Mongo = ({
   next: () => void;
 }) => {
   const [setup, setSetup] = useState<boolean>();
-  const [mongoURL, setMongoUrl] = useState("mongodb://127.0.0.1:27017/monitor");
+  const [registryURL, setRegistryURL] = useState("http://127.0.0.1:5000/");
   const [confirm, setConfirm] = useState(false);
   const blinker = useBlinker();
 
@@ -21,17 +21,17 @@ const Mongo = ({
     if (setup === false) {
       if (key.return) {
         if (confirm) {
-          setConfig("mongoURL", mongoURL);
+          setConfig("registryURL", registryURL);
           next();
         } else {
           setConfirm(true);
         }
       } else if (!confirm && key.delete) {
-        setMongoUrl(mongoURL.slice(0, mongoURL.length - 1));
+        setRegistryURL(registryURL.slice(0, registryURL.length - 1));
       } else if (key.leftArrow) {
         setConfirm(false);
       } else if (!confirm) {
-        setMongoUrl(mongoURL + input);
+        setRegistryURL(registryURL + input);
       }
     }
   });
@@ -41,9 +41,9 @@ const Mongo = ({
       <YesNo
         label={
           <Text>
-            Do you need to set up mongo db locally? This will begin the{" "}
+            Do you need to set up a docker registry locally? This will begin the{" "}
             <Text color="cyan" bold>
-              Mongo Setup Helper
+              Registry Setup Helper
             </Text>
             .
           </Text>
@@ -60,10 +60,10 @@ const Mongo = ({
     );
   } else if (setup) {
     return (
-      <SetupMongo
+      <SetupRegistry
         blinker={blinker}
-        onFinished={(mongoURL) => {
-          setConfig("mongoURL", mongoURL);
+        onFinished={(registryURL) => {
+          setConfig("registryURL", registryURL);
           next();
         }}
       />
@@ -72,9 +72,9 @@ const Mongo = ({
     return (
       <Box flexDirection="column">
         <Box flexDirection="row">
-          <Text color="green">mongo url: </Text>
+          <Text color="green">registry url: </Text>
           <Text>
-            {mongoURL}
+            {registryURL}
             {blinker && !confirm ? "|" : ""}
           </Text>
         </Box>
@@ -85,7 +85,7 @@ const Mongo = ({
             <Text color="green" bold>
               enter
             </Text>{" "}
-            to confirm mongo url or press the{" "}
+            to confirm registry url or press the{" "}
             <Text color="blue" bold>
               left arrow
             </Text>{" "}
@@ -97,4 +97,4 @@ const Mongo = ({
   }
 };
 
-export default Mongo;
+export default Registry;

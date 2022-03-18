@@ -10,6 +10,7 @@ import Periphery from "./components/Periphery";
 import Mongo from "./components/mongo/Mongo";
 import { dockerNotInstalled } from "./monitor-cli";
 import Docker from "./components/docker/Docker";
+import Registry from "./components/registry/Registry";
 
 const App = () => {
   const [current, next, prev] = useSequence();
@@ -18,10 +19,12 @@ const App = () => {
   const [config, setConfig] = useConfig<Config>({
     useBuilds: false,
     mongoURL: "",
+    registryURL: "",
   });
 
   const corePages: ReactNode[] = [
     <Mongo setConfig={setConfig} next={next} />,
+    <Registry setConfig={setConfig} next={next} />,
     <Builds setConfig={setConfig} next={next} />,
   ];
 
