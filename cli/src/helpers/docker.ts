@@ -1,5 +1,5 @@
 import { CommandLogError } from "@monitor/types";
-import { execute } from "./execute";
+import { execute } from "@monitor/util";
 
 export type InstallLog = {
   stage: string;

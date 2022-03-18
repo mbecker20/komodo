@@ -135,7 +135,7 @@ function volsString(folderName: string, sysRoot: string, volumes?: Volume[]) {
   return volumes && volumes.length > 0
     ? volumes
         .map(({ local, container, useSystemRoot }) => {
-          const mid = !useSystemRoot && `${folderName}/`;
+          const mid = useSystemRoot ? "" : `${folderName}/`;
           const localString =
             local.length > 0
               ? local[0] === "/"

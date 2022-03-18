@@ -1,4 +1,4 @@
-import { execute } from "./execute";
+import { execute } from "@monitor/util";
 
 export async function startMongo(
   name: string,
