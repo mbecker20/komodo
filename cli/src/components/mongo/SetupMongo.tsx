@@ -2,9 +2,7 @@ import { CommandLogError } from "@monitor/types";
 import { Box, Newline, Text, useInput } from "ink";
 import React, { Fragment, useState } from "react";
 import { startMongo } from "../../helpers/mongo";
-import { useBlinker } from "../../hooks";
 import LabelledSelector from "../util/LabelledSelector";
-import Selector from "../util/Selector";
 import YesNo from "../util/YesNo";
 
 const RESTART_MODES = ["no", "on-failure", "always", "unless-stopped"];
@@ -164,7 +162,7 @@ const SetupMongo = ({
       )}
       {stage === "volume" && volume === undefined && (
         <LabelledSelector
-          label="use volume:"
+          label="mount data on local filesystem:"
           items={["yes", "no"]}
           onSelect={(use) => {
             if (use === "yes") {
@@ -178,7 +176,7 @@ const SetupMongo = ({
       )}
       {(volume || volume === false) && (
         <Text color="green">
-          volume:{" "}
+          {volume ? "mount folder: " : "mount: "}
           <Text color="white">
             {volume || "no"}
             {stage === "volume" && blinker ? "|" : ""}
@@ -242,7 +240,7 @@ const SetupMongo = ({
       )}
       {stage === "finish" && result && !result.isError && (
         <Text>
-          press{" "}
+          Success! Press{" "}
           <Text color="green" bold>
             enter
           </Text>{" "}
