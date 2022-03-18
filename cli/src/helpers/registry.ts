@@ -1,4 +1,4 @@
-import { execute } from "@monitor/util";
+import { execute } from "./execute";
 
 export async function startRegistry(
   name: string,

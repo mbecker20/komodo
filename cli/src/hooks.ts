@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { clearInterval } from "timers";
 
 export function useSequence(): [
 	current: number,
