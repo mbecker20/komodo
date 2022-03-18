@@ -10,7 +10,7 @@
   "scripts": {
     "start": "yarn build && build/monitor-cli.js",
     "build": "vite build && node transform.mjs && chmod +x build/monitor-cli.js",
-    "publish": "yarn build && npm publish --access=public && node update-version.mjs"
+    "publish-cli": "yarn build && cd build && npm publish --access=public && node update-version.mjs"
   },
   "devDependencies": {
     "@sindresorhus/tsconfig": "^2.0.0",
