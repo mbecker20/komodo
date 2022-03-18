@@ -6,7 +6,9 @@
     "esModuleInterop": true,
     "outDir": "build",
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "allowJs": true,
+    "noImplicitAny": false
   },
   "include": [
     "src"

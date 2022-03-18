@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { clearInterval } from "timers";
 
 export function useSequence(): [
 	current: number,
@@ -23,4 +24,15 @@ export function useConfig<T>(
 		setConfig((config) => ({ ...config, [field]: val }));
 	}, []);
 	return [config, set];
+}
+
+export function useBlinker(interval = 750) {
+	const [on, setOn] = useState(false);
+	useEffect(() => {
+		const int = setInterval(() => {
+			setOn(on => !on);
+		}, interval)
+		return () => clearInterval(int);
+	}, []);
+	return on;
 }

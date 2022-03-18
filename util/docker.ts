@@ -18,7 +18,7 @@ export async function prune() {
 export async function allContainerStatus(dockerode: Dockerode) {
   const statusAr = await dockerode.listContainers({ all: true });
   const statusNames = statusAr.map((stat) =>
-    stat.Names[0].slice(1, stat.Names[0].length)
+    stat.Names[0]?.slice(1, stat.Names[0]?.length) || stat.Id
   ); // they all start with '/'
   return objFrom2Arrays(
     statusNames,

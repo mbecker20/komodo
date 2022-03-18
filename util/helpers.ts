@@ -21,7 +21,7 @@ export function getBooleanFromEnv(varName: string, defaultValue: boolean) {
   else return defaultValue;
 }
 
-export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T> {
+export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T | undefined> {
   return Object.fromEntries(
     keys.map((id, index) => {
       return [id, entries[index]];

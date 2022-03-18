@@ -7,6 +7,7 @@ import { Config } from "./types";
 import Intro from "./components/Intro";
 import Setup from "./components/Setup";
 import Periphery from "./components/Periphery";
+import SetupMongo from "./components/SetupMongo";
 
 const App = () => {
   const [current, next, prev] = useSequence();
@@ -14,6 +15,7 @@ const App = () => {
   const [installing, setInstalling] = useState(false);
   const [config, setConfig] = useConfig<Config>({
     useBuilds: false,
+    mongoURL: ""
   });
 
   const corePages: ReactNode[] = [<Builds setConfig={setConfig} next={next} />];
@@ -40,14 +42,15 @@ const App = () => {
     if (!installing && key.escape) prev();
   });
   return (
-    <Box flexDirection="column">
-      <Newline />
-      <Text color="blue" bold underline>
-        Monitor CLI
-      </Text>
-      <Newline />
-      {pages[current]}
-    </Box>
+    // <Box flexDirection="column">
+    //   <Newline />
+    //   <Text color="blue" bold underline>
+    //     Monitor CLI
+    //   </Text>
+    //   <Newline />
+    //   {pages[current]}
+    // </Box>
+    <SetupMongo />
   );
 };
 

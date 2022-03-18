@@ -10,7 +10,7 @@
 			"\t\t<div>",
 			"\t\t\t${0}",
 			"\t\t</div>",
-			"\t)",
+			"\t);",
 			"}",
 			"",
 			"export default ${1:$TM_FILENAME_BASE};"
@@ -28,7 +28,7 @@
 			"\t\t<div class={s.${1:$TM_FILENAME_BASE}} >",
 			"\t\t\t${0}",
 			"\t\t</div>",
-			"\t)",
+			"\t);",
 			"}",
 			"",
 			"export default ${1:$TM_FILENAME_BASE};"
@@ -54,7 +54,7 @@
 			"\t\t<Context.Provider value={context}>",
 			"\t\t\t{p.children}",
 			"\t\t</Context.Provider>",
-			"\t)",
+			"\t);",
 			"}",
 			"",
 			"export function useContxt() {",
