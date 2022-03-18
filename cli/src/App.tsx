@@ -1,6 +1,5 @@
 import React, { ReactNode, useState } from "react";
 import { Box, Newline, Text, useInput } from "ink";
-import Builds from "./components/Builds";
 import FinalConfig from "./components/FinalConfig";
 import { useConfig, useSequence } from "./hooks";
 import { Config } from "./types";
@@ -17,7 +16,6 @@ const App = () => {
   const [periphery, setPeriphery] = useState<boolean>();
   const [installing, setInstalling] = useState(false);
   const [config, setConfig] = useConfig<Config>({
-    useBuilds: false,
     mongoURL: "",
     registryURL: "",
   });
@@ -25,7 +23,6 @@ const App = () => {
   const corePages: ReactNode[] = [
     <Mongo setConfig={setConfig} next={next} />,
     <Registry setConfig={setConfig} next={next} />,
-    <Builds setConfig={setConfig} next={next} />,
   ];
 
   const peripheryPages: ReactNode[] = [];

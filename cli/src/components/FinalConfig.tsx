@@ -35,10 +35,6 @@ const FinalConfig = (p: {
           <Text color="green">
             registry url: <Text color="white">{p.config.registryURL}</Text>
           </Text>
-          <Text color={p.config.useBuilds ? "green" : "red"}>
-            use builds:{" "}
-            <Text color="white">{p.config.useBuilds ? "yes" : "no"}</Text>
-          </Text>
         </Box>
         <Newline />
         <Text>

@@ -79,6 +79,11 @@ const Mongo = ({
           </Text>
         </Box>
         <Newline />
+        <Text color="gray">
+          note: remember to specify the database name in the url, ie
+          mongodb://localhost:27017<Text color="green">/monitor</Text>
+        </Text>
+        <Newline />
         {confirm && (
           <Text>
             press{" "}
