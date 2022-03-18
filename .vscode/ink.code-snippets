@@ -1,0 +1,21 @@
+{
+	"ink-comp": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "ink-comp",
+		"body": [
+			"import React from \"react\";",
+			"import { Box } from \"ink\";",
+			
+			"",
+			"const ${1:$TM_FILENAME_BASE} = ({ setConfig, next }: {setConfig: SetConfig; next: Next; }) => {",
+			"\treturn (",
+			"\t\t<Box>",
+			"\t\t\t${0}",
+			"\t\t</Box>",
+			"\t);",
+			"}",
+			"",
+			"export default ${1:$TM_FILENAME_BASE};"
+		]
+	},
+}

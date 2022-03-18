@@ -5,12 +5,14 @@ const YesNo = ({
   label,
   onYes,
 	onNo,
+	onSelect,
 	direction,
 	labelColor
 }: {
   label: ReactNode;
   onYes?: () => void;
 	onNo?: () => void;
+	onSelect?: (res: "yes" | "no") => void;
 	direction?: "vertical" | "horizontal";
 	labelColor?: "green" | "white"
 }) => {
@@ -22,8 +24,9 @@ const YesNo = ({
 				if (item === "yes") {
 					onYes && onYes();
 				} else {
-					onNo && onNo()
+					onNo && onNo();
 				}
+				onSelect && onSelect(item as "yes" | "no");
 			}}
 			direction={direction}
 			labelColor={labelColor}
