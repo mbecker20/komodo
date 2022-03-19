@@ -3,15 +3,20 @@ import { Newline, Text } from "ink";
 import YesNo from "../util/YesNo";
 import InstallDocker from "./InstallDocker";
 import { useMainSequence } from "../../cli";
+import { useEsc } from "../../util/hooks";
 
 const Docker = () => {
-  const { next } = useMainSequence();
+  const { next, prev } = useMainSequence();
   const [installDocker, setInstallDocker] = useState<boolean>();
+  
   useEffect(() => {
     if (installDocker === false) {
       process.exit();
     }
   }, [installDocker]);
+
+  useEsc(prev);
+
   if (installDocker === undefined) {
     return (
       <YesNo

@@ -28,3 +28,5 @@
 
 	* periphery
 
+* install
+

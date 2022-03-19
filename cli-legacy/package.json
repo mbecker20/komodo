@@ -8,7 +8,7 @@
     "node": ">=10"
   },
   "scripts": {
-    "start": "yarn build && build/monitor-cli.js",
+    "start": "yarn build && build/monitor-cli.js --help",
     "build": "vite build && node post-build.mjs && chmod +x build/monitor-cli.js",
     "publish-cli": "yarn build && cd build && npm publish --access=public && node update-version.mjs"
   },

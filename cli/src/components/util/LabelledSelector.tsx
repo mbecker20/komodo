@@ -6,19 +6,23 @@ const LabelledSelector = ({
   label,
   items,
   onSelect,
-  direction = "horizontal",
-  labelColor = "green"
+  vertical,
+  labelColor = "white",
 }: {
   label: ReactNode;
   labelColor?: "green" | "white";
   items: string[];
   onSelect?: (item: string, index: number) => void;
-  direction?: "vertical" | "horizontal"
+  vertical?: boolean;
 }) => {
   return (
-    <Box flexDirection={direction === "horizontal" ? "row" : "column"}>
-      {typeof label === "string" ? <Text color={labelColor}>{label} </Text> : label}
-      {direction === "vertical" && <Newline />}
+    <Box flexDirection={vertical ? "column" : "row"}>
+      {typeof label === "string" ? (
+        <Text color={labelColor}>{label} </Text>
+      ) : (
+        label
+      )}
+      {vertical && <Newline />}
       <Selector items={items} onSelect={onSelect} />
     </Box>
   );

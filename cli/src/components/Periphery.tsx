@@ -22,7 +22,7 @@ const Periphery = ({
         setPeriphery(item === "periphery");
         next();
       }}
-      direction="vertical"
+      vertical
     />
   );
 };

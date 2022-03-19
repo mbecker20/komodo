@@ -6,7 +6,7 @@ const YesNo = ({
   onYes,
   onNo,
   onSelect,
-  direction,
+  vertical,
   labelColor,
 	noYes
 }: {
@@ -14,7 +14,7 @@ const YesNo = ({
   onYes?: () => void;
   onNo?: () => void;
   onSelect?: (res: "yes" | "no") => void;
-  direction?: "vertical" | "horizontal";
+  vertical?: boolean;
   labelColor?: "green" | "white";
   noYes?: boolean;
 }) => {
@@ -30,7 +30,7 @@ const YesNo = ({
         }
         onSelect && onSelect(item as "yes" | "no");
       }}
-      direction={direction}
+      vertical={vertical}
       labelColor={labelColor}
     />
   );
