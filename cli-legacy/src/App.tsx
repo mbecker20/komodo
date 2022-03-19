@@ -15,10 +15,7 @@ const App = () => {
   const [current, next, prev] = useSequence();
   const [periphery, setPeriphery] = useState<boolean>();
   const [installing, setInstalling] = useState(false);
-  const [config, setConfig] = useConfig<Config>({
-    mongoURL: "",
-    registryURL: "",
-  });
+  const [config, setConfig] = useConfig<Config>({});
 
   const corePages: ReactNode[] = [
     <Mongo setConfig={setConfig} next={next} />,

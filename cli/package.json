@@ -1,28 +1,20 @@
 {
   "name": "@mbecker20/monitor-cli",
   "version": "0.0.3",
+  "description": "A CLI to aid in the setup of monitor",
+  "bin": "cli.js",
   "author": "mbecker20",
   "license": "MIT",
-  "bin": "build/monitor-cli.js",
-  "engines": {
-    "node": ">=10"
-  },
-  "scripts": {
-    "start": "yarn build && build/monitor-cli.js",
-    "build": "vite build && node post-build.mjs && chmod +x build/monitor-cli.js",
-    "publish-cli": "yarn build && cd build && npm publish --access=public && node update-version.mjs"
+  "dependencies": {
+    "ink": "^3.2.0",
+    "mongoose": "^6.2.7",
+    "react": "^17.0.2"
   },
   "devDependencies": {
-    "@sindresorhus/tsconfig": "^2.0.0",
     "@types/node": "^17.0.21",
     "@types/react": "^17.0.40",
     "typescript": "^4.6.2",
-    "vite": "^2.8.6"
-  },
-  "dependencies": {
-    "ink": "^3.2.0",
-    "meow": "^10.1.2",
-    "mongoose": "^6.2.7",
-    "react": "^17.0.2"
+    "vite": "^2.8.6",
+    "@monitor/types": "1.0.0"
   }
 }

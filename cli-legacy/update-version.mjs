@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "fs";
 
-const pkgjson = JSON.parse(readFileSync("package.json"));
+const rawpkg = readFileSync("package.json");
+const pkgjson = JSON.parse(rawpkg);
 
 const [major, minor, increment] = pkgjson.version
   .split(".")

@@ -14,6 +14,7 @@ const Mongo = ({
 }) => {
   const [setup, setSetup] = useState<boolean>();
   const [mongoURL, setMongoUrl] = useState("mongodb://127.0.0.1:27017/monitor");
+  const [monitorManaged, setMonitorManaged] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const blinker = useBlinker();
 
