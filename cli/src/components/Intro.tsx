@@ -1,8 +1,10 @@
 import React from "react";
 import { Box, Newline, Text } from "ink";
 import EnterToContinue from "./util/EnterToContinue";
+import { useMainSequence } from "../cli";
 
-const Intro = ({ next }: { next: () => void }) => {
+const Intro = () => {
+  const { next } = useMainSequence();
   return (
     <Box flexDirection="column">
       <Text>

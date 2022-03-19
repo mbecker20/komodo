@@ -13,6 +13,7 @@
   "dependencies": {
     "ink": "^3.2.0",
     "ink-text-input": "^4.0.3",
+    "jotai": "^1.6.1",
     "meow": "^10.1.2",
     "mongoose": "^6.2.7",
     "react": "^17.0.2"

@@ -1,15 +1,14 @@
 import React from "react";
 import { Text } from "ink";
-import { Next } from "../types";
 import LabelledSelector from "./util/LabelledSelector";
+import { useMainSequence } from "../cli";
 
 const Periphery = ({
   setPeriphery,
-  next,
 }: {
   setPeriphery: (periphery: boolean) => void;
-  next: Next;
 }) => {
+  const { next } = useMainSequence();
   return (
     <LabelledSelector
       label={

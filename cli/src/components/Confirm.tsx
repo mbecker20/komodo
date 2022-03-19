@@ -1,9 +1,10 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { Config, Next } from "../types";
-import { useEnter } from "../hooks";
+import { useEnter } from "../util/hooks";
+import { useConfig } from "../cli";
 
-const Confirm = ({ config, next }: { config: Config; next: Next }) => {
+const Confirm = ({ next }: { next: () => void }) => {
+	const { config } = useConfig();
 	useEnter(next);
   return <Box><Text>confirm</Text></Box>;
 };

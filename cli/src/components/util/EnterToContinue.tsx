@@ -1,6 +1,6 @@
 import React from "react";
 import { Text } from "ink";
-import { useEnter } from "../../hooks";
+import { useEnter } from "../../util/hooks";
 
 const EnterToContinue = ({ onEnter }: { onEnter: () => void }) => {
 	useEnter(onEnter);

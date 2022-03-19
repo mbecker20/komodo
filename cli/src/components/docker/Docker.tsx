@@ -1,10 +1,11 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { Newline, Text } from "ink";
-import { Next } from "../../types";
 import YesNo from "../util/YesNo";
 import InstallDocker from "./InstallDocker";
+import { useMainSequence } from "../../cli";
 
-const Docker = ({ next }: { next: Next }) => {
+const Docker = () => {
+  const { next } = useMainSequence();
   const [installDocker, setInstallDocker] = useState<boolean>();
   useEffect(() => {
     if (installDocker === false) {

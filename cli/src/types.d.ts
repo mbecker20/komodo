@@ -35,7 +35,5 @@ export type StartConfig = {
 
 export type SetConfig = (
   field: keyof Config,
-  val: string | number | boolean
+  val: Config[keyof Config]
 ) => void;
-
-export type Next = () => void;
