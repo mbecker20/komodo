@@ -10,7 +10,7 @@ import { useEsc } from "../../util/hooks";
 
 const Mongo = () => {
   const { set } = useConfig();
-  const { next } = useMainSequence();
+  const { next, prev } = useMainSequence();
   const [setup, setSetup] = useState<boolean>();
   const [mongoURL, setMongoURL] = useState(DEFAULT_MONGO_URL);
   const [confirm, setConfirm] = useState(false);
@@ -18,7 +18,9 @@ const Mongo = () => {
 	useEsc(() => {
 		if (!setup && confirm) {
 			setConfirm(false);
-		}
+		} else if (setup === undefined) {
+      prev();
+    }
 	})
 
   if (setup === undefined) {
@@ -48,6 +50,7 @@ const Mongo = () => {
         <Newline />
         <DeploymentConfig
           deployment="mongo-db"
+					back={() => setSetup(undefined)}
           onFinish={({ name, port, volume, restart }) => {
             set("mongo", {
               url: `mongodb://127.0.0.1:${port}/monitor`,

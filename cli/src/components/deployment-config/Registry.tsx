@@ -10,7 +10,7 @@ import { useEsc } from "../../util/hooks";
 
 const Registry = () => {
   const { set } = useConfig();
-  const { next } = useMainSequence();
+  const { next, prev } = useMainSequence();
   const [setup, setSetup] = useState<boolean>();
   const [regURL, setRegURL] = useState(DEFAULT_REGISTRY_URL);
   const [confirm, setConfirm] = useState(false);
@@ -18,6 +18,8 @@ const Registry = () => {
   useEsc(() => {
     if (!setup && confirm) {
       setConfirm(false);
+    } else if (setup === undefined) {
+      prev();
     }
   });
 
@@ -48,9 +50,9 @@ const Registry = () => {
         <Newline />
         <DeploymentConfig
           deployment="registry"
+          back={() => setSetup(undefined)}
           onFinish={({ name, port, volume, restart }) => {
             set("registry", {
-              exists: true,
               url: `http://127.0.0.1:${port}/`,
               startConfig: {
                 name,

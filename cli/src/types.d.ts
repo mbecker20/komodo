@@ -15,8 +15,7 @@ export type Config = {
     startConfig?: StartConfig;
   };
   registry?: {
-    exists: boolean; // if this is false, dont use a registry and builds will be disabled
-    url?: string;
+    url: string;
     startConfig?: StartConfig;
   };
 };

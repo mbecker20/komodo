@@ -33,7 +33,7 @@ const Docker = () => {
         onSelect={(res) => {
           setInstallDocker(res === "yes");
         }}
-        direction="vertical"
+        vertical
       />
     );
   } else if (installDocker) {

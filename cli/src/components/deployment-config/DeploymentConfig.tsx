@@ -1,11 +1,11 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment } from "react";
 import { Box, Newline, Text } from "ink";
 import TextInput from "ink-text-input";
 import { useEsc, useStore } from "../../util/hooks";
-import { useMainSequence } from "../../cli";
 import EnterToContinue from "../util/EnterToContinue";
 import LabelledSelector from "../util/LabelledSelector";
 import YesNo from "../util/YesNo";
+import { toDashedName } from "../../util/helpers/general";
 
 type DeploymentConfig = {
   stage: "name" | "port" | "volume" | "restart" | "confirm";
@@ -15,33 +15,50 @@ type DeploymentConfig = {
   restart?: string;
 };
 
-const RESTART_MODES = ["no", "on-failure", "always", "unless-stopped"];
+const RESTART_MODES = [
+  "always",
+  "on failure",
+  "unless stopped",
+  "don't restart",
+];
 
 const DeploymentConfig = ({
   deployment,
   onFinish,
+  back,
 }: {
   deployment: "mongo-db" | "registry";
   onFinish: (config: DeploymentConfig) => void;
+  back: () => void;
 }) => {
   const [config, setConfig, setMany] = useStore<DeploymentConfig>({
     stage: "name",
     name: deployment,
   });
   const { stage, name, port, volume, restart } = config;
-  const { next } = useMainSequence();
   useEsc(() => {
     switch (stage) {
+      case "name":
+        back();
+        break;
+
       case "port":
         setConfig("stage", "name");
         break;
 
       case "volume":
-        setMany(["stage", "port"], ["volume", undefined]);
+        if (volume) {
+          setConfig("volume", undefined);
+        } else {
+          setMany(["stage", "port"], ["volume", undefined]);
+        }
         break;
 
       case "restart":
-        setMany(["stage", "volume"], ["volume", undefined]);
+        setMany(
+          ["stage", "volume"],
+          volume === false ? ["volume", undefined] : ["volume", volume]
+        );
         break;
 
       case "confirm":
@@ -123,7 +140,7 @@ const DeploymentConfig = ({
                 }}
               />
             ) : (
-              volume || "no"
+              volume || "don't use"
             )}
           </Text>
         </Text>
@@ -134,7 +151,13 @@ const DeploymentConfig = ({
           label="restart: "
           items={RESTART_MODES}
           onSelect={(restart) => {
-            setMany(["stage", "confirm"], ["restart", restart]);
+            setMany(
+              ["stage", "confirm"],
+              [
+                "restart",
+                restart === "don't restart" ? "no" : toDashedName(restart),
+              ]
+            );
           }}
         />
       )}

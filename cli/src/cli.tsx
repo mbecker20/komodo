@@ -32,15 +32,17 @@ init().then(({ flags, dockerInstalled }) => {
       !flags.core && !flags.periphery ? (
         <Periphery setPeriphery={setPeriphery} />
       ) : undefined,
-      ...peripheryPages,
-      ...corePages,
+      peripheryPages,
+      corePages,
       <Confirm
         next={() => {
           setInstalling(true);
           next();
         }}
       />,
-    ].filter((val) => (val ? true : false));
+    ]
+      .filter((val) => (val ? true : false))
+      .flat();
 
     return (
       <Box flexDirection="column">

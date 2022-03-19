@@ -1,10 +1,9 @@
 import React, { Fragment, useState } from "react";
 import { Box, Newline, Text, useInput } from "ink";
-import { Next } from "../../types";
 import YesNo from "../util/YesNo";
 import { installDockerUbuntu, InstallLog } from "../../util/helpers/docker";
 
-const InstallDocker = ({ next }: { next: Next }) => {
+const InstallDocker = ({ next }: { next: () => void }) => {
   const [stage, setStage] = useState<
     "sysCtlEnable" | "confirm" | "install" | "installing" | "finish" | "error"
   >("sysCtlEnable");
@@ -65,7 +64,7 @@ const InstallDocker = ({ next }: { next: Next }) => {
             setSysCtlEnable(res);
             setStage("confirm");
           }}
-          direction="vertical"
+          vertical
         />
       )}
       {sysCtlEnable !== undefined && (
