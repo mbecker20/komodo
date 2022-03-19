@@ -1,7 +1,7 @@
 import { CommandLogError } from "@monitor/types";
 import { Box, Newline, Text, useInput } from "ink";
 import React, { Fragment, useState } from "react";
-import { startRegistry } from "../../helpers/registry";
+import { startRegistry } from "../../helpers/deploy/registry";
 import LabelledSelector from "../util/LabelledSelector";
 import YesNo from "../util/YesNo";
 

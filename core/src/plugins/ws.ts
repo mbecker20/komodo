@@ -17,7 +17,7 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
   const messages = createObservable();
 
   app.decorate(
-    "broadcast",
+    "broadcast", // used to sending state updates to all connected clients
     <MessageType>(type: string, msg: Action & MessageType) => {
       msg.type = type;
       messages.publish(msg);

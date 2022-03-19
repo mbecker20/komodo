@@ -1,7 +1,7 @@
 import { CommandLogError } from "@monitor/types";
 import { Box, Newline, Text, useInput } from "ink";
 import React, { Fragment, useState } from "react";
-import { startMongo } from "../../helpers/mongo";
+import { startMongo } from "../../helpers/deploy/mongo";
 import LabelledSelector from "../util/LabelledSelector";
 import YesNo from "../util/YesNo";
 

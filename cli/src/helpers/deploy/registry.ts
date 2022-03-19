@@ -1,4 +1,4 @@
-import { execute } from "./execute";
+import { execute } from "../execute";
 
 export async function startRegistry(
   name: string,
