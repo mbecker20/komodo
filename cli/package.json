@@ -6,7 +6,7 @@
   "license": "MIT",
   "bin": "cli.js",
   "scripts": {
-    "start": "yarn build && build/cli.js",
+    "start": "yarn build && build/cli.js --core",
     "build": "vite build && node post-build.mjs && chmod +x build/cli.js",
     "publish-cli": "yarn build && cd build && npm publish --access=public && node update-version.mjs"
   },

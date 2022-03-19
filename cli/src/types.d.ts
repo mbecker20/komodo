@@ -12,15 +12,11 @@ export type Config = {
   };
   mongo?: {
     url: string;
-    deploymentConfig?: {
-      // if mongo container already exists locally running on docker and should be added as a monitor managed deployment
-    };
     startConfig?: StartConfig;
   };
   registry?: {
     exists: boolean; // if this is false, dont use a registry and builds will be disabled
     url?: string;
-    deploymentConfig?: {};
     startConfig?: StartConfig;
   };
 };
