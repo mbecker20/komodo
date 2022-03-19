@@ -27,7 +27,7 @@ export async function installDockerUbuntu(
     ca-certificates \
     curl \
     gnupg \
-    lsb-release
+    lsb-release -y
 	`);
   if (installDeps.isError)
     return {
@@ -68,7 +68,7 @@ export async function installDockerUbuntu(
   });
 
   const installDocker = await execute(
-    "sudo apt-get udpate && sudo apt-get install docker-ce docker-ce-cli containerd.io"
+    "sudo apt-get udpate && sudo apt-get install docker-ce docker-ce-cli containerd.io -y"
   );
   if (installDocker.isError)
     return {
@@ -111,7 +111,7 @@ export async function installDockerUbuntu(
   return;
 }
 
-export async function checkDockerNotInstalled() {
+export async function isDockerInstalled() {
   const res = await execute("docker ps");
-  return res.isError;
+  return !res.isError;
 }

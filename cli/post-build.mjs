@@ -1,7 +1,14 @@
 import { readFileSync, writeFileSync } from "fs";
 
 const contents = readFileSync("build/cli.js").toString();
-writeFileSync("build/cli.js", "#!/usr/bin/env node\n" + contents);
+writeFileSync(
+  "build/cli.js",
+  "#!/usr/bin/env node\n" +
+    contents.replace(
+      "Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require('meow')); })",
+			"import(\"meow\")"
+    )
+);
 
 const pkgjson = JSON.parse(readFileSync("package.json"));
 

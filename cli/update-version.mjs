@@ -12,3 +12,5 @@ writeFileSync(
   "package.json",
   JSON.stringify(pkgjson, undefined, 2)
 );
+
+console.log("version updated to", pkgjson.version);

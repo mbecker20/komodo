@@ -4,9 +4,10 @@ export default defineConfig({
   build: {
     outDir: "build",
     target: "esnext",
-    ssr: "./src/monitor-cli.tsx",
+    ssr: true,
+    "ssr.target": "webworker",
     rollupOptions: {
-      input: "./src/monitor-cli.tsx",
+      input: "./src/cli.tsx",
     },
   },
 });
