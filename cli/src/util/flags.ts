@@ -3,7 +3,7 @@ const getFlags = async () => {
   const cli = meow.default(
     `
 			Usage
-				$ @mbecker20/monitor-cli
+				$ npx @mbecker20/monitor-cli
 			Options
 				--core, -c  setup monitor core
 				--periphery, -p  setup monitor periphery
