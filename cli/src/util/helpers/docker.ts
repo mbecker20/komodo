@@ -24,13 +24,11 @@ export async function installDockerUbuntu(
       log: update,
     };
 
-  const installDeps = await execute(`
-		sudo apt-get install \
+  const installDeps = await execute(`sudo apt-get install \
     ca-certificates \
     curl \
     gnupg \
-    lsb-release -y
-	`);
+    lsb-release`);
   onCommandEnd({
     stage: `${
       installDeps.isError ? "error installing" : "installed"
@@ -58,11 +56,9 @@ export async function installDockerUbuntu(
       log: addKey,
     };
 
-  const setStableRepository = await execute(`
-		echo \
-  	"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-  	$(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-	`);
+  const setStableRepository = await execute(`echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null`);
   onCommandEnd({
     stage: `${
       setStableRepository.isError ? "error setting" : "set"

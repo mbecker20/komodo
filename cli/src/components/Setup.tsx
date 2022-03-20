@@ -3,6 +3,7 @@ import { Box, Newline, Text } from "ink";
 import { useConfig } from "../cli";
 import deploy, { Stage, Update } from "../util/helpers/deploy";
 import { Config } from "../types";
+import Spinner from "ink-spinner";
 
 const Setup = () => {
   const { config } = useConfig();
@@ -34,6 +35,11 @@ const Setup = () => {
   return (
     <Box flexDirection="column">
       <Text>
+        {(finished || error) && (
+          <Text color="green">
+            <Spinner type="dots" />
+          </Text>
+        )}{" "}
         setting up{" "}
         {config.core ? (
           <Text color="cyan">monitor core</Text>
@@ -92,7 +98,11 @@ const Setup = () => {
           </Box>
           <Newline />
           <Text>
-            process <Text color="red" bold>exiting</Text>.
+            process{" "}
+            <Text color="red" bold>
+              exiting
+            </Text>
+            .
           </Text>
         </Fragment>
       )}

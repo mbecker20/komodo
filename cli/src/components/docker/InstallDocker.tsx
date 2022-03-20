@@ -1,7 +1,9 @@
 import React, { Fragment, useState } from "react";
-import { Box, Newline, Text, useInput } from "ink";
+import { Box, Newline, Text } from "ink";
 import YesNo from "../util/YesNo";
 import { installDockerUbuntu, InstallLog } from "../../util/helpers/docker";
+import { useEnter, useKey } from "../../util/hooks";
+import Spinner from "ink-spinner";
 
 const InstallDocker = ({ next }: { next: () => void }) => {
   const [stage, setStage] = useState<
@@ -9,45 +11,39 @@ const InstallDocker = ({ next }: { next: () => void }) => {
   >("sysCtlEnable");
   const [sysCtlEnable, setSysCtlEnable] = useState<"yes" | "no">();
   const [logs, setLogs] = useState<InstallLog[]>([]);
-  useInput(async (_, key) => {
-    if (key.return) {
-      switch (stage) {
-        case "confirm":
-          const log = await installDockerUbuntu(
-            (log) => setLogs((logs) => [...logs, log]),
-            sysCtlEnable === "yes"
-          );
-          if (log) {
-            // there was some error
-            setLogs((logs) => [...logs, log]);
-            setStage("error");
-          } else {
-            setStage("finish");
-          }
-          break;
+  useEnter(async () => {
+    switch (stage) {
+      case "confirm":
+        setStage("installing");
+        const log = await installDockerUbuntu(
+          (log) => setLogs((logs) => [...logs, log]),
+          sysCtlEnable === "yes"
+        );
+        if (log) {
+          // there was some error
+          setLogs((logs) => [...logs, log]);
+          setStage("error");
+        } else {
+          setStage("finish");
+        }
+        break;
 
-        case "finish":
-          next();
-          break;
+      case "finish":
+        next();
+        break;
 
-        case "error":
-          setSysCtlEnable(undefined);
-          setStage("sysCtlEnable");
-          break;
-
-        default:
-          break;
-      }
-    } else if (key.leftArrow) {
-      switch (stage) {
-        case "confirm":
-          setSysCtlEnable(undefined);
-          setStage("sysCtlEnable");
-          break;
-
-        default:
-          break;
-      }
+      case "error":
+        setSysCtlEnable(undefined);
+        setStage("sysCtlEnable");
+        break;
+    }
+  });
+  useKey("leftArrow", () => {
+    switch (stage) {
+      case "confirm":
+        setSysCtlEnable(undefined);
+        setStage("sysCtlEnable");
+        break;
     }
   });
   return (
@@ -76,13 +72,21 @@ const InstallDocker = ({ next }: { next: () => void }) => {
         <Fragment>
           <Newline />
           <Text>
-            press <Text color="green">enter</Text> to install docker. you may have to provide your password.
+            press <Text color="green">enter</Text> to install docker. you may
+            have to provide your password.
           </Text>
         </Fragment>
       )}
       {(stage === "installing" || stage === "finish") && (
         <Fragment>
-          {stage === "installing" && <Text color="cyan">installing...</Text>}
+          {stage === "installing" && (
+            <Text>
+              <Text color="green">
+                <Spinner type="dots" />
+              </Text>
+              installing...
+            </Text>
+          )}
           <Newline />
           {logs.map(({ stage, log }) => {
             <Fragment>
