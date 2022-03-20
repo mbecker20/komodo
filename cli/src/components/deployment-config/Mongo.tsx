@@ -1,24 +1,37 @@
-import React, { useState } from "react";
+import React from "react";
 import { Box, Newline, Text } from "ink";
-import TextInput from "ink-text-input";
 import { useConfig, useMainSequence } from "../../cli";
 import YesNo from "../util/YesNo";
 import DeploymentConfig from "./DeploymentConfig";
 import EnterToContinue from "../util/EnterToContinue";
 import { DEFAULT_MONGO_URL } from "../../config";
-import { useEsc } from "../../util/hooks";
+import { useEsc, useStore } from "../../util/hooks";
+import { Input } from "../util/Input";
+
+type State = {
+  setup?: boolean;
+  mongoUrl: string;
+  confirm: boolean;
+}
 
 const Mongo = () => {
   const { set } = useConfig();
   const { next, prev } = useMainSequence();
-  const [setup, setSetup] = useState<boolean>();
-  const [mongoURL, setMongoURL] = useState(DEFAULT_MONGO_URL);
-  const [confirm, setConfirm] = useState(false);
+  const [state, setState, setMany] = useStore<State>({
+    mongoUrl: DEFAULT_MONGO_URL,
+    confirm: false,
+  })
+
+  const { setup, mongoUrl, confirm } = state;
 
 	useEsc(() => {
-		if (!setup && confirm) {
-			setConfirm(false);
-		} else if (setup === undefined) {
+		if (setup === false) {
+      if (confirm) {
+        setState("confirm", false);
+      } else {
+        setState("setup", undefined);
+      }
+    } else if (setup === undefined) {
       prev();
     }
 	})
@@ -35,7 +48,7 @@ const Mongo = () => {
             locally?{" "}
           </Text>
         }
-				onSelect={(res) => setSetup(res === "yes")}
+				onSelect={(res) => setState("setup", res === "yes")}
         vertical
       />
     );
@@ -43,40 +56,34 @@ const Mongo = () => {
 
   if (setup) {
     return (
-      <Box flexDirection="column">
-        <Text color="cyan" bold>
-          mongo db config
-        </Text>
-        <Newline />
-        <DeploymentConfig
-          deployment="mongo-db"
-					back={() => setSetup(undefined)}
-          onFinish={({ name, port, volume, restart }) => {
-            set("mongo", {
-              url: `mongodb://127.0.0.1:${port}/monitor`,
-              startConfig: {
-                name,
-                port: Number(port),
-                volume: volume as string | false,
-                restart: restart as string,
-              },
-            });
-            next();
-          }}
-        />
-      </Box>
+      <DeploymentConfig
+        deployment="mongo-db"
+        back={() => setState("setup", undefined)}
+        onFinish={({ name, port, volume, restart }) => {
+          set("mongo", {
+            url: `mongodb://127.0.0.1:${port}/monitor`,
+            startConfig: {
+              name,
+              port: port as number,
+              volume: volume as string | false,
+              restart: restart as string,
+            },
+          });
+          next();
+        }}
+      />
     );
   } else {
     if (confirm) {
       return (
         <Box flexDirection="column">
           <Text color="green">
-            mongo url: <Text color="white">{mongoURL}</Text>
+            mongo url: <Text color="white">{mongoUrl}</Text>
           </Text>
           <Newline />
           <EnterToContinue
             onEnter={() => {
-              set("mongo", { url: mongoURL });
+              set("mongo", { url: mongoUrl });
               next();
             }}
           />
@@ -87,10 +94,11 @@ const Mongo = () => {
         <Text color="green">
           mongo url:{" "}
           <Text color="white">
-            <TextInput
-              value={mongoURL}
-              onChange={setMongoURL}
-              onSubmit={() => setConfirm(true)}
+            <Input
+              initialValue={mongoUrl}
+              onSubmit={(mongoUrl) => {
+                setMany(["mongoUrl", mongoUrl], ["confirm", true]);
+              }}
             />
           </Text>
         </Text>

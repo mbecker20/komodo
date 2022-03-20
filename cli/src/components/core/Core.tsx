@@ -1,12 +1,13 @@
 import React, { Fragment } from "react";
 import { Box, Newline, Text } from "ink";
-import TextInput from "ink-text-input";
 import { useConfig, useMainSequence } from "../../cli";
-import { useStore } from "../../util/hooks";
+import { useEsc, useStore } from "../../util/hooks";
 import { CoreConfig } from "../../types";
 import YesNo from "../util/YesNo";
 import { DEFAULT_PORT } from "../../config";
 import EnterToContinue from "../util/EnterToContinue";
+import { ControlledInput } from "../util/Input";
+import NumberInput from "../util/NumberInput";
 
 type Stage = "name" | "secret" | "network" | "port" | "confirm";
 
@@ -20,18 +21,36 @@ const Core = () => {
     name: "monitor-core",
   });
   const { stage, name, secretVolume, hostNetwork, port } = config;
+  useEsc(() => {
+    switch (stage) {
+      case "name":
+        prev();
+        break;
+
+      case "secret":
+        setConfig("stage", "name");
+        break;
+
+      case "network":
+        setConfig("stage", "secret");
+        break;
+
+      case "port":
+        setMany(["stage", "network"], ["hostNetwork", undefined], ["port", undefined]);
+        break;
+
+      case "confirm":
+        setMany(["stage", "port"], ["port", undefined]);
+        break;
+    }
+  });
   return (
     <Box flexDirection="column">
-      <Text color="cyan" bold>
-        monitor core config
-      </Text>
-      <Newline />
-
       <Text color="green">
         name:{" "}
         <Text color="white">
           {stage === "name" ? (
-            <TextInput
+            <ControlledInput
               value={name!}
               onChange={(name) => setConfig("name", name)}
               onSubmit={(name) => {
@@ -48,7 +67,7 @@ const Core = () => {
         <Text color="green">
           secrets folder:{" "}
           <Text color="white">
-            <TextInput
+            <ControlledInput
               value={secretVolume || "~/secrets"}
               onChange={(volume) => setConfig("secretVolume", volume)}
               onSubmit={(volume) => {
@@ -59,7 +78,7 @@ const Core = () => {
         </Text>
       )}
 
-      {secretVolume && (
+      {secretVolume && stage !== "secret" && (
         <Text color="green">
           secrets folder: <Text color="white">{secretVolume}</Text>
         </Text>
@@ -86,11 +105,8 @@ const Core = () => {
         <Text color="green">
           port:{" "}
           <Text color="white">
-            <TextInput
-              value={port || DEFAULT_PORT.toString()}
-              onChange={(port) => {
-                setConfig("port", port);
-              }}
+            <NumberInput
+              initialValue={port || DEFAULT_PORT}
               onSubmit={(port) => {
                 setMany(["stage", "confirm"], ["port", port]);
               }}

@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Text } from "ink";
 import LabelledSelector from "./util/LabelledSelector";
-import { useMainSequence } from "../cli";
+import { useConfig, useMainSequence } from "../cli";
 
 const IsPeriphery = ({
   setPeriphery,
@@ -9,6 +9,15 @@ const IsPeriphery = ({
   setPeriphery: (periphery: boolean) => void;
 }) => {
   const { next } = useMainSequence();
+  const { setMany } = useConfig();
+  useEffect(() => {
+    setMany(
+      ["core", undefined],
+      ["periphery", undefined],
+      ["mongo", undefined],
+      ["registry", undefined]
+    );
+  }, []);
   return (
     <LabelledSelector
       label={

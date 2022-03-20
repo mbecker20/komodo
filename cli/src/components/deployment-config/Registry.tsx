@@ -1,23 +1,35 @@
-import React, { useState } from "react";
+import React from "react";
 import { Box, Newline, Text } from "ink";
-import TextInput from "ink-text-input";
 import { useConfig, useMainSequence } from "../../cli";
 import YesNo from "../util/YesNo";
 import DeploymentConfig from "./DeploymentConfig";
 import EnterToContinue from "../util/EnterToContinue";
 import { DEFAULT_REGISTRY_URL } from "../../config";
-import { useEsc } from "../../util/hooks";
+import { useEsc, useStore } from "../../util/hooks";
+import { Input } from "../util/Input";
+
+type State = {
+  setup?: boolean;
+  regUrl: string;
+  confirm: boolean;
+};
 
 const Registry = () => {
   const { set } = useConfig();
   const { next, prev } = useMainSequence();
-  const [setup, setSetup] = useState<boolean>();
-  const [regURL, setRegURL] = useState(DEFAULT_REGISTRY_URL);
-  const [confirm, setConfirm] = useState(false);
+  const [state, setState, setMany] = useStore<State>({
+    regUrl: DEFAULT_REGISTRY_URL,
+    confirm: false,
+  });
+  const { setup, regUrl, confirm } = state;
 
   useEsc(() => {
-    if (!setup && confirm) {
-      setConfirm(false);
+    if (setup === false) {
+      if (confirm) {
+        setState("confirm", false);
+      } else {
+        setState("setup", undefined);
+      }
     } else if (setup === undefined) {
       prev();
     }
@@ -35,7 +47,7 @@ const Registry = () => {
             locally?{" "}
           </Text>
         }
-        onSelect={(res) => setSetup(res === "yes")}
+        onSelect={(res) => setState("setup", res === "yes")}
         vertical
       />
     );
@@ -43,40 +55,34 @@ const Registry = () => {
 
   if (setup) {
     return (
-      <Box flexDirection="column">
-        <Text color="cyan" bold>
-          registry config
-        </Text>
-        <Newline />
-        <DeploymentConfig
-          deployment="registry"
-          back={() => setSetup(undefined)}
-          onFinish={({ name, port, volume, restart }) => {
-            set("registry", {
-              url: `http://127.0.0.1:${port}/`,
-              startConfig: {
-                name,
-                port: Number(port),
-                volume: volume as string | false,
-                restart: restart as string,
-              },
-            });
-            next();
-          }}
-        />
-      </Box>
+      <DeploymentConfig
+        deployment="registry"
+        back={() => setState("setup", undefined)}
+        onFinish={({ name, port, volume, restart }) => {
+          set("registry", {
+            url: `http://127.0.0.1:${port}/`,
+            startConfig: {
+              name,
+              port: Number(port),
+              volume: volume as string | false,
+              restart: restart as string,
+            },
+          });
+          next();
+        }}
+      />
     );
   } else {
     if (confirm) {
       return (
         <Box flexDirection="column">
           <Text color="green">
-            registry url: <Text color="white">{regURL}</Text>
+            registry url: <Text color="white">{regUrl}</Text>
           </Text>
           <Newline />
           <EnterToContinue
             onEnter={() => {
-              set("registry", { url: regURL });
+              set("registry", { url: regUrl });
               next();
             }}
           />
@@ -87,10 +93,9 @@ const Registry = () => {
         <Text color="green">
           registry url:{" "}
           <Text color="white">
-            <TextInput
-              value={regURL}
-              onChange={setRegURL}
-              onSubmit={() => setConfirm(true)}
+            <Input
+              initialValue={regUrl}
+              onSubmit={(regUrl) => setMany(["regUrl", regUrl], ["confirm", true])}
             />
           </Text>
         </Text>

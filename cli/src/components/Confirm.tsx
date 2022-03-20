@@ -7,9 +7,9 @@ import View from "./deployment-config/View";
 import ViewCore from "./core/ViewCore";
 import ViewPeriphery from "./periphery/ViewPeriphery";
 
-const Confirm = ({ next }: { next: () => void }) => {
+const Confirm = () => {
   const { config } = useConfig();
-  const { prev } = useMainSequence();
+  const { next, prev } = useMainSequence();
   useEsc(prev);
   return (
     <Box flexDirection="column">
@@ -56,7 +56,7 @@ const Confirm = ({ next }: { next: () => void }) => {
         </Fragment>
       )}
 
-      <EnterToContinue pressEnterTo="install" onEnter={next} />
+      <EnterToContinue pressEnterTo="begin setup" onEnter={next} />
     </Box>
   );
 };

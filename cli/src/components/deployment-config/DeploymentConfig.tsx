@@ -1,16 +1,17 @@
 import React, { Fragment } from "react";
 import { Box, Newline, Text } from "ink";
-import TextInput from "ink-text-input";
 import { useEsc, useStore } from "../../util/hooks";
 import EnterToContinue from "../util/EnterToContinue";
 import LabelledSelector from "../util/LabelledSelector";
 import YesNo from "../util/YesNo";
 import { toDashedName } from "../../util/helpers/general";
+import { Input } from "../util/Input";
+import NumberInput from "../util/NumberInput";
 
 type DeploymentConfig = {
   stage: "name" | "port" | "volume" | "restart" | "confirm";
   name: string;
-  port?: string;
+  port?: number;
   volume?: string | false;
   restart?: string;
 };
@@ -72,12 +73,10 @@ const DeploymentConfig = ({
         name:{" "}
         <Text color="white">
           {stage === "name" ? (
-            <TextInput
-              value={name}
-              onChange={(name) => setConfig("name", name)}
+            <Input
+              initialValue={name}
               onSubmit={(name) => {
-                // setConfig("port", deployment === "mongo-db" ? "27017" : "5000");
-                setMany(["name", name], ["stage", "port"]);
+                setMany(["stage", "port"], ["name", name]);
               }}
             />
           ) : (
@@ -90,9 +89,8 @@ const DeploymentConfig = ({
         <Text color="green">
           port:{" "}
           <Text color="white">
-            <TextInput
-              value={port || (deployment === "mongo-db" ? "27017" : "5000")}
-              onChange={(port) => setConfig("port", port)}
+            <NumberInput
+              initialValue={port || (deployment === "mongo-db" ? 27017 : 5000)}
               onSubmit={(port) => {
                 setMany(["stage", "volume"], ["port", port]);
               }}
@@ -132,9 +130,8 @@ const DeploymentConfig = ({
           mount folder:{" "}
           <Text color="white">
             {stage === "volume" ? (
-              <TextInput
-                value={volume as string}
-                onChange={(volume) => setConfig("volume", volume)}
+              <Input
+                initialValue={volume as string}
                 onSubmit={(volume) => {
                   setMany(["stage", "restart"], ["volume", volume]);
                 }}

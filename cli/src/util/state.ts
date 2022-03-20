@@ -9,9 +9,22 @@ export function createUseConfig<T>(init: T) {
     const set = useCallback((field: keyof T, val: T[keyof T]) => {
       setConfig((config) => ({ ...config, [field]: val }));
     }, []);
+    const setMany = useCallback(
+      (...updates: Array<[field: keyof T, val: T[keyof T]]>) => {
+        setConfig((config) =>
+          Object.assign(
+            {},
+            config,
+            ...updates.map(([field, val]) => ({ [field]: val }))
+          )
+        );
+      },
+      []
+    );
     return {
       config: config as T,
-      set
+      set,
+      setMany
     };
   }
 }

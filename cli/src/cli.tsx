@@ -11,49 +11,94 @@ import Mongo from "./components/deployment-config/Mongo";
 import Registry from "./components/deployment-config/Registry";
 import Core from "./components/core/Core";
 import Periphery from "./components/periphery/Periphery";
+import { bound } from "./util/helpers/general";
+import Setup from "./components/Setup";
+
+type Page = {
+  title: string;
+  view: ReactNode;
+};
 
 export const useMainSequence = createUseSequence();
 export const useConfig = createUseConfig<Config>({});
 
 init().then(({ flags, dockerInstalled }) => {
   const App = () => {
-    const { current, next } = useMainSequence();
+    const { current } = useMainSequence();
     const [periphery, setPeriphery] = useState<boolean | undefined>(
       flags.core ? false : flags.periphery ? true : undefined
     );
-    const [installing, setInstalling] = useState(false);
 
-    const corePages: ReactNode[] =
-      periphery === false ? [<Mongo />, <Registry />, <Core />] : [];
+    const corePages: Page[] = [
+      {
+        title: "mongo config",
+        view: <Mongo />,
+      },
+      {
+        title: "registry config",
+        view: <Registry />,
+      },
+      {
+        title: "monitor core config",
+        view: <Core />,
+      },
+    ];
 
-    const peripheryPages: ReactNode[] = periphery ? [<Periphery />] : [];
+    const peripheryPages: Page[] = [
+      {
+        title: "periphery config",
+        view: <Periphery />,
+      },
+    ];
 
-    const pages: ReactNode[] = [
-      <Intro />,
-      dockerInstalled ? undefined : <Docker />,
-      !flags.core && !flags.periphery ? (
-        <IsPeriphery setPeriphery={setPeriphery} />
-      ) : undefined,
-      peripheryPages,
-      corePages,
-      <Confirm
-        next={() => {
-          setInstalling(true);
-          next();
-        }}
-      />,
+    const pages = [
+      {
+        title: "intro",
+        view: <Intro />,
+      },
+      dockerInstalled
+        ? false
+        : {
+            title: "docker intro",
+            view: <Docker />,
+          },
+      !flags.core && !flags.periphery
+        ? {
+            title: "core or periphery",
+            view: <IsPeriphery setPeriphery={setPeriphery} />,
+          }
+        : false,
+      periphery === true && peripheryPages,
+      periphery === false && corePages,
+      {
+        title: "confirm config",
+        view: <Confirm />,
+      },
+      {
+        title: "setup",
+        view: <Setup />,
+      },
     ]
       .filter((val) => (val ? true : false))
       .flat();
 
+    const { title, view } = pages[bound(current, 0, pages.length - 1)] as Page;
+
     return (
       <Box flexDirection="column">
         <Newline />
-        <Text color="blue" bold underline>
-          Monitor CLI
-        </Text>
+        <Box>
+          <Text color="blue" bold underline>
+            Monitor CLI{" "}
+          </Text>
+          <Box marginLeft={2}>
+            <Text color="gray">
+              {title} {`(${current + 1} of ${pages.length})`}
+            </Text>
+          </Box>
+        </Box>
         <Newline />
-        {pages[current]}
+        {view}
       </Box>
     );
   };

@@ -1,11 +1,13 @@
 import { Deployment } from "@monitor/types";
 import mongoose from "mongoose";
+import { Config } from "../../types";
+import { toDashedName } from "../helpers/general";
 import deploymentModel from "./deployment";
 import serverModel from "./server";
 import userModel from "./user";
 
-export async function addInitialDocs(mongoURL: string, localMongo: boolean, localRegistry: boolean) {
-  await mongoose.connect(mongoURL);
+export async function addInitialDocs({ core, mongo, registry }: Config) {
+  await mongoose.connect(mongo!.url);
 
   const servers = serverModel();
   const deployments = deploymentModel();
@@ -21,8 +23,8 @@ export async function addInitialDocs(mongoURL: string, localMongo: boolean, loca
   const coreServerID = (await servers.create(coreServer)).toObject()._id;
 
   const coreDeployment: Deployment = {
-    name: "Monitor Core",
-    containerName: "monitor-core",
+    name: core!.name,
+    containerName: toDashedName(core!.name),
     image: "mbecker2020/monitor-core",
     latest: true,
     serverID: coreServerID,
@@ -30,21 +32,38 @@ export async function addInitialDocs(mongoURL: string, localMongo: boolean, loca
   };
   deployments.create(coreDeployment);
 
-  if (localMongo) {
-     const mongoDeployment: Deployment = {
-       name: "Mongo DB",
-       containerName: "mongo-db",
-       image: "mongo",
-       latest: true,
-       owner: "admin",
-     };
-     deployments.create(mongoDeployment);
+  if (mongo?.startConfig) {
+    const mongoDeployment: Deployment = {
+      name: mongo.startConfig.name,
+      containerName: toDashedName(mongo.startConfig.name),
+      ports: [{ local: mongo.startConfig.port.toString(), container: "27017" }],
+      volumes: mongo.startConfig.volume
+        ? [{ local: mongo.startConfig.volume, container: "/data/db" }]
+        : undefined,
+      restart: mongo.startConfig.restart,
+      image: "mongo",
+      latest: true,
+      owner: "admin",
+    };
+    deployments.create(mongoDeployment);
   }
 
-  if (localRegistry) {
+  if (registry?.startConfig) {
     const registryDeployment: Deployment = {
-      name: "Registry",
-      containerName: "registry",
+      name: registry.startConfig.name,
+      containerName: toDashedName(registry.startConfig.name),
+      ports: [
+        { local: registry.startConfig.port.toString(), container: "5000" },
+      ],
+      volumes: registry.startConfig.volume
+        ? [
+            {
+              local: registry.startConfig.volume,
+              container: "/var/lib/registry",
+            },
+          ]
+        : undefined,
+      restart: registry.startConfig.restart,
       image: "registry:2",
       serverID: coreServerID,
       owner: "admin",
