@@ -44,6 +44,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
       image: "mongo",
       latest: true,
       owner: "admin",
+      serverID: coreServerID,
     };
     deployments.create(mongoDeployment);
   }
