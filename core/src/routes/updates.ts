@@ -6,9 +6,9 @@ const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
     // serves the last 10 updates going back an optional offest
     const { offset, buildID, serverID, deploymentID } = req.query as {
       offset?: number;
-      buildID?: number;
-      serverID?: number;
-      deploymentID?: number;
+      buildID?: string;
+      serverID?: string;
+      deploymentID?: string;
     };
     const updates = await app.updates.getMostRecent(10, { buildID, serverID, deploymentID }, offset);
 		res.send(updates);

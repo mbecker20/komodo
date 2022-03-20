@@ -1,5 +1,5 @@
 import { URL } from "..";
-import { User } from "@monitor/types";
+import { Collection, User } from "@monitor/types";
 
 export function combineClasses(...classes: (string | undefined)[]) {
   return classes.filter((c) => (c ? true : false)).join(" ");
@@ -15,7 +15,15 @@ export function getAuthProvider(user: User) {
 }
 
 export function loginGithub() {
-  window.location.replace(
-    `${URL}/login/github`
-  );
+  window.location.replace(`${URL}/login/github`);
+}
+
+export function generateQuery(query?: Collection<string | number | undefined>) {
+  if (query) {
+    const q = Object.keys(query)
+      .filter((key) => query[key] !== undefined)
+      .map((key) => key + "=" + query[key])
+      .join("&");
+    return q && `?${q}`;
+  } else return "";
 }

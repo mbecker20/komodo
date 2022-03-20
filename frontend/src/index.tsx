@@ -6,7 +6,7 @@ import App from './components/App/App';
 import Client from './util/client';
 import makeNotifications from './components/util/notification/Notifications';
 
-export const URL = "http://localhost:2020";
+export const URL = "http://localhost:9000";
 export const client = new Client(URL);
 
 export const { Notifications, pushNotification } = makeNotifications();
