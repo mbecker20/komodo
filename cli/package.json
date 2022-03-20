@@ -1,6 +1,6 @@
 {
   "name": "@mbecker20/monitor-cli",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "A CLI to aid in the setup of monitor",
   "author": "mbecker20",
   "license": "MIT",
