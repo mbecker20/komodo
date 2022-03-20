@@ -1,9 +1,10 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { useConfig, useMainSequence } from "../cli";
 import EnterToContinue from "./util/EnterToContinue";
 import { useEsc } from "../util/hooks";
 import { Box, Newline, Text } from "ink";
 import View from "./deployment-config/View";
+import ViewCore from "./core/ViewCore";
 
 const Confirm = ({ next }: { next: () => void }) => {
   const { config } = useConfig();
@@ -22,6 +23,16 @@ const Confirm = ({ next }: { next: () => void }) => {
       </Text>
       <View url={config.registry!.url!} config={config.registry?.startConfig} />
       <Newline />
+
+      {config.core && (
+        <Fragment>
+          <Text color="cyan" bold>
+            monitor core:
+          </Text>
+          <ViewCore config={config.core} />
+          <Newline />
+        </Fragment>
+      )}
 
       <EnterToContinue pressEnterTo="install" onEnter={next} />
     </Box>

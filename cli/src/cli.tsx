@@ -9,6 +9,7 @@ import { createUseConfig, createUseSequence } from "./util/state";
 import { Config } from "./types";
 import Mongo from "./components/deployment-config/Mongo";
 import Registry from "./components/deployment-config/Registry";
+import Core from "./components/core/Core";
 
 export const useMainSequence = createUseSequence();
 export const useConfig = createUseConfig<Config>({});
@@ -22,7 +23,7 @@ init().then(({ flags, dockerInstalled }) => {
     const [installing, setInstalling] = useState(false);
 
     const corePages: ReactNode[] =
-      periphery === false ? [<Mongo />, <Registry />] : [];
+      periphery === false ? [<Mongo />, <Registry />, <Core />] : [];
 
     const peripheryPages: ReactNode[] = periphery ? [] : [];
 

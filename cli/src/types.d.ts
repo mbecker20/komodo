@@ -1,15 +1,6 @@
 export type Config = {
-  monitorCore?: {
-    name: string;
-    secretVolume: string; //  to mount secrets.json into the container
-    hostNetwork?: boolean;
-    port?: number;
-  };
-  monitorPeriphery?: {
-    name: string;
-    hostNetwork?: boolean;
-    port?: number;
-  };
+  core?: CoreConfig;
+  periphery?: PeripheryConfig;
   mongo?: {
     url: string;
     startConfig?: StartConfig;
@@ -18,6 +9,19 @@ export type Config = {
     url: string;
     startConfig?: StartConfig;
   };
+};
+
+export type CoreConfig = {
+  name: string;
+  secretVolume: string; //  to mount secrets.json into the container
+  hostNetwork: boolean;
+  port: number;
+};
+
+export type PeripheryConfig = {
+  name: string;
+  hostNetwork: boolean;
+  port: number;
 };
 
 export type StartConfig = {
