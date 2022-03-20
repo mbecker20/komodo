@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "start-cli": "cd cli && yarn start",
-    "publish-cli": "cd cli && yarn publish-cli",
+    "update-cli-version": "cd cli && yarn update-version",
     "push-core": "cd core && yarn push",
     "push-periphery": "cd periphery && yarn push",
     "start-frontend": "cd frontend && yarn start",

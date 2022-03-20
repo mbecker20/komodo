@@ -1,6 +1,6 @@
 {
   "name": "@mbecker20/monitor-cli",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A CLI to aid in the setup of monitor",
   "author": "mbecker20",
   "license": "MIT",
@@ -8,7 +8,7 @@
   "scripts": {
     "start": "yarn build && build/cli.js",
     "build": "vite build && node post-build.mjs && chmod +x build/cli.js",
-    "publish-cli": "yarn build && cd build && npm publish && node update-version.mjs"
+    "update-version": "node update-version.mjs"
   },
   "dependencies": {
     "ink": "^3.2.0",
