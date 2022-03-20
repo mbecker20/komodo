@@ -5,8 +5,10 @@ writeFileSync(
   "build/cli.js",
   "#!/usr/bin/env node\n" +
     contents.replace(
-      "Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require('meow')); })",
-			"import(\"meow\")"
+      `const meow = await Promise.resolve().then(function() {
+    return /* @__PURE__ */ _interopNamespace(require("meow"));
+  });`,
+      'const meow = await import("meow");'
     )
 );
 
