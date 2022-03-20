@@ -3,13 +3,14 @@ import { Newline, render, Text, Box } from "ink";
 import init from "./util/init";
 import Intro from "./components/Intro";
 import Docker from "./components/docker/Docker";
-import Periphery from "./components/Periphery";
+import IsPeriphery from "./components/IsPeriphery";
 import Confirm from "./components/Confirm";
 import { createUseConfig, createUseSequence } from "./util/state";
 import { Config } from "./types";
 import Mongo from "./components/deployment-config/Mongo";
 import Registry from "./components/deployment-config/Registry";
 import Core from "./components/core/Core";
+import Periphery from "./components/periphery/Periphery";
 
 export const useMainSequence = createUseSequence();
 export const useConfig = createUseConfig<Config>({});
@@ -25,13 +26,13 @@ init().then(({ flags, dockerInstalled }) => {
     const corePages: ReactNode[] =
       periphery === false ? [<Mongo />, <Registry />, <Core />] : [];
 
-    const peripheryPages: ReactNode[] = periphery ? [] : [];
+    const peripheryPages: ReactNode[] = periphery ? [<Periphery />] : [];
 
     const pages: ReactNode[] = [
       <Intro />,
       dockerInstalled ? undefined : <Docker />,
       !flags.core && !flags.periphery ? (
-        <Periphery setPeriphery={setPeriphery} />
+        <IsPeriphery setPeriphery={setPeriphery} />
       ) : undefined,
       peripheryPages,
       corePages,

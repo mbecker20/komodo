@@ -3,7 +3,7 @@ import { Text } from "ink";
 import LabelledSelector from "./util/LabelledSelector";
 import { useMainSequence } from "../cli";
 
-const Periphery = ({
+const IsPeriphery = ({
   setPeriphery,
 }: {
   setPeriphery: (periphery: boolean) => void;
@@ -27,4 +27,4 @@ const Periphery = ({
   );
 };
 
-export default Periphery;
+export default IsPeriphery;
