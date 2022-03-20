@@ -56,14 +56,14 @@ const Setup = () => {
               <Text color="green">
                 command: <Text color="white">{result.command}</Text>
               </Text>
-              {result.log.stdout ? (
-                <Text color="green">
-                  stdout: <Text color="white">{result.log.stdout}</Text>
-                </Text>
-              ) : undefined}
               {result.log.stderr ? (
                 <Text color="red">
                   stderr: <Text color="white">{result.log.stderr}</Text>
+                </Text>
+              ) : undefined}
+              {result.log.stdout ? (
+                <Text color="green">
+                  stdout: <Text color="white">{result.log.stdout}</Text>
                 </Text>
               ) : undefined}
             </Box>
