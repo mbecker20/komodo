@@ -5,7 +5,6 @@ export default defineConfig({
     outDir: "build",
     target: "esnext",
     ssr: true,
-    "ssr.target": "webworker",
     rollupOptions: {
       input: "./src/cli.tsx",
     },
