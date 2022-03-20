@@ -7,6 +7,7 @@ import { Config } from "../types";
 const Setup = () => {
   const { config } = useConfig();
   const [updates, setUpdates] = useState<Update[]>([getInitialUpdate(config)]);
+  const [error, setError] = useState<string>();
   const [finished, setFinished] = useState(false);
 
   useEffect(() => {
@@ -17,12 +18,18 @@ const Setup = () => {
         ) as Update[];
         return [...updates, ...newUpdates];
       })
-    ).then(() => setFinished(true));
+    )
+      .then(() => setFinished(true))
+      .catch((err) => setError(err));
   }, []);
 
   useEffect(() => {
     if (finished) process.exit();
   }, [finished]);
+
+  useEffect(() => {
+    if (error) process.exit();
+  }, [error]);
 
   return (
     <Box flexDirection="column">
@@ -69,6 +76,19 @@ const Setup = () => {
           <Text>
             setup <Text color="green">finished</Text>.
           </Text>
+        </Fragment>
+      )}
+      {error && (
+        <Fragment>
+          <Newline />
+          <Text>
+            setup encountered an <Text color="red">error</Text>:
+          </Text>
+          <Box marginLeft={2}>
+            <Text>{error}</Text>
+          </Box>
+          <Newline />
+          <Text>process exiting.</Text>
         </Fragment>
       )}
       <Newline />
