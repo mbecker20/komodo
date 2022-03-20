@@ -74,6 +74,9 @@ const Setup = () => {
         <Fragment>
           <Newline />
           <Text>
+            <Text color={config.core ? "cyan" : "red"} bold>
+              {config.core ? "monitor core" : "monitor periphery"}
+            </Text>{" "}
             setup <Text color="green">finished</Text>.
           </Text>
         </Fragment>
@@ -88,7 +91,9 @@ const Setup = () => {
             <Text>{error}</Text>
           </Box>
           <Newline />
-          <Text>process exiting.</Text>
+          <Text>
+            process <Text color="red" bold>exiting</Text>.
+          </Text>
         </Fragment>
       )}
       <Newline />
