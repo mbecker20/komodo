@@ -21,7 +21,7 @@ export default async function deploy(
         onComplete({
           stage: "mongo",
           result,
-          description: "",
+          description: "mongo started",
         });
       }
 
@@ -30,7 +30,7 @@ export default async function deploy(
         onComplete({
           stage: "registry",
           result,
-          description: "",
+          description: "registry started",
         })
       }
 
@@ -38,13 +38,13 @@ export default async function deploy(
       onComplete({
         stage: "core",
         result,
-        description: "",
+        description: "monitor core started",
       })
 
       await addInitialDocs(config);
       onComplete({
         stage: "docs",
-        description: ""
+        description: "configurations added to db"
       })
     }
   } else if (periphery) {
@@ -52,7 +52,7 @@ export default async function deploy(
     onComplete({
       stage: "periphery",
       result,
-      description: "",
+      description: "monitor periphery started",
     });
   }
 }
