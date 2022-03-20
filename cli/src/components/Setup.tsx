@@ -52,7 +52,7 @@ const Setup = () => {
       {updates.map(({ stage, result, description }, i) => (
         <Fragment key={i}>
           <Text>
-            {description} -{" "}
+            {description}{" "}
             <Text color="gray">
               ({getStageNumber(config, stage)} of {getTotalSteps(config)})
             </Text>
@@ -166,9 +166,17 @@ function getStageNumber(config: Config, stage: Stage) {
     case "registry":
       return config.mongo?.startConfig ? 2 : 1;
     case "core":
-      return 1 + (config.mongo?.startConfig ? 1 : 0) + (config.registry?.startConfig ? 1 : 0);
+      return (
+        1 +
+        (config.mongo?.startConfig ? 1 : 0) +
+        (config.registry?.startConfig ? 1 : 0)
+      );
     case "docs":
-      return 2 + (config.mongo?.startConfig ? 1 : 0) + (config.registry?.startConfig ? 1 : 0);
+      return (
+        2 +
+        (config.mongo?.startConfig ? 1 : 0) +
+        (config.registry?.startConfig ? 1 : 0)
+      );
     case "periphery":
       return 1;
   }
@@ -178,7 +186,11 @@ function getTotalSteps(config: Config) {
   if (config.periphery) {
     return 1;
   } else {
-    return 2 + (config.mongo?.startConfig ? 1 : 0) + (config.registry?.startConfig ? 1 : 0);
+    return (
+      2 +
+      (config.mongo?.startConfig ? 1 : 0) +
+      (config.registry?.startConfig ? 1 : 0)
+    );
   }
 }
 
