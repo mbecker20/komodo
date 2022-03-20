@@ -90,7 +90,6 @@ const Core = () => {
           onSelect={(res) => {
             setMany(["stage", "port"], ["hostNetwork", res === "yes"]);
           }}
-          noYes
         />
       )}
 

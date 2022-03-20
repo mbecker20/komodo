@@ -69,7 +69,6 @@ const Periphery = () => {
           onSelect={(res) => {
             setMany(["stage", "port"], ["hostNetwork", res === "yes"]);
           }}
-          noYes
         />
       )}
 
