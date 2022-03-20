@@ -15,13 +15,12 @@ const InstallDocker = ({ next }: { next: () => void }) => {
     switch (stage) {
       case "confirm":
         setStage("installing");
-        const log = await installDockerUbuntu(
+        const error = await installDockerUbuntu(
           (log) => setLogs((logs) => [...logs, log]),
           sysCtlEnable === "yes"
         );
-        if (log) {
+        if (error) {
           // there was some error
-          setLogs((logs) => [...logs, log]);
           setStage("error");
         } else {
           setStage("finish");
@@ -68,14 +67,12 @@ const InstallDocker = ({ next }: { next: () => void }) => {
           start on boot: <Text color="white">{sysCtlEnable}</Text>
         </Text>
       )}
+      <Newline />
       {stage === "confirm" && (
-        <Fragment>
-          <Newline />
-          <Text>
-            press <Text color="green">enter</Text> to install docker. you may
-            have to provide your password.
-          </Text>
-        </Fragment>
+        <Text>
+          press <Text color="green">enter</Text> to install docker. you may have
+          to provide your password.
+        </Text>
       )}
       {(stage === "installing" || stage === "finish") && (
         <Fragment>
@@ -83,7 +80,7 @@ const InstallDocker = ({ next }: { next: () => void }) => {
             <Text>
               <Text color="green">
                 <Spinner type="dots" />
-              </Text>
+              </Text>{" "}
               installing...
             </Text>
           )}
@@ -111,7 +108,6 @@ const InstallDocker = ({ next }: { next: () => void }) => {
           })}
         </Fragment>
       )}
-      <Newline />
       {stage === "finish" && (
         <Text>
           docker has finished installing. press <Text color="green">enter</Text>{" "}
