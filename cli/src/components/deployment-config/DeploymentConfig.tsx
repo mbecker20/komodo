@@ -122,6 +122,7 @@ const DeploymentConfig = ({
             }
           }}
           vertical
+          noYes
         />
       )}
 
