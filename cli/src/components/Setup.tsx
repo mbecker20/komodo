@@ -35,7 +35,7 @@ const Setup = () => {
   return (
     <Box flexDirection="column">
       <Text>
-        {(finished || error) && (
+        {!finished && !error && (
           <Text color="green">
             <Spinner type="dots" />
           </Text>
@@ -54,7 +54,7 @@ const Setup = () => {
           <Text>
             {description} -{" "}
             <Text color="gray">
-              ({getStageNumber(stage)} of {config.core ? 4 : 1})
+              ({getStageNumber(config, stage)} of {getTotalSteps(config)})
             </Text>
           </Text>
           {result && (
@@ -120,7 +120,7 @@ function getInitialUpdate(config: Config): Update {
       };
     } else if (config.registry?.startConfig) {
       return {
-        stage: "periphery",
+        stage: "registry",
         description: "starting registry",
       };
     } else {
@@ -141,7 +141,7 @@ function getNextUpdate({ stage }: Update): Update | undefined {
   switch (stage) {
     case "mongo":
       return {
-        stage: "periphery",
+        stage: "registry",
         description: "starting registry...",
       };
 
@@ -159,18 +159,26 @@ function getNextUpdate({ stage }: Update): Update | undefined {
   }
 }
 
-function getStageNumber(stage: Stage) {
+function getStageNumber(config: Config, stage: Stage) {
   switch (stage) {
     case "mongo":
       return 1;
     case "registry":
-      return 2;
+      return config.mongo ? 2 : 1;
     case "core":
-      return 3;
+      return 1 + (config.mongo ? 1 : 0) + (config.registry ? 1 : 0);
     case "docs":
-      return 4;
+      return 2 + (config.mongo ? 1 : 0) + (config.registry ? 1 : 0);
     case "periphery":
       return 1;
+  }
+}
+
+function getTotalSteps(config: Config) {
+  if (config.registry) {
+    return 1;
+  } else {
+    return 2 + (config.mongo ? 1 : 0) + (config.registry ? 1 : 0);
   }
 }
 
