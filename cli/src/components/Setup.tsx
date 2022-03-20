@@ -164,21 +164,21 @@ function getStageNumber(config: Config, stage: Stage) {
     case "mongo":
       return 1;
     case "registry":
-      return config.mongo ? 2 : 1;
+      return config.mongo?.startConfig ? 2 : 1;
     case "core":
-      return 1 + (config.mongo ? 1 : 0) + (config.registry ? 1 : 0);
+      return 1 + (config.mongo?.startConfig ? 1 : 0) + (config.registry?.startConfig ? 1 : 0);
     case "docs":
-      return 2 + (config.mongo ? 1 : 0) + (config.registry ? 1 : 0);
+      return 2 + (config.mongo?.startConfig ? 1 : 0) + (config.registry?.startConfig ? 1 : 0);
     case "periphery":
       return 1;
   }
 }
 
 function getTotalSteps(config: Config) {
-  if (config.registry) {
+  if (config.periphery) {
     return 1;
   } else {
-    return 2 + (config.mongo ? 1 : 0) + (config.registry ? 1 : 0);
+    return 2 + (config.mongo?.startConfig ? 1 : 0) + (config.registry?.startConfig ? 1 : 0);
   }
 }
 
