@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "start": "tsc && node build/main.js",
-    "build": "vite build && node post-build.mjs && docker build -t mbecker2020/monitor-periphery ."
+    "build": "vite build && node post-build.mjs && docker build -t mbecker2020/monitor-periphery .",
+    "push": "yarn build && docker push mbecker2020/monitor-periphery"
   },
   "devDependencies": {
     "@monitor/types": "1.0.0",

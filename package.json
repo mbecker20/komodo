@@ -16,9 +16,8 @@
   "scripts": {
     "start-cli": "cd cli && yarn start",
     "publish-cli": "cd cli && yarn publish-cli",
-    "build-core": "cd core && yarn build",
-    "docker-run-core": "cd core && yarn docker-run",
-    "build-periphery": "cd periphery && yarn build",
+    "push-core": "cd core && yarn push",
+    "push-periphery": "cd periphery && yarn push",
     "start-frontend": "cd frontend && yarn start",
     "build-frontend": "cd frontend && yarn build"
   },
