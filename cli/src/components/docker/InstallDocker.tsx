@@ -107,6 +107,7 @@ const InstallDocker = ({ next }: { next: () => void }) => {
           })}
         </Fragment>
       )}
+      <Newline />
       {stage === "finish" && (
         <Text>
           docker has finished installing. press <Text color="green">enter</Text>{" "}

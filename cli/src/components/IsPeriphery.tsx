@@ -2,13 +2,14 @@ import React, { useEffect } from "react";
 import { Text } from "ink";
 import LabelledSelector from "./util/LabelledSelector";
 import { useConfig, useMainSequence } from "../cli";
+import { useEsc } from "../util/hooks";
 
 const IsPeriphery = ({
   setPeriphery,
 }: {
   setPeriphery: (periphery: boolean) => void;
 }) => {
-  const { next } = useMainSequence();
+  const { next, prev } = useMainSequence();
   const { setMany } = useConfig();
   useEffect(() => {
     setMany(
@@ -18,6 +19,7 @@ const IsPeriphery = ({
       ["registry", undefined]
     );
   }, []);
+  useEsc(prev);
   return (
     <LabelledSelector
       label={
