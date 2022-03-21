@@ -23,6 +23,9 @@ type State = {
   error?: RestartError;
 };
 
+const DEPLOY_CORE_OR_PERIPHERY = "deploy monitor core or periphery";
+const RESTART_CORE = "restart monitor core";
+
 const Restart = ({
   useDefaults,
   defaultName,
@@ -68,14 +71,14 @@ const Restart = ({
     return (
       <LabelledSelector
         label="What are you trying to do?"
-        items={["deploy monitor core", "restart monitor core"]}
+        items={[DEPLOY_CORE_OR_PERIPHERY, RESTART_CORE]}
         onSelect={(option) => {
           switch (option) {
-            case "deploy monitor core":
+            case DEPLOY_CORE_OR_PERIPHERY:
               next();
               break;
 
-            case "restart monitor core":
+            case RESTART_CORE:
               setConfig("stage", "name");
               break;
           }
