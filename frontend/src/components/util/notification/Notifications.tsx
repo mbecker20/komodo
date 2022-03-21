@@ -26,7 +26,6 @@ export default function makeNotifications() {
     state.count++;
     state.notifications = [notif, ...state.notifications];
     setNotifs(state.notifications);
-    console.log(state.notifications);
     setTimeout(() => {
       state.notifications = state.notifications.slice(
         0,

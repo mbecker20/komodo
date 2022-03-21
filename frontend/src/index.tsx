@@ -8,6 +8,7 @@ import makeNotifications from "./components/util/notification/Notifications";
 import { UserProvider } from "./state/UserProvider";
 
 export const URL = "http://localhost:9000";
+export const WS_URL = "ws://localhost:9000/ws"
 export const client = new Client(URL);
 
 export const { Notifications, pushNotification } = makeNotifications();

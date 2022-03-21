@@ -1269,7 +1269,7 @@ fast-json-stringify@^2.5.2:
     rfdc "^1.2.0"
     string-similarity "^4.0.1"
 
-fast-jwt@^1.4.0:
+fast-jwt@^1.4.0, fast-jwt@^1.5.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/fast-jwt/-/fast-jwt-1.5.1.tgz#642a1e8915b5a2898f5e304abf9a57dffdb0ff00"
   integrity sha512-XmsUqmyGoyMH5JB8dLFkMs7v2aEYdNj9UdZ/SZTyd211KVkvojnd7p9HT/9UXzMdF2s6IS0cSb7gUcOQrJq2GQ==

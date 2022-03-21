@@ -25,6 +25,7 @@
     "axios": "^0.26.1",
     "bcrypt": "^5.0.1",
     "dockerode": "^3.3.1",
+    "fast-jwt": "^1.5.1",
     "fastify": "^3.27.4",
     "fastify-cors": "^6.0.3",
     "fastify-helmet": "^7.0.1",

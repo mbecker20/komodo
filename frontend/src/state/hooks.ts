@@ -1,13 +1,24 @@
 import { Collection } from "@monitor/types";
 import { createResource } from "solid-js";
+import { client, WS_URL } from "..";
 import { getBuilds, getDeployments, getServers, getUpdates } from "../util/query";
 import { State } from "./StateProvider";
 
 export function useWs(state: State) {
-  const ws = new WebSocket("");
+  const ws = new WebSocket(WS_URL);
 
+  ws.addEventListener("open", () => {
+    ws.send(JSON.stringify({ token: client.token }));
+  });
+  
+  ws.addEventListener("message", ({ data }) => {
+    console.log(data);
+  });
 
-
+  ws.addEventListener("close", () => {
+    console.log("connection closed")
+  })
+  
   return ws;
 }
 

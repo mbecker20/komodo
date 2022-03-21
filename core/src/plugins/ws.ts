@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import fastifyWebsocket from "fastify-websocket";
+import { createDecoder } from "fast-jwt";
 import { createObservable } from "@monitor/util";
 import handleMessage from "../messages";
 import { Action } from "@monitor/types";
@@ -10,6 +11,8 @@ declare module "fastify" {
     broadcast: <MessageType>(type: string, message: MessageType) => void;
   }
 }
+
+const decode = createDecoder();
 
 const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.register(fastifyWebsocket);
@@ -24,17 +27,30 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
   );
 
-  app.get("/ws", { websocket: true, onRequest: [app.auth] }, async (connection, req) => {
-    const user = await app.users.findById(req.user.id);
-    if (user) {
-      const unsub = messages.subscribe((msg) => connection.socket.send(msg));
-      connection.socket.on("message", (msg) =>
-        handleMessage(app, connection.socket, JSON.parse(msg.toString()), user)
-      );
-      connection.socket.on("close", unsub);
-    } else {
-      connection.socket.close(403);
-    }
+  app.get("/ws", { websocket: true }, async (connection) => {  
+    connection.socket.on("message", async (msg) => {
+      const jwt = JSON.parse(msg.toString()).token;
+      if (app.jwt.verify(jwt)) {
+        const payload = decode(jwt) as { id: string };
+        const userID = payload.id;
+        const user = await app.users.findById(userID);
+        if (user) {
+          const unsub = messages.subscribe((msg) => connection.socket.send(msg));
+          connection.socket.removeAllListeners("message");
+          connection.socket.on("message", (msg) =>
+            handleMessage(app, connection.socket, JSON.parse(msg.toString()), user)
+          );
+          connection.socket.on("close", unsub);
+          connection.socket.send(
+            JSON.stringify({ type: "LOGIN", message: "logged in successfully" })
+          );
+        } else {
+          connection.socket.close(403);
+        }
+      } else {
+        connection.socket.close(403);
+      }
+    });
   });
 
   done();
