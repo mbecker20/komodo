@@ -7,6 +7,7 @@ const getFlags = async () => {
 			Options
 				--core, -c  setup monitor core
 				--periphery, -p  setup monitor periphery
+        --restart-default -r  restart monitor with defaults
 			Examples
 				$ npx @mbecker20/monitor-cli --core
 		`,
@@ -21,6 +22,10 @@ const getFlags = async () => {
           type: "boolean",
           alias: "-p",
         },
+        restartDefault: {
+          type: "boolean",
+          alias: "-r",
+        }
       },
     }
   );

@@ -29,6 +29,26 @@ init().then(({ flags, dockerInstalled }) => {
       flags.core ? false : flags.periphery ? true : undefined
     );
 
+    if (flags.restartDefault) {
+      return (
+        <Box flexDirection="column">
+          <Newline />
+          <Box>
+            <Text color="blue" bold underline>
+              Monitor CLI{" "}
+            </Text>
+            <Box marginLeft={2}>
+              <Text color="gray">
+                restart {`(1 of 1)`}
+              </Text>
+            </Box>
+          </Box>
+          <Newline />
+          <Restart defaults />
+        </Box>
+      );
+    }
+
     const corePages: Page[] = [
       {
         title: "mongo config",

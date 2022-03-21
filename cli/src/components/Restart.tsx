@@ -23,11 +23,12 @@ type State = {
   error?: RestartError;
 };
 
-const Restart = () => {
+const Restart = ({ defaults }: { defaults?: boolean }) => {
   const { next, prev } = useMainSequence();
   const [config, setConfig, setMany] = useStore<State>({
-    stage: "query",
+    stage: defaults ? "installing" : "query",
     name: "monitor-core",
+    mongoUrl: defaults ? "mongodb://127.0.0.1:27017/monitor" : undefined,
   });
 
   const { stage, name, mongoUrl, result, error } = config;

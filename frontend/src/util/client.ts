@@ -22,7 +22,6 @@ export default class Client {
     const jwt: string = await this.post("/login/local", { username, password });
     this.token = jwt;
     localStorage.setItem("access_token", this.token);
-    console.log(this.token);
     return await this.getUser();
   }
 
