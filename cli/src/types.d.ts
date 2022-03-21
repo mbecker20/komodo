@@ -1,6 +1,6 @@
 export type Config = {
-  core?: CoreConfig;
-  periphery?: PeripheryConfig;
+  core?: CoreOrPeripheryConfig;
+  periphery?: CoreOrPeripheryConfig;
   mongo?: {
     url: string;
     startConfig?: StartConfig;
@@ -11,17 +11,12 @@ export type Config = {
   };
 };
 
-export type CoreConfig = {
+export type CoreOrPeripheryConfig = {
   name: string;
   secretVolume: string; //  to mount secrets.json into the container
   hostNetwork: boolean;
   port: number;
-};
-
-export type PeripheryConfig = {
-  name: string;
-  hostNetwork: boolean;
-  port: number;
+  restart: string;
 };
 
 export type StartConfig = {

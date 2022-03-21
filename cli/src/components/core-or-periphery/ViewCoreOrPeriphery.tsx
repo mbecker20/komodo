@@ -1,11 +1,11 @@
 import React from "react";
 import { Box, Text } from "ink";
-import { CoreConfig } from "../../types";
+import { CoreOrPeripheryConfig } from "../../types";
 
-const ViewCore = ({
-  config: { name, secretVolume, hostNetwork, port },
+const ViewCoreOrPeriphery = ({
+  config: { name, secretVolume, hostNetwork, port, restart },
 }: {
-  config: CoreConfig;
+  config: CoreOrPeripheryConfig;
 }) => {
   return (
     <Box flexDirection="column" marginLeft={2}>
@@ -22,8 +22,11 @@ const ViewCore = ({
       <Text color="green">
         port: <Text color="white">{port}</Text>
       </Text>
+      <Text color="green">
+        restart: <Text color="white">{restart}</Text>
+      </Text>
     </Box>
   );
 };
 
-export default ViewCore;
+export default ViewCoreOrPeriphery;

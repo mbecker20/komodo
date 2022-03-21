@@ -9,8 +9,7 @@ import { createUseConfig, createUseSequence } from "./util/state";
 import { Config } from "./types";
 import Mongo from "./components/deployment-config/Mongo";
 import Registry from "./components/deployment-config/Registry";
-import Core from "./components/core/Core";
-import Periphery from "./components/periphery/Periphery";
+import CoreOrPeriphery from "./components/core-or-periphery/CoreOrPeriphery";
 import { bound } from "./util/helpers/general";
 import Setup from "./components/Setup";
 
@@ -40,14 +39,14 @@ init().then(({ flags, dockerInstalled }) => {
       },
       {
         title: "monitor core config",
-        view: <Core />,
+        view: <CoreOrPeriphery type="core" />,
       },
     ];
 
     const peripheryPages: Page[] = [
       {
         title: "periphery config",
-        view: <Periphery />,
+        view: <CoreOrPeriphery type="periphery" />,
       },
     ];
 

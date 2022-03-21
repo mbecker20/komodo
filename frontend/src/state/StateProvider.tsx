@@ -24,6 +24,8 @@ export const Provider: Component<{}> = (p) => {
     updates: useUpdates(),
   };
 
+
+  // created state before attaching ws, to pass state easily to ws
   const ws = useWs(state);
 
   return (

@@ -1,7 +1,7 @@
 import { Collection } from "@monitor/types";
 import { createResource } from "solid-js";
 import { getBuilds, getDeployments, getServers, getUpdates } from "../util/query";
-import { State } from "./Provider";
+import { State } from "./StateProvider";
 
 export function useWs(state: State) {
   const ws = new WebSocket("");

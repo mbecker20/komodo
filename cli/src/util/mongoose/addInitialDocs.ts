@@ -1,5 +1,6 @@
 import { Deployment } from "@monitor/types";
 import mongoose from "mongoose";
+import { DEFAULT_PORT } from "../../config";
 import { Config } from "../../types";
 import { toDashedName } from "../helpers/general";
 import deploymentModel from "./deployment";
@@ -27,6 +28,18 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     containerName: toDashedName(core!.name),
     image: "mbecker2020/monitor-core",
     latest: true,
+    restart: core?.restart,
+    volumes: [{ local: core?.secretVolume!, container: "/secrets" }],
+    ports: core?.hostNetwork
+      ? undefined
+      : [{ local: core?.port.toString()!, container: DEFAULT_PORT.toString() }],
+    environment: [
+      { variable: "MONGO_URL", value: mongo!.url },
+      { variable: "REGISTRY_URL", value: registry!.url },
+      (core?.hostNetwork
+        ? { variable: "PORT", value: core.port.toString() }
+        : undefined)!,
+    ].filter((val) => val),
     serverID: coreServerID,
     owner: "admin",
   };

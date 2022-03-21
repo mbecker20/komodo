@@ -2,25 +2,35 @@ import React, { Fragment } from "react";
 import { Box, Newline, Text } from "ink";
 import { useConfig, useMainSequence } from "../../cli";
 import { useEsc, useStore } from "../../util/hooks";
-import { CoreConfig } from "../../types";
 import YesNo from "../util/YesNo";
 import { DEFAULT_PORT } from "../../config";
 import EnterToContinue from "../util/EnterToContinue";
 import { ControlledInput } from "../util/Input";
 import NumberInput from "../util/NumberInput";
+import { CoreOrPeripheryConfig } from "../../types";
+import LabelledSelector from "../util/LabelledSelector";
+import { toDashedName } from "../../util/helpers/general";
 
-type Stage = "name" | "secret" | "network" | "port" | "confirm";
+type Stage = "name" | "secret" | "network" | "port" | "restart" | "confirm";
 
-const Core = () => {
+const RESTART_MODES = [
+  "always",
+  "on failure",
+  "unless stopped",
+  "don't restart",
+];
+
+const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
   const { set } = useConfig();
   const { next, prev } = useMainSequence();
+  const isCore = type === "core";
   const [config, setConfig, setMany] = useStore<
-    Partial<CoreConfig> & { stage: Stage }
+    Partial<CoreOrPeripheryConfig> & { stage: Stage }
   >({
     stage: "name",
-    name: "monitor-core",
+    name: isCore ? "monitor-core" : "monitor-periphery",
   });
-  const { stage, name, secretVolume, hostNetwork, port } = config;
+  const { stage, name, secretVolume, hostNetwork, port, restart } = config;
   useEsc(() => {
     switch (stage) {
       case "name":
@@ -36,11 +46,18 @@ const Core = () => {
         break;
 
       case "port":
-        setMany(["stage", "network"], ["hostNetwork", undefined], ["port", undefined]);
+        setMany(
+          ["stage", "network"],
+          ["hostNetwork", undefined],
+          ["port", undefined]
+        );
         break;
 
-      case "confirm":
+      case "restart":
         setMany(["stage", "port"], ["port", undefined]);
+
+      case "confirm":
+        setMany(["stage", "restart"], ["restart", undefined]);
         break;
     }
   });
@@ -120,16 +137,39 @@ const Core = () => {
         </Text>
       )}
 
+      {stage === "restart" && (
+        <LabelledSelector
+          label="restart: "
+          items={RESTART_MODES}
+          onSelect={(restart) => {
+            setMany(
+              ["stage", "confirm"],
+              [
+                "restart",
+                restart === "don't restart" ? "no" : toDashedName(restart),
+              ]
+            );
+          }}
+        />
+      )}
+
+      {restart && (
+        <Text color="green">
+          restart: <Text color="white">{restart}</Text>
+        </Text>
+      )}
+
       {stage === "confirm" && (
         <Fragment>
           <Newline />
           <EnterToContinue
             onEnter={() => {
-              set("core", {
+              set(type, {
                 name: name as string,
                 secretVolume: secretVolume as string,
                 hostNetwork: hostNetwork as boolean,
                 port: Number(port),
+                restart: "",
               });
               next();
             }}
@@ -140,4 +180,4 @@ const Core = () => {
   );
 };
 
-export default Core;
+export default CoreOrPeriphery;

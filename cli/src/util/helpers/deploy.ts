@@ -1,7 +1,7 @@
 import { CommandLogError } from "@monitor/types";
-import { CORE_IMAGE, PERIPHERY_IMAGE } from "../../config";
+import { CORE_IMAGE, DEFAULT_PORT, PERIPHERY_IMAGE } from "../../config";
 import { Config, StartConfig } from "../../types";
-import { addInitialDocs } from "../mongoose/mongoose";
+import { addInitialDocs } from "../mongoose/addInitialDocs";
 import { execute } from "./execute";
 import { toDashedName } from "./general";
 
@@ -58,24 +58,27 @@ export default async function deploy(
 }
 
 async function deployCore({ core, mongo, registry }: Config) {
-  const { name, hostNetwork, secretVolume, port } = core!;
+  const { name, hostNetwork, secretVolume, port, restart } = core!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volume = `-v ${secretVolume}:/secrets`;
-  const network = hostNetwork ? '--network="host"' : `-p ${port}:9000`;
+  const network = hostNetwork ? '--network="host"' : `-p ${port}:${DEFAULT_PORT}`;
   const env = `-e MONGO_URL=${mongo?.url} -e REGISTRY_URL=${registry?.url}${
     hostNetwork ? ` -e PORT=${port}` : ""
   }`;
-  const command = `docker run -d ${nameConfig} ${volume} ${network} ${env} ${CORE_IMAGE}`;
+  const restartArg = `--restart ${restart}`
+  const command = `docker run -d ${nameConfig} ${volume} ${network} ${env} ${restartArg} ${CORE_IMAGE}`;
   return await execute(command);
 }
 
 async function deployPeriphery({ periphery }: Config) {
-  const { name, hostNetwork, port } = periphery!;
+  const { name, hostNetwork, port, secretVolume, restart } = periphery!;
   const nameConfig = `--name ${toDashedName(name)}`;
+  const volume = `-v ${secretVolume}:/secrets`;
   const network = hostNetwork
     ? `--network="host" -e PORT=${port}`
-    : `-p ${port}:9000`;
-  const command = `docker run -d ${nameConfig} ${network} ${PERIPHERY_IMAGE}`;
+    : `-p ${port}:${DEFAULT_PORT}`;
+  const restartArg = `--restart ${restart}`;
+  const command = `docker run -d ${nameConfig} ${volume} ${network} ${restartArg} ${PERIPHERY_IMAGE}`;
   return await execute(command);
 }
 

@@ -4,8 +4,7 @@ import EnterToContinue from "./util/EnterToContinue";
 import { useEsc } from "../util/hooks";
 import { Box, Newline, Text } from "ink";
 import View from "./deployment-config/View";
-import ViewCore from "./core/ViewCore";
-import ViewPeriphery from "./periphery/ViewPeriphery";
+import ViewCoreOrPeriphery from "./core-or-periphery/ViewCoreOrPeriphery";
 
 const Confirm = () => {
   const { config } = useConfig();
@@ -41,7 +40,7 @@ const Confirm = () => {
           <Text color="cyan" bold>
             monitor core:
           </Text>
-          <ViewCore config={config.core} />
+          <ViewCoreOrPeriphery config={config.core} />
           <Newline />
         </Fragment>
       )}
@@ -51,7 +50,7 @@ const Confirm = () => {
           <Text color="cyan" bold>
             monitor periphery:
           </Text>
-          <ViewPeriphery config={config.periphery} />
+          <ViewCoreOrPeriphery config={config.periphery} />
           <Newline />
         </Fragment>
       )}
