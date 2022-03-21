@@ -29,7 +29,7 @@ init().then(({ flags, dockerInstalled }) => {
       flags.core ? false : flags.periphery ? true : undefined
     );
 
-    if (flags.restartDefault) {
+    if (flags.restart || flags.restartDefault) {
       return (
         <Box flexDirection="column">
           <Newline />
@@ -38,13 +38,15 @@ init().then(({ flags, dockerInstalled }) => {
               Monitor CLI{" "}
             </Text>
             <Box marginLeft={2}>
-              <Text color="gray">
-                restart {`(1 of 1)`}
-              </Text>
+              <Text color="gray">restart {`(1 of 1)`}</Text>
             </Box>
           </Box>
           <Newline />
-          <Restart defaults />
+          <Restart
+            useDefaults={flags.restartDefault ? true : false}
+            defaultName={flags.name}
+            defaultMongoUrl={flags.mongoUrl}
+          />
         </Box>
       );
     }

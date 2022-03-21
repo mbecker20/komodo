@@ -23,12 +23,29 @@ type State = {
   error?: RestartError;
 };
 
-const Restart = ({ defaults }: { defaults?: boolean }) => {
+const Restart = ({
+  useDefaults,
+  defaultName,
+  defaultMongoUrl,
+}: {
+  useDefaults?: boolean;
+  defaultName?: string;
+  defaultMongoUrl?: string;
+}) => {
   const { next, prev } = useMainSequence();
   const [config, setConfig, setMany] = useStore<State>({
-    stage: defaults ? "installing" : "query",
-    name: "monitor-core",
-    mongoUrl: defaults ? "mongodb://127.0.0.1:27017/monitor" : undefined,
+    stage:
+      useDefaults || (defaultName && defaultMongoUrl)
+        ? "installing"
+        : defaultName
+        ? "mongo"
+        : defaultMongoUrl
+        ? "name"
+        : "query",
+    name: defaultName || "monitor-core",
+    mongoUrl: useDefaults
+      ? "mongodb://127.0.0.1:27017/monitor"
+      : defaultMongoUrl,
   });
 
   const { stage, name, mongoUrl, result, error } = config;

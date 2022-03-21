@@ -7,7 +7,7 @@
   "bin": "cli.js",
   "scripts": {
     "start": "yarn build && build/cli.js",
-    "restart-default": "yarn build && build/cli.js -r",
+    "restart-default": "yarn build && build/cli.js -rd",
     "build": "vite build && node post-build.mjs && chmod +x build/cli.js",
     "update-version": "node update-version.mjs"
   },
