@@ -4,19 +4,21 @@ import Grid from "./util/layout/Grid";
 import { createStore } from "solid-js/store";
 import Flex from "./util/layout/Flex";
 import { client, pushNotification } from "..";
-import { User } from "@monitor/types";
+import { useUser } from "../state/UserProvider";
 
-const Login: Component<{ setUser: (user: User | false) => void }> = (p) => {
+const Login: Component<{}> = (p) => {
   const [info, set] = createStore({
     username: "",
     password: "",
   });
 
+  const { setUser } = useUser();
+
   const login = async () => {
     if (info.username.length > 0 && info.password.length > 0) {
       try {
         const user = await client.login(info.username, info.password);
-        p.setUser(user);
+        setUser(() => user);
         pushNotification("good", "logged in!");
       } catch {
         pushNotification("bad", "login failed!");
@@ -31,7 +33,7 @@ const Login: Component<{ setUser: (user: User | false) => void }> = (p) => {
       try {
         pushNotification("ok", "logging in...");
         const user = await client.signup(info.username, info.password);
-        p.setUser(user);
+        setUser(() => user);
         pushNotification("good", "logged in!");
       } catch {
         pushNotification("bad", "signup failed!");
