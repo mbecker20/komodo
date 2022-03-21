@@ -10,7 +10,7 @@ const getFlags = async () => {
         --restart, -r  restart monitor
         --name  name of monitor core (used with restart)
         --mongo-url  the url of mongo used with monitor (used with restart)
-        --restart-default, -rd  restart monitor with defaults
+        --restart-default  restart monitor with defaults
 			Examples
 				$ npx @mbecker20/monitor-cli --core
 		`,
@@ -37,7 +37,6 @@ const getFlags = async () => {
         },
         restartDefault: {
           type: "boolean",
-          alias: "-rd",
         },
       },
     }

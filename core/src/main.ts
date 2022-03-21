@@ -13,8 +13,15 @@ import routes from "./routes";
 
 async function main() {
   const app = fastify({ logger: LOGGER })
+    .register(fastifyHelmet, {
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          "img-src": ["'self'", "https: data:"],
+        },
+      },
+    })
     .register(fastifyCors)
-    .register(fastifyHelmet)
     .register(db)
     .register(docker)
     .register(auth)
