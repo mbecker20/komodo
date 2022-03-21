@@ -14,14 +14,13 @@
     "cli"
   ],
   "scripts": {
+    "start-frontend": "cd frontend && yarn start",
     "start-cli": "cd cli && yarn start",
     "update-cli-version": "cd cli && yarn update-version",
     "build-core": "cd core && yarn build",
-    "restart-core": "yarn build-core && cd cli && yarn restart-default",
+    "restart-core": "cd cli && yarn restart-default",
     "push-core": "cd core && yarn push",
-    "push-periphery": "cd periphery && yarn push",
-    "start-frontend": "cd frontend && yarn start",
-    "build-frontend": "cd frontend && yarn build"
+    "push-periphery": "cd periphery && yarn push"
   },
   "devDependencies": {
     "typescript": "^4.6.2"
