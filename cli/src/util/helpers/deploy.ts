@@ -25,6 +25,8 @@ export default async function deploy(
   const { core, periphery, mongo, registry } = config;
   if (core) {
     if (mongo && registry) {
+      await createNetwork();
+
       if (mongo.startConfig) {
         const result = await deployMongo(mongo.startConfig);
         onComplete({
@@ -98,5 +100,10 @@ async function deployRegistry({ name, port, volume, restart }: StartConfig) {
   const command = `docker run -d --name ${name} -p ${port}:5000${
     volume ? ` -v ${volume}:/var/lib/registry` : ""
   } --network ${DOCKER_NETWORK} --restart ${restart} registry:2`;
+  return await execute(command);
+}
+
+async function createNetwork() {
+  const command = `docker network create ${DOCKER_NETWORK}`;
   return await execute(command);
 }

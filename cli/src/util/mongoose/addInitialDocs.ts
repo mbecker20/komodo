@@ -10,7 +10,7 @@ import userModel from "./user";
 export async function addInitialDocs({ core, mongo, registry }: Config) {
   await mongoose.connect(
     mongo?.startConfig
-      ? mongo!.url.replace(toDashedName(mongo!.startConfig!.name), "127.0.0.1")
+      ? mongo!.url.replaceAll(toDashedName(mongo!.startConfig!.name), "127.0.0.1")
       : mongo!.url
   );
 
@@ -45,7 +45,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     serverID: coreServerID,
     owner: "admin",
   };
-  deployments.create(coreDeployment);
+  await deployments.create(coreDeployment);
 
   if (mongo?.startConfig) {
     const mongoDeployment: Deployment = {
@@ -62,7 +62,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
       owner: "admin",
       serverID: coreServerID,
     };
-    deployments.create(mongoDeployment);
+    await deployments.create(mongoDeployment);
   }
 
   if (registry?.startConfig) {
@@ -86,6 +86,6 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
       serverID: coreServerID,
       owner: "admin",
     };
-    deployments.create(registryDeployment);
+    await deployments.create(registryDeployment);
   }
 }
