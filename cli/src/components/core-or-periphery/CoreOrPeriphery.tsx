@@ -124,7 +124,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
             <NumberInput
               initialValue={port || DEFAULT_PORT}
               onSubmit={(port) => {
-                setMany(["stage", "confirm"], ["port", port]);
+                setMany(["stage", "restart"], ["port", port]);
               }}
             />
           </Text>
