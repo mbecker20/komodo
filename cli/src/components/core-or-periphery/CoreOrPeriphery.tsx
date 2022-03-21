@@ -54,7 +54,8 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
         break;
 
       case "restart":
-        setMany(["stage", "port"], ["port", undefined]);
+        setMany(["stage", "port"]);
+        break;
 
       case "confirm":
         setMany(["stage", "restart"], ["restart", undefined]);
@@ -117,7 +118,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
         </Text>
       )}
 
-      {stage === "port" && port === undefined && (
+      {stage === "port" && (
         <Text color="green">
           port:{" "}
           <Text color="white">
@@ -165,11 +166,11 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
           <EnterToContinue
             onEnter={() => {
               set(type, {
-                name: name as string,
-                secretVolume: secretVolume as string,
-                hostNetwork: hostNetwork as boolean,
+                name: name!,
+                secretVolume: secretVolume!,
+                hostNetwork: hostNetwork!,
                 port: Number(port),
-                restart: "",
+                restart: restart!,
               });
               next();
             }}
