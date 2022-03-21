@@ -27,18 +27,25 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
   );
 
-  app.get("/ws", { websocket: true }, async (connection) => {  
+  app.get("/ws", { websocket: true }, async (connection) => {
     connection.socket.on("message", async (msg) => {
       const jwt = JSON.parse(msg.toString()).token;
-      if (app.jwt.verify(jwt)) {
+      if (jwt && app.jwt.verify(jwt)) {
         const payload = decode(jwt) as { id: string };
         const userID = payload.id;
         const user = await app.users.findById(userID);
         if (user) {
-          const unsub = messages.subscribe((msg) => connection.socket.send(msg));
+          const unsub = messages.subscribe((msg) =>
+            connection.socket.send(msg)
+          );
           connection.socket.removeAllListeners("message");
           connection.socket.on("message", (msg) =>
-            handleMessage(app, connection.socket, JSON.parse(msg.toString()), user)
+            handleMessage(
+              app,
+              connection.socket,
+              JSON.parse(msg.toString()),
+              user
+            )
           );
           connection.socket.on("close", unsub);
           connection.socket.send(

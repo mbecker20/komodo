@@ -1,9 +1,10 @@
 import React from "react";
 import { Text } from "ink";
-import { useEnter } from "../../util/hooks";
+import { useEnter, useEsc } from "../../util/hooks";
 
-const EnterToContinue = ({ onEnter, pressEnterTo }: { onEnter: () => void; pressEnterTo?: string }) => {
+const EnterToContinue = ({ onEnter, pressEnterTo, onEsc }: { onEnter: () => void; pressEnterTo?: string; onEsc?: () => void; }) => {
 	useEnter(onEnter);
+  useEsc(() => onEsc && onEsc());
   return (
     <Text>
       press{" "}

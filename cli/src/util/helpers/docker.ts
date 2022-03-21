@@ -1,4 +1,4 @@
-import { CommandLogError } from "@monitor/types";
+import { CommandLogError, Conversion, DockerRunArgs, EnvironmentVar, Volume } from "@monitor/types";
 import { execute } from "./execute";
 
 export type InstallLog = {
@@ -101,4 +101,85 @@ export async function installDockerUbuntu(
 export async function isDockerInstalled() {
   const res = await execute("docker ps");
   return !res.isError;
+}
+
+export async function deleteContainer(containerName: string) {
+  return await execute(
+    `docker stop ${containerName} && docker container rm ${containerName}`
+  );
+}
+
+/* Docker Run for Deployments */
+export async function dockerRun(
+  {
+    image,
+    latest,
+    ports,
+    environment,
+    network,
+    volumes,
+    restart,
+    postImage,
+    containerName,
+    containerUser,
+  }: DockerRunArgs
+) {
+  const command =
+    `docker run -d` +
+    name(containerName) +
+    containerUserString(containerUser) +
+    portsString(ports) +
+    volsString(volumes) +
+    envString(environment) +
+    restartString(restart) +
+    networkString(network) +
+    ` ${image}${latest ? ":latest" : ""}${postImage ? " " + postImage : ""}`;
+
+  return await execute(command);
+}
+
+function name(containerName?: string) {
+  return containerName ? ` --name ${containerName}` : "";
+}
+
+function portsString(ports?: Conversion[]) {
+  return ports && ports.length > 0
+    ? ports
+        .map(({ local, container }) => ` -p ${local}:${container}`)
+        .reduce((prev, curr) => prev + curr)
+    : "";
+}
+
+function volsString(volumes?: Volume[]) {
+  return volumes && volumes.length > 0
+    ? volumes
+        .map(({ local, container }) => {
+          return ` -v ${local}:${container}`;
+        })
+        .reduce((prev, curr) => prev + curr)
+    : "";
+}
+
+function restartString(restart?: string) {
+  return restart
+    ? ` --restart=${restart}${restart === "on-failure" ? ":10" : ""}`
+    : "";
+}
+
+function envString(environment?: EnvironmentVar[]) {
+  return environment && environment.length > 0
+    ? environment
+        .map(({ variable, value }) => ` -e "${variable}=${value}"`)
+        .reduce((prev, curr) => prev + curr)
+    : "";
+}
+
+function networkString(network?: string) {
+  return network ? ` --network ${network}` : "";
+}
+
+function containerUserString(containerUser?: string) {
+  return containerUser && containerUser.length > 0
+    ? ` -u ${containerUser}`
+    : "";
 }

@@ -107,3 +107,4 @@ async function createNetwork() {
   const command = `docker network create ${DOCKER_NETWORK}`;
   return await execute(command);
 }
+

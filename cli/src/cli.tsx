@@ -12,6 +12,7 @@ import Registry from "./components/deployment-config/Registry";
 import CoreOrPeriphery from "./components/core-or-periphery/CoreOrPeriphery";
 import { bound } from "./util/helpers/general";
 import Setup from "./components/Setup";
+import Restart from "./components/Restart";
 
 type Page = {
   title: string;
@@ -61,6 +62,10 @@ init().then(({ flags, dockerInstalled }) => {
             title: "docker intro",
             view: <Docker />,
           },
+      {
+        title: "restart",
+        view: <Restart />,
+      },
       !flags.core && !flags.periphery
         ? {
             title: "core or periphery",

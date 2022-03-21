@@ -17,8 +17,8 @@ export async function prune() {
 
 export async function allContainerStatus(dockerode: Dockerode) {
   const statusAr = await dockerode.listContainers({ all: true });
-  const statusNames = statusAr.map((stat) =>
-    stat.Names[0]?.slice(1, stat.Names[0]?.length) || stat.Id
+  const statusNames = statusAr.map(
+    (stat) => stat.Names[0]?.slice(1, stat.Names[0]?.length) || stat.Id
   ); // they all start with '/'
   return objFrom2Arrays(
     statusNames,
@@ -114,13 +114,13 @@ export async function dockerRun(
     envString(environment) +
     restartString(restart) +
     networkString(network) +
-    ` ${image}${latest && ":latest"}${postImage && " " + postImage}`;
+    ` ${image}${latest ? ":latest" : ""}${postImage ? " " + postImage : ""}`;
 
   return await execute(command);
 }
 
 function name(containerName?: string) {
-  return containerName && ` --name ${containerName}`;
+  return containerName ? ` --name ${containerName}` : "";
 }
 
 function portsString(ports?: Conversion[]) {
@@ -153,10 +153,9 @@ function repoVolume(
   repoMount?: { repoFolder: string; containerMount: string }
 ) {
   // repo root should be SYSROOT + "repos/"
-  return (
-    repoMount &&
-    ` -v ${repoMount.repoFolder + containerName}:${repoMount.containerMount}`
-  );
+  return repoMount
+    ? ` -v ${repoMount.repoFolder + containerName}:${repoMount.containerMount}`
+    : "";
 }
 
 function restartString(restart?: string) {

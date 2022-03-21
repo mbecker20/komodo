@@ -8,7 +8,8 @@ const YesNo = ({
   onSelect,
   vertical,
   labelColor,
-	noYes
+	noYes,
+  onEsc
 }: {
   label: ReactNode;
   onYes?: () => void;
@@ -17,6 +18,7 @@ const YesNo = ({
   vertical?: boolean;
   labelColor?: "green" | "white";
   noYes?: boolean;
+  onEsc?: () => void;
 }) => {
   return (
     <LabelledSelector
@@ -32,6 +34,7 @@ const YesNo = ({
       }}
       vertical={vertical}
       labelColor={labelColor}
+      onEsc={onEsc}
     />
   );
 };

@@ -6,6 +6,7 @@ const LabelledSelector = ({
   label,
   items,
   onSelect,
+  onEsc,
   vertical,
   labelColor = "white",
 }: {
@@ -14,6 +15,7 @@ const LabelledSelector = ({
   items: string[];
   onSelect?: (item: string, index: number) => void;
   vertical?: boolean;
+  onEsc?: () => void;
 }) => {
   return (
     <Box flexDirection={vertical ? "column" : "row"}>
@@ -23,7 +25,7 @@ const LabelledSelector = ({
         label
       )}
       {vertical && <Newline />}
-      <Selector items={items} onSelect={onSelect} />
+      <Selector items={items} onSelect={onSelect} onEsc={onEsc} />
     </Box>
   );
 };

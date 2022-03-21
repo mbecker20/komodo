@@ -3,7 +3,8 @@ import { Component, createContext, createResource, Resource, Setter, useContext 
 import { client } from "..";
 
 export type UserState = {
-  user: Resource<false | User | undefined>;
+  userResource: Resource<false | User | undefined>;
+  user: () => User;
   setUser: Setter<false | User | undefined>;
   logout: () => void;
   username: () => string | undefined;
@@ -25,7 +26,8 @@ export const UserProvider: Component = (p) => {
     }
   };
   const context: UserState = {
-    user,
+    userResource: user,
+    user: () => user() as User,
     setUser: mutate,
     logout,
     username,

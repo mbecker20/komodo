@@ -4,19 +4,24 @@ import Flex from "./util/layout/Flex";
 import Grid from "./util/layout/Grid";
 import { User } from "@monitor/types";
 import { pushNotification } from "..";
+import { useUser } from "../state/UserProvider";
+import { useAppState } from "../state/StateProvider";
 
-const UserInfo: Component<{ user: User; logout: () => void }> = (p) => {
+const UserInfo: Component<{}> = (p) => {
+  const { user, logout } = useUser();
+  const { ws } = useAppState();
   return (
     <Grid style={{ "font-size": "2rem" }}>
-      <div>provider: {getAuthProvider(p.user)}</div>
+      <div>provider: {getAuthProvider(user() as User)}</div>
       <Flex alignItems="center">
-        <div>username: {p.user.username}</div>
-        <Show when={p.user.avatar}>
-          <img src={p.user.avatar} style={{ width: "2rem", height: "2rem" }} />
+        <div>username: {user().username}</div>
+        <Show when={user().avatar}>
+          <img src={user().avatar} style={{ width: "2rem", height: "2rem" }} />
         </Show>
       </Flex>
       <button style={{ width: "100%" }} onClick={() => {
-        p.logout();
+        logout();
+        ws.close();
         pushNotification("ok", "logged out");
       }}>
         logout

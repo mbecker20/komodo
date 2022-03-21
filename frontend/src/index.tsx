@@ -2,7 +2,7 @@
 import { render } from "solid-js/web";
 
 import "./index.css";
-import App from "./components/App/App";
+import App from "./components/app/App";
 import Client from "./util/client";
 import makeNotifications from "./components/util/notification/Notifications";
 import { UserProvider } from "./state/UserProvider";

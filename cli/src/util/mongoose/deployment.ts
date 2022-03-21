@@ -1,15 +1,11 @@
 import { Deployment } from "@monitor/types";
+import mongoose from "mongoose";
 import { model, Schema } from "mongoose";
 
 export default function deploymentModel() {
 	const Conversion = new Schema({
     local: String,
     container: String,
-  });
-
-  const Volume = new Schema({
-    variable: String,
-    value: String,
   });
 
   const EnvironmentVar = new Schema({
@@ -27,7 +23,7 @@ export default function deploymentModel() {
     image: String, // used if deploying an external image (from docker hub)
     latest: Boolean, // if custom image, use this to add :latest
     ports: [Conversion],
-    volumes: [Volume],
+    volumes: [Conversion],
     environment: [EnvironmentVar],
     network: String,
     restart: String,
@@ -41,4 +37,14 @@ export default function deploymentModel() {
   });
 
 	return model("Deployment", schema)
+}
+
+export async function getCoreDeployment({ name, mongoUrl }: { name: string; mongoUrl: string }) {
+  await mongoose.connect(mongoUrl);
+
+  const deployments = deploymentModel();
+
+  return (await deployments.findOne({ name }).lean().exec()) as
+    | Deployment
+    | undefined;
 }
