@@ -1,5 +1,4 @@
 import axios from "axios";
-import { URL } from "..";
 import { User } from "@monitor/types";
 
 export default class Client {
@@ -8,17 +7,14 @@ export default class Client {
   constructor(private baseURL: string) {
 		const params = new URLSearchParams(location.search);
     const token = params.get("token");
-    const redirect = params.get("redirect")
     if (token) {
 			this.token = token;
       localStorage.setItem("access_token", this.token);
       history.replaceState(
         {},
         "",
-        `${URL}${redirect ? `/?redirect=${redirect}` : ""}`
+        this.baseURL
       );
-    } else if (params.get("logout") === "true") {
-      this.logout();
     }
 	}
 
@@ -27,6 +23,10 @@ export default class Client {
     this.token = jwt;
     localStorage.setItem("access_token", this.token);
     return await this.getUser();
+  }
+
+  loginGithub() {
+    window.location.replace(`${this.baseURL}/login/github`);
   }
 
   async signup(username: string, password: string) {

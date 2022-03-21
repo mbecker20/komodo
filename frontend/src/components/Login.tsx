@@ -1,5 +1,4 @@
 import { Component } from "solid-js";
-import { loginGithub } from "../util/helpers";
 import Input from "./util/Input";
 import Grid from "./util/layout/Grid";
 import { createStore } from "solid-js/store";
@@ -59,7 +58,7 @@ const Login: Component<{ setUser: (user: User | false) => void }> = (p) => {
         <button onClick={login}>log in</button>
         <button onClick={signup}>sign up</button>
       </Flex>
-      <button onClick={loginGithub}>log in with github</button>
+      <button onClick={() => client.loginGithub()}>log in with github</button>
     </Grid>
   );
 };

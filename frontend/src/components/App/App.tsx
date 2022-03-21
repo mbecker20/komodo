@@ -4,6 +4,7 @@ import styles from "./App.module.css";
 import UserInfo from "../UserInfo";
 import { User } from "@monitor/types"
 import Login from "../Login";
+import { AppStateProvider } from "../../state/StateProvider";
 
 const App: Component = () => {
   const [user, { mutate }] = createResource(() => client.getUser());
@@ -12,13 +13,15 @@ const App: Component = () => {
     <div class={styles.App}>
       <Switch>
         <Match when={user()}>
-          <UserInfo
-            user={user() as User}
-            logout={() => {
-              client.logout();
-              mutate(false);
-            }}
-          />
+          <AppStateProvider>
+            <UserInfo
+              user={user() as User}
+              logout={() => {
+                client.logout();
+                mutate(false);
+              }}
+            />
+          </AppStateProvider>
         </Match>
         <Match when={user() === undefined}>
           <div>...</div>

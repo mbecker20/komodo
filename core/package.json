@@ -6,10 +6,9 @@
   "license": "MIT",
   "scripts": {
     "start": "tsc && node build/main.js",
-    "build": "vite build && node post-build.mjs && docker build -t mbecker2020/monitor-core .",
-    "push": "yarn build && docker push mbecker2020/monitor-core",
-    "docker-run": "docker run -d --name monitor-core --network=\"host\" -v /Users/max/GitHub/monitor/core/secrets:/secrets -v /Users/max/GitHub/monitor/frontend/build:/frontend mbecker2020/monitor-core",
-    "docker-remove": "docker stop monitor-core && docker container rm monitor-core"
+    "build-copy-frontend": "cd ../frontend && yarn build && cd ../core && rm -r frontend && mkdir frontend && cp -a ../frontend/build/. ./frontend/",
+    "build": "vite build && node post-build.mjs && yarn build-copy-frontend && docker build -t mbecker2020/monitor-core .",
+    "push": "yarn build && docker push mbecker2020/monitor-core"
   },
   "devDependencies": {
     "@monitor/types": "1.0.0",

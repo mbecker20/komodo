@@ -16,15 +16,13 @@ export type State = {
 
 const context = createContext<State & { ws: ReturnType<typeof useWs> }>();
 
-export const Provider: Component<{}> = (p) => {
+export const AppStateProvider: Component<{}> = (p) => {
   const state: State = {
     servers: useServers(),
     builds: useBuilds(),
     deployments: useDeployments(),
     updates: useUpdates(),
   };
-
-
   // created state before attaching ws, to pass state easily to ws
   const ws = useWs(state);
 
