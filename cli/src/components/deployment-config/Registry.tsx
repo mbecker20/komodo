@@ -7,6 +7,7 @@ import EnterToContinue from "../util/EnterToContinue";
 import { DEFAULT_REGISTRY_URL } from "../../config";
 import { useEsc, useStore } from "../../util/hooks";
 import { Input } from "../util/Input";
+import { toDashedName } from "../../util/helpers/general";
 
 type State = {
   setup?: boolean;
@@ -60,7 +61,7 @@ const Registry = () => {
         back={() => setState("setup", undefined)}
         onFinish={({ name, port, volume, restart }) => {
           set("registry", {
-            url: `http://127.0.0.1:${port}/`,
+            url: `http://${toDashedName(name)}:${port}/`,
             startConfig: {
               name,
               port: Number(port),

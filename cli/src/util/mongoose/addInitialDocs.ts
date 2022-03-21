@@ -1,6 +1,6 @@
 import { Deployment } from "@monitor/types";
 import mongoose from "mongoose";
-import { DEFAULT_PORT } from "../../config";
+import { DEFAULT_PORT, DOCKER_NETWORK } from "../../config";
 import { Config } from "../../types";
 import { toDashedName } from "../helpers/general";
 import deploymentModel from "./deployment";
@@ -8,7 +8,11 @@ import serverModel from "./server";
 import userModel from "./user";
 
 export async function addInitialDocs({ core, mongo, registry }: Config) {
-  await mongoose.connect(mongo!.url);
+  await mongoose.connect(
+    mongo?.startConfig
+      ? mongo!.url.replace(toDashedName(mongo!.startConfig!.name), "127.0.0.1")
+      : mongo!.url
+  );
 
   const servers = serverModel();
   const deployments = deploymentModel();
@@ -30,16 +34,14 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     latest: true,
     restart: core?.restart,
     volumes: [{ local: core?.secretVolume!, container: "/secrets" }],
-    ports: core?.hostNetwork
-      ? undefined
-      : [{ local: core?.port.toString()!, container: DEFAULT_PORT.toString() }],
+    ports: [
+      { local: core?.port.toString()!, container: DEFAULT_PORT.toString() },
+    ],
     environment: [
       { variable: "MONGO_URL", value: mongo!.url },
       { variable: "REGISTRY_URL", value: registry!.url },
-      (core?.hostNetwork
-        ? { variable: "PORT", value: core.port.toString() }
-        : undefined)!,
-    ].filter((val) => val),
+    ],
+    network: DOCKER_NETWORK,
     serverID: coreServerID,
     owner: "admin",
   };
@@ -56,6 +58,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
       restart: mongo.startConfig.restart,
       image: "mongo",
       latest: true,
+      network: DOCKER_NETWORK,
       owner: "admin",
       serverID: coreServerID,
     };
@@ -79,6 +82,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
         : undefined,
       restart: registry.startConfig.restart,
       image: "registry:2",
+      network: DOCKER_NETWORK,
       serverID: coreServerID,
       owner: "admin",
     };

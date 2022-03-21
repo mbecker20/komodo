@@ -11,7 +11,7 @@ import { CoreOrPeripheryConfig } from "../../types";
 import LabelledSelector from "../util/LabelledSelector";
 import { toDashedName } from "../../util/helpers/general";
 
-type Stage = "name" | "secret" | "network" | "port" | "restart" | "confirm";
+type Stage = "name" | "secret" | "port" | "restart" | "confirm";
 
 const RESTART_MODES = [
   "always",
@@ -30,7 +30,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
     stage: "name",
     name: isCore ? "monitor-core" : "monitor-periphery",
   });
-  const { stage, name, secretVolume, hostNetwork, port, restart } = config;
+  const { stage, name, secretVolume, port, restart } = config;
   useEsc(() => {
     switch (stage) {
       case "name":
@@ -41,15 +41,9 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
         setConfig("stage", "name");
         break;
 
-      case "network":
-        setConfig("stage", "secret");
-        break;
-
       case "port":
         setMany(
-          ["stage", "network"],
-          ["hostNetwork", undefined],
-          ["port", undefined]
+          ["stage", "secret"]
         );
         break;
 
@@ -89,7 +83,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
               value={secretVolume || "~/secrets"}
               onChange={(volume) => setConfig("secretVolume", volume)}
               onSubmit={(volume) => {
-                setMany(["stage", "network"], ["secretVolume", volume]);
+                setMany(["stage", "port"], ["secretVolume", volume]);
               }}
             />
           </Text>
@@ -99,22 +93,6 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
       {secretVolume && stage !== "secret" && (
         <Text color="green">
           secrets folder: <Text color="white">{secretVolume}</Text>
-        </Text>
-      )}
-
-      {stage === "network" && hostNetwork === undefined && (
-        <YesNo
-          label="use host network: "
-          onSelect={(res) => {
-            setMany(["stage", "port"], ["hostNetwork", res === "yes"]);
-          }}
-        />
-      )}
-
-      {hostNetwork !== undefined && (
-        <Text color="green">
-          use host network:{" "}
-          <Text color="white">{hostNetwork ? "yes" : "no"}</Text>
         </Text>
       )}
 
@@ -168,7 +146,6 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
               set(type, {
                 name: name!,
                 secretVolume: secretVolume!,
-                hostNetwork: hostNetwork!,
                 port: Number(port),
                 restart: restart!,
               });

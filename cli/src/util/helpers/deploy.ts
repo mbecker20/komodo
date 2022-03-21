@@ -1,13 +1,22 @@
 import { CommandLogError } from "@monitor/types";
-import { CORE_IMAGE, DEFAULT_PORT, PERIPHERY_IMAGE } from "../../config";
+import {
+  CORE_IMAGE,
+  DEFAULT_PORT,
+  DOCKER_NETWORK,
+  PERIPHERY_IMAGE,
+} from "../../config";
 import { Config, StartConfig } from "../../types";
 import { addInitialDocs } from "../mongoose/addInitialDocs";
 import { execute } from "./execute";
 import { toDashedName } from "./general";
 
-export type Stage = "mongo" | "registry" | "core" | "periphery" | "docs"
+export type Stage = "mongo" | "registry" | "core" | "periphery" | "docs";
 
-export type Update = { stage: Stage; result?: CommandLogError; description: string };
+export type Update = {
+  stage: Stage;
+  result?: CommandLogError;
+  description: string;
+};
 
 export default async function deploy(
   config: Config,
@@ -31,7 +40,7 @@ export default async function deploy(
           stage: "registry",
           result,
           description: "registry started",
-        })
+        });
       }
 
       const result = await deployCore(config);
@@ -39,13 +48,13 @@ export default async function deploy(
         stage: "core",
         result,
         description: "monitor core started",
-      })
+      });
 
       await addInitialDocs(config);
       onComplete({
         stage: "docs",
-        description: "configurations added to db"
-      })
+        description: "configurations added to db",
+      });
     }
   } else if (periphery) {
     const result = await deployPeriphery(config);
@@ -58,25 +67,21 @@ export default async function deploy(
 }
 
 async function deployCore({ core, mongo, registry }: Config) {
-  const { name, hostNetwork, secretVolume, port, restart } = core!;
+  const { name, secretVolume, port, restart } = core!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volume = `-v ${secretVolume}:/secrets`;
-  const network = hostNetwork ? '--network="host"' : `-p ${port}:${DEFAULT_PORT}`;
-  const env = `-e MONGO_URL=${mongo?.url} -e REGISTRY_URL=${registry?.url}${
-    hostNetwork ? ` -e PORT=${port}` : ""
-  }`;
-  const restartArg = `--restart ${restart}`
+  const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
+  const env = `-e MONGO_URL=${mongo?.url} -e REGISTRY_URL=${registry?.url}`;
+  const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volume} ${network} ${env} ${restartArg} ${CORE_IMAGE}`;
   return await execute(command);
 }
 
 async function deployPeriphery({ periphery }: Config) {
-  const { name, hostNetwork, port, secretVolume, restart } = periphery!;
+  const { name, port, secretVolume, restart } = periphery!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volume = `-v ${secretVolume}:/secrets`;
-  const network = hostNetwork
-    ? `--network="host" -e PORT=${port}`
-    : `-p ${port}:${DEFAULT_PORT}`;
+  const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volume} ${network} ${restartArg} ${PERIPHERY_IMAGE}`;
   return await execute(command);
@@ -85,13 +90,13 @@ async function deployPeriphery({ periphery }: Config) {
 async function deployMongo({ name, port, volume, restart }: StartConfig) {
   const command = `docker run -d --name ${name} -p ${port}:27017${
     volume ? ` -v ${volume}:/data/db` : ""
-  } --restart ${restart} mongo:latest`;
+  } --network ${DOCKER_NETWORK} --restart ${restart} mongo:latest`;
   return await execute(command);
 }
 
 async function deployRegistry({ name, port, volume, restart }: StartConfig) {
   const command = `docker run -d --name ${name} -p ${port}:5000${
     volume ? ` -v ${volume}:/var/lib/registry` : ""
-  } --restart ${restart} registry:2`;
+  } --network ${DOCKER_NETWORK} --restart ${restart} registry:2`;
   return await execute(command);
 }

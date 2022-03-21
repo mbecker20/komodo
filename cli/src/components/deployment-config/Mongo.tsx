@@ -7,6 +7,7 @@ import EnterToContinue from "../util/EnterToContinue";
 import { DEFAULT_MONGO_URL } from "../../config";
 import { useEsc, useStore } from "../../util/hooks";
 import { Input } from "../util/Input";
+import { toDashedName } from "../../util/helpers/general";
 
 type State = {
   setup?: boolean;
@@ -61,7 +62,7 @@ const Mongo = () => {
         back={() => setState("setup", undefined)}
         onFinish={({ name, port, volume, restart }) => {
           set("mongo", {
-            url: `mongodb://127.0.0.1:${port}/monitor`,
+            url: `mongodb://${toDashedName(name)}:${port}/monitor`,
             startConfig: {
               name,
               port: port as number,

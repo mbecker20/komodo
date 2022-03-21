@@ -3,7 +3,7 @@ import { Box, Text } from "ink";
 import { CoreOrPeripheryConfig } from "../../types";
 
 const ViewCoreOrPeriphery = ({
-  config: { name, secretVolume, hostNetwork, port, restart },
+  config: { name, secretVolume, port, restart },
 }: {
   config: CoreOrPeripheryConfig;
 }) => {
@@ -14,10 +14,6 @@ const ViewCoreOrPeriphery = ({
       </Text>
       <Text color="green">
         secrets folder: <Text color="white">{secretVolume}</Text>
-      </Text>
-      <Text color="green">
-        use host network:{" "}
-        <Text color="white">{hostNetwork ? "yes" : "no"}</Text>
       </Text>
       <Text color="green">
         port: <Text color="white">{port}</Text>

@@ -174,7 +174,7 @@ function envString(environment?: EnvironmentVar[]) {
 }
 
 function networkString(network?: string) {
-  return network ? ` --network=${network}` : "";
+  return network ? ` --network ${network}` : "";
 }
 
 function containerUserString(containerUser?: string) {
