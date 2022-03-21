@@ -24,7 +24,7 @@ async function main() {
     .register(actionStates)
     .register(routes);
     
-  app.listen(PORT, async (err, address) => {
+  app.listen(PORT, "0.0.0.0", async (err, address) => {
     if (err) {
       app.log.error(err);
       process.exit(1);
