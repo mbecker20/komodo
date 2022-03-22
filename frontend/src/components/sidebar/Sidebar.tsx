@@ -1,5 +1,5 @@
 import { Component } from "solid-js";
-import s from "./Sidebar.module.css";
+import s from "./sidebar.module.css";
 
 const Sidebar: Component<{}> = (p) => {
 	return (

@@ -17,7 +17,7 @@ export function useWs(state: State) {
   });
 
   ws.addEventListener("message", ({ data }) => {
-    console.log(data);
+    console.log(JSON.parse(data));
   });
 
   ws.addEventListener("close", () => {
@@ -35,12 +35,12 @@ export function useBuilds() {
   return useCollection(getBuilds);
 }
 
-export function useDeployments() {
-  return useCollection(getDeployments);
+export function useDeployments(query?: Parameters<typeof getDeployments>[0]) {
+  return useCollection(() => getDeployments(query));
 }
 
-export function useUpdates() {
-  const [collection, { refetch }] = createResource(getUpdates);
+export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {
+  const [collection, { refetch }] = createResource(() => getUpdates(query));
   return {
     collection,
     refetch,
@@ -55,10 +55,12 @@ export function useCollection<T>(query: () => Promise<Collection<T>>) {
   const add = (items: Collection<T>) => {
     mutate((collection: any) => ({ ...collection, ...items }));
   };
+  const get = (id: string) => collection() && collection()![id];
   return {
     collection,
     mutate,
     update,
     add,
+    get
   };
 }

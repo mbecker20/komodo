@@ -1,6 +1,6 @@
 import { Component } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
-import s from "./Deployment.module.css";
+import s from "./deployment.module.css";
 
 const Deployment: Component<{}> = (p) => {
 	const { servers, deployments } = useAppState();

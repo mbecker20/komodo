@@ -2,12 +2,16 @@ import { User } from "@monitor/types";
 import { Component, createContext, createResource, Resource, Setter, useContext } from "solid-js";
 import { client } from "..";
 
+export const LOGGED_IN = "LOGGED_IN";
+export const SIGNED_OUT = "SIGNED_OUT";
+export const UNKNOWN = "UNKNOWN";
+
 export type UserState = {
-  userResource: Resource<false | User | undefined>;
   user: () => User;
   setUser: Setter<false | User | undefined>;
   logout: () => void;
   username: () => string | undefined;
+  loginStatus: () => "LOGGED_IN" | "SIGNED_OUT" | "UNKNOWN"
 };
 
 const UserContext = createContext<UserState>();
@@ -25,12 +29,17 @@ export const UserProvider: Component = (p) => {
       return undefined;
     }
   };
+  const loginStatus = () => {
+    if (user()) return LOGGED_IN
+    else if (user() === false) return SIGNED_OUT;
+    else return UNKNOWN
+  }
   const context: UserState = {
-    userResource: user,
     user: () => user() as User,
     setUser: mutate,
     logout,
     username,
+    loginStatus
   };
   return (
     <UserContext.Provider value={context}>{p.children}</UserContext.Provider>

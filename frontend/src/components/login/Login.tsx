@@ -1,10 +1,10 @@
 import { Component } from "solid-js";
-import Input from "./util/Input";
-import Grid from "./util/layout/Grid";
+import Input from "../util/Input";
+import Grid from "../util/layout/Grid";
 import { createStore } from "solid-js/store";
-import Flex from "./util/layout/Flex";
-import { client, pushNotification } from "..";
-import { useUser } from "../state/UserProvider";
+import Flex from "../util/layout/Flex";
+import { client, pushNotification } from "../..";
+import { useUser } from "../../state/UserProvider";
 
 const Login: Component<{}> = (p) => {
   const [info, set] = createStore({

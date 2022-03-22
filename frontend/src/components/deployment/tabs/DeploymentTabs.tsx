@@ -1,12 +1,12 @@
 import { Component } from "solid-js";
 import s from "../deployment.module.css";
 
-const ErrorLog: Component<{}> = (p) => {
+const DeploymentTabs: Component<{}> = (p) => {
 	return (
-		<div class={s.ErrorLog} >
+		<div class={s.DeploymentTabs} >
 			
 		</div>
 	);
 }
 
-export default ErrorLog;
+export default DeploymentTabs;

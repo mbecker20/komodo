@@ -1,8 +1,9 @@
 import { Component } from "solid-js";
+import s from "../deployment.module.css";
 
 const Log: Component<{}> = (p) => {
 	return (
-		<div>
+		<div class={s.Log} >
 			
 		</div>
 	);
