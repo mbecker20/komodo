@@ -29,6 +29,17 @@ export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T | 
   );
 }
 
+export function filterOutFromObj<T>(
+  obj: T,
+  idsToFilterOut: string[]
+) {
+  return Object.fromEntries(
+    Object.entries(obj).filter((entry) => {
+      return !idsToFilterOut.includes(entry[0]);
+    })
+  );
+}
+
 export function timestamp() {
   return Math.floor(Date.now() / 1000);
 }

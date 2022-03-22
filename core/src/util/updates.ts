@@ -1,8 +1,6 @@
 import { Log } from "@monitor/types";
-import { timestamp } from "@monitor/util";
+import { ADD_UPDATE, timestamp } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-
-const ADD_UPDATE = "ADD_UPDATE";
 
 export async function addBuildUpdate(
   app: FastifyInstance,

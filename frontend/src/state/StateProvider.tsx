@@ -4,8 +4,8 @@ import {
   useDeployments,
   useServers,
   useUpdates,
-  useWs,
 } from "./hooks";
+import socket from "./socket";
 
 export type State = {
   servers: ReturnType<typeof useServers>;
@@ -14,7 +14,7 @@ export type State = {
   updates: ReturnType<typeof useUpdates>;
 };
 
-const context = createContext<State & { ws: ReturnType<typeof useWs> }>();
+const context = createContext<State & { ws: ReturnType<typeof socket> }>();
 
 export const AppStateProvider: Component<{}> = (p) => {
   const state: State = {
@@ -23,8 +23,9 @@ export const AppStateProvider: Component<{}> = (p) => {
     deployments: useDeployments(),
     updates: useUpdates(),
   };
-  // created state before attaching ws, to pass state easily to ws
-  const ws = useWs(state);
+
+  // created state before attaching ws, to pass state easily
+  const ws = socket(state);
 
   return (
     <context.Provider value={{ ...state, ws }}>{p.children}</context.Provider>
@@ -32,5 +33,5 @@ export const AppStateProvider: Component<{}> = (p) => {
 };
 
 export function useAppState() {
-  return useContext(context) as State & { ws: ReturnType<typeof useWs> };
+  return useContext(context) as State & { ws: ReturnType<typeof socket> };
 }

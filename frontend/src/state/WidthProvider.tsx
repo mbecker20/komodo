@@ -1,17 +1,24 @@
 import { Accessor, Component, createContext, useContext } from "solid-js";
 import { useInnerWidth } from "../util/hooks";
 
-type Width = Accessor<number>;
+type WidthState = {
+  width: Accessor<number>;
+  isMobile: () => boolean;
+};
 
-const WidthContext = createContext<Width>();
+const WidthContext = createContext<WidthState>();
 
 export const WidthProvider: Component = (p) => {
   const width = useInnerWidth();
+  const context = {
+    width,
+    isMobile: () => width() < 700,
+  };
   return (
-    <WidthContext.Provider value={width}>{p.children}</WidthContext.Provider>
+    <WidthContext.Provider value={context}>{p.children}</WidthContext.Provider>
   );
 };
 
 export function useAppWidth() {
-  return useContext(WidthContext) as Width;
+  return useContext(WidthContext) as WidthState;
 }

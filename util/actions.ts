@@ -24,3 +24,6 @@ export const REMOVE_SERVER = "REMOVE_SERVER";
 export const UPDATE_SERVER = "UPDATE_SERVER";
 export const PRUNE_SERVER = "PRUNE_SERVER";
 export const GET_SERVER_STATS = "GET_SERVER_STATS";
+
+/* UPDATE */
+export const ADD_UPDATE = "ADD_UPDATE";
