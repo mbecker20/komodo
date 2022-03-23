@@ -36,7 +36,7 @@ const github = fp((app: FastifyInstance, _: {}, done: () => void) => {
     if (existingUser) {
       const jwt = app.jwt.sign(
         { id: existingUser._id!.toString() },
-        { expiresIn: token.expires_in }
+        { expiresIn: TOKEN_EXPIRES_IN }
       );
       res.redirect(
         `${HOST}/?token=${jwt}`

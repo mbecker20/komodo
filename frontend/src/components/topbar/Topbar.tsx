@@ -16,11 +16,11 @@ const Topbar: Component<{}> = (p) => {
       style={{ height: inPx(TOPBAR_HEIGHT) }}
     >
       {/* right side */}
-      <Flex>
+      <Flex alignItems="center">
         <button onClick={sidebar.toggle}>
-          <Icon type="menu" />
+          <Icon type="menu" width="1.5rem" />
         </button>
-        <div>monitor</div>
+        <div class={s.Monitor}>monitor</div>
       </Flex>
 
       {/* left side */}

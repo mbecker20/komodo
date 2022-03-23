@@ -44,7 +44,7 @@ const local = fp((app: FastifyInstance, _: {}, done: () => void) => {
           if (result) {
             const jwt = app.jwt.sign(
               { id: user._id!.toString() },
-              { expiresIn: 3000 }
+              { expiresIn: TOKEN_EXPIRES_IN }
             );
             res.send(jwt);
           } else {

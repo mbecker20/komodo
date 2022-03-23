@@ -2,3 +2,12 @@
 	grid-area: sidebar;
 	background-color: blue;
 }
+
+.Server {
+	background-color: gray;
+	height: fit-content;
+}
+
+.Deployments {
+	background-color: rgb(85, 85, 85);
+}

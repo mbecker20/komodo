@@ -6,6 +6,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: lightskyblue;
+
+  color: #fceade;
 }
 
 .root {
@@ -33,11 +35,12 @@ button {
   width: 100%;
   border-radius: 0.25rem;
   font-family: inherit;
-  font-size: 2rem;
+  font-size: 1rem;
   font-weight: 500;
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: transparent;
   transition: background-color 125ms ease-in-out, border-color 125ms ease-in-out;
 }
 
@@ -47,4 +50,59 @@ button:focus {
 
 input {
   font-size: 2rem;
+}
+
+.green {
+  border: solid 1px rgba(35, 128, 77, 0.4);
+}
+
+.green:hover {
+  background-color: rgba(35, 128, 77, 0.8);
+  border: solid 1px transparent;
+}
+
+.red {
+  border: solid 1px rgba(169, 76, 79, 0.4);
+}
+
+.red:hover {
+  background-color: rgba(169, 76, 79, 0.8);
+  border: solid 1px transparent;
+}
+
+.grey {
+  background-color: rgba(112, 108, 87, 0.4);
+}
+
+.grey:hover {
+  background-color: rgba(112, 108, 87, 0.8);
+  border: solid 1px transparent;
+}
+
+.blue {
+  border: 1px solid rgba(2, 107, 121, 0.4);
+}
+
+.blue:hover {
+  background-color: rgba(2, 107, 121, 0.8);
+  border: solid 1px transparent;
+}
+
+.blue.active {
+  background-color: rgba(2, 107, 121, 0.5);
+  /* border: solid 1px transparent; */
+}
+
+.blue.active:hover {
+  background-color: rgba(2, 107, 121, 0.8);
+  border: solid 1px transparent;
+}
+
+.orange {
+  background-color: rgba(250, 131, 33, 0.4);
+}
+
+.orange:hover {
+  background-color: rgba(250, 131, 33, 0.8);
+  border: solid 1px transparent;
 }

@@ -5,7 +5,10 @@ import {
   readJSONFile,
 } from "@monitor/util";
 
-export const CORE_SERVER_NAME = getStringFromEnv("CORE_SERVER_NAME", "Monitor Core");
+export const CORE_SERVER_NAME = getStringFromEnv(
+  "CORE_SERVER_NAME",
+  "Monitor Core"
+);
 export const SECRETS = readJSONFile("/secrets/secrets.json");
 export const LOGGER = getBooleanFromEnv("LOGGER", false);
 export const PORT = getNumberFromEnv("PORT", 9000);
@@ -14,7 +17,7 @@ export const MONGO_URL = getStringFromEnv(
   "MONGO_URL",
   "mongodb://127.0.0.1:27017/monitor"
 );
-export const TOKEN_EXPIRES_IN = getNumberFromEnv("TOKEN_EXPIRES_IN", 3000);
+export const TOKEN_EXPIRES_IN = getStringFromEnv("TOKEN_EXPIRES_IN", "7d");
 export const PASSWORD_SALT_ROUNDS = getNumberFromEnv("PASSWORD_SALT_ROUNDS", 8);
 export const SYSROOT = getStringFromEnv("SYSROOT", "~/monitor/"); // the root folder monitor has access to, prepends volumes mounted using useSysroot
 export const ROOT = "/monitor/"; // the root folder in the container that SYSROOT is mounted on
