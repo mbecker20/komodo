@@ -19,7 +19,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
   const users = userModel();
 
   const coreServer = {
-    name: "Core Server",
+    name: "core server",
     address: "localhost",
     passkey: "passkey",
     enabled: true,

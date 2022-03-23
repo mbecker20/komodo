@@ -8,21 +8,19 @@ export async function getUpdates(query?: {
   serverID?: string;
   deploymentID?: string;
 }) {
-  return (await client.get("/updates" + generateQuery(query))) as Update[];
+  return (await client.get("/api/updates" + generateQuery(query))) as Update[];
 }
 
 export async function getBuilds() {
-  return (await client.get("/builds")) as Builds;
+  return (await client.get("/api/builds")) as Builds;
 }
 
 export async function getDeployments(query?: { serverID?: string }) {
   return (await client.get(
-    "/deployments" + generateQuery(query)
+    "/api/deployments" + generateQuery(query)
   )) as Deployments;
 }
 
 export async function getServers() {
-  return (await client.get("/servers")) as Servers;
+  return (await client.get("/api/servers")) as Servers;
 }
-
-export async function getContainerStatus() {}

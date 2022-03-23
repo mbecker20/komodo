@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
 const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
-  app.get("/updates", { onRequest: [app.auth] }, async (req, res) => {
+  app.get("/api/updates", { onRequest: [app.auth] }, async (req, res) => {
     // serves the last 10 updates going back an optional offest
     const { offset, buildID, serverID, deploymentID } = req.query as {
       offset?: number;
