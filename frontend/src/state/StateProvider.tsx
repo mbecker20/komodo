@@ -1,11 +1,7 @@
 import { Accessor, Component, createContext, useContext } from "solid-js";
+import { createStore, SetStoreFunction } from "solid-js/store";
 import { useLocalStorageToggle } from "../util/hooks";
-import {
-  useBuilds,
-  useDeployments,
-  useServers,
-  useUpdates,
-} from "./hooks";
+import { useBuilds, useDeployments, useSelected, useServers, useUpdates } from "./hooks";
 import socket from "./socket";
 
 export type State = {
@@ -13,8 +9,9 @@ export type State = {
   builds: ReturnType<typeof useBuilds>;
   deployments: ReturnType<typeof useDeployments>;
   updates: ReturnType<typeof useUpdates>;
+  selected: ReturnType<typeof useSelected>;
   sidebar: {
-    open: Accessor<boolean>,
+    open: Accessor<boolean>;
     toggle: () => void;
   };
 };
@@ -22,16 +19,20 @@ export type State = {
 const context = createContext<State & { ws: ReturnType<typeof socket> }>();
 
 export const AppStateProvider: Component<{}> = (p) => {
-  const [sidebarOpen, toggleSidebarOpen] = useLocalStorageToggle("sidebar-open");
+  const [sidebarOpen, toggleSidebarOpen] = useLocalStorageToggle(
+    "sidebar-open",
+    true
+  );
   const state: State = {
     servers: useServers(),
     builds: useBuilds(),
     deployments: useDeployments(),
     updates: useUpdates(),
+    selected: useSelected(),
     sidebar: {
       open: sidebarOpen,
       toggle: toggleSidebarOpen,
-    }
+    },
   };
 
   // created state before attaching ws, to pass state easily

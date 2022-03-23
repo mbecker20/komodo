@@ -6,7 +6,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: lightskyblue;
-
+  scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
+  scrollbar-width: thin;
   color: #fceade;
 }
 

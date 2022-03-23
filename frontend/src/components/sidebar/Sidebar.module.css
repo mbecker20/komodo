@@ -1,6 +1,7 @@
 .Sidebar {
 	grid-area: sidebar;
 	background-color: blue;
+	overflow-y: scroll;
 }
 
 .Server {
@@ -10,4 +11,9 @@
 
 .Deployments {
 	background-color: rgb(85, 85, 85);
+}
+
+.Deployment {
+	padding: 0.5rem 1rem;
+	justify-content: space-between;
 }

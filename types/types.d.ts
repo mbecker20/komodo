@@ -90,6 +90,9 @@ export interface Deployment extends DockerRunArgs {
   branch?: string;
   accessToken?: string;
   containerMount?: string; // the file path to mount repo on inside the container
+
+  // running status
+  status?: "not created" | ContainerStatus;
 }
 
 export type Conversion = {
@@ -120,7 +123,6 @@ export type DeployActionState = {
 
 export type ContainerStatus = {
   name: string;
-  deploymentID?: string;
   Status: string;
   State: "running" | "exited";
 };

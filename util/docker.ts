@@ -1,4 +1,5 @@
 import {
+  ContainerStatus,
   Conversion,
   DockerBuildArgs,
   DockerRunArgs,
@@ -30,13 +31,13 @@ export async function allContainerStatus(dockerode: Dockerode) {
   );
 }
 
-export async function getContainerStatus(dockerode: Dockerode, name: string) {
+export async function getContainerStatus(dockerode: Dockerode, name: string): Promise<ContainerStatus | "not created"> {
   const status = (await dockerode.listContainers({ all: true })).filter(
     ({ Names }) => Names[0] === "/" + name
   );
   return status[0]
     ? {
-        State: status[0].State,
+        State: status[0].State as "running" | "exited",
         Status: status[0].Status,
         name,
       }

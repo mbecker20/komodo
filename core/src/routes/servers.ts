@@ -5,7 +5,7 @@ import { serverStatusPeriphery } from "../util/periphery/status";
 
 const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.get("/servers", { onRequest: [app.auth] }, async (req, res) => {
-    const servers = await app.servers.find({}, "name enabled");
+    const servers = await app.servers.find({});
     await Promise.all(
       servers.map(async (server) => {
         server.status = (await serverStatusPeriphery(server))

@@ -20,6 +20,7 @@
     "build-core": "cd core && yarn build",
     "restart-core": "cd core && yarn build && cd ../cli && yarn restart-default",
     "push-core": "cd core && yarn push",
+    "build-periphery": "cd periphery && yarn build",
     "push-periphery": "cd periphery && yarn push"
   },
   "devDependencies": {

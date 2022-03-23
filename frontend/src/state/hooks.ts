@@ -1,12 +1,28 @@
 import { Collection, Update } from "@monitor/types";
 import { createEffect, createResource } from "solid-js";
 import { filterOutFromObj } from "../util/helpers";
+import { useLocalStorage } from "../util/hooks";
 import {
   getBuilds,
   getDeployments,
   getServers,
   getUpdates,
 } from "../util/query";
+
+export function useSelected() {
+  const [selected, setSelected] = useLocalStorage<{
+    id: string;
+    type: "server" | "deployment" | "build";
+  }>({ id: "", type: "deployment" }, "selected-item");
+  const set = (id: string, type: "server" | "deployment" | "build") => {
+    setSelected({ id, type });
+  };
+  return {
+    id: () => selected().id,
+    type: () => selected().type,
+    set,
+  };
+}
 
 export function useServers() {
   return useCollection(getServers);
@@ -29,11 +45,11 @@ export function useArray<T>(query: () => Promise<T[]>) {
   const push = (update: Update) => {
     mutate((updates: any) => [update, ...updates]);
   };
-  const loaded = () => collection() ? true : false;
+  const loaded = () => (collection() ? true : false);
   return {
     collection,
     push,
-    loaded
+    loaded,
   };
 }
 
@@ -58,9 +74,9 @@ export function useCollection<T>(query: () => Promise<Collection<T>>) {
     return collection() && collection()![id];
   };
   const ids = () => collection() && Object.keys(collection()!);
-  const loaded = () => collection() ? true : false;
+  const loaded = () => (collection() ? true : false);
 
-  createEffect(() => console.log(collection()))
+  createEffect(() => console.log(collection()));
 
   return {
     collection,
