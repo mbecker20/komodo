@@ -10,7 +10,7 @@ body {
   color: #fceade;
 }
 
-.root {
+.app {
   width: 100vw;
   height: 100vh;
   display: grid;
