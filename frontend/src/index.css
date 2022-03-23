@@ -5,6 +5,18 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: lightskyblue;
+}
+
+.root {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: auto 1fr 2fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: 
+    "topbar topbar topbar"
+    "sidebar left right";
 }
 
 code {

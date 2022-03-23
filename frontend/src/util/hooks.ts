@@ -24,10 +24,10 @@ export function useToggleTimeout(
 }
 
 export function useLocalStorageToggle(
-  initial: boolean,
-  key: string
+  key: string,
+  initial?: boolean
 ): [Accessor<boolean>, () => void] {
-  const [s, set] = useLocalStorage(initial, key);
+  const [s, set] = useLocalStorage(initial || false, key);
   const toggle = () => set((s) => !s);
   return [s, toggle];
 }
@@ -53,15 +53,24 @@ export function useLocalStorage<T>(
   return [stored, set];
 }
 
-
 export function useInnerWidth(): Accessor<number> {
   const [width, setWidth] = createSignal(window.innerWidth);
   onMount(() => {
     const listener = () => setWidth(window.innerWidth);
     window.addEventListener("resize", listener);
     onCleanup(() => window.removeEventListener("resize", listener));
-  })
+  });
   return width;
+}
+
+export function useInnerHeight(): Accessor<number> {
+  const [height, setHeight] = createSignal(window.innerHeight);
+  onMount(() => {
+    const listener = () => setHeight(window.innerHeight);
+    window.addEventListener("resize", listener);
+    onCleanup(() => window.removeEventListener("resize", listener));
+  });
+  return height;
 }
 
 export function useWidth(): [

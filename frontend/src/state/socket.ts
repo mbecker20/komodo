@@ -10,7 +10,7 @@ import {
   UPDATE_BUILD,
   UPDATE_DEPLOYMENT,
   UPDATE_SERVER,
-} from "@monitor/util";
+} from "../state/actions";
 import { State } from "./StateProvider";
 
 function socket(state: State) {
@@ -44,37 +44,47 @@ function handleMessage(
   switch (message.type) {
     /* Deployments */
     case CREATE_DEPLOYMENT:
+      deployments.add(message.deployment);
       break;
 
     case DELETE_DEPLOYMENT:
+      deployments.delete(message.deploymentID);
       break;
 
     case UPDATE_DEPLOYMENT:
+      deployments.update(message.deployment);
       break;
 
     /* Builds */
     case CREATE_BUILD:
+      builds.add(message.build);
       break;
 
     case DELETE_BUILD:
+      builds.delete(message.buildID);
       break;
 
     case UPDATE_BUILD:
+      builds.update(message.build);
       break;
 
     /* Servers */
     case ADD_SERVER:
+      servers.add(message.server);
       break;
 
     case REMOVE_SERVER:
+      servers.delete(message.serverID);
       break;
 
     case UPDATE_SERVER:
+      servers.update(message.server);
       break;
 
-		/* Updates */
-		case ADD_UPDATE:
-			break;
+    /* Updates */
+    case ADD_UPDATE:
+      updates.push(message.update);
+      break;
   }
 }
 

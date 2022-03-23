@@ -18,7 +18,7 @@ declare module "fastify" {
     builds: Model<Build>;
     updates: Model<Update>;
     servers: Model<Server>;
-    core: Server;
+    core: Server & { _id: string };
   }
 }
 
@@ -33,6 +33,12 @@ const db = fp(async (app: FastifyInstance, _: {}, done: () => void) => {
     .register(deployments)
     .register(builds)
     .register(updates);
+
+  app.after(async () => {
+    const server = await app.servers.findOne({ isCore: true });
+    server!._id = server?._id?.toString();
+    app.decorate("core", server);
+  });
 
 	done();
 });

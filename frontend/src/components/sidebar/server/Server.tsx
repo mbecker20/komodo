@@ -10,11 +10,11 @@ const Server: Component<{ id: string }> = (p) => {
   const { servers, deployments } = useAppState();
   const server = () => servers.get(p.id);
   const deploymentIDs = createMemo(() => {
-    return Object.keys(deployments.collection()!).filter(
+    return deployments.loaded() && deployments.ids()!.filter(
       (id) => deployments.get(id)?.serverID === p.id
     );
   });
-  const [open, toggleOpen] = useLocalStorageToggle(false, p.id);
+  const [open, toggleOpen] = useLocalStorageToggle(p.id);
   return (
     <div class={s.Server}>
       <Flex justifyContent="space-between" onClick={toggleOpen}>

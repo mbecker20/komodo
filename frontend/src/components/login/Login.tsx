@@ -1,4 +1,5 @@
 import { Component } from "solid-js";
+import s from "./login.module.css";
 import Input from "../util/Input";
 import Grid from "../util/layout/Grid";
 import { createStore } from "solid-js/store";
@@ -44,24 +45,26 @@ const Login: Component<{}> = (p) => {
   };
 
   return (
-    <Grid>
-      <Input
-        placeholder="username"
-        value={info.username}
-        onEdit={(value) => set("username", value)}
-      />
-      <Input
-        type="password"
-        placeholder="password"
-        value={info.password}
-        onEdit={(value) => set("password", value)}
-      />
-      <Flex style={{ width: "100%" }} justifyContent="space-between">
-        <button onClick={login}>log in</button>
-        <button onClick={signup}>sign up</button>
-      </Flex>
-      <button onClick={() => client.loginGithub()}>log in with github</button>
-    </Grid>
+    <div class={s.Login}>
+      <Grid>
+        <Input
+          placeholder="username"
+          value={info.username}
+          onEdit={(value) => set("username", value)}
+        />
+        <Input
+          type="password"
+          placeholder="password"
+          value={info.password}
+          onEdit={(value) => set("password", value)}
+        />
+        <Flex style={{ width: "100%" }} justifyContent="space-between">
+          <button onClick={login}>log in</button>
+          <button onClick={signup}>sign up</button>
+        </Flex>
+        <button onClick={() => client.loginGithub()}>log in with github</button>
+      </Grid>
+    </div>
   );
 };
 

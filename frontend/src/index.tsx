@@ -2,11 +2,11 @@
 import { render } from "solid-js/web";
 
 import "./index.css";
-import App from "./components/App";
+import App from "./App";
 import Client from "./util/client";
 import makeNotifications from "./components/util/notification/Notifications";
 import { UserProvider } from "./state/UserProvider";
-import { WidthProvider } from "./state/WidthProvider";
+import { DimensionProvider } from "./state/DimensionProvider";
 import LoginGuard from "./components/login/LoginGuard";
 import { AppStateProvider } from "./state/StateProvider";
 
@@ -18,7 +18,7 @@ export const { Notifications, pushNotification } = makeNotifications();
 
 render(
   () => [
-    <WidthProvider>
+    <DimensionProvider>
       <UserProvider>
         <LoginGuard>
           <AppStateProvider>
@@ -26,7 +26,7 @@ render(
           </AppStateProvider>
         </LoginGuard>
       </UserProvider>
-    </WidthProvider>,
+    </DimensionProvider>,
     <Notifications />,
   ],
   document.getElementById("root") as HTMLElement

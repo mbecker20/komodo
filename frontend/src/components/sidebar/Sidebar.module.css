@@ -1,3 +1,4 @@
 .Sidebar {
-	
+	grid-area: sidebar;
+	background-color: blue;
 }

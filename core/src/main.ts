@@ -36,6 +36,7 @@ async function main() {
       app.log.error(err);
       process.exit(1);
     }
+    console.log(app.core)
     if (!LOGGER) console.log(`monitor core listening at ${address}`);
   });
 }

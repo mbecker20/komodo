@@ -15,10 +15,6 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   app.decorate("servers", model(app, "Server", schema));
 
-  app.after(async () => {
-    app.decorate("core", await app.servers.findOne({ isCore: true }));
-  });
-
   done();
 });
 

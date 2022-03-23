@@ -22,3 +22,22 @@ export function generateQuery(query?: Collection<string | number | undefined>) {
     return q && `?${q}`;
   } else return "";
 }
+
+export function objFrom2Arrays<T>(
+  keys: string[],
+  entries: T[]
+): Collection<T | undefined> {
+  return Object.fromEntries(
+    keys.map((id, index) => {
+      return [id, entries[index]];
+    })
+  );
+}
+
+export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
+  return Object.fromEntries(
+    Object.entries(obj).filter((entry) => {
+      return !idsToFilterOut.includes(entry[0]);
+    })
+  );
+}

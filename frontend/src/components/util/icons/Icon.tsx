@@ -14,11 +14,13 @@ export type IconType =
   | "star"
   | "chevron-left"
   | "trash"
-  | "info-sign";
+  | "info-sign"
+  | "menu"
+  | "build";
 
 const Icon: Component<{
   type: IconType;
-  alt: string;
+  alt?: string;
   className?: string;
   style?: JSX.CSSProperties;
   width?: string;
@@ -30,7 +32,7 @@ const Icon: Component<{
     <img
       className={p.className}
       src={`/icons/${p.type}.svg`}
-			alt={p.alt}
+			alt={p.alt || p.type}
 			title={p.title}
 			style={{
 				...p.style,

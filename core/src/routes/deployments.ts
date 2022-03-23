@@ -7,7 +7,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     // returns the core deployments if no serverID is specified
     const { serverID } = req.query as { serverID?: string };
     const deployments = app.deployments.findCollection(
-      serverID ? { serverID } : { serverID: app.core._id! }
+      serverID ? { serverID } : { serverID: app.core._id }
     );
     res.send(deployments);
   });

@@ -7,7 +7,7 @@ import {
 
 export const CORE_SERVER_NAME = getStringFromEnv("CORE_SERVER_NAME", "Monitor Core");
 export const SECRETS = readJSONFile("/secrets/secrets.json");
-export const LOGGER = getBooleanFromEnv("LOGGER", true);
+export const LOGGER = getBooleanFromEnv("LOGGER", false);
 export const PORT = getNumberFromEnv("PORT", 9000);
 export const HOST = getStringFromEnv("HOST", "http://localhost:" + PORT);
 export const MONGO_URL = getStringFromEnv(
