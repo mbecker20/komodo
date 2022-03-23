@@ -21,7 +21,10 @@ export function getBooleanFromEnv(varName: string, defaultValue: boolean) {
   else return defaultValue;
 }
 
-export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T | undefined> {
+export function objFrom2Arrays<T>(
+  keys: string[],
+  entries: T[]
+): Collection<T> {
   return Object.fromEntries(
     keys.map((id, index) => {
       return [id, entries[index]];
@@ -29,15 +32,16 @@ export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T | 
   );
 }
 
-export function filterOutFromObj<T>(
-  obj: T,
-  idsToFilterOut: string[]
-) {
+export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
   return Object.fromEntries(
     Object.entries(obj).filter((entry) => {
       return !idsToFilterOut.includes(entry[0]);
     })
   );
+}
+
+export function intoCollection<T>(arr: T[], field = "_id"): Collection<T> {
+  return Object.fromEntries(arr.map((item) => [item[field], item]));
 }
 
 export function timestamp() {

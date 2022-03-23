@@ -71,7 +71,7 @@ export default async function deploy(
 async function deployCore({ core, mongo, registry }: Config) {
   const { name, secretVolume, port, restart } = core!;
   const nameConfig = `--name ${toDashedName(name)}`;
-  const volume = `-v ${secretVolume}:/secrets`;
+  const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock`;
   const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
   const env = `-e MONGO_URL=${mongo?.url} -e REGISTRY_URL=${registry?.url}`;
   const restartArg = `--restart ${restart}`;
@@ -82,7 +82,7 @@ async function deployCore({ core, mongo, registry }: Config) {
 async function deployPeriphery({ periphery }: Config) {
   const { name, port, secretVolume, restart } = periphery!;
   const nameConfig = `--name ${toDashedName(name)}`;
-  const volume = `-v ${secretVolume}:/secrets`;
+  const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock`;
   const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volume} ${network} ${restartArg} ${PERIPHERY_IMAGE}`;
@@ -107,4 +107,3 @@ async function createNetwork() {
   const command = `docker network create ${DOCKER_NETWORK}`;
   return await execute(command);
 }
-

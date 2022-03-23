@@ -31,3 +31,4 @@ export const PERMISSIONS_DENY_LOG = {
   stderr: "Someone tried to access this route without appropriate permissions",
 };
 export const UPDATES_PER_REQUEST = getNumberFromEnv("UPDATES_PER_REQUEST", 10);
+export const SERVER_CHECK_TIMEOUT = getNumberFromEnv("SERVER_CHECK_TIMEOUT", 1000);

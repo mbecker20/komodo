@@ -1,6 +1,7 @@
 import { exec } from "child_process";
 import { promisify } from "util";
 import { CommandLogError } from "@monitor/types";
+import { prettyStringify } from "./general";
 
 export const pExec = promisify(exec);
 
@@ -17,7 +18,7 @@ export async function execute(
   } catch (err) {
     return {
       command: commandForLog || command,
-      log: { stderr: JSON.stringify(err) },
+      log: { stderr: prettyStringify(err) },
       isError: true,
     };
   }

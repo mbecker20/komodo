@@ -7,13 +7,15 @@ export async function deployPeriphery(
   deployment: Deployment,
   image?: string
 ) {
-  return (await axios.post(
-    `http://${address}/deploy${image && "?image=" + REGISTRY_URL + image}`,
-    { deployment },
-    {
-      headers: {
-        Authorization: passkey,
-      },
-    }
-  )) as CommandLogError;
+  return (await axios
+    .post(
+      `http://${address}/deploy${image && "?image=" + REGISTRY_URL + image}`,
+      { deployment },
+      {
+        headers: {
+          Authorization: passkey,
+        },
+      }
+    )
+    .then(({ data }) => data)) as CommandLogError;
 }

@@ -1,5 +1,6 @@
 import { getCoreDeployment } from "../mongoose/deployment";
 import { deleteContainer, dockerRun } from "./docker";
+import { prettyStringify } from "./general";
 
 export type RestartError = {
 	message: string;
@@ -19,7 +20,7 @@ export async function restart(
       } catch (error) {
         onError({
           message: "failed to restart container",
-          error: JSON.stringify(error),
+          error: prettyStringify(error),
         });
       }
     } else {
@@ -31,7 +32,7 @@ export async function restart(
   } catch (error) {
     onError({
       message: "failed to connect to mongo at url",
-      error: JSON.stringify(error),
+      error: prettyStringify(error),
     });
   }
 }

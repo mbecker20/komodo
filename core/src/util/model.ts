@@ -1,5 +1,5 @@
 import { Collection } from "@monitor/types";
-import { objFrom2Arrays } from "@monitor/util";
+import { intoCollection, objFrom2Arrays } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import {
   Schema,
@@ -75,9 +75,8 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
       options?: QueryOptions
     ) => {
       const docs = await model.find(filter, projection, options).lean().exec();
-      return objFrom2Arrays(
-        docs.map((doc) => doc._id),
-        docs as T[]
+      return intoCollection(
+        docs as T[],
       ) as Collection<T>;
     },
     findByIdAndDelete: async (id: string) => {

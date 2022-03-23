@@ -2,7 +2,7 @@ import { ContainerStatus, Deployment } from "@monitor/types";
 import { objFrom2Arrays } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 
-export async function allContainerStatusLocal(
+export async function deploymentStatusLocal(
   app: FastifyInstance,
   deploymentsAr: Deployment[]
 ) {
@@ -21,7 +21,7 @@ export async function allContainerStatusLocal(
   return objFrom2Arrays(
     statusNames,
     statusNames.map((name) => {
-      const tryDeployment = getDeployment(status[name], deploymentsAr);
+      const tryDeployment = getDeployment(status[name]!, deploymentsAr);
       const _id = tryDeployment ? tryDeployment._id : "none";
       return {
         ...status[name],
