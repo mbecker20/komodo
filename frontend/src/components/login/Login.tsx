@@ -47,6 +47,7 @@ const Login: Component<{}> = (p) => {
   return (
     <div class={s.Login}>
       <Grid>
+        <div class={s.Monitor}>monitor</div>
         <Input
           placeholder="username"
           value={info.username}
