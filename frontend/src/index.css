@@ -1,10 +1,14 @@
+@import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500&display=swap");
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  /* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    sans-serif; */
+  font-family: "Chakra Petch", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
   background-color: lightskyblue;
   scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
   scrollbar-width: thin;
@@ -15,11 +19,11 @@ body {
   width: 100vw;
   height: 100vh;
   display: grid;
-  grid-template-columns: auto 1fr 2fr;
+  grid-template-columns: auto 1fr;
   grid-template-rows: auto 1fr;
   grid-template-areas: 
-    "topbar topbar topbar"
-    "sidebar left right";
+    "topbar topbar"
+    "sidebar content";
 }
 
 code {
@@ -51,6 +55,7 @@ button:focus {
 
 input {
   font-size: 2rem;
+  font-family: inherit;
 }
 
 .green {

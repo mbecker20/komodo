@@ -59,10 +59,20 @@ const Login: Component<{}> = (p) => {
           onEdit={(value) => set("password", value)}
         />
         <Flex style={{ width: "100%" }} justifyContent="space-between">
-          <button class="blue" onClick={login}>log in</button>
-          <button class="blue" onClick={signup}>sign up</button>
+          <button class="blue" onClick={login} style={{ "font-size": "2rem" }}>
+            log in
+          </button>
+          <button class="blue" onClick={signup} style={{ "font-size": "2rem" }}>
+            sign up
+          </button>
         </Flex>
-        <button class="blue" onClick={() => client.loginGithub()}>log in with github</button>
+        <button
+          class="blue"
+          onClick={() => client.loginGithub()}
+          style={{ "font-size": "2rem" }}
+        >
+          log in with github
+        </button>
       </Grid>
     </div>
   );
