@@ -17,6 +17,7 @@
     "start-frontend": "cd frontend && yarn start",
     "start-cli": "cd cli && yarn start",
     "update-cli-version": "cd cli && yarn update-version",
+    "build-core": "cd core && yarn build",
     "restart-core": "cd core && yarn build && cd ../cli && yarn restart-default",
     "push-core": "cd core && yarn push",
     "push-periphery": "cd periphery && yarn push"
