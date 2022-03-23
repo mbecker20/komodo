@@ -16,7 +16,9 @@ export type IconType =
   | "trash"
   | "info-sign"
   | "menu"
-  | "build";
+  | "build"
+  | "notifications"
+  | "user";
 
 const Icon: Component<{
   type: IconType;

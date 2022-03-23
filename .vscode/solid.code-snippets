@@ -23,15 +23,15 @@
 			"import { Component } from \"solid-js\";",
 			"import s from \"./${1:$TM_FILENAME_BASE}.module.css\";",
 			"",
-			"const ${1:$TM_FILENAME_BASE}: Component<{}> = (p) => {",
+			"const ${2:$TM_FILENAME_BASE}: Component<{}> = (p) => {",
 			"\treturn (",
-			"\t\t<div class={s.${1:$TM_FILENAME_BASE}} >",
+			"\t\t<div class={s.${2:$TM_FILENAME_BASE}} >",
 			"\t\t\t${0}",
 			"\t\t</div>",
 			"\t);",
 			"}",
 			"",
-			"export default ${1:$TM_FILENAME_BASE};"
+			"export default ${2:$TM_FILENAME_BASE};"
 		]
 	},
 	"context": {

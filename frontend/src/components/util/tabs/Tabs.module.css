@@ -1,0 +1,31 @@
+.Tabs {
+	display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 1rem;
+}
+
+.TabTitles {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 1rem;
+}
+
+.Tab {
+  display: grid;
+  place-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0rem;
+  cursor: pointer;
+  font-size: 1rem;
+  width: 100%;
+
+  background-color: rgba(2, 107, 121, 0);
+  border-bottom: solid 2px rgba(2, 107, 121, 0.5);
+  transition: background-color 50ms ease-in-out, border-color 250ms ease-in-out;
+}
+
+.Active {
+  border-color: rgba(2, 107, 121, 0.8);
+  background-color: rgba(2, 107, 121, 0.4);
+}

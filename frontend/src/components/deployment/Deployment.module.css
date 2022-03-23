@@ -1,3 +1,5 @@
 .Deployment {
-	
+	grid-area: content;
+	grid-template-columns: 2fr 3fr;
+	background-color: rgb(49, 78, 112);
 }

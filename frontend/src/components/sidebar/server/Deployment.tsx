@@ -4,7 +4,7 @@ import { useAppState } from "../../../state/StateProvider";
 import s from "../sidebar.module.css";
 
 const Deployment: Component<{ id: string }> = (p) => {
-  const { deployments } = useAppState();
+  const { deployments, selected } = useAppState();
   const deployment = () => deployments.get(p.id);
   const status = () => {
     if (!deployment() || deployment()!.status === "not created") {
@@ -15,7 +15,10 @@ const Deployment: Component<{ id: string }> = (p) => {
   };
   return (
     <Show when={deployment()}>
-      <button class={s.Deployment}>
+      <button
+        class={s.Deployment}
+        onClick={() => selected.set(deployment()!._id!, "deployment")}
+      >
         <div>{deployment()!.name}</div>
         <div>{status()}</div>
       </button>

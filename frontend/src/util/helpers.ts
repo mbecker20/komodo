@@ -41,3 +41,11 @@ export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
     })
   );
 }
+
+export function readablePermissions(permissions: number) {
+  switch (permissions) {
+    case 0: return "view only"
+        
+    case 1: return ""
+  }
+}

@@ -34,6 +34,7 @@ function socket(state: State) {
     send: <T>(type: string, message: T) => {
       ws.send(JSON.stringify({ ...message, type }));
     },
+    close: () => ws.close(),
   };
 }
 

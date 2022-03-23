@@ -1,22 +1,65 @@
 import { Collection, Update } from "@monitor/types";
-import { createEffect, createResource } from "solid-js";
+import { createEffect, createResource, createSignal } from "solid-js";
+import { URL } from "..";
 import { filterOutFromObj } from "../util/helpers";
-import { useLocalStorage } from "../util/hooks";
 import {
   getBuilds,
   getDeployments,
   getServers,
   getUpdates,
 } from "../util/query";
+import { State } from "./StateProvider";
 
-export function useSelected() {
-  const [selected, setSelected] = useLocalStorage<{
+export function useSelected({ servers, builds, deployments }: State) {
+  const [_type, id] = location.pathname.split("/").filter((val) => val);
+  const type =
+    _type === "deployment" || _type === "server" || _type === "build"
+      ? _type
+      : undefined;
+  const [selected, setSelected] = createSignal<{
     id: string;
     type: "server" | "deployment" | "build";
-  }>({ id: "", type: "deployment" }, "selected-item");
+  }>({ id: id || "", type: type || "deployment" });
+
   const set = (id: string, type: "server" | "deployment" | "build") => {
     setSelected({ id, type });
+    history.pushState({}, "", `${location.origin}/${type}/${id}`);
   };
+
+  createEffect(() => {
+    if (selected().type === "deployment" && deployments.loaded()) {
+      if (!deployments.get(selected().id)) {
+        const id = deployments.ids()![0];
+        set(id, "deployment");
+      } else {
+        const [type, id] = location.pathname.split("/").filter((val) => val);
+        if (type !== selected().type || id !== selected().id) {
+          history.replaceState({}, "", `${selected().type}/${selected().id}`);
+        }
+      }
+    } else if (selected().type === "server" && servers.loaded()) {
+      if (!servers.get(selected().id)) {
+        const id = servers.ids()![0];
+        set(id, "server");
+      } else {
+        const [type, id] = location.pathname.split("/").filter((val) => val);
+        if (type !== selected().type || id !== selected().id) {
+          history.replaceState({}, "", `${selected().type}/${selected().id}`);
+        }
+      }
+    } else if (selected().type === "build" && builds.loaded()) {
+      if (!builds.get(selected().id)) {
+        const id = builds.ids()![0];
+        set(id, "build");
+      } else {
+        const [type, id] = location.pathname.split("/").filter((val) => val);
+        if (type !== selected().type || id !== selected().id) {
+          history.replaceState({}, "", `${selected().type}/${selected().id}`);
+        }
+      }
+    }
+  });
+
   return {
     id: () => selected().id,
     type: () => selected().type,
@@ -75,8 +118,6 @@ export function useCollection<T>(query: () => Promise<Collection<T>>) {
   };
   const ids = () => collection() && Object.keys(collection()!);
   const loaded = () => (collection() ? true : false);
-
-  createEffect(() => console.log(collection()));
 
   return {
     collection,
