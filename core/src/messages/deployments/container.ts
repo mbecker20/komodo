@@ -9,7 +9,11 @@ import {
 } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { PERMISSIONS_DENY_LOG } from "../../config";
-import { deletePeripheryContainer, startPeripheryContainer, stopPeripheryContainer } from "../../util/periphery/container";
+import {
+  deletePeripheryContainer,
+  startPeripheryContainer,
+  stopPeripheryContainer,
+} from "../../util/periphery/container";
 import { addDeploymentUpdate } from "../../util/updates";
 
 export async function startDeploymentContainer(
@@ -19,7 +23,7 @@ export async function startDeploymentContainer(
 ) {
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
-  if (user.permissions! < 2 && user.username !== deployment.owner) {
+  if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
     addDeploymentUpdate(
       app,
       deploymentID,
@@ -38,16 +42,16 @@ export async function startDeploymentContainer(
   const { command, log, isError } = server
     ? await startPeripheryContainer(server, deployment.containerName!)
     : await startContainer(deployment.containerName!);
-	addDeploymentUpdate(
-		app,
-		deploymentID,
-		START_CONTAINER,
-		command,
-		log,
-		user.username,
-		note,
-		isError
-	);
+  addDeploymentUpdate(
+    app,
+    deploymentID,
+    START_CONTAINER,
+    command,
+    log,
+    user.username,
+    note,
+    isError
+  );
 }
 
 export async function stopDeploymentContainer(
@@ -57,7 +61,7 @@ export async function stopDeploymentContainer(
 ) {
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
-  if (user.permissions! < 2 && user.username !== deployment.owner) {
+  if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
     addDeploymentUpdate(
       app,
       deploymentID,
@@ -95,7 +99,7 @@ export async function deleteDeploymentContainer(
 ) {
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
-  if (user.permissions! < 2 && user.username !== deployment.owner) {
+  if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
     addDeploymentUpdate(
       app,
       deploymentID,

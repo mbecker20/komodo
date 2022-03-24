@@ -27,3 +27,6 @@ export const GET_SERVER_STATS = "GET_SERVER_STATS";
 
 /* UPDATE */
 export const ADD_UPDATE = "ADD_UPDATE";
+
+/* LOG */
+export const CONTAINER_LOG = "CONTAINER_LOG";

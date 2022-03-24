@@ -27,7 +27,7 @@ const Deployment: Component<{ id: string }> = (p) => {
           <Updates deploymentID={p.id} />
         </Grid>
         {/* right / tabs */}
-        <DeploymentTabs />
+        <DeploymentTabs deployment={deployment()!} />
       </Grid>
     </Show>
   );

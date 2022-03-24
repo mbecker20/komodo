@@ -1,10 +1,11 @@
+import { Deployment } from "@monitor/types";
 import { Component } from "solid-js";
 import Tabs from "../../util/tabs/Tabs";
-import Config from "./Config";
+import Config from "./config/Config";
 import ErrorLog from "./ErrorLog";
 import Log from "./Log";
 
-const DeploymentTabs: Component<{}> = (p) => {
+const DeploymentTabs: Component<{ deployment: Deployment }> = (p) => {
   return (
     <Tabs
       tabs={[
@@ -18,7 +19,7 @@ const DeploymentTabs: Component<{}> = (p) => {
         },
         {
           title: "config",
-          element: <Config />,
+          element: <Config deployment={p.deployment} />,
         },
       ]}
       localStorageKey="deployment-tab"
