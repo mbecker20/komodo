@@ -12,7 +12,7 @@ async function updateDeployment(
 ) {
   const preDeployment = await app.deployments.findById(deployment._id!);
   if (!preDeployment) return;
-  if (user.permissions! < 2 && user.username !== preDeployment.owner) {
+  if (user.permissions! < 2 && !preDeployment.owners.includes(user.username)) {
     addDeploymentUpdate(
       app,
       deployment._id!,
@@ -33,6 +33,8 @@ async function updateDeployment(
     ) {
       await cloneRepo(app, user, deployment);
     }
+    // make sure owners cant be updated this way
+    (deployment.owners as any) = false;
     await app.deployments.updateById(deployment._id!, deployment);
     addDeploymentUpdate(
       app,

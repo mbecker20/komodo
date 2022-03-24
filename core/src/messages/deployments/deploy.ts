@@ -14,7 +14,7 @@ async function deployDeployment(
 ) {
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
-  if (user.permissions! < 2 && user.username !== deployment.owner) {
+  if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
     addDeploymentUpdate(
       app,
       deploymentID,

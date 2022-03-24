@@ -8,3 +8,13 @@
 	font-size: 1.5rem;
 	user-select: none;
 }
+
+.Updates {
+	width: 300px;
+	color: rgb(231, 225, 225);
+}
+
+.Update {
+	background-color: brown;
+	padding: 0.5rem;
+}

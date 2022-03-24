@@ -25,7 +25,7 @@ async function createDeployment(
   const created = await app.deployments.create({
     ...deployment,
     containerName: toDashedName(deployment.name),
-    owner: user.username,
+    owners: [user.username],
   });
   app.deployActionStates.add(created._id!);
   addDeploymentUpdate(

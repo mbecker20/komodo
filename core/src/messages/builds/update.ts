@@ -14,7 +14,7 @@ async function updateBuild(
 ) {
   const preBuild = await app.builds.findById(build._id!).catch(() => {});
   if (!preBuild) return; // may want to add some update here
-  if (user.permissions! < 2 && user.username !== build.owner) {
+  if (user.permissions! < 2 && !build.owners.includes(user.username)) {
     addBuildUpdate(
       app,
       build._id!,

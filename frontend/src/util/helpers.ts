@@ -49,3 +49,15 @@ export function readablePermissions(permissions: number) {
     case 1: return ""
   }
 }
+
+export function readableTimestamp(unixTimeInMS: number) {
+  const date = new Date(unixTimeInMS);
+  const hours24 = date.getHours();
+  let hours = hours24 % 12;
+  if (hours === 0) hours = 12;
+  const pm = hours24 > 13;
+  const minutes = date.getMinutes();
+  return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${
+    minutes > 9 ? minutes : "0" + minutes
+  } ${pm ? "PM" : "AM"}`;
+}

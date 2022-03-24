@@ -38,7 +38,7 @@ const Icon: Component<{
 			title={p.title}
 			style={{
 				...p.style,
-				width: p.width,
+				width: p.width || "1rem",
 				height: p.height
 			}}
       onClick={p.onClick}

@@ -12,7 +12,7 @@ async function build(
 ) {
   const build = await app.builds.findById(buildID);
   if (!build) return;
-  if (user.permissions! < 2 && build.owner !== user.username) {
+  if (user.permissions! < 2 && !build.owners.includes(user.username)) {
     addBuildUpdate(
       app,
       buildID,

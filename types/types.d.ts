@@ -63,7 +63,7 @@ export interface Build extends DockerBuildArgs {
   repo?: string;
   branch?: string;
   accessToken?: string; // to gain access to private repos
-  owner: string; // userID / username
+  owners: string[]; // userID / username
 }
 
 export type DockerRunArgs = {
@@ -82,7 +82,7 @@ export type DockerRunArgs = {
 export interface Deployment extends DockerRunArgs {
   _id?: string;
   name: string;
-  owner: string;
+  owners: string[];
   serverID?: string; // only added if running on periphery server
   buildID?: string; // if deploying a monitor build
   /* to manage repo for static frontend, mounted as a volume. locally in REPO_ROOT/containerName */
@@ -132,7 +132,7 @@ export type EntityCollection = {
   name: string;
   deploymentIDs: string[];
   buildIDs: string[];
-  owner: string; // userID
+  owners: string[]; // userID
 };
 
 export type CommandLogError = {

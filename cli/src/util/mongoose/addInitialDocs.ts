@@ -48,7 +48,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     ],
     network: DOCKER_NETWORK,
     serverID: coreServerID,
-    owner: "admin",
+    owners: ["admin"],
   };
   await deployments.create(coreDeployment);
 
@@ -64,7 +64,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
       image: "mongo",
       latest: true,
       network: DOCKER_NETWORK,
-      owner: "admin",
+      owners: ["admin"],
       serverID: coreServerID,
     };
     await deployments.create(mongoDeployment);
@@ -90,7 +90,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
       image: "registry:2",
       network: DOCKER_NETWORK,
       serverID: coreServerID,
-      owner: "admin",
+      owners: ["admin"],
     };
     await deployments.create(registryDeployment);
   }

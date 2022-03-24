@@ -15,7 +15,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
     buildPath: String, // build folder relative to repo root
     dockerfilePath: String, // relative to buildPath
     imageName: { type: String, index: true }, // derived on build creation
-    owner: { type: String, index: true }, // userID / username
+    owners: [String],
   });
 
   app.decorate("builds", model(app, "Build", schema));
