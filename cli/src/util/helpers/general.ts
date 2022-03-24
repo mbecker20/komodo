@@ -9,3 +9,7 @@ export function bound(num: number, min: number, max: number) {
 export function prettyStringify(json: any): string {
   return JSON.stringify(json, undefined, 2);
 }
+
+export function timestamp() {
+  return Math.floor(Date.now() / 1000);
+}

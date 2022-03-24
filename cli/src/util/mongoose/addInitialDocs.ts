@@ -1,10 +1,11 @@
-import { Deployment } from "@monitor/types";
+import { Deployment, Update } from "@monitor/types";
 import mongoose from "mongoose";
 import { DEFAULT_PORT, DOCKER_NETWORK } from "../../config";
 import { Config } from "../../types";
-import { toDashedName } from "../helpers/general";
+import { timestamp, toDashedName } from "../helpers/general";
 import deploymentModel from "./deployment";
 import serverModel from "./server";
+import updateModel from "./update";
 import userModel from "./user";
 
 export async function addInitialDocs({ core, mongo, registry }: Config) {
@@ -16,6 +17,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
 
   const servers = serverModel();
   const deployments = deploymentModel();
+  const updates = updateModel();
   const users = userModel();
 
   const coreServer = {
@@ -92,4 +94,17 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     };
     await deployments.create(registryDeployment);
   }
+
+  const startupUpdate: Update = {
+    operation: "Startup",
+    command: "Start monitor",
+    log: {
+      stdout: "monitor started successfully",
+    },
+    timestamp: timestamp(),
+    note: "",
+    operator: "admin"
+  }
+
+  await updates.create(startupUpdate);
 }
