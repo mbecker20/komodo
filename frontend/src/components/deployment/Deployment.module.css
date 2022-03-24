@@ -1,6 +1,6 @@
 .Deployment {
 	grid-area: content;
-	grid-template-columns: 2fr 3fr;
+	grid-template-columns: 1fr 2fr;
 	background-color: rgb(49, 78, 112);
 	padding: 1rem;
 }
@@ -10,7 +10,13 @@
 }
 
 .Header {
+	background-color: rgb(35, 73, 115);
+	padding: 0.5rem;
+}
+
+.ItemHeader {
 	font-size: 1.5rem;
+	font-weight: 500;
 }
 
 .Actions {
@@ -19,5 +25,14 @@
 }
 
 .Action {
+	background-color: rgb(35, 73, 115);
+}
+
+.Updates {
+	background-color: rgb(35, 73, 115);
+	padding: 0.5rem;
+}
+
+.Update {
 	background-color: rgb(35, 73, 115);
 }

@@ -10,7 +10,7 @@ const Account: Component<{}> = (p) => {
   const { logout } = useAppState();
   const { user, username } = useUser();
   return (
-    <Grid class={s.Account}>
+    <Grid class={s.Account} placeItems="center end">
       <div>{username()}</div>
       <div>permissions: {readablePermissions(user()!.permissions!)}</div>
       <ConfirmButton onConfirm={logout} color="red">

@@ -1,13 +1,29 @@
 import { Component } from "solid-js";
-import Grid from "../../util/layout/Grid";
-import s from "../deployment.module.css";
+import Tabs from "../../util/tabs/Tabs";
+import Config from "./Config";
+import ErrorLog from "./ErrorLog";
+import Log from "./Log";
 
 const DeploymentTabs: Component<{}> = (p) => {
-	return (
-		<Grid class={s.DeploymentTabs} >
-			tabs
-		</Grid>
-	);
-}
+  return (
+    <Tabs
+      tabs={[
+        {
+          title: "log",
+          element: <Log />,
+        },
+        {
+          title: "error log",
+          element: <ErrorLog />,
+        },
+        {
+          title: "config",
+          element: <Config />,
+        },
+      ]}
+      localStorageKey="deployment-tab"
+    />
+  );
+};
 
 export default DeploymentTabs;

@@ -5,23 +5,27 @@ import Grid from "../util/layout/Grid";
 import Actions from "./Actions";
 import s from "./deployment.module.css";
 import DeploymentTabs from "./tabs/DeploymentTabs";
+import Updates from "./updates/Updates";
 
 const Deployment: Component<{ id: string }> = (p) => {
 	const { servers, deployments } = useAppState();
 	const deployment = () => deployments.get(p.id);
+  const server = () => deployment() && servers.get(deployment()?.serverID!);
 	
 	return (
-    <Show when={deployment()}>
+    <Show when={deployment() && server()}>
       <Grid class={s.Deployment}>
         {/* left / actions */}
         <Grid class={s.Left}>
           <Flex class={s.Header}>
-            name:{" "}
-            <div style={{ "font-weight": "bold" }}>{deployment()!.name}</div>
+            <Grid gap="0.1rem">
+              <div class={s.ItemHeader}>{deployment()!.name}</div>
+              <div>{server()!.name}</div>
+            </Grid>
           </Flex>
           <Actions deployment={deployment()!} />
+          <Updates deploymentID={p.id} />
         </Grid>
-
         {/* right / tabs */}
         <DeploymentTabs />
       </Grid>

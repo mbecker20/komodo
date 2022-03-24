@@ -8,7 +8,7 @@ import s from "./deployment.module.css";
 const Actions: Component<{ deployment: Deployment }> = (p) => {
   return (
     <Grid class={s.Actions}>
-      <div class={s.Header}>actions</div>
+      <div class={s.ItemHeader}>actions</div>
       <Flex alignItems="center" class={s.Action}>
         deploy:{" "}
         <button>

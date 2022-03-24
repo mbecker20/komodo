@@ -4,7 +4,7 @@ import { useToggle } from "../../../util/hooks";
 
 const Config: Component<{}> = (p) => {
   const [editing, toggleEditing] = useToggle();
-  return <div class={s.Config}></div>;
+  return <div class={s.Config}>config</div>;
 };
 
 export default Config;
