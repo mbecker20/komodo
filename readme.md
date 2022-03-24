@@ -1,7 +1,6 @@
+### Monitor
 ![screenshot1](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ScreenShot1.png)
-
 ![screenshot2](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ScreenShot2.png)
-
 
 ### There are seven main tasks of monitor:
 ## 1. Manage Github repos
