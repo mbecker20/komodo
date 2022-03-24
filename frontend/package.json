@@ -7,7 +7,7 @@
     "build": "vite build",
     "serve": "vite preview"
   },
-  "license": "MIT",
+  "license": "GPL v3.0",
   "devDependencies": {
     "typescript": "^4.6.2",
     "vite": "^2.8.6",

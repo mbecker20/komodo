@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "types.d.ts",
   "author": "mbecker20",
-  "license": "MIT",
+  "license": "GPL v3.0",
   "private": true,
   "devDependencies": {
     "typescript": "^4.6.2"

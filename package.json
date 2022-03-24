@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "mbecker20",
-  "license": "MIT",
+  "license": "GPL v3.0",
   "private": true,
   "workspaces": [
     "types",

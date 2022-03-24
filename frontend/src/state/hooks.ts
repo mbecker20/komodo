@@ -1,6 +1,5 @@
 import { Collection, Update } from "@monitor/types";
 import { createEffect, createResource, createSignal } from "solid-js";
-import { URL } from "..";
 import { filterOutFromObj } from "../util/helpers";
 import {
   getBuilds,

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "mbecker20",
-  "license": "MIT",
+  "license": "GPL v3.0",
   "scripts": {
     "start": "tsc && node build/main.js",
     "build-copy-frontend": "cd ../frontend && yarn build && cd ../core && rm -r frontend && mkdir frontend && cp -a ../frontend/build/. ./frontend/",

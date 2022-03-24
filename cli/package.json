@@ -3,7 +3,7 @@
   "version": "0.0.19",
   "description": "A CLI to aid in the setup of monitor",
   "author": "mbecker20",
-  "license": "MIT",
+  "license": "GPL v3.0",
   "bin": "cli.js",
   "scripts": {
     "start": "yarn build && build/cli.js",
