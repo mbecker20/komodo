@@ -5,13 +5,25 @@ import {
   DockerRunArgs,
   EnvironmentVar,
   Volume,
+  Network,
 } from "@monitor/types";
 import { execute } from "./execute";
 import { objFrom2Arrays } from "./helpers";
 import Dockerode from "dockerode";
 
+/* Server */
+
 export async function prune() {
   return await execute("docker image prune -a -f");
+}
+
+export async function getNetworks(dockerode: Dockerode): Promise<Network[]> {
+  const networks = await dockerode.listNetworks();
+  return networks.map(({ Id, Name, Driver }) => ({
+    _id: Id,
+    name: Name,
+    driver: Driver,
+  }));
 }
 
 /* Container */

@@ -127,6 +127,12 @@ export type ContainerStatus = {
   State: "running" | "exited";
 };
 
+export type Network = {
+  _id: string;
+  name: string;
+  driver: string;
+}
+
 export type EntityCollection = {
   _id?: string;
   name: string;

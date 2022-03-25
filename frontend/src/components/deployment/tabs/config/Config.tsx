@@ -13,11 +13,11 @@ import Ports from "./Ports";
 
 const Config: Component<{ deployment: Deployment }> = (p) => {
   const [deployment, setDeployment] = createStore<
-    Deployment & { loaded: boolean }
-  >({ ...p.deployment, loaded: false });
+    Deployment & { loaded: boolean; updated: boolean; }
+  >({ ...p.deployment, loaded: false, updated: false });
   createEffect(() => {
     getDeployment(p.deployment._id!).then((deployment) =>
-      setDeployment({ ...deployment, loaded: true })
+      setDeployment({ ...deployment, loaded: true, updated: false })
     );
   });
   return (
