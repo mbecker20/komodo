@@ -7,35 +7,38 @@ import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import s from "../../deployment.module.css";
 
-const Env: Component<{
+const Ports: Component<{
   deployment: DeepReadonly<Deployment>;
   setDeployment: SetStoreFunction<Deployment>;
 }> = (p) => {
   return (
     <Grid class={s.ConfigItem}>
       <Flex alignItems="center">
-        <div class={s.ItemHeader}>environment</div>
-        <Show
-          when={
-            !p.deployment.environment || p.deployment.environment.length === 0
-          }
-        >
+        <div class={s.ItemHeader}>ports</div>
+        <Show when={!p.deployment.ports || p.deployment.ports.length === 0}>
           <div>none</div>
         </Show>
         <button>
           <Icon type="plus" />
         </button>
       </Flex>
-      <For each={p.deployment.environment}>
-        {({ variable, value }) => (
+      <For each={p.deployment.ports}>
+        {({ local, container }) => (
           <Flex justifyContent="center">
             <Input
-              placeholder="variable"
-              value={variable}
+              placeholder="system"
+              value={local}
               style={{ width: "40%" }}
             />
             {" : "}
-            <Input placeholder="value" value={value} style={{ width: "40%" }} />
+            <Input
+              placeholder="container"
+              value={container}
+              style={{ width: "40%" }}
+            />
+            <button>
+              <Icon type="minus" />
+            </button>
           </Flex>
         )}
       </For>
@@ -43,4 +46,4 @@ const Env: Component<{
   );
 };
 
-export default Env;
+export default Ports;

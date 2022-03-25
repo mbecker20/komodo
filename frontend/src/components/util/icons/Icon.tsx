@@ -18,7 +18,12 @@ export type IconType =
   | "menu"
   | "build"
   | "notifications"
-  | "user";
+  | "user"
+  | "play"
+  | "pause"
+  | "reset"
+  | "plus"
+  | "minus";
 
 const Icon: Component<{
   type: IconType;
@@ -34,13 +39,13 @@ const Icon: Component<{
     <img
       className={p.className}
       src={`/icons/${p.type}.svg`}
-			alt={p.alt || p.type}
-			title={p.title}
-			style={{
-				...p.style,
-				width: p.width || "1rem",
-				height: p.height
-			}}
+      alt={p.alt || p.type}
+      title={p.title}
+      style={{
+        ...p.style,
+        width: p.width || "1rem",
+        height: p.height,
+      }}
       onClick={p.onClick}
     />
   );

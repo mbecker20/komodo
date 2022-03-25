@@ -1,6 +1,8 @@
 import { Deployment } from "@monitor/types";
-import { Component } from "solid-js";
+import { Component, For } from "solid-js";
 import { DeepReadonly, SetStoreFunction } from "solid-js/store";
+import Input from "../../../util/Input";
+import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import s from "../../deployment.module.css";
 
@@ -9,9 +11,10 @@ const Network: Component<{
   setDeployment: SetStoreFunction<Deployment>;
 }> = (p) => {
   return (
-    <Grid class={s.ConfigItem}>
+    <Flex class={s.ConfigItem} justifyContent="space-between">
       <div class={s.ItemHeader}>network</div>
-    </Grid>
+      <Input value={p.deployment.network} />
+    </Flex>
   );
 };
 

@@ -1,6 +1,9 @@
 import { Deployment } from "@monitor/types";
-import { Component } from "solid-js";
+import { Component, For, Show } from "solid-js";
 import { DeepReadonly, SetStoreFunction } from "solid-js/store";
+import Icon from "../../../util/icons/Icon";
+import Input from "../../../util/Input";
+import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import s from "../../deployment.module.css";
 
@@ -10,7 +13,32 @@ const Mounts: Component<{
 }> = (p) => {
   return (
     <Grid class={s.ConfigItem}>
-      <div class={s.ItemHeader}>mounts</div>
+      <Flex alignItems="center">
+        <div class={s.ItemHeader}>mounts</div>
+        <Show when={!p.deployment.volumes || p.deployment.volumes.length === 0}>
+          <div>none</div>
+        </Show>
+        <button>
+          <Icon type="plus" />
+        </button>
+      </Flex>
+      <For each={p.deployment.volumes}>
+        {({ local, container }) => (
+          <Flex justifyContent="center">
+            <Input
+              placeholder="system"
+              value={local}
+              style={{ width: "40%" }}
+            />
+            {" : "}
+            <Input
+              placeholder="container"
+              value={container}
+              style={{ width: "40%" }}
+            />
+          </Flex>
+        )}
+      </For>
     </Grid>
   );
 };

@@ -1,6 +1,6 @@
 import { Component, createSignal } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
-import { inPx } from "../../util/helpers";
+import { combineClasses, inPx } from "../../util/helpers";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Menu from "../util/menu/Menu";
@@ -15,7 +15,7 @@ const Topbar: Component = () => {
   const [menu, setMenu] = createSignal<"updates" | "account">();
   return (
     <Flex
-      class={s.Topbar}
+      class={combineClasses(s.Topbar, "shadow")}
       justifyContent="space-between"
       alignItems="center"
       style={{ height: inPx(TOPBAR_HEIGHT) }}

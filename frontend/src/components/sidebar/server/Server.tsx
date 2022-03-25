@@ -1,5 +1,6 @@
 import { Component, createMemo, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
+import { combineClasses } from "../../../util/helpers";
 import { useLocalStorageToggle } from "../../../util/hooks";
 import Icon from "../../util/icons/Icon";
 import Flex from "../../util/layout/Flex";
@@ -17,11 +18,8 @@ const Server: Component<{ id: string }> = (p) => {
   });
   const [open, toggleOpen] = useLocalStorageToggle(p.id);
   return (
-    <div class={s.Server}>
-      <button
-        onClick={toggleOpen}
-        style={{ "justify-content": "space-between" }}
-      >
+    <div class={combineClasses(s.Server, "shadow")}>
+      <button class={combineClasses(s.ServerButton, "shadow")} onClick={toggleOpen}>
         <Flex>
           <Icon type="chevron-down" width="1rem" />
           <div>{server()?.name}</div>

@@ -1,7 +1,8 @@
 .Topbar {
 	grid-area: topbar;
 	width: 100%;
-	background-color: red;
+	background-color: rgb(107, 37, 37);
+	z-index: 20;
 }
 
 .Monitor {

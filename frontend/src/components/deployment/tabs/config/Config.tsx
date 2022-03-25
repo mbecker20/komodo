@@ -1,4 +1,4 @@
-import { Component, Show } from "solid-js";
+import { Component, createEffect, Show } from "solid-js";
 import s from "../../deployment.module.css";
 import { Deployment } from "@monitor/types";
 import { createStore } from "solid-js/store";
@@ -9,15 +9,17 @@ import Network from "./Network";
 import { TOPBAR_HEIGHT } from "../../../topbar/Topbar";
 import Mounts from "./Mounts";
 import Env from "./Env";
+import Ports from "./Ports";
 
 const Config: Component<{ deployment: Deployment }> = (p) => {
   const [deployment, setDeployment] = createStore<
     Deployment & { loaded: boolean }
   >({ ...p.deployment, loaded: false });
-  getDeployment(p.deployment._id!).then((deployment) =>
-    setDeployment({ ...deployment, loaded: true })
-  );
-
+  createEffect(() => {
+    getDeployment(p.deployment._id!).then((deployment) =>
+      setDeployment({ ...deployment, loaded: true })
+    );
+  });
   return (
     <Show when={deployment.loaded}>
       <Grid
@@ -27,6 +29,7 @@ const Config: Component<{ deployment: Deployment }> = (p) => {
       >
         <Image deployment={deployment} setDeployment={setDeployment} />
         <Network deployment={deployment} setDeployment={setDeployment} />
+        <Ports deployment={deployment} setDeployment={setDeployment} />
         <Mounts deployment={deployment} setDeployment={setDeployment} />
         <Env deployment={deployment} setDeployment={setDeployment} />
       </Grid>

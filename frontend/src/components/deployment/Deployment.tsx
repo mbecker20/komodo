@@ -1,10 +1,12 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
+import { combineClasses } from "../../util/helpers";
+import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import Actions from "./Actions";
 import s from "./deployment.module.css";
-import DeploymentTabs from "./tabs/DeploymentTabs";
+import Tabs from "./tabs/Tabs";
 import Updates from "./updates/Updates";
 
 const Deployment: Component<{ id: string }> = (p) => {
@@ -17,17 +19,20 @@ const Deployment: Component<{ id: string }> = (p) => {
       <Grid class={s.Deployment}>
         {/* left / actions */}
         <Grid class={s.Left}>
-          <Flex class={s.Header}>
+          <Flex class={combineClasses(s.Header, "shadow")} justifyContent="space-between" alignItems="center">
             <Grid gap="0.1rem">
               <div class={s.ItemHeader}>{deployment()!.name}</div>
               <div>{server()!.name}</div>
             </Grid>
+            <button>
+              <Icon type="trash" />
+            </button>
           </Flex>
           <Actions deployment={deployment()!} />
           <Updates deploymentID={p.id} />
         </Grid>
         {/* right / tabs */}
-        <DeploymentTabs deployment={deployment()!} />
+        <Tabs deployment={deployment()!} />
       </Grid>
     </Show>
   );

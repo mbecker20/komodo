@@ -4,10 +4,13 @@ import Tabs from "../../util/tabs/Tabs";
 import Config from "./config/Config";
 import ErrorLog from "./ErrorLog";
 import Log from "./Log";
+import s from "../deployment.module.css";
+import { combineClasses } from "../../../util/helpers";
 
 const DeploymentTabs: Component<{ deployment: Deployment }> = (p) => {
   return (
     <Tabs
+      containerClass={combineClasses(s.Tabs, "shadow")}
       tabs={[
         {
           title: "log",

@@ -1,5 +1,6 @@
-import { Deployment } from "@monitor/types";
-import { Component } from "solid-js";
+import { ContainerStatus, Deployment } from "@monitor/types";
+import { Component, Match, Switch } from "solid-js";
+import { combineClasses } from "../../util/helpers";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
@@ -7,32 +8,60 @@ import s from "./deployment.module.css";
 
 const Actions: Component<{ deployment: Deployment }> = (p) => {
   return (
-    <Grid class={s.Actions}>
+    <Grid class={combineClasses(s.Actions, "shadow")}>
       <div class={s.ItemHeader}>actions</div>
-      <Flex class={s.Action}>
-        deploy:{" "}
-        <button>
-          <Icon type="arrow-down" />
-        </button>
-      </Flex>
-      <Flex class={s.Action}>
-        redeploy:{" "}
-        <button>
-          <Icon type="arrow-down" />
-        </button>
-      </Flex>
-      <Flex class={s.Action}>
-        start:{" "}
-        <button>
-          <Icon type="arrow-down" />
-        </button>
-      </Flex>
-      <Flex class={s.Action}>
-        stop:{" "}
-        <button>
-          <Icon type="arrow-down" />
-        </button>
-      </Flex>
+      <Switch>
+        <Match
+          when={(p.deployment.status as ContainerStatus).State === "running"}
+        >
+          <Flex class={s.Action}>
+            deploy:{" "}
+            <Flex>
+              <button>
+                <Icon type="reset" />
+              </button>
+              <button>
+                <Icon type="trash" />
+              </button>
+            </Flex>
+          </Flex>
+          <Flex class={s.Action}>
+            container:{" "}
+            <button>
+              <Icon type="pause" />
+            </button>
+          </Flex>
+        </Match>
+
+        <Match
+          when={(p.deployment.status as ContainerStatus).State === "exited"}
+        >
+          <Flex class={s.Action}>
+            deploy:{" "}
+            <button>
+              <Icon type="reset" />
+            </button>
+            <button>
+              <Icon type="trash" />
+            </button>
+          </Flex>
+          <Flex class={s.Action}>
+            container:{" "}
+            <button>
+              <Icon type="play" />
+            </button>
+          </Flex>
+        </Match>
+
+        <Match when={p.deployment.status === "not created"}>
+          <Flex class={s.Action}>
+            deploy:{" "}
+            <button>
+              <Icon type="play" />
+            </button>
+          </Flex>
+        </Match>
+      </Switch>
     </Grid>
   );
 };

@@ -1,16 +1,17 @@
 .Deployment {
 	grid-area: content;
-	grid-template-columns: 1fr 2fr;
+	grid-template-columns: auto 2fr;
 	background-color: rgb(49, 78, 112);
 	padding: 1rem;
 }
 
 .Left {
 	height: fit-content;
+	width: 20rem;
 }
 
 .Header {
-	background-color: rgb(35, 73, 115);
+	background-color: rgb(27, 55, 86);
 	padding: 0.5rem;
 }
 
@@ -20,7 +21,7 @@
 }
 
 .Actions {
-	background-color: rgb(35, 73, 115);
+	background-color: rgb(27, 55, 86);
 	padding: 0.5rem;
 }
 
@@ -33,12 +34,16 @@
 }
 
 .Updates {
-	background-color: rgb(35, 73, 115);
+	background-color: rgb(27, 55, 86);
 	padding: 0.5rem;
 }
 
 .Update {
-	background-color: rgb(35, 73, 115);
+	background-color: rgb(69, 34, 96);
+}
+
+.Tabs {
+	background-color: rgb(27, 55, 86);
 }
 
 .Config {
@@ -47,7 +52,7 @@
 
 .ConfigItem {
 	width: 100%;
-	/* max-width: 30rem; */
+	max-width: 35rem;
 	background-color: darkolivegreen;
 	box-sizing: border-box;
 	padding: 0.5rem;

@@ -15,6 +15,7 @@ const Tabs: Component<{
   tabStyle?: JSX.CSSProperties;
   titleElement?: JSXElement;
   titleStyle?: JSX.CSSProperties;
+  containerClass?: string;
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
   const def = p.defaultSelected ? p.defaultSelected : p.tabs[0].title;
@@ -26,7 +27,7 @@ const Tabs: Component<{
   const getClassName = (title: string) =>
     selected() === title ? combineClasses(s.Tab, s.Active) : s.Tab;
   return (
-    <div class={s.Tabs}>
+    <div class={combineClasses(s.Tabs, p.containerClass)} style={p.containerStyle}>
       <div class={s.TabTitles}>
         <For each={p.tabs}>
           {(tab) => (
@@ -39,9 +40,9 @@ const Tabs: Component<{
             </button>
           )}
         </For>
-				{p.titleElement}
+        {p.titleElement}
       </div>
-			{current().element}
+      {current().element}
     </div>
   );
 };
