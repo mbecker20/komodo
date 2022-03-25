@@ -25,7 +25,11 @@
 }
 
 .Action {
-	background-color: rgb(35, 73, 115);
+	background-color: rgb(69, 34, 96);
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem;
+	box-sizing: border-box;
 }
 
 .Updates {
@@ -35,4 +39,17 @@
 
 .Update {
 	background-color: rgb(35, 73, 115);
+}
+
+.Config {
+	height: fit-content;
+}
+
+.ConfigItem {
+	width: 100%;
+	/* max-width: 30rem; */
+	background-color: darkolivegreen;
+	box-sizing: border-box;
+	padding: 0.5rem;
+	height: fit-content;
 }

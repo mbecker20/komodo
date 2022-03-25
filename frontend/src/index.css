@@ -37,12 +37,13 @@ button {
   margin: 0;
   cursor: pointer;
   border: none;
-  width: 100%;
+  width: fit-content;
   border-radius: 0.25rem;
   font-family: inherit;
   font-size: 1rem;
   font-weight: 500;
   display: flex;
+  gap: 0.5rem;
   justify-content: center;
   align-items: center;
   background-color: transparent;
@@ -54,7 +55,7 @@ button:focus {
 }
 
 input {
-  font-size: 2rem;
+  /* font-size: 2rem; */
   font-family: inherit;
 }
 

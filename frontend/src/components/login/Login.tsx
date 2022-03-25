@@ -52,12 +52,14 @@ const Login: Component<{}> = (p) => {
           placeholder="username"
           value={info.username}
           onEdit={(value) => set("username", value)}
+          style={{ "font-size": "2rem" }}
         />
         <Input
           type="password"
           placeholder="password"
           value={info.password}
           onEdit={(value) => set("password", value)}
+          style={{ "font-size": "2rem" }}
         />
         <Flex style={{ width: "100%" }} justifyContent="space-between">
           <button class="blue" onClick={login} style={{ "font-size": "2rem" }}>

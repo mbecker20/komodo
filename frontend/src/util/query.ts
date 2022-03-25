@@ -1,4 +1,10 @@
-import { Builds, Deployments, Servers, Update } from "@monitor/types";
+import {
+  Builds,
+  Deployment,
+  Deployments,
+  Servers,
+  Update,
+} from "@monitor/types";
 import { client } from "..";
 import { generateQuery } from "./helpers";
 
@@ -8,19 +14,23 @@ export async function getUpdates(query?: {
   serverID?: string;
   deploymentID?: string;
 }) {
-  return (await client.get("/api/updates" + generateQuery(query))) as Update[];
+  return await client.get<Update[]>("/api/updates" + generateQuery(query));
 }
 
 export async function getBuilds() {
-  return (await client.get("/api/builds")) as Builds;
+  return await client.get<Builds>("/api/builds");
 }
 
 export async function getDeployments(query?: { serverID?: string }) {
-  return (await client.get(
+  return await client.get<Deployments>(
     "/api/deployments" + generateQuery(query)
-  )) as Deployments;
+  );
+}
+
+export async function getDeployment(deploymentID: string) {
+  return await client.get<Deployment>("/api/deployment/" + deploymentID);
 }
 
 export async function getServers() {
-  return (await client.get("/api/servers")) as Servers;
+  return await client.get<Servers>("/api/servers");
 }
