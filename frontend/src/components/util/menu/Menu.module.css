@@ -94,8 +94,9 @@
 
 .BottomCenter {
 	top: 100%;
-	margin-left: 0.5rem;
-	transform: translateY(-50%);
+	left: 50%;
+	margin-top: 0.5rem;
+	transform: translateX(-50%);
 }
 
 .HoverMenuTarget {
