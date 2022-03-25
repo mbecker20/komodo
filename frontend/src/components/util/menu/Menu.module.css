@@ -92,6 +92,12 @@
 	margin-top: 0.5rem;
 }
 
+.BottomCenter {
+	top: 100%;
+	margin-left: 0.5rem;
+	transform: translateY(-50%);
+}
+
 .HoverMenuTarget {
 	position: relative;
   width: fit-content;

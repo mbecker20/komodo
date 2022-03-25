@@ -5,11 +5,10 @@ export type Position =
   | "right"
   | "right center"
   | "bottom"
-  | "bottom right";
+  | "bottom right"
+  | "bottom center";
 
-export function getPositionClass(
-  position: Position = "bottom"
-) {
+export function getPositionClass(position: Position = "bottom") {
   switch (position) {
     case "left":
       return s.Left;
@@ -21,5 +20,7 @@ export function getPositionClass(
       return s.Bottom;
     case "bottom right":
       return s.BottomRight;
+    case "bottom center":
+      return s.BottomCenter;
   }
 }
