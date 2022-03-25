@@ -128,7 +128,7 @@ export type ContainerStatus = {
 };
 
 export type Network = {
-  _id: string;
+  // _id: string;
   name: string;
   driver: string;
 }

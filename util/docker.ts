@@ -19,8 +19,8 @@ export async function prune() {
 
 export async function getNetworks(dockerode: Dockerode): Promise<Network[]> {
   const networks = await dockerode.listNetworks();
-  return networks.map(({ Id, Name, Driver }) => ({
-    _id: Id,
+  return networks.map(({ Name, Driver }) => ({
+    // _id: Id,
     name: Name,
     driver: Driver,
   }));

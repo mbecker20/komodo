@@ -11,8 +11,12 @@ const networks = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const { serverID } = req.params as { serverID: string };
       const server =
         serverID === app.core._id
-          ? undefined
+          ? false
           : await app.servers.findById(serverID);
+      if (server === undefined) {
+        res.status(400);
+        res.send("could not find server");
+      }
       const networks = server
         ? await getPeripheryNetworks(server)
         : await getNetworks(app.dockerode);
