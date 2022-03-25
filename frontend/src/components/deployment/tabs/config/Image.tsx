@@ -2,6 +2,7 @@ import { Deployment } from "@monitor/types";
 import { Component, createEffect, For, Show } from "solid-js";
 import { DeepReadonly, SetStoreFunction } from "solid-js/store";
 import { useAppState } from "../../../../state/StateProvider";
+import { combineClasses } from "../../../../util/helpers";
 import { useToggle } from "../../../../util/hooks";
 import Icon from "../../../util/icons/Icon";
 import Input from "../../../util/Input";
@@ -18,7 +19,7 @@ const Image: Component<{
   const [show, toggle] = useToggle();
   createEffect(() => console.log(p.deployment));
   return (
-    <Flex class={s.ConfigItem} justifyContent="space-between">
+    <Flex class={combineClasses(s.ConfigItem, "shadow")} justifyContent="space-between">
       <div class={s.ItemHeader}>{p.deployment.buildID ? "build" : "image"}</div>
       <Flex>
         <Menu

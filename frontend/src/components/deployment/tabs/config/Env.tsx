@@ -1,6 +1,7 @@
 import { Deployment } from "@monitor/types";
 import { Component, For, Show } from "solid-js";
 import { DeepReadonly, SetStoreFunction } from "solid-js/store";
+import { combineClasses } from "../../../../util/helpers";
 import Icon from "../../../util/icons/Icon";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
@@ -12,7 +13,7 @@ const Env: Component<{
   setDeployment: SetStoreFunction<Deployment>;
 }> = (p) => {
   return (
-    <Grid class={s.ConfigItem}>
+    <Grid class={combineClasses(s.ConfigItem, "shadow")}>
       <Flex alignItems="center">
         <div class={s.ItemHeader}>environment</div>
         <Show
@@ -36,6 +37,9 @@ const Env: Component<{
             />
             {" : "}
             <Input placeholder="value" value={value} style={{ width: "40%" }} />
+            <button>
+              <Icon type="minus" />
+            </button>
           </Flex>
         )}
       </For>

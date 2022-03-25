@@ -1,6 +1,7 @@
 import { Deployment } from "@monitor/types";
 import { Component, For, Show } from "solid-js";
 import { DeepReadonly, SetStoreFunction } from "solid-js/store";
+import { combineClasses } from "../../../../util/helpers";
 import Icon from "../../../util/icons/Icon";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
@@ -12,7 +13,7 @@ const Ports: Component<{
   setDeployment: SetStoreFunction<Deployment>;
 }> = (p) => {
   return (
-    <Grid class={s.ConfigItem}>
+    <Grid class={combineClasses(s.ConfigItem, "shadow")}>
       <Flex alignItems="center">
         <div class={s.ItemHeader}>ports</div>
         <Show when={!p.deployment.ports || p.deployment.ports.length === 0}>
