@@ -1,8 +1,8 @@
 import { Component, For, Show } from "solid-js";
-import { useAppState } from "../../../state/StateProvider";
-import Grid from "../../util/layout/Grid";
-import s from "../topbar.module.css";
-import Update from "./Update";
+import { useAppState } from "../../state/StateProvider";
+import Grid from "../util/layout/Grid";
+import s from "./topbar.module.css";
+import Update from "../update/Update";
 
 const Updates: Component<{}> = (p) => {
   const { updates } = useAppState();
@@ -20,7 +20,7 @@ const Updates: Component<{}> = (p) => {
         </div>
         <Grid class={s.UpdatesContainer}>
           <For each={updates.collection()!}>
-            {(update) => <Update update={update} />}
+            {(update) => <Update update={update} showName />}
           </For>
         </Grid>
       </Grid>

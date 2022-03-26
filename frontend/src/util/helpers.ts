@@ -1,6 +1,6 @@
 import { Collection, User } from "@monitor/types";
 
-export function combineClasses(...classes: (string | undefined)[]) {
+export function combineClasses(...classes: (string | false | undefined)[]) {
   return classes.filter((c) => (c ? true : false)).join(" ");
 }
 

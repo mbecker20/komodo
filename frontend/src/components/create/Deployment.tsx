@@ -43,7 +43,7 @@ const Content: Component<{ serverID: string; close: () => void }> = (p) => {
   };
   return (
     <>
-      <Flex alignItems="center" justifyContent="space-between">
+      <Flex alignItems="center" justifyContent="space-between" style={{ padding: "2rem 1rem 1rem 1rem" }}>
         <Input
           ref={nameInput}
           value={name()}

@@ -59,6 +59,7 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
 
   const save = () => {
     ws.send(UPDATE_DEPLOYMENT, { deployment });
+    
   };
 
   const state = {

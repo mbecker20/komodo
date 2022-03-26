@@ -87,7 +87,7 @@ function handleMessage(
     /* Updates */
     case ADD_UPDATE:
       const { update } = message as { update: Update };
-      updates.push(update);
+      updates.add(update);
       pushNotification(
         update.isError ? "bad" : "good",
         `${readableOperation(update.operation)} by ${update.operator}`

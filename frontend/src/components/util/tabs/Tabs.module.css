@@ -22,7 +22,7 @@
 
   background-color: rgba(2, 107, 121, 0);
   border-bottom: solid 2px rgba(2, 107, 121, 0.5);
-  transition: background-color 50ms ease-in-out, border-color 250ms ease-in-out;
+  transition: background-color 250ms ease-in-out, border-color 250ms ease-in-out;
 }
 
 .Active {

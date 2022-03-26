@@ -13,6 +13,7 @@
 
 .Deployments {
 	background-color: rgb(85, 85, 85);
+	transform-origin: top;
 }
 
 .ServerButton {
@@ -25,6 +26,7 @@
 	padding: 0.5rem 1rem;
 	width: 100%;
 	justify-content: space-between;
+	transition: background-color 500ms ease;
 }
 
 .CreateButton {
@@ -34,3 +36,33 @@
 	margin: 0.25rem;
 	box-sizing: border-box;
 }
+
+/* .Enter {
+  animation-name: enter;
+  animation-duration: 500ms;
+  animation-timing-function: ease;
+}
+
+.Exit {
+  animation-name: exit;
+  animation-duration: 500ms;
+  animation-timing-function: ease;
+}
+
+@keyframes enter {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes exit {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0);
+  }
+} */

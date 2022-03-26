@@ -67,12 +67,12 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
       return (
         await model
           .find(filter, projection, options)
-          .sort({ createdAt: -1 })
+          .sort({ _id: -1 })
           .skip(offset)
           .limit(limit)
           .lean()
           .exec()
-      ).reverse() as T[];
+      ) as T[];
     },
     findCollection: async (
       filter: FilterQuery<T>,

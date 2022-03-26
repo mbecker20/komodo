@@ -19,6 +19,7 @@ const Server: Component<{ id: string }> = (p) => {
     );
   });
   const [open, toggleOpen] = useLocalStorageToggle(p.id);
+  // const buffer = useBuffer(open);
   return (
     <div class={combineClasses(s.Server, "shadow")}>
       <button
@@ -32,7 +33,7 @@ const Server: Component<{ id: string }> = (p) => {
         <div>{server()?.status}</div>
       </button>
       <Show when={open()}>
-        <Grid gap=".15rem" class={s.Deployments}>
+        <Grid gap=".15rem" class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}>
           <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
           <CreateDeployment serverID={p.id} />
         </Grid>

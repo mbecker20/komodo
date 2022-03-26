@@ -83,14 +83,18 @@ export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {
 }
 
 export function useArray<T>(query: () => Promise<T[]>) {
-  const [collection, { mutate }] = createResource(query);
-  const push = (update: Update) => {
-    mutate((updates: any) => [update, ...updates]);
+  const [collection, set] = createSignal<T[]>();
+  createEffect(() => {
+    console.log("running query")
+    query().then(set);
+  })
+  const add = (item: T) => {
+    set((items: any) => [item, ...items]);
   };
   const loaded = () => (collection() ? true : false);
   return {
     collection,
-    push,
+    add,
     loaded,
   };
 }

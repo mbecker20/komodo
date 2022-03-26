@@ -60,10 +60,10 @@ const Child: Component<{
     <Grid class={s.CenterMenuContainer} onClick={p.toggleShow}>
       <Grid
         class={combineClasses(s.Menu, "shadow", p.show() ? s.Enter : s.Exit)}
-        style={{ padding: p.padding, ...p.style }}
+        style={{ padding: p.padding || "1rem", ...p.style }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Flex justifyContent="space-between" alignItems="center">
+        <Flex gap="3rem" justifyContent="space-between" alignItems="center">
           <div class={s.CenterMenuTitle}>{p.title}</div>
           <button class="red" onClick={p.toggleShow}>
             <Icon type="cross" />

@@ -17,17 +17,17 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
           <Flex class={combineClasses(s.Action, "shadow")}>
             deploy{" "}
             <Flex>
-              <button>
+              <button class="green">
                 <Icon type="reset" />
               </button>
-              <button>
+              <button class="red">
                 <Icon type="trash" />
               </button>
             </Flex>
           </Flex>
           <Flex class={combineClasses(s.Action, "shadow")}>
             container{" "}
-            <button class="yellow">
+            <button class="orange">
               <Icon type="pause" />
             </button>
           </Flex>
@@ -38,10 +38,10 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
         >
           <Flex class={combineClasses(s.Action, "shadow")}>
             deploy{" "}
-            <button>
+            <button class="green">
               <Icon type="reset" />
             </button>
-            <button>
+            <button class="red">
               <Icon type="trash" />
             </button>
           </Flex>

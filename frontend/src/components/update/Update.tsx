@@ -1,13 +1,13 @@
 import { Update as UpdateType } from "@monitor/types";
 import { Component, Show } from "solid-js";
-import { useAppState } from "../../../state/StateProvider";
-import { readableOperation, readableTimestamp } from "../../../util/helpers";
-import Icon from "../../util/icons/Icon";
-import Flex from "../../util/layout/Flex";
-import Grid from "../../util/layout/Grid";
-import s from "../topbar.module.css";
+import { useAppState } from "../../state/StateProvider";
+import { combineClasses, readableOperation, readableTimestamp } from "../../util/helpers";
+import Icon from "../util/icons/Icon";
+import Flex from "../util/layout/Flex";
+import Grid from "../util/layout/Grid";
+import s from "./update.module.css";
 
-const Update: Component<{ update: UpdateType }> = (p) => {
+const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   const { deployments, servers, builds } = useAppState();
   const name = () => {
     if (p.update.deploymentID && deployments.loaded()) {
@@ -20,9 +20,25 @@ const Update: Component<{ update: UpdateType }> = (p) => {
       return "Monitor System";
     }
   };
+  const operation = () => {
+    const op = readableOperation(p.update.operation);
+    if (!p.showName) {
+      if (p.update.deploymentID) {
+        return op.replaceAll(" deployment", "");
+      } else if (p.update.buildID) {
+        return op.replaceAll(" build", "");
+      } else if (p.update.serverID) {
+        return op.replaceAll(" server", "");
+      }
+    } else {
+      return op;
+    }
+  }
   return (
-    <Grid gap="0.5rem" class={s.Update}>
-      <div>{name()}</div>
+    <Grid gap="0.5rem" class={combineClasses(s.Update, "shadow")}>
+      <Show when={p.showName}>
+        <div>{name()}</div>
+      </Show>
       <Grid
         gap="0.5rem"
         style={{
@@ -30,15 +46,15 @@ const Update: Component<{ update: UpdateType }> = (p) => {
           "grid-template-rows": "1fr 1fr",
         }}
       >
-        <div>{readableOperation(p.update.operation)}</div>
+        <div>{operation()}</div>
         <div style={{ "place-self": "center end" }}>
           {readableTimestamp(p.update.timestamp)}
         </div>
-        <Flex>
+        <Flex alignItems="center">
           <Icon type="user" />
           <div>{p.update.operator}</div>
         </Flex>
-        <Flex justifyContent="space-between">
+        <Flex justifyContent="space-between" alignItems="center">
           {/* show command */}
           <Icon type="arrow-down" />
           <Show when={p.update.note}>

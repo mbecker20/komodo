@@ -6,7 +6,7 @@ import Flex from "../util/layout/Flex";
 import Menu from "../util/menu/Menu";
 import Account from "./Account";
 import s from "./topbar.module.css";
-import Updates from "./updates/Updates";
+import Updates from "./Updates";
 
 export const TOPBAR_HEIGHT = 40;
 

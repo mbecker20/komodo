@@ -1,4 +1,4 @@
-import { Accessor, createSignal, onCleanup, onMount } from "solid-js";
+import { Accessor, createEffect, createSignal, onCleanup, onMount } from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
 
 export function useToggle(initial = false): [Accessor<boolean>, () => void] {
@@ -101,4 +101,18 @@ export function useKeyDown(key: string, action: () => void) {
     window.addEventListener("keydown", listener);
     onCleanup(() => window.removeEventListener("keydown", listener));
   });
+}
+
+export function useBuffer(show: Accessor<boolean>, timeout = 250) {
+  const [buffer, set] = createSignal(show());
+  createEffect(() => {
+    if (show()) {
+      set(true);
+    } else {
+      setTimeout(() => {
+        set(false);
+      }, timeout);
+    }
+  });
+  return buffer;
 }

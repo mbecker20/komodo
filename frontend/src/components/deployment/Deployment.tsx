@@ -10,7 +10,7 @@ import Grid from "../util/layout/Grid";
 import Actions from "./Actions";
 import s from "./deployment.module.css";
 import Tabs from "./tabs/Tabs";
-import Updates from "./updates/Updates";
+import Updates from "./Updates";
 
 const Deployment: Component<{ id: string }> = (p) => {
   const { servers, deployments, ws } = useAppState();
