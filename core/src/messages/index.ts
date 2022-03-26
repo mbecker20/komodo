@@ -11,7 +11,11 @@ export default async function handleMessage(
   message: Action & object,
   user: User
 ) {
-  (await buildMessages(app, client, message, user)) ||
-    (await deploymentMessages(app, client, message, user)) ||
-    (await serverMessages(app, client, message, user));
+  try {
+    (await buildMessages(app, client, message, user)) ||
+      (await deploymentMessages(app, client, message, user)) ||
+      (await serverMessages(app, client, message, user));
+  } catch (error) {
+    console.log(error);
+  }
 }

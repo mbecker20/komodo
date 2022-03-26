@@ -36,6 +36,7 @@ async function createDeployment(
     { stdout: "Deployment Created: " + deployment.name },
     user.username
   );
+  return created;
 }
 
 export default createDeployment;

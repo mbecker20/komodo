@@ -8,13 +8,15 @@ import {
   Show,
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
-import { useKeyDown, useToggle } from "../../../util/hooks";
+import { useKeyDown } from "../../../util/hooks";
 import Icon from "../icons/Icon";
 import Flex from "../layout/Flex";
 import Grid from "../layout/Grid";
 import s from "./Menu.module.css";
 
 const CenterMenu: Component<{
+  show: Accessor<boolean>;
+  toggleShow: () => void;
   content: JSXElement;
   target: JSXElement;
   targetStyle?: JSX.CSSProperties;
@@ -23,10 +25,9 @@ const CenterMenu: Component<{
   padding?: string | number;
   style?: JSX.CSSProperties;
 }> = (p) => {
-  const [show, toggleShow] = useToggle();
-  const [buffer, set] = createSignal(show());
+  const [buffer, set] = createSignal(p.show());
   createEffect(() => {
-    if (show()) {
+    if (p.show()) {
       set(true);
     } else {
       setTimeout(() => {
@@ -36,11 +37,11 @@ const CenterMenu: Component<{
   });
   return (
     <>
-      <button onClick={toggleShow} class={p.targetClass} style={p.targetStyle}>
+      <button onClick={p.toggleShow} class={p.targetClass} style={p.targetStyle}>
         {p.target}
       </button>
       <Show when={buffer()}>
-        <Child {...p} show={show} toggleShow={toggleShow} />
+        <Child {...p} show={p.show} toggleShow={p.toggleShow} />
       </Show>
     </>
   );

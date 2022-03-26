@@ -9,7 +9,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  background-color: lightskyblue;
+  background-color: rgb(18, 43, 59);
   scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
   scrollbar-width: thin;
   color: #fceade;
@@ -56,6 +56,7 @@ button:focus {
 
 input {
   font-family: inherit;
+  font-size: 1.05rem;
   color: inherit;
   background-color: rgba(50, 50, 50, 0.2);
   padding: 0.25rem;
@@ -69,12 +70,12 @@ input:focus {
 }
 
 .green {
-  border: solid 1px rgba(35, 128, 77, 0.4);
+  background-color: rgba(28, 110, 65, 0.9);
 }
 
 .green:hover {
-  background-color: rgba(35, 128, 77, 0.8);
-  border: solid 1px transparent;
+  background-color: rgba(35, 128, 77, 0.9);
+  /* border: solid 1px transparent; */
 }
 
 .red {

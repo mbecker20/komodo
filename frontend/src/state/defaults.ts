@@ -1,9 +1,6 @@
-import { Deployment } from "@monitor/types";
-
-export function defaultDeployment(name: string, serverID: string, username: string): Deployment {
+export function defaultDeployment(name: string, serverID: string) {
 	return {
 		name,
 		serverID,
-		owners: [username],
 	}
 }

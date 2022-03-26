@@ -22,7 +22,10 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
       projection?: string | object,
       options?: QueryOptions
     ) => {
-      return (await model.find(filter, projection, options).lean().exec()) as T[];
+      return (await model
+        .find(filter, projection, options)
+        .lean()
+        .exec()) as T[];
     },
     findById: async (
       id: string,
@@ -61,13 +64,15 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
       projection?: string | object,
       options?: QueryOptions
     ) => {
-      return (await model
-        .find(filter, projection, options)
-        .sort({ createdAt: -1 })
-        .skip(offset)
-        .limit(limit)
-        .lean()
-        .exec()) as T[];
+      return (
+        await model
+          .find(filter, projection, options)
+          .sort({ createdAt: -1 })
+          .skip(offset)
+          .limit(limit)
+          .lean()
+          .exec()
+      ).reverse() as T[];
     },
     findCollection: async (
       filter: FilterQuery<T>,
@@ -75,9 +80,7 @@ const model = <T>(app: FastifyInstance, name: string, schema: Schema<T>) => {
       options?: QueryOptions
     ) => {
       const docs = await model.find(filter, projection, options).lean().exec();
-      return intoCollection(
-        docs as T[],
-      ) as Collection<T>;
+      return intoCollection(docs as T[]) as Collection<T>;
     },
     findByIdAndDelete: async (id: string) => {
       return (await model.findByIdAndDelete(id).lean().exec()) as T | undefined;

@@ -1,57 +1,63 @@
-import { Component, createEffect, createSignal } from "solid-js";
+import { Component, createSignal, onMount } from "solid-js";
 import { pushNotification } from "../..";
 import { CREATE_DEPLOYMENT } from "../../state/actions";
 import { defaultDeployment } from "../../state/defaults";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
+import { useToggle } from "../../util/hooks";
 import Icon from "../util/icons/Icon";
 import Input from "../util/Input";
 import Flex from "../util/layout/Flex";
 import CenterMenu from "../util/menu/CenterMenu";
 
 const CreateDeployment: Component<{ serverID: string }> = (p) => {
-  const { username } = useUser();
-  const { servers, ws } = useAppState();
+  const { servers } = useAppState();
   const server = () => servers.get(p.serverID);
-  const [name, setName] = createSignal("");
+  const [show, toggleShow] = useToggle();
   return (
     <CenterMenu
+      show={show}
+      toggleShow={toggleShow}
       title={`create deployment on ${server()?.name}`}
       target={<Icon type="plus" />}
       targetClass="green"
       targetStyle={{ width: "100%" }}
-      content={
-        <>
-          <Flex alignItems="center" justifyContent="space-between">
-            <Input
-              value={name()}
-							onEdit={setName}
-              placeholder="name"
-              autofocus
-              style={{ "font-size": "1.5rem" }}
-            />
-            <button
-              class="green"
-              style={{ width: "100%" }}
-              onClick={() => {
-                if (name().length > 0) {
-									ws.send(CREATE_DEPLOYMENT, {
-                    deployment: defaultDeployment(
-                      name(),
-                      p.serverID,
-                      username()!
-                    ),
-                  });
-									pushNotification("ok", "creating deployment...");
-								}
-              }}
-            >
-              create
-            </button>
-          </Flex>
-        </>
-      }
+      content={<Content serverID={p.serverID} close={toggleShow} />}
     />
+  );
+};
+
+const Content: Component<{ serverID: string; close: () => void }> = (p) => {
+  const { ws } = useAppState();
+  let nameInput: HTMLInputElement | undefined;
+
+  const [name, setName] = createSignal("");
+  onMount(() => nameInput?.focus());
+  const create = () => {
+    if (name().length > 0) {
+      ws.send(CREATE_DEPLOYMENT, {
+        deployment: defaultDeployment(name(), p.serverID),
+      });
+      pushNotification("ok", "creating deployment...");
+      p.close();
+    }
+  };
+  return (
+    <>
+      <Flex alignItems="center" justifyContent="space-between">
+        <Input
+          ref={nameInput}
+          value={name()}
+          onEdit={setName}
+          placeholder="name"
+          style={{ "font-size": "1.5rem" }}
+          onConfirm={create}
+        />
+        <button class="green" style={{ width: "100%" }} onClick={create}>
+          create
+        </button>
+      </Flex>
+    </>
   );
 };
 

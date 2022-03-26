@@ -10,8 +10,18 @@ const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
       serverID?: string;
       deploymentID?: string;
     };
-    const updates = await app.updates.getMostRecent(10, { buildID, serverID, deploymentID }, offset);
-		res.send(updates);
+    const updates = await app.updates.getMostRecent(
+      10,
+      buildID
+        ? { buildID }
+        : deploymentID
+        ? { deploymentID }
+        : serverID
+        ? { serverID }
+        : {},
+      offset
+    );
+    res.send(updates);
   });
   done();
 });

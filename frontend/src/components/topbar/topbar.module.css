@@ -2,7 +2,7 @@
 	grid-area: topbar;
 	width: 100%;
 	background-color: rgb(107, 37, 37);
-	z-index: 20;
+	z-index: 90;
 }
 
 .Monitor {
@@ -13,6 +13,7 @@
 .Updates {
 	width: 300px;
 	color: rgb(231, 225, 225);
+	z-index: 25;
 }
 
 .Update {

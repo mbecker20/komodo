@@ -52,27 +52,25 @@ const Login: Component<{}> = (p) => {
           placeholder="username"
           value={info.username}
           onEdit={(value) => set("username", value)}
-          style={{ "font-size": "2rem" }}
         />
         <Input
           type="password"
           placeholder="password"
           value={info.password}
           onEdit={(value) => set("password", value)}
-          style={{ "font-size": "2rem" }}
         />
         <Flex style={{ width: "100%" }} justifyContent="space-between">
-          <button class="blue" onClick={login} style={{ "font-size": "2rem" }}>
+          <button class="blue" onClick={login} style={{ "font-size": "1.05rem" }}>
             log in
           </button>
-          <button class="blue" onClick={signup} style={{ "font-size": "2rem" }}>
+          <button class="blue" onClick={signup} style={{ "font-size": "1.05rem" }}>
             sign up
           </button>
         </Flex>
         <button
           class="blue"
           onClick={() => client.loginGithub()}
-          style={{ "font-size": "2rem" }}
+          style={{ "font-size": "1.05rem" }}
         >
           log in with github
         </button>
