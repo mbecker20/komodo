@@ -1,8 +1,9 @@
 import { User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
-import { DELETE_DEPLOYMENT } from "@monitor/util";
+import { deleteContainer, DELETE_DEPLOYMENT } from "@monitor/util";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { addDeploymentUpdate, addSystemUpdate } from "../../util/updates";
+import { deletePeripheryContainer } from "../../util/periphery/container";
 
 const deploymentViewFields = [
   "name",
@@ -38,7 +39,15 @@ async function deleteDeployment(
     return;
   }
   try {
-    const stopLog = (deployment.image || deployment.buildID) && ""; // stop container, either locally or remote
+    if (deployment.image || deployment.buildID) {
+      const server = deployment.serverID === app.core._id ? undefined : await app.servers.findById(deployment.serverID!);
+      if (server) {
+        await deletePeripheryContainer(server, deployment.containerName!);
+      } else {
+        await deleteContainer(deployment.containerName!)
+      }
+    }
+    await app.deployments.findByIdAndDelete(deploymentID);
     addSystemUpdate(
       app,
       DELETE_DEPLOYMENT,
@@ -50,8 +59,7 @@ async function deleteDeployment(
             .map((field) => {
               return `${field}: ${JSON.stringify(deployment[field])}\n`;
             })
-            .reduce((prev, curr) => prev + curr) +
-          (stopLog && `\n\nDocker Stop Log:\n\n${JSON.stringify(stopLog)}`),
+            .reduce((prev, curr) => prev + curr),
       },
       user.username,
       note

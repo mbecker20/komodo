@@ -1,4 +1,4 @@
-import { client, WS_URL } from "..";
+import { client, pushNotification, WS_URL } from "..";
 import {
   ADD_SERVER,
   ADD_UPDATE,
@@ -85,6 +85,10 @@ function handleMessage(
     /* Updates */
     case ADD_UPDATE:
       updates.push(message.update);
+      pushNotification(
+        message.update.isError ? "bad" : "good",
+        `${message.update.operation} by ${message.update.operator}`
+      );
       break;
   }
 }

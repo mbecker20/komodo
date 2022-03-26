@@ -43,12 +43,12 @@ const Image: Component<{}> = (p) => {
           }
           position="bottom center"
         />
-        <Show when={deployment.image}>
+        <Show when={!deployment.buildID}>
           <Flex>
             <Input
               placeholder="image"
               spellcheck={false}
-              value={deployment.image}
+              value={deployment.image || ""}
               style={{ width: "12rem" }}
               onConfirm={(value) => setDeployment("image", value)}
             />
