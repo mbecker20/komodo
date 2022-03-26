@@ -38,7 +38,7 @@ async function deploymentMessages(
       const created =
         message.deployment && (await createDeployment(app, user, message));
       if (created) {
-        app.broadcast(CREATE_DEPLOYMENT, { deployment: created });
+        app.broadcast(CREATE_DEPLOYMENT, { deployment: { ...created, status: "not created" } });
       }
       return true;
 

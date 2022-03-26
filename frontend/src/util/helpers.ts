@@ -52,8 +52,8 @@ export function readablePermissions(permissions: number) {
   }
 }
 
-export function readableTimestamp(unixTimeInMS: number) {
-  const date = new Date(unixTimeInMS);
+export function readableTimestamp(unixTimeInSecs: number) {
+  const date = new Date(unixTimeInSecs * 1000);
   const hours24 = date.getHours();
   let hours = hours24 % 12;
   if (hours === 0) hours = 12;
