@@ -13,10 +13,9 @@ import s from "../../deployment.module.css";
 import { useConfig } from "./Provider";
 
 const Image: Component<{}> = (p) => {
-  const { deployment } = useConfig();
+  const { deployment, setDeployment } = useConfig();
   const { builds } = useAppState();
   const [show, toggle] = useToggle();
-  // createEffect(() => console.log(deployment));
   return (
     <Flex
       class={combineClasses(s.ConfigItem, "shadow")}
@@ -53,6 +52,7 @@ const Image: Component<{}> = (p) => {
               spellcheck={false}
               value={deployment.image}
               style={{ width: "12rem" }}
+              onConfirm={(value) => setDeployment("image", value)}
             />
           </Flex>
         </Show>
