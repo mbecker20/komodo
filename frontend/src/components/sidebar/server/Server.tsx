@@ -12,14 +12,18 @@ const Server: Component<{ id: string }> = (p) => {
   const { servers, deployments } = useAppState();
   const server = () => servers.get(p.id);
   const deploymentIDs = createMemo(() => {
-    return deployments.loaded() && deployments.ids()!.filter(
-      (id) => deployments.get(id)?.serverID === p.id
+    return (
+      deployments.loaded() &&
+      deployments.ids()!.filter((id) => deployments.get(id)?.serverID === p.id)
     );
   });
   const [open, toggleOpen] = useLocalStorageToggle(p.id);
   return (
     <div class={combineClasses(s.Server, "shadow")}>
-      <button class={combineClasses(s.ServerButton, "shadow")} onClick={toggleOpen}>
+      <button
+        class={combineClasses(s.ServerButton, "shadow")}
+        onClick={toggleOpen}
+      >
         <Flex>
           <Icon type="chevron-down" width="1rem" />
           <div>{server()?.name}</div>
@@ -27,8 +31,11 @@ const Server: Component<{ id: string }> = (p) => {
         <div>{server()?.status}</div>
       </button>
       <Show when={open()}>
-        <Grid gap=".25rem" class={s.Deployments}>
+        <Grid gap=".15rem" class={s.Deployments}>
           <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
+          <button class={combineClasses("green", s.CreateButton)}>
+            <Icon type="plus" />
+          </button>
         </Grid>
       </Show>
     </div>

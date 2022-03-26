@@ -23,7 +23,8 @@ export type IconType =
   | "pause"
   | "reset"
   | "plus"
-  | "minus";
+  | "minus"
+  | "floppy-disk";
 
 const Icon: Component<{
   type: IconType;

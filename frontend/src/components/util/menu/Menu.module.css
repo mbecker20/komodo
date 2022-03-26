@@ -2,19 +2,17 @@
 	position: relative;
   height: fit-content;
   width: fit-content;
+	z-index: 100;
 }
 
 .Menu {
-	/* transform-origin: left center; */
-	/* -webkit-transform-origin: left center; */
-	/* overflow: hidden; */
 	white-space: nowrap;
 	padding: 0.5rem 1rem;
 	position: absolute;
   display: grid;
   width: fit-content;
-  border: solid 1px rgba(2, 107, 121, 0.25);
-  background-color: rgba(10, 10, 10, 0.95);
+  /* border: solid 1px rgba(2, 107, 121, 0.25); */
+  background-color: rgb(107, 37, 37);
   z-index: 21;
   border-radius: 0.25rem;	
 	box-sizing: border-box;
@@ -65,37 +63,37 @@
 .Left {
 	right: 100%;
 	top: 0px;
-	margin-right: 0.5rem;
+	/* margin-right: 0.5rem; */
 }
 
 .Right {
 	left: 100%;
 	top: 0px;
-	margin-left: 0.5rem;
+	/* margin-left: 0.5rem; */
 }
 
 .RightCenter {
 	left: 100%;
 	top: 50%;
-	margin-left: 0.5rem;
+	margin-left: 0.25rem;
 	transform: translateY(-50%);
 }
 
 .Bottom {
 	top: 100%;
-	margin-top: 0.5rem;
+	margin-top: 0.25rem;
 }
 
 .BottomRight {
 	right: 0px;
 	top: 100%;
-	margin-top: 0.5rem;
+	margin-top: 0.25rem;
 }
 
 .BottomCenter {
 	top: 100%;
 	left: 50%;
-	margin-top: 0.5rem;
+	margin-top: 0.25rem;
 	transform: translateX(-50%);
 }
 

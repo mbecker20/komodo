@@ -18,6 +18,7 @@
 .ItemHeader {
 	font-size: 1.5rem;
 	font-weight: 500;
+	user-select: none;
 }
 
 .Actions {
@@ -47,7 +48,15 @@
 }
 
 .Config {
-	height: fit-content;
+	height: 100%;
+	place-items: start center;
+	grid-template-rows: 70vh 1fr;
+}
+
+.ConfigItems {
+	max-height: 100%;
+	overflow: scroll;
+	padding: 0.5rem;
 }
 
 .ConfigItem {

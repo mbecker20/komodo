@@ -10,24 +10,26 @@ import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import Menu from "../../../util/menu/Menu";
 import s from "../../deployment.module.css";
+import { useConfig } from "./Provider";
 
-const Image: Component<{
-  deployment: DeepReadonly<Deployment>;
-  setDeployment: SetStoreFunction<Deployment>;
-}> = (p) => {
+const Image: Component<{}> = (p) => {
+  const { deployment } = useConfig();
   const { builds } = useAppState();
   const [show, toggle] = useToggle();
-  createEffect(() => console.log(p.deployment));
+  // createEffect(() => console.log(deployment));
   return (
-    <Flex class={combineClasses(s.ConfigItem, "shadow")} justifyContent="space-between">
-      <div class={s.ItemHeader}>{p.deployment.buildID ? "build" : "image"}</div>
+    <Flex
+      class={combineClasses(s.ConfigItem, "shadow")}
+      justifyContent="space-between"
+    >
+      <div class={s.ItemHeader}>{deployment.buildID ? "build" : "image"}</div>
       <Flex>
         <Menu
           show={show()}
           target={
             <button class="green" onClick={toggle}>
-              {p.deployment.buildID
-                ? builds.get(p.deployment.buildID)?.name
+              {deployment.buildID
+                ? builds.get(deployment.buildID)?.name
                 : "custom image"}
               <Icon type="chevron-down" />
             </button>
@@ -44,12 +46,12 @@ const Image: Component<{
           }
           position="bottom center"
         />
-        <Show when={p.deployment.image}>
+        <Show when={deployment.image}>
           <Flex>
             <Input
               placeholder="image"
               spellcheck={false}
-              value={p.deployment.image}
+              value={deployment.image}
               style={{ width: "12rem" }}
             />
           </Flex>

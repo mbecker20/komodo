@@ -26,3 +26,11 @@
 	width: 100%;
 	justify-content: space-between;
 }
+
+.CreateButton {
+	width: 90%;
+	justify-self: center;
+	justify-content: center;
+	margin: 0.25rem;
+	box-sizing: border-box;
+}

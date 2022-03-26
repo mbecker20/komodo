@@ -15,7 +15,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
           when={(p.deployment.status as ContainerStatus).State === "running"}
         >
           <Flex class={combineClasses(s.Action, "shadow")}>
-            deploy:{" "}
+            deploy{" "}
             <Flex>
               <button>
                 <Icon type="reset" />
@@ -26,7 +26,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
             </Flex>
           </Flex>
           <Flex class={combineClasses(s.Action, "shadow")}>
-            container:{" "}
+            container{" "}
             <button>
               <Icon type="pause" />
             </button>
@@ -37,7 +37,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
           when={(p.deployment.status as ContainerStatus).State === "exited"}
         >
           <Flex class={combineClasses(s.Action, "shadow")}>
-            deploy:{" "}
+            deploy{" "}
             <button>
               <Icon type="reset" />
             </button>
@@ -46,7 +46,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
             </button>
           </Flex>
           <Flex class={combineClasses(s.Action, "shadow")}>
-            container:{" "}
+            container{" "}
             <button>
               <Icon type="play" />
             </button>
@@ -55,7 +55,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
 
         <Match when={p.deployment.status === "not created"}>
           <Flex class={combineClasses(s.Action, "shadow")}>
-            deploy:{" "}
+            deploy{" "}
             <button>
               <Icon type="play" />
             </button>

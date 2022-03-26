@@ -35,6 +35,7 @@ const Menu: Component<{
         <div
           class={combineClasses(
             s.Menu,
+            "shadow",
             getPositionClass(p.position),
             p.show ? s.Enter : s.Exit
           )}
