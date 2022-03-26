@@ -38,7 +38,6 @@ const Content: Component<{ serverID: string; close: () => void }> = (p) => {
       ws.send(CREATE_DEPLOYMENT, {
         deployment: defaultDeployment(name(), p.serverID),
       });
-      pushNotification("ok", "creating deployment...");
       p.close();
     }
   };

@@ -1,3 +1,4 @@
+import { Update } from "@monitor/types";
 import { client, pushNotification, WS_URL } from "..";
 import {
   ADD_SERVER,
@@ -11,6 +12,7 @@ import {
   UPDATE_DEPLOYMENT,
   UPDATE_SERVER,
 } from "../state/actions";
+import { readableOperation } from "../util/helpers";
 import { State } from "./StateProvider";
 
 function socket(state: State) {
@@ -84,10 +86,11 @@ function handleMessage(
 
     /* Updates */
     case ADD_UPDATE:
-      updates.push(message.update);
+      const { update } = message as { update: Update };
+      updates.push(update);
       pushNotification(
-        message.update.isError ? "bad" : "good",
-        `${message.update.operation} by ${message.update.operator}`
+        update.isError ? "bad" : "good",
+        `${readableOperation(update.operation)} by ${update.operator}`
       );
       break;
   }

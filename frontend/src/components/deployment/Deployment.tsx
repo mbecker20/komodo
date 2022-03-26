@@ -33,7 +33,6 @@ const Deployment: Component<{ id: string }> = (p) => {
             </Grid>
             <ConfirmButton
               onConfirm={() => {
-                pushNotification("ok", "deleting deployment...")
                 ws.send(DELETE_DEPLOYMENT, { deploymentID: p.id });
               }}
               color="red"

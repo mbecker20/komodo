@@ -44,11 +44,14 @@ export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
 
 export function readablePermissions(permissions: number) {
   switch (permissions) {
-    case 0: return "view only"
-        
-    case 1: return "user"
+    case 0:
+      return "view only";
 
-    case 2: return "admin"
+    case 1:
+      return "user";
+
+    case 2:
+      return "admin";
   }
 }
 
@@ -62,4 +65,8 @@ export function readableTimestamp(unixTimeInSecs: number) {
   return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${
     minutes > 9 ? minutes : "0" + minutes
   } ${pm ? "PM" : "AM"}`;
+}
+
+export function readableOperation(operation: string) {
+  return operation.toLowerCase().replace("_", " ");
 }

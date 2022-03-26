@@ -11,9 +11,15 @@
 }
 
 .Updates {
-	width: 300px;
+	width: 340px;
 	color: rgb(231, 225, 225);
 	z-index: 25;
+}
+
+.UpdatesContainer {
+	max-height: 70vh;
+	overflow: scroll;
+	padding-right: 1rem;
 }
 
 .Update {

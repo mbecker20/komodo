@@ -1,7 +1,7 @@
 import { Update as UpdateType } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
-import { readableTimestamp } from "../../../util/helpers";
+import { readableOperation, readableTimestamp } from "../../../util/helpers";
 import Icon from "../../util/icons/Icon";
 import Flex from "../../util/layout/Flex";
 import Grid from "../../util/layout/Grid";
@@ -30,8 +30,10 @@ const Update: Component<{ update: UpdateType }> = (p) => {
           "grid-template-rows": "1fr 1fr",
         }}
       >
-        <div>{p.update.operation}</div>
-        <div style={{ "place-self": "center end" }}>{readableTimestamp(p.update.timestamp)}</div>
+        <div>{readableOperation(p.update.operation)}</div>
+        <div style={{ "place-self": "center end" }}>
+          {readableTimestamp(p.update.timestamp)}
+        </div>
         <Flex>
           <Icon type="user" />
           <div>{p.update.operator}</div>

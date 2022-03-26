@@ -9,10 +9,20 @@ const Updates: Component<{}> = (p) => {
   return (
     <Show when={updates.loaded()}>
       <Grid class={s.Updates}>
-        <div style={{ "font-size": "1.5rem", "font-weight": 500, "place-self": "center end" }}>updates</div>
-        <For each={updates.collection()!}>
-          {(update) => <Update update={update} />}
-        </For>
+        <div
+          style={{
+            "font-size": "1.5rem",
+            "font-weight": 500,
+            "place-self": "center end",
+          }}
+        >
+          updates
+        </div>
+        <Grid class={s.UpdatesContainer}>
+          <For each={updates.collection()!}>
+            {(update) => <Update update={update} />}
+          </For>
+        </Grid>
       </Grid>
     </Show>
   );
