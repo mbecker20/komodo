@@ -8,6 +8,8 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
+import { UPDATE_DEPLOYMENT } from "../../../../state/actions";
+import { useAppState } from "../../../../state/StateProvider";
 import { getDeployment, getNetworks } from "../../../../util/query";
 
 type ConfigDeployment = Deployment & { loaded: boolean; updated: boolean };
@@ -17,12 +19,14 @@ type State = {
   deployment: DeepReadonly<ConfigDeployment>;
   setDeployment: SetStoreFunction<ConfigDeployment>;
   reset: () => void;
+  save: () => void;
   networks: Accessor<Network[]>;
 };
 
 const context = createContext<State>();
 
 export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
+  const { ws } = useAppState();
   const [editing] = createSignal(false);
   const [deployment, set] = createStore({
     ...p.deployment,
@@ -53,11 +57,16 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
     getNetworks(p.deployment.serverID!).then(setNetworks);
   });
 
+  const save = () => {
+    ws.send(UPDATE_DEPLOYMENT, { deployment });
+  };
+
   const state = {
     editing,
     deployment,
     setDeployment,
     reset: load,
+    save,
     networks,
   };
 

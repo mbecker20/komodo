@@ -9,9 +9,10 @@ import Ports from "./Ports";
 import { useConfig } from "./Provider";
 import Flex from "../../../util/layout/Flex";
 import Icon from "../../../util/icons/Icon";
+import ConfirmButton from "../../../util/ConfirmButton";
 
 const Config: Component<{}> = (p) => {
-  const { deployment, reset } = useConfig();
+  const { deployment, reset, save } = useConfig();
   return (
     <Show when={deployment.loaded}>
       <Grid class={s.Config}>
@@ -28,10 +29,10 @@ const Config: Component<{}> = (p) => {
               reset
               <Icon type="reset" />
             </button>
-            <button>
+            <ConfirmButton onConfirm={save} color="green">
               save
               <Icon type="floppy-disk" />
-            </button>
+            </ConfirmButton>
           </Flex>
         </Show>
       </Grid>

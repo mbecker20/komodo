@@ -27,7 +27,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
           </Flex>
           <Flex class={combineClasses(s.Action, "shadow")}>
             container{" "}
-            <button>
+            <button class="yellow">
               <Icon type="pause" />
             </button>
           </Flex>
@@ -47,7 +47,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
           </Flex>
           <Flex class={combineClasses(s.Action, "shadow")}>
             container{" "}
-            <button>
+            <button class="green">
               <Icon type="play" />
             </button>
           </Flex>
@@ -56,7 +56,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
         <Match when={p.deployment.status === "not created"}>
           <Flex class={combineClasses(s.Action, "shadow")}>
             deploy{" "}
-            <button>
+            <button class="green">
               <Icon type="play" />
             </button>
           </Flex>

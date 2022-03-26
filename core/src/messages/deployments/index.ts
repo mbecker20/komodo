@@ -54,7 +54,7 @@ async function deploymentMessages(
 
     case UPDATE_DEPLOYMENT:
       const updated =
-        message.deploymentID && (await updateDeployment(app, user, message));
+        message.deployment && (await updateDeployment(app, user, message));
       if (updated) {
         app.broadcast(UPDATE_DEPLOYMENT, { deployment: updated });
       }
