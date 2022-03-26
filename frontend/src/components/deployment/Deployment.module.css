@@ -39,6 +39,11 @@
 	padding: 0.5rem;
 }
 
+.UpdatesContainer {
+	max-height: 50vh;
+	overflow: scroll;
+}
+
 .Update {
 	background-color: rgb(69, 34, 96);
 }

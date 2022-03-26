@@ -118,7 +118,7 @@ export async function dockerRun(
   repoMount?: { repoFolder: string; containerMount: string }
 ) {
   const command =
-    `docker pull ${image}${latest && ":latest"} && docker run -d` +
+    `docker pull ${image}${latest ? ":latest" : ""} && docker run -d` +
     name(containerName) +
     containerUserString(containerUser) +
     portsString(ports) +
@@ -173,7 +173,7 @@ function repoVolume(
 
 function restartString(restart?: string) {
   return restart
-    ? ` --restart=${restart}${restart === "on-failure" ? ":10" : ""}`
+    ? ` --restart ${restart}${restart === "on-failure" ? ":10" : ""}`
     : "";
 }
 

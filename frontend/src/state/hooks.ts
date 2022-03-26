@@ -85,7 +85,6 @@ export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {
 export function useArray<T>(query: () => Promise<T[]>) {
   const [collection, set] = createSignal<T[]>();
   createEffect(() => {
-    console.log("running query")
     query().then(set);
   })
   const add = (item: T) => {

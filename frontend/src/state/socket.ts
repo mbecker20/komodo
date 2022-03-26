@@ -33,6 +33,7 @@ function socket(state: State) {
   });
 
   return {
+    socket: ws,
     send: <T>(type: string, message: T) => {
       ws.send(JSON.stringify({ ...message, type }));
     },

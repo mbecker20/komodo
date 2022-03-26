@@ -115,14 +115,14 @@
 }
 
 .CenterMenuContainer {
-  position: absolute;
+  position: fixed;
 	z-index: 200;
 	top: 0;
 	left: 0;
   width: 100vw;
   height: 100vh;
   place-items: center;
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .CenterMenuTitle {

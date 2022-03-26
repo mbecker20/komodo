@@ -1,10 +1,16 @@
 import { Update as UpdateType } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
-import { combineClasses, readableOperation, readableTimestamp } from "../../util/helpers";
+import {
+  combineClasses,
+  readableOperation,
+  readableTimestamp,
+} from "../../util/helpers";
+import { useToggle } from "../../util/hooks";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
+import CenterMenu from "../util/menu/CenterMenu";
 import s from "./update.module.css";
 
 const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
@@ -33,7 +39,20 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
     } else {
       return op;
     }
+  };
+  const log = () => {
+    const outText = p.update.log.stdout
+      ? `stdout:\n\n${p.update.log.stdout}` +
+        (p.update.log.stderr ? "\n\n" : "")
+      : "";
+    const errText = p.update.log.stderr
+      ? `stderr:\n\n${p.update.log.stderr}`
+      : "";
+    return outText + errText;
   }
+  const [showCommand, toggleShowCommand] = useToggle();
+  const [showLog, toggleShowLog] = useToggle();
+  const [showNote, toggleShowNote] = useToggle();
   return (
     <Grid gap="0.5rem" class={combineClasses(s.Update, "shadow")}>
       <Show when={p.showName}>
@@ -46,7 +65,13 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
           "grid-template-rows": "1fr 1fr",
         }}
       >
-        <div>{operation()}</div>
+        <div
+          style={{
+            color: p.update.isError ? "rgb(182, 47, 52)" : "inherit",
+          }}
+        >
+          {operation()}
+        </div>
         <div style={{ "place-self": "center end" }}>
           {readableTimestamp(p.update.timestamp)}
         </div>
@@ -56,12 +81,31 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
         </Flex>
         <Flex justifyContent="space-between" alignItems="center">
           {/* show command */}
-          <Icon type="arrow-down" />
+          <CenterMenu
+            title="command"
+            show={showCommand}
+            toggleShow={toggleShowCommand}
+            target={<Icon type="arrow-down" />}
+            content={<pre class={s.Log}>{p.update.command}</pre>}
+          />
+
           <Show when={p.update.note}>
-            <Icon type="arrow-down" />
+            <CenterMenu
+              title="note"
+              show={showNote}
+              toggleShow={toggleShowNote}
+              target={<Icon type="arrow-down" />}
+              content={<div></div>}
+            />
           </Show>
           {/* show log */}
-          <Icon type="arrow-down" />
+          <CenterMenu
+            title="log"
+            show={showLog}
+            toggleShow={toggleShowLog}
+            target={<Icon type="arrow-down" />}
+            content={<pre class={s.Log}>{log()}</pre>}
+          />
         </Flex>
       </Grid>
     </Grid>

@@ -24,7 +24,9 @@ export type IconType =
   | "reset"
   | "plus"
   | "minus"
-  | "floppy-disk";
+  | "floppy-disk"
+  | "download"
+  | "upload";
 
 const Icon: Component<{
   type: IconType;

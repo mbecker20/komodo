@@ -31,9 +31,9 @@ async function deployDeployment(
   app.deployActionStates.set(deploymentID, DEPLOYING, true);
   app.broadcast(DEPLOY, { complete: false, deploymentID });
   try {
-    const server = deployment.serverID
-      ? await app.servers.findById(deployment.serverID)
-      : undefined;
+    const server = deployment.serverID === app.core._id
+      ? undefined
+      : await app.servers.findById(deployment.serverID!);
     if (server) {
       // delete the container on periphery
       await deletePeripheryContainer(server, deployment.containerName!);
