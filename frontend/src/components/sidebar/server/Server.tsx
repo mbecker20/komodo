@@ -2,6 +2,7 @@ import { Component, createMemo, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { combineClasses } from "../../../util/helpers";
 import { useLocalStorageToggle } from "../../../util/hooks";
+import CreateDeployment from "../../create/Deployment";
 import Icon from "../../util/icons/Icon";
 import Flex from "../../util/layout/Flex";
 import Grid from "../../util/layout/Grid";
@@ -9,7 +10,7 @@ import s from "../sidebar.module.css";
 import Deployment from "./Deployment";
 
 const Server: Component<{ id: string }> = (p) => {
-  const { servers, deployments } = useAppState();
+  const { servers, deployments, ws } = useAppState();
   const server = () => servers.get(p.id);
   const deploymentIDs = createMemo(() => {
     return (
@@ -33,9 +34,7 @@ const Server: Component<{ id: string }> = (p) => {
       <Show when={open()}>
         <Grid gap=".15rem" class={s.Deployments}>
           <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
-          <button class={combineClasses("green", s.CreateButton)}>
-            <Icon type="plus" />
-          </button>
+          <CreateDeployment serverID={p.id} />
         </Grid>
       </Show>
     </div>

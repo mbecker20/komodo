@@ -1,6 +1,4 @@
-import { Deployment } from "@monitor/types";
-import { Component, createEffect, For, Show } from "solid-js";
-import { DeepReadonly, SetStoreFunction } from "solid-js/store";
+import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../../../state/StateProvider";
 import { combineClasses } from "../../../../util/helpers";
 import { useToggle } from "../../../../util/hooks";

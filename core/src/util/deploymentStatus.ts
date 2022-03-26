@@ -8,14 +8,14 @@ export async function deploymentStatusLocal(
   const statusNames = statusAr.map((stat) =>
     stat.Names[0].slice(1, stat.Names[0].length)
   ); // they all start with '/'
-  const status = objFrom2Arrays(
-    statusNames,
-    statusAr.map((stat, i) => ({
-      name: statusNames[i],
-      Status: stat.Status,
-      State: stat.State as "running" | "exited",
-    }))
-  );
+  // const status = objFrom2Arrays(
+  //   statusNames,
+  //   statusAr.map((stat, i) => ({
+  //     name: statusNames[i],
+  //     Status: stat.Status,
+  //     State: stat.State as "running" | "exited",
+  //   }))
+  // );
   return objFrom2Arrays(
     statusNames,
     statusAr.map((stat, i) => ({

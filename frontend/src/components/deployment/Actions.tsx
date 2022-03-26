@@ -12,7 +12,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
       <div class={s.ItemHeader}>actions</div>
       <Switch>
         <Match
-          when={(p.deployment.status as ContainerStatus).State === "running"}
+          when={(p.deployment.status as ContainerStatus)?.State === "running"}
         >
           <Flex class={combineClasses(s.Action, "shadow")}>
             deploy{" "}
