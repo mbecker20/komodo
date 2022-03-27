@@ -17,11 +17,11 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   const { deployments, servers, builds } = useAppState();
   const name = () => {
     if (p.update.deploymentID && deployments.loaded()) {
-      return deployments.get(p.update.deploymentID)?.name || "loading...";
+      return deployments.get(p.update.deploymentID)?.name || "deleted";
     } else if (p.update.serverID && servers.loaded()) {
-      return servers.get(p.update.serverID)?.name || "loading...";
+      return servers.get(p.update.serverID)?.name || "deleted";
     } else if (p.update.buildID && builds.loaded()) {
-      return builds.get(p.update.buildID)?.name || "loading...";
+      return builds.get(p.update.buildID)?.name || "deleted";
     } else {
       return "Monitor System";
     }
@@ -40,19 +40,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
       return op;
     }
   };
-  const log = () => {
-    const outText = p.update.log.stdout
-      ? `stdout:\n\n${p.update.log.stdout}` +
-        (p.update.log.stderr ? "\n\n" : "")
-      : "";
-    const errText = p.update.log.stderr
-      ? `stderr:\n\n${p.update.log.stderr}`
-      : "";
-    return outText + errText;
-  }
-  const [showCommand, toggleShowCommand] = useToggle();
   const [showLog, toggleShowLog] = useToggle();
-  const [showNote, toggleShowNote] = useToggle();
   return (
     <Grid gap="0.5rem" class={combineClasses(s.Update, "shadow")}>
       <Show when={p.showName}>
@@ -79,32 +67,29 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
           <Icon type="user" />
           <div>{p.update.operator}</div>
         </Flex>
-        <Flex justifyContent="space-between" alignItems="center">
-          {/* show command */}
-          <CenterMenu
-            title="command"
-            show={showCommand}
-            toggleShow={toggleShowCommand}
-            target={<Icon type="command" />}
-            content={<pre class={s.Log}>{p.update.command}</pre>}
-          />
-
-          <Show when={p.update.note}>
-            <CenterMenu
-              title="note"
-              show={showNote}
-              toggleShow={toggleShowNote}
-              target={<Icon type="arrow-down" />}
-              content={<div></div>}
-            />
-          </Show>
-          {/* show log */}
+        <Flex justifyContent="flex-end" alignItems="center">
           <CenterMenu
             title="log"
             show={showLog}
             toggleShow={toggleShowLog}
-            target={<Icon type="log" />}
-            content={<pre class={s.Log}>{log()}</pre>}
+            target={<Icon type="console" />}
+            content={
+              <Grid gap="0.25rem">
+                <Show when={p.update.note}>
+                  <pre>note: {p.update.note}</pre>
+                </Show>
+                <div>command</div>
+                <pre class={s.Log}>{p.update.command}</pre>
+                <Show when={p.update.log.stderr}>
+                  <div>stderr</div>
+                  <pre class={s.Log}>{p.update.log.stderr}</pre>
+                </Show>
+                <Show when={p.update.log.stdout}>
+                  <div>stdout</div>
+                  <pre class={s.Log}>{p.update.log.stdout}</pre>
+                </Show>
+              </Grid>
+            }
           />
         </Flex>
       </Grid>

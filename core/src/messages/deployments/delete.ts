@@ -8,14 +8,11 @@ import { deletePeripheryContainer } from "../../util/periphery/container";
 const deploymentViewFields = [
   "name",
   "image",
+  "network",
+  "restart",
   "ports",
   "volumes",
   "environment",
-  "network",
-  "logToAWS",
-  "useServerRoot",
-  "restart",
-  "autoDeploy",
 ]; // the fields shown in the update log
 
 async function deleteDeployment(

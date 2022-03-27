@@ -26,7 +26,9 @@ export type IconType =
   | "minus"
   | "floppy-disk"
   | "command"
-  | "log";
+  | "log"
+  | "console"
+  | "application";
 
 const Icon: Component<{
   type: IconType;

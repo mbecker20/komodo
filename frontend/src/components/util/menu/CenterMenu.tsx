@@ -21,7 +21,7 @@ const CenterMenu: Component<{
   target: JSXElement;
   targetStyle?: JSX.CSSProperties;
   targetClass?: string;
-  title: string;
+  title?: string;
   padding?: string | number;
   style?: JSX.CSSProperties;
 }> = (p) => {
@@ -37,7 +37,11 @@ const CenterMenu: Component<{
   });
   return (
     <>
-      <button onClick={p.toggleShow} class={p.targetClass} style={p.targetStyle}>
+      <button
+        onClick={p.toggleShow}
+        class={p.targetClass}
+        style={p.targetStyle}
+      >
         {p.target}
       </button>
       <Show when={buffer()}>
@@ -48,7 +52,7 @@ const CenterMenu: Component<{
 };
 
 const Child: Component<{
-  title: string;
+  title?: string;
   content: JSXElement;
   show: Accessor<boolean>;
   toggleShow: () => void;
@@ -57,13 +61,16 @@ const Child: Component<{
 }> = (p) => {
   useKeyDown("Escape", p.toggleShow);
   return (
-    <Grid class={s.CenterMenuContainer} onClick={p.toggleShow}>
+    <Grid
+      class={combineClasses(s.CenterMenuContainer, p.show() ? s.Enter : s.Exit)}
+      onClick={p.toggleShow}
+    >
       <Grid
-        class={combineClasses(s.Menu, "shadow", p.show() ? s.Enter : s.Exit)}
+        class={combineClasses(s.Menu, "shadow")}
         style={{ padding: p.padding || "1rem", ...p.style }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Flex gap="3rem" justifyContent="space-between" alignItems="center">
+        <Flex class={s.CenterMenuHeader} gap="3rem" justifyContent="space-between" alignItems="center">
           <div class={s.CenterMenuTitle}>{p.title}</div>
           <button class="red" onClick={p.toggleShow}>
             <Icon type="cross" />

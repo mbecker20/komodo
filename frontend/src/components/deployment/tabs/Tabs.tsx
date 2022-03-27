@@ -14,20 +14,20 @@ const DeploymentTabs: Component<{ deployment: Deployment }> = (p) => {
       containerClass={combineClasses(s.Tabs, "shadow")}
       tabs={[
         {
-          title: "log",
-          element: <Log />,
-        },
-        {
-          title: "error log",
-          element: <ErrorLog />,
-        },
-        {
           title: "config",
           element: (
             <ConfigProvider deployment={p.deployment}>
               <Config />
             </ConfigProvider>
           ),
+        },
+        {
+          title: "log",
+          element: <Log />,
+        },
+        {
+          title: "error log",
+          element: <ErrorLog />,
         },
       ]}
       localStorageKey="deployment-tab"

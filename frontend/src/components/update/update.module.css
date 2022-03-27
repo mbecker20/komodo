@@ -6,11 +6,12 @@
 .Log {
 	white-space: pre-line;
 	overflow-wrap: anywhere;
-	word-wrap: break-word;
+	/* word-wrap: break-word; */
 	max-height: 80vh;
 	overflow: scroll;
 	tab-size: 2;
-	-moz-tab-size: 2;
 	width: 40rem;
 	max-width: 90vw;
+	margin-left: 2rem;
+	box-sizing: border-box;
 }

@@ -10,6 +10,7 @@ import { useConfig } from "./Provider";
 import Flex from "../../../util/layout/Flex";
 import Icon from "../../../util/icons/Icon";
 import ConfirmButton from "../../../util/ConfirmButton";
+import Restart from "./Restart";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save } = useConfig();
@@ -19,6 +20,7 @@ const Config: Component<{}> = (p) => {
         <Grid class={s.ConfigItems}>
           <Image />
           <Network />
+          <Restart />
           <Ports />
           <Mounts />
           <Env />

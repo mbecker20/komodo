@@ -69,24 +69,28 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
           >
             <Flex class={combineClasses(s.Action, "shadow")}>
               deploy{" "}
-              <ConfirmButton
-                color="green"
-                onConfirm={() => {
-                  ws.send(DEPLOY, { deploymentID: p.deployment._id });
-                  pushNotification("ok", `deploying ${p.deployment.name}...`);
-                }}
-              >
-                <Icon type="reset" />
-              </ConfirmButton>
-              <ConfirmButton
-                color="red"
-                onConfirm={() => {
-                  ws.send(DELETE_CONTAINER, { deploymentID: p.deployment._id });
-                  pushNotification("ok", `removing container...`);
-                }}
-              >
-                <Icon type="trash" />
-              </ConfirmButton>
+              <Flex>
+                <ConfirmButton
+                  color="green"
+                  onConfirm={() => {
+                    ws.send(DEPLOY, { deploymentID: p.deployment._id });
+                    pushNotification("ok", `deploying ${p.deployment.name}...`);
+                  }}
+                >
+                  <Icon type="reset" />
+                </ConfirmButton>
+                <ConfirmButton
+                  color="red"
+                  onConfirm={() => {
+                    ws.send(DELETE_CONTAINER, {
+                      deploymentID: p.deployment._id,
+                    });
+                    pushNotification("ok", `removing container...`);
+                  }}
+                >
+                  <Icon type="trash" />
+                </ConfirmButton>
+              </Flex>
             </Flex>
             <Flex class={combineClasses(s.Action, "shadow")}>
               container{" "}
