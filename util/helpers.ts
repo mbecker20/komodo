@@ -60,3 +60,13 @@ export function combineLogs(log0: Log, log1: Log): Log {
       (log1.stderr ? log1.stderr : ""),
   };
 }
+
+export function generateQuery(query?: Collection<string | number | undefined>) {
+  if (query) {
+    const q = Object.keys(query)
+      .filter((key) => query[key] !== undefined)
+      .map((key) => key + "=" + query[key])
+      .join("&");
+    return q && `?${q}`;
+  } else return "";
+}

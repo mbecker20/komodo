@@ -30,6 +30,7 @@ const context = createContext<
 >();
 
 export const AppStateProvider: Component<{}> = (p) => {
+  const { user } = useUser();
   const [sidebarOpen, toggleSidebarOpen] = useLocalStorageToggle(
     "sidebar-open",
     true
@@ -47,7 +48,7 @@ export const AppStateProvider: Component<{}> = (p) => {
 
   // created prior state before, to pass state easily
   const selected = useSelected(state);
-  const ws = socket(state);
+  const ws = socket(user(), state, selected);
 
   const { logout } = useUser();
 

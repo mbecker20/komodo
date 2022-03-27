@@ -3,12 +3,15 @@
 	padding: 0.75rem;
 }
 
+.LogContainer {
+	max-height: 80vh;
+	overflow: scroll;
+}
+
 .Log {
 	white-space: pre-line;
 	overflow-wrap: anywhere;
 	/* word-wrap: break-word; */
-	max-height: 80vh;
-	overflow: scroll;
 	tab-size: 2;
 	width: 40rem;
 	max-width: 90vw;

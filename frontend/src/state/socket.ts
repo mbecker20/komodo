@@ -1,4 +1,4 @@
-import { Update } from "@monitor/types";
+import { Update, User } from "@monitor/types";
 import { client, pushNotification, WS_URL } from "..";
 import {
   ADD_SERVER,
@@ -13,9 +13,14 @@ import {
   UPDATE_SERVER,
 } from "../state/actions";
 import { readableOperation } from "../util/helpers";
+import { useSelected } from "./hooks";
 import { State } from "./StateProvider";
 
-function socket(state: State) {
+function socket(
+  user: User,
+  state: State,
+  selected: ReturnType<typeof useSelected>
+) {
   const ws = new WebSocket(WS_URL);
 
   ws.addEventListener("open", () => {
@@ -25,7 +30,7 @@ function socket(state: State) {
   ws.addEventListener("message", ({ data }) => {
     const message = JSON.parse(data);
     console.log(message);
-    handleMessage(state, message);
+    handleMessage(user, state, selected, message);
   });
 
   ws.addEventListener("close", () => {
@@ -42,13 +47,18 @@ function socket(state: State) {
 }
 
 function handleMessage(
+  user: User,
   { deployments, builds, servers, updates }: State,
+  selected: ReturnType<typeof useSelected>,
   message: { type: string } & any
 ) {
   switch (message.type) {
     /* Deployments */
     case CREATE_DEPLOYMENT:
       deployments.add(message.deployment);
+      if (message.deployment.owners[0] === user.username) {
+        selected.set(message.deployment._id, "deployment");
+      }
       break;
 
     case DELETE_DEPLOYMENT:

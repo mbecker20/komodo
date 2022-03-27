@@ -1,4 +1,5 @@
 import { Collection, CommandLogError, ContainerStatus, Log, Server } from "@monitor/types";
+import { generateQuery } from "@monitor/util";
 import axios from "axios";
 
 export async function getPeripheryContainers({ address, passkey }: Server) {
@@ -24,13 +25,15 @@ export async function getPeripheryContainer(
 
 export async function getPeripheryContainerLog(
   { address, passkey }: Server,
-  name: string
+  name: string,
+  tail?: number
 ) {
   return (await axios
-    .get(`http://${address}/container/log/${name}`, {
+    .get(`http://${address}/container/log/${name}${generateQuery({ tail })}`, {
       headers: {
         Authorization: passkey,
       },
+
     })
     .then(({ data }) => data)) as Log;
 }

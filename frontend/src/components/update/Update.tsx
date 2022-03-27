@@ -23,7 +23,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
     } else if (p.update.buildID && builds.loaded()) {
       return builds.get(p.update.buildID)?.name || "deleted";
     } else {
-      return "Monitor System";
+      return "monitor";
     }
   };
   const operation = () => {
@@ -52,6 +52,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
           "grid-template-columns": "1fr 1fr",
           "grid-template-rows": "1fr 1fr",
         }}
+        placeItems="center start"
       >
         <div
           style={{
@@ -67,31 +68,30 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
           <Icon type="user" />
           <div>{p.update.operator}</div>
         </Flex>
-        <Flex justifyContent="flex-end" alignItems="center">
-          <CenterMenu
-            title="log"
-            show={showLog}
-            toggleShow={toggleShowLog}
-            target={<Icon type="console" />}
-            content={
-              <Grid gap="0.25rem">
-                <Show when={p.update.note}>
-                  <pre>note: {p.update.note}</pre>
-                </Show>
-                <div>command</div>
-                <pre class={s.Log}>{p.update.command}</pre>
-                <Show when={p.update.log.stderr}>
-                  <div>stderr</div>
-                  <pre class={s.Log}>{p.update.log.stderr}</pre>
-                </Show>
-                <Show when={p.update.log.stdout}>
-                  <div>stdout</div>
-                  <pre class={s.Log}>{p.update.log.stdout}</pre>
-                </Show>
-              </Grid>
-            }
-          />
-        </Flex>
+        <CenterMenu
+          title="log"
+          show={showLog}
+          toggleShow={toggleShowLog}
+          target={<Icon type="console" />}
+          targetStyle={{ "place-self": "center end" }}
+          content={
+            <Grid class={s.LogContainer} gap="0.25rem">
+              <Show when={p.update.note}>
+                <pre>note: {p.update.note}</pre>
+              </Show>
+              <div>command</div>
+              <pre class={s.Log}>{p.update.command}</pre>
+              <Show when={p.update.log.stderr}>
+                <div>stderr</div>
+                <pre class={s.Log}>{p.update.log.stderr}</pre>
+              </Show>
+              <Show when={p.update.log.stdout}>
+                <div>stdout</div>
+                <pre class={s.Log}>{p.update.log.stdout}</pre>
+              </Show>
+            </Grid>
+          }
+        />
       </Grid>
     </Grid>
   );
