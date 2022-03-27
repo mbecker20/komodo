@@ -40,11 +40,14 @@ async function deleteDeployment(
   }
   try {
     if (deployment.image || deployment.buildID) {
-      const server = deployment.serverID === app.core._id ? undefined : await app.servers.findById(deployment.serverID!);
+      const server =
+        deployment.serverID === app.core._id
+          ? undefined
+          : await app.servers.findById(deployment.serverID!);
       if (server) {
         await deletePeripheryContainer(server, deployment.containerName!);
       } else {
-        await deleteContainer(deployment.containerName!)
+        await deleteContainer(deployment.containerName!);
       }
     }
     await app.deployments.findByIdAndDelete(deploymentID);

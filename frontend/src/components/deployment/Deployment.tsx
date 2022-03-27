@@ -1,3 +1,4 @@
+import { ContainerStatus } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { pushNotification } from "../..";
 import { DELETE_DEPLOYMENT } from "../../state/actions";
@@ -31,6 +32,11 @@ const Deployment: Component<{ id: string }> = (p) => {
               <div class={s.ItemHeader}>{deployment()!.name}</div>
               <div>{server()!.name}</div>
             </Grid>
+            <div>
+              {deployment()!.status === "not created"
+                ? "not created"
+                : (deployment()!.status as ContainerStatus).State}
+            </div>
             <ConfirmButton
               onConfirm={() => {
                 ws.send(DELETE_DEPLOYMENT, { deploymentID: p.id });

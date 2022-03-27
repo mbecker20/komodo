@@ -2,6 +2,7 @@ import { Deployment, User } from "@monitor/types";
 import { deploymentChangelog, UPDATE_DEPLOYMENT } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { PERMISSIONS_DENY_LOG } from "../../config";
+import { clonePeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
 import cloneRepo from "./clone";
 
@@ -31,7 +32,15 @@ async function updateDeployment(
       deployment.repo !== preDeployment.repo ||
       deployment.branch !== preDeployment.branch
     ) {
-      await cloneRepo(app, user, deployment);
+      const server =
+        deployment.serverID === app.core._id
+          ? undefined
+          : await app.servers.findById(deployment.serverID!);
+      if (server) {
+        await clonePeriphery(server, deployment);
+      } else {
+        await cloneRepo(app, user, deployment);
+      }
     }
     // make sure owners cant be updated this way
     (deployment.owners as any) = false;

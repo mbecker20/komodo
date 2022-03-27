@@ -13,7 +13,10 @@ async function cloneRepo(
 ) {
   const { serverID, containerName, branch, repo, accessToken, _id } =
     deployment;
-  const server = serverID ? await app.servers.findById(serverID) : undefined;
+  const server =
+    deployment.serverID === app.core._id
+      ? undefined
+      : await app.servers.findById(deployment.serverID!);
   const { command, log, isError } = server
     ? await clonePeriphery(server, deployment)
     : await clone(

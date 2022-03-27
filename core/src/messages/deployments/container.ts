@@ -36,9 +36,10 @@ export async function startDeploymentContainer(
     );
     return;
   }
-  const server = deployment.serverID
-    ? await app.servers.findById(deployment.serverID)
-    : undefined;
+  const server =
+    deployment.serverID === app.core._id
+      ? undefined
+      : await app.servers.findById(deployment.serverID!);
   const { command, log, isError } = server
     ? await startPeripheryContainer(server, deployment.containerName!)
     : await startContainer(deployment.containerName!);
@@ -74,9 +75,10 @@ export async function stopDeploymentContainer(
     );
     return;
   }
-  const server = deployment.serverID
-    ? await app.servers.findById(deployment.serverID)
-    : undefined;
+  const server =
+    deployment.serverID === app.core._id
+      ? undefined
+      : await app.servers.findById(deployment.serverID!);
   const { command, log, isError } = server
     ? await stopPeripheryContainer(server, deployment.containerName!)
     : await stopContainer(deployment.containerName!);
@@ -112,9 +114,10 @@ export async function deleteDeploymentContainer(
     );
     return;
   }
-  const server = deployment.serverID
-    ? await app.servers.findById(deployment.serverID)
-    : undefined;
+  const server =
+    deployment.serverID === app.core._id
+      ? undefined
+      : await app.servers.findById(deployment.serverID!);
   const { command, log, isError } = server
     ? await deletePeripheryContainer(server, deployment.containerName!)
     : await deleteContainer(deployment.containerName!);
