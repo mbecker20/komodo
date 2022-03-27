@@ -1,4 +1,4 @@
-import { ContainerStatus, Deployment } from "@monitor/types";
+import { ContainerStatus } from "@monitor/types";
 import { Component, Match, Show, Switch } from "solid-js";
 import { pushNotification } from "../..";
 import {
@@ -15,15 +15,16 @@ import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import s from "./deployment.module.css";
 
-const Actions: Component<{ deployment: Deployment }> = (p) => {
-  const { ws } = useAppState();
+const Actions: Component<{}> = (p) => {
+  const { ws, deployments, selected } = useAppState();
+  const deployment = () => deployments.get(selected.id())!;
   return (
     <Show when={true}>
       <Grid class={combineClasses(s.Actions, "shadow")}>
         <div class={s.ItemHeader}>actions</div>
         <Switch>
           <Match
-            when={(p.deployment.status as ContainerStatus)?.State === "running"}
+            when={(deployment().status as ContainerStatus)?.State === "running"}
           >
             <Flex class={combineClasses(s.Action, "shadow")}>
               deploy{" "}
@@ -31,8 +32,8 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
                 <ConfirmButton
                   color="green"
                   onConfirm={() => {
-                    ws.send(DEPLOY, { deploymentID: p.deployment._id });
-                    pushNotification("ok", `deploying ${p.deployment.name}...`);
+                    ws.send(DEPLOY, { deploymentID: deployment()._id });
+                    pushNotification("ok", `deploying ${deployment().name}...`);
                   }}
                 >
                   <Icon type="reset" />
@@ -41,7 +42,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
                   color="red"
                   onConfirm={() => {
                     ws.send(DELETE_CONTAINER, {
-                      deploymentID: p.deployment._id,
+                      deploymentID: deployment()._id,
                     });
                     pushNotification("ok", `removing container...`);
                   }}
@@ -55,7 +56,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
               <ConfirmButton
                 color="orange"
                 onConfirm={() => {
-                  ws.send(STOP_CONTAINER, { deploymentID: p.deployment._id });
+                  ws.send(STOP_CONTAINER, { deploymentID: deployment()._id });
                   pushNotification("ok", `stopping container`);
                 }}
               >
@@ -65,7 +66,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
           </Match>
 
           <Match
-            when={(p.deployment.status as ContainerStatus).State === "exited"}
+            when={(deployment().status as ContainerStatus).State === "exited"}
           >
             <Flex class={combineClasses(s.Action, "shadow")}>
               deploy{" "}
@@ -73,8 +74,8 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
                 <ConfirmButton
                   color="green"
                   onConfirm={() => {
-                    ws.send(DEPLOY, { deploymentID: p.deployment._id });
-                    pushNotification("ok", `deploying ${p.deployment.name}...`);
+                    ws.send(DEPLOY, { deploymentID: deployment()._id });
+                    pushNotification("ok", `deploying ${deployment().name}...`);
                   }}
                 >
                   <Icon type="reset" />
@@ -83,7 +84,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
                   color="red"
                   onConfirm={() => {
                     ws.send(DELETE_CONTAINER, {
-                      deploymentID: p.deployment._id,
+                      deploymentID: deployment()._id,
                     });
                     pushNotification("ok", `removing container...`);
                   }}
@@ -97,7 +98,7 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
               <ConfirmButton
                 color="green"
                 onConfirm={() => {
-                  ws.send(START_CONTAINER, { deploymentID: p.deployment._id });
+                  ws.send(START_CONTAINER, { deploymentID: deployment()._id });
                   pushNotification("ok", `starting container...`);
                 }}
               >
@@ -106,14 +107,14 @@ const Actions: Component<{ deployment: Deployment }> = (p) => {
             </Flex>
           </Match>
 
-          <Match when={p.deployment.status === "not created"}>
+          <Match when={deployment().status === "not created"}>
             <Flex class={combineClasses(s.Action, "shadow")}>
               deploy{" "}
               <ConfirmButton
                 color="green"
                 onConfirm={() => {
-                  ws.send(DEPLOY, { deploymentID: p.deployment._id });
-                  pushNotification("ok", `deploying ${p.deployment.name}...`);
+                  ws.send(DEPLOY, { deploymentID: deployment()._id });
+                  pushNotification("ok", `deploying ${deployment().name}...`);
                 }}
               >
                 <Icon type="play" />

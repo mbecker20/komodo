@@ -66,5 +66,10 @@
 		"scope": "typescriptreact,javascriptreact",
 		"prefix": "create-store",
 		"body": "import { createStore } from \"solid-js/store\";"
+	},
+	"use-app-state": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "use-app-state",
+		"body": "const {${0}} = useAppState();"
 	}
 }

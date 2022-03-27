@@ -1,5 +1,5 @@
 import { Component, For, onCleanup, Show } from "solid-js";
-import { useArray, useUpdates } from "../../state/hooks";
+import { useArray } from "../../state/hooks";
 import { combineClasses } from "../../util/helpers";
 import Grid from "../util/layout/Grid";
 import s from "./deployment.module.css";
@@ -8,16 +8,16 @@ import { getUpdates } from "../../util/query";
 import { useAppState } from "../../state/StateProvider";
 import { ADD_UPDATE } from "../../state/actions";
 
-const Updates: Component<{ deploymentID: string }> = (p) => {
-  const { ws } = useAppState();
+const Updates: Component<{}> = (p) => {
+  const { ws, selected } = useAppState();
   const selectedUpdates = useArray(() =>
-    getUpdates({ deploymentID: p.deploymentID })
+    getUpdates({ deploymentID: selected.id() })
   );
   const listener = ({ data }: { data: string }) => {
     const message = JSON.parse(data);
     if (
       message.type === ADD_UPDATE &&
-      message.update.deploymentID === p.deploymentID
+      message.update.deploymentID === selected.id()
     ) {
       selectedUpdates.add(message.update);
     }

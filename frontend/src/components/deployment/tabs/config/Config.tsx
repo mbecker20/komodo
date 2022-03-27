@@ -26,7 +26,7 @@ const Config: Component<{}> = (p) => {
           <Env />
         </Grid>
         <Show when={deployment.updated}>
-          <Flex style={{ "place-self": "center" }}>
+          <Flex style={{ "place-self": "center", padding: "1rem" }}>
             <button onClick={reset}>
               reset
               <Icon type="reset" />

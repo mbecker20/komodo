@@ -28,7 +28,8 @@ export type IconType =
   | "command"
   | "log"
   | "console"
-  | "application";
+  | "application"
+  | "error";
 
 const Icon: Component<{
   type: IconType;

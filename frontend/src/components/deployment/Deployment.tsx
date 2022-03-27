@@ -7,18 +7,18 @@ import Header from "./Header";
 import Tabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
-const Deployment: Component<{ id: string }> = (p) => {
-  const { servers, deployments } = useAppState();
-  const deployment = () => deployments.get(p.id);
+const Deployment: Component<{}> = (p) => {
+  const { servers, deployments, selected } = useAppState();
+  const deployment = () => deployments.get(selected.id());
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   return (
     <Show when={deployment() && server()}>
       <Grid class={s.Deployment}>
         {/* left / actions */}
         <Grid class={s.Left}>
-          <Header id={p.id} />
-          <Actions deployment={deployment()!} />
-          <Updates deploymentID={p.id} />
+          <Header />
+          <Actions />
+          <Updates />
         </Grid>
         {/* right / tabs */}
         <Tabs deployment={deployment()!} />

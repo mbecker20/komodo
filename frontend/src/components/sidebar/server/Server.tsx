@@ -30,7 +30,7 @@ const Server: Component<{ id: string }> = (p) => {
           <Icon type="chevron-down" width="1rem" />
           <div>{server()?.name}</div>
         </Flex>
-        <div>{server()?.status}</div>
+        <div style={{  }} >{server()?.status === "OK" ? "OK" : "not connected"}</div>
       </button>
       <Show when={open()}>
         <Grid gap=".15rem" class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}>

@@ -10,16 +10,20 @@
 	width: 20rem;
 }
 
-.Header {
-	background-color: rgb(27, 55, 86);
-	padding: 0.5rem;
-}
-
 .ItemHeader {
 	font-size: 1.5rem;
 	font-weight: 500;
 	user-select: none;
 }
+
+/* header */
+
+.Header {
+	background-color: rgb(27, 55, 86);
+	padding: 0.5rem;
+}
+
+/* actions */
 
 .Actions {
 	background-color: rgb(27, 55, 86);
@@ -33,6 +37,8 @@
 	padding: 0.5rem;
 	box-sizing: border-box;
 }
+
+/* updates */
 
 .Updates {
 	background-color: rgb(27, 55, 86);
@@ -48,9 +54,14 @@
 	background-color: rgb(69, 34, 96);
 }
 
+/* tabs */
+
 .Tabs {
 	background-color: rgb(27, 55, 86);
+	height: fit-content;
 }
+
+/* Config */
 
 .Config {
 	height: 100%;
@@ -71,4 +82,34 @@
 	box-sizing: border-box;
 	padding: 0.5rem;
 	height: fit-content;
+}
+
+/* log */
+
+.LogContainer {
+	max-height: 80vh;
+	overflow: scroll;
+	margin: 0rem 1rem 1rem 1rem;
+	background-color: rgb(22, 39, 57);
+	box-sizing: border-box;
+	position: relative;
+}
+
+.Log {
+	white-space: pre-line;
+	overflow-wrap: anywhere;
+	/* word-wrap: break-word; */
+	tab-size: 2;
+	/* width: 40rem;
+	max-width: 90vw;
+	margin-left: 2rem; */
+	/* box-sizing: border-box; */
+	padding: 0rem 1rem;
+	margin-bottom: 40vh;
+}
+
+.ReturnButton {
+	position: absolute;
+	bottom: 2rem;
+	right: 2rem;
 }

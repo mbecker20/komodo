@@ -2,6 +2,7 @@ import {
   Builds,
   Deployment,
   Deployments,
+  Log,
   Network,
   Servers,
   Update,
@@ -30,6 +31,12 @@ export async function getDeployments(query?: { serverID?: string }) {
 
 export async function getDeployment(deploymentID: string) {
   return await client.get<Deployment>("/api/deployment/" + deploymentID);
+}
+
+export async function getDeploymentLog(deploymentID: string, tail?: number) {
+  return await client.get<Log>(
+    `/api/deployment/${deploymentID}/log${generateQuery({ tail })}`
+  );
 }
 
 export async function getServers() {

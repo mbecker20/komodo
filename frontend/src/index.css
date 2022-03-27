@@ -98,12 +98,11 @@ input:focus {
 }
 
 .blue {
-  border: 1px solid rgba(2, 107, 121, 0.4);
+  background-color: rgba(0, 84, 95, 0.978);
 }
 
 .blue:hover {
-  background-color: rgba(2, 107, 121, 0.8);
-  border: solid 1px transparent;
+  background-color: rgba(1, 105, 119, 0.978);
 }
 
 .blue.active {

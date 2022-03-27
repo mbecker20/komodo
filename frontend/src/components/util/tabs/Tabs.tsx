@@ -5,6 +5,7 @@ import s from "./Tabs.module.css";
 
 export type Tab = {
   title: string;
+  titleElement?: JSXElement;
   element: JSXElement;
 };
 
@@ -36,7 +37,7 @@ const Tabs: Component<{
               style={p.tabStyle}
               onClick={() => set(tab.title)}
             >
-              {tab.title}
+              {tab.titleElement || tab.title}
             </button>
           )}
         </For>

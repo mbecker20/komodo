@@ -9,9 +9,9 @@ import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import s from "./deployment.module.css";
 
-const Header: Component<{ id: string }> = (p) => {
-  const { servers, deployments, ws } = useAppState();
-  const deployment = () => deployments.get(p.id);
+const Header: Component<{}> = (p) => {
+  const { servers, deployments, ws, selected } = useAppState();
+  const deployment = () => deployments.get(selected.id());
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   return (
     <Flex
@@ -31,7 +31,7 @@ const Header: Component<{ id: string }> = (p) => {
         </div>
         <ConfirmButton
           onConfirm={() => {
-            ws.send(DELETE_DEPLOYMENT, { deploymentID: p.id });
+            ws.send(DELETE_DEPLOYMENT, { deploymentID: selected.id() });
           }}
           color="red"
         >

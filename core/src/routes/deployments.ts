@@ -93,8 +93,8 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       const log = onCore
-        ? await getContainerLog(deployment.containerName!, tail || 100)
-        : await getPeripheryContainerLog(server, deployment.containerName!, tail || 100);
+        ? await getContainerLog(deployment.containerName!, tail || 50)
+        : await getPeripheryContainerLog(server, deployment.containerName!, tail || 50);
       res.send(log);
     }
   );
