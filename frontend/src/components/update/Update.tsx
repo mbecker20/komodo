@@ -85,7 +85,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
             title="command"
             show={showCommand}
             toggleShow={toggleShowCommand}
-            target={<Icon type="arrow-down" />}
+            target={<Icon type="command" />}
             content={<pre class={s.Log}>{p.update.command}</pre>}
           />
 
@@ -103,7 +103,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
             title="log"
             show={showLog}
             toggleShow={toggleShowLog}
-            target={<Icon type="arrow-down" />}
+            target={<Icon type="log" />}
             content={<pre class={s.Log}>{log()}</pre>}
           />
         </Flex>
