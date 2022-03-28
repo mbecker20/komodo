@@ -9,7 +9,9 @@ WORKDIR /monitor
 
 COPY ./build/package.json ./
 
-RUN npm i
+RUN apk add --no-cache --virtual .gyp python3 make g++ \
+    && npm i \
+    && apk del .gyp
 
 COPY ./build/main.js ./
 
