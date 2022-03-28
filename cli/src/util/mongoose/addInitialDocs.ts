@@ -6,7 +6,7 @@ import { timestamp, toDashedName } from "../helpers/general";
 import deploymentModel from "./deployment";
 import serverModel from "./server";
 import updateModel from "./update";
-import userModel from "./user";
+// import userModel from "./user";
 
 export async function addInitialDocs({ core, mongo, registry }: Config) {
   await mongoose.connect(
@@ -18,11 +18,11 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
   const servers = serverModel();
   const deployments = deploymentModel();
   const updates = updateModel();
-  const users = userModel();
+  // const users = userModel();
 
   const coreServer = {
     name: "core server",
-    address: "localhost",
+    address: "monitor core",
     passkey: "passkey",
     enabled: true,
     isCore: true,
@@ -33,7 +33,6 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     name: core!.name,
     containerName: toDashedName(core!.name),
     image: "mbecker2020/monitor-core",
-    latest: true,
     restart: core?.restart,
     volumes: [
       { local: core?.secretVolume!, container: "/secrets", useSystemRoot: true },
@@ -62,7 +61,6 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
         : undefined,
       restart: mongo.startConfig.restart,
       image: "mongo",
-      latest: true,
       network: DOCKER_NETWORK,
       owners: ["admin"],
       serverID: coreServerID,

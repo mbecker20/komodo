@@ -8,8 +8,8 @@ const Deployment: Component<{ id: string }> = (p) => {
   const { deployments, selected } = useAppState();
   const deployment = () => deployments.get(p.id);
   const status = () => {
-    if (!deployment() || deployment()!.status === "not created") {
-      return "not created";
+    if (!deployment() || deployment()!.status === "not deployed") {
+      return "not deployed";
     } else {
       return (deployment()!.status as ContainerStatus).State;
     }

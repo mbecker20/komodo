@@ -34,7 +34,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       intoCollection(
         deployments.map((deployment) => ({
           ...deployment,
-          status: status[deployment.containerName!] || "not created",
+          status: status[deployment.containerName!] || "not deployed",
         }))
       )
     );

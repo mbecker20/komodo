@@ -110,7 +110,7 @@ const Actions: Component<{}> = (p) => {
             </Flex>
           </Match>
 
-          <Match when={deployment().status === "not created"}>
+          <Match when={deployment().status === "not deployed"}>
             <Flex class={combineClasses(s.Action, "shadow")}>
               deploy{" "}
               <ConfirmButton

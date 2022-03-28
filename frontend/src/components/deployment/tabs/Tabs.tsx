@@ -30,7 +30,7 @@ const DeploymentTabs: Component<{}> = (p) => {
   const [log, setLog] = createSignal<LogType>({});
   const load = async () => {
     console.log("load log")
-    if (deployment()?.status !== "not created") {
+    if (deployment()?.status !== "not deployed") {
       const log = await getDeploymentLog(selected.id());
       setLog(log);
     } else {
@@ -74,7 +74,7 @@ const DeploymentTabs: Component<{}> = (p) => {
                   error log{" "}
                   <Show
                     when={
-                      deployment()!.status !== "not created" && log().stderr
+                      deployment()!.status !== "not deployed" && log().stderr
                     }
                   >
                     <Icon type="error" />

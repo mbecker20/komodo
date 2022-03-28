@@ -91,7 +91,7 @@ export interface Deployment extends DockerRunArgs {
   containerMount?: string; // the file path to mount repo on inside the container
 
   // running status
-  status?: "not created" | ContainerStatus;
+  status?: "not deployed" | ContainerStatus;
 }
 
 export type Conversion = {

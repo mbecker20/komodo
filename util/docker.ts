@@ -66,7 +66,7 @@ export async function allContainerStatus(dockerode: Dockerode) {
 export async function getContainerStatus(
   dockerode: Dockerode,
   name: string
-): Promise<ContainerStatus | "not created"> {
+): Promise<ContainerStatus | "not deployed"> {
   const status = (await dockerode.listContainers({ all: true })).filter(
     ({ Names }) => Names[0] === "/" + name
   );
@@ -76,7 +76,7 @@ export async function getContainerStatus(
         Status: status[0].Status,
         name,
       }
-    : "not created";
+    : "not deployed";
 }
 
 export async function getContainerLog(containerName: string, logTail?: number) {

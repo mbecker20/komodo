@@ -19,11 +19,6 @@ const Network: Component<{}> = (p) => {
         onSelect={(network) => setDeployment("network", network)}
         position="bottom right"
       />
-      {/* <Input
-        value={deployment.network}
-        placeholder="network"
-        onConfirm={(value) => setDeployment("network", value)}
-      /> */}
     </Flex>
   );
 };

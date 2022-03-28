@@ -42,7 +42,7 @@ export async function getDeploymentLog(deploymentID: string, tail?: number) {
 }
 
 export async function getDeploymentStatus(deploymentID: string) {
-  return await client.get<ContainerStatus | "not created">(
+  return await client.get<ContainerStatus | "not deployed">(
     `/api/deployment/${deploymentID}/status`
   );
 }

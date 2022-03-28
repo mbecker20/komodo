@@ -12,7 +12,6 @@ import s from "./server.module.css";
 const Header: Component<{}> = (p) => {
   const { servers, selected, ws } = useAppState();
   const server = () => servers.get(selected.id()) as Server;
-
   return (
     <Flex
       class={combineClasses(s.Card, "shadow")}
@@ -21,13 +20,14 @@ const Header: Component<{}> = (p) => {
     >
       <Grid gap="0.1rem">
         <h1>{server().name}</h1>
+        <div style={{ opacity: 0.8 }}>{server().address}</div>
       </Grid>
       <Flex alignItems="center">
         <div>
           {server().enabled
             ? server().status === "OK"
               ? "OK"
-              : "DISCONNECTED"
+              : "NOT OK"
             : "DISABLED"}
         </div>
         <ConfirmButton

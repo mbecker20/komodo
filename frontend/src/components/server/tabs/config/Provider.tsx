@@ -46,9 +46,11 @@ export const ConfigProvider: Component<{ server: Server }> = (p) => {
   };
 
   const load = () => {
+    console.log("load server");
     getServer(p.server._id!).then((server) => {
       set({
         ...server,
+        isCore: server.isCore,
         loaded: true,
         updated: false,
       });

@@ -20,7 +20,7 @@ export async function getPeripheryContainer(
         Authorization: passkey,
       },
     })
-    .then(({ data }) => data)) as ContainerStatus | "not created";
+    .then(({ data }) => data)) as ContainerStatus | "not deployed";
 }
 
 export async function getPeripheryContainerLog(

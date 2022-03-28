@@ -17,7 +17,7 @@ import {
   UPDATE_SERVER,
 } from "../state/actions";
 import { readableOperation } from "../util/helpers";
-import { getDeploymentStatus } from "../util/query";
+import { getDeploymentStatus, getServer } from "../util/query";
 import { useSelected } from "./hooks";
 import { State } from "./StateProvider";
 
@@ -131,6 +131,12 @@ function handleMessage(
           getDeploymentStatus(selected.id()).then((status) =>
             deployments.update({ ...deployments.get(selected.id())!, status })
           );
+        }
+      } else if (update.serverID === selected.id()) {
+        if ([UPDATE_SERVER].includes(update.operation)) {
+          getServer(selected.id()).then((server) => {
+            servers.update(server);
+          });
         }
       }
       break;

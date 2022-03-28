@@ -50,7 +50,7 @@ const Server: Component<{ id: string }> = (p) => {
               selected.set(p.id, "server");
             }}
           >
-            {server()?.status === "OK" ? "OK" : "DISCONNECTED"}
+            {server()?.status === "OK" ? "OK" : "NOT OK"}
           </div>
         </button>
         <Show when={open()}>

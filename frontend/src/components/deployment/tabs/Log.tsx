@@ -37,8 +37,8 @@ const Log: Component<{
     }
   });
   const log = () => {
-    if (deployment()?.status === "not created") {
-      return "not created";
+    if (deployment()?.status === "not deployed") {
+      return "not deployed";
     } else {
       return (p.error ? p.log?.stderr : p.log?.stdout) || "no log";
     }

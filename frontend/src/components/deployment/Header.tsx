@@ -21,12 +21,12 @@ const Header: Component<{}> = (p) => {
     >
       <Grid gap="0.1rem">
         <h1>{deployment()!.name}</h1>
-        <div>{server()!.name}</div>
+        <div style={{ opacity: 0.8 }}>{server()!.name}</div>
       </Grid>
       <Flex alignItems="center">
         <div>
-          {deployment()!.status === "not created"
-            ? "not created"
+          {deployment()!.status === "not deployed"
+            ? "not deployed"
             : (deployment()!.status as ContainerStatus).State}
         </div>
         <ConfirmButton
