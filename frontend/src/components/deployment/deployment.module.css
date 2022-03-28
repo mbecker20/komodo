@@ -52,7 +52,7 @@
 .Config {
 	height: 100%;
 	place-items: start center;
-	grid-template-rows: 70vh 1fr;
+	grid-template-rows: 70vh auto
 }
 
 .ConfigItems {

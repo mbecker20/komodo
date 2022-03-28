@@ -29,6 +29,7 @@ const DeploymentTabs: Component<{}> = (p) => {
   const deployment = () => deployments.get(selected.id());
   const [log, setLog] = createSignal<LogType>({});
   const load = async () => {
+    console.log("load log")
     if (deployment()?.status !== "not created") {
       const log = await getDeploymentLog(selected.id());
       setLog(log);

@@ -40,6 +40,7 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
     set("updated", true);
   };
   const load = () => {
+    console.log("loading deployment")
     getDeployment(p.deployment._id!).then((deployment) =>
       set({
         ...deployment,
@@ -55,6 +56,7 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
 
   const [networks, setNetworks] = createSignal<Network[]>([]);
   createEffect(() => {
+    console.log("load networks")
     getNetworks(p.deployment.serverID!).then(setNetworks);
   });
 

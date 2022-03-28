@@ -5,6 +5,7 @@ import { combineClasses, inPx } from "../../util/helpers";
 import AddServer from "../create/Server";
 import { TOPBAR_HEIGHT } from "../topbar/Topbar";
 import Grid from "../util/layout/Grid";
+import Builds from "./builds/Builds";
 import Server from "./server/Server";
 import s from "./sidebar.module.css";
 
@@ -23,8 +24,10 @@ const Sidebar: Component<{}> = (p) => {
         }}
       >
         <Grid style={{ height: "fit-content", padding: "1rem" }}>
-          <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
           <AddServer />
+          <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
+          <div class={s.Divider} />
+          <Builds />
         </Grid>
       </Grid>
     </Show>
