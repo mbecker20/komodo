@@ -2,7 +2,7 @@ import { Component, For, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses, inPx } from "../../util/helpers";
-import AddServer from "../create/server";
+import AddServer from "../create/Server";
 import { TOPBAR_HEIGHT } from "../topbar/Topbar";
 import Grid from "../util/layout/Grid";
 import Server from "./server/Server";
@@ -16,7 +16,7 @@ const Sidebar: Component<{}> = (p) => {
   return (
     <Show when={servers.loaded() && sidebar.open()}>
       <Grid
-        class={combineClasses(s.Sidebar, "shadow")}
+        class={combineClasses(s.Sidebar, "shadow", "scroller")}
         style={{
           width: inPx(SIDEBAR_WIDTH),
           height: inPx(height() - TOPBAR_HEIGHT),

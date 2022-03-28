@@ -3,6 +3,7 @@ import { useAppState } from "../../state/StateProvider";
 import Grid from "../util/layout/Grid";
 import s from "./topbar.module.css";
 import Update from "../update/Update";
+import { combineClasses } from "../../util/helpers";
 
 const Updates: Component<{}> = (p) => {
   const { updates } = useAppState();
@@ -18,7 +19,7 @@ const Updates: Component<{}> = (p) => {
         >
           updates
         </div>
-        <Grid class={s.UpdatesContainer}>
+        <Grid class={combineClasses(s.UpdatesContainer, "scroller")}>
           <For each={updates.collection()!}>
             {(update) => <Update update={update} showName />}
           </For>

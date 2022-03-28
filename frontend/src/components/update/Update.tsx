@@ -75,19 +75,26 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
           target={<Icon type="console" />}
           targetStyle={{ "place-self": "center end" }}
           content={
-            <Grid class={s.LogContainer} gap="0.25rem">
+            <Grid
+              class={combineClasses(s.LogContainer, "scroller")}
+              gap="0.25rem"
+            >
               <Show when={p.update.note}>
                 <pre>note: {p.update.note}</pre>
               </Show>
               <div>command</div>
-              <pre class={s.Log}>{p.update.command}</pre>
+              <pre class={combineClasses(s.Log, "scroller")}>
+                {p.update.command}
+              </pre>
               <Show when={p.update.log.stderr}>
                 <div>stderr</div>
                 <pre class={s.Log}>{p.update.log.stderr}</pre>
               </Show>
               <Show when={p.update.log.stdout}>
                 <div>stdout</div>
-                <pre class={s.Log}>{p.update.log.stdout}</pre>
+                <pre class={combineClasses(s.Log, "scroller")}>
+                  {p.update.log.stdout}
+                </pre>
               </Show>
             </Grid>
           }

@@ -5,7 +5,6 @@
 
 .LogContainer {
 	max-height: 80vh;
-	overflow: scroll;
 }
 
 .Log {
@@ -18,5 +17,4 @@
 	margin-left: 2rem;
 	box-sizing: border-box;
 	max-height: 20vh;
-	overflow: scroll;
 }

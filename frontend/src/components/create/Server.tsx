@@ -3,7 +3,6 @@ import { Component, createSignal, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
 import { pushNotification } from "../..";
 import { ADD_SERVER } from "../../state/actions";
-import { defaultDeployment } from "../../state/defaults";
 import { useAppState } from "../../state/StateProvider";
 import { useToggle } from "../../util/hooks";
 import Input from "../util/Input";

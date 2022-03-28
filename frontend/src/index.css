@@ -12,6 +12,7 @@ body {
   background-color: rgb(18, 43, 59);
   scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
   scrollbar-width: thin;
+  
   color: #fceade;
 }
 
@@ -135,4 +136,19 @@ input:focus {
 
 .selected {
 	background-color: rgb(36, 122, 192);
+}
+
+.scroller {
+  overflow-y: scroll;
+  scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
+  scrollbar-width: thin;
+}
+
+.scroller::-webkit-scrollbar {
+	width: 8px;
+	background-color: transparent;
+}
+
+.scroller::-webkit-scrollbar-thumb {
+	background: rgba(252, 234, 222, 0.3);
 }

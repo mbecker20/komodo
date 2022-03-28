@@ -35,7 +35,6 @@
 
 .UpdatesContainer {
 	max-height: 50vh;
-	overflow: scroll;
 }
 
 .Update {
@@ -58,7 +57,6 @@
 
 .ConfigItems {
 	max-height: 100%;
-	overflow: scroll;
 	padding: 0.5rem;
 }
 
@@ -75,7 +73,6 @@
 
 .LogContainer {
 	max-height: 80vh;
-	overflow: scroll;
 	margin: 0rem 1rem 1rem 1rem;
 	background-color: rgb(22, 39, 57);
 	box-sizing: border-box;

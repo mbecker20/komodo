@@ -11,13 +11,14 @@ import Flex from "../../../util/layout/Flex";
 import Icon from "../../../util/icons/Icon";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Restart from "./Restart";
+import { combineClasses } from "../../../../util/helpers";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save } = useConfig();
   return (
     <Show when={deployment.loaded}>
       <Grid class={s.Config}>
-        <Grid class={s.ConfigItems}>
+        <Grid class={combineClasses(s.ConfigItems, "scroller")}>
           <Image />
           <Network />
           <Restart />

@@ -47,7 +47,7 @@ const Log: Component<{
     <Show when={p.log}>
       <div style={{ position: "relative" }}>
         <div
-          class={s.LogContainer}
+          class={combineClasses(s.LogContainer, "scroller")}
           ref={ref}
           onScroll={() => {
             if (!ignore) {

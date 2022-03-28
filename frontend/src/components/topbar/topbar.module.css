@@ -18,6 +18,4 @@
 
 .UpdatesContainer {
 	max-height: 50vh;
-	overflow: scroll;
-	padding-right: 1rem;
 }

@@ -28,7 +28,7 @@ const Updates: Component<{}> = (p) => {
     >
       <Grid class={combineClasses(s.Card, "shadow")}>
         <div class={s.ItemHeader}>updates</div>
-        <Grid class={s.UpdatesContainer}>
+        <Grid class={combineClasses(s.UpdatesContainer, "scroller")}>
           <For each={selectedUpdates.collection()}>
             {(update) => <Update update={update} showName={false} />}
           </For>

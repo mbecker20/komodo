@@ -1,7 +1,6 @@
 .Sidebar {
 	grid-area: sidebar;
 	background-color: rgb(28, 58, 129);
-	overflow-y: scroll;
 	z-index: 10;
 }
 
