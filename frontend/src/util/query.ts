@@ -5,6 +5,7 @@ import {
   Deployments,
   Log,
   Network,
+  Server,
   Servers,
   Update,
 } from "@monitor/types";
@@ -48,6 +49,10 @@ export async function getDeploymentStatus(deploymentID: string) {
 
 export async function getServers() {
   return await client.get<Servers>("/api/servers");
+}
+
+export async function getServer(id: string) {
+  return await client.get<Server>(`/api/server/${id}`);
 }
 
 export async function getNetworks(serverID: string) {

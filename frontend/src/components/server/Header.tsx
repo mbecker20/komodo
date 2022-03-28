@@ -7,7 +7,7 @@ import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
-import s from "./Header.module.css";
+import s from "./server.module.css";
 
 const Header: Component<{}> = (p) => {
   const { servers, selected, ws } = useAppState();

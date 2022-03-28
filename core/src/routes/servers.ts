@@ -15,6 +15,20 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     );
     res.send(intoCollection(servers));
   });
+
+  app.get("/api/server/:id", { onRequest: [app.auth] }, async (req, res) => {
+    const { id } = req.params as { id: string };
+    const server = await app.servers.findById(id);
+    if (!server) {
+      res.status(400);
+      res.send("server not found");
+      return;
+    }
+    server.status = (await serverStatusPeriphery(server))
+      ? "OK"
+      : "Could Not Be Reached";
+    res.send(server);
+  });
   done();
 });
 

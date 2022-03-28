@@ -20,7 +20,7 @@ const Header: Component<{}> = (p) => {
       alignItems="center"
     >
       <Grid gap="0.1rem">
-        <div class={s.ItemHeader}>{deployment()!.name}</div>
+        <h1>{deployment()!.name}</h1>
         <div>{server()!.name}</div>
       </Grid>
       <Flex alignItems="center">

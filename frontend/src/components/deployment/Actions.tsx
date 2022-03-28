@@ -19,9 +19,9 @@ const Actions: Component<{}> = (p) => {
   const { ws, deployments, selected } = useAppState();
   const deployment = () => deployments.get(selected.id())!;
   return (
-    <Show when={true}>
+    <Show when={deployment()}>
       <Grid class={combineClasses(s.Card, "shadow")}>
-        <div class={s.ItemHeader}>actions</div>
+        <h1>actions</h1>
         <Switch>
           <Match
             when={(deployment().status as ContainerStatus)?.State === "running"}

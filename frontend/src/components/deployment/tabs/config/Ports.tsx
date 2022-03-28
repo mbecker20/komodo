@@ -21,7 +21,7 @@ const Ports: Component<{}> = (p) => {
   return (
     <Grid class={combineClasses(s.ConfigItem, "shadow")}>
       <Flex alignItems="center">
-        <div class={s.ItemHeader}>ports</div>
+        <h1>ports</h1>
         <Show when={!deployment.ports || deployment.ports.length === 0}>
           <div>none</div>
         </Show>

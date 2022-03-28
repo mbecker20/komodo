@@ -27,6 +27,18 @@ body {
     "sidebar content";
 }
 
+.content {
+  grid-area: content;
+	grid-template-columns: auto 2fr;
+	background-color: rgb(49, 78, 112);
+	padding: 1rem;
+}
+
+.left-content {
+	height: fit-content;
+	width: 20rem;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
@@ -74,6 +86,7 @@ h1 {
   font-size: 1.5rem;
 	font-weight: 500;
 	user-select: none;
+  margin: 0;
 }
 
 .green {

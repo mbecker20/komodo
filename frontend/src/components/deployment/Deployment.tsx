@@ -4,7 +4,7 @@ import Grid from "../util/layout/Grid";
 import Actions from "./Actions";
 import s from "./deployment.module.css";
 import Header from "./Header";
-import Tabs from "./tabs/Tabs";
+import DeploymentTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
 const Deployment: Component<{}> = (p) => {
@@ -13,15 +13,15 @@ const Deployment: Component<{}> = (p) => {
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   return (
     <Show when={deployment() && server()}>
-      <Grid class={s.Deployment}>
+      <Grid class="content">
         {/* left / actions */}
-        <Grid class={s.Left}>
+        <Grid class="left-content">
           <Header />
           <Actions />
           <Updates />
         </Grid>
         {/* right / tabs */}
-        <Tabs />
+        <DeploymentTabs />
       </Grid>
     </Show>
   );

@@ -23,7 +23,7 @@ const Env: Component<{}> = (p) => {
   return (
     <Grid class={combineClasses(s.ConfigItem, "shadow")}>
       <Flex alignItems="center">
-        <div class={s.ItemHeader}>environment</div>
+        <h1>environment</h1>
         <Show
           when={!deployment.environment || deployment.environment.length === 0}
         >

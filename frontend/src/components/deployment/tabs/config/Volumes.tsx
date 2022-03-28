@@ -21,7 +21,7 @@ const Volumes: Component<{}> = (p) => {
   return (
     <Grid class={combineClasses(s.ConfigItem, "shadow")}>
       <Flex alignItems="center">
-        <div class={s.ItemHeader}>volumes</div>
+        <h1>volumes</h1>
         <Show when={!deployment.volumes || deployment.volumes.length === 0}>
           <div>none</div>
         </Show>

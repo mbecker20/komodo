@@ -19,7 +19,7 @@ const Restart: Component<{}> = (p) => {
       class={combineClasses(s.ConfigItem, "shadow")}
       justifyContent="space-between"
     >
-      <div class={s.ItemHeader}>restart</div>
+      <h1>restart</h1>
       <Selector
         items={RESTART_MODES}
         selected={

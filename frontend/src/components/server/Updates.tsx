@@ -1,25 +1,25 @@
 import { Component, For, onCleanup, Show } from "solid-js";
-import { useArray } from "../../state/hooks";
-import { combineClasses } from "../../util/helpers";
-import Grid from "../util/layout/Grid";
-import s from "./deployment.module.css";
-import Update from "../update/Update";
-import { getUpdates } from "../../util/query";
-import { useAppState } from "../../state/StateProvider";
 import { ADD_UPDATE } from "../../state/actions";
+import { useArray } from "../../state/hooks";
+import { useAppState } from "../../state/StateProvider";
+import { combineClasses } from "../../util/helpers";
+import { getUpdates } from "../../util/query";
+import Update from "../update/Update";
+import Grid from "../util/layout/Grid";
+import s from "./server.module.css";
 
 const Updates: Component<{}> = (p) => {
-  const { ws, selected } = useAppState();
+	const { ws, selected } = useAppState();
   const selectedUpdates = useArray(() =>
-    getUpdates({ deploymentID: selected.id() })
+    getUpdates({ serverID: selected.id() })
   );
   const unsub = ws.subscribe([ADD_UPDATE], ({ update }) => {
-    if (update.deploymentID === selected.id()) {
+    if (update.serverID === selected.id()) {
       selectedUpdates.add(update);
     }
   });
   onCleanup(unsub);
-  return (
+	return (
     <Show
       when={
         selectedUpdates.loaded() &&
@@ -36,6 +36,6 @@ const Updates: Component<{}> = (p) => {
       </Grid>
     </Show>
   );
-};
+}
 
 export default Updates;

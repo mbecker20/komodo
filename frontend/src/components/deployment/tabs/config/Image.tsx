@@ -19,7 +19,7 @@ const Image: Component<{}> = (p) => {
       class={combineClasses(s.ConfigItem, "shadow")}
       justifyContent="space-between"
     >
-      <div class={s.ItemHeader}>{deployment.buildID ? "build" : "image"}</div>
+      <h1>{deployment.buildID ? "build" : "image"}</h1>
       <Flex>
         <Menu
           show={show()}

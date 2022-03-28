@@ -12,7 +12,7 @@ const Network: Component<{}> = (p) => {
       class={combineClasses(s.ConfigItem, "shadow")}
       justifyContent="space-between"
     >
-      <div class={s.ItemHeader}>network</div>
+      <h1>network</h1>
       <Selector
         items={networks().map((net) => net.name)}
         selected={deployment.network || "bridge"}
