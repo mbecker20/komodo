@@ -3,7 +3,7 @@ import axios from "axios";
 
 export async function prunePeripheryImages({ address, passkey }: Server) {
   return await axios
-    .get<CommandLogError>(`http://${address}/images/prune`, {
+    .get<CommandLogError>(`${address}/images/prune`, {
       headers: {
         Authorization: passkey,
       },

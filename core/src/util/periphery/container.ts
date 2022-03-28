@@ -3,7 +3,7 @@ import { generateQuery } from "@monitor/util";
 import axios from "axios";
 
 export async function getPeripheryContainers({ address, passkey }: Server) {
-  return (await axios.get(`http://${address}/containers`, {
+  return (await axios.get(`${address}/containers`, {
     headers: {
       Authorization: passkey,
     },
@@ -15,7 +15,7 @@ export async function getPeripheryContainer(
   name: string
 ) {
 	return (await axios
-    .get(`http://${address}/container/${name}`, {
+    .get(`${address}/container/${name}`, {
       headers: {
         Authorization: passkey,
       },
@@ -29,7 +29,7 @@ export async function getPeripheryContainerLog(
   tail?: number
 ) {
   return (await axios
-    .get(`http://${address}/container/log/${name}${generateQuery({ tail })}`, {
+    .get(`${address}/container/log/${name}${generateQuery({ tail })}`, {
       headers: {
         Authorization: passkey,
       },
@@ -43,7 +43,7 @@ export async function startPeripheryContainer(
   name: string
 ) {
   return (await axios
-    .get(`http://${address}/container/start/${name}`, {
+    .get(`${address}/container/start/${name}`, {
       headers: {
         Authorization: passkey,
       },
@@ -56,7 +56,7 @@ export async function stopPeripheryContainer(
   name: string
 ) {
   return (await axios
-    .get(`http://${address}/container/stop/${name}`, {
+    .get(`${address}/container/stop/${name}`, {
       headers: {
         Authorization: passkey,
       },
@@ -69,7 +69,7 @@ export async function deletePeripheryContainer(
   name: string
 ) {
   return (await axios
-    .get(`http://${address}/container/delete/${name}`, {
+    .get(`${address}/container/delete/${name}`, {
       headers: {
         Authorization: passkey,
       },

@@ -8,6 +8,9 @@ async function addServer(app: FastifyInstance, user: User, { server }: { server:
 	if (user.permissions! < 2) {
 		return;
 	}
+	if (server.address[server.address.length - 1] === "/") {
+		server.address = server.address.slice(0, server.address.length - 1);
+	}
 	const created = await app.servers.create(server);
 	addServerUpdate(
 		app,

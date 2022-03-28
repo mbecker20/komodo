@@ -6,7 +6,7 @@ export async function clonePeriphery(
   deployment: Deployment
 ) {
   return (await axios.post(
-    `http://${address}/repo/clone`,
+    `${address}/repo/clone`,
     { deployment },
     {
       headers: {
@@ -21,7 +21,7 @@ export async function pullPeriphery(
   deployment: Deployment
 ) {
   return (await axios.post(
-    `http://${address}/repo/pull`,
+    `${address}/repo/pull`,
     { deployment },
     {
       headers: {
@@ -36,7 +36,7 @@ export async function deleteRepoPeriphery(
   deployment: Deployment
 ) {
   return (await axios.post(
-    `http://${address}/repo/delete`,
+    `${address}/repo/delete`,
     { deployment },
     {
       headers: {

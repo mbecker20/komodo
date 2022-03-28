@@ -4,7 +4,7 @@ import axios from "axios";
 
 export async function getPeripheryNetworks({ address, passkey }: Server) {
   return await axios
-    .get<Network[]>(`http://${address}/networks`, {
+    .get<Network[]>(`${address}/networks`, {
       headers: {
         Authorization: passkey,
       },
@@ -14,7 +14,7 @@ export async function getPeripheryNetworks({ address, passkey }: Server) {
 
 export async function prunePeripheryNetworks({ address, passkey }: Server) {
   return await axios
-    .get<CommandLogError>(`http://${address}/networks/prune`, {
+    .get<CommandLogError>(`${address}/networks/prune`, {
       headers: {
         Authorization: passkey,
       },
@@ -24,7 +24,7 @@ export async function prunePeripheryNetworks({ address, passkey }: Server) {
 
 export async function createPeripheryNetwork({ address, passkey }: Server, name: string, driver?: string) {
   return await axios
-    .get<CommandLogError>(`http://${address}/network/create/${name}${generateQuery({ driver })}`, {
+    .get<CommandLogError>(`${address}/network/create/${name}${generateQuery({ driver })}`, {
       headers: {
         Authorization: passkey,
       },
@@ -37,7 +37,7 @@ export async function deletePeripheryNetwork(
   name: string
 ) {
   return await axios
-    .get<CommandLogError>(`http://${address}/network/delete/${name}`, {
+    .get<CommandLogError>(`${address}/network/delete/${name}`, {
       headers: {
         Authorization: passkey,
       },

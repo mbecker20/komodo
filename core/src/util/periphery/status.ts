@@ -18,7 +18,7 @@ export async function serverStatusPeriphery({
   }, SERVER_CHECK_TIMEOUT);
 
   try {
-    await axios.get(`http://${address}/status`, {
+    await axios.get(`${address}/status`, {
       headers: {
         Authorization: passkey,
       },
