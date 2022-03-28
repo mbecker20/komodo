@@ -1,7 +1,6 @@
-import { Deployment, Server } from "@monitor/types";
+import { Server } from "@monitor/types";
 import axios from "axios";
 import { SERVER_CHECK_TIMEOUT } from "../../config";
-import { getPeripheryContainers } from "./container";
 
 export async function serverStatusPeriphery({
   address,
