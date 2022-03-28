@@ -43,7 +43,7 @@ export async function deleteNetwork(name: string): Promise<CommandLogError> {
 }
 
 export async function pruneNetworks(): Promise<CommandLogError> {
-  return await execute(`docker network prune`);
+  return await execute(`docker network prune -f`);
 }
 
 /* Container */

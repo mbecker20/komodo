@@ -39,3 +39,7 @@
 	background-color: darkgreen;
 	padding: 0.5rem;
 }
+
+.UpdatesContainer {
+	max-height: 50vh;
+}

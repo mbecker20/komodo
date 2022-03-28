@@ -1,7 +1,21 @@
 import { Network, Server, Update } from "@monitor/types";
-import { Accessor, Component, createContext, createEffect, createSignal, onCleanup, useContext } from "solid-js";
+import {
+  Accessor,
+  Component,
+  createContext,
+  createEffect,
+  createSignal,
+  onCleanup,
+  useContext,
+} from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
-import { ADD_UPDATE, UPDATE_SERVER } from "../../../../state/actions";
+import {
+  ADD_UPDATE,
+  CREATE_NETWORK,
+  DELETE_NETWORK,
+  PRUNE_NETWORKS,
+  UPDATE_SERVER,
+} from "../../../../state/actions";
 import { useAppState } from "../../../../state/StateProvider";
 import { getNetworks, getServer } from "../../../../util/query";
 
@@ -43,20 +57,32 @@ export const ConfigProvider: Component<{ server: Server }> = (p) => {
   createEffect(load);
 
   const [networks, setNetworks] = createSignal<Network[]>([]);
-  createEffect(() => {
+  const loadNetworks = () => {
     console.log("load networks");
     getNetworks(p.server._id!).then(setNetworks);
-  });
+  };
+  createEffect(loadNetworks);
 
   const save = () => {
     ws.send(UPDATE_SERVER, { server });
   };
 
-  const unsub = ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
-    if (update.serverID === p.server._id) {
-      load();
+  const unsub = ws.subscribe(
+    [ADD_UPDATE],
+    ({ update }: { update: Update }) => {
+      if (update.serverID === p.server._id) {
+        if (
+          [CREATE_NETWORK, DELETE_NETWORK, PRUNE_NETWORKS].includes(
+            update.operation
+          )
+        ) {
+          loadNetworks()
+        } else if ([UPDATE_SERVER].includes(update.operation)) {
+          load();
+        }
+      }
     }
-  });
+  );
 
   onCleanup(unsub);
 
@@ -65,7 +91,7 @@ export const ConfigProvider: Component<{ server: Server }> = (p) => {
     setServer,
     reset: load,
     save,
-    networks
+    networks,
   };
   return <context.Provider value={state}>{p.children}</context.Provider>;
 };

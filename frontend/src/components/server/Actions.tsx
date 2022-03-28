@@ -1,6 +1,6 @@
 import { Component, Show } from "solid-js";
 import { pushNotification } from "../..";
-import { PRUNE_SERVER } from "../../state/actions";
+import { PRUNE_IMAGES, PRUNE_NETWORKS } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
@@ -21,8 +21,20 @@ const Actions: Component<{}> = (p) => {
           <ConfirmButton
             color="green"
             onConfirm={() => {
-              ws.send(PRUNE_SERVER, { serverID: server()._id });
+              ws.send(PRUNE_IMAGES, { serverID: server()._id });
               pushNotification("ok", `pruning images on ${server().name}...`);
+            }}
+          >
+            <Icon type="cut" />
+          </ConfirmButton>
+        </Flex>
+        <Flex class={combineClasses(s.Action, "shadow")}>
+          prune networks{" "}
+          <ConfirmButton
+            color="green"
+            onConfirm={() => {
+              ws.send(PRUNE_NETWORKS, { serverID: server()._id });
+              pushNotification("ok", `pruning networks on ${server().name}...`);
             }}
           >
             <Icon type="cut" />
