@@ -113,7 +113,6 @@ export async function deleteContainer(containerName: string) {
 export async function dockerRun(
   {
     image,
-    latest,
     ports,
     environment,
     network,
@@ -133,7 +132,7 @@ export async function dockerRun(
     envString(environment) +
     restartString(restart) +
     networkString(network) +
-    ` ${image}${latest ? ":latest" : ""}${postImage ? " " + postImage : ""}`;
+    ` ${image}${postImage ? " " + postImage : ""}`;
 
   return await execute(command);
 }

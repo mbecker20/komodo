@@ -3,7 +3,7 @@ import { Box, Newline, Text } from "ink";
 import { useConfig, useMainSequence } from "../../cli";
 import { useEsc, useStore } from "../../util/hooks";
 import YesNo from "../util/YesNo";
-import { DEFAULT_PORT } from "../../config";
+import { DEFAULT_PERIPHERY_PORT, DEFAULT_PORT } from "../../config";
 import EnterToContinue from "../util/EnterToContinue";
 import { ControlledInput } from "../util/Input";
 import NumberInput from "../util/NumberInput";
@@ -42,9 +42,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
         break;
 
       case "port":
-        setMany(
-          ["stage", "secret"]
-        );
+        setMany(["stage", "secret"]);
         break;
 
       case "restart":
@@ -101,7 +99,10 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
           port:{" "}
           <Text color="white">
             <NumberInput
-              initialValue={port || DEFAULT_PORT}
+              initialValue={
+                port ||
+                (type === "core" ? DEFAULT_PORT : DEFAULT_PERIPHERY_PORT)
+              }
               onSubmit={(port) => {
                 setMany(["stage", "restart"], ["port", port]);
               }}

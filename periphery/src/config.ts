@@ -2,7 +2,7 @@ import { getBooleanFromEnv, getNumberFromEnv, getStringFromEnv, readJSONFile } f
 
 export const PASSKEY = readJSONFile("/secrets/secrets.json").PASSKEY!;
 export const LOG = getBooleanFromEnv("LOG", false);
-export const PORT = getNumberFromEnv("PORT", 7000);
+export const PORT = getNumberFromEnv("PORT", 8000);
 export const REGISTRY_URL = getStringFromEnv("REGISTRY_URL", "http://localhost:5000/");
 export const SYSROOT = getStringFromEnv("SYSROOT", "~/");
 export const ROOT = "/rootDir/";

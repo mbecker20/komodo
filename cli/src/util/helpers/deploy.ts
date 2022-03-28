@@ -1,6 +1,7 @@
 import { CommandLogError } from "@monitor/types";
 import {
   CORE_IMAGE,
+  DEFAULT_PERIPHERY_PORT,
   DEFAULT_PORT,
   DOCKER_NETWORK,
   PERIPHERY_IMAGE,
@@ -83,7 +84,7 @@ async function deployPeriphery({ periphery }: Config) {
   const { name, port, secretVolume, restart } = periphery!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock`;
-  const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
+  const network = `-p ${port}:${DEFAULT_PERIPHERY_PORT} --network ${DOCKER_NETWORK}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volume} ${network} ${restartArg} ${PERIPHERY_IMAGE}`;
   return await execute(command);

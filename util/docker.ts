@@ -49,7 +49,7 @@ export async function getContainerStatus(dockerode: Dockerode, name: string): Pr
   );
   return status[0]
     ? {
-        State: status[0].State as "running" | "exited",
+        State: status[0].State as "running" | "created" | "exited",
         Status: status[0].Status,
         name,
       }
@@ -121,7 +121,7 @@ export async function dockerRun(
     name(containerName) +
     containerUserString(containerUser) +
     portsString(ports) +
-    volsString(containerName!, sysRoot, volumes) +
+    volsString(volumes) +
     repoVolume(containerName, repoMount) +
     envString(environment) +
     restartString(restart) +
@@ -143,18 +143,28 @@ function portsString(ports?: Conversion[]) {
     : "";
 }
 
-function volsString(folderName: string, sysRoot: string, volumes?: Volume[]) {
+// function volsString(folderName: string, sysRoot: string, volumes?: Volume[]) {
+//   return volumes && volumes.length > 0
+//     ? volumes
+//         .map(({ local, container, useSystemRoot }) => {
+//           const mid = useSystemRoot ? "" : `${folderName}/`;
+//           const localString =
+//             local.length > 0
+//               ? local[0] === "/"
+//                 ? local.slice(1, local.length)
+//                 : local
+//               : "";
+//           return ` -v ${sysRoot + mid + localString}:${container}`;
+//         })
+//         .reduce((prev, curr) => prev + curr)
+//     : "";
+// }
+
+function volsString(volumes?: Volume[]) {
   return volumes && volumes.length > 0
     ? volumes
-        .map(({ local, container, useSystemRoot }) => {
-          const mid = useSystemRoot ? "" : `${folderName}/`;
-          const localString =
-            local.length > 0
-              ? local[0] === "/"
-                ? local.slice(1, local.length)
-                : local
-              : "";
-          return ` -v ${sysRoot + mid + localString}:${container}`;
+        .map(({ local, container }) => {
+          return ` -v ${local}:${container}`;
         })
         .reduce((prev, curr) => prev + curr)
     : "";

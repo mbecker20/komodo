@@ -11,7 +11,7 @@ declare module "fastify" {
 const auth = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	app.decorate("auth", async (req: FastifyRequest, res: FastifyReply) => {
 		try {
-			await verifyPasskey(req.headers.authorization)
+			await verifyPasskey(req.headers.authorization);
 		} catch{
 			res.status(403);
       res.send("unauthorized access to monitor periphery");

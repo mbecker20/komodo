@@ -1,9 +1,7 @@
 import { Component, createSignal, onMount } from "solid-js";
-import { pushNotification } from "../..";
 import { CREATE_DEPLOYMENT } from "../../state/actions";
 import { defaultDeployment } from "../../state/defaults";
 import { useAppState } from "../../state/StateProvider";
-import { useUser } from "../../state/UserProvider";
 import { useToggle } from "../../util/hooks";
 import Icon from "../util/icons/Icon";
 import Input from "../util/Input";

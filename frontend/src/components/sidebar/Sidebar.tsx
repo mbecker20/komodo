@@ -2,6 +2,7 @@ import { Component, For, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses, inPx } from "../../util/helpers";
+import AddServer from "../create/server";
 import { TOPBAR_HEIGHT } from "../topbar/Topbar";
 import Grid from "../util/layout/Grid";
 import Server from "./server/Server";
@@ -21,7 +22,10 @@ const Sidebar: Component<{}> = (p) => {
           height: inPx(height() - TOPBAR_HEIGHT),
         }}
       >
-        <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
+        <Grid style={{ height: "fit-content", padding: "1rem" }}>
+          <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
+          <AddServer />
+        </Grid>
       </Grid>
     </Show>
   );

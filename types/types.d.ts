@@ -46,7 +46,7 @@ export type Server = {
   name: string;
   address: string;
   passkey: string;
-  status: "OK" | "Incorrect Password" | "Could Not Be Reached";
+  status?: "OK" | "Incorrect Password" | "Could Not Be Reached";
   enabled: boolean;
   isCore?: boolean;
 };
@@ -123,7 +123,7 @@ export type DeployActionState = {
 export type ContainerStatus = {
   name: string;
   Status: string;
-  State: "running" | "exited";
+  State: "created" | "running" | "exited";
 };
 
 export type Network = {

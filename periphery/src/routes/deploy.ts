@@ -21,7 +21,6 @@ const deploy = fp((app: FastifyInstance, _: {}, done: () => void) => {
       {
         ...deployment,
         image: image ? REGISTRY_URL + image : deployment.image,
-        latest: image ? true : deployment.latest,
       },
       SYSROOT,
       repoMount

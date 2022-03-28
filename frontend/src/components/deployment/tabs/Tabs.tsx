@@ -45,8 +45,10 @@ const DeploymentTabs: Component<{}> = (p) => {
         update.operation === STOP_CONTAINER ||
         update.operation === DELETE_CONTAINER)
     ) {
-      console.log("updating log");
-      getDeploymentLog(selected.id()).then(setLog);
+      // console.log("updating log");
+      setTimeout(() => {
+        getDeploymentLog(selected.id()).then(setLog);
+      }, 2000);
     }
   });
   onCleanup(unsub);
