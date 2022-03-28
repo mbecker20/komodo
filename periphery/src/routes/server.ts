@@ -1,10 +1,11 @@
-import { prune } from "@monitor/util";
+import { pruneImages } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
 const server = fp((app: FastifyInstance, _: {}, done: () => void) => {
-	app.get("/prune", { onRequest: [app.auth] }, async (_, res) => {
-		return await prune();
+	app.get("/images/prune", { onRequest: [app.auth] }, async (_, res) => {
+		const log = await pruneImages();
+		res.send(log);
 	});
 
 	done();

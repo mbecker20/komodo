@@ -1,6 +1,11 @@
 import { Component, Show } from "solid-js";
+import { pushNotification } from "../..";
+import { PRUNE_SERVER } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
+import ConfirmButton from "../util/ConfirmButton";
+import Icon from "../util/icons/Icon";
+import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import s from "./server.module.css";
 
@@ -10,8 +15,20 @@ const Actions: Component<{}> = (p) => {
   return (
     <Show when={server() && server().status === "OK"}>
       <Grid class={combineClasses(s.Card, "shadow")}>
-				<h1>actions</h1>
-			</Grid>
+        <h1>actions</h1>
+        <Flex class={combineClasses(s.Action, "shadow")}>
+          prune images{" "}
+          <ConfirmButton
+            color="green"
+            onConfirm={() => {
+              ws.send(PRUNE_SERVER, { serverID: server()._id });
+              pushNotification("ok", `pruning images on ${server().name}...`);
+            }}
+          >
+            <Icon type="cut" />
+          </ConfirmButton>
+        </Flex>
+      </Grid>
     </Show>
   );
 };

@@ -6,6 +6,7 @@ import {
   EnvironmentVar,
   Volume,
   Network,
+  CommandLogError,
 } from "@monitor/types";
 import { execute } from "./execute";
 import { objFrom2Arrays } from "./helpers";
@@ -13,7 +14,7 @@ import Dockerode from "dockerode";
 
 /* Server */
 
-export async function prune() {
+export async function pruneImages() {
   return await execute("docker image prune -a -f");
 }
 
@@ -24,6 +25,25 @@ export async function getNetworks(dockerode: Dockerode): Promise<Network[]> {
     name: Name,
     driver: Driver,
   }));
+}
+
+export async function createNetwork(
+  name: string,
+  driver?: string
+): Promise<CommandLogError> {
+  return await execute(
+    `docker network create${driver ? ` -d ${driver}` : ""} ${name}`
+  );
+}
+
+export async function deleteNetwork(name: string): Promise<CommandLogError> {
+  return await execute(
+    `docker network rm ${name}`
+  );
+}
+
+export async function pruneNetworks(): Promise<CommandLogError> {
+  return await execute(`docker network prune`);
 }
 
 /* Container */
@@ -43,7 +63,10 @@ export async function allContainerStatus(dockerode: Dockerode) {
   );
 }
 
-export async function getContainerStatus(dockerode: Dockerode, name: string): Promise<ContainerStatus | "not created"> {
+export async function getContainerStatus(
+  dockerode: Dockerode,
+  name: string
+): Promise<ContainerStatus | "not created"> {
   const status = (await dockerode.listContainers({ all: true })).filter(
     ({ Names }) => Names[0] === "/" + name
   );

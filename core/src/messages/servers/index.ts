@@ -1,9 +1,19 @@
-import { Action, User } from "@monitor/types";
-import { ADD_SERVER, GET_SERVER_STATS, PRUNE_SERVER, REMOVE_SERVER, UPDATE_SERVER } from "@monitor/util";
+import { User } from "@monitor/types";
+import {
+  ADD_SERVER,
+  CREATE_NETWORK,
+  DELETE_NETWORK,
+  GET_SERVER_STATS,
+  PRUNE_IMAGES,
+  PRUNE_NETWORKS,
+  REMOVE_SERVER,
+  UPDATE_SERVER,
+} from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import addServer from "./add";
-import pruneServer from "./prune";
+import { createServerNetwork, deleteServerNetwork } from "./networks";
+import { pruneServerImages, pruneServerNetworks } from "./prune";
 import removeServer from "./remove";
 import updateServer from "./update";
 
@@ -37,8 +47,24 @@ async function serverMessages(
       }
       return true;
 
-    case PRUNE_SERVER:
-      await pruneServer(app, user, message);
+    case PRUNE_IMAGES:
+      await pruneServerImages(app, user, message);
+      return true;
+
+    case CREATE_NETWORK:
+      message.serverID &&
+        message.name &&
+        (await createServerNetwork(app, user, message));
+      return true;
+
+    case DELETE_NETWORK:
+      message.serverID &&
+        message.name &&
+        (await deleteServerNetwork(app, user, message));
+      return true;
+
+    case PRUNE_NETWORKS:
+      await pruneServerNetworks(app, user, message);
       return true;
 
     case GET_SERVER_STATS:

@@ -45,7 +45,7 @@ const Content: Component<{ close: () => void }> = (p) => {
       });
       p.close();
     } else {
-			pushNotification("bad", "field empty. fill in field");
+			pushNotification("bad", "a field is empty. fill in all fields");
 		}
   };
   return (

@@ -30,7 +30,8 @@ export type IconType =
   | "console"
   | "application"
   | "error"
-  | "refresh";
+  | "refresh"
+  | "cut";
 
 const Icon: Component<{
   type: IconType;

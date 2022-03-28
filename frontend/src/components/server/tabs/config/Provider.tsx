@@ -1,9 +1,9 @@
-import { Server, Update } from "@monitor/types";
-import { Component, createContext, onCleanup } from "solid-js";
+import { Network, Server, Update } from "@monitor/types";
+import { Accessor, Component, createContext, createEffect, createSignal, onCleanup, useContext } from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
 import { ADD_UPDATE, UPDATE_SERVER } from "../../../../state/actions";
 import { useAppState } from "../../../../state/StateProvider";
-import { getServer } from "../../../../util/query";
+import { getNetworks, getServer } from "../../../../util/query";
 
 type ConfigServer = Server & { loaded: boolean; updated: boolean };
 
@@ -12,6 +12,7 @@ type State = {
   setServer: SetStoreFunction<ConfigServer>;
   reset: () => void;
   save: () => void;
+  networks: Accessor<Network[]>;
 };
 
 const context = createContext<State>();
@@ -34,11 +35,18 @@ export const ConfigProvider: Component<{ server: Server }> = (p) => {
     getServer(p.server._id!).then((server) => {
       set({
         ...server,
-        loaded: false,
+        loaded: true,
         updated: false,
       });
     });
   };
+  createEffect(load);
+
+  const [networks, setNetworks] = createSignal<Network[]>([]);
+  createEffect(() => {
+    console.log("load networks");
+    getNetworks(p.server._id!).then(setNetworks);
+  });
 
   const save = () => {
     ws.send(UPDATE_SERVER, { server });
@@ -57,6 +65,11 @@ export const ConfigProvider: Component<{ server: Server }> = (p) => {
     setServer,
     reset: load,
     save,
+    networks
   };
   return <context.Provider value={state}>{p.children}</context.Provider>;
 };
+
+export function useConfig() {
+  return useContext(context) as State;
+}

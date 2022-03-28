@@ -1,4 +1,5 @@
 import { Component, createSignal, onMount } from "solid-js";
+import { pushNotification } from "../..";
 import { CREATE_DEPLOYMENT } from "../../state/actions";
 import { defaultDeployment } from "../../state/defaults";
 import { useAppState } from "../../state/StateProvider";
@@ -37,11 +38,17 @@ const Content: Component<{ serverID: string; close: () => void }> = (p) => {
         deployment: defaultDeployment(name(), p.serverID),
       });
       p.close();
+    } else {
+      pushNotification("bad", "please provide a name");
     }
   };
   return (
     <>
-      <Flex alignItems="center" justifyContent="space-between" style={{ padding: "2rem 1rem 1rem 1rem" }}>
+      <Flex
+        alignItems="center"
+        justifyContent="space-between"
+        style={{ padding: "2rem 1rem 1rem 1rem" }}
+      >
         <Input
           ref={nameInput}
           value={name()}

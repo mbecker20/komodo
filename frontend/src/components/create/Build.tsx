@@ -1,4 +1,5 @@
 import { Component, createSignal, onMount } from "solid-js";
+import { pushNotification } from "../..";
 import { CREATE_BUILD } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { useToggle } from "../../util/hooks";
@@ -34,6 +35,8 @@ const Content: Component<{ close: () => void }> = (p) => {
         build: { name: name() },
       });
       p.close();
+    } else {
+      pushNotification("bad", "please provide a name");
     }
   };
   return (

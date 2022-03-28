@@ -1,7 +1,7 @@
 import { Component, createSignal, JSX } from "solid-js";
 
 const ConfirmButton: Component<{
-  onConfirm: () => void;
+  onConfirm?: () => void;
   color?: "red" | "green" | "blue" | "orange";
   style?: JSX.CSSProperties;
 }> = (p) => {
@@ -15,7 +15,7 @@ const ConfirmButton: Component<{
       onClick={(e) => {
         e.stopPropagation();
         if (confirm()) {
-          p.onConfirm();
+          p.onConfirm && p.onConfirm();
         }
         set(confirm => !confirm);
       }}

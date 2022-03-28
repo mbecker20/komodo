@@ -22,8 +22,11 @@ export const CLONE_DEPLOYMENT_REPO = "CLONE_REPO";
 export const ADD_SERVER = "ADD_SERVER";
 export const REMOVE_SERVER = "REMOVE_SERVER";
 export const UPDATE_SERVER = "UPDATE_SERVER";
-export const PRUNE_SERVER = "PRUNE_SERVER";
+export const PRUNE_IMAGES = "PRUNE_IMAGES";
 export const GET_SERVER_STATS = "GET_SERVER_STATS";
+export const CREATE_NETWORK = "CREATE_NETWORK";
+export const DELETE_NETWORK = "DELETE_NETWORK";
+export const PRUNE_NETWORKS = "PRUNE_NETWORKS";
 
 /* UPDATE */
 export const ADD_UPDATE = "ADD_UPDATE";
