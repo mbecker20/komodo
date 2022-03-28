@@ -11,7 +11,6 @@ const deploymentViewFields = [
   "network",
   "useServerRoot",
   "restart",
-  "latest",
   "logTail",
   "autoDeploy",
   "containerUser",

@@ -14,7 +14,6 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     buildID: { type: String, index: true }, // if deploying a monitor build
     /* to create docker run command */
     image: String, // used if deploying an external image (from docker hub)
-    latest: Boolean, // if custom image, use this to add :latest
     ports: [Conversion],
     volumes: [Volume],
     environment: [EnvironmentVar],

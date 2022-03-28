@@ -94,8 +94,42 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       }
       const log = onCore
         ? await getContainerLog(deployment.containerName!, tail || 50)
-        : await getPeripheryContainerLog(server, deployment.containerName!, tail || 50);
+        : await getPeripheryContainerLog(
+            server,
+            deployment.containerName!,
+            tail || 50
+          );
       res.send(log);
+    }
+  );
+
+  app.get(
+    "/api/deployment/:id/status",
+    { onRequest: [app.auth] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const deployment = await app.deployments.findById(
+        id,
+        "serverID containerName"
+      );
+      if (!deployment) {
+        res.status(400);
+        res.send("could not find deployment");
+        return;
+      }
+      const onCore = deployment.serverID === app.core._id;
+      const server = onCore
+        ? app.core
+        : await app.servers.findById(deployment.serverID!);
+      if (!server) {
+        res.status(400);
+        res.send("could not find deployment's server");
+        return;
+      }
+      const status = onCore
+        ? await getContainerStatus(app.dockerode, deployment.containerName!)
+        : await getPeripheryContainer(server, deployment.containerName!);
+      res.send(status);
     }
   );
 });

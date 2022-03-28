@@ -1,18 +1,28 @@
 import { Log as LogType } from "@monitor/types";
 import { Component, createEffect, createSignal, Show } from "solid-js";
+import { pushNotification } from "../../..";
 import { useAppState } from "../../../state/StateProvider";
 import { combineClasses } from "../../../util/helpers";
 import Icon from "../../util/icons/Icon";
 import s from "../deployment.module.css";
 
-const Log: Component<{ log: LogType; error?: boolean }> = (p) => {
+const Log: Component<{
+  log: LogType;
+  reload: () => Promise<void>;
+  error?: boolean;
+}> = (p) => {
   const { selected, deployments } = useAppState();
   const deployment = () => deployments.get(selected.id());
   let ref: HTMLDivElement | undefined;
   let ignore = false;
   const [scrolled, setScrolled] = createSignal(false);
   createEffect(() => {
-    if (selected.id()) setScrolled(false);
+    if (selected.id()) {
+      ref?.scroll({
+        top: ref.scrollHeight,
+      });
+      setScrolled(false);
+    }
   });
   createEffect(() => {
     if (!scrolled() && p.log) {
@@ -52,10 +62,17 @@ const Log: Component<{ log: LogType; error?: boolean }> = (p) => {
             }
           }}
         >
-          <pre class={s.Log}>
-            {log()}
-          </pre>
+          <pre class={s.Log}>{log()}</pre>
         </div>
+        <button
+          class={combineClasses(s.RefreshButton, "blue")}
+          onClick={async () => {
+            await p.reload();
+            pushNotification("good", "log refreshed");
+          }}
+        >
+          <Icon type="refresh" />
+        </button>
         <Show when={scrolled()}>
           <button
             class={combineClasses(s.ReturnButton, "blue")}

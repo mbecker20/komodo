@@ -20,7 +20,7 @@ const Actions: Component<{}> = (p) => {
   const deployment = () => deployments.get(selected.id())!;
   return (
     <Show when={true}>
-      <Grid class={combineClasses(s.Actions, "shadow")}>
+      <Grid class={combineClasses(s.Card, "shadow")}>
         <div class={s.ItemHeader}>actions</div>
         <Switch>
           <Match

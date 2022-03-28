@@ -1,14 +1,15 @@
-import { Deployment, Network } from "@monitor/types";
+import { Deployment, Network, Update } from "@monitor/types";
 import {
   Accessor,
   Component,
   createContext,
   createEffect,
   createSignal,
+  onCleanup,
   useContext,
 } from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
-import { UPDATE_DEPLOYMENT } from "../../../../state/actions";
+import { ADD_UPDATE, UPDATE_DEPLOYMENT } from "../../../../state/actions";
 import { useAppState } from "../../../../state/StateProvider";
 import { getDeployment, getNetworks } from "../../../../util/query";
 
@@ -59,8 +60,15 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
 
   const save = () => {
     ws.send(UPDATE_DEPLOYMENT, { deployment });
-    
   };
+
+  const unsub = ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
+    if (update.deploymentID === p.deployment._id) {
+      load();
+    }
+  });
+
+  onCleanup(unsub);
 
   const state = {
     editing,

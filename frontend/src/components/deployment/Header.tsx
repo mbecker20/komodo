@@ -15,7 +15,7 @@ const Header: Component<{}> = (p) => {
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   return (
     <Flex
-      class={combineClasses(s.Header, "shadow")}
+      class={combineClasses(s.Card, "shadow")}
       justifyContent="space-between"
       alignItems="center"
     >

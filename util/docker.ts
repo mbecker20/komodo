@@ -104,7 +104,6 @@ export async function dockerBuild(
 export async function dockerRun(
   {
     image,
-    latest,
     ports,
     environment,
     network,
@@ -118,7 +117,7 @@ export async function dockerRun(
   repoMount?: { repoFolder: string; containerMount: string }
 ) {
   const command =
-    `docker pull ${image}${latest ? ":latest" : ""} && docker run -d` +
+    `docker pull ${image} && docker run -d` +
     name(containerName) +
     containerUserString(containerUser) +
     portsString(ports) +
@@ -127,7 +126,7 @@ export async function dockerRun(
     envString(environment) +
     restartString(restart) +
     networkString(network) +
-    ` ${image}${latest ? ":latest" : ""}${postImage ? " " + postImage : ""}`;
+    ` ${image}${postImage ? " " + postImage : ""}`;
 
   return await execute(command);
 }

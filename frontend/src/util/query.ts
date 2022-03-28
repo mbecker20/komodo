@@ -1,5 +1,6 @@
 import {
   Builds,
+  ContainerStatus,
   Deployment,
   Deployments,
   Log,
@@ -36,6 +37,12 @@ export async function getDeployment(deploymentID: string) {
 export async function getDeploymentLog(deploymentID: string, tail?: number) {
   return await client.get<Log>(
     `/api/deployment/${deploymentID}/log${generateQuery({ tail })}`
+  );
+}
+
+export async function getDeploymentStatus(deploymentID: string) {
+  return await client.get<ContainerStatus | "not created">(
+    `/api/deployment/${deploymentID}/status`
   );
 }
 

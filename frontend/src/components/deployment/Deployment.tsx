@@ -21,7 +21,7 @@ const Deployment: Component<{}> = (p) => {
           <Updates />
         </Grid>
         {/* right / tabs */}
-        <Tabs deployment={deployment()!} />
+        <Tabs />
       </Grid>
     </Show>
   );

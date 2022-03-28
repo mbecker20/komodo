@@ -16,19 +16,12 @@
 	user-select: none;
 }
 
-/* header */
-
-.Header {
+.Card {
 	background-color: rgb(27, 55, 86);
 	padding: 0.5rem;
 }
 
 /* actions */
-
-.Actions {
-	background-color: rgb(27, 55, 86);
-	padding: 0.5rem;
-}
 
 .Action {
 	background-color: rgb(69, 34, 96);
@@ -39,11 +32,6 @@
 }
 
 /* updates */
-
-.Updates {
-	background-color: rgb(27, 55, 86);
-	padding: 0.5rem;
-}
 
 .UpdatesContainer {
 	max-height: 50vh;
@@ -57,7 +45,6 @@
 /* tabs */
 
 .Tabs {
-	background-color: rgb(27, 55, 86);
 	height: fit-content;
 }
 
@@ -66,7 +53,7 @@
 .Config {
 	height: 100%;
 	place-items: start center;
-	grid-template-rows: 75vh 1fr;
+	grid-template-rows: 70vh 1fr;
 }
 
 .ConfigItems {
@@ -98,14 +85,15 @@
 .Log {
 	white-space: pre-line;
 	overflow-wrap: anywhere;
-	/* word-wrap: break-word; */
 	tab-size: 2;
-	/* width: 40rem;
-	max-width: 90vw;
-	margin-left: 2rem; */
-	/* box-sizing: border-box; */
 	padding: 0rem 1rem;
 	margin-bottom: 40vh;
+}
+
+.RefreshButton {
+	position: absolute;
+	top: 1rem;
+	right: 2rem;
 }
 
 .ReturnButton {

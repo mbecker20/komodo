@@ -13,19 +13,12 @@ const Updates: Component<{}> = (p) => {
   const selectedUpdates = useArray(() =>
     getUpdates({ deploymentID: selected.id() })
   );
-  const listener = ({ data }: { data: string }) => {
-    const message = JSON.parse(data);
-    if (
-      message.type === ADD_UPDATE &&
-      message.update.deploymentID === selected.id()
-    ) {
-      selectedUpdates.add(message.update);
+  const unsub = ws.subscribe([ADD_UPDATE], ({ update }) => {
+    if (update.deploymentID === selected.id()) {
+      selectedUpdates.add(update);
     }
-  };
-  ws.socket.addEventListener("message", listener);
-  onCleanup(() => {
-    ws.socket.removeEventListener("message", listener);
   });
+  onCleanup(unsub);
   return (
     <Show
       when={
@@ -33,7 +26,7 @@ const Updates: Component<{}> = (p) => {
         (selectedUpdates.collection()?.length || 0) > 0
       }
     >
-      <Grid class={combineClasses(s.Updates, "shadow")}>
+      <Grid class={combineClasses(s.Card, "shadow")}>
         <div class={s.ItemHeader}>updates</div>
         <Grid class={s.UpdatesContainer}>
           <For each={selectedUpdates.collection()}>

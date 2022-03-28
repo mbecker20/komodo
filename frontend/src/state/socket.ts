@@ -6,13 +6,18 @@ import {
   CREATE_BUILD,
   CREATE_DEPLOYMENT,
   DELETE_BUILD,
+  DELETE_CONTAINER,
   DELETE_DEPLOYMENT,
+  DEPLOY,
   REMOVE_SERVER,
+  START_CONTAINER,
+  STOP_CONTAINER,
   UPDATE_BUILD,
   UPDATE_DEPLOYMENT,
   UPDATE_SERVER,
 } from "../state/actions";
 import { readableOperation } from "../util/helpers";
+import { getDeploymentStatus } from "../util/query";
 import { useSelected } from "./hooks";
 import { State } from "./StateProvider";
 
@@ -38,7 +43,21 @@ function socket(
   });
 
   return {
-    socket: ws,
+    subscribe: (
+      types: string[],
+      callback: (message: { type: string } & any) => void
+    ) => {
+      const listener = ({ data }: { data: string }) => {
+        const message = JSON.parse(data);
+        if (types.includes(message.type)) {
+          callback(JSON.parse(data));
+        }
+      };
+      ws.addEventListener("message", listener);
+      return () => {
+        ws.removeEventListener("message", listener);
+      };
+    },
     send: <T>(type: string, message: T) => {
       ws.send(JSON.stringify({ ...message, type }));
     },
@@ -103,6 +122,17 @@ function handleMessage(
         update.isError ? "bad" : "good",
         `${readableOperation(update.operation)} by ${update.operator}`
       );
+      if (update.deploymentID === selected.id()) {
+        if (
+          [DEPLOY, START_CONTAINER, STOP_CONTAINER, DELETE_CONTAINER].includes(
+            update.operation
+          )
+        ) {
+          getDeploymentStatus(selected.id()).then((status) =>
+            deployments.update({ ...deployments.get(selected.id())!, status })
+          );
+        }
+      }
       break;
   }
 }
