@@ -12,6 +12,7 @@ const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
     const log = await clone(
       deployment.repo!,
       CONTAINER_REPO_ROOT + deployment.containerName,
+      deployment.subfolder,
       deployment.branch,
       deployment.accessToken
     );

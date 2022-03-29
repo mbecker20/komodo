@@ -1,4 +1,4 @@
-import { Collection, Log } from "@monitor/types";
+import { Collection, CommandLogError, Log } from "@monitor/types";
 import { readFileSync } from "fs-extra";
 
 export function readJSONFile<T = any>(path: string): T {
@@ -21,10 +21,7 @@ export function getBooleanFromEnv(varName: string, defaultValue: boolean) {
   else return defaultValue;
 }
 
-export function objFrom2Arrays<T>(
-  keys: string[],
-  entries: T[]
-): Collection<T> {
+export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T> {
   return Object.fromEntries(
     keys.map((id, index) => {
       return [id, entries[index]];
@@ -69,4 +66,36 @@ export function generateQuery(query?: Collection<string | number | undefined>) {
       .join("&");
     return q && `?${q}`;
   } else return "";
+}
+
+export function mergeCommandLogError(
+  ...cle: ({ name: string; cle: CommandLogError | undefined })[]
+) {
+  const _cle = cle.filter((cle) => cle.cle) as {
+    name: string;
+    cle: CommandLogError;
+  }[]; 
+  const command = _cle.reduce((prev, curr) => {
+    return prev + (prev && "\n\n") + `${curr.name}: ${curr.cle.command}`;
+  }, "");
+  const log = _cle.reduce(
+    (log, curr) => {
+      log.stdout =
+        log.stdout +
+        (log.stdout && "\n\n") +
+        `${curr.name}:\n${curr.cle.log.stdout}`;
+      log.stderr =
+        log.stderr +
+        (log.stderr && "\n\n") +
+        `${curr.name}:\n${curr.cle.log.stderr}`;
+      return log;
+    },
+    { stdout: "", stderr: "" }
+  );
+  const isError = _cle.filter((cle) => cle.cle.isError).length > 0;
+  return {
+    command,
+    log,
+    isError,
+  };
 }

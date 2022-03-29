@@ -1,14 +1,31 @@
 import { remove } from "fs-extra";
 import { execute } from "./execute";
 
-export async function sparseClone(
+async function fullClone(
+  repo: string,
+  folder: string,
+  branch?: string,
+  accessToken?: string
+) {
+  const _clone = "git clone";
+  const url = `https://${
+    accessToken ? `${accessToken}@` : ""
+  }github.com/${repo}.git`;
+  const _branch = branch && branch !== "master" ? ` -b ${branch}` : "";
+  const clone = `${_clone} ${url} ${folder}${_branch}`;
+  return await execute(
+    clone,
+    accessToken && clone.replace(accessToken, "<TOKEN>")
+  );
+}
+
+async function sparseClone(
   repo: string,
   folder: string,
   subfolder: string,
   branch?: string,
   accessToken?: string
 ) {
-  await remove(folder).catch();
   const _clone = "git clone --no-checkout";
   const url = `https://${
     accessToken ? `${accessToken}@` : ""
@@ -25,20 +42,16 @@ export async function sparseClone(
 export async function clone(
   repo: string,
   folder: string,
+  subfolder?: string,
   branch?: string,
   accessToken?: string
 ) {
   await remove(folder).catch();
-  const _clone = "git clone";
-  const url = `https://${
-    accessToken ? `${accessToken}@` : ""
-  }github.com/${repo}.git`;
-  const _branch = branch && branch !== "master" ? ` -b ${branch}` : "";
-  const clone = `${_clone} ${url} ${folder}${_branch}`;
-  return await execute(
-    clone,
-    accessToken && clone.replace(accessToken, "<TOKEN>")
-  );
+  if (subfolder) {
+    return await sparseClone(repo, folder, subfolder, branch, accessToken);
+  } else {
+    return await fullClone(repo, folder, branch, accessToken);
+  }
 }
 
 export async function pull(folder: string, branch = "master") {

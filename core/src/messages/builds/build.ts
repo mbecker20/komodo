@@ -1,7 +1,16 @@
 import { User } from "@monitor/types";
-import { dockerBuild, BUILD } from "@monitor/util";
+import {
+  dockerBuild,
+  BUILD,
+  execute,
+  mergeCommandLogError,
+} from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { PERMISSIONS_DENY_LOG, REGISTRY_URL, BUILD_REPO_PATH } from "../../config";
+import {
+  PERMISSIONS_DENY_LOG,
+  REGISTRY_URL,
+  BUILD_REPO_PATH,
+} from "../../config";
 import { BUILDING } from "../../plugins/actionStates";
 import { addBuildUpdate } from "../../util/updates";
 
@@ -28,11 +37,21 @@ async function build(
   if (app.buildActionStates.get(buildID, BUILDING)) {
     app.buildActionStates.set(buildID, BUILDING, true);
     app.broadcast(BUILD, { complete: false, buildID });
+    const { cliBuild, dockerBuildArgs } = build;
     try {
-      const { command, log, isError } = await dockerBuild(
-        build,
-        BUILD_REPO_PATH,
-        REGISTRY_URL
+      const cli = cliBuild
+        ? await execute(`cd ${cliBuild.path} && ${cliBuild.command}`)
+        : undefined;
+      const docker = dockerBuildArgs
+        ? await dockerBuild(
+            dockerBuildArgs,
+            BUILD_REPO_PATH,
+            REGISTRY_URL
+          )
+        : undefined;
+      const { command, log, isError } = mergeCommandLogError(
+        { name: "cli", cle: cli },
+        { name: "docker", cle: docker }
       );
       addBuildUpdate(
         app,

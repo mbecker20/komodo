@@ -104,9 +104,9 @@ export interface Deployment extends DockerRunArgs {
   branch?: string;
   subfolder?: string; // subfolder of repo to clone (uses sparse clone)
   accessToken?: string;
-  repoMount?: string;
+  repoMount?: string; // subfolder of repo to mount in container
   containerMount?: string; // the file path to mount repo on inside the container
-
+  onPull?: Command[];
   // running status
   status?: "not deployed" | ContainerStatus;
 }

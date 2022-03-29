@@ -7,11 +7,12 @@ import { addBuildUpdate } from "../../util/updates";
 async function cloneRepo(
   app: FastifyInstance,
   user: User,
-  { imageName, branch, repo, accessToken, _id }: Build
+  { pullName, branch, repo, subfolder, onClone, accessToken, _id }: Build
 ) {
   const { command, log, isError } = await clone(
     repo!,
-    BUILD_REPO_PATH + imageName!,
+    BUILD_REPO_PATH + pullName!,
+    subfolder,
     branch,
     accessToken
   );

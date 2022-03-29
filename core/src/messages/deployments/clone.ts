@@ -11,7 +11,7 @@ async function cloneRepo(
   user: User,
   deployment: Deployment
 ) {
-  const { serverID, containerName, branch, repo, accessToken, _id } =
+  const { serverID, containerName, branch, repo, subfolder, accessToken, _id } =
     deployment;
   const server =
     deployment.serverID === app.core._id
@@ -22,6 +22,7 @@ async function cloneRepo(
     : await clone(
         repo!,
         DEPLOYMENT_REPO_PATH + containerName!,
+        subfolder,
         branch,
         accessToken
       );
