@@ -58,6 +58,7 @@ const Login: Component<{}> = (p) => {
           placeholder="password"
           value={info.password}
           onEdit={(value) => set("password", value)}
+          onConfirm={login}
         />
         <Flex style={{ width: "100%" }} justifyContent="space-between">
           <button class="blue" onClick={login} style={{ "font-size": "1.05rem" }}>

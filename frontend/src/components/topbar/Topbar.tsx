@@ -29,7 +29,7 @@ const Topbar: Component = () => {
       </Flex>
 
       {/* left side */}
-      <Flex alignItems="center" style={{ padding: "0rem 0.5rem" }}>
+      <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
         <Menu
           show={menu() === "updates"}
           target={

@@ -57,12 +57,27 @@ export type DockerBuildArgs = {
   imageName: string;
 };
 
-export interface Build extends DockerBuildArgs {
+// these are potentially dangerous but also useful
+// maybe best for admins to add premade curated command strings, so user dev can't input them directly, only give path to run in.
+export type Command = {
+  path: string;
+  command: string; // no cd and no sudo
+};
+
+export interface Build {
   _id?: string;
   name: string;
+  pullName?: string; // used for git listener
+  commands?: Command[];
+  /* repo related */
   repo?: string;
+  subfolder?: string; // subfolder of monorepo. uses sparse clone
   branch?: string;
   accessToken?: string; // to gain access to private repos
+  onClone?: Command[];
+  /* build related */
+  cliBuild?: Command; // run shell commands on build, before docker build step if it exists
+  dockerBuildArgs?: DockerBuildArgs; // provided if docker build
   owners: string[]; // userID / username
 }
 
@@ -85,9 +100,11 @@ export interface Deployment extends DockerRunArgs {
   serverID?: string; // only added if running on periphery server
   buildID?: string; // if deploying a monitor build
   /* to manage repo for static frontend, mounted as a volume. locally in REPO_ROOT/containerName */
-  repo?: string; 
+  repo?: string;
   branch?: string;
+  subfolder?: string; // subfolder of repo to clone (uses sparse clone)
   accessToken?: string;
+  repoMount?: string;
   containerMount?: string; // the file path to mount repo on inside the container
 
   // running status
