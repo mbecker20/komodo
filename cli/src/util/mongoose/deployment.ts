@@ -30,7 +30,7 @@ export default function deploymentModel() {
     containerUser: String, // after -u in the run command
     /* to manage repo for static frontend, mounted as a volume */
     repo: String,
-    branch: { type: String, default: "master" },
+    branch: String,
     accessToken: String,
     containerMount: String, // the file path to mount repo on inside the container
   });

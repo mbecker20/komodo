@@ -3,6 +3,7 @@ import { Component, createEffect, createSignal, Show } from "solid-js";
 import { pushNotification } from "../../..";
 import { useAppState } from "../../../state/StateProvider";
 import { combineClasses } from "../../../util/helpers";
+import { useBuffer } from "../../../util/hooks";
 import Icon from "../../util/icons/Icon";
 import s from "../deployment.module.css";
 
@@ -43,6 +44,7 @@ const Log: Component<{
       return (p.error ? p.log?.stderr : p.log?.stdout) || "no log";
     }
   };
+  const buffer = useBuffer(scrolled, 250);
   return (
     <Show when={p.log}>
       <div style={{ position: "relative" }}>
@@ -73,9 +75,13 @@ const Log: Component<{
         >
           <Icon type="refresh" />
         </button>
-        <Show when={scrolled()}>
+        <Show when={buffer()}>
           <button
-            class={combineClasses(s.ReturnButton, "blue")}
+            class={combineClasses(
+              s.ReturnButton,
+              "blue",
+              scrolled() ? s.Enter : s.Exit
+            )}
             onClick={() => setScrolled(false)}
           >
             <Icon type="arrow-down" />

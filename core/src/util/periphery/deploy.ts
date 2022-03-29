@@ -9,7 +9,7 @@ export async function deployPeriphery(
 ) {
   return (await axios
     .post(
-      `${address}/deploy${image && "?image=" + REGISTRY_URL + image}`,
+      `${address}/deploy${image ? "?image=" + REGISTRY_URL + image : ""}`,
       { deployment },
       {
         headers: {

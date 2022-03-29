@@ -58,7 +58,6 @@ async function deployDeployment(
           {
             ...deployment,
             image: image ? REGISTRY_URL + image : deployment.image,
-            latest: image ? true : deployment.latest,
           },
           SYSROOT,
           containerMount
