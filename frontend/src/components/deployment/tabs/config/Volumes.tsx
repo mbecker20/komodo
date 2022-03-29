@@ -12,7 +12,7 @@ const Volumes: Component<{}> = (p) => {
   const onAdd = () => {
     setDeployment("volumes", (volumes: any) => [
       ...volumes,
-      { local: "", container: "", useSystemRoot: false },
+      { local: "", container: "" },
     ]);
   };
   const onRemove = (index: number) => {

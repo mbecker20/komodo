@@ -19,7 +19,7 @@ export const MONGO_URL = getStringFromEnv(
 );
 export const TOKEN_EXPIRES_IN = getStringFromEnv("TOKEN_EXPIRES_IN", "7d");
 export const PASSWORD_SALT_ROUNDS = getNumberFromEnv("PASSWORD_SALT_ROUNDS", 8);
-export const SYSROOT = getStringFromEnv("SYSROOT", "~/monitor/"); // the root folder monitor has access to, prepends volumes mounted using useSysroot
+export const SYSROOT = getStringFromEnv("SYSROOT", "/home/ubuntu/"); // the root folder monitor has access to, prepends volumes mounted using useSysroot
 export const ROOT = "/monitor/"; // the root folder in the container that SYSROOT is mounted on
 export const DEPLOYDATA_ROOT = "deployments/";
 export const BUILD_REPO_PATH = ROOT + "builds/";

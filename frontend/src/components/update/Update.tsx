@@ -74,6 +74,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
           toggleShow={toggleShowLog}
           target={<Icon type="console" />}
           targetStyle={{ "place-self": "center end" }}
+          targetClass="blue"
           content={
             <Grid
               class={combineClasses(s.LogContainer, "scroller")}

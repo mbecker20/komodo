@@ -70,9 +70,9 @@ export type DockerRunArgs = {
   image?: string;
   containerName?: string; // also for auto pull of repo, will be set by time deployment created
   ports?: Conversion[];
+  volumes?: Conversion[];
   environment?: EnvironmentVar[];
   network?: string;
-  volumes?: Volume[];
   restart?: string;
   postImage?: string; // interpolated into run command after the image string
   containerUser?: string; // after -u in the run command
@@ -98,10 +98,6 @@ export type Conversion = {
   local: string;
   container: string;
 };
-
-export interface Volume extends Conversion {
-  useSystemRoot?: boolean;
-}
 
 export type EnvironmentVar = {
   variable: string;

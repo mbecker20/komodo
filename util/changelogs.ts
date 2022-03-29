@@ -1,4 +1,4 @@
-import { Build, Conversion, Deployment, EnvironmentVar, Server, Volume } from "@monitor/types";
+import { Build, Conversion, Deployment, EnvironmentVar, Server } from "@monitor/types";
 import { objFrom2Arrays } from "./helpers";
 
 const deploymentViewFields = [
@@ -190,7 +190,7 @@ function portsChangelog(oldPorts?: Conversion[], newPorts?: Conversion[]) {
   }
 }
 
-function volumesChangelog(oldVols?: Volume[], newVols?: Volume[]) {
+function volumesChangelog(oldVols?: Conversion[], newVols?: Conversion[]) {
   if (!oldVols) {
     if (!newVols) {
       return "";
@@ -198,9 +198,7 @@ function volumesChangelog(oldVols?: Volume[], newVols?: Volume[]) {
       return `Added Volumes:\n${newVols
         .map(
           (vol) =>
-            `\t${vol.local}: ${vol.container}, Use Filesystem Root: ${
-              vol.useSystemRoot ? "true" : "false"
-            }, \n`
+            `\t${vol.local}: ${vol.container},\n`
         )
         .reduce((prev, curr) => prev + curr)}`;
     }
@@ -208,30 +206,23 @@ function volumesChangelog(oldVols?: Volume[], newVols?: Volume[]) {
     return `Removed Volumes:\n${oldVols
       .map(
         (vol) =>
-          `\t${vol.local}: ${vol.container}, Use Filesystem Root: ${
-            vol.useSystemRoot ? "true" : "false"
-          }, \n`
+          `\t${vol.local}: ${vol.container},\n`
       )
       .reduce((prev, curr) => prev + curr)}`;
   } else {
-    const oldLocal = oldVols.map((env) => env.local);
-    const oldContainer = oldVols.map((env) => env.container);
-    const oldUseSystem = oldVols.map((env) => env.useSystemRoot);
-    const newLocal = newVols.map((env) => env.local);
-    const newContainer = newVols.map((env) => env.container);
-    const newUseSystem = newVols.map((env) => env.useSystemRoot);
+    const oldLocal = oldVols.map((vol) => vol.local);
+    const oldContainer = oldVols.map((vol) => vol.container);
+    const newLocal = newVols.map((vol) => vol.local);
+    const newContainer = newVols.map((vol) => vol.container);
     const oldObj = objFrom2Arrays(oldLocal, oldContainer);
-    const oldObjSystem = objFrom2Arrays(oldLocal, oldUseSystem);
     const newObj = objFrom2Arrays(newLocal, newContainer);
-    const newObjSystem = objFrom2Arrays(newLocal, newUseSystem);
     const additions: string[] = [];
     const changes: string[] = [];
     const deletions: string[] = [];
     oldLocal.forEach((local) => {
       if (newLocal.includes(local)) {
         if (
-          oldObj[local] !== newObj[local] ||
-          oldObjSystem[local] !== newObjSystem[local]
+          oldObj[local] !== newObj[local]
         )
           changes.push(local);
       } else {
@@ -250,9 +241,7 @@ function volumesChangelog(oldVols?: Volume[], newVols?: Volume[]) {
           additions
             .map(
               (addition) =>
-                `\t\t${addition}: ${newObj[addition]}, Use Filesystem Root: ${
-                  newObjSystem[addition] ? "true" : false
-                }, \n`
+                `\t\t${addition}: ${newObj[addition]},\n`
             )
             .reduce((prev, curr) => prev + curr)
         : "";
@@ -262,13 +251,7 @@ function volumesChangelog(oldVols?: Volume[], newVols?: Volume[]) {
           changes
             .map(
               (change) =>
-                `\t\t${change}: ${oldObj[change]} -> ${newObj[change]}${
-                  oldObjSystem[change] !== newObjSystem[change]
-                    ? `, Use Filesystem Root: ${
-                        oldObjSystem[change] ? "true" : "false"
-                      } -> ${newObjSystem[change] ? "true" : "false"}`
-                    : ""
-                } \n`
+                `\t\t${change}: ${oldObj[change]} -> ${newObj[change]}\n`
             )
             .reduce((prev, curr) => prev + curr)
         : "";
@@ -278,9 +261,7 @@ function volumesChangelog(oldVols?: Volume[], newVols?: Volume[]) {
           deletions
             .map(
               (deletion) =>
-                `\t\t${deletion}: ${oldObj[deletion]}, Use Filesystem Root: ${
-                  oldObjSystem[deletion] ? "true" : "false"
-                }, \n`
+                `\t\t${deletion}: ${oldObj[deletion]},\n`
             )
             .reduce((prev, curr) => prev + curr)
         : "";

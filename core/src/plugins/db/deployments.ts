@@ -3,7 +3,7 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
 import model from "../../util/model";
-import { Conversion, EnvironmentVar, Volume } from "./misc";
+import { Conversion, EnvironmentVar } from "./misc";
 
 const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	const schema = new Schema<Deployment>({
@@ -15,7 +15,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     /* to create docker run command */
     image: String, // used if deploying an external image (from docker hub)
     ports: [Conversion],
-    volumes: [Volume],
+    volumes: [Conversion],
     environment: [EnvironmentVar],
     network: String,
     restart: String,
@@ -23,7 +23,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     containerUser: String, // after -u in the run command
     /* to manage repo for static frontend, mounted as a volume */
     repo: String,
-    branch: { type: String, default: "master" },
+    branch: String,
     accessToken: String,
     containerMount: String, // the file path to mount repo on inside the container
   });

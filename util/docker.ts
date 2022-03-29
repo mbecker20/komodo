@@ -4,7 +4,6 @@ import {
   DockerBuildArgs,
   DockerRunArgs,
   EnvironmentVar,
-  Volume,
   Network,
   CommandLogError,
 } from "@monitor/types";
@@ -144,7 +143,7 @@ export async function dockerRun(
     name(containerName) +
     containerUserString(containerUser) +
     portsString(ports) +
-    volsString(volumes) +
+    volsString(sysRoot, volumes) +
     repoVolume(containerName, repoMount) +
     envString(environment) +
     restartString(restart) +
@@ -183,11 +182,11 @@ function portsString(ports?: Conversion[]) {
 //     : "";
 // }
 
-function volsString(volumes?: Volume[]) {
+function volsString(sysRoot: string, volumes?: Conversion[]) {
   return volumes && volumes.length > 0
     ? volumes
         .map(({ local, container }) => {
-          return ` -v ${local}:${container}`;
+          return ` -v ${local.replace("~/", sysRoot)}:${container}`;
         })
         .reduce((prev, curr) => prev + curr)
     : "";

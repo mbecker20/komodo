@@ -35,8 +35,8 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     image: "mbecker2020/monitor-core",
     restart: core?.restart,
     volumes: [
-      { local: core?.secretVolume!, container: "/secrets", useSystemRoot: true },
-      { local: "/var/run/docker.sock", container: "/var/run/docker.sock", useSystemRoot: true },
+      { local: core?.secretVolume!, container: "/secrets" },
+      { local: "/var/run/docker.sock", container: "/var/run/docker.sock" },
     ],
     ports: [
       { local: core?.port.toString()!, container: DEFAULT_PORT.toString() },
@@ -57,7 +57,7 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
       containerName: toDashedName(mongo.startConfig.name),
       ports: [{ local: mongo.startConfig.port.toString(), container: "27017" }],
       volumes: mongo.startConfig.volume
-        ? [{ local: mongo.startConfig.volume, container: "/data/db", useSystemRoot: true }]
+        ? [{ local: mongo.startConfig.volume, container: "/data/db" }]
         : undefined,
       restart: mongo.startConfig.restart,
       image: "mongo",
@@ -80,7 +80,6 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
             {
               local: registry.startConfig.volume,
               container: "/var/lib/registry",
-              useSystemRoot: true,
             },
           ]
         : undefined,
