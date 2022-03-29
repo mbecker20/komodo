@@ -8,6 +8,7 @@ import {
 import { Schema } from "mongoose";
 
 export const Command = new Schema<CommandType>({
+  name: String,
   path: String,
   command: String,
 });

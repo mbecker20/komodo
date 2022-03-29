@@ -1,5 +1,5 @@
 import { Deployment, User } from "@monitor/types";
-import { clone } from "@monitor/util";
+import { clone, execute, mergeCommandLogError } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { CLONE_DEPLOYMENT_REPO } from "@monitor/util";
 import { DEPLOYMENT_REPO_PATH } from "../../config";
@@ -11,13 +11,34 @@ async function cloneRepo(
   user: User,
   deployment: Deployment
 ) {
-  const { serverID, containerName, branch, repo, subfolder, accessToken, _id } =
-    deployment;
+  const {
+    serverID,
+    containerName,
+    branch,
+    repo,
+    subfolder,
+    accessToken,
+    onPull,
+    _id,
+  } = deployment;
   const server =
-    deployment.serverID === app.core._id
-      ? undefined
-      : await app.servers.findById(deployment.serverID!);
-  const { command, log, isError } = server
+    serverID === app.core._id
+      ? app.core
+      : await app.servers.findById(serverID!);
+  if (!server) {
+    addDeploymentUpdate(
+      app,
+      _id!,
+      CLONE_DEPLOYMENT_REPO,
+      "clone (FAILED)",
+      { stderr: "server not found" },
+      user.username,
+      "",
+      true
+    );
+    return;
+  }
+  const cloneCle = server.isCore
     ? await clonePeriphery(server, deployment)
     : await clone(
         repo!,
@@ -26,6 +47,21 @@ async function cloneRepo(
         branch,
         accessToken
       );
+  const onPullCle =
+    !server && onPull
+      ? await execute(
+          `cd ${DEPLOYMENT_REPO_PATH + containerName!}${
+            onPull.path[0] === "/" ? "" : "/"
+          }${onPull.path} && ${onPull.command}`
+        )
+      : undefined;
+  const { command, log, isError } = mergeCommandLogError(
+    {
+      name: "clone",
+      cle: cloneCle,
+    },
+    { name: "post clone", cle: onPullCle }
+  );
   addDeploymentUpdate(
     app,
     _id!,

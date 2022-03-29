@@ -26,7 +26,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     branch: String,
     accessToken: String,
     containerMount: String, // the file path to mount repo on inside the container
-    onPull: [Command],
+    onPull: Command,
   });
 
 	app.decorate("deployments", model(app, "Deployment", schema));

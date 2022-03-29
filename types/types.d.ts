@@ -60,6 +60,7 @@ export type DockerBuildArgs = {
 // these are potentially dangerous but also useful
 // maybe best for admins to add premade curated command strings, so user dev can't input them directly, only give path to run in.
 export type Command = {
+  name: string;
   path: string;
   command: string; // no cd and no sudo
 };
@@ -74,7 +75,7 @@ export interface Build {
   subfolder?: string; // subfolder of monorepo. uses sparse clone
   branch?: string;
   accessToken?: string; // to gain access to private repos
-  onClone?: Command[];
+  onClone?: Command;
   /* build related */
   cliBuild?: Command; // run shell commands on build, before docker build step if it exists
   dockerBuildArgs?: DockerBuildArgs; // provided if docker build
@@ -106,7 +107,7 @@ export interface Deployment extends DockerRunArgs {
   accessToken?: string;
   repoMount?: string; // subfolder of repo to mount in container
   containerMount?: string; // the file path to mount repo on inside the container
-  onPull?: Command[];
+  onPull?: Command;
   // running status
   status?: "not deployed" | ContainerStatus;
 }

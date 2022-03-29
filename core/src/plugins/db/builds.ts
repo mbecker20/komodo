@@ -14,7 +14,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
     repo: String,
     branch: String,
     accessToken: String,
-    onClone: [Command],
+    onClone: Command,
     /* build related */
     cliBuild: Command,
     dockerBuildArgs: DockerBuildArgs,
