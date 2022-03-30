@@ -51,8 +51,8 @@ async function cloneRepo(
     !server && onPull
       ? await execute(
           `cd ${DEPLOYMENT_REPO_PATH + containerName!}${
-            onPull.path[0] === "/" ? "" : "/"
-          }${onPull.path} && ${onPull.command}`
+            onPull.path ? (onPull.path[0] === "/" ? "" : "/") : ""
+          }${onPull.path ? onPull.path : ""} && ${onPull.command}`
         )
       : undefined;
   const { command, log, isError } = mergeCommandLogError(
