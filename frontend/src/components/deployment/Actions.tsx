@@ -98,40 +98,48 @@ const Actions: Component<{}> = (p) => {
                   </ConfirmButton>
                 </Show>
 
-                <ConfirmButton
-                  color="red"
-                  onConfirm={() => {
-                    ws.send(DELETE_CONTAINER, {
-                      deploymentID: deployment()._id,
-                    });
-                    pushNotification("ok", `removing container...`);
-                  }}
+                <Show
+                  when={!actions.deleting}
+                  fallback={
+                    <button class="red">
+                      <Loading type="spinner" />
+                    </button>
+                  }
                 >
-                  <Show
-                    when={!actions.deleting}
-                    fallback={<Loading type="spinner" />}
+                  <ConfirmButton
+                    color="red"
+                    onConfirm={() => {
+                      ws.send(DELETE_CONTAINER, {
+                        deploymentID: deployment()._id,
+                      });
+                      pushNotification("ok", `removing container...`);
+                    }}
                   >
                     <Icon type="trash" />
-                  </Show>
-                </ConfirmButton>
+                  </ConfirmButton>
+                </Show>
               </Flex>
             </Flex>
             <Flex class={combineClasses(s.Action, "shadow")}>
               container{" "}
-              <ConfirmButton
-                color="orange"
-                onConfirm={() => {
-                  ws.send(STOP_CONTAINER, { deploymentID: deployment()._id });
-                  pushNotification("ok", `stopping container`);
-                }}
+              <Show
+                when={!actions.stopping}
+                fallback={
+                  <button class="orange">
+                    <Loading type="spinner" />
+                  </button>
+                }
               >
-                <Show
-                  when={!actions.stopping}
-                  fallback={<Loading type="spinner" />}
+                <ConfirmButton
+                  color="orange"
+                  onConfirm={() => {
+                    ws.send(STOP_CONTAINER, { deploymentID: deployment()._id });
+                    pushNotification("ok", `stopping container`);
+                  }}
                 >
                   <Icon type="pause" />
-                </Show>
-              </ConfirmButton>
+                </ConfirmButton>
+              </Show>
             </Flex>
           </Match>
 
@@ -144,6 +152,85 @@ const Actions: Component<{}> = (p) => {
             <Flex class={combineClasses(s.Action, "shadow")}>
               deploy{" "}
               <Flex>
+                <Show
+                  when={!actions.deploying}
+                  fallback={
+                    <button class="green">
+                      <Loading type="spinner" />
+                    </button>
+                  }
+                >
+                  <ConfirmButton
+                    color="green"
+                    onConfirm={() => {
+                      ws.send(DEPLOY, { deploymentID: deployment()._id });
+                      pushNotification(
+                        "ok",
+                        `deploying ${deployment().name}...`
+                      );
+                    }}
+                  >
+                    <Icon type="reset" />
+                  </ConfirmButton>
+                </Show>
+                <Show
+                  when={!actions.deleting}
+                  fallback={
+                    <button class="red">
+                      <Loading type="spinner" />
+                    </button>
+                  }
+                >
+                  <ConfirmButton
+                    color="red"
+                    onConfirm={() => {
+                      ws.send(DELETE_CONTAINER, {
+                        deploymentID: deployment()._id,
+                      });
+                      pushNotification("ok", `removing container...`);
+                    }}
+                  >
+                    <Icon type="trash" />
+                  </ConfirmButton>
+                </Show>
+              </Flex>
+            </Flex>
+            <Flex class={combineClasses(s.Action, "shadow")}>
+              container{" "}
+              <Show
+                when={!actions.starting}
+                fallback={
+                  <button class="green">
+                    <Loading type="spinner" />
+                  </button>
+                }
+              >
+                <ConfirmButton
+                  color="green"
+                  onConfirm={() => {
+                    ws.send(START_CONTAINER, {
+                      deploymentID: deployment()._id,
+                    });
+                    pushNotification("ok", `starting container`);
+                  }}
+                >
+                  <Icon type="play" />
+                </ConfirmButton>
+              </Show>
+            </Flex>
+          </Match>
+
+          <Match when={deployment().status === "not deployed"}>
+            <Flex class={combineClasses(s.Action, "shadow")}>
+              deploy{" "}
+              <Show
+                when={!actions.deploying}
+                fallback={
+                  <button class="green">
+                    <Loading type="spinner" />
+                  </button>
+                }
+              >
                 <ConfirmButton
                   color="green"
                   onConfirm={() => {
@@ -151,67 +238,9 @@ const Actions: Component<{}> = (p) => {
                     pushNotification("ok", `deploying ${deployment().name}...`);
                   }}
                 >
-                  <Show
-                    when={!actions.deploying}
-                    fallback={<Loading type="spinner" />}
-                  >
-                    <Icon type="reset" />
-                  </Show>
-                </ConfirmButton>
-                <ConfirmButton
-                  color="red"
-                  onConfirm={() => {
-                    ws.send(DELETE_CONTAINER, {
-                      deploymentID: deployment()._id,
-                    });
-                    pushNotification("ok", `removing container...`);
-                  }}
-                >
-                  <Show
-                    when={!actions.deleting}
-                    fallback={<Loading type="spinner" />}
-                  >
-                    <Icon type="trash" />
-                  </Show>
-                </ConfirmButton>
-              </Flex>
-            </Flex>
-            <Flex class={combineClasses(s.Action, "shadow")}>
-              container{" "}
-              <ConfirmButton
-                color="green"
-                onConfirm={() => {
-                  ws.send(START_CONTAINER, { deploymentID: deployment()._id });
-                  pushNotification("ok", `starting container...`);
-                }}
-              >
-                <Show
-                  when={!actions.starting}
-                  fallback={<Loading type="spinner" />}
-                >
                   <Icon type="play" />
-                </Show>
-              </ConfirmButton>
-            </Flex>
-          </Match>
-
-          <Match when={deployment().status === "not deployed"}>
-            <Flex class={combineClasses(s.Action, "shadow")}>
-              deploy{" "}
-              <ConfirmButton
-                color="green"
-                onConfirm={() => {
-                  ws.send(DEPLOY, { deploymentID: deployment()._id });
-                  pushNotification("ok", `deploying ${deployment().name}...`);
-                }}
-              >
-                <Show
-                  when={!actions.deploying}
-                  fallback={<Loading type="spinner" />}
-                >
-                  <Icon type="play" />
-                </Show>
-              </ConfirmButton>
+                </ConfirmButton>
+              </Show>
             </Flex>
           </Match>
         </Switch>
