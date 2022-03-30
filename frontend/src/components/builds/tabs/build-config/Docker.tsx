@@ -4,7 +4,7 @@ import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import s from "../../build.module.css";
-import { useConfig } from "./Provider";
+import { useConfig } from "../Provider";
 
 const Docker: Component<{}> = (p) => {
   const { build, setBuild } = useConfig();

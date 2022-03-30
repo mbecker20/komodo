@@ -60,7 +60,7 @@ export type DockerBuildArgs = {
 // maybe best for admins to add premade curated command strings, so user dev can't input them directly, only give path to run in.
 export type Command = {
   name: string;
-  path: string;
+  path?: string;
   command: string; // no cd and no sudo
 };
 

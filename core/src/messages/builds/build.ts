@@ -40,7 +40,11 @@ async function build(
     const { cliBuild, dockerBuildArgs } = build;
     try {
       const cli = cliBuild
-        ? await execute(`cd ${cliBuild.path} && ${cliBuild.command}`)
+        ? await execute(
+            `cd ${BUILD_REPO_PATH}${
+              cliBuild.path ? (cliBuild.path[0] === "/" ? "" : "/") : ""
+            }${cliBuild.path} && ${cliBuild.command}`
+          )
         : undefined;
       const docker = dockerBuildArgs
         ? await dockerBuild(

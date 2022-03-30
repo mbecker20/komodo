@@ -7,18 +7,16 @@ import Grid from "../../../util/layout/Grid";
 import s from "../../build.module.css";
 import CliBuild from "./CliBuild";
 import Docker from "./Docker";
-import Git from "./Git";
-import { useConfig } from "./Provider";
+import { useConfig } from "../Provider";
 
-const Config: Component<{}> = (p) => {
-	const { build, reset, save } = useConfig();
-	return (
+const BuildConfig: Component<{}> = (p) => {
+  const { build, reset, save } = useConfig();
+  return (
     <Show when={build.loaded}>
       <Grid class={s.Config}>
         <Grid class={combineClasses(s.ConfigItems, "scroller")}>
-          <Git />
           <CliBuild />
-					<Docker />
+          <Docker />
         </Grid>
         <Show when={build.updated}>
           <Flex style={{ "place-self": "center", padding: "1rem" }}>
@@ -35,6 +33,6 @@ const Config: Component<{}> = (p) => {
       </Grid>
     </Show>
   );
-}
+};
 
-export default Config;
+export default BuildConfig;

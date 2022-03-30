@@ -1,7 +1,7 @@
 import { Component } from "solid-js";
 import { combineClasses } from "../../../../util/helpers";
 import Grid from "../../../util/layout/Grid";
-import { useConfig } from "./Provider";
+import { useConfig } from "../Provider";
 import s from "../../build.module.css";
 import Flex from "../../../util/layout/Flex";
 import Input from "../../../util/Input";

@@ -4,7 +4,7 @@ import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import s from "../../build.module.css";
-import { useConfig } from "./Provider";
+import { useConfig } from "../Provider";
 
 const CliBuild: Component<{}> = (p) => {
   const { build, setBuild } = useConfig();
@@ -17,7 +17,7 @@ const CliBuild: Component<{}> = (p) => {
         <Input
           placeholder="from root of repo"
           value={build.cliBuild?.path}
-          onEdit={(value) => setBuild("cliBuild", "path", value)}
+          onEdit={(path) => setBuild("cliBuild", { path })}
         />
       </Flex>
       <Flex justifyContent="space-between" alignItems="center">
@@ -25,7 +25,7 @@ const CliBuild: Component<{}> = (p) => {
         <Input
           placeholder="ie. yarn build"
           value={build.cliBuild?.command}
-          onEdit={(value) => setBuild("cliBuild", "command", value)}
+          onEdit={(command) => setBuild("cliBuild", { command })}
         />
       </Flex>
     </Grid>

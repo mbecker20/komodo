@@ -1,7 +1,13 @@
-import { Build, Conversion, Deployment, EnvironmentVar, Server } from "@monitor/types";
+import {
+  Build,
+  Conversion,
+  Deployment,
+  EnvironmentVar,
+  Server,
+} from "@monitor/types";
 import { objFrom2Arrays } from "./helpers";
 
-const deploymentViewFields = [
+const deploymentViewFields: (keyof Deployment)[] = [
   "name",
   "image",
   "buildID",
@@ -9,10 +15,7 @@ const deploymentViewFields = [
   "volumes",
   "environment",
   "network",
-  "useServerRoot",
   "restart",
-  "logTail",
-  "autoDeploy",
   "containerUser",
   "postImage",
 ]; // the fields shown in the update log
@@ -196,18 +199,12 @@ function volumesChangelog(oldVols?: Conversion[], newVols?: Conversion[]) {
       return "";
     } else {
       return `Added Volumes:\n${newVols
-        .map(
-          (vol) =>
-            `\t${vol.local}: ${vol.container},\n`
-        )
+        .map((vol) => `\t${vol.local}: ${vol.container},\n`)
         .reduce((prev, curr) => prev + curr)}`;
     }
   } else if (!newVols) {
     return `Removed Volumes:\n${oldVols
-      .map(
-        (vol) =>
-          `\t${vol.local}: ${vol.container},\n`
-      )
+      .map((vol) => `\t${vol.local}: ${vol.container},\n`)
       .reduce((prev, curr) => prev + curr)}`;
   } else {
     const oldLocal = oldVols.map((vol) => vol.local);
@@ -221,10 +218,7 @@ function volumesChangelog(oldVols?: Conversion[], newVols?: Conversion[]) {
     const deletions: string[] = [];
     oldLocal.forEach((local) => {
       if (newLocal.includes(local)) {
-        if (
-          oldObj[local] !== newObj[local]
-        )
-          changes.push(local);
+        if (oldObj[local] !== newObj[local]) changes.push(local);
       } else {
         deletions.push(local);
       }
@@ -239,10 +233,7 @@ function volumesChangelog(oldVols?: Conversion[], newVols?: Conversion[]) {
       additions.length > 0
         ? `\tAdditions:\n` +
           additions
-            .map(
-              (addition) =>
-                `\t\t${addition}: ${newObj[addition]},\n`
-            )
+            .map((addition) => `\t\t${addition}: ${newObj[addition]},\n`)
             .reduce((prev, curr) => prev + curr)
         : "";
     const changesString =
@@ -259,10 +250,7 @@ function volumesChangelog(oldVols?: Conversion[], newVols?: Conversion[]) {
       deletions.length > 0
         ? `\tDeletions:\n` +
           deletions
-            .map(
-              (deletion) =>
-                `\t\t${deletion}: ${oldObj[deletion]},\n`
-            )
+            .map((deletion) => `\t\t${deletion}: ${oldObj[deletion]},\n`)
             .reduce((prev, curr) => prev + curr)
         : "";
     const show =
@@ -275,14 +263,13 @@ function volumesChangelog(oldVols?: Conversion[], newVols?: Conversion[]) {
   }
 }
 
-const buildViewFields = [
+const buildViewFields: (keyof Build)[] = [
   "name",
-  "repoURL",
-  "repoName",
+  "repo",
   "branch",
-  "buildPath",
-  "dockerfilePath",
-  "owner",
+  "onClone",
+  "cliBuild",
+  "dockerBuildArgs",
 ]; // the fields shown in the update log
 
 export function buildChangelog(oldBuild: Build, newBuild: Build) {

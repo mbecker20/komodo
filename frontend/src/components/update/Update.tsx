@@ -89,7 +89,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
               </pre>
               <Show when={p.update.log.stderr}>
                 <div>stderr</div>
-                <pre class={s.Log}>{p.update.log.stderr}</pre>
+                <pre class={combineClasses(s.Log, "scroller")}>{p.update.log.stderr}</pre>
               </Show>
               <Show when={p.update.log.stdout}>
                 <div>stdout</div>

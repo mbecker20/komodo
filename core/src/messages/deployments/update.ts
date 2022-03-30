@@ -1,7 +1,8 @@
 import { Deployment, User } from "@monitor/types";
 import { deploymentChangelog, UPDATE_DEPLOYMENT } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { PERMISSIONS_DENY_LOG } from "../../config";
+import { remove } from "fs-extra";
+import { DEPLOYMENT_REPO_PATH, PERMISSIONS_DENY_LOG } from "../../config";
 import { clonePeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
 import cloneRepo from "./clone";
@@ -36,10 +37,18 @@ async function updateDeployment(
         deployment.serverID === app.core._id
           ? undefined
           : await app.servers.findById(deployment.serverID!);
-      if (server) {
-        await clonePeriphery(server, deployment);
+      if (deployment.repo) {
+        if (server) {
+          await clonePeriphery(server, deployment);
+        } else {
+          await cloneRepo(app, user, deployment);
+        }
       } else {
-        await cloneRepo(app, user, deployment);
+        if (server) {
+          // need to make this route
+        } else {
+          await remove(DEPLOYMENT_REPO_PATH + deployment.containerName); // need to have this on periphery as well
+        }
       }
     }
     // make sure owners cant be updated this way

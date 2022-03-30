@@ -69,12 +69,12 @@ export function generateQuery(query?: Collection<string | number | undefined>) {
 }
 
 export function mergeCommandLogError(
-  ...cle: ({ name: string; cle: CommandLogError | undefined })[]
+  ...cle: { name: string; cle: CommandLogError | undefined }[]
 ) {
   const _cle = cle.filter((cle) => cle.cle) as {
     name: string;
     cle: CommandLogError;
-  }[]; 
+  }[];
   const command = _cle.reduce((prev, curr) => {
     return prev + (prev && "\n\n") + `${curr.name}: ${curr.cle.command}`;
   }, "");
@@ -82,12 +82,16 @@ export function mergeCommandLogError(
     (log, curr) => {
       log.stdout =
         log.stdout +
-        (log.stdout && "\n\n") +
-        `${curr.name}:\n${curr.cle.log.stdout}`;
+        (log.stdout && (curr.cle.log.stdout ? "\n\n" : "")) +
+        curr.cle.log.stdout
+          ? `${curr.name}:\n${curr.cle.log.stdout}`
+          : "";
       log.stderr =
         log.stderr +
-        (log.stderr && "\n\n") +
-        `${curr.name}:\n${curr.cle.log.stderr}`;
+        (log.stderr && (curr.cle.log.stderr ? "\n\n" : "")) +
+        curr.cle.log.stderr
+          ? `${curr.name}:\n${curr.cle.log.stderr}`
+          : "";
       return log;
     },
     { stdout: "", stderr: "" }
