@@ -60,7 +60,7 @@ async function build(
           )
         : undefined;
       const { command, log, isError } = mergeCommandLogError(
-        { name: "log", cle: pull },
+        { name: "pull", cle: pull },
         { name: "cli", cle: cli },
         { name: "docker", cle: docker }
       );
