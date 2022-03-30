@@ -66,7 +66,6 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.send(deployment);
     }
   );
-  done();
 
   app.get(
     "/api/deployment/:id/log",
@@ -132,6 +131,18 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.send(status);
     }
   );
+
+  app.get(
+    "/api/deployment/:id/action-state",
+    { onRequest: [app.auth] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const state = app.deployActionStates.getJSON(id);
+      res.send(state);
+    }
+  );
+
+  done();
 });
 
 export default deployments;

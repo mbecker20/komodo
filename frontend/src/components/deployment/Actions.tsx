@@ -1,5 +1,13 @@
-import { ContainerStatus } from "@monitor/types";
-import { Component, Match, Show, Switch } from "solid-js";
+import { ContainerStatus, DeployActionState } from "@monitor/types";
+import {
+  Component,
+  createEffect,
+  Match,
+  onCleanup,
+  Show,
+  Switch,
+} from "solid-js";
+import { createStore } from "solid-js/store";
 import { pushNotification } from "../..";
 import {
   DELETE_CONTAINER,
@@ -9,15 +17,54 @@ import {
 } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
+import { getDeploymentActionState } from "../../util/query";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
+import Loading from "../util/loading/Loading";
 import s from "./deployment.module.css";
 
 const Actions: Component<{}> = (p) => {
   const { ws, deployments, selected } = useAppState();
   const deployment = () => deployments.get(selected.id())!;
+  const [actions, setActions] = createStore<DeployActionState>({
+    deploying: false,
+    deleting: false,
+    starting: false,
+    stopping: false,
+  });
+  createEffect(() => {
+    getDeploymentActionState(selected.id()).then(setActions);
+  });
+  onCleanup(
+    ws.subscribe([DEPLOY], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("deploying", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([DELETE_CONTAINER], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("deleting", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([START_CONTAINER], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("starting", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([STOP_CONTAINER], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("stopping", !complete);
+      }
+    })
+  );
   return (
     <Show when={deployment()}>
       <Grid class={combineClasses(s.Card, "shadow")}>
@@ -36,7 +83,12 @@ const Actions: Component<{}> = (p) => {
                     pushNotification("ok", `deploying ${deployment().name}...`);
                   }}
                 >
-                  <Icon type="reset" />
+                  <Show
+                    when={!actions.deploying}
+                    fallback={<Loading type="spinner" scale={0.25} />}
+                  >
+                    <Icon type="reset" />
+                  </Show>
                 </ConfirmButton>
                 <ConfirmButton
                   color="red"
@@ -47,7 +99,12 @@ const Actions: Component<{}> = (p) => {
                     pushNotification("ok", `removing container...`);
                   }}
                 >
-                  <Icon type="trash" />
+                  <Show
+                    when={!actions.deleting}
+                    fallback={<Loading type="spinner" scale={0.25} />}
+                  >
+                    <Icon type="trash" />
+                  </Show>
                 </ConfirmButton>
               </Flex>
             </Flex>
@@ -60,7 +117,12 @@ const Actions: Component<{}> = (p) => {
                   pushNotification("ok", `stopping container`);
                 }}
               >
-                <Icon type="pause" />
+                <Show
+                  when={!actions.stopping}
+                  fallback={<Loading type="spinner" scale={0.25} />}
+                >
+                  <Icon type="pause" />
+                </Show>
               </ConfirmButton>
             </Flex>
           </Match>
@@ -81,7 +143,12 @@ const Actions: Component<{}> = (p) => {
                     pushNotification("ok", `deploying ${deployment().name}...`);
                   }}
                 >
-                  <Icon type="reset" />
+                  <Show
+                    when={!actions.deploying}
+                    fallback={<Loading type="spinner" scale={0.25} />}
+                  >
+                    <Icon type="reset" />
+                  </Show>
                 </ConfirmButton>
                 <ConfirmButton
                   color="red"
@@ -92,7 +159,12 @@ const Actions: Component<{}> = (p) => {
                     pushNotification("ok", `removing container...`);
                   }}
                 >
-                  <Icon type="trash" />
+                  <Show
+                    when={!actions.deleting}
+                    fallback={<Loading type="spinner" scale={0.25} />}
+                  >
+                    <Icon type="trash" />
+                  </Show>
                 </ConfirmButton>
               </Flex>
             </Flex>
@@ -105,7 +177,12 @@ const Actions: Component<{}> = (p) => {
                   pushNotification("ok", `starting container...`);
                 }}
               >
-                <Icon type="play" />
+                <Show
+                  when={!actions.starting}
+                  fallback={<Loading type="spinner" scale={0.25} />}
+                >
+                  <Icon type="play" />
+                </Show>
               </ConfirmButton>
             </Flex>
           </Match>
@@ -120,7 +197,12 @@ const Actions: Component<{}> = (p) => {
                   pushNotification("ok", `deploying ${deployment().name}...`);
                 }}
               >
-                <Icon type="play" />
+                <Show
+                  when={!actions.deploying}
+                  fallback={<Loading type="spinner" scale={0.25} />}
+                >
+                  <Icon type="play" />
+                </Show>
               </ConfirmButton>
             </Flex>
           </Match>

@@ -3,6 +3,7 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
 interface ActionState {
+  getJSON(id: string): void;
   add(id: string): void;
   delete(id: string): void;
   set(id: string, type: string, state: boolean): void;
@@ -29,6 +30,9 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
   const deployActionStates: DeployActionStates = {};
 
   app.decorate("buildActionStates", {
+    getJSON: (buildID: string) => {
+      return buildActionStates[buildID];
+    },
     add: (buildID: string) => {
       buildActionStates[buildID] = {
         pulling: false,
@@ -53,6 +57,9 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
   });
 
   app.decorate("deployActionStates", {
+    getJSON: (deploymentID: string) => {
+      return deployActionStates[deploymentID];
+    },
     add: (deploymentID: string) => {
       deployActionStates[deploymentID] = {
         deploying: false,

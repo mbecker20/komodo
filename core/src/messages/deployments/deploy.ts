@@ -44,7 +44,7 @@ async function deployDeployment(
     const build = deployment.buildID
       ? await app.builds.findById(deployment.buildID)
       : undefined;
-    const image = build && build.imageName;
+    const image = build && build.dockerBuildArgs?.imageName;
     const containerMount =
       deployment.repo && deployment.containerMount
         ? {

@@ -31,7 +31,7 @@ async function sparseClone(
     accessToken ? `${accessToken}@` : ""
   }github.com/${repo}.git`;
   const _branch = branch && branch !== "master" ? ` -b ${branch}` : "";
-  const sparseCheckout = `git sparse-checkout init --cone && git sparse-checkout set ${subfolder}`;
+  const sparseCheckout = `cd ${folder} && git sparse-checkout init --cone && git sparse-checkout set ${subfolder}`;
   const command = `${_clone} ${url} ${folder}${_branch} && ${sparseCheckout}`;
   return await execute(
     command,
