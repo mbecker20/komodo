@@ -3,6 +3,7 @@ import { client, pushNotification, WS_URL } from "..";
 import {
   ADD_SERVER,
   ADD_UPDATE,
+  ALERT,
   CREATE_BUILD,
   CREATE_DEPLOYMENT,
   DELETE_BUILD,
@@ -118,6 +119,10 @@ function handleMessage(
 
     case UPDATE_SERVER:
       servers.update(message.server);
+      break;
+
+    case ALERT:
+      pushNotification(message.status, message.message);
       break;
 
     /* Updates */

@@ -9,7 +9,6 @@ import {
   START_CONTAINER,
   STOP_CONTAINER,
   UPDATE_DEPLOYMENT,
-  CONTAINER_LOG
 } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
@@ -22,10 +21,6 @@ import createDeployment from "./create";
 import deleteDeployment from "./delete";
 import deployDeployment from "./deploy";
 import updateDeployment from "./update";
-import containerLog from "./log";
-
-const DEPLOY_TIMEOUT = 1000;
-const DEPLOY_RECHECK_TIMEOUT = 3000;
 
 async function deploymentMessages(
   app: FastifyInstance,
@@ -74,11 +69,6 @@ async function deploymentMessages(
 
     case DELETE_CONTAINER:
       await deleteDeploymentContainer(app, user, message);
-      return true;
-
-    case CONTAINER_LOG:
-      const log = await containerLog(app, message);
-      client.send(JSON.stringify(log));
       return true;
 
     case REFRESH_CONTAINER_STATUS:

@@ -1,7 +1,7 @@
 import { BuildActionState } from "@monitor/types";
 import { Component, createEffect, onCleanup, Show } from "solid-js";
 import { createStore } from "solid-js/store";
-import { BUILD } from "../../state/actions";
+import { BUILD, CLONE_BUILD_REPO } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
 import { getBuildActionState } from "../../util/query";
@@ -52,6 +52,17 @@ const Actions: Component<{}> = (p) => {
               <Icon type="build" />
             </ConfirmButton>
           </Show>
+        </Flex>
+        <Flex class={combineClasses(s.Action, "shadow")}>
+          clone{" "}
+          <ConfirmButton
+            color="orange"
+            onConfirm={() => {
+              ws.send(CLONE_BUILD_REPO, { buildID: selected.id() });
+            }}
+          >
+            <Icon type="arrow-down" />
+          </ConfirmButton>
         </Flex>
       </Grid>
     </Show>

@@ -1,4 +1,6 @@
+import { ALERT } from "@monitor/util";
 import { FastifyInstance } from "fastify";
+import { WebSocket } from "ws";
 import { HOST } from "../config";
 
 export function toDashedName(name: string) {
@@ -22,4 +24,12 @@ export async function getDeploymentGithubListenerURL(
     "containerName"
   );
   return `${HOST}/githubListener?containerName=${deployment?.containerName}`;
+}
+
+export function sendAlert(
+  client: WebSocket,
+  status: "good" | "bad" | "ok",
+  message: string
+) {
+  client.send(JSON.stringify({ type: ALERT, status, message }))
 }

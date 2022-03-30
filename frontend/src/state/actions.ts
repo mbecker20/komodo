@@ -30,3 +30,6 @@ export const PRUNE_NETWORKS = "PRUNE_NETWORKS";
 
 /* UPDATE */
 export const ADD_UPDATE = "ADD_UPDATE";
+
+/* ALERT */
+export const ALERT = "ALERT"
