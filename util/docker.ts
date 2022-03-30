@@ -103,7 +103,8 @@ export async function deleteContainer(containerName: string) {
 /* Docker Build */
 
 export async function dockerBuild(
-  { buildPath, dockerfilePath, imageName }: DockerBuildArgs,
+  imageName: string,
+  { buildPath, dockerfilePath }: DockerBuildArgs,
   repoPath: string,
   registryUrl: string
 ) {

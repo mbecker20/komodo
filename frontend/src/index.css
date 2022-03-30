@@ -82,6 +82,11 @@ input:focus {
   outline: solid 1px rgba(50, 50, 50, 0.5);
 }
 
+input::placeholder {
+  color: inherit;
+  opacity: 0.6;
+}
+
 h1 {
   font-size: 1.5rem;
 	font-weight: 500;

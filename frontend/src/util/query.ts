@@ -1,4 +1,5 @@
 import {
+  Build,
   Builds,
   ContainerStatus,
   DeployActionState,
@@ -24,6 +25,10 @@ export async function getUpdates(query?: {
 
 export async function getBuilds() {
   return await client.get<Builds>("/api/builds");
+}
+
+export async function getBuild(buildID: string) {
+  return await client.get<Build>(`/api/build/${buildID}`);
 }
 
 export async function getDeployments(query?: { serverID?: string }) {

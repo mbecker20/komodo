@@ -24,8 +24,8 @@ const Sidebar: Component<{}> = (p) => {
         }}
       >
         <Grid style={{ height: "fit-content", padding: "1rem" }}>
-          <AddServer />
           <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
+          <AddServer />
           <div class={s.Divider} />
           <Builds />
         </Grid>

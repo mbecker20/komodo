@@ -50,7 +50,7 @@ const Image: Component<{}> = (p) => {
               spellcheck={false}
               value={deployment.image || ""}
               style={{ width: "12rem" }}
-              onConfirm={(value) => setDeployment("image", value)}
+              onEdit={(value) => setDeployment("image", value)}
             />
           </Flex>
         </Show>

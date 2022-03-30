@@ -29,9 +29,9 @@ async function pullRepo(
     app.buildActionStates.set(buildID, PULLING, true);
     app.broadcast(PULL, { complete: false, buildID });
     try {
-      const { imageName, branch } = build;
+      const { pullName, branch } = build;
       const { command, log, isError } = await pull(
-        BUILD_REPO_PATH + imageName,
+        BUILD_REPO_PATH + pullName,
         branch
       );
       addBuildUpdate(

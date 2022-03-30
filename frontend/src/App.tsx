@@ -1,4 +1,5 @@
 import { Component, Match, Switch } from "solid-js";
+import Build from "./components/builds/Build";
 import Deployment from "./components/deployment/Deployment";
 import Server from "./components/server/Server";
 import Sidebar from "./components/sidebar/Sidebar";
@@ -18,7 +19,9 @@ const App: Component = () => {
         <Match when={selected.type() === "server"}>
           <Server />
         </Match>
-        {/* <Match when={selected.type() === "build"}></Match> */}
+        <Match when={selected.type() === "build"}>
+          <Build />
+        </Match>
       </Switch>
     </>
   );

@@ -26,7 +26,7 @@ async function createBuild(
   try {
     const build = await app.builds.create({
       ...message.build,
-      imageName: toDashedName(message.build.name),
+      pullName: toDashedName(message.build.name),
       owners: [user.username],
     });
     app.buildActionStates.add(build._id!);

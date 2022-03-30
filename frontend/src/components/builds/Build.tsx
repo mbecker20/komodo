@@ -3,15 +3,14 @@ import { useAppState } from "../../state/StateProvider";
 import Grid from "../util/layout/Grid";
 import Actions from "./Actions";
 import Header from "./Header";
-import DeploymentTabs from "./tabs/Tabs";
+import BuildTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
-const Deployment: Component<{}> = (p) => {
-  const { servers, deployments, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id());
-  const server = () => deployment() && servers.get(deployment()?.serverID!);
-  return (
-    <Show when={deployment() && server()}>
+const Build: Component<{}> = (p) => {
+	const { builds, selected } = useAppState();
+  const build = () => builds.get(selected.id())!;
+	return (
+    <Show when={build()}>
       <Grid class="content">
         {/* left / actions */}
         <Grid class="left-content">
@@ -20,10 +19,10 @@ const Deployment: Component<{}> = (p) => {
           <Updates />
         </Grid>
         {/* right / tabs */}
-        <DeploymentTabs />
+        <BuildTabs />
       </Grid>
     </Show>
   );
-};
+}
 
-export default Deployment;
+export default Build;

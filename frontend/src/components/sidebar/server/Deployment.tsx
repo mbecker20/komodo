@@ -17,7 +17,7 @@ const Deployment: Component<{ id: string }> = (p) => {
   return (
     <Show when={deployment()}>
       <button
-        class={combineClasses(s.Deployment, selected.id() === p.id && "selected")}
+        class={combineClasses(s.DropdownItem, selected.id() === p.id && "selected")}
         onClick={() => selected.set(deployment()!._id!, "deployment")}
       >
         <div>{deployment()!.name}</div>

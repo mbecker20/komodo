@@ -1,5 +1,5 @@
 import { Server } from "@monitor/types";
-import { Component } from "solid-js";
+import { Component, Show } from "solid-js";
 import { REMOVE_SERVER } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
@@ -22,23 +22,25 @@ const Header: Component<{}> = (p) => {
         <h1>{server().name}</h1>
         <div style={{ opacity: 0.8 }}>{server().address}</div>
       </Grid>
-      <Flex alignItems="center">
-        <div>
-          {server().enabled
-            ? server().status === "OK"
-              ? "OK"
-              : "NOT OK"
-            : "DISABLED"}
-        </div>
-        <ConfirmButton
-          onConfirm={() => {
-            ws.send(REMOVE_SERVER, { serverID: selected.id() });
-          }}
-          color="red"
-        >
-          <Icon type="trash" />
-        </ConfirmButton>
-      </Flex>
+      <Show when={!server().isCore}>
+        <Flex alignItems="center">
+          <div>
+            {server().enabled
+              ? server().status === "OK"
+                ? "OK"
+                : "NOT OK"
+              : "DISABLED"}
+          </div>
+          <ConfirmButton
+            onConfirm={() => {
+              ws.send(REMOVE_SERVER, { serverID: selected.id() });
+            }}
+            color="red"
+          >
+            <Icon type="trash" />
+          </ConfirmButton>
+        </Flex>
+      </Show>
     </Flex>
   );
 };

@@ -54,7 +54,6 @@ export type Server = {
 export type DockerBuildArgs = {
   buildPath: string; // build folder relative to repo root
   dockerfilePath: string; // relative to buildPath
-  imageName: string;
 };
 
 // these are potentially dangerous but also useful

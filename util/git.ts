@@ -11,7 +11,7 @@ async function fullClone(
   const url = `https://${
     accessToken ? `${accessToken}@` : ""
   }github.com/${repo}.git`;
-  const _branch = branch && branch !== "master" ? ` -b ${branch}` : "";
+  const _branch = ` -b ${branch || "main"}`;
   const clone = `${_clone} ${url} ${folder}${_branch}`;
   return await execute(
     clone,
@@ -30,7 +30,7 @@ async function sparseClone(
   const url = `https://${
     accessToken ? `${accessToken}@` : ""
   }github.com/${repo}.git`;
-  const _branch = branch && branch !== "master" ? ` -b ${branch}` : "";
+  const _branch = ` -b ${branch || "main"}`;
   const sparseCheckout = `cd ${folder} && git sparse-checkout init --cone && git sparse-checkout set ${subfolder}`;
   const command = `${_clone} ${url} ${folder}${_branch} && ${sparseCheckout}`;
   return await execute(

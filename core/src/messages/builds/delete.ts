@@ -30,7 +30,7 @@ async function deleteBuild(
       { buildID: build._id },
       { buildID: undefined }
     );
-    if (build!.repo) await remove(BUILD_REPO_PATH + build.imageName);
+    if (build!.repo) await remove(BUILD_REPO_PATH + build.pullName);
     app.buildActionStates.delete(buildID);
     addSystemUpdate(app, DELETE_BUILD, "Delete Build", {}, user.username, note);
     return true;

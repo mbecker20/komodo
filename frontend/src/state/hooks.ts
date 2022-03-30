@@ -36,7 +36,11 @@ export function useSelected({ servers, builds, deployments }: State) {
           history.replaceState({}, "", `${selected().type}/${selected().id}`);
         }
       }
-    } else if (selected().type === "server" && servers.loaded()) {
+    } else if (
+      selected().type === "server" &&
+      servers.loaded() &&
+      deployments.loaded()
+    ) {
       if (!servers.get(selected().id)) {
         const id = servers.ids()![0];
         set(id, "server");
@@ -46,10 +50,18 @@ export function useSelected({ servers, builds, deployments }: State) {
           history.replaceState({}, "", `${selected().type}/${selected().id}`);
         }
       }
-    } else if (selected().type === "build" && builds.loaded()) {
+    } else if (
+      selected().type === "build" &&
+      builds.loaded() &&
+      deployments.loaded()
+    ) {
       if (!builds.get(selected().id)) {
         const id = builds.ids()![0];
-        set(id, "build");
+        if (!id) {
+          set(deployments.ids()![0], "deployment");
+        } else {
+          set(id, "build");
+        }
       } else {
         const [type, id] = location.pathname.split("/").filter((val) => val);
         if (type !== selected().type || id !== selected().id) {
@@ -86,7 +98,7 @@ export function useArray<T>(query: () => Promise<T[]>) {
   const [collection, set] = createSignal<T[]>();
   createEffect(() => {
     query().then(set);
-  })
+  });
   const add = (item: T) => {
     set((items: any) => [item, ...items]);
   };

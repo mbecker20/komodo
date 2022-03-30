@@ -16,7 +16,6 @@ export const Command = new Schema<CommandType>({
 export const DockerBuildArgs = new Schema<DockerBuildArgsType>({
   buildPath: String,
   dockerfilePath: String,
-  imageName: String,
 });
 
 export const Conversion = new Schema<ConversionType>({

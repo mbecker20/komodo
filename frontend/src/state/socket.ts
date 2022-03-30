@@ -91,6 +91,9 @@ function handleMessage(
     /* Builds */
     case CREATE_BUILD:
       builds.add(message.build);
+      if (message.build.owners[0] === user.username) {
+        selected.set(message.build._id, "build");
+      }
       break;
 
     case DELETE_BUILD:
@@ -104,6 +107,9 @@ function handleMessage(
     /* Servers */
     case ADD_SERVER:
       servers.add(message.server);
+      if (message.server.owners[0] === user.username) {
+        selected.set(message.server._id, "server");
+      }
       break;
 
     case REMOVE_SERVER:

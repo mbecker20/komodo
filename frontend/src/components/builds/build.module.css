@@ -1,0 +1,52 @@
+.Card {
+	background-color: rgb(27, 55, 86);
+	padding: 0.5rem;
+}
+
+/* actions */
+
+.Action {
+	background-color: rgb(69, 34, 96);
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem;
+	box-sizing: border-box;
+}
+
+/* updates */
+
+.UpdatesContainer {
+	max-height: 50vh;
+}
+
+.Update {
+	background-color: rgb(69, 34, 96);
+}
+
+/* tabs */
+
+.Tabs {
+	height: fit-content;
+}
+
+/* Config */
+
+.Config {
+	height: 100%;
+	place-items: start center;
+	grid-template-rows: 70vh auto
+}
+
+.ConfigItems {
+	max-height: 100%;
+	padding: 0.5rem;
+}
+
+.ConfigItem {
+	width: 100%;
+	max-width: 35rem;
+	background-color: darkolivegreen;
+	box-sizing: border-box;
+	padding: 0.5rem;
+	height: fit-content;
+}

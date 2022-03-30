@@ -9,22 +9,22 @@ const AUTO_BUILD = "Auto Build";
 
 const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/githubListener", async (req, res) => {
-    const query = req.query as { imageName?: string; containerName?: string };
-    if (query.imageName) {
-      const build = await app.builds.findOne({ imageName: query.imageName });
+    const query = req.query as { pullName?: string; containerName?: string };
+    if (query.pullName) {
+      const build = await app.builds.findOne({ pullName: query.pullName });
       if (build) {
-        const { _id, buildPath, dockerfilePath, branch, imageName } = build;
+        const { _id, dockerBuildArgs, branch, pullName } = build;
         const {
           command: pullCommand,
           log: pullLog,
           isError: pullIsError,
-        } = await pull(BUILD_REPO_PATH + imageName, branch);
-        if (!pullIsError && buildPath && dockerfilePath) {
+        } = await pull(BUILD_REPO_PATH + pullName, branch);
+        if (!pullIsError && dockerBuildArgs) {
           const {
             command: buildCommand,
             log: buildLog,
             isError: buildIsError,
-          } = await dockerBuild(build, BUILD_REPO_PATH, REGISTRY_URL);
+          } = await dockerBuild(pullName!, dockerBuildArgs, BUILD_REPO_PATH, REGISTRY_URL);
           await addBuildUpdate(
             app,
             _id!,

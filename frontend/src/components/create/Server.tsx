@@ -4,6 +4,7 @@ import { createStore } from "solid-js/store";
 import { pushNotification } from "../..";
 import { ADD_SERVER } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
+import { combineClasses } from "../../util/helpers";
 import { useToggle } from "../../util/hooks";
 import Input from "../util/Input";
 import Grid from "../util/layout/Grid";
@@ -17,7 +18,7 @@ const AddServer: Component<{}> = (p) => {
       toggleShow={toggleShow}
       title="add server"
       target="add server"
-      targetClass="blue"
+      targetClass={combineClasses("green", "shadow")}
       targetStyle={{ width: "100%" }}
       content={<Content close={toggleShow} />}
     />

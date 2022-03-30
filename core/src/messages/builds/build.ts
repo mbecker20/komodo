@@ -44,6 +44,7 @@ async function build(
         : undefined;
       const docker = dockerBuildArgs
         ? await dockerBuild(
+            build.pullName!,
             dockerBuildArgs,
             BUILD_REPO_PATH,
             REGISTRY_URL

@@ -31,9 +31,10 @@ async function deployDeployment(
   app.deployActionStates.set(deploymentID, DEPLOYING, true);
   app.broadcast(DEPLOY, { complete: false, deploymentID });
   try {
-    const server = deployment.serverID === app.core._id
-      ? undefined
-      : await app.servers.findById(deployment.serverID!);
+    const server =
+      deployment.serverID === app.core._id
+        ? undefined
+        : await app.servers.findById(deployment.serverID!);
     if (server) {
       // delete the container on periphery
       await deletePeripheryContainer(server, deployment.containerName!);
@@ -44,7 +45,7 @@ async function deployDeployment(
     const build = deployment.buildID
       ? await app.builds.findById(deployment.buildID)
       : undefined;
-    const image = build && build.dockerBuildArgs?.imageName;
+    const image = build && build.dockerBuildArgs ? build.pullName : undefined;
     const containerMount =
       deployment.repo && deployment.containerMount
         ? {

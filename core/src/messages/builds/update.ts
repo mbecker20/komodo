@@ -28,16 +28,16 @@ async function updateBuild(
     return;
   }
   try {
-    build.imageName = toDashedName(build.name);
+    build.pullName = toDashedName(build.name);
     if (build.repo !== preBuild.repo || build.branch !== preBuild.branch) {
       // reclone repo if repo is changed
-      await remove(BUILD_REPO_PATH + preBuild.imageName).catch();
+      await remove(BUILD_REPO_PATH + preBuild.pullName).catch();
       if (build.repo) {
         await cloneRepo(app, user, build);
       }
-    } else if (build.imageName !== preBuild.imageName) {
-      if (await pathExists(BUILD_REPO_PATH + preBuild.imageName)) {
-        await move(BUILD_REPO_PATH + preBuild.imageName, BUILD_REPO_PATH + build.imageName);
+    } else if (build.pullName !== preBuild.pullName) {
+      if (await pathExists(BUILD_REPO_PATH + preBuild.pullName)) {
+        await move(BUILD_REPO_PATH + preBuild.pullName, BUILD_REPO_PATH + build.pullName);
       }
       // maybe do something more with deployments
     }
