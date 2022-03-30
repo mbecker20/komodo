@@ -35,6 +35,11 @@ export const ConfigProvider: Component<{ build: Build }> = (p) => {
     getBuild(p.build._id!).then((build) => {
       set({
         ...build,
+        repo: build.repo,
+        branch: build.branch,
+        onClone: build.onClone,
+        dockerBuildArgs: build.dockerBuildArgs,
+        cliBuild: build.cliBuild,
         loaded: true,
         updated: false,
         saving: false

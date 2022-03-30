@@ -54,7 +54,7 @@ export async function clone(
   }
 }
 
-export async function pull(folder: string, branch = "master") {
+export async function pull(folder: string, branch = "main") {
   const command = `cd ${folder} && git pull origin ${branch}`;
   return await execute(command);
 }

@@ -16,7 +16,7 @@ const CliBuild: Component<{}> = (p) => {
         <div>build path</div>
         <Input
           placeholder="from root of repo"
-          value={build.cliBuild?.path}
+          value={build.cliBuild?.path || ""}
           onEdit={(path) => setBuild("cliBuild", { path })}
         />
       </Flex>
@@ -24,7 +24,7 @@ const CliBuild: Component<{}> = (p) => {
         <div>command</div>
         <Input
           placeholder="ie. yarn build"
-          value={build.cliBuild?.command}
+          value={build.cliBuild?.command || ""}
           onEdit={(command) => setBuild("cliBuild", { command })}
         />
       </Flex>

@@ -76,20 +76,28 @@ const Actions: Component<{}> = (p) => {
             <Flex class={combineClasses(s.Action, "shadow")}>
               deploy{" "}
               <Flex>
-                <ConfirmButton
-                  color="green"
-                  onConfirm={() => {
-                    ws.send(DEPLOY, { deploymentID: deployment()._id });
-                    pushNotification("ok", `deploying ${deployment().name}...`);
-                  }}
+                <Show
+                  when={!actions.deploying}
+                  fallback={
+                    <button class="green">
+                      <Loading type="spinner" />
+                    </button>
+                  }
                 >
-                  <Show
-                    when={!actions.deploying}
-                    fallback={<Loading type="spinner" scale={0.25} />}
+                  <ConfirmButton
+                    color="green"
+                    onConfirm={() => {
+                      ws.send(DEPLOY, { deploymentID: deployment()._id });
+                      pushNotification(
+                        "ok",
+                        `deploying ${deployment().name}...`
+                      );
+                    }}
                   >
                     <Icon type="reset" />
-                  </Show>
-                </ConfirmButton>
+                  </ConfirmButton>
+                </Show>
+
                 <ConfirmButton
                   color="red"
                   onConfirm={() => {
@@ -101,7 +109,7 @@ const Actions: Component<{}> = (p) => {
                 >
                   <Show
                     when={!actions.deleting}
-                    fallback={<Loading type="spinner" scale={0.25} />}
+                    fallback={<Loading type="spinner" />}
                   >
                     <Icon type="trash" />
                   </Show>
@@ -119,7 +127,7 @@ const Actions: Component<{}> = (p) => {
               >
                 <Show
                   when={!actions.stopping}
-                  fallback={<Loading type="spinner" scale={0.25} />}
+                  fallback={<Loading type="spinner" />}
                 >
                   <Icon type="pause" />
                 </Show>
@@ -145,7 +153,7 @@ const Actions: Component<{}> = (p) => {
                 >
                   <Show
                     when={!actions.deploying}
-                    fallback={<Loading type="spinner" scale={0.25} />}
+                    fallback={<Loading type="spinner" />}
                   >
                     <Icon type="reset" />
                   </Show>
@@ -161,7 +169,7 @@ const Actions: Component<{}> = (p) => {
                 >
                   <Show
                     when={!actions.deleting}
-                    fallback={<Loading type="spinner" scale={0.25} />}
+                    fallback={<Loading type="spinner" />}
                   >
                     <Icon type="trash" />
                   </Show>
@@ -179,7 +187,7 @@ const Actions: Component<{}> = (p) => {
               >
                 <Show
                   when={!actions.starting}
-                  fallback={<Loading type="spinner" scale={0.25} />}
+                  fallback={<Loading type="spinner" />}
                 >
                   <Icon type="play" />
                 </Show>
@@ -199,7 +207,7 @@ const Actions: Component<{}> = (p) => {
               >
                 <Show
                   when={!actions.deploying}
-                  fallback={<Loading type="spinner" scale={0.25} />}
+                  fallback={<Loading type="spinner" />}
                 >
                   <Icon type="play" />
                 </Show>

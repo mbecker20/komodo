@@ -36,9 +36,7 @@ export async function createNetwork(
 }
 
 export async function deleteNetwork(name: string): Promise<CommandLogError> {
-  return await execute(
-    `docker network rm ${name}`
-  );
+  return await execute(`docker network rm ${name}`);
 }
 
 export async function pruneNetworks(): Promise<CommandLogError> {
@@ -112,9 +110,9 @@ export async function dockerBuild(
     buildPath && (buildPath[0] === "/" ? buildPath : "/" + buildPath)
   }`;
 
-  const build = `docker build -t ${
-    registryUrl + imageName
-  } -f ${dockerfilePath} .`;
+  const build = `docker build -t ${registryUrl + imageName}${
+    dockerfilePath ? ` -f ${dockerfilePath}` : ""
+  } .`;
 
   const push = `docker push ${registryUrl + imageName}`;
 

@@ -39,9 +39,14 @@ async function build(
     app.broadcast(BUILD, { complete: false, buildID });
     const { cliBuild, dockerBuildArgs } = build;
     try {
+      const pull = await execute(
+        `cd ${BUILD_REPO_PATH + build.pullName} && git pull origin ${
+          build.branch || "main"
+        }`
+      );
       const cli = cliBuild
         ? await execute(
-            `cd ${BUILD_REPO_PATH}${
+            `cd ${BUILD_REPO_PATH + build.pullName}${
               cliBuild.path ? (cliBuild.path[0] === "/" ? "" : "/") : ""
             }${cliBuild.path} && ${cliBuild.command}`
           )
@@ -55,6 +60,7 @@ async function build(
           )
         : undefined;
       const { command, log, isError } = mergeCommandLogError(
+        { name: "log", cle: pull },
         { name: "cli", cle: cli },
         { name: "docker", cle: docker }
       );

@@ -1,6 +1,6 @@
 /* CSS from https://loading.io/css/ */
 
-export function spinnerCss(scale = 0.5) {
+export function spinnerCss(scale = 0.25) {
   return `
     .Spinner {
       display: inline-block;
@@ -40,7 +40,7 @@ export function spinnerCss(scale = 0.5) {
   `;
 }
 
-export function sonarCss(scale = 0.5) {
+export function sonarCss(scale = 0.25) {
 	return `
 		.Sonar {
 			display: inline-block;
@@ -77,7 +77,7 @@ export function sonarCss(scale = 0.5) {
 	`;
 }
 
-export function threeDotsCss(scale = 0.5) {
+export function threeDotsCss(scale = 0.25) {
 	return `
 		.ThreeDot {
 			display: inline-block;

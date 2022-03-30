@@ -15,16 +15,16 @@ const Docker: Component<{}> = (p) => {
         <div>build path</div>
         <Input
           placeholder="from root of repo"
-          value={build.dockerBuildArgs?.buildPath}
-          onEdit={(value) => setBuild("dockerBuildArgs", "buildPath", value)}
+          value={build.dockerBuildArgs?.buildPath || ""}
+          onEdit={(buildPath) => setBuild("dockerBuildArgs", { buildPath })}
         />
       </Flex>
       <Flex justifyContent="space-between" alignItems="center">
         <div>dockerfile path</div>
         <Input
-          placeholder="from root of repo"
-          value={build.dockerBuildArgs?.buildPath}
-          onEdit={(value) => setBuild("dockerBuildArgs", "buildPath", value)}
+          placeholder="from root of build path"
+          value={build.dockerBuildArgs?.dockerfilePath || ""}
+          onEdit={(dockerfilePath) => setBuild("dockerBuildArgs", { dockerfilePath })}
         />
       </Flex>
     </Grid>

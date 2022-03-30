@@ -15,7 +15,7 @@ const Git: Component<{}> = (p) => {
         <div>repo</div>
         <Input
           placeholder="ie. solidjs/solid"
-          value={build.repo}
+          value={build.repo || ""}
           onEdit={(value) => setBuild("repo", value)}
         />
       </Flex>
@@ -23,7 +23,7 @@ const Git: Component<{}> = (p) => {
         <div>branch</div>
         <Input
           placeholder="defaults to main"
-          value={build.branch}
+          value={build.branch || ""}
           onEdit={(value) => setBuild("branch", value)}
         />
       </Flex>
@@ -31,7 +31,7 @@ const Git: Component<{}> = (p) => {
         <div>access token</div>
         <Input
           placeholder="paste token"
-          value={build.accessToken}
+          value={build.accessToken || ""}
           onEdit={(value) => setBuild("accessToken", value)}
         />
       </Flex>

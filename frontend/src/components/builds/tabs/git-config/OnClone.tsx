@@ -12,15 +12,31 @@ const OnClone: Component = () => {
       <h1>on clone</h1>
       <Input
         placeholder="path"
-        value={build.onClone?.path}
+        value={build.onClone?.path || ""}
         onEdit={(path) => {
+          if (
+            path.length === 0 &&
+            (!build.onClone ||
+              !build.onClone.command ||
+              build.onClone.command.length === 0)
+          ) {
+            setBuild("onClone", undefined);
+          }
           setBuild("onClone", { path });
         }}
       />
       <Input
         placeholder="command"
-        value={build.onClone?.command}
+        value={build.onClone?.command || ""}
         onEdit={(command) => {
+          if (
+            command.length === 0 &&
+            (!build.onClone ||
+              !build.onClone.path ||
+              build.onClone.path.length === 0)
+          ) {
+            setBuild("onClone", undefined);
+          }
           setBuild("onClone", { command });
         }}
       />
