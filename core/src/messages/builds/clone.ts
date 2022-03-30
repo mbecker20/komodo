@@ -24,9 +24,9 @@ async function cloneRepo(
   const onCloneCle =
     onClone &&
     (await execute(
-      `cd ${BUILD_REPO_PATH + pullName!}${onClone.path[0] === "/" ? "" : "/"}${
-        onClone.path
-      } && ${onClone.command}`
+      `cd ${BUILD_REPO_PATH + pullName!}${
+        onClone.path ? (onClone.path[0] === "/" ? "" : "/") : ""
+      }${onClone.path ? onClone.path : ""} && ${onClone.command}`
     ));
   const { command, log, isError } = mergeCommandLogError(
     {
