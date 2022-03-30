@@ -277,7 +277,7 @@ export function buildChangelog(oldBuild: Build, newBuild: Build) {
     .filter((field) => {
       return (
         (newBuild[field] || oldBuild[field]) &&
-        newBuild[field] !== oldBuild[field]
+        JSON.stringify(newBuild[field]) !== JSON.stringify(oldBuild[field])
       );
     })
     .map((field) => {
