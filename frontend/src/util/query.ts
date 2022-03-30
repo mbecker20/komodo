@@ -1,5 +1,6 @@
 import {
   Build,
+  BuildActionState,
   Builds,
   ContainerStatus,
   DeployActionState,
@@ -29,6 +30,12 @@ export async function getBuilds() {
 
 export async function getBuild(buildID: string) {
   return await client.get<Build>(`/api/build/${buildID}`);
+}
+
+export async function getBuildActionState(buildID: string) {
+  return await client.get<BuildActionState>(
+    `/api/build/${buildID}/action-state`
+  );
 }
 
 export async function getDeployments(query?: { serverID?: string }) {

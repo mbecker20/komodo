@@ -34,7 +34,7 @@ async function build(
     );
     return;
   }
-  if (app.buildActionStates.get(buildID, BUILDING)) {
+  if (!app.buildActionStates.get(buildID, BUILDING)) {
     app.buildActionStates.set(buildID, BUILDING, true);
     app.broadcast(BUILD, { complete: false, buildID });
     const { cliBuild, dockerBuildArgs } = build;

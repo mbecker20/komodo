@@ -12,6 +12,16 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		const build = await app.builds.findById(id);
     res.send(build);
 	});
+
+	app.get(
+    "/api/build/:id/action-state",
+    { onRequest: [app.auth] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const state = app.buildActionStates.getJSON(id);
+      res.send(state);
+    }
+  );
 	done();
 });
 
