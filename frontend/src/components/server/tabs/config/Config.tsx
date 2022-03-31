@@ -1,10 +1,8 @@
 import { Component, Show } from "solid-js";
-import { combineClasses } from "../../../../util/helpers";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Icon from "../../../util/icons/Icon";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
-import s from "../../server.module.css";
 import Address from "./Address";
 import Enabled from "./Enabled";
 import Networks from "./Networks";
@@ -14,8 +12,8 @@ const Config: Component<{}> = (p) => {
 	const { server, reset, save } = useConfig();
 	return (
     <Show when={server.loaded}>
-      <Grid class={s.Config}>
-        <Grid class={combineClasses(s.ConfigItems, "scroller")}>
+      <Grid class="config">
+        <Grid class="config-items scroller">
           <Show when={!server.isCore}>
             <Address />
             <Enabled />

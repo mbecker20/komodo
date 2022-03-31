@@ -5,7 +5,6 @@ import Icon from "../../../util/icons/Icon";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import Loading from "../../../util/loading/Loading";
-import s from "../../build.module.css";
 import { useConfig } from "../Provider";
 import Git from "./Git";
 import OnClone from "./OnClone";
@@ -14,8 +13,8 @@ const GitConfig: Component<{}> = (p) => {
   const { build, reset, save } = useConfig();
   return (
     <Show when={build.loaded}>
-      <Grid class={s.Config}>
-        <Grid class={combineClasses(s.ConfigItems, "scroller")}>
+      <Grid class="config">
+        <Grid class="config-items scroller">
           <Git />
           <OnClone />
         </Grid>

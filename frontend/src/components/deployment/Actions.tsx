@@ -23,7 +23,6 @@ import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
-import s from "./deployment.module.css";
 
 const Actions: Component<{}> = (p) => {
   const { ws, deployments, selected } = useAppState();
@@ -67,13 +66,13 @@ const Actions: Component<{}> = (p) => {
   );
   return (
     <Show when={deployment()}>
-      <Grid class={combineClasses(s.Card, "shadow")}>
+      <Grid class="card shadow">
         <h1>actions</h1>
         <Switch>
           <Match
             when={(deployment().status as ContainerStatus)?.State === "running"}
           >
-            <Flex class={combineClasses(s.Action, "shadow")}>
+            <Flex class="action shadow">
               deploy{" "}
               <Flex>
                 <Show
@@ -120,7 +119,7 @@ const Actions: Component<{}> = (p) => {
                 </Show>
               </Flex>
             </Flex>
-            <Flex class={combineClasses(s.Action, "shadow")}>
+            <Flex class="action shadow">
               container{" "}
               <Show
                 when={!actions.stopping}
@@ -149,7 +148,7 @@ const Actions: Component<{}> = (p) => {
               (deployment().status as ContainerStatus).State === "created"
             }
           >
-            <Flex class={combineClasses(s.Action, "shadow")}>
+            <Flex class="action shadow">
               deploy{" "}
               <Flex>
                 <Show
@@ -195,7 +194,7 @@ const Actions: Component<{}> = (p) => {
                 </Show>
               </Flex>
             </Flex>
-            <Flex class={combineClasses(s.Action, "shadow")}>
+            <Flex class="action shadow">
               container{" "}
               <Show
                 when={!actions.starting}
@@ -221,7 +220,7 @@ const Actions: Component<{}> = (p) => {
           </Match>
 
           <Match when={deployment().status === "not deployed"}>
-            <Flex class={combineClasses(s.Action, "shadow")}>
+            <Flex class="action shadow">
               deploy{" "}
               <Show
                 when={!actions.deploying}

@@ -9,7 +9,6 @@ import {
 import Tabs from "../../util/tabs/Tabs";
 import Config from "./config/Config";
 import Log from "./Log";
-import s from "../deployment.module.css";
 import { combineClasses } from "../../../util/helpers";
 import { ConfigProvider } from "./config/Provider";
 import { useAppState } from "../../../state/StateProvider";
@@ -57,7 +56,7 @@ const DeploymentTabs: Component<{}> = (p) => {
     <Show when={deployment()}>
       <ConfigProvider deployment={deployment()!}>
         <Tabs
-          containerClass={combineClasses(s.Card, s.Tabs, "shadow")}
+          containerClass="card tabs shadow"
           tabs={[
             {
               title: "config",

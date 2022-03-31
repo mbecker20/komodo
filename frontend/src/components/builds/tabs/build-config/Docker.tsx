@@ -12,7 +12,7 @@ const Docker: Component<{}> = (p) => {
   const { dockerAccounts } = useAppState();
   const { build, setBuild } = useConfig();
   return (
-    <Grid class={combineClasses(s.ConfigItem, "shadow")}>
+    <Grid class="config-item shadow">
       <h1>docker build</h1> {/* checkbox here? */}
       <Flex justifyContent="space-between" alignItems="center">
         <div>build path</div>

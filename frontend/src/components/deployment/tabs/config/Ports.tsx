@@ -1,10 +1,8 @@
 import { Component, For, Show } from "solid-js";
-import { combineClasses } from "../../../../util/helpers";
 import Icon from "../../../util/icons/Icon";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
-import s from "../../deployment.module.css";
 import { useConfig } from "./Provider";
 
 const Ports: Component<{}> = (p) => {
@@ -19,7 +17,7 @@ const Ports: Component<{}> = (p) => {
     setDeployment("ports", (ports) => ports!.filter((_, i) => i !== index));
   };
   return (
-    <Grid class={combineClasses(s.ConfigItem, "shadow")}>
+    <Grid class="config-item shadow">
       <Flex alignItems="center">
         <h1>ports</h1>
         <Show when={!deployment.ports || deployment.ports.length === 0}>

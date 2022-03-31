@@ -176,3 +176,44 @@ h1 {
 .scroller::-webkit-scrollbar-thumb {
 	background: rgba(252, 234, 222, 0.3);
 }
+
+.card {
+  background-color: rgb(27, 55, 86);
+  padding: 0.5rem;
+}
+
+.action {
+  background-color: rgb(69, 34, 96);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.updates-container {
+  max-height: 50vh;
+}
+
+.tabs {
+  height: fit-content;
+}
+
+.config {
+  height: 100%;
+  place-items: start center;
+  grid-template-rows: 70vh auto
+}
+
+.config-items {
+  max-height: 100%;
+  padding: 0.5rem;
+}
+
+.config-item {
+  width: 60vw;
+  max-width: 30rem;
+  background-color: darkolivegreen;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  height: fit-content;
+}

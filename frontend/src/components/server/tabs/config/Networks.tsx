@@ -3,13 +3,11 @@ import { Component, createSignal, For } from "solid-js";
 import { pushNotification } from "../../../..";
 import { CREATE_NETWORK, DELETE_NETWORK } from "../../../../state/actions";
 import { useAppState } from "../../../../state/StateProvider";
-import { combineClasses } from "../../../../util/helpers";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Icon from "../../../util/icons/Icon";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
-import s from "../../server.module.css";
 import { useConfig } from "./Provider";
 
 const BASE_NETWORKS = ["bridge", "host", "none"];
@@ -24,7 +22,7 @@ const Networks: Component<{}> = (p) => {
   };
   const [name, setName] = createSignal("");
   return (
-    <Grid class={combineClasses(s.ConfigItem, "shadow")}>
+    <Grid class="config-item shadow">
       <Flex alignItems="center" justifyContent="space-between">
         <h1>networks</h1>
         <Flex alignItems="center">
@@ -60,7 +58,11 @@ const Networks: Component<{}> = (p) => {
 const Network: Component<{ network: NetworkType }> = (p) => {
   const { selected, ws } = useAppState();
   return (
-    <Flex class={s.Network} alignItems="center" justifyContent="space-between">
+    <Flex
+      alignItems="center"
+      justifyContent="space-between"
+      style={{ "background-color": "darkgreen", padding: "0.5rem" }}
+    >
       <div>{p.network.name}</div>
       <ConfirmButton
         color="red"

@@ -1,14 +1,9 @@
-import { Component, For, Show } from "solid-js";
+import { Component, Show } from "solid-js";
 import { useAppState } from "../../../../state/StateProvider";
-import { combineClasses } from "../../../../util/helpers";
 import { useToggle } from "../../../../util/hooks";
-import Icon from "../../../util/icons/Icon";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import Menu from "../../../util/menu/Menu";
 import Selector from "../../../util/menu/Selector";
-import s from "../../deployment.module.css";
 import { useConfig } from "./Provider";
 
 const Image: Component<{}> = (p) => {
@@ -17,7 +12,7 @@ const Image: Component<{}> = (p) => {
   const [show, toggle] = useToggle();
   return (
     <Flex
-      class={combineClasses(s.ConfigItem, "shadow")}
+      class="config-item shadow"
       justifyContent="space-between"
     >
       <h1>{deployment.buildID ? "build" : "image"}</h1>

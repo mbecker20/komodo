@@ -2,19 +2,17 @@ import { Server } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { REMOVE_SERVER } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
-import { combineClasses } from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
-import s from "./server.module.css";
 
 const Header: Component<{}> = (p) => {
   const { servers, selected, ws } = useAppState();
   const server = () => servers.get(selected.id()) as Server;
   return (
     <Flex
-      class={combineClasses(s.Card, "shadow")}
+      class="card shadow"
       justifyContent="space-between"
       alignItems="center"
     >

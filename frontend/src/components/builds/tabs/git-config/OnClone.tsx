@@ -8,7 +8,7 @@ import s from "../../build.module.css";
 const OnClone: Component = () => {
   const { build, setBuild } = useConfig();
   return (
-    <Grid class={combineClasses(s.ConfigItem, "shadow")}>
+    <Grid class="config-item shadow">
       <h1>on clone</h1>
       <Input
         placeholder="path relative to repo"

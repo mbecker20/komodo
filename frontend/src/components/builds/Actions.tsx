@@ -10,7 +10,6 @@ import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
-import s from "./build.module.css";
 
 const Actions: Component<{}> = (p) => {
   const { builds, selected, ws } = useAppState();
@@ -40,9 +39,9 @@ const Actions: Component<{}> = (p) => {
   );
   return (
     <Show when={build()}>
-      <Grid class={combineClasses(s.Card, "shadow")}>
+      <Grid class="card shadow">
         <h1>actions</h1>
-        <Flex class={combineClasses(s.Action, "shadow")}>
+        <Flex class="action shadow">
           build{" "}
           <Show
             when={!actions.building}
@@ -62,8 +61,8 @@ const Actions: Component<{}> = (p) => {
             </ConfirmButton>
           </Show>
         </Flex>
-        <Flex class={combineClasses(s.Action, "shadow")}>
-          clone{" "}
+        <Flex class="action shadow">
+          reclone{" "}
           <Show
             when={!actions.cloning}
             fallback={

@@ -1,8 +1,6 @@
 import { Component } from "solid-js";
-import { combineClasses } from "../../../../util/helpers";
 import Flex from "../../../util/layout/Flex";
 import Selector from "../../../util/menu/Selector";
-import s from "../../deployment.module.css";
 import { useConfig } from "./Provider";
 
 const RESTART_MODES = [
@@ -16,7 +14,7 @@ const Restart: Component<{}> = (p) => {
   const { deployment, setDeployment } = useConfig();
   return (
     <Flex
-      class={combineClasses(s.ConfigItem, "shadow")}
+      class="config-item shadow"
       justifyContent="space-between"
     >
       <h1>restart</h1>

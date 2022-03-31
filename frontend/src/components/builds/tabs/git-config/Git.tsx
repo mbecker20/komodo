@@ -2,7 +2,6 @@ import { Component, Show } from "solid-js";
 import { combineClasses } from "../../../../util/helpers";
 import Grid from "../../../util/layout/Grid";
 import { useConfig } from "../Provider";
-import s from "../../build.module.css";
 import Flex from "../../../util/layout/Flex";
 import Input from "../../../util/Input";
 import { useAppState } from "../../../../state/StateProvider";
@@ -12,7 +11,7 @@ const Git: Component<{}> = (p) => {
   const { githubAccounts } = useAppState();
   const { build, setBuild } = useConfig();
   return (
-    <Grid class={combineClasses(s.ConfigItem, "shadow")}>
+    <Grid class="config-item shadow">
       <h1>github config</h1>
       <Flex justifyContent="space-between" alignItems="center">
         <div>repo</div>

@@ -1,10 +1,8 @@
 import { Component, For, Show } from "solid-js";
-import { combineClasses } from "../../../../util/helpers";
 import Icon from "../../../util/icons/Icon";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
-import s from "../../deployment.module.css";
 import { useConfig } from "./Provider";
 
 const Volumes: Component<{}> = (p) => {
@@ -19,7 +17,7 @@ const Volumes: Component<{}> = (p) => {
     setDeployment("volumes", (volumes) => volumes!.filter((_, i) => i !== index));
   };
   return (
-    <Grid class={combineClasses(s.ConfigItem, "shadow")}>
+    <Grid class="config-item shadow">
       <Flex alignItems="center">
         <h1>volumes</h1>
         <Show when={!deployment.volumes || deployment.volumes.length === 0}>

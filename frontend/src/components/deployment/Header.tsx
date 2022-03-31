@@ -2,12 +2,10 @@ import { ContainerStatus } from "@monitor/types";
 import { Component } from "solid-js";
 import { DELETE_DEPLOYMENT } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
-import { combineClasses } from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
-import s from "./deployment.module.css";
 
 const Header: Component<{}> = (p) => {
   const { servers, deployments, ws, selected } = useAppState();
@@ -15,7 +13,7 @@ const Header: Component<{}> = (p) => {
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   return (
     <Flex
-      class={combineClasses(s.Card, "shadow")}
+      class="card shadow"
       justifyContent="space-between"
       alignItems="center"
     >

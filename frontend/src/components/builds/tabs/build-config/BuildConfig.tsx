@@ -1,10 +1,8 @@
 import { Component, Show } from "solid-js";
-import { combineClasses } from "../../../../util/helpers";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Icon from "../../../util/icons/Icon";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
-import s from "../../build.module.css";
 import CliBuild from "./CliBuild";
 import Docker from "./Docker";
 import { useConfig } from "../Provider";
@@ -14,8 +12,8 @@ const BuildConfig: Component<{}> = (p) => {
   const { build, reset, save } = useConfig();
   return (
     <Show when={build.loaded}>
-      <Grid class={s.Config}>
-        <Grid class={combineClasses(s.ConfigItems, "scroller")}>
+      <Grid class="config">
+        <Grid class="config-items scroller">
           <Docker />
           <CliBuild />
         </Grid>

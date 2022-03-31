@@ -1,9 +1,7 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../../state/StateProvider";
-import { combineClasses } from "../../../../util/helpers";
 import Flex from "../../../util/layout/Flex";
 import Selector from "../../../util/menu/Selector";
-import s from "../../deployment.module.css";
 import { useConfig } from "./Provider";
 
 const DockerAccount: Component<{}> = (p) => {
@@ -12,7 +10,7 @@ const DockerAccount: Component<{}> = (p) => {
   return (
     <Show when={dockerAccounts() && dockerAccounts()!.length > 0}>
       <Flex
-        class={combineClasses(s.ConfigItem, "shadow")}
+        class="config-item shadow"
         justifyContent="space-between"
       >
         <h1>docker account</h1>

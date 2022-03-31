@@ -2,7 +2,6 @@ import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { combineClasses } from "../../../util/helpers";
 import Tabs from "../../util/tabs/Tabs";
-import s from "../server.module.css";
 import Config from "./config/Config";
 import { ConfigProvider } from "./config/Provider";
 
@@ -13,7 +12,7 @@ const ServerTabs: Component<{}> = (p) => {
     <Show when={server()}>
       <ConfigProvider server={server()}>
         <Tabs
-          containerClass={combineClasses(s.Card, s.Tabs, "shadow")}
+          containerClass="card tabs shadow"
 					tabs={[
 						{
 							title: "config",
