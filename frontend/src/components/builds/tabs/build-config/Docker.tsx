@@ -36,6 +36,7 @@ const Docker: Component<{}> = (p) => {
         <Flex justifyContent="space-between" alignItems="center">
           <div>account</div>
           <Selector
+            targetClass="blue"
             selected={build.dockerAccount || "none"}
             items={["none", ...dockerAccounts()!]}
             onSelect={(account) => {

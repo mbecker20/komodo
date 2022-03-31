@@ -34,6 +34,7 @@ const Git: Component<{}> = (p) => {
         <Flex justifyContent="space-between" alignItems="center">
           <div>github account</div>
           <Selector
+            targetClass="blue"
             selected={build.dockerAccount || "none"}
             items={["none", ...githubAccounts()!]}
             onSelect={(account) => {

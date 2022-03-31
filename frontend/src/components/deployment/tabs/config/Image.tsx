@@ -7,6 +7,7 @@ import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import Menu from "../../../util/menu/Menu";
+import Selector from "../../../util/menu/Selector";
 import s from "../../deployment.module.css";
 import { useConfig } from "./Provider";
 
@@ -21,28 +22,29 @@ const Image: Component<{}> = (p) => {
     >
       <h1>{deployment.buildID ? "build" : "image"}</h1>
       <Flex>
-        <Menu
-          show={show()}
-          target={
-            <button class="green" onClick={toggle}>
-              {deployment.buildID
-                ? builds.get(deployment.buildID)?.name
-                : "custom image"}
-              <Icon type="chevron-down" />
-            </button>
-          }
-          content={
-            <Grid>
-              <button class="green">custom image</button>
-              <For each={builds.ids()}>
-                {(buildID) => (
-                  <button class="blue">{builds.get(buildID)?.name}</button>
-                )}
-              </For>
-            </Grid>
-          }
-          position="bottom center"
-        />
+        <Show when={builds.loaded()}>
+          <Selector
+            targetClass="blue"
+            selected={
+              (deployment.buildID && builds.get(deployment.buildID)?.name) ||
+              "custom image"
+            }
+            items={[
+              "custom image",
+              ...builds
+                .ids()!
+                .map((id) => builds.get(id)?.name!)
+                .filter((val) => val),
+            ]}
+            onSelect={(build, index) => {
+              setDeployment(
+                "buildID",
+                build === "custom image" ? undefined : builds.ids()![index - 1]
+              );
+            }}
+            position="bottom center"
+          />
+        </Show>
         <Show when={!deployment.buildID}>
           <Flex>
             <Input

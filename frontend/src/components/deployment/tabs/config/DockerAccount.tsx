@@ -17,6 +17,7 @@ const DockerAccount: Component<{}> = (p) => {
       >
         <h1>docker account</h1>
         <Selector
+          targetClass="blue"
           items={["none", ...dockerAccounts()!]}
           selected={deployment.dockerAccount || "none"}
           onSelect={(account) =>

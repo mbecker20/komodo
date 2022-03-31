@@ -2,7 +2,7 @@ import { User } from "@monitor/types";
 import { deleteContainer, dockerRun, DEPLOY } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { join } from "path";
-import { PERMISSIONS_DENY_LOG, SYSROOT } from "../../config";
+import { PERMISSIONS_DENY_LOG, SECRETS, SYSROOT } from "../../config";
 import { DEPLOYING } from "../../plugins/actionStates";
 import { deletePeripheryContainer } from "../../util/periphery/container";
 import { deployPeriphery } from "../../util/periphery/deploy";
@@ -65,7 +65,10 @@ async function deployDeployment(
             image: image ? image : deployment.image,
           },
           SYSROOT,
-          containerMount
+          containerMount,
+          deployment.dockerAccount,
+          deployment.dockerAccount &&
+            SECRETS.DOCKER_ACCOUNTS[deployment.dockerAccount]
         );
     addDeploymentUpdate(
       app,

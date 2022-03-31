@@ -21,6 +21,7 @@ const Restart: Component<{}> = (p) => {
     >
       <h1>restart</h1>
       <Selector
+        targetClass="blue"
         items={RESTART_MODES}
         selected={
           (deployment.restart === "no"

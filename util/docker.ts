@@ -144,10 +144,10 @@ export async function dockerRun(
   if (username && password) {
     await execute(`docker login -u ${username} -p ${password}`);
   }
-
+  const pull = username ? `docker pull ${image} && ` : "";
   const command =
-    `docker pull ${image} && docker run -d` +
-    name(containerName) +
+    `${pull}docker run -d` +
+    name(containerName!) +
     containerUserString(containerUser) +
     portsString(ports) +
     volsString(sysRoot, volumes) +
@@ -206,7 +206,7 @@ function repoVolume(
   // repo root should be SYSROOT + "repos/"
 
   return repoMount
-    ? ` -v ${join(repoMount.repoFolder, containerName)}:${
+    ? ` -v ${join(repoMount.repoFolder, containerName || "")}:${
         repoMount.containerMount
       }`
     : "";

@@ -14,6 +14,7 @@ const Network: Component<{}> = (p) => {
     >
       <h1>network</h1>
       <Selector
+        targetClass="blue"
         items={networks().map((net) => net.name)}
         selected={deployment.network || "bridge"}
         onSelect={(network) => setDeployment("network", network)}

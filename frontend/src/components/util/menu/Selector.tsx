@@ -10,13 +10,14 @@ const Selector: Component<{
   items: string[];
   onSelect?: (item: string, index: number) => void;
   position?: Position;
+  targetClass?: string;
 }> = (p) => {
   const [show, toggle] = useToggle();
   return (
     <Menu
       show={show()}
       target={
-        <button onClick={toggle}>
+        <button class={p.targetClass} onClick={toggle}>
           {p.selected}
           <Icon type="chevron-down" />
         </button>
@@ -29,7 +30,7 @@ const Selector: Component<{
                 p.onSelect && p.onSelect(item, index());
                 toggle();
               }}
-							style={{ width: "100%", "justify-content": "flex-end" }}
+              style={{ width: "100%", "justify-content": "flex-end" }}
               class={s.SelectorItem}
             >
               {item}
@@ -38,7 +39,7 @@ const Selector: Component<{
         </For>
       }
       position={p.position}
-			padding="0.25rem"
+      padding="0.25rem"
     />
   );
 };
