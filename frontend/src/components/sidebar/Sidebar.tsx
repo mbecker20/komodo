@@ -21,14 +21,20 @@ const Sidebar: Component<{}> = () => {
         containerClass={combineClasses(s.Sidebar, "shadow")}
         containerStyle={{
           width: inPx(SIDEBAR_WIDTH),
-          height: inPx(height() - TOPBAR_HEIGHT),
         }}
         tabsGap="0rem"
         tabs={[
           {
             title: "deployments",
             element: (
-              <Grid  style={{ height: "fit-content", padding: "0rem 1rem" }}>
+              <Grid
+                class="scroller"
+                style={{
+                  height: "fit-content",
+                  "max-height": inPx(height() - TOPBAR_HEIGHT - 80),
+                  padding: "0rem 1rem",
+                }}
+              >
                 <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
                 <AddServer />
               </Grid>
@@ -37,7 +43,13 @@ const Sidebar: Component<{}> = () => {
           {
             title: "builds",
             element: (
-              <Grid style={{ height: "fit-content", padding: "0rem 1rem" }}>
+              <Grid
+                style={{
+                  height: "fit-content",
+                  "max-height": inPx(height() - TOPBAR_HEIGHT - 80),
+                  padding: "0rem 1rem",
+                }}
+              >
                 <Builds />
               </Grid>
             ),
