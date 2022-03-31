@@ -1,4 +1,9 @@
-import { BuildActionStates, DeployActionStates } from "@monitor/types";
+import {
+  BuildActionState,
+  BuildActionStates,
+  DeployActionState,
+  DeployActionStates,
+} from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
@@ -6,9 +11,19 @@ interface ActionState {
   getJSON(id: string): void;
   add(id: string): void;
   delete(id: string): void;
-  set(id: string, type: string, state: boolean): void;
-  get(id: string, type: string): boolean;
-  getMultiple(id: string, types: string[]): boolean;
+  set(
+    id: string,
+    type: keyof BuildActionState | keyof DeployActionState,
+    state: boolean
+  ): void;
+  get(
+    id: string,
+    type: keyof BuildActionState | keyof DeployActionState
+  ): boolean;
+  getMultiple(
+    id: string,
+    types: (keyof BuildActionState | keyof DeployActionState)[]
+  ): boolean;
 }
 
 declare module "fastify" {
@@ -20,6 +35,7 @@ declare module "fastify" {
 
 export const PULLING = "pulling";
 export const BUILDING = "building";
+export const CLONING = "cloning";
 export const DEPLOYING = "deploying";
 export const STARTING = "starting";
 export const STOPPING = "stopping";
@@ -37,6 +53,8 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
       buildActionStates[buildID] = {
         pulling: false,
         building: false,
+        cloning: false,
+        updating: false,
       };
     },
     delete: (buildID: string) => {

@@ -18,6 +18,8 @@ const Actions: Component<{}> = (p) => {
   const [actions, setActions] = createStore<BuildActionState>({
     pulling: false,
     building: false,
+    cloning: false,
+    updating: false,
   });
   createEffect(() => {
     getBuildActionState(selected.id()).then(setActions);
@@ -26,6 +28,13 @@ const Actions: Component<{}> = (p) => {
     ws.subscribe([BUILD], ({ complete, buildID }) => {
       if (buildID === selected.id()) {
         setActions("building", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([CLONE_BUILD_REPO], ({ complete, buildID }) => {
+      if (buildID === selected.id()) {
+        setActions("cloning", !complete);
       }
     })
   );
@@ -53,7 +62,7 @@ const Actions: Component<{}> = (p) => {
             </ConfirmButton>
           </Show>
         </Flex>
-        {/* <Flex class={combineClasses(s.Action, "shadow")}>
+        <Flex class={combineClasses(s.Action, "shadow")}>
           clone{" "}
           <ConfirmButton
             color="orange"
@@ -63,7 +72,7 @@ const Actions: Component<{}> = (p) => {
           >
             <Icon type="arrow-down" />
           </ConfirmButton>
-        </Flex> */}
+        </Flex>
       </Grid>
     </Show>
   );

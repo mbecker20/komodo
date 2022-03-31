@@ -1,8 +1,7 @@
 import { User } from "@monitor/types";
 import {
-  ALERT,
   BUILD,
-  CLONE_DEPLOYMENT_REPO,
+  CLONE_BUILD_REPO,
   CREATE_BUILD,
   DELETE_BUILD,
   PULL,
@@ -55,7 +54,7 @@ async function buildMessages(
       message.buildID && (await pullRepo(app, user, message));
       return true;
 
-    case CLONE_DEPLOYMENT_REPO:
+    case CLONE_BUILD_REPO:
       if (message.buildID) {
         const build = await app.builds.findById(message.buildID);
         if (!build) {
@@ -64,7 +63,14 @@ async function buildMessages(
         }
         await remove(BUILD_REPO_PATH + build.pullName).catch();
         if (build.repo) {
+          app.broadcast(CLONE_BUILD_REPO, { buildID: message.buildID, complete: false });
+          app.buildActionStates.set(message.buildID, "cloning", true)
           await cloneRepo(app, user, build);
+          app.buildActionStates.set(message.buildID, "cloning", false);
+          app.broadcast(CLONE_BUILD_REPO, {
+            buildID: message.buildID,
+            complete: true,
+          });
         } else {
           sendAlert(client, "bad", "build has no repo configured");
         }

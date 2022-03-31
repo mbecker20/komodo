@@ -126,6 +126,8 @@ export type EnvironmentVar = {
 export type BuildActionState = {
   pulling: boolean;
   building: boolean;
+  cloning: boolean;
+  updating: boolean;
 };
 
 export type DeployActionState = {

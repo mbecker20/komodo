@@ -33,7 +33,11 @@ async function updateBuild(
       // reclone repo if repo is changed
       await remove(BUILD_REPO_PATH + preBuild.pullName).catch();
       if (build.repo) {
+        app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: false });
+        app.buildActionStates.set(build._id!, "updating", true);
         await cloneRepo(app, user, build);
+        app.buildActionStates.set(build._id!, "updating", false);
+        app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: true });
       }
     } else if (build.pullName !== preBuild.pullName) {
       if (await pathExists(BUILD_REPO_PATH + preBuild.pullName)) {
