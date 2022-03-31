@@ -30,7 +30,7 @@ const Git: Component<{}> = (p) => {
           onEdit={(value) => setBuild("branch", value)}
         />
       </Flex>
-      <Show when={githubAccounts()}>
+      <Show when={githubAccounts() && githubAccounts()!.length > 0}>
         <Flex justifyContent="space-between" alignItems="center">
           <div>github account</div>
           <Selector

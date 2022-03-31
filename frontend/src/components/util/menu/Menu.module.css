@@ -4,6 +4,14 @@
   width: fit-content;
 }
 
+.MenuBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
 .Menu {
   white-space: nowrap;
   padding: 0.5rem 1rem;

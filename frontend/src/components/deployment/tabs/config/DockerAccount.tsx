@@ -10,7 +10,7 @@ const DockerAccount: Component<{}> = (p) => {
 	const { dockerAccounts } = useAppState();
   const { deployment, setDeployment } = useConfig();
   return (
-    <Show when={dockerAccounts}>
+    <Show when={dockerAccounts() && dockerAccounts()!.length > 0}>
       <Flex
         class={combineClasses(s.ConfigItem, "shadow")}
         justifyContent="space-between"

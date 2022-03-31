@@ -27,11 +27,11 @@ const Topbar: Component = () => {
         </button>
         <div class={s.Monitor}>monitor</div>
       </Flex>
-
       {/* left side */}
       <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
         <Menu
           show={menu() === "updates"}
+          close={() => setMenu(undefined)}
           target={
             <button
               onClick={() =>
@@ -46,6 +46,7 @@ const Topbar: Component = () => {
         />
         <Menu
           show={menu() === "account"}
+          close={() => setMenu(undefined)}
           target={
             <button
               onClick={() =>

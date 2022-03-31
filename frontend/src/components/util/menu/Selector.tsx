@@ -16,6 +16,7 @@ const Selector: Component<{
   return (
     <Menu
       show={show()}
+      close={toggle}
       target={
         <button class={p.targetClass} onClick={toggle}>
           {p.selected}

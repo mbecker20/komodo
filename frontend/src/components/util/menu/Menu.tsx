@@ -14,6 +14,7 @@ const Menu: Component<{
   content: JSXElement;
   target: JSXElement;
   show: boolean;
+  close: () => void;
   position?: Position;
   padding?: string | number;
   style?: JSX.CSSProperties;
@@ -32,6 +33,7 @@ const Menu: Component<{
     <div class={s.MenuContainer}>
       {p.target}
       <Show when={buffer()}>
+        <div class={s.MenuBackground} onClick={p.close} />
         <div
           class={combineClasses(
             s.Menu,
@@ -40,6 +42,7 @@ const Menu: Component<{
             p.show ? s.Enter : s.Exit
           )}
           style={{ padding: p.padding, ...p.style }}
+          onClick={(e) => e.stopPropagation()}
         >
           {p.content}
         </div>

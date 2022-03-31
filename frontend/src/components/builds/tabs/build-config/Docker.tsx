@@ -32,7 +32,7 @@ const Docker: Component<{}> = (p) => {
           }
         />
       </Flex>
-      <Show when={dockerAccounts()}>
+      <Show when={dockerAccounts() && dockerAccounts()!.length > 0}>
         <Flex justifyContent="space-between" alignItems="center">
           <div>account</div>
           <Selector

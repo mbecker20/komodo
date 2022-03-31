@@ -55,7 +55,6 @@ const Content: Component<{ serverID: string; close: () => void }> = (p) => {
           onEdit={setName}
           placeholder="name"
           style={{ "font-size": "1.5rem" }}
-          onConfirm={create}
         />
         <button class="green" style={{ width: "100%" }} onClick={create}>
           create
