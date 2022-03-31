@@ -1,12 +1,15 @@
-import { Component } from "solid-js";
+import { Component, Show } from "solid-js";
 import { combineClasses } from "../../../../util/helpers";
 import Grid from "../../../util/layout/Grid";
 import { useConfig } from "../Provider";
 import s from "../../build.module.css";
 import Flex from "../../../util/layout/Flex";
 import Input from "../../../util/Input";
+import { useAppState } from "../../../../state/StateProvider";
+import Selector from "../../../util/menu/Selector";
 
 const Git: Component<{}> = (p) => {
+  const { githubAccounts } = useAppState();
   const { build, setBuild } = useConfig();
   return (
     <Grid class={combineClasses(s.ConfigItem, "shadow")}>
@@ -27,14 +30,22 @@ const Git: Component<{}> = (p) => {
           onEdit={(value) => setBuild("branch", value)}
         />
       </Flex>
-      <Flex justifyContent="space-between" alignItems="center">
-        <div>access token</div>
-        <Input
-          placeholder="paste token"
-          value={build.accessToken || ""}
-          onEdit={(value) => setBuild("accessToken", value)}
-        />
-      </Flex>
+      <Show when={githubAccounts()}>
+        <Flex justifyContent="space-between" alignItems="center">
+          <div>github account</div>
+          <Selector
+            selected={build.dockerAccount || "none"}
+            items={["none", ...githubAccounts()!]}
+            onSelect={(account) => {
+              setBuild(
+                "githubAccount",
+                account === "none" ? undefined : account
+              );
+            }}
+            position="bottom right"
+          />
+        </Flex>
+      </Show>
     </Grid>
   );
 };

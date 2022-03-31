@@ -3,7 +3,7 @@ import { Box, Newline, Text } from "ink";
 import { useConfig, useMainSequence } from "../../cli";
 import { useEsc, useStore } from "../../util/hooks";
 import YesNo from "../util/YesNo";
-import { DEFAULT_PERIPHERY_PORT, DEFAULT_PORT } from "../../config";
+import { DEFAULT_PERIPHERY_PORT, DEFAULT_PORT, RESTART_MODES } from "../../config";
 import EnterToContinue from "../util/EnterToContinue";
 import { ControlledInput } from "../util/Input";
 import NumberInput from "../util/NumberInput";
@@ -12,13 +12,6 @@ import LabelledSelector from "../util/LabelledSelector";
 import { toDashedName } from "../../util/helpers/general";
 
 type Stage = "name" | "secret" | "port" | "restart" | "confirm";
-
-const RESTART_MODES = [
-  "always",
-  "on failure",
-  "unless stopped",
-  "don't restart",
-];
 
 const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
   const { set } = useConfig();

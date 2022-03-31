@@ -24,7 +24,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     /* to manage repo for static frontend, mounted as a volume */
     repo: String,
     branch: String,
-    accessToken: String,
+    githubAccount: String,
     containerMount: String, // the file path to mount repo on inside the container
     onPull: Command,
   });

@@ -73,7 +73,7 @@ export interface Build {
   repo?: string;
   subfolder?: string; // subfolder of monorepo. uses sparse clone
   branch?: string;
-  accessToken?: string; // to gain access to private repos
+  githubAccount?: string; // to gain access to private repos
   onClone?: Command;
   /* build related */
   cliBuild?: Command; // run shell commands on build, before docker build step if it exists
@@ -105,8 +105,7 @@ export interface Deployment extends DockerRunArgs {
   repo?: string;
   branch?: string;
   subfolder?: string; // subfolder of repo to clone (uses sparse clone)
-  githubAccount?: string;
-  
+  githubAccount?: string;  
   repoMount?: string; // subfolder of repo to mount in container
   containerMount?: string; // the file path to mount repo on inside the container
   onPull?: Command;

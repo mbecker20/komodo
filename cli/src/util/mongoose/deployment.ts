@@ -31,8 +31,8 @@ export default function deploymentModel() {
     /* to manage repo for static frontend, mounted as a volume */
     repo: String,
     branch: String,
-    accessToken: String,
     containerMount: String, // the file path to mount repo on inside the container
+    githubAccount: String,
   });
 
 	return model("Deployment", schema)

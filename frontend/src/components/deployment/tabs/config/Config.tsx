@@ -12,6 +12,7 @@ import Icon from "../../../util/icons/Icon";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Restart from "./Restart";
 import { combineClasses } from "../../../../util/helpers";
+import DockerAccount from "./DockerAccount";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save } = useConfig();
@@ -20,6 +21,7 @@ const Config: Component<{}> = (p) => {
       <Grid class={s.Config}>
         <Grid class={combineClasses(s.ConfigItems, "scroller")}>
           <Image />
+          <DockerAccount />
           <Network />
           <Restart />
           <Ports />

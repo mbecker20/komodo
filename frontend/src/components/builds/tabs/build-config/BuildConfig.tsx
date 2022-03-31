@@ -15,8 +15,8 @@ const BuildConfig: Component<{}> = (p) => {
     <Show when={build.loaded}>
       <Grid class={s.Config}>
         <Grid class={combineClasses(s.ConfigItems, "scroller")}>
-          <CliBuild />
           <Docker />
+          <CliBuild />
         </Grid>
         <Show when={build.updated}>
           <Flex style={{ "place-self": "center", padding: "1rem" }}>

@@ -7,6 +7,7 @@ import YesNo from "../util/YesNo";
 import { toDashedName } from "../../util/helpers/general";
 import { Input } from "../util/Input";
 import NumberInput from "../util/NumberInput";
+import { RESTART_MODES } from "../../config";
 
 type DeploymentConfig = {
   stage: "name" | "port" | "volume" | "restart" | "confirm";
@@ -15,13 +16,6 @@ type DeploymentConfig = {
   volume?: string | false;
   restart?: string;
 };
-
-const RESTART_MODES = [
-  "always",
-  "on failure",
-  "unless stopped",
-  "don't restart",
-];
 
 const DeploymentConfig = ({
   deployment,

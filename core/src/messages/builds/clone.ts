@@ -7,25 +7,27 @@ import {
 } from "@monitor/util";
 import { join } from "path";
 import { FastifyInstance } from "fastify";
-import { BUILD_REPO_PATH } from "../../config";
+import { BUILD_REPO_PATH, SECRETS } from "../../config";
 import { addBuildUpdate } from "../../util/updates";
 
 async function cloneRepo(
   app: FastifyInstance,
   user: User,
-  { pullName, branch, repo, subfolder, onClone, accessToken, _id }: Build
+  { pullName, branch, repo, subfolder, onClone, githubAccount, _id }: Build
 ) {
   const cloneCle = await clone(
     repo!,
     BUILD_REPO_PATH + pullName!,
     subfolder,
     branch,
-    accessToken
+    githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
   );
   const onCloneCle =
     onClone &&
     (await execute(
-      `cd ${join(BUILD_REPO_PATH, pullName!, onClone.path || "")} && ${onClone.command}`
+      `cd ${join(BUILD_REPO_PATH, pullName!, onClone.path || "")} && ${
+        onClone.command
+      }`
     ));
   const { command, log, isError } = mergeCommandLogError(
     {

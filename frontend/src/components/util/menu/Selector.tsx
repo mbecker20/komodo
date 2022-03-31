@@ -30,6 +30,7 @@ const Selector: Component<{
                 toggle();
               }}
 							style={{ width: "100%", "justify-content": "flex-end" }}
+              class={s.SelectorItem}
             >
               {item}
             </button>

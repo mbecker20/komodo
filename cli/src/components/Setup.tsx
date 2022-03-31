@@ -130,12 +130,6 @@ function getNextUpdate({ stage }: Update): Update | undefined {
   switch (stage) {
     case "mongo":
       return {
-        stage: "registry",
-        description: "starting registry...",
-      };
-
-    case "registry":
-      return {
         stage: "core",
         description: "starting monitor core...",
       };

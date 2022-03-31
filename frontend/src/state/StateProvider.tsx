@@ -1,5 +1,6 @@
-import { Accessor, Component, createContext, useContext } from "solid-js";
+import { Accessor, Component, createContext, createResource, Resource, useContext } from "solid-js";
 import { useLocalStorageToggle } from "../util/hooks";
+import { getDockerAccounts, getGithubAccounts } from "../util/query";
 import {
   useBuilds,
   useDeployments,
@@ -15,6 +16,8 @@ export type State = {
   builds: ReturnType<typeof useBuilds>;
   deployments: ReturnType<typeof useDeployments>;
   updates: ReturnType<typeof useUpdates>;
+  dockerAccounts: Resource<string[] | undefined>;
+  githubAccounts: Resource<string[] | undefined>;
   sidebar: {
     open: Accessor<boolean>;
     toggle: () => void;
@@ -35,11 +38,15 @@ export const AppStateProvider: Component<{}> = (p) => {
     "sidebar-open",
     true
   );
+  const [dockerAccounts] = createResource(getDockerAccounts);
+  const [githubAccounts] = createResource(getGithubAccounts);
   const state: State = {
     servers: useServers(),
     builds: useBuilds(),
     deployments: useDeployments(),
     updates: useUpdates(),
+    dockerAccounts,
+    githubAccounts,
     sidebar: {
       open: sidebarOpen,
       toggle: toggleSidebarOpen,

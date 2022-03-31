@@ -129,3 +129,7 @@
 	font-size: 1.5rem;
 	font-weight: 500;
 }
+
+.SelectorItem:hover {
+  background-color: rgba(180, 43, 43, 0.377);
+}

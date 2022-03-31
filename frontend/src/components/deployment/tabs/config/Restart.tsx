@@ -6,10 +6,10 @@ import s from "../../deployment.module.css";
 import { useConfig } from "./Provider";
 
 const RESTART_MODES = [
-  "always",
-  "on failure",
-  "unless stopped",
   "don't restart",
+  "unless stopped",
+  "on failure",
+  "always",
 ];
 
 const Restart: Component<{}> = (p) => {
@@ -35,11 +35,6 @@ const Restart: Component<{}> = (p) => {
         }
         position="bottom right"
       />
-      {/* <Input
-        value={deployment.network}
-        placeholder="network"
-        onConfirm={(value) => setDeployment("network", value)}
-      /> */}
     </Flex>
   );
 };
