@@ -16,7 +16,6 @@ const IsPeriphery = ({
       ["core", undefined],
       ["periphery", undefined],
       ["mongo", undefined],
-      ["registry", undefined]
     );
   }, []);
   useEsc(prev);

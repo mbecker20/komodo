@@ -7,8 +7,7 @@ import model from "../../util/model";
 const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
   const schema = new Schema<Server>({
     name: { type: String, unique: true },
-    address: String,
-    passkey: String,
+    address: { type: String, unique: true },
     enabled: { type: Boolean, default: true },
     isCore: Boolean,
   });

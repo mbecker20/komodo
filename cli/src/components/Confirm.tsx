@@ -22,7 +22,7 @@ const Confirm = () => {
         </Fragment>
       )}
 
-      {config.registry && (
+      {/* {config.registry && (
         <Fragment>
           <Text color="cyan" bold>
             registry:
@@ -33,7 +33,7 @@ const Confirm = () => {
           />
           <Newline />
         </Fragment>
-      )}
+      )} */}
 
       {config.core && (
         <Fragment>

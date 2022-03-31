@@ -1,7 +1,8 @@
 import { User } from "@monitor/types";
 import { deleteContainer, dockerRun, DEPLOY } from "@monitor/util";
 import { FastifyInstance } from "fastify";
-import { PERMISSIONS_DENY_LOG, REGISTRY_URL, SYSROOT } from "../../config";
+import { join } from "path";
+import { PERMISSIONS_DENY_LOG, SYSROOT } from "../../config";
 import { DEPLOYING } from "../../plugins/actionStates";
 import { deletePeripheryContainer } from "../../util/periphery/container";
 import { deployPeriphery } from "../../util/periphery/deploy";
@@ -45,7 +46,10 @@ async function deployDeployment(
     const build = deployment.buildID
       ? await app.builds.findById(deployment.buildID)
       : undefined;
-    const image = build && build.dockerBuildArgs ? build.pullName : undefined;
+    const image =
+      build && build.dockerBuildArgs
+        ? join(build.dockerAccount || "", build.pullName!)
+        : undefined;
     const containerMount =
       deployment.repo && deployment.containerMount
         ? {
@@ -58,7 +62,7 @@ async function deployDeployment(
       : await dockerRun(
           {
             ...deployment,
-            image: image ? REGISTRY_URL + image : deployment.image,
+            image: image ? image : deployment.image,
           },
           SYSROOT,
           containerMount

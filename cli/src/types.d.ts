@@ -5,10 +5,10 @@ export type Config = {
     url: string;
     startConfig?: StartConfig;
   };
-  registry?: {
-    url: string;
-    startConfig?: StartConfig;
-  };
+  // registry?: {
+  //   url: string;
+  //   startConfig?: StartConfig;
+  // };
 };
 
 export type CoreOrPeripheryConfig = {

@@ -8,7 +8,6 @@ import s from "../../server.module.css";
 import Address from "./Address";
 import Enabled from "./Enabled";
 import Networks from "./Networks";
-import Passkey from "./Passkey";
 import { useConfig } from "./Provider";
 
 const Config: Component<{}> = (p) => {
@@ -19,7 +18,6 @@ const Config: Component<{}> = (p) => {
         <Grid class={combineClasses(s.ConfigItems, "scroller")}>
           <Show when={!server.isCore}>
             <Address />
-            <Passkey />
             <Enabled />
           </Show>
           <Networks />

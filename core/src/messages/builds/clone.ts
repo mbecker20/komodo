@@ -5,6 +5,7 @@ import {
   execute,
   mergeCommandLogError,
 } from "@monitor/util";
+import { join } from "path";
 import { FastifyInstance } from "fastify";
 import { BUILD_REPO_PATH } from "../../config";
 import { addBuildUpdate } from "../../util/updates";
@@ -24,9 +25,7 @@ async function cloneRepo(
   const onCloneCle =
     onClone &&
     (await execute(
-      `cd ${BUILD_REPO_PATH + pullName!}${
-        onClone.path ? (onClone.path[0] === "/" ? "" : "/") : ""
-      }${onClone.path ? onClone.path : ""} && ${onClone.command}`
+      `cd ${join(BUILD_REPO_PATH, pullName!, onClone.path || "")} && ${onClone.command}`
     ));
   const { command, log, isError } = mergeCommandLogError(
     {

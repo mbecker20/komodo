@@ -5,7 +5,6 @@ export default function serverModel() {
 	const schema = new Schema<Server>({
     name: { type: String, unique: true },
     address: String,
-    passkey: String,
     enabled: { type: Boolean, default: true },
     isCore: Boolean,
   });

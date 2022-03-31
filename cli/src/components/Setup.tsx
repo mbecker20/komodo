@@ -112,11 +112,6 @@ function getInitialUpdate(config: Config): Update {
         stage: "mongo",
         description: "starting mongo",
       };
-    } else if (config.registry?.startConfig) {
-      return {
-        stage: "registry",
-        description: "starting registry",
-      };
     } else {
       return {
         stage: "core",
@@ -157,20 +152,10 @@ function getStageNumber(config: Config, stage: Stage) {
   switch (stage) {
     case "mongo":
       return 1;
-    case "registry":
-      return config.mongo?.startConfig ? 2 : 1;
     case "core":
-      return (
-        1 +
-        (config.mongo?.startConfig ? 1 : 0) +
-        (config.registry?.startConfig ? 1 : 0)
-      );
+      return 1 + (config.mongo?.startConfig ? 1 : 0);
     case "docs":
-      return (
-        2 +
-        (config.mongo?.startConfig ? 1 : 0) +
-        (config.registry?.startConfig ? 1 : 0)
-      );
+      return 2 + (config.mongo?.startConfig ? 1 : 0);
     case "periphery":
       return 1;
   }
@@ -180,11 +165,7 @@ function getTotalSteps(config: Config) {
   if (config.periphery) {
     return 1;
   } else {
-    return (
-      2 +
-      (config.mongo?.startConfig ? 1 : 0) +
-      (config.registry?.startConfig ? 1 : 0)
-    );
+    return 2 + (config.mongo?.startConfig ? 1 : 0);
   }
 }
 

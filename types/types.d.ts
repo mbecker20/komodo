@@ -45,7 +45,6 @@ export type Server = {
   _id?: string;
   name: string;
   address: string;
-  passkey: string;
   status?: "OK" | "Incorrect Password" | "Could Not Be Reached";
   enabled: boolean;
   isCore?: boolean;
@@ -54,6 +53,7 @@ export type Server = {
 export type DockerBuildArgs = {
   buildPath: string; // build folder relative to repo root
   dockerfilePath?: string; // relative to buildPath
+  account?: string;
 };
 
 // these are potentially dangerous but also useful
@@ -78,6 +78,7 @@ export interface Build {
   /* build related */
   cliBuild?: Command; // run shell commands on build, before docker build step if it exists
   dockerBuildArgs?: DockerBuildArgs; // provided if docker build
+  dockerAccount?: string; // username
   owners: string[]; // userID / username
 }
 
@@ -143,7 +144,7 @@ export type Network = {
   // _id: string;
   name: string;
   driver: string;
-}
+};
 
 export type EntityCollection = {
   _id?: string;
@@ -157,4 +158,14 @@ export type CommandLogError = {
   command: string;
   log: Log;
   isError: boolean;
-}
+};
+
+export type PeripherySecrets = {
+  PASSKEY: string;
+  DOCKER_ACCOUNTS: { [username: string]: string };
+};
+
+export type CoreSecrets = PeripherySecrets & {
+  JWT: { SECRET: string };
+  GITHUB: { ID: string; SECRET: string };
+};

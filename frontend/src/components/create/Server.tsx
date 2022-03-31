@@ -31,15 +31,13 @@ const Content: Component<{ close: () => void }> = (p) => {
   const [server, setServer] = createStore<Server>({
     name: "",
     address: "",
-    passkey: "",
     enabled: true,
   });
   onMount(() => nameInput?.focus());
   const create = () => {
     if (
       server.name.length > 0 &&
-      server.address.length > 0 &&
-      server.passkey.length > 0
+      server.address.length > 0
     ) {
       ws.send(ADD_SERVER, {
         server,
@@ -66,12 +64,6 @@ const Content: Component<{ close: () => void }> = (p) => {
           value={server.address}
           onEdit={(address) => setServer("address", address)}
           placeholder="address"
-          style={{ "font-size": "1.5rem" }}
-        />
-        <Input
-          value={server.passkey}
-          onEdit={(passkey) => setServer("passkey", passkey)}
-          placeholder="passkey"
           style={{ "font-size": "1.5rem" }}
         />
         <button class="green" style={{ width: "100%" }} onClick={create}>

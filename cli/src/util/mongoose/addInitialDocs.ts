@@ -8,7 +8,7 @@ import serverModel from "./server";
 import updateModel from "./update";
 // import userModel from "./user";
 
-export async function addInitialDocs({ core, mongo, registry }: Config) {
+export async function addInitialDocs({ core, mongo }: Config) {
   await mongoose.connect(
     mongo?.startConfig
       ? mongo!.url.replaceAll(toDashedName(mongo!.startConfig!.name), "127.0.0.1")
@@ -23,7 +23,6 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
   const coreServer = {
     name: "core server",
     address: "monitor core",
-    passkey: "passkey",
     enabled: true,
     isCore: true,
   };
@@ -43,7 +42,6 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     ],
     environment: [
       { variable: "MONGO_URL", value: mongo!.url },
-      { variable: "REGISTRY_URL", value: registry!.url },
     ],
     network: DOCKER_NETWORK,
     serverID: coreServerID,
@@ -68,29 +66,29 @@ export async function addInitialDocs({ core, mongo, registry }: Config) {
     await deployments.create(mongoDeployment);
   }
 
-  if (registry?.startConfig) {
-    const registryDeployment: Deployment = {
-      name: registry.startConfig.name,
-      containerName: toDashedName(registry.startConfig.name),
-      ports: [
-        { local: registry.startConfig.port.toString(), container: "5000" },
-      ],
-      volumes: registry.startConfig.volume
-        ? [
-            {
-              local: registry.startConfig.volume,
-              container: "/var/lib/registry",
-            },
-          ]
-        : undefined,
-      restart: registry.startConfig.restart,
-      image: "registry:2",
-      network: DOCKER_NETWORK,
-      serverID: coreServerID,
-      owners: ["admin"],
-    };
-    await deployments.create(registryDeployment);
-  }
+  // if (registry?.startConfig) {
+  //   const registryDeployment: Deployment = {
+  //     name: registry.startConfig.name,
+  //     containerName: toDashedName(registry.startConfig.name),
+  //     ports: [
+  //       { local: registry.startConfig.port.toString(), container: "5000" },
+  //     ],
+  //     volumes: registry.startConfig.volume
+  //       ? [
+  //           {
+  //             local: registry.startConfig.volume,
+  //             container: "/var/lib/registry",
+  //           },
+  //         ]
+  //       : undefined,
+  //     restart: registry.startConfig.restart,
+  //     image: "registry:2",
+  //     network: DOCKER_NETWORK,
+  //     serverID: coreServerID,
+  //     owners: ["admin"],
+  //   };
+  //   await deployments.create(registryDeployment);
+  // }
 
   const startupUpdate: Update = {
     operation: "Startup",

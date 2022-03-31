@@ -18,6 +18,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
     /* build related */
     cliBuild: Command,
     dockerBuildArgs: DockerBuildArgs,
+    dockerAccount: String,
     owners: [String],
   });
 

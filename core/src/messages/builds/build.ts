@@ -5,11 +5,12 @@ import {
   execute,
   mergeCommandLogError,
 } from "@monitor/util";
+import { join } from "path";
 import { FastifyInstance } from "fastify";
 import {
   PERMISSIONS_DENY_LOG,
-  REGISTRY_URL,
   BUILD_REPO_PATH,
+  SECRETS,
 } from "../../config";
 import { BUILDING } from "../../plugins/actionStates";
 import { addBuildUpdate } from "../../util/updates";
@@ -40,25 +41,28 @@ async function build(
     const { cliBuild, dockerBuildArgs } = build;
     try {
       const pull = await execute(
-        `cd ${BUILD_REPO_PATH + build.pullName} && git pull origin ${
+        `cd ${join(BUILD_REPO_PATH, build.pullName || "")} && git pull origin ${
           build.branch || "main"
         }`
       );
-      const cli = cliBuild
-        ? await execute(
-            `cd ${BUILD_REPO_PATH + build.pullName}${
-              cliBuild.path ? (cliBuild.path[0] === "/" ? "" : "/") : ""
-            }${cliBuild.path} && ${cliBuild.command}`
-          )
-        : undefined;
-      const docker = dockerBuildArgs
-        ? await dockerBuild(
-            build.pullName!,
-            dockerBuildArgs,
+      const cli =
+        cliBuild &&
+        (await execute(
+          `cd ${join(
             BUILD_REPO_PATH,
-            REGISTRY_URL
-          )
-        : undefined;
+            build.pullName!,
+            cliBuild.path || ""
+          )} && ${cliBuild.command}`
+        ));
+      const docker =
+        dockerBuildArgs &&
+        (await dockerBuild(
+          build.pullName!,
+          dockerBuildArgs,
+          BUILD_REPO_PATH,
+          build.dockerAccount,
+          build.dockerAccount && SECRETS.DOCKER_ACCOUNTS[build.dockerAccount]
+        ));
       const { command, log, isError } = mergeCommandLogError(
         { name: "pull", cle: pull },
         { name: "cli", cle: cli },

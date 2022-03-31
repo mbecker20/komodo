@@ -8,7 +8,7 @@ import Confirm from "./components/Confirm";
 import { createUseConfig, createUseSequence } from "./util/state";
 import { Config } from "./types";
 import Mongo from "./components/deployment-config/Mongo";
-import Registry from "./components/deployment-config/Registry";
+// import Registry from "./components/deployment-config/Registry";
 import CoreOrPeriphery from "./components/core-or-periphery/CoreOrPeriphery";
 import { bound } from "./util/helpers/general";
 import Setup from "./components/Setup";
@@ -56,10 +56,10 @@ init().then(({ flags, dockerInstalled }) => {
         title: "mongo config",
         view: <Mongo />,
       },
-      {
-        title: "registry config",
-        view: <Registry />,
-      },
+      // {
+      //   title: "registry config",
+      //   view: <Registry />,
+      // },
       {
         title: "monitor core config",
         view: <CoreOrPeriphery type="core" />,

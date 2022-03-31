@@ -7,6 +7,7 @@ import {
   Network,
   CommandLogError,
 } from "@monitor/types";
+import { join } from "path";
 import { execute } from "./execute";
 import { objFrom2Arrays } from "./helpers";
 import Dockerode from "dockerode";
@@ -104,20 +105,21 @@ export async function dockerBuild(
   imageName: string,
   { buildPath, dockerfilePath }: DockerBuildArgs,
   repoPath: string,
-  registryUrl: string
+  username?: string,
+  password?: string,
 ) {
-  const cd = `cd ${repoPath}${imageName}${
-    buildPath && (buildPath[0] === "/" ? buildPath : "/" + buildPath)
-  }`;
+  if (username && password) {
+    await execute(`docker login -u ${username} -p ${password}`);
+  }
+  const cd = `cd ${join(repoPath, imageName, buildPath)}`;
 
-  const build = `docker build -t ${registryUrl + imageName}${
+  const build = `docker build -t ${join(username || "", imageName)}${
     dockerfilePath ? ` -f ${dockerfilePath}` : ""
   } .`;
 
-  const push = `docker push ${registryUrl + imageName}`;
+  const push = `docker push ${join(username || "", imageName)}`;
 
-  const command = `${cd} && ${build} && ${push}`;
-  return await execute(command);
+  return await execute(`${cd} && ${build} && ${push}`);
 }
 
 /* Docker Run */

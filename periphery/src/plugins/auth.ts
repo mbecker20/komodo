@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
-import { PASSKEY } from "../config";
+import { SECRETS } from "../config";
 
 declare module "fastify" {
 	interface FastifyInstance {
@@ -23,7 +23,7 @@ const auth = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
 function verifyPasskey(passkey?: string): Promise<void> {
 	return new Promise((res, rej) => {
-		if (passkey === PASSKEY) {
+		if (passkey === SECRETS.PASSKEY) {
 			res();
 		} else {
 			rej();

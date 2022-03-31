@@ -1,19 +1,20 @@
 import { CommandLogError, Deployment, Server } from "@monitor/types";
+import { generateQuery } from "@monitor/util";
 import axios from "axios";
-import { REGISTRY_URL } from "../../config";
+import { SECRETS } from "../../config";
 
 export async function deployPeriphery(
-  { address, passkey }: Server,
+  { address }: Server,
   deployment: Deployment,
   image?: string
 ) {
   return (await axios
     .post(
-      `${address}/deploy${image ? "?image=" + REGISTRY_URL + image : ""}`,
+      `${address}/deploy${generateQuery({ image })}`,
       { deployment },
       {
         headers: {
-          Authorization: passkey,
+          Authorization: SECRETS.PASSKEY,
         },
       }
     )

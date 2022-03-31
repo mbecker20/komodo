@@ -1,6 +1,11 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { REGISTRY_URL, BUILD_REPO_PATH, DEPLOYMENT_REPO_PATH, SYSTEM_OPERATOR } from "../config";
+import {
+  BUILD_REPO_PATH,
+  DEPLOYMENT_REPO_PATH,
+  SECRETS,
+  SYSTEM_OPERATOR,
+} from "../config";
 import { pull, dockerBuild } from "@monitor/util";
 import { addBuildUpdate, addDeploymentUpdate } from "../util/updates";
 
@@ -13,7 +18,7 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
     if (query.pullName) {
       const build = await app.builds.findOne({ pullName: query.pullName });
       if (build) {
-        const { _id, dockerBuildArgs, branch, pullName } = build;
+        const { _id, dockerBuildArgs, branch, pullName, dockerAccount } = build;
         const {
           command: pullCommand,
           log: pullLog,
@@ -24,7 +29,13 @@ const githubListener = fp((app: FastifyInstance, _: {}, done: () => void) => {
             command: buildCommand,
             log: buildLog,
             isError: buildIsError,
-          } = await dockerBuild(pullName!, dockerBuildArgs, BUILD_REPO_PATH, REGISTRY_URL);
+          } = await dockerBuild(
+            pullName!,
+            dockerBuildArgs,
+            BUILD_REPO_PATH,
+            dockerAccount,
+            dockerAccount && SECRETS.DOCKER_ACCOUNTS[dockerAccount]
+          );
           await addBuildUpdate(
             app,
             _id!,

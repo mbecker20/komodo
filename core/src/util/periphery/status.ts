@@ -1,10 +1,9 @@
 import { Server } from "@monitor/types";
 import axios from "axios";
-import { SERVER_CHECK_TIMEOUT } from "../../config";
+import { SECRETS, SERVER_CHECK_TIMEOUT } from "../../config";
 
 export async function serverStatusPeriphery({
   address,
-  passkey,
   enabled,
   isCore,
 }: Server) {
@@ -20,7 +19,7 @@ export async function serverStatusPeriphery({
   try {
     await axios.get(`${address}/status`, {
       headers: {
-        Authorization: passkey,
+        Authorization: SECRETS.PASSKEY,
       },
       signal: controller.signal,
     });

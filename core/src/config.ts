@@ -1,3 +1,4 @@
+import { CoreSecrets } from "@monitor/types";
 import {
   getBooleanFromEnv,
   getNumberFromEnv,
@@ -9,7 +10,7 @@ export const CORE_SERVER_NAME = getStringFromEnv(
   "CORE_SERVER_NAME",
   "Monitor Core"
 );
-export const SECRETS = readJSONFile("/secrets/secrets.json");
+export const SECRETS = readJSONFile("/secrets/secrets.json") as CoreSecrets;
 export const LOGGER = getBooleanFromEnv("LOGGER", true);
 export const PORT = getNumberFromEnv("PORT", 9000);
 export const HOST = getStringFromEnv("HOST", "http://localhost:" + PORT);
@@ -24,7 +25,7 @@ export const ROOT = "/monitor/"; // the root folder in the container that SYSROO
 export const DEPLOYDATA_ROOT = "deployments/";
 export const BUILD_REPO_PATH = ROOT + "builds/";
 export const DEPLOYMENT_REPO_PATH = ROOT + "repos/";
-export const REGISTRY_URL = getStringFromEnv("REGISTRY_URL", "localhost:5000/");
+// export const REGISTRY_URL = getStringFromEnv("REGISTRY_URL", "localhost:5000/");
 export const FRONTEND_PATH = getStringFromEnv("FRONTEND_PATH", "/frontend");
 export const SYSTEM_OPERATOR = "Monitor";
 export const PERMISSIONS_DENY_LOG = {

@@ -23,9 +23,9 @@ export default async function deploy(
   config: Config,
   onComplete: (update: Update) => void
 ) {
-  const { core, periphery, mongo, registry } = config;
+  const { core, periphery, mongo } = config;
   if (core) {
-    if (mongo && registry) {
+    if (mongo) {
       await createNetwork();
 
       if (mongo.startConfig) {
@@ -37,14 +37,14 @@ export default async function deploy(
         });
       }
 
-      if (registry.startConfig) {
-        const result = await deployRegistry(registry.startConfig);
-        onComplete({
-          stage: "registry",
-          result,
-          description: "registry started",
-        });
-      }
+      // if (registry.startConfig) {
+      //   const result = await deployRegistry(registry.startConfig);
+      //   onComplete({
+      //     stage: "registry",
+      //     result,
+      //     description: "registry started",
+      //   });
+      // }
 
       const result = await deployCore(config);
       onComplete({
@@ -69,12 +69,12 @@ export default async function deploy(
   }
 }
 
-async function deployCore({ core, mongo, registry }: Config) {
+async function deployCore({ core, mongo }: Config) {
   const { name, secretVolume, port, restart } = core!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock`;
   const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
-  const env = `-e MONGO_URL=${mongo?.url} -e REGISTRY_URL=${registry?.url}`;
+  const env = `-e MONGO_URL=${mongo?.url}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volume} ${network} ${env} ${restartArg} ${CORE_IMAGE}`;
   return await execute(command);
@@ -97,12 +97,12 @@ async function deployMongo({ name, port, volume, restart }: StartConfig) {
   return await execute(command);
 }
 
-async function deployRegistry({ name, port, volume, restart }: StartConfig) {
-  const command = `docker run -d --name ${name} -p ${port}:5000${
-    volume ? ` -v ${volume}:/var/lib/registry` : ""
-  } --network ${DOCKER_NETWORK} --restart ${restart} registry:2`;
-  return await execute(command);
-}
+// async function deployRegistry({ name, port, volume, restart }: StartConfig) {
+//   const command = `docker run -d --name ${name} -p ${port}:5000${
+//     volume ? ` -v ${volume}:/var/lib/registry` : ""
+//   } --network ${DOCKER_NETWORK} --restart ${restart} registry:2`;
+//   return await execute(command);
+// }
 
 async function createNetwork() {
   const command = `docker network create ${DOCKER_NETWORK}`;

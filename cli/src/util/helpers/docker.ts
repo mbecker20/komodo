@@ -1,4 +1,4 @@
-import { CommandLogError, Conversion, DockerRunArgs, EnvironmentVar, Volume } from "@monitor/types";
+import { CommandLogError, Conversion, DockerRunArgs, EnvironmentVar } from "@monitor/types";
 import { execute } from "./execute";
 
 export type InstallLog = {
@@ -149,7 +149,7 @@ function portsString(ports?: Conversion[]) {
     : "";
 }
 
-function volsString(volumes?: Volume[]) {
+function volsString(volumes?: Conversion[]) {
   return volumes && volumes.length > 0
     ? volumes
         .map(({ local, container }) => {
