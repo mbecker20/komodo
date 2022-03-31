@@ -11,7 +11,7 @@ const OnClone: Component = () => {
     <Grid class={combineClasses(s.ConfigItem, "shadow")}>
       <h1>on clone</h1>
       <Input
-        placeholder="path"
+        placeholder="path relative to repo"
         value={build.onClone?.path || ""}
         onEdit={(path) => {
           if (

@@ -8,6 +8,7 @@ import s from "../../build.module.css";
 import CliBuild from "./CliBuild";
 import Docker from "./Docker";
 import { useConfig } from "../Provider";
+import Loading from "../../../util/loading/Loading";
 
 const BuildConfig: Component<{}> = (p) => {
   const { build, reset, save } = useConfig();
@@ -19,16 +20,25 @@ const BuildConfig: Component<{}> = (p) => {
           <CliBuild />
         </Grid>
         <Show when={build.updated}>
-          <Flex style={{ "place-self": "center", padding: "1rem" }}>
-            <button onClick={reset}>
-              reset
-              <Icon type="reset" />
-            </button>
-            <ConfirmButton onConfirm={save} color="green">
-              save
-              <Icon type="floppy-disk" />
-            </ConfirmButton>
-          </Flex>
+          <Show
+            when={!build.saving}
+            fallback={
+              <button class="green">
+                updating <Loading type="spinner" />
+              </button>
+            }
+          >
+            <Flex style={{ "place-self": "center", padding: "1rem" }}>
+              <button onClick={reset}>
+                reset
+                <Icon type="reset" />
+              </button>
+              <ConfirmButton onConfirm={save} color="green">
+                save
+                <Icon type="floppy-disk" />
+              </ConfirmButton>
+            </Flex>
+          </Show>
         </Show>
       </Grid>
     </Show>

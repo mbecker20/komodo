@@ -3,7 +3,7 @@ import { Box, Text } from "ink";
 import { CoreOrPeripheryConfig } from "../../types";
 
 const ViewCoreOrPeriphery = ({
-  config: { name, secretVolume, port, restart },
+  config: { name, secretVolume, port, restart, sysroot },
 }: {
   config: CoreOrPeripheryConfig;
 }) => {
@@ -14,6 +14,9 @@ const ViewCoreOrPeriphery = ({
       </Text>
       <Text color="green">
         secrets folder: <Text color="white">{secretVolume}</Text>
+      </Text>
+      <Text color="green">
+        system root: <Text color="white">{sysroot}</Text>
       </Text>
       <Text color="green">
         port: <Text color="white">{port}</Text>
