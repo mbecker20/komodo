@@ -14,6 +14,7 @@ export type Config = {
 export type CoreOrPeripheryConfig = {
   name: string;
   secretVolume: string; //  to mount secrets.json into the container
+  sysroot: string;
   port: number;
   restart: string;
 };

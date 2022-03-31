@@ -2,8 +2,11 @@ import React, { Fragment } from "react";
 import { Box, Newline, Text } from "ink";
 import { useConfig, useMainSequence } from "../../cli";
 import { useEsc, useStore } from "../../util/hooks";
-import YesNo from "../util/YesNo";
-import { DEFAULT_PERIPHERY_PORT, DEFAULT_PORT, RESTART_MODES } from "../../config";
+import {
+  DEFAULT_PERIPHERY_PORT,
+  DEFAULT_PORT,
+  RESTART_MODES,
+} from "../../config";
 import EnterToContinue from "../util/EnterToContinue";
 import { ControlledInput } from "../util/Input";
 import NumberInput from "../util/NumberInput";
@@ -11,7 +14,7 @@ import { CoreOrPeripheryConfig } from "../../types";
 import LabelledSelector from "../util/LabelledSelector";
 import { toDashedName } from "../../util/helpers/general";
 
-type Stage = "name" | "secret" | "port" | "restart" | "confirm";
+type Stage = "name" | "secret" | "sysroot" | "port" | "restart" | "confirm";
 
 const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
   const { set } = useConfig();
@@ -23,7 +26,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
     stage: "name",
     name: isCore ? "monitor-core" : "monitor-periphery",
   });
-  const { stage, name, secretVolume, port, restart } = config;
+  const { stage, name, secretVolume, port, restart, sysroot } = config;
   useEsc(() => {
     switch (stage) {
       case "name":
@@ -34,8 +37,12 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
         setConfig("stage", "name");
         break;
 
+      case "sysroot":
+        setConfig("stage", "secret");
+        break;
+
       case "port":
-        setMany(["stage", "secret"]);
+        setMany(["stage", "sysroot"]);
         break;
 
       case "restart":
@@ -74,7 +81,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
               value={secretVolume || "~/secrets"}
               onChange={(volume) => setConfig("secretVolume", volume)}
               onSubmit={(volume) => {
-                setMany(["stage", "port"], ["secretVolume", volume]);
+                setMany(["stage", "sysroot"], ["secretVolume", volume]);
               }}
             />
           </Text>
@@ -84,6 +91,27 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
       {secretVolume && stage !== "secret" && (
         <Text color="green">
           secrets folder: <Text color="white">{secretVolume}</Text>
+        </Text>
+      )}
+
+      {stage === "sysroot" && (
+        <Text color="green">
+          system root folder:{" "}
+          <Text color="white">
+            <ControlledInput
+              value={sysroot || "/home/ubuntu/"}
+              onChange={(sysroot) => setConfig("sysroot", sysroot)}
+              onSubmit={(sysroot) => {
+                setMany(["stage", "port"], ["sysroot", sysroot]);
+              }}
+            />
+          </Text>
+        </Text>
+      )}
+
+      {sysroot && stage !== "sysroot" && (
+        <Text color="green">
+          system root: <Text color="white">{sysroot}</Text>
         </Text>
       )}
 
@@ -142,6 +170,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
                 secretVolume: secretVolume!,
                 port: Number(port),
                 restart: restart!,
+                sysroot: sysroot!,
               });
               next();
             }}

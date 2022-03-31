@@ -36,12 +36,14 @@ export async function addInitialDocs({ core, mongo }: Config) {
     volumes: [
       { local: core?.secretVolume!, container: "/secrets" },
       { local: "/var/run/docker.sock", container: "/var/run/docker.sock" },
+      { local: core?.sysroot!, container: "/monitor-root" }
     ],
     ports: [
       { local: core?.port.toString()!, container: DEFAULT_PORT.toString() },
     ],
     environment: [
       { variable: "MONGO_URL", value: mongo!.url },
+      { variable: "SYSROOT", value: core!.sysroot },
     ],
     network: DOCKER_NETWORK,
     serverID: coreServerID,
