@@ -40,6 +40,7 @@ export const ConfigProvider: Component<{ build: Build }> = (p) => {
         onClone: build.onClone,
         dockerBuildArgs: build.dockerBuildArgs,
         cliBuild: build.cliBuild,
+        dockerAccount: build.dockerAccount,
         loaded: true,
         updated: false,
         saving: false
