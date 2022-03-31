@@ -8,8 +8,7 @@ import { CONTAINER_REPO_ROOT, SECRETS } from "../config";
 
 const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/repo/clone", { onRequest: [app.auth] }, async (req, res) => {
-    const body = req.body as { deployment: Deployment };
-    const deployment = body.deployment;
+    const { deployment } = req.body as { deployment: Deployment };
     const log = await clone(
       deployment.repo!,
       CONTAINER_REPO_ROOT + deployment.containerName,

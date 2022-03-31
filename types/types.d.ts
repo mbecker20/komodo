@@ -95,6 +95,16 @@ export type DockerRunArgs = {
   dockerAccount?: string;
 };
 
+export type DeploymentGitConfig = {
+  repo?: string;
+  branch?: string;
+  subfolder?: string; // subfolder of repo to clone (uses sparse clone)
+  githubAccount?: string;
+  repoMount?: string; // subfolder of repo to mount in container
+  containerMount?: string; // the file path to mount repo on inside the container
+  onPull?: Command;
+};
+
 export interface Deployment extends DockerRunArgs {
   _id?: string;
   name: string;
@@ -105,10 +115,11 @@ export interface Deployment extends DockerRunArgs {
   repo?: string;
   branch?: string;
   subfolder?: string; // subfolder of repo to clone (uses sparse clone)
-  githubAccount?: string;  
+  githubAccount?: string;
   repoMount?: string; // subfolder of repo to mount in container
   containerMount?: string; // the file path to mount repo on inside the container
   onPull?: Command;
+  gitConfigs?: DeploymentGitConfig[];
   // running status
   status?: "not deployed" | ContainerStatus;
 }

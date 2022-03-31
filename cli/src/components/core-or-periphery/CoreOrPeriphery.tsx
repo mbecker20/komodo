@@ -1,5 +1,6 @@
 import React, { Fragment } from "react";
 import { Box, Newline, Text } from "ink";
+import { resolve } from "path";
 import { useConfig, useMainSequence } from "../../cli";
 import { useEsc, useStore } from "../../util/hooks";
 import {
@@ -99,7 +100,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
           system root folder:{" "}
           <Text color="white">
             <ControlledInput
-              value={sysroot || "/home/ubuntu/"}
+              value={sysroot || resolve(".")}
               onChange={(sysroot) => setConfig("sysroot", sysroot)}
               onSubmit={(sysroot) => {
                 setMany(["stage", "port"], ["sysroot", sysroot]);

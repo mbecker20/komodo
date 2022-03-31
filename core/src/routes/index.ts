@@ -7,6 +7,7 @@ import listenerURL from "./listenerURL";
 import networks from "./networks";
 import servers from "./servers";
 import updates from "./updates";
+import secrets from "./secrets";
 
 const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	app
@@ -16,6 +17,7 @@ const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		.register(servers)
 		.register(networks)
 		.register(accounts)
+		.register(secrets)
 		.register(listenerURL);
 	
 	done();
