@@ -16,7 +16,7 @@ const Address: Component<{}> = (p) => {
       <Input
         value={server.address}
         placeholder="address"
-        onConfirm={(value) => setServer("address", value)}
+        onEdit={(value) => setServer("address", value)}
 				style={{ width: "13rem" }}
       />
     </Flex>

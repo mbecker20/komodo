@@ -10,6 +10,7 @@ import {
 import { FastifyInstance } from "fastify";
 import { remove } from "fs-extra";
 import { WebSocket } from "ws";
+import { join } from "path";
 import { BUILD_REPO_PATH } from "../../config";
 import { sendAlert } from "../../util/helpers";
 import build from "./build";
@@ -61,10 +62,13 @@ async function buildMessages(
           sendAlert(client, "bad", "could not find build");
           return true;
         }
-        await remove(BUILD_REPO_PATH + build.pullName).catch();
+        await remove(join(BUILD_REPO_PATH, build.pullName!)).catch();
         if (build.repo) {
-          app.broadcast(CLONE_BUILD_REPO, { buildID: message.buildID, complete: false });
-          app.buildActionStates.set(message.buildID, "cloning", true)
+          app.broadcast(CLONE_BUILD_REPO, {
+            buildID: message.buildID,
+            complete: false,
+          });
+          app.buildActionStates.set(message.buildID, "cloning", true);
           await cloneRepo(app, user, build);
           app.buildActionStates.set(message.buildID, "cloning", false);
           app.broadcast(CLONE_BUILD_REPO, {

@@ -4,7 +4,7 @@ export const DELETE_BUILD = "DELETE_BUILD";
 export const UPDATE_BUILD = "UPDATE_BUILD";
 export const PULL = "PULL";
 export const BUILD = "BUILD";
-export const CLONE_BUILD_REPO = "CLONE_REPO";
+export const CLONE_BUILD_REPO = "CLONE_BUILD_REPO";
 
 /* DEPLOY */
 export const CREATE_DEPLOYMENT = "CREATE_DEPLOYMENT";
@@ -16,7 +16,7 @@ export const STOP_CONTAINER = "STOP_CONTAINER";
 export const DELETE_CONTAINER = "DELETE_CONTAINER";
 export const REFRESH_CONTAINER_STATUS = "REFRESH_CONTAINER_STATUS";
 export const COPY_ENV = "COPY_ENV";
-export const CLONE_DEPLOYMENT_REPO = "CLONE_REPO";
+export const CLONE_DEPLOYMENT_REPO = "CLONE_DEPLOYMENT_REPO";
 
 /* SERVER */
 export const ADD_SERVER = "ADD_SERVER";

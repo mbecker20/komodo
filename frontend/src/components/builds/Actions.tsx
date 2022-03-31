@@ -64,14 +64,23 @@ const Actions: Component<{}> = (p) => {
         </Flex>
         <Flex class={combineClasses(s.Action, "shadow")}>
           clone{" "}
-          <ConfirmButton
-            color="orange"
-            onConfirm={() => {
-              ws.send(CLONE_BUILD_REPO, { buildID: selected.id() });
-            }}
+          <Show
+            when={!actions.cloning}
+            fallback={
+              <button class="orange">
+                <Loading type="spinner" />
+              </button>
+            }
           >
-            <Icon type="arrow-down" />
-          </ConfirmButton>
+            <ConfirmButton
+              color="orange"
+              onConfirm={() => {
+                ws.send(CLONE_BUILD_REPO, { buildID: selected.id() });
+              }}
+            >
+              <Icon type="arrow-down" />
+            </ConfirmButton>
+          </Show>
         </Flex>
       </Grid>
     </Show>
