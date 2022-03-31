@@ -103,3 +103,7 @@ export function mergeCommandLogError(
     isError,
   };
 }
+
+export function trailingSlash(str: string) {
+  return str[str.length - 1] === "/" ? str : str + "/";
+}

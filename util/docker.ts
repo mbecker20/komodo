@@ -9,7 +9,7 @@ import {
 } from "@monitor/types";
 import { join } from "path";
 import { execute } from "./execute";
-import { objFrom2Arrays } from "./helpers";
+import { objFrom2Arrays, trailingSlash } from "./helpers";
 import Dockerode from "dockerode";
 
 /* Server */
@@ -193,7 +193,10 @@ function volsString(sysRoot: string, volumes?: Conversion[]) {
   return volumes && volumes.length > 0
     ? volumes
         .map(({ local, container }) => {
-          return ` -v ${local.replace("~/", sysRoot)}:${container}`;
+          return ` -v ${local.replace(
+            "~/",
+            trailingSlash(sysRoot)
+          )}:${container}`;
         })
         .reduce((prev, curr) => prev + curr)
     : "";

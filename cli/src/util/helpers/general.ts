@@ -13,3 +13,7 @@ export function prettyStringify(json: any): string {
 export function timestamp() {
   return Math.floor(Date.now() / 1000);
 }
+
+export function trailingSlash(str: string) {
+  return str[str.length - 1] === "/" ? str : str + "/";
+}

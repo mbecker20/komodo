@@ -9,7 +9,7 @@ import {
 import { Config, StartConfig } from "../../types";
 import { addInitialDocs } from "../mongoose/addInitialDocs";
 import { execute } from "./execute";
-import { toDashedName } from "./general";
+import { toDashedName, trailingSlash } from "./general";
 
 export type Stage = "mongo" | "registry" | "core" | "periphery" | "docs";
 
@@ -74,7 +74,7 @@ async function deployCore({ core, mongo }: Config) {
   const nameConfig = `--name ${toDashedName(name)}`;
   const volumes = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root`;
   const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
-  const env = `-e MONGO_URL=${mongo?.url} -e SYSROOT=${core?.sysroot}`;
+  const env = `-e MONGO_URL=${mongo?.url} -e SYSROOT=${trailingSlash(core?.sysroot!)}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volumes} ${network} ${env} ${restartArg} ${CORE_IMAGE}`;
   return await execute(command);
@@ -85,7 +85,7 @@ async function deployPeriphery({ periphery }: Config) {
   const nameConfig = `--name ${toDashedName(name)}`;
   const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root`;
   const network = `-p ${port}:${DEFAULT_PERIPHERY_PORT} --network ${DOCKER_NETWORK}`;
-  const env = `-e SYSROOT=${periphery?.sysroot}`;
+  const env = `-e SYSROOT=${trailingSlash(periphery?.sysroot!)}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volume} ${network} ${env} ${restartArg} ${PERIPHERY_IMAGE}`;
   return await execute(command);
