@@ -43,8 +43,8 @@
 }
 
 .ConfigItem {
-	width: 100%;
-	max-width: 35rem;
+	width: 60vw;
+	max-width: 30rem;
 	background-color: darkolivegreen;
 	box-sizing: border-box;
 	padding: 0.5rem;
