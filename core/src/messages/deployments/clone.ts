@@ -2,7 +2,7 @@ import { Deployment, User } from "@monitor/types";
 import { clone, execute, mergeCommandLogError } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { CLONE_DEPLOYMENT_REPO } from "@monitor/util";
-import { DEPLOYMENT_REPO_PATH } from "../../config";
+import { DEPLOYMENT_REPO_PATH, SECRETS } from "../../config";
 import { clonePeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
 
@@ -17,7 +17,7 @@ async function cloneRepo(
     branch,
     repo,
     subfolder,
-    accessToken,
+    githubAccount,
     onPull,
     _id,
   } = deployment;
@@ -45,7 +45,7 @@ async function cloneRepo(
         DEPLOYMENT_REPO_PATH + containerName!,
         subfolder,
         branch,
-        accessToken
+        githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
       );
   const onPullCle =
     !server && onPull

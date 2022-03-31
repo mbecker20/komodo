@@ -16,8 +16,8 @@ const github = fp((app: FastifyInstance, _: {}, done: () => void) => {
     scope: [], // empty for only basic access to acct, ie info that is is already public about your acct.
     credentials: {
       client: {
-        id: SECRETS.GITHUB.ID,
-        secret: SECRETS.GITHUB.SECRET,
+        id: SECRETS.GITHUB_OAUTH.ID,
+        secret: SECRETS.GITHUB_OAUTH.SECRET,
       },
       auth: fastifyOauth2.GITHUB_CONFIGURATION,
     },

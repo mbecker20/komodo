@@ -106,7 +106,7 @@ export async function dockerBuild(
   { buildPath, dockerfilePath }: DockerBuildArgs,
   repoPath: string,
   username?: string,
-  password?: string,
+  password?: string
 ) {
   if (username && password) {
     await execute(`docker login -u ${username} -p ${password}`);
@@ -137,8 +137,14 @@ export async function dockerRun(
     containerUser,
   }: DockerRunArgs,
   sysRoot: string,
-  repoMount?: { repoFolder: string; containerMount: string }
+  repoMount?: { repoFolder: string; containerMount: string },
+  username?: string,
+  password?: string
 ) {
+  if (username && password) {
+    await execute(`docker login -u ${username} -p ${password}`);
+  }
+
   const command =
     `docker pull ${image} && docker run -d` +
     name(containerName) +
@@ -154,7 +160,7 @@ export async function dockerRun(
   return await execute(command);
 }
 
-function name(containerName?: string) {
+function name(containerName: string) {
   return containerName ? ` --name ${containerName}` : "";
 }
 
@@ -198,8 +204,11 @@ function repoVolume(
   repoMount?: { repoFolder: string; containerMount: string }
 ) {
   // repo root should be SYSROOT + "repos/"
+
   return repoMount
-    ? ` -v ${repoMount.repoFolder + containerName}:${repoMount.containerMount}`
+    ? ` -v ${join(repoMount.repoFolder, containerName)}:${
+        repoMount.containerMount
+      }`
     : "";
 }
 

@@ -2,7 +2,7 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import builds from "./builds";
 import deployments from "./deployments";
-import dockerAccounts from "./dockerAccounts";
+import accounts from "./accounts";
 import listenerURL from "./listenerURL";
 import networks from "./networks";
 import servers from "./servers";
@@ -15,7 +15,7 @@ const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		.register(deployments)
 		.register(servers)
 		.register(networks)
-		.register(dockerAccounts)
+		.register(accounts)
 		.register(listenerURL);
 	
 	done();

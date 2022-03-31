@@ -2,7 +2,8 @@ import { Deployment } from "@monitor/types";
 import { deleteContainer, dockerRun } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { REGISTRY_URL, SYSROOT, SYS_REPO_ROOT } from "../config";
+import { join } from "path";
+import { SECRETS, SYSROOT, SYS_REPO_ROOT } from "../config";
 
 const deploy = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/deploy", { onRequest: [app.auth] }, async (req, res) => {
@@ -20,10 +21,15 @@ const deploy = fp((app: FastifyInstance, _: {}, done: () => void) => {
     const log = await dockerRun(
       {
         ...deployment,
-        image: image ? REGISTRY_URL + image : deployment.image,
+        image: image
+          ? join(deployment.dockerAccount || "", image)
+          : deployment.image,
       },
       SYSROOT,
-      repoMount
+      repoMount,
+      deployment.dockerAccount,
+      deployment.dockerAccount &&
+        SECRETS.DOCKER_ACCOUNTS[deployment.dockerAccount]
     );
     res.send(log);
   });

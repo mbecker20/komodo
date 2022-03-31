@@ -3,7 +3,7 @@ import { clone, pull } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { remove } from "fs-extra";
-import { CONTAINER_REPO_ROOT } from "../config";
+import { CONTAINER_REPO_ROOT, SECRETS } from "../config";
 
 const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/repo/clone", { onRequest: [app.auth] }, async (req, res) => {
@@ -14,7 +14,7 @@ const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
       CONTAINER_REPO_ROOT + deployment.containerName,
       deployment.subfolder,
       deployment.branch,
-      deployment.accessToken
+      deployment.githubAccount && SECRETS.GITHUB_ACCOUNTS[deployment.githubAccount]
     );
 		res.send(log);
   });

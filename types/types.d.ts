@@ -92,6 +92,7 @@ export type DockerRunArgs = {
   restart?: string;
   postImage?: string; // interpolated into run command after the image string
   containerUser?: string; // after -u in the run command
+  dockerAccount?: string;
 };
 
 export interface Deployment extends DockerRunArgs {
@@ -104,7 +105,8 @@ export interface Deployment extends DockerRunArgs {
   repo?: string;
   branch?: string;
   subfolder?: string; // subfolder of repo to clone (uses sparse clone)
-  accessToken?: string;
+  githubAccount?: string;
+  
   repoMount?: string; // subfolder of repo to mount in container
   containerMount?: string; // the file path to mount repo on inside the container
   onPull?: Command;
@@ -162,10 +164,19 @@ export type CommandLogError = {
 
 export type PeripherySecrets = {
   PASSKEY: string;
-  DOCKER_ACCOUNTS: { [username: string]: string };
+  DOCKER_ACCOUNTS: {
+    [
+      username: string
+    ]: string /* this is the password for the account (they don't use auth tokens) */;
+  };
+  GITHUB_ACCOUNTS: {
+    [
+      username: string
+    ]: string /* this is a personal access token for the acct */;
+  };
 };
 
 export type CoreSecrets = PeripherySecrets & {
   JWT: { SECRET: string };
-  GITHUB: { ID: string; SECRET: string };
+  GITHUB_OAUTH: { ID: string; SECRET: string };
 };

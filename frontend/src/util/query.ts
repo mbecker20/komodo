@@ -77,3 +77,11 @@ export async function getServer(id: string) {
 export async function getNetworks(serverID: string) {
   return await client.get<Network[]>("/api/networks/" + serverID);
 }
+
+export async function getGithubAccounts() {
+  return await client.get<string[]>("/api/accounts/github");
+}
+
+export async function getDockerAccounts() {
+  return await client.get<string[]>("/api/accounts/docker");
+}
