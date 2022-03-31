@@ -1,6 +1,7 @@
 import { Component, createSignal, For, JSX, JSXElement } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
 import { useLocalStorage } from "../../../util/hooks";
+import Flex from "../layout/Flex";
 import s from "./Tabs.module.css";
 
 export type Tab = {
@@ -13,8 +14,8 @@ const Tabs: Component<{
   tabs: Tab[];
   defaultSelected?: string;
   localStorageKey?: string;
+  tabsGap?: string;
   tabStyle?: JSX.CSSProperties;
-  titleElement?: JSXElement;
   titleStyle?: JSX.CSSProperties;
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
@@ -29,7 +30,7 @@ const Tabs: Component<{
     selected() === title ? combineClasses(s.Tab, s.Active) : s.Tab;
   return (
     <div class={combineClasses(s.Tabs, p.containerClass)} style={p.containerStyle}>
-      <div class={s.TabTitles}>
+      <Flex gap={p.tabsGap} alignItems="center" justifyContent="space-evenly">
         <For each={p.tabs}>
           {(tab) => (
             <button
@@ -41,8 +42,7 @@ const Tabs: Component<{
             </button>
           )}
         </For>
-        {p.titleElement}
-      </div>
+      </Flex>
       {current().element}
     </div>
   );
