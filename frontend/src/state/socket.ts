@@ -108,9 +108,6 @@ function handleMessage(
     /* Servers */
     case ADD_SERVER:
       servers.add(message.server);
-      if (message.server.owners[0] === user.username) {
-        selected.set(message.server._id, "server");
-      }
       break;
 
     case REMOVE_SERVER:

@@ -34,22 +34,27 @@ const Env: Component<{}> = (p) => {
         </button>
       </Flex>
       <For each={deployment.environment}>
-        {({ variable, value }, index) => (
+        {(_, index) => (
           <Flex justifyContent="center">
             <Input
               placeholder="variable"
-              value={variable}
+              value={deployment.environment![index()].variable}
               style={{ width: "40%" }}
-              onConfirm={(value) =>
-                setDeployment("environment", index(), "variable", value)
+              onEdit={(value) =>
+                setDeployment(
+                  "environment",
+                  index(),
+                  "variable",
+                  value.toUpperCase().replaceAll(" ", "_")
+                )
               }
             />
             {" : "}
             <Input
               placeholder="value"
-              value={value}
+              value={deployment.environment![index()].value}
               style={{ width: "40%" }}
-              onConfirm={(value) =>
+              onEdit={(value) =>
                 setDeployment("environment", index(), "value", value)
               }
             />

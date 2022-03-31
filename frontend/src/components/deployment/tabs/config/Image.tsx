@@ -22,6 +22,17 @@ const Image: Component<{}> = (p) => {
     >
       <h1>{deployment.buildID ? "build" : "image"}</h1>
       <Flex>
+        <Show when={!deployment.buildID}>
+          <Flex>
+            <Input
+              placeholder="image"
+              spellcheck={false}
+              value={deployment.image || ""}
+              style={{ width: "12rem" }}
+              onEdit={(value) => setDeployment("image", value)}
+            />
+          </Flex>
+        </Show>
         <Show when={builds.loaded()}>
           <Selector
             targetClass="blue"
@@ -44,17 +55,6 @@ const Image: Component<{}> = (p) => {
             }}
             position="bottom center"
           />
-        </Show>
-        <Show when={!deployment.buildID}>
-          <Flex>
-            <Input
-              placeholder="image"
-              spellcheck={false}
-              value={deployment.image || ""}
-              style={{ width: "12rem" }}
-              onEdit={(value) => setDeployment("image", value)}
-            />
-          </Flex>
         </Show>
       </Flex>
     </Flex>
