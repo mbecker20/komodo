@@ -117,9 +117,9 @@ export async function dockerBuild(
     dockerfilePath ? ` -f ${dockerfilePath}` : ""
   } .`;
 
-  const push = `docker push ${join(username || "", imageName)}`;
+  const push = username ? ` && docker push ${join(username, imageName)}` : "";
 
-  return await execute(`${cd} && ${build} && ${push}`);
+  return await execute(`${cd} && ${build}${push}`);
 }
 
 /* Docker Run */

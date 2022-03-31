@@ -53,7 +53,7 @@ const Actions: Component<{}> = (p) => {
             </ConfirmButton>
           </Show>
         </Flex>
-        <Flex class={combineClasses(s.Action, "shadow")}>
+        {/* <Flex class={combineClasses(s.Action, "shadow")}>
           clone{" "}
           <ConfirmButton
             color="orange"
@@ -63,7 +63,7 @@ const Actions: Component<{}> = (p) => {
           >
             <Icon type="arrow-down" />
           </ConfirmButton>
-        </Flex>
+        </Flex> */}
       </Grid>
     </Show>
   );
