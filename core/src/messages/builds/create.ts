@@ -1,6 +1,6 @@
 import { Build, User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
-import { CREATE_BUILD } from "@monitor/util";
+import { CREATE_BUILD, prettyStringify } from "@monitor/util";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { toDashedName } from "../../util/helpers";
 import { addBuildUpdate, addSystemUpdate } from "../../util/updates";
@@ -48,7 +48,7 @@ async function createBuild(
       app,
       CREATE_BUILD,
       "Create Build (ERROR)",
-      { stderr: JSON.stringify(err) },
+      { stderr: prettyStringify(err) },
       user.username,
       message.note,
       true

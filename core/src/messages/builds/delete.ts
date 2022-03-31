@@ -1,7 +1,7 @@
 import { User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import { remove } from "fs-extra";
-import { DELETE_BUILD } from "@monitor/util";
+import { DELETE_BUILD, prettyStringify } from "@monitor/util";
 import { PERMISSIONS_DENY_LOG, BUILD_REPO_PATH } from "../../config";
 import { addSystemUpdate } from "../../util/updates";
 
@@ -40,7 +40,7 @@ async function deleteBuild(
       DELETE_BUILD,
       "Delete Build",
       {
-        stderr: JSON.stringify(error),
+        stderr: prettyStringify(error),
       },
       user.username,
       note,

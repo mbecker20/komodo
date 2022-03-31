@@ -5,7 +5,7 @@ import {
   EnvironmentVar,
   Server,
 } from "@monitor/types";
-import { objFrom2Arrays } from "./helpers";
+import { objFrom2Arrays, prettyStringify } from "./helpers";
 
 const deploymentViewFields: (keyof Deployment)[] = [
   "name",
@@ -43,9 +43,9 @@ export function deploymentChangelog(
         case "ports":
           return portsChangelog(oldDeployment.ports, newDeployment.ports);
         default:
-          return `${field}: ${JSON.stringify(
+          return `${field}: ${prettyStringify(
             oldDeployment[field]
-          )} -> ${JSON.stringify(newDeployment[field])}, \n\n`;
+          )} -> ${prettyStringify(newDeployment[field])}, \n\n`;
       }
     });
   return changelogArray.length > 0
@@ -277,11 +277,11 @@ export function buildChangelog(oldBuild: Build, newBuild: Build) {
     .filter((field) => {
       return (
         (newBuild[field] || oldBuild[field]) &&
-        JSON.stringify(newBuild[field]) !== JSON.stringify(oldBuild[field])
+        prettyStringify(newBuild[field]) !== prettyStringify(oldBuild[field])
       );
     })
     .map((field) => {
-      return `${field}: ${JSON.stringify(oldBuild[field])} -> ${JSON.stringify(
+      return `${field}: ${prettyStringify(oldBuild[field])} -> ${prettyStringify(
         newBuild[field]
       )}, \n\n`;
     });
@@ -301,7 +301,7 @@ export function serverChangelog(oldServer: Server, newServer: Server) {
       );
     })
     .map((field) => {
-      return `${field}: ${JSON.stringify(oldServer[field])} -> ${JSON.stringify(
+      return `${field}: ${prettyStringify(oldServer[field])} -> ${prettyStringify(
         newServer[field]
       )}, \n\n`;
     });

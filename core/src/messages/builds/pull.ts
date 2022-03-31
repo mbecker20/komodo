@@ -1,5 +1,5 @@
 import { User } from "@monitor/types";
-import { pull, PULL } from "@monitor/util";
+import { prettyStringify, pull, PULL } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { PERMISSIONS_DENY_LOG, BUILD_REPO_PATH } from "../../config";
 import { PULLING } from "../../plugins/actionStates";
@@ -50,7 +50,7 @@ async function pullRepo(
         buildID,
         PULL,
         "Pull (ERROR)",
-        { stderr: JSON.stringify(error) },
+        { stderr: prettyStringify(error) },
         user.username,
         note,
         true

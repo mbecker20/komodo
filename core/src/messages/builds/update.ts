@@ -1,5 +1,5 @@
 import { Build, User } from "@monitor/types";
-import { buildChangelog, UPDATE_BUILD } from "@monitor/util";
+import { buildChangelog, prettyStringify, UPDATE_BUILD } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { move, pathExists, remove } from "fs-extra";
 import { PERMISSIONS_DENY_LOG, BUILD_REPO_PATH } from "../../config";
@@ -63,7 +63,7 @@ async function updateBuild(
       UPDATE_BUILD,
       "Update Build (ERROR)",
       {
-        stderr: JSON.stringify(error),
+        stderr: prettyStringify(error),
       },
       user.username,
       note,

@@ -107,3 +107,7 @@ export function mergeCommandLogError(
 export function trailingSlash(str: string) {
   return str[str.length - 1] === "/" ? str : str + "/";
 }
+
+export function prettyStringify(json: any) {
+  return JSON.stringify(json, undefined, 2);
+}

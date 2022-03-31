@@ -1,9 +1,9 @@
 import { Build, Update } from "@monitor/types";
-import { Component, createContext, createEffect, createResource, onCleanup, Resource, useContext } from "solid-js";
+import { Component, createContext, createEffect, onCleanup, useContext } from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
 import { ADD_UPDATE, UPDATE_BUILD } from "../../../state/actions";
 import { useAppState } from "../../../state/StateProvider";
-import { getBuild, getDockerAccounts } from "../../../util/query";
+import { getBuild } from "../../../util/query";
 
 type ConfigBuild = Build & { loaded: boolean; updated: boolean; saving: boolean };
 

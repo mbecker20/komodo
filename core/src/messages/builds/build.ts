@@ -4,6 +4,7 @@ import {
   BUILD,
   execute,
   mergeCommandLogError,
+  prettyStringify,
 } from "@monitor/util";
 import { join } from "path";
 import { FastifyInstance } from "fastify";
@@ -84,7 +85,7 @@ async function build(
         buildID,
         BUILD,
         "Build (ERROR)",
-        { stderr: JSON.stringify(error) },
+        { stderr: prettyStringify(error) },
         user.username,
         note,
         true

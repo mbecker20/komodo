@@ -1,5 +1,5 @@
 import { Deployment, User } from "@monitor/types";
-import { deploymentChangelog, UPDATE_DEPLOYMENT } from "@monitor/util";
+import { deploymentChangelog, prettyStringify, UPDATE_DEPLOYMENT } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { remove } from "fs-extra";
 import { DEPLOYMENT_REPO_PATH, PERMISSIONS_DENY_LOG } from "../../config";
@@ -72,7 +72,7 @@ async function updateDeployment(
       UPDATE_DEPLOYMENT,
       "Update Deployment (ERROR)",
       {
-        stderr: JSON.stringify(error),
+        stderr: prettyStringify(error),
       },
       user.username,
       note,

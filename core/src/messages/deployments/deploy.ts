@@ -1,5 +1,5 @@
 import { User } from "@monitor/types";
-import { deleteContainer, dockerRun, DEPLOY } from "@monitor/util";
+import { deleteContainer, dockerRun, DEPLOY, prettyStringify } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { join } from "path";
 import { DEPLOYMENT_REPO_PATH, PERMISSIONS_DENY_LOG, SECRETS, SYSROOT } from "../../config";
@@ -86,7 +86,7 @@ async function deployDeployment(
       deploymentID,
       DEPLOY,
       "Deploy (ERROR)",
-      { stderr: JSON.stringify(error) },
+      { stderr: prettyStringify(error) },
       user.username,
       note,
       true
