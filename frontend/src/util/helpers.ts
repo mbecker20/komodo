@@ -68,5 +68,5 @@ export function readableTimestamp(unixTimeInSecs: number) {
 }
 
 export function readableOperation(operation: string) {
-  return operation.toLowerCase().replace("_", " ");
+  return operation.toLowerCase().replaceAll("_", " ");
 }

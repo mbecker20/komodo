@@ -13,7 +13,7 @@ import { ControlledInput } from "../util/Input";
 import NumberInput from "../util/NumberInput";
 import { CoreOrPeripheryConfig } from "../../types";
 import LabelledSelector from "../util/LabelledSelector";
-import { toDashedName } from "../../util/helpers/general";
+import { toDashedName, trailingSlash } from "../../util/helpers/general";
 
 type Stage = "name" | "secret" | "sysroot" | "port" | "restart" | "confirm";
 
@@ -103,7 +103,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
               value={sysroot || resolve(".")}
               onChange={(sysroot) => setConfig("sysroot", sysroot)}
               onSubmit={(sysroot) => {
-                setMany(["stage", "port"], ["sysroot", sysroot]);
+                setMany(["stage", "port"], ["sysroot", trailingSlash(sysroot)]);
               }}
             />
           </Text>

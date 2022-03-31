@@ -44,7 +44,7 @@ async function cloneRepo(
     log,
     user.username,
     "",
-    !isError
+    isError
   );
 }
 
