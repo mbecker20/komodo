@@ -1,17 +1,19 @@
 import { Component, createEffect, createMemo, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
+import { useUser } from "../../../state/UserProvider";
 import { combineClasses } from "../../../util/helpers";
 import { useLocalStorageToggle } from "../../../util/hooks";
 import { getDeployments } from "../../../util/query";
-import CreateDeployment from "../../create/Deployment";
 import Icon from "../../util/icons/Icon";
 import Flex from "../../util/layout/Flex";
 import Grid from "../../util/layout/Grid";
 import s from "../sidebar.module.css";
 import Deployment from "./Deployment";
+import NewDeployment from "./NewDeployment";
 
 const Server: Component<{ id: string }> = (p) => {
   const { servers, deployments, selected } = useAppState();
+  const { permissions } = useUser();
   const server = () => servers.get(p.id);
   const deploymentIDs = createMemo(() => {
     return (
@@ -33,8 +35,8 @@ const Server: Component<{ id: string }> = (p) => {
         <button
           class={combineClasses(
             s.ServerButton,
-            "shadow",
-            selected.id() === p.id && "selected"
+            selected.id() === p.id && "selected",
+            "shadow"
           )}
           onClick={toggleOpen}
         >
@@ -59,7 +61,9 @@ const Server: Component<{ id: string }> = (p) => {
             class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}
           >
             <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
-            <CreateDeployment serverID={p.id} />
+            <Show when={permissions() >= 1}>
+              <NewDeployment serverID={p.id} />
+            </Show>
           </Grid>
         </Show>
       </div>

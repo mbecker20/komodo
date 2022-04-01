@@ -10,8 +10,8 @@ const Build: Component<{ id: string }> = (p) => {
     <Show when={build()}>
       <button
         class={combineClasses(
+          selected.id() === p.id && "selected",
           s.DropdownItem,
-          selected.id() === p.id && "selected"
         )}
         onClick={() => selected.set(build()._id!, "build")}
       >

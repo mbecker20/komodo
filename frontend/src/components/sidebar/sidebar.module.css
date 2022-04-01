@@ -22,11 +22,27 @@
 	transition: background-color 500ms ease;
 }
 
+.ServerButton:hover {
+	background-color: rgba(36, 122, 192, 0.7);
+}
+
+.ServerButton:global(.selected):hover {
+	background-color: rgb(36, 122, 192);
+}
+
 .DropdownItem {
 	padding: 0.5rem 1rem;
 	width: 100%;
 	justify-content: space-between;
 	transition: background-color 500ms ease;
+}
+
+.DropdownItem:hover {
+	background-color: rgba(36, 122, 192, 0.7);
+}
+
+.DropdownItem:global(.selected):hover {
+	background-color: rgb(36, 122, 192);
 }
 
 .CreateButton {

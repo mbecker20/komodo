@@ -11,6 +11,7 @@ export type UserState = {
   setUser: Setter<false | User | undefined>;
   logout: () => void;
   username: () => string | undefined;
+  permissions: () => number;
   loginStatus: () => "LOGGED_IN" | "SIGNED_OUT" | "UNKNOWN"
 };
 
@@ -34,11 +35,19 @@ export const UserProvider: Component = (p) => {
     else if (user() === false) return SIGNED_OUT;
     else return UNKNOWN
   }
+  const permissions = () => {
+    if (user()) {
+      return (user() as User).permissions!
+    } else {
+      return 0;
+    }
+  }
   const context: UserState = {
     user: () => user() as User,
     setUser: mutate,
     logout,
     username,
+    permissions,
     loginStatus
   };
   return (

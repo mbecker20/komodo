@@ -41,6 +41,7 @@ export const ConfigProvider: Component<{ build: Build }> = (p) => {
         dockerBuildArgs: build.dockerBuildArgs,
         cliBuild: build.cliBuild,
         dockerAccount: build.dockerAccount,
+        githubAccount: build.githubAccount,
         loaded: true,
         updated: false,
         saving: false

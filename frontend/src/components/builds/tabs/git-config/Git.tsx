@@ -34,7 +34,7 @@ const Git: Component<{}> = (p) => {
           <div>github account</div>
           <Selector
             targetClass="blue"
-            selected={build.dockerAccount || "none"}
+            selected={build.githubAccount || "none"}
             items={["none", ...githubAccounts()!]}
             onSelect={(account) => {
               setBuild(

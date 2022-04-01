@@ -1,6 +1,7 @@
 import { Component, For, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
+import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
 import AddServer from "../create/Server";
 import { TOPBAR_HEIGHT } from "../topbar/Topbar";
@@ -15,6 +16,7 @@ const SIDEBAR_WIDTH = 350;
 const Sidebar: Component<{}> = () => {
   const { sidebar, servers } = useAppState();
   const { height } = useAppDimensions();
+  const { permissions } = useUser();
   return (
     <Show when={servers.loaded() && sidebar.open()}>
       <Tabs
@@ -36,7 +38,9 @@ const Sidebar: Component<{}> = () => {
                 }}
               >
                 <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
-                <AddServer />
+                <Show when={permissions() >= 2}>
+                  <AddServer />
+                </Show>
               </Grid>
             ),
           },

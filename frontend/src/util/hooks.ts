@@ -1,10 +1,19 @@
-import { Accessor, createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import {
+  Accessor,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+  Setter,
+} from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
 
-export function useToggle(initial = false): [Accessor<boolean>, () => void] {
+export function useToggle(
+  initial = false
+): [Accessor<boolean>, () => void, Setter<boolean>] {
   const [s, set] = createSignal(initial);
   const toggle = () => set((s) => !s);
-  return [s, toggle];
+  return [s, toggle, set];
 }
 
 export function useToggleTimeout(
@@ -27,10 +36,14 @@ export function useToggleTimeout(
 export function useLocalStorageToggle(
   key: string,
   initial?: boolean
-): [Accessor<boolean>, () => void] {
+): [
+  Accessor<boolean>,
+  () => void,
+  (arg: boolean | ((arg: boolean) => boolean)) => void
+] {
   const [s, set] = useLocalStorage(initial || false, key);
   const toggle = () => set((s) => !s);
-  return [s, toggle];
+  return [s, toggle, set];
 }
 
 export function useLocalStorage<T>(
