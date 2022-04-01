@@ -11,7 +11,7 @@ export async function execute(
 ): Promise<CommandLogError> {
   try {
     return {
-      command,
+      command: commandForLog || command,
       log: await pExec(command),
       isError: false,
     };
