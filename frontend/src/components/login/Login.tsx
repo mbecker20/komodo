@@ -6,6 +6,7 @@ import { createStore } from "solid-js/store";
 import Flex from "../util/layout/Flex";
 import { client, pushNotification } from "../..";
 import { useUser } from "../../state/UserProvider";
+import { combineClasses } from "../../util/helpers";
 
 const Login: Component<{}> = (p) => {
   const [info, set] = createStore({
@@ -46,14 +47,18 @@ const Login: Component<{}> = (p) => {
 
   return (
     <div class={s.Login}>
-      <Grid>
+      <Grid placeItems="center">
         <div class={s.Monitor}>monitor</div>
         <Input
+          class={s.LoginItem}
+          style={{ width: "20rem" }}
           placeholder="username"
           value={info.username}
           onEdit={(value) => set("username", value)}
         />
         <Input
+          class={s.LoginItem}
+          style={{ width: "20rem" }}
           type="password"
           placeholder="password"
           value={info.password}
@@ -61,17 +66,19 @@ const Login: Component<{}> = (p) => {
           onConfirm={login}
         />
         <Flex style={{ width: "100%" }} justifyContent="space-between">
-          <button class="blue" onClick={login} style={{ "font-size": "1.05rem" }}>
+          <button class={combineClasses(s.LoginItem, "green")} onClick={login}>
             log in
           </button>
-          <button class="blue" onClick={signup} style={{ "font-size": "1.05rem" }}>
+          <button
+            class={combineClasses(s.LoginItem, "orange")}
+            onClick={signup}
+          >
             sign up
           </button>
         </Flex>
         <button
-          class="blue"
+          class={combineClasses(s.LoginItem, "blue")}
           onClick={() => client.loginGithub()}
-          style={{ "font-size": "1.05rem" }}
         >
           log in with github
         </button>

@@ -79,7 +79,7 @@ input {
 }
 
 input:focus {
-  outline: solid 1px rgba(50, 50, 50, 0.5);
+  outline: solid 1px rgba(127, 133, 143, 0.5);
 }
 
 input::placeholder {

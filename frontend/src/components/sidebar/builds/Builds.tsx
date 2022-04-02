@@ -12,6 +12,11 @@ const Builds: Component<{}> = (p) => {
   const { permissions } = useUser();
   return (
     <Grid gap=".5rem" class={combineClasses(s.Deployments)}>
+      <Show
+        when={builds.ids() && (builds.ids() as string[]).length === 0}
+      >
+        <div>no builds</div>
+      </Show>
       <For each={builds.ids()}>{(id) => <Build id={id} />}</For>
       <Show when={permissions() >= 1}>
         <NewBuild />
