@@ -9,7 +9,7 @@ const CliBuild: Component<{}> = (p) => {
   return (
     <Grid class="config-item shadow">
       <h1>cli build</h1>
-      <div>build with a custom command</div>
+      <div style={{ opacity: 0.7 }}>build with a custom command</div>
       <Flex justifyContent="space-between" alignItems="center">
         <div>build path</div>
         <Input

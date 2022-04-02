@@ -7,11 +7,20 @@ import Selector from "../../../util/menu/Selector";
 import { useConfig } from "./Provider";
 
 const Git: Component<{}> = (p) => {
-	const { githubAccounts } = useAppState();
-	const { deployment, setDeployment } = useConfig();
-	return (
+  const { githubAccounts } = useAppState();
+  const { deployment, setDeployment } = useConfig();
+  return (
     <Grid class="config-item shadow">
-      <h1>deployment repo</h1>
+      {/* <Flex alignItems="center" justifyContent="space-between">
+        <h1>deployment repo</h1>
+        <Toggle
+          toggled={deployment.repo !== undefined}
+          onChange={(toggled) =>
+            setDeployment("repo", toggled ? "" : undefined)
+          }
+        />
+      </Flex> */}
+      <h1>github config</h1>
       <Flex justifyContent="space-between" alignItems="center">
         <div>repo</div>
         <Input
@@ -47,6 +56,6 @@ const Git: Component<{}> = (p) => {
       </Show>
     </Grid>
   );
-}
+};
 
 export default Git;

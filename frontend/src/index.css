@@ -205,8 +205,8 @@ h1 {
 }
 
 .config-items {
-  max-height: 100%;
-  padding: 0.5rem;
+  max-height: 65vh;
+  padding: 0rem 0.5rem;
 }
 
 .config-item {

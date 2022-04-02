@@ -12,24 +12,47 @@ import ConfirmButton from "../../../util/ConfirmButton";
 import Restart from "./Restart";
 import DockerAccount from "./DockerAccount";
 import Git from "./Git";
+import Tabs from "../../../util/tabs/Tabs";
+import RepoMount from "./RepoMount";
+import { OnClone, OnPull } from "./OnGit";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save } = useConfig();
   return (
     <Show when={deployment.loaded}>
       <Grid class="config">
-        <Grid class="config-items scroller">
-          <Image />
-          <Show when={deployment.image}>
-            <DockerAccount />
-          </Show>
-          <Network />
-          <Restart />
-          <Ports />
-          <Mounts />
-          <Env />
-          <Git />
-        </Grid>
+        <Tabs
+          tabsGap="0rem"
+          tabs={[
+            {
+              title: "container",
+              element: (
+                <Grid class="config-items scroller">
+                  <Image />
+                  <Show when={deployment.image}>
+                    <DockerAccount />
+                  </Show>
+                  <Network />
+                  <Restart />
+                  <Ports />
+                  <Mounts />
+                  <Env />
+                </Grid>
+              ),
+            },
+            {
+              title: "repo mount",
+              element: (
+                <Grid class="config-items scroller">
+                  <Git />
+                  <RepoMount />
+                  <OnClone />
+                  <OnPull />
+                </Grid>
+              ),
+            },
+          ]}
+        />
         <Show when={deployment.updated}>
           <Flex style={{ "place-self": "center", padding: "1rem" }}>
             <button onClick={reset}>

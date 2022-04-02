@@ -23,7 +23,7 @@ const Ports: Component<{}> = (p) => {
         <Show when={!deployment.ports || deployment.ports.length === 0}>
           <div>none</div>
         </Show>
-        <button onClick={onAdd}>
+        <button class="green" onClick={onAdd}>
           <Icon type="plus" />
         </button>
       </Flex>
@@ -47,7 +47,7 @@ const Ports: Component<{}> = (p) => {
                 setDeployment("ports", index(), "container", value)
               }
             />
-            <button onClick={() => onRemove(index())}>
+            <button class="red" onClick={() => onRemove(index())}>
               <Icon type="minus" />
             </button>
           </Flex>

@@ -3,6 +3,8 @@ export function toggleCss(scale = 0.75) {
 		.toggle {
 			position: relative;
 			display: inline-block;
+			padding: 0;
+			margin: 0;
 			width: ${60 * scale}px;
 			height: ${34 * scale}px;
 		}

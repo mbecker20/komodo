@@ -23,7 +23,7 @@ const Volumes: Component<{}> = (p) => {
         <Show when={!deployment.volumes || deployment.volumes.length === 0}>
           <div>none</div>
         </Show>
-        <button onClick={onAdd}>
+        <button class="green" onClick={onAdd}>
           <Icon type="plus" />
         </button>
       </Flex>
@@ -34,7 +34,7 @@ const Volumes: Component<{}> = (p) => {
               placeholder="system"
               value={local}
               style={{ width: "40%" }}
-              onConfirm={(value) =>
+              onEdit={(value) =>
                 setDeployment("volumes", index(), "local", value)
               }
             />
@@ -43,11 +43,11 @@ const Volumes: Component<{}> = (p) => {
               placeholder="container"
               value={container}
               style={{ width: "40%" }}
-              onConfirm={(value) =>
+              onEdit={(value) =>
                 setDeployment("volumes", index(), "container", value)
               }
             />
-            <button onClick={() => onRemove(index())}>
+            <button class="red" onClick={() => onRemove(index())}>
               <Icon type="minus" />
             </button>
           </Flex>

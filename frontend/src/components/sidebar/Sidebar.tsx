@@ -14,7 +14,7 @@ import s from "./sidebar.module.css";
 const SIDEBAR_WIDTH = 350;
 
 const Sidebar: Component<{}> = () => {
-  const { sidebar, servers } = useAppState();
+  const { sidebar, servers, selected } = useAppState();
   const { height } = useAppDimensions();
   const { permissions } = useUser();
   return (
@@ -59,7 +59,6 @@ const Sidebar: Component<{}> = () => {
             ),
           },
         ]}
-        localStorageKey="sidebar-tab"
       />
     </Show>
   );

@@ -33,13 +33,15 @@ export function useToggleTimeout(
   return [s, toggle];
 }
 
+export type LocalStorageSetter<T> = (arg: T | ((s: T) => T)) => void;
+
 export function useLocalStorageToggle(
   key: string,
   initial?: boolean
 ): [
   Accessor<boolean>,
   () => void,
-  (arg: boolean | ((arg: boolean) => boolean)) => void
+  LocalStorageSetter<boolean>
 ] {
   const [s, set] = useLocalStorage(initial || false, key);
   const toggle = () => set((s) => !s);
@@ -49,7 +51,7 @@ export function useLocalStorageToggle(
 export function useLocalStorage<T>(
   defaultStore: T,
   key: string
-): [Accessor<T>, (arg: T | ((s: T) => T)) => void] {
+): [Accessor<T>, LocalStorageSetter<T>] {
   const toStore = window.localStorage.getItem(key);
   const [stored, setStored] = createSignal<T>(
     toStore ? JSON.parse(toStore) : defaultStore

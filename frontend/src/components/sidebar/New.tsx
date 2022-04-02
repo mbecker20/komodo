@@ -32,6 +32,7 @@ const New: Component<{
         placeholder={p.placeholder}
         value={name()}
         onEdit={setName}
+        onConfirm={create}
         style={{ width: "11rem" }}
       />
       <Flex gap="0.4rem">
