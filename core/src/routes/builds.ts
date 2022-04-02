@@ -3,7 +3,7 @@ import fp from "fastify-plugin";
 
 const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	app.get("/api/builds", { onRequest: [app.auth] }, async (req, res) => {
-		const builds = await app.builds.findCollection({}, "name");
+		const builds = await app.builds.findCollection({}, "name owners");
 		res.send(builds);
 	});
 

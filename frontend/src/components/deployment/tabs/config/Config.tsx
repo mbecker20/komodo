@@ -11,6 +11,7 @@ import Icon from "../../../util/icons/Icon";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Restart from "./Restart";
 import DockerAccount from "./DockerAccount";
+import Git from "./Git";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save } = useConfig();
@@ -27,6 +28,7 @@ const Config: Component<{}> = (p) => {
           <Ports />
           <Mounts />
           <Env />
+          <Git />
         </Grid>
         <Show when={deployment.updated}>
           <Flex style={{ "place-self": "center", padding: "1rem" }}>

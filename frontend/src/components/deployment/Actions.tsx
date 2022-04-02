@@ -16,7 +16,7 @@ import {
   STOP_CONTAINER,
 } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
-import { combineClasses } from "../../util/helpers";
+import { useUser } from "../../state/UserProvider";
 import { getDeploymentActionState } from "../../util/query";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
@@ -26,6 +26,7 @@ import Loading from "../util/loading/Loading";
 
 const Actions: Component<{}> = (p) => {
   const { ws, deployments, selected } = useAppState();
+  const { permissions, username } = useUser();
   const deployment = () => deployments.get(selected.id())!;
   const [actions, setActions] = createStore<DeployActionState>({
     deploying: false,
@@ -65,7 +66,12 @@ const Actions: Component<{}> = (p) => {
     })
   );
   return (
-    <Show when={deployment()}>
+    <Show
+      when={
+        deployment() &&
+        (permissions() >= 2 || deployment().owners.includes(username()!))
+      }
+    >
       <Grid class="card shadow">
         <h1>actions</h1>
         <Switch>

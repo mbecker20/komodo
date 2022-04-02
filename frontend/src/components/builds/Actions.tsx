@@ -3,7 +3,7 @@ import { Component, createEffect, onCleanup, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { BUILD, CLONE_BUILD_REPO } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
-import { combineClasses } from "../../util/helpers";
+import { useUser } from "../../state/UserProvider";
 import { getBuildActionState } from "../../util/query";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
@@ -12,6 +12,7 @@ import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
 
 const Actions: Component<{}> = (p) => {
+  const { username, permissions } = useUser();
   const { builds, selected, ws } = useAppState();
   const build = () => builds.get(selected.id())!;
   const [actions, setActions] = createStore<BuildActionState>({
@@ -38,7 +39,7 @@ const Actions: Component<{}> = (p) => {
     })
   );
   return (
-    <Show when={build()}>
+    <Show when={build() && (permissions() >= 2 || build().owners.includes(username()!))}>
       <Grid class="card shadow">
         <h1>actions</h1>
         <Flex class="action shadow">

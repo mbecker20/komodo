@@ -25,7 +25,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
     const deployments = await app.deployments.find(
       { serverID: server._id },
-      "name containerName serverID"
+      "name containerName serverID owners"
     );
     const status = server.isCore
       ? await deploymentStatusLocal(app)
