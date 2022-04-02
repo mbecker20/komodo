@@ -100,7 +100,7 @@ export function useArray<T>(query: () => Promise<T[]>) {
     query().then(set);
   });
   const add = (item: T) => {
-    set((items: any) => [item, ...items]);
+    set((items: any) => items ? [item, ...items] : [item]);
   };
   const loaded = () => (collection() ? true : false);
   return {
