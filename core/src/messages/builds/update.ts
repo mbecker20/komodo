@@ -45,6 +45,7 @@ async function updateBuild(
       }
       // maybe do something more with deployments
     }
+    (build.owners as any) = false;
     await app.builds.updateOne({ _id: build._id }, build);
     addBuildUpdate(
       app,

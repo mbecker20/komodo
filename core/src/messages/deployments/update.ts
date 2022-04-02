@@ -3,7 +3,7 @@ import { deploymentChangelog, prettyStringify, UPDATE_DEPLOYMENT } from "@monito
 import { FastifyInstance } from "fastify";
 import { remove } from "fs-extra";
 import { DEPLOYMENT_REPO_PATH, PERMISSIONS_DENY_LOG } from "../../config";
-import { clonePeriphery } from "../../util/periphery/git";
+import { clonePeriphery, deleteRepoPeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
 import cloneRepo from "./clone";
 
@@ -38,14 +38,10 @@ async function updateDeployment(
           ? undefined
           : await app.servers.findById(deployment.serverID!);
       if (deployment.repo) {
-        if (server) {
-          await clonePeriphery(server, deployment);
-        } else {
-          await cloneRepo(app, user, deployment);
-        }
+        await cloneRepo(app, user, deployment);
       } else {
         if (server) {
-          // need to make this route
+          await deleteRepoPeriphery(server, deployment);
         } else {
           await remove(DEPLOYMENT_REPO_PATH + deployment.containerName); // need to have this on periphery as well
         }

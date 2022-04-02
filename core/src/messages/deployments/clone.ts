@@ -1,6 +1,7 @@
 import { Deployment, User } from "@monitor/types";
 import { clone, execute, mergeCommandLogError } from "@monitor/util";
 import { FastifyInstance } from "fastify";
+import { join } from "path";
 import { CLONE_DEPLOYMENT_REPO } from "@monitor/util";
 import { DEPLOYMENT_REPO_PATH, SECRETS } from "../../config";
 import { clonePeriphery } from "../../util/periphery/git";
@@ -19,6 +20,7 @@ async function cloneRepo(
     subfolder,
     githubAccount,
     onPull,
+    onClone,
     _id,
   } = deployment;
   const server =
@@ -39,20 +41,32 @@ async function cloneRepo(
     return;
   }
   const cloneCle = server.isCore
-    ? await clonePeriphery(server, deployment)
-    : await clone(
+    ? await clone(
         repo!,
         DEPLOYMENT_REPO_PATH + containerName!,
         subfolder,
         branch,
         githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
-      );
+      )
+    : await clonePeriphery(server, deployment);
+  const onCloneCle =
+    !server && onClone
+      ? await execute(
+          `cd ${join(
+            DEPLOYMENT_REPO_PATH,
+            containerName!,
+            onClone.path || ""
+          )} && ${onClone.command}`
+        )
+      : undefined;
   const onPullCle =
     !server && onPull
       ? await execute(
-          `cd ${DEPLOYMENT_REPO_PATH + containerName!}${
-            onPull.path ? (onPull.path[0] === "/" ? "" : "/") : ""
-          }${onPull.path ? onPull.path : ""} && ${onPull.command}`
+          `cd ${join(
+            DEPLOYMENT_REPO_PATH,
+            containerName!,
+            onPull.path || ""
+          )} && ${onPull.command}`
         )
       : undefined;
   const { command, log, isError } = mergeCommandLogError(
@@ -60,7 +74,11 @@ async function cloneRepo(
       name: "clone",
       cle: cloneCle,
     },
-    { name: "post clone", cle: onPullCle }
+    {
+      name: "on clone",
+      cle: onCloneCle,
+    },
+    { name: "on pull", cle: onPullCle }
   );
   addDeploymentUpdate(
     app,

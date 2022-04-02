@@ -75,8 +75,13 @@ export function mergeCommandLogError(
     name: string;
     cle: CommandLogError;
   }[];
+  const onlyOne = _cle.length === 1;
   const command = _cle.reduce((prev, curr) => {
-    return prev + (prev && "\n\n") + `${curr.name}: ${curr.cle.command}`;
+    return (
+      prev +
+      (prev && "\n\n") +
+      `${onlyOne ? curr.name + ": " : ""}${curr.cle.command}`
+    );
   }, "");
   const log = _cle.reduce(
     (log, curr) => {
@@ -84,13 +89,13 @@ export function mergeCommandLogError(
         log.stdout +
         (log.stdout && (curr.cle.log.stdout ? "\n\n" : "")) +
         curr.cle.log.stdout
-          ? `${curr.name}:\n${curr.cle.log.stdout}`
+          ? `${onlyOne ? curr.name + ":\n" : ""}${curr.cle.log.stdout}`
           : "";
       log.stderr =
         log.stderr +
         (log.stderr && (curr.cle.log.stderr ? "\n\n" : "")) +
         curr.cle.log.stderr
-          ? `${curr.name}:\n${curr.cle.log.stderr}`
+          ? `${onlyOne ? curr.name + ":\n" : ""}${curr.cle.log.stderr}`
           : "";
       return log;
     },
