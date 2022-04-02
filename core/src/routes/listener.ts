@@ -99,6 +99,8 @@ const listener = fp((app: FastifyInstance, _: {}, done: () => void) => {
     );
     res.send();
   });
+
+  done();
 });
 
 export default listener;

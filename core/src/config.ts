@@ -14,7 +14,7 @@ export let SECRETS: CoreSecrets = readJSONFile("/secrets/secrets.json");
 export function refreshSecrets() {
   SECRETS = readJSONFile("/secrets/secrets.json");
 }
-export const LOGGER = getBooleanFromEnv("LOGGER", false);
+export const LOGGER = getBooleanFromEnv("LOGGER", true);
 export const PORT = getNumberFromEnv("PORT", 9000);
 export const HOST = getStringFromEnv("HOST", "http://localhost:" + PORT);
 export const MONGO_URL = getStringFromEnv(
@@ -35,4 +35,7 @@ export const PERMISSIONS_DENY_LOG = {
   stderr: "Someone tried to access this route without appropriate permissions",
 };
 export const UPDATES_PER_REQUEST = getNumberFromEnv("UPDATES_PER_REQUEST", 10);
-export const SERVER_CHECK_TIMEOUT = getNumberFromEnv("SERVER_CHECK_TIMEOUT", 1000);
+export const SERVER_CHECK_TIMEOUT = getNumberFromEnv(
+  "SERVER_CHECK_TIMEOUT",
+  1000
+);

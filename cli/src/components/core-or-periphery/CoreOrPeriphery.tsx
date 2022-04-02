@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 import { Box, Newline, Text } from "ink";
-import { resolve } from "path";
+import { join, resolve } from "path";
 import { useConfig, useMainSequence } from "../../cli";
 import { useEsc, useStore } from "../../util/hooks";
 import {
@@ -79,7 +79,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
           secrets folder:{" "}
           <Text color="white">
             <ControlledInput
-              value={secretVolume || "~/secrets"}
+              value={secretVolume || join(resolve("."), "/secrets")}
               onChange={(volume) => setConfig("secretVolume", volume)}
               onSubmit={(volume) => {
                 setMany(["stage", "sysroot"], ["secretVolume", volume]);
@@ -89,7 +89,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
         </Text>
       )}
 
-      {secretVolume && stage !== "secret" && (
+      {(secretVolume || undefined) && stage !== "secret" && (
         <Text color="green">
           secrets folder: <Text color="white">{secretVolume}</Text>
         </Text>
