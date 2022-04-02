@@ -7,7 +7,6 @@ import db from "./plugins/db";
 import ws from "./plugins/ws";
 import docker from "./plugins/docker";
 import frontend from "./plugins/frontend";
-import githubListener from "./plugins/github-listener";
 import actionStates from "./plugins/actionStates";
 import routes from "./routes";
 
@@ -27,7 +26,6 @@ async function main() {
     .register(auth)
     .register(ws)
     .register(frontend)
-    .register(githubListener)
     .register(actionStates)
     .register(routes);
     

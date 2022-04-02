@@ -8,17 +8,19 @@ import networks from "./networks";
 import servers from "./servers";
 import updates from "./updates";
 import secrets from "./secrets";
+import listener from "./listener";
 
 const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	app
-		.register(updates)
-		.register(builds)
-		.register(deployments)
-		.register(servers)
-		.register(networks)
-		.register(accounts)
-		.register(secrets)
-		.register(listenerURL);
+    .register(updates)
+    .register(builds)
+    .register(deployments)
+    .register(servers)
+    .register(networks)
+    .register(accounts)
+    .register(secrets)
+    .register(listenerURL)
+    .register(listener);
 	
 	done();
 });

@@ -9,20 +9,50 @@ import { CONTAINER_REPO_ROOT, SECRETS } from "../config";
 const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/repo/clone", { onRequest: [app.auth] }, async (req, res) => {
     const { deployment } = req.body as { deployment: Deployment };
-    const log = await clone(
-      deployment.repo!,
-      CONTAINER_REPO_ROOT + deployment.containerName,
-      deployment.subfolder,
-      deployment.branch,
-      deployment.githubAccount &&
-        SECRETS.GITHUB_ACCOUNTS[deployment.githubAccount]
+    const {
+      containerName,
+      repo,
+      subfolder,
+      branch,
+      githubAccount,
+      onClone,
+      onPull,
+    } = deployment;
+    const cloneCle = await clone(
+      repo!,
+      join(CONTAINER_REPO_ROOT, containerName!),
+      subfolder,
+      branch,
+      githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
+    );
+    const onCloneCle =
+      onClone &&
+      (await execute(
+        `cd ${join(
+          CONTAINER_REPO_ROOT,
+          containerName!,
+          onClone.path || ""
+        )} && ${onClone.command}`
+      ));
+    const onPullCle =
+      onPull &&
+      (await execute(
+        `cd ${join(
+          CONTAINER_REPO_ROOT,
+          containerName!,
+          onPull.path || ""
+        )} && ${onPull.command}`
+      ));
+    const log = mergeCommandLogError(
+      { name: "clone", cle: cloneCle },
+      { name: "on clone", cle: onCloneCle },
+      { name: "on pull", cle: onPullCle }
     );
     res.send(log);
   });
 
   app.post("/repo/pull", { onRequest: [app.auth] }, async (req, res) => {
-    const body = req.body as { deployment: Deployment };
-    const deployment = body.deployment;
+    const { deployment } = req.body as { deployment: Deployment };
     const pullCle = await pull(
       join(CONTAINER_REPO_ROOT, deployment.containerName!),
       deployment.branch
@@ -45,9 +75,8 @@ const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
   });
 
   app.post("/repo/delete", { onRequest: [app.auth] }, async (req, res) => {
-    const body = req.body as { deployment: Deployment };
-    const deployment = body.deployment;
-    await remove(CONTAINER_REPO_ROOT + deployment.containerName).catch();
+    const { deployment } = req.body as { deployment: Deployment };
+    await remove(join(CONTAINER_REPO_ROOT, deployment.containerName!)).catch();
     res.send();
   });
 

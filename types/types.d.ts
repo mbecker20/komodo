@@ -59,7 +59,7 @@ export type DockerBuildArgs = {
 // these are potentially dangerous but also useful
 // maybe best for admins to add premade curated command strings, so user dev can't input them directly, only give path to run in.
 export type Command = {
-  name: string;
+  name?: string;
   path?: string;
   command: string; // no cd and no sudo
 };
@@ -119,6 +119,7 @@ export interface Deployment extends DockerRunArgs {
   repoMount?: string; // subfolder of repo to mount in container
   containerMount?: string; // the file path to mount repo on inside the container
   onPull?: Command;
+  onClone?: Command;
   gitConfigs?: DeploymentGitConfig[];
   // running status
   status?: "not deployed" | ContainerStatus;
