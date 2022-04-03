@@ -1,161 +1,148 @@
 @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500&display=swap");
 
-$orange: #C96B40;
+$lightblue: #4270b3;
+$blue: #395d93;
+$darkblue: #23395b;
 
-$blue: #395D93;
-$darkblue: #23395B;
+$lightgreen: #4f8d5c;
+$green: #41764c;
+$darkgreen: #2b4f33;
 
-$green: #41764C;
-$darkgreen: #2B4F33;
+$lightred: #b13a2d;
+$red: #952E23;
+$darkred: #631F17;
 
+$lightorange: #d56b3a;
+$orange: #ac5c36;
+$darkorange: #984f2d;
 
 body {
-	margin: 0;
-	/* font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif; */
-	font-family: "Chakra Petch", sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  font-family: "Chakra Petch", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 
-	background-color: rgb(18, 43, 59);
-	scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
-	scrollbar-width: thin;
-
-	color: #fceade;
+  background-color: rgb(18, 43, 59);
+  color: #fceade;
 }
 
 code {
-	font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-		monospace;
-}
-
-button {
-	color: inherit;
-	padding: 0.5rem;
-	margin: 0;
-	cursor: pointer;
-	border: none;
-	width: fit-content;
-	border-radius: 0.25rem;
-	font-family: inherit;
-	font-size: 0.9rem;
-	font-weight: 500;
-	display: flex;
-	gap: 0.5rem;
-	justify-content: center;
-	align-items: center;
-	background-color: transparent;
-	transition: background-color 125ms ease-in-out;
-}
-
-button:focus {
-	outline: none;
-}
-
-input {
-	font-family: inherit;
-	font-size: 1.05rem;
-	color: inherit;
-	background-color: rgba(50, 50, 50, 0.2);
-	padding: 0.25rem;
-	box-sizing: border-box;
-	border: none;
-	-webkit-appearance: none;
-}
-
-input:focus {
-	outline: solid 1px rgba(127, 133, 143, 0.5);
-}
-
-input::placeholder {
-	color: inherit;
-	opacity: 0.6;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
 
 h1 {
-	font-size: 1.5rem;
-	font-weight: 500;
-	user-select: none;
-	margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+  user-select: none;
+  margin: 0;
 }
 
-.green {
-	background-color: rgba(28, 110, 65, 0.9);
+button {
+  color: inherit;
+  padding: 0.5rem;
+  margin: 0;
+  cursor: pointer;
+  border: none;
+  width: fit-content;
+  border-radius: 0.25rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  transition: background-color 125ms ease-in-out;
 }
 
-.green:hover {
-	background-color: rgba(35, 128, 77, 0.9);
-	/* border: solid 1px transparent; */
+button:focus {
+  outline: none;
 }
 
-.red {
-	background-color: rgba(182, 47, 52, 0.95);
-	/* border: solid 1px rgba(169, 76, 79, 0.4); */
+input {
+  font-family: inherit;
+  font-size: 1.05rem;
+  color: inherit;
+  background-color: rgba(50, 50, 50, 0.2);
+  padding: 0.25rem;
+  box-sizing: border-box;
+  border: none;
+  -webkit-appearance: none;
 }
 
-.red:hover {
-	background-color: rgba(202, 34, 40, 0.95);
-	/* border: solid 1px transparent; */
+input:focus {
+  outline: solid 1px rgba(127, 133, 143, 0.5);
+}
+
+input::placeholder {
+  color: inherit;
+  opacity: 0.6;
 }
 
 .grey {
-	background-color: rgba(112, 108, 87, 0.4);
+  background-color: rgba(112, 108, 87, 0.4);
 }
 
 .grey:hover {
-	background-color: rgba(112, 108, 87, 0.8);
-	border: solid 1px transparent;
+  background-color: rgba(112, 108, 87, 0.8);
+  border: solid 1px transparent;
+}
+
+.green {
+  background-color: rgba(28, 110, 65, 0.9);
+}
+
+.green:hover {
+  background-color: rgba(35, 128, 77, 0.9);
+}
+
+.red {
+  background-color: rgba(182, 47, 52, 0.95);
+}
+
+.red:hover {
+  background-color: rgba(202, 34, 40, 0.95);
 }
 
 .blue {
-	background-color: rgba(0, 84, 95, 0.978);
+  background-color: rgba(0, 84, 95, 0.978);
 }
 
 .blue:hover {
-	background-color: rgba(1, 105, 119, 0.978);
-}
-
-.blue.active {
-	background-color: rgba(2, 107, 121, 0.5);
-	/* border: solid 1px transparent; */
-}
-
-.blue.active:hover {
-	background-color: rgba(2, 107, 121, 0.8);
-	border: solid 1px transparent;
+  background-color: rgba(1, 105, 119, 0.978);
 }
 
 .orange {
-	background-color: rgba(192, 87, 34, 0.9);
+  background-color: rgba(192, 87, 34, 0.9);
 }
 
 .orange:hover {
-	background-color: rgba(214, 88, 25, 0.9);
+  background-color: rgba(214, 88, 25, 0.9);
 }
 
 .shadow {
-	/* box-shadow: 0px 1px 6px 4px rgba(0, 0, 0, 0.25); */
-	box-shadow: rgba(0, 0, 0, 0.25) 0px 3px 8px;
-	transition: box-shadow 250ms ease
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 3px 8px;
+  transition: box-shadow 250ms ease;
 }
 
 .shadow:hover {
-	box-shadow: rgba(0, 0, 0, 0.35) 2px 4px 10px;
+  box-shadow: rgba(0, 0, 0, 0.35) 2px 4px 10px;
 }
 
 .scroller {
-	overflow-y: scroll;
-	scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
-	scrollbar-width: thin;
+  overflow-y: scroll;
+  scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
+  scrollbar-width: thin;
 }
 
 .scroller::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
-	background-color: transparent;
+  width: 8px;
+  height: 8px;
+  background-color: transparent;
 }
 
 .scroller::-webkit-scrollbar-thumb {
-	background: rgba(252, 234, 222, 0.3);
+  background: rgba(252, 234, 222, 0.3);
 }
