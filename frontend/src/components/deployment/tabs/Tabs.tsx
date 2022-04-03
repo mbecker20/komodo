@@ -57,6 +57,7 @@ const DeploymentTabs: Component<{}> = (p) => {
       <ConfigProvider deployment={deployment()!}>
         <Tabs
           containerClass="card tabs shadow"
+          containerStyle={{ gap: "0.5rem" }}
           tabs={[
             {
               title: "config",

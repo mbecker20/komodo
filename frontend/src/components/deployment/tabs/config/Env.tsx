@@ -20,20 +20,24 @@ const Env: Component<{}> = (p) => {
   };
   return (
     <Grid class="config-item shadow">
-      <Flex alignItems="center">
+      <Flex alignItems="center" justifyContent="space-between">
         <h1>environment</h1>
-        <Show
-          when={!deployment.environment || deployment.environment.length === 0}
-        >
-          <div>none</div>
-        </Show>
-        <button class="green" onClick={onAdd}>
-          <Icon type="plus" />
-        </button>
+        <Flex alignItems="center">
+          <Show
+            when={
+              !deployment.environment || deployment.environment.length === 0
+            }
+          >
+            <div>none</div>
+          </Show>
+          <button class="green" onClick={onAdd}>
+            <Icon type="plus" />
+          </button>
+        </Flex>
       </Flex>
       <For each={deployment.environment}>
         {(_, index) => (
-          <Flex justifyContent="center">
+          <Flex justifyContent="space-between" alignItems="center">
             <Input
               placeholder="variable"
               value={deployment.environment![index()].variable}
