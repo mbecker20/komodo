@@ -4,6 +4,9 @@
 	grid-area: sidebar;
 	background-color: c.$darkblue;
 	z-index: 10;
+	box-sizing: border-box;
+	margin: 1rem;
+	margin-right: 0rem;
 }
 
 .Server {
