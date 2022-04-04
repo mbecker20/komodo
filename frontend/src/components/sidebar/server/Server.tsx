@@ -60,13 +60,6 @@ const Server: Component<{ id: string }> = (p) => {
             gap=".5rem"
             class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}
           >
-            <Show
-              when={
-                deploymentIDs() && (deploymentIDs() as string[]).length === 0
-              }
-            >
-              <Flex justifyContent="center">no deployments</Flex>
-            </Show>
             <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
             <Show when={permissions() >= 1}>
               <NewDeployment serverID={p.id} />

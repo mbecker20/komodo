@@ -1,11 +1,11 @@
 import { Log as LogType } from "@monitor/types";
 import { Component, createEffect, createSignal, Show } from "solid-js";
-import { pushNotification } from "../../..";
-import { useAppState } from "../../../state/StateProvider";
-import { combineClasses } from "../../../util/helpers";
-import { useBuffer } from "../../../util/hooks";
-import Icon from "../../util/icons/Icon";
-import s from "../deployment.module.css";
+import { pushNotification } from "../../../..";
+import { useAppState } from "../../../../state/StateProvider";
+import { combineClasses } from "../../../../util/helpers";
+import { useBuffer } from "../../../../util/hooks";
+import Icon from "../../../util/icons/Icon";
+import s from "./log.module.css";
 
 const Log: Component<{
   log: LogType;

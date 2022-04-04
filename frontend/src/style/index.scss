@@ -67,7 +67,7 @@ input::placeholder {
 }
 
 .grey {
-  background-color: c.$grey;
+  background-color: rgba(c.$grey, 0.8);
 }
 
 .grey:hover {
@@ -75,35 +75,67 @@ input::placeholder {
 }
 
 .green {
-  background-color: c.$green;
+  background-color: rgba(c.$green, 0.8);
 }
 
 .green:hover {
   background-color: c.$lightgreen;
 }
 
+.green-outlined {
+  border: solid 1px c.$green;
+}
+
+.green-outlined:hover {
+  border: solid 1px c.$lightgreen;
+}
+
 .red {
-  background-color: c.$red;
+  background-color: rgba(c.$red, 0.8);
 }
 
 .red:hover {
   background-color: c.$lightred;
 }
 
+.red-outlined {
+  border: solid 1px c.$red;
+}
+
+.red-outlined:hover {
+  border: solid 1px c.$lightred;
+}
+
 .blue {
-  background-color: c.$blue;
+  background-color: rgba(c.$blue, 0.8);
 }
 
 .blue:hover {
   background-color: c.$lightblue;
 }
 
+.blue-outlined {
+  border: solid 1px c.$blue;
+}
+
+.blue-outlined:hover {
+  border: solid 1px c.$lightblue;
+}
+
 .orange {
-  background-color: c.$orange;
+  background-color: rgba(c.$orange, 0.8);
 }
 
 .orange:hover {
   background-color: c.$lightorange;
+}
+
+.orange-outlined {
+  border: solid 1px c.$orange;
+}
+
+.orange-outlined:hover {
+  border: solid 1px c.$lightorange;
 }
 
 .shadow {

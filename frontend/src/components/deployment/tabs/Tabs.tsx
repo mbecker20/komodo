@@ -8,8 +8,7 @@ import {
 } from "solid-js";
 import Tabs from "../../util/tabs/Tabs";
 import Config from "./config/Config";
-import Log from "./Log";
-import { combineClasses } from "../../../util/helpers";
+import Log from "./log/Log";
 import { ConfigProvider } from "./config/Provider";
 import { useAppState } from "../../../state/StateProvider";
 import { getDeploymentLog } from "../../../util/query";

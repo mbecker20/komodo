@@ -31,7 +31,8 @@ export type IconType =
   | "application"
   | "error"
   | "refresh"
-  | "cut";
+  | "cut"
+  | "fullscreen";
 
 const Icon: Component<{
   type: IconType;
