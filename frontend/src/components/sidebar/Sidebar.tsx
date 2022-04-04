@@ -48,9 +48,10 @@ const Sidebar: Component<{}> = () => {
             title: "builds",
             element: (
               <Grid
+                class="scroller"
                 style={{
                   height: "fit-content",
-                  "max-height": inPx(height() - TOPBAR_HEIGHT - 80),
+                  "max-height": inPx(height() - TOPBAR_HEIGHT - 120),
                   padding: "0rem 1rem",
                 }}
               >
