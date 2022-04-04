@@ -2,7 +2,7 @@
 
 .Sidebar {
 	grid-area: sidebar;
-	background-color: c.$darkblue;
+	background-color: c.$grey;
 	z-index: 10;
 	box-sizing: border-box;
 	margin: 1rem;
@@ -10,12 +10,12 @@
 }
 
 .Server {
-	background-color: c.$blue;
+	background-color: c.$lightgrey;
 	height: fit-content;
 }
 
 .Deployments {
-	background-color: c.$blue;
+	background-color: c.$lightgrey;
 	transform-origin: top;
 	padding: 0.5rem;
 }

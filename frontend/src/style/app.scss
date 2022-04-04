@@ -26,12 +26,12 @@
 }
 
 .card {
-	background-color: c.$darkblue;
+	background-color: c.$grey;
 	padding: 0.5rem;
 }
 
 .action {
-	background-color: c.$blue;
+	background-color: c.$lightgrey;
 	align-items: center;
 	justify-content: space-between;
 	padding: 0.5rem;
@@ -60,7 +60,7 @@
 .config-item {
 	width: 60vw;
 	max-width: 30rem;
-	background-color: c.$blue;
+	background-color: c.$lightgrey;
 	box-sizing: border-box;
 	padding: 0.5rem;
 	height: fit-content;
