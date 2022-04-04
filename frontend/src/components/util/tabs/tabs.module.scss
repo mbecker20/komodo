@@ -14,11 +14,11 @@
   cursor: pointer;
   font-size: 1rem;
   width: 100%;
-  border-bottom: solid 2px rgba(c.$lightblue, 0.5);
+  border-bottom: solid 2px rgba(c.$lightgrey, 0.7);
   transition: background-color 250ms ease-in-out, border-color 250ms ease-in-out;
 }
 
 .Active {
-  border-color: rgba(c.$lightblue, 0.8);
-  background-color: rgba(c.$blue, 0.4);
+  border-color: rgba(c.$lightgrey, 0.9);
+  background-color: rgba(c.$lightgrey, 0.4);
 }
