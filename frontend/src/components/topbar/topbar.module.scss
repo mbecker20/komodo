@@ -1,7 +1,9 @@
+@use "../../style/colors.scss" as c;
+
 .Topbar {
 	grid-area: topbar;
 	width: 100%;
-	background-color: rgb(107, 37, 37);
+	background-color: c.$darkblue;
 	z-index: 90;
 }
 
@@ -12,7 +14,6 @@
 
 .Updates {
 	width: 340px;
-	color: rgb(231, 225, 225);
 	z-index: 25;
 }
 

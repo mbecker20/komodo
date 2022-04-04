@@ -3,13 +3,13 @@ import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
-import AddServer from "../create/Server";
+import AddServer from "./AddServer";
 import { TOPBAR_HEIGHT } from "../topbar/Topbar";
 import Grid from "../util/layout/Grid";
 import Tabs from "../util/tabs/Tabs";
 import Builds from "./builds/Builds";
 import Server from "./server/Server";
-import s from "./sidebar.module.css";
+import s from "./sidebar.module.scss";
 
 const SIDEBAR_WIDTH = 350;
 

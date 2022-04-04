@@ -12,7 +12,7 @@ import { useKeyDown } from "../../../util/hooks";
 import Icon from "../icons/Icon";
 import Flex from "../layout/Flex";
 import Grid from "../layout/Grid";
-import s from "./Menu.module.css";
+import s from "./menu.module.scss";
 
 const CenterMenu: Component<{
   show: Accessor<boolean>;
@@ -24,6 +24,7 @@ const CenterMenu: Component<{
   title?: string;
   padding?: string | number;
   style?: JSX.CSSProperties;
+  position?: "top" | "center"
 }> = (p) => {
   const [buffer, set] = createSignal(p.show());
   createEffect(() => {
@@ -58,12 +59,14 @@ const Child: Component<{
   toggleShow: () => void;
   padding?: string | number;
   style?: JSX.CSSProperties;
+  position?: "top" | "center";
 }> = (p) => {
   useKeyDown("Escape", p.toggleShow);
   return (
     <Grid
       class={combineClasses(s.CenterMenuContainer, p.show() ? s.Enter : s.Exit)}
       onClick={p.toggleShow}
+      placeItems={p.position === "center" ? "center" : "start center"}
     >
       <Grid
         class={combineClasses(s.Menu, "shadow")}

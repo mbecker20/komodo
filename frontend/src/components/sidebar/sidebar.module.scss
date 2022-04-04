@@ -1,16 +1,18 @@
+@use "../../style/colors.scss" as c;
+
 .Sidebar {
 	grid-area: sidebar;
-	background-color: rgb(28, 58, 129);
+	background-color: c.$darkgrey;
 	z-index: 10;
 }
 
 .Server {
-	background-color: rgb(100, 100, 100);
+	background-color: c.$darkblue;
 	height: fit-content;
 }
 
 .Deployments {
-	background-color: rgb(66, 66, 66);
+	background-color: c.$darkblue;
 	transform-origin: top;
 	padding: 0.5rem;
 }
@@ -23,12 +25,12 @@
 }
 
 .ServerButton:hover {
-	background-color: rgba(36, 122, 192, 0.7);
+	background-color: c.$blue;
 }
 
-.ServerButton:global(.selected):hover {
-	background-color: rgb(36, 122, 192);
-}
+// .ServerButton:global(.selected):hover {
+// 	background-color: c.$blue;
+// }
 
 .DropdownItem {
 	padding: 0.5rem 1rem;
@@ -38,12 +40,12 @@
 }
 
 .DropdownItem:hover {
-	background-color: rgba(36, 122, 192, 0.7);
+	background-color: c.$blue;
 }
 
-.DropdownItem:global(.selected):hover {
-	background-color: rgb(36, 122, 192);
-}
+// .DropdownItem:global(.selected):hover {
+// 	background-color: c.$lightblue
+// }
 
 .CreateButton {
 	width: 90%;
@@ -51,10 +53,4 @@
 	justify-content: center;
 	margin: 0.25rem;
 	box-sizing: border-box;
-}
-
-.Divider {
-	width: 100%;
-	height: 2px;
-	background-color: rgba(255, 255, 255, 0.3);
 }

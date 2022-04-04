@@ -4,6 +4,7 @@ const Input: Component<
   {
     onEdit?: (value: string) => void;
     onConfirm?: (value: string) => void;
+    onEnter?: (value: string) => void;
   } & JSX.InputHTMLAttributes<HTMLInputElement>
 > = (p) => {
   return (
@@ -11,7 +12,11 @@ const Input: Component<
       {...p}
       onInput={(e) => p.onEdit && p.onEdit(e.currentTarget.value)}
       onBlur={(e) => p.onConfirm && p.onConfirm(e.currentTarget.value)}
-      onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          p.onEnter ? p.onEnter(e.currentTarget.value) : e.currentTarget.blur();
+        }
+      }}
     />
   );
 };

@@ -1,11 +1,11 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import Grid from "../util/layout/Grid";
-import s from "./topbar.module.css";
+import s from "./topbar.module.scss";
 import Update from "../update/Update";
 import { combineClasses } from "../../util/helpers";
 
-const Updates: Component<{}> = (p) => {
+const Updates: Component<{}> = () => {
   const { updates } = useAppState();
   return (
     <Show when={updates.loaded()}>

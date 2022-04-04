@@ -1,3 +1,5 @@
+@use "../../../style/colors.scss" as c;
+
 .MenuContainer {
   position: relative;
   height: fit-content;
@@ -19,7 +21,7 @@
   display: grid;
   width: fit-content;
   /* border: solid 1px rgba(2, 107, 121, 0.25); */
-  background-color: rgb(56, 20, 20);
+  background-color: c.$darkgrey;
   z-index: 21;
   border-radius: 0.25rem;
   box-sizing: border-box;
@@ -115,8 +117,7 @@
   top: 100%;
   left: 0;
   padding: 0rem 0.5rem;
-  background-color: rgba(10, 10, 10, 0.85);
-  border: solid 1px rgba(2, 107, 121, 1);
+  background-color: c.$darkgrey;
   border-radius: 0.25rem;
   z-index: 30;
   white-space: nowrap;
@@ -129,7 +130,7 @@
 	left: 0;
   width: 100vw;
   height: 100vh;
-  place-items: center;
+  // place-items: start center;
   background-color: rgba(0, 0, 0, 0.4);
 }
 
@@ -139,5 +140,5 @@
 }
 
 .SelectorItem:hover {
-  background-color: rgba(180, 43, 43, 0.377);
+  background-color: c.$grey;
 }

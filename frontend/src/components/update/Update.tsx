@@ -11,7 +11,7 @@ import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import CenterMenu from "../util/menu/CenterMenu";
-import s from "./update.module.css";
+import s from "./update.module.scss";
 
 const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   const { deployments, servers, builds } = useAppState();

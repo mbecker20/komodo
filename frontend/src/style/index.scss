@@ -1,20 +1,5 @@
+@use "colors" as c;
 @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500&display=swap");
-
-$lightblue: #4270b3;
-$blue: #395d93;
-$darkblue: #23395b;
-
-$lightgreen: #4f8d5c;
-$green: #41764c;
-$darkgreen: #2b4f33;
-
-$lightred: #b13a2d;
-$red: #952E23;
-$darkred: #631F17;
-
-$lightorange: #d56b3a;
-$orange: #ac5c36;
-$darkorange: #984f2d;
 
 body {
   margin: 0;
@@ -22,8 +7,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  background-color: rgb(18, 43, 59);
-  color: #fceade;
+  background-color: c.$darkgrey;
+  color: c.$app-color;
 }
 
 code {
@@ -82,44 +67,43 @@ input::placeholder {
 }
 
 .grey {
-  background-color: rgba(112, 108, 87, 0.4);
+  background-color: c.$grey;
 }
 
 .grey:hover {
-  background-color: rgba(112, 108, 87, 0.8);
-  border: solid 1px transparent;
+  background-color: c.$lightgrey;
 }
 
 .green {
-  background-color: rgba(28, 110, 65, 0.9);
+  background-color: c.$green;
 }
 
 .green:hover {
-  background-color: rgba(35, 128, 77, 0.9);
+  background-color: c.$lightgreen;
 }
 
 .red {
-  background-color: rgba(182, 47, 52, 0.95);
+  background-color: c.$red;
 }
 
 .red:hover {
-  background-color: rgba(202, 34, 40, 0.95);
+  background-color: c.$lightred;
 }
 
 .blue {
-  background-color: rgba(0, 84, 95, 0.978);
+  background-color: c.$blue;
 }
 
 .blue:hover {
-  background-color: rgba(1, 105, 119, 0.978);
+  background-color: c.$lightblue;
 }
 
 .orange {
-  background-color: rgba(192, 87, 34, 0.9);
+  background-color: c.$orange;
 }
 
 .orange:hover {
-  background-color: rgba(214, 88, 25, 0.9);
+  background-color: c.$lightorange;
 }
 
 .shadow {

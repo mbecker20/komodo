@@ -9,7 +9,7 @@ import {
 import { combineClasses } from "../../../util/helpers";
 import { getPositionClass } from "./helpers";
 import { Position } from "./helpers";
-import s from "./Menu.module.css";
+import s from "./menu.module.scss";
 
 const HoverMenu: Component<{
   target: JSXElement;

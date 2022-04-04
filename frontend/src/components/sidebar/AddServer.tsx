@@ -1,5 +1,5 @@
 import { Server } from "@monitor/types";
-import { Component, createSignal, onMount } from "solid-js";
+import { Component, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
 import { pushNotification } from "../..";
 import { ADD_SERVER } from "../../state/actions";
@@ -10,7 +10,7 @@ import Input from "../util/Input";
 import Grid from "../util/layout/Grid";
 import CenterMenu from "../util/menu/CenterMenu";
 
-const AddServer: Component<{}> = (p) => {
+const AddServer: Component<{}> = () => {
   const [show, toggleShow] = useToggle();
   return (
     <CenterMenu
@@ -21,6 +21,7 @@ const AddServer: Component<{}> = (p) => {
       targetClass={combineClasses("green", "shadow")}
       targetStyle={{ width: "100%" }}
       content={<Content close={toggleShow} />}
+      position="center"
     />
   );
 };

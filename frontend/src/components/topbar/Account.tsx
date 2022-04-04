@@ -4,7 +4,7 @@ import { useUser } from "../../state/UserProvider";
 import { readablePermissions } from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
 import Grid from "../util/layout/Grid";
-import s from "./topbar.module.css";
+import s from "./topbar.module.scss";
 
 const Account: Component<{}> = (p) => {
   const { logout } = useAppState();

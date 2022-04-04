@@ -47,6 +47,8 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
         image: deployment.image,
         network: deployment.network,
         buildID: deployment.buildID,
+        dockerAccount: deployment.dockerAccount,
+        githubAccount: deployment.githubAccount,
         loaded: true,
         updated: false,
       })

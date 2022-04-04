@@ -2,7 +2,7 @@ import { ContainerStatus } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { combineClasses } from "../../../util/helpers";
-import s from "../sidebar.module.css";
+import s from "../sidebar.module.scss";
 
 const Deployment: Component<{ id: string }> = (p) => {
   const { deployments, selected } = useAppState();

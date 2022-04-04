@@ -9,7 +9,7 @@ import {
 import { combineClasses } from "../../../util/helpers";
 import { LocalStorageSetter, useLocalStorage } from "../../../util/hooks";
 import Flex from "../layout/Flex";
-import s from "./Tabs.module.css";
+import s from "./tabs.module.scss";
 
 export type Tab = {
   title: string;

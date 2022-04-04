@@ -1,4 +1,4 @@
-import s from "./Menu.module.css";
+import s from "./menu.module.scss";
 
 export type Position =
   | "left"

@@ -3,7 +3,7 @@ import { useToggle } from "../../../util/hooks";
 import Icon from "../icons/Icon";
 import { Position } from "./helpers";
 import Menu from "./Menu";
-import s from "./Menu.module.css";
+import s from "./menu.module.scss";
 
 const Selector: Component<{
   selected: string;

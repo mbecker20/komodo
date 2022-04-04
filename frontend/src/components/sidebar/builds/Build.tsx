@@ -1,7 +1,7 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { combineClasses } from "../../../util/helpers";
-import s from "../sidebar.module.css";
+import s from "../sidebar.module.scss";
 
 const Build: Component<{ id: string }> = (p) => {
   const { builds, selected } = useAppState();

@@ -1,3 +1,5 @@
+@use "colors" as c;
+
 .app {
 	width: 100vw;
 	height: 100vh;
@@ -12,7 +14,7 @@
 .content {
 	grid-area: content;
 	grid-template-columns: auto 2fr;
-	background-color: rgb(49, 78, 112);
+	background-color: c.$darkgrey;
 	padding: 1rem;
 }
 
@@ -22,12 +24,12 @@
 }
 
 .card {
-	background-color: rgb(27, 55, 86);
+	background-color: c.$darkblue;
 	padding: 0.5rem;
 }
 
 .action {
-	background-color: rgb(69, 34, 96);
+	background-color: c.$blue;
 	align-items: center;
 	justify-content: space-between;
 	padding: 0.5rem;
@@ -56,12 +58,12 @@
 .config-item {
 	width: 60vw;
 	max-width: 30rem;
-	background-color: darkolivegreen;
+	background-color: c.$blue;
 	box-sizing: border-box;
 	padding: 0.5rem;
 	height: fit-content;
 }
 
 .selected {
-	background-color: rgb(36, 122, 192);
+	background-color: c.$lightblue;
 }

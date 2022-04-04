@@ -7,7 +7,7 @@ import { getDeployments } from "../../../util/query";
 import Icon from "../../util/icons/Icon";
 import Flex from "../../util/layout/Flex";
 import Grid from "../../util/layout/Grid";
-import s from "../sidebar.module.css";
+import s from "../sidebar.module.scss";
 import Deployment from "./Deployment";
 import NewDeployment from "./NewDeployment";
 
@@ -65,7 +65,7 @@ const Server: Component<{ id: string }> = (p) => {
                 deploymentIDs() && (deploymentIDs() as string[]).length === 0
               }
             >
-              <div>no deployments</div>
+              <Flex justifyContent="center">no deployments</Flex>
             </Show>
             <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
             <Show when={permissions() >= 1}>

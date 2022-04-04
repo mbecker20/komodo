@@ -48,7 +48,7 @@ const Image: Component<{}> = (p) => {
                 build === "custom image" ? undefined : builds.ids()![index - 1]
               );
             }}
-            position="bottom center"
+            position="bottom right"
           />
         </Show>
       </Flex>

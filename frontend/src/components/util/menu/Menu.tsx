@@ -8,7 +8,7 @@ import {
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
 import { getPositionClass, Position } from "./helpers";
-import s from "./Menu.module.css";
+import s from "./menu.module.scss";
 
 const Menu: Component<{
   content: JSXElement;

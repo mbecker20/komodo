@@ -1,5 +1,5 @@
 import { Component } from "solid-js";
-import s from "./login.module.css";
+import s from "./login.module.scss";
 import Input from "../util/Input";
 import Grid from "../util/layout/Grid";
 import { createStore } from "solid-js/store";
@@ -63,7 +63,7 @@ const Login: Component<{}> = (p) => {
           placeholder="password"
           value={info.password}
           onEdit={(value) => set("password", value)}
-          onConfirm={login}
+          onEnter={login}
         />
         <Flex style={{ width: "100%" }} justifyContent="space-between">
           <button class={combineClasses(s.LoginItem, "green")} onClick={login}>

@@ -1,8 +1,9 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
 
-import "./index.scss";
-import "./app.scss";
+import "./style/colors.scss";
+import "./style/index.scss";
+import "./style/app.scss";
 import App from "./App";
 import Client from "./util/client";
 import makeNotifications from "./components/util/notification/Notifications";

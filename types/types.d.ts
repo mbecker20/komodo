@@ -82,6 +82,16 @@ export interface Build {
   owners: string[]; // userID / username
 }
 
+export type DeploymentGitConfig = {
+  repo?: string;
+  branch?: string;
+  subfolder?: string; // subfolder of repo to clone (uses sparse clone)
+  githubAccount?: string;
+  repoMount?: string; // subfolder of repo to mount in container
+  containerMount?: string; // the file path to mount repo on inside the container
+  onPull?: Command;
+};
+
 export type DockerRunArgs = {
   image?: string;
   containerName?: string; // also for auto pull of repo, will be set by time deployment created
@@ -93,16 +103,6 @@ export type DockerRunArgs = {
   postImage?: string; // interpolated into run command after the image string
   containerUser?: string; // after -u in the run command
   dockerAccount?: string;
-};
-
-export type DeploymentGitConfig = {
-  repo?: string;
-  branch?: string;
-  subfolder?: string; // subfolder of repo to clone (uses sparse clone)
-  githubAccount?: string;
-  repoMount?: string; // subfolder of repo to mount in container
-  containerMount?: string; // the file path to mount repo on inside the container
-  onPull?: Command;
 };
 
 export interface Deployment extends DockerRunArgs {
