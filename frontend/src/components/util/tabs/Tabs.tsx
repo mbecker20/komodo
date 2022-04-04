@@ -1,6 +1,8 @@
 import {
   Accessor,
   Component,
+  createEffect,
+  createMemo,
   createSignal,
   For,
   JSX,
@@ -18,7 +20,7 @@ export type Tab = {
 };
 
 const Tabs: Component<{
-  tabs: Tab[];
+  tabs: (Tab | undefined | false)[];
   defaultSelected?: string;
   localStorageKey?: string;
   tabsGap?: string;
@@ -26,15 +28,21 @@ const Tabs: Component<{
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
-  const def = p.defaultSelected ? p.defaultSelected : p.tabs[0].title;
+  const tabs = createMemo(() => p.tabs.filter(val => val) as Tab[])
+  const def = p.defaultSelected ? p.defaultSelected : tabs()[0].title;
   const [selected, set] = p.localStorageKey
     ? useLocalStorage(def, p.localStorageKey)
     : createSignal(def);
+  createEffect(() => {
+    if (tabs().filter((tab) => tab.title === selected())[0] === undefined) {
+      set(tabs()[0].title);
+    }
+  })
   return <ControlledTabs selected={selected} set={set} {...p} />;
 };
 
 export const ControlledTabs: Component<{
-  tabs: Tab[];
+  tabs: (Tab | undefined | false)[];
   selected: Accessor<string>;
   set: LocalStorageSetter<string>;
   tabsGap?: string;
@@ -42,7 +50,8 @@ export const ControlledTabs: Component<{
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
-  const current = () => p.tabs.filter((tab) => tab.title === p.selected())[0];
+  const tabs = createMemo(() => p.tabs.filter((val) => val) as Tab[]);
+  const current = () => tabs().filter((tab) => tab.title === p.selected())[0] || tabs()[0];
   const getClassName = (title: string) =>
     p.selected() === title ? combineClasses(s.Tab, s.Active) : s.Tab;
   return (
@@ -50,8 +59,12 @@ export const ControlledTabs: Component<{
       class={combineClasses(s.Tabs, p.containerClass)}
       style={p.containerStyle}
     >
-      <Flex gap={p.tabsGap || "0rem"} alignItems="center" justifyContent="space-evenly">
-        <For each={p.tabs}>
+      <Flex
+        gap={p.tabsGap || "0rem"}
+        alignItems="center"
+        justifyContent="space-evenly"
+      >
+        <For each={tabs()}>
           {(tab) => (
             <button
               class={getClassName(tab.title)}

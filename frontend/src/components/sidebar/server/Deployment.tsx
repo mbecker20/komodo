@@ -1,7 +1,7 @@
 import { ContainerStatus } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
-import { combineClasses } from "../../../util/helpers";
+import { combineClasses, deploymentStatusClass } from "../../../util/helpers";
 import s from "../sidebar.module.scss";
 
 const Deployment: Component<{ id: string }> = (p) => {
@@ -19,12 +19,12 @@ const Deployment: Component<{ id: string }> = (p) => {
       <button
         class={combineClasses(
           s.DropdownItem,
-          selected.id() === p.id && "selected",
+          selected.id() === p.id && "selected"
         )}
         onClick={() => selected.set(deployment()!._id!, "deployment")}
       >
         <div>{deployment()!.name}</div>
-        <div>{status()}</div>
+        <div class={deploymentStatusClass(status())}>{status()}</div>
       </button>
     </Show>
   );

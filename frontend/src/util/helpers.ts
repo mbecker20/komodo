@@ -60,7 +60,7 @@ export function readableTimestamp(unixTimeInSecs: number) {
   const hours24 = date.getHours();
   let hours = hours24 % 12;
   if (hours === 0) hours = 12;
-  const pm = hours24 > 13;
+  const pm = hours24 > 11;
   const minutes = date.getMinutes();
   return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${
     minutes > 9 ? minutes : "0" + minutes
@@ -70,3 +70,26 @@ export function readableTimestamp(unixTimeInSecs: number) {
 export function readableOperation(operation: string) {
   return operation.toLowerCase().replaceAll("_", " ");
 }
+
+export function deploymentStatusClass(
+  status: "not deployed" | "created" | "running" | "exited"
+) {
+  switch (status) {
+    case "running":
+      return "running";
+    case "exited":
+      return "exited";
+  }
+}
+
+export function serverStatusClass(
+  status: "OK" | "NOT OK" | "DISABLED"
+) {
+  switch (status) {
+    case "OK":
+      return "running";
+    case "NOT OK":
+      return "exited";
+  }
+}
+

@@ -28,12 +28,12 @@
 }
 
 .ServerButton:hover {
-	background-color: c.$lightblue;
+	background-color: rgba(c.$lightblue, 0.7);
 }
 
-// .ServerButton:global(.selected):hover {
-// 	background-color: c.$blue;
-// }
+.ServerButton:global(.selected):hover {
+	background-color: c.$lightblue;
+}
 
 .DropdownItem {
 	padding: 0.5rem 1rem;
@@ -43,12 +43,12 @@
 }
 
 .DropdownItem:hover {
-	background-color: c.$lightblue;
+	background-color: rgba(c.$lightblue, 0.7);
 }
 
-// .DropdownItem:global(.selected):hover {
-// 	background-color: c.$lightblue
-// }
+.DropdownItem:global(.selected):hover {
+	background-color: c.$lightblue
+}
 
 .CreateButton {
 	width: 90%;

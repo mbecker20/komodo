@@ -5,6 +5,7 @@ import { useAppState } from "../../../../state/StateProvider";
 import { combineClasses } from "../../../../util/helpers";
 import { useBuffer } from "../../../../util/hooks";
 import Icon from "../../../util/icons/Icon";
+import Grid from "../../../util/layout/Grid";
 import s from "./log.module.scss";
 
 const Log: Component<{
@@ -66,27 +67,25 @@ const Log: Component<{
         >
           <pre class={s.Log}>{log()}</pre>
         </div>
-        <button
-          class={combineClasses(s.RefreshButton, "blue")}
-          onClick={async () => {
-            await p.reload();
-            pushNotification("good", "log refreshed");
-          }}
-        >
-          <Icon type="refresh" />
-        </button>
-        <Show when={buffer()}>
+        <Grid class={s.TopRight}>
           <button
-            class={combineClasses(
-              s.ReturnButton,
-              "blue",
-              scrolled() ? s.Enter : s.Exit
-            )}
-            onClick={() => setScrolled(false)}
+            class="blue"
+            onClick={async () => {
+              await p.reload();
+              pushNotification("good", "log refreshed");
+            }}
           >
-            <Icon type="arrow-down" />
+            <Icon type="refresh" />
           </button>
-        </Show>
+          <Show when={buffer()}>
+            <button
+              class={combineClasses("blue", scrolled() ? s.Enter : s.Exit)}
+              onClick={() => setScrolled(false)}
+            >
+              <Icon type="arrow-down" />
+            </button>
+          </Show>
+        </Grid>
       </div>
     </Show>
   );

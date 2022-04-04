@@ -46,7 +46,11 @@ const Server: Component<{ id: string }> = (p) => {
           </Flex>
           <div
             class={server()?.status === "OK" ? "green" : "red"}
-            style={{ padding: "0.25rem", "border-radius": ".35rem" }}
+            style={{
+              padding: "0.25rem",
+              "border-radius": ".35rem",
+              transition: "background-color 125ms ease-in-out",
+            }}
             onClick={(e) => {
               e.stopPropagation();
               selected.set(p.id, "server");

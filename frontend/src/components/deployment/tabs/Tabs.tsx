@@ -1,4 +1,4 @@
-import { Log as LogType, Update } from "@monitor/types";
+import { ContainerStatus, Log as LogType, Update } from "@monitor/types";
 import {
   Component,
   createEffect,
@@ -22,12 +22,16 @@ import {
   STOP_CONTAINER,
 } from "../../../state/actions";
 
-const DeploymentTabs: Component<{}> = (p) => {
+const DeploymentTabs: Component<{}> = () => {
   const { selected, deployments, ws } = useAppState();
   const deployment = () => deployments.get(selected.id());
   const [log, setLog] = createSignal<LogType>({});
+  const status = () =>
+    deployment()!.status === "not deployed"
+      ? "not deployed"
+      : (deployment()!.status as ContainerStatus).State;
   const load = async () => {
-    console.log("load log")
+    console.log("load log");
     if (deployment()?.status !== "not deployed") {
       const log = await getDeploymentLog(selected.id());
       setLog(log);
@@ -62,27 +66,29 @@ const DeploymentTabs: Component<{}> = (p) => {
               title: "config",
               element: <Config />,
             },
-            {
-              title: "log",
-              element: <Log reload={load} log={log()} />,
-            },
-            {
-              title: "error log",
-              titleElement: (
-                <Flex gap="0.5rem" alignItems="center">
-                  error log{" "}
-                  <Show
-                    when={
-                      deployment()!.status !== "not deployed" && log().stderr
-                    }
-                  >
-                    <Icon type="error" />
-                  </Show>
-                </Flex>
-              ),
-              element: <Log reload={load} log={log()} error />,
-            },
-          ].filter((val) => val)}
+            status() !== "not deployed" && [
+              {
+                title: "log",
+                element: <Log reload={load} log={log()} />,
+              },
+              {
+                title: "error log",
+                titleElement: (
+                  <Flex gap="0.5rem" alignItems="center">
+                    error log{" "}
+                    <Show
+                      when={
+                        deployment()!.status !== "not deployed" && log().stderr
+                      }
+                    >
+                      <Icon type="error" />
+                    </Show>
+                  </Flex>
+                ),
+                element: <Log reload={load} log={log()} error />,
+              },
+            ],
+          ].flat()}
           localStorageKey="deployment-tab"
         />
       </ConfigProvider>
