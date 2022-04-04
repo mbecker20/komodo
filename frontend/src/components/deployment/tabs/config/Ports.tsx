@@ -36,7 +36,7 @@ const Ports: Component<{}> = (p) => {
               placeholder="system"
               value={local}
               style={{ width: "40%" }}
-              onConfirm={(value) =>
+              onEdit={(value) =>
                 setDeployment("ports", index(), "local", value)
               }
             />
@@ -45,7 +45,7 @@ const Ports: Component<{}> = (p) => {
               placeholder="container"
               value={container}
               style={{ width: "40%" }}
-              onConfirm={(value) =>
+              onEdit={(value) =>
                 setDeployment("ports", index(), "container", value)
               }
             />

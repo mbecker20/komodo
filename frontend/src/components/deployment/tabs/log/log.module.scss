@@ -1,9 +1,10 @@
-/* log */
+@use "../../../../style/colors.scss" as c;
+
 .LogContainer {
 	max-height: 80vh;
 	margin: 1rem;
 	margin-top: 0rem;
-	background-color: rgb(22, 39, 57);
+	background-color: rgba(c.$darkgrey, 0.6);
 	box-sizing: border-box;
 	position: relative;
 }

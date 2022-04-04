@@ -5,7 +5,7 @@ import { useAppState } from "../../../../state/StateProvider";
 import { combineClasses } from "../../../../util/helpers";
 import { useBuffer } from "../../../../util/hooks";
 import Icon from "../../../util/icons/Icon";
-import s from "./log.module.css";
+import s from "./log.module.scss";
 
 const Log: Component<{
   log: LogType;

@@ -50,7 +50,7 @@ input {
   font-family: inherit;
   font-size: 1.05rem;
   color: inherit;
-  background-color: rgba(50, 50, 50, 0.2);
+  background-color: rgba(c.$grey, 0.5);
   padding: 0.25rem;
   box-sizing: border-box;
   border: none;
@@ -58,7 +58,7 @@ input {
 }
 
 input:focus {
-  outline: solid 1px rgba(127, 133, 143, 0.5);
+  outline: solid 1px rgba(c.$lightgrey, 0.7);
 }
 
 input::placeholder {
