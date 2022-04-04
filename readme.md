@@ -1,7 +1,7 @@
 ### Monitor
-![screenshot6](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/screenshot6.png)
-![screenshot7](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/screenshot7.png)
-![screenshot8](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/screenshot8.png)
+![screenshot9](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/screenshot9.png)
+![screenshot10](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/screenshot10.png)
+![screenshot11](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/screenshot11.png)
 <!-- <img src="https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/mobile.jpeg" alt="mobile view" width="400" /> -->
 
 ### There are seven main tasks of monitor:

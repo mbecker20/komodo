@@ -59,9 +59,13 @@ const Network: Component<{ network: NetworkType }> = (p) => {
   const { selected, ws } = useAppState();
   return (
     <Flex
+      class="grey-no-hover"
       alignItems="center"
       justifyContent="space-between"
-      style={{ "background-color": "darkgreen", padding: "0.5rem" }}
+      style={{
+        padding: "0.5rem",
+        transition: "background-color 125ms ease-in-out",
+      }}
     >
       <div>{p.network.name}</div>
       <ConfirmButton

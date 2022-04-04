@@ -66,6 +66,11 @@ input::placeholder {
   opacity: 0.6;
 }
 
+.grey-no-hover {
+  background-color: rgba(c.$grey, 0.8);
+}
+
+
 .grey {
   background-color: rgba(c.$grey, 0.8);
 }
