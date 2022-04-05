@@ -6,12 +6,16 @@ import { SECRETS } from "../../config";
 export async function deployPeriphery(
   { address }: Server,
   deployment: Deployment,
-  image?: string
+  image?: string,
+  dockerAccount?: string
 ) {
   return (await axios
     .post(
       `${address}/deploy${generateQuery({ image })}`,
-      { deployment },
+      {
+        ...deployment,
+        dockerAccount: dockerAccount || deployment.dockerAccount,
+      },
       {
         headers: {
           Authorization: SECRETS.PASSKEY,

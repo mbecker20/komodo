@@ -72,7 +72,12 @@ async function deployDeployment(
           }
         : undefined;
     const { command, log, isError } = server
-      ? await deployPeriphery(server, deployment, image)
+      ? await deployPeriphery(
+          server,
+          deployment,
+          image,
+          build && build.dockerAccount
+        )
       : await dockerRun(
           {
             ...deployment,
@@ -80,9 +85,11 @@ async function deployDeployment(
           },
           SYSROOT,
           containerMount,
-          deployment.dockerAccount,
-          deployment.dockerAccount &&
-            SECRETS.DOCKER_ACCOUNTS[deployment.dockerAccount]
+          (build && build.dockerAccount) || deployment.dockerAccount,
+          ((build && build.dockerAccount) || deployment.dockerAccount) &&
+            SECRETS.DOCKER_ACCOUNTS[
+              ((build && build.dockerAccount) || deployment.dockerAccount)!
+            ]
         );
     addDeploymentUpdate(
       app,
