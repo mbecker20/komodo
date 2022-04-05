@@ -35,11 +35,7 @@ async function buildMessages(
       return true;
 
     case DELETE_BUILD:
-      const deleted =
-        message.buildID && (await deleteBuild(app, user, message));
-      if (deleted) {
-        app.broadcast(DELETE_BUILD, { buildID: message.buildID });
-      }
+      message.buildID && (await deleteBuild(app, user, message));
       return true;
 
     case UPDATE_BUILD:

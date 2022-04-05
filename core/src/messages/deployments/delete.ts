@@ -35,6 +35,8 @@ async function deleteDeployment(
     );
     return;
   }
+  app.deployActionStates.set(deploymentID, "fullDeleting", true);
+  app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: false });
   try {
     if (deployment.image || deployment.buildID) {
       const server =
@@ -48,6 +50,7 @@ async function deleteDeployment(
       }
     }
     await app.deployments.findByIdAndDelete(deploymentID);
+    app.deployActionStates.delete(deploymentID);
     addSystemUpdate(
       app,
       DELETE_DEPLOYMENT,
@@ -64,8 +67,11 @@ async function deleteDeployment(
       user.username,
       note
     );
+    app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: true });
     return true;
   } catch (error) {
+    app.deployActionStates.set(deploymentID, "fullDeleting", false);
+    app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: true });
     addSystemUpdate(
       app,
       DELETE_DEPLOYMENT,

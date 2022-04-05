@@ -1,43 +1,19 @@
-import { BuildActionState } from "@monitor/types";
-import { Component, createEffect, onCleanup, Show } from "solid-js";
-import { createStore } from "solid-js/store";
+import { Component, Show } from "solid-js";
 import { BUILD, CLONE_BUILD_REPO } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { getBuildActionState } from "../../util/query";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
+import { useActionStates } from "./ActionStateProvider";
 
 const Actions: Component<{}> = (p) => {
   const { username, permissions } = useUser();
   const { builds, selected, ws } = useAppState();
   const build = () => builds.get(selected.id())!;
-  const [actions, setActions] = createStore<BuildActionState>({
-    pulling: false,
-    building: false,
-    cloning: false,
-    updating: false,
-  });
-  createEffect(() => {
-    getBuildActionState(selected.id()).then(setActions);
-  });
-  onCleanup(
-    ws.subscribe([BUILD], ({ complete, buildID }) => {
-      if (buildID === selected.id()) {
-        setActions("building", !complete);
-      }
-    })
-  );
-  onCleanup(
-    ws.subscribe([CLONE_BUILD_REPO], ({ complete, buildID }) => {
-      if (buildID === selected.id()) {
-        setActions("cloning", !complete);
-      }
-    })
-  );
+  const actions = useActionStates();
   return (
     <Show when={build() && (permissions() >= 2 || build().owners.includes(username()!))}>
       <Grid class="card shadow">

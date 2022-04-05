@@ -4,6 +4,7 @@ export interface Collection<T> {
 
 export type BuildActionStates = Collection<BuildActionState>;
 export type DeployActionStates = Collection<DeployActionState>;
+export type ServerActionStates = Collection<ServerActionState>;
 export type Servers = Collection<Server>;
 export type Builds = Collection<Build>;
 export type Deployments = Collection<Deployment>;
@@ -140,6 +141,7 @@ export type BuildActionState = {
   building: boolean;
   cloning: boolean;
   updating: boolean;
+  deleting: boolean;
 };
 
 export type DeployActionState = {
@@ -147,6 +149,14 @@ export type DeployActionState = {
   deleting: boolean;
   starting: boolean;
   stopping: boolean;
+  updating: boolean;
+  fullDeleting: boolean;
+};
+
+export type ServerActionState = {
+  pruningImages: boolean;
+  pruningNetworks: boolean;
+  deleting: boolean;
 };
 
 export type ContainerStatus = {

@@ -82,7 +82,9 @@ function handleMessage(
       break;
 
     case DELETE_DEPLOYMENT:
-      deployments.delete(message.deploymentID);
+      if (message.complete) {
+        deployments.delete(message.deploymentID);
+      }
       break;
 
     case UPDATE_DEPLOYMENT:
@@ -98,7 +100,9 @@ function handleMessage(
       break;
 
     case DELETE_BUILD:
-      builds.delete(message.buildID);
+      if (message.complete) {
+        builds.delete(message.buildID);
+      }
       break;
 
     case UPDATE_BUILD:

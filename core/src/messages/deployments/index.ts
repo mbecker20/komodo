@@ -38,13 +38,7 @@ async function deploymentMessages(
       return true;
 
     case DELETE_DEPLOYMENT:
-      const deleted =
-        message.deploymentID && (await deleteDeployment(app, user, message));
-      if (deleted) {
-        app.broadcast(DELETE_DEPLOYMENT, {
-          deploymentID: message.deploymentID,
-        });
-      }
+      message.deploymentID && (await deleteDeployment(app, user, message));
       return true;
 
     case UPDATE_DEPLOYMENT:

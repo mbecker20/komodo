@@ -15,6 +15,7 @@ import Git from "./Git";
 import Tabs from "../../../util/tabs/Tabs";
 import RepoMount from "./RepoMount";
 import { OnClone, OnPull } from "./OnGit";
+import Loading from "../../../util/loading/Loading";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save } = useConfig();
@@ -54,16 +55,25 @@ const Config: Component<{}> = (p) => {
           ]}
         />
         <Show when={deployment.updated}>
-          <Flex style={{ "place-self": "center", padding: "1rem" }}>
-            <button onClick={reset}>
-              reset
-              <Icon type="reset" />
-            </button>
-            <ConfirmButton onConfirm={save} color="green">
-              save
-              <Icon type="floppy-disk" />
-            </ConfirmButton>
-          </Flex>
+          <Show
+            when={!deployment.updating}
+            fallback={
+              <button class="green">
+                updating <Loading type="spinner" />
+              </button>
+            }
+          >
+            <Flex style={{ "place-self": "center", padding: "1rem" }}>
+              <button onClick={reset}>
+                reset
+                <Icon type="reset" />
+              </button>
+              <ConfirmButton onConfirm={save} color="green">
+                save
+                <Icon type="floppy-disk" />
+              </ConfirmButton>
+            </Flex>
+          </Show>
         </Show>
       </Grid>
     </Show>

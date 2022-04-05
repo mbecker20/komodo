@@ -29,6 +29,17 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
       : "Could Not Be Reached";
     res.send(server);
   });
+
+  app.get(
+    "/api/server/:id/action-state",
+    { onRequest: [app.auth] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const state = app.serverActionStates.getJSON(id);
+      res.send(state);
+    }
+  );
+  
   done();
 });
 

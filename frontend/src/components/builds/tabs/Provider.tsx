@@ -16,10 +16,10 @@ type State = {
 
 const context = createContext<State>();
 
-export const ConfigProvider: Component<{ build: Build }> = (p) => {
-  const { ws } = useAppState();
+export const ConfigProvider: Component<{}> = (p) => {
+  const { ws, selected, builds } = useAppState();
   const [build, set] = createStore({
-    ...p.build,
+    ...builds.get(selected.id())!,
     loaded: false,
     updated: false,
     saving: false,
@@ -32,7 +32,7 @@ export const ConfigProvider: Component<{ build: Build }> = (p) => {
 
   const load = () => {
     console.log("load server");
-    getBuild(p.build._id!).then((build) => {
+    getBuild(selected.id()).then((build) => {
       set({
         ...build,
         repo: build.repo,
@@ -58,7 +58,7 @@ export const ConfigProvider: Component<{ build: Build }> = (p) => {
   const unsub = ws.subscribe(
     [ADD_UPDATE],
     ({ update }: { update: Update }) => {
-			if (update.buildID === p.build._id) {
+			if (update.buildID === selected.id()) {
 				if ([UPDATE_BUILD].includes(update.operation)) {
 					load();
 				}

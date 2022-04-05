@@ -1,15 +1,17 @@
 import { Build } from "@monitor/types";
-import { Component } from "solid-js";
+import { Component, Show } from "solid-js";
 import { DELETE_BUILD } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
+import { useActionStates } from "./ActionStateProvider";
 
 const Header: Component<{}> = (p) => {
   const { builds, selected, ws } = useAppState();
   const build = () => builds.get(selected.id())!;
+  const actions = useActionStates();
   return (
     <Flex
       class="card shadow"
@@ -20,14 +22,23 @@ const Header: Component<{}> = (p) => {
         <h1>{build().name}</h1>
         <div style={{ opacity: 0.8 }}>{getSub(build())}</div>
       </Grid>
-      <ConfirmButton
-        onConfirm={() => {
-          ws.send(DELETE_BUILD, { buildID: selected.id() });
-        }}
-        color="red"
+      <Show
+        when={!actions.deleting}
+        fallback={
+          <button class="red">
+            <Icon type="trash" />
+          </button>
+        }
       >
-        <Icon type="trash" />
-      </ConfirmButton>
+        <ConfirmButton
+          onConfirm={() => {
+            ws.send(DELETE_BUILD, { buildID: selected.id() });
+          }}
+          color="red"
+        >
+          <Icon type="trash" />
+        </ConfirmButton>
+      </Show>
     </Flex>
   );
 };

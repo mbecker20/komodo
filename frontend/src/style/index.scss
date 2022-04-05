@@ -39,7 +39,7 @@ button {
   justify-content: center;
   align-items: center;
   background-color: transparent;
-  transition: background-color 125ms ease-in-out;
+  transition: background-color 500ms ease-in-out;
 }
 
 button:focus {
@@ -145,7 +145,7 @@ input::placeholder {
 
 .shadow {
   box-shadow: rgba(0, 0, 0, 0.25) 0px 3px 8px;
-  transition: box-shadow 250ms ease;
+  transition: all 250ms ease-in-out;
 }
 
 .shadow:hover {

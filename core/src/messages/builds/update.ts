@@ -27,18 +27,14 @@ async function updateBuild(
     );
     return;
   }
+  app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: false });
+  app.buildActionStates.set(build._id!, "updating", true);
   try {
     build.pullName = toDashedName(build.name);
     if (build.repo !== preBuild.repo || build.branch !== preBuild.branch) {
       // reclone repo if repo is changed
       await remove(BUILD_REPO_PATH + preBuild.pullName).catch();
-      if (build.repo) {
-        app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: false });
-        app.buildActionStates.set(build._id!, "updating", true);
-        await cloneRepo(app, user, build);
-        app.buildActionStates.set(build._id!, "updating", false);
-        app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: true });
-      }
+      if (build.repo) await cloneRepo(app, user, build);
     } else if (build.pullName !== preBuild.pullName) {
       if (await pathExists(BUILD_REPO_PATH + preBuild.pullName)) {
         await move(BUILD_REPO_PATH + preBuild.pullName, BUILD_REPO_PATH + build.pullName);
@@ -56,6 +52,8 @@ async function updateBuild(
       user.username,
       note
     );
+    app.buildActionStates.set(build._id!, "updating", false);
+    app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: true });
     return build;
   } catch (error) {
     addBuildUpdate(
@@ -70,6 +68,8 @@ async function updateBuild(
       note,
       true
     );
+    app.buildActionStates.set(build._id!, "updating", false);
+    app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: true });
   }
 }
 

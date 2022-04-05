@@ -19,9 +19,14 @@ const GitConfig: Component<{}> = (p) => {
           <OnClone />
         </Grid>
         <Show when={build.updated}>
-          <Show when={!build.saving} fallback={<button class="green">
-            updating <Loading type="spinner" />
-          </button>}>
+          <Show
+            when={!build.saving}
+            fallback={
+              <button class="green">
+                updating <Loading type="spinner" />
+              </button>
+            }
+          >
             <Flex style={{ "place-self": "center", padding: "1rem" }}>
               <button onClick={reset}>
                 reset

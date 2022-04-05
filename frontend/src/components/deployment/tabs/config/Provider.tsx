@@ -13,7 +13,11 @@ import { ADD_UPDATE, UPDATE_DEPLOYMENT } from "../../../../state/actions";
 import { useAppState } from "../../../../state/StateProvider";
 import { getDeployment, getNetworks } from "../../../../util/query";
 
-type ConfigDeployment = Deployment & { loaded: boolean; updated: boolean };
+type ConfigDeployment = Deployment & {
+  loaded: boolean;
+  updated: boolean;
+  updating: boolean;
+};
 
 type State = {
   editing: Accessor<boolean>;
@@ -26,13 +30,14 @@ type State = {
 
 const context = createContext<State>();
 
-export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
-  const { ws } = useAppState();
+export const ConfigProvider: Component<{}> = (p) => {
+  const { ws, deployments, selected } = useAppState();
   const [editing] = createSignal(false);
   const [deployment, set] = createStore({
-    ...p.deployment,
+    ...deployments.get(selected.id())!,
     loaded: false,
     updated: false,
+    updating: false,
   });
   const setDeployment = (...args: any) => {
     // @ts-ignore
@@ -40,8 +45,8 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
     set("updated", true);
   };
   const load = () => {
-    console.log("loading deployment")
-    getDeployment(p.deployment._id!).then((deployment) =>
+    console.log("loading deployment");
+    getDeployment(selected.id()).then((deployment) =>
       set({
         ...deployment,
         image: deployment.image,
@@ -51,6 +56,7 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
         githubAccount: deployment.githubAccount,
         loaded: true,
         updated: false,
+        updating: false,
       })
     );
   };
@@ -58,17 +64,20 @@ export const ConfigProvider: Component<{ deployment: Deployment }> = (p) => {
 
   const [networks, setNetworks] = createSignal<Network[]>([]);
   createEffect(() => {
-    console.log("load networks")
-    getNetworks(p.deployment.serverID!).then(setNetworks);
+    console.log("load networks");
+    getNetworks(deployments.get(selected.id())!.serverID!).then(setNetworks);
   });
 
   const save = () => {
+    setDeployment("updating", true);
     ws.send(UPDATE_DEPLOYMENT, { deployment });
   };
 
   const unsub = ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
-    if (update.deploymentID === p.deployment._id) {
-      load();
+    if (update.deploymentID === selected.id()) {
+      if ([UPDATE_DEPLOYMENT].includes(update.operation)) {
+        load();
+      }
     }
   });
 

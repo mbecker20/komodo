@@ -27,19 +27,21 @@ async function updateDeployment(
     );
     return;
   }
+  app.deployActionStates.set(deployment._id!, "updating", true);
+  app.broadcast(UPDATE_DEPLOYMENT, { deploymentID: deployment._id, complete: false });
   try {
     // this assumes no change to deployment name (ie cannot rename deployments after created)
     if (
       deployment.repo !== preDeployment.repo ||
       deployment.branch !== preDeployment.branch
     ) {
-      const server =
-        deployment.serverID === app.core._id
-          ? undefined
-          : await app.servers.findById(deployment.serverID!);
       if (deployment.repo) {
         await cloneRepo(app, user, deployment);
       } else {
+        const server =
+          deployment.serverID === app.core._id
+            ? undefined
+            : await app.servers.findById(deployment.serverID!);
         if (server) {
           await deleteRepoPeriphery(server, deployment);
         } else {
@@ -61,6 +63,12 @@ async function updateDeployment(
       user.username,
       note
     );
+    app.deployActionStates.set(deployment._id!, "updating", false);
+    app.broadcast(UPDATE_DEPLOYMENT, {
+      deploymentID: deployment._id,
+      complete: true,
+    });
+    return deployment;
   } catch (error) {
     addDeploymentUpdate(
       app,
@@ -74,6 +82,11 @@ async function updateDeployment(
       note,
       true
     );
+    app.deployActionStates.set(deployment._id!, "updating", false);
+    app.broadcast(UPDATE_DEPLOYMENT, {
+      deploymentID: deployment._id,
+      complete: true,
+    });
   }
 }
 

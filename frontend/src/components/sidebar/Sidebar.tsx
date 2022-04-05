@@ -31,11 +31,9 @@ const Sidebar: Component<{}> = () => {
             title: "deployments",
             element: (
               <Grid
-                class="scroller"
+                class={combineClasses(s.DeploymentsTabContent, "scroller")}
                 style={{
-                  height: "fit-content",
                   "max-height": inPx(height() - TOPBAR_HEIGHT - 80),
-                  padding: "0rem 1rem",
                 }}
               >
                 <For each={servers.ids()}>{(id) => <Server id={id} />}</For>

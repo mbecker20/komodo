@@ -11,15 +11,6 @@ const Git: Component<{}> = (p) => {
   const { deployment, setDeployment } = useConfig();
   return (
     <Grid class="config-item shadow">
-      {/* <Flex alignItems="center" justifyContent="space-between">
-        <h1>deployment repo</h1>
-        <Toggle
-          toggled={deployment.repo !== undefined}
-          onChange={(toggled) =>
-            setDeployment("repo", toggled ? "" : undefined)
-          }
-        />
-      </Flex> */}
       <h1>github config</h1>
       <Flex justifyContent="space-between" alignItems="center">
         <div>repo</div>
