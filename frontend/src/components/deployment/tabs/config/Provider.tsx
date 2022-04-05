@@ -58,6 +58,8 @@ export const ConfigProvider: Component<{}> = (p) => {
         branch: deployment.branch,
         onPull: deployment.onPull,
         onClone: deployment.onClone,
+        containerMount: deployment.containerMount,
+        repoMount: deployment.repoMount,
         loaded: true,
         updated: false,
         updating: false,

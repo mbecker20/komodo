@@ -14,6 +14,7 @@ import {
   execute,
 } from "@monitor/util";
 import { addBuildUpdate, addDeploymentUpdate } from "../util/updates";
+import { pullPeriphery } from "../util/periphery/git";
 
 const AUTO_PULL = "AUTO_PULL";
 const AUTO_BUILD = "AUTO_BUILD";
@@ -72,32 +73,53 @@ const listener = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.send();
       return;
     }
-    const { branch, containerName, onPull } = deployment;
-    const pullCle = await pull(join(BUILD_REPO_PATH, containerName!), branch);
-    const onPullCle =
-      onPull &&
-      (await execute(
-        `cd ${join(
-          DEPLOYMENT_REPO_PATH,
-          containerName!,
-          onPull.path || ""
-        )} && ${onPull.command}`
-      ));
-    const { command, log, isError } = mergeCommandLogError(
-      { name: "pull", cle: pullCle },
-      { name: "on pull", cle: onPullCle },
-    );
-    await addDeploymentUpdate(
-      app,
-      deploymentID,
-      AUTO_PULL,
-      command,
-      log,
-      SYSTEM_OPERATOR,
-      "",
-      isError
-    );
-    res.send();
+    const { branch, containerName, onPull, serverID } = deployment;
+    const server = await app.servers.findById(serverID!);
+    if (!server) {
+      res.status(400);
+      res.send();
+      return;
+    }
+    if (server.isCore) {
+      const pullCle = await pull(join(BUILD_REPO_PATH, containerName!), branch);
+      const onPullCle =
+        onPull &&
+        (await execute(
+          `cd ${join(
+            DEPLOYMENT_REPO_PATH,
+            containerName!,
+            onPull.path || ""
+          )} && ${onPull.command}`
+        ));
+      const { command, log, isError } = mergeCommandLogError(
+        { name: "pull", cle: pullCle },
+        { name: "on pull", cle: onPullCle }
+      );
+      await addDeploymentUpdate(
+        app,
+        deploymentID,
+        AUTO_PULL,
+        command,
+        log,
+        SYSTEM_OPERATOR,
+        "",
+        isError
+      );
+      res.send();
+    } else {
+      const { command, log, isError } = await pullPeriphery(server, deployment);
+      await addDeploymentUpdate(
+        app,
+        deploymentID,
+        AUTO_PULL,
+        command,
+        log,
+        SYSTEM_OPERATOR,
+        "",
+        isError
+      );
+      res.send()
+    }
   });
 
   done();

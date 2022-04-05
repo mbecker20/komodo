@@ -13,8 +13,10 @@ export async function deployPeriphery(
     .post(
       `${address}/deploy${generateQuery({ image })}`,
       {
-        ...deployment,
-        dockerAccount: dockerAccount || deployment.dockerAccount,
+        deployment: {
+          ...deployment,
+          dockerAccount: dockerAccount || deployment.dockerAccount,
+        },
       },
       {
         headers: {
