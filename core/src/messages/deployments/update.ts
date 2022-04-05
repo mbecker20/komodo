@@ -36,7 +36,9 @@ async function updateDeployment(
       deployment.branch !== preDeployment.branch
     ) {
       if (deployment.repo) {
+        console.log("cloning repo")
         await cloneRepo(app, user, deployment);
+        console.log("repo cloned")
       } else {
         const server =
           deployment.serverID === app.core._id
@@ -50,8 +52,10 @@ async function updateDeployment(
       }
     }
     // make sure owners cant be updated this way
-    (deployment.owners as any) = false;
+    (deployment.owners as any) = undefined;
+    console.log("updating")
     await app.deployments.updateById(deployment._id!, deployment);
+    console.log("updated");
     addDeploymentUpdate(
       app,
       deployment._id!,

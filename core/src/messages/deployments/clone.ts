@@ -52,7 +52,7 @@ async function cloneRepo(
     : await clonePeriphery(server, deployment);
   console.log("repo cloned");
   const onCloneCle =
-    !server && onClone
+    server._id === app.core._id && onClone
       ? await execute(
           `cd ${join(
             DEPLOYMENT_REPO_PATH,
@@ -63,7 +63,7 @@ async function cloneRepo(
       : undefined;
   console.log("on clone executed");
   const onPullCle =
-    !server && onPull
+    server._id === app.core._id && onPull
       ? await execute(
           `cd ${join(
             DEPLOYMENT_REPO_PATH,
