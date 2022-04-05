@@ -88,7 +88,9 @@ function handleMessage(
       break;
 
     case UPDATE_DEPLOYMENT:
-      deployments.update(message.deployment);
+      if (message.deployment) {
+        deployments.update(message.deployment);
+      }
       break;
 
     /* Builds */
@@ -106,7 +108,9 @@ function handleMessage(
       break;
 
     case UPDATE_BUILD:
-      builds.update(message.build);
+      if (message.build) {
+        builds.update(message.build);
+      }
       break;
 
     /* Servers */

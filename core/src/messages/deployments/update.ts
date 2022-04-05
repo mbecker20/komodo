@@ -51,6 +51,7 @@ async function updateDeployment(
         }
       }
     }
+    console.log("setting owners undefined");
     // make sure owners cant be updated this way
     (deployment.owners as any) = undefined;
     console.log("updating")

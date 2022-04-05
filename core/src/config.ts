@@ -15,7 +15,7 @@ export let SECRETS: CoreSecrets = readJSONFile("/secrets/secrets.json");
 export function refreshSecrets() {
   SECRETS = readJSONFile("/secrets/secrets.json");
 }
-export const LOGGER = getBooleanFromEnv("LOGGER", true);
+export const LOGGER = getBooleanFromEnv("LOGGER", false);
 export const PORT = getNumberFromEnv("PORT", 9000);
 export const HOST = getStringFromEnv("HOST", "http://localhost:" + PORT);
 export const MONGO_URL = getStringFromEnv(
@@ -27,8 +27,8 @@ export const PASSWORD_SALT_ROUNDS = getNumberFromEnv("PASSWORD_SALT_ROUNDS", 8);
 export const SYSROOT = getStringFromEnv("SYSROOT", "/home/ubuntu/"); // the root folder monitor has access to, prepends volumes mounted using useSysroot
 export const ROOT = "/monitor-root/"; // the root folder in the container that SYSROOT is mounted on
 export const DEPLOYDATA_ROOT = "deployments/";
-export const BUILD_REPO_PATH = ROOT + "builds/";
-export const DEPLOYMENT_REPO_PATH = ROOT + "repos/";
+export const BUILD_REPO_PATH = join(ROOT, "builds");
+export const DEPLOYMENT_REPO_PATH = join(ROOT, "repos");
 export const SYS_DEPLOYMENT_REPO_PATH = join(SYSROOT, "repos");
 // export const REGISTRY_URL = getStringFromEnv("REGISTRY_URL", "localhost:5000/");
 export const FRONTEND_PATH = getStringFromEnv("FRONTEND_PATH", "/frontend");

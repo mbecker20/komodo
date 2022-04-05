@@ -40,7 +40,7 @@ async function cloneRepo(
     );
     return;
   }
-  console.log("cloning repo")
+  // console.log("cloning repo")
   const cloneCle = server.isCore
     ? await clone(
         repo!,
@@ -50,9 +50,9 @@ async function cloneRepo(
         githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
       )
     : await clonePeriphery(server, deployment);
-  console.log("repo cloned");
+  // console.log("repo cloned");
   const onCloneCle =
-    server._id === app.core._id && onClone
+    server.isCore && onClone
       ? await execute(
           `cd ${join(
             DEPLOYMENT_REPO_PATH,
@@ -61,9 +61,9 @@ async function cloneRepo(
           )} && ${onClone.command}`
         )
       : undefined;
-  console.log("on clone executed");
+  // console.log("on clone executed");
   const onPullCle =
-    server._id === app.core._id && onPull
+    server.isCore && onPull
       ? await execute(
           `cd ${join(
             DEPLOYMENT_REPO_PATH,
@@ -72,7 +72,7 @@ async function cloneRepo(
           )} && ${onPull.command}`
         )
       : undefined;
-  console.log("on pull executed");
+  // console.log("on pull executed");
   const { command, log, isError } = mergeCommandLogError(
     {
       name: "clone",
