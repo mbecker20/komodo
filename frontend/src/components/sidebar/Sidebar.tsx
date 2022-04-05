@@ -24,6 +24,7 @@ const Sidebar: Component<{}> = () => {
         containerStyle={{
           width: inPx(SIDEBAR_WIDTH),
         }}
+        localStorageKey="sidebar-tab"
         tabsGap="0rem"
         tabs={[
           {
