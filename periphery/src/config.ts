@@ -3,7 +3,7 @@ import { getBooleanFromEnv, getNumberFromEnv, getStringFromEnv, readJSONFile } f
 import { join } from "path";
 
 export const SECRETS = readJSONFile("/secrets/secrets.json") as PeripherySecrets;
-export const LOG = getBooleanFromEnv("LOG", false);
+export const LOG = getBooleanFromEnv("LOG", true);
 export const PORT = getNumberFromEnv("PORT", 8000);
 // export const REGISTRY_URL = getStringFromEnv("REGISTRY_URL", "http://localhost:5000/");
 export const SYSROOT = getStringFromEnv("SYSROOT", "/home/ubuntu/");
