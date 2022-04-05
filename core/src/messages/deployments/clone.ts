@@ -40,6 +40,7 @@ async function cloneRepo(
     );
     return;
   }
+  console.log("cloning repo")
   const cloneCle = server.isCore
     ? await clone(
         repo!,
@@ -49,6 +50,7 @@ async function cloneRepo(
         githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
       )
     : await clonePeriphery(server, deployment);
+  console.log("repo cloned");
   const onCloneCle =
     !server && onClone
       ? await execute(
@@ -59,6 +61,7 @@ async function cloneRepo(
           )} && ${onClone.command}`
         )
       : undefined;
+  console.log("on clone executed");
   const onPullCle =
     !server && onPull
       ? await execute(
@@ -69,6 +72,7 @@ async function cloneRepo(
           )} && ${onPull.command}`
         )
       : undefined;
+  console.log("on pull executed");
   const { command, log, isError } = mergeCommandLogError(
     {
       name: "clone",

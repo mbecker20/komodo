@@ -18,6 +18,7 @@ const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
       onClone,
       onPull,
     } = deployment;
+    console.log("cloning repo");
     const cloneCle = await clone(
       repo!,
       join(CONTAINER_REPO_ROOT, containerName!),
@@ -25,6 +26,7 @@ const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
       branch,
       githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
     );
+    console.log("repo cloned");
     const onCloneCle =
       onClone &&
       (await execute(
@@ -34,6 +36,7 @@ const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
           onClone.path || ""
         )} && ${onClone.command}`
       ));
+    console.log("on clone executed");
     const onPullCle =
       onPull &&
       (await execute(
@@ -43,6 +46,7 @@ const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
           onPull.path || ""
         )} && ${onPull.command}`
       ));
+    console.log("on pull executed");
     const log = mergeCommandLogError(
       { name: "clone", cle: cloneCle },
       { name: "on clone", cle: onCloneCle },
