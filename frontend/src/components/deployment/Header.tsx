@@ -7,6 +7,7 @@ import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
+import HoverMenu from "../util/menu/HoverMenu";
 import { useActionStates } from "./ActionStateProvider";
 
 const Header: Component<{}> = (p) => {
@@ -38,14 +39,21 @@ const Header: Component<{}> = (p) => {
             </button>
           }
         >
-          <ConfirmButton
-            onConfirm={() => {
-              ws.send(DELETE_DEPLOYMENT, { deploymentID: selected.id() });
-            }}
-            color="red"
-          >
-            <Icon type="trash" />
-          </ConfirmButton>
+          <HoverMenu
+            target={
+              <ConfirmButton
+                onConfirm={() => {
+                  ws.send(DELETE_DEPLOYMENT, { deploymentID: selected.id() });
+                }}
+                color="red"
+              >
+                <Icon type="trash" />
+              </ConfirmButton>
+            }
+            content="delete deployment"
+            position="bottom center"
+            padding="0.5rem"
+          />
         </Show>
       </Flex>
     </Flex>

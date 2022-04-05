@@ -39,7 +39,7 @@
 }
 
 .updates-container {
-	max-height: 45vh;
+	max-height: calc(225px + 5.5rem);
 }
 
 .tabs {
@@ -72,10 +72,10 @@
 
 .running {
 	color: c.$textgreen;
-	text-shadow: 0px 0px 1px c.$textgreen;
+	// text-shadow: 0px 0px 1px c.$textgreen;
 }
 
 .exited {
 	color: c.$textred;
-	text-shadow: 0px 0px 1px c.$textred;
+	// text-shadow: 0px 0px 1px c.$textred;
 }

@@ -73,8 +73,8 @@ async function pullDeploymentRepo(
       isError
     );
   }
-  app.deployActionStates.set(deploymentID, "pulling", false);
   app.broadcast(PULL_DEPLOYMENT, { deploymentID, complete: true });
+  app.deployActionStates.set(deploymentID, "pulling", false);
 }
 
 export default pullDeploymentRepo;

@@ -75,6 +75,13 @@
   /* margin-right: 0.5rem; */
 }
 
+.LeftCenter {
+  left: 0px;
+  top: 50%;
+  transform: translate(-100%, -50%);
+  /* margin-right: 0.5rem; */
+}
+
 .Right {
   left: 100%;
   top: 0px;
@@ -114,8 +121,6 @@
 
 .HoverMenu {
   position: absolute;
-  top: 100%;
-  left: 0;
   padding: 0rem 0.5rem;
   background-color: c.$grey;
   border-radius: 0.25rem;

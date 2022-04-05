@@ -15,17 +15,19 @@ const HoverMenu: Component<{
   target: JSXElement;
   content: JSXElement;
   position?: Position;
-  interactive?: boolean;
   padding?: string;
   contentStyle?: JSX.CSSProperties;
+
 }> = (p) => {
   const [show, set] = createSignal(false);
   const [buffer, setBuffer] = createSignal(false);
+  let timeout: NodeJS.Timeout;
   createEffect(() => {
+    clearTimeout(timeout);
     if (show()) {
       setBuffer(true);
     } else {
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         setBuffer(false);
       }, 500);
     }
@@ -34,24 +36,23 @@ const HoverMenu: Component<{
     <div
       class={s.HoverMenuTarget}
       onMouseEnter={() => set(true)}
-      onMouseLeave={() => {
-        if (!p.interactive) set(false);
-      }}
+      onMouseLeave={() => set(false)}
       onTouchStart={() => set((show) => !show)}
-      onClick={(e) => e.stopPropagation()}
+      // onClick={(e) => e.stopPropagation()}
     >
       {p.target}
       <Show when={buffer()}>
         <div
           class={combineClasses(
-            s.HoverMenu,
             getPositionClass(p.position),
+            s.HoverMenu,
             show() ? s.Enter : s.Exit
           )}
           onMouseOut={() => {
-            if (p.interactive) set(false);
+            set(false);
           }}
           onMouseEnter={(e) => {
+            set(false)
             e.stopPropagation();
           }}
           style={{ ...p.contentStyle, padding: p.padding }}

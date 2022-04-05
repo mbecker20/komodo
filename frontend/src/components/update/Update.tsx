@@ -42,12 +42,12 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   };
   const [showLog, toggleShowLog] = useToggle();
   return (
-    <Grid gap="0.5rem" class={combineClasses(s.Update, "shadow")}>
+    <Grid gap="0.25rem" class={combineClasses(s.Update, !p.showName && s.NoName, "shadow")}>
       <Show when={p.showName}>
         <div>{name()}</div>
       </Show>
       <Grid
-        gap="0.5rem"
+        gap="0.25rem"
         style={{
           "grid-template-columns": "1fr 1fr",
           "grid-template-rows": "1fr 1fr",

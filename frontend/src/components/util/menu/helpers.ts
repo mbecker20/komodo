@@ -2,6 +2,7 @@ import s from "./menu.module.scss";
 
 export type Position =
   | "left"
+  | "left center"
   | "right"
   | "right center"
   | "bottom"
@@ -12,6 +13,8 @@ export function getPositionClass(position: Position = "bottom") {
   switch (position) {
     case "left":
       return s.Left;
+    case "left center":
+      return s.LeftCenter;
     case "right":
       return s.Right;
     case "right center":
