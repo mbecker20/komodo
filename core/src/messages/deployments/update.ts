@@ -3,7 +3,7 @@ import { deploymentChangelog, prettyStringify, UPDATE_DEPLOYMENT } from "@monito
 import { FastifyInstance } from "fastify";
 import { remove } from "fs-extra";
 import { DEPLOYMENT_REPO_PATH, PERMISSIONS_DENY_LOG } from "../../config";
-import { clonePeriphery, deleteRepoPeriphery } from "../../util/periphery/git";
+import { deleteRepoPeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
 import cloneRepo from "./clone";
 

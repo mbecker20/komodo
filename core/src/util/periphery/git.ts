@@ -6,43 +6,49 @@ export async function clonePeriphery(
   { address }: Server,
   deployment: Deployment
 ) {
-  return (await axios.post(
-    `${address}/repo/clone`,
-    { deployment },
-    {
-      headers: {
-        Authorization: SECRETS.PASSKEY,
-      },
-    }
-  )) as CommandLogError;
+  return (await axios
+    .post(
+      `${address}/repo/clone`,
+      { deployment },
+      {
+        headers: {
+          Authorization: SECRETS.PASSKEY,
+        },
+      }
+    )
+    .then(({ data }) => data)) as CommandLogError;
 }
 
 export async function pullPeriphery(
   { address }: Server,
   deployment: Deployment
 ) {
-  return (await axios.post(
-    `${address}/repo/pull`,
-    { deployment },
-    {
-      headers: {
-        Authorization: SECRETS.PASSKEY,
-      },
-    }
-  )) as CommandLogError;
+  return (await axios
+    .post(
+      `${address}/repo/pull`,
+      { deployment },
+      {
+        headers: {
+          Authorization: SECRETS.PASSKEY,
+        },
+      }
+    )
+    .then(({ data }) => data)) as CommandLogError;
 }
 
 export async function deleteRepoPeriphery(
   { address }: Server,
   deployment: Deployment
 ) {
-  return (await axios.post(
-    `${address}/repo/delete`,
-    { deployment },
-    {
-      headers: {
-        Authorization: SECRETS.PASSKEY,
-      },
-    }
-  )) as CommandLogError;
+  return (await axios
+    .post(
+      `${address}/repo/delete`,
+      { deployment },
+      {
+        headers: {
+          Authorization: SECRETS.PASSKEY,
+        },
+      }
+    )
+    .then(({ data }) => data)) as CommandLogError;
 }
