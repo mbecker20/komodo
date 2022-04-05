@@ -7,7 +7,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { DEPLOY } from "../../state/actions";
+import { DELETE_CONTAINER, DELETE_DEPLOYMENT, DEPLOY, START_CONTAINER, STOP_CONTAINER } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { getDeploymentActionState } from "../../util/query";
 
@@ -32,6 +32,34 @@ export const ActionStateProvider: Component<{}> = (p) => {
     ws.subscribe([DEPLOY], ({ complete, deploymentID }) => {
       if (deploymentID === selected.id()) {
         setActions("deploying", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([DELETE_CONTAINER], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("deleting", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([START_CONTAINER], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("starting", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([STOP_CONTAINER], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("stopping", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([DELETE_DEPLOYMENT], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("deleting", !complete);
       }
     })
   );

@@ -1,8 +1,18 @@
 import { User } from "@monitor/types";
-import { deleteContainer, dockerRun, DEPLOY, prettyStringify } from "@monitor/util";
+import {
+  deleteContainer,
+  dockerRun,
+  DEPLOY,
+  prettyStringify,
+} from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { join } from "path";
-import { DEPLOYMENT_REPO_PATH, PERMISSIONS_DENY_LOG, SECRETS, SYSROOT } from "../../config";
+import {
+  PERMISSIONS_DENY_LOG,
+  SECRETS,
+  SYSROOT,
+  SYS_DEPLOYMENT_REPO_PATH,
+} from "../../config";
 import { DEPLOYING } from "../../plugins/actionStates";
 import { deletePeripheryContainer } from "../../util/periphery/container";
 import { deployPeriphery } from "../../util/periphery/deploy";
@@ -53,7 +63,11 @@ async function deployDeployment(
     const containerMount =
       deployment.repo && deployment.containerMount
         ? {
-            repoFolder: DEPLOYMENT_REPO_PATH,
+            repoFolder: join(
+              SYS_DEPLOYMENT_REPO_PATH,
+              deployment.containerName!,
+              deployment.repoMount || ""
+            ),
             containerMount: deployment.containerMount,
           }
         : undefined;

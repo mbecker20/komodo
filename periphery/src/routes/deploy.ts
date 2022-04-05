@@ -13,7 +13,11 @@ const deploy = fp((app: FastifyInstance, _: {}, done: () => void) => {
     const repoMount =
       deployment.repo && deployment.containerMount
         ? {
-            repoFolder: SYS_REPO_ROOT,
+            repoFolder: join(
+              SYS_REPO_ROOT,
+              deployment.containerName!,
+              deployment.repoMount || ""
+            ),
             containerMount: deployment.containerMount!,
           }
         : undefined;

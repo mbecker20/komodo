@@ -151,7 +151,7 @@ export async function dockerRun(
     containerUserString(containerUser) +
     portsString(ports) +
     volsString(sysRoot, volumes) +
-    repoVolume(containerName, repoMount) +
+    repoVolume(repoMount) +
     envString(environment) +
     restartString(restart) +
     networkString(network) +
@@ -203,13 +203,12 @@ function volsString(sysRoot: string, volumes?: Conversion[]) {
 }
 
 function repoVolume(
-  containerName?: string,
   repoMount?: { repoFolder: string; containerMount: string }
 ) {
   // repo root should be SYSROOT + "repos/"
 
   return repoMount
-    ? ` -v ${join(repoMount.repoFolder, containerName || "")}:${
+    ? ` -v ${repoMount.repoFolder}:${
         repoMount.containerMount
       }`
     : "";

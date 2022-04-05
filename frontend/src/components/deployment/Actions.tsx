@@ -23,48 +23,13 @@ import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
+import { useActionStates } from "./ActionStateProvider";
 
 const Actions: Component<{}> = (p) => {
   const { ws, deployments, selected } = useAppState();
   const { permissions, username } = useUser();
   const deployment = () => deployments.get(selected.id())!;
-  const [actions, setActions] = createStore<DeployActionState>({
-    deploying: false,
-    deleting: false,
-    starting: false,
-    stopping: false,
-  });
-  createEffect(() => {
-    getDeploymentActionState(selected.id()).then(setActions);
-  });
-  onCleanup(
-    ws.subscribe([DEPLOY], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("deploying", !complete);
-      }
-    })
-  );
-  onCleanup(
-    ws.subscribe([DELETE_CONTAINER], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("deleting", !complete);
-      }
-    })
-  );
-  onCleanup(
-    ws.subscribe([START_CONTAINER], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("starting", !complete);
-      }
-    })
-  );
-  onCleanup(
-    ws.subscribe([STOP_CONTAINER], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("stopping", !complete);
-      }
-    })
-  );
+  const actions = useActionStates();
   return (
     <Show
       when={

@@ -1,5 +1,5 @@
 import { ContainerStatus } from "@monitor/types";
-import { Component } from "solid-js";
+import { Component, Show } from "solid-js";
 import { DELETE_DEPLOYMENT } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { deploymentStatusClass } from "../../util/helpers";
@@ -7,6 +7,7 @@ import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
+import { useActionStates } from "./ActionStateProvider";
 
 const Header: Component<{}> = (p) => {
   const { servers, deployments, ws, selected } = useAppState();
@@ -16,6 +17,7 @@ const Header: Component<{}> = (p) => {
     deployment()!.status === "not deployed"
       ? "not deployed"
       : (deployment()!.status as ContainerStatus).State;
+  const actions = useActionStates();
   return (
     <Flex
       class="card shadow"
@@ -28,14 +30,23 @@ const Header: Component<{}> = (p) => {
       </Grid>
       <Flex alignItems="center">
         <div class={deploymentStatusClass(status())}>{status()}</div>
-        <ConfirmButton
-          onConfirm={() => {
-            ws.send(DELETE_DEPLOYMENT, { deploymentID: selected.id() });
-          }}
-          color="red"
+        <Show
+          when={!actions.fullDeleting}
+          fallback={
+            <button class="red">
+              <Icon type="trash" />
+            </button>
+          }
         >
-          <Icon type="trash" />
-        </ConfirmButton>
+          <ConfirmButton
+            onConfirm={() => {
+              ws.send(DELETE_DEPLOYMENT, { deploymentID: selected.id() });
+            }}
+            color="red"
+          >
+            <Icon type="trash" />
+          </ConfirmButton>
+        </Show>
       </Flex>
     </Flex>
   );

@@ -5,6 +5,7 @@ import {
   getStringFromEnv,
   readJSONFile,
 } from "@monitor/util";
+import { join } from "path";
 
 export const CORE_SERVER_NAME = getStringFromEnv(
   "CORE_SERVER_NAME",
@@ -28,6 +29,7 @@ export const ROOT = "/monitor-root/"; // the root folder in the container that S
 export const DEPLOYDATA_ROOT = "deployments/";
 export const BUILD_REPO_PATH = ROOT + "builds/";
 export const DEPLOYMENT_REPO_PATH = ROOT + "repos/";
+export const SYS_DEPLOYMENT_REPO_PATH = join(SYSROOT, "repos");
 // export const REGISTRY_URL = getStringFromEnv("REGISTRY_URL", "localhost:5000/");
 export const FRONTEND_PATH = getStringFromEnv("FRONTEND_PATH", "/frontend");
 export const SYSTEM_OPERATOR = "Monitor";
