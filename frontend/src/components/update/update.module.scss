@@ -10,7 +10,7 @@
 }
 
 .Log {
-	white-space: pre-line;
+	white-space: pre-wrap;
 	overflow-wrap: anywhere;
 	/* word-wrap: break-word; */
 	tab-size: 2;
@@ -18,5 +18,7 @@
 	max-width: 90vw;
 	margin-left: 2rem;
 	box-sizing: border-box;
-	max-height: 20vh;
+	max-height: 30vh;
+	background-color: rgba(c.$darkgrey, 0.6);
+	padding: 1rem;
 }

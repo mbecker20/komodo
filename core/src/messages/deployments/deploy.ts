@@ -60,17 +60,6 @@ async function deployDeployment(
       build && build.dockerBuildArgs
         ? join(build.dockerAccount || "", build.pullName!)
         : undefined;
-    const containerMount =
-      deployment.repo && deployment.containerMount
-        ? {
-            repoFolder: join(
-              SYS_DEPLOYMENT_REPO_PATH,
-              deployment.containerName!,
-              deployment.repoMount || ""
-            ),
-            containerMount: deployment.containerMount,
-          }
-        : undefined;
     const { command, log, isError } = server
       ? await deployPeriphery(
           server,
@@ -84,7 +73,16 @@ async function deployDeployment(
             image: image ? image : deployment.image,
           },
           SYSROOT,
-          containerMount,
+          deployment.repo && deployment.containerMount
+            ? {
+                repoFolder: join(
+                  SYS_DEPLOYMENT_REPO_PATH,
+                  deployment.containerName!,
+                  deployment.repoMount || ""
+                ),
+                containerMount: deployment.containerMount,
+              }
+            : undefined,
           (build && build.dockerAccount) || deployment.dockerAccount,
           ((build && build.dockerAccount) || deployment.dockerAccount) &&
             SECRETS.DOCKER_ACCOUNTS[
