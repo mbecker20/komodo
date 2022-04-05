@@ -1,11 +1,10 @@
 import { User } from "@monitor/types";
 import {
-  COPY_ENV,
   CREATE_DEPLOYMENT,
   DELETE_CONTAINER,
   DELETE_DEPLOYMENT,
   DEPLOY,
-  REFRESH_CONTAINER_STATUS,
+  PULL_DEPLOYMENT,
   START_CONTAINER,
   STOP_CONTAINER,
   UPDATE_DEPLOYMENT,
@@ -20,6 +19,7 @@ import {
 import createDeployment from "./create";
 import deleteDeployment from "./delete";
 import deployDeployment from "./deploy";
+import pullDeploymentRepo from "./pull";
 import updateDeployment from "./update";
 
 async function deploymentMessages(
@@ -65,10 +65,8 @@ async function deploymentMessages(
       await deleteDeploymentContainer(app, user, message);
       return true;
 
-    case REFRESH_CONTAINER_STATUS:
-      return true;
-
-    case COPY_ENV:
+    case PULL_DEPLOYMENT:
+      await pullDeploymentRepo(app, user, message)
       return true;
 
     default:

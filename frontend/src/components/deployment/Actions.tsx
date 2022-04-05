@@ -1,23 +1,15 @@
-import { ContainerStatus, DeployActionState } from "@monitor/types";
-import {
-  Component,
-  createEffect,
-  Match,
-  onCleanup,
-  Show,
-  Switch,
-} from "solid-js";
-import { createStore } from "solid-js/store";
+import { ContainerStatus } from "@monitor/types";
+import { Component, Match, Show, Switch } from "solid-js";
 import { pushNotification } from "../..";
 import {
   DELETE_CONTAINER,
   DEPLOY,
+  PULL_DEPLOYMENT,
   START_CONTAINER,
   STOP_CONTAINER,
 } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { getDeploymentActionState } from "../../util/query";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/icons/Icon";
 import Flex from "../util/layout/Flex";
@@ -57,7 +49,7 @@ const Actions: Component<{}> = (p) => {
                   <ConfirmButton
                     color="green"
                     onConfirm={() => {
-                      ws.send(DEPLOY, { deploymentID: deployment()._id });
+                      ws.send(DEPLOY, { deploymentID: selected.id() });
                       pushNotification(
                         "ok",
                         `deploying ${deployment().name}...`
@@ -80,7 +72,7 @@ const Actions: Component<{}> = (p) => {
                     color="red"
                     onConfirm={() => {
                       ws.send(DELETE_CONTAINER, {
-                        deploymentID: deployment()._id,
+                        deploymentID: selected.id(),
                       });
                       pushNotification("ok", `removing container...`);
                     }}
@@ -214,6 +206,22 @@ const Actions: Component<{}> = (p) => {
             </Flex>
           </Match>
         </Switch>
+        <Show when={deployment().repo}>
+          <Flex class="action shadow">
+            pull{" "}
+            <Show when={!actions.pulling}>
+              <ConfirmButton
+                color="blue"
+                onConfirm={() => {
+                  ws.send(PULL_DEPLOYMENT, { deploymentID: selected.id() });
+                  pushNotification("ok", `pulling ${deployment().name}...`);
+                }}
+              >
+                <Icon type="arrow-down" />
+              </ConfirmButton>
+            </Show>
+          </Flex>
+        </Show>
       </Grid>
     </Show>
   );

@@ -4,7 +4,7 @@ import {
   CLONE_BUILD_REPO,
   CREATE_BUILD,
   DELETE_BUILD,
-  PULL,
+  PULL_BUILD,
   UPDATE_BUILD,
 } from "@monitor/util";
 import { FastifyInstance } from "fastify";
@@ -47,7 +47,7 @@ async function buildMessages(
       }
       return true;
 
-    case PULL:
+    case PULL_BUILD:
       message.buildID && (await pullRepo(app, user, message));
       return true;
 

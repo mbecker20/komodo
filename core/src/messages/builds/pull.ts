@@ -1,5 +1,5 @@
 import { User } from "@monitor/types";
-import { prettyStringify, pull, PULL } from "@monitor/util";
+import { prettyStringify, pull, PULL_BUILD } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { PERMISSIONS_DENY_LOG, BUILD_REPO_PATH } from "../../config";
 import { PULLING } from "../../plugins/actionStates";
@@ -16,7 +16,7 @@ async function pullRepo(
     addBuildUpdate(
       app,
       buildID,
-      PULL,
+      PULL_BUILD,
       "Pull (DENIED)",
       PERMISSIONS_DENY_LOG,
       user.username,
@@ -27,7 +27,7 @@ async function pullRepo(
   }
   if (!app.buildActionStates.get(buildID, PULLING)) {
     app.buildActionStates.set(buildID, PULLING, true);
-    app.broadcast(PULL, { complete: false, buildID });
+    app.broadcast(PULL_BUILD, { complete: false, buildID });
     try {
       const { pullName, branch } = build;
       const { command, log, isError } = await pull(
@@ -37,7 +37,7 @@ async function pullRepo(
       addBuildUpdate(
         app,
         buildID,
-        PULL,
+        PULL_BUILD,
         command,
         log,
         user.username,
@@ -48,7 +48,7 @@ async function pullRepo(
       addBuildUpdate(
         app,
         buildID,
-        PULL,
+        PULL_BUILD,
         "Pull (ERROR)",
         { stderr: prettyStringify(error) },
         user.username,
@@ -56,7 +56,7 @@ async function pullRepo(
         true
       );
     }
-    app.broadcast(PULL, { complete: true, buildID });
+    app.broadcast(PULL_BUILD, { complete: true, buildID });
     app.buildActionStates.set(buildID, PULLING, false);
   }
 }

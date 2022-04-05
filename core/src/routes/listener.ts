@@ -81,7 +81,7 @@ const listener = fp((app: FastifyInstance, _: {}, done: () => void) => {
       return;
     }
     if (server.isCore) {
-      const pullCle = await pull(join(BUILD_REPO_PATH, containerName!), branch);
+      const pullCle = await pull(join(DEPLOYMENT_REPO_PATH, containerName!), branch);
       const onPullCle =
         onPull &&
         (await execute(

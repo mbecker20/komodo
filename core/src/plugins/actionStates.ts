@@ -81,6 +81,7 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
         stopping: false,
         updating: false,
         fullDeleting: false,
+        pulling: false,
       };
     },
     delete: (deploymentID: string) => {

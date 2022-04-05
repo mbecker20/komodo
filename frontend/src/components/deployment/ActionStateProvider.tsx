@@ -7,7 +7,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { DELETE_CONTAINER, DELETE_DEPLOYMENT, DEPLOY, START_CONTAINER, STOP_CONTAINER } from "../../state/actions";
+import { DELETE_CONTAINER, DELETE_DEPLOYMENT, DEPLOY, PULL_DEPLOYMENT, START_CONTAINER, STOP_CONTAINER } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { getDeploymentActionState } from "../../util/query";
 
@@ -24,6 +24,7 @@ export const ActionStateProvider: Component<{}> = (p) => {
     stopping: false,
     fullDeleting: false,
     updating: false,
+    pulling: false,
   });
   createEffect(() => {
     getDeploymentActionState(selected.id()).then(setActions);
@@ -60,6 +61,13 @@ export const ActionStateProvider: Component<{}> = (p) => {
     ws.subscribe([DELETE_DEPLOYMENT], ({ complete, deploymentID }) => {
       if (deploymentID === selected.id()) {
         setActions("deleting", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([PULL_DEPLOYMENT], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("pulling", !complete);
       }
     })
   );

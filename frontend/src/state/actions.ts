@@ -2,7 +2,7 @@
 export const CREATE_BUILD = "CREATE_BUILD";
 export const DELETE_BUILD = "DELETE_BUILD";
 export const UPDATE_BUILD = "UPDATE_BUILD";
-export const PULL = "PULL";
+export const PULL_BUILD = "PULL_BUILD";
 export const BUILD = "BUILD";
 export const CLONE_BUILD_REPO = "CLONE_BUILD_REPO";
 
@@ -17,6 +17,7 @@ export const DELETE_CONTAINER = "DELETE_CONTAINER";
 export const REFRESH_CONTAINER_STATUS = "REFRESH_CONTAINER_STATUS";
 export const COPY_ENV = "COPY_ENV";
 export const CLONE_DEPLOYMENT_REPO = "CLONE_DEPLOYMENT_REPO";
+export const PULL_DEPLOYMENT = "PULL_DEPLOYMENT";
 
 /* SERVER */
 export const ADD_SERVER = "ADD_SERVER";
@@ -32,4 +33,4 @@ export const PRUNE_NETWORKS = "PRUNE_NETWORKS";
 export const ADD_UPDATE = "ADD_UPDATE";
 
 /* ALERT */
-export const ALERT = "ALERT"
+export const ALERT = "ALERT";
