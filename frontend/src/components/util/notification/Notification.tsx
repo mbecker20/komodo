@@ -1,6 +1,6 @@
 import { Component, createSignal } from "solid-js";
 import { inPx } from "../../../util/helpers";
-import Icon from "../icons/Icon";
+import Icon from "../Icon";
 import {
   Notification,
   NotificationType,

@@ -34,7 +34,13 @@ export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
     Object.entries(obj).filter((entry) => {
       return !idsToFilterOut.includes(entry[0]);
     })
-  );
+  ) as T;
+}
+
+export function filterOutUndefined<T>(obj: T) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, entry]) => entry !== undefined)
+  ) as T;
 }
 
 export function intoCollection<T>(arr: T[], field = "_id"): Collection<T> {

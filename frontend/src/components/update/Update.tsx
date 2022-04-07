@@ -7,7 +7,7 @@ import {
   readableTimestamp,
 } from "../../util/helpers";
 import { useToggle } from "../../util/hooks";
-import Icon from "../util/icons/Icon";
+import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import CenterMenu from "../util/menu/CenterMenu";

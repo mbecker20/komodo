@@ -1,6 +1,6 @@
 import { Component, For } from "solid-js";
 import { useToggle } from "../../../util/hooks";
-import Icon from "../icons/Icon";
+import Icon from "../Icon";
 import { Position } from "./helpers";
 import Menu from "./Menu";
 import s from "./menu.module.scss";

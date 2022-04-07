@@ -9,18 +9,20 @@ import {
 } from "../util/query";
 import { State } from "./StateProvider";
 
+const pages: PageType[] = ["deployment", "server", "build", "users"];
+type PageType = "deployment" | "server" | "build" | "users";
+
 export function useSelected({ servers, builds, deployments }: State) {
   const [_type, id] = location.pathname.split("/").filter((val) => val);
-  const type =
-    _type === "deployment" || _type === "server" || _type === "build"
-      ? _type
-      : undefined;
+  const type = (
+    pages.includes(_type as PageType) ? _type : undefined
+  ) as PageType;
   const [selected, setSelected] = createSignal<{
     id: string;
-    type: "server" | "deployment" | "build";
+    type: PageType;
   }>({ id: id || "", type: type || "deployment" });
 
-  const set = (id: string, type: "server" | "deployment" | "build") => {
+  const set = (id: string, type: PageType) => {
     setSelected({ id, type });
     history.pushState({}, "", `${location.origin}/${type}/${id}`);
   };
@@ -100,7 +102,7 @@ export function useArray<T>(query: () => Promise<T[]>) {
     query().then(set);
   });
   const add = (item: T) => {
-    set((items: any) => items ? [item, ...items] : [item]);
+    set((items: any) => (items ? [item, ...items] : [item]));
   };
   const loaded = () => (collection() ? true : false);
   return {

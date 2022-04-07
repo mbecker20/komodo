@@ -79,6 +79,10 @@ input::placeholder {
   background-color: c.$lightgrey;
 }
 
+.lightgrey {
+  background-color: rgba(c.$lightgrey, 0.8);
+}
+
 .green {
   background-color: rgba(c.$green, 0.8);
 }

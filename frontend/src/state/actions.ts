@@ -34,3 +34,6 @@ export const ADD_UPDATE = "ADD_UPDATE";
 
 /* ALERT */
 export const ALERT = "ALERT";
+
+/* USERS */
+export const USER_UPDATE = "USER_UPDATE";

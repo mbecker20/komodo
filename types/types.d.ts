@@ -16,6 +16,7 @@ export type User = {
   password?: string;
   githubID?: number;
   avatar?: string;
+  enabled?: true; // users start out disabled and have to be enabled through admin
 };
 
 export type Action = {
@@ -201,6 +202,6 @@ export type PeripherySecrets = {
 };
 
 export type CoreSecrets = PeripherySecrets & {
-  JWT: { SECRET: string };
+  JWT: { SECRET: string; INVITE_SECRET: string };
   GITHUB_OAUTH: { ID: string; SECRET: string };
 };

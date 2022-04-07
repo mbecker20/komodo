@@ -7,7 +7,7 @@ import Env from "./Env";
 import Ports from "./Ports";
 import { useConfig } from "./Provider";
 import Flex from "../../../util/layout/Flex";
-import Icon from "../../../util/icons/Icon";
+import Icon from "../../../util/Icon";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Restart from "./Restart";
 import DockerAccount from "./DockerAccount";

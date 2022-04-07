@@ -9,8 +9,13 @@ export default async function handleMessage(
   app: FastifyInstance,
   client: WebSocket,
   message: Action & object,
-  user: User
+  userID: string,
 ) {
+  const user = await app.users.findById(userID);
+  if (!user || !user.enabled) {
+    client.close(403);
+    return;
+  }
   try {
     (await buildMessages(app, client, message, user)) ||
       (await deploymentMessages(app, client, message, user)) ||

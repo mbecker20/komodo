@@ -7,6 +7,7 @@ import Flex from "../util/layout/Flex";
 import { client, pushNotification } from "../..";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses } from "../../util/helpers";
+import Icon from "../util/Icon";
 
 const Login: Component<{}> = (p) => {
   const [info, set] = createStore({
@@ -80,7 +81,7 @@ const Login: Component<{}> = (p) => {
           class={combineClasses(s.LoginItem, "blue")}
           onClick={() => client.loginGithub()}
         >
-          log in with github
+          log in with github <Icon type="github" />
         </button>
       </Grid>
     </div>

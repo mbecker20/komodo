@@ -15,9 +15,6 @@ declare module "fastify-jwt" {
     payload: {
       id: string;
     };
-    user: {
-      id: string;
-    };
   }
 }
 
@@ -36,8 +33,7 @@ const jwt = fp((app: FastifyInstance, _: {}, done: () => void) => {
   });
 
   app.get("/user", { onRequest: [app.auth] }, async (req, res) => {
-    const id = req.user.id;
-    const user = await app.users.findById(id);
+    const user = await app.users.findById(req.user.id);
     if (user) {
       user.password = undefined;
       res.send(user);
@@ -46,6 +42,8 @@ const jwt = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.send("User could not be found");
     }
   });
+
+  app.register
 
 	done();
 });

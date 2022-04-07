@@ -4,7 +4,7 @@ import { useUser } from "../../../state/UserProvider";
 import { combineClasses } from "../../../util/helpers";
 import { useLocalStorageToggle } from "../../../util/hooks";
 import { getDeployments } from "../../../util/query";
-import Icon from "../../util/icons/Icon";
+import Icon from "../../util/Icon";
 import Flex from "../../util/layout/Flex";
 import Grid from "../../util/layout/Grid";
 import s from "../sidebar.module.scss";

@@ -8,7 +8,7 @@ const accounts = fp((app: FastifyInstance, _: {}, done: () => void) => {
     { onRequest: [app.auth] },
     async (req, res) => {
       const user = await app.users.findById(req.user.id);
-      if (!user || user.permissions! < 1) {
+      if (!user || !user.enabled || user.permissions! < 1) {
         res.status(403);
         res.send("invalid user");
         return;
@@ -21,7 +21,7 @@ const accounts = fp((app: FastifyInstance, _: {}, done: () => void) => {
     { onRequest: [app.auth] },
     async (req, res) => {
       const user = await app.users.findById(req.user.id);
-      if (!user || user.permissions! < 1) {
+      if (!user || !user.enabled || user.permissions! < 1) {
         res.status(403);
         res.send("invalid user");
         return;

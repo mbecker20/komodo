@@ -4,7 +4,7 @@ import fp from "fastify-plugin";
 import { serverStatusPeriphery } from "../util/periphery/status";
 
 const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
-  app.get("/api/servers", { onRequest: [app.auth] }, async (req, res) => {
+  app.get("/api/servers", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
     const servers = await app.servers.find({});
     await Promise.all(
       servers.map(async (server) => {
@@ -16,7 +16,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     res.send(intoCollection(servers));
   });
 
-  app.get("/api/server/:id", { onRequest: [app.auth] }, async (req, res) => {
+  app.get("/api/server/:id", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
     const { id } = req.params as { id: string };
     const server = await app.servers.findById(id);
     if (!server) {
@@ -32,7 +32,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   app.get(
     "/api/server/:id/action-state",
-    { onRequest: [app.auth] },
+    { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
       const state = app.serverActionStates.getJSON(id);

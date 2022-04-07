@@ -2,7 +2,7 @@ import { Component, Show } from "solid-js";
 import { CREATE_BUILD } from "../../../state/actions";
 import { useAppState } from "../../../state/StateProvider";
 import { useToggle } from "../../../util/hooks";
-import Icon from "../../util/icons/Icon";
+import Icon from "../../util/Icon";
 import New from "../New";
 
 const NewBuild: Component<{}> = (p) => {

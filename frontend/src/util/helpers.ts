@@ -52,6 +52,9 @@ export function readablePermissions(permissions: number) {
 
     case 2:
       return "admin";
+
+    default:
+      return "view only";
   }
 }
 

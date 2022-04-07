@@ -3,7 +3,7 @@ import { BUILD, CLONE_BUILD_REPO } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import ConfirmButton from "../util/ConfirmButton";
-import Icon from "../util/icons/Icon";
+import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";

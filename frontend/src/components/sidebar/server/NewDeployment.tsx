@@ -3,7 +3,7 @@ import { CREATE_DEPLOYMENT } from "../../../state/actions";
 import { defaultDeployment } from "../../../state/defaults";
 import { useAppState } from "../../../state/StateProvider";
 import { useToggle } from "../../../util/hooks";
-import Icon from "../../util/icons/Icon";
+import Icon from "../../util/Icon";
 import New from "../New";
 
 const NewDeployment: Component<{ serverID: string }> = (p) => {

@@ -1,7 +1,7 @@
 import { Component, createSignal } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses, inPx } from "../../util/helpers";
-import Icon from "../util/icons/Icon";
+import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import Menu from "../util/menu/Menu";
 import Account from "./Account";
@@ -13,6 +13,7 @@ export const TOPBAR_HEIGHT = 40;
 const Topbar: Component = () => {
   const { sidebar } = useAppState();
   const [menu, setMenu] = createSignal<"updates" | "account">();
+  const close = () => setMenu(undefined);
   return (
     <Flex
       class={combineClasses(s.Topbar, "shadow")}
@@ -31,7 +32,7 @@ const Topbar: Component = () => {
       <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
         <Menu
           show={menu() === "updates"}
-          close={() => setMenu(undefined)}
+          close={close}
           target={
             <button
               onClick={() =>
@@ -46,7 +47,7 @@ const Topbar: Component = () => {
         />
         <Menu
           show={menu() === "account"}
-          close={() => setMenu(undefined)}
+          close={close}
           target={
             <button
               onClick={() =>
@@ -56,7 +57,7 @@ const Topbar: Component = () => {
               <Icon type="user" alt="account" width="1.5rem" />
             </button>
           }
-          content={<Account />}
+          content={<Account close={close} />}
           position="bottom right"
         />
       </Flex>

@@ -1,7 +1,7 @@
 import { Component, createSignal, onMount } from "solid-js";
 import { pushNotification } from "../..";
 import { useKeyDown } from "../../util/hooks";
-import Icon from "../util/icons/Icon";
+import Icon from "../util/Icon";
 import Input from "../util/Input";
 import Flex from "../util/layout/Flex";
 

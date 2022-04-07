@@ -4,10 +4,13 @@ import Deployment from "./components/deployment/Deployment";
 import Server from "./components/server/Server";
 import Sidebar from "./components/sidebar/Sidebar";
 import Topbar from "./components/topbar/Topbar";
+import Users from "./components/users/Users";
 import { useAppState } from "./state/StateProvider";
+import { useUser } from "./state/UserProvider";
 
 const App: Component = () => {
   const { selected } = useAppState();
+  const { permissions } = useUser();
   return (
     <>
       <Topbar />
@@ -21,6 +24,9 @@ const App: Component = () => {
         </Match>
         <Match when={selected.type() === "build"}>
           <Build />
+        </Match>
+        <Match when={selected.type() === "users" && permissions() > 1}>
+          <Users />
         </Match>
       </Switch>
     </>

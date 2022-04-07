@@ -34,7 +34,7 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
         const payload = decode(jwt) as { id: string };
         const userID = payload.id;
         const user = await app.users.findById(userID);
-        if (user) {
+        if (user && user.enabled) {
           const unsub = messages.subscribe((msg) =>
             connection.socket.send(msg)
           );
@@ -44,7 +44,7 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
               app,
               connection.socket,
               JSON.parse(msg.toString()),
-              user
+              userID,
             )
           );
           connection.socket.on("close", unsub);

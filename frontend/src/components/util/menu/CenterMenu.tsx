@@ -9,7 +9,7 @@ import {
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
 import { useKeyDown } from "../../../util/hooks";
-import Icon from "../icons/Icon";
+import Icon from "../Icon";
 import Flex from "../layout/Flex";
 import Grid from "../layout/Grid";
 import s from "./menu.module.scss";

@@ -3,7 +3,7 @@ import fp from "fastify-plugin";
 import { HOST } from "../config";
 
 const listenerURL = fp((app: FastifyInstance, _: {}, done: () => void) => {
-  app.get("/listenerURL", { onRequest: [app.auth] }, async (req, res) => {
+  app.get("/listenerURL", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
     const { buildID, deploymentID } = req.query as {
       buildID?: string;
       deploymentID?: string;

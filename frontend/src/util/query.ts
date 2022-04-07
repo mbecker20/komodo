@@ -11,6 +11,7 @@ import {
   Server,
   Servers,
   Update,
+  User,
 } from "@monitor/types";
 import { client } from "..";
 import { generateQuery } from "./helpers";
@@ -84,4 +85,20 @@ export async function getGithubAccounts() {
 
 export async function getDockerAccounts() {
   return await client.get<string[]>("/api/accounts/docker");
+}
+
+export async function getUsers() {
+  return await client.get<User[]>("/api/users");
+}
+
+export async function updateUser(body: {
+  userID: string;
+  permissions?: number;
+  enabled?: boolean;
+}) {
+  return await client.post("/api/user/update", body);
+}
+
+export async function deleteUser(id: string) {
+  return await client.delete(`/api/user/${id}`);
 }

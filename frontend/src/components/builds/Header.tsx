@@ -3,7 +3,7 @@ import { Component, Show } from "solid-js";
 import { DELETE_BUILD } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import ConfirmButton from "../util/ConfirmButton";
-import Icon from "../util/icons/Icon";
+import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import { useActionStates } from "./ActionStateProvider";

@@ -1,5 +1,5 @@
 import { Component, For, Show } from "solid-js";
-import Icon from "../../../util/icons/Icon";
+import Icon from "../../../util/Icon";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";

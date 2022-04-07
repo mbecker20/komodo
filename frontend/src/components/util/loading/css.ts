@@ -53,10 +53,10 @@ export function sonarCss(scale = 0.25) {
 			border: ${4 * scale}px solid #fff;
 			opacity: 1;
 			border-radius: 50%;
-			animation: sonar 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+			animation: sonar 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
 		}
 		.Sonar div:nth-child(2) {
-			animation-delay: -0.5s;
+			animation-delay: -1s;
 		}
 		@keyframes sonar {
 			0% {

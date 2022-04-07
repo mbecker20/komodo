@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 import { useLocalStorageToggle } from "../util/hooks";
 import { getDockerAccounts, getGithubAccounts } from "../util/query";
+import { USER_UPDATE } from "./actions";
 import {
   useBuilds,
   useDeployments,
@@ -40,7 +41,7 @@ const context = createContext<
 >();
 
 export const AppStateProvider: Component<{}> = (p) => {
-  const { user, permissions } = useUser();
+  const { user, permissions, reloadUser, logout } = useUser();
   const [sidebarOpen, toggleSidebarOpen] = useLocalStorageToggle(
     "sidebar-open",
     true
@@ -68,7 +69,7 @@ export const AppStateProvider: Component<{}> = (p) => {
   const selected = useSelected(state);
   const ws = socket(user(), state, selected);
 
-  const { logout } = useUser();
+  ws.subscribe([USER_UPDATE], reloadUser);
 
   return (
     <context.Provider

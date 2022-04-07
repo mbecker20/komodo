@@ -1,7 +1,7 @@
 import { Component, Show } from "solid-js";
 import { combineClasses } from "../../../../util/helpers";
 import ConfirmButton from "../../../util/ConfirmButton";
-import Icon from "../../../util/icons/Icon";
+import Icon from "../../../util/Icon";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import Loading from "../../../util/loading/Loading";

@@ -11,6 +11,7 @@ const users = fp((app: FastifyInstance, _: {}, done: () => void) => {
     password: String,
     avatar: String,
     githubID: { type: Number, index: true },
+    enabled: { type: Boolean, default: false },
   });
 
 	app.decorate("users", model(app, "User", schema));

@@ -16,7 +16,8 @@ import {
   UPDATE_BUILD,
   UPDATE_DEPLOYMENT,
   UPDATE_SERVER,
-} from "../state/actions";
+  USER_UPDATE,
+} from "./actions";
 import { readableOperation } from "../util/helpers";
 import { getDeploymentStatus, getServer } from "../util/query";
 import { useSelected } from "./hooks";

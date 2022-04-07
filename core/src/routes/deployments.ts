@@ -13,7 +13,7 @@ import {
 } from "../util/periphery/container";
 
 const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
-  app.get("/api/deployments", { onRequest: [app.auth] }, async (req, res) => {
+  app.get("/api/deployments", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
     // returns the periphery deployments on the given serverID
     // returns the core deployments if no serverID is specified
     const { serverID } = req.query as { serverID?: string };
@@ -42,7 +42,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   app.get(
     "/api/deployment/:id",
-    { onRequest: [app.auth] },
+    { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
       const deployment = await app.deployments.findById(id);
@@ -69,7 +69,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   app.get(
     "/api/deployment/:id/log",
-    { onRequest: [app.auth] },
+    { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
       const { tail } = req.query as { tail?: number };
@@ -104,7 +104,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   app.get(
     "/api/deployment/:id/status",
-    { onRequest: [app.auth] },
+    { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
       const deployment = await app.deployments.findById(
@@ -134,7 +134,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   app.get(
     "/api/deployment/:id/action-state",
-    { onRequest: [app.auth] },
+    { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
       const state = app.deployActionStates.getJSON(id);

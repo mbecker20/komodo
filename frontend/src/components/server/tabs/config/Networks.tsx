@@ -4,7 +4,7 @@ import { pushNotification } from "../../../..";
 import { CREATE_NETWORK, DELETE_NETWORK } from "../../../../state/actions";
 import { useAppState } from "../../../../state/StateProvider";
 import ConfirmButton from "../../../util/ConfirmButton";
-import Icon from "../../../util/icons/Icon";
+import Icon from "../../../util/Icon";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";

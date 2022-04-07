@@ -4,7 +4,7 @@ import { DELETE_DEPLOYMENT } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { deploymentStatusClass } from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
-import Icon from "../util/icons/Icon";
+import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import HoverMenu from "../util/menu/HoverMenu";

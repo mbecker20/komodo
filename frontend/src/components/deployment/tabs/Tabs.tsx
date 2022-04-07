@@ -12,7 +12,7 @@ import Log from "./log/Log";
 import { ConfigProvider } from "./config/Provider";
 import { useAppState } from "../../../state/StateProvider";
 import { getDeploymentLog } from "../../../util/query";
-import Icon from "../../util/icons/Icon";
+import Icon from "../../util/Icon";
 import Flex from "../../util/layout/Flex";
 import {
   ADD_UPDATE,

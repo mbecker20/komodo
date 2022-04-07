@@ -23,6 +23,10 @@ export const MONGO_URL = getStringFromEnv(
   "mongodb://127.0.0.1:27017/monitor"
 );
 export const TOKEN_EXPIRES_IN = getStringFromEnv("TOKEN_EXPIRES_IN", "7d");
+export const INVITE_TOKEN_EXPIRES_IN = getNumberFromEnv(
+  "INVITE_TOKEN_EXPIRES_IN",
+  2.592e8 // 3 days
+);
 export const PASSWORD_SALT_ROUNDS = getNumberFromEnv("PASSWORD_SALT_ROUNDS", 8);
 export const SYSROOT = getStringFromEnv("SYSROOT", "/home/ubuntu/"); // the root folder monitor has access to, prepends volumes mounted using useSysroot
 export const ROOT = "/monitor-root/"; // the root folder in the container that SYSROOT is mounted on

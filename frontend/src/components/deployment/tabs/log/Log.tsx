@@ -4,7 +4,7 @@ import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { combineClasses } from "../../../../util/helpers";
 import { useBuffer } from "../../../../util/hooks";
-import Icon from "../../../util/icons/Icon";
+import Icon from "../../../util/Icon";
 import Grid from "../../../util/layout/Grid";
 import s from "./log.module.scss";
 

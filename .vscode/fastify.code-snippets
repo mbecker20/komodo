@@ -41,7 +41,7 @@
 		"scope": "typescript",
 		"prefix": "get-auth",
 		"body": [
-			"app.get(\"/${1}\", { onRequest: [app.auth] }, async (req, res) => {",
+			"app.get(\"/${1}\", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {",
 			"\t${0}",
 			"});"
 		]
@@ -51,7 +51,7 @@
 		"scope": "typescript",
 		"prefix": "post-auth",
 		"body": [
-			"app.post(\"/${1}\", { onRequest: [app.auth] }, async (req, res) => {",
+			"app.post(\"/${1}\", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {",
 			"\t${0}",
 			"});"
 		]

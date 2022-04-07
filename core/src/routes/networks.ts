@@ -6,7 +6,7 @@ import { getPeripheryNetworks } from "../util/periphery/networks";
 const networks = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.get(
     "/api/networks/:serverID",
-    { onRequest: [app.auth] },
+    { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { serverID } = req.params as { serverID: string };
       const server =
