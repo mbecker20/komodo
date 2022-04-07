@@ -37,6 +37,14 @@ export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
   ) as T;
 }
 
+export function keepOnlyInObj<T>(obj: T, idsToKeep: string[]) {
+  return Object.fromEntries(
+    Object.entries(obj).filter((entry) => {
+      return idsToKeep.includes(entry[0]);
+    })
+  ) as T;
+}
+
 export function filterOutUndefined<T>(obj: T) {
   return Object.fromEntries(
     Object.entries(obj).filter(([_, entry]) => entry !== undefined)

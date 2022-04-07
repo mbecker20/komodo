@@ -1,6 +1,6 @@
-import { Collection, Update } from "@monitor/types";
+import { Collection } from "@monitor/types";
 import { createEffect, createResource, createSignal } from "solid-js";
-import { filterOutFromObj } from "../util/helpers";
+import { filterOutFromObj, keepOnlyInObj } from "../util/helpers";
 import {
   getBuilds,
   getDeployments,
@@ -134,7 +134,11 @@ export function useCollection<T>(query: () => Promise<Collection<T>>) {
   };
   const ids = () => collection() && Object.keys(collection()!);
   const loaded = () => (collection() ? true : false);
-
+  const filter = (condition: (item: T) => boolean) => {
+    const coll = collection();
+    const _ids = coll && ids()!.filter((id) => condition(coll[id]));
+    return _ids && keepOnlyInObj(coll, _ids);
+  };
   return {
     collection,
     add,
@@ -144,5 +148,6 @@ export function useCollection<T>(query: () => Promise<Collection<T>>) {
     get,
     ids,
     loaded,
+    filter,
   };
 }

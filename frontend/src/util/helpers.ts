@@ -42,6 +42,14 @@ export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
   );
 }
 
+export function keepOnlyInObj<T>(obj: T, idsToKeep: string[]) {
+  return Object.fromEntries(
+    Object.entries(obj).filter((entry) => {
+      return idsToKeep.includes(entry[0]);
+    })
+  ) as T;
+}
+
 export function readablePermissions(permissions: number) {
   switch (permissions) {
     case 0:
