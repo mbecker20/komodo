@@ -53,7 +53,7 @@ const Owners: Component<{}> = (p) => {
                   onConfirm={async () => {
                     await addOwnerToDeployment(deployment._id!, user.username);
                     pushNotification("good", "owner added to deployment");
-										setUserSearch("");
+                    setUserSearch("");
                   }}
                 >
                   {user.username}
@@ -74,7 +74,7 @@ const Owners: Component<{}> = (p) => {
                 color="red"
                 onConfirm={async () => {
                   await removeOwnerFromDeployment(deployment._id!, owner);
-                  pushNotification("good", "user added to collaborators");
+                  pushNotification("good", "user removed from collaborators");
                 }}
               >
                 remove

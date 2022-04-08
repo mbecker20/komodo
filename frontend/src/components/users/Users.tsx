@@ -22,7 +22,7 @@ import s from "./users.module.scss";
 
 const Users: Component<{}> = (p) => {
   const { ws } = useAppState();
-  const [users, { refetch }] = createResource(getUsers);
+  const [users, { refetch }] = createResource(() => getUsers());
   onCleanup(ws.subscribe([USER_UPDATE], refetch));
   const [search, setSearch] = createSignal("");
   const filteredUsers = createMemo(() =>
