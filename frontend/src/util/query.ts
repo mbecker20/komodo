@@ -67,6 +67,20 @@ export async function getDeploymentActionState(deploymentID: string) {
   );
 }
 
+export async function addOwnerToDeployment(
+  deploymentID: string,
+  username: string
+) {
+  return await client.post(`/api/deployment/${deploymentID}/${username}`);
+}
+
+export async function removeOwnerFromDeployment(
+  deploymentID: string,
+  username: string
+) {
+  return await client.delete(`/api/deployment/${deploymentID}/${username}`);
+}
+
 export async function getServers() {
   return await client.get<Servers>("/api/servers");
 }
@@ -87,8 +101,8 @@ export async function getDockerAccounts() {
   return await client.get<string[]>("/api/accounts/docker");
 }
 
-export async function getUsers() {
-  return await client.get<User[]>("/api/users");
+export async function getUsers(username?: string) {
+  return await client.get<User[]>("/api/users" + generateQuery({ username }));
 }
 
 export async function updateUser(body: {

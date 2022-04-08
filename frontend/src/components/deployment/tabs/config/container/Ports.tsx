@@ -1,33 +1,27 @@
 import { Component, For, Show } from "solid-js";
-import Icon from "../../../util/Icon";
-import Input from "../../../util/Input";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import { useConfig } from "./Provider";
+import Icon from "../../../../util/Icon";
+import Input from "../../../../util/Input";
+import Flex from "../../../../util/layout/Flex";
+import Grid from "../../../../util/layout/Grid";
+import { useConfig } from "../Provider";
 
-const Env: Component<{}> = (p) => {
+const Ports: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
   const onAdd = () => {
-    setDeployment("environment", (environment: any) => [
-      ...environment,
-      { variable: "", value: "" },
+    setDeployment("ports", (ports: any) => [
+      ...ports,
+      { local: "", container: "" },
     ]);
   };
   const onRemove = (index: number) => {
-    setDeployment("environment", (environment) =>
-      environment!.filter((_, i) => i !== index)
-    );
+    setDeployment("ports", (ports) => ports!.filter((_, i) => i !== index));
   };
   return (
     <Grid class="config-item shadow">
       <Flex alignItems="center" justifyContent="space-between">
-        <h1>environment</h1>
+        <h1>ports</h1>
         <Flex alignItems="center">
-          <Show
-            when={
-              !deployment.environment || deployment.environment.length === 0
-            }
-          >
+          <Show when={!deployment.ports || deployment.ports.length === 0}>
             <div>none</div>
           </Show>
           <Show when={userCanUpdate()}>
@@ -37,33 +31,28 @@ const Env: Component<{}> = (p) => {
           </Show>
         </Flex>
       </Flex>
-      <For each={deployment.environment}>
-        {(_, index) => (
+      <For each={deployment.ports}>
+        {({ local, container }, index) => (
           <Flex
             justifyContent={userCanUpdate() ? "space-between" : undefined}
             alignItems="center"
           >
             <Input
-              placeholder="variable"
-              value={deployment.environment![index()].variable}
+              placeholder="system"
+              value={local}
               style={{ width: "40%" }}
               onEdit={(value) =>
-                setDeployment(
-                  "environment",
-                  index(),
-                  "variable",
-                  value.toUpperCase().replaceAll(" ", "_")
-                )
+                setDeployment("ports", index(), "local", value)
               }
               disabled={!userCanUpdate()}
             />
             {" : "}
             <Input
-              placeholder="value"
-              value={deployment.environment![index()].value}
+              placeholder="container"
+              value={container}
               style={{ width: "40%" }}
               onEdit={(value) =>
-                setDeployment("environment", index(), "value", value)
+                setDeployment("ports", index(), "container", value)
               }
               disabled={!userCanUpdate()}
             />
@@ -79,4 +68,4 @@ const Env: Component<{}> = (p) => {
   );
 };
 
-export default Env;
+export default Ports;

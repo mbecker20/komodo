@@ -5,12 +5,20 @@ import fp from "fastify-plugin";
 const users = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.get("/api/users", { onRequest: [app.auth] }, async (req, res) => {
     const user = await app.users.findById(req.user.id);
-    if (!user || !user.enabled || user.permissions! < 2) {
+    if (!user || !user.enabled || user.permissions! < 1) {
       res.status(403);
       res.send("not authorized");
     }
+    const { username } = req.query as { username: string };
     const users = await app.users.find(
-      { permissions: { $lt: 2 } },
+      filterOutUndefined({
+        permissions: { $lt: 2 },
+        username: username
+          ? {
+              $regex: `.*${username}.*`,
+            }
+          : undefined,
+      }),
       "username permissions enabled"
     );
     res.send(users);

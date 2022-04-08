@@ -1,8 +1,8 @@
 import { Component, Show } from "solid-js";
-import { useAppState } from "../../../../state/StateProvider";
-import Flex from "../../../util/layout/Flex";
-import Selector from "../../../util/menu/Selector";
-import { useConfig } from "./Provider";
+import { useAppState } from "../../../../../state/StateProvider";
+import Flex from "../../../../util/layout/Flex";
+import Selector from "../../../../util/menu/Selector";
+import { useConfig } from "../Provider";
 
 const DockerAccount: Component<{}> = (p) => {
 	const { dockerAccounts } = useAppState();

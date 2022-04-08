@@ -1,11 +1,11 @@
 import { Component, Show } from "solid-js";
-import { useAppState } from "../../../../state/StateProvider";
-import { useUser } from "../../../../state/UserProvider";
+import { useAppState } from "../../../../../state/StateProvider";
+import { useUser } from "../../../../../state/UserProvider";
 // import { useToggle } from "../../../../util/hooks";
-import Input from "../../../util/Input";
-import Flex from "../../../util/layout/Flex";
-import Selector from "../../../util/menu/Selector";
-import { useConfig } from "./Provider";
+import Input from "../../../../util/Input";
+import Flex from "../../../../util/layout/Flex";
+import Selector from "../../../../util/menu/Selector";
+import { useConfig } from "../Provider";
 
 const Image: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();

@@ -1,8 +1,8 @@
 import { Component } from "solid-js";
-import Input from "../../../util/Input";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import { useConfig } from "./Provider";
+import Input from "../../../../util/Input";
+import Flex from "../../../../util/layout/Flex";
+import Grid from "../../../../util/layout/Grid";
+import { useConfig } from "../Provider";
 
 export const OnClone: Component<{}> = (p) => {
   const { deployment, setDeployment } = useConfig();

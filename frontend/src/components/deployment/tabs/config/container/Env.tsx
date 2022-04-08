@@ -1,29 +1,33 @@
 import { Component, For, Show } from "solid-js";
-import Icon from "../../../util/Icon";
-import Input from "../../../util/Input";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import { useConfig } from "./Provider";
+import Icon from "../../../../util/Icon";
+import Input from "../../../../util/Input";
+import Flex from "../../../../util/layout/Flex";
+import Grid from "../../../../util/layout/Grid";
+import { useConfig } from "../Provider";
 
-const Volumes: Component<{}> = (p) => {
+const Env: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
   const onAdd = () => {
-    setDeployment("volumes", (volumes: any) => [
-      ...volumes,
-      { local: "", container: "" },
+    setDeployment("environment", (environment: any) => [
+      ...environment,
+      { variable: "", value: "" },
     ]);
   };
   const onRemove = (index: number) => {
-    setDeployment("volumes", (volumes) =>
-      volumes!.filter((_, i) => i !== index)
+    setDeployment("environment", (environment) =>
+      environment!.filter((_, i) => i !== index)
     );
   };
   return (
     <Grid class="config-item shadow">
-      <Flex justifyContent="space-between" alignItems="center">
-        <h1>volumes</h1>
+      <Flex alignItems="center" justifyContent="space-between">
+        <h1>environment</h1>
         <Flex alignItems="center">
-          <Show when={!deployment.volumes || deployment.volumes.length === 0}>
+          <Show
+            when={
+              !deployment.environment || deployment.environment.length === 0
+            }
+          >
             <div>none</div>
           </Show>
           <Show when={userCanUpdate()}>
@@ -33,28 +37,33 @@ const Volumes: Component<{}> = (p) => {
           </Show>
         </Flex>
       </Flex>
-      <For each={deployment.volumes}>
-        {({ local, container }, index) => (
+      <For each={deployment.environment}>
+        {(_, index) => (
           <Flex
             justifyContent={userCanUpdate() ? "space-between" : undefined}
             alignItems="center"
           >
             <Input
-              placeholder="system"
-              value={local}
+              placeholder="variable"
+              value={deployment.environment![index()].variable}
               style={{ width: "40%" }}
               onEdit={(value) =>
-                setDeployment("volumes", index(), "local", value)
+                setDeployment(
+                  "environment",
+                  index(),
+                  "variable",
+                  value.toUpperCase().replaceAll(" ", "_")
+                )
               }
               disabled={!userCanUpdate()}
             />
             {" : "}
             <Input
-              placeholder="container"
-              value={container}
+              placeholder="value"
+              value={deployment.environment![index()].value}
               style={{ width: "40%" }}
               onEdit={(value) =>
-                setDeployment("volumes", index(), "container", value)
+                setDeployment("environment", index(), "value", value)
               }
               disabled={!userCanUpdate()}
             />
@@ -70,4 +79,4 @@ const Volumes: Component<{}> = (p) => {
   );
 };
 
-export default Volumes;
+export default Env;

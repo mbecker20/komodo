@@ -1,7 +1,7 @@
 import { Component } from "solid-js";
-import Flex from "../../../util/layout/Flex";
-import Selector from "../../../util/menu/Selector";
-import { useConfig } from "./Provider";
+import Flex from "../../../../util/layout/Flex";
+import Selector from "../../../../util/menu/Selector";
+import { useConfig } from "../Provider";
 
 const Network: Component<{}> = (p) => {
   const { deployment, setDeployment, networks, userCanUpdate } = useConfig();

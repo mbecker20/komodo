@@ -44,7 +44,7 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
               app,
               connection.socket,
               JSON.parse(msg.toString()),
-              userID,
+              userID
             )
           );
           connection.socket.on("close", unsub);

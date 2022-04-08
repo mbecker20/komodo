@@ -1,10 +1,10 @@
 import { Component, Show } from "solid-js";
-import { useAppState } from "../../../../state/StateProvider";
-import Input from "../../../util/Input";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import Selector from "../../../util/menu/Selector";
-import { useConfig } from "./Provider";
+import { useAppState } from "../../../../../state/StateProvider";
+import Input from "../../../../util/Input";
+import Flex from "../../../../util/layout/Flex";
+import Grid from "../../../../util/layout/Grid";
+import Selector from "../../../../util/menu/Selector";
+import { useConfig } from "../Provider";
 
 const Git: Component<{}> = (p) => {
   const { githubAccounts } = useAppState();

@@ -57,7 +57,7 @@ const DeploymentTabs: Component<{}> = () => {
   onCleanup(unsub);
   return (
     <Show when={deployment()}>
-      <ConfigProvider deployment={deployment()!}>
+      <ConfigProvider>
         <Tabs
           containerClass="card tabs shadow"
           containerStyle={{ gap: "0.5rem" }}

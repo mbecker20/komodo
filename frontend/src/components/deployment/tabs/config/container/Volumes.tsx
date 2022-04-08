@@ -1,27 +1,29 @@
 import { Component, For, Show } from "solid-js";
-import Icon from "../../../util/Icon";
-import Input from "../../../util/Input";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import { useConfig } from "./Provider";
+import Icon from "../../../../util/Icon";
+import Input from "../../../../util/Input";
+import Flex from "../../../../util/layout/Flex";
+import Grid from "../../../../util/layout/Grid";
+import { useConfig } from "../Provider";
 
-const Ports: Component<{}> = (p) => {
+const Volumes: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
   const onAdd = () => {
-    setDeployment("ports", (ports: any) => [
-      ...ports,
+    setDeployment("volumes", (volumes: any) => [
+      ...volumes,
       { local: "", container: "" },
     ]);
   };
   const onRemove = (index: number) => {
-    setDeployment("ports", (ports) => ports!.filter((_, i) => i !== index));
+    setDeployment("volumes", (volumes) =>
+      volumes!.filter((_, i) => i !== index)
+    );
   };
   return (
     <Grid class="config-item shadow">
-      <Flex alignItems="center" justifyContent="space-between">
-        <h1>ports</h1>
+      <Flex justifyContent="space-between" alignItems="center">
+        <h1>volumes</h1>
         <Flex alignItems="center">
-          <Show when={!deployment.ports || deployment.ports.length === 0}>
+          <Show when={!deployment.volumes || deployment.volumes.length === 0}>
             <div>none</div>
           </Show>
           <Show when={userCanUpdate()}>
@@ -31,7 +33,7 @@ const Ports: Component<{}> = (p) => {
           </Show>
         </Flex>
       </Flex>
-      <For each={deployment.ports}>
+      <For each={deployment.volumes}>
         {({ local, container }, index) => (
           <Flex
             justifyContent={userCanUpdate() ? "space-between" : undefined}
@@ -42,7 +44,7 @@ const Ports: Component<{}> = (p) => {
               value={local}
               style={{ width: "40%" }}
               onEdit={(value) =>
-                setDeployment("ports", index(), "local", value)
+                setDeployment("volumes", index(), "local", value)
               }
               disabled={!userCanUpdate()}
             />
@@ -52,7 +54,7 @@ const Ports: Component<{}> = (p) => {
               value={container}
               style={{ width: "40%" }}
               onEdit={(value) =>
-                setDeployment("ports", index(), "container", value)
+                setDeployment("volumes", index(), "container", value)
               }
               disabled={!userCanUpdate()}
             />
@@ -68,4 +70,4 @@ const Ports: Component<{}> = (p) => {
   );
 };
 
-export default Ports;
+export default Volumes;

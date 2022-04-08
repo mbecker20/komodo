@@ -6,7 +6,6 @@ import {
   onMount,
   Setter,
 } from "solid-js";
-import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
 
 export function useToggle(
   initial = false

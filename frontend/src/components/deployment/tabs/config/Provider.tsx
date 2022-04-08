@@ -9,7 +9,11 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
-import { ADD_UPDATE, UPDATE_DEPLOYMENT } from "../../../../state/actions";
+import {
+  ADD_UPDATE,
+  DEPLOYMENT_OWNER_UPDATE,
+  UPDATE_DEPLOYMENT,
+} from "../../../../state/actions";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
 import { getDeployment, getNetworks } from "../../../../util/query";
@@ -82,15 +86,27 @@ export const ConfigProvider: Component<{}> = (p) => {
     ws.send(UPDATE_DEPLOYMENT, { deployment });
   };
 
-  const unsub = ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
-    if (update.deploymentID === selected.id()) {
-      if ([UPDATE_DEPLOYMENT].includes(update.operation)) {
-        load();
+  onCleanup(
+    ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
+      if (update.deploymentID === selected.id()) {
+        if ([UPDATE_DEPLOYMENT].includes(update.operation)) {
+          load();
+        }
       }
-    }
-  });
+    })
+  );
 
-  onCleanup(unsub);
+  onCleanup(
+    ws.subscribe(
+      [DEPLOYMENT_OWNER_UPDATE],
+      async ({ deploymentID }: { deploymentID: string }) => {
+        if (deploymentID === selected.id()) {
+          const dep = await getDeployment(selected.id());
+          set("owners", dep.owners);
+        }
+      }
+    )
+  );
 
   const userCanUpdate = () => {
     if (permissions() > 1) {
