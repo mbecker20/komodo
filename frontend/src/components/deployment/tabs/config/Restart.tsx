@@ -11,11 +11,12 @@ const RESTART_MODES = [
 ];
 
 const Restart: Component<{}> = (p) => {
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   return (
     <Flex
       class="config-item shadow"
       justifyContent="space-between"
+      alignItems="center"
     >
       <h1>restart</h1>
       <Selector
@@ -33,6 +34,7 @@ const Restart: Component<{}> = (p) => {
           )
         }
         position="bottom right"
+        disabled={!userCanUpdate()}
       />
     </Flex>
   );

@@ -6,7 +6,7 @@ import Grid from "../../../util/layout/Grid";
 import { useConfig } from "./Provider";
 
 const Ports: Component<{}> = (p) => {
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   const onAdd = () => {
     setDeployment("ports", (ports: any) => [
       ...ports,
@@ -24,14 +24,19 @@ const Ports: Component<{}> = (p) => {
           <Show when={!deployment.ports || deployment.ports.length === 0}>
             <div>none</div>
           </Show>
-          <button class="green" onClick={onAdd}>
-            <Icon type="plus" />
-          </button>
+          <Show when={userCanUpdate()}>
+            <button class="green" onClick={onAdd}>
+              <Icon type="plus" />
+            </button>
+          </Show>
         </Flex>
       </Flex>
       <For each={deployment.ports}>
         {({ local, container }, index) => (
-          <Flex justifyContent="space-between" alignItems="center">
+          <Flex
+            justifyContent={userCanUpdate() ? "space-between" : undefined}
+            alignItems="center"
+          >
             <Input
               placeholder="system"
               value={local}
@@ -39,6 +44,7 @@ const Ports: Component<{}> = (p) => {
               onEdit={(value) =>
                 setDeployment("ports", index(), "local", value)
               }
+              disabled={!userCanUpdate()}
             />
             {" : "}
             <Input
@@ -48,10 +54,13 @@ const Ports: Component<{}> = (p) => {
               onEdit={(value) =>
                 setDeployment("ports", index(), "container", value)
               }
+              disabled={!userCanUpdate()}
             />
-            <button class="red" onClick={() => onRemove(index())}>
-              <Icon type="minus" />
-            </button>
+            <Show when={userCanUpdate()}>
+              <button class="red" onClick={() => onRemove(index())}>
+                <Icon type="minus" />
+              </button>
+            </Show>
           </Flex>
         )}
       </For>

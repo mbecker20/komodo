@@ -6,12 +6,13 @@ import { useConfig } from "./Provider";
 
 const DockerAccount: Component<{}> = (p) => {
 	const { dockerAccounts } = useAppState();
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   return (
     <Show when={dockerAccounts() && dockerAccounts()!.length > 0}>
       <Flex
         class="config-item shadow"
         justifyContent="space-between"
+        alignItems="center"
       >
         <h1>docker account</h1>
         <Selector
@@ -25,6 +26,7 @@ const DockerAccount: Component<{}> = (p) => {
             )
           }
           position="bottom right"
+          disabled={!userCanUpdate()}
         />
       </Flex>
     </Show>

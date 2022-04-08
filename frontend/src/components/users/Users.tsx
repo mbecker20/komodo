@@ -10,7 +10,9 @@ import {
 import { USER_UPDATE } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses, readablePermissions } from "../../util/helpers";
-import { getUsers, updateUser } from "../../util/query";
+import { deleteUser, getUsers, updateUser } from "../../util/query";
+import ConfirmButton from "../util/ConfirmButton";
+import Icon from "../util/Icon";
 import Input from "../util/Input";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
@@ -66,6 +68,12 @@ const Users: Component<{}> = (p) => {
                   >
                     {user.enabled ? "enabled" : "disabled"}
                   </button>
+                  <ConfirmButton
+                    color="red"
+                    onConfirm={() => deleteUser(user._id!)}
+                  >
+                    <Icon type="trash" />
+                  </ConfirmButton>
                 </Flex>
               </Flex>
             )}

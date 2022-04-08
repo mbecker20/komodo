@@ -1,3 +1,4 @@
+import { USER_UPDATE } from "@monitor/util";
 import axios from "axios";
 import { FastifyInstance } from "fastify";
 import fastifyOauth2, { OAuth2Namespace } from "fastify-oauth2";
@@ -43,6 +44,7 @@ const github = fp((app: FastifyInstance, _: {}, done: () => void) => {
       );
     } else {
       const createdUser = await app.users.create(profile);
+      app.broadcast(USER_UPDATE, {});
       const jwt = app.jwt.sign(
         { id: createdUser._id!.toString() },
         { expiresIn: TOKEN_EXPIRES_IN }

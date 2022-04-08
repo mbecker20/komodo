@@ -6,7 +6,7 @@ import Grid from "../../../util/layout/Grid";
 import { useConfig } from "./Provider";
 
 const Volumes: Component<{}> = (p) => {
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   const onAdd = () => {
     setDeployment("volumes", (volumes: any) => [
       ...volumes,
@@ -14,7 +14,9 @@ const Volumes: Component<{}> = (p) => {
     ]);
   };
   const onRemove = (index: number) => {
-    setDeployment("volumes", (volumes) => volumes!.filter((_, i) => i !== index));
+    setDeployment("volumes", (volumes) =>
+      volumes!.filter((_, i) => i !== index)
+    );
   };
   return (
     <Grid class="config-item shadow">
@@ -24,14 +26,19 @@ const Volumes: Component<{}> = (p) => {
           <Show when={!deployment.volumes || deployment.volumes.length === 0}>
             <div>none</div>
           </Show>
-          <button class="green" onClick={onAdd}>
-            <Icon type="plus" />
-          </button>
+          <Show when={userCanUpdate()}>
+            <button class="green" onClick={onAdd}>
+              <Icon type="plus" />
+            </button>
+          </Show>
         </Flex>
       </Flex>
       <For each={deployment.volumes}>
         {({ local, container }, index) => (
-          <Flex justifyContent="space-between" alignItems="center">
+          <Flex
+            justifyContent={userCanUpdate() ? "space-between" : undefined}
+            alignItems="center"
+          >
             <Input
               placeholder="system"
               value={local}
@@ -39,6 +46,7 @@ const Volumes: Component<{}> = (p) => {
               onEdit={(value) =>
                 setDeployment("volumes", index(), "local", value)
               }
+              disabled={!userCanUpdate()}
             />
             {" : "}
             <Input
@@ -48,10 +56,13 @@ const Volumes: Component<{}> = (p) => {
               onEdit={(value) =>
                 setDeployment("volumes", index(), "container", value)
               }
+              disabled={!userCanUpdate()}
             />
-            <button class="red" onClick={() => onRemove(index())}>
-              <Icon type="minus" />
-            </button>
+            <Show when={userCanUpdate()}>
+              <button class="red" onClick={() => onRemove(index())}>
+                <Icon type="minus" />
+              </button>
+            </Show>
           </Flex>
         )}
       </For>

@@ -1,4 +1,5 @@
 import { User } from "@monitor/types";
+import { USER_UPDATE } from "@monitor/util";
 import { compare, hash } from "bcrypt";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import fp from "fastify-plugin";
@@ -18,6 +19,7 @@ const local = fp((app: FastifyInstance, _: {}, done: () => void) => {
           username,
           password: hashedPass,
         });
+        app.broadcast(USER_UPDATE, {});
         const jwt = app.jwt.sign(
           { id: user._id!.toString() },
           { expiresIn: TOKEN_EXPIRES_IN }

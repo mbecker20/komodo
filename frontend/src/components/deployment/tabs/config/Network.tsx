@@ -4,12 +4,9 @@ import Selector from "../../../util/menu/Selector";
 import { useConfig } from "./Provider";
 
 const Network: Component<{}> = (p) => {
-  const { deployment, setDeployment, networks } = useConfig();
+  const { deployment, setDeployment, networks, userCanUpdate } = useConfig();
   return (
-    <Flex
-      class="config-item shadow"
-      justifyContent="space-between"
-    >
+    <Flex class="config-item shadow" justifyContent="space-between" alignItems="center">
       <h1>network</h1>
       <Selector
         targetClass="blue"
@@ -17,6 +14,7 @@ const Network: Component<{}> = (p) => {
         selected={deployment.network || "bridge"}
         onSelect={(network) => setDeployment("network", network)}
         position="bottom right"
+        disabled={!userCanUpdate()}
       />
     </Flex>
   );

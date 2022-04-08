@@ -6,7 +6,7 @@ import Grid from "../../../util/layout/Grid";
 import { useConfig } from "./Provider";
 
 const Env: Component<{}> = (p) => {
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   const onAdd = () => {
     setDeployment("environment", (environment: any) => [
       ...environment,
@@ -30,14 +30,19 @@ const Env: Component<{}> = (p) => {
           >
             <div>none</div>
           </Show>
-          <button class="green" onClick={onAdd}>
-            <Icon type="plus" />
-          </button>
+          <Show when={userCanUpdate()}>
+            <button class="green" onClick={onAdd}>
+              <Icon type="plus" />
+            </button>
+          </Show>
         </Flex>
       </Flex>
       <For each={deployment.environment}>
         {(_, index) => (
-          <Flex justifyContent="space-between" alignItems="center">
+          <Flex
+            justifyContent={userCanUpdate() ? "space-between" : undefined}
+            alignItems="center"
+          >
             <Input
               placeholder="variable"
               value={deployment.environment![index()].variable}
@@ -50,6 +55,7 @@ const Env: Component<{}> = (p) => {
                   value.toUpperCase().replaceAll(" ", "_")
                 )
               }
+              disabled={!userCanUpdate()}
             />
             {" : "}
             <Input
@@ -59,10 +65,13 @@ const Env: Component<{}> = (p) => {
               onEdit={(value) =>
                 setDeployment("environment", index(), "value", value)
               }
+              disabled={!userCanUpdate()}
             />
-            <button class="red" onClick={() => onRemove(index())}>
-              <Icon type="minus" />
-            </button>
+            <Show when={userCanUpdate()}>
+              <button class="red" onClick={() => onRemove(index())}>
+                <Icon type="minus" />
+              </button>
+            </Show>
           </Flex>
         )}
       </For>

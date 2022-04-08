@@ -1,34 +1,31 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../../state/StateProvider";
-import { useToggle } from "../../../../util/hooks";
+import { useUser } from "../../../../state/UserProvider";
+// import { useToggle } from "../../../../util/hooks";
 import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Selector from "../../../util/menu/Selector";
 import { useConfig } from "./Provider";
 
 const Image: Component<{}> = (p) => {
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   const { builds } = useAppState();
-  const [show, toggle] = useToggle();
+  // const [show, toggle] = useToggle();
   return (
-    <Flex
-      class="config-item shadow"
-      justifyContent="space-between"
-    >
+    <Flex class="config-item shadow" justifyContent="space-between">
       <h1>{deployment.buildID ? "build" : "image"}</h1>
-      <Flex>
+      <Flex alignItems="center">
         <Show when={!deployment.buildID}>
-          <Flex>
-            <Input
-              placeholder="image"
-              spellcheck={false}
-              value={deployment.image || ""}
-              style={{ width: "12rem" }}
-              onEdit={(value) => setDeployment("image", value)}
-            />
-          </Flex>
+          <Input
+            placeholder="image"
+            spellcheck={false}
+            value={deployment.image || ""}
+            style={{ width: userCanUpdate() && "12rem" }}
+            onEdit={(value) => setDeployment("image", value)}
+            disabled={!userCanUpdate()}
+          />
         </Show>
-        <Show when={builds.loaded()}>
+        <Show when={builds.loaded() && (userCanUpdate() || deployment.buildID)}>
           <Selector
             targetClass="blue"
             selected={
@@ -49,6 +46,7 @@ const Image: Component<{}> = (p) => {
               );
             }}
             position="bottom right"
+            disabled={!userCanUpdate()}
           />
         </Show>
       </Flex>
