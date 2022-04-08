@@ -39,6 +39,20 @@ export async function getBuildActionState(buildID: string) {
   );
 }
 
+export async function addOwnerToBuild(
+  buildID: string,
+  username: string
+) {
+  return await client.post(`/api/build/${buildID}/${username}`);
+}
+
+export async function removeOwnerFromBuild(
+  buildID: string,
+  username: string
+) {
+  return await client.delete(`/api/build/${buildID}/${username}`);
+}
+
 export async function getDeployments(query?: { serverID?: string }) {
   return await client.get<Deployments>(
     "/api/deployments" + generateQuery(query)

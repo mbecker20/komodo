@@ -8,29 +8,40 @@ import { useConfig } from "../Provider";
 
 const Git: Component<{}> = (p) => {
   const { githubAccounts } = useAppState();
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   return (
     <Grid class="config-item shadow">
       <h1>github config</h1>
-      <Flex justifyContent="space-between" alignItems="center">
-        <div>repo</div>
+      <Flex
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+        alignItems="center"
+      >
+        <h2>repo: </h2>
         <Input
           placeholder="ie. solidjs/solid"
           value={deployment.repo || ""}
           onEdit={(value) => setDeployment("repo", value)}
+          disabled={!userCanUpdate()}
         />
       </Flex>
-      <Flex justifyContent="space-between" alignItems="center">
-        <div>branch</div>
+      <Flex
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+        alignItems="center"
+      >
+        <h2>branch: </h2>
         <Input
           placeholder="defaults to main"
           value={deployment.branch || ""}
           onEdit={(value) => setDeployment("branch", value)}
+          disabled={!userCanUpdate()}
         />
       </Flex>
       <Show when={githubAccounts() && githubAccounts()!.length > 0}>
-        <Flex justifyContent="space-between" alignItems="center">
-          <div>github account</div>
+        <Flex
+          justifyContent={userCanUpdate() ? "space-between" : undefined}
+          alignItems="center"
+        >
+          <h2>github account: </h2>
           <Selector
             targetClass="blue"
             selected={deployment.githubAccount || "none"}
@@ -42,6 +53,7 @@ const Git: Component<{}> = (p) => {
               );
             }}
             position="bottom right"
+            disabled={!userCanUpdate()}
           />
         </Flex>
       </Show>

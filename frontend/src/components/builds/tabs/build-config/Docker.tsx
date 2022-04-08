@@ -10,31 +10,45 @@ import { useConfig } from "../Provider";
 
 const Docker: Component<{}> = (p) => {
   const { dockerAccounts } = useAppState();
-  const { build, setBuild } = useConfig();
+  const { build, setBuild, userCanUpdate } = useConfig();
   return (
     <Grid class="config-item shadow">
       <h1>docker build</h1> {/* checkbox here? */}
-      <Flex justifyContent="space-between" alignItems="center">
-        <div>build path</div>
+      <Flex
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+        alignItems="center"
+      >
+        <h2>build path: </h2>
         <Input
           placeholder="from root of repo"
           value={build.dockerBuildArgs?.buildPath || ""}
           onEdit={(buildPath) => setBuild("dockerBuildArgs", { buildPath })}
+          disabled={!userCanUpdate()}
         />
       </Flex>
-      <Flex justifyContent="space-between" alignItems="center">
-        <div>dockerfile path</div>
+      <Flex
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+        alignItems="center"
+      >
+        <h2>dockerfile path: </h2>
         <Input
           placeholder="from root of build path"
-          value={build.dockerBuildArgs?.dockerfilePath || ""}
+          value={
+            build.dockerBuildArgs?.dockerfilePath ||
+            (userCanUpdate() ? "" : "./dockerfile")
+          }
           onEdit={(dockerfilePath) =>
             setBuild("dockerBuildArgs", { dockerfilePath })
           }
+          disabled={!userCanUpdate()}
         />
       </Flex>
       <Show when={dockerAccounts() && dockerAccounts()!.length > 0}>
-        <Flex justifyContent="space-between" alignItems="center">
-          <div>account</div>
+        <Flex
+          justifyContent={userCanUpdate() ? "space-between" : undefined}
+          alignItems="center"
+        >
+          <h2>account: </h2>
           <Selector
             targetClass="blue"
             selected={build.dockerAccount || "none"}
@@ -46,6 +60,7 @@ const Docker: Component<{}> = (p) => {
               );
             }}
             position="bottom right"
+            disabled={!userCanUpdate()}
           />
         </Flex>
       </Show>

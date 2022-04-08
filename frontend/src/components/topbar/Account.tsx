@@ -25,9 +25,9 @@ const Account: Component<{ close: () => void }> = (p) => {
           manage users
         </button>
       </Show>
-      <ConfirmButton onConfirm={logout} color="red">
+      <button onClick={logout} class="red">
         log out
-      </ConfirmButton>
+      </button>
     </Grid>
   );
 };

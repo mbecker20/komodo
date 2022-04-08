@@ -44,7 +44,7 @@ const Config: Component<{}> = (p) => {
                 </Grid>
               ),
             },
-            {
+            (userCanUpdate() || deployment.repo ? true : false) && {
               title: "repo mount",
               element: (
                 <Grid class="config-items scroller">
@@ -58,7 +58,7 @@ const Config: Component<{}> = (p) => {
             userCanUpdate() && {
               title: "collaborators",
               element: (
-                <Grid class="config-items scroller">
+                <Grid class="config-items scroller" style={{ height: "100%" }}>
                   <Owners />
                 </Grid>
               ),

@@ -1,23 +1,36 @@
 import { Build, Update } from "@monitor/types";
-import { Component, createContext, createEffect, onCleanup, useContext } from "solid-js";
+import {
+  Component,
+  createContext,
+  createEffect,
+  onCleanup,
+  useContext,
+} from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
 import { ADD_UPDATE, UPDATE_BUILD } from "../../../state/actions";
 import { useAppState } from "../../../state/StateProvider";
+import { useUser } from "../../../state/UserProvider";
 import { getBuild } from "../../../util/query";
 
-type ConfigBuild = Build & { loaded: boolean; updated: boolean; saving: boolean };
+type ConfigBuild = Build & {
+  loaded: boolean;
+  updated: boolean;
+  saving: boolean;
+};
 
 type State = {
   build: DeepReadonly<ConfigBuild>;
   setBuild: SetStoreFunction<ConfigBuild>;
   reset: () => void;
   save: () => void;
+  userCanUpdate: () => boolean;
 };
 
 const context = createContext<State>();
 
 export const ConfigProvider: Component<{}> = (p) => {
   const { ws, selected, builds } = useAppState();
+  const { permissions, username } = useUser();
   const [build, set] = createStore({
     ...builds.get(selected.id())!,
     loaded: false,
@@ -31,7 +44,7 @@ export const ConfigProvider: Component<{}> = (p) => {
   };
 
   const load = () => {
-    console.log("load server");
+    console.log("load build");
     getBuild(selected.id()).then((build) => {
       set({
         ...build,
@@ -44,7 +57,7 @@ export const ConfigProvider: Component<{}> = (p) => {
         githubAccount: build.githubAccount,
         loaded: true,
         updated: false,
-        saving: false
+        saving: false,
       });
     });
   };
@@ -55,23 +68,31 @@ export const ConfigProvider: Component<{}> = (p) => {
     ws.send(UPDATE_BUILD, { build });
   };
 
-  const unsub = ws.subscribe(
-    [ADD_UPDATE],
-    ({ update }: { update: Update }) => {
-			if (update.buildID === selected.id()) {
-				if ([UPDATE_BUILD].includes(update.operation)) {
-					load();
-				}
-			}
-		}
-  );
-	onCleanup(unsub);
+  const unsub = ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
+    if (update.buildID === selected.id()) {
+      if ([UPDATE_BUILD].includes(update.operation)) {
+        load();
+      }
+    }
+  });
+  onCleanup(unsub);
+
+  const userCanUpdate = () => {
+    if (permissions() > 1) {
+      return true;
+    } else if (permissions() > 0 && build.owners.includes(username()!)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
 
   const state = {
     build,
     setBuild,
     reset: load,
     save,
+    userCanUpdate,
   };
   return <context.Provider value={state}>{p.children}</context.Provider>;
 };

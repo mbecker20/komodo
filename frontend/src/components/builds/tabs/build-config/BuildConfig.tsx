@@ -9,7 +9,7 @@ import { useConfig } from "../Provider";
 import Loading from "../../../util/loading/Loading";
 
 const BuildConfig: Component<{}> = (p) => {
-  const { build, reset, save } = useConfig();
+  const { build, reset, save, userCanUpdate } = useConfig();
   return (
     <Show when={build.loaded}>
       <Grid class="config">
@@ -17,7 +17,7 @@ const BuildConfig: Component<{}> = (p) => {
           <Docker />
           <CliBuild />
         </Grid>
-        <Show when={build.updated}>
+        <Show when={userCanUpdate() && build.updated}>
           <Show
             when={!build.saving}
             fallback={

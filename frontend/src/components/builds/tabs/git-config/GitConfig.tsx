@@ -1,5 +1,4 @@
 import { Component, Show } from "solid-js";
-import { combineClasses } from "../../../../util/helpers";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Icon from "../../../util/Icon";
 import Flex from "../../../util/layout/Flex";
@@ -10,7 +9,7 @@ import Git from "./Git";
 import OnClone from "./OnClone";
 
 const GitConfig: Component<{}> = (p) => {
-  const { build, reset, save } = useConfig();
+  const { build, reset, save, userCanUpdate } = useConfig();
   return (
     <Show when={build.loaded}>
       <Grid class="config">
@@ -18,7 +17,7 @@ const GitConfig: Component<{}> = (p) => {
           <Git />
           <OnClone />
         </Grid>
-        <Show when={build.updated}>
+        <Show when={userCanUpdate() && build.updated}>
           <Show
             when={!build.saving}
             fallback={

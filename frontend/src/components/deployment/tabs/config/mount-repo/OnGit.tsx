@@ -5,15 +5,18 @@ import Grid from "../../../../util/layout/Grid";
 import { useConfig } from "../Provider";
 
 export const OnClone: Component<{}> = (p) => {
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   return (
     <Grid class="config-item shadow">
       <h1>on clone</h1>
-      <Flex alignItems="center" justifyContent="space-between">
-        path:
+      <Flex
+        alignItems="center"
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+      >
+        <h2>path:</h2>
         <Input
           placeholder="relative to repo"
-          value={deployment.onClone?.path || ""}
+          value={deployment.onClone?.path || (userCanUpdate() ? "" : "/")}
           onEdit={(path) => {
             if (
               path.length === 0 &&
@@ -25,10 +28,14 @@ export const OnClone: Component<{}> = (p) => {
             }
             setDeployment("onClone", { path });
           }}
+          disabled={!userCanUpdate()}
         />
       </Flex>
-      <Flex alignItems="center" justifyContent="space-between">
-        command:
+      <Flex
+        alignItems="center"
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+      >
+        <h2>command:</h2>
         <Input
           placeholder="command"
           value={deployment.onClone?.command || ""}
@@ -43,6 +50,7 @@ export const OnClone: Component<{}> = (p) => {
             }
             setDeployment("onClone", { command });
           }}
+          disabled={!userCanUpdate()}
         />
       </Flex>
     </Grid>
@@ -50,12 +58,15 @@ export const OnClone: Component<{}> = (p) => {
 };
 
 export const OnPull: Component<{}> = (p) => {
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
   return (
     <Grid class="config-item shadow">
       <h1>on pull</h1>
-      <Flex alignItems="center" justifyContent="space-between">
-        path:
+      <Flex
+        alignItems="center"
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+      >
+        <h2>path:</h2>
         <Input
           placeholder="relative to repo"
           value={deployment.onPull?.path || ""}
@@ -70,10 +81,14 @@ export const OnPull: Component<{}> = (p) => {
             }
             setDeployment("onPull", { path });
           }}
+          disabled={!userCanUpdate()}
         />
       </Flex>
-      <Flex alignItems="center" justifyContent="space-between">
-        command:
+      <Flex
+        alignItems="center"
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+      >
+        <h2>command:</h2>
         <Input
           placeholder="command"
           value={deployment.onPull?.command || ""}
@@ -88,6 +103,7 @@ export const OnPull: Component<{}> = (p) => {
             }
             setDeployment("onPull", { command });
           }}
+          disabled={!userCanUpdate()}
         />
       </Flex>
     </Grid>
