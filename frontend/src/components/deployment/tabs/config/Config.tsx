@@ -26,6 +26,7 @@ const Config: Component<{}> = (p) => {
         <Tabs
           containerStyle={{ height: "100%" }}
           tabsGap="0rem"
+          localStorageKey="deployment-config-tab"
           tabs={[
             {
               title: "container",

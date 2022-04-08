@@ -4,6 +4,7 @@ const ConfirmButton: Component<{
   onConfirm?: () => void;
   color?: "red" | "green" | "blue" | "orange" | "grey";
   style?: JSX.CSSProperties;
+  confirmText?: string;
 }> = (p) => {
   const [confirm, set] = createSignal(false);
 
@@ -17,10 +18,10 @@ const ConfirmButton: Component<{
         if (confirm()) {
           p.onConfirm && p.onConfirm();
         }
-        set(confirm => !confirm);
+        set((confirm) => !confirm);
       }}
     >
-      {confirm() ? "confirm" : p.children}
+      {confirm() ? p.confirmText || "confirm" : p.children}
     </button>
   );
 };

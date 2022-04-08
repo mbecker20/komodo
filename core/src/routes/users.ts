@@ -9,10 +9,13 @@ const users = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.status(403);
       res.send("not authorized");
     }
-    const { username } = req.query as { username: string };
+    const { username, onlyUsers } = req.query as {
+      username: string;
+      onlyUsers: boolean;
+    };
     const users = await app.users.find(
       filterOutUndefined({
-        permissions: { $lt: 2 },
+        permissions: onlyUsers ? { $lt: 2, $gt: 0 } : { $lt: 2 },
         username: username
           ? {
               $regex: `.*${username}.*`,

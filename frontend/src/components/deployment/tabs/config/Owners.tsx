@@ -16,12 +16,12 @@ import { useConfig } from "./Provider";
 
 const Owners: Component<{}> = (p) => {
   const { deployment } = useConfig();
-  const { permissions } = useUser();
+  const { permissions, username } = useUser();
   const [userSearch, setUserSearch] = createSignal("");
   const [users, setUsers] = createSignal<User[]>([]);
   createEffect(() => {
     if (userSearch().length > 0) {
-      getUsers(userSearch()).then((users) => {
+      getUsers(userSearch(), true).then((users) => {
         setUsers(
           users.filter((user) => !deployment.owners.includes(user.username))
         );
@@ -55,6 +55,7 @@ const Owners: Component<{}> = (p) => {
                     pushNotification("good", "owner added to deployment");
                     setUserSearch("");
                   }}
+                  confirmText="add user"
                 >
                   {user.username}
                 </ConfirmButton>
@@ -68,7 +69,10 @@ const Owners: Component<{}> = (p) => {
       <For each={deployment.owners}>
         {(owner) => (
           <Flex alignItems="center" justifyContent="space-between">
-            <div class="big-text">{owner}</div>
+            <div class="big-text">
+              {owner}
+              {owner === username() && " ( you )"}
+            </div>
             <Show when={permissions() > 1}>
               <ConfirmButton
                 color="red"

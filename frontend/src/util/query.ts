@@ -101,8 +101,11 @@ export async function getDockerAccounts() {
   return await client.get<string[]>("/api/accounts/docker");
 }
 
-export async function getUsers(username?: string) {
-  return await client.get<User[]>("/api/users" + generateQuery({ username }));
+export async function getUsers(username?: string, onlyUsers?: boolean) {
+  return await client.get<User[]>(
+    "/api/users" +
+      generateQuery({ username, onlyUsers: onlyUsers ? "true" : undefined })
+  );
 }
 
 export async function updateUser(body: {
