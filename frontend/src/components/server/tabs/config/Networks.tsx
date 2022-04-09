@@ -62,7 +62,9 @@ const Network: Component<{ network: NetworkType }> = (p) => {
       class="grey-no-hover"
       alignItems="center"
       justifyContent="space-between"
-      grey-no-hover
+      style={{
+        padding: "0.5rem",
+      }}
     >
       <div>{p.network.name}</div>
       <ConfirmButton

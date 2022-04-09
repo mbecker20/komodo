@@ -11,7 +11,7 @@ import Updates from "./Updates";
 export const TOPBAR_HEIGHT = 40;
 
 const Topbar: Component = () => {
-  const { sidebar } = useAppState();
+  const { sidebar, selected } = useAppState();
   const [menu, setMenu] = createSignal<"updates" | "account">();
   const close = () => setMenu(undefined);
   return (
@@ -26,7 +26,9 @@ const Topbar: Component = () => {
         <button onClick={sidebar.toggle}>
           <Icon type="menu" width="1.5rem" />
         </button>
-        <div class={s.Monitor}>monitor</div>
+        <div class={s.Monitor} onClick={() => selected.set("", "home")}>
+          monitor
+        </div>
       </Flex>
       {/* left side */}
       <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>

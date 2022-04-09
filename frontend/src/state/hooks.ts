@@ -15,7 +15,7 @@ import {
 import { State } from "./StateProvider";
 
 const pages: PageType[] = ["deployment", "server", "build", "users"];
-type PageType = "deployment" | "server" | "build" | "users";
+type PageType = "deployment" | "server" | "build" | "users" | "home";
 
 export function useSelected({ servers, builds, deployments }: State) {
   const [_type, id] = location.pathname.split("/").filter((val) => val);
@@ -26,16 +26,23 @@ export function useSelected({ servers, builds, deployments }: State) {
   const [selected, setSelected] = createSignal<{
     id: string;
     type: PageType;
-  }>({ id: id || "", type: type || "deployment" });
+  }>({ id: id || "", type: type || "home" });
 
   const set = (id: string, type: PageType) => {
     setSelected({ id, type });
-    history.pushState({ id, type }, "", `${location.origin}/${type}/${id}`);
+    if (type === "home") {
+      history.pushState({ id, type }, "", `${location.origin}`);
+    } else {
+      history.pushState({ id, type }, "", `${location.origin}/${type}/${id}`);
+    }
   };
 
   createEffect(() => {
     if (firstLoad()) {
-      if (selected().type === "deployment" && deployments.loaded()) {
+      if (selected().type === "home") {
+        history.replaceState({ id: "", type: "home" }, "", "/");
+        setFirstLoad(false);
+      } else if (selected().type === "deployment" && deployments.loaded()) {
         const [type, id] = location.pathname.split("/").filter((val) => val);
         if (type !== selected().type || id !== selected().id) {
           history.replaceState(

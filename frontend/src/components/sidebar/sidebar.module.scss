@@ -34,7 +34,7 @@
 }
 
 .ServerButton:hover {
-	background-color: rgba(c.$lightblue, 0.7);
+	background-color: rgba(c.$lightblue, 0.5);
 }
 
 .ServerButton:global(.selected):hover {
@@ -49,7 +49,7 @@
 }
 
 .DropdownItem:hover {
-	background-color: rgba(c.$lightblue, 0.7);
+	background-color: rgba(c.$lightblue, 0.5);
 }
 
 .DropdownItem:global(.selected):hover {
