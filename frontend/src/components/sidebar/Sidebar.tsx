@@ -37,7 +37,7 @@ const Sidebar: Component<{}> = () => {
                 }}
               >
                 <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
-                <Show when={permissions() >= 2}>
+                <Show when={permissions() > 1}>
                   <AddServer />
                 </Show>
               </Grid>

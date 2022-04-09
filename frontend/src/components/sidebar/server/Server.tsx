@@ -13,7 +13,7 @@ import NewDeployment from "./NewDeployment";
 
 const Server: Component<{ id: string }> = (p) => {
   const { servers, deployments, selected } = useAppState();
-  const { permissions } = useUser();
+  const { permissions, username } = useUser();
   const server = () => servers.get(p.id);
   const deploymentIDs = createMemo(() => {
     return (
@@ -65,7 +65,12 @@ const Server: Component<{ id: string }> = (p) => {
             class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}
           >
             <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
-            <Show when={permissions() >= 1}>
+            <Show
+              when={
+                permissions() > 1 ||
+                (permissions() > 0 && server()!.owners.includes(username()!))
+              }
+            >
               <NewDeployment serverID={p.id} />
             </Show>
           </Grid>

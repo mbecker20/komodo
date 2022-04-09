@@ -3,33 +3,33 @@ import { Component, createEffect, createSignal, For, Show } from "solid-js";
 import { pushNotification } from "../../..";
 import { useUser } from "../../../state/UserProvider";
 import {
-  addOwnerToBuild,
+  addOwnerToServer,
   getUsers,
-  removeOwnerFromBuild,
+  removeOwnerFromServer,
 } from "../../../util/query";
 import ConfirmButton from "../../util/ConfirmButton";
 import Input from "../../util/Input";
 import Flex from "../../util/layout/Flex";
 import Grid from "../../util/layout/Grid";
 import Menu from "../../util/menu/Menu";
-import { useConfig } from "./Provider";
+import { useConfig } from "./config/Provider";
 
 const Owners: Component<{}> = (p) => {
-  const { build } = useConfig();
+  const { server } = useConfig();
   const { permissions, username } = useUser();
   const [userSearch, setUserSearch] = createSignal("");
   const [users, setUsers] = createSignal<User[]>([]);
   createEffect(() => {
     if (userSearch().length > 0) {
       getUsers(userSearch(), true).then((users) => {
-        setUsers(users.filter((user) => !build.owners.includes(user.username)));
+        setUsers(users.filter((user) => !server.owners.includes(user.username)));
       });
     } else {
       setUsers([]);
     }
   });
   return (
-    <Show when={build.loaded}>
+    <Show when={server.loaded}>
       <Grid class="config">
         <Grid class="config-items scroller" style={{ height: "100%" }}>
           <Grid class="config-item shadow">
@@ -55,8 +55,8 @@ const Owners: Component<{}> = (p) => {
                           "justify-content": "flex-start",
                         }}
                         onConfirm={async () => {
-                          await addOwnerToBuild(build._id!, user.username);
-                          pushNotification("good", "owner added to build");
+                          await addOwnerToServer(server._id!, user.username);
+                          pushNotification("good", "owner added to server");
                           setUserSearch("");
                         }}
                         confirmText="add user"
@@ -70,7 +70,7 @@ const Owners: Component<{}> = (p) => {
               }
               style={{ width: "12rem" }}
             />
-            <For each={build.owners}>
+            <For each={server.owners}>
               {(owner) => (
                 <Flex alignItems="center" justifyContent="space-between">
                   <div class="big-text">
@@ -81,7 +81,7 @@ const Owners: Component<{}> = (p) => {
                     <ConfirmButton
                       color="red"
                       onConfirm={async () => {
-                        await removeOwnerFromBuild(build._id!, owner);
+                        await removeOwnerFromServer(server._id!, owner);
                         pushNotification(
                           "good",
                           "user removed from collaborators"

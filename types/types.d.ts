@@ -50,6 +50,7 @@ export type Server = {
   status?: "OK" | "Incorrect Password" | "Could Not Be Reached";
   enabled: boolean;
   isCore?: boolean;
+  owners: string[];
 };
 
 export type DockerBuildArgs = {

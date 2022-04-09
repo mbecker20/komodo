@@ -10,10 +10,17 @@ import Grid from "../util/layout/Grid";
 
 const Actions: Component<{}> = (p) => {
   const { ws, servers, selected } = useAppState();
-  const { permissions } = useUser();
+  const { permissions, username } = useUser();
   const server = () => servers.get(selected.id())!;
   return (
-    <Show when={server() && server().status === "OK" && permissions() >= 2}>
+    <Show
+      when={
+        server() &&
+        server().status === "OK" &&
+        (permissions() > 1 ||
+          (permissions() > 0 && server().owners.includes(username()!)))
+      }
+    >
       <Grid class="card shadow">
         <h1>actions</h1>
         <Flex class="action shadow">

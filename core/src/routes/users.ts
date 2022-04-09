@@ -48,6 +48,7 @@ const users = fp((app: FastifyInstance, _: {}, done: () => void) => {
     await app.users.findByIdAndDelete(id);
     app.deployments.updateMany({}, { $pull: { owners: toDelete.username } });
     app.builds.updateMany({}, { $pull: { owners: toDelete.username } });
+    app.servers.updateMany({}, { $pull: { owners: toDelete.username } });
     app.broadcast(USER_UPDATE, {});
     res.send(`deleted user ${id} (${toDelete.username})`);
   });

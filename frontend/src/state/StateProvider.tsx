@@ -3,6 +3,7 @@ import {
   Component,
   createContext,
   createResource,
+  onCleanup,
   Resource,
   useContext,
 } from "solid-js";
@@ -69,7 +70,7 @@ export const AppStateProvider: Component<{}> = (p) => {
   const selected = useSelected(state);
   const ws = socket(user(), state, selected);
 
-  ws.subscribe([USER_UPDATE], reloadUser);
+  onCleanup(ws.subscribe([USER_UPDATE], reloadUser));
 
   return (
     <context.Provider

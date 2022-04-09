@@ -33,6 +33,7 @@ const Content: Component<{ close: () => void }> = (p) => {
     name: "",
     address: "",
     enabled: true,
+    owners: [],
   });
   onMount(() => nameInput?.focus());
   const create = () => {

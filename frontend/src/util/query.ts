@@ -103,6 +103,14 @@ export async function getServer(id: string) {
   return await client.get<Server>(`/api/server/${id}`);
 }
 
+export async function addOwnerToServer(serverID: string, username: string) {
+  return await client.post(`/api/server/${serverID}/${username}`);
+}
+
+export async function removeOwnerFromServer(serverID: string, username: string) {
+  return await client.delete(`/api/server/${serverID}/${username}`);
+}
+
 export async function getNetworks(serverID: string) {
   return await client.get<Network[]>("/api/networks/" + serverID);
 }

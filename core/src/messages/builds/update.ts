@@ -37,11 +37,14 @@ async function updateBuild(
       if (build.repo) await cloneRepo(app, user, build);
     } else if (build.pullName !== preBuild.pullName) {
       if (await pathExists(BUILD_REPO_PATH + preBuild.pullName)) {
-        await move(BUILD_REPO_PATH + preBuild.pullName, BUILD_REPO_PATH + build.pullName);
+        await move(
+          BUILD_REPO_PATH + preBuild.pullName,
+          BUILD_REPO_PATH + build.pullName
+        );
       }
       // maybe do something more with deployments
     }
-    (build.owners as any) = false;
+    (build.owners as any) = undefined;
     await app.builds.updateOne({ _id: build._id }, build);
     addBuildUpdate(
       app,

@@ -10,7 +10,14 @@ async function createDeployment(
   user: User,
   { deployment }: { deployment: Deployment }
 ) {
-  if (user.permissions! < 1) {
+  const server = await app.servers.findById(deployment.serverID!);
+  if (!server) {
+    return;
+  }
+  if (
+    user.permissions! < 1 ||
+    (user.permissions! < 2 && !server.owners.includes(user.username))
+  ) {
     addSystemUpdate(
       app,
       CREATE_DEPLOYMENT,

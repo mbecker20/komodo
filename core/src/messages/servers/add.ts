@@ -11,6 +11,7 @@ async function addServer(app: FastifyInstance, user: User, { server }: { server:
 	if (server.address[server.address.length - 1] === "/") {
 		server.address = server.address.slice(0, server.address.length - 1);
 	}
+	server.owners = [user.username];
 	const created = await app.servers.create(server);
 	addServerUpdate(
 		app,

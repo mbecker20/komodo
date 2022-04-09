@@ -24,7 +24,7 @@ const BuildTabs: Component<{}> = (p) => {
     <Show when={build()}>
       <ConfigProvider>
         <Tabs
-          containerClass="card tabs shadow"
+          containerClass="card shadow"
           tabs={[
             {
               title: "repo",

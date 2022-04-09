@@ -7,7 +7,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
-import { ADD_UPDATE, UPDATE_BUILD } from "../../../state/actions";
+import { ADD_UPDATE, BUILD_OWNER_UPDATE, UPDATE_BUILD } from "../../../state/actions";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { getBuild } from "../../../util/query";
@@ -68,14 +68,27 @@ export const ConfigProvider: Component<{}> = (p) => {
     ws.send(UPDATE_BUILD, { build });
   };
 
-  const unsub = ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
-    if (update.buildID === selected.id()) {
-      if ([UPDATE_BUILD].includes(update.operation)) {
-        load();
+  onCleanup(
+    ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
+      if (update.buildID === selected.id()) {
+        if ([UPDATE_BUILD].includes(update.operation)) {
+          load();
+        }
       }
-    }
-  });
-  onCleanup(unsub);
+    })
+  );
+
+  onCleanup(
+    ws.subscribe(
+      [BUILD_OWNER_UPDATE],
+      async ({ buildID }: { buildID: string }) => {
+        if (buildID === selected.id()) {
+          const build = await getBuild(selected.id());
+          set("owners", build.owners);
+        }
+      }
+    )
+  );
 
   const userCanUpdate = () => {
     if (permissions() > 1) {
