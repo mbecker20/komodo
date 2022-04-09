@@ -27,7 +27,13 @@ const Header: Component<{}> = (p) => {
     >
       <Grid gap="0.1rem">
         <h1>{deployment()!.name}</h1>
-        <div style={{ opacity: 0.8 }}>{server()!.name}</div>
+        <button
+          class="grey"
+          style={{ opacity: 0.8 }}
+          onClick={() => selected.set(deployment()?.serverID!, "server")}
+        >
+          {server()!.name}
+        </button>
       </Grid>
       <Flex alignItems="center">
         <div class={deploymentStatusClass(status())}>{status()}</div>

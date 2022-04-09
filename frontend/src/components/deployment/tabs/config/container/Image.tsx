@@ -47,6 +47,7 @@ const Image: Component<{}> = (p) => {
             }}
             position="bottom right"
             disabled={!userCanUpdate()}
+            useSearch
           />
         </Show>
       </Flex>

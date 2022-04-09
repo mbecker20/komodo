@@ -1,6 +1,15 @@
-import { Component, For, JSX, Show } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  For,
+  JSX,
+  onMount,
+  Show,
+} from "solid-js";
 import { useToggle } from "../../../util/hooks";
 import Icon from "../Icon";
+import Input from "../Input";
 import { Position } from "./helpers";
 import Menu from "./Menu";
 import s from "./menu.module.scss";
@@ -14,8 +23,14 @@ const Selector: Component<{
   disabled?: boolean;
   disabledClass?: string;
   disabledStyle?: JSX.CSSProperties;
+  useSearch?: boolean;
 }> = (p) => {
   const [show, toggle] = useToggle();
+  const [search, setSearch] = createSignal("");
+  let ref: HTMLInputElement | undefined;
+  createEffect(() => {
+    if (show()) ref?.focus();
+  });
   return (
     <Show
       when={!p.disabled}
@@ -27,7 +42,10 @@ const Selector: Component<{
     >
       <Menu
         show={show()}
-        close={toggle}
+        close={() => {
+          toggle();
+          setSearch("");
+        }}
         target={
           <button class={p.targetClass} onClick={toggle}>
             {p.selected}
@@ -35,20 +53,43 @@ const Selector: Component<{
           </button>
         }
         content={
-          <For each={p.items}>
-            {(item, index) => (
-              <button
-                onClick={() => {
-                  p.onSelect && p.onSelect(item, index());
-                  toggle();
+          <>
+            <Show when={p.useSearch}>
+              <Input
+                ref={ref}
+                placeholder="search"
+                value={search()}
+                onEdit={setSearch}
+                style={{ "text-align": "end" }}
+                onKeyDown={(e: any) => {
+                  if (e.key === "Escape") {
+                    toggle();
+                    setSearch("");
+                  }
                 }}
-                style={{ width: "100%", "justify-content": "flex-end" }}
-                class={s.SelectorItem}
-              >
-                {item}
-              </button>
-            )}
-          </For>
+              />
+            </Show>
+            <For
+              each={
+                p.useSearch
+                  ? p.items.filter((item) => item.includes(search()))
+                  : p.items
+              }
+            >
+              {(item, index) => (
+                <button
+                  onClick={() => {
+                    p.onSelect && p.onSelect(item, index());
+                    toggle();
+                  }}
+                  style={{ width: "100%", "justify-content": "flex-end" }}
+                  class={s.SelectorItem}
+                >
+                  {item}
+                </button>
+              )}
+            </For>
+          </>
         }
         position={p.position}
         padding="0.25rem"

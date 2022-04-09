@@ -1,5 +1,10 @@
 import { Collection } from "@monitor/types";
-import { createEffect, createResource, createSignal } from "solid-js";
+import {
+  createEffect,
+  createResource,
+  createSignal,
+  onCleanup,
+} from "solid-js";
 import { filterOutFromObj, keepOnlyInObj } from "../util/helpers";
 import {
   getBuilds,
@@ -14,6 +19,7 @@ type PageType = "deployment" | "server" | "build" | "users";
 
 export function useSelected({ servers, builds, deployments }: State) {
   const [_type, id] = location.pathname.split("/").filter((val) => val);
+  const [firstLoad, setFirstLoad] = createSignal(true);
   const type = (
     pages.includes(_type as PageType) ? _type : undefined
   ) as PageType;
@@ -24,54 +30,76 @@ export function useSelected({ servers, builds, deployments }: State) {
 
   const set = (id: string, type: PageType) => {
     setSelected({ id, type });
-    history.pushState({}, "", `${location.origin}/${type}/${id}`);
+    history.pushState({ id, type }, "", `${location.origin}/${type}/${id}`);
   };
 
   createEffect(() => {
-    if (selected().type === "deployment" && deployments.loaded()) {
-      if (!deployments.get(selected().id)) {
-        const id = deployments.ids()![0];
-        set(id, "deployment");
-      } else {
+    if (firstLoad()) {
+      if (selected().type === "deployment" && deployments.loaded()) {
         const [type, id] = location.pathname.split("/").filter((val) => val);
         if (type !== selected().type || id !== selected().id) {
-          history.replaceState({}, "", `${selected().type}/${selected().id}`);
+          history.replaceState(
+            { id, type },
+            "",
+            `${selected().type}/${selected().id}`
+          );
+          setFirstLoad(false);
         }
-      }
-    } else if (
-      selected().type === "server" &&
-      servers.loaded() &&
-      deployments.loaded()
-    ) {
-      if (!servers.get(selected().id)) {
-        const id = servers.ids()![0];
-        set(id, "server");
-      } else {
-        const [type, id] = location.pathname.split("/").filter((val) => val);
-        if (type !== selected().type || id !== selected().id) {
-          history.replaceState({}, "", `${selected().type}/${selected().id}`);
-        }
-      }
-    } else if (
-      selected().type === "build" &&
-      builds.loaded() &&
-      deployments.loaded()
-    ) {
-      if (!builds.get(selected().id)) {
-        const id = builds.ids()![0];
-        if (!id) {
-          set(deployments.ids()![0], "deployment");
+        setFirstLoad(false);
+      } else if (
+        selected().type === "server" &&
+        servers.loaded() &&
+        deployments.loaded()
+      ) {
+        if (!servers.get(selected().id)) {
+          const id = servers.ids()![0];
+          set(id, "server");
         } else {
-          set(id, "build");
+          const [type, id] = location.pathname.split("/").filter((val) => val);
+          if (type !== selected().type || id !== selected().id) {
+            history.replaceState(
+              { type, id },
+              "",
+              `${selected().type}/${selected().id}`
+            );
+            setFirstLoad(false);
+          }
         }
-      } else {
-        const [type, id] = location.pathname.split("/").filter((val) => val);
-        if (type !== selected().type || id !== selected().id) {
-          history.replaceState({}, "", `${selected().type}/${selected().id}`);
+        setFirstLoad(false);
+      } else if (
+        selected().type === "build" &&
+        builds.loaded() &&
+        deployments.loaded()
+      ) {
+        if (!builds.get(selected().id)) {
+          const id = builds.ids()![0];
+          if (!id) {
+            set(deployments.ids()![0], "deployment");
+          } else {
+            set(id, "build");
+          }
+        } else {
+          const [type, id] = location.pathname.split("/").filter((val) => val);
+          if (type !== selected().type || id !== selected().id) {
+            history.replaceState(
+              { id, type },
+              "",
+              `${selected().type}/${selected().id}`
+            );
+          }
         }
+        setFirstLoad(false);
       }
     }
   });
+
+  const popstate = (e: any) => {
+    setSelected({ id: e.state.id, type: e.state.type });
+  };
+
+  window.addEventListener("popstate", popstate);
+
+  onCleanup(() => window.removeEventListener("popstate", popstate));
 
   return {
     id: () => selected().id,

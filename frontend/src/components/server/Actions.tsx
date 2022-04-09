@@ -13,14 +13,7 @@ const Actions: Component<{}> = (p) => {
   const { permissions, username } = useUser();
   const server = () => servers.get(selected.id())!;
   return (
-    <Show
-      when={
-        server() &&
-        server().status === "OK" &&
-        (permissions() > 1 ||
-          (permissions() > 0 && server().owners.includes(username()!)))
-      }
-    >
+    <Show when={server() && server().status === "OK" && permissions() > 1}>
       <Grid class="card shadow">
         <h1>actions</h1>
         <Flex class="action shadow">

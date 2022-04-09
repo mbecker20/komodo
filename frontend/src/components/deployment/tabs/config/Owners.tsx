@@ -31,7 +31,7 @@ const Owners: Component<{}> = (p) => {
     }
   });
   return (
-    <Grid class="config-item shadow">
+    <Grid class="config-item shadow" gap="0.5rem">
       <Menu
         show={userSearch() ? true : false}
         close={() => setUserSearch("")}
@@ -68,7 +68,14 @@ const Owners: Component<{}> = (p) => {
       />
       <For each={deployment.owners}>
         {(owner) => (
-          <Flex alignItems="center" justifyContent="space-between">
+          <Flex
+            alignItems="center"
+            justifyContent="space-between"
+            class="grey-no-hover"
+            style={{
+              padding: "0.5rem",
+            }}
+          >
             <div class="big-text">
               {owner}
               {owner === username() && " ( you )"}

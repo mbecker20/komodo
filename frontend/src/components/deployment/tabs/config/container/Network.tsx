@@ -15,6 +15,7 @@ const Network: Component<{}> = (p) => {
         onSelect={(network) => setDeployment("network", network)}
         position="bottom right"
         disabled={!userCanUpdate()}
+        useSearch
       />
     </Flex>
   );
