@@ -39,24 +39,16 @@ export async function getBuildActionState(buildID: string) {
   );
 }
 
-export async function addOwnerToBuild(
-  buildID: string,
-  username: string
-) {
+export async function addOwnerToBuild(buildID: string, username: string) {
   return await client.post(`/api/build/${buildID}/${username}`);
 }
 
-export async function removeOwnerFromBuild(
-  buildID: string,
-  username: string
-) {
+export async function removeOwnerFromBuild(buildID: string, username: string) {
   return await client.delete(`/api/build/${buildID}/${username}`);
 }
 
-export async function getDeployments(query?: { serverID?: string }) {
-  return await client.get<Deployments>(
-    "/api/deployments" + generateQuery(query)
-  );
+export async function getDeployments() {
+  return await client.get<Deployments>("/api/deployments");
 }
 
 export async function getDeployment(deploymentID: string) {
@@ -107,7 +99,10 @@ export async function addOwnerToServer(serverID: string, username: string) {
   return await client.post(`/api/server/${serverID}/${username}`);
 }
 
-export async function removeOwnerFromServer(serverID: string, username: string) {
+export async function removeOwnerFromServer(
+  serverID: string,
+  username: string
+) {
   return await client.delete(`/api/server/${serverID}/${username}`);
 }
 

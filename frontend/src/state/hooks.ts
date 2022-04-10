@@ -43,14 +43,19 @@ export function useSelected({ servers, builds, deployments }: State) {
         history.replaceState({ id: "", type: "home" }, "", "/");
         setFirstLoad(false);
       } else if (selected().type === "deployment" && deployments.loaded()) {
-        const [type, id] = location.pathname.split("/").filter((val) => val);
-        if (type !== selected().type || id !== selected().id) {
-          history.replaceState(
-            { id, type },
-            "",
-            `${selected().type}/${selected().id}`
-          );
-          setFirstLoad(false);
+        if (!deployments.get(selected().id)) {
+          const id = deployments.ids()![0];
+          set(id, "deployment");
+        } else {
+          const [type, id] = location.pathname.split("/").filter((val) => val);
+          if (type !== selected().type || id !== selected().id) {
+            history.replaceState(
+              { type, id },
+              "",
+              `${selected().type}/${selected().id}`
+            );
+            setFirstLoad(false);
+          }
         }
         setFirstLoad(false);
       } else if (
@@ -69,7 +74,6 @@ export function useSelected({ servers, builds, deployments }: State) {
               "",
               `${selected().type}/${selected().id}`
             );
-            setFirstLoad(false);
           }
         }
         setFirstLoad(false);
@@ -123,8 +127,8 @@ export function useBuilds() {
   return useCollection(getBuilds);
 }
 
-export function useDeployments(query?: Parameters<typeof getDeployments>[0]) {
-  return useCollection(() => getDeployments(query));
+export function useDeployments() {
+  return useCollection(getDeployments);
 }
 
 export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {

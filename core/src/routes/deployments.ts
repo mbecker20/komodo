@@ -13,35 +13,73 @@ import {
   getPeripheryContainers,
 } from "../util/periphery/container";
 
+async function getDeployments(app: FastifyInstance, serverID: string) {
+  const server = await app.servers.findById(serverID);
+  if (!server) return {};
+  const deployments = await app.deployments.find(
+    { serverID: server._id },
+    "name containerName serverID owners repo"
+  );
+  const status = server.isCore
+    ? await deploymentStatusLocal(app)
+    : await getPeripheryContainers(server);
+  return intoCollection(
+    deployments.map((deployment) => ({
+      ...deployment,
+      status: status[deployment.containerName!] || "not deployed",
+    }))
+  );
+}
+
 const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
+  // app.get(
+  //   "/api/deployments",
+  //   { onRequest: [app.auth, app.userEnabled] },
+  //   async (req, res) => {
+  //     // returns the periphery deployments on the given serverID
+  //     // returns the core deployments if no serverID is specified
+  //     const { serverID } = req.query as { serverID?: string };
+  //     const server = serverID ? await app.servers.findById(serverID) : app.core;
+  //     if (!server) {
+  //       res.status(400);
+  //       res.send();
+  //       return;
+  //     }
+  //     const deployments = await app.deployments.find(
+  //       { serverID: server._id },
+  //       "name containerName serverID owners repo"
+  //     );
+  //     const status = server.isCore
+  //       ? await deploymentStatusLocal(app)
+  //       : await getPeripheryContainers(server);
+  //     res.send(
+  //       intoCollection(
+  //         deployments.map((deployment) => ({
+  //           ...deployment,
+  //           status: status[deployment.containerName!] || "not deployed",
+  //         }))
+  //       )
+  //     );
+  //   }
+  // );
+
   app.get(
     "/api/deployments",
     { onRequest: [app.auth, app.userEnabled] },
-    async (req, res) => {
-      // returns the periphery deployments on the given serverID
-      // returns the core deployments if no serverID is specified
-      const { serverID } = req.query as { serverID?: string };
-      const server = serverID ? await app.servers.findById(serverID) : app.core;
-      if (!server) {
-        res.status(400);
-        res.send();
-        return;
-      }
-      const deployments = await app.deployments.find(
-        { serverID: server._id },
-        "name containerName serverID owners repo"
-      );
-      const status = server.isCore
-        ? await deploymentStatusLocal(app)
-        : await getPeripheryContainers(server);
-      res.send(
-        intoCollection(
-          deployments.map((deployment) => ({
-            ...deployment,
-            status: status[deployment.containerName!] || "not deployed",
-          }))
+    async (_, res) => {
+      // returns all the deployments
+      const servers = await app.servers.find({});
+      const deployments = (
+        await Promise.all(
+          servers.map((server) => getDeployments(app, server._id!))
         )
-      );
+      ).reduce((acc, curr) => {
+        Object.keys(curr).forEach((id) => {
+          acc[id] = curr[id];
+        });
+        return acc;
+      }, {});
+      res.send(deployments);
     }
   );
 

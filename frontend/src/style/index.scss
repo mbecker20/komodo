@@ -1,9 +1,18 @@
 @use "colors" as c;
 @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Tajawal&display=swap");
 
 body {
   margin: 0;
-  font-family: "Chakra Petch", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  // font-family: "Chakra Petch", sans-serif;
+  // font-family: "Work Sans", sans-serif;
+  // font-family: 'Ubuntu Mono', monospace;
+  // font-family: "Tajawal", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
@@ -81,7 +90,6 @@ input::placeholder {
 .grey-no-hover {
   background-color: rgba(c.$grey, 0.8);
 }
-
 
 .grey {
   background-color: rgba(c.$grey, 0.8);
