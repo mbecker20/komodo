@@ -11,7 +11,7 @@ export type UserState = {
   user: () => User;
   setUser: Setter<false | User | undefined>;
   logout: () => void;
-  username: () => string | undefined;
+  username: () => string;
   permissions: () => number;
   loginStatus: () =>
     | "LOGGED_IN_ENABLED"
@@ -30,11 +30,7 @@ export const UserProvider: Component = (p) => {
     mutate(false);
   };
   const username = () => {
-    if (user()) {
-      return (user() as User).username;
-    } else {
-      return undefined;
-    }
+    return (user() as User)?.username!;
   };
   const loginStatus = createMemo(() => {
     const _user = user();

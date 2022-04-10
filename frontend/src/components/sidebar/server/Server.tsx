@@ -22,13 +22,6 @@ const Server: Component<{ id: string }> = (p) => {
     );
   });
   const [open, toggleOpen] = useLocalStorageToggle(p.id);
-  // createEffect(() => {
-  //   if (server() && !server()!.isCore) {
-  //     getDeployments({ serverID: p.id }).then((more) =>
-  //       deployments.addMany(more)
-  //     );
-  //   }
-  // });
   return (
     <Show when={server()}>
       <div class={combineClasses(s.Server, "shadow")}>
@@ -42,7 +35,7 @@ const Server: Component<{ id: string }> = (p) => {
         >
           <Flex>
             <Icon type="chevron-down" width="1rem" />
-            <h2>{server()?.name}</h2>
+            <h2 style={{ opacity: 0.7 }}>{server()?.name}</h2>
           </Flex>
           <div
             class={server()?.status === "OK" ? "green" : "red"}

@@ -11,7 +11,6 @@ const Account: Component<{ close: () => void }> = (p) => {
   const { username, permissions } = useUser();
   return (
     <Grid class={s.Account} placeItems="center end">
-      <div>{username()}</div>
       <div>permissions: {readablePermissions(permissions())}</div>
       <Show when={permissions() > 1}>
         <button

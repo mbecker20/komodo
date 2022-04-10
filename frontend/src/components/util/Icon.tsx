@@ -33,7 +33,8 @@ export type IconType =
   | "refresh"
   | "cut"
   | "fullscreen"
-  | "github";
+  | "github"
+  | "edit";
 
 const Icon: Component<{
   type: IconType;

@@ -47,8 +47,8 @@ const Home: Component<{}> = (p) => {
         <Show
           when={filteredDeploymentIds() && filteredDeploymentIds()!.length > 0}
         >
-          <Grid class="card shadow">
-            <h1>my deployments</h1>
+          <Grid gap="0.5rem" class="card shadow">
+            <h1 style={{ opacity: 0.5 }}>my deployments</h1>
             <For each={filteredDeploymentIds()}>
               {(id) => (
                 <button
@@ -71,7 +71,7 @@ const Home: Component<{}> = (p) => {
 
         <Show when={filteredServerIds() && filteredServerIds()!.length > 0}>
           <Grid class="card shadow">
-            <h1>my servers</h1>
+            <h1 style={{ opacity: 0.5 }}>my servers</h1>
             <For each={filteredServerIds()}>
               {(id) => (
                 <button
@@ -103,7 +103,7 @@ const Home: Component<{}> = (p) => {
 
         <Show when={filteredBuildIds() && filteredBuildIds()!.length > 0}>
           <Grid class="card shadow">
-            <h1>my builds</h1>
+            <h1 style={{ opacity: 0.5 }}>my builds</h1>
             <For each={filteredBuildIds()}>
               {(id) => (
                 <button

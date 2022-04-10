@@ -1,5 +1,6 @@
 import { Component, createSignal } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
+import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
 import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
@@ -12,6 +13,7 @@ export const TOPBAR_HEIGHT = 40;
 
 const Topbar: Component = () => {
   const { sidebar, selected } = useAppState();
+  const { username } = useUser();
   const [menu, setMenu] = createSignal<"updates" | "account">();
   const close = () => setMenu(undefined);
   return (
@@ -56,7 +58,8 @@ const Topbar: Component = () => {
                 menu() === "account" ? setMenu(undefined) : setMenu("account")
               }
             >
-              <Icon type="user" alt="account" width="1.5rem" />
+              {username()}
+              <Icon type="chevron-down" />
             </button>
           }
           content={<Account close={close} />}

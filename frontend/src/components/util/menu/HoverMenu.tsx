@@ -7,6 +7,7 @@ import {
   Show,
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
+import Flex from "../layout/Flex";
 import { getPositionClass } from "./helpers";
 import { Position } from "./helpers";
 import s from "./menu.module.scss";
@@ -17,7 +18,7 @@ const HoverMenu: Component<{
   position?: Position;
   padding?: string;
   contentStyle?: JSX.CSSProperties;
-
+  containerStyle?: JSX.CSSProperties;
 }> = (p) => {
   const [show, set] = createSignal(false);
   const [buffer, setBuffer] = createSignal(false);
@@ -33,12 +34,14 @@ const HoverMenu: Component<{
     }
   });
   return (
-    <div
+    <Flex
       class={s.HoverMenuTarget}
+      style={p.containerStyle}
       onMouseEnter={() => set(true)}
       onMouseLeave={() => set(false)}
       onTouchStart={() => set((show) => !show)}
       // onClick={(e) => e.stopPropagation()}
+      alignItems="center"
     >
       {p.target}
       <Show when={buffer()}>
@@ -60,7 +63,7 @@ const HoverMenu: Component<{
           {p.content}
         </div>
       </Show>
-    </div>
+    </Flex>
   );
 };
 
