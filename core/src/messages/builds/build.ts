@@ -15,12 +15,19 @@ import {
 } from "../../config";
 import { BUILDING } from "../../plugins/actionStates";
 import { addBuildUpdate } from "../../util/updates";
+import { WebSocket } from "ws";
+import { sendAlert } from "../../util/helpers";
 
 async function build(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { buildID, note }: { buildID: string; note?: string }
 ) {
+  if (app.buildActionStates.busy(buildID)) {
+    sendAlert(client, "bad", "build busy, try again in a bit");
+    return;
+  }
   const build = await app.builds.findById(buildID);
   if (!build) return;
   if (user.permissions! < 2 && !build.owners.includes(user.username)) {

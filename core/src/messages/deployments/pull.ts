@@ -2,20 +2,27 @@ import { User } from "@monitor/types";
 import { execute, mergeCommandLogError, PULL_DEPLOYMENT, pull } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { join } from "path";
+import { WebSocket } from "ws";
 import { DEPLOYMENT_REPO_PATH, PERMISSIONS_DENY_LOG, SYSTEM_OPERATOR } from "../../config";
+import { sendAlert } from "../../util/helpers";
 import { pullPeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
 
 async function pullDeploymentRepo(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { deploymentID }: { deploymentID: string }
 ) {
-	const deployment = await app.deployments.findById(deploymentID);
+  if (app.deployActionStates.busy(deploymentID)) {
+    sendAlert(client, "bad", "deployment busy, try again in a bit");
+    return;
+  }
+  const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) {
     return;
   }
-	if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
+  if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
     addDeploymentUpdate(
       app,
       deploymentID,
@@ -36,7 +43,10 @@ async function pullDeploymentRepo(
   app.deployActionStates.set(deploymentID, "pulling", true);
   app.broadcast(PULL_DEPLOYMENT, { deploymentID, complete: false });
   if (server.isCore) {
-    const pullCle = await pull(join(DEPLOYMENT_REPO_PATH, containerName!), branch);
+    const pullCle = await pull(
+      join(DEPLOYMENT_REPO_PATH, containerName!),
+      branch
+    );
     const onPullCle =
       onPull &&
       (await execute(

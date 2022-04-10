@@ -48,7 +48,7 @@ async function serverMessages(
       return true;
 
     case PRUNE_IMAGES:
-      await pruneServerImages(app, user, message);
+      await pruneServerImages(app, client, user, message);
       return true;
 
     case CREATE_NETWORK:
@@ -64,7 +64,7 @@ async function serverMessages(
       return true;
 
     case PRUNE_NETWORKS:
-      await pruneServerNetworks(app, user, message);
+      await pruneServerNetworks(app, client, user, message);
       return true;
 
     case GET_SERVER_STATS:

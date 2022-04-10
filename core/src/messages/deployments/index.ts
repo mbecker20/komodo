@@ -31,42 +31,47 @@ async function deploymentMessages(
   switch (message.type) {
     case CREATE_DEPLOYMENT:
       const created =
-        message.deployment && (await createDeployment(app, user, message));
+        message.deployment &&
+        (await createDeployment(app, client, user, message));
       if (created) {
-        app.broadcast(CREATE_DEPLOYMENT, { deployment: { ...created, status: "not deployed" } });
+        app.broadcast(CREATE_DEPLOYMENT, {
+          deployment: { ...created, status: "not deployed" },
+        });
       }
       return true;
 
     case DELETE_DEPLOYMENT:
-      message.deploymentID && (await deleteDeployment(app, user, message));
+      message.deploymentID &&
+        (await deleteDeployment(app, client, user, message));
       return true;
 
     case UPDATE_DEPLOYMENT:
       const updated =
-        message.deployment && (await updateDeployment(app, user, message));
+        message.deployment &&
+        (await updateDeployment(app, client, user, message));
       if (updated) {
         app.broadcast(UPDATE_DEPLOYMENT, { deployment: updated });
       }
       return true;
 
     case DEPLOY:
-      await deployDeployment(app, user, message);
+      await deployDeployment(app, client, user, message);
       return true;
 
     case START_CONTAINER:
-      await startDeploymentContainer(app, user, message);
+      await startDeploymentContainer(app, client, user, message);
       return true;
 
     case STOP_CONTAINER:
-      await stopDeploymentContainer(app, user, message);
+      await stopDeploymentContainer(app, client, user, message);
       return true;
 
     case DELETE_CONTAINER:
-      await deleteDeploymentContainer(app, user, message);
+      await deleteDeploymentContainer(app, client, user, message);
       return true;
 
     case PULL_DEPLOYMENT:
-      await pullDeploymentRepo(app, user, message)
+      await pullDeploymentRepo(app, client, user, message);
       return true;
 
     default:

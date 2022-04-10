@@ -7,6 +7,7 @@ import {
 } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { join } from "path";
+import { WebSocket } from "ws";
 import {
   PERMISSIONS_DENY_LOG,
   SECRETS,
@@ -14,15 +15,21 @@ import {
   SYS_DEPLOYMENT_REPO_PATH,
 } from "../../config";
 import { DEPLOYING } from "../../plugins/actionStates";
+import { sendAlert } from "../../util/helpers";
 import { deletePeripheryContainer } from "../../util/periphery/container";
 import { deployPeriphery } from "../../util/periphery/deploy";
 import { addDeploymentUpdate } from "../../util/updates";
 
 async function deployDeployment(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { deploymentID, note }: { deploymentID: string; note?: string }
 ) {
+  if (app.deployActionStates.busy(deploymentID)) {
+    sendAlert(client, "bad", "deployment busy, try again in a bit");
+    return;
+  }
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
   if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {

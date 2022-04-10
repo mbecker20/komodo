@@ -4,6 +4,8 @@ import { deleteContainer, DELETE_DEPLOYMENT, prettyStringify } from "@monitor/ut
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { addDeploymentUpdate, addSystemUpdate } from "../../util/updates";
 import { deletePeripheryContainer } from "../../util/periphery/container";
+import { WebSocket } from "ws";
+import { sendAlert } from "../../util/helpers";
 
 const deploymentViewFields = [
   "name",
@@ -17,9 +19,14 @@ const deploymentViewFields = [
 
 async function deleteDeployment(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { deploymentID, note }: { deploymentID: string; note?: string }
 ) {
+  if (app.deployActionStates.busy(deploymentID)) {
+    sendAlert(client, "bad", "deployment busy, try again in a bit");
+    return;
+  }
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
   if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {

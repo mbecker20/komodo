@@ -35,11 +35,11 @@ async function buildMessages(
       return true;
 
     case DELETE_BUILD:
-      message.buildID && (await deleteBuild(app, user, message));
+      message.buildID && (await deleteBuild(app, client, user, message));
       return true;
 
     case UPDATE_BUILD:
-      const updated = message.build && (await updateBuild(app, user, message));
+      const updated = message.build && (await updateBuild(app, client, user, message));
       if (updated) {
         app.broadcast(UPDATE_BUILD, { build: updated });
       } else {
@@ -48,11 +48,15 @@ async function buildMessages(
       return true;
 
     case PULL_BUILD:
-      message.buildID && (await pullRepo(app, user, message));
+      message.buildID && (await pullRepo(app, client, user, message));
       return true;
 
     case CLONE_BUILD_REPO:
       if (message.buildID) {
+        if (app.buildActionStates.busy(message.buildID)) {
+          sendAlert(client, "bad", "build busy, try again in a bit");
+          return;
+        }
         const build = await app.builds.findById(message.buildID);
         if (!build) {
           sendAlert(client, "bad", "could not find build");
@@ -78,7 +82,7 @@ async function buildMessages(
       return true;
 
     case BUILD:
-      message.buildID && (await build(app, user, message));
+      message.buildID && (await build(app, client, user, message));
       return true;
 
     default:

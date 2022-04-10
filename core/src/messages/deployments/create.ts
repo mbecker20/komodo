@@ -4,9 +4,11 @@ import { CREATE_DEPLOYMENT } from "@monitor/util";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { toDashedName } from "../../util/helpers";
 import { addDeploymentUpdate, addSystemUpdate } from "../../util/updates";
+import { WebSocket } from "ws";
 
 async function createDeployment(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { deployment }: { deployment: Deployment }
 ) {

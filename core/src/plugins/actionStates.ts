@@ -16,6 +16,7 @@ interface ActionState<T> {
   set(id: string, type: keyof T, state: boolean): void;
   get(id: string, type: keyof T): boolean;
   getMultiple(id: string, types: (keyof T)[]): boolean;
+  busy(id: string): boolean;
 }
 
 declare module "fastify" {
@@ -67,6 +68,18 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
       }
       return false;
     },
+    busy: (buildID: string) => {
+      for (const type of [
+        "pulling",
+        "building",
+        "cloning",
+        "updating",
+        "deleting",
+      ]) {
+        if (buildActionStates[buildID][type]) return true;
+      }
+      return false;
+    },
   });
 
   app.decorate("deployActionStates", {
@@ -95,6 +108,20 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
     },
     getMultiple: (deploymentID: string, types: string[]) => {
       for (const type of types) {
+        if (deployActionStates[deploymentID][type]) return true;
+      }
+      return false;
+    },
+    busy: (deploymentID: string) => {
+      for (const type of [
+        "deploying",
+        "deleting",
+        "starting",
+        "stopping",
+        "updating",
+        "fullDeleting",
+        "pulling",
+      ]) {
         if (deployActionStates[deploymentID][type]) return true;
       }
       return false;
@@ -132,6 +159,12 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
     },
     getMultiple: (serverID: string, types: string[]) => {
       for (const type of types) {
+        if (serverActionStates[serverID][type]) return true;
+      }
+      return false;
+    },
+    busy: (serverID: string) => {
+      for (const type of ["pruningImages", "pruningNetworks", "deleting"]) {
         if (serverActionStates[serverID][type]) return true;
       }
       return false;

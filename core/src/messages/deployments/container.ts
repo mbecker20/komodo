@@ -8,7 +8,9 @@ import {
   STOP_CONTAINER,
 } from "@monitor/util";
 import { FastifyInstance } from "fastify";
+import { WebSocket } from "ws";
 import { PERMISSIONS_DENY_LOG } from "../../config";
+import { sendAlert } from "../../util/helpers";
 import {
   deletePeripheryContainer,
   startPeripheryContainer,
@@ -18,9 +20,14 @@ import { addDeploymentUpdate } from "../../util/updates";
 
 export async function startDeploymentContainer(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { deploymentID, note }: { deploymentID: string; note?: string }
 ) {
+  if (app.deployActionStates.busy(deploymentID)) {
+    sendAlert(client, "bad", "deployment busy, try again in a bit");
+    return;
+  }
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
   if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
@@ -57,9 +64,14 @@ export async function startDeploymentContainer(
 
 export async function stopDeploymentContainer(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { deploymentID, note }: { deploymentID: string; note?: string }
 ) {
+  if (app.deployActionStates.busy(deploymentID)) {
+    sendAlert(client, "bad", "deployment busy, try again in a bit");
+    return;
+  }
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
   if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
@@ -96,9 +108,14 @@ export async function stopDeploymentContainer(
 
 export async function deleteDeploymentContainer(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { deploymentID, note }: { deploymentID: string; note?: string }
 ) {
+  if (app.deployActionStates.busy(deploymentID)) {
+    sendAlert(client, "bad", "deployment busy, try again in a bit");
+    return;
+  }
   const deployment = await app.deployments.findById(deploymentID);
   if (!deployment) return;
   if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {

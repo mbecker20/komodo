@@ -2,16 +2,22 @@ import { Build, User } from "@monitor/types";
 import { buildChangelog, prettyStringify, UPDATE_BUILD } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { move, pathExists, remove } from "fs-extra";
+import { WebSocket } from "ws";
 import { PERMISSIONS_DENY_LOG, BUILD_REPO_PATH } from "../../config";
-import { toDashedName } from "../../util/helpers";
+import { sendAlert, toDashedName } from "../../util/helpers";
 import { addBuildUpdate } from "../../util/updates";
 import cloneRepo from "./clone";
 
 async function updateBuild(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { build, note }: { build: Build; note?: string }
 ) {
+  if (app.buildActionStates.busy(build._id!)) {
+    sendAlert(client, "bad", "build busy, try again in a bit");
+    return;
+  }
   const preBuild = await app.builds.findById(build._id!).catch(() => {});
   if (!preBuild) return; // may want to add some update here
   if (user.permissions! < 2 && !build.owners.includes(user.username)) {

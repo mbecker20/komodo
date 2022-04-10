@@ -2,16 +2,23 @@ import { Deployment, User } from "@monitor/types";
 import { deploymentChangelog, prettyStringify, UPDATE_DEPLOYMENT } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { remove } from "fs-extra";
+import { WebSocket } from "ws";
 import { DEPLOYMENT_REPO_PATH, PERMISSIONS_DENY_LOG } from "../../config";
+import { sendAlert } from "../../util/helpers";
 import { deleteRepoPeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
 import cloneRepo from "./clone";
 
 async function updateDeployment(
   app: FastifyInstance,
+  client: WebSocket,
   user: User,
   { deployment, note }: { deployment: Deployment; note?: string }
 ) {
+  if (app.deployActionStates.busy(deployment._id!)) {
+    sendAlert(client, "bad", "deployment busy, try again in a bit");
+    return;
+  }
   const preDeployment = await app.deployments.findById(deployment._id!);
   if (!preDeployment) return;
   if (user.permissions! < 2 && !preDeployment.owners.includes(user.username)) {
