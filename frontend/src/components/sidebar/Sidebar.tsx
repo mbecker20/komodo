@@ -11,8 +11,6 @@ import Builds from "./builds/Builds";
 import Server from "./server/Server";
 import s from "./sidebar.module.scss";
 
-const SIDEBAR_WIDTH = 350;
-
 const Sidebar: Component<{}> = () => {
   const { sidebar, servers, selected } = useAppState();
   const { height } = useAppDimensions();
@@ -21,9 +19,6 @@ const Sidebar: Component<{}> = () => {
     <Show when={servers.loaded() && sidebar.open()}>
       <Tabs
         containerClass={combineClasses(s.Sidebar, "shadow")}
-        containerStyle={{
-          width: inPx(SIDEBAR_WIDTH),
-        }}
         localStorageKey="sidebar-tab"
         tabsGap="0rem"
         tabs={[

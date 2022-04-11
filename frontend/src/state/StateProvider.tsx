@@ -10,6 +10,7 @@ import {
 import { useLocalStorageToggle } from "../util/hooks";
 import { getDockerAccounts, getGithubAccounts } from "../util/query";
 import { USER_UPDATE } from "./actions";
+import { useAppDimensions } from "./DimensionProvider";
 import {
   useBuilds,
   useDeployments,
@@ -47,6 +48,7 @@ export const AppStateProvider: Component<{}> = (p) => {
     "sidebar-open",
     true
   );
+  const { width } = useAppDimensions();
   const [dockerAccounts] = createResource(async () =>
     permissions() >= 1 ? getDockerAccounts() : undefined
   );
@@ -71,6 +73,17 @@ export const AppStateProvider: Component<{}> = (p) => {
   const ws = socket(user(), state, selected);
 
   onCleanup(ws.subscribe([USER_UPDATE], reloadUser));
+
+  const resizeListener = () => {
+    if (
+      (width() < 1000 && sidebarOpen()) ||
+      (width() > 1000 && !sidebarOpen())
+    ) {
+      toggleSidebarOpen();
+    }
+  };
+  window.addEventListener("resize", resizeListener);
+  onCleanup(() => window.removeEventListener("resize", resizeListener));
 
   return (
     <context.Provider

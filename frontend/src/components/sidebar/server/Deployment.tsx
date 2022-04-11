@@ -1,5 +1,6 @@
 import { ContainerStatus } from "@monitor/types";
 import { Component, Show } from "solid-js";
+import { useAppDimensions } from "../../../state/DimensionProvider";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { combineClasses, deploymentStatusClass } from "../../../util/helpers";
@@ -9,7 +10,8 @@ import HoverMenu from "../../util/menu/HoverMenu";
 import s from "../sidebar.module.scss";
 
 const Deployment: Component<{ id: string }> = (p) => {
-  const { deployments, selected } = useAppState();
+  const { deployments, selected, sidebar } = useAppState();
+  const { width } = useAppDimensions();
   const { permissions, username } = useUser();
   const deployment = () => deployments.get(p.id)!;
   const status = () => {
@@ -26,7 +28,12 @@ const Deployment: Component<{ id: string }> = (p) => {
           s.DropdownItem,
           selected.id() === p.id && "selected"
         )}
-        onClick={() => selected.set(deployment()!._id!, "deployment")}
+        onClick={() => {
+          selected.set(deployment()!._id!, "deployment");
+          if (width() <= 1000) {
+            sidebar.toggle();
+          }
+        }}
       >
         <div>{deployment()!.name}</div>
         <Flex alignItems="center">

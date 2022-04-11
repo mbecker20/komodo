@@ -44,7 +44,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   return (
     <Grid gap="0.25rem" class={combineClasses(s.Update, !p.showName && s.NoName, "shadow")}>
       <Show when={p.showName}>
-        <div>{name()}</div>
+        <h2 style={{ "place-self": "center" }} >{name()}</h2>
       </Show>
       <Grid
         gap="0.25rem"
