@@ -14,17 +14,17 @@ const Account: Component<{ close: () => void }> = (p) => {
       <div>permissions: {readablePermissions(permissions())}</div>
       <Show when={permissions() > 1}>
         <button
-          class="blue"
+          class="grey"
           onClick={() => {
             selected.set("", "users");
             p.close();
           }}
-          style={{ "font-size": "1rem" }}
+          style={{ "font-size": "1rem", width: "100%" }}
         >
           manage users
         </button>
       </Show>
-      <button onClick={logout} class="red">
+      <button onClick={logout} class="red" style={{ width: "100%" }}>
         log out
       </button>
     </Grid>

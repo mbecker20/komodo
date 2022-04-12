@@ -39,12 +39,13 @@ const Actions: Component<{}> = (p) => {
               deploy{" "}
               <Flex>
                 <Deploy redeploy />
+                <Stop />
                 <Delete />
               </Flex>
             </Flex>
-            <Flex class="action shadow">
+            {/* <Flex class="action shadow">
               container <Stop />
-            </Flex>
+            </Flex> */}
           </Match>
 
           <Match
@@ -57,12 +58,13 @@ const Actions: Component<{}> = (p) => {
               deploy{" "}
               <Flex>
                 <Deploy redeploy />
+                <Start />
                 <Delete />
               </Flex>
             </Flex>
-            <Flex class="action shadow">
+            {/* <Flex class="action shadow">
               container <Start />
-            </Flex>
+            </Flex> */}
           </Match>
 
           <Match when={deployment().status === "not deployed"}>

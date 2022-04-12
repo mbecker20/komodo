@@ -43,7 +43,7 @@ const Home: Component<{}> = (p) => {
       : (deployments.get(id)!.status as ContainerStatus).Status.toLowerCase();
   return (
     <Grid class={s.Home}>
-      <Grid style={{ height: "fit-content" }}>
+      <Grid style={{ height: "fit-content", width: "fit-content" }}>
         <Show
           when={filteredDeploymentIds() && filteredDeploymentIds()!.length > 0}
         >
