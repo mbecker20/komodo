@@ -17,9 +17,12 @@ import RepoMount from "./mount-repo/RepoMount";
 import { OnClone, OnPull } from "./mount-repo/OnGit";
 import Loading from "../../../util/loading/Loading";
 import Owners from "./Owners";
+import { pushNotification, URL } from "../../../..";
+import { copyToClipboard } from "../../../../util/helpers";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
+  const listenerUrl = () => `${URL}/api/listener/deployment/${deployment._id}`;
   return (
     <Show when={deployment.loaded}>
       <Grid class="config">
@@ -49,6 +52,23 @@ const Config: Component<{}> = (p) => {
               element: (
                 <Grid class="config-items scroller">
                   <Git />
+                  <Grid class="config-item shadow">
+                    <h1>webhook url</h1>
+                    <Flex justifyContent="space-between" alignItems="center">
+                      <div class="ellipsis" style={{ width: "350px" }}>
+                        {listenerUrl()}
+                      </div>
+                      <button
+                        class="blue"
+                        onClick={() => {
+                          copyToClipboard(listenerUrl());
+                          pushNotification("good", "copied url to clipboard");
+                        }}
+                      >
+                        <Icon type="clipboard" />
+                      </button>
+                    </Flex>
+                  </Grid>
                   <RepoMount />
                   <OnClone />
                   <OnPull />

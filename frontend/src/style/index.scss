@@ -6,8 +6,8 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   // font-family: "Chakra Petch", sans-serif;
   // font-family: "Work Sans", sans-serif;
@@ -191,4 +191,11 @@ input::placeholder {
 .scroller::-webkit-scrollbar-thumb {
   background: rgba(252, 234, 222, 0.3);
   border-radius: 0.25rem;
+}
+
+.ellipsis {
+  width: 100%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }

@@ -34,7 +34,8 @@ export type IconType =
   | "cut"
   | "fullscreen"
   | "github"
-  | "edit";
+  | "edit"
+  | "clipboard";
 
 const Icon: Component<{
   type: IconType;

@@ -104,3 +104,6 @@ export function serverStatusClass(
   }
 }
 
+export function copyToClipboard(text: string) {
+  navigator.clipboard.writeText(text);
+}
