@@ -6,6 +6,7 @@ import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import Menu from "../util/menu/Menu";
 import Account from "./Account";
+import Search from "./Search";
 import s from "./topbar.module.scss";
 import Updates from "./Updates";
 
@@ -34,6 +35,7 @@ const Topbar: Component = () => {
       </Flex>
       {/* left side */}
       <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
+        <Search />
         <Menu
           show={menu() === "updates"}
           close={close}

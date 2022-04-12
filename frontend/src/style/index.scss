@@ -207,3 +207,10 @@ input::placeholder {
   overflow: hidden;
   white-space: nowrap;
 }
+
+.divider {
+  width: 100%;
+  background-color: white;
+  opacity: 0.4;
+  height: 2px;
+}

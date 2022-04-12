@@ -63,26 +63,10 @@ const Header: Component<{}> = (p) => {
         </Show>
       </Flex>
       <Flex alignItems="center" justifyContent="space-between">
-        <HoverMenu
-          target={
-            <button
-              class="grey"
-              style={{ opacity: 0.8 }}
-              onClick={() => selected.set(deployment()?.serverID!, "server")}
-            >
-              {server()!.name}
-            </button>
-          }
-          content="show server"
-          position="bottom center"
-          padding="0.5rem"
-        />
-        <Flex alignItems="center">
-          <div class={deploymentStatusClass(state())}>{state()}</div>
-          <Show when={status()}>
-            <div style={{ opacity: 0.7 }}>{status()}</div>
-          </Show>
-        </Flex>
+        <div class={deploymentStatusClass(state())}>{state()}</div>
+        <Show when={status()}>
+          <div style={{ opacity: 0.7 }}>{status()}</div>
+        </Show>
       </Flex>
     </Grid>
   );

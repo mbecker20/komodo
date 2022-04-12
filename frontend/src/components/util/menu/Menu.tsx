@@ -18,6 +18,7 @@ const Menu: Component<{
   position?: Position;
   padding?: string | number;
   style?: JSX.CSSProperties;
+  containerStyle?: JSX.CSSProperties;
 }> = (p) => {
   const [buffer, set] = createSignal(p.show);
   createEffect(() => {
@@ -30,7 +31,7 @@ const Menu: Component<{
     }
   });
   return (
-    <div class={s.MenuContainer}>
+    <div class={s.MenuContainer} style={p.containerStyle}>
       {p.target}
       <Show when={buffer()}>
         <div class={s.MenuBackground} onClick={p.close} />

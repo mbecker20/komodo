@@ -162,7 +162,7 @@ const Start = () => {
       }
     >
       <HoverMenu
-        content={
+        target={
           <ConfirmButton
             color="green"
             onConfirm={() => {
@@ -175,7 +175,7 @@ const Start = () => {
             <Icon type="play" />
           </ConfirmButton>
         }
-        target="start container"
+        content="start container"
         position="bottom center"
         padding="0.5rem"
       />

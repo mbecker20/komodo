@@ -13,6 +13,17 @@
 	cursor: pointer;
 }
 
+.Search {
+	width: 15rem;
+	background-color: c.$lightgrey;
+}
+
+.SearchItem {
+	width: 100%;
+	font-size: 1.1rem;
+	justify-content: space-between;
+}
+
 .Updates {
 	width: 340px;
 	z-index: 25;
