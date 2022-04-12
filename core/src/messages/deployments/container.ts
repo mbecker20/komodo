@@ -47,9 +47,11 @@ export async function startDeploymentContainer(
     deployment.serverID === app.core._id
       ? undefined
       : await app.servers.findById(deployment.serverID!);
+  app.broadcast(START_CONTAINER, { complete: false, deploymentID });
   const { command, log, isError } = server
     ? await startPeripheryContainer(server, deployment.containerName!)
     : await startContainer(deployment.containerName!);
+  app.broadcast(START_CONTAINER, { complete: true, deploymentID });
   addDeploymentUpdate(
     app,
     deploymentID,
@@ -91,9 +93,11 @@ export async function stopDeploymentContainer(
     deployment.serverID === app.core._id
       ? undefined
       : await app.servers.findById(deployment.serverID!);
+  app.broadcast(STOP_CONTAINER, { complete: false, deploymentID });
   const { command, log, isError } = server
     ? await stopPeripheryContainer(server, deployment.containerName!)
     : await stopContainer(deployment.containerName!);
+  app.broadcast(STOP_CONTAINER, { complete: true, deploymentID });
   addDeploymentUpdate(
     app,
     deploymentID,
@@ -135,9 +139,11 @@ export async function deleteDeploymentContainer(
     deployment.serverID === app.core._id
       ? undefined
       : await app.servers.findById(deployment.serverID!);
+  app.broadcast(DELETE_CONTAINER, { complete: false, deploymentID });
   const { command, log, isError } = server
     ? await deletePeripheryContainer(server, deployment.containerName!)
     : await deleteContainer(deployment.containerName!);
+  app.broadcast(DELETE_CONTAINER, { complete: true, deploymentID });
   addDeploymentUpdate(
     app,
     deploymentID,

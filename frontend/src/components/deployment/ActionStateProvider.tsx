@@ -60,7 +60,7 @@ export const ActionStateProvider: Component<{}> = (p) => {
   onCleanup(
     ws.subscribe([DELETE_DEPLOYMENT], ({ complete, deploymentID }) => {
       if (deploymentID === selected.id()) {
-        setActions("deleting", !complete);
+        setActions("fullDeleting", !complete);
       }
     })
   );

@@ -52,23 +52,26 @@ const Config: Component<{}> = (p) => {
               element: (
                 <Grid class="config-items scroller">
                   <Git />
-                  <Grid class="config-item shadow">
-                    <h1>webhook url</h1>
-                    <Flex justifyContent="space-between" alignItems="center">
-                      <div class="ellipsis" style={{ width: "350px" }}>
-                        {listenerUrl()}
-                      </div>
-                      <button
-                        class="blue"
-                        onClick={() => {
-                          copyToClipboard(listenerUrl());
-                          pushNotification("good", "copied url to clipboard");
-                        }}
-                      >
-                        <Icon type="clipboard" />
-                      </button>
-                    </Flex>
-                  </Grid>
+                  <Show when={userCanUpdate()}>
+                    <Grid class="config-item shadow">
+                      <h1>webhook url</h1>
+                      <Flex justifyContent="space-between" alignItems="center">
+                        <div class="ellipsis" style={{ width: "350px" }}>
+                          {listenerUrl()}
+                        </div>
+                        <ConfirmButton
+                          color="blue"
+                          onFirstClick={() => {
+                            copyToClipboard(listenerUrl());
+                            pushNotification("good", "copied url to clipboard");
+                          }}
+                          confirm={<Icon type="check" />}
+                        >
+                          <Icon type="clipboard" />
+                        </ConfirmButton>
+                      </Flex>
+                    </Grid>
+                  </Show>
                   <RepoMount />
                   <OnClone />
                   <OnPull />

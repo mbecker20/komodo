@@ -99,6 +99,14 @@ input::placeholder {
   background-color: c.$lightgrey;
 }
 
+.darkgrey {
+  background-color: rgba(c.$darkgrey, 0.8);
+}
+
+.darkgrey:hover {
+  background-color: c.$grey;
+}
+
 .lightgrey {
   background-color: rgba(c.$lightgrey, 0.8);
 }

@@ -2,9 +2,10 @@ import { Component, createSignal, JSX } from "solid-js";
 
 const ConfirmButton: Component<{
   onConfirm?: () => void;
+  onFirstClick?: () => void;
   color?: "red" | "green" | "blue" | "orange" | "grey";
   style?: JSX.CSSProperties;
-  confirmText?: string;
+  confirm?: JSX.Element;
 }> = (p) => {
   const [confirm, set] = createSignal(false);
 
@@ -17,11 +18,13 @@ const ConfirmButton: Component<{
         e.stopPropagation();
         if (confirm()) {
           p.onConfirm && p.onConfirm();
+        } else {
+          p.onFirstClick && p.onFirstClick();
         }
         set((confirm) => !confirm);
       }}
     >
-      {confirm() ? p.confirmText || "confirm" : p.children}
+      {confirm() ? p.confirm || "confirm" : p.children}
     </button>
   );
 };

@@ -115,7 +115,7 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
 };
 
 const Delete = () => {
-  const { ws, deployments, selected } = useAppState();
+  const { ws, selected } = useAppState();
   const actions = useActionStates();
   return (
     <Show

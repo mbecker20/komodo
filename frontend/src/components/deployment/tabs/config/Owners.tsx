@@ -55,7 +55,7 @@ const Owners: Component<{}> = (p) => {
                     pushNotification("good", "owner added to deployment");
                     setUserSearch("");
                   }}
-                  confirmText="add user"
+                  confirm="add user"
                 >
                   {user.username}
                 </ConfirmButton>
