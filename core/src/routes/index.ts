@@ -3,7 +3,6 @@ import fp from "fastify-plugin";
 import builds from "./builds";
 import deployments from "./deployments";
 import accounts from "./accounts";
-import listenerURL from "./listenerURL";
 import networks from "./networks";
 import servers from "./servers";
 import updates from "./updates";
@@ -20,7 +19,6 @@ const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
     .register(networks)
     .register(accounts)
     .register(secrets)
-    .register(listenerURL)
     .register(listener)
     .register(users);
 	

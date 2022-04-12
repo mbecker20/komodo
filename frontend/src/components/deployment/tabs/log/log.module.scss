@@ -2,8 +2,7 @@
 
 .LogContainer {
 	max-height: 80vh;
-	margin: 1rem;
-	margin-top: 0rem;
+	margin: 0rem 1rem;
 	background-color: rgba(c.$darkgrey, 0.6);
 	box-sizing: border-box;
 	position: relative;
@@ -27,6 +26,11 @@
 	position: absolute;
 	bottom: 2rem;
 	right: 2rem;
+}
+
+.Download {
+	place-self: end;
+	margin-right: 1rem;
 }
 
 .Enter {

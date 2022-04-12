@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { User } from "@monitor/types";
 
 export default class Client {
@@ -55,13 +55,14 @@ export default class Client {
     }
   }
 
-  async get<T = any>(url: string) {
+  async get<T = any>(url: string, config?: AxiosRequestConfig) {
     return await axios({
       method: "get",
       url: this.baseURL + url,
       headers: {
         authorization: `Bearer ${this.token}`,
       },
+      ...config,
     }).then(({ data }) => data as T);
   }
 

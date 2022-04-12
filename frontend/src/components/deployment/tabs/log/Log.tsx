@@ -4,8 +4,10 @@ import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { combineClasses } from "../../../../util/helpers";
 import { useBuffer } from "../../../../util/hooks";
+import { downloadDeploymentLog } from "../../../../util/query";
 import Icon from "../../../util/Icon";
 import Grid from "../../../util/layout/Grid";
+import { useConfig } from "../config/Provider";
 import s from "./log.module.scss";
 
 const Log: Component<{
@@ -14,6 +16,7 @@ const Log: Component<{
   error?: boolean;
 }> = (p) => {
   const { selected, deployments } = useAppState();
+  const { userCanUpdate } = useConfig();
   const deployment = () => deployments.get(selected.id());
   let ref: HTMLDivElement | undefined;
   let ignore = false;
@@ -87,6 +90,14 @@ const Log: Component<{
           </Show>
         </Grid>
       </div>
+      <Show when={userCanUpdate()}>
+        <button
+          class={combineClasses(s.Download, "blue")}
+          onClick={() => downloadDeploymentLog(selected.id(), deployment()!.name)}
+        >
+          download
+        </button>
+      </Show>
     </Show>
   );
 };

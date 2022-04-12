@@ -15,6 +15,7 @@ import {
 } from "@monitor/types";
 import { client } from "..";
 import { generateQuery } from "./helpers";
+import fileDownload from "js-file-download";
 
 export async function getUpdates(query?: {
   offset?: number;
@@ -58,6 +59,23 @@ export async function getDeployment(deploymentID: string) {
 export async function getDeploymentLog(deploymentID: string, tail?: number) {
   return await client.get<Log>(
     `/api/deployment/${deploymentID}/log${generateQuery({ tail })}`
+  );
+}
+
+export async function downloadDeploymentLog(
+  deploymentID: string,
+  name: string
+) {
+  const data = await client.get<string>(
+    `/api/deployment/${deploymentID}/log/download`,
+    {
+      responseType: "blob",
+    }
+  );
+  const date = new Date();
+  fileDownload(
+    data,
+    `${name}-log-${date.toLocaleDateString().replaceAll("/", "-")}.txt`
   );
 }
 

@@ -27,7 +27,7 @@ const Topbar: Component = () => {
       {/* right side */}
       <Flex alignItems="center" style={{ padding: "0rem 0.5rem" }}>
         <button onClick={sidebar.toggle}>
-          <Icon type="menu" width="1.5rem" />
+          <Icon type="menu" width="1.25rem" />
         </button>
         <div class={s.Monitor} onClick={() => selected.set("", "home")}>
           monitor
@@ -45,7 +45,7 @@ const Topbar: Component = () => {
                 menu() === "updates" ? setMenu(undefined) : setMenu("updates")
               }
             >
-              <Icon type="notifications" alt="updates" width="1.5rem" />
+              <Icon type="notifications" alt="updates" width="1.25rem" />
             </button>
           }
           content={<Updates />}

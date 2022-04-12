@@ -115,6 +115,50 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
   );
 
   app.get(
+    "/api/deployment/:id/log/download",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const deployment = await app.deployments.findById(id, "name containerName owners serverID");
+      if (!deployment) {
+        res.status(400);
+        res.send("deployment not found");
+        return;
+      }
+      const user = await app.users.findById(
+        req.user.id,
+        "username permissions"
+      );
+      if (
+        !user ||
+        (user?.permissions! < 2 && !deployment.owners.includes(user.username))
+      ) {
+        res.status(403);
+        res.send("user not authorized for this action");
+      }
+      const server = await app.servers.findById(deployment.serverID!);
+      if (!server) {
+        res.status(400);
+        res.send("could not find deployment's server");
+        return;
+      }
+      const date = new Date();
+      const log = server.isCore
+        ? await getContainerLog(deployment.containerName!)
+        : await getPeripheryContainerLog(server, deployment.containerName!);
+      res
+        .type("application/octet-stream")
+        .header(
+          "Content-Disposition",
+          `attachment; filename="${deployment.name}-log-${date
+            .toLocaleDateString()
+            .replaceAll("/", "-")}.txt"`
+        )
+        .send(JSON.stringify(log));
+    }
+  );
+
+  app.get(
     "/api/deployment/:id/status",
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
