@@ -22,18 +22,21 @@ import { getDeploymentStatus, getServer } from "../util/query";
 import { useSelected } from "./hooks";
 import { State } from "./StateProvider";
 import { createSignal } from "solid-js";
+import ReconnectingWebSocket from "reconnecting-websocket";
 
 function socket(
   user: User,
   state: State,
   selected: ReturnType<typeof useSelected>
 ) {
-  const ws = new WebSocket(WS_URL);
+  const ws = new ReconnectingWebSocket(WS_URL);
 
-  const [isOpen, setOpen] = createSignal(true);
+  const [isOpen, setOpen] = createSignal(false);
 
   ws.addEventListener("open", () => {
+    console.log("connection opened")
     ws.send(JSON.stringify({ token: client.token }));
+    setOpen(true);
   });
 
   ws.addEventListener("message", ({ data }) => {
@@ -66,6 +69,9 @@ function socket(
       callback: (message: { type: string } & any) => void
     ) => {
       const listener = ({ data }: { data: string }) => {
+        if (data === "PONG") {
+          return;
+        }
         const message = JSON.parse(data);
         if (types.includes(message.type)) {
           callback(JSON.parse(data));

@@ -15,7 +15,7 @@ import { AppStateProvider } from "./state/StateProvider";
 export const URL =
   import.meta.env.MODE === "production"
     ? location.origin
-    : "http://localhost:9000";
+    : "https://monitor.mogh.tech";
 export const WS_URL = URL.replace("https", "wss").replace("http", "ws") + "/ws";
 
 export const client = new Client(URL);

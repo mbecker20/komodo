@@ -22,13 +22,10 @@ const deploy = fp((app: FastifyInstance, _: {}, done: () => void) => {
           }
         : undefined;
     await deleteContainer(deployment.containerName!);
-    console.log("deploying")
     const log = await dockerRun(
       {
         ...deployment,
-        image: image
-          ? join(deployment.dockerAccount || "", image)
-          : deployment.image,
+        image: image || deployment.image,
       },
       SYSROOT,
       repoMount,
@@ -36,7 +33,6 @@ const deploy = fp((app: FastifyInstance, _: {}, done: () => void) => {
       deployment.dockerAccount &&
         SECRETS.DOCKER_ACCOUNTS[deployment.dockerAccount]
     );
-    console.log("deployed");
     res.send(log);
   });
 
