@@ -12,8 +12,12 @@ import { DimensionProvider } from "./state/DimensionProvider";
 import LoginGuard from "./components/login/LoginGuard";
 import { AppStateProvider } from "./state/StateProvider";
 
-export const URL = "http://localhost:9000";
-export const WS_URL = "ws://localhost:9000/ws";
+export const URL =
+  import.meta.env.MODE === "production"
+    ? location.origin
+    : "http://localhost:9000";
+export const WS_URL = URL.replace("https", "wss").replace("http", "ws") + "/ws";
+
 export const client = new Client(URL);
 
 export const { Notifications, pushNotification } = makeNotifications();
