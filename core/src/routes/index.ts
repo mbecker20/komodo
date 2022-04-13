@@ -9,9 +9,11 @@ import updates from "./updates";
 import secrets from "./secrets";
 import listener from "./listener";
 import users from "./users";
+import healthCheck from "./healthCheck";
 
 const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
-	app
+  app
+    .register(healthCheck)
     .register(updates)
     .register(builds)
     .register(deployments)
@@ -21,8 +23,8 @@ const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
     .register(secrets)
     .register(listener)
     .register(users);
-	
-	done();
+
+  done();
 });
 
 export default routes;
