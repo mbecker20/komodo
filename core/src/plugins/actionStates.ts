@@ -128,15 +128,6 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
     },
   });
 
-  app.builds.find({}, { _id: true }).then((builds) => {
-    builds.forEach((build) => app.buildActionStates.add(build._id!));
-  });
-  app.deployments.find({}, { _id: true }).then((deployments) => {
-    deployments.forEach((deployment) =>
-      app.deployActionStates.add(deployment._id!)
-    );
-  });
-
   app.decorate("serverActionStates", {
     getJSON: (serverID: string) => {
       return serverActionStates[serverID];
@@ -169,6 +160,18 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
       }
       return false;
     },
+  });
+
+  app.builds.find({}, { _id: true }).then((builds) => {
+    builds.forEach((build) => app.buildActionStates.add(build._id!));
+  });
+  app.deployments.find({}, { _id: true }).then((deployments) => {
+    deployments.forEach((deployment) =>
+      app.deployActionStates.add(deployment._id!)
+    );
+  });
+  app.servers.find({}, { _id: true }).then((servers) => {
+    servers.forEach((server) => app.serverActionStates.add(server._id!));
   });
 
   done();
