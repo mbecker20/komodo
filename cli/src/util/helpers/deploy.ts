@@ -73,7 +73,7 @@ async function deployCore({ core, mongo }: Config) {
   const { name, secretVolume, port, restart, sysroot } = core!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volumes = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root`;
-  const network = `-p ${port}:${DEFAULT_PORT}`;
+  const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
   const env = `-e MONGO_URL=${mongo?.url} -e SYSROOT=${trailingSlash(core?.sysroot!)}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volumes} ${network} ${env} ${restartArg} ${CORE_IMAGE}`;
@@ -84,7 +84,7 @@ async function deployPeriphery({ periphery }: Config) {
   const { name, port, secretVolume, restart, sysroot } = periphery!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root`;
-  const network = `-p ${port}:${DEFAULT_PERIPHERY_PORT} --network ${DOCKER_NETWORK}`;
+  const network = `-p ${port}:${DEFAULT_PERIPHERY_PORT}`;
   const env = `-e SYSROOT=${trailingSlash(periphery?.sysroot!)}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volume} ${network} ${env} ${restartArg} ${PERIPHERY_IMAGE}`;
