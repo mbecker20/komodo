@@ -48,10 +48,10 @@ const Topbar: Component = () => {
           }
           content={
             ws.isOpen()
-              ? "connected to socket"
-              : "disconnected from socket, refresh page"
+              ? "connected"
+              : "disconnected"
           }
-          position="bottom center"
+          position="right center"
         />
       </Flex>
       {/* left side */}

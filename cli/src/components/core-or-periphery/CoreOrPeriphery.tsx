@@ -100,7 +100,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
           system root folder:{" "}
           <Text color="white">
             <ControlledInput
-              value={sysroot || resolve(".")}
+              value={sysroot || join(resolve("."), "/monitor")}
               onChange={(sysroot) => setConfig("sysroot", sysroot)}
               onSubmit={(sysroot) => {
                 setMany(["stage", "port"], ["sysroot", trailingSlash(sysroot)]);

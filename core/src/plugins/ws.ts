@@ -57,10 +57,10 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
             JSON.stringify({ type: "LOGIN", message: "logged in successfully" })
           );
         } else {
-          connection.socket.close(403);
+          connection.socket.close();
         }
       } else {
-        connection.socket.close(403);
+        connection.socket.close();
       }
     });
   });
