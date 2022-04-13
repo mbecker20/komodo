@@ -3,8 +3,10 @@ import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
+import Cirle from "../util/Cirle";
 import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
+import HoverMenu from "../util/menu/HoverMenu";
 import Menu from "../util/menu/Menu";
 import Account from "./Account";
 import Search from "./Search";
@@ -14,7 +16,7 @@ import Updates from "./Updates";
 export const TOPBAR_HEIGHT = 40;
 
 const Topbar: Component = () => {
-  const { sidebar, selected } = useAppState();
+  const { sidebar, selected, ws } = useAppState();
   const { width } = useAppDimensions();
   const { username } = useUser();
   const [menu, setMenu] = createSignal<"updates" | "account">();
@@ -36,6 +38,21 @@ const Topbar: Component = () => {
             monitor
           </div>
         </Show>
+        <HoverMenu
+          target={
+            <Cirle
+              size={1}
+              class={ws.isOpen() ? "green" : "red"}
+              style={{ transition: "all 500ms ease-in-out" }}
+            />
+          }
+          content={
+            ws.isOpen()
+              ? "connected to socket"
+              : "disconnected from socket, refresh page"
+          }
+          position="bottom center"
+        />
       </Flex>
       {/* left side */}
       <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>

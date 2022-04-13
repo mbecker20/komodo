@@ -39,14 +39,19 @@ const ws = fp((app: FastifyInstance, _: {}, done: () => void) => {
             connection.socket.send(msg)
           );
           connection.socket.removeAllListeners("message");
-          connection.socket.on("message", (msg) =>
+          connection.socket.on("message", (raw) => {
+            const msg = raw.toString();
+            if (msg === "PING") {
+              connection.socket.send("PONG");
+              return;
+            }
             handleMessage(
               app,
               connection.socket,
-              JSON.parse(msg.toString()),
+              JSON.parse(msg),
               userID
-            )
-          );
+            );
+          });
           connection.socket.on("close", unsub);
           connection.socket.send(
             JSON.stringify({ type: "LOGIN", message: "logged in successfully" })

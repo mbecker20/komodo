@@ -16,12 +16,12 @@ import {
   UPDATE_BUILD,
   UPDATE_DEPLOYMENT,
   UPDATE_SERVER,
-  USER_UPDATE,
 } from "./actions";
 import { readableOperation } from "../util/helpers";
 import { getDeploymentStatus, getServer } from "../util/query";
 import { useSelected } from "./hooks";
 import { State } from "./StateProvider";
+import { createSignal } from "solid-js";
 
 function socket(
   user: User,
@@ -30,18 +30,34 @@ function socket(
 ) {
   const ws = new WebSocket(WS_URL);
 
+  const [isOpen, setOpen] = createSignal(true);
+
   ws.addEventListener("open", () => {
     ws.send(JSON.stringify({ token: client.token }));
   });
 
   ws.addEventListener("message", ({ data }) => {
+    if (data === "PONG") {
+      console.log("pong");
+      return;
+    }
     const message = JSON.parse(data);
     console.log(message);
     handleMessage(user, state, selected, message);
   });
 
+  const int = setInterval(() => {
+    if (ws.readyState === ws.OPEN) {
+      ws.send("PING");
+    } else {
+      setOpen(false);
+    }
+  }, 10000);
+
   ws.addEventListener("close", () => {
     console.log("connection closed");
+    clearInterval(int);
+    setOpen(false);
   });
 
   return {
@@ -64,6 +80,7 @@ function socket(
       ws.send(JSON.stringify({ ...message, type }));
     },
     close: () => ws.close(),
+    isOpen,
   };
 }
 
