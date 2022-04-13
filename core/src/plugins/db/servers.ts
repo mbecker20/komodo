@@ -10,7 +10,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     address: { type: String, unique: true },
     enabled: { type: Boolean, default: true },
     isCore: Boolean,
-    owners: [String],
+    owners: { type: [String], default: [] },
   });
 
   app.decorate("servers", model(app, "Server", schema));

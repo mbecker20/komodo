@@ -7,6 +7,7 @@ export default function serverModel() {
     address: String,
     enabled: { type: Boolean, default: true },
     isCore: Boolean,
+    owners: { type: [String], default: [] }
   });
 
   return model("Server", schema);

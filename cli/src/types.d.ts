@@ -17,6 +17,7 @@ export type CoreOrPeripheryConfig = {
   sysroot: string;
   port: number;
   restart: string;
+  host?: string;
 };
 
 export type StartConfig = {
