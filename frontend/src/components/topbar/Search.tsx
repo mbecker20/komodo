@@ -11,29 +11,23 @@ const Search: Component<{}> = (p) => {
   const [highlighted, setHighlighted] = createSignal(0);
   const filteredDeployments = createMemo(() =>
     search().length > 0
-      ? Object.keys(
-          deployments.filter((deployment) =>
-            deployment.name.toLowerCase().includes(search().toLowerCase())
-          )!
-        )
+      ? deployments.filterArray((deployment) =>
+          deployment.name.toLowerCase().includes(search().toLowerCase())
+        )!
       : undefined
   );
   const filteredBuilds = createMemo(() =>
     search().length > 0
-      ? Object.keys(
-          builds.filter((build) =>
-            build.name.toLowerCase().includes(search().toLowerCase())
-          )!
-        )
+      ? builds.filterArray((build) =>
+          build.name.toLowerCase().includes(search().toLowerCase())
+        )!
       : undefined
   );
   const filteredServers = createMemo(() =>
     search().length > 0
-      ? Object.keys(
-          servers.filter((server) =>
-            server.name.toLowerCase().includes(search().toLowerCase())
-          )!
-        )
+      ? servers.filterArray((server) =>
+          server.name.toLowerCase().includes(search().toLowerCase())
+        )!
       : undefined
   );
   return (
@@ -58,7 +52,8 @@ const Search: Component<{}> = (p) => {
                   h + 1,
                   (filteredDeployments()?.length || 0) +
                     (filteredBuilds()?.length || 0) +
-                    (filteredServers()?.length || 0)
+                    (filteredServers()?.length || 0) -
+                    1
                 )
               );
             } else if (e.key === "ArrowUp") {
@@ -67,7 +62,7 @@ const Search: Component<{}> = (p) => {
             } else if (e.key === "Enter") {
               if (highlighted() < (filteredDeployments()?.length || 0)) {
                 selected.set(
-                  filteredDeployments()![highlighted()],
+                  filteredDeployments()![highlighted()]._id!,
                   "deployment"
                 );
                 setSearch("");
@@ -79,7 +74,7 @@ const Search: Component<{}> = (p) => {
                 selected.set(
                   filteredBuilds()![
                     highlighted() - (filteredDeployments()?.length || 0)
-                  ],
+                  ]._id!,
                   "build"
                 );
                 setSearch("");
@@ -94,11 +89,13 @@ const Search: Component<{}> = (p) => {
                     highlighted() -
                       (filteredDeployments()?.length || 0) -
                       (filteredBuilds()?.length || 0)
-                  ],
+                  ]._id!,
                   "server"
                 );
                 setSearch("");
               }
+            } else if (e.key === "Escape") {
+              setSearch("");
             }
           }}
         />
@@ -115,7 +112,7 @@ const Search: Component<{}> = (p) => {
             no results
           </Show>
           <For each={filteredDeployments()}>
-            {(id, index) => (
+            {(deployment, index) => (
               <button
                 class={combineClasses(
                   s.SearchItem,
@@ -123,11 +120,11 @@ const Search: Component<{}> = (p) => {
                   "grey"
                 )}
                 onClick={() => {
-                  selected.set(id, "deployment");
+                  selected.set(deployment._id!, "deployment");
                   setSearch("");
                 }}
               >
-                {deployments.get(id)!.name}
+                {deployment.name}
                 <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>
                   deployment
                 </div>
@@ -136,7 +133,7 @@ const Search: Component<{}> = (p) => {
           </For>
           {/* <div class="divider" /> */}
           <For each={filteredBuilds()}>
-            {(id, index) => (
+            {(build, index) => (
               <button
                 class={combineClasses(
                   s.SearchItem,
@@ -145,18 +142,18 @@ const Search: Component<{}> = (p) => {
                   "grey"
                 )}
                 onClick={() => {
-                  selected.set(id, "build");
+                  selected.set(build._id!, "build");
                   setSearch("");
                 }}
               >
-                {builds.get(id)!.name}
+                {build.name}
                 <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</div>
               </button>
             )}
           </For>
           {/* <div class="divider" /> */}
           <For each={filteredServers()}>
-            {(id, index) => (
+            {(server, index) => (
               <button
                 class={combineClasses(
                   s.SearchItem,
@@ -167,11 +164,11 @@ const Search: Component<{}> = (p) => {
                   "grey"
                 )}
                 onClick={() => {
-                  selected.set(id, "server");
+                  selected.set(server._id!, "server");
                   setSearch("");
                 }}
               >
-                {servers.get(id)!.name}
+                {server.name}
                 <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>
                   server
                 </div>

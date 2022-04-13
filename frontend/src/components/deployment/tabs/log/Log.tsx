@@ -95,7 +95,7 @@ const Log: Component<{
           class={combineClasses(s.Download, "blue")}
           onClick={() => downloadDeploymentLog(selected.id(), deployment()!.name)}
         >
-          download
+          download full log
         </button>
       </Show>
     </Show>

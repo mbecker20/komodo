@@ -1,4 +1,4 @@
-import { Component, For, onCleanup, Show } from "solid-js";
+import { Component, createSignal, For, onCleanup, Show } from "solid-js";
 import { useArray } from "../../state/hooks";
 import Grid from "../util/layout/Grid";
 import Update from "../update/Update";
@@ -17,6 +17,17 @@ const Updates: Component<{}> = (p) => {
     }
   });
   onCleanup(unsub);
+  const [noMoreUpdates, setNoMore] = createSignal(false);
+  const loadMore = async () => {
+    const offset = selectedUpdates.collection()?.length;
+    if (offset) {
+      const updates = await getUpdates({ offset, deploymentID: selected.id() });
+      selectedUpdates.addManyToEnd(updates);
+      if (updates.length !== 10) {
+        setNoMore(true);
+      }
+    }
+  };
   return (
     <Show
       when={
@@ -30,6 +41,11 @@ const Updates: Component<{}> = (p) => {
           <For each={selectedUpdates.collection()}>
             {(update) => <Update update={update} showName={false} />}
           </For>
+          <Show when={!noMoreUpdates()}>
+            <button class="grey" style={{ width: "100%" }} onClick={loadMore}>
+              load more
+            </button>
+          </Show>
         </Grid>
       </Grid>
     </Show>

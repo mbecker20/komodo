@@ -132,7 +132,23 @@ export function useDeployments() {
 }
 
 export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {
-  return useArray(() => getUpdates(query));
+  const updates = useArray(() => getUpdates(query));
+  const [noMore, setNoMore] = createSignal(false);
+  const loadMore = async () => {
+    const offset = updates.collection()?.length;
+    if (offset) {
+      const newUpdates = await getUpdates({ offset });
+      updates.addManyToEnd(newUpdates);
+      if (newUpdates.length !== 10) {
+        setNoMore(true);
+      }
+    }
+  }
+  return {
+    noMore,
+    loadMore,
+    ...updates
+  }
 }
 
 export function useArray<T>(query: () => Promise<T[]>) {
@@ -143,10 +159,14 @@ export function useArray<T>(query: () => Promise<T[]>) {
   const add = (item: T) => {
     set((items: any) => (items ? [item, ...items] : [item]));
   };
+  const addManyToEnd = (items: T[]) => {
+    set((curr: any) => (curr ? [...curr, ...items] : items));
+  };
   const loaded = () => (collection() ? true : false);
   return {
     collection,
     add,
+    addManyToEnd,
     loaded,
   };
 }
@@ -178,6 +198,11 @@ export function useCollection<T>(query: () => Promise<Collection<T>>) {
     const _ids = coll && ids()!.filter((id) => condition(coll[id]));
     return _ids && keepOnlyInObj(coll, _ids);
   };
+  const filterArray = (condition: (item: T) => boolean) => {
+    const coll = collection();
+    const _ids = coll && ids()!.filter((id) => condition(coll[id]));
+    return _ids && _ids.map((id) => coll[id]);
+  };
   return {
     collection,
     add,
@@ -188,5 +213,6 @@ export function useCollection<T>(query: () => Promise<Collection<T>>) {
     ids,
     loaded,
     filter,
+    filterArray,
   };
 }

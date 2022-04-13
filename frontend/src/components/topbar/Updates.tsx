@@ -23,6 +23,15 @@ const Updates: Component<{}> = () => {
           <For each={updates.collection()!}>
             {(update) => <Update update={update} showName />}
           </For>
+          <Show when={!updates.noMore()}>
+            <button
+              class="grey"
+              style={{ width: "100%" }}
+              onClick={updates.loadMore}
+            >
+              load more
+            </button>
+          </Show>
         </Grid>
       </Grid>
     </Show>
