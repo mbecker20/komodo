@@ -33,7 +33,7 @@ const New: Component<{
         value={name()}
         onEdit={setName}
         onEnter={create}
-        style={{ width: "11rem" }}
+        style={{ width: "10rem" }}
       />
       <Flex gap="0.4rem">
         <button
