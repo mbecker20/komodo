@@ -21,6 +21,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     restart: String,
     postImage: String, // interpolated into run command after the image String
     containerUser: String, // after -u in the run command
+    dockerAccount: String,
     /* to manage repo for static frontend, mounted as a volume */
     repo: String,
     branch: String,

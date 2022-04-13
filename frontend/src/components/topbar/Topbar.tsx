@@ -1,4 +1,5 @@
-import { Component, createSignal } from "solid-js";
+import { Component, createSignal, Show } from "solid-js";
+import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
@@ -14,6 +15,7 @@ export const TOPBAR_HEIGHT = 40;
 
 const Topbar: Component = () => {
   const { sidebar, selected } = useAppState();
+  const { width } = useAppDimensions();
   const { username } = useUser();
   const [menu, setMenu] = createSignal<"updates" | "account">();
   const close = () => setMenu(undefined);
@@ -29,9 +31,11 @@ const Topbar: Component = () => {
         <button onClick={sidebar.toggle}>
           <Icon type="menu" width="1.25rem" />
         </button>
-        <div class={s.Monitor} onClick={() => selected.set("", "home")}>
-          monitor
-        </div>
+        <Show when={width() > 500}>
+          <div class={s.Monitor} onClick={() => selected.set("", "home")}>
+            monitor
+          </div>
+        </Show>
       </Flex>
       {/* left side */}
       <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
