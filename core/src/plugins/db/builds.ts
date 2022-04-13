@@ -19,7 +19,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
     cliBuild: Command,
     dockerBuildArgs: DockerBuildArgs,
     dockerAccount: String,
-    owners: [String],
+    owners: { type: [String], default: [] },
   });
 
   app.decorate("builds", model(app, "Build", schema));

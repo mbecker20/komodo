@@ -16,7 +16,7 @@ export default function deploymentModel() {
   const schema = new Schema<Deployment>({
     name: { type: String, unique: true, index: true },
     containerName: { type: String, unique: true, index: true }, // for auto pull of frontend repo as well
-    owners: [String],
+    owners: { type: [String], default: [] },
     serverID: { type: String, index: true },
     buildID: { type: String, index: true }, // if deploying a monitor build
     /* to create docker run command */
@@ -28,11 +28,14 @@ export default function deploymentModel() {
     restart: String,
     postImage: String, // interpolated into run command after the image String
     containerUser: String, // after -u in the run command
+    dockerAccount: String,
     /* to manage repo for static frontend, mounted as a volume */
     repo: String,
     branch: String,
-    containerMount: String, // the file path to mount repo on inside the container
+    subfolder: String,
     githubAccount: String,
+    containerMount: String, // the file path to mount repo on inside the container
+    repoMount: String,
   });
 
 	return model("Deployment", schema)
