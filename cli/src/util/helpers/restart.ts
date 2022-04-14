@@ -1,5 +1,6 @@
 import { getCoreDeployment } from "../mongoose/deployment";
 import { deleteContainer, dockerRun } from "./docker";
+import { execute } from "./execute";
 import { prettyStringify } from "./general";
 
 export type RestartError = {
@@ -8,10 +9,20 @@ export type RestartError = {
 }
 
 export async function restart(
-  args: { name: string; mongoUrl: string },
+  args: { name: string; mongoUrl: string, pullLatest: boolean },
   onError: (err: RestartError) => void
 ) {
   try {
+    if (args.pullLatest) {
+      try {
+        await execute("docker pull mbecker2020/monitor-core");
+      } catch (error) {
+        onError({
+          message: "failed to pull latest image",
+          error: prettyStringify(error),
+        });
+      }
+    }
     const deployment = await getCoreDeployment(args);
     if (deployment) {
       try {

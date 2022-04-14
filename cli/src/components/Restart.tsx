@@ -7,17 +7,20 @@ import { Input } from "./util/Input";
 import EnterToContinue from "./util/EnterToContinue";
 import { CommandLogError } from "@monitor/types";
 import { restart, RestartError } from "../util/helpers/restart";
+import YesNo from "./util/YesNo";
 
 type State = {
   stage:
     | "query"
     | "name"
     | "mongo"
+    | "pullLatest"
     | "confirm"
     | "installing"
     | "finished"
     | "error";
   name: string;
+  pullLatest?: boolean;
   mongoUrl?: string;
   result?: CommandLogError;
   error?: RestartError;
@@ -30,10 +33,12 @@ const Restart = ({
   useDefaults,
   defaultName,
   defaultMongoUrl,
+  defaultPullLatest,
 }: {
   useDefaults?: boolean;
   defaultName?: string;
   defaultMongoUrl?: string;
+  defaultPullLatest?: boolean;
 }) => {
   const { next, prev } = useMainSequence();
   const [config, setConfig, setMany] = useStore<State>({
@@ -49,13 +54,14 @@ const Restart = ({
     mongoUrl: useDefaults
       ? "mongodb://127.0.0.1:27017/monitor"
       : defaultMongoUrl,
+    pullLatest: useDefaults ? false : defaultPullLatest,
   });
 
-  const { stage, name, mongoUrl, result, error } = config;
+  const { stage, name, mongoUrl, pullLatest, result, error } = config;
 
   useEffect(() => {
     if (stage === "installing") {
-      restart({ name, mongoUrl: mongoUrl! }, (err) =>
+      restart({ name, mongoUrl: mongoUrl!, pullLatest: pullLatest! }, (err) =>
         setMany(["stage", "error"], ["error", err])
       ).then((success) => {
         if (success) {
@@ -112,7 +118,7 @@ const Restart = ({
               <Input
                 initialValue={mongoUrl || "mongodb://127.0.0.1:27017/monitor"}
                 onSubmit={(mongoUrl) =>
-                  setMany(["stage", "confirm"], ["mongoUrl", mongoUrl])
+                  setMany(["stage", "pullLatest"], ["mongoUrl", mongoUrl])
                 }
                 onEsc={() => setConfig("stage", "name")}
               />
@@ -126,6 +132,22 @@ const Restart = ({
           </Text>
         )}
 
+        {stage === "pullLatest" && (
+          <YesNo
+            label="pull latest core?"
+            onSelect={(res) => {
+              setMany(["stage", "confirm"], ["pullLatest", res === "yes"]);
+            }}
+            onEsc={() => setConfig("stage", "mongo")}
+          />
+        )}
+
+        {pullLatest !== undefined && stage !== "pullLatest" && (
+          <Text color="green">
+            pull latest: <Text color="white">{pullLatest ? "yes" : "no"}</Text>
+          </Text>
+        )}
+
         <Newline />
 
         {stage === "confirm" && (
@@ -133,7 +155,7 @@ const Restart = ({
             onEnter={() => {
               setConfig("stage", "installing");
             }}
-            onEsc={() => setConfig("stage", "mongo")}
+            onEsc={() => setConfig("stage", "pullLatest")}
             pressEnterTo="restart monitor"
           />
         )}
