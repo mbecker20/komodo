@@ -30,8 +30,8 @@ const Topbar: Component = () => {
     >
       {/* right side */}
       <Flex alignItems="center" style={{ padding: "0rem 0.5rem" }}>
-        <button onClick={sidebar.toggle}>
-          <Icon type="menu" width="1.25rem" />
+        <button class="grey" onClick={sidebar.toggle}>
+          <Icon type="menu" width="1.15rem" />
         </button>
         <Show when={width() > 500}>
           <div class={s.Monitor} onClick={() => selected.set("", "home")}>
@@ -62,11 +62,12 @@ const Topbar: Component = () => {
           close={close}
           target={
             <button
+              class="grey"
               onClick={() =>
                 menu() === "updates" ? setMenu(undefined) : setMenu("updates")
               }
             >
-              <Icon type="notifications" alt="updates" width="1.25rem" />
+              <Icon type="notifications" alt="updates" width="1.15rem" />
             </button>
           }
           content={<Updates />}
@@ -77,6 +78,7 @@ const Topbar: Component = () => {
           close={close}
           target={
             <button
+              class="grey"
               onClick={() =>
                 menu() === "account" ? setMenu(undefined) : setMenu("account")
               }
