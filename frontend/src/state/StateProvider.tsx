@@ -92,7 +92,7 @@ export const AppStateProvider: Component<{}> = (p) => {
     }
   };
   addEventListener("keydown", menuToggleListener);
-  onCleanup(() => removeEventListener("resize", menuToggleListener));
+  onCleanup(() => removeEventListener("keydown", menuToggleListener));
 
   return (
     <context.Provider

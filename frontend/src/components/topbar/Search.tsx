@@ -1,4 +1,11 @@
-import { Component, createMemo, createSignal, For, Show } from "solid-js";
+import {
+  Component,
+  createMemo,
+  createSignal,
+  For,
+  onCleanup,
+  Show,
+} from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
 import Icon from "../util/Icon";
@@ -12,6 +19,7 @@ const Search: Component<{}> = (p) => {
   const [search, setSearch] = createSignal("");
   const [open, setOpen] = createSignal(false);
   const close = () => {
+    inputRef?.blur();
     setSearch("");
     setOpen(false);
   };
@@ -34,6 +42,16 @@ const Search: Component<{}> = (p) => {
         server.name.toLowerCase().includes(search().toLowerCase())
       )!
   );
+  let inputRef: HTMLInputElement | undefined;
+  const listener = (e: any) => {
+    if (e.target.matches("input")) return;
+    if (e.key === "S" && e.shiftKey) {
+      setOpen(true);
+      setTimeout(() => inputRef?.focus(), 200);
+    }
+  };
+  addEventListener("keydown", listener);
+  onCleanup(() => removeEventListener("keydown", listener));
   return (
     <Menu
       show={open()}
@@ -45,6 +63,7 @@ const Search: Component<{}> = (p) => {
       }}
       target={
         <Input
+          ref={inputRef}
           class={s.Search}
           placeholder="search"
           value={search()}
