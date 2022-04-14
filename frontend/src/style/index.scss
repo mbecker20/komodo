@@ -87,6 +87,14 @@ input::placeholder {
   font-weight: 450;
 }
 
+.lightgrey {
+  background-color: rgba(c.$lightgrey, 0.6);
+}
+
+.lightgrey:hover {
+  background-color: c.$lightgrey;
+}
+
 .grey-no-hover {
   background-color: rgba(c.$grey, 0.8);
 }

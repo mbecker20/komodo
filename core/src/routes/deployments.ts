@@ -142,19 +142,10 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
         res.send("could not find deployment's server");
         return;
       }
-      const date = new Date();
       const log = server.isCore
         ? await getContainerLog(deployment.containerName!)
         : await getPeripheryContainerLog(server, deployment.containerName!);
-      res
-        .type("application/octet-stream")
-        .header(
-          "Content-Disposition",
-          `attachment; filename="${deployment.name}-log-${date
-            .toLocaleDateString()
-            .replaceAll("/", "-")}.txt"`
-        )
-        .send(JSON.stringify(log));
+      res.send(log);
     }
   );
 

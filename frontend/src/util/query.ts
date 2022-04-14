@@ -66,15 +66,12 @@ export async function downloadDeploymentLog(
   deploymentID: string,
   name: string
 ) {
-  const data = await client.get<string>(
-    `/api/deployment/${deploymentID}/log/download`,
-    {
-      responseType: "blob",
-    }
+  const data = await client.get<Log>(
+    `/api/deployment/${deploymentID}/log/download`
   );
   const date = new Date();
   fileDownload(
-    data,
+    JSON.stringify(data, undefined, 2),
     `${name}-log-${date.toLocaleDateString().replaceAll("/", "-")}.txt`
   );
 }

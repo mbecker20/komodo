@@ -25,6 +25,7 @@ import {
 const DeploymentTabs: Component<{}> = () => {
   const { selected, deployments, ws } = useAppState();
   const deployment = () => deployments.get(selected.id());
+  const [logTail, setLogTail] = createSignal(50);
   const [log, setLog] = createSignal<LogType>({});
   const status = () =>
     deployment()!.status === "not deployed"
@@ -33,7 +34,7 @@ const DeploymentTabs: Component<{}> = () => {
   const load = async () => {
     console.log("load log");
     if (deployment()?.status !== "not deployed") {
-      const log = await getDeploymentLog(selected.id());
+      const log = await getDeploymentLog(selected.id(), logTail());
       setLog(log);
     } else {
       setLog({});
@@ -69,7 +70,14 @@ const DeploymentTabs: Component<{}> = () => {
             status() !== "not deployed" && [
               {
                 title: "log",
-                element: <Log reload={load} log={log()} />,
+                element: (
+                  <Log
+                    reload={load}
+                    log={log()}
+                    logTail={logTail()}
+                    setLogTail={setLogTail}
+                  />
+                ),
               },
               {
                 title: "error log",
@@ -85,7 +93,15 @@ const DeploymentTabs: Component<{}> = () => {
                     </Show>
                   </Flex>
                 ),
-                element: <Log reload={load} log={log()} error />,
+                element: (
+                  <Log
+                    reload={load}
+                    log={log()}
+                    logTail={logTail()}
+                    setLogTail={setLogTail}
+                    error
+                  />
+                ),
               },
             ],
           ].flat()}

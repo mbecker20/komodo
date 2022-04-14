@@ -7,6 +7,7 @@ import {
   onMount,
   Show,
 } from "solid-js";
+import { combineClasses } from "../../../util/helpers";
 import { useToggle } from "../../../util/hooks";
 import Icon from "../Icon";
 import Input from "../Input";
@@ -20,10 +21,13 @@ const Selector: Component<{
   onSelect?: (item: string, index: number) => void;
   position?: Position;
   targetClass?: string;
+  targetStyle?: JSX.CSSProperties;
   disabled?: boolean;
   disabledClass?: string;
   disabledStyle?: JSX.CSSProperties;
   useSearch?: boolean;
+  itemClass?: string;
+  itemStyle?: JSX.CSSProperties;
 }> = (p) => {
   const [show, toggle] = useToggle();
   const [search, setSearch] = createSignal("");
@@ -47,7 +51,7 @@ const Selector: Component<{
           setSearch("");
         }}
         target={
-          <button class={p.targetClass} onClick={toggle}>
+          <button class={p.targetClass} onClick={toggle} style={p.targetStyle}>
             {p.selected}
             <Icon type="chevron-down" />
           </button>
@@ -82,8 +86,12 @@ const Selector: Component<{
                     p.onSelect && p.onSelect(item, index());
                     toggle();
                   }}
-                  style={{ width: "100%", "justify-content": "flex-end" }}
-                  class={s.SelectorItem}
+                  style={{
+                    width: "100%",
+                    "justify-content": "flex-end",
+                    ...p.itemStyle,
+                  }}
+                  class={combineClasses(p.itemClass, s.SelectorItem)}
                 >
                   {item}
                 </button>

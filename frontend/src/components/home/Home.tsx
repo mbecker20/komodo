@@ -70,7 +70,7 @@ const Home: Component<{}> = (p) => {
         </Show>
 
         <Show when={filteredServerIds() && filteredServerIds()!.length > 0}>
-          <Grid class="card shadow">
+          <Grid gap="0.5rem" class="card shadow">
             <h1 style={{ opacity: 0.5 }}>my servers</h1>
             <For each={filteredServerIds()}>
               {(id) => (
@@ -102,7 +102,7 @@ const Home: Component<{}> = (p) => {
         </Show>
 
         <Show when={filteredBuildIds() && filteredBuildIds()!.length > 0}>
-          <Grid class="card shadow">
+          <Grid gap="0.5rem" class="card shadow">
             <h1 style={{ opacity: 0.5 }}>my builds</h1>
             <For each={filteredBuildIds()}>
               {(id) => (

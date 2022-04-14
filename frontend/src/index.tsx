@@ -1,6 +1,5 @@
 /* @refresh reload */
 import { render } from "solid-js/web";
-
 import "./style/colors.scss";
 import "./style/index.scss";
 import "./style/app.scss";
@@ -15,7 +14,7 @@ import { AppStateProvider } from "./state/StateProvider";
 export const URL =
   import.meta.env.MODE === "production"
     ? location.origin
-    : "https://monitor.mogh.tech";
+    : "http://localhost:9000";
 export const WS_URL = URL.replace("https", "wss").replace("http", "ws") + "/ws";
 
 export const client = new Client(URL);
