@@ -12,7 +12,14 @@ const Deployment: Component<{}> = (p) => {
   const deployment = () => deployments.get(selected.id());
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   return (
-    <Show when={deployment() && server()}>
+    <Show
+      when={deployment() && server()}
+      fallback={
+        <Grid class="content">
+          <div class="left-content">deployment at id not found</div>
+        </Grid>
+      }
+    >
       <ActionStateProvider>
         <Grid class="content">
           {/* left / actions */}

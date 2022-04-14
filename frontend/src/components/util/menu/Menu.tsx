@@ -17,7 +17,8 @@ const Menu: Component<{
   close: () => void;
   position?: Position;
   padding?: string | number;
-  style?: JSX.CSSProperties;
+  menuClass?: string;
+  menuStyle?: JSX.CSSProperties;
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
   const [buffer, set] = createSignal(p.show);
@@ -37,12 +38,13 @@ const Menu: Component<{
         <div class={s.MenuBackground} onClick={p.close} />
         <div
           class={combineClasses(
+            p.menuClass,
             s.Menu,
             "shadow",
             getPositionClass(p.position),
             p.show ? s.Enter : s.Exit
           )}
-          style={{ padding: p.padding, ...p.style }}
+          style={{ padding: p.padding, ...p.menuStyle }}
           onClick={(e) => e.stopPropagation()}
         >
           {p.content}

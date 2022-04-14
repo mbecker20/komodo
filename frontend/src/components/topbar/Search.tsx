@@ -1,40 +1,48 @@
 import { Component, createMemo, createSignal, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
+import Icon from "../util/Icon";
 import Input from "../util/Input";
+import Flex from "../util/layout/Flex";
 import Menu from "../util/menu/Menu";
 import s from "./topbar.module.scss";
 
 const Search: Component<{}> = (p) => {
   const { deployments, builds, servers, selected } = useAppState();
   const [search, setSearch] = createSignal("");
+  const [open, setOpen] = createSignal(false);
+  const close = () => {
+    setSearch("");
+    setOpen(false);
+  };
   const [highlighted, setHighlighted] = createSignal(0);
-  const filteredDeployments = createMemo(() =>
-    search().length > 0
-      ? deployments.filterArray((deployment) =>
-          deployment.name.toLowerCase().includes(search().toLowerCase())
-        )!
-      : undefined
+  const filteredDeployments = createMemo(
+    () =>
+      deployments.filterArray((deployment) =>
+        deployment.name.toLowerCase().includes(search().toLowerCase())
+      )!
   );
-  const filteredBuilds = createMemo(() =>
-    search().length > 0
-      ? builds.filterArray((build) =>
-          build.name.toLowerCase().includes(search().toLowerCase())
-        )!
-      : undefined
+  const filteredBuilds = createMemo(
+    () =>
+      builds.filterArray((build) =>
+        build.name.toLowerCase().includes(search().toLowerCase())
+      )!
   );
-  const filteredServers = createMemo(() =>
-    search().length > 0
-      ? servers.filterArray((server) =>
-          server.name.toLowerCase().includes(search().toLowerCase())
-        )!
-      : undefined
+  const filteredServers = createMemo(
+    () =>
+      servers.filterArray((server) =>
+        server.name.toLowerCase().includes(search().toLowerCase())
+      )!
   );
   return (
     <Menu
-      show={search().length > 0}
-      close={() => setSearch("")}
+      show={open()}
+      close={close}
       position="bottom right"
+      menuClass="scroller"
+      menuStyle={{
+        "max-height": "80vh",
+      }}
       target={
         <Input
           class={s.Search}
@@ -44,6 +52,8 @@ const Search: Component<{}> = (p) => {
             setSearch(val);
             setHighlighted(0);
           }}
+          onFocus={() => setOpen(true)}
+          onBlur={close}
           onKeyDown={(e: any) => {
             if (e.key === "ArrowDown") {
               e.preventDefault();
@@ -65,7 +75,7 @@ const Search: Component<{}> = (p) => {
                   filteredDeployments()![highlighted()]._id!,
                   "deployment"
                 );
-                setSearch("");
+                close();
               } else if (
                 highlighted() <
                 (filteredDeployments()?.length || 0) +
@@ -77,7 +87,7 @@ const Search: Component<{}> = (p) => {
                   ]._id!,
                   "build"
                 );
-                setSearch("");
+                close();
               } else if (
                 highlighted() <
                 (filteredDeployments()?.length || 0) +
@@ -92,10 +102,10 @@ const Search: Component<{}> = (p) => {
                   ]._id!,
                   "server"
                 );
-                setSearch("");
+                close();
               }
             } else if (e.key === "Escape") {
-              setSearch("");
+              close();
             }
           }}
         />
@@ -121,13 +131,19 @@ const Search: Component<{}> = (p) => {
                 )}
                 onClick={() => {
                   selected.set(deployment._id!, "deployment");
-                  setSearch("");
+                  close();
                 }}
               >
                 {deployment.name}
-                <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>
+                <Flex
+                  alignItems="center"
+                  gap="0.2rem"
+                  style={{ opacity: 0.6, "font-size": "0.9rem" }}
+                >
+                  {servers.get(deployment.serverID!)?.name}
+                  <Icon type="caret-right" width="0.7rem" />
                   deployment
-                </div>
+                </Flex>
               </button>
             )}
           </For>
@@ -143,7 +159,7 @@ const Search: Component<{}> = (p) => {
                 )}
                 onClick={() => {
                   selected.set(build._id!, "build");
-                  setSearch("");
+                  close();
                 }}
               >
                 {build.name}
@@ -165,7 +181,7 @@ const Search: Component<{}> = (p) => {
                 )}
                 onClick={() => {
                   selected.set(server._id!, "server");
-                  setSearch("");
+                  close();
                 }}
               >
                 {server.name}

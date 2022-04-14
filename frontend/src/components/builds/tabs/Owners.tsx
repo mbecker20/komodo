@@ -68,7 +68,7 @@ const Owners: Component<{}> = (p) => {
                   <Show when={users().length === 0}>no matching users</Show>
                 </>
               }
-              style={{ width: "12rem" }}
+              menuStyle={{ width: "12rem" }}
             />
             <For each={build.owners}>
               {(owner) => (

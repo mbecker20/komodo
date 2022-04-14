@@ -57,21 +57,19 @@ const Log: Component<{
     <Show when={p.log}>
       <Flex
         alignItems="center"
-        justifyContent="space-between"
+        justifyContent="flex-end"
         style={{ margin: "0rem 0.5rem" }}
       >
-        <Flex alignItems="center">
-          number of lines:
-          <Selector
-            targetClass="lightgrey"
-            targetStyle={{ padding: "0.35rem" }}
-            selected={p.logTail.toString()}
-            items={["50", "100", "500", "1000"]}
-            onSelect={(tail) => p.setLogTail(Number(tail))}
-            position="bottom right"
-            itemStyle={{ width: "4rem" }}
-          />
-        </Flex>
+        number of lines:
+        <Selector
+          targetClass="lightgrey"
+          targetStyle={{ padding: "0.35rem" }}
+          selected={p.logTail.toString()}
+          items={["50", "100", "500", "1000"]}
+          onSelect={(tail) => p.setLogTail(Number(tail))}
+          position="bottom right"
+          itemStyle={{ width: "4rem" }}
+        />
         <Show when={userCanUpdate()}>
           <button
             class="blue"

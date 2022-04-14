@@ -4,7 +4,6 @@ import {
   createSignal,
   For,
   JSX,
-  onMount,
   Show,
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";

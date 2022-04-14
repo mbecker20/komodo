@@ -21,7 +21,10 @@
 .SearchItem {
 	width: 100%;
 	font-size: 1.1rem;
-	justify-content: space-between;
+	display: grid;
+	gap: 0.2rem;
+	place-items: start;
+	justify-content: start;
 	transition: all 250ms ease-in-out;
 }
 

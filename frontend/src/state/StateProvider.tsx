@@ -82,8 +82,17 @@ export const AppStateProvider: Component<{}> = (p) => {
       toggleSidebarOpen();
     }
   };
-  window.addEventListener("resize", resizeListener);
-  onCleanup(() => window.removeEventListener("resize", resizeListener));
+  addEventListener("resize", resizeListener);
+  onCleanup(() => removeEventListener("resize", resizeListener));
+
+  const menuToggleListener = (e: any) => {
+    if (e.target.matches("input")) return;
+    if (e.key === "M" && e.shiftKey) {
+      toggleSidebarOpen();
+    }
+  };
+  addEventListener("keydown", menuToggleListener);
+  onCleanup(() => removeEventListener("resize", menuToggleListener));
 
   return (
     <context.Provider

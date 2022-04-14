@@ -36,7 +36,8 @@ export type IconType =
   | "github"
   | "edit"
   | "clipboard"
-  | "check";
+  | "check"
+  | "caret-right";
 
 const Icon: Component<{
   type: IconType;

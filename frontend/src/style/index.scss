@@ -103,7 +103,7 @@ input::placeholder {
   background-color: rgba(c.$grey, 0.8);
 }
 
-.grey:hover {
+.grey:not(.selected):hover {
   background-color: c.$lightgrey;
 }
 
