@@ -13,9 +13,20 @@ import { ControlledInput } from "../util/Input";
 import NumberInput from "../util/NumberInput";
 import { CoreOrPeripheryConfig } from "../../types";
 import LabelledSelector from "../util/LabelledSelector";
-import { toDashedName, trailingSlash } from "../../util/helpers/general";
+import {
+  noTrailingSlash,
+  toDashedName,
+  trailingSlash,
+} from "../../util/helpers/general";
 
-type Stage = "name" | "secret" | "sysroot" | "port" | "restart" | "confirm";
+type Stage =
+  | "name"
+  | "secret"
+  | "sysroot"
+  | "host"
+  | "port"
+  | "restart"
+  | "confirm";
 
 const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
   const { set } = useConfig();
@@ -27,7 +38,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
     stage: "name",
     name: isCore ? "monitor-core" : "monitor-periphery",
   });
-  const { stage, name, secretVolume, port, restart, sysroot } = config;
+  const { stage, name, secretVolume, host, port, restart, sysroot } = config;
   useEsc(() => {
     switch (stage) {
       case "name":
@@ -42,8 +53,12 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
         setConfig("stage", "secret");
         break;
 
+      case "host":
+        setConfig("stage", "sysroot");
+        break;
+
       case "port":
-        setMany(["stage", "sysroot"]);
+        setMany(["stage", isCore ? "host" : "sysroot"]);
         break;
 
       case "restart":
@@ -103,7 +118,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
               value={sysroot || join(resolve("."), "/monitor")}
               onChange={(sysroot) => setConfig("sysroot", sysroot)}
               onSubmit={(sysroot) => {
-                setMany(["stage", "port"], ["sysroot", trailingSlash(sysroot)]);
+                setMany(["stage", isCore ? "host" : "port"], ["sysroot", trailingSlash(sysroot)]);
               }}
             />
           </Text>
@@ -113,6 +128,27 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
       {sysroot && stage !== "sysroot" && (
         <Text color="green">
           system root: <Text color="white">{sysroot}</Text>
+        </Text>
+      )}
+
+      {stage === "host" && (
+        <Text color="green">
+          host address:{" "}
+          <Text color="white">
+            <ControlledInput
+              value={host || "http://localhost:9000"}
+              onChange={(host) => setConfig("host", host)}
+              onSubmit={(host) => {
+                setMany(["stage", "port"], ["host", noTrailingSlash(host)]);
+              }}
+            />
+          </Text>
+        </Text>
+      )}
+
+      {host && stage !== "host" && (
+        <Text color="green">
+          host address: <Text color="white">{host}</Text>
         </Text>
       )}
 
@@ -172,6 +208,7 @@ const CoreOrPeriphery = ({ type }: { type: "core" | "periphery" }) => {
                 port: Number(port),
                 restart: restart!,
                 sysroot: sysroot!,
+                host,
               });
               next();
             }}

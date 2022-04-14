@@ -17,3 +17,7 @@ export function timestamp() {
 export function trailingSlash(str: string) {
   return str[str.length - 1] === "/" ? str : str + "/";
 }
+
+export function noTrailingSlash(str: string) {
+  return str[str.length - 1] === "/" ? str.slice(0, str.length - 1) : str;
+}

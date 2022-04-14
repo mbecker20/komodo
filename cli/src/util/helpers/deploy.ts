@@ -9,7 +9,7 @@ import {
 import { Config, StartConfig } from "../../types";
 import { addInitialDocs } from "../mongoose/addInitialDocs";
 import { execute } from "./execute";
-import { toDashedName, trailingSlash } from "./general";
+import { noTrailingSlash, toDashedName, trailingSlash } from "./general";
 
 export type Stage = "mongo" | "registry" | "core" | "periphery" | "docs";
 
@@ -70,11 +70,13 @@ export default async function deploy(
 }
 
 async function deployCore({ core, mongo }: Config) {
-  const { name, secretVolume, port, restart, sysroot } = core!;
+  const { name, secretVolume, port, restart, sysroot, host } = core!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volumes = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root`;
   const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
-  const env = `-e MONGO_URL=${mongo?.url} -e SYSROOT=${trailingSlash(core?.sysroot!)}`;
+  const env = `-e MONGO_URL=${mongo?.url} -e SYSROOT=${trailingSlash(
+    core?.sysroot!
+  )} -e HOST=${noTrailingSlash(core?.host!)}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volumes} ${network} ${env} ${restartArg} ${CORE_IMAGE}`;
   return await execute(command);
