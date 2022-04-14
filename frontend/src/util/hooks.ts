@@ -37,11 +37,7 @@ export type LocalStorageSetter<T> = (arg: T | ((s: T) => T)) => void;
 export function useLocalStorageToggle(
   key: string,
   initial?: boolean
-): [
-  Accessor<boolean>,
-  () => void,
-  LocalStorageSetter<boolean>
-] {
+): [Accessor<boolean>, () => void, LocalStorageSetter<boolean>] {
   const [s, set] = useLocalStorage(initial || false, key);
   const toggle = () => set((s) => !s);
   return [s, toggle, set];
@@ -129,4 +125,15 @@ export function useBuffer(show: Accessor<boolean>, timeout = 250) {
     }
   });
   return buffer;
+}
+
+export function useWindowKeyDown(
+  onKeyDown: (e: { key: string; shiftKey: boolean }) => void
+) {
+  const listener = (e: any) => {
+    if (e.target.matches("input")) return;
+    onKeyDown(e);
+  };
+  addEventListener("keydown", listener);
+  onCleanup(() => removeEventListener("keydown", listener));
 }

@@ -7,7 +7,7 @@ import {
   Resource,
   useContext,
 } from "solid-js";
-import { useLocalStorageToggle } from "../util/hooks";
+import { useLocalStorageToggle, useWindowKeyDown } from "../util/hooks";
 import { getDockerAccounts, getGithubAccounts } from "../util/query";
 import { USER_UPDATE } from "./actions";
 import { useAppDimensions } from "./DimensionProvider";
@@ -82,14 +82,11 @@ export const AppStateProvider: Component<{}> = (p) => {
   addEventListener("resize", resizeListener);
   onCleanup(() => removeEventListener("resize", resizeListener));
 
-  const menuToggleListener = (e: any) => {
-    if (e.target.matches("input")) return;
+  useWindowKeyDown((e) => {
     if (e.key === "M" && e.shiftKey) {
       toggleSidebarOpen();
     }
-  };
-  addEventListener("keydown", menuToggleListener);
-  onCleanup(() => removeEventListener("keydown", menuToggleListener));
+  });
 
   return (
     <context.Provider

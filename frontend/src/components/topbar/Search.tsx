@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
+import { useWindowKeyDown } from "../../util/hooks";
 import Icon from "../util/Icon";
 import Input from "../util/Input";
 import Flex from "../util/layout/Flex";
@@ -43,15 +44,13 @@ const Search: Component<{}> = (p) => {
       )!
   );
   let inputRef: HTMLInputElement | undefined;
-  const listener = (e: any) => {
-    if (e.target.matches("input")) return;
+
+  useWindowKeyDown((e) => {
     if (e.key === "S" && e.shiftKey) {
       setOpen(true);
       setTimeout(() => inputRef?.focus(), 200);
     }
-  };
-  addEventListener("keydown", listener);
-  onCleanup(() => removeEventListener("keydown", listener));
+  });
   return (
     <Menu
       show={open()}
