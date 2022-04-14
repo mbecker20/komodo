@@ -9,6 +9,7 @@ import Icon from "../../../util/Icon";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import Selector from "../../../util/menu/Selector";
+import { useConfig } from "../config/Provider";
 import s from "./log.module.scss";
 
 const Log: Component<{
@@ -19,6 +20,7 @@ const Log: Component<{
   error?: boolean;
 }> = (p) => {
   const { selected, deployments } = useAppState();
+  const { userCanUpdate } = useConfig();
   const deployment = () => deployments.get(selected.id());
   let ref: HTMLDivElement | undefined;
   let ignore = false;
@@ -70,15 +72,17 @@ const Log: Component<{
             itemStyle={{ width: "4rem" }}
           />
         </Flex>
-        <button
-          class="blue"
-          onClick={() =>
-            downloadDeploymentLog(selected.id(), deployment()!.name)
-          }
-          style={{ padding: "0.35rem" }}
-        >
-          download full log
-        </button>
+        <Show when={userCanUpdate()}>
+          <button
+            class="blue"
+            onClick={() =>
+              downloadDeploymentLog(selected.id(), deployment()!.name)
+            }
+            style={{ padding: "0.35rem" }}
+          >
+            download full log
+          </button>
+        </Show>
       </Flex>
       <div style={{ position: "relative" }}>
         <div
