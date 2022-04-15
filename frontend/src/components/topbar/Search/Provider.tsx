@@ -75,39 +75,18 @@ const value = () => {
           setHighlighted(0);
         }
       } else if (e.key === "Enter") {
-        if (highlighted() < (filteredDeployments()?.length || 0)) {
-          selected.set(
-            filteredDeployments()![highlighted()]._id!,
-            "deployment"
-          );
-          close(inputRef);
-        } else if (
-          highlighted() <
-          (filteredDeployments()?.length || 0) + (filteredBuilds()?.length || 0)
-        ) {
-          selected.set(
-            filteredBuilds()![
-              highlighted() - (filteredDeployments()?.length || 0)
-            ]._id!,
-            "build"
-          );
-          close(inputRef);
-        } else if (
-          highlighted() <
-          (filteredDeployments()?.length || 0) +
-            (filteredBuilds()?.length || 0) +
-            (filteredServers()?.length || 0)
-        ) {
-          selected.set(
-            filteredServers()![
-              highlighted() -
-                (filteredDeployments()?.length || 0) -
-                (filteredBuilds()?.length || 0)
-            ]._id!,
-            "server"
-          );
-          close(inputRef);
+        switch (selectedTab()) {
+          case "deployments":
+            selected.set(filteredBuilds()![highlighted()]._id!, "deployment");
+            break;
+          case "builds":
+            selected.set(filteredDeployments()![highlighted()]._id!, "build");
+            break;
+          case "servers":
+            selected.set(filteredServers()![highlighted()]._id!, "server");
+            break;
         }
+        close(inputRef);
       } else if (e.key === "Escape") {
         close(inputRef);
       }
@@ -119,37 +98,52 @@ const value = () => {
   );
 
   useWindowKeyDown((e) => {
-    if (e.key === "ArrowRight") {
-      if (selectedTab() === "deployments") {
-        setSelectedTab("builds");
-        setHighlighted(0);
-      } else if (selectedTab() === "builds") {
-        setSelectedTab("servers");
-        setHighlighted(0);
+    if (open()) {
+      if (e.key === "ArrowRight") {
+        if (selectedTab() === "deployments") {
+          setSelectedTab("builds");
+          setHighlighted(0);
+        } else if (selectedTab() === "builds") {
+          setSelectedTab("servers");
+          setHighlighted(0);
+        }
+      } else if (e.key === "ArrowLeft") {
+        if (selectedTab() === "builds") {
+          setSelectedTab("deployments");
+          setHighlighted(0);
+        } else if (selectedTab() === "servers") {
+          setSelectedTab("builds");
+          setHighlighted(0);
+        }
+      } else if (e.key === "ArrowDown") {
+        setHighlighted((h) =>
+          Math.min(
+            h + 1,
+            (selectedTab() === "deployments"
+              ? filteredDeployments()?.length
+              : selectedTab() === "builds"
+              ? filteredBuilds()?.length
+              : selectedTab() === "servers"
+              ? filteredServers()?.length
+              : 1) - 1
+          )
+        );
+      } else if (e.key === "ArrowUp") {
+        setHighlighted((h) => Math.max(0, h - 1));
+      } else if (e.key === "Enter") {
+        switch (selectedTab()) {
+          case "deployments":
+            selected.set(filteredBuilds()![highlighted()]._id!, "deployment");
+            break;
+          case "builds":
+            selected.set(filteredDeployments()![highlighted()]._id!, "build");
+            break;
+          case "servers":
+            selected.set(filteredServers()![highlighted()]._id!, "server");
+            break;
+        }
+        close(undefined);
       }
-    } else if (e.key === "ArrowLeft") {
-      if (selectedTab() === "builds") {
-        setSelectedTab("deployments");
-        setHighlighted(0);
-      } else if (selectedTab() === "servers") {
-        setSelectedTab("builds");
-        setHighlighted(0);
-      }
-    } else if (e.key === "ArrowDown") {
-      setHighlighted((h) =>
-        Math.min(
-          h + 1,
-          (selectedTab() === "deployments"
-            ? filteredDeployments()?.length
-            : selectedTab() === "builds"
-            ? filteredBuilds()?.length
-            : selectedTab() === "servers"
-            ? filteredServers()?.length
-            : 1) - 1
-        )
-      );
-    } else if (e.key === "ArrowUp") {
-      setHighlighted((h) => Math.max(0, h - 1));
     }
   });
 
