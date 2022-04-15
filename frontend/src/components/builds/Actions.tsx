@@ -15,7 +15,7 @@ const Actions: Component<{}> = (p) => {
   const build = () => builds.get(selected.id())!;
   const actions = useActionStates();
   return (
-    <Show when={build() && (permissions() >= 2 || build().owners.includes(username()!))}>
+    <Show when={permissions() > 1 || build().owners.includes(username()!)}>
       <Grid class="card shadow">
         <h1>actions</h1>
         <Flex class="action shadow">

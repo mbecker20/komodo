@@ -2,6 +2,7 @@ import { ContainerStatus } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { DELETE_DEPLOYMENT } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
+import { useUser } from "../../state/UserProvider";
 import { deploymentStatusClass } from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/Icon";
@@ -12,9 +13,9 @@ import HoverMenu from "../util/menu/HoverMenu";
 import { useActionStates } from "./ActionStateProvider";
 
 const Header: Component<{}> = (p) => {
-  const { servers, deployments, ws, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id());
-  const server = () => deployment() && servers.get(deployment()?.serverID!);
+  const { deployments, ws, selected } = useAppState();
+  const deployment = () => deployments.get(selected.id())!;
+  const { permissions, username } = useUser();
   const state = () =>
     deployment()!.status === "not deployed"
       ? "not deployed"
@@ -29,37 +30,43 @@ const Header: Component<{}> = (p) => {
       <Flex alignItems="center" justifyContent="space-between">
         <h1>{deployment()!.name}</h1>
         <Show
-          when={!actions.fullDeleting}
-          fallback={
-            <button class="red">
-              <Icon type="trash" />
-            </button>
-          }
+          when={permissions() >= 2 || deployment().owners.includes(username()!)}
         >
-          <HoverMenu
-            target={
-              <Show
-                when={!actions.fullDeleting}
-                fallback={
-                  <button class="red">
-                    <Loading />
-                  </button>
-                }
-              >
-                <ConfirmButton
-                  onConfirm={() => {
-                    ws.send(DELETE_DEPLOYMENT, { deploymentID: selected.id() });
-                  }}
-                  color="red"
-                >
-                  <Icon type="trash" />
-                </ConfirmButton>
-              </Show>
+          <Show
+            when={!actions.fullDeleting}
+            fallback={
+              <button class="red">
+                <Icon type="trash" />
+              </button>
             }
-            content="delete deployment"
-            position="bottom center"
-            padding="0.5rem"
-          />
+          >
+            <HoverMenu
+              target={
+                <Show
+                  when={!actions.fullDeleting}
+                  fallback={
+                    <button class="red">
+                      <Loading />
+                    </button>
+                  }
+                >
+                  <ConfirmButton
+                    onConfirm={() => {
+                      ws.send(DELETE_DEPLOYMENT, {
+                        deploymentID: selected.id(),
+                      });
+                    }}
+                    color="red"
+                  >
+                    <Icon type="trash" />
+                  </ConfirmButton>
+                </Show>
+              }
+              content="delete deployment"
+              position="bottom center"
+              padding="0.5rem"
+            />
+          </Show>
         </Show>
       </Flex>
       <Flex alignItems="center" justifyContent="space-between">

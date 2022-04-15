@@ -8,9 +8,9 @@ import BuildTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
 const Build: Component<{}> = (p) => {
-	const { builds, selected } = useAppState();
+  const { builds, selected } = useAppState();
   const build = () => builds.get(selected.id())!;
-	return (
+  return (
     <Show when={build()}>
       <ActionStateProvider>
         <Grid class="content">
@@ -26,6 +26,6 @@ const Build: Component<{}> = (p) => {
       </ActionStateProvider>
     </Show>
   );
-}
+};
 
 export default Build;

@@ -2,6 +2,7 @@ import { Server } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { REMOVE_SERVER } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
+import { useUser } from "../../state/UserProvider";
 import { serverStatusClass } from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/Icon";
@@ -17,6 +18,7 @@ const Header: Component<{}> = (p) => {
         ? "OK"
         : "NOT OK"
       : "DISABLED";
+  const { permissions, username } = useUser();
   return (
     <Flex
       class="card shadow"
@@ -30,14 +32,16 @@ const Header: Component<{}> = (p) => {
       <Show when={!server().isCore}>
         <Flex alignItems="center">
           <div class={serverStatusClass(status())}>{status()}</div>
-          <ConfirmButton
-            onConfirm={() => {
-              ws.send(REMOVE_SERVER, { serverID: selected.id() });
-            }}
-            color="red"
-          >
-            <Icon type="trash" />
-          </ConfirmButton>
+          <Show when={permissions() > 1 || server().owners.includes(username())}>
+            <ConfirmButton
+              onConfirm={() => {
+                ws.send(REMOVE_SERVER, { serverID: selected.id() });
+              }}
+              color="red"
+            >
+              <Icon type="trash" />
+            </ConfirmButton>
+          </Show>
         </Flex>
       </Show>
     </Flex>
