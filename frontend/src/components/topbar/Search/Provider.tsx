@@ -77,10 +77,10 @@ const value = () => {
       } else if (e.key === "Enter") {
         switch (selectedTab()) {
           case "deployments":
-            selected.set(filteredBuilds()![highlighted()]._id!, "deployment");
+            selected.set(filteredDeployments()![highlighted()]._id!, "deployment");
             break;
           case "builds":
-            selected.set(filteredDeployments()![highlighted()]._id!, "build");
+            selected.set(filteredBuilds()![highlighted()]._id!, "build");
             break;
           case "servers":
             selected.set(filteredServers()![highlighted()]._id!, "server");
@@ -133,10 +133,10 @@ const value = () => {
       } else if (e.key === "Enter") {
         switch (selectedTab()) {
           case "deployments":
-            selected.set(filteredBuilds()![highlighted()]._id!, "deployment");
+            selected.set(filteredDeployments()![highlighted()]._id!, "deployment");
             break;
           case "builds":
-            selected.set(filteredDeployments()![highlighted()]._id!, "build");
+            selected.set(filteredBuilds()![highlighted()]._id!, "build");
             break;
           case "servers":
             selected.set(filteredServers()![highlighted()]._id!, "server");
