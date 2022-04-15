@@ -1,4 +1,5 @@
 import { Component, createSignal, Show } from "solid-js";
+import { TOPBAR_HEIGHT } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
@@ -10,11 +11,9 @@ import HoverMenu from "../util/menu/HoverMenu";
 import Menu from "../util/menu/Menu";
 import Account from "./Account";
 import { SearchProvider } from "./Search/Provider";
-import Search from "./Search/Search";
+import { Search } from "./Search/Search";
 import s from "./topbar.module.scss";
 import Updates from "./Updates";
-
-export const TOPBAR_HEIGHT = 40;
 
 const Topbar: Component = () => {
   const { sidebar, selected, ws } = useAppState();
@@ -82,8 +81,8 @@ const Topbar: Component = () => {
                 menu() === "account" ? setMenu(undefined) : setMenu("account")
               }
             >
-              {username()}
-              <Icon type="chevron-down" />
+              <Show when={width() > 500}>{username()}</Show>
+              <Icon type={width() > 500 ? "chevron-down" : "user"} />
             </button>
           }
           content={<Account close={close} />}

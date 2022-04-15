@@ -37,7 +37,8 @@ export type IconType =
   | "edit"
   | "clipboard"
   | "check"
-  | "caret-right";
+  | "caret-right"
+  | "search";
 
 const Icon: Component<{
   type: IconType;

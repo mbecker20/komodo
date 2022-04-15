@@ -1,17 +1,30 @@
-import { Component, For, Show } from "solid-js";
+import { Component, For, JSX, onMount, Show } from "solid-js";
 import s from "../topbar.module.scss";
 import Input from "../../util/Input";
 import Menu from "../../util/menu/Menu";
 import { useSearchState } from "./Provider";
-import { combineClasses, deploymentStatusClass } from "../../../util/helpers";
+import {
+  combineClasses,
+  deploymentStatusClass,
+  inPx,
+} from "../../../util/helpers";
 import { useAppState } from "../../../state/StateProvider";
 import Flex from "../../util/layout/Flex";
 import Icon from "../../util/Icon";
 import { useWindowKeyDown } from "../../../util/hooks";
 import Circle from "../../util/Circle";
-import Tabs, { ControlledTabs } from "../../util/tabs/Tabs";
+import { ControlledTabs } from "../../util/tabs/Tabs";
+import { useAppDimensions } from "../../../state/DimensionProvider";
 
-const Search: Component<{}> = (p) => {
+const mobileStyle: JSX.CSSProperties = {
+  position: "fixed",
+  top: inPx(44),
+  left: "1rem",
+  width: "calc(100vw - 2rem)",
+};
+
+export const Search: Component<{}> = (p) => {
+  const { width } = useAppDimensions();
   const { search, open, input } = useSearchState();
   let inputRef: HTMLInputElement | undefined;
   useWindowKeyDown((e) => {
@@ -20,27 +33,41 @@ const Search: Component<{}> = (p) => {
       setTimeout(() => inputRef?.focus(), 200);
     }
   });
+  const style = () => {
+    return {
+      "max-height": "80vh",
+      "padding-right": "0.5rem",
+      gap: "0.5rem",
+      ...(width() < 500 ? mobileStyle : {}),
+    };
+  };
   return (
     <Menu
       show={open.value()}
       close={() => open.close(inputRef)}
       position="bottom right"
       menuClass="scroller"
-      menuStyle={{
-        "max-height": "80vh",
-        "padding-right": "0.5rem",
-        gap: "0.5rem",
-      }}
+      menuStyle={style()}
+      backgroundColor={width() <= 500 ? "rgba(0,0,0,0.6)" : undefined}
       target={
-        <Input
-          ref={inputRef}
-          class={s.Search}
-          placeholder="search"
-          value={search.value()}
-          onEdit={input.onEdit}
-          onFocus={() => open.set(true)}
-          onKeyDown={input.onKeyDown(inputRef)}
-        />
+        <Show
+          when={width() > 500}
+          fallback={
+            <button class="grey" onClick={() => open.set(true)}>
+              <Icon type="search" width="1.15rem" />
+            </button>
+          }
+        >
+          <Input
+            ref={inputRef}
+            class={s.Search}
+            placeholder="search"
+            value={search.value()}
+            onEdit={input.onEdit}
+            onFocus={() => open.set(true)}
+            onKeyDown={input.onKeyDown(inputRef)}
+          />
+        </Show>
       }
       content={<SearchMenu close={() => open.close(inputRef)} />}
     />
@@ -48,27 +75,47 @@ const Search: Component<{}> = (p) => {
 };
 
 const SearchMenu: Component<{ close: () => void }> = (p) => {
-  const { tab } = useSearchState();
+  const { tab, input, search } = useSearchState();
+  const { width } = useAppDimensions();
+  let inputRef: HTMLInputElement | undefined;
+  onMount(() => {
+    if (width() <= 500) {
+      inputRef?.focus();
+    }
+  });
   return (
-    <ControlledTabs
-      selected={tab.selected}
-      set={tab.set}
-      containerStyle={{ width: "350px" }}
-      tabs={[
-        {
-          title: "deployments",
-          element: <Deployments close={p.close} />,
-        },
-        {
-          title: "builds",
-          element: <Builds close={p.close} />,
-        },
-        {
-          title: "servers",
-          element: <Servers close={p.close} />,
-        },
-      ]}
-    />
+    <>
+      <Show when={width() <= 500}>
+        <Input
+          ref={inputRef}
+          class={s.Search}
+          placeholder="search"
+          value={search.value()}
+          onEdit={input.onEdit}
+          onKeyDown={input.onKeyDown(inputRef)}
+          style={{ width: width() < 500 ? "100%" : undefined }}
+        />
+      </Show>
+      <ControlledTabs
+        selected={tab.selected}
+        set={tab.set}
+        containerStyle={{ width: width() < 500 ? "100%" : "350px" }}
+        tabs={[
+          {
+            title: "deployments",
+            element: <Deployments close={p.close} />,
+          },
+          {
+            title: "builds",
+            element: <Builds close={p.close} />,
+          },
+          {
+            title: "servers",
+            element: <Servers close={p.close} />,
+          },
+        ]}
+      />
+    </>
   );
 };
 
@@ -170,5 +217,3 @@ const Servers: Component<{ close: () => void }> = (p) => {
     </>
   );
 };
-
-export default Search;

@@ -20,6 +20,7 @@ const Menu: Component<{
   menuClass?: string;
   menuStyle?: JSX.CSSProperties;
   containerStyle?: JSX.CSSProperties;
+  backgroundColor?: string;
 }> = (p) => {
   const [buffer, set] = createSignal(p.show);
   createEffect(() => {
@@ -35,7 +36,11 @@ const Menu: Component<{
     <div class={s.MenuContainer} style={p.containerStyle}>
       {p.target}
       <Show when={buffer()}>
-        <div class={s.MenuBackground} onClick={p.close} />
+        <div
+          class={s.MenuBackground}
+          style={{ "background-color": p.backgroundColor }}
+          onClick={p.close}
+        />
         <div
           class={combineClasses(
             p.menuClass,

@@ -21,6 +21,8 @@ export const client = new Client(URL);
 
 export const { Notifications, pushNotification } = makeNotifications();
 
+export const TOPBAR_HEIGHT = 40;
+
 render(
   () => [
     <DimensionProvider>
