@@ -3,13 +3,14 @@ import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
-import Cirle from "../util/Cirle";
+import Circle from "../util/Circle";
 import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import HoverMenu from "../util/menu/HoverMenu";
 import Menu from "../util/menu/Menu";
 import Account from "./Account";
-import Search from "./Search";
+import { SearchProvider } from "./Search/Provider";
+import Search from "./Search/Search";
 import s from "./topbar.module.scss";
 import Updates from "./Updates";
 
@@ -40,23 +41,21 @@ const Topbar: Component = () => {
         </Show>
         <HoverMenu
           target={
-            <Cirle
+            <Circle
               size={1}
               class={ws.isOpen() ? "green" : "red"}
               style={{ transition: "all 500ms ease-in-out" }}
             />
           }
-          content={
-            ws.isOpen()
-              ? "connected"
-              : "disconnected"
-          }
+          content={ws.isOpen() ? "connected" : "disconnected"}
           position="right center"
         />
       </Flex>
       {/* left side */}
       <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
-        <Search />
+        <SearchProvider>
+          <Search />
+        </SearchProvider>
         <Menu
           show={menu() === "updates"}
           close={close}

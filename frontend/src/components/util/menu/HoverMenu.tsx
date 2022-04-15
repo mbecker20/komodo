@@ -18,6 +18,7 @@ const HoverMenu: Component<{
   position?: Position;
   padding?: string;
   contentStyle?: JSX.CSSProperties;
+  contentClass?: string;
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
   const [show, set] = createSignal(false);
@@ -47,6 +48,7 @@ const HoverMenu: Component<{
       <Show when={buffer()}>
         <div
           class={combineClasses(
+            p.contentClass,
             getPositionClass(p.position),
             s.HoverMenu,
             show() ? s.Enter : s.Exit

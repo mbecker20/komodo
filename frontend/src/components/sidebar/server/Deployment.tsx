@@ -4,6 +4,7 @@ import { useAppDimensions } from "../../../state/DimensionProvider";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { combineClasses, deploymentStatusClass } from "../../../util/helpers";
+import Circle from "../../util/Circle";
 import Icon from "../../util/Icon";
 import Flex from "../../util/layout/Flex";
 import HoverMenu from "../../util/menu/HoverMenu";
@@ -49,7 +50,12 @@ const Deployment: Component<{ id: string }> = (p) => {
               position="bottom center"
             />
           </Show>
-          <div class={deploymentStatusClass(status())}>{status()}</div>
+          <HoverMenu
+            target={<Circle size={1} class={deploymentStatusClass(status())} />}
+            content={status()}
+            position="left center"
+            contentStyle={{ "background-color": "transparent" }}
+          />
         </Flex>
       </button>
     </Show>

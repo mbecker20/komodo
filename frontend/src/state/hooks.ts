@@ -1,4 +1,4 @@
-import { Collection } from "@monitor/types";
+import { Collection, ContainerStatus } from "@monitor/types";
 import {
   createEffect,
   createResource,
@@ -128,7 +128,20 @@ export function useBuilds() {
 }
 
 export function useDeployments() {
-  return useCollection(getDeployments);
+  const deployments = useCollection(getDeployments);
+  const state = (id: string) =>
+    deployments.get(id)!.status === "not deployed"
+      ? "not deployed"
+      : (deployments.get(id)!.status as ContainerStatus).State;
+  const status = (id: string) =>
+    deployments.get(id)!.status === "not deployed"
+      ? undefined
+      : (deployments.get(id)!.status as ContainerStatus).Status.toLowerCase();
+  return {
+    ...deployments,
+    status,
+    state,
+  }
 }
 
 export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {

@@ -3,7 +3,7 @@ import { Component, Show } from "solid-js";
 import { DELETE_DEPLOYMENT } from "../../state/actions";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { deploymentStatusClass } from "../../util/helpers";
+import { deploymentHeaderStatusClass } from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
@@ -70,7 +70,7 @@ const Header: Component<{}> = (p) => {
         </Show>
       </Flex>
       <Flex alignItems="center" justifyContent="space-between">
-        <div class={deploymentStatusClass(state())}>{state()}</div>
+        <div class={deploymentHeaderStatusClass(state())}>{state()}</div>
         <Show when={status()}>
           <div style={{ opacity: 0.7 }}>{status()}</div>
         </Show>

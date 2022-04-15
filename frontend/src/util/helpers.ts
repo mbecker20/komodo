@@ -87,6 +87,19 @@ export function deploymentStatusClass(
 ) {
   switch (status) {
     case "running":
+      return "green";
+    case "exited":
+      return "red";
+    default:
+      return "blue";
+  }
+}
+
+export function deploymentHeaderStatusClass(
+  status: "not deployed" | "created" | "running" | "exited"
+) {
+  switch (status) {
+    case "running":
       return "running";
     case "exited":
       return "exited";

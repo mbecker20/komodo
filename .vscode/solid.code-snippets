@@ -36,40 +36,29 @@
 	},
 	"context": {
 		"scope": "typescriptreact,javascriptreact",
-		"prefix": "context",
+		"prefix": "provider",
 		"body": [
 			"import { Component, createContext, useContext } from \"solid-js\";",
 			"",
-			"export type State = {",
-			"\t",
+			"const value = () => {",
+			"\treturn {};",
 			"}",
 			"",
-			"const Context = createContext<State>()",
+			"export type Value = ReturnType<typeof value>;",
 			"",
-			"export const Provider: Component = (p) => {",
-			"\tconst context: State = {",
-			"\t\t",
-			"\t}",
+			"const context = createContext<Value>()",
+			"",
+			"export const Provider: Component<{}> = (p) => {",
 			"\treturn (",
-			"\t\t<Context.Provider value={context}>",
+			"\t\t<context.Provider value={value()}>",
 			"\t\t\t{p.children}",
-			"\t\t</Context.Provider>",
+			"\t\t</context.Provider>",
 			"\t);",
 			"}",
 			"",
-			"export function useContxt() {",
-			"\treturn useContext(Context) as State;",
+			"export function useValue() {",
+			"\treturn useContext(context) as Value;",
 			"}"
 		]
-	},
-	"create-store": {
-		"scope": "typescriptreact,javascriptreact",
-		"prefix": "create-store",
-		"body": "import { createStore } from \"solid-js/store\";"
-	},
-	"use-app-state": {
-		"scope": "typescriptreact,javascriptreact",
-		"prefix": "use-app-state",
-		"body": "const {${0}} = useAppState();"
 	}
 }

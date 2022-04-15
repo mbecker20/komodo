@@ -53,10 +53,6 @@
   background-color: rgba(c.$lightblue, 0.5);
 }
 
-.ServerButton:global(.selected):hover {
-  background-color: c.$lightblue;
-}
-
 .DropdownItem {
   padding: 0.5rem 1rem;
   width: 100%;
@@ -66,10 +62,6 @@
 
 .DropdownItem:hover {
   background-color: rgba(c.$lightblue, 0.5);
-}
-
-.DropdownItem:global(.selected):hover {
-  background-color: c.$lightblue;
 }
 
 .CreateButton {

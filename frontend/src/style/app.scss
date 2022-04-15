@@ -87,7 +87,7 @@
 }
 
 .selected {
-  background-color: c.$lightblue;
+  background-color: rgba(c.$lightblue, 0.5);
 }
 
 .running {

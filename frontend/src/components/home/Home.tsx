@@ -3,8 +3,10 @@ import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { deploymentStatusClass, serverStatusClass } from "../../util/helpers";
+import Circle from "../util/Circle";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
+import HoverMenu from "../util/menu/HoverMenu";
 import s from "./home.module.scss";
 
 const Home: Component<{}> = (p) => {
@@ -58,9 +60,17 @@ const Home: Component<{}> = (p) => {
                 >
                   <h2>{deployments.get(id)!.name}</h2>
                   <Flex>
-                    <div class={deploymentStatusClass(deploymentState(id))}>
-                      {deploymentState(id)}
-                    </div>
+                    <HoverMenu
+                      target={
+                        <Circle
+                          size={1}
+                          class={deploymentStatusClass(deploymentState(id))}
+                        />
+                      }
+                      content={deploymentState(id)}
+                      position="left center"
+                      contentStyle={{ "background-color": "transparent" }}
+                    />
                     <div style={{ opacity: 0.7 }}>{deploymentStatus(id)}</div>
                   </Flex>
                 </button>

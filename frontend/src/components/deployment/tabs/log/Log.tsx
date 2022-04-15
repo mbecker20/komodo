@@ -81,6 +81,16 @@ const Log: Component<{
             download full log
           </button>
         </Show>
+        <button
+          class="blue"
+          onClick={async () => {
+            await p.reload();
+            pushNotification("good", "log refreshed");
+          }}
+          style={{ padding: "0.4rem" }}
+        >
+          <Icon type="refresh" />
+        </button>
       </Flex>
       <div style={{ position: "relative" }}>
         <div
@@ -101,25 +111,14 @@ const Log: Component<{
         >
           <pre class={s.Log}>{log()}</pre>
         </div>
-        <Grid class={s.TopRight}>
+        <Show when={buffer()}>
           <button
-            class="blue"
-            onClick={async () => {
-              await p.reload();
-              pushNotification("good", "log refreshed");
-            }}
+            class={combineClasses(s.TopRight, "blue", scrolled() ? s.Enter : s.Exit)}
+            onClick={() => setScrolled(false)}
           >
-            <Icon type="refresh" />
+            <Icon type="arrow-down" />
           </button>
-          <Show when={buffer()}>
-            <button
-              class={combineClasses("blue", scrolled() ? s.Enter : s.Exit)}
-              onClick={() => setScrolled(false)}
-            >
-              <Icon type="arrow-down" />
-            </button>
-          </Show>
-        </Grid>
+        </Show>
       </div>
     </Show>
   );
