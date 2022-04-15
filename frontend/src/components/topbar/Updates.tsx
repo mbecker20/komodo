@@ -1,15 +1,17 @@
-import { Component, For, Show } from "solid-js";
+import { Component, For, JSX, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import Grid from "../util/layout/Grid";
 import s from "./topbar.module.scss";
 import Update from "../update/Update";
-import { combineClasses } from "../../util/helpers";
+import { combineClasses, inPx } from "../../util/helpers";
+import { useAppDimensions } from "../../state/DimensionProvider";
 
 const Updates: Component<{}> = () => {
   const { updates } = useAppState();
+  const { isMobile } = useAppDimensions();
   return (
     <Show when={updates.loaded()}>
-      <Grid class={s.Updates}>
+      <Grid class={s.Updates} style={isMobile() ? { width: "100%" } : undefined}>
         <div
           style={{
             "font-size": "1.5rem",

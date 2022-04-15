@@ -1,4 +1,4 @@
-import { Component, createSignal, Show } from "solid-js";
+import { Component, createSignal, JSX, Show } from "solid-js";
 import { TOPBAR_HEIGHT } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
@@ -15,9 +15,16 @@ import { Search } from "./Search/Search";
 import s from "./topbar.module.scss";
 import Updates from "./Updates";
 
+const mobileStyle: JSX.CSSProperties = {
+  position: "fixed",
+  top: inPx(44),
+  left: "1rem",
+  width: "calc(100vw - 2rem)",
+};
+
 const Topbar: Component = () => {
   const { sidebar, selected, ws } = useAppState();
-  const { width } = useAppDimensions();
+  const { isMobile } = useAppDimensions();
   const { username } = useUser();
   const [menu, setMenu] = createSignal<"updates" | "account">();
   const close = () => setMenu(undefined);
@@ -33,7 +40,7 @@ const Topbar: Component = () => {
         <button class="grey" onClick={sidebar.toggle}>
           <Icon type="menu" width="1.15rem" />
         </button>
-        <Show when={width() > 500}>
+        <Show when={!isMobile()}>
           <div class={s.Monitor} onClick={() => selected.set("", "home")}>
             monitor
           </div>
@@ -58,6 +65,7 @@ const Topbar: Component = () => {
         <Menu
           show={menu() === "updates"}
           close={close}
+          menuStyle={isMobile() ? mobileStyle : undefined}
           target={
             <button
               class="grey"
@@ -81,8 +89,8 @@ const Topbar: Component = () => {
                 menu() === "account" ? setMenu(undefined) : setMenu("account")
               }
             >
-              <Show when={width() > 500}>{username()}</Show>
-              <Icon type={width() > 500 ? "chevron-down" : "user"} />
+              <Show when={!isMobile()}>{username()}</Show>
+              <Icon type={!isMobile() ? "chevron-down" : "user"} />
             </button>
           }
           content={<Account close={close} />}
