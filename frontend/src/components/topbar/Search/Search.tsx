@@ -24,7 +24,7 @@ const mobileStyle: JSX.CSSProperties = {
 };
 
 export const Search: Component<{}> = (p) => {
-  const { width } = useAppDimensions();
+  const { isMobile } = useAppDimensions();
   const { search, open, input } = useSearchState();
   let inputRef: HTMLInputElement | undefined;
   useWindowKeyDown((e) => {
@@ -38,7 +38,7 @@ export const Search: Component<{}> = (p) => {
       "max-height": "80vh",
       "padding-right": "0.5rem",
       gap: "0.5rem",
-      ...(width() < 500 ? mobileStyle : {}),
+      ...(isMobile() ? mobileStyle : {}),
     };
   };
   return (
@@ -48,10 +48,10 @@ export const Search: Component<{}> = (p) => {
       position="bottom right"
       menuClass="scroller"
       menuStyle={style()}
-      backgroundColor={width() <= 500 ? "rgba(0,0,0,0.6)" : undefined}
+      backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
       target={
         <Show
-          when={width() > 500}
+          when={!isMobile()}
           fallback={
             <button class="grey" onClick={() => open.set(true)}>
               <Icon type="search" width="1.15rem" />
@@ -76,16 +76,16 @@ export const Search: Component<{}> = (p) => {
 
 const SearchMenu: Component<{ close: () => void }> = (p) => {
   const { tab, input, search } = useSearchState();
-  const { width } = useAppDimensions();
+  const { isMobile } = useAppDimensions();
   let inputRef: HTMLInputElement | undefined;
   onMount(() => {
-    if (width() <= 500) {
+    if (isMobile()) {
       inputRef?.focus();
     }
   });
   return (
     <>
-      <Show when={width() <= 500}>
+      <Show when={isMobile()}>
         <Input
           ref={inputRef}
           class={s.Search}
@@ -93,13 +93,13 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
           value={search.value()}
           onEdit={input.onEdit}
           onKeyDown={input.onKeyDown(inputRef)}
-          style={{ width: width() < 500 ? "100%" : undefined }}
+          style={{ width: isMobile() ? "100%" : undefined }}
         />
       </Show>
       <ControlledTabs
         selected={tab.selected}
         set={tab.set}
-        containerStyle={{ width: width() < 500 ? "100%" : "350px" }}
+        containerStyle={{ width: isMobile() ? "100%" : "350px" }}
         tabs={[
           {
             title: "deployments",

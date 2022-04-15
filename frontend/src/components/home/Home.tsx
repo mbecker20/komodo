@@ -56,7 +56,7 @@ const Home: Component<{}> = (p) => {
                 <button
                   class="grey"
                   onClick={() => selected.set(id, "deployment")}
-                  style={{ "justify-content": "space-between", width: "22rem" }}
+                  style={{ "justify-content": "space-between", width: "300px" }}
                 >
                   <h2>{deployments.get(id)!.name}</h2>
                   <Flex>
@@ -87,7 +87,7 @@ const Home: Component<{}> = (p) => {
                 <button
                   class="grey"
                   onClick={() => selected.set(id, "server")}
-                  style={{ "justify-content": "space-between", width: "22rem" }}
+                  style={{ "justify-content": "space-between", width: "300px" }}
                 >
                   <h2>{servers.get(id)!.name}</h2>
                   <div
@@ -119,7 +119,7 @@ const Home: Component<{}> = (p) => {
                 <button
                   class="grey"
                   onClick={() => selected.set(id, "build")}
-                  style={{ "justify-content": "space-between", width: "22rem" }}
+                  style={{ "justify-content": "space-between", width: "300px" }}
                 >
                   <h2>{builds.get(id)!.name}</h2>
                 </button>

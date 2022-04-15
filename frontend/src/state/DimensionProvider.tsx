@@ -15,7 +15,7 @@ export const DimensionProvider: Component = (p) => {
   const context = {
     width,
     height,
-    isMobile: () => width() < 700,
+    isMobile: () => width() <= 500,
   };
   return (
     <DimensionContext.Provider value={context}>

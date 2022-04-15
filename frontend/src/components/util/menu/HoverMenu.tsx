@@ -40,7 +40,6 @@ const HoverMenu: Component<{
       style={p.containerStyle}
       onMouseEnter={() => set(true)}
       onMouseLeave={() => set(false)}
-      onTouchStart={() => set((show) => !show)}
       // onClick={(e) => e.stopPropagation()}
       alignItems="center"
     >
