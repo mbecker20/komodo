@@ -1,7 +1,7 @@
 import fastify from "fastify";
 import fastifyCors from "fastify-cors";
 import fastifyHelmet from "fastify-helmet";
-import { LOGGER, PORT } from "./config";
+import { HOST, LOGGER, PORT } from "./config";
 import auth from "./plugins/auth";
 import db from "./plugins/db";
 import ws from "./plugins/ws";
@@ -17,6 +17,9 @@ async function main() {
         useDefaults: true,
         directives: {
           "img-src": ["'self'", "https: data:"],
+          "connect-src": [
+            HOST.replace("https", "wss").replace("http", "ws") + "/ws",
+          ],
         },
       },
     })
