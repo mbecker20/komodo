@@ -16,10 +16,11 @@ async function main() {
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          "img-src": ["'self'", "https: data:"],
           "connect-src": [
+            "'self'",
             HOST.replace("https", "wss").replace("http", "ws") + "/ws",
           ],
+          "img-src": ["'self'", "https: data:"],
         },
       },
     })
@@ -31,7 +32,7 @@ async function main() {
     .register(frontend)
     .register(actionStates)
     .register(routes);
-    
+
   app.listen(PORT, "0.0.0.0", async (err, address) => {
     if (err) {
       app.log.error(err);
