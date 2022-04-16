@@ -64,15 +64,16 @@ export async function getDeploymentLog(deploymentID: string, tail?: number) {
 
 export async function downloadDeploymentLog(
   deploymentID: string,
-  name: string
+  name: string,
+  error?: boolean | undefined
 ) {
-  const data = await client.get<Log>(
+  const log = await client.get<Log>(
     `/api/deployment/${deploymentID}/log/download`
   );
   const date = new Date();
   fileDownload(
-    JSON.stringify(data, undefined, 2),
-    `${name}-log-${date.toLocaleDateString().replaceAll("/", "-")}.txt`
+    (error ? log.stderr : log.stdout) || "no log",
+    `${name}-${error ? "error-" : ""}log-${date.toLocaleDateString().replaceAll("/", "-")}.txt`
   );
 }
 

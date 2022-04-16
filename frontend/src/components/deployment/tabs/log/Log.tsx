@@ -77,7 +77,7 @@ const Log: Component<{
           <button
             class="blue"
             onClick={() =>
-              downloadDeploymentLog(selected.id(), deployment()!.name)
+              downloadDeploymentLog(selected.id(), deployment()!.name, p.error)
             }
             style={{ padding: "0.35rem" }}
           >
