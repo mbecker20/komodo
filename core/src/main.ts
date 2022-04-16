@@ -18,7 +18,7 @@ async function main() {
         directives: {
           "connect-src": [
             "'self'",
-            HOST.replace("https", "wss").replace("http", "ws") + "/ws",
+            HOST.replace("http", "ws") + "/ws",
           ],
           "img-src": ["'self'", "https: data:"],
         },
