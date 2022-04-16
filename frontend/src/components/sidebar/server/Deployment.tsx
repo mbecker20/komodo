@@ -16,8 +16,11 @@ const Deployment: Component<{ id: string }> = (p) => {
   const { permissions, username } = useUser();
   const deployment = () => deployments.get(p.id)!;
   const status = () => {
-    if (!deployment() || deployment()!.status === "not deployed") {
-      return "not deployed";
+    if (
+      deployment()!.status === "unknown" ||
+      deployment()!.status === "not deployed"
+    ) {
+      return deployment()!.status as "unknown" | "not deployed";
     } else {
       return (deployment()!.status as ContainerStatus).State;
     }

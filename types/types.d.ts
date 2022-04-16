@@ -125,7 +125,7 @@ export interface Deployment extends DockerRunArgs {
   onClone?: Command;
   gitConfigs?: DeploymentGitConfig[];
   // running status
-  status?: "not deployed" | ContainerStatus;
+  status?: "not deployed" | "unknown" | ContainerStatus;
 }
 
 export type Conversion = {

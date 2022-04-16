@@ -1,3 +1,4 @@
+import { Server } from "@monitor/types";
 import {
   getContainerLog,
   getContainerStatus,
@@ -12,23 +13,31 @@ import {
   getPeripheryContainerLog,
   getPeripheryContainers,
 } from "../util/periphery/container";
+import { serverStatusPeriphery } from "../util/periphery/status";
 
-async function getDeployments(app: FastifyInstance, serverID: string) {
-  const server = await app.servers.findById(serverID);
-  if (!server) return {};
+async function getDeployments(app: FastifyInstance, server: Server) {
   const deployments = await app.deployments.find(
     { serverID: server._id },
     "name containerName serverID owners repo"
   );
-  const status = server.isCore
-    ? await deploymentStatusLocal(app)
-    : await getPeripheryContainers(server);
-  return intoCollection(
-    deployments.map((deployment) => ({
-      ...deployment,
-      status: status[deployment.containerName!] || "not deployed",
-    }))
-  );
+  if (await serverStatusPeriphery(server)) {
+    const status = server.isCore
+      ? await deploymentStatusLocal(app)
+      : await getPeripheryContainers(server);
+    return intoCollection(
+      deployments.map((deployment) => {
+        deployment.status = status[deployment.containerName!] || "not deployed";
+        return deployment;
+      })
+    );
+  } else {
+    return intoCollection(
+      deployments.map((deployment) => {
+        deployment.status = "unknown";
+        return deployment;
+      })
+    );
+  }
 }
 
 const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
@@ -39,9 +48,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       // returns all the deployments
       const servers = await app.servers.find({});
       const deployments = (
-        await Promise.all(
-          servers.map((server) => getDeployments(app, server._id!))
-        )
+        await Promise.all(servers.map((server) => getDeployments(app, server)))
       ).reduce((acc, curr) => {
         Object.keys(curr).forEach((id) => {
           acc[id] = curr[id];
@@ -119,7 +126,10 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
-      const deployment = await app.deployments.findById(id, "name containerName owners serverID");
+      const deployment = await app.deployments.findById(
+        id,
+        "name containerName owners serverID"
+      );
       if (!deployment) {
         res.status(400);
         res.send("deployment not found");

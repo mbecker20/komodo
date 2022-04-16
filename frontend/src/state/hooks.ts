@@ -129,14 +129,21 @@ export function useBuilds() {
 
 export function useDeployments() {
   const deployments = useCollection(getDeployments);
-  const state = (id: string) =>
-    deployments.get(id)!.status === "not deployed"
-      ? "not deployed"
+  const state = (id: string) =>{
+    const deployment = deployments.get(id)!;
+    return deployment.status === "not deployed" ||
+      deployment.status === "unknown"
+      ? deployment.status
       : (deployments.get(id)!.status as ContainerStatus).State;
-  const status = (id: string) =>
-    deployments.get(id)!.status === "not deployed"
+  }
+    ;
+  const status = (id: string) => {
+    const deployment = deployments.get(id)!;
+    return deployment.status === "not deployed" ||
+      deployment.status === "unknown"
       ? undefined
       : (deployments.get(id)!.status as ContainerStatus).Status.toLowerCase();
+  }
   return {
     ...deployments,
     status,

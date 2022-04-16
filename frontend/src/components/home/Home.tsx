@@ -35,14 +35,6 @@ const Home: Component<{}> = (p) => {
         (id) =>
           permissions() > 1 || servers.get(id)!.owners.includes(username()!)
       );
-  const deploymentState = (id: string) =>
-    deployments.get(id)!.status === "not deployed"
-      ? "not deployed"
-      : (deployments.get(id)!.status as ContainerStatus).State;
-  const deploymentStatus = (id: string) =>
-    deployments.get(id)!.status === "not deployed"
-      ? undefined
-      : (deployments.get(id)!.status as ContainerStatus).Status.toLowerCase();
   return (
     <Grid class={s.Home}>
       <Grid style={{ height: "fit-content", width: "fit-content" }}>
@@ -64,14 +56,14 @@ const Home: Component<{}> = (p) => {
                       target={
                         <Circle
                           size={1}
-                          class={deploymentStatusClass(deploymentState(id))}
+                          class={deploymentStatusClass(deployments.state(id))}
                         />
                       }
-                      content={deploymentState(id)}
+                      content={deployments.state(id)}
                       position="left center"
                       contentStyle={{ "background-color": "transparent" }}
                     />
-                    <div style={{ opacity: 0.7 }}>{deploymentStatus(id)}</div>
+                    <div style={{ opacity: 0.7 }}>{deployments.status(id)}</div>
                   </Flex>
                 </button>
               )}

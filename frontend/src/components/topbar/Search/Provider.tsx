@@ -185,7 +185,6 @@ const context = createContext<Value>();
 
 export const SearchProvider: Component<{}> = (p) => {
   const val = value();
-  console.log(val);
   return <context.Provider value={val}>{p.children}</context.Provider>;
 };
 

@@ -83,7 +83,7 @@ export function readableOperation(operation: string) {
 }
 
 export function deploymentStatusClass(
-  status: "not deployed" | "created" | "running" | "exited"
+  status: "not deployed" | "created" | "running" | "exited" | "unknown"
 ) {
   switch (status) {
     case "running":

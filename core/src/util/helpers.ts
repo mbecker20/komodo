@@ -1,5 +1,7 @@
+import { Server } from "@monitor/types";
 import { ALERT } from "@monitor/util";
 import { WebSocket } from "ws";
+import { serverStatusPeriphery } from "./periphery/status";
 
 export function toDashedName(name: string) {
   return name.toLowerCase().replaceAll(" ", "-");

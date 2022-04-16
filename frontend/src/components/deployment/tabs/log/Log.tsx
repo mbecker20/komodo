@@ -49,7 +49,10 @@ const Log: Component<{
     if (deployment()?.status === "not deployed") {
       return "not deployed";
     } else {
-      return (p.error ? p.log?.stderr : p.log?.stdout) || "no log";
+      return (
+        (p.error ? p.log?.stderr : p.log?.stdout) ||
+        `no${p.error ? " error" : ""} log`
+      );
     }
   };
   const buffer = useBuffer(scrolled, 250);
@@ -113,7 +116,11 @@ const Log: Component<{
         </div>
         <Show when={buffer()}>
           <button
-            class={combineClasses(s.TopRight, "blue", scrolled() ? s.Enter : s.Exit)}
+            class={combineClasses(
+              s.TopRight,
+              "blue",
+              scrolled() ? s.Enter : s.Exit
+            )}
             onClick={() => setScrolled(false)}
           >
             <Icon type="arrow-down" />
