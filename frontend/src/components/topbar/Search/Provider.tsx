@@ -41,43 +41,75 @@ const value = () => {
     (inputRef: HTMLInputElement | undefined) => (e: any) => {
       if (e.key === "ArrowDown") {
         e.preventDefault();
-        setHighlighted((h) =>
-          Math.min(
-            h + 1,
+        setHighlighted((h) => {
+          const greaterThan =
+            h + 1 >
             (selectedTab() === "deployments"
               ? filteredDeployments()?.length
               : selectedTab() === "builds"
               ? filteredBuilds()?.length
               : selectedTab() === "servers"
               ? filteredServers()?.length
-              : 1) - 1
-          )
-        );
+              : 1) -
+              1;
+          return greaterThan ? 0 : h + 1;
+        });
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        setHighlighted((h) => Math.max(0, h - 1));
+        setHighlighted((h) => {
+          if (h - 1 < 0) {
+            return (
+              (selectedTab() === "deployments"
+                ? filteredDeployments()?.length
+                : selectedTab() === "builds"
+                ? filteredBuilds()?.length
+                : selectedTab() === "servers"
+                ? filteredServers()?.length
+                : 1) - 1
+            );
+          } else {
+            return h - 1;
+          }
+        });
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        if (selectedTab() === "deployments") {
-          setSelectedTab("builds");
-          setHighlighted(0);
-        } else if (selectedTab() === "builds") {
-          setSelectedTab("servers");
-          setHighlighted(0);
+        switch (selectedTab()) {
+          case "deployments":
+            setSelectedTab("builds");
+            break;
+
+          case "builds":
+            setSelectedTab("servers");
+            break;
+
+          case "servers":
+            setSelectedTab("deployments");
+            break;
         }
+        setHighlighted(0);
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        if (selectedTab() === "builds") {
-          setSelectedTab("deployments");
-          setHighlighted(0);
-        } else if (selectedTab() === "servers") {
-          setSelectedTab("builds");
-          setHighlighted(0);
+        switch (selectedTab()) {
+          case "deployments":
+            setSelectedTab("servers");
+            break;
+
+          case "builds":
+            setSelectedTab("deployments");
+            break;
+
+          case "servers":
+            setSelectedTab("builds");
+            break;
         }
+        setHighlighted(0);
       } else if (e.key === "Enter") {
         switch (selectedTab()) {
           case "deployments":
-            selected.set(filteredDeployments()![highlighted()]._id!, "deployment");
+            selected.set(
+              filteredDeployments()![highlighted()]._id!,
+              "deployment"
+            );
             break;
           case "builds":
             selected.set(filteredBuilds()![highlighted()]._id!, "build");
@@ -100,40 +132,72 @@ const value = () => {
   useWindowKeyDown((e) => {
     if (open()) {
       if (e.key === "ArrowRight") {
-        if (selectedTab() === "deployments") {
-          setSelectedTab("builds");
-          setHighlighted(0);
-        } else if (selectedTab() === "builds") {
-          setSelectedTab("servers");
-          setHighlighted(0);
+        switch (selectedTab()) {
+          case "deployments":
+            setSelectedTab("builds");
+            break;
+
+          case "builds":
+            setSelectedTab("servers");
+            break;
+
+          case "servers":
+            setSelectedTab("deployments");
+            break;
         }
+        setHighlighted(0);
       } else if (e.key === "ArrowLeft") {
-        if (selectedTab() === "builds") {
-          setSelectedTab("deployments");
-          setHighlighted(0);
-        } else if (selectedTab() === "servers") {
-          setSelectedTab("builds");
-          setHighlighted(0);
+        switch (selectedTab()) {
+          case "deployments":
+            setSelectedTab("servers");
+            break;
+
+          case "builds":
+            setSelectedTab("deployments");
+            break;
+
+          case "servers":
+            setSelectedTab("builds");
+            break;
         }
+        setHighlighted(0);
       } else if (e.key === "ArrowDown") {
-        setHighlighted((h) =>
-          Math.min(
-            h + 1,
+        setHighlighted((h) => {
+          const greaterThan =
+            h + 1 >
             (selectedTab() === "deployments"
               ? filteredDeployments()?.length
               : selectedTab() === "builds"
               ? filteredBuilds()?.length
               : selectedTab() === "servers"
               ? filteredServers()?.length
-              : 1) - 1
-          )
-        );
+              : 1) -
+              1;
+          return greaterThan ? 0 : h + 1;
+        });
       } else if (e.key === "ArrowUp") {
-        setHighlighted((h) => Math.max(0, h - 1));
+        setHighlighted((h) => {
+          if (h - 1 < 0) {
+            return (
+              (selectedTab() === "deployments"
+                ? filteredDeployments()?.length
+                : selectedTab() === "builds"
+                ? filteredBuilds()?.length
+                : selectedTab() === "servers"
+                ? filteredServers()?.length
+                : 1) - 1
+            );
+          } else {
+            return h - 1;
+          }
+        });
       } else if (e.key === "Enter") {
         switch (selectedTab()) {
           case "deployments":
-            selected.set(filteredDeployments()![highlighted()]._id!, "deployment");
+            selected.set(
+              filteredDeployments()![highlighted()]._id!,
+              "deployment"
+            );
             break;
           case "builds":
             selected.set(filteredBuilds()![highlighted()]._id!, "build");
