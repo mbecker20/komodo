@@ -23,7 +23,7 @@ const GitConfig: Component<{}> = (p) => {
             <Grid class="config-item shadow">
               <h1>webhook url</h1>
               <Flex justifyContent="space-between" alignItems="center">
-                <div class="ellipsis" style={{ width: "350px" }}>
+                <div class="ellipsis" style={{ width: "250px" }}>
                   {listenerUrl()}
                 </div>
                 <ConfirmButton

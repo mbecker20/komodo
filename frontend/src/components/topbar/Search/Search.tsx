@@ -15,6 +15,7 @@ import { useWindowKeyDown } from "../../../util/hooks";
 import Circle from "../../util/Circle";
 import { ControlledTabs } from "../../util/tabs/Tabs";
 import { useAppDimensions } from "../../../state/DimensionProvider";
+import Grid from "../../util/layout/Grid";
 
 const mobileStyle: JSX.CSSProperties = {
   position: "fixed",
@@ -33,21 +34,15 @@ export const Search: Component<{}> = (p) => {
       setTimeout(() => inputRef?.focus(), 200);
     }
   });
-  const style = () => {
-    return {
-      "max-height": "80vh",
-      "padding-right": "0.5rem",
-      gap: "0.5rem",
-      ...(isMobile() ? mobileStyle : {}),
-    };
-  };
   return (
     <Menu
       show={open.value()}
       close={() => open.close(inputRef)}
       position="bottom right"
-      menuClass="scroller"
-      menuStyle={style()}
+      menuStyle={{
+        gap: "0.5rem",
+        ...(isMobile() ? mobileStyle : {}),
+      }}
       backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
       target={
         <Show
@@ -99,7 +94,7 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
       <ControlledTabs
         selected={tab.selected}
         set={tab.set}
-        containerStyle={{ width: isMobile() ? "100%" : "350px" }}
+        containerStyle={{ width: isMobile() ? "100%" : "350px", gap: "0.5rem" }}
         tabs={[
           {
             title: "deployments",
@@ -123,7 +118,11 @@ const Deployments: Component<{ close: () => void }> = (p) => {
   const { selected, servers, deployments } = useAppState();
   const { highlighted, filteredDeployments } = useSearchState();
   return (
-    <>
+    <Grid
+      class="scroller"
+      gap="0.5rem"
+      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
+    >
       <Show when={filteredDeployments()?.length === 0}>no results</Show>
       <For each={filteredDeployments()}>
         {(deployment, index) => (
@@ -158,7 +157,7 @@ const Deployments: Component<{ close: () => void }> = (p) => {
           </button>
         )}
       </For>
-    </>
+    </Grid>
   );
 };
 
@@ -166,7 +165,11 @@ const Builds: Component<{ close: () => void }> = (p) => {
   const { selected } = useAppState();
   const { highlighted, filteredBuilds } = useSearchState();
   return (
-    <>
+    <Grid
+      class="scroller"
+      gap="0.5rem"
+      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
+    >
       <Show when={filteredBuilds()?.length === 0}>no results</Show>
       <For each={filteredBuilds()}>
         {(build, index) => (
@@ -186,7 +189,7 @@ const Builds: Component<{ close: () => void }> = (p) => {
           </button>
         )}
       </For>
-    </>
+    </Grid>
   );
 };
 
@@ -194,7 +197,11 @@ const Servers: Component<{ close: () => void }> = (p) => {
   const { selected } = useAppState();
   const { highlighted, filteredServers } = useSearchState();
   return (
-    <>
+    <Grid
+      class="scroller"
+      gap="0.5rem"
+      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
+    >
       <Show when={filteredServers()?.length === 0}>no results</Show>
       <For each={filteredServers()}>
         {(server, index) => (
@@ -214,6 +221,6 @@ const Servers: Component<{ close: () => void }> = (p) => {
           </button>
         )}
       </For>
-    </>
+    </Grid>
   );
 };

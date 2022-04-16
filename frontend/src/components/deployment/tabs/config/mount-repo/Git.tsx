@@ -15,6 +15,7 @@ const Git: Component<{}> = (p) => {
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}
         alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>repo: </h2>
         <Input
@@ -27,6 +28,7 @@ const Git: Component<{}> = (p) => {
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}
         alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>branch: </h2>
         <Input
@@ -40,6 +42,7 @@ const Git: Component<{}> = (p) => {
         <Flex
           justifyContent={userCanUpdate() ? "space-between" : undefined}
           alignItems="center"
+          style={{ "flex-wrap": "wrap" }}
         >
           <h2>github account: </h2>
           <Selector

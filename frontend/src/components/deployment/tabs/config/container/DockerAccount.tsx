@@ -13,6 +13,7 @@ const DockerAccount: Component<{}> = (p) => {
         class="config-item shadow"
         justifyContent="space-between"
         alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
       >
         <h1>docker account</h1>
         <Selector

@@ -17,6 +17,7 @@ const Docker: Component<{}> = (p) => {
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}
         alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>build path: </h2>
         <Input
@@ -29,6 +30,7 @@ const Docker: Component<{}> = (p) => {
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}
         alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>dockerfile path: </h2>
         <Input
@@ -47,8 +49,9 @@ const Docker: Component<{}> = (p) => {
         <Flex
           justifyContent={userCanUpdate() ? "space-between" : undefined}
           alignItems="center"
+          style={{ "flex-wrap": "wrap" }}
         >
-          <h2>account: </h2>
+          <h2>dockerhub account: </h2>
           <Selector
             targetClass="blue"
             selected={build.dockerAccount || "none"}

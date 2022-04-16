@@ -78,12 +78,14 @@
 }
 
 .config-item {
-  width: 60vw;
-  max-width: 30rem;
+  width: 400px;
+  max-width: calc(100vw - 2rem);
+  flex-wrap: wrap;
   background-color: c.$lightgrey;
   box-sizing: border-box;
   padding: 0.5rem;
   height: fit-content;
+  box-sizing: border-box;
 }
 
 .selected {

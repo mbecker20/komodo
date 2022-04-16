@@ -34,7 +34,7 @@ const Deployment: Component<{ id: string }> = (p) => {
         )}
         onClick={() => {
           selected.set(deployment()!._id!, "deployment");
-          if (width() <= 1000) {
+          if (width() <= 1200) {
             sidebar.toggle();
           }
         }}

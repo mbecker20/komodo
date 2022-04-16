@@ -12,6 +12,7 @@ export const OnClone: Component<{}> = (p) => {
       <Flex
         alignItems="center"
         justifyContent={userCanUpdate() ? "space-between" : undefined}
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>path:</h2>
         <Input
@@ -34,6 +35,7 @@ export const OnClone: Component<{}> = (p) => {
       <Flex
         alignItems="center"
         justifyContent={userCanUpdate() ? "space-between" : undefined}
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>command:</h2>
         <Input
@@ -65,6 +67,7 @@ export const OnPull: Component<{}> = (p) => {
       <Flex
         alignItems="center"
         justifyContent={userCanUpdate() ? "space-between" : undefined}
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>path:</h2>
         <Input
@@ -87,6 +90,7 @@ export const OnPull: Component<{}> = (p) => {
       <Flex
         alignItems="center"
         justifyContent={userCanUpdate() ? "space-between" : undefined}
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>command:</h2>
         <Input

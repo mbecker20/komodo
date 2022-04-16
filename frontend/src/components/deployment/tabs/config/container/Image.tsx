@@ -14,7 +14,7 @@ const Image: Component<{}> = (p) => {
   return (
     <Flex class="config-item shadow" justifyContent="space-between">
       <h1>{deployment.buildID ? "build" : "image"}</h1>
-      <Flex alignItems="center">
+      <Flex alignItems="center" style={{ "flex-wrap": "wrap" }}>
         <Show when={!deployment.buildID}>
           <Input
             placeholder="image"

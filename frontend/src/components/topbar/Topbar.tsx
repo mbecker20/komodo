@@ -78,6 +78,7 @@ const Topbar: Component = () => {
           }
           content={<Updates />}
           position="bottom right"
+          backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
         />
         <Menu
           show={menu() === "account"}

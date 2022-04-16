@@ -11,16 +11,17 @@ const Updates: Component<{}> = () => {
   const { isMobile } = useAppDimensions();
   return (
     <Show when={updates.loaded()}>
-      <Grid class={s.Updates} style={isMobile() ? { width: "100%" } : undefined}>
-        <div
+      <Grid
+        class={s.Updates}
+        style={isMobile() ? { width: "100%" } : undefined}
+      >
+        <h1
           style={{
-            "font-size": "1.5rem",
-            "font-weight": 500,
             "place-self": "center end",
           }}
         >
           updates
-        </div>
+        </h1>
         <Grid class={combineClasses(s.UpdatesContainer, "scroller")}>
           <For each={updates.collection()!}>
             {(update) => <Update update={update} showName />}

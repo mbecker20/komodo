@@ -13,6 +13,7 @@ const CliBuild: Component<{}> = (p) => {
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}
         alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>build path: </h2>
         <Input
@@ -25,6 +26,7 @@ const CliBuild: Component<{}> = (p) => {
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}
         alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>command: </h2>
         <Input

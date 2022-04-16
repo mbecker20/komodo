@@ -75,7 +75,7 @@ export const AppStateProvider: Component<{}> = (p) => {
   onCleanup(ws.subscribe([USER_UPDATE], reloadUser));
 
   const resizeListener = () => {
-    if (width() < 1000 && sidebarOpen()) {
+    if (width() < 1200 && sidebarOpen()) {
       toggleSidebarOpen();
     }
   };

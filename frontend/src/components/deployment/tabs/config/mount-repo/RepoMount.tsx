@@ -12,6 +12,7 @@ const RepoMount: Component<{}> = (p) => {
       <Flex
         alignItems="center"
         justifyContent={userCanUpdate() ? "space-between" : undefined}
+        style={{ "flex-wrap": "wrap" }}
       >
         <Input
           placeholder="repo folder to mount"

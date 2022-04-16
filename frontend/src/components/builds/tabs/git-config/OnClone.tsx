@@ -14,6 +14,7 @@ const OnClone: Component = () => {
       <Flex
         alignItems="center"
         justifyContent={userCanUpdate() ? "space-between" : undefined}
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>path:</h2>
         <Input
@@ -36,6 +37,7 @@ const OnClone: Component = () => {
       <Flex
         alignItems="center"
         justifyContent={userCanUpdate() ? "space-between" : undefined}
+        style={{ "flex-wrap": "wrap" }}
       >
         <h2>command:</h2>
         <Input

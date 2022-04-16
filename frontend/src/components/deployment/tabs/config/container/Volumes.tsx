@@ -38,6 +38,7 @@ const Volumes: Component<{}> = (p) => {
           <Flex
             justifyContent={userCanUpdate() ? "space-between" : undefined}
             alignItems="center"
+            style={{ "flex-wrap": "wrap" }}
           >
             <Input
               placeholder="system"
