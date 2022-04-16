@@ -1,13 +1,13 @@
-import { ContainerStatus } from "@monitor/types";
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { deploymentStatusClass, serverStatusClass } from "../../util/helpers";
+import { deploymentStatusClass, inPx, serverStatusClass } from "../../util/helpers";
 import Circle from "../util/Circle";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
-import HoverMenu from "../util/menu/HoverMenu";
 import s from "./home.module.scss";
+
+const cardWidth = 300; // in px
 
 const Home: Component<{}> = (p) => {
   const { username, permissions } = useUser();
@@ -37,33 +37,33 @@ const Home: Component<{}> = (p) => {
       );
   return (
     <Grid class={s.Home}>
-      <Grid style={{ height: "fit-content", width: "fit-content" }}>
+      <Flex class={s.Container}>
         <Show
           when={filteredDeploymentIds() && filteredDeploymentIds()!.length > 0}
         >
-          <Grid gap="0.5rem" class="card shadow">
+          <Grid
+            gap="0.5rem"
+            class="card shadow"
+            style={{ height: "fit-content" }}
+          >
             <h1 style={{ opacity: 0.5 }}>my deployments</h1>
             <For each={filteredDeploymentIds()}>
               {(id) => (
                 <button
                   class="grey"
                   onClick={() => selected.set(id, "deployment")}
-                  style={{ "justify-content": "space-between", width: "300px" }}
+                  style={{
+                    "justify-content": "space-between",
+                    width: inPx(cardWidth),
+                  }}
                 >
                   <h2>{deployments.get(id)!.name}</h2>
                   <Flex>
-                    <HoverMenu
-                      target={
-                        <Circle
-                          size={1}
-                          class={deploymentStatusClass(deployments.state(id))}
-                        />
-                      }
-                      content={deployments.state(id)}
-                      position="left center"
-                      contentStyle={{ "background-color": "transparent" }}
-                    />
                     <div style={{ opacity: 0.7 }}>{deployments.status(id)}</div>
+                    <Circle
+                      size={1}
+                      class={deploymentStatusClass(deployments.state(id))}
+                    />
                   </Flex>
                 </button>
               )}
@@ -72,14 +72,21 @@ const Home: Component<{}> = (p) => {
         </Show>
 
         <Show when={filteredServerIds() && filteredServerIds()!.length > 0}>
-          <Grid gap="0.5rem" class="card shadow">
+          <Grid
+            gap="0.5rem"
+            class="card shadow"
+            style={{ height: "fit-content" }}
+          >
             <h1 style={{ opacity: 0.5 }}>my servers</h1>
             <For each={filteredServerIds()}>
               {(id) => (
                 <button
                   class="grey"
                   onClick={() => selected.set(id, "server")}
-                  style={{ "justify-content": "space-between", width: "300px" }}
+                  style={{
+                    "justify-content": "space-between",
+                    width: inPx(cardWidth),
+                  }}
                 >
                   <h2>{servers.get(id)!.name}</h2>
                   <div
@@ -104,14 +111,21 @@ const Home: Component<{}> = (p) => {
         </Show>
 
         <Show when={filteredBuildIds() && filteredBuildIds()!.length > 0}>
-          <Grid gap="0.5rem" class="card shadow">
+          <Grid
+            gap="0.5rem"
+            class="card shadow"
+            style={{ height: "fit-content" }}
+          >
             <h1 style={{ opacity: 0.5 }}>my builds</h1>
             <For each={filteredBuildIds()}>
               {(id) => (
                 <button
                   class="grey"
                   onClick={() => selected.set(id, "build")}
-                  style={{ "justify-content": "space-between", width: "300px" }}
+                  style={{
+                    "justify-content": "space-between",
+                    width: inPx(cardWidth),
+                  }}
                 >
                   <h2>{builds.get(id)!.name}</h2>
                 </button>
@@ -123,7 +137,7 @@ const Home: Component<{}> = (p) => {
         <Show when={permissions() < 1}>
           <div>you are using a view only account.</div>
         </Show>
-      </Grid>
+      </Flex>
     </Grid>
   );
 };

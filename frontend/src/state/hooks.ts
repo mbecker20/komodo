@@ -141,7 +141,7 @@ export function useDeployments() {
     const deployment = deployments.get(id)!;
     return deployment.status === "not deployed" ||
       deployment.status === "unknown"
-      ? undefined
+      ? deployment.status
       : (deployments.get(id)!.status as ContainerStatus).Status.toLowerCase();
   }
   return {

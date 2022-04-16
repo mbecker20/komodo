@@ -4,3 +4,10 @@
 	grid-area: content;
 	padding: 1rem;
 }
+
+.Container {
+	width: fit-content;
+	height: fit-content;
+	flex-wrap: wrap;
+	max-width: 100%;
+}
