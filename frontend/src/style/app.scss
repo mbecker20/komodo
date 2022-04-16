@@ -25,7 +25,7 @@
   width: 325px;
 }
 
-@media only screen and (max-width: 1000px) {
+@media only screen and (max-width: 1200px) {
   .app {
     grid-template-columns: 1fr;
     grid-template-areas:
@@ -34,7 +34,7 @@
   }
 }
 
-@media only screen and (max-width: 500px) {	
+@media only screen and (max-width: 700px) {	
 	.content {
 		grid-template-columns: 1fr;
 	}
