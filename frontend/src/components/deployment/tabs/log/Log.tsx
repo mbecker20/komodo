@@ -7,7 +7,6 @@ import { useBuffer } from "../../../../util/hooks";
 import { downloadDeploymentLog } from "../../../../util/query";
 import Icon from "../../../util/Icon";
 import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
 import Selector from "../../../util/menu/Selector";
 import { useConfig } from "../config/Provider";
 import s from "./log.module.scss";
