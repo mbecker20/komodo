@@ -28,6 +28,7 @@ export type State = {
   updates: ReturnType<typeof useUpdates>;
   dockerAccounts: Resource<string[] | undefined>;
   githubAccounts: Resource<string[] | undefined>;
+  selected: ReturnType<typeof useSelected>;
   sidebar: {
     open: Accessor<boolean>;
     toggle: () => void;
@@ -37,7 +38,6 @@ export type State = {
 const context = createContext<
   State & {
     ws: ReturnType<typeof socket>;
-    selected: ReturnType<typeof useSelected>;
     logout: () => void;
   }
 >();
@@ -60,6 +60,7 @@ export const AppStateProvider: Component<{}> = (p) => {
     builds: useBuilds(),
     deployments: useDeployments(),
     updates: useUpdates(),
+    selected: useSelected(),
     dockerAccounts,
     githubAccounts,
     sidebar: {
@@ -68,9 +69,7 @@ export const AppStateProvider: Component<{}> = (p) => {
     },
   };
 
-  // created prior state before, to pass state easily
-  const selected = useSelected(state);
-  const ws = socket(user(), state, selected);
+  const ws = socket(user(), state);
 
   onCleanup(ws.subscribe([USER_UPDATE], reloadUser));
 
@@ -93,7 +92,6 @@ export const AppStateProvider: Component<{}> = (p) => {
       value={{
         ...state,
         ws,
-        selected,
         logout: () => {
           logout();
           ws.close();

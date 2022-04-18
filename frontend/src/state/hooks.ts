@@ -12,14 +12,12 @@ import {
   getServers,
   getUpdates,
 } from "../util/query";
-import { State } from "./StateProvider";
 
 const pages: PageType[] = ["deployment", "server", "build", "users"];
 type PageType = "deployment" | "server" | "build" | "users" | "home";
 
-export function useSelected({ servers, builds, deployments }: State) {
+export function useSelected() {
   const [_type, id] = location.pathname.split("/").filter((val) => val);
-  const [firstLoad, setFirstLoad] = createSignal(true);
   const type = (
     pages.includes(_type as PageType) ? _type : undefined
   ) as PageType;
@@ -29,7 +27,7 @@ export function useSelected({ servers, builds, deployments }: State) {
   }>({ id: id || "", type: type || "home" });
 
   history.replaceState(
-    { type, id },
+    { type: selected().type, id: selected().id },
     "",
     selected().type === "home"
       ? location.origin
@@ -50,64 +48,6 @@ export function useSelected({ servers, builds, deployments }: State) {
       history.pushState({ id, type }, "", `${location.origin}/${type}/${id}`);
     }
   };
-
-  // createEffect(() => {
-  //   if (firstLoad()) {
-  //     if (selected().type === "home") {
-  //       history.replaceState({ id: "", type: "home" }, "", "/");
-  //       setFirstLoad(false);
-  //     } else if (selected().type === "deployment" && deployments.loaded()) {
-  //       if (!deployments.get(selected().id)) {
-  //         const id = deployments.ids()![0];
-  //         set(id, "deployment");
-  //       } else {
-  //       }
-  //       setFirstLoad(false);
-  //     } else if (
-  //       selected().type === "server" &&
-  //       servers.loaded() &&
-  //       deployments.loaded()
-  //     ) {
-  //       if (!servers.get(selected().id)) {
-  //         const id = servers.ids()![0];
-  //         set(id, "server");
-  //       } else {
-  //         const [type, id] = location.pathname.split("/").filter((val) => val);
-  //         if (type !== selected().type || id !== selected().id) {
-  //           history.replaceState(
-  //             { type, id },
-  //             "",
-  //             `${selected().type}/${selected().id}`
-  //           );
-  //         }
-  //       }
-  //       setFirstLoad(false);
-  //     } else if (
-  //       selected().type === "build" &&
-  //       builds.loaded() &&
-  //       deployments.loaded()
-  //     ) {
-  //       if (!builds.get(selected().id)) {
-  //         const id = builds.ids()![0];
-  //         if (!id) {
-  //           set(deployments.ids()![0], "deployment");
-  //         } else {
-  //           set(id, "build");
-  //         }
-  //       } else {
-  //         const [type, id] = location.pathname.split("/").filter((val) => val);
-  //         if (type !== selected().type || id !== selected().id) {
-  //           history.replaceState(
-  //             { id, type },
-  //             "",
-  //             `${selected().type}/${selected().id}`
-  //           );
-  //         }
-  //       }
-  //       setFirstLoad(false);
-  //     }
-  //   }
-  // });
 
   const popstate = (e: any) => {
     setSelected({ id: e.state.id, type: e.state.type });

@@ -19,7 +19,6 @@ import {
 } from "@monitor/util";
 import { readableOperation } from "../util/helpers";
 import { getDeploymentStatus, getServer } from "../util/query";
-import { useSelected } from "./hooks";
 import { State } from "./StateProvider";
 import { createSignal } from "solid-js";
 import ReconnectingWebSocket from "reconnecting-websocket";
@@ -27,7 +26,6 @@ import ReconnectingWebSocket from "reconnecting-websocket";
 function socket(
   user: User,
   state: State,
-  selected: ReturnType<typeof useSelected>
 ) {
   const ws = new ReconnectingWebSocket(WS_URL);
 
@@ -46,7 +44,7 @@ function socket(
     }
     const message = JSON.parse(data);
     console.log(message);
-    handleMessage(user, state, selected, message);
+    handleMessage(user, state, message);
   });
 
   const int = setInterval(() => {
@@ -92,8 +90,7 @@ function socket(
 
 function handleMessage(
   user: User,
-  { deployments, builds, servers, updates }: State,
-  selected: ReturnType<typeof useSelected>,
+  { deployments, builds, servers, updates, selected }: State,
   message: { type: string } & any
 ) {
   switch (message.type) {
