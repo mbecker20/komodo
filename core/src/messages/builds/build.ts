@@ -43,64 +43,60 @@ async function build(
     );
     return;
   }
-  if (!app.buildActionStates.get(buildID, BUILDING)) {
-    app.buildActionStates.set(buildID, BUILDING, true);
-    app.broadcast(BUILD, { complete: false, buildID });
-    const { cliBuild, dockerBuildArgs } = build;
-    try {
-      const pull = await execute(
-        `cd ${join(BUILD_REPO_PATH, build.pullName || "")} && git pull origin ${
-          build.branch || "main"
+  app.buildActionStates.set(buildID, BUILDING, true);
+  app.broadcast(BUILD, { complete: false, buildID });
+  const { cliBuild, dockerBuildArgs } = build;
+  try {
+    const pull = await execute(
+      `cd ${join(BUILD_REPO_PATH, build.pullName || "")} && git pull origin ${
+        build.branch || "main"
+      }`
+    );
+    const cli =
+      cliBuild &&
+      (await execute(
+        `cd ${join(BUILD_REPO_PATH, build.pullName!, cliBuild.path || "")} && ${
+          cliBuild.command
         }`
-      );
-      const cli =
-        cliBuild &&
-        (await execute(
-          `cd ${join(
-            BUILD_REPO_PATH,
-            build.pullName!,
-            cliBuild.path || ""
-          )} && ${cliBuild.command}`
-        ));
-      const docker =
-        dockerBuildArgs &&
-        (await dockerBuild(
-          build.pullName!,
-          dockerBuildArgs,
-          BUILD_REPO_PATH,
-          build.dockerAccount,
-          build.dockerAccount && SECRETS.DOCKER_ACCOUNTS[build.dockerAccount]
-        ));
-      const { command, log, isError } = mergeCommandLogError(
-        { name: "pull", cle: pull },
-        { name: "cli", cle: cli },
-        { name: "docker", cle: docker }
-      );
-      addBuildUpdate(
-        app,
-        buildID,
-        BUILD,
-        command,
-        log,
-        user.username,
-        note,
-        isError
-      );
-    } catch (error) {
-      addBuildUpdate(
-        app,
-        buildID,
-        BUILD,
-        "Build (ERROR)",
-        { stderr: prettyStringify(error) },
-        user.username,
-        note,
-        true
-      );
-    }
-    app.broadcast(BUILD, { complete: true, buildID });
-    app.buildActionStates.set(buildID, BUILDING, false);
+      ));
+    const docker =
+      dockerBuildArgs &&
+      (await dockerBuild(
+        build.pullName!,
+        dockerBuildArgs,
+        BUILD_REPO_PATH,
+        build.dockerAccount,
+        build.dockerAccount && SECRETS.DOCKER_ACCOUNTS[build.dockerAccount]
+      ));
+    const { command, log, isError } = mergeCommandLogError(
+      { name: "pull", cle: pull },
+      { name: "cli", cle: cli },
+      { name: "docker", cle: docker }
+    );
+    addBuildUpdate(
+      app,
+      buildID,
+      BUILD,
+      command,
+      log,
+      user.username,
+      note,
+      isError
+    );
+  } catch (error) {
+    addBuildUpdate(
+      app,
+      buildID,
+      BUILD,
+      "Build (ERROR)",
+      { stderr: prettyStringify(error) },
+      user.username,
+      note,
+      true
+    );
   }
+  app.broadcast(BUILD, { complete: true, buildID });
+  app.buildActionStates.set(buildID, BUILDING, false);
 }
 
 export default build;

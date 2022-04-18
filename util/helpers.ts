@@ -102,15 +102,15 @@ export function mergeCommandLogError(
       log.stdout =
         log.stdout +
         (log.stdout && (curr.cle.log.stdout ? "\n\n" : "")) +
-        curr.cle.log.stdout
+        (curr.cle.log.stdout
           ? `${moreThanOne ? curr.name + ":\n" : ""}${curr.cle.log.stdout}`
-          : "";
+          : "");
       log.stderr =
         log.stderr +
         (log.stderr && (curr.cle.log.stderr ? "\n\n" : "")) +
-        curr.cle.log.stderr
+        (curr.cle.log.stderr
           ? `${moreThanOne ? curr.name + ":\n" : ""}${curr.cle.log.stderr}`
-          : "";
+          : "");
       return log;
     },
     { stdout: "", stderr: "" }
