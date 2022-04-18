@@ -42,9 +42,12 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   };
   const [showLog, toggleShowLog] = useToggle();
   return (
-    <Grid gap="0.25rem" class={combineClasses(s.Update, !p.showName && s.NoName, "shadow")}>
+    <Grid
+      gap="0.25rem"
+      class={combineClasses(s.Update, !p.showName && s.NoName, "shadow")}
+    >
       <Show when={p.showName}>
-        <h2 style={{ "place-self": "center" }} >{name()}</h2>
+        <h2 style={{ "place-self": "center" }}>{name()}</h2>
       </Show>
       <Grid
         gap="0.25rem"
@@ -87,17 +90,6 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
               <pre class={combineClasses(s.Log, "scroller")}>
                 {p.update.command}
               </pre>
-              <Show when={p.update.log.stderr}>
-                <div>stderr</div>
-                <pre
-                  class={combineClasses(s.Log, "scroller")}
-                  style={{
-                    "max-height": p.update.log.stdout ? "30vh" : "60vh",
-                  }}
-                >
-                  {p.update.log.stderr}
-                </pre>
-              </Show>
               <Show when={p.update.log.stdout}>
                 <div>stdout</div>
                 <pre
@@ -107,6 +99,17 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
                   }}
                 >
                   {p.update.log.stdout}
+                </pre>
+              </Show>
+              <Show when={p.update.log.stderr}>
+                <div>stderr</div>
+                <pre
+                  class={combineClasses(s.Log, "scroller")}
+                  style={{
+                    "max-height": p.update.log.stdout ? "30vh" : "60vh",
+                  }}
+                >
+                  {p.update.log.stderr}
                 </pre>
               </Show>
             </Grid>
