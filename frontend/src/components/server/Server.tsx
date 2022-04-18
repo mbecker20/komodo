@@ -1,6 +1,9 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
+import { combineClasses } from "../../util/helpers";
+import NotFound from "../NotFound";
 import Grid from "../util/layout/Grid";
+import Loading from "../util/loading/Loading";
 import Actions from "./Actions";
 import { ActionStateProvider } from "./ActionStateProvider";
 import Header from "./Header";
@@ -11,7 +14,7 @@ const Server: Component<{}> = (p) => {
 	const { servers, selected } = useAppState();
   const server = () => servers.get(selected.id())!;
 	return (
-    <Show when={server()}>
+    <Show when={server()} fallback={<NotFound type="server" />}>
       <ActionStateProvider>
         <Grid class="content">
           {/* left / actions */}

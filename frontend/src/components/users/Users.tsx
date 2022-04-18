@@ -32,7 +32,7 @@ const Users: Component<{}> = (p) => {
     <Show
       when={users()}
       fallback={
-        <Grid placeItems="center">
+        <Grid placeItems="center" class="content">
           <Loading type="sonar" />
         </Grid>
       }

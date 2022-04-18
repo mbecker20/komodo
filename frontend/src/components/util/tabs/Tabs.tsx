@@ -51,7 +51,7 @@ export const ControlledTabs: Component<{
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
   const tabs = createMemo(() => p.tabs.filter((val) => val) as Tab[]);
-  const current = () => tabs().filter((tab) => tab.title === p.selected())[0] || tabs()[0];
+  const current = () => tabs().findIndex((tab) => tab.title === p.selected())
   const getClassName = (title: string) =>
     p.selected() === title ? combineClasses(s.Tab, s.Active) : s.Tab;
   return (
@@ -76,7 +76,7 @@ export const ControlledTabs: Component<{
           )}
         </For>
       </Flex>
-      {current().element}
+      {tabs()[current()].element}
     </div>
   );
 };

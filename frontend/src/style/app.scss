@@ -14,7 +14,6 @@
 /* CONTENT */
 
 .content {
-  grid-area: content;
   grid-template-columns: auto 2fr;
   background-color: c.$darkgrey;
   padding: 1rem;
@@ -47,15 +46,17 @@
 $anim-time: 500ms;
 
 .content-enter {
-  animation-name: content-enter;
-  animation-duration: $anim-time;
-  animation-timing-function: ease;
+  grid-area: content;
+  // animation-name: content-enter;
+  // animation-duration: $anim-time;
+  // animation-timing-function: ease-out;
 }
 
 .content-exit {
+  grid-area: content;
   animation-name: content-exit;
   animation-duration: $anim-time;
-  animation-timing-function: ease;
+  animation-timing-function: ease-out;
 }
 
 @keyframes content-enter {

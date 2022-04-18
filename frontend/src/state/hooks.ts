@@ -28,6 +28,14 @@ export function useSelected({ servers, builds, deployments }: State) {
     type: PageType;
   }>({ id: id || "", type: type || "home" });
 
+  history.replaceState(
+    { type, id },
+    "",
+    selected().type === "home"
+      ? location.origin
+      : `${location.origin}/${selected().type}/${selected().id}`
+  );
+
   const [prevSelected, setPrevSelected] = createSignal<{
     id: string;
     type: PageType;
@@ -37,78 +45,69 @@ export function useSelected({ servers, builds, deployments }: State) {
     setPrevSelected({ id: selected().id, type: selected().type });
     setSelected({ id, type });
     if (type === "home") {
-      history.pushState({ id, type }, "", `${location.origin}`);
+      history.pushState({ id, type }, "", location.origin);
     } else {
       history.pushState({ id, type }, "", `${location.origin}/${type}/${id}`);
     }
   };
 
-  createEffect(() => {
-    if (firstLoad()) {
-      if (selected().type === "home") {
-        history.replaceState({ id: "", type: "home" }, "", "/");
-        setFirstLoad(false);
-      } else if (selected().type === "deployment" && deployments.loaded()) {
-        if (!deployments.get(selected().id)) {
-          const id = deployments.ids()![0];
-          set(id, "deployment");
-        } else {
-          const [type, id] = location.pathname.split("/").filter((val) => val);
-          if (type !== selected().type || id !== selected().id) {
-            history.replaceState(
-              { type, id },
-              "",
-              `${selected().type}/${selected().id}`
-            );
-            setFirstLoad(false);
-          }
-        }
-        setFirstLoad(false);
-      } else if (
-        selected().type === "server" &&
-        servers.loaded() &&
-        deployments.loaded()
-      ) {
-        if (!servers.get(selected().id)) {
-          const id = servers.ids()![0];
-          set(id, "server");
-        } else {
-          const [type, id] = location.pathname.split("/").filter((val) => val);
-          if (type !== selected().type || id !== selected().id) {
-            history.replaceState(
-              { type, id },
-              "",
-              `${selected().type}/${selected().id}`
-            );
-          }
-        }
-        setFirstLoad(false);
-      } else if (
-        selected().type === "build" &&
-        builds.loaded() &&
-        deployments.loaded()
-      ) {
-        if (!builds.get(selected().id)) {
-          const id = builds.ids()![0];
-          if (!id) {
-            set(deployments.ids()![0], "deployment");
-          } else {
-            set(id, "build");
-          }
-        } else {
-          const [type, id] = location.pathname.split("/").filter((val) => val);
-          if (type !== selected().type || id !== selected().id) {
-            history.replaceState(
-              { id, type },
-              "",
-              `${selected().type}/${selected().id}`
-            );
-          }
-        }
-        setFirstLoad(false);
-      }
-    }
-  });
+  // createEffect(() => {
+  //   if (firstLoad()) {
+  //     if (selected().type === "home") {
+  //       history.replaceState({ id: "", type: "home" }, "", "/");
+  //       setFirstLoad(false);
+  //     } else if (selected().type === "deployment" && deployments.loaded()) {
+  //       if (!deployments.get(selected().id)) {
+  //         const id = deployments.ids()![0];
+  //         set(id, "deployment");
+  //       } else {
+  //       }
+  //       setFirstLoad(false);
+  //     } else if (
+  //       selected().type === "server" &&
+  //       servers.loaded() &&
+  //       deployments.loaded()
+  //     ) {
+  //       if (!servers.get(selected().id)) {
+  //         const id = servers.ids()![0];
+  //         set(id, "server");
+  //       } else {
+  //         const [type, id] = location.pathname.split("/").filter((val) => val);
+  //         if (type !== selected().type || id !== selected().id) {
+  //           history.replaceState(
+  //             { type, id },
+  //             "",
+  //             `${selected().type}/${selected().id}`
+  //           );
+  //         }
+  //       }
+  //       setFirstLoad(false);
+  //     } else if (
+  //       selected().type === "build" &&
+  //       builds.loaded() &&
+  //       deployments.loaded()
+  //     ) {
+  //       if (!builds.get(selected().id)) {
+  //         const id = builds.ids()![0];
+  //         if (!id) {
+  //           set(deployments.ids()![0], "deployment");
+  //         } else {
+  //           set(id, "build");
+  //         }
+  //       } else {
+  //         const [type, id] = location.pathname.split("/").filter((val) => val);
+  //         if (type !== selected().type || id !== selected().id) {
+  //           history.replaceState(
+  //             { id, type },
+  //             "",
+  //             `${selected().type}/${selected().id}`
+  //           );
+  //         }
+  //       }
+  //       setFirstLoad(false);
+  //     }
+  //   }
+  // });
 
   const popstate = (e: any) => {
     setSelected({ id: e.state.id, type: e.state.type });
@@ -137,26 +136,25 @@ export function useBuilds() {
 
 export function useDeployments() {
   const deployments = useCollection(getDeployments);
-  const state = (id: string) =>{
+  const state = (id: string) => {
     const deployment = deployments.get(id)!;
     return deployment.status === "not deployed" ||
       deployment.status === "unknown"
       ? deployment.status
       : (deployments.get(id)!.status as ContainerStatus).State;
-  }
-    ;
+  };
   const status = (id: string) => {
     const deployment = deployments.get(id)!;
     return deployment.status === "not deployed" ||
       deployment.status === "unknown"
       ? deployment.status
       : (deployments.get(id)!.status as ContainerStatus).Status.toLowerCase();
-  }
+  };
   return {
     ...deployments,
     status,
     state,
-  }
+  };
 }
 
 export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {
@@ -171,12 +169,12 @@ export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {
         setNoMore(true);
       }
     }
-  }
+  };
   return {
     noMore,
     loadMore,
-    ...updates
-  }
+    ...updates,
+  };
 }
 
 export function useArray<T>(query: () => Promise<T[]>) {

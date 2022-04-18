@@ -1,4 +1,13 @@
-import { Component, Match, Switch } from "solid-js";
+import { Collection } from "@monitor/types";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  JSXElement,
+  Match,
+  Switch,
+} from "solid-js";
+import { createStore } from "solid-js/store";
 import Build from "./components/builds/Build";
 import Deployment from "./components/deployment/Deployment";
 import Home from "./components/home/Home";
@@ -12,27 +21,65 @@ import { useUser } from "./state/UserProvider";
 const App: Component = () => {
   const { selected } = useAppState();
   const { permissions } = useUser();
+  const [element, setElement] = createSignal<JSXElement>();
+  createEffect(() => {
+    if (selected.id()) {
+    }
+    switch (selected.type()) {
+      case "home":
+        setElement(
+          <div class="content-enter">
+            <Home />
+          </div>
+        );
+        return;
+
+      case "deployment":
+        setElement(
+          <div class="content-enter">
+            <Deployment />
+          </div>
+        );
+        break;
+
+      case "build":
+        setElement(
+          <div class="content-enter">
+            <Build />
+          </div>
+        );
+        break;
+
+      case "server":
+        setElement(
+          <div class="content-enter">
+            <Server />
+          </div>
+        );
+        break;
+
+      case "users":
+        if (permissions() > 1) {
+          setElement(
+            <div class="content-enter">
+              <Users />
+            </div>
+          );
+        } else {
+          setElement(
+            <div class="content-enter">
+              <Home />
+            </div>
+          );
+        }
+        break;
+    }
+  });
   return (
     <>
       <Topbar />
       <Sidebar />
-      <Switch>
-        <Match when={selected.type() === "home"}>
-          <Home />
-        </Match>
-        <Match when={selected.type() === "deployment"}>
-          <Deployment />
-        </Match>
-        <Match when={selected.type() === "server"}>
-          <Server />
-        </Match>
-        <Match when={selected.type() === "build"}>
-          <Build />
-        </Match>
-        <Match when={selected.type() === "users" && permissions() > 1}>
-          <Users />
-        </Match>
-      </Switch>
+      {element()}
     </>
   );
 };

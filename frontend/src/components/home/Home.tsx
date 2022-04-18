@@ -1,7 +1,7 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { deploymentStatusClass, inPx, serverStatusClass } from "../../util/helpers";
+import { combineClasses, deploymentStatusClass, inPx, serverStatusClass } from "../../util/helpers";
 import Circle from "../util/Circle";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
