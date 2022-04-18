@@ -1,4 +1,4 @@
-import { pruneImages } from "@monitor/util";
+import { pruneImages } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 

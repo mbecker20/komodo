@@ -1,5 +1,5 @@
 import { User } from "@monitor/types";
-import { Component, createContext, createMemo, createResource, Resource, Setter, useContext } from "solid-js";
+import { Component, createContext, createMemo, createResource, Setter, useContext } from "solid-js";
 import { client } from "..";
 
 export const LOGGED_IN_ENABLED = "LOGGED_IN_ENABLED";

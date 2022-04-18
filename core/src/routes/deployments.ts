@@ -1,10 +1,9 @@
 import { Server } from "@monitor/types";
 import {
-  getContainerLog,
-  getContainerStatus,
   intoCollection,
   DEPLOYMENT_OWNER_UPDATE,
 } from "@monitor/util";
+import { getContainerLog, getContainerStatus } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { deploymentStatusLocal } from "../util/deploymentStatus";

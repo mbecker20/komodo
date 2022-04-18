@@ -16,7 +16,7 @@ import {
   PRUNE_NETWORKS,
   SERVER_OWNER_UPDATE,
   UPDATE_SERVER,
-} from "../../../../state/actions";
+} from "@monitor/util";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
 import { getNetworks, getServer } from "../../../../util/query";

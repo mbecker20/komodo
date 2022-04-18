@@ -2,7 +2,7 @@ import { Server } from "@monitor/types";
 import { Component, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
 import { pushNotification } from "../..";
-import { ADD_SERVER } from "../../state/actions";
+import { ADD_SERVER } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
 import { useToggle } from "../../util/hooks";

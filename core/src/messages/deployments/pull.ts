@@ -1,5 +1,6 @@
 import { User } from "@monitor/types";
-import { execute, mergeCommandLogError, PULL_DEPLOYMENT, pull } from "@monitor/util";
+import { mergeCommandLogError, PULL_DEPLOYMENT } from "@monitor/util";
+import { execute, pull } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import { join } from "path";
 import { WebSocket } from "ws";

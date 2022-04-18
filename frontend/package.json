@@ -16,6 +16,7 @@
     "vite-plugin-solid": "^2.2.6"
   },
   "dependencies": {
+    "@monitor/util": "1.0.0",
     "axios": "^0.26.1",
     "js-file-download": "^0.4.12",
     "reconnecting-websocket": "^4.4.0",

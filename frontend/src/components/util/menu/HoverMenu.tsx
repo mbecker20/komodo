@@ -31,7 +31,7 @@ const HoverMenu: Component<{
     } else {
       timeout = setTimeout(() => {
         setBuffer(false);
-      }, 500);
+      }, 350);
     }
   });
   return (

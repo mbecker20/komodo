@@ -4,7 +4,7 @@ import {
   getNumberFromEnv,
   getStringFromEnv,
   readJSONFile,
-} from "@monitor/util";
+} from "@monitor/util-node";
 import { join } from "path";
 
 export const CORE_SERVER_NAME = getStringFromEnv(

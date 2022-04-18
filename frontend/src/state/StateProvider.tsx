@@ -9,7 +9,7 @@ import {
 } from "solid-js";
 import { useLocalStorageToggle, useWindowKeyDown } from "../util/hooks";
 import { getDockerAccounts, getGithubAccounts } from "../util/query";
-import { USER_UPDATE } from "./actions";
+import { USER_UPDATE } from "@monitor/util";
 import { useAppDimensions } from "./DimensionProvider";
 import {
   useBuilds,

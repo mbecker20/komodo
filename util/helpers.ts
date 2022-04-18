@@ -1,25 +1,4 @@
 import { Collection, CommandLogError, Log } from "@monitor/types";
-import { readFileSync } from "fs-extra";
-
-export function readJSONFile<T = any>(path: string): T {
-  const raw = readFileSync(path);
-  return JSON.parse(raw as any);
-}
-
-export function getStringFromEnv(varName: string, defaultValue: string) {
-  return process.env[varName] ? process.env[varName]! : defaultValue;
-}
-
-export function getNumberFromEnv(varName: string, defaultValue: number) {
-  return process.env[varName] ? Number(process.env[varName]!) : defaultValue;
-}
-
-export function getBooleanFromEnv(varName: string, defaultValue: boolean) {
-  const variable = process.env[varName];
-  if (variable === "true") return true;
-  else if (variable === "false") return false;
-  else return defaultValue;
-}
 
 export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T> {
   return Object.fromEntries(
@@ -52,7 +31,7 @@ export function filterOutUndefined<T>(obj: T) {
 }
 
 export function intoCollection<T>(arr: T[], field = "_id"): Collection<T> {
-  return Object.fromEntries(arr.map((item) => [item[field], item]));
+  return Object.fromEntries(arr.map((item) => [(item as any)[field], item]));
 }
 
 export function timestamp() {

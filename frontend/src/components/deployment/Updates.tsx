@@ -4,7 +4,7 @@ import Grid from "../util/layout/Grid";
 import Update from "../update/Update";
 import { getUpdates } from "../../util/query";
 import { useAppState } from "../../state/StateProvider";
-import { ADD_UPDATE } from "../../state/actions";
+import { ADD_UPDATE } from "@monitor/util";
 
 const Updates: Component<{}> = (p) => {
   const { ws, selected } = useAppState();

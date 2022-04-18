@@ -1,8 +1,6 @@
 import { User } from "@monitor/types";
 import {
-  dockerBuild,
   BUILD,
-  execute,
   mergeCommandLogError,
   prettyStringify,
 } from "@monitor/util";
@@ -17,6 +15,7 @@ import { BUILDING } from "../../plugins/actionStates";
 import { addBuildUpdate } from "../../util/updates";
 import { WebSocket } from "ws";
 import { sendAlert } from "../../util/helpers";
+import { dockerBuild, execute } from "@monitor/util-node";
 
 async function build(
   app: FastifyInstance,

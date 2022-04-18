@@ -1,5 +1,5 @@
 import { Collection } from "@monitor/types";
-import { intoCollection, objFrom2Arrays } from "@monitor/util";
+import { intoCollection } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import {
   Schema,

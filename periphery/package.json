@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@monitor/util": "1.0.0",
+    "@monitor/util-node": "1.0.0",
     "dockerode": "^3.3.1",
     "fastify": "^3.27.4",
     "fastify-cors": "^6.0.3",

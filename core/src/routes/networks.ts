@@ -1,6 +1,6 @@
+import { getNetworks } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { getNetworks } from "@monitor/util";
 import { getPeripheryNetworks } from "../util/periphery/networks";
 
 const networks = fp((app: FastifyInstance, _: {}, done: () => void) => {

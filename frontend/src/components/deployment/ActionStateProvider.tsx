@@ -7,7 +7,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { DELETE_CONTAINER, DELETE_DEPLOYMENT, DEPLOY, PULL_DEPLOYMENT, START_CONTAINER, STOP_CONTAINER } from "../../state/actions";
+import { DELETE_CONTAINER, DELETE_DEPLOYMENT, DEPLOY, PULL_DEPLOYMENT, START_CONTAINER, STOP_CONTAINER } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { getDeploymentActionState } from "../../util/query";
 
@@ -15,7 +15,7 @@ type State = {} & DeployActionState;
 
 const context = createContext<State>();
 
-export const ActionStateProvider: Component<{}> = (p) => {
+export const ActionStateProvider: Component<{ exiting?: boolean }> = (p) => {
   const { selected, ws } = useAppState();
   const [actions, setActions] = createStore<DeployActionState>({
     deploying: false,

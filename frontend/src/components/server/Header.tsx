@@ -1,6 +1,6 @@
 import { Server } from "@monitor/types";
 import { Component, Show } from "solid-js";
-import { REMOVE_SERVER } from "../../state/actions";
+import { REMOVE_SERVER } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { serverStatusClass } from "../../util/helpers";

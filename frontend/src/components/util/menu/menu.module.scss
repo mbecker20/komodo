@@ -28,27 +28,29 @@
   box-sizing: border-box;
 }
 
+$anim-time: 350ms;
+
 .Enter {
   animation-name: enter;
-  animation-duration: 500ms;
+  animation-duration: $anim-time;
   animation-timing-function: ease;
 }
 
 .Exit {
   animation-name: exit;
-  animation-duration: 500ms;
+  animation-duration: $anim-time;
   animation-timing-function: ease;
 }
 
 .ShortEnter {
   animation-name: enter;
-  animation-duration: 250ms;
+  animation-duration: $anim-time;
   animation-timing-function: ease;
 }
 
 .ShortExit {
   animation-name: exit;
-  animation-duration: 250ms;
+  animation-duration: $anim-time;
   animation-timing-function: ease;
 }
 

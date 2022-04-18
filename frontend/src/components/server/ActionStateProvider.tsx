@@ -7,7 +7,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { PRUNE_IMAGES } from "../../state/actions";
+import { PRUNE_IMAGES } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { getDeploymentActionState } from "../../util/query";
 

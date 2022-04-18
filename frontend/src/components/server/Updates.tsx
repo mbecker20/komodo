@@ -1,5 +1,5 @@
 import { Component, createSignal, For, onCleanup, Show } from "solid-js";
-import { ADD_UPDATE } from "../../state/actions";
+import { ADD_UPDATE } from "@monitor/util";
 import { useArray } from "../../state/hooks";
 import { useAppState } from "../../state/StateProvider";
 import { getUpdates } from "../../util/query";

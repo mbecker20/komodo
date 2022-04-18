@@ -20,7 +20,7 @@ import {
   DEPLOY,
   START_CONTAINER,
   STOP_CONTAINER,
-} from "../../../state/actions";
+} from "@monitor/util";
 
 const DeploymentTabs: Component<{}> = () => {
   const { selected, deployments, ws } = useAppState();

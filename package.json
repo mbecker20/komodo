@@ -8,6 +8,7 @@
   "workspaces": [
     "types",
     "util",
+    "util-node",
     "core",
     "periphery",
     "frontend",

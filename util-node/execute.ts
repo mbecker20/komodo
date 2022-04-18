@@ -1,7 +1,7 @@
 import { exec } from "child_process";
 import { promisify } from "util";
 import { CommandLogError } from "@monitor/types";
-import { prettyStringify } from "./helpers";
+import { prettyStringify } from "@monitor/util";
 
 export const pExec = promisify(exec);
 

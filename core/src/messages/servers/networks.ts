@@ -1,10 +1,9 @@
 import { User } from "@monitor/types";
 import {
-  createNetwork,
   CREATE_NETWORK,
-  deleteNetwork,
   DELETE_NETWORK,
 } from "@monitor/util";
+import { createNetwork, deleteNetwork } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import {

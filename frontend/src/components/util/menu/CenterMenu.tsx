@@ -33,7 +33,7 @@ const CenterMenu: Component<{
     } else {
       setTimeout(() => {
         set(false);
-      }, 250);
+      }, 350);
     }
   });
   return (

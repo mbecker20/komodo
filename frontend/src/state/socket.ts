@@ -16,7 +16,7 @@ import {
   UPDATE_BUILD,
   UPDATE_DEPLOYMENT,
   UPDATE_SERVER,
-} from "./actions";
+} from "@monitor/util";
 import { readableOperation } from "../util/helpers";
 import { getDeploymentStatus, getServer } from "../util/query";
 import { useSelected } from "./hooks";

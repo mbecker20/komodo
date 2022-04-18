@@ -5,7 +5,7 @@ import {
   createSignal,
   onCleanup,
 } from "solid-js";
-import { filterOutFromObj, keepOnlyInObj } from "../util/helpers";
+import { filterOutFromObj, keepOnlyInObj } from "@monitor/util";
 import {
   getBuilds,
   getDeployments,
@@ -28,7 +28,13 @@ export function useSelected({ servers, builds, deployments }: State) {
     type: PageType;
   }>({ id: id || "", type: type || "home" });
 
+  const [prevSelected, setPrevSelected] = createSignal<{
+    id: string;
+    type: PageType;
+  }>();
+
   const set = (id: string, type: PageType) => {
+    setPrevSelected({ id: selected().id, type: selected().type });
     setSelected({ id, type });
     if (type === "home") {
       history.pushState({ id, type }, "", `${location.origin}`);
@@ -116,6 +122,8 @@ export function useSelected({ servers, builds, deployments }: State) {
     id: () => selected().id,
     type: () => selected().type,
     set,
+    prevId: () => prevSelected()?.id,
+    prevType: () => prevSelected()?.type,
   };
 }
 

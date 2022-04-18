@@ -1,11 +1,12 @@
 import { Deployment, User } from "@monitor/types";
-import { clone, execute, mergeCommandLogError } from "@monitor/util";
+import { mergeCommandLogError } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { join } from "path";
 import { CLONE_DEPLOYMENT_REPO } from "@monitor/util";
 import { DEPLOYMENT_REPO_PATH, SECRETS } from "../../config";
 import { clonePeriphery } from "../../util/periphery/git";
 import { addDeploymentUpdate } from "../../util/updates";
+import { clone, execute } from "@monitor/util-node";
 
 async function cloneRepo(
   app: FastifyInstance,

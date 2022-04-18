@@ -7,7 +7,7 @@ import {
   onCleanup,
   Show,
 } from "solid-js";
-import { USER_UPDATE } from "../../state/actions";
+import { USER_UPDATE } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses, readablePermissions } from "../../util/helpers";
 import { deleteUser, getUsers, updateUser } from "../../util/query";

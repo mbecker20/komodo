@@ -13,7 +13,7 @@ import {
   ADD_UPDATE,
   DEPLOYMENT_OWNER_UPDATE,
   UPDATE_DEPLOYMENT,
-} from "../../../../state/actions";
+} from "@monitor/util";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
 import { getDeployment, getNetworks } from "../../../../util/query";

@@ -8,13 +8,11 @@ import {
   SYSTEM_OPERATOR,
 } from "../config";
 import {
-  pull,
-  dockerBuild,
   mergeCommandLogError,
-  execute,
 } from "@monitor/util";
 import { addBuildUpdate, addDeploymentUpdate } from "../util/updates";
 import { pullPeriphery } from "../util/periphery/git";
+import { dockerBuild, execute, pull } from "@monitor/util-node";
 
 const AUTO_PULL = "AUTO_PULL";
 const AUTO_BUILD = "AUTO_BUILD";

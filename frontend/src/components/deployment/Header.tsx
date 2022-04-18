@@ -1,6 +1,6 @@
 import { ContainerStatus } from "@monitor/types";
 import { Component, Show } from "solid-js";
-import { DELETE_DEPLOYMENT } from "../../state/actions";
+import { DELETE_DEPLOYMENT } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { deploymentHeaderStatusClass } from "../../util/helpers";
@@ -12,9 +12,11 @@ import Loading from "../util/loading/Loading";
 import HoverMenu from "../util/menu/HoverMenu";
 import { useActionStates } from "./ActionStateProvider";
 
-const Header: Component<{}> = (p) => {
+const Header: Component<{ exiting?: boolean }> = (p) => {
   const { deployments, ws, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id())!;
+  const deployment = p.exiting
+    ? () => deployments.get(selected.prevId()!)!
+    : () => deployments.get(selected.id())!;
   const { permissions, username } = useUser();
   const state = () =>
     deployment()!.status === "not deployed"

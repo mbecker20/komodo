@@ -1,5 +1,6 @@
 import { Deployment } from "@monitor/types";
-import { clone, execute, mergeCommandLogError, pull } from "@monitor/util";
+import { mergeCommandLogError } from "@monitor/util";
+import { clone, execute, pull } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { remove } from "fs-extra";

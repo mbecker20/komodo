@@ -7,7 +7,7 @@ import {
   PULL_DEPLOYMENT,
   START_CONTAINER,
   STOP_CONTAINER,
-} from "../../state/actions";
+} from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import ConfirmButton from "../util/ConfirmButton";

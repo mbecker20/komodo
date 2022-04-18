@@ -1,6 +1,6 @@
 import { Component, Show } from "solid-js";
 import { pushNotification } from "../..";
-import { PRUNE_IMAGES, PRUNE_NETWORKS } from "../../state/actions";
+import { PRUNE_IMAGES, PRUNE_NETWORKS } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import ConfirmButton from "../util/ConfirmButton";

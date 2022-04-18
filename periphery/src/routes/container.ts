@@ -1,4 +1,4 @@
-import { allContainerStatus, deleteContainer, getContainerLog, getContainerStatus, startContainer, stopContainer } from "@monitor/util";
+import { allContainerStatus, deleteContainer, getContainerLog, getContainerStatus, startContainer, stopContainer } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 

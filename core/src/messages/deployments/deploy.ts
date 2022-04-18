@@ -1,10 +1,9 @@
 import { User } from "@monitor/types";
 import {
-  deleteContainer,
-  dockerRun,
   DEPLOY,
   prettyStringify,
 } from "@monitor/util";
+import { deleteContainer, dockerRun } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import { join } from "path";
 import { WebSocket } from "ws";

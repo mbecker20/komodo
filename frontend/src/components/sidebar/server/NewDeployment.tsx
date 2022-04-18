@@ -1,5 +1,5 @@
 import { Component, Show } from "solid-js";
-import { CREATE_DEPLOYMENT } from "../../../state/actions";
+import { CREATE_DEPLOYMENT } from "@monitor/util";
 import { defaultDeployment } from "../../../state/defaults";
 import { useAppState } from "../../../state/StateProvider";
 import { useToggle } from "../../../util/hooks";

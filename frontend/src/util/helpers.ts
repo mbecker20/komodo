@@ -23,33 +23,6 @@ export function generateQuery(query?: Collection<string | number | undefined>) {
   } else return "";
 }
 
-export function objFrom2Arrays<T>(
-  keys: string[],
-  entries: T[]
-): Collection<T | undefined> {
-  return Object.fromEntries(
-    keys.map((id, index) => {
-      return [id, entries[index]];
-    })
-  );
-}
-
-export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
-  return Object.fromEntries(
-    Object.entries(obj).filter((entry) => {
-      return !idsToFilterOut.includes(entry[0]);
-    })
-  );
-}
-
-export function keepOnlyInObj<T>(obj: T, idsToKeep: string[]) {
-  return Object.fromEntries(
-    Object.entries(obj).filter((entry) => {
-      return idsToKeep.includes(entry[0]);
-    })
-  ) as T;
-}
-
 export function readablePermissions(permissions: number) {
   switch (permissions) {
     case 0:

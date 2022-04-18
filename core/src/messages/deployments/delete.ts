@@ -1,11 +1,12 @@
 import { User } from "@monitor/types";
 import { FastifyInstance } from "fastify";
-import { deleteContainer, DELETE_DEPLOYMENT, prettyStringify } from "@monitor/util";
+import { DELETE_DEPLOYMENT, prettyStringify } from "@monitor/util";
 import { PERMISSIONS_DENY_LOG } from "../../config";
 import { addDeploymentUpdate, addSystemUpdate } from "../../util/updates";
 import { deletePeripheryContainer } from "../../util/periphery/container";
 import { WebSocket } from "ws";
 import { sendAlert } from "../../util/helpers";
+import { deleteContainer } from "@monitor/util-node";
 
 const deploymentViewFields = [
   "name",

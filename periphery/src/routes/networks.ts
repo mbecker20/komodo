@@ -1,4 +1,4 @@
-import { createNetwork, deleteNetwork, getNetworks, pruneNetworks } from "@monitor/util";
+import { createNetwork, deleteNetwork, getNetworks, pruneNetworks } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 

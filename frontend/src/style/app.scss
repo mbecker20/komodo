@@ -44,6 +44,42 @@
 	}
 }
 
+$anim-time: 500ms;
+
+.content-enter {
+  animation-name: content-enter;
+  animation-duration: $anim-time;
+  animation-timing-function: ease;
+}
+
+.content-exit {
+  animation-name: content-exit;
+  animation-duration: $anim-time;
+  animation-timing-function: ease;
+}
+
+@keyframes content-enter {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0%);
+  }
+}
+
+@keyframes content-exit {
+  from {
+    opacity: 0;
+    transform: translateX(0%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+}
+
 .card {
   background-color: c.$grey;
   padding: 0.5rem;

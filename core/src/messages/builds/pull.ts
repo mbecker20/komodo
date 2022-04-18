@@ -1,5 +1,6 @@
 import { User } from "@monitor/types";
-import { prettyStringify, pull, PULL_BUILD } from "@monitor/util";
+import { prettyStringify, PULL_BUILD } from "@monitor/util";
+import { pull } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import { PERMISSIONS_DENY_LOG, BUILD_REPO_PATH } from "../../config";

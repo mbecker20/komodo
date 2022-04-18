@@ -9,7 +9,7 @@ import {
 } from "@monitor/types";
 import { join } from "path";
 import { execute } from "./execute";
-import { objFrom2Arrays, trailingSlash } from "./helpers";
+import { objFrom2Arrays, trailingSlash } from "@monitor/util";
 import Dockerode from "dockerode";
 
 /* Server */

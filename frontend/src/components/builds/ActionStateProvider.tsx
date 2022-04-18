@@ -1,7 +1,7 @@
 import { BuildActionState } from "@monitor/types";
 import { Component, createContext, createEffect, onCleanup, useContext } from "solid-js";
 import { createStore } from "solid-js/store";
-import { BUILD, CLONE_BUILD_REPO, DELETE_BUILD } from "../../state/actions";
+import { BUILD, CLONE_BUILD_REPO, DELETE_BUILD } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { getBuildActionState } from "../../util/query";
 

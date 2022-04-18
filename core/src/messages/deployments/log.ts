@@ -1,4 +1,4 @@
-import { getContainerLog } from "@monitor/util";
+import { getContainerLog } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import { getPeripheryContainerLog } from "../../util/periphery/container";
 

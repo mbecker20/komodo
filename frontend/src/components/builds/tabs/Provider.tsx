@@ -7,7 +7,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
-import { ADD_UPDATE, BUILD_OWNER_UPDATE, UPDATE_BUILD } from "../../../state/actions";
+import { ADD_UPDATE, BUILD_OWNER_UPDATE, UPDATE_BUILD } from "@monitor/util";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { getBuild } from "../../../util/query";

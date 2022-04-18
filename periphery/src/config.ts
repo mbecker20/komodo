@@ -1,5 +1,5 @@
 import { PeripherySecrets } from "@monitor/types";
-import { getBooleanFromEnv, getNumberFromEnv, getStringFromEnv, readJSONFile } from "@monitor/util";
+import { getBooleanFromEnv, getNumberFromEnv, getStringFromEnv, readJSONFile } from "@monitor/util-node";
 import { join } from "path";
 
 export const SECRETS = readJSONFile("/secrets/secrets.json") as PeripherySecrets;

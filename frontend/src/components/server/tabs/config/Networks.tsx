@@ -1,7 +1,7 @@
 import { Network as NetworkType } from "@monitor/types";
 import { Component, createSignal, For } from "solid-js";
 import { pushNotification } from "../../../..";
-import { CREATE_NETWORK, DELETE_NETWORK } from "../../../../state/actions";
+import { CREATE_NETWORK, DELETE_NETWORK } from "@monitor/util";
 import { useAppState } from "../../../../state/StateProvider";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Icon from "../../../util/Icon";

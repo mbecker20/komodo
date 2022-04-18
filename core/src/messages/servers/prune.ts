@@ -1,10 +1,9 @@
 import { User } from "@monitor/types";
 import {
-  pruneImages,
-  pruneNetworks,
   PRUNE_IMAGES,
   PRUNE_NETWORKS,
 } from "@monitor/util";
+import { pruneImages, pruneNetworks } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import { PERMISSIONS_DENY_LOG } from "../../config";
