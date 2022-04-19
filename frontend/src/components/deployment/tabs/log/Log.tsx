@@ -58,11 +58,11 @@ const Log: Component<{
   const buffer = useBuffer(scrolled, 250);
   return (
     <Show when={p.log}>
-      <Grid gap="0.5rem">
+      <Grid gap="0.5rem" style={{ height: "100%", "grid-template-rows": "auto 1fr" }}>
         <Flex
           alignItems="center"
           justifyContent="flex-end"
-          style={{ margin: "0rem 0.5rem" }}
+          style={{ margin: "0rem 0.5rem", height: "fit-content" }}
         >
           lines:
           <Selector
@@ -100,7 +100,7 @@ const Log: Component<{
             <Icon type="refresh" />
           </button>
         </Flex>
-        <div style={{ position: "relative" }}>
+        <div style={{ position: "relative", height: "100%" }}>
           <div
             class={combineClasses(s.LogContainer, "scroller")}
             ref={ref}
