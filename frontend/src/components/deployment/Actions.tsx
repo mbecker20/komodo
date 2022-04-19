@@ -25,7 +25,7 @@ const Actions: Component<{}> = (p) => {
   return (
     <Show
       when={
-        deployment() &&
+        deployment() && !deployment().isCore &&
         (permissions() >= 2 || deployment().owners.includes(username()!))
       }
     >
