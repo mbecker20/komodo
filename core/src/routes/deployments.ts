@@ -1,8 +1,5 @@
 import { Server } from "@monitor/types";
-import {
-  intoCollection,
-  DEPLOYMENT_OWNER_UPDATE,
-} from "@monitor/util";
+import { intoCollection, DEPLOYMENT_OWNER_UPDATE } from "@monitor/util";
 import { getContainerLog, getContainerStatus } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
@@ -17,7 +14,7 @@ import { serverStatusPeriphery } from "../util/periphery/status";
 async function getDeployments(app: FastifyInstance, server: Server) {
   const deployments = await app.deployments.find(
     { serverID: server._id },
-    "name containerName serverID owners repo"
+    "name containerName serverID owners repo isCore"
   );
   if (await serverStatusPeriphery(server)) {
     const status = server.isCore
