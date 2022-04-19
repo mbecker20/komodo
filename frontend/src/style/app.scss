@@ -115,14 +115,19 @@ $anim-time: 500ms;
 }
 
 .config-item {
-  width: 400px;
-  max-width: calc(100vw - 2rem);
+  width: 450px;
   flex-wrap: wrap;
   background-color: c.$lightgrey;
   box-sizing: border-box;
   padding: 0.5rem;
   height: fit-content;
   box-sizing: border-box;
+}
+
+@media only screen and (max-width: 700px) {
+  .config-item {
+    width: calc(100vw - 6rem);
+  }
 }
 
 .selected {

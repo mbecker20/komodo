@@ -19,22 +19,27 @@ import Loading from "../../../util/loading/Loading";
 import Owners from "./Owners";
 import { pushNotification, URL } from "../../../..";
 import { copyToClipboard } from "../../../../util/helpers";
+import { useAppDimensions } from "../../../../state/DimensionProvider";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
+  const { isMobile } = useAppDimensions();
   const listenerUrl = () => `${URL}/api/listener/deployment/${deployment._id}`;
   return (
     <Show when={deployment.loaded}>
       <Grid class="config">
         <Tabs
-          containerStyle={{ height: "100%" }}
+          containerStyle={{
+            height: "100%",
+            width: isMobile() ? undefined : "500px",
+          }}
           tabsGap="0rem"
           localStorageKey="deployment-config-tab"
           tabs={[
             {
               title: "container",
               element: (
-                <Grid class="config-items scroller">
+                <Grid class="config-items scroller" placeItems="start center">
                   <Image />
                   <Show when={deployment.image}>
                     <DockerAccount />
@@ -44,18 +49,25 @@ const Config: Component<{}> = (p) => {
                   <Ports />
                   <Mounts />
                   <Env />
+                  <Show when={isMobile()}>
+                    <div style={{ height: "1rem" }} />
+                  </Show>
                 </Grid>
               ),
             },
             (userCanUpdate() || deployment.repo ? true : false) && {
               title: "repo mount",
               element: (
-                <Grid class="config-items scroller">
+                <Grid class="config-items scroller" placeItems="start center">
                   <Git />
                   <Show when={userCanUpdate()}>
                     <Grid class="config-item shadow">
                       <h1>webhook url</h1>
-                      <Flex justifyContent="space-between" alignItems="center">
+                      <Flex
+                        justifyContent="space-between"
+                        alignItems="center"
+                        style={{ "flex-wrap": "wrap" }}
+                      >
                         <div class="ellipsis" style={{ width: "250px" }}>
                           {listenerUrl()}
                         </div>
@@ -75,13 +87,20 @@ const Config: Component<{}> = (p) => {
                   <RepoMount />
                   <OnClone />
                   <OnPull />
+                  <Show when={isMobile()}>
+                    <div style={{ height: "1rem" }} />
+                  </Show>
                 </Grid>
               ),
             },
             userCanUpdate() && {
               title: "collaborators",
               element: (
-                <Grid class="config-items scroller" style={{ height: "100%" }}>
+                <Grid
+                  class="config-items scroller"
+                  style={{ height: "100%" }}
+                  placeItems="start center"
+                >
                   <Owners />
                 </Grid>
               ),
