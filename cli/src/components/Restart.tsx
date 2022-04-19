@@ -12,14 +12,12 @@ import YesNo from "./util/YesNo";
 type State = {
   stage:
     | "query"
-    | "name"
     | "mongo"
     | "pullLatest"
     | "confirm"
     | "installing"
     | "finished"
     | "error";
-  name: string;
   pullLatest?: boolean;
   mongoUrl?: string;
   result?: CommandLogError;
@@ -31,37 +29,32 @@ const RESTART_CORE = "restart monitor core";
 
 const Restart = ({
   useDefaults,
-  defaultName,
   defaultMongoUrl,
   defaultPullLatest,
 }: {
   useDefaults?: boolean;
-  defaultName?: string;
   defaultMongoUrl?: string;
   defaultPullLatest?: boolean;
 }) => {
   const { next, prev } = useMainSequence();
   const [config, setConfig, setMany] = useStore<State>({
     stage:
-      useDefaults || (defaultName && defaultMongoUrl)
+      useDefaults || defaultMongoUrl
         ? "installing"
-        : defaultName
-        ? "mongo"
         : defaultMongoUrl
-        ? "name"
+        ? "pullLatest"
         : "query",
-    name: defaultName || "monitor-core",
     mongoUrl: useDefaults
       ? "mongodb://127.0.0.1:27017/monitor"
       : defaultMongoUrl,
     pullLatest: useDefaults ? false : defaultPullLatest,
   });
 
-  const { stage, name, mongoUrl, pullLatest, result, error } = config;
+  const { stage, mongoUrl, pullLatest, result, error } = config;
 
   useEffect(() => {
     if (stage === "installing") {
-      restart({ name, mongoUrl: mongoUrl!, pullLatest: pullLatest! }, (err) =>
+      restart({ mongoUrl: mongoUrl!, pullLatest: pullLatest! }, (err) =>
         setMany(["stage", "error"], ["error", err])
       ).then((success) => {
         if (success) {
@@ -85,7 +78,7 @@ const Restart = ({
               break;
 
             case RESTART_CORE:
-              setConfig("stage", "name");
+              setConfig("stage", "mongo");
               break;
           }
         }}
@@ -96,21 +89,6 @@ const Restart = ({
   } else {
     return (
       <Box flexDirection="column">
-        <Text color="green">
-          name:{" "}
-          <Text color="white">
-            {stage === "name" ? (
-              <Input
-                initialValue={name}
-                onSubmit={(name) => setMany(["stage", "mongo"], ["name", name])}
-                onEsc={() => setConfig("stage", "query")}
-              />
-            ) : (
-              name
-            )}
-          </Text>
-        </Text>
-
         {stage === "mongo" && (
           <Text color="green">
             mongo url:{" "}
@@ -120,7 +98,7 @@ const Restart = ({
                 onSubmit={(mongoUrl) =>
                   setMany(["stage", "pullLatest"], ["mongoUrl", mongoUrl])
                 }
-                onEsc={() => setConfig("stage", "name")}
+                onEsc={() => setConfig("stage", "query")}
               />
             </Text>
           </Text>

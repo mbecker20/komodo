@@ -112,6 +112,7 @@ export interface Deployment extends DockerRunArgs {
   _id?: string;
   name: string;
   owners: string[];
+  isCore?: boolean; // whether this deployment is monitor-core. only one per monitor system. set up with cli
   serverID?: string; // only added if running on periphery server
   buildID?: string; // if deploying a monitor build
   /* to manage repo for static frontend, mounted as a volume. locally in REPO_ROOT/containerName */

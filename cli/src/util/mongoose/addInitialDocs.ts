@@ -30,6 +30,7 @@ export async function addInitialDocs({ core, mongo }: Config) {
 
   const coreDeployment: Deployment = {
     name: core!.name,
+    isCore: true,
     containerName: toDashedName(core!.name),
     image: "mbecker2020/monitor-core",
     restart: core?.restart,

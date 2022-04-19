@@ -9,6 +9,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	const schema = new Schema<Deployment>({
     name: { type: String, unique: true, index: true },
     containerName: { type: String, unique: true, index: true }, // for auto pull of frontend repo as well
+    isCore: Boolean,
     owners: { type: [String], default: [] },
     serverID: { type: String, index: true },
     buildID: { type: String, index: true }, // if deploying a monitor build

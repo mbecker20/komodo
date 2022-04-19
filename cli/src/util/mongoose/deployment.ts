@@ -16,6 +16,7 @@ export default function deploymentModel() {
   const schema = new Schema<Deployment>({
     name: { type: String, unique: true, index: true },
     containerName: { type: String, unique: true, index: true }, // for auto pull of frontend repo as well
+    isCore: Boolean,
     owners: { type: [String], default: [] },
     serverID: { type: String, index: true },
     buildID: { type: String, index: true }, // if deploying a monitor build
@@ -41,12 +42,12 @@ export default function deploymentModel() {
 	return model("Deployment", schema)
 }
 
-export async function getCoreDeployment({ name, mongoUrl }: { name: string; mongoUrl: string }) {
+export async function getCoreDeployment({ mongoUrl }: { mongoUrl: string }) {
   await mongoose.connect(mongoUrl);
 
   const deployments = deploymentModel();
 
-  return (await deployments.findOne({ name }).lean().exec()) as
+  return (await deployments.findOne({ isCore: true }).lean().exec()) as
     | Deployment
     | undefined;
 }

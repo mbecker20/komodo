@@ -9,7 +9,7 @@ export type RestartError = {
 }
 
 export async function restart(
-  args: { name: string; mongoUrl: string, pullLatest: boolean },
+  args: { mongoUrl: string, pullLatest: boolean },
   onError: (err: RestartError) => void
 ) {
   try {
