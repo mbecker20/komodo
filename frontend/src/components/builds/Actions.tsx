@@ -54,7 +54,7 @@ const Actions: Component<{}> = (p) => {
                 ws.send(CLONE_BUILD_REPO, { buildID: selected.id() });
               }}
             >
-              <Icon type="arrow-down" />
+              <Icon type="reset" />
             </ConfirmButton>
           </Show>
         </Flex>
