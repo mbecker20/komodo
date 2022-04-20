@@ -7,7 +7,15 @@ import {
   useContext,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { DELETE_CONTAINER, DELETE_DEPLOYMENT, DEPLOY, PULL_DEPLOYMENT, START_CONTAINER, STOP_CONTAINER } from "@monitor/util";
+import {
+  DELETE_CONTAINER,
+  DELETE_DEPLOYMENT,
+  DEPLOY,
+  PULL_DEPLOYMENT,
+  RECLONE_DEPLOYMENT_REPO,
+  START_CONTAINER,
+  STOP_CONTAINER,
+} from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { getDeploymentActionState } from "../../util/query";
 
@@ -25,6 +33,7 @@ export const ActionStateProvider: Component<{ exiting?: boolean }> = (p) => {
     fullDeleting: false,
     updating: false,
     pulling: false,
+    recloning: false,
   });
   createEffect(() => {
     getDeploymentActionState(selected.id()).then(setActions);
@@ -68,6 +77,13 @@ export const ActionStateProvider: Component<{ exiting?: boolean }> = (p) => {
     ws.subscribe([PULL_DEPLOYMENT], ({ complete, deploymentID }) => {
       if (deploymentID === selected.id()) {
         setActions("pulling", !complete);
+      }
+    })
+  );
+  onCleanup(
+    ws.subscribe([RECLONE_DEPLOYMENT_REPO], ({ complete, deploymentID }) => {
+      if (deploymentID === selected.id()) {
+        setActions("recloning", !complete);
       }
     })
   );

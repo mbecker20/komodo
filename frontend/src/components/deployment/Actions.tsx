@@ -5,6 +5,7 @@ import {
   DELETE_CONTAINER,
   DEPLOY,
   PULL_DEPLOYMENT,
+  RECLONE_DEPLOYMENT_REPO,
   START_CONTAINER,
   STOP_CONTAINER,
 } from "@monitor/util";
@@ -25,7 +26,8 @@ const Actions: Component<{}> = (p) => {
   return (
     <Show
       when={
-        deployment() && !deployment().isCore &&
+        deployment() &&
+        !deployment().isCore &&
         (permissions() >= 2 || deployment().owners.includes(username()!))
       }
     >
@@ -75,7 +77,11 @@ const Actions: Component<{}> = (p) => {
         </Switch>
         <Show when={deployment().repo}>
           <Flex class="action shadow">
-            pull <Pull />
+            repo
+            <Flex>
+              <Reclone />
+              <Pull />
+            </Flex>
           </Flex>
         </Show>
       </Grid>
@@ -245,7 +251,40 @@ const Pull = () => {
             <Icon type="arrow-down" />
           </ConfirmButton>
         }
-        content="pull repo"
+        content="pull"
+        position="bottom center"
+        padding="0.5rem"
+      />
+    </Show>
+  );
+};
+
+const Reclone = () => {
+  const { ws, deployments, selected } = useAppState();
+  const deployment = () => deployments.get(selected.id())!;
+  const actions = useActionStates();
+  return (
+    <Show
+      when={!actions.recloning}
+      fallback={
+        <button class="orange">
+          <Loading type="spinner" />
+        </button>
+      }
+    >
+      <HoverMenu
+        target={
+          <ConfirmButton
+            color="orange"
+            onConfirm={() => {
+              ws.send(RECLONE_DEPLOYMENT_REPO, { deploymentID: selected.id() });
+              pushNotification("ok", `recloning ${deployment().name}...`);
+            }}
+          >
+            <Icon type="reset" />
+          </ConfirmButton>
+        }
+        content="reclone"
         position="bottom center"
         padding="0.5rem"
       />

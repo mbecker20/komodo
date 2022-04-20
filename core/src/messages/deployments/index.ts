@@ -8,6 +8,7 @@ import {
   START_CONTAINER,
   STOP_CONTAINER,
   UPDATE_DEPLOYMENT,
+  RECLONE_DEPLOYMENT_REPO,
 } from "@monitor/util";
 import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
@@ -20,6 +21,7 @@ import createDeployment from "./create";
 import deleteDeployment from "./delete";
 import deployDeployment from "./deploy";
 import pullDeploymentRepo from "./pull";
+import recloneDeployment from "./reclone";
 import updateDeployment from "./update";
 
 async function deploymentMessages(
@@ -55,23 +57,33 @@ async function deploymentMessages(
       return true;
 
     case DEPLOY:
-      await deployDeployment(app, client, user, message);
+      message.deploymentID &&
+        (await deployDeployment(app, client, user, message));
       return true;
 
     case START_CONTAINER:
-      await startDeploymentContainer(app, client, user, message);
+      message.deploymentID &&
+        (await startDeploymentContainer(app, client, user, message));
       return true;
 
     case STOP_CONTAINER:
-      await stopDeploymentContainer(app, client, user, message);
+      message.deploymentID &&
+        (await stopDeploymentContainer(app, client, user, message));
       return true;
 
     case DELETE_CONTAINER:
-      await deleteDeploymentContainer(app, client, user, message);
+      message.deploymentID &&
+        (await deleteDeploymentContainer(app, client, user, message));
       return true;
 
     case PULL_DEPLOYMENT:
-      await pullDeploymentRepo(app, client, user, message);
+      message.deploymentID &&
+        (await pullDeploymentRepo(app, client, user, message));
+      return true;
+
+    case RECLONE_DEPLOYMENT_REPO:
+      message.deploymentID &&
+        (await recloneDeployment(app, client, user, message));
       return true;
 
     default:

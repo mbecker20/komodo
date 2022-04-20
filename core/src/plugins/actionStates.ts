@@ -95,6 +95,7 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
         updating: false,
         fullDeleting: false,
         pulling: false,
+        recloning: false,
       };
     },
     delete: (deploymentID: string) => {
@@ -121,6 +122,7 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
         "updating",
         "fullDeleting",
         "pulling",
+        "recloning"
       ]) {
         if (deployActionStates[deploymentID][type]) return true;
       }

@@ -155,6 +155,7 @@ export type DeployActionState = {
   updating: boolean;
   fullDeleting: boolean;
   pulling: boolean;
+  recloning: boolean;
 };
 
 export type ServerActionState = {
