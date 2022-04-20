@@ -8,6 +8,7 @@ import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
 import { useActionStates } from "./ActionStateProvider";
+import { pushNotification } from "../..";
 
 const Actions: Component<{}> = (p) => {
   const { username, permissions } = useUser();
@@ -32,6 +33,7 @@ const Actions: Component<{}> = (p) => {
               color="green"
               onConfirm={() => {
                 ws.send(BUILD, { buildID: selected.id() });
+                pushNotification("ok", "building...");
               }}
             >
               <Icon type="build" />
@@ -52,6 +54,7 @@ const Actions: Component<{}> = (p) => {
               color="orange"
               onConfirm={() => {
                 ws.send(CLONE_BUILD_REPO, { buildID: selected.id() });
+                pushNotification("ok", "recloning build repo...");
               }}
             >
               <Icon type="reset" />

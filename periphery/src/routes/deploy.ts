@@ -1,5 +1,5 @@
 import { Deployment } from "@monitor/types";
-import { deleteContainer, dockerRun } from "@monitor/util";
+import { deleteContainer, dockerRun } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { join } from "path";

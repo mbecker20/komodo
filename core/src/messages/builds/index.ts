@@ -39,7 +39,8 @@ async function buildMessages(
       return true;
 
     case UPDATE_BUILD:
-      const updated = message.build && (await updateBuild(app, client, user, message));
+      const updated =
+        message.build && (await updateBuild(app, client, user, message));
       if (updated) {
         app.broadcast(UPDATE_BUILD, { build: updated });
       } else {
@@ -62,22 +63,22 @@ async function buildMessages(
           sendAlert(client, "bad", "could not find build");
           return true;
         }
+        app.broadcast(CLONE_BUILD_REPO, {
+          buildID: message.buildID,
+          complete: false,
+        });
+        app.buildActionStates.set(message.buildID, "cloning", true);
         await remove(join(BUILD_REPO_PATH, build.pullName!)).catch();
         if (build.repo) {
-          app.broadcast(CLONE_BUILD_REPO, {
-            buildID: message.buildID,
-            complete: false,
-          });
-          app.buildActionStates.set(message.buildID, "cloning", true);
           await cloneRepo(app, user, build);
-          app.buildActionStates.set(message.buildID, "cloning", false);
-          app.broadcast(CLONE_BUILD_REPO, {
-            buildID: message.buildID,
-            complete: true,
-          });
         } else {
           sendAlert(client, "bad", "build has no repo configured");
         }
+        app.buildActionStates.set(message.buildID, "cloning", false);
+        app.broadcast(CLONE_BUILD_REPO, {
+          buildID: message.buildID,
+          complete: true,
+        });
       }
       return true;
 
