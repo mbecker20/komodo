@@ -18,10 +18,16 @@ const value = () => {
     setOpen(false);
   };
   const [highlighted, setHighlighted] = createSignal(0);
+
   const filteredDeployments = createMemo(
     () =>
-      deployments.filterArray((deployment) =>
-        deployment.name.toLowerCase().includes(search().toLowerCase())
+      deployments.filterArray(
+        (deployment) =>
+          deployment.name.toLowerCase().includes(search().toLowerCase()) ||
+          servers
+            .get(deployment.serverID!)!
+            .name.toLowerCase()
+            .includes(search().toLowerCase())
       )!
   );
   const filteredBuilds = createMemo(
