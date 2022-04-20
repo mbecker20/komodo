@@ -1,8 +1,5 @@
 import { Build, User } from "@monitor/types";
-import {
-  CLONE_BUILD_REPO,
-  mergeCommandLogError,
-} from "@monitor/util";
+import { CLONE_BUILD_REPO, mergeCommandLogError } from "@monitor/util";
 import { join } from "path";
 import { FastifyInstance } from "fastify";
 import { BUILD_REPO_PATH, SECRETS } from "../../config";
@@ -16,7 +13,7 @@ async function cloneRepo(
 ) {
   const cloneCle = await clone(
     repo!,
-    BUILD_REPO_PATH + pullName!,
+    join(BUILD_REPO_PATH, pullName!),
     subfolder,
     branch,
     githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
