@@ -10,6 +10,7 @@ import { UserProvider } from "./state/UserProvider";
 import { DimensionProvider } from "./state/DimensionProvider";
 import LoginGuard from "./components/login/LoginGuard";
 import { AppStateProvider } from "./state/StateProvider";
+import { ThemeProvider } from "./state/ThemeProvider";
 
 export const URL =
   import.meta.env.MODE === "production"
@@ -26,13 +27,15 @@ export const TOPBAR_HEIGHT = 40;
 render(
   () => [
     <DimensionProvider>
-      <UserProvider>
-        <LoginGuard>
-          <AppStateProvider>
-            <App />
-          </AppStateProvider>
-        </LoginGuard>
-      </UserProvider>
+      <ThemeProvider>
+        <UserProvider>
+          <LoginGuard>
+            <AppStateProvider>
+              <App />
+            </AppStateProvider>
+          </LoginGuard>
+        </UserProvider>
+      </ThemeProvider>
     </DimensionProvider>,
     <Notifications />,
   ],

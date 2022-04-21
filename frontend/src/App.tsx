@@ -1,13 +1,9 @@
-import { Collection } from "@monitor/types";
 import {
   Component,
   createEffect,
   createSignal,
   JSXElement,
-  Match,
-  Switch,
 } from "solid-js";
-import { createStore } from "solid-js/store";
 import Build from "./components/builds/Build";
 import Deployment from "./components/deployment/Deployment";
 import Home from "./components/home/Home";
