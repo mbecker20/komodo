@@ -6,6 +6,7 @@ import {
   JSXElement,
   Show,
 } from "solid-js";
+import { useTheme } from "../../../state/ThemeProvider";
 import { combineClasses } from "../../../util/helpers";
 import Flex from "../layout/Flex";
 import { getPositionClass } from "./helpers";
@@ -34,6 +35,7 @@ const HoverMenu: Component<{
       }, 350);
     }
   });
+  const { themeClass } = useTheme();
   return (
     <Flex
       class={s.HoverMenuTarget}
@@ -50,7 +52,8 @@ const HoverMenu: Component<{
             p.contentClass,
             getPositionClass(p.position),
             s.HoverMenu,
-            show() ? s.Enter : s.Exit
+            show() ? s.Enter : s.Exit,
+            themeClass(),
           )}
           onMouseOut={() => {
             set(false);
