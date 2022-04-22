@@ -1,4 +1,5 @@
 import { Component, JSX } from "solid-js";
+import { useTheme } from "../../state/ThemeProvider";
 
 export type IconType =
   | "arrow-down"
@@ -50,6 +51,7 @@ const Icon: Component<{
   onClick?: JSX.EventHandlerUnion<HTMLImageElement, MouseEvent>;
   title?: string;
 }> = (p) => {
+  const { isDark } = useTheme();
   return (
     <img
       className={p.className}
@@ -60,6 +62,7 @@ const Icon: Component<{
         ...p.style,
         width: p.width || "1rem",
         height: p.height,
+        filter: !isDark() ? "invert(0.9)" : undefined,
       }}
       onClick={p.onClick}
     />
