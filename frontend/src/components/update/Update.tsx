@@ -82,7 +82,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
           targetClass="blue"
           content={
             <Grid
-              class={combineClasses(s.LogContainer, "scroller")}
+              class={s.LogContainer}
               gap="0.25rem"
             >
               <Show when={p.update.note}>

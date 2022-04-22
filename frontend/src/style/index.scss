@@ -271,6 +271,7 @@ svg.dark {
 
 .scroller {
   overflow-y: scroll;
+  overflow-x: hidden;
   scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
   scrollbar-width: thin;
 }
