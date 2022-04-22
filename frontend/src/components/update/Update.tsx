@@ -89,13 +89,13 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
                 <pre>note: {p.update.note}</pre>
               </Show>
               <div>command</div>
-              <pre class={combineClasses(s.Log, "scroller")}>
+              <pre class={combineClasses(s.Log, "scroller", themeClass())}>
                 {p.update.command}
               </pre>
               <Show when={p.update.log.stdout}>
                 <div>stdout</div>
                 <pre
-                  class={combineClasses(s.Log, "scroller")}
+                  class={combineClasses(s.Log, "scroller", themeClass())}
                   style={{
                     "max-height": p.update.log.stderr ? "30vh" : "60vh",
                   }}
@@ -106,7 +106,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
               <Show when={p.update.log.stderr}>
                 <div>stderr</div>
                 <pre
-                  class={combineClasses(s.Log, "scroller")}
+                  class={combineClasses(s.Log, "scroller", themeClass())}
                   style={{
                     "max-height": p.update.log.stdout ? "30vh" : "60vh",
                   }}

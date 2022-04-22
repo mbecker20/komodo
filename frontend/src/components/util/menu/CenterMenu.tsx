@@ -7,6 +7,7 @@ import {
   JSXElement,
   Show,
 } from "solid-js";
+import { useTheme } from "../../../state/ThemeProvider";
 import { combineClasses } from "../../../util/helpers";
 import { useKeyDown } from "../../../util/hooks";
 import Button from "../Button";
@@ -63,6 +64,7 @@ const Child: Component<{
   position?: "top" | "center";
 }> = (p) => {
   useKeyDown("Escape", p.toggleShow);
+  const { themeClass } = useTheme();
   return (
     <Grid
       class={combineClasses(s.CenterMenuContainer, p.show() ? s.Enter : s.Exit)}
@@ -70,7 +72,7 @@ const Child: Component<{
       placeItems={p.position === "center" ? "center" : "start center"}
     >
       <Grid
-        class={combineClasses(s.Menu, "shadow")}
+        class={combineClasses(s.Menu, "shadow", themeClass())}
         style={{ padding: p.padding || "1rem", ...p.style }}
         onClick={(e) => e.stopPropagation()}
       >
