@@ -19,6 +19,7 @@ import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
 import Selector from "../util/menu/Selector";
 import s from "./users.module.scss";
+import { useTheme } from "../../state/ThemeProvider";
 
 const Users: Component<{}> = (p) => {
   const { ws } = useAppState();
@@ -28,6 +29,7 @@ const Users: Component<{}> = (p) => {
   const filteredUsers = createMemo(() =>
     users()?.filter((user) => user.username.includes(search()))
   );
+  const { themeClass } = useTheme();
   return (
     <Show
       when={users()}
@@ -38,7 +40,7 @@ const Users: Component<{}> = (p) => {
       }
     >
       <Grid class={s.UsersContent}>
-        <Grid class={combineClasses(s.Users, "card")}>
+        <Grid class={combineClasses(s.Users, "card shadow", themeClass())}>
           <Flex justifyContent="space-between">
             <h1>users</h1>
             <Input
@@ -50,7 +52,7 @@ const Users: Component<{}> = (p) => {
           </Flex>
           <For each={filteredUsers()}>
             {(user) => (
-              <Flex class={s.User}>
+              <Flex class={combineClasses(s.User, "shadow", themeClass())}>
                 <div class={s.Username}>{user.username}</div>
                 <Flex alignItems="center">
                   <Selector
