@@ -51,7 +51,7 @@ const Icon: Component<{
   onClick?: JSX.EventHandlerUnion<HTMLImageElement, MouseEvent>;
   title?: string;
 }> = (p) => {
-  const { isDark } = useTheme();
+  const theme = useTheme();
   return (
     <img
       className={p.className}
@@ -62,7 +62,7 @@ const Icon: Component<{
         ...p.style,
         width: p.width || "1rem",
         height: p.height,
-        filter: !isDark() ? "invert(0.9)" : undefined,
+        filter: !theme?.isDark() ? "invert(0.9)" : undefined,
       }}
       onClick={p.onClick}
     />
