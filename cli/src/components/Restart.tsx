@@ -39,7 +39,7 @@ const Restart = ({
   const { next, prev } = useMainSequence();
   const [config, setConfig, setMany] = useStore<State>({
     stage:
-      useDefaults || (defaultMongoUrl && defaultPullLatest !== undefined)
+      useDefaults
         ? "installing"
         : defaultMongoUrl
         ? "pullLatest"
