@@ -43,8 +43,8 @@ init().then(({ flags, dockerInstalled }) => {
           <Newline />
           <Restart
             useDefaults={flags.restartDefault ? true : false}
-            defaultName={flags.name}
             defaultMongoUrl={flags.mongoUrl}
+            defaultPullLatest={flags.pullLatest}
           />
         </Box>
       );
