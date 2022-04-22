@@ -1,7 +1,9 @@
 import { User } from "@monitor/types";
 import { Component, createEffect, createSignal, For, Show } from "solid-js";
 import { pushNotification } from "../../../..";
+import { useTheme } from "../../../../state/ThemeProvider";
 import { useUser } from "../../../../state/UserProvider";
+import { combineClasses } from "../../../../util/helpers";
 import {
   addOwnerToDeployment,
   getUsers,
@@ -30,8 +32,12 @@ const Owners: Component<{}> = (p) => {
       setUsers([]);
     }
   });
+  const { themeClass } = useTheme();
   return (
-    <Grid class="config-item shadow" gap="0.5rem">
+    <Grid
+      class={combineClasses("config-item shadow", themeClass())}
+      gap="0.5rem"
+    >
       <Menu
         show={userSearch() ? true : false}
         close={() => setUserSearch("")}
@@ -71,7 +77,7 @@ const Owners: Component<{}> = (p) => {
           <Flex
             alignItems="center"
             justifyContent="space-between"
-            class="grey-no-hover"
+            class={combineClasses("grey-no-hover", themeClass())}
             style={{
               padding: "0.5rem",
             }}

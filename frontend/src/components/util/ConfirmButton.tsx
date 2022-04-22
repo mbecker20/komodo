@@ -1,4 +1,5 @@
 import { Component, createSignal, JSX } from "solid-js";
+import Button from "./Button";
 
 const ConfirmButton: Component<{
   onConfirm?: () => void;
@@ -10,7 +11,7 @@ const ConfirmButton: Component<{
   const [confirm, set] = createSignal(false);
 
   return (
-    <button
+    <Button
       class={p.color || "green"}
       style={p.style}
       onBlur={() => set(false)}
@@ -25,7 +26,7 @@ const ConfirmButton: Component<{
       }}
     >
       {confirm() ? p.confirm || "confirm" : p.children}
-    </button>
+    </Button>
   );
 };
 

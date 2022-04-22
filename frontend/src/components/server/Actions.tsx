@@ -7,16 +7,19 @@ import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
+import { useTheme } from "../../state/ThemeProvider";
+import { combineClasses } from "../../util/helpers";
 
 const Actions: Component<{}> = (p) => {
   const { ws, servers, selected } = useAppState();
-  const { permissions, username } = useUser();
+  const { permissions } = useUser();
   const server = () => servers.get(selected.id())!;
+  const { themeClass } = useTheme();
   return (
     <Show when={server() && server().status === "OK" && permissions() > 1}>
-      <Grid class="card shadow">
+      <Grid class={combineClasses("card shadow", themeClass())}>
         <h1>actions</h1>
-        <Flex class="action shadow">
+        <Flex class={combineClasses("action shadow", themeClass())}>
           prune images{" "}
           <ConfirmButton
             color="green"
@@ -28,7 +31,7 @@ const Actions: Component<{}> = (p) => {
             <Icon type="cut" />
           </ConfirmButton>
         </Flex>
-        <Flex class="action shadow">
+        <Flex class={combineClasses("action shadow", themeClass())}>
           prune networks{" "}
           <ConfirmButton
             color="green"

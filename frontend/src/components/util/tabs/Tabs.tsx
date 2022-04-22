@@ -8,8 +8,10 @@ import {
   JSX,
   JSXElement,
 } from "solid-js";
+import { useTheme } from "../../../state/ThemeProvider";
 import { combineClasses } from "../../../util/helpers";
 import { LocalStorageSetter, useLocalStorage } from "../../../util/hooks";
+import Button from "../Button";
 import Flex from "../layout/Flex";
 import Grid from "../layout/Grid";
 import s from "./tabs.module.scss";
@@ -54,10 +56,13 @@ export const ControlledTabs: Component<{
   const tabs = createMemo(() => p.tabs.filter((val) => val) as Tab[]);
   const current = () => tabs().findIndex((tab) => tab.title === p.selected());
   const getClassName = (title: string) =>
-    p.selected() === title ? combineClasses(s.Tab, s.Active) : s.Tab;
+    p.selected() === title
+      ? combineClasses(s.Tab, s.Active, themeClass())
+      : combineClasses(s.Tab, themeClass());
+  const { themeClass } = useTheme();
   return (
     <div
-      class={combineClasses(s.Tabs, p.containerClass)}
+      class={combineClasses(p.containerClass, s.Tabs, themeClass())}
       style={p.containerStyle}
     >
       <Flex
@@ -67,13 +72,13 @@ export const ControlledTabs: Component<{
       >
         <For each={tabs()}>
           {(tab) => (
-            <button
+            <Button
               class={getClassName(tab.title)}
               style={p.tabStyle}
               onClick={() => p.set(tab.title)}
             >
               {tab.titleElement || tab.title}
-            </button>
+            </Button>
           )}
         </For>
       </Flex>

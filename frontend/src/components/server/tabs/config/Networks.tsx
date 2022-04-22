@@ -9,6 +9,8 @@ import Input from "../../../util/Input";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import { useConfig } from "./Provider";
+import { useTheme } from "../../../../state/ThemeProvider";
+import { combineClasses } from "../../../../util/helpers";
 
 const BASE_NETWORKS = ["bridge", "host", "none"];
 
@@ -21,8 +23,9 @@ const Networks: Component<{}> = (p) => {
     );
   };
   const [name, setName] = createSignal("");
+  const { themeClass } = useTheme();
   return (
-    <Grid class="config-item shadow">
+    <Grid class={combineClasses("config-item shadow", themeClass())}>
       <Flex alignItems="center" justifyContent="space-between">
         <h1>networks</h1>
         <Flex alignItems="center">
@@ -57,9 +60,10 @@ const Networks: Component<{}> = (p) => {
 
 const Network: Component<{ network: NetworkType }> = (p) => {
   const { selected, ws } = useAppState();
+  const { themeClass } = useTheme();
   return (
     <Flex
-      class="grey-no-hover"
+      class={combineClasses("grey-no-hover", themeClass())}
       alignItems="center"
       justifyContent="space-between"
       style={{

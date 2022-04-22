@@ -18,13 +18,15 @@ import { OnClone, OnPull } from "./mount-repo/OnGit";
 import Loading from "../../../util/loading/Loading";
 import Owners from "./Owners";
 import { pushNotification, URL } from "../../../..";
-import { copyToClipboard } from "../../../../util/helpers";
+import { combineClasses, copyToClipboard } from "../../../../util/helpers";
 import { useAppDimensions } from "../../../../state/DimensionProvider";
+import { useTheme } from "../../../../state/ThemeProvider";
 
 const Config: Component<{}> = (p) => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
   const { isMobile } = useAppDimensions();
   const listenerUrl = () => `${URL}/api/listener/deployment/${deployment._id}`;
+  const { themeClass } = useTheme();
   return (
     <Show when={deployment.loaded}>
       <Grid class="config">
@@ -61,7 +63,9 @@ const Config: Component<{}> = (p) => {
                 <Grid class="config-items scroller" placeItems="start center">
                   <Git />
                   <Show when={userCanUpdate()}>
-                    <Grid class="config-item shadow">
+                    <Grid
+                      class={combineClasses("config-item shadow", themeClass())}
+                    >
                       <h1>webhook url</h1>
                       <Flex
                         justifyContent="space-between"

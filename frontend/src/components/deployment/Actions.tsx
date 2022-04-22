@@ -18,11 +18,15 @@ import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
 import HoverMenu from "../util/menu/HoverMenu";
 import { useActionStates } from "./ActionStateProvider";
+import { useTheme } from "../../state/ThemeProvider";
+import { combineClasses } from "../../util/helpers";
+import Button from "../util/Button";
 
 const Actions: Component<{}> = (p) => {
   const { deployments, selected } = useAppState();
   const { permissions, username } = useUser();
   const deployment = () => deployments.get(selected.id())!;
+  const { themeClass } = useTheme();
   return (
     <Show
       when={
@@ -31,13 +35,13 @@ const Actions: Component<{}> = (p) => {
         (permissions() >= 2 || deployment().owners.includes(username()!))
       }
     >
-      <Grid class="card shadow">
+      <Grid class={combineClasses("card shadow", themeClass())}>
         <h1>actions</h1>
         <Switch>
           <Match
             when={(deployment().status as ContainerStatus)?.State === "running"}
           >
-            <Flex class="action shadow">
+            <Flex class={combineClasses("action shadow", themeClass())}>
               deploy{" "}
               <Flex>
                 <Deploy redeploy />
@@ -56,7 +60,7 @@ const Actions: Component<{}> = (p) => {
               (deployment().status as ContainerStatus).State === "created"
             }
           >
-            <Flex class="action shadow">
+            <Flex class={combineClasses("action shadow", themeClass())}>
               deploy{" "}
               <Flex>
                 <Deploy redeploy />
@@ -70,13 +74,13 @@ const Actions: Component<{}> = (p) => {
           </Match>
 
           <Match when={deployment().status === "not deployed"}>
-            <Flex class="action shadow">
+            <Flex class={combineClasses("action shadow", themeClass())}>
               deploy <Deploy />
             </Flex>
           </Match>
         </Switch>
         <Show when={deployment().repo}>
-          <Flex class="action shadow">
+          <Flex class={combineClasses("action shadow", themeClass())}>
             repo
             <Flex>
               <Reclone />
@@ -234,9 +238,9 @@ const Pull = () => {
     <Show
       when={!actions.pulling}
       fallback={
-        <button class="blue">
+        <Button class="blue">
           <Loading type="spinner" />
-        </button>
+        </Button>
       }
     >
       <HoverMenu

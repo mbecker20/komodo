@@ -1,5 +1,6 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
+import { useTheme } from "../../state/ThemeProvider";
 import { combineClasses } from "../../util/helpers";
 import NotFound from "../NotFound";
 import Grid from "../util/layout/Grid";
@@ -14,13 +15,14 @@ const Deployment: Component<{}> = (p) => {
   const { servers, deployments, selected } = useAppState();
   const deployment = () => deployments.get(selected.id()!);
   const server = () => deployment() && servers.get(deployment()?.serverID!);
+  const { themeClass } = useTheme();
   return (
     <Show
       when={deployment() && server()}
       fallback={<NotFound type="deployment" />}
     >
       <ActionStateProvider>
-        <Grid class="content">
+        <Grid class={combineClasses("content", themeClass())}>
           {/* left / actions */}
           <Grid class="left-content">
             <Header />

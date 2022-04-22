@@ -1,6 +1,7 @@
 import { Update as UpdateType } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
+import { useTheme } from "../../state/ThemeProvider";
 import {
   combineClasses,
   readableOperation,
@@ -15,6 +16,7 @@ import s from "./update.module.scss";
 
 const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   const { deployments, servers, builds } = useAppState();
+  const { themeClass } = useTheme();
   const name = () => {
     if (p.update.deploymentID && deployments.loaded()) {
       return deployments.get(p.update.deploymentID)?.name || "deleted";
@@ -44,7 +46,7 @@ const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   return (
     <Grid
       gap="0.25rem"
-      class={combineClasses(s.Update, !p.showName && s.NoName, "shadow")}
+      class={combineClasses(s.Update, !p.showName && s.NoName, "shadow", themeClass())}
     >
       <Show when={p.showName}>
         <h2 style={{ "place-self": "center" }}>{name()}</h2>

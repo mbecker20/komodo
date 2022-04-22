@@ -2,8 +2,10 @@ import { Component, createSignal, JSX, Show } from "solid-js";
 import { TOPBAR_HEIGHT } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
+import { useTheme } from "../../state/ThemeProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
+import Button from "../util/Button";
 import Circle from "../util/Circle";
 import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
@@ -28,18 +30,19 @@ const Topbar: Component = () => {
   const { username } = useUser();
   const [menu, setMenu] = createSignal<"updates" | "account">();
   const close = () => setMenu(undefined);
+  const { themeClass } = useTheme();
   return (
     <Flex
-      class={combineClasses(s.Topbar, "shadow")}
+      class={combineClasses(s.Topbar, "shadow", themeClass())}
       justifyContent="space-between"
       alignItems="center"
       style={{ height: inPx(TOPBAR_HEIGHT) }}
     >
       {/* right side */}
       <Flex alignItems="center" style={{ padding: "0rem 0.5rem" }}>
-        <button class="grey" onClick={sidebar.toggle}>
+        <Button class="grey" onClick={sidebar.toggle}>
           <Icon type="menu" width="1.15rem" />
-        </button>
+        </Button>
         <Show when={!isMobile()}>
           <div class={s.Monitor} onClick={() => selected.set("", "home")}>
             monitor
@@ -67,14 +70,14 @@ const Topbar: Component = () => {
           close={close}
           menuStyle={isMobile() ? mobileStyle : undefined}
           target={
-            <button
+            <Button
               class="grey"
               onClick={() =>
                 menu() === "updates" ? setMenu(undefined) : setMenu("updates")
               }
             >
               <Icon type="notifications" alt="updates" width="1.15rem" />
-            </button>
+            </Button>
           }
           content={<Updates />}
           position="bottom right"
@@ -84,7 +87,7 @@ const Topbar: Component = () => {
           show={menu() === "account"}
           close={close}
           target={
-            <button
+            <Button
               class="grey"
               onClick={() =>
                 menu() === "account" ? setMenu(undefined) : setMenu("account")
@@ -92,7 +95,7 @@ const Topbar: Component = () => {
             >
               <Show when={!isMobile()}>{username()}</Show>
               <Icon type={!isMobile() ? "chevron-down" : "user"} />
-            </button>
+            </Button>
           }
           content={<Account close={close} />}
           position="bottom right"

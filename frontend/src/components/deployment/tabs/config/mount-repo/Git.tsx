@@ -1,5 +1,7 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../../../state/StateProvider";
+import { useTheme } from "../../../../../state/ThemeProvider";
+import { combineClasses } from "../../../../../util/helpers";
 import Input from "../../../../util/Input";
 import Flex from "../../../../util/layout/Flex";
 import Grid from "../../../../util/layout/Grid";
@@ -9,8 +11,9 @@ import { useConfig } from "../Provider";
 const Git: Component<{}> = (p) => {
   const { githubAccounts } = useAppState();
   const { deployment, setDeployment, userCanUpdate } = useConfig();
+  const { themeClass } = useTheme();
   return (
-    <Grid class="config-item shadow">
+    <Grid class={combineClasses("config-item shadow", themeClass())}>
       <h1>github config</h1>
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}

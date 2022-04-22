@@ -5,6 +5,9 @@ import { useAppState } from "../../state/StateProvider";
 import { getUpdates } from "../../util/query";
 import Update from "../update/Update";
 import Grid from "../util/layout/Grid";
+import { useTheme } from "../../state/ThemeProvider";
+import { combineClasses } from "../../util/helpers";
+import Button from "../util/Button";
 
 const Updates: Component<{}> = (p) => {
   const { ws, selected } = useAppState();
@@ -28,6 +31,7 @@ const Updates: Component<{}> = (p) => {
       }
     }
   };
+  const { themeClass } = useTheme();
   return (
     <Show
       when={
@@ -35,16 +39,16 @@ const Updates: Component<{}> = (p) => {
         (selectedUpdates.collection()?.length || 0) > 0
       }
     >
-      <Grid class="card shadow">
+      <Grid class={combineClasses("card shadow", themeClass())}>
         <h1>updates</h1>
         <Grid class="updates-container scroller">
           <For each={selectedUpdates.collection()}>
             {(update) => <Update update={update} showName={false} />}
           </For>
           <Show when={!noMoreUpdates()}>
-            <button class="grey" style={{ width: "100%" }} onClick={loadMore}>
+            <Button class="grey" style={{ width: "100%" }} onClick={loadMore}>
               load more
-            </button>
+            </Button>
           </Show>
         </Grid>
       </Grid>

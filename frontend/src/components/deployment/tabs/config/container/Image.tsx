@@ -1,6 +1,8 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../../../state/StateProvider";
+import { useTheme } from "../../../../../state/ThemeProvider";
 import { useUser } from "../../../../../state/UserProvider";
+import { combineClasses } from "../../../../../util/helpers";
 // import { useToggle } from "../../../../util/hooks";
 import Input from "../../../../util/Input";
 import Flex from "../../../../util/layout/Flex";
@@ -11,8 +13,12 @@ const Image: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
   const { builds } = useAppState();
   // const [show, toggle] = useToggle();
+  const { themeClass } = useTheme();
   return (
-    <Flex class="config-item shadow" justifyContent="space-between">
+    <Flex
+      class={combineClasses("config-item shadow", themeClass())}
+      justifyContent="space-between"
+    >
       <h1>{deployment.buildID ? "build" : "image"}</h1>
       <Flex alignItems="center" style={{ "flex-wrap": "wrap" }}>
         <Show when={!deployment.buildID}>

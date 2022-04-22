@@ -2,9 +2,11 @@ import { Log as LogType } from "@monitor/types";
 import { Component, createEffect, createSignal, Show } from "solid-js";
 import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
+import { useTheme } from "../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../util/helpers";
 import { useBuffer } from "../../../../util/hooks";
 import { downloadDeploymentLog } from "../../../../util/query";
+import Button from "../../../util/Button";
 import Icon from "../../../util/Icon";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
@@ -56,6 +58,7 @@ const Log: Component<{
     }
   };
   const buffer = useBuffer(scrolled, 250);
+  const { themeClass } = useTheme();
   return (
     <Show when={p.log}>
       <Grid gap="0.5rem" style={{ height: "100%", "grid-template-rows": "auto 1fr" }}>
@@ -75,7 +78,7 @@ const Log: Component<{
             itemStyle={{ width: "4rem" }}
           />
           <Show when={userCanUpdate()}>
-            <button
+            <Button
               class="blue"
               onClick={() =>
                 downloadDeploymentLog(
@@ -87,9 +90,9 @@ const Log: Component<{
               style={{ padding: "0.35rem" }}
             >
               download full log
-            </button>
+            </Button>
           </Show>
-          <button
+          <Button
             class="blue"
             onClick={async () => {
               await p.reload();
@@ -98,11 +101,11 @@ const Log: Component<{
             style={{ padding: "0.4rem" }}
           >
             <Icon type="refresh" />
-          </button>
+          </Button>
         </Flex>
         <div style={{ position: "relative", height: "100%" }}>
           <div
-            class={combineClasses(s.LogContainer, "scroller")}
+            class={combineClasses(s.LogContainer, "scroller", themeClass())}
             ref={ref}
             onScroll={() => {
               if (!ignore) {

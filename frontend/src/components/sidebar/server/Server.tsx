@@ -1,8 +1,10 @@
 import { Component, createEffect, createMemo, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
+import { useTheme } from "../../../state/ThemeProvider";
 import { useUser } from "../../../state/UserProvider";
 import { combineClasses } from "../../../util/helpers";
 import { useLocalStorageToggle } from "../../../util/hooks";
+import Button from "../../util/Button";
 import Icon from "../../util/Icon";
 import Flex from "../../util/layout/Flex";
 import Grid from "../../util/layout/Grid";
@@ -21,10 +23,11 @@ const Server: Component<{ id: string }> = (p) => {
     );
   });
   const [open, toggleOpen] = useLocalStorageToggle(p.id);
+  const { themeClass } = useTheme();
   return (
     <Show when={server()}>
-      <div class={combineClasses(s.Server, "shadow")}>
-        <button
+      <div class={combineClasses(s.Server, "shadow", themeClass())}>
+        <Button
           class={combineClasses(
             s.ServerButton,
             selected.id() === p.id && "selected",
@@ -50,11 +53,15 @@ const Server: Component<{ id: string }> = (p) => {
           >
             {server()?.status === "OK" ? "OK" : "NOT OK"}
           </div>
-        </button>
+        </Button>
         <Show when={open()}>
           <Grid
             gap=".5rem"
-            class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}
+            class={combineClasses(
+              s.Deployments,
+              open() ? s.Enter : s.Exit,
+              themeClass()
+            )}
           >
             <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
             <Show

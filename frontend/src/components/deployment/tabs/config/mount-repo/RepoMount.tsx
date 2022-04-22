@@ -1,4 +1,6 @@
 import { Component } from "solid-js";
+import { useTheme } from "../../../../../state/ThemeProvider";
+import { combineClasses } from "../../../../../util/helpers";
 import Input from "../../../../util/Input";
 import Flex from "../../../../util/layout/Flex";
 import Grid from "../../../../util/layout/Grid";
@@ -6,8 +8,9 @@ import { useConfig } from "../Provider";
 
 const RepoMount: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
+  const { themeClass } = useTheme();
   return (
-    <Grid class="config-item shadow">
+    <Grid class={combineClasses("config-item shadow", themeClass())}>
       <h1>mount</h1>
       <Flex
         alignItems="center"

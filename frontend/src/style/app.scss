@@ -19,6 +19,10 @@
   padding: 1rem;
 }
 
+.content.dark {
+  background-color: c.$darkgrey-dark;
+}
+
 .left-content {
   height: fit-content;
   width: 325px;
@@ -86,12 +90,20 @@ $anim-time: 500ms;
   padding: 0.5rem;
 }
 
+.card.dark {
+  background-color: c.$grey-dark;
+}
+
 .action {
   background-color: c.$lightgrey;
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem;
   box-sizing: border-box;
+}
+
+.action.dark {
+  background-color: c.$lightgrey-dark;
 }
 
 .updates-container {
@@ -124,6 +136,10 @@ $anim-time: 500ms;
   box-sizing: border-box;
 }
 
+.config-item.dark {
+  background-color: c.$lightgrey-dark;
+}
+
 @media only screen and (max-width: 700px) {
   .config-item {
     width: calc(100vw - 6rem);
@@ -132,6 +148,10 @@ $anim-time: 500ms;
 
 .selected {
   background-color: rgba(c.$lightblue, 0.5);
+}
+
+.selected.dark {
+  background-color: rgba(c.$lightblue-dark, 0.5);
 }
 
 .running {

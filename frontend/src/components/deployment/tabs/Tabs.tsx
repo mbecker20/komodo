@@ -21,6 +21,8 @@ import {
   START_CONTAINER,
   STOP_CONTAINER,
 } from "@monitor/util";
+import { useTheme } from "../../../state/ThemeProvider";
+import { combineClasses } from "../../../util/helpers";
 
 const DeploymentTabs: Component<{}> = () => {
   const { selected, deployments, ws } = useAppState();
@@ -56,11 +58,12 @@ const DeploymentTabs: Component<{}> = () => {
     }
   });
   onCleanup(unsub);
+  const { themeClass } = useTheme();
   return (
     <Show when={deployment()}>
       <ConfigProvider>
         <Tabs
-          containerClass="card tabs shadow"
+          containerClass={combineClasses("card tabs shadow", themeClass())}
           containerStyle={{ gap: "0.5rem" }}
           tabs={[
             {

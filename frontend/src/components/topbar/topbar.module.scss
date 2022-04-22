@@ -7,6 +7,10 @@
 	z-index: 90;
 }
 
+.Topbar:global(.dark) {
+	background-color: c.$grey-dark;
+}
+
 .Monitor {
 	font-size: 1.5rem;
 	user-select: none;
@@ -16,6 +20,10 @@
 .Search {
 	width: 12rem;
 	background-color: c.$lightgrey;
+}
+
+.Search:global(.dark) {
+	background-color: c.$lightgrey-dark;
 }
 
 .SearchItem {

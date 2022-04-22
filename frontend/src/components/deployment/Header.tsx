@@ -3,7 +3,10 @@ import { Component, Show } from "solid-js";
 import { DELETE_DEPLOYMENT } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { deploymentHeaderStatusClass } from "../../util/helpers";
+import {
+  combineClasses,
+  deploymentHeaderStatusClass,
+} from "../../util/helpers";
 import ConfirmButton from "../util/ConfirmButton";
 import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
@@ -11,6 +14,8 @@ import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
 import HoverMenu from "../util/menu/HoverMenu";
 import { useActionStates } from "./ActionStateProvider";
+import { useTheme } from "../../state/ThemeProvider";
+import Button from "../util/Button";
 
 const Header: Component<{ exiting?: boolean }> = (p) => {
   const { deployments, ws, selected } = useAppState();
@@ -27,8 +32,9 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
       ? undefined
       : (deployment()!.status as ContainerStatus).Status.toLowerCase();
   const actions = useActionStates();
+  const { themeClass } = useTheme();
   return (
-    <Grid gap="0.5rem" class="card shadow">
+    <Grid gap="0.5rem" class={combineClasses("card shadow", themeClass())}>
       <Flex alignItems="center" justifyContent="space-between">
         <h1>{deployment()!.name}</h1>
         <Show
@@ -37,9 +43,9 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
           <Show
             when={!actions.fullDeleting}
             fallback={
-              <button class="red">
+              <Button class="red">
                 <Icon type="trash" />
-              </button>
+              </Button>
             }
           >
             <HoverMenu
@@ -47,9 +53,9 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
                 <Show
                   when={!actions.fullDeleting}
                   fallback={
-                    <button class="red">
+                    <Button class="red">
                       <Loading />
-                    </button>
+                    </Button>
                   }
                 >
                   <ConfirmButton

@@ -9,6 +9,7 @@ import {
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
 import { useKeyDown } from "../../../util/hooks";
+import Button from "../Button";
 import Icon from "../Icon";
 import Flex from "../layout/Flex";
 import Grid from "../layout/Grid";
@@ -38,13 +39,13 @@ const CenterMenu: Component<{
   });
   return (
     <>
-      <button
+      <Button
         onClick={p.toggleShow}
         class={p.targetClass}
         style={p.targetStyle}
       >
         {p.target}
-      </button>
+      </Button>
       <Show when={buffer()}>
         <Child {...p} show={p.show} toggleShow={p.toggleShow} />
       </Show>

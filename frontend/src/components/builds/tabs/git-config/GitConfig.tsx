@@ -1,6 +1,7 @@
 import { Component, Show } from "solid-js";
 import { pushNotification, URL } from "../../../..";
-import { copyToClipboard } from "../../../../util/helpers";
+import { useTheme } from "../../../../state/ThemeProvider";
+import { combineClasses, copyToClipboard } from "../../../../util/helpers";
 import ConfirmButton from "../../../util/ConfirmButton";
 import Icon from "../../../util/Icon";
 import Flex from "../../../util/layout/Flex";
@@ -13,6 +14,7 @@ import OnClone from "./OnClone";
 const GitConfig: Component<{}> = (p) => {
   const { build, reset, save, userCanUpdate } = useConfig();
   const listenerUrl = () => `${URL}/api/listener/build/${build._id}`;
+  const { themeClass } = useTheme();
   return (
     <Show when={build.loaded}>
       <Grid class="config">
@@ -20,7 +22,7 @@ const GitConfig: Component<{}> = (p) => {
           <Git />
           <OnClone />
           <Show when={userCanUpdate()}>
-            <Grid class="config-item shadow">
+            <Grid class={combineClasses("config-item shadow", themeClass())}>
               <h1>webhook url</h1>
               <Flex justifyContent="space-between" alignItems="center">
                 <div class="ellipsis" style={{ width: "250px" }}>

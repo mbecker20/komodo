@@ -9,17 +9,20 @@ import Grid from "../util/layout/Grid";
 import Loading from "../util/loading/Loading";
 import { useActionStates } from "./ActionStateProvider";
 import { pushNotification } from "../..";
+import { combineClasses } from "../../util/helpers";
+import { useTheme } from "../../state/ThemeProvider";
 
 const Actions: Component<{}> = (p) => {
   const { username, permissions } = useUser();
   const { builds, selected, ws } = useAppState();
   const build = () => builds.get(selected.id())!;
   const actions = useActionStates();
+  const { themeClass } = useTheme();
   return (
     <Show when={permissions() > 1 || build().owners.includes(username()!)}>
-      <Grid class="card shadow">
+      <Grid class={combineClasses("card shadow", themeClass())}>
         <h1>actions</h1>
-        <Flex class="action shadow">
+        <Flex class={combineClasses("action shadow", themeClass())}>
           build{" "}
           <Show
             when={!actions.building}
@@ -40,7 +43,7 @@ const Actions: Component<{}> = (p) => {
             </ConfirmButton>
           </Show>
         </Flex>
-        <Flex class="action shadow">
+        <Flex class={combineClasses("action shadow", themeClass())}>
           reclone{" "}
           <Show
             when={!actions.cloning}

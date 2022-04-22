@@ -6,6 +6,7 @@ import {
   JSXElement,
   Show,
 } from "solid-js";
+import { useTheme } from "../../../state/ThemeProvider";
 import { combineClasses } from "../../../util/helpers";
 import { getPositionClass, Position } from "./helpers";
 import s from "./menu.module.scss";
@@ -32,6 +33,7 @@ const Menu: Component<{
       }, 350);
     }
   });
+  const { themeClass } = useTheme();
   return (
     <div class={s.MenuContainer} style={p.containerStyle}>
       {p.target}
@@ -45,6 +47,7 @@ const Menu: Component<{
           class={combineClasses(
             p.menuClass,
             s.Menu,
+            themeClass(),
             "shadow",
             getPositionClass(p.position),
             p.show ? s.Enter : s.Exit

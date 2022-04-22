@@ -8,6 +8,7 @@ import {
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
 import { useToggle } from "../../../util/hooks";
+import Button from "../Button";
 import Icon from "../Icon";
 import Input from "../Input";
 import { Position } from "./helpers";
@@ -50,10 +51,10 @@ const Selector: Component<{
           setSearch("");
         }}
         target={
-          <button class={p.targetClass} onClick={toggle} style={p.targetStyle}>
+          <Button class={p.targetClass} onClick={toggle} style={p.targetStyle}>
             {p.selected}
             <Icon type="chevron-down" />
-          </button>
+          </Button>
         }
         content={
           <>
@@ -80,7 +81,7 @@ const Selector: Component<{
               }
             >
               {(item, index) => (
-                <button
+                <Button
                   onClick={() => {
                     p.onSelect && p.onSelect(item, index());
                     toggle();
@@ -93,7 +94,7 @@ const Selector: Component<{
                   class={combineClasses(p.itemClass, s.SelectorItem)}
                 >
                   {item}
-                </button>
+                </Button>
               )}
             </For>
           </>

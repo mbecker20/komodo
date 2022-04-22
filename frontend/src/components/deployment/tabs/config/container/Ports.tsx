@@ -1,4 +1,6 @@
 import { Component, For, Show } from "solid-js";
+import { useTheme } from "../../../../../state/ThemeProvider";
+import { combineClasses } from "../../../../../util/helpers";
 import Icon from "../../../../util/Icon";
 import Input from "../../../../util/Input";
 import Flex from "../../../../util/layout/Flex";
@@ -16,8 +18,9 @@ const Ports: Component<{}> = (p) => {
   const onRemove = (index: number) => {
     setDeployment("ports", (ports) => ports!.filter((_, i) => i !== index));
   };
+  const { themeClass } = useTheme();
   return (
-    <Grid class="config-item shadow">
+    <Grid class={combineClasses("config-item shadow", themeClass())}>
       <Flex alignItems="center" justifyContent="space-between">
         <h1>ports</h1>
         <Flex alignItems="center">

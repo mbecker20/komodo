@@ -1,7 +1,9 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
+import { useTheme } from "../../state/ThemeProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, deploymentStatusClass, inPx, serverStatusClass } from "../../util/helpers";
+import Button from "../util/Button";
 import Circle from "../util/Circle";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
@@ -12,6 +14,7 @@ const cardWidth = 300; // in px
 const Home: Component<{}> = (p) => {
   const { username, permissions } = useUser();
   const { deployments, builds, servers, selected } = useAppState();
+  const { themeClass } = useTheme();
   const filteredDeploymentIds = () =>
     deployments
       .ids()
@@ -43,13 +46,13 @@ const Home: Component<{}> = (p) => {
         >
           <Grid
             gap="0.5rem"
-            class="card shadow"
+            class={combineClasses("card shadow", themeClass())}
             style={{ height: "fit-content" }}
           >
             <h1 style={{ opacity: 0.5 }}>my deployments</h1>
             <For each={filteredDeploymentIds()}>
               {(id) => (
-                <button
+                <Button
                   class="grey"
                   onClick={() => selected.set(id, "deployment")}
                   style={{
@@ -65,7 +68,7 @@ const Home: Component<{}> = (p) => {
                       class={deploymentStatusClass(deployments.state(id))}
                     />
                   </Flex>
-                </button>
+                </Button>
               )}
             </For>
           </Grid>
@@ -74,13 +77,13 @@ const Home: Component<{}> = (p) => {
         <Show when={filteredServerIds() && filteredServerIds()!.length > 0}>
           <Grid
             gap="0.5rem"
-            class="card shadow"
+            class={combineClasses("card shadow", themeClass())}
             style={{ height: "fit-content" }}
           >
             <h1 style={{ opacity: 0.5 }}>my servers</h1>
             <For each={filteredServerIds()}>
               {(id) => (
-                <button
+                <Button
                   class="grey"
                   onClick={() => selected.set(id, "server")}
                   style={{
@@ -104,7 +107,7 @@ const Home: Component<{}> = (p) => {
                         : "NOT OK"
                       : "DISABLED"}
                   </div>
-                </button>
+                </Button>
               )}
             </For>
           </Grid>
@@ -113,13 +116,13 @@ const Home: Component<{}> = (p) => {
         <Show when={filteredBuildIds() && filteredBuildIds()!.length > 0}>
           <Grid
             gap="0.5rem"
-            class="card shadow"
+            class={combineClasses("card shadow", themeClass())}
             style={{ height: "fit-content" }}
           >
             <h1 style={{ opacity: 0.5 }}>my builds</h1>
             <For each={filteredBuildIds()}>
               {(id) => (
-                <button
+                <Button
                   class="grey"
                   onClick={() => selected.set(id, "build")}
                   style={{
@@ -128,7 +131,7 @@ const Home: Component<{}> = (p) => {
                   }}
                 >
                   <h2>{builds.get(id)!.name}</h2>
-                </button>
+                </Button>
               )}
             </For>
           </Grid>

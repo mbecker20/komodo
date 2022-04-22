@@ -6,6 +6,10 @@
 	height: 90px;
 }
 
+.Update:global(.dark) {
+	background-color: c.$lightgrey-dark;
+}
+
 .Update.NoName {
 	height: 70px;
 }
@@ -25,4 +29,8 @@
 	max-height: 30vh;
 	background-color: rgba(c.$darkgrey, 0.6);
 	padding: 1rem;
+}
+
+.Log:global(.dark) {
+	background-color: rgba(c.$darkgrey-dark, 0.6);
 }

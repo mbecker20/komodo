@@ -93,3 +93,17 @@ export function serverStatusClass(
 export function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
 }
+
+export function applyDarkTheme(element: Element) {
+  element.classList.add("dark");
+  for (let i = 0; i < element.children.length; i++) {
+    applyDarkTheme(element.children[i])
+  }
+}
+
+export function removeDarkTheme(element: Element) {
+  element.classList.remove("dark");
+  for (let i = 0; i < element.children.length; i++) {
+    removeDarkTheme(element.children[i]);
+  }
+}

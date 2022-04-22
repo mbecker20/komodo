@@ -5,13 +5,16 @@ import Flex from "../../../util/layout/Flex";
 import Input from "../../../util/Input";
 import { useAppState } from "../../../../state/StateProvider";
 import Selector from "../../../util/menu/Selector";
+import { useTheme } from "../../../../state/ThemeProvider";
+import { combineClasses } from "../../../../util/helpers";
 
 const Git: Component<{}> = (p) => {
   const { githubAccounts } = useAppState();
   const { build, setBuild, userCanUpdate } = useConfig();
   createEffect(() => console.log(build.branch));
+  const { themeClass } = useTheme();
   return (
-    <Grid class="config-item shadow">
+    <Grid class={combineClasses("config-item shadow", themeClass())}>
       <h1>github config</h1>
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}

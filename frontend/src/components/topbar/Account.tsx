@@ -1,19 +1,21 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
+import { useTheme } from "../../state/ThemeProvider";
 import { useUser } from "../../state/UserProvider";
 import { readablePermissions } from "../../util/helpers";
-import ConfirmButton from "../util/ConfirmButton";
+import Button from "../util/Button";
 import Grid from "../util/layout/Grid";
 import s from "./topbar.module.scss";
 
 const Account: Component<{ close: () => void }> = (p) => {
   const { logout, selected } = useAppState();
-  const { username, permissions } = useUser();
+  const { permissions } = useUser();
+  const { isDark, toggleDarkTheme } = useTheme();
   return (
-    <Grid class={s.Account} placeItems="center end">
+    <Grid gap="0.5rem" class={s.Account} placeItems="center end">
       <div>permissions: {readablePermissions(permissions())}</div>
       <Show when={permissions() > 1}>
-        <button
+        <Button
           class="grey"
           onClick={() => {
             selected.set("", "users");
@@ -22,11 +24,18 @@ const Account: Component<{ close: () => void }> = (p) => {
           style={{ "font-size": "1rem", width: "100%" }}
         >
           manage users
-        </button>
+        </Button>
       </Show>
-      <button onClick={logout} class="red" style={{ width: "100%" }}>
+      <Button
+        class="grey"
+        onClick={toggleDarkTheme}
+        style={{ "font-size": "1rem", width: "100%" }}
+      >
+        {isDark() ? "dark" : "light"} theme
+      </Button>
+      <Button onClick={logout} class="red" style={{ width: "100%" }}>
         log out
-      </button>
+      </Button>
     </Grid>
   );
 };

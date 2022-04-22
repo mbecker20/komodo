@@ -5,11 +5,13 @@ import Grid from "../../../util/layout/Grid";
 import { useConfig } from "../Provider";
 import s from "../../build.module.css";
 import Flex from "../../../util/layout/Flex";
+import { useTheme } from "../../../../state/ThemeProvider";
 
 const OnClone: Component = () => {
   const { build, setBuild, userCanUpdate } = useConfig();
+  const { themeClass } = useTheme();
   return (
-    <Grid class="config-item shadow">
+    <Grid class={combineClasses("config-item shadow", themeClass())}>
       <h1>on clone</h1>
       <Flex
         alignItems="center"

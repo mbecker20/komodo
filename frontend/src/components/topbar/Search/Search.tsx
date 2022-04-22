@@ -16,6 +16,7 @@ import Circle from "../../util/Circle";
 import { ControlledTabs } from "../../util/tabs/Tabs";
 import { useAppDimensions } from "../../../state/DimensionProvider";
 import Grid from "../../util/layout/Grid";
+import Button from "../../util/Button";
 
 const mobileStyle: JSX.CSSProperties = {
   position: "fixed",
@@ -126,7 +127,7 @@ const Deployments: Component<{ close: () => void }> = (p) => {
       <Show when={filteredDeployments()?.length === 0}>no results</Show>
       <For each={filteredDeployments()}>
         {(deployment, index) => (
-          <button
+          <Button
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
@@ -154,7 +155,7 @@ const Deployments: Component<{ close: () => void }> = (p) => {
               <Icon type="caret-right" width="0.7rem" />
               deployment
             </Flex>
-          </button>
+          </Button>
         )}
       </For>
     </Grid>
@@ -173,7 +174,7 @@ const Builds: Component<{ close: () => void }> = (p) => {
       <Show when={filteredBuilds()?.length === 0}>no results</Show>
       <For each={filteredBuilds()}>
         {(build, index) => (
-          <button
+          <Button
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
@@ -186,7 +187,7 @@ const Builds: Component<{ close: () => void }> = (p) => {
           >
             {build.name}
             <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</div>
-          </button>
+          </Button>
         )}
       </For>
     </Grid>
@@ -205,7 +206,7 @@ const Servers: Component<{ close: () => void }> = (p) => {
       <Show when={filteredServers()?.length === 0}>no results</Show>
       <For each={filteredServers()}>
         {(server, index) => (
-          <button
+          <Button
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
@@ -218,7 +219,7 @@ const Servers: Component<{ close: () => void }> = (p) => {
           >
             {server.name}
             <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>server</div>
-          </button>
+          </Button>
         )}
       </For>
     </Grid>

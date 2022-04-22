@@ -10,15 +10,17 @@ import Builds from "./builds/Builds";
 import Server from "./server/Server";
 import s from "./sidebar.module.scss";
 import { TOPBAR_HEIGHT } from "../..";
+import { useTheme } from "../../state/ThemeProvider";
 
 const Sidebar: Component<{}> = () => {
-  const { sidebar, servers, selected } = useAppState();
+  const { sidebar, servers } = useAppState();
   const { height } = useAppDimensions();
   const { permissions } = useUser();
+  const { themeClass } = useTheme();
   return (
     <Show when={servers.loaded() && sidebar.open()}>
       <Tabs
-        containerClass={combineClasses(s.Sidebar, "shadow")}
+        containerClass={combineClasses(s.Sidebar, "shadow", themeClass())}
         localStorageKey="sidebar-tab"
         tabsGap="0rem"
         tabs={[

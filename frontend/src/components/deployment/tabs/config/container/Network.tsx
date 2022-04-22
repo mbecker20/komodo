@@ -1,12 +1,19 @@
 import { Component } from "solid-js";
+import { useTheme } from "../../../../../state/ThemeProvider";
+import { combineClasses } from "../../../../../util/helpers";
 import Flex from "../../../../util/layout/Flex";
 import Selector from "../../../../util/menu/Selector";
 import { useConfig } from "../Provider";
 
 const Network: Component<{}> = (p) => {
   const { deployment, setDeployment, networks, userCanUpdate } = useConfig();
+  const { themeClass } = useTheme();
   return (
-    <Flex class="config-item shadow" justifyContent="space-between" alignItems="center">
+    <Flex
+      class={combineClasses("config-item shadow", themeClass())}
+      justifyContent="space-between"
+      alignItems="center"
+    >
       <h1>network</h1>
       <Selector
         targetClass="blue"

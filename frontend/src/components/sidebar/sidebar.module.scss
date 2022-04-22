@@ -10,6 +10,10 @@
   width: 325px;
 }
 
+.Sidebar:global(.dark) {
+  background-color: c.$grey-dark;
+}
+
 @media only screen and (max-width: 1200px) {
   .Sidebar {
     position: absolute;
@@ -31,6 +35,10 @@
   cursor: pointer;
 }
 
+.Server:global(.dark) {
+  background-color: c.$lightgrey-dark;
+}
+
 .DeploymentsTabContent {
   height: fit-content;
   padding: 0rem 1rem;
@@ -41,6 +49,10 @@
   background-color: c.$lightgrey;
   transform-origin: top;
   padding: 0.5rem;
+}
+
+.Deployments:global(.dark) {
+  background-color: c.$lightgrey-dark;
 }
 
 .ServerButton {
@@ -54,6 +66,10 @@
   background-color: rgba(c.$lightblue, 0.5);
 }
 
+.ServerButton:global(.dark):hover {
+  background-color: rgba(c.$lightblue-dark, 0.5);
+}
+
 .DropdownItem {
   padding: 0.5rem 1rem;
   width: 100%;
@@ -63,6 +79,10 @@
 
 .DropdownItem:hover {
   background-color: rgba(c.$lightblue, 0.5);
+}
+
+.DropdownItem:global(.dark):hover {
+  background-color: rgba(c.$lightblue-dark, 0.5);
 }
 
 .CreateButton {

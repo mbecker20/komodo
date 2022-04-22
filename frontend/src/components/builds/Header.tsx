@@ -8,15 +8,18 @@ import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import { useActionStates } from "./ActionStateProvider";
+import { useTheme } from "../../state/ThemeProvider";
+import { combineClasses } from "../../util/helpers";
 
 const Header: Component<{}> = (p) => {
   const { builds, selected, ws } = useAppState();
   const build = () => builds.get(selected.id())!;
   const actions = useActionStates();
   const { permissions, username } = useUser();
+  const { themeClass } = useTheme();
   return (
     <Flex
-      class="card shadow"
+      class={combineClasses("card shadow", themeClass())}
       justifyContent="space-between"
       alignItems="center"
     >
