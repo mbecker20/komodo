@@ -5,6 +5,7 @@ import s from "./topbar.module.scss";
 import Update from "../update/Update";
 import { combineClasses, inPx } from "../../util/helpers";
 import { useAppDimensions } from "../../state/DimensionProvider";
+import Button from "../util/Button";
 
 const Updates: Component<{}> = () => {
   const { updates } = useAppState();
@@ -27,13 +28,13 @@ const Updates: Component<{}> = () => {
             {(update) => <Update update={update} showName />}
           </For>
           <Show when={!updates.noMore()}>
-            <button
+            <Button
               class="grey"
               style={{ width: "100%" }}
               onClick={updates.loadMore}
             >
               load more
-            </button>
+            </Button>
           </Show>
         </Grid>
       </Grid>
