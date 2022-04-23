@@ -69,24 +69,26 @@ export function deploymentStatusClass(
 }
 
 export function deploymentHeaderStatusClass(
-  status: "not deployed" | "created" | "running" | "exited"
+  status: "not deployed" | "created" | "running" | "exited",
+  themeClass: () => string | undefined
 ) {
   switch (status) {
     case "running":
-      return "running";
+      return combineClasses("running", themeClass());
     case "exited":
-      return "exited";
+      return combineClasses("exited", themeClass());
   }
 }
 
 export function serverStatusClass(
-  status: "OK" | "NOT OK" | "DISABLED"
+  status: "OK" | "NOT OK" | "DISABLED",
+  themeClass: () => string | undefined
 ) {
   switch (status) {
     case "OK":
-      return "running";
+      return combineClasses("running", themeClass());
     case "NOT OK":
-      return "exited";
+      return combineClasses("exited", themeClass());
   }
 }
 

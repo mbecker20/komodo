@@ -78,7 +78,7 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
         </Show>
       </Flex>
       <Flex alignItems="center" justifyContent="space-between">
-        <div class={deploymentHeaderStatusClass(state())}>{state()}</div>
+        <div class={deploymentHeaderStatusClass(state(), themeClass)}>{state()}</div>
         <Show when={status()}>
           <div style={{ opacity: 0.7 }}>{status()}</div>
         </Show>

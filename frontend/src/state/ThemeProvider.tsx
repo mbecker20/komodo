@@ -1,6 +1,6 @@
 import { Component, createContext, createEffect, useContext } from "solid-js";
 import { applyDarkTheme, removeDarkTheme } from "../util/helpers";
-import { useLocalStorageToggle } from "../util/hooks";
+import { useLocalStorageToggle, useWindowKeyDown } from "../util/hooks";
 
 const value = () => {
   const [isDark, toggleDarkTheme] = useLocalStorageToggle("dark-theme", true);
@@ -31,6 +31,12 @@ const value = () => {
   });
 
   const themeClass = () => (isDark() ? "dark" : undefined);
+
+  useWindowKeyDown((e) => {
+    if (e.key === "D" && e.shiftKey) {
+      toggleDarkTheme();
+    }
+  });
 
   return {
     isDark,

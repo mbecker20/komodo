@@ -159,7 +159,15 @@ $anim-time: 500ms;
   // text-shadow: 0px 0px 1px c.$textgreen;
 }
 
+.running.dark {
+  color: c.$textgreen-dark;
+}
+
 .exited {
   color: c.$textred;
   // text-shadow: 0px 0px 1px c.$textred;
+}
+
+.exited-dark {
+  color: c.$textred-dark
 }

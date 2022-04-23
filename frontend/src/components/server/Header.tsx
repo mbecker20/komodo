@@ -33,7 +33,7 @@ const Header: Component<{}> = (p) => {
       </Grid>
       <Show when={!server().isCore}>
         <Flex alignItems="center">
-          <div class={serverStatusClass(status())}>{status()}</div>
+          <div class={serverStatusClass(status(), themeClass)}>{status()}</div>
           <Show
             when={permissions() > 1 || server().owners.includes(username())}
           >

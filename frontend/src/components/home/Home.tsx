@@ -2,7 +2,12 @@ import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useTheme } from "../../state/ThemeProvider";
 import { useUser } from "../../state/UserProvider";
-import { combineClasses, deploymentStatusClass, inPx, serverStatusClass } from "../../util/helpers";
+import {
+  combineClasses,
+  deploymentStatusClass,
+  inPx,
+  serverStatusClass,
+} from "../../util/helpers";
 import Button from "../util/Button";
 import Circle from "../util/Circle";
 import Flex from "../util/layout/Flex";
@@ -98,7 +103,8 @@ const Home: Component<{}> = (p) => {
                         ? servers.get(id)!.status === "OK"
                           ? "OK"
                           : "NOT OK"
-                        : "DISABLED"
+                        : "DISABLED",
+                      themeClass
                     )}
                   >
                     {servers.get(id)!.enabled
