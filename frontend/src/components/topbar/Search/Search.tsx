@@ -49,9 +49,9 @@ export const Search: Component<{}> = (p) => {
         <Show
           when={!isMobile()}
           fallback={
-            <button class="grey" onClick={() => open.set(true)}>
+            <Button class="grey" onClick={() => open.set(true)}>
               <Icon type="search" width="1.15rem" />
-            </button>
+            </Button>
           }
         >
           <Input
