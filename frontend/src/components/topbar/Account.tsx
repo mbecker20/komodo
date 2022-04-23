@@ -1,19 +1,27 @@
 import { Component, Show } from "solid-js";
+import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useTheme } from "../../state/ThemeProvider";
 import { useUser } from "../../state/UserProvider";
 import { readablePermissions } from "../../util/helpers";
 import Button from "../util/Button";
+import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import s from "./topbar.module.scss";
 
 const Account: Component<{ close: () => void }> = (p) => {
   const { logout, selected } = useAppState();
-  const { permissions } = useUser();
+  const { username, permissions } = useUser();
   const { isDark, toggleDarkTheme } = useTheme();
+  const { isMobile } = useAppDimensions();
   return (
     <Grid gap="0.5rem" class={s.Account} placeItems="center end">
-      <div>permissions: {readablePermissions(permissions())}</div>
+      <Show when={isMobile()}>
+        <Flex justifyContent="center">{username()}</Flex>
+      </Show>
+      <Flex justifyContent="center">
+        permissions: {readablePermissions(permissions())}
+      </Flex>
       <Show when={permissions() > 1}>
         <Button
           class="grey"
