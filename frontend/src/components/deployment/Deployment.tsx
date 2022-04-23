@@ -1,4 +1,5 @@
 import { Component, Show } from "solid-js";
+import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useTheme } from "../../state/ThemeProvider";
 import { combineClasses } from "../../util/helpers";
@@ -16,6 +17,7 @@ const Deployment: Component<{}> = (p) => {
   const deployment = () => deployments.get(selected.id()!);
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   const { themeClass } = useTheme();
+  const { isMobile } = useAppDimensions();
   return (
     <Show
       when={deployment() && server()}
@@ -27,7 +29,9 @@ const Deployment: Component<{}> = (p) => {
           <Grid class="left-content">
             <Header />
             <Actions />
-            <Updates />
+            <Show when={!isMobile()}>
+              <Updates />
+            </Show>
           </Grid>
           {/* right / tabs */}
           <DeploymentTabs />

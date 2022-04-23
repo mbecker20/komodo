@@ -16,6 +16,9 @@ import HoverMenu from "../util/menu/HoverMenu";
 import { useActionStates } from "./ActionStateProvider";
 import { useTheme } from "../../state/ThemeProvider";
 import Button from "../util/Button";
+import { useLocalStorageToggle } from "../../util/hooks";
+import { useAppDimensions } from "../../state/DimensionProvider";
+import Updates from "./Updates";
 
 const Header: Component<{ exiting?: boolean }> = (p) => {
   const { deployments, ws, selected } = useAppState();
@@ -33,57 +36,88 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
       : (deployment()!.status as ContainerStatus).Status.toLowerCase();
   const actions = useActionStates();
   const { themeClass } = useTheme();
+  const { isMobile } = useAppDimensions();
+  const [showUpdates, toggleShowUpdates] =
+    useLocalStorageToggle("show-updates");
   return (
-    <Grid gap="0.5rem" class={combineClasses("card shadow", themeClass())}>
-      <Flex alignItems="center" justifyContent="space-between">
-        <h1>{deployment()!.name}</h1>
-        <Show
-          when={permissions() >= 2 || deployment().owners.includes(username()!)}
-        >
+    <>
+      <Grid
+        gap="0.5rem"
+        class={combineClasses("card shadow", themeClass())}
+        style={{
+          position: "relative",
+          cursor: isMobile() ? "pointer" : undefined,
+        }}
+        onClick={() => {
+          if (isMobile()) toggleShowUpdates();
+        }}
+      >
+        <Flex alignItems="center" justifyContent="space-between">
+          <h1>{deployment()!.name}</h1>
           <Show
-            when={!actions.fullDeleting}
-            fallback={
-              <Button class="red">
-                <Icon type="trash" />
-              </Button>
+            when={
+              permissions() >= 2 || deployment().owners.includes(username()!)
             }
           >
-            <HoverMenu
-              target={
-                <Show
-                  when={!actions.fullDeleting}
-                  fallback={
-                    <Button class="red">
-                      <Loading />
-                    </Button>
-                  }
-                >
-                  <ConfirmButton
-                    onConfirm={() => {
-                      ws.send(DELETE_DEPLOYMENT, {
-                        deploymentID: selected.id(),
-                      });
-                    }}
-                    color="red"
-                  >
-                    <Icon type="trash" />
-                  </ConfirmButton>
-                </Show>
+            <Show
+              when={!actions.fullDeleting}
+              fallback={
+                <Button class="red">
+                  <Icon type="trash" />
+                </Button>
               }
-              content="delete deployment"
-              position="bottom center"
-              padding="0.5rem"
-            />
+            >
+              <HoverMenu
+                target={
+                  <Show
+                    when={!actions.fullDeleting}
+                    fallback={
+                      <Button class="red">
+                        <Loading />
+                      </Button>
+                    }
+                  >
+                    <ConfirmButton
+                      onConfirm={() => {
+                        ws.send(DELETE_DEPLOYMENT, {
+                          deploymentID: selected.id(),
+                        });
+                      }}
+                      color="red"
+                    >
+                      <Icon type="trash" />
+                    </ConfirmButton>
+                  </Show>
+                }
+                content="delete deployment"
+                position="bottom center"
+                padding="0.5rem"
+              />
+            </Show>
           </Show>
+        </Flex>
+        <Flex alignItems="center" justifyContent="space-between">
+          <div class={deploymentHeaderStatusClass(state(), themeClass)}>
+            {state()}
+          </div>
+          <Show when={status()}>
+            <div style={{ opacity: 0.7 }}>{status()}</div>
+          </Show>
+        </Flex>
+        <Show when={isMobile()}>
+          <Flex gap="0.5rem" alignItems="center" class="show-updates-indicator">
+            updates{" "}
+            <Icon
+              type={showUpdates() ? "chevron-up" : "chevron-down"}
+              width="0.9rem"
+            />
+          </Flex>
         </Show>
-      </Flex>
-      <Flex alignItems="center" justifyContent="space-between">
-        <div class={deploymentHeaderStatusClass(state(), themeClass)}>{state()}</div>
-        <Show when={status()}>
-          <div style={{ opacity: 0.7 }}>{status()}</div>
-        </Show>
-      </Flex>
-    </Grid>
+      </Grid>
+      <Show when={isMobile() && showUpdates()}>
+        <Updates />
+      </Show>
+    </>
   );
 };
 

@@ -1,4 +1,5 @@
 import { Component, Show } from "solid-js";
+import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useTheme } from "../../state/ThemeProvider";
 import { combineClasses } from "../../util/helpers";
@@ -14,6 +15,7 @@ const Server: Component<{}> = (p) => {
   const { servers, selected } = useAppState();
   const server = () => servers.get(selected.id())!;
   const { themeClass } = useTheme();
+  const { isMobile } = useAppDimensions();
   return (
     <Show when={server()} fallback={<NotFound type="server" />}>
       <ActionStateProvider>
@@ -22,7 +24,9 @@ const Server: Component<{}> = (p) => {
           <Grid class="left-content">
             <Header />
             <Actions />
-            <Updates />
+            <Show when={!isMobile()}>
+              <Updates />
+            </Show>
           </Grid>
           {/* right / tabs */}
           <ServerTabs />

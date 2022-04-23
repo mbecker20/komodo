@@ -6,6 +6,7 @@ export type IconType =
   | "arrow-up"
   | "arrow-left"
   | "chevron-down"
+  | "chevron-up"
   | "cross"
   | "double-chevron-right"
   | "exchange"

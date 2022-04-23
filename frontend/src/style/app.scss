@@ -110,6 +110,15 @@ $anim-time: 500ms;
   max-height: calc(225px + 5.5rem);
 }
 
+.show-updates-indicator {
+  font-size: 0.8rem;
+  position: absolute;
+  bottom: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: .7;
+}
+
 .tabs {
   height: fit-content;
 }
