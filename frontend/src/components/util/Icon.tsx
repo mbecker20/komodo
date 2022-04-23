@@ -62,7 +62,7 @@ const Icon: Component<{
         ...p.style,
         width: p.width || "1rem",
         height: p.height,
-        filter: !theme?.isDark() ? "invert(0.9)" : undefined,
+        filter: !theme?.isDark() ? "invert(0.92)" : undefined,
       }}
       onClick={p.onClick}
     />

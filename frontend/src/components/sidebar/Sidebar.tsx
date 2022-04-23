@@ -48,7 +48,7 @@ const Sidebar: Component<{}> = () => {
                 style={{
                   height: "fit-content",
                   "max-height": inPx(height() - TOPBAR_HEIGHT - 120),
-                  padding: "0rem 1rem",
+                  padding: "0rem 0.5rem",
                 }}
               >
                 <Builds />

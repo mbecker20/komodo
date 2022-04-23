@@ -84,6 +84,7 @@ export const ControlledTabs: Component<{
       </Flex>
       <div style={{ overflow: "hidden" }}>
         <Flex
+          gap="0rem"
           style={{
             width: `${tabs().length * 100}%`,
             transform: `translateX(-${(current() / tabs().length) * 100}%)`,
