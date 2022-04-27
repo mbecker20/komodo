@@ -4,7 +4,6 @@ import { createStore } from "solid-js/store";
 import { pushNotification } from "../..";
 import { ADD_SERVER } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
-import { combineClasses } from "../../util/helpers";
 import { useToggle } from "../../util/hooks";
 import Input from "../util/Input";
 import Grid from "../util/layout/Grid";
@@ -50,29 +49,24 @@ const Content: Component<{ close: () => void }> = (p) => {
 		}
   };
   return (
-    <>
-      <Grid
-        placeItems="center"
-        style={{ padding: "2rem 1rem 1rem 1rem" }}
-      >
-        <Input
-          ref={nameInput}
-          value={server.name}
-          onEdit={(name) => setServer("name", name)}
-          placeholder="name"
-          style={{ "font-size": "1.5rem" }}
-        />
-        <Input
-          value={server.address}
-          onEdit={(address) => setServer("address", address)}
-          placeholder="address"
-          style={{ "font-size": "1.5rem" }}
-        />
-        <button class="green" style={{ width: "100%" }} onClick={create}>
-          add
-        </button>
-      </Grid>
-    </>
+    <Grid placeItems="center" style={{ padding: "2rem 1rem 1rem 1rem" }}>
+      <Input
+        ref={nameInput}
+        value={server.name}
+        onEdit={(name) => setServer("name", name)}
+        placeholder="name"
+        style={{ "font-size": "1.5rem" }}
+      />
+      <Input
+        value={server.address}
+        onEdit={(address) => setServer("address", address)}
+        placeholder="address"
+        style={{ "font-size": "1.5rem" }}
+      />
+      <button class="green" style={{ width: "100%" }} onClick={create}>
+        add
+      </button>
+    </Grid>
   );
 };
 

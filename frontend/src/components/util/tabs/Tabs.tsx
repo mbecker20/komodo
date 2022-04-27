@@ -13,7 +13,6 @@ import { combineClasses } from "../../../util/helpers";
 import { LocalStorageSetter, useLocalStorage } from "../../../util/hooks";
 import Button from "../Button";
 import Flex from "../layout/Flex";
-import Grid from "../layout/Grid";
 import s from "./tabs.module.scss";
 
 export type Tab = {
@@ -86,9 +85,10 @@ export const ControlledTabs: Component<{
         <Flex
           gap="0rem"
           style={{
+            position: "relative",
             width: `${tabs().length * 100}%`,
-            transform: `translateX(-${(current() / tabs().length) * 100}%)`,
-            transition: "transform 350ms ease",
+            left: `-${current() * 100}%`,
+            transition: "left 350ms ease",
           }}
         >
           <For each={tabs()}>
