@@ -39,6 +39,19 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
   const { isMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
     useLocalStorageToggle("show-updates");
+
+  const userCanUpdate = () => {
+    if (permissions() > 1) {
+      return true;
+    } else if (
+      permissions() > 0 &&
+      deployment()!.owners.includes(username()!)
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   return (
     <>
       <Grid
@@ -46,10 +59,10 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
         class={combineClasses("card shadow", themeClass())}
         style={{
           position: "relative",
-          cursor: isMobile() ? "pointer" : undefined,
+          cursor: (isMobile() && userCanUpdate()) ? "pointer" : undefined,
         }}
         onClick={() => {
-          if (isMobile()) toggleShowUpdates();
+          if (isMobile() && userCanUpdate()) toggleShowUpdates();
         }}
       >
         <Flex alignItems="center" justifyContent="space-between">
@@ -104,7 +117,7 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
             <div style={{ opacity: 0.7 }}>{status()}</div>
           </Show>
         </Flex>
-        <Show when={isMobile()}>
+        <Show when={isMobile() && userCanUpdate()}>
           <Flex gap="0.5rem" alignItems="center" class="show-updates-indicator">
             updates{" "}
             <Icon
@@ -114,7 +127,7 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
           </Flex>
         </Show>
       </Grid>
-      <Show when={isMobile() && showUpdates()}>
+      <Show when={isMobile() && userCanUpdate() && showUpdates()}>
         <Updates />
       </Show>
     </>

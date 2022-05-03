@@ -14,12 +14,13 @@ const Updates: Component<{}> = (p) => {
   const selectedUpdates = useArray(() =>
     getUpdates({ deploymentID: selected.id() })
   );
-  const unsub = ws.subscribe([ADD_UPDATE], ({ update }) => {
-    if (update.deploymentID === selected.id()) {
-      selectedUpdates.add(update);
-    }
-  });
-  onCleanup(unsub);
+  onCleanup(
+    ws.subscribe([ADD_UPDATE], ({ update }) => {
+      if (update.deploymentID === selected.id()) {
+        selectedUpdates.add(update);
+      }
+    })
+  );
   const [noMoreUpdates, setNoMore] = createSignal(false);
   const loadMore = async () => {
     const offset = selectedUpdates.collection()?.length;

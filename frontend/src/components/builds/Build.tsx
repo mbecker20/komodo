@@ -2,6 +2,7 @@ import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useTheme } from "../../state/ThemeProvider";
+import { useUser } from "../../state/UserProvider";
 import { combineClasses } from "../../util/helpers";
 import NotFound from "../NotFound";
 import Grid from "../util/layout/Grid";
@@ -16,6 +17,16 @@ const Build: Component<{}> = (p) => {
   const build = () => builds.get(selected.id())!;
   const { themeClass } = useTheme();
   const { isMobile } = useAppDimensions();
+  const { permissions, username } = useUser();
+  const userCanUpdate = () => {
+    if (permissions() > 1) {
+      return true;
+    } else if (permissions() > 0 && build()!.owners.includes(username()!)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   return (
     <Show when={build()} fallback={<NotFound type="build" />}>
       <ActionStateProvider>
@@ -24,7 +35,7 @@ const Build: Component<{}> = (p) => {
           <Grid class="left-content">
             <Header />
             <Actions />
-            <Show when={!isMobile()}>
+            <Show when={!isMobile() && userCanUpdate()}>
               <Updates />
             </Show>
           </Grid>

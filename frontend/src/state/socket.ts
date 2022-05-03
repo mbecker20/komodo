@@ -23,16 +23,13 @@ import { State } from "./StateProvider";
 import { createSignal } from "solid-js";
 import ReconnectingWebSocket from "reconnecting-websocket";
 
-function socket(
-  user: User,
-  state: State,
-) {
+function socket(user: User, state: State) {
   const ws = new ReconnectingWebSocket(WS_URL);
 
   const [isOpen, setOpen] = createSignal(false);
 
   ws.addEventListener("open", () => {
-    console.log("connection opened")
+    console.log("connection opened");
     ws.send(JSON.stringify({ token: client.token }));
     setOpen(true);
   });
@@ -154,6 +151,19 @@ function handleMessage(
     /* Updates */
     case ADD_UPDATE:
       const { update } = message as { update: Update };
+      if (
+        (update.deploymentID &&
+          !deployments
+            .get(update.deploymentID)
+            ?.owners.includes(user.username)) ||
+        (update.buildID &&
+          !builds.get(update.buildID)?.owners.includes(user.username)) ||
+        (update.serverID &&
+          !servers.get(update.serverID)?.owners.includes(user.username))
+      ) {
+        // dont respond to updates outside of users scope. not airtight for protecting sensitive data.
+        return;
+      }
       updates.add(update);
       pushNotification(
         update.isError ? "bad" : "good",

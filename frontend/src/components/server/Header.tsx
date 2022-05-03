@@ -27,6 +27,15 @@ const Header: Component<{}> = (p) => {
   const { isMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
     useLocalStorageToggle("show-updates");
+  const userCanUpdate = () => {
+    if (permissions() > 1) {
+      return true;
+    } else if (permissions() > 0 && server()!.owners.includes(username()!)) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   return (
     <>
       <Flex
@@ -35,10 +44,10 @@ const Header: Component<{}> = (p) => {
         alignItems="center"
         style={{
           position: "relative",
-          cursor: isMobile() ? "pointer" : undefined,
+          cursor: isMobile() && userCanUpdate() ? "pointer" : undefined,
         }}
         onClick={() => {
-          if (isMobile()) toggleShowUpdates();
+          if (isMobile() && userCanUpdate()) toggleShowUpdates();
         }}
       >
         <Grid gap="0.1rem">
@@ -64,7 +73,7 @@ const Header: Component<{}> = (p) => {
             </Show>
           </Flex>
         </Show>
-        <Show when={isMobile()}>
+        <Show when={isMobile() && userCanUpdate()}>
           <Flex gap="0.5rem" alignItems="center" class="show-updates-indicator">
             updates{" "}
             <Icon
@@ -74,7 +83,7 @@ const Header: Component<{}> = (p) => {
           </Flex>
         </Show>
       </Flex>
-      <Show when={isMobile() && showUpdates()}>
+      <Show when={isMobile() && userCanUpdate() && showUpdates()}>
         <Updates />
       </Show>
     </>

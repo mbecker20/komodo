@@ -66,6 +66,18 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
         res.send("could not find deployment");
         return;
       }
+      const user = await app.users.findById(
+        req.user.id,
+        "username permissions"
+      );
+      if (
+        !user ||
+        (user?.permissions! < 2 && !deployment.owners.includes(user.username))
+      ) {
+        res.status(403);
+        res.send("user does not have permissions to view this information");
+        return;
+      }
       const onCore = deployment.serverID === app.core._id;
       const server = onCore
         ? app.core
@@ -90,11 +102,23 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const { tail } = req.query as { tail?: number };
       const deployment = await app.deployments.findById(
         id,
-        "serverID containerName"
+        "serverID containerName owners"
       );
       if (!deployment) {
         res.status(400);
         res.send("could not find deployment");
+        return;
+      }
+      const user = await app.users.findById(
+        req.user.id,
+        "username permissions"
+      );
+      if (
+        !user ||
+        (user?.permissions! < 2 && !deployment.owners.includes(user.username))
+      ) {
+        res.status(403);
+        res.send("user does not have permissions to view this log");
         return;
       }
       const onCore = deployment.serverID === app.core._id;
@@ -141,6 +165,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       ) {
         res.status(403);
         res.send("user not authorized for this action");
+        return;
       }
       const server = await app.servers.findById(deployment.serverID!);
       if (!server) {

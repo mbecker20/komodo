@@ -2,13 +2,14 @@ import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useTheme } from "../../state/ThemeProvider";
+import { useUser } from "../../state/UserProvider";
 import { combineClasses } from "../../util/helpers";
 import NotFound from "../NotFound";
 import Grid from "../util/layout/Grid";
-import Loading from "../util/loading/Loading";
 import Actions from "./Actions";
 import { ActionStateProvider } from "./ActionStateProvider";
 import Header from "./Header";
+import { ConfigProvider } from "./tabs/config/Provider";
 import DeploymentTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
@@ -18,6 +19,19 @@ const Deployment: Component<{}> = (p) => {
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   const { themeClass } = useTheme();
   const { isMobile } = useAppDimensions();
+  const { permissions, username } = useUser();
+  const userCanUpdate = () => {
+    if (permissions() > 1) {
+      return true;
+    } else if (
+      permissions() > 0 &&
+      deployment()!.owners.includes(username()!)
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  };
   return (
     <Show
       when={deployment() && server()}
@@ -29,12 +43,23 @@ const Deployment: Component<{}> = (p) => {
           <Grid class="left-content">
             <Header />
             <Actions />
-            <Show when={!isMobile()}>
+            <Show when={!isMobile() && userCanUpdate()}>
               <Updates />
             </Show>
           </Grid>
           {/* right / tabs */}
-          <DeploymentTabs />
+          <Show
+            when={userCanUpdate()}
+            fallback={
+              <h2 class={combineClasses("card tabs shadow", themeClass())}>
+                you do not have permission to view this deployment
+              </h2>
+            }
+          >
+            <ConfigProvider>
+              <DeploymentTabs />
+            </ConfigProvider>
+          </Show>
         </Grid>
       </ActionStateProvider>
     </Show>
