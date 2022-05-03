@@ -19,12 +19,14 @@ async function cloneRepo(
     githubAccount && SECRETS.GITHUB_ACCOUNTS[githubAccount]
   );
   const onCloneCle =
-    onClone &&
-    (await execute(
-      `cd ${join(BUILD_REPO_PATH, pullName!, onClone.path || "")} && ${
-        onClone.command
-      }`
-    ));
+    (onClone &&
+      onClone.command &&
+      (await execute(
+        `cd ${join(BUILD_REPO_PATH, pullName!, onClone.path || "")} && ${
+          onClone.command
+        }`
+      ))) ||
+    undefined;
   const { command, log, isError } = mergeCommandLogError(
     {
       name: "clone",

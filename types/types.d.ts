@@ -205,6 +205,6 @@ export type PeripherySecrets = {
 };
 
 export type CoreSecrets = PeripherySecrets & {
-  JWT: { SECRET: string; INVITE_SECRET: string };
+  JWT: { SECRET: string };
   GITHUB_OAUTH: { ID: string; SECRET: string };
 };

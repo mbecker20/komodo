@@ -52,7 +52,7 @@ async function cloneRepo(
       )
     : await clonePeriphery(server, deployment);
   const onCloneCle =
-    server.isCore && onClone
+    server.isCore && onClone && onClone.command
       ? await execute(
           `cd ${join(
             DEPLOYMENT_REPO_PATH,
