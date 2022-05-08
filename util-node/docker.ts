@@ -14,6 +14,10 @@ import Dockerode from "dockerode";
 
 /* Server */
 
+export async function getDockerStats() {
+  return await execute("docker stats --no-stream");
+}
+
 export async function pruneImages() {
   return await execute("docker image prune -a -f");
 }

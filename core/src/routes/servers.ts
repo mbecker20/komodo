@@ -1,34 +1,44 @@
 import { intoCollection, SERVER_OWNER_UPDATE } from "@monitor/util";
+import { getDockerStats } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
+import { getPeripheryDockerStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
 
 const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
-  app.get("/api/servers", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
-    const servers = await app.servers.find({});
-    await Promise.all(
-      servers.map(async (server) => {
-        server.status = (await serverStatusPeriphery(server))
-          ? "OK"
-          : "Could Not Be Reached";
-      })
-    );
-    res.send(intoCollection(servers));
-  });
-
-  app.get("/api/server/:id", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
-    const { id } = req.params as { id: string };
-    const server = await app.servers.findById(id);
-    if (!server) {
-      res.status(400);
-      res.send("server not found");
-      return;
+  app.get(
+    "/api/servers",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (_, res) => {
+      const servers = await app.servers.find({});
+      await Promise.all(
+        servers.map(async (server) => {
+          server.status = (await serverStatusPeriphery(server))
+            ? "OK"
+            : "Could Not Be Reached";
+        })
+      );
+      res.send(intoCollection(servers));
     }
-    server.status = (await serverStatusPeriphery(server))
-      ? "OK"
-      : "Could Not Be Reached";
-    res.send(server);
-  });
+  );
+
+  app.get(
+    "/api/server/:id",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const server = await app.servers.findById(id);
+      if (!server) {
+        res.status(400);
+        res.send("server not found");
+        return;
+      }
+      server.status = (await serverStatusPeriphery(server))
+        ? "OK"
+        : "Could Not Be Reached";
+      res.send(server);
+    }
+  );
 
   app.get(
     "/api/server/:id/action-state",
@@ -37,6 +47,30 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const { id } = req.params as { id: string };
       const state = app.serverActionStates.getJSON(id);
       res.send(state);
+    }
+  );
+
+  app.get(
+    "/api/server/:id/stats",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const server = await app.servers.findById(id);
+      if (!server) {
+        res.status(400);
+        res.send("server not found");
+        return;
+      }
+      const sender = (await app.users.findById(req.user.id))!;
+      if (sender.permissions! < 1 && !server.owners.includes(sender.username)) {
+        res.status(403);
+        res.send("inadequate permissions");
+        return;
+      }
+      const stats = server.isCore
+        ? await getDockerStats()
+        : await getPeripheryDockerStats(server);
+      res.send(stats);
     }
   );
 
@@ -98,7 +132,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.send("owner removed");
     }
   );
-  
+
   done();
 });
 

@@ -11,3 +11,13 @@ export async function prunePeripheryImages({ address }: Server) {
     })
     .then(({ data }) => data);
 }
+
+export async function getPeripheryDockerStats({ address }: Server) {
+  return await axios
+    .get<CommandLogError>(`${address}/stats`, {
+      headers: {
+        Authorization: SECRETS.PASSKEY,
+      },
+    })
+    .then(({ data }) => data);
+}

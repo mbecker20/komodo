@@ -2,6 +2,7 @@ import {
   Build,
   BuildActionState,
   Builds,
+  CommandLogError,
   ContainerStatus,
   DeployActionState,
   Deployment,
@@ -109,6 +110,10 @@ export async function getServers() {
 
 export async function getServer(id: string) {
   return await client.get<Server>(`/api/server/${id}`);
+}
+
+export async function getServerStats(id: string) {
+  return await client.get<CommandLogError>(`/api/server/${id}/stats`);
 }
 
 export async function addOwnerToServer(serverID: string, username: string) {
