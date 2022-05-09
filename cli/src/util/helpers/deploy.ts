@@ -8,6 +8,7 @@ import {
 } from "../../config";
 import { Config, StartConfig } from "../../types";
 import { addInitialDocs } from "../mongoose/addInitialDocs";
+import { deleteContainer } from "./docker";
 import { execute } from "./execute";
 import { noTrailingSlash, toDashedName, trailingSlash } from "./general";
 
@@ -60,6 +61,7 @@ export default async function deploy(
       });
     }
   } else if (periphery) {
+    await deleteContainer(toDashedName(periphery.name));
     const result = await deployPeriphery(config);
     onComplete({
       stage: "periphery",
@@ -70,19 +72,21 @@ export default async function deploy(
 }
 
 async function deployCore({ core, mongo }: Config) {
+  await execute("docker pull mbecker2020/monitor-core:latest");
   const { name, secretVolume, port, restart, sysroot, host } = core!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volumes = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root`;
   const network = `-p ${port}:${DEFAULT_PORT} --network ${DOCKER_NETWORK}`;
   const env = `-e MONGO_URL=${mongo?.url} -e SYSROOT=${trailingSlash(
     core?.sysroot!
-  )} -e HOST=${noTrailingSlash(core?.host!)}`;
+  )} -e HOST=${noTrailingSlash(host!)}`;
   const restartArg = `--restart ${restart}`;
   const command = `docker run -d ${nameConfig} ${volumes} ${network} ${env} ${restartArg} ${CORE_IMAGE}`;
   return await execute(command);
 }
 
 async function deployPeriphery({ periphery }: Config) {
+  await execute("docker pull mbecker2020/monitor-periphery:latest");
   const { name, port, secretVolume, restart, sysroot } = periphery!;
   const nameConfig = `--name ${toDashedName(name)}`;
   const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root`;
