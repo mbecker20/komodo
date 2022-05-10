@@ -9,6 +9,7 @@ import docker from "./plugins/docker";
 import frontend from "./plugins/frontend";
 import actionStates from "./plugins/actionStates";
 import routes from "./routes";
+import slackNotifier from "./plugins/slackNotifier";
 
 async function main() {
   const app = fastify({ logger: LOGGER })
@@ -31,6 +32,7 @@ async function main() {
     .register(ws)
     .register(frontend)
     .register(actionStates)
+    .register(slackNotifier)
     .register(routes);
 
   app.listen(PORT, "0.0.0.0", async (err, address) => {

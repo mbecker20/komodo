@@ -1,4 +1,4 @@
-import { CommandLogError, Server } from "@monitor/types";
+import { CommandLogError, Server, SystemStats } from "@monitor/types";
 import axios from "axios";
 import { SECRETS } from "../../config";
 
@@ -24,7 +24,7 @@ export async function getPeripheryDockerStats({ address }: Server) {
 
 export async function getPeripherySystemStats({ address }: Server) {
   return await axios
-    .get<CommandLogError>(`${address}/sys-stats`, {
+    .get<SystemStats>(`${address}/sys-stats`, {
       headers: {
         Authorization: SECRETS.PASSKEY,
       },

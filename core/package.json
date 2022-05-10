@@ -23,6 +23,7 @@
   "dependencies": {
     "@monitor/util": "1.0.0",
     "@monitor/util-node": "1.0.0",
+    "@slack/web-api": "^6.7.1",
     "axios": "^0.26.1",
     "bcrypt": "^5.0.1",
     "dockerode": "^3.3.1",
