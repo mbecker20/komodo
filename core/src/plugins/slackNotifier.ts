@@ -6,7 +6,7 @@ import {
   DISK_USAGE_NOTIFY_LIMIT,
   MEM_USAGE_NOTIFY_LIMIT,
   SERVER_STATS_INTERVAL,
-  SLACK_TOKEN,
+  SECRETS,
 } from "../config";
 import { getPeripherySystemStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
@@ -67,7 +67,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     });
   };
 
-  if (SLACK_TOKEN) {
+  if (SECRETS.SLACK_TOKEN) {
     // only do this if slack token is provided
     setInterval(interval, SERVER_STATS_INTERVAL);
   }
