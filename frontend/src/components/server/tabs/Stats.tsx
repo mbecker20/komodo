@@ -32,15 +32,26 @@ const Stats: Component<{}> = (p) => {
   createEffect(loadStats);
   const { themeClass } = useTheme();
   return (
-    <Grid
-      placeItems="start center"
-      style={{ overflow: "scroll", height: "fit-content" }}
-    >
+    <Grid placeItems="start center" style={{ height: "fit-content" }}>
       <Show when={sysStats()}>
-        <Flex alignItems="center" style={{ height: "fit-content" }}>
-          <h2>cpu: {sysStats()!.cpu}%</h2>
-          <h2>mem: {sysStats()!.mem.usedMemPercentage}%</h2>
-          <h2>disk: {sysStats()!.disk.usedPercentage}%</h2>
+        <Flex>
+          <Grid style={{ height: "fit-content" }}>
+            <h2>cpu: {sysStats()!.cpu}%</h2>
+            <Flex alignItems="center">
+              <h2>mem: {sysStats()!.mem.usedMemPercentage}%</h2>
+              <h2>
+                (using {sysStats()!.mem.usedMemMb} mb of{" "}
+                {sysStats()!.mem.totalMemMb} mb)
+              </h2>
+            </Flex>
+            <Flex>
+              <h2>disk: {sysStats()!.disk.usedPercentage}%</h2>
+              <h2>
+                (using {sysStats()!.disk.usedGb} gb of{" "}
+                {sysStats()!.disk.totalGb} gb)
+              </h2>
+            </Flex>
+          </Grid>
           <Button
             class="blue"
             style={{ "justify-self": "end" }}
