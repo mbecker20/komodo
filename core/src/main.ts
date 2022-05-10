@@ -1,7 +1,7 @@
 import fastify from "fastify";
 import fastifyCors from "fastify-cors";
 import fastifyHelmet from "fastify-helmet";
-import { HOST, LOGGER, PORT } from "./config";
+import { HOST, LOGGER, PORT, SECRETS } from "./config";
 import auth from "./plugins/auth";
 import db from "./plugins/db";
 import ws from "./plugins/ws";
@@ -18,10 +18,7 @@ async function main() {
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-          "connect-src": [
-            "'self'",
-            HOST.replace("http", "ws") + "/ws",
-          ],
+          "connect-src": ["'self'", HOST.replace("http", "ws") + "/ws"],
           "img-src": ["'self'", "https: data:"],
         },
       },
@@ -42,11 +39,13 @@ async function main() {
       process.exit(1);
     }
     if (!LOGGER) console.log(`monitor core listening at ${address}`);
-    notifySlack(`
+    if (SECRETS.SLACK_TOKEN) {
+      notifySlack(`
       INFO | monitor core has launched
 
       connection to slack is enabled
     `);
+    }
   });
 }
 

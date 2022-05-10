@@ -1,13 +1,13 @@
 import { readableTimestamp, timestamp } from "@monitor/util";
 import { WebClient, LogLevel } from "@slack/web-api";
-import { SLACK_CHANNEL, SLACK_TOKEN } from "../config";
+import { SLACK_CHANNEL, SECRETS } from "../config";
 
-const slack = new WebClient(SLACK_TOKEN, { logLevel: LogLevel.INFO });
+const slack = new WebClient(SECRETS.SLACK_TOKEN, { logLevel: LogLevel.INFO });
 
 export async function notifySlack(text: string) {
 	try {
 		await slack.chat.postMessage({
-			token: SLACK_TOKEN,
+			token: SECRETS.SLACK_TOKEN,
       channel: SLACK_CHANNEL,
       text,
     });

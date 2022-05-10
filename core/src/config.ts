@@ -48,7 +48,6 @@ export const SERVER_CHECK_TIMEOUT = getNumberFromEnv(
 
 export const SERVER_STATS_INTERVAL = getNumberFromEnv("SERVER_STATS_INTERVAL", 5 * 60 * 1000); // 5 minute check default
 export const SLACK_CHANNEL = getStringFromEnv("SLACK_CHANNEL", "");
-export const SLACK_TOKEN = getStringFromEnv("SLACK_TOKEN", "");
 export const CPU_USAGE_NOTIFY_LIMIT = getNumberFromEnv("CPU_USAGE_NOTIFY_LIMIT", 50);
 export const MEM_USAGE_NOTIFY_LIMIT = getNumberFromEnv("MEM_USAGE_NOTIFY_LIMIT", 75);
 export const DISK_USAGE_NOTIFY_LIMIT = getNumberFromEnv("DISK_USAGE_NOTIFY_LIMIT", 75);
