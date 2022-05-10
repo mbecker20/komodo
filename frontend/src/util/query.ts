@@ -11,6 +11,7 @@ import {
   Network,
   Server,
   Servers,
+  SystemStats,
   Update,
   User,
 } from "@monitor/types";
@@ -114,6 +115,10 @@ export async function getServer(id: string) {
 
 export async function getServerStats(id: string) {
   return await client.get<CommandLogError>(`/api/server/${id}/stats`);
+}
+
+export async function getServerSystemStats(id: string) {
+  return await client.get<SystemStats>(`/api/server/${id}/sys-stats`);
 }
 
 export async function addOwnerToServer(serverID: string, username: string) {

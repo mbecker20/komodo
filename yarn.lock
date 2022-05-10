@@ -504,6 +504,11 @@
   resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.2.tgz#ee771e2ba4b3dc5b372935d549fd9617bf345b8c"
   integrity sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==
 
+"@types/node-os-utils@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@types/node-os-utils/-/node-os-utils-1.2.0.tgz#d03286eca0642f861cbee506bc1f4dd868a15826"
+  integrity sha512-sstDo2s8gQR/Qh2Bd6yNQ5xJv+D4ttyB9ZVjB3mBm3VkGl2RoqjV7fiw9mIHLbshHSRm2m8uf0XrIRQNWB/z6A==
+
 "@types/node@*", "@types/node@^17.0.21":
   version "17.0.21"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.21.tgz#864b987c0c68d07b4345845c3e63b75edd143644"
@@ -2114,6 +2119,11 @@ node-fetch@^2.6.5:
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
   dependencies:
     whatwg-url "^5.0.0"
+
+node-os-utils@^1.3.6:
+  version "1.3.6"
+  resolved "https://registry.yarnpkg.com/node-os-utils/-/node-os-utils-1.3.6.tgz#92ec217972436df67b677f9c939aac57eda2804c"
+  integrity sha512-WympE9ELtdOzNak/rAuuIV5DwvX/PTJtN0LjyWeGyTTR2Kt0sY56ldLoGbVBnfM1dz46VeO3sHcNZI5BZ+EB+w==
 
 node-releases@^2.0.2:
   version "2.0.2"

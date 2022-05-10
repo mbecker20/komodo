@@ -109,3 +109,15 @@ export function trailingSlash(str: string) {
 export function prettyStringify(json: any) {
   return JSON.stringify(json, undefined, 2);
 }
+
+export function convertFieldsToNumbers(obj: any): {
+  [key: string]: number;
+} {
+  return objMap(obj, (entry) => Number(entry));
+}
+
+export function objMap<T>(obj: { [key: string]: T }, map: (entry: T) => any) {
+  return Object.fromEntries(
+    Object.entries(obj).map((entry) => [entry[0], map(entry[1])])
+  );
+}

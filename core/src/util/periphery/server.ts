@@ -21,3 +21,13 @@ export async function getPeripheryDockerStats({ address }: Server) {
     })
     .then(({ data }) => data);
 }
+
+export async function getPeripherySystemStats({ address }: Server) {
+  return await axios
+    .get<CommandLogError>(`${address}/sys-stats`, {
+      headers: {
+        Authorization: SECRETS.PASSKEY,
+      },
+    })
+    .then(({ data }) => data);
+}

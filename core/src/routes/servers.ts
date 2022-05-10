@@ -1,8 +1,8 @@
 import { intoCollection, SERVER_OWNER_UPDATE } from "@monitor/util";
-import { getDockerStats } from "@monitor/util-node";
+import { getDockerStats, getSystemStats } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { getPeripheryDockerStats } from "../util/periphery/server";
+import { getPeripheryDockerStats, getPeripherySystemStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
 
 const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
@@ -70,6 +70,30 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const stats = server.isCore
         ? await getDockerStats()
         : await getPeripheryDockerStats(server);
+      res.send(stats);
+    }
+  );
+
+  app.get(
+    "/api/server/:id/sys-stats",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const server = await app.servers.findById(id);
+      if (!server) {
+        res.status(400);
+        res.send("server not found");
+        return;
+      }
+      const sender = (await app.users.findById(req.user.id))!;
+      if (sender.permissions! < 1 && !server.owners.includes(sender.username)) {
+        res.status(403);
+        res.send("inadequate permissions");
+        return;
+      }
+      const stats = server.isCore
+        ? await getSystemStats()
+        : await getPeripherySystemStats(server);
       res.send(stats);
     }
   );

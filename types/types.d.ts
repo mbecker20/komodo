@@ -208,3 +208,25 @@ export type CoreSecrets = PeripherySecrets & {
   JWT: { SECRET: string };
   GITHUB_OAUTH: { ID: string; SECRET: string };
 };
+
+export type SystemStats = {
+  cpu: number;
+  mem: MemStats;
+  disk: DiskStats;
+};
+
+export type MemStats = {
+  totalMemMb: number;
+  usedMemMb: number;
+  freeMemMb: number;
+  usedMemPercentage: number;
+  freeMemPercentage: number;
+};
+
+export type DiskStats = {
+  totalGb: number;
+  usedGb: number;
+  freeGb: number;
+  usedPercentage: number;
+  freePercentage: number;
+};
