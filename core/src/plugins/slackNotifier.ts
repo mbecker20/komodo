@@ -40,6 +40,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     ).filter((server) => server.stats);
     return serversWithStatus;
   };
+
   const interval = async () => {
     const servers = await getAllServerStats();
     servers.forEach((server) => {
@@ -47,27 +48,21 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const stats = server.stats!;
       if (stats.cpu > CPU_USAGE_NOTIFY_LIMIT) {
         // high cpu usage
-        notifySlack(`
-					WARNING | server ${server.name} has high CPU usage.
-
-					usage: ${stats.cpu}%
-				`);
+        notifySlack(
+          `WARNING | ${server.name} has high CPU usage.\n\nusage: ${stats.cpu}%`
+        );
       }
       if (stats.mem.usedMemPercentage > MEM_USAGE_NOTIFY_LIMIT) {
         // high memory usage
-        notifySlack(`
-					WARNING | server ${server.name} has high memory usage.
-
-					using ${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB (${stats.mem.usedMemPercentage}%)
-				`);
+        notifySlack(
+          `WARNING | ${server.name} has high memory usage.\n\nusing ${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB (${stats.mem.usedMemPercentage}%)`
+        );
       }
       if (stats.disk.usedPercentage > DISK_USAGE_NOTIFY_LIMIT) {
         // high disk usage
-        notifySlack(`
-					WARNING | server ${server.name} has high disk usage.
-
-					using ${stats.disk.usedGb} GB of ${stats.disk.totalGb} (${stats.disk.usedPercentage}% full)
-				`);
+        notifySlack(
+          `WARNING | ${server.name} has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} (${stats.disk.usedPercentage}%)`
+        );
       }
     });
   };
@@ -78,7 +73,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const stats = curr.stats!;
       return (
         prev +
-        `name: ${curr.name} | CPU: ${stats.cpu}% | MEM: ${stats.mem.usedMemPercentage}% | DISK: ${stats.disk.usedPercentage}%\n\n`
+        `${curr.name} | CPU: ${stats.cpu}% | MEM: ${stats.mem.usedMemPercentage}% (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: ${stats.disk.usedPercentage}% (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)\n\n`
       );
     }, "");
     const message = "INFO | daily update\n\n" + statsLog;
