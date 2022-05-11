@@ -61,7 +61,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       if (stats.disk.usedPercentage > DISK_USAGE_NOTIFY_LIMIT) {
         // high disk usage
         notifySlack(
-          `WARNING | ${server.name} has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} (${stats.disk.usedPercentage}%)`
+          `WARNING | ${server.name} has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB (${stats.disk.usedPercentage}%)`
         );
       }
     });
