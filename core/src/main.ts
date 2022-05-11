@@ -40,11 +40,7 @@ async function main() {
     }
     if (!LOGGER) console.log(`monitor core listening at ${address}`);
     if (SECRETS.SLACK_TOKEN) {
-      notifySlack(`
-      INFO | monitor core has launched
-
-      connection to slack is enabled
-    `);
+      app.dailyInterval();
     }
   });
 }
