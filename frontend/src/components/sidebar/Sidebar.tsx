@@ -15,8 +15,15 @@ import { useTheme } from "../../state/ThemeProvider";
 const Sidebar: Component<{}> = () => {
   const { sidebar, servers } = useAppState();
   const { height } = useAppDimensions();
-  const { permissions } = useUser();
+  const { permissions, username } = useUser();
   const { themeClass } = useTheme();
+  const filteredServerIds = () =>
+    servers
+      .ids()
+      ?.filter(
+        (id) =>
+          permissions() > 1 || servers.get(id)!.owners.includes(username()!)
+      );
   return (
     <Show when={servers.loaded() && sidebar.open()}>
       <Tabs
@@ -33,7 +40,7 @@ const Sidebar: Component<{}> = () => {
                   "max-height": inPx(height() - TOPBAR_HEIGHT - 80),
                 }}
               >
-                <For each={servers.ids()}>{(id) => <Server id={id} />}</For>
+                <For each={filteredServerIds()}>{(id) => <Server id={id} />}</For>
                 <Show when={permissions() > 1}>
                   <AddServer />
                 </Show>
