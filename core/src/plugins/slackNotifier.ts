@@ -73,7 +73,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const stats = curr.stats!;
       return (
         prev +
-        `${curr.name} | CPU: ${stats.cpu}% | MEM: ${stats.mem.usedMemPercentage}% (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: ${stats.disk.usedPercentage}% (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)\n\n`
+        `${curr.name} | CPU: ${stats.cpu}% | MEM: ${stats.mem.usedMemPercentage}% (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: ${stats.disk.usedPercentage}% (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)\n------------------------------------------------------------------\n\n`
       );
     }, "");
     const message = "INFO | daily update\n\n" + statsLog;
