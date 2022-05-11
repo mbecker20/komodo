@@ -12,6 +12,12 @@ import { getPeripherySystemStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
 import { notifySlack } from "../util/slack";
 
+declare module "fastify" {
+  interface FastifyInstance {
+    dailyInterval: () => Promise<void>;
+  }
+}
+
 const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
   const getAllServerStats = async () => {
     const servers = await app.servers.find({});
@@ -34,7 +40,6 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     ).filter((server) => server.stats);
     return serversWithStatus;
   };
-
   const interval = async () => {
     const servers = await getAllServerStats();
     servers.forEach((server) => {
@@ -67,9 +72,24 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     });
   };
 
+  const dailyInterval = async () => {
+    const servers = await getAllServerStats();
+    const statsLog = servers.reduce((prev, curr) => {
+      const stats = curr.stats!;
+      return (
+        prev +
+        `name: ${curr.name} | CPU: ${stats.cpu}% | MEM: ${stats.mem.usedMemPercentage}% | DISK: ${stats.disk.usedPercentage}%\n\n`
+      );
+    }, "");
+    const message = "INFO | daily update\n\n" + statsLog;
+    notifySlack(message);
+  };
+
+  app.decorate("dailyInterval", dailyInterval);
+
   if (SECRETS.SLACK_TOKEN) {
-    // only do this if slack token is provided
     setInterval(interval, SERVER_STATS_INTERVAL);
+    setInterval(dailyInterval, 24 * 60 * 60 * 1000);
   }
 
   done();
