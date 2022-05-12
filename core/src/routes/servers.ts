@@ -1,5 +1,5 @@
 import { intoCollection, SERVER_OWNER_UPDATE } from "@monitor/util";
-import { getDockerStats, getSystemStats } from "@monitor/util-node";
+import { getDockerStats, getDockerStatsJson, getSystemStats } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { getPeripheryDockerStats, getPeripherySystemStats } from "../util/periphery/server";
@@ -68,7 +68,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       const stats = server.isCore
-        ? await getDockerStats()
+        ? await getDockerStatsJson()
         : await getPeripheryDockerStats(server);
       res.send(stats);
     }

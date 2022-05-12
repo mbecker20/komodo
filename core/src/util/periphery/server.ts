@@ -1,4 +1,4 @@
-import { CommandLogError, Server, SystemStats } from "@monitor/types";
+import { CommandLogError, DockerStat, Server, SystemStats } from "@monitor/types";
 import axios from "axios";
 import { SECRETS } from "../../config";
 
@@ -14,7 +14,7 @@ export async function prunePeripheryImages({ address }: Server) {
 
 export async function getPeripheryDockerStats({ address }: Server) {
   return await axios
-    .get<CommandLogError>(`${address}/stats`, {
+    .get<DockerStat[]>(`${address}/stats`, {
       headers: {
         Authorization: SECRETS.PASSKEY,
       },

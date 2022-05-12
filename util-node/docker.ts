@@ -6,6 +6,7 @@ import {
   EnvironmentVar,
   Network,
   CommandLogError,
+  DockerStat,
 } from "@monitor/types";
 import { join } from "path";
 import { execute } from "./execute";
@@ -18,10 +19,13 @@ export async function getDockerStats() {
   return await execute("docker stats --no-stream");
 }
 
-export async function getDockerStatsJson() {
-  return await execute('docker stats --no-stream --format "{{json .}}"');
+export async function getDockerStatsJson(): Promise<DockerStat[]> {
+  const cle = await execute('docker stats --no-stream --format "{{json .}}"');
+  return cle.log
+    .stdout!.split("\n")
+    .filter((entry) => entry)
+    .map((entry) => JSON.parse(entry));
 }
-
 
 export async function pruneImages() {
   return await execute("docker image prune -a -f");
@@ -211,15 +215,14 @@ function volsString(sysRoot: string, volumes?: Conversion[]) {
     : "";
 }
 
-function repoVolume(
-  repoMount?: { repoFolder: string; containerMount: string }
-) {
+function repoVolume(repoMount?: {
+  repoFolder: string;
+  containerMount: string;
+}) {
   // repo root should be SYSROOT + "repos/"
 
   return repoMount
-    ? ` -v ${repoMount.repoFolder}:${
-        repoMount.containerMount
-      }`
+    ? ` -v ${repoMount.repoFolder}:${repoMount.containerMount}`
     : "";
 }
 

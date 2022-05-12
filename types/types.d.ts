@@ -235,3 +235,15 @@ export type DiskStats = {
   usedPercentage: number;
   freePercentage: number;
 };
+
+export type DockerStat = {
+  BlockIO: string;
+  CPUPerc: string;
+  Container: string;
+  ID: string;
+  MemPerc: string;
+  MemUsage: string;
+  Name: string;
+  NetIO: string;
+  PIDs: string;
+}
