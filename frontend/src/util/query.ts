@@ -7,6 +7,7 @@ import {
   DeployActionState,
   Deployment,
   Deployments,
+  DockerStat,
   Log,
   Network,
   Server,
@@ -75,7 +76,9 @@ export async function downloadDeploymentLog(
   const date = new Date();
   fileDownload(
     (error ? log.stderr : log.stdout) || "no log",
-    `${name}-${error ? "error-" : ""}log-${date.toLocaleDateString().replaceAll("/", "-")}.txt`
+    `${name}-${error ? "error-" : ""}log-${date
+      .toLocaleDateString()
+      .replaceAll("/", "-")}.txt`
   );
 }
 
@@ -114,7 +117,7 @@ export async function getServer(id: string) {
 }
 
 export async function getServerStats(id: string) {
-  return await client.get<CommandLogError>(`/api/server/${id}/stats`);
+  return await client.get<DockerStat[]>(`/api/server/${id}/stats`);
 }
 
 export async function getServerSystemStats(id: string) {

@@ -1,5 +1,5 @@
-import { CommandLogError, SystemStats } from "@monitor/types";
-import { Component, createEffect, createSignal, Show } from "solid-js";
+import { CommandLogError, DockerStat, SystemStats } from "@monitor/types";
+import { Component, createEffect, createSignal, For, Show } from "solid-js";
 import { pushNotification } from "../../..";
 import { useAppState } from "../../../state/StateProvider";
 import { useTheme } from "../../../state/ThemeProvider";
@@ -14,11 +14,11 @@ import s from "./stats.module.scss";
 
 const Stats: Component<{}> = (p) => {
   const { selected } = useAppState();
-  const [log, setLog] = createSignal<CommandLogError>();
+  const [stats, setStats] = createSignal<DockerStat[]>();
   const [refreshing, setRefreshing] = createSignal(false);
   const load = () => {
     if (selected.id()) {
-      getServerStats(selected.id()).then(setLog);
+      getServerStats(selected.id()).then(setStats);
     }
   };
   createEffect(load);
@@ -69,15 +69,15 @@ const Stats: Component<{}> = (p) => {
           </Button>
         </Flex>
       </Show>
-      <Show when={log()} fallback={<Loading type="three-dot" scale={0.8} />}>
+      <Show when={stats()} fallback={<Loading type="three-dot" scale={0.8} />}>
         <Grid class={combineClasses(s.StatsContainer, themeClass())}>
           <Button
             class="blue"
             style={{ "justify-self": "end" }}
             onClick={async () => {
               setRefreshing(true);
-              const log = await getServerStats(selected.id());
-              setLog(log);
+              const stats = await getServerStats(selected.id());
+              setStats(stats);
               setRefreshing(false);
               pushNotification("good", "stats refreshed");
             }}
@@ -86,7 +86,18 @@ const Stats: Component<{}> = (p) => {
               <Icon type="refresh" />
             </Show>
           </Button>
-          <pre class={s.Stats}>{log()!.log.stdout}</pre>
+          <For each={stats()}>
+            {(stat) => (
+              <Flex alignItems="center">
+                <div>{stat.Name}</div>
+                <div>cpu: {stat.CPUPerc}</div>
+                <div>
+                  mem: {stat.MemPerc} ({stat.MemUsage})
+                </div>
+              </Flex>
+            )}
+          </For>
+          {/* <pre class={s.Stats}>{log()!.log.stdout}</pre> */}
         </Grid>
       </Show>
     </Grid>
