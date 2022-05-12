@@ -99,7 +99,7 @@ export function copyToClipboard(text: string) {
 export function applyDarkTheme(element: Element) {
   element.classList.add("dark");
   for (let i = 0; i < element.children.length; i++) {
-    applyDarkTheme(element.children[i])
+    applyDarkTheme(element.children[i]);
   }
 }
 
@@ -108,4 +108,10 @@ export function removeDarkTheme(element: Element) {
   for (let i = 0; i < element.children.length; i++) {
     removeDarkTheme(element.children[i]);
   }
+}
+
+export function validatePercentage(perc: string) {
+  // validates that a string represents a percentage
+  const percNum = Number(perc);
+  return !isNaN(percNum) && percNum > 0 && percNum < 100;
 }

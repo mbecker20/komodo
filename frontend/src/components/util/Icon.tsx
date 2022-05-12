@@ -40,7 +40,8 @@ export type IconType =
   | "clipboard"
   | "check"
   | "caret-right"
-  | "search";
+  | "search"
+  | "cog";
 
 const Icon: Component<{
   type: IconType;

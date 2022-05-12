@@ -51,6 +51,10 @@ export type Server = {
   enabled: boolean;
   isCore?: boolean;
   owners: string[];
+  // usage stats threshold
+  cpuAlert?: number; // 0 - 100
+  memAlert?: number; // 0 - 100
+  diskAlert?: number; // 0 - 100
 };
 
 export type DockerBuildArgs = {

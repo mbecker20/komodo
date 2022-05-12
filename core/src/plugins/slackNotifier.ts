@@ -46,19 +46,25 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     servers.forEach((server) => {
       // check for out of bounds stats
       const stats = server.stats!;
-      if (stats.cpu > CPU_USAGE_NOTIFY_LIMIT) {
+      if (stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT)) {
         // high cpu usage
         notifySlack(
           `WARNING | ${server.name} has high CPU usage.\n\nusage: ${stats.cpu}%`
         );
       }
-      if (stats.mem.usedMemPercentage > MEM_USAGE_NOTIFY_LIMIT) {
+      if (
+        stats.mem.usedMemPercentage >
+        (server.memAlert || MEM_USAGE_NOTIFY_LIMIT)
+      ) {
         // high memory usage
         notifySlack(
           `WARNING | ${server.name} has high memory usage.\n\nusing ${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB (${stats.mem.usedMemPercentage}%)`
         );
       }
-      if (stats.disk.usedPercentage > DISK_USAGE_NOTIFY_LIMIT) {
+      if (
+        stats.disk.usedPercentage >
+        (server.diskAlert || DISK_USAGE_NOTIFY_LIMIT)
+      ) {
         // high disk usage
         notifySlack(
           `WARNING | ${server.name} has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB (${stats.disk.usedPercentage}%)`

@@ -4,6 +4,7 @@ import Icon from "../../../util/Icon";
 import Flex from "../../../util/layout/Flex";
 import Grid from "../../../util/layout/Grid";
 import Address from "./Address";
+import Alerts from "./Alerts";
 import Enabled from "./Enabled";
 import Networks from "./Networks";
 import { useConfig } from "./Provider";
@@ -19,6 +20,7 @@ const Config: Component<{}> = (p) => {
             <Enabled />
           </Show>
           <Networks />
+          <Alerts />
         </Grid>
         <Show when={server.updated}>
           <Flex style={{ "place-self": "center", padding: "1rem" }}>
