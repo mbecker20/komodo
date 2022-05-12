@@ -71,32 +71,38 @@ const Stats: Component<{}> = (p) => {
       </Show>
       <Show when={stats()} fallback={<Loading type="three-dot" scale={0.8} />}>
         <Grid class={combineClasses(s.StatsContainer, themeClass())}>
-          <Button
-            class="blue"
-            style={{ "justify-self": "end" }}
-            onClick={async () => {
-              setRefreshing(true);
-              const stats = await getServerStats(selected.id());
-              setStats(stats);
-              setRefreshing(false);
-              pushNotification("good", "stats refreshed");
-            }}
-          >
-            <Show when={!refreshing()} fallback={<Loading />}>
-              <Icon type="refresh" />
-            </Show>
-          </Button>
-          <For each={stats()}>
-            {(stat) => (
-              <Flex alignItems="center">
-                <div>{stat.Name}</div>
-                <div>cpu: {stat.CPUPerc}</div>
-                <div>
-                  mem: {stat.MemPerc} ({stat.MemUsage})
-                </div>
-              </Flex>
-            )}
-          </For>
+          <Flex justifyContent="space-between">
+            <h1>container stats</h1>
+            <Button
+              class="blue"
+              onClick={async () => {
+                setRefreshing(true);
+                const stats = await getServerStats(selected.id());
+                setStats(stats);
+                setRefreshing(false);
+                pushNotification("good", "stats refreshed");
+              }}
+            >
+              <Show when={!refreshing()} fallback={<Loading />}>
+                <Icon type="refresh" />
+              </Show>
+            </Button>
+          </Flex>
+          <Grid style={{ padding: "0.5rem" }}>
+            <For each={stats()}>
+              {(stat) => (
+                <Flex alignItems="center" justifyContent="space-between">
+                  <div>{stat.Name}</div>
+                  <Flex alignItems="center">
+                    <div>cpu: {stat.CPUPerc}</div>
+                    <div>
+                      mem: {stat.MemPerc} ({stat.MemUsage})
+                    </div>
+                  </Flex>
+                </Flex>
+              )}
+            </For>
+          </Grid>
           {/* <pre class={s.Stats}>{log()!.log.stdout}</pre> */}
         </Grid>
       </Show>
