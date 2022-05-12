@@ -4,7 +4,7 @@ import axios from "axios";
 import { SECRETS } from "../../config";
 
 export async function deployPeriphery(
-  { address }: Server,
+  { address, passkey }: Server,
   deployment: Deployment,
   image?: string,
   dockerAccount?: string
@@ -20,7 +20,7 @@ export async function deployPeriphery(
       },
       {
         headers: {
-          Authorization: SECRETS.PASSKEY,
+          Authorization: passkey || SECRETS.PASSKEY,
         },
       }
     )

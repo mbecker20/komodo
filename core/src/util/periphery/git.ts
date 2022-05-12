@@ -3,7 +3,7 @@ import axios from "axios";
 import { SECRETS } from "../../config";
 
 export async function clonePeriphery(
-  { address }: Server,
+  { address, passkey }: Server,
   deployment: Deployment
 ) {
   return (await axios
@@ -12,7 +12,7 @@ export async function clonePeriphery(
       { deployment },
       {
         headers: {
-          Authorization: SECRETS.PASSKEY,
+          Authorization: passkey || SECRETS.PASSKEY,
         },
       }
     )
@@ -20,7 +20,7 @@ export async function clonePeriphery(
 }
 
 export async function pullPeriphery(
-  { address }: Server,
+  { address, passkey }: Server,
   deployment: Deployment
 ) {
   return (await axios
@@ -29,7 +29,7 @@ export async function pullPeriphery(
       { deployment },
       {
         headers: {
-          Authorization: SECRETS.PASSKEY,
+          Authorization: passkey || SECRETS.PASSKEY,
         },
       }
     )
@@ -37,7 +37,7 @@ export async function pullPeriphery(
 }
 
 export async function deleteRepoPeriphery(
-  { address }: Server,
+  { address, passkey }: Server,
   deployment: Deployment
 ) {
   return (await axios
@@ -46,7 +46,7 @@ export async function deleteRepoPeriphery(
       { deployment },
       {
         headers: {
-          Authorization: SECRETS.PASSKEY,
+          Authorization: passkey || SECRETS.PASSKEY,
         },
       }
     )

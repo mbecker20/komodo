@@ -1,81 +1,86 @@
-import { Collection, CommandLogError, ContainerStatus, Log, Server } from "@monitor/types";
+import {
+  Collection,
+  CommandLogError,
+  ContainerStatus,
+  Log,
+  Server,
+} from "@monitor/types";
 import { generateQuery } from "@monitor/util";
 import axios from "axios";
 import { SECRETS } from "../../config";
 
-export async function getPeripheryContainers({ address }: Server) {
-  return (await axios.get(`${address}/containers`, {
-    headers: {
-      Authorization: SECRETS.PASSKEY,
-    },
-  }).then(({ data }) => data)) as Collection<ContainerStatus>;
+export async function getPeripheryContainers({ address, passkey }: Server) {
+  return (await axios
+    .get(`${address}/containers`, {
+      headers: {
+        Authorization: passkey || SECRETS.PASSKEY,
+      },
+    })
+    .then(({ data }) => data)) as Collection<ContainerStatus>;
 }
 
 export async function getPeripheryContainer(
-  { address }: Server,
+  { address, passkey }: Server,
   name: string
 ) {
-	return (await axios
+  return (await axios
     .get(`${address}/container/${name}`, {
       headers: {
-        Authorization: SECRETS.PASSKEY,
+        Authorization: passkey || SECRETS.PASSKEY,
       },
     })
     .then(({ data }) => data)) as ContainerStatus | "not deployed";
 }
 
 export async function getPeripheryContainerLog(
-  { address }: Server,
+  { address, passkey }: Server,
   name: string,
   tail?: number
 ) {
   return (await axios
     .get(`${address}/container/log/${name}${generateQuery({ tail })}`, {
       headers: {
-        Authorization:  SECRETS.PASSKEY,
+        Authorization: passkey || SECRETS.PASSKEY,
       },
-
     })
     .then(({ data }) => data)) as Log;
 }
 
 export async function startPeripheryContainer(
-  { address }: Server,
+  { address, passkey }: Server,
   name: string
 ) {
   return (await axios
     .get(`${address}/container/start/${name}`, {
       headers: {
-        Authorization:  SECRETS.PASSKEY,
+        Authorization: passkey || SECRETS.PASSKEY,
       },
     })
     .then(({ data }) => data)) as CommandLogError;
 }
 
 export async function stopPeripheryContainer(
-  { address }: Server,
+  { address, passkey }: Server,
   name: string
 ) {
   return (await axios
     .get(`${address}/container/stop/${name}`, {
       headers: {
-        Authorization:  SECRETS.PASSKEY,
+        Authorization: passkey || SECRETS.PASSKEY,
       },
     })
     .then(({ data }) => data)) as CommandLogError;
 }
 
 export async function deletePeripheryContainer(
-  { address }: Server,
+  { address, passkey }: Server,
   name: string
 ) {
   return (await axios
     .get(`${address}/container/delete/${name}`, {
       headers: {
-        Authorization:  SECRETS.PASSKEY,
+        Authorization: passkey || SECRETS.PASSKEY,
       },
     })
     .then(({ data }) => data)) as CommandLogError;
 }
-
-

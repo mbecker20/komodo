@@ -55,6 +55,8 @@ export type Server = {
   cpuAlert?: number; // 0 - 100
   memAlert?: number; // 0 - 100
   diskAlert?: number; // 0 - 100
+  // optional custom passkey
+  passkey?: string;
 };
 
 export type DockerBuildArgs = {

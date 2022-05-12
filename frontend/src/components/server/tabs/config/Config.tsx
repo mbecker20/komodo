@@ -7,6 +7,7 @@ import Address from "./Address";
 import Alerts from "./Alerts";
 import Enabled from "./Enabled";
 import Networks from "./Networks";
+import Passkey from "./Passkey";
 import { useConfig } from "./Provider";
 
 const Config: Component<{}> = (p) => {
@@ -18,6 +19,7 @@ const Config: Component<{}> = (p) => {
           <Show when={!server.isCore}>
             <Address />
             <Enabled />
+            <Passkey />
           </Show>
           <Networks />
           <Alerts />

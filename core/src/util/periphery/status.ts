@@ -6,6 +6,7 @@ export async function serverStatusPeriphery({
   address,
   enabled,
   isCore,
+  passkey,
 }: Server) {
   // returns true if can be reached, false else
   if (isCore) return true;
@@ -19,7 +20,7 @@ export async function serverStatusPeriphery({
   try {
     await axios.get(`${address}/status`, {
       headers: {
-        Authorization: SECRETS.PASSKEY,
+        Authorization: passkey || SECRETS.PASSKEY,
       },
       signal: controller.signal,
     });
