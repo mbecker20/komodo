@@ -18,6 +18,11 @@ export async function getDockerStats() {
   return await execute("docker stats --no-stream");
 }
 
+export async function getDockerStatsJson() {
+  return await execute('docker stats --no-stream --format "{{json .}}"');
+}
+
+
 export async function pruneImages() {
   return await execute("docker image prune -a -f");
 }
