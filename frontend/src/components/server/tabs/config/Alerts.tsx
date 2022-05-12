@@ -18,60 +18,65 @@ const Alerts: Component<{}> = (p) => {
   return (
     <Grid class={combineClasses("config-item shadow", themeClass())}>
       <h1>alerts</h1>
-      <Flex justifyContent="space-between">
-        <div>cpu</div>
-        <Flex alignItems="center">
-          <Input
-            placeholder="%"
-            value={alerts.cpu || server.cpuAlert?.toString()}
-            onEdit={(val) => setAlerts("cpu", val)}
-            onConfirm={(val) => {
-              if (validatePercentage(val)) {
-                setServer("cpuAlert", Number(val));
-              } else {
-                setAlerts("cpu", server.cpuAlert?.toString());
-              }
-            }}
-          />
-          <div>%</div>
+      <Grid style={{ padding: "0.5rem" }}>
+        <Flex justifyContent="space-between" alignItems="center">
+          <div>cpu</div>
+          <Flex alignItems="center" gap="0.5rem">
+            <Input
+              placeholder="%"
+              value={alerts.cpu}
+              onEdit={(val) => setAlerts("cpu", val)}
+              onConfirm={(val) => {
+                if (validatePercentage(val)) {
+                  setServer("cpuAlert", Number(val));
+                } else {
+                  setAlerts("cpu", server.cpuAlert?.toString());
+                }
+              }}
+              style={{ width: "4rem" }}
+            />
+            <div>%</div>
+          </Flex>
         </Flex>
-      </Flex>
-      <Flex justifyContent="space-between">
-        <div>mem</div>
-        <Flex alignItems="center">
-          <Input
-            placeholder="%"
-            value={alerts.mem || server.memAlert?.toString()}
-            onEdit={(val) => setAlerts("mem", val)}
-            onConfirm={(val) => {
-              if (validatePercentage(val)) {
-                setServer("memAlert", Number(val));
-              } else {
-                setAlerts("mem", server.memAlert?.toString());
-              }
-            }}
-          />
-          <div>%</div>
+        <Flex justifyContent="space-between" alignItems="center">
+          <div>mem</div>
+          <Flex alignItems="center" gap="0.5rem">
+            <Input
+              placeholder="%"
+              value={alerts.mem}
+              onEdit={(val) => setAlerts("mem", val)}
+              onConfirm={(val) => {
+                if (validatePercentage(val)) {
+                  setServer("memAlert", Number(val));
+                } else {
+                  setAlerts("mem", server.memAlert?.toString());
+                }
+              }}
+              style={{ width: "4rem" }}
+            />
+            <div>%</div>
+          </Flex>
         </Flex>
-      </Flex>
-      <Flex justifyContent="space-between">
-        <div>disk</div>
-        <Flex alignItems="center">
-          <Input
-            placeholder="%"
-            value={alerts.disk || server.diskAlert?.toString()}
-            onEdit={(val) => setAlerts("disk", val)}
-            onConfirm={(val) => {
-              if (validatePercentage(val)) {
-                setServer("diskAlert", Number(val));
-              } else {
-                setAlerts("disk", server.diskAlert?.toString());
-              }
-            }}
-          />
-          <div>%</div>
+        <Flex justifyContent="space-between" alignItems="center">
+          <div>disk</div>
+          <Flex alignItems="center" gap="0.5rem">
+            <Input
+              placeholder="%"
+              value={alerts.disk}
+              onEdit={(val) => setAlerts("disk", val)}
+              onConfirm={(val) => {
+                if (validatePercentage(val)) {
+                  setServer("diskAlert", Number(val));
+                } else {
+                  setAlerts("disk", server.diskAlert?.toString());
+                }
+              }}
+              style={{ width: "4rem" }}
+            />
+            <div>%</div>
+          </Flex>
         </Flex>
-      </Flex>
+      </Grid>
     </Grid>
   );
 };
