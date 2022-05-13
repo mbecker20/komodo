@@ -249,3 +249,10 @@ export type DockerStat = {
   NetIO: string;
   PIDs: string;
 }
+
+export type AccountAccess = {
+  _id?: string;
+  type: "github" | "docker";
+  users: string[] // list of user usernames;
+  username: string; // specifies the account corresponding to those defined in secrets;
+}

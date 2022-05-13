@@ -9,7 +9,9 @@ async function updateServer(
   user: User,
   { server }: { server: Server }
 ) {
-  if (user.permissions! < 2) {
+  const preServer = await app.servers.findById(server._id!);
+  if (!preServer) return;
+  if (user.permissions! < 2 && !preServer.owners.includes(user.username)) {
     addServerUpdate(
       app,
       server._id!,
@@ -22,8 +24,7 @@ async function updateServer(
     );
     return;
   }
-  const preServer = await app.servers.findById(server._id!);
-  if (!preServer) return;
+  (server.owners as any) = undefined;
   await app.servers.updateById(server._id!, server);
   addServerUpdate(
     app,
