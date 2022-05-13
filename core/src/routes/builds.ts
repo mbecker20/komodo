@@ -3,18 +3,41 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 
 const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
-	app.get("/api/builds", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
-		const builds = await app.builds.findCollection({}, "name owners");
-		res.send(builds);
-	});
+  app.get(
+    "/api/builds",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (req, res) => {
+      const user = (await app.users.findById(req.user.id))!;
+      const builds = await app.builds.findCollection(
+        user.permissions! > 1 ? {} : { owners: user.username },
+        "name owners"
+      );
+      res.send(builds);
+    }
+  );
 
-	app.get("/api/build/:id", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
-		const { id } = req.params as { id: string };
-		const build = await app.builds.findById(id);
-    res.send(build);
-	});
+  app.get(
+    "/api/build/:id",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const user = (await app.users.findById(req.user.id))!;
+      const build = await app.builds.findById(id);
+      if (!build) {
+        res.status(400);
+        res.send("build not found");
+        return;
+      }
+      if (user.permissions! < 2 && !build.owners.includes(user.username)) {
+        res.status(403);
+        res.send("access denied");
+        return;
+      }
+      res.send(build);
+    }
+  );
 
-	app.get(
+  app.get(
     "/api/build/:id/action-state",
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
@@ -24,7 +47,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
   );
 
-	app.post(
+  app.post(
     "/api/build/:id/:owner",
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
@@ -83,7 +106,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
   );
 
-	done();
+  done();
 });
 
 export default builds;
