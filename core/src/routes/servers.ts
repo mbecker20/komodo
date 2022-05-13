@@ -1,16 +1,31 @@
 import { intoCollection, SERVER_OWNER_UPDATE } from "@monitor/util";
-import { getDockerStats, getDockerStatsJson, getSystemStats } from "@monitor/util-node";
+import {
+  getDockerStats,
+  getDockerStatsJson,
+  getSystemStats,
+} from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { getPeripheryDockerStats, getPeripherySystemStats } from "../util/periphery/server";
+import {
+  getPeripheryDockerStats,
+  getPeripherySystemStats,
+} from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
 
 const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.get(
     "/api/servers",
     { onRequest: [app.auth, app.userEnabled] },
-    async (_, res) => {
-      const servers = await app.servers.find({});
+    async (req, res) => {
+      const user = await app.users.findById(req.user.id);
+      if (!user) {
+        res.status(403);
+        res.send("user not found");
+        return;
+      }
+      const servers = await app.servers.find(
+        user.permissions! > 1 ? {} : { owners: user.username }
+      );
       await Promise.all(
         servers.map(async (server) => {
           server.status = (await serverStatusPeriphery(server))
@@ -27,10 +42,20 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
+
       const server = await app.servers.findById(id);
       if (!server) {
         res.status(400);
         res.send("server not found");
+        return;
+      }
+      const user = await app.users.findById(req.user.id);
+      if (
+        !user ||
+        (user.permissions! < 2 && !server.owners.includes(user.username))
+      ) {
+        res.status(403);
+        res.send("user not authorized for this information");
         return;
       }
       server.status = (await serverStatusPeriphery(server))
@@ -61,8 +86,8 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
         res.send("server not found");
         return;
       }
-      const sender = (await app.users.findById(req.user.id))!;
-      if (sender.permissions! < 1 && !server.owners.includes(sender.username)) {
+      const user = (await app.users.findById(req.user.id))!;
+      if (user.permissions! < 1 && !server.owners.includes(user.username)) {
         res.status(403);
         res.send("inadequate permissions");
         return;
