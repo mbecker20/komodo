@@ -1,4 +1,4 @@
-import { Server } from "@monitor/types";
+import { Server, User } from "@monitor/types";
 import { intoCollection, DEPLOYMENT_OWNER_UPDATE } from "@monitor/util";
 import { getContainerLog, getContainerStatus } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
@@ -11,9 +11,15 @@ import {
 } from "../util/periphery/container";
 import { serverStatusPeriphery } from "../util/periphery/status";
 
-async function getDeployments(app: FastifyInstance, server: Server) {
+async function getDeployments(
+  app: FastifyInstance,
+  server: Server,
+  user: User
+) {
   const deployments = await app.deployments.find(
-    { serverID: server._id },
+    user.permissions! > 1
+      ? { serverID: server._id }
+      : { serverID: server._id, owners: user.username },
     "name containerName serverID owners repo isCore"
   );
   if (await serverStatusPeriphery(server)) {
@@ -40,11 +46,16 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.get(
     "/api/deployments",
     { onRequest: [app.auth, app.userEnabled] },
-    async (_, res) => {
+    async (req, res) => {
       // returns all the deployments
-      const servers = await app.servers.find({});
+      const user = (await app.users.findById(req.user.id))!;
+      const servers = await app.servers.find(
+        user.permissions! > 1 ? {} : { owners: user.username }
+      );
       const deployments = (
-        await Promise.all(servers.map((server) => getDeployments(app, server)))
+        await Promise.all(
+          servers.map((server) => getDeployments(app, server, user))
+        )
       ).reduce((acc, curr) => {
         Object.keys(curr).forEach((id) => {
           acc[id] = curr[id];
