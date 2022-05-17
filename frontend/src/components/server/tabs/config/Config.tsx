@@ -9,6 +9,7 @@ import Enabled from "./Enabled";
 import Networks from "./Networks";
 import Passkey from "./Passkey";
 import { useConfig } from "./Provider";
+import ToNotify from "./ToNotify";
 
 const Config: Component<{}> = (p) => {
 	const { server, reset, save } = useConfig();
@@ -23,6 +24,7 @@ const Config: Component<{}> = (p) => {
           </Show>
           <Networks />
           <Alerts />
+          <ToNotify />
         </Grid>
         <Show when={server.updated}>
           <Flex style={{ "place-self": "center", padding: "1rem" }}>

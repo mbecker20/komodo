@@ -54,7 +54,12 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high cpu usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
           notifySlack(
-            `WARNING | ${server.name} has high CPU usage.\n\nusage: ${stats.cpu}%`
+            `WARNING | ${server.name} has high CPU usage.\n\nusage: ${
+              stats.cpu
+            }%\n\n${server.toNotify.reduce(
+              (prev, curr) => (prev ? " @" + curr : "@" + curr),
+              ""
+            )}`
           );
           if (alreadyAlerted[server._id!]) {
             alreadyAlerted[server._id!] = {
@@ -77,7 +82,14 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high memory usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].mem) {
           notifySlack(
-            `WARNING | ${server.name} has high memory usage.\n\nusing ${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB (${stats.mem.usedMemPercentage}%)`
+            `WARNING | ${server.name} has high memory usage.\n\nusing ${
+              stats.mem.usedMemMb
+            } MB of ${stats.mem.totalMemMb} MB (${
+              stats.mem.usedMemPercentage
+            }%)\n\n${server.toNotify.reduce(
+              (prev, curr) => (prev ? " @" + curr : "@" + curr),
+              ""
+            )}`
           );
           if (alreadyAlerted[server._id!]) {
             alreadyAlerted[server._id!] = {
@@ -100,7 +112,14 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high disk usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].disk) {
           notifySlack(
-            `WARNING | ${server.name} has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB (${stats.disk.usedPercentage}%)`
+            `WARNING | ${server.name} has high disk usage.\n\nusing ${
+              stats.disk.usedGb
+            } GB of ${stats.disk.totalGb} GB (${
+              stats.disk.usedPercentage
+            }%)\n\n${server.toNotify.reduce(
+              (prev, curr) => (prev ? " @" + curr : "@" + curr),
+              ""
+            )}`
           );
           if (alreadyAlerted[server._id!]) {
             alreadyAlerted[server._id!] = {

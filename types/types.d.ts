@@ -51,6 +51,7 @@ export type Server = {
   enabled: boolean;
   isCore?: boolean;
   owners: string[];
+  toNotify: string[];
   // usage stats threshold
   cpuAlert?: number; // 0 - 100
   memAlert?: number; // 0 - 100
