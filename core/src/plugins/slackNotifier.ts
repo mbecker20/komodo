@@ -18,6 +18,10 @@ declare module "fastify" {
   }
 }
 
+let alreadyAlerted: {
+  [serverID: string]: { cpu: boolean; mem: boolean; disk: boolean };
+} = {};
+
 const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
   const getAllServerStats = async () => {
     const servers = await app.servers.find({});
@@ -48,27 +52,69 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const stats = server.stats!;
       if (stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT)) {
         // high cpu usage
-        notifySlack(
-          `WARNING | ${server.name} has high CPU usage.\n\nusage: ${stats.cpu}%`
-        );
+        if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
+          notifySlack(
+            `WARNING | ${server.name} has high CPU usage.\n\nusage: ${stats.cpu}%`
+          );
+          if (alreadyAlerted[server._id!]) {
+            alreadyAlerted[server._id!] = {
+              ...alreadyAlerted[server._id!],
+              cpu: true,
+            };
+          } else {
+            alreadyAlerted[server._id!] = {
+              cpu: true,
+              mem: false,
+              disk: false,
+            };
+          }
+        }
       }
       if (
         stats.mem.usedMemPercentage >
         (server.memAlert || MEM_USAGE_NOTIFY_LIMIT)
       ) {
         // high memory usage
-        notifySlack(
-          `WARNING | ${server.name} has high memory usage.\n\nusing ${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB (${stats.mem.usedMemPercentage}%)`
-        );
+        if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].mem) {
+          notifySlack(
+            `WARNING | ${server.name} has high memory usage.\n\nusing ${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB (${stats.mem.usedMemPercentage}%)`
+          );
+          if (alreadyAlerted[server._id!]) {
+            alreadyAlerted[server._id!] = {
+              ...alreadyAlerted[server._id!],
+              mem: true,
+            };
+          } else {
+            alreadyAlerted[server._id!] = {
+              cpu: false,
+              mem: true,
+              disk: false,
+            };
+          }
+        }
       }
       if (
         stats.disk.usedPercentage >
         (server.diskAlert || DISK_USAGE_NOTIFY_LIMIT)
       ) {
         // high disk usage
-        notifySlack(
-          `WARNING | ${server.name} has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB (${stats.disk.usedPercentage}%)`
-        );
+        if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].disk) {
+          notifySlack(
+            `WARNING | ${server.name} has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB (${stats.disk.usedPercentage}%)`
+          );
+          if (alreadyAlerted[server._id!]) {
+            alreadyAlerted[server._id!] = {
+              ...alreadyAlerted[server._id!],
+              disk: true,
+            };
+          } else {
+            alreadyAlerted[server._id!] = {
+              cpu: false,
+              mem: false,
+              disk: true,
+            };
+          }
+        }
       }
     });
   };
@@ -79,11 +125,12 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const stats = curr.stats!;
       return (
         prev +
-        `${curr.name} | CPU: ${stats.cpu}% | MEM: ${stats.mem.usedMemPercentage}% (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: ${stats.disk.usedPercentage}% (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)\n------------------------------------------------------------------\n\n`
+        `${curr.name} | CPU: ${stats.cpu}% | MEM: ${stats.mem.usedMemPercentage}% (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: ${stats.disk.usedPercentage}% (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)\n-----------------------------------------------------------------------------\n\n`
       );
     }, "");
     const message = "INFO | daily update\n\n" + statsLog;
     notifySlack(message);
+    alreadyAlerted = {};
   };
 
   app.decorate("dailyInterval", dailyInterval);
