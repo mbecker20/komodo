@@ -38,6 +38,11 @@ async function updateDeployment(
   app.broadcast(UPDATE_DEPLOYMENT, { deploymentID: deployment._id, complete: false });
   try {
     // this assumes no change to deployment name (ie cannot rename deployments after created)
+    if (user.permissions! < 2) {
+      // disallow non-admins from updating the onClone / onPull commands
+      deployment.onClone = undefined;
+      deployment.onPull = undefined;
+    }
     if (
       deployment.repo !== preDeployment.repo ||
       deployment.branch !== preDeployment.branch

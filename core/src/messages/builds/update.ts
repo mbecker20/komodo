@@ -37,6 +37,11 @@ async function updateBuild(
   app.buildActionStates.set(build._id!, "updating", true);
   try {
     build.pullName = toDashedName(build.name);
+    if (user.permissions! < 2) {
+      // disallow non-admins from updating the onClone / onPull commands
+      build.onClone = undefined;
+      build.cliBuild = undefined;
+    }
     if (build.repo !== preBuild.repo || build.branch !== preBuild.branch) {
       // reclone repo if repo is changed
       await remove(BUILD_REPO_PATH + preBuild.pullName).catch();
