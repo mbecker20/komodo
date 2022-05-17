@@ -57,7 +57,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
             `WARNING | ${server.name} has high CPU usage.\n\nusage: ${
               stats.cpu
             }%\n\n${server.toNotify.reduce(
-              (prev, curr) => (prev ? " @" + curr : "@" + curr),
+              (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
             )}`
           );
@@ -87,7 +87,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
             } MB of ${stats.mem.totalMemMb} MB (${
               stats.mem.usedMemPercentage
             }%)\n\n${server.toNotify.reduce(
-              (prev, curr) => (prev ? " @" + curr : "@" + curr),
+              (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
             )}`
           );
@@ -117,7 +117,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
             } GB of ${stats.disk.totalGb} GB (${
               stats.disk.usedPercentage
             }%)\n\n${server.toNotify.reduce(
-              (prev, curr) => (prev ? " @" + curr : "@" + curr),
+              (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
             )}`
           );
