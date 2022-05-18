@@ -97,22 +97,27 @@ const Home: Component<{}> = (p) => {
                   }}
                 >
                   <h2>{servers.get(id)!.name}</h2>
-                  <div
-                    class={serverStatusClass(
-                      servers.get(id)!.enabled
+                  <Flex alignItems="center">
+                    <Show when={servers.get(id)!.region}>
+                      <div style={{ opacity: 0.7 }}>{servers.get(id)!.region}</div>
+                    </Show>
+                    <div
+                      class={serverStatusClass(
+                        servers.get(id)!.enabled
+                          ? servers.get(id)!.status === "OK"
+                            ? "OK"
+                            : "NOT OK"
+                          : "DISABLED",
+                        themeClass
+                      )}
+                    >
+                      {servers.get(id)!.enabled
                         ? servers.get(id)!.status === "OK"
                           ? "OK"
                           : "NOT OK"
-                        : "DISABLED",
-                      themeClass
-                    )}
-                  >
-                    {servers.get(id)!.enabled
-                      ? servers.get(id)!.status === "OK"
-                        ? "OK"
-                        : "NOT OK"
-                      : "DISABLED"}
-                  </div>
+                        : "DISABLED"}
+                    </div>
+                  </Flex>
                 </Button>
               )}
             </For>
