@@ -57,7 +57,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
           notifySlack(
             `WARNING | ${server.name} has high CPU usage.${
-              server.region ? ` | region: ${server.region}` : ""
+              server.region ? ` | ${server.region}` : ""
             }\n\nusage: ${stats.cpu}%\n\n${server.toNotify.reduce(
               (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
@@ -85,7 +85,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].mem) {
           notifySlack(
             `WARNING | ${server.name} has high memory usage.${
-              server.region ? ` | region: ${server.region}` : ""
+              server.region ? ` | ${server.region}` : ""
             }\n\nusing ${stats.mem.usedMemMb} MB of ${
               stats.mem.totalMemMb
             } MB (${stats.mem.usedMemPercentage}%)\n\n${server.toNotify.reduce(
@@ -115,7 +115,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].disk) {
           notifySlack(
             `WARNING | ${server.name} has high disk usage.${
-              server.region ? ` | region: ${server.region}` : ""
+              server.region ? ` | ${server.region}` : ""
             }\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB (${
               stats.disk.usedPercentage
             }%)\n\n${server.toNotify.reduce(
@@ -146,7 +146,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const stats = curr.stats!;
       return (
         prev +
-        `${curr.name}${curr.region ? ` | region: ${curr.region}` : ""} | CPU: ${
+        `${curr.name}${curr.region ? ` | ${curr.region}` : ""} | CPU: ${
           stats.cpu
         }% | MEM: ${stats.mem.usedMemPercentage}% (${
           stats.mem.usedMemMb
