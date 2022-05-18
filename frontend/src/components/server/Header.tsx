@@ -52,7 +52,13 @@ const Header: Component<{}> = (p) => {
       >
         <Grid gap="0.1rem">
           <h1>{server().name}</h1>
-          <div style={{ opacity: 0.8 }}>server</div>
+          <Flex gap="0.2rem" alignItems="center" style={{ opacity: 0.8 }}>
+            <div>server</div>
+            <Show when={server().region}>
+              <Icon type="caret-right" width="0.7rem" />
+              {server().region}
+            </Show>
+          </Flex>
         </Grid>
         <Show when={!server().isCore}>
           <Flex alignItems="center">

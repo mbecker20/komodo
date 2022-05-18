@@ -217,8 +217,30 @@ const Servers: Component<{ close: () => void }> = (p) => {
               p.close();
             }}
           >
-            {server.name}
-            <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>server</div>
+            <Flex alignItems="center">
+              <div>{server.name}</div>
+              <div
+                class={server.status === "OK" ? "green" : "red"}
+                style={{
+                  padding: "0.25rem",
+                  "border-radius": ".35rem",
+                  transition: "background-color 125ms ease-in-out",
+                }}
+              >
+                {server.status === "OK" ? "OK" : "NOT OK"}
+              </div>
+            </Flex>
+            <Flex
+              alignItems="center"
+              gap="0.2rem"
+              style={{ opacity: 0.6, "font-size": "0.9rem" }}
+            >
+              server
+              <Show when={server.region}>
+                <Icon type="caret-right" width="0.7rem" />
+                {server.region}
+              </Show>
+            </Flex>
           </Button>
         )}
       </For>
