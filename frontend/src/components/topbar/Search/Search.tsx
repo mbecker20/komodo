@@ -225,6 +225,7 @@ const Servers: Component<{ close: () => void }> = (p) => {
                   padding: "0.25rem",
                   "border-radius": ".35rem",
                   transition: "background-color 125ms ease-in-out",
+                  "font-size": "0.8rem"
                 }}
               >
                 {server.status === "OK" ? "OK" : "NOT OK"}
