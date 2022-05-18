@@ -58,6 +58,9 @@ export type Server = {
   diskAlert?: number; // 0 - 100
   // optional custom passkey
   passkey?: string;
+  // optional instance info
+  region?: string;
+  instanceID?: string;
 };
 
 export type DockerBuildArgs = {
