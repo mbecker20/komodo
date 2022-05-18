@@ -18,6 +18,8 @@ declare module "fastify" {
   }
 }
 
+const DIVIDER = "-----------------------------------------------------------------------------";
+
 let alreadyAlerted: {
   [serverID: string]: { cpu: boolean; mem: boolean; disk: boolean };
 } = {};
@@ -54,9 +56,9 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high cpu usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
           notifySlack(
-            `WARNING | ${server.name} has high CPU usage.\n\nusage: ${
-              stats.cpu
-            }%\n\n${server.toNotify.reduce(
+            `WARNING | ${server.name} has high CPU usage.${
+              server.region ? ` | region: ${server.region}` : ""
+            }\n\nusage: ${stats.cpu}%\n\n${server.toNotify.reduce(
               (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
             )}`
@@ -82,11 +84,11 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high memory usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].mem) {
           notifySlack(
-            `WARNING | ${server.name} has high memory usage.\n\nusing ${
-              stats.mem.usedMemMb
-            } MB of ${stats.mem.totalMemMb} MB (${
-              stats.mem.usedMemPercentage
-            }%)\n\n${server.toNotify.reduce(
+            `WARNING | ${server.name} has high memory usage.${
+              server.region ? ` | region: ${server.region}` : ""
+            }\n\nusing ${stats.mem.usedMemMb} MB of ${
+              stats.mem.totalMemMb
+            } MB (${stats.mem.usedMemPercentage}%)\n\n${server.toNotify.reduce(
               (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
             )}`
@@ -112,9 +114,9 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high disk usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].disk) {
           notifySlack(
-            `WARNING | ${server.name} has high disk usage.\n\nusing ${
-              stats.disk.usedGb
-            } GB of ${stats.disk.totalGb} GB (${
+            `WARNING | ${server.name} has high disk usage.${
+              server.region ? ` | region: ${server.region}` : ""
+            }\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB (${
               stats.disk.usedPercentage
             }%)\n\n${server.toNotify.reduce(
               (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
@@ -144,10 +146,18 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       const stats = curr.stats!;
       return (
         prev +
-        `${curr.name} | CPU: ${stats.cpu}% | MEM: ${stats.mem.usedMemPercentage}% (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: ${stats.disk.usedPercentage}% (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)\n-----------------------------------------------------------------------------\n\n`
+        `${curr.name}${curr.region ? ` | region: ${curr.region}` : ""} | CPU: ${
+          stats.cpu
+        }% | MEM: ${stats.mem.usedMemPercentage}% (${
+          stats.mem.usedMemMb
+        } MB of ${stats.mem.totalMemMb} MB) | DISK: ${
+          stats.disk.usedPercentage
+        }% (${stats.disk.usedGb} GB of ${
+          stats.disk.totalGb
+        } GB)\n${DIVIDER}\n\n`
       );
     }, "");
-    const message = "INFO | daily update\n\n" + statsLog;
+    const message = "INFO | daily update\n\n" + DIVIDER + "\n\n" + statsLog;
     notifySlack(message);
     alreadyAlerted = {};
   };
