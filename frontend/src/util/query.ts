@@ -10,6 +10,7 @@ import {
   DockerStat,
   Log,
   Network,
+  PM2Process,
   Server,
   Servers,
   SystemStats,
@@ -122,6 +123,10 @@ export async function getServerStats(id: string) {
 
 export async function getServerSystemStats(id: string) {
   return await client.get<SystemStats>(`/api/server/${id}/sys-stats`);
+}
+
+export async function getServerPm2Processes(id: string) {
+  return await client.get<PM2Process[]>(`/api/server/${id}/pm2`);
 }
 
 export async function addOwnerToServer(serverID: string, username: string) {
