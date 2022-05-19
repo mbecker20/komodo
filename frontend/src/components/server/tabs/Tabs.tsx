@@ -5,7 +5,7 @@ import Tabs from "../../util/tabs/Tabs";
 import Config from "./config/Config";
 import { ConfigProvider } from "./config/Provider";
 import Owners from "./Owners";
-import Stats from "./Stats";
+import Stats from "./stats/Stats";
 
 const ServerTabs: Component<{}> = (p) => {
   const { servers, selected } = useAppState();
