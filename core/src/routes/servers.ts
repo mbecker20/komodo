@@ -1,6 +1,5 @@
 import { intoCollection, SERVER_OWNER_UPDATE } from "@monitor/util";
 import {
-  getDockerStats,
   getDockerStatsJson,
   getSystemStats,
 } from "@monitor/util-node";
