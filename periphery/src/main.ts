@@ -5,12 +5,14 @@ import { LOG, PORT } from "./config";
 import docker from "./plugins/docker";
 import auth from "./plugins/auth";
 import routes from "./routes";
+import pm2 from "./plugins/pm2";
 
 const app = fastify({ logger: LOG })
   .register(fastifyHelmet)
   .register(fastifyCors)
   .register(docker)
   .register(auth)
+  .register(pm2)
   .register(routes);
 
 app.listen(PORT, "0.0.0.0", (err, address) => {

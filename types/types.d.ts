@@ -260,3 +260,14 @@ export type AccountAccess = {
   users: string[] // list of user usernames;
   username: string; // specifies the account corresponding to those defined in secrets;
 }
+
+export type PM2Process = {
+  pid?: number;
+  name?: string;
+  status?: string;
+  cpu?: number;
+  memory?: number;
+  uptime?: number;
+  createdAt?: number;
+  restarts?: number;
+}

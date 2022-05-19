@@ -4,6 +4,7 @@ import container from "./container";
 import deploy from "./deploy";
 import git from "./git";
 import networks from "./networks";
+import pm2 from "./pm2";
 import server from "./server";
 import status from "./status";
 
@@ -14,7 +15,8 @@ const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
     .register(container)
     .register(server)
     .register(status)
-    .register(networks);
+    .register(networks)
+    .register(pm2);
 
   done();
 });

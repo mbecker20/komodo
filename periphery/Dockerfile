@@ -13,4 +13,6 @@ RUN apk add --no-cache --virtual .gyp python3 make g++ \
 
 COPY ./build/main.js ./
 
+ENV PM2_HOME /.pm2
+
 CMD node main.js
