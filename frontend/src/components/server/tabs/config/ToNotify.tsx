@@ -26,7 +26,7 @@ const ToNotify: Component<{}> = (p) => {
         {(user, index) => (
           <Flex justifyContent="space-between" alignItems="center">
             <Input
-              placeholder="slack username"
+              placeholder="slack user id"
               value={user}
               onEdit={(user) => setServer("toNotify", index(), user)}
             />
