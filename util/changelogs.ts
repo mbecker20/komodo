@@ -92,26 +92,26 @@ function envChangelog(oldEnv?: EnvironmentVar[], newEnv?: EnvironmentVar[]) {
     const additionsString =
       additions.length > 0
         ? `\tAdditions:\n` +
-          additions
-            .map((addition) => `\t\t${addition}: ${newObj[addition]}, \n`)
-            .reduce((prev, curr) => prev + curr)
+        additions
+          .map((addition) => `\t\t${addition}: ${newObj[addition]}, \n`)
+          .reduce((prev, curr) => prev + curr)
         : "";
     const changesString =
       changes.length > 0
         ? `\tChanges:\n` +
-          changes
-            .map(
-              (change) =>
-                `\t\t${change}: ${oldObj[change]} -> ${newObj[change]}, \n`
-            )
-            .reduce((prev, curr) => prev + curr)
+        changes
+          .map(
+            (change) =>
+              `\t\t${change}: ${oldObj[change]} -> ${newObj[change]}, \n`
+          )
+          .reduce((prev, curr) => prev + curr)
         : "";
     const deletionsString =
       deletions.length > 0
         ? `\tDeletions:\n` +
-          deletions
-            .map((deletion) => `\t\t${deletion}: ${oldObj[deletion]}, \n`)
-            .reduce((prev, curr) => prev + curr)
+        deletions
+          .map((deletion) => `\t\t${deletion}: ${oldObj[deletion]}, \n`)
+          .reduce((prev, curr) => prev + curr)
         : "";
     const show =
       additionsString.length > 0 ||
@@ -162,26 +162,26 @@ function portsChangelog(oldPorts?: Conversion[], newPorts?: Conversion[]) {
     const additionsString =
       additions.length > 0
         ? `\tAdditions:\n` +
-          additions
-            .map((addition) => `\t\t${addition}: ${newObj[addition]}, \n`)
-            .reduce((prev, curr) => prev + curr)
+        additions
+          .map((addition) => `\t\t${addition}: ${newObj[addition]}, \n`)
+          .reduce((prev, curr) => prev + curr)
         : "";
     const changesString =
       changes.length > 0
         ? `\tChanges:\n` +
-          changes
-            .map(
-              (change) =>
-                `\t\t${change}: ${oldObj[change]} -> ${newObj[change]}, \n`
-            )
-            .reduce((prev, curr) => prev + curr)
+        changes
+          .map(
+            (change) =>
+              `\t\t${change}: ${oldObj[change]} -> ${newObj[change]}, \n`
+          )
+          .reduce((prev, curr) => prev + curr)
         : "";
     const deletionsString =
       deletions.length > 0
         ? `\tDeletions:\n` +
-          deletions
-            .map((deletion) => `\t\t${deletion}: ${oldObj[deletion]}, \n`)
-            .reduce((prev, curr) => prev + curr)
+        deletions
+          .map((deletion) => `\t\t${deletion}: ${oldObj[deletion]}, \n`)
+          .reduce((prev, curr) => prev + curr)
         : "";
     const show =
       additionsString.length > 0 ||
@@ -232,26 +232,26 @@ function volumesChangelog(oldVols?: Conversion[], newVols?: Conversion[]) {
     const additionsString =
       additions.length > 0
         ? `\tAdditions:\n` +
-          additions
-            .map((addition) => `\t\t${addition}: ${newObj[addition]},\n`)
-            .reduce((prev, curr) => prev + curr)
+        additions
+          .map((addition) => `\t\t${addition}: ${newObj[addition]},\n`)
+          .reduce((prev, curr) => prev + curr)
         : "";
     const changesString =
       changes.length > 0
         ? `\tChanges:\n` +
-          changes
-            .map(
-              (change) =>
-                `\t\t${change}: ${oldObj[change]} -> ${newObj[change]}\n`
-            )
-            .reduce((prev, curr) => prev + curr)
+        changes
+          .map(
+            (change) =>
+              `\t\t${change}: ${oldObj[change]} -> ${newObj[change]}\n`
+          )
+          .reduce((prev, curr) => prev + curr)
         : "";
     const deletionsString =
       deletions.length > 0
         ? `\tDeletions:\n` +
-          deletions
-            .map((deletion) => `\t\t${deletion}: ${oldObj[deletion]},\n`)
-            .reduce((prev, curr) => prev + curr)
+        deletions
+          .map((deletion) => `\t\t${deletion}: ${oldObj[deletion]},\n`)
+          .reduce((prev, curr) => prev + curr)
         : "";
     const show =
       additionsString.length > 0 ||
@@ -290,7 +290,7 @@ export function buildChangelog(oldBuild: Build, newBuild: Build) {
     : "No Changes";
 }
 
-const serverViewFields = ["name", "address", "port", "enabled"];
+const serverViewFields = ["name", "address", "port", "enabled", "region", "toNotify", "cpuAlert", "memAlert", "diskAlert"];
 
 export function serverChangelog(oldServer: Server, newServer: Server) {
   const changelogArray = serverViewFields

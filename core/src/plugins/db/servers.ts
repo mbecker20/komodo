@@ -17,6 +17,8 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     memAlert: { type: Number, default: MEM_USAGE_NOTIFY_LIMIT },
     diskAlert: { type: Number, default: DISK_USAGE_NOTIFY_LIMIT },
     passkey: String,
+    region: String,
+    instanceID: String,
   });
 
   app.decorate("servers", model(app, "Server", schema));
