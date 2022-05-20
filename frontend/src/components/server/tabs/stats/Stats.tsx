@@ -6,10 +6,12 @@ import SystemStats from "./SystemStats";
 
 const Stats: Component<{}> = (p) => {
   return (
-    <Grid placeItems="start center" style={{ height: "fit-content" }}>
-      <SystemStats />
-      <Pm2Processes />
-      <DockerStats />
+    <Grid class="config">
+      <Grid class="config-items">
+        <SystemStats />
+        <Pm2Processes />
+        <DockerStats />
+      </Grid>
     </Grid>
   );
 };
