@@ -1,4 +1,4 @@
-import { SystemStats } from "@monitor/types";
+import { SystemStats as SystemStatsType } from "@monitor/types";
 import { Component, createEffect, createSignal, Show } from "solid-js";
 import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
@@ -11,7 +11,7 @@ import Loading from "../../../util/loading/Loading";
 
 const SystemStats: Component<{}> = (p) => {
   const { selected } = useAppState();
-  const [sysStats, setSysStats] = createSignal<SystemStats>();
+  const [sysStats, setSysStats] = createSignal<SystemStatsType>();
   const [refreshingStats, setRefreshingStats] = createSignal(false);
   const loadStats = () => {
     if (selected.id()) {
