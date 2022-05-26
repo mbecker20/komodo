@@ -7,7 +7,6 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import {
   getPeripheryDockerStats,
-  getPeripheryPm2Processes,
   getPeripherySystemStats,
 } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
@@ -123,23 +122,23 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
   );
 
-  app.get("/api/server/:id/pm2", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
-    const { id } = req.params as { id: string };
-    const server = await app.servers.findById(id);
-    if (!server) {
-      res.status(400);
-      res.send("server not found");
-      return;
-    }
-    const sender = (await app.users.findById(req.user.id))!;
-    if (sender.permissions! < 1 && !server.owners.includes(sender.username)) {
-      res.status(403);
-      res.send("inadequate permissions");
-      return;
-    }
-    const processes = server.isCore ? [] : await getPeripheryPm2Processes(server);
-    res.send(processes);
-  });
+  // app.get("/api/server/:id/pm2", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
+  //   const { id } = req.params as { id: string };
+  //   const server = await app.servers.findById(id);
+  //   if (!server) {
+  //     res.status(400);
+  //     res.send("server not found");
+  //     return;
+  //   }
+  //   const sender = (await app.users.findById(req.user.id))!;
+  //   if (sender.permissions! < 1 && !server.owners.includes(sender.username)) {
+  //     res.status(403);
+  //     res.send("inadequate permissions");
+  //     return;
+  //   }
+  //   const processes = server.isCore ? [] : await getPeripheryPm2Processes(server);
+  //   res.send(processes);
+  // });
 
   app.post(
     "/api/server/:id/:owner",

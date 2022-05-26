@@ -31,17 +31,3 @@ export async function getPeripherySystemStats({ address, passkey }: Server) {
     })
     .then(({ data }) => data);
 }
-
-export async function getPeripheryPm2Processes({ address, passkey }: Server) {
-  try {
-    return await axios
-      .get<PM2Process[]>(`${address}/pm2List`, {
-        headers: {
-          Authorization: passkey || SECRETS.PASSKEY,
-        },
-      })
-      .then(({ data }) => data);
-  } catch (error) {
-    return []
-  }
-}

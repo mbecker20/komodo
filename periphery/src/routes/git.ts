@@ -67,12 +67,11 @@ const git = fp((app: FastifyInstance, _: {}, done: () => void) => {
           deployment.onPull.path || ""
         )} && ${deployment.onPull.command}`
       ));
-    res.send(
-      mergeCommandLogError(
-        { name: "pull", cle: pullCle },
-        { name: "post", cle: onPullCle }
-      )
+    const log = mergeCommandLogError(
+      { name: "pull", cle: pullCle },
+      { name: "post", cle: onPullCle }
     );
+    res.send(log);
   });
 
   app.post("/repo/delete", { onRequest: [app.auth] }, async (req, res) => {

@@ -10,3 +10,5 @@ export const SYSROOT = getStringFromEnv("SYSROOT", "/home/ubuntu/");
 export const ROOT = "/monitor-root/";
 export const CONTAINER_REPO_ROOT = join(ROOT, "repos");
 export const SYS_REPO_ROOT = join(SYSROOT, "repos");
+
+export const PM2_CLIENT_PORT = getNumberFromEnv("PM2_CLIENT_PORT", 4000);

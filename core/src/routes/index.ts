@@ -10,6 +10,7 @@ import secrets from "./secrets";
 import listener from "./listener";
 import users from "./users";
 import healthCheck from "./healthCheck";
+import pm2 from "./pm2";
 
 const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app
@@ -18,6 +19,7 @@ const routes = fp((app: FastifyInstance, _: {}, done: () => void) => {
     .register(builds)
     .register(deployments)
     .register(servers)
+    .register(pm2)
     .register(networks)
     .register(accounts)
     .register(secrets)
