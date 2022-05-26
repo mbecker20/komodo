@@ -89,7 +89,7 @@ async function deployPeriphery({ periphery }: Config) {
   await execute("docker pull mbecker2020/monitor-periphery:latest");
   const { name, port, secretVolume, restart, sysroot } = periphery!;
   const nameConfig = `--name ${toDashedName(name)}`;
-  const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root -v /home/ubuntu/.pm2:/.pm2`;
+  const volume = `-v ${secretVolume}:/secrets -v /var/run/docker.sock:/var/run/docker.sock -v ${sysroot}:/monitor-root`;
   const network = `-p ${port}:${DEFAULT_PERIPHERY_PORT}`;
   const env = `-e SYSROOT=${trailingSlash(periphery?.sysroot!)}`;
   const restartArg = `--restart ${restart}`;
