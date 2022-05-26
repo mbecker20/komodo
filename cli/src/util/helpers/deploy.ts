@@ -93,7 +93,8 @@ async function deployPeriphery({ periphery }: Config) {
   const network = `-p ${port}:${DEFAULT_PERIPHERY_PORT}`;
   const env = `-e SYSROOT=${trailingSlash(periphery?.sysroot!)}`;
   const restartArg = `--restart ${restart}`;
-  const command = `docker run -d ${nameConfig} ${volume} ${network} ${env} ${restartArg} ${PERIPHERY_IMAGE}`;
+  const hostCommunication = "--add-host=host.docker.internal:host-gateway"
+  const command = `docker run -d ${nameConfig} ${volume} ${network} ${env} ${restartArg} ${hostCommunication} ${PERIPHERY_IMAGE}`;
   return await execute(command);
 }
 
