@@ -100,31 +100,31 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 export default pm2;
 
 async function getPm2Processes() {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/processes`)
+	return await axios.get(`http://0.0.0.0:${PM2_CLIENT_PORT}/processes`)
 		.then(({ data }) => data);
 }
 
 async function getPm2Log(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/log/${name}`)
+	return await axios.get(`http://0.0.0.0:${PM2_CLIENT_PORT}/log/${name}`)
 		.then(({ data }) => data);
 }
 
 async function startPm2(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/start/${name}`)
+	return await axios.get(`http://0.0.0.0:${PM2_CLIENT_PORT}/start/${name}`)
 		.then(({ data }) => data);
 }
 
 async function stopPm2(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/stop/${name}`)
+	return await axios.get(`http://0.0.0.0:${PM2_CLIENT_PORT}/stop/${name}`)
 		.then(({ data }) => data);
 }
 
 async function restartPm2(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/restart/${name}`)
+	return await axios.get(`http://0.0.0.0:${PM2_CLIENT_PORT}/restart/${name}`)
 		.then(({ data }) => data);
 }
 
 async function deletePm2(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/delete/${name}`)
+	return await axios.get(`http://0.0.0.0:${PM2_CLIENT_PORT}/delete/${name}`)
 		.then(({ data }) => data);
 }
