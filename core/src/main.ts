@@ -10,7 +10,6 @@ import frontend from "./plugins/frontend";
 import actionStates from "./plugins/actionStates";
 import routes from "./routes";
 import slackNotifier from "./plugins/slackNotifier";
-import { notifySlack } from "./util/slack";
 
 async function main() {
   const app = fastify({ logger: LOGGER })

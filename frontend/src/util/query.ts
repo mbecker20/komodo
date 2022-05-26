@@ -125,8 +125,28 @@ export async function getServerSystemStats(id: string) {
   return await client.get<SystemStats>(`/api/server/${id}/sys-stats`);
 }
 
-export async function getServerPm2Processes(id: string) {
-  return await client.get<PM2Process[]>(`/api/server/${id}/pm2`);
+export async function getPm2Processes(id: string) {
+  return await client.get<PM2Process[]>(`/api/server/${id}/pm2/processes`);
+}
+
+export async function getPm2Log(serverID: string, name: string) {
+  return await client.get<CommandLogError>(`/api/server/${serverID}/pm2/log/${name}`);
+}
+
+export async function startPm2Process(serverID: string, name: string) {
+  return await client.get<CommandLogError>(`/api/server/${serverID}/pm2/start/${name}`);
+}
+
+export async function stopPm2Process(serverID: string, name: string) {
+  return await client.get<CommandLogError>(`/api/server/${serverID}/pm2/stop/${name}`);
+}
+
+export async function restartPm2Process(serverID: string, name: string) {
+  return await client.get<CommandLogError>(`/api/server/${serverID}/pm2/restart/${name}`);
+}
+
+export async function deletePm2Process(serverID: string, name: string) {
+  return await client.get<CommandLogError>(`/api/server/${serverID}/pm2/delete/${name}`);
 }
 
 export async function addOwnerToServer(serverID: string, username: string) {

@@ -1,15 +1,16 @@
 import { PM2Process } from "@monitor/types";
 import { Component, createEffect, createSignal, For, Show } from "solid-js";
-import { pushNotification } from "../../../..";
-import { useAppState } from "../../../../state/StateProvider";
-import { useTheme } from "../../../../state/ThemeProvider";
-import { combineClasses } from "../../../../util/helpers";
-import { getServerPm2Processes } from "../../../../util/query";
-import Button from "../../../util/Button";
-import Icon from "../../../util/Icon";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import Loading from "../../../util/loading/Loading";
+import { pushNotification } from "../../../../..";
+import { useAppState } from "../../../../../state/StateProvider";
+import { useTheme } from "../../../../../state/ThemeProvider";
+import { combineClasses } from "../../../../../util/helpers";
+import { getPm2Processes } from "../../../../../util/query";
+import Button from "../../../../util/Button";
+import Icon from "../../../../util/Icon";
+import Flex from "../../../../util/layout/Flex";
+import Grid from "../../../../util/layout/Grid";
+import Loading from "../../../../util/loading/Loading";
+import LogButton from "./Log";
 import s from "./stats.module.scss";
 
 const Pm2Processes: Component<{}> = (p) => {
@@ -18,7 +19,7 @@ const Pm2Processes: Component<{}> = (p) => {
   const [refreshing, setRefreshing] = createSignal(false);
   const loadPm2 = () => {
     if (selected.id()) {
-      getServerPm2Processes(selected.id()).then(setPm2Proc);
+      getPm2Processes(selected.id()).then(setPm2Proc);
     }
   };
   createEffect(loadPm2);
@@ -32,7 +33,7 @@ const Pm2Processes: Component<{}> = (p) => {
             class="blue"
             onClick={async () => {
               setRefreshing(true);
-              const processes = await getServerPm2Processes(selected.id());
+              const processes = await getPm2Processes(selected.id());
               setPm2Proc(processes);
               setRefreshing(false);
               pushNotification("good", "processes refreshed");
@@ -57,6 +58,7 @@ const Pm2Processes: Component<{}> = (p) => {
                       ? `${process.memory / 1024000} mb`
                       : "unknown"}
                   </div>
+                  <LogButton name={process.name!} />
                 </Flex>
               </Flex>
             )}
