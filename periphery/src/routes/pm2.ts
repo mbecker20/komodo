@@ -9,7 +9,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			const processes = await getPm2Processes();
 			res.send(processes);
 		} catch {
-			res.status(400);
+			res.status(503);
 			res.send("could not reach pm2 client");
 		}
 	});
@@ -21,7 +21,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await getPm2Log(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -37,7 +37,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await startPm2(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -53,7 +53,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await stopPm2(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -69,7 +69,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await restartPm2(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -85,7 +85,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await deletePm2(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
