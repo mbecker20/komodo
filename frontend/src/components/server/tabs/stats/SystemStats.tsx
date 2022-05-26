@@ -44,16 +44,21 @@ const SystemStats: Component<{}> = (p) => {
             </Show>
           </Button>
         </Flex>
-        <div>cpu: {sysStats()!.cpu}%</div>
         <Flex alignItems="center">
-          <div>mem: {sysStats()!.mem.usedMemPercentage}%</div>
+          <h2>cpu: </h2>
+          <div>{sysStats()!.cpu}%</div>
+        </Flex>
+        <Flex alignItems="center">
+          <h2>mem: </h2>
+          <div>{sysStats()!.mem.usedMemPercentage}%</div>
           <div>
             (using {sysStats()!.mem.usedMemMb} mb of{" "}
             {sysStats()!.mem.totalMemMb} mb)
           </div>
         </Flex>
         <Flex>
-          <div>disk: {sysStats()!.disk.usedPercentage}%</div>
+          <h2>disk: </h2>
+          <div>{sysStats()!.disk.usedPercentage}%</div>
           <div>
             (using {sysStats()!.disk.usedGb} gb of {sysStats()!.disk.totalGb}{" "}
             gb)

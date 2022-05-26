@@ -8,8 +8,8 @@ const Stats: Component<{}> = (p) => {
   return (
     <Grid class="config">
       <Grid class="config-items">
-        <SystemStats />
         <Pm2Processes />
+        <SystemStats />
         <DockerStats />
       </Grid>
     </Grid>
