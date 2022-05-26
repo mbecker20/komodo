@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { deletePeripheryPm2, getPeripheryPm2Log, getPeripheryPm2Processes, restartPeripheryPm2, startPeripheryPm2, stopPeripheryPm2 } from "../util/periphery/pm2";
+// import { addPm2Update } from "../util/updates";
 
 const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	app.get("/api/server/:id/pm2/processes", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
@@ -41,6 +42,10 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			return;
 		}
 		const log = await getPeripheryPm2Log(server, name);
+		// await addPm2Update(
+		// 	app,
+
+		// );
 		res.send(log);
 	});
 

@@ -9,6 +9,7 @@ const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	const schema = new Schema<Update>({
     buildID: { type: String, index: true },
     deploymentID: { type: String, index: true },
+    pm2DeploymentID: { type: String, index: true },
     serverID: { type: String, index: true },
     operation: { type: String, index: true },
     command: String,

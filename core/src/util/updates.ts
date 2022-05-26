@@ -92,6 +92,25 @@ export async function addSystemUpdate(
   app.broadcast(ADD_UPDATE, { update });
 }
 
-export async function addPm2Update() {
-    
+export async function addPm2Update(
+  app: FastifyInstance,
+  pm2DeploymentID: string,
+  operation: string,
+  command: string,
+  log: Log,
+  operator: string,
+  note = "",
+  isError = false
+) {
+  const update = await app.updates.create({
+    pm2DeploymentID,
+    operation,
+    command,
+    log,
+    operator,
+    note,
+    isError,
+    timestamp: timestamp(),
+  });
+  app.broadcast(ADD_UPDATE, { update });
 }

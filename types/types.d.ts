@@ -33,6 +33,7 @@ export type Update = {
   _id?: string;
   buildID?: string;
   deploymentID?: string;
+  pm2DeploymentID?: string;
   serverID?: string;
   operation: string;
   command: string;
