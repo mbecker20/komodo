@@ -80,7 +80,7 @@ export type Command = {
 export interface Build {
   _id?: string;
   name: string;
-  pullName?: string; // used for git listener
+  pullName?: string; // used for git listener / folder name
   commands?: Command[];
   /* repo related */
   repo?: string;
@@ -96,13 +96,15 @@ export interface Build {
 }
 
 export type DeploymentGitConfig = {
+  pullName?: string; // used for git listener / folder name
   repo?: string;
   branch?: string;
   subfolder?: string; // subfolder of repo to clone (uses sparse clone)
   githubAccount?: string;
-  repoMount?: string; // subfolder of repo to mount in container
-  containerMount?: string; // the file path to mount repo on inside the container
+  // repoMount?: string; // subfolder of repo to mount in container
+  // containerMount?: string; // the file path to mount repo on inside the container
   onPull?: Command;
+  onClone?: Command;
 };
 
 export type DockerRunArgs = {
@@ -134,9 +136,16 @@ export interface Deployment extends DockerRunArgs {
   containerMount?: string; // the file path to mount repo on inside the container
   onPull?: Command;
   onClone?: Command;
-  gitConfigs?: DeploymentGitConfig[];
+  // gitConfigs?: DeploymentGitConfig[];
   // running status
   status?: "not deployed" | "unknown" | ContainerStatus;
+}
+
+export interface Pm2Deployment extends DeploymentGitConfig {
+  _id?: string;
+  name: string;
+  serverID: string;
+  owners: string[];
 }
 
 export type Conversion = {

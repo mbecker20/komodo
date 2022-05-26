@@ -35,7 +35,12 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			res.send("inadequate permissions");
 			return;
 		}
-		const log = server.isCore ? {} : await getPeripheryPm2Log(server, name);
+		if (server.isCore) {
+			res.status(400);
+			res.send("monitor core does not support pm2");
+			return;
+		}
+		const log = await getPeripheryPm2Log(server, name);
 		res.send(log);
 	});
 
@@ -53,7 +58,12 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			res.send("inadequate permissions");
 			return;
 		}
-		const log = server.isCore ? {} : await startPeripheryPm2(server, name);
+		if (server.isCore) {
+			res.status(400);
+			res.send("monitor core does not support pm2");
+			return;
+		}
+		const log = await startPeripheryPm2(server, name);
 		res.send(log);
 	});
 
@@ -71,7 +81,12 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			res.send("inadequate permissions");
 			return;
 		}
-		const log = server.isCore ? {} : await stopPeripheryPm2(server, name);
+		if (server.isCore) {
+			res.status(400);
+			res.send("monitor core does not support pm2");
+			return;
+		}
+		const log = await stopPeripheryPm2(server, name);
 		res.send(log);
 	});
 
@@ -89,7 +104,12 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			res.send("inadequate permissions");
 			return;
 		}
-		const log = server.isCore ? {} : await restartPeripheryPm2(server, name);
+		if (server.isCore) {
+			res.status(400);
+			res.send("monitor core does not support pm2");
+			return;
+		}
+		const log = await restartPeripheryPm2(server, name);
 		res.send(log);
 	});
 
@@ -107,7 +127,12 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			res.send("inadequate permissions");
 			return;
 		}
-		const log = server.isCore ? {} : await deletePeripheryPm2(server, name);
+		if (server.isCore) {
+			res.status(400);
+			res.send("monitor core does not support pm2");
+			return;
+		}
+		const log = await deletePeripheryPm2(server, name);
 		res.send(log);
 	});
 

@@ -18,8 +18,8 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		const { name } = req.params as { name: string }
 		if (name) {
 			try {
-				const log = await getPm2Log(name);
-				res.send(log);
+				const cle = await getPm2Log(name);
+				res.send(cle);
 			} catch {
 				res.status(400);
 				res.send("could not reach pm2 client");
@@ -34,8 +34,8 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		const { name } = req.params as { name: string };
 		if (name) {
 			try {
-				const log = await startPm2(name);
-				res.send(log);
+				const cle = await startPm2(name);
+				res.send(cle);
 			} catch {
 				res.status(400);
 				res.send("could not reach pm2 client");
@@ -50,8 +50,8 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		const { name } = req.params as { name: string };
 		if (name) {
 			try {
-				const log = await stopPm2(name);
-				res.send(log);
+				const cle = await stopPm2(name);
+				res.send(cle);
 			} catch {
 				res.status(400);
 				res.send("could not reach pm2 client");
@@ -66,8 +66,8 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		const { name } = req.params as { name: string };
 		if (name) {
 			try {
-				const log = await restartPm2(name);
-				res.send(log);
+				const cle = await restartPm2(name);
+				res.send(cle);
 			} catch {
 				res.status(400);
 				res.send("could not reach pm2 client");
@@ -82,8 +82,8 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		const { name } = req.params as { name: string };
 		if (name) {
 			try {
-				const log = await deletePm2(name);
-				res.send(log);
+				const cle = await deletePm2(name);
+				res.send(cle);
 			} catch {
 				res.status(400);
 				res.send("could not reach pm2 client");

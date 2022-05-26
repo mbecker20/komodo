@@ -91,3 +91,7 @@ export async function addSystemUpdate(
   });
   app.broadcast(ADD_UPDATE, { update });
 }
+
+export async function addPm2Update() {
+    
+}
