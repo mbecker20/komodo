@@ -11,7 +11,7 @@ import Flex from "../../../../util/layout/Flex";
 import Grid from "../../../../util/layout/Grid";
 import Loading from "../../../../util/loading/Loading";
 import LogButton from "./Log";
-import s from "./stats.module.scss";
+import s from "../stats.module.scss";
 
 const Pm2Processes: Component<{}> = (p) => {
   const { selected } = useAppState();
