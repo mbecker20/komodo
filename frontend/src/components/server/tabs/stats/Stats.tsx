@@ -1,15 +1,15 @@
 import { Component } from "solid-js";
 import Grid from "../../../util/layout/Grid";
 import DockerStats from "./DockerStats";
-import Pm2Processes from "./Pm2Processes";
+import Pm2Processes from "./pm2/Pm2Processes";
 import SystemStats from "./SystemStats";
 
 const Stats: Component<{}> = (p) => {
   return (
     <Grid class="config">
       <Grid class="config-items">
-        <SystemStats />
         <Pm2Processes />
+        <SystemStats />
         <DockerStats />
       </Grid>
     </Grid>

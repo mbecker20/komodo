@@ -9,7 +9,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			const processes = await getPm2Processes();
 			res.send(processes);
 		} catch {
-			res.status(400);
+			res.status(503);
 			res.send("could not reach pm2 client");
 		}
 	});
@@ -21,7 +21,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await getPm2Log(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -37,7 +37,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await startPm2(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -53,7 +53,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await stopPm2(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -69,7 +69,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await restartPm2(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -85,7 +85,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 				const cle = await deletePm2(name);
 				res.send(cle);
 			} catch {
-				res.status(400);
+				res.status(503);
 				res.send("could not reach pm2 client");
 			}
 		} else {
@@ -100,31 +100,31 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 export default pm2;
 
 async function getPm2Processes() {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/processes`)
+	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/processes`)
 		.then(({ data }) => data);
 }
 
 async function getPm2Log(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/log/${name}`)
+	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/log/${name}`)
 		.then(({ data }) => data);
 }
 
 async function startPm2(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/start/${name}`)
+	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/start/${name}`)
 		.then(({ data }) => data);
 }
 
 async function stopPm2(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/stop/${name}`)
+	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/stop/${name}`)
 		.then(({ data }) => data);
 }
 
 async function restartPm2(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/restart/${name}`)
+	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/restart/${name}`)
 		.then(({ data }) => data);
 }
 
 async function deletePm2(name: string) {
-	return await axios.get(`http://127.0.0.1:${PM2_CLIENT_PORT}/delete/${name}`)
+	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/delete/${name}`)
 		.then(({ data }) => data);
 }

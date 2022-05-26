@@ -18,3 +18,19 @@
 .Stats {
 	padding: 0rem 1rem;
 }
+
+.Pm2Log {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	word-wrap: break-word;
+	tab-size: 2;
+	width: 80vw;
+	box-sizing: border-box;
+	height: 80vh;
+	background-color: rgba(c.$darkgrey, 0.6);
+	padding: 1rem;
+}
+
+.Pm2Log:global(.dark) {
+	background-color: rgba(c.$darkgrey-dark, 0.6);
+}

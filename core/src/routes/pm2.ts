@@ -18,7 +18,12 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			res.send("inadequate permissions");
 			return;
 		}
-		const processes = server.isCore ? [] : await getPeripheryPm2Processes(server);
+		if (server.isCore) {
+			res.status(400);
+			res.send("monitor core does not support pm2");
+			return;
+		}
+		const processes = await getPeripheryPm2Processes(server);
 		res.send(processes);
 	});
 
