@@ -1,4 +1,4 @@
-import { Log } from "@monitor/types";
+import { Log as LogType } from "@monitor/types";
 import { Component, createSignal } from "solid-js";
 import { useAppState } from "../../../../../state/StateProvider";
 import { useToggle } from "../../../../../util/hooks";
@@ -24,7 +24,7 @@ const LogButton: Component<{ name: string }> = (p) => {
 
 const Log: Component<{ name: string }> = (p) => {
   const { selected } = useAppState();
-  const [log, setLog] = createSignal<Log>();
+  const [log, setLog] = createSignal<LogType>();
   const load = () => {
     getPm2Log(selected.id(), p.name).then((cle) => setLog(cle.log));
   };
