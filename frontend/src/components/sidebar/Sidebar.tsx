@@ -32,7 +32,7 @@ const Sidebar: Component<{}> = () => {
         tabsGap="0rem"
         tabs={[
           {
-            title: "deployments",
+            title: "servers",
             element: (
               <Grid
                 class={combineClasses(s.DeploymentsTabContent, "scroller")}
