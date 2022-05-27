@@ -41,7 +41,8 @@ export type IconType =
   | "check"
   | "caret-right"
   | "search"
-  | "cog";
+  | "cog"
+  | "home";
 
 const Icon: Component<{
   type: IconType;

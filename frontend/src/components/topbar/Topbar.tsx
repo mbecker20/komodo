@@ -48,6 +48,11 @@ const Topbar: Component = () => {
             monitor
           </div>
         </Show>
+        <Show when={isMobile()}>
+          <Button class="grey" onClick={() => selected.set("", "home")}>
+            <Icon type="home" width="1.15rem" />
+          </Button>
+        </Show>
         <HoverMenu
           target={
             <Circle
