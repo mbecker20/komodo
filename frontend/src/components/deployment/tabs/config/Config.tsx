@@ -4,6 +4,7 @@ import Image from "./container/Image";
 import Network from "./container/Network";
 import Mounts from "./container/Volumes";
 import Env from "./container/Env";
+import PostImage from "./container/PostImage";
 import Ports from "./container/Ports";
 import { useConfig } from "./Provider";
 import Flex from "../../../util/layout/Flex";
@@ -22,7 +23,7 @@ import { combineClasses, copyToClipboard } from "../../../../util/helpers";
 import { useAppDimensions } from "../../../../state/DimensionProvider";
 import { useTheme } from "../../../../state/ThemeProvider";
 
-const Config: Component<{}> = (p) => {
+const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
   const { isMobile } = useAppDimensions();
   const listenerUrl = () => `${URL}/api/listener/deployment/${deployment._id}`;
@@ -51,6 +52,7 @@ const Config: Component<{}> = (p) => {
                   <Ports />
                   <Mounts />
                   <Env />
+                  <PostImage />
                   <Show when={isMobile()}>
                     <div style={{ height: "1rem" }} />
                   </Show>
