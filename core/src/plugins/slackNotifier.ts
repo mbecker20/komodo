@@ -39,17 +39,17 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
               stats: server.isCore
                 ? await getSystemStats()
                 : status
-                ? await getPeripherySystemStats(server)
-                : undefined,
+                  ? await getPeripherySystemStats(server)
+                  : undefined,
             };
           })
       )
-    ).filter((server) => server.stats);
+    );
     return serversWithStatus;
   };
 
   const interval = async () => {
-    const servers = await getAllServerStats();
+    const servers = (await getAllServerStats()).filter((server) => server.stats);
     servers.forEach((server) => {
       // check for out of bounds stats
       const stats = server.stats!;
@@ -57,10 +57,8 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high cpu usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
           notifySlack(
-            `WARNING | ${server.name}${
-              server.region ? ` (${server.region})` : ""
-            } has high CPU usage.\n\nusage: ${
-              stats.cpu
+            `WARNING | ${server.name}${server.region ? ` (${server.region})` : ""
+            } has high CPU usage.\n\nusage: ${stats.cpu
             }%\n\n${server.toNotify.reduce(
               (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
@@ -87,10 +85,8 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high memory usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].mem) {
           notifySlack(
-            `WARNING | ${server.name}${
-              server.region ? ` (${server.region})` : ""
-            } has high memory usage.\n\nusing ${stats.mem.usedMemMb} MB of ${
-              stats.mem.totalMemMb
+            `WARNING | ${server.name}${server.region ? ` (${server.region})` : ""
+            } has high memory usage.\n\nusing ${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb
             } MB (${stats.mem.usedMemPercentage}%)\n\n${server.toNotify.reduce(
               (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
@@ -117,10 +113,8 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         // high disk usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].disk) {
           notifySlack(
-            `WARNING | ${server.name}${
-              server.region ? ` (${server.region})` : ""
-            } has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${
-              stats.disk.totalGb
+            `WARNING | ${server.name}${server.region ? ` (${server.region})` : ""
+            } has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb
             } GB (${stats.disk.usedPercentage}%)\n\n${server.toNotify.reduce(
               (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
               ""
@@ -147,18 +141,21 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     const servers = await getAllServerStats();
     const statsLog = servers.reduce((prev, curr) => {
       const stats = curr.stats!;
-      return (
-        prev +
-        `${curr.name}${curr.region ? ` | ${curr.region}` : ""} | CPU: ${
-          stats.cpu
-        }% | MEM: ${stats.mem.usedMemPercentage}% (${
-          stats.mem.usedMemMb
-        } MB of ${stats.mem.totalMemMb} MB) | DISK: ${
-          stats.disk.usedPercentage
-        }% (${stats.disk.usedGb} GB of ${
-          stats.disk.totalGb
-        } GB)\n${DIVIDER}\n\n`
-      );
+      if (stats) {
+        return (
+          prev +
+          `${curr.name}${curr.region ? ` | ${curr.region}` : ""} | CPU: ${stats.cpu
+          }% | MEM: ${stats.mem.usedMemPercentage}% (${stats.mem.usedMemMb
+          } MB of ${stats.mem.totalMemMb} MB) | DISK: ${stats.disk.usedPercentage
+          }% (${stats.disk.usedGb} GB of ${stats.disk.totalGb
+          } GB)\n${DIVIDER}\n\n`
+        );
+      } else {
+        return (
+          prev +
+          `${curr.name}${curr.region ? ` | ${curr.region}` : ""} | UNREACHABLE\n${DIVIDER}\n\n`
+        )
+      }
     }, "");
     const message = "INFO | daily update\n\n" + DIVIDER + "\n\n" + statsLog;
     notifySlack(message);
