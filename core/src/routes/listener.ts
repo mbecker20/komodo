@@ -13,18 +13,37 @@ import {
 import { addBuildUpdate, addDeploymentUpdate } from "../util/updates";
 import { pullPeriphery } from "../util/periphery/git";
 import { dockerBuild, execute, pull } from "@monitor/util-node";
+import { createHmac, timingSafeEqual } from "crypto";
 
 const AUTO_PULL = "AUTO_PULL";
 const AUTO_BUILD = "AUTO_BUILD";
 
 const listener = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.post("/api/listener/build/:buildID", async (req, res) => {
+    if (!verifySignature(req.headers["x-hub-signature-256"] as string | undefined, req.body)) {
+      res.status(403);
+      res.send();
+      return;
+    }
+    const { ref } = req.body as { ref: string };
+    const updatedBranch = ref.replace("refs/heads/", "");
     const { buildID } = req.params as { buildID: string };
     const build = await app.builds.findById(buildID);
     if (!build) {
       res.status(400);
       res.send();
       return;
+    }
+    if (build.branch === undefined) {
+      if (updatedBranch !== "main") {
+        res.send();
+        return;
+      }
+    } else {
+      if (build.branch !== updatedBranch) {
+        res.send();
+        return;
+      }
     }
     const { dockerBuildArgs, branch, pullName, dockerAccount, cliBuild } =
       build;
@@ -64,12 +83,30 @@ const listener = fp((app: FastifyInstance, _: {}, done: () => void) => {
   });
 
   app.post("/api/listener/deployment/:deploymentID", async (req, res) => {
+    if (!verifySignature(req.headers["x-hub-signature-256"] as string | undefined, req.body)) {
+      res.status(403);
+      res.send();
+      return;
+    }
+    const { ref } = req.body as { ref: string };
+    const updatedBranch = ref.replace("refs/heads/", "");
     const { deploymentID } = req.params as { deploymentID: string };
     const deployment = await app.deployments.findById(deploymentID);
     if (!deployment) {
       res.status(400);
       res.send();
       return;
+    }
+    if (deployment.branch === undefined) {
+      if (updatedBranch !== "main") {
+        res.send();
+        return;
+      }
+    } else {
+      if (deployment.branch !== updatedBranch) {
+        res.send();
+        return;
+      }
     }
     const { branch, containerName, onPull, serverID } = deployment;
     const server = await app.servers.findById(serverID!);
@@ -122,5 +159,14 @@ const listener = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   done();
 });
+
+function verifySignature(signature: string | undefined, body: any) {
+  if (signature) {
+    const encoded = "sha256=" + createHmac("sha256", SECRETS.GITHUB_WEBHOOK_SECRET).update(JSON.stringify(body)).digest("hex");
+    return timingSafeEqual(Buffer.from(encoded, "utf-8"), Buffer.from(signature, "utf-8"));
+  } else {
+    return false
+  }
+}
 
 export default listener;

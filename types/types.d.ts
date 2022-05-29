@@ -228,6 +228,7 @@ export type CoreSecrets = PeripherySecrets & {
   JWT: { SECRET: string };
   GITHUB_OAUTH: { ID: string; SECRET: string };
   SLACK_TOKEN: string;
+  GITHUB_WEBHOOK_SECRET: string;
 };
 
 export type SystemStats = {
