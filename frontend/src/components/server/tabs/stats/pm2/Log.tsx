@@ -41,7 +41,7 @@ const Log: Component<{ name: string }> = (p) => {
       style={{ padding: "0.5rem", width: "80vw", height: "90vh" }}
     >
       <Flex justifyContent="space-between" alignItems="center">
-        <h1>log</h1>
+        <h1>{p.name} log</h1>
         <Flex alignItems="center">
           lines:
           <Selector
