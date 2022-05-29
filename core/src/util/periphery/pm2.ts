@@ -1,4 +1,5 @@
 import { CommandLogError, PM2Process, Server } from "@monitor/types";
+import { generateQuery } from "@monitor/util";
 import axios from "axios";
 import { SECRETS } from "../../config";
 
@@ -16,10 +17,10 @@ export async function getPeripheryPm2Processes({ address, passkey }: Server) {
 	}
 }
 
-export async function getPeripheryPm2Log({ address, passkey }: Server, name: string) {
+export async function getPeripheryPm2Log({ address, passkey }: Server, name: string, lines = 50) {
 	try {
 		return await axios
-			.get<CommandLogError>(`${address}/pm2/log/${name}`, {
+			.get<CommandLogError>(`${address}/pm2/log/${name}` + generateQuery({ lines }), {
 				headers: {
 					Authorization: passkey || SECRETS.PASSKEY,
 				},

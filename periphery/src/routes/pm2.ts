@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import axios from "axios";
 import { PM2_CLIENT_PORT } from "../config";
+import { generateQuery } from "@monitor/util";
 
 const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	app.get("/pm2/processes", { onRequest: [app.auth] }, async (_, res) => {
@@ -15,10 +16,11 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	});
 
 	app.get("/pm2/log/:name", { onRequest: [app.auth] }, async (req, res) => {
-		const { name } = req.params as { name: string }
+		const { name } = req.params as { name: string };
+		const { lines } = req.query as { lines: number };
 		if (name) {
 			try {
-				const cle = await getPm2Log(name);
+				const cle = await getPm2Log(name, lines);
 				res.send(cle);
 			} catch {
 				res.status(503);
@@ -104,8 +106,8 @@ async function getPm2Processes() {
 		.then(({ data }) => data);
 }
 
-async function getPm2Log(name: string) {
-	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/log/${name}`)
+async function getPm2Log(name: string, lines = 50) {
+	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/log/${name}` + generateQuery({ lines }))
 		.then(({ data }) => data);
 }
 

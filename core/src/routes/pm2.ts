@@ -29,6 +29,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
 	app.get("/api/server/:id/pm2/log/:name", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
 		const { id, name } = req.params as { id: string; name: string };
+		const { lines } = req.query as { lines: number };
 		const server = await app.servers.findById(id);
 		if (!server) {
 			res.status(400);
@@ -46,11 +47,7 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 			res.send("monitor core does not support pm2");
 			return;
 		}
-		const log = await getPeripheryPm2Log(server, name);
-		// await addPm2Update(
-		// 	app,
-
-		// );
+		const log = await getPeripheryPm2Log(server, name, lines);
 		res.send(log);
 	});
 

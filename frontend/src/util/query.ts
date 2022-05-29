@@ -129,8 +129,8 @@ export async function getPm2Processes(id: string) {
   return await client.get<PM2Process[]>(`/api/server/${id}/pm2/processes`);
 }
 
-export async function getPm2Log(serverID: string, name: string) {
-  return await client.get<CommandLogError>(`/api/server/${serverID}/pm2/log/${name}`);
+export async function getPm2Log(serverID: string, name: string, lines = 50) {
+  return await client.get<CommandLogError>(`/api/server/${serverID}/pm2/log/${name}` + generateQuery({ lines }));
 }
 
 export async function startPm2Process(serverID: string, name: string) {
