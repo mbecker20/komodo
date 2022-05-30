@@ -9,17 +9,15 @@ const networks = fp((app: FastifyInstance, _: {}, done: () => void) => {
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { serverID } = req.params as { serverID: string };
-      const server =
-        serverID === app.core._id
-          ? false
-          : await app.servers.findById(serverID);
+      const server = await app.servers.findById(serverID);
       if (server === undefined) {
         res.status(400);
         res.send("could not find server");
+        return;
       }
-      const networks = server
-        ? await getPeripheryNetworks(server)
-        : await getNetworks(app.dockerode);
+      const networks = server.isCore
+        ? await getNetworks(app.dockerode)
+        : await getPeripheryNetworks(server);
       res.send(networks);
     }
   );
