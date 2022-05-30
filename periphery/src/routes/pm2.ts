@@ -96,6 +96,12 @@ const pm2 = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		}
 	});
 
+	app.get("/pm2/flush", { onRequest: [app.auth] }, async (req, res) => {
+		const { name } = req.query as { name?: string };
+		const log = await flushLogs(name);
+		res.send(log);
+	});
+
 	done();
 });
 
@@ -128,5 +134,10 @@ async function restartPm2(name: string) {
 
 async function deletePm2(name: string) {
 	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/delete/${name}`)
+		.then(({ data }) => data);
+}
+
+async function flushLogs(name?: string) {
+	return await axios.get(`http://host.docker.internal:${PM2_CLIENT_PORT}/flush` + generateQuery({ name }))
 		.then(({ data }) => data);
 }

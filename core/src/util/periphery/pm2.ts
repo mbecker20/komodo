@@ -86,3 +86,17 @@ export async function deletePeripheryPm2({ address, passkey }: Server, name: str
 		return { command: "try to delete process", log: { stderr: "could not reach pm2 client" }, isError: true };
 	}
 }
+
+export async function flushPm2Logs({ address, passkey }: Server, name?: string) {
+	try {
+		return await axios
+			.get<CommandLogError>(`${address}/pm2/flush` + generateQuery({ name }), {
+				headers: {
+					Authorization: passkey || SECRETS.PASSKEY,
+				},
+			})
+			.then(({ data }) => data);
+	} catch (error) {
+		return { command: "try to flush logs", log: { stderr: "could not reach pm2 client" }, isError: true };
+	}
+}
