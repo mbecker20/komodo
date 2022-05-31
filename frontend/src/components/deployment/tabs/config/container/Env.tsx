@@ -1,11 +1,13 @@
 import { Component, For, Show } from "solid-js";
 import { useTheme } from "../../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../../util/helpers";
+import Button from "../../../../util/Button";
 import Icon from "../../../../util/Icon";
 import Input from "../../../../util/Input";
 import Flex from "../../../../util/layout/Flex";
 import Grid from "../../../../util/layout/Grid";
 import { useConfig } from "../Provider";
+import AddDotEnv from "./AddDotEnv";
 
 const Env: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
@@ -25,7 +27,7 @@ const Env: Component<{}> = (p) => {
     <Grid class={combineClasses("config-item shadow", themeClass())}>
       <Flex alignItems="center" justifyContent="space-between">
         <h1>environment</h1>
-        <Flex alignItems="center">
+        <Flex alignItems="center" gap="0.2rem">
           <Show
             when={
               !deployment.environment || deployment.environment.length === 0
@@ -34,9 +36,12 @@ const Env: Component<{}> = (p) => {
             <div>none</div>
           </Show>
           <Show when={userCanUpdate()}>
-            <button class="green" onClick={onAdd}>
+            <AddDotEnv />
+          </Show>
+          <Show when={userCanUpdate()}>
+            <Button class="green" onClick={onAdd}>
               <Icon type="plus" />
-            </button>
+            </Button>
           </Show>
         </Flex>
       </Flex>

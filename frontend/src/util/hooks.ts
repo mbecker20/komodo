@@ -131,7 +131,7 @@ export function useWindowKeyDown(
   onKeyDown: (e: { key: string; shiftKey: boolean }) => void
 ) {
   const listener = (e: any) => {
-    if (e.target.matches("input")) return;
+    if (e.target.matches("input") || e.target.matches("textarea")) return;
     onKeyDown(e);
   };
   addEventListener("keydown", listener);

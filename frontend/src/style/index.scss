@@ -95,6 +95,34 @@ input::placeholder {
   opacity: 0.6;
 }
 
+textarea {
+  font-family: inherit;
+  font-size: 1.05rem;
+  color: inherit;
+  background-color: rgba(c.$darkgrey, 0.5);
+  padding: 0.25rem;
+  box-sizing: border-box;
+  border: none;
+  -webkit-appearance: none;
+}
+
+textarea:focus {
+  outline: solid 1px rgba(c.$lightgrey, 0.7);
+}
+
+textarea.dark {
+  background-color: rgba(c.$darkgrey-dark, 0.5);
+}
+
+textarea.dark:focus {
+  outline: solid 1px rgba(c.$lightgrey-dark, 0.7);
+}
+
+textarea::placeholder {
+  color: inherit;
+  opacity: 0.6;
+}
+
 svg {
   color: c.$app-color;
 }
