@@ -24,6 +24,7 @@ const CenterMenu: Component<{
   targetStyle?: JSX.CSSProperties;
   targetClass?: string;
   title?: string;
+  leftOfX?: JSXElement;
   padding?: string | number;
   style?: JSX.CSSProperties;
   position?: "top" | "center"
@@ -62,6 +63,7 @@ const Child: Component<{
   padding?: string | number;
   style?: JSX.CSSProperties;
   position?: "top" | "center";
+  leftOfX?: JSXElement;
 }> = (p) => {
   useKeyDown("Escape", p.toggleShow);
   const { themeClass } = useTheme();
@@ -76,11 +78,19 @@ const Child: Component<{
         style={{ padding: p.padding || "1rem", ...p.style }}
         onClick={(e) => e.stopPropagation()}
       >
-        <Flex class={s.CenterMenuHeader} gap="3rem" justifyContent="space-between" alignItems="center">
+        <Flex
+          class={s.CenterMenuHeader}
+          gap="3rem"
+          justifyContent="space-between"
+          alignItems="center"
+        >
           <div class={s.CenterMenuTitle}>{p.title}</div>
-          <button class="red" onClick={p.toggleShow}>
-            <Icon type="cross" />
-          </button>
+          <Flex alignItems="center">
+            {p.leftOfX}
+            <button class="red" onClick={p.toggleShow}>
+              <Icon type="cross" />
+            </button>
+          </Flex>
         </Flex>
         {p.content}
       </Grid>

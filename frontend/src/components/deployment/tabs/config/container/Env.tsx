@@ -36,7 +36,7 @@ const Env: Component<{}> = (p) => {
 };
 
 const EditDotEnv: Component<{}> = (p) => {
-  const [show, toggleShow] = useToggle();
+  const [show, toggle] = useToggle();
   const [dotenv, setDotEnv] = createSignal("");
   const { deployment, setDeployment } = useConfig();
   createEffect(() => {
@@ -48,34 +48,32 @@ const EditDotEnv: Component<{}> = (p) => {
       )
     );
   });
-  const confirm = async () => {
-    setDeployment("environment", parseDotEnvToEnvVars(dotenv()));
-    toggleShow();
-  };
+  const toggleShow = () => {
+    if (show()) {
+      setDeployment("environment", parseDotEnvToEnvVars(dotenv()));
+    }
+    toggle()
+  }
   return (
     <CenterMenu
       show={show}
       toggleShow={toggleShow}
+      title={`${deployment.name} environment`}
       target="edit"
       targetClass="blue"
+      leftOfX={
+        <Button class="green" onClick={toggleShow}>
+          confirm
+        </Button>
+      }
       content={
-        <Grid gap="1rem">
-          <Flex alignItems="center" justifyContent="space-between">
-            <h1>{deployment.name} environment</h1>
-            <Show when={dotenv().length > 0}>
-              <Button class="green" onClick={confirm}>
-                confirm
-              </Button>
-            </Show>
-          </Flex>
-          <TextArea
-            class="scroller"
-            value={dotenv()}
-            onEdit={setDotEnv}
-            style={{ width: "40rem", "max-width": "90vw", height: "80vh" }}
-            spellcheck={false}
-          />
-        </Grid>
+        <TextArea
+          class="scroller"
+          value={dotenv()}
+          onEdit={setDotEnv}
+          style={{ width: "40rem", "max-width": "90vw", height: "80vh" }}
+          spellcheck={false}
+        />
       }
     />
   );
