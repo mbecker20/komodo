@@ -314,7 +314,7 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.send("user not authorized for this action");
       return;
     }
-    const { dotenv } = req.body as { dotenv: string }
+    const { dotenv } = req.body as { dotenv: string };
     const newEnvVars = parseDotEnvToEnvVars(dotenv)
       .filter(({ variable }) => {
         if (deployment.environment) {
