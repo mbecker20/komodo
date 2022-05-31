@@ -1,27 +1,18 @@
-import { Component, For, Show } from "solid-js";
+import { EnvironmentVar } from "@monitor/types";
+import { parseDotEnvToEnvVars, parseEnvVarseToDotEnv } from "@monitor/util";
+import { Component, createEffect, createSignal, Show } from "solid-js";
 import { useTheme } from "../../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../../util/helpers";
+import { useToggle } from "../../../../../util/hooks";
 import Button from "../../../../util/Button";
-import Icon from "../../../../util/Icon";
-import Input from "../../../../util/Input";
 import Flex from "../../../../util/layout/Flex";
 import Grid from "../../../../util/layout/Grid";
+import CenterMenu from "../../../../util/menu/CenterMenu";
+import TextArea from "../../../../util/TextArea";
 import { useConfig } from "../Provider";
-import AddDotEnv from "./AddDotEnv";
 
 const Env: Component<{}> = (p) => {
-  const { deployment, setDeployment, userCanUpdate } = useConfig();
-  const onAdd = () => {
-    setDeployment("environment", (environment: any) => [
-      ...environment,
-      { variable: "", value: "" },
-    ]);
-  };
-  const onRemove = (index: number) => {
-    setDeployment("environment", (environment) =>
-      environment!.filter((_, i) => i !== index)
-    );
-  };
+  const { deployment, userCanUpdate } = useConfig();
   const { themeClass } = useTheme();
   return (
     <Grid class={combineClasses("config-item shadow", themeClass())}>
@@ -36,55 +27,57 @@ const Env: Component<{}> = (p) => {
             <div>none</div>
           </Show>
           <Show when={userCanUpdate()}>
-            <AddDotEnv />
-          </Show>
-          <Show when={userCanUpdate()}>
-            <Button class="green" onClick={onAdd}>
-              <Icon type="plus" />
-            </Button>
+            <EditDotEnv />
           </Show>
         </Flex>
       </Flex>
-      <For each={deployment.environment}>
-        {(_, index) => (
-          <Flex
-            justifyContent={userCanUpdate() ? "space-between" : undefined}
-            alignItems="center"
-            style={{ "flex-wrap": "wrap" }}
-          >
-            <Input
-              placeholder="variable"
-              value={deployment.environment![index()].variable}
-              style={{ width: "40%" }}
-              onEdit={(value) =>
-                setDeployment(
-                  "environment",
-                  index(),
-                  "variable",
-                  value.toUpperCase().replaceAll(" ", "_")
-                )
-              }
-              disabled={!userCanUpdate()}
-            />
-            {" : "}
-            <Input
-              placeholder="value"
-              value={deployment.environment![index()].value}
-              style={{ width: "40%" }}
-              onEdit={(value) =>
-                setDeployment("environment", index(), "value", value)
-              }
-              disabled={!userCanUpdate()}
-            />
-            <Show when={userCanUpdate()}>
-              <button class="red" onClick={() => onRemove(index())}>
-                <Icon type="minus" />
-              </button>
+    </Grid>
+  );
+};
+
+const EditDotEnv: Component<{}> = (p) => {
+  const [show, toggleShow] = useToggle();
+  const [dotenv, setDotEnv] = createSignal("");
+  const { deployment, setDeployment } = useConfig();
+  createEffect(() => {
+    setDotEnv(
+      parseEnvVarseToDotEnv(
+        deployment.environment
+          ? (deployment.environment as EnvironmentVar[])
+          : []
+      )
+    );
+  });
+  const confirm = async () => {
+    setDeployment("environment", parseDotEnvToEnvVars(dotenv()));
+    toggleShow();
+  };
+  return (
+    <CenterMenu
+      show={show}
+      toggleShow={toggleShow}
+      target="edit"
+      targetClass="blue"
+      content={
+        <Grid gap="1rem">
+          <Flex alignItems="center" justifyContent="space-between">
+            <h1>{deployment.name} environment</h1>
+            <Show when={dotenv().length > 0}>
+              <Button class="green" onClick={confirm}>
+                confirm
+              </Button>
             </Show>
           </Flex>
-        )}
-      </For>
-    </Grid>
+          <TextArea
+            class="scroller"
+            value={dotenv()}
+            onEdit={setDotEnv}
+            style={{ width: "40rem", "max-width": "90vw", height: "80vh" }}
+            spellcheck={false}
+          />
+        </Grid>
+      }
+    />
   );
 };
 

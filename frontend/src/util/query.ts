@@ -109,10 +109,6 @@ export async function removeOwnerFromDeployment(
   return await client.delete(`/api/deployment/${deploymentID}/${username}`);
 }
 
-export async function postDotEnv(deploymentID: string, dotenv: string) {
-  return await client.post(`/api/deployment/${deploymentID}/dotenv`, { dotenv });
-}
-
 export async function getServers() {
   return await client.get<Servers>("/api/servers");
 }

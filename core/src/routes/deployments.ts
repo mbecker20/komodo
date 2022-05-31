@@ -1,6 +1,6 @@
 import { Server, User } from "@monitor/types";
-import { intoCollection, DEPLOYMENT_OWNER_UPDATE, UPDATE_DEPLOYMENT, deploymentChangelog } from "@monitor/util";
-import { environmentIncludes, getContainerLog, getContainerStatus, parseDotEnvToEnvVars } from "@monitor/util-node";
+import { intoCollection, DEPLOYMENT_OWNER_UPDATE } from "@monitor/util";
+import { getContainerLog, getContainerStatus } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { deploymentStatusLocal } from "../util/deploymentStatus";
@@ -10,7 +10,6 @@ import {
   getPeripheryContainers,
 } from "../util/periphery/container";
 import { serverStatusPeriphery } from "../util/periphery/status";
-import { addDeploymentUpdate } from "../util/updates";
 
 async function getDeployments(
   app: FastifyInstance,
@@ -293,51 +292,6 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.send("owner removed");
     }
   );
-
-  app.post("/api/deployment/:id/dotenv", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
-    const { id } = req.params as { id: string };
-    const deployment = await app.deployments.findById(id);
-    if (!deployment) {
-      res.status(400);
-      res.send("deployment not found");
-      return;
-    }
-    const user = await app.users.findById(
-      req.user.id,
-      "username permissions"
-    );
-    if (
-      !user ||
-      (user?.permissions! < 2 && !deployment.owners.includes(user.username))
-    ) {
-      res.status(403);
-      res.send("user not authorized for this action");
-      return;
-    }
-    const { dotenv } = req.body as { dotenv: string };
-    const newEnvVars = parseDotEnvToEnvVars(dotenv)
-      .filter(({ variable }) => {
-        if (deployment.environment) {
-          // filter out new env vars if variable already exists
-          return !environmentIncludes(variable, deployment.environment);
-        } else {
-          return true;
-        };
-      });
-    await app.deployments.updateById(id, { $push: { environment: { $each: newEnvVars } } });
-    const updated = (await app.deployments.findById(id))!;
-    await addDeploymentUpdate(
-      app,
-      id,
-      UPDATE_DEPLOYMENT,
-      "Parse Dot Env",
-      {
-        stdout: deploymentChangelog(deployment, updated),
-      },
-      user.username,
-    );
-    res.send();
-  });
 
   done();
 });

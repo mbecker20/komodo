@@ -20,20 +20,3 @@ export function readJSONFile<T = any>(path: string): T {
   const raw = readFileSync(path);
   return JSON.parse(raw as any);
 }
-
-export function parseDotEnvToEnvVars(dotenv: string) {
-  return dotenv
-    .split("\n")
-    .filter(entry => entry.length > 0)
-    .map(entry => entry.replaceAll("\"", "").split("="))
-    .map(([variable, value]) => ({ variable, value }));
-}
-
-export function environmentIncludes(newVar: string, environment: EnvironmentVar[]) {
-  for (const { variable } of environment) {
-    if (newVar === variable) {
-      return true;
-    }
-  }
-  return false;
-}

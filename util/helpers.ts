@@ -1,4 +1,4 @@
-import { Collection, CommandLogError, Log } from "@monitor/types";
+import { Collection, CommandLogError, EnvironmentVar, Log } from "@monitor/types";
 
 export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T> {
   return Object.fromEntries(
@@ -132,4 +132,36 @@ export function readableTimestamp(unixTimeInSecs: number) {
   return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${
     minutes > 9 ? minutes : "0" + minutes
   } ${pm ? "PM" : "AM"}`;
+}
+
+export function parseEnvVarseToDotEnv(envVars: EnvironmentVar[]) {
+  return envVars.reduce((prev, { variable, value }) => prev + (prev ? "\n" : "") + `${variable}=${value}`, "");
+}
+
+function shouldKeepLine(line: string) {
+  if (line.length === 0) {
+    return false;
+  }
+  let firstIndex = -1;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] !== " ") {
+      firstIndex = i;
+      break
+    }
+  }
+  if (firstIndex === -1) {
+    return false;
+  }
+  if (line[firstIndex] === "#") {
+    return false
+  }
+  return true;
+}
+
+export function parseDotEnvToEnvVars(env: string) {
+  return env
+    .split("\n")
+    .filter(line => shouldKeepLine(line))
+    .map(entry => entry.replaceAll("\"", "").split("="))
+    .map(([variable, value]) => ({ variable, value }));
 }
