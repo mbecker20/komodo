@@ -5,6 +5,7 @@ import {
   createEffect,
   createSignal,
 } from "solid-js";
+import { pushNotification } from "../../../../..";
 import { useAppState } from "../../../../../state/StateProvider";
 import { useTheme } from "../../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../../util/helpers";
@@ -44,7 +45,11 @@ const LogButton: Component<{ name: string }> = (p) => {
             position="bottom right"
             itemStyle={{ width: "4rem" }}
           />
-          <Button class="blue" onClick={load}>
+          <Button class="blue" onClick={async () => {
+            const cle = await getPm2Log(selected.id(), p.name, lines());
+            setLog(cle.log);
+            pushNotification("good", "log reloaded");
+          }}>
             <Icon type="refresh" />
           </Button>
         </>
