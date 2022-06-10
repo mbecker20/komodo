@@ -1,4 +1,5 @@
 import { getSystemStats } from "@monitor/util-node";
+import { Block, KnownBlock } from "@slack/web-api";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import {
@@ -10,16 +11,13 @@ import {
 } from "../config";
 import { getPeripherySystemStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
-import { notifySlack } from "../util/slack";
+import { notifySlackAdvanced, notifySlackCpu, notifySlackDisk, notifySlackMem } from "../util/slack";
 
 declare module "fastify" {
   interface FastifyInstance {
     dailyInterval: () => Promise<void>;
   }
 }
-
-const DIVIDER =
-  "-----------------------------------------------------------------------------";
 
 let alreadyAlerted: {
   [serverID: string]: { cpu: boolean; mem: boolean; disk: boolean };
@@ -56,14 +54,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       if (stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT)) {
         // high cpu usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
-          notifySlack(
-            `WARNING | ${server.name}${server.region ? ` (${server.region})` : ""
-            } has high CPU usage.\n\nusage: ${stats.cpu
-            }%\n\n${server.toNotify.reduce(
-              (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-              ""
-            )}`
-          );
+          notifySlackCpu(server.name, server.region!, stats.cpu, server.toNotify);
           if (alreadyAlerted[server._id!]) {
             alreadyAlerted[server._id!] = {
               ...alreadyAlerted[server._id!],
@@ -84,14 +75,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       ) {
         // high memory usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].mem) {
-          notifySlack(
-            `WARNING | ${server.name}${server.region ? ` (${server.region})` : ""
-            } has high memory usage.\n\nusing ${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb
-            } MB (${stats.mem.usedMemPercentage}%)\n\n${server.toNotify.reduce(
-              (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-              ""
-            )}`
-          );
+          notifySlackMem(server.name, server.region, stats.mem.usedMemMb, stats.mem.totalMemMb, stats.mem.usedMemPercentage, server.toNotify);
           if (alreadyAlerted[server._id!]) {
             alreadyAlerted[server._id!] = {
               ...alreadyAlerted[server._id!],
@@ -112,14 +96,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       ) {
         // high disk usage
         if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].disk) {
-          notifySlack(
-            `WARNING | ${server.name}${server.region ? ` (${server.region})` : ""
-            } has high disk usage.\n\nusing ${stats.disk.usedGb} GB of ${stats.disk.totalGb
-            } GB (${stats.disk.usedPercentage}%)\n\n${server.toNotify.reduce(
-              (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-              ""
-            )}`
-          );
+          notifySlackDisk(server.name, server.region, stats.disk.usedGb, stats.disk.totalGb, stats.disk.usedPercentage, server.toNotify);
           if (alreadyAlerted[server._id!]) {
             alreadyAlerted[server._id!] = {
               ...alreadyAlerted[server._id!],
@@ -139,26 +116,54 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   const dailyInterval = async () => {
     const servers = await getAllServerStats();
-    const statsLog = servers.reduce((prev, curr) => {
-      const stats = curr.stats!;
+
+    const statsBlocks: (Block | KnownBlock)[] = servers.map(server => {
+      const stats = server.stats!;
       if (stats) {
-        return (
-          prev +
-          `${curr.name}${curr.region ? ` | ${curr.region}` : ""} | CPU: ${stats.cpu
-          }% | MEM: ${stats.mem.usedMemPercentage}% (${stats.mem.usedMemMb
-          } MB of ${stats.mem.totalMemMb} MB) | DISK: ${stats.disk.usedPercentage
-          }% (${stats.disk.usedGb} GB of ${stats.disk.totalGb
-          } GB)\n${DIVIDER}\n\n`
-        );
+        const inWarning = stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT) || stats.mem.usedMemPercentage > (server.memAlert || MEM_USAGE_NOTIFY_LIMIT) || stats.disk.usedPercentage > (server.diskAlert || DISK_USAGE_NOTIFY_LIMIT);
+        return [
+          {
+            type: "mrkdwn",
+            text: `*${server.name}*${server.region ? ` | ${server.region}` : ""} | *${inWarning ? "WARNING" : "OK"}*`,
+          },
+          {
+            type: "mrkdwn",
+            text: `CPU: *${stats.cpu}%* | MEM: *${stats.mem.usedMemPercentage}%* (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: *${stats.disk.usedPercentage}%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)`,
+          },
+          {
+            type: "divider",
+          }
+        ];
       } else {
-        return (
-          prev +
-          `${curr.name}${curr.region ? ` | ${curr.region}` : ""} | UNREACHABLE\n${DIVIDER}\n\n`
-        )
+        return [
+          {
+            type: "section",
+            fields: [
+              {
+                type: "mrkdwn",
+                text: `*${server.name}*${server.region ? ` | ${server.region}` : ""} | *UNREACHABLE*`,
+              }
+            ]
+          },
+          {
+            type: "divider"
+          }
+        ]
       }
-    }, "");
-    const message = "INFO | daily update\n\n" + DIVIDER + "\n\n" + statsLog;
-    notifySlack(message);
+    }).flat();
+
+    notifySlackAdvanced([
+      { 
+        type: "header", 
+        text: { 
+          type: "plain_text", 
+          text: "INFO | daily update" 
+        }
+      }, 
+      { type: "divider" }, 
+      ...statsBlocks
+    ]);
+
     alreadyAlerted = {};
   };
 
