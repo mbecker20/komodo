@@ -23,7 +23,6 @@ export async function notifySlackAdvanced(blocks: (Block | KnownBlock)[]) {
 			token: SECRETS.SLACK_TOKEN,
 			channel: SLACK_CHANNEL,
 			blocks,
-			markdown: true,
 		});
 	} catch (error) {
 		console.log("POST TO SLACK FAILED @", readableTimestamp(timestamp()));
@@ -44,33 +43,27 @@ export async function notifySlackCpu(name: string, region: string | undefined, u
 		HEADER,
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: `*${name}*${region ? ` (${region})` : ""} has high *CPU usage*`
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: `*${name}*${region ? ` (${region})` : ""} has high *CPU usage*`
+			}
 		},
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: `cpu: *${usage}%*`
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: `cpu: *${usage}%*`
+			}
 		},
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: toNotify.reduce(
-						(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-						""
-					)
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: toNotify.reduce(
+					(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
+					""
+				)
+			}
 		}
 	]);
 }
@@ -80,33 +73,27 @@ export async function notifySlackMem(name: string, region: string | undefined, u
 		HEADER,
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: `*${name}*${region ? ` (${region})` : ""} has high *memory usage*`
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: `*${name}*${region ? ` (${region})` : ""} has high *memory usage*`
+			}
 		},
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: `memory: ${usedMem} MB of ${totalMem} MB (*${memPercentage}%*)`
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: `memory: ${usedMem} MB of ${totalMem} MB (*${memPercentage}%*)`
+			}
 		},
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: toNotify.reduce(
-						(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-						""
-					)
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: toNotify.reduce(
+					(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
+					""
+				)
+			}
 		}
 	]);
 }
@@ -116,33 +103,27 @@ export async function notifySlackDisk(name: string, region: string | undefined, 
 		HEADER,
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: `*${name}*${region ? ` (${region})` : ""} has high *disk usage*`
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: `*${name}*${region ? ` (${region})` : ""} has high *disk usage*`
+			}
 		},
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: `disk: using ${usedDisk} GB of ${totalDisk} GB (*${diskPercentage}%*)`
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: `disk: using ${usedDisk} GB of ${totalDisk} GB (*${diskPercentage}%*)`
+			}
 		},
 		{
 			type: "section",
-			fields: [
-				{
-					type: "plain_text",
-					text: toNotify.reduce(
-						(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-						""
-					)
-				}
-			]
+			text: {
+				type: "mrkdwn",
+				text: toNotify.reduce(
+					(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
+					""
+				)
+			}
 		}
 	]);
 }

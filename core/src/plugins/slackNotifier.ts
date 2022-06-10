@@ -123,12 +123,18 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         const inWarning = stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT) || stats.mem.usedMemPercentage > (server.memAlert || MEM_USAGE_NOTIFY_LIMIT) || stats.disk.usedPercentage > (server.diskAlert || DISK_USAGE_NOTIFY_LIMIT);
         return [
           {
-            type: "plain_text",
-            text: `*${server.name}*${server.region ? ` | ${server.region}` : ""} | *${inWarning ? "WARNING" : "OK"}*`,
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `*${server.name}*${server.region ? ` | ${server.region}` : ""} | *${inWarning ? "WARNING" : "OK"}*`
+            },
           },
           {
-            type: "plain_text",
-            text: `CPU: *${stats.cpu}%* | MEM: *${stats.mem.usedMemPercentage}%* (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: *${stats.disk.usedPercentage}%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)`,
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `CPU: *${stats.cpu}%* | MEM: *${stats.mem.usedMemPercentage}%* (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: *${stats.disk.usedPercentage}%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)`
+            },
           },
           {
             type: "divider",
@@ -138,12 +144,10 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return [
           {
             type: "section",
-            fields: [
-              {
-                type: "plain_text",
-                text: `*${server.name}*${server.region ? ` | ${server.region}` : ""} | *UNREACHABLE*`,
-              }
-            ]
+            text: {
+              type: "mrkdwn",
+              text: `*${server.name}*${server.region ? ` | ${server.region}` : ""} | *UNREACHABLE*`,
+            }
           },
           {
             type: "divider"
@@ -153,14 +157,14 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }).flat();
 
     notifySlackAdvanced([
-      { 
-        type: "header", 
-        text: { 
-          type: "plain_text", 
-          text: "INFO | daily update" 
+      {
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: "INFO | daily update"
         }
-      }, 
-      { type: "divider" }, 
+      },
+      { type: "divider" },
       ...statsBlocks
     ]);
 
