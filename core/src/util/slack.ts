@@ -17,11 +17,12 @@ export async function notifySlack(text: string) {
 	}
 }
 
-export async function notifySlackAdvanced(blocks: (Block | KnownBlock)[]) {
+export async function notifySlackAdvanced(text: string, blocks: (Block | KnownBlock)[]) {
 	try {
 		await slack.chat.postMessage({
 			token: SECRETS.SLACK_TOKEN,
 			channel: SLACK_CHANNEL,
+			text,
 			blocks,
 		});
 	} catch (error) {
@@ -39,7 +40,7 @@ const HEADER = {
 }
 
 export async function notifySlackCpu(name: string, region: string | undefined, usage: number, toNotify: string[]) {
-	await notifySlackAdvanced([
+	await notifySlackAdvanced(`WARNING | ${name}${region ? ` (${region})` : ""} has high CPU usage`, [
 		HEADER,
 		{
 			type: "section",
@@ -69,7 +70,7 @@ export async function notifySlackCpu(name: string, region: string | undefined, u
 }
 
 export async function notifySlackMem(name: string, region: string | undefined, usedMem: number, totalMem: number, memPercentage: number, toNotify: string[]) {
-	await notifySlackAdvanced([
+	await notifySlackAdvanced(`WARNING | ${name}${region ? ` (${region})` : ""} has high memory usage`, [
 		HEADER,
 		{
 			type: "section",
@@ -99,7 +100,7 @@ export async function notifySlackMem(name: string, region: string | undefined, u
 }
 
 export async function notifySlackDisk(name: string, region: string | undefined, usedDisk: number, totalDisk: number, diskPercentage: number, toNotify: string[]) {
-	await notifySlackAdvanced([
+	await notifySlackAdvanced(`WARNING | ${name}${region ? ` (${region})` : ""} has high disk usage`, [
 		HEADER,
 		{
 			type: "section",

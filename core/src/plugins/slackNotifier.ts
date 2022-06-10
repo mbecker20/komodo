@@ -133,7 +133,21 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `CPU: *${stats.cpu}%* | MEM: *${stats.mem.usedMemPercentage}%* (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB) | DISK: *${stats.disk.usedPercentage}%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)`
+              text: `CPU: *${stats.cpu}%*`
+            },
+          },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `MEM: *${stats.mem.usedMemPercentage}%* (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB)`
+            },
+          },
+          {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: `DISK: *${stats.disk.usedPercentage}%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)`
             },
           },
           {
@@ -156,7 +170,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       }
     }).flat();
 
-    notifySlackAdvanced([
+    notifySlackAdvanced("INFO | daily update", [
       {
         type: "header",
         text: {
