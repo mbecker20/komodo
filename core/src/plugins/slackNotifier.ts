@@ -126,28 +126,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: `*${server.name}*${server.region ? ` | ${server.region}` : ""} | *${inWarning ? "WARNING" : "OK"}*`
-            },
-          },
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `CPU: *${stats.cpu}%*`
-            },
-          },
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `MEM: *${stats.mem.usedMemPercentage}%* (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB)`
-            },
-          },
-          {
-            type: "section",
-            text: {
-              type: "mrkdwn",
-              text: `DISK: *${stats.disk.usedPercentage}%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)`
+              text: `*${server.name}*${server.region ? ` | ${server.region}` : ""} | *${inWarning ? "WARNING" : "OK"}*\nCPU: *${stats.cpu}%*\nMEM: *${stats.mem.usedMemPercentage}%* (${stats.mem.usedMemMb} MB of ${stats.mem.totalMemMb} MB)\nDISK: *${stats.disk.usedPercentage}%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)`
             },
           },
           {
