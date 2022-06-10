@@ -22,7 +22,7 @@ export async function notifySlackAdvanced(blocks: (Block | KnownBlock)[]) {
 		await slack.chat.postMessage({
 			token: SECRETS.SLACK_TOKEN,
 			channel: SLACK_CHANNEL,
-			blocks,
+			attachments: [{ blocks }],
 		});
 	} catch (error) {
 		console.log("POST TO SLACK FAILED @", readableTimestamp(timestamp()));
