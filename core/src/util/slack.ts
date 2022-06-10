@@ -22,7 +22,8 @@ export async function notifySlackAdvanced(blocks: (Block | KnownBlock)[]) {
 		await slack.chat.postMessage({
 			token: SECRETS.SLACK_TOKEN,
 			channel: SLACK_CHANNEL,
-			attachments: [{ blocks }],
+			blocks,
+			markdown: true,
 		});
 	} catch (error) {
 		console.log("POST TO SLACK FAILED @", readableTimestamp(timestamp()));
@@ -45,7 +46,7 @@ export async function notifySlackCpu(name: string, region: string | undefined, u
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: `*${name}*${region ? ` (${region})` : ""} has high *CPU usage*`
 				}
 			]
@@ -54,7 +55,7 @@ export async function notifySlackCpu(name: string, region: string | undefined, u
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: `cpu: *${usage}%*`
 				}
 			]
@@ -63,7 +64,7 @@ export async function notifySlackCpu(name: string, region: string | undefined, u
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: toNotify.reduce(
 						(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
 						""
@@ -81,7 +82,7 @@ export async function notifySlackMem(name: string, region: string | undefined, u
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: `*${name}*${region ? ` (${region})` : ""} has high *memory usage*`
 				}
 			]
@@ -90,7 +91,7 @@ export async function notifySlackMem(name: string, region: string | undefined, u
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: `memory: ${usedMem} MB of ${totalMem} MB (*${memPercentage}%*)`
 				}
 			]
@@ -99,7 +100,7 @@ export async function notifySlackMem(name: string, region: string | undefined, u
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: toNotify.reduce(
 						(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
 						""
@@ -117,7 +118,7 @@ export async function notifySlackDisk(name: string, region: string | undefined, 
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: `*${name}*${region ? ` (${region})` : ""} has high *disk usage*`
 				}
 			]
@@ -126,7 +127,7 @@ export async function notifySlackDisk(name: string, region: string | undefined, 
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: `disk: using ${usedDisk} GB of ${totalDisk} GB (*${diskPercentage}%*)`
 				}
 			]
@@ -135,7 +136,7 @@ export async function notifySlackDisk(name: string, region: string | undefined, 
 			type: "section",
 			fields: [
 				{
-					type: "mrkdwn",
+					type: "plain_text",
 					text: toNotify.reduce(
 						(prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
 						""
