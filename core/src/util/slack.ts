@@ -46,7 +46,7 @@ export async function notifySlackCpu(name: string, region: string | undefined, u
 			fields: [
 				{
 					type: "mrkdwn",
-					text: `*${name}*${region ? ` (${region})` : ""} has high CPU usage`
+					text: `*${name}*${region ? ` (${region})` : ""} has high *CPU usage*`
 				}
 			]
 		},
@@ -55,7 +55,7 @@ export async function notifySlackCpu(name: string, region: string | undefined, u
 			fields: [
 				{
 					type: "mrkdwn",
-					text: `*cpu*: ${usage}%`
+					text: `cpu: *${usage}%*`
 				}
 			]
 		},
@@ -82,7 +82,7 @@ export async function notifySlackMem(name: string, region: string | undefined, u
 			fields: [
 				{
 					type: "mrkdwn",
-					text: `*${name}*${region ? ` (${region})` : ""} has high memory usage`
+					text: `*${name}*${region ? ` (${region})` : ""} has high *memory usage*`
 				}
 			]
 		},
@@ -91,7 +91,7 @@ export async function notifySlackMem(name: string, region: string | undefined, u
 			fields: [
 				{
 					type: "mrkdwn",
-					text: `*memory*: ${usedMem} MB of ${totalMem} MB (${memPercentage}%)`
+					text: `memory: ${usedMem} MB of ${totalMem} MB (*${memPercentage}%*)`
 				}
 			]
 		},
@@ -118,7 +118,7 @@ export async function notifySlackDisk(name: string, region: string | undefined, 
 			fields: [
 				{
 					type: "mrkdwn",
-					text: `*${name}*${region ? ` (${region})` : ""} has high memory usage`
+					text: `*${name}*${region ? ` (${region})` : ""} has high *disk usage*`
 				}
 			]
 		},
@@ -127,7 +127,7 @@ export async function notifySlackDisk(name: string, region: string | undefined, 
 			fields: [
 				{
 					type: "mrkdwn",
-					text: `*disk*: using ${usedDisk} GB of ${totalDisk} GB (${diskPercentage}%)`
+					text: `disk: using ${usedDisk} GB of ${totalDisk} GB (*${diskPercentage}%*)`
 				}
 			]
 		},
