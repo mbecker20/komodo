@@ -12,8 +12,10 @@ import routes from "./routes";
 import slackNotifier from "./plugins/slackNotifier";
 
 async function main() {
-  const app = fastify({ logger: LOGGER })
-    .register(fastifyHelmet, {
+  const app = fastify({ logger: LOGGER });
+
+  if (HOST.includes("https")) {
+    app.register(fastifyHelmet, {
       contentSecurityPolicy: {
         useDefaults: true,
         directives: {
@@ -21,7 +23,10 @@ async function main() {
           "img-src": ["'self'", "https: data:"],
         },
       },
-    })
+    });
+  }
+
+  app
     .register(fastifyCors)
     .register(db)
     .register(docker)
