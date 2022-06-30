@@ -8,6 +8,7 @@ import {
   MEM_USAGE_NOTIFY_LIMIT,
   SERVER_STATS_INTERVAL,
   SECRETS,
+  CLEAR_ALREADY_ALERTED_INTERVAL,
 } from "../config";
 import { getPeripherySystemStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
@@ -160,8 +161,6 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       { type: "divider" },
       ...statsBlocks
     ]);
-
-    alreadyAlerted = {};
   };
 
   app.decorate("dailyInterval", dailyInterval);
@@ -169,6 +168,9 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
   if (SECRETS.SLACK_TOKEN) {
     setInterval(interval, SERVER_STATS_INTERVAL);
     setInterval(dailyInterval, 24 * 60 * 60 * 1000);
+    setInterval(() => {
+      alreadyAlerted = {};
+    }, CLEAR_ALREADY_ALERTED_INTERVAL);
   }
 
   done();
