@@ -1,15 +1,22 @@
-import { Server, User } from "@monitor/types";
-import { intoCollection, DEPLOYMENT_OWNER_UPDATE } from "@monitor/util";
-import { getContainerLog, getContainerStatus } from "@monitor/util-node";
+import { Deployment, Server, User } from "@monitor/types";
+import { intoCollection, DEPLOYMENT_OWNER_UPDATE, CREATE_DEPLOYMENT, DEPLOY, prettyStringify } from "@monitor/util";
+import { deleteContainer, dockerRun, getContainerLog, getContainerStatus } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
+import { PERMISSIONS_DENY_LOG, SECRETS, SYSROOT, SYS_DEPLOYMENT_REPO_PATH } from "../config";
+import { DEPLOYING } from "../plugins/actionStates";
 import { deploymentStatusLocal } from "../util/deploymentStatus";
+import { toDashedName } from "../util/helpers";
 import {
+  deletePeripheryContainer,
   getPeripheryContainer,
   getPeripheryContainerLog,
   getPeripheryContainers,
 } from "../util/periphery/container";
 import { serverStatusPeriphery } from "../util/periphery/status";
+import { addDeploymentUpdate, addSystemUpdate } from "../util/updates";
+import { join } from "path";
+import { deployPeriphery } from "../util/periphery/deploy";
 
 async function getDeployments(
   app: FastifyInstance,
@@ -232,6 +239,165 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
   );
 
   app.post(
+    "/api/deployment/create",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (req, res) => {
+      const { deployment } = req.body as { deployment: Deployment };
+      const user = await app.users.findById(req.user.id);
+      if (!user) {
+        res.status(403);
+        res.send("user not found");
+        return;
+      }
+      const server = await app.servers.findById(deployment.serverID!);
+      if (!server) {
+        return;
+      }
+      if (
+        user.permissions! < 1 ||
+        (user.permissions! < 2 && !server.owners.includes(user.username))
+      ) {
+        addSystemUpdate(
+          app,
+          CREATE_DEPLOYMENT,
+          "Create Deployment (DENIED)",
+          PERMISSIONS_DENY_LOG,
+          user.username,
+          "",
+          true
+        );
+        res.status(403);
+        res.send("user does not have permissions")
+        return;
+      }
+      const created = await app.deployments.create({
+        ...deployment,
+        containerName: toDashedName(deployment.name),
+        owners: [user.username],
+      });
+      app.deployActionStates.add(created._id!);
+      addDeploymentUpdate(
+        app,
+        created._id!,
+        CREATE_DEPLOYMENT,
+        "Create Deployment",
+        { stdout: "Deployment Created: " + deployment.name },
+        user.username
+      );
+      res.send(created);
+    }
+  );
+
+  app.get("/api/deployment/:deploymentID/deploy", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
+    const { deploymentID } = req.params as { deploymentID: string };
+    const user = await app.users.findById(req.user.id);
+    if (!user) {
+      res.status(403);
+      res.send("user not found");
+      return;
+    }
+    if (app.deployActionStates.busy(deploymentID)) {
+      res.status(400);
+      res.send("busy, wait a bit");
+      return;
+    }
+    const deployment = await app.deployments.findById(deploymentID);
+    if (!deployment) {
+      res.status(400);
+      res.send("deployment not found")
+      return;
+    };
+    if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
+      addDeploymentUpdate(
+        app,
+        deploymentID,
+        DEPLOY,
+        "Deploy (DENIED)",
+        PERMISSIONS_DENY_LOG,
+        user.username,
+        undefined,
+        true
+      );
+      return;
+    }
+    if (app.deployActionStates.get(deploymentID, DEPLOYING)) return;
+    app.deployActionStates.set(deploymentID, DEPLOYING, true);
+    app.broadcast(DEPLOY, { complete: false, deploymentID });
+    try {
+      const server =
+        deployment.serverID === app.core._id
+          ? undefined
+          : await app.servers.findById(deployment.serverID!);
+      if (server) {
+        // delete the container on periphery
+        await deletePeripheryContainer(server, deployment.containerName!);
+      } else {
+        // delete the container on core
+        await deleteContainer(deployment.containerName!);
+      }
+      const build = deployment.buildID
+        ? await app.builds.findById(deployment.buildID)
+        : undefined;
+      const image =
+        build && build.dockerBuildArgs
+          ? join(build.dockerAccount || "", build.pullName!)
+          : undefined;
+      const { command, log, isError } = server
+        ? await deployPeriphery(
+            server,
+            deployment,
+            image,
+            build && build.dockerAccount
+          )
+        : await dockerRun(
+            {
+              ...deployment,
+              image: image ? image : deployment.image,
+            },
+            SYSROOT,
+            deployment.repo && deployment.containerMount
+              ? {
+                  repoFolder: join(
+                    SYS_DEPLOYMENT_REPO_PATH,
+                    deployment.containerName!,
+                    deployment.repoMount || ""
+                  ),
+                  containerMount: deployment.containerMount,
+                }
+              : undefined,
+            (build && build.dockerAccount) || deployment.dockerAccount,
+            ((build && build.dockerAccount) || deployment.dockerAccount) &&
+              SECRETS.DOCKER_ACCOUNTS[
+                ((build && build.dockerAccount) || deployment.dockerAccount)!
+              ]
+          );
+      addDeploymentUpdate(
+        app,
+        deploymentID,
+        DEPLOY,
+        command,
+        log,
+        user.username,
+        undefined,
+        isError
+      );
+    } catch (error) {
+      addDeploymentUpdate(
+        app,
+        deploymentID,
+        DEPLOY,
+        "Deploy (ERROR)",
+        { stderr: prettyStringify(error) },
+        user.username,
+        undefined,
+        true
+      );
+    }
+    app.broadcast(DEPLOY, { complete: true, deploymentID });
+    app.deployActionStates.set(deploymentID, DEPLOYING, false);
+  });
+
+  app.post(
     "/api/deployment/:id/:owner",
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
@@ -292,6 +458,8 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       res.send("owner removed");
     }
   );
+
+  
 
   done();
 });
