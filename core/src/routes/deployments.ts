@@ -392,9 +392,13 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
         undefined,
         true
       );
+      res.status(400);
+      res.send("deploy failed");
+      return;
     }
     app.broadcast(DEPLOY, { complete: true, deploymentID });
     app.deployActionStates.set(deploymentID, DEPLOYING, false);
+    res.send("deploy success");
   });
 
   app.post(
