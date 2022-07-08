@@ -12,7 +12,11 @@ import { pushNotification } from "../../../../..";
 import { useAppState } from "../../../../../state/StateProvider";
 import { useTheme } from "../../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../../util/helpers";
-import { getPm2Processes, startPm2Process, stopPm2Process } from "../../../../../util/query";
+import {
+  getPm2Processes,
+  startPm2Process,
+  stopPm2Process,
+} from "../../../../../util/query";
 import Button from "../../../../util/Button";
 import Icon from "../../../../util/Icon";
 import Flex from "../../../../util/layout/Flex";
@@ -28,7 +32,9 @@ const Pm2Processes: Component<{}> = (p) => {
   const [refreshing, setRefreshing] = createSignal(false);
   const loadPm2 = () => {
     if (selected.id()) {
-      getPm2Processes(selected.id()).then(setPm2Proc);
+      try {
+        getPm2Processes(selected.id()).then(setPm2Proc);
+      } catch {}
     }
   };
   createEffect(loadPm2);

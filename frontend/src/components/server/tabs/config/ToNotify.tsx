@@ -43,7 +43,7 @@ const ToNotify: Component<{}> = (p) => {
           </Flex>
         )}
       </For>
-			<Show when={server.toNotify.length === 0}>
+			<Show when={server.toNotify?.length === 0}>
 				<div>no slack users to notify</div>
 			</Show>
     </Grid>
