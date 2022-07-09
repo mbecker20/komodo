@@ -60,7 +60,7 @@ const Config: Component<{}> = () => {
               ),
             },
             (userCanUpdate() || deployment.repo ? true : false) && {
-              title: "repo mount",
+              title: "frontend",
               element: (
                 <Grid class="config-items scroller" placeItems="start center">
                   <Git />
