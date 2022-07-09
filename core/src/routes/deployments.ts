@@ -251,6 +251,8 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       }
       const server = await app.servers.findById(deployment.serverID!);
       if (!server) {
+        res.status(400);
+        res.send("server not found");
         return;
       }
       if (

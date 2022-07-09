@@ -27,11 +27,11 @@ const value = () => {
           .map((term) => term.toLowerCase());
         return searchTerms.reduce((prev, search) => {
           return (
-            (prev && deployment.name.toLowerCase().includes(search)) ||
+            prev && (deployment.name.toLowerCase().includes(search) ||
             servers
               .get(deployment.serverID!)!
               .name.toLowerCase()
-              .includes(search)
+              .includes(search))
           );
         }, true);
         // return (
