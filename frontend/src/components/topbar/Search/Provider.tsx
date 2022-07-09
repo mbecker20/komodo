@@ -20,28 +20,23 @@ const value = () => {
   const [highlighted, setHighlighted] = createSignal(0);
 
   const filteredDeployments = createMemo(
-    () =>
-      deployments.filterArray((deployment) => {
-        const searchTerms = search()
-          .split(" ")
-          .map((term) => term.toLowerCase());
+    () => {
+      const searchTerms = search()
+        .split(" ")
+        .map((term) => term.toLowerCase());
+      return deployments.filterArray((deployment) => {
         return searchTerms.reduce((prev, search) => {
           return (
-            prev && (deployment.name.toLowerCase().includes(search) ||
-            servers
-              .get(deployment.serverID!)!
-              .name.toLowerCase()
-              .includes(search))
+            prev &&
+            (deployment.name.toLowerCase().includes(search) ||
+              servers
+                .get(deployment.serverID!)!
+                .name.toLowerCase()
+                .includes(search))
           );
         }, true);
-        // return (
-        //   deployment.name.toLowerCase().includes(search().toLowerCase()) ||
-        //   servers
-        //     .get(deployment.serverID!)!
-        //     .name.toLowerCase()
-        //     .includes(search().toLowerCase())
-        // );
-      })!
+      })!;
+    }
   );
   const filteredBuilds = createMemo(
     () =>

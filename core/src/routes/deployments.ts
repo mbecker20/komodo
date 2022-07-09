@@ -286,6 +286,9 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
         { stdout: "Deployment Created: " + deployment.name },
         user.username
       );
+      app.broadcast(CREATE_DEPLOYMENT, {
+        deployment: { ...created, status: "not deployed" },
+      });
       res.send(created);
     }
   );
