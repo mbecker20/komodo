@@ -25,11 +25,6 @@ const mobileStyle: JSX.CSSProperties = {
 };
 
 const Topbar: Component = () => {
-  const { sidebar, selected, ws } = useAppState();
-  const { isMobile } = useAppDimensions();
-  const { username } = useUser();
-  const [menu, setMenu] = createSignal<"updates" | "account">();
-  const close = () => setMenu(undefined);
   const { themeClass } = useTheme();
   return (
     <Flex
@@ -38,76 +33,84 @@ const Topbar: Component = () => {
       alignItems="center"
       style={{ height: inPx(TOPBAR_HEIGHT) }}
     >
-      {/* right side */}
-      <Flex alignItems="center" style={{ padding: "0rem 0.5rem" }}>
-        <Button class="grey" onClick={sidebar.toggle}>
-          <Icon type="menu" width="1.15rem" />
-        </Button>
-        <Show when={!isMobile()}>
-          <div class={s.Monitor} onClick={() => selected.set("", "home")}>
-            monitor
-          </div>
-        </Show>
-        <Show when={isMobile()}>
-          <Button class="grey" onClick={() => selected.set("", "home")}>
-            <Icon type="home" width="1.15rem" />
-          </Button>
-        </Show>
-        <HoverMenu
-          target={
-            <Circle
-              size={1}
-              class={ws.isOpen() ? "green" : "red"}
-              style={{ transition: "all 500ms ease-in-out" }}
-            />
-          }
-          content={ws.isOpen() ? "connected" : "disconnected"}
-          position="right center"
-        />
-      </Flex>
-      {/* left side */}
-      <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
-        <SearchProvider>
-          <Search />
-        </SearchProvider>
-        <Menu
-          show={menu() === "updates"}
-          close={close}
-          menuStyle={isMobile() ? mobileStyle : undefined}
-          target={
-            <Button
-              class="grey"
-              onClick={() =>
-                menu() === "updates" ? setMenu(undefined) : setMenu("updates")
-              }
-            >
-              <Icon type="notifications" alt="updates" width="1.15rem" />
-            </Button>
-          }
-          content={<Updates />}
-          position="bottom right"
-          backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
-        />
-        <Menu
-          show={menu() === "account"}
-          close={close}
-          target={
-            <Button
-              class="grey"
-              onClick={() =>
-                menu() === "account" ? setMenu(undefined) : setMenu("account")
-              }
-            >
-              <Show when={!isMobile()}>{username()}</Show>
-              <Icon type={!isMobile() ? "chevron-down" : "user"} />
-            </Button>
-          }
-          content={<Account close={close} />}
-          position="bottom right"
-        />
-      </Flex>
+      <LeftTopbar />
+      <RightSide />
     </Flex>
   );
 };
+
+const LeftTopbar: Component = () => {
+  const { sidebar, selected, ws } = useAppState();
+  return (
+    <Flex alignItems="center" style={{ padding: "0rem 0.5rem" }}>
+      <Button class="grey" onClick={sidebar.toggle}>
+        <Icon type="menu" width="1.15rem" />
+      </Button>
+      <Button class="grey" onClick={() => selected.set("", "home")}>
+        <Icon type="home" width="1.15rem" />
+      </Button>
+      <HoverMenu
+        target={
+          <Circle
+            size={1}
+            class={ws.isOpen() ? "green" : "red"}
+            style={{ transition: "all 500ms ease-in-out" }}
+          />
+        }
+        content={ws.isOpen() ? "connected" : "disconnected"}
+        position="right center"
+      />
+    </Flex>
+  );
+} 
+
+const RightSide: Component = () => {
+  const { isMobile } = useAppDimensions();
+  const { username } = useUser();
+  const [menu, setMenu] = createSignal<"updates" | "account">();
+  const close = () => setMenu(undefined);
+  return (
+    <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
+      <SearchProvider>
+        <Search />
+      </SearchProvider>
+      <Menu
+        show={menu() === "updates"}
+        close={close}
+        menuStyle={isMobile() ? mobileStyle : undefined}
+        target={
+          <Button
+            class="grey"
+            onClick={() =>
+              menu() === "updates" ? setMenu(undefined) : setMenu("updates")
+            }
+          >
+            <Icon type="notifications" alt="updates" width="1.15rem" />
+          </Button>
+        }
+        content={<Updates />}
+        position="bottom right"
+        backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
+      />
+      <Menu
+        show={menu() === "account"}
+        close={close}
+        target={
+          <Button
+            class="grey"
+            onClick={() =>
+              menu() === "account" ? setMenu(undefined) : setMenu("account")
+            }
+          >
+            <Show when={!isMobile()}>{username()}</Show>
+            <Icon type={!isMobile() ? "chevron-down" : "user"} />
+          </Button>
+        }
+        content={<Account close={close} />}
+        position="bottom right"
+      />
+    </Flex>
+  );
+}
 
 export default Topbar;
