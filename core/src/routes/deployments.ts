@@ -325,7 +325,6 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
       );
       return;
     }
-    if (app.deployActionStates.get(deploymentID, DEPLOYING)) return;
     app.deployActionStates.set(deploymentID, DEPLOYING, true);
     app.broadcast(DEPLOY, { complete: false, deploymentID });
     try {
