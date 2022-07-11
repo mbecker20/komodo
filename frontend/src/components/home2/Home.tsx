@@ -7,6 +7,7 @@ import Tabs from "../util/tabs/Tabs";
 import Server from "./Server";
 import Builds from "./Builds";
 import s from "./home.module.scss";
+import AddServer from "./AddServer";
 
 const Home: Component<{}> = (p) => {
   const { username, permissions } = useUser();
@@ -24,6 +25,7 @@ const Home: Component<{}> = (p) => {
             element: (
               <Grid>
                 <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
+                <AddServer />
               </Grid>
             ),
           },

@@ -7,6 +7,7 @@ import Icon from "../util/Icon";
 import Grid from "../util/layout/Grid";
 import HoverMenu from "../util/menu/HoverMenu";
 import s from "./home.module.scss";
+import { NewBuild } from "./New";
 
 const Builds: Component<{}> = (p) => {
 	const { builds } = useAppState();
@@ -19,6 +20,7 @@ const Builds: Component<{}> = (p) => {
       )}
     >
       <For each={builds.ids()}>{(id) => <Build id={id} />}</For>
+      <NewBuild />
     </Grid>
   );
 }

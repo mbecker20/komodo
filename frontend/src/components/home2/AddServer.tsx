@@ -33,21 +33,18 @@ const Content: Component<{ close: () => void }> = (p) => {
     address: "",
     enabled: true,
     owners: [],
-    toNotify: []
+    toNotify: [],
   });
   onMount(() => nameInput?.focus());
   const create = () => {
-    if (
-      server.name.length > 0 &&
-      server.address.length > 0
-    ) {
+    if (server.name.length > 0 && server.address.length > 0) {
       ws.send(ADD_SERVER, {
         server,
       });
       p.close();
     } else {
-			pushNotification("bad", "a field is empty. fill in all fields");
-		}
+      pushNotification("bad", "a field is empty. fill in all fields");
+    }
   };
   return (
     <Grid placeItems="center" style={{ padding: "2rem 1rem 1rem 1rem" }}>

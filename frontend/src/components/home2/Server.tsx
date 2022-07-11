@@ -10,7 +10,7 @@ import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import Deployment from "./Deployment";
 import s from "./home.module.scss";
-import NewDeployment from "./NewDeployment";
+import { NewDeployment } from "./New";
 
 const Server: Component<{ id: string }> = (p) => {
   const { servers, deployments, selected } = useAppState();
