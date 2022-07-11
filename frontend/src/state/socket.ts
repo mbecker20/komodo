@@ -95,7 +95,7 @@ function handleMessage(
     case CREATE_DEPLOYMENT:
       deployments.add(message.deployment);
       if (message.deployment.owners[0] === user.username) {
-        selected.set(message.deployment._id, "deployment");
+        // selected.set(message.deployment._id, "deployment");
       }
       break;
 
@@ -115,7 +115,7 @@ function handleMessage(
     case CREATE_BUILD:
       builds.add(message.build);
       if (message.build.owners[0] === user.username) {
-        selected.set(message.build._id, "build");
+        // selected.set(message.build._id, "build");
       }
       break;
 
