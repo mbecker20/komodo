@@ -6,9 +6,9 @@ import {
 } from "solid-js";
 import Build from "./components/builds/Build";
 import Deployment from "./components/deployment/Deployment";
-import Home from "./components/home/Home";
+import Home from "./components/home2/Home";
 import Server from "./components/server/Server";
-import Sidebar from "./components/sidebar/Sidebar";
+// import Sidebar from "./components/sidebar/Sidebar";
 import Topbar from "./components/topbar/Topbar";
 import Users from "./components/users/Users";
 import { useAppState } from "./state/StateProvider";
@@ -74,7 +74,7 @@ const App: Component = () => {
   return (
     <>
       <Topbar />
-      <Sidebar />
+      {/* <Sidebar /> */}
       {element()}
     </>
   );

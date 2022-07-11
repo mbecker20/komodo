@@ -21,7 +21,7 @@
 		"prefix": "css-comp",
 		"body": [
 			"import { Component } from \"solid-js\";",
-			"import s from \"./${1:$TM_FILENAME_BASE}.module.css\";",
+			"import s from \"./${1:$TM_FILENAME_BASE}.module.scss\";",
 			"",
 			"const ${2:$TM_FILENAME_BASE}: Component<{}> = (p) => {",
 			"\treturn (",

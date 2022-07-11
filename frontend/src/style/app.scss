@@ -4,17 +4,17 @@
   width: 100vw;
   height: 100vh;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr;
   grid-template-rows: auto 1fr;
   grid-template-areas:
-    "topbar topbar"
-    "sidebar content";
+    "topbar"
+    "content";
 }
 
 /* CONTENT */
 
 .content {
-  grid-template-columns: auto 2fr;
+  grid-template-columns: auto 1fr;
   background-color: c.$darkgrey;
   padding: 1rem;
 }
@@ -25,7 +25,8 @@
 
 .left-content {
   height: fit-content;
-  width: 325px;
+  width: fit-content;
+  min-width: 325px;
 }
 
 @media only screen and (max-width: 1200px) {

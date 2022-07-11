@@ -43,9 +43,9 @@ const LeftTopbar: Component = () => {
   const { sidebar, selected, ws } = useAppState();
   return (
     <Flex alignItems="center" style={{ padding: "0rem 0.5rem" }}>
-      <Button class="grey" onClick={sidebar.toggle}>
+      {/* <Button class="grey" onClick={sidebar.toggle}>
         <Icon type="menu" width="1.15rem" />
-      </Button>
+      </Button> */}
       <Button class="grey" onClick={() => selected.set("", "home")}>
         <Icon type="home" width="1.15rem" />
       </Button>
