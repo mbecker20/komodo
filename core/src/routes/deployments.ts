@@ -1,5 +1,5 @@
 import { Deployment, Server, User } from "@monitor/types";
-import { intoCollection, DEPLOYMENT_OWNER_UPDATE, CREATE_DEPLOYMENT, DEPLOY, prettyStringify } from "@monitor/util";
+import { intoCollection, DEPLOYMENT_OWNER_UPDATE, CREATE_DEPLOYMENT, DEPLOY, prettyStringify, DELETE_DEPLOYMENT } from "@monitor/util";
 import { deleteContainer, dockerRun, getContainerLog, getContainerStatus } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
@@ -17,6 +17,7 @@ import { serverStatusPeriphery } from "../util/periphery/status";
 import { addDeploymentUpdate, addSystemUpdate } from "../util/updates";
 import { join } from "path";
 import { deployPeriphery } from "../util/periphery/deploy";
+import { DEPLOYMENT_VIEW_FIELDS } from "../messages/deployments/delete";
 
 async function getDeployments(
   app: FastifyInstance,
@@ -403,6 +404,91 @@ const deployments = fp((app: FastifyInstance, _: {}, done: () => void) => {
     app.broadcast(DEPLOY, { complete: true, deploymentID });
     app.deployActionStates.set(deploymentID, DEPLOYING, false);
     res.send("deploy success");
+  });
+
+  app.delete("/api/deployment/:deploymentID/delete", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
+    const { deploymentID } = req.params as { deploymentID: string };
+    const user = await app.users.findById(req.user.id);
+    if (!user) {
+      res.status(403);
+      res.send("user not found");
+      return;
+    }
+    if (app.deployActionStates.busy(deploymentID)) {
+      res.status(400);
+      res.send("busy, wait a bit");
+      return;
+    }
+    const deployment = await app.deployments.findById(deploymentID);
+    if (!deployment) {
+      res.status(400);
+      res.send("deployment not found")
+      return;
+    };
+    if (user.permissions! < 2 && !deployment.owners.includes(user.username)) {
+      addDeploymentUpdate(
+        app,
+        deploymentID,
+        DELETE_DEPLOYMENT,
+        "Delete Deployment (DENIED)",
+        PERMISSIONS_DENY_LOG,
+        user.username,
+        undefined,
+        true
+      );
+      res.status(403);
+      res.send("user not authorized to delete this deployment");
+      return;
+    }
+    app.deployActionStates.set(deploymentID, "fullDeleting", true);
+    app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: false });
+    try {
+      if (deployment.image || deployment.buildID) {
+        const server =
+          deployment.serverID === app.core._id
+            ? undefined
+            : await app.servers.findById(deployment.serverID!);
+        if (server) {
+          await deletePeripheryContainer(server, deployment.containerName!);
+        } else {
+          await deleteContainer(deployment.containerName!);
+        }
+      }
+      await app.deployments.findByIdAndDelete(deploymentID);
+      app.deployActionStates.delete(deploymentID);
+      addSystemUpdate(
+        app,
+        DELETE_DEPLOYMENT,
+        "Delete Deployment",
+        {
+          stdout:
+            "Removed:\n\n" +
+            DEPLOYMENT_VIEW_FIELDS
+              .map((field) => {
+                return `${field}: ${prettyStringify(deployment[field])}\n`;
+              })
+              .reduce((prev, curr) => prev + curr),
+        },
+        user.username,
+        undefined
+      );
+      app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: true });
+      res.send("deployment deleted");
+    } catch (error) {
+      app.deployActionStates.set(deploymentID, "fullDeleting", false);
+      app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: true });
+      addSystemUpdate(
+        app,
+        DELETE_DEPLOYMENT,
+        "Delete Deployment (ERROR)",
+        { stderr: prettyStringify(error) },
+        user.username,
+        undefined,
+        true
+      );
+      res.status(400);
+      res.send("deployment delete failed");
+    }
   });
 
   app.post(

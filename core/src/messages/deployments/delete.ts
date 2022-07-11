@@ -8,7 +8,7 @@ import { WebSocket } from "ws";
 import { sendAlert } from "../../util/helpers";
 import { deleteContainer } from "@monitor/util-node";
 
-const deploymentViewFields = [
+export const DEPLOYMENT_VIEW_FIELDS = [
   "name",
   "image",
   "network",
@@ -66,7 +66,7 @@ async function deleteDeployment(
       {
         stdout:
           "Removed:\n\n" +
-          deploymentViewFields
+          DEPLOYMENT_VIEW_FIELDS
             .map((field) => {
               return `${field}: ${prettyStringify(deployment[field])}\n`;
             })
