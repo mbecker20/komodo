@@ -45,6 +45,7 @@ export async function addInitialDocs({ core, mongo }: Config) {
     environment: [
       { variable: "MONGO_URL", value: mongo!.url },
       { variable: "SYSROOT", value: core!.sysroot },
+      { variable: "HOST", value: core!.host! }
     ],
     network: DOCKER_NETWORK,
     serverID: coreServerID,
