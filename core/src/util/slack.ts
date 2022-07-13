@@ -46,7 +46,7 @@ export async function notifySlackCpu(
   name: string,
   region: string | undefined,
   usage: number,
-  toNotify: string[]
+  toNotify?: string[]
 ) {
   await notifySlackAdvanced(
     `WARNING | ${name}${region ? ` (${region})` : ""} has high CPU usage`,
@@ -72,10 +72,10 @@ export async function notifySlackCpu(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: toNotify.reduce(
+          text: toNotify ? toNotify.reduce(
             (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
             ""
-          ),
+          ) : "",
         },
       },
     ]
@@ -114,10 +114,12 @@ export async function notifySlackMem(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: toNotify.reduce(
-            (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-            ""
-          ),
+          text: toNotify
+            ? toNotify.reduce(
+                (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
+                ""
+              )
+            : "",
         },
       },
     ]
@@ -156,10 +158,12 @@ export async function notifySlackDisk(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: toNotify.reduce(
-            (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-            ""
-          ),
+          text: toNotify
+            ? toNotify.reduce(
+                (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
+                ""
+              )
+            : "",
         },
       },
     ]
@@ -186,10 +190,12 @@ export async function notifySlackUnreachable(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: toNotify.reduce(
-            (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
-            ""
-          ),
+          text: toNotify
+            ? toNotify.reduce(
+                (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
+                ""
+              )
+            : "",
         },
       },
     ]
