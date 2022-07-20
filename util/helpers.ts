@@ -162,6 +162,9 @@ export function parseDotEnvToEnvVars(env: string) {
   return env
     .split("\n")
     .filter(line => shouldKeepLine(line))
-    .map(entry => entry.replaceAll("\"", "").split("="))
+    .map(entry => {
+      const [first, ...rest] = entry.replaceAll('"', "").split("=");
+      return [first, rest.join("=")];
+    })
     .map(([variable, value]) => ({ variable, value }));
 }
