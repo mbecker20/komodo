@@ -88,7 +88,7 @@ export async function notifySlackMem(
   usedMem: number,
   totalMem: number,
   memPercentage: number,
-  toNotify: string[]
+  toNotify?: string[]
 ) {
   await notifySlackAdvanced(
     `WARNING | ${name}${region ? ` (${region})` : ""} has high memory usage`,
@@ -132,7 +132,7 @@ export async function notifySlackDisk(
   usedDisk: number,
   totalDisk: number,
   diskPercentage: number,
-  toNotify: string[]
+  toNotify?: string[]
 ) {
   await notifySlackAdvanced(
     `WARNING | ${name}${region ? ` (${region})` : ""} has high disk usage`,
@@ -173,7 +173,7 @@ export async function notifySlackDisk(
 export async function notifySlackUnreachable(
   name: string,
   region: string | undefined,
-  toNotify: string[]
+  toNotify?: string[]
 ) {
   await notifySlackAdvanced(
     `WARNING 🚨 | ${name}${region ? ` (${region})` : ""} is unreachable ❌`,
