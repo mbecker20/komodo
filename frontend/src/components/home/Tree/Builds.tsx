@@ -1,12 +1,12 @@
 import { Component, For, Show } from "solid-js";
-import { useAppState } from "../../state/StateProvider";
-import { useTheme } from "../../state/ThemeProvider";
-import { useUser } from "../../state/UserProvider";
-import { combineClasses } from "../../util/helpers";
-import Icon from "../util/Icon";
-import Grid from "../util/layout/Grid";
-import HoverMenu from "../util/menu/HoverMenu";
-import s from "./home.module.scss";
+import { useAppState } from "../../../state/StateProvider";
+import { useTheme } from "../../../state/ThemeProvider";
+import { useUser } from "../../../state/UserProvider";
+import { combineClasses } from "../../../util/helpers";
+import Icon from "../../util/Icon";
+import Grid from "../../util/layout/Grid";
+import HoverMenu from "../../util/menu/HoverMenu";
+import s from "../home.module.scss";
 import { NewBuild } from "./New";
 
 const Builds: Component<{}> = (p) => {

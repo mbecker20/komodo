@@ -1,15 +1,15 @@
 import { Component, createMemo, For, Show } from "solid-js";
-import { useAppState } from "../../state/StateProvider";
-import { useTheme } from "../../state/ThemeProvider";
-import { useUser } from "../../state/UserProvider";
-import { combineClasses } from "../../util/helpers";
-import { useLocalStorageToggle } from "../../util/hooks";
-import Button from "../util/Button";
-import Icon from "../util/Icon";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
+import { useAppState } from "../../../state/StateProvider";
+import { useTheme } from "../../../state/ThemeProvider";
+import { useUser } from "../../../state/UserProvider";
+import { combineClasses } from "../../../util/helpers";
+import { useLocalStorageToggle } from "../../../util/hooks";
+import Button from "../../util/Button";
+import Icon from "../../util/Icon";
+import Flex from "../../util/layout/Flex";
+import Grid from "../../util/layout/Grid";
 import Deployment from "./Deployment";
-import s from "./home.module.scss";
+import s from "../home.module.scss";
 import { NewDeployment } from "./New";
 
 const Server: Component<{ id: string }> = (p) => {

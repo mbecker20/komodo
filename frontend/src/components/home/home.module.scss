@@ -1,7 +1,12 @@
 @use "../../style/colors.scss" as c;
 
 .Home {
-	padding: 1rem;
+	width: 100%;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.Tabs {
+  padding: 1rem;
 }
 
 .Container {
@@ -9,4 +14,59 @@
 	height: fit-content;
 	flex-wrap: wrap;
 	max-width: 100%;
+}
+
+.Server {
+	background-color: c.$lightgrey;
+  height: fit-content;
+  cursor: pointer;
+}
+
+.Server:global(.dark) {
+  background-color: c.$lightgrey-dark;
+}
+
+.ServerButton {
+  justify-content: space-between;
+  z-index: 5;
+  transition: background-color 500ms ease;
+  width: 100%;
+}
+
+.ServerButton:hover {
+  background-color: rgba(c.$lightblue, 0.5);
+}
+
+.ServerButton:global(.dark):hover {
+  background-color: rgba(c.$lightblue-dark, 0.5);
+}
+
+.Deployments {
+  background-color: c.$lightgrey;
+  transform-origin: top;
+  padding: 0.5rem;
+}
+
+.Deployments:global(.dark) {
+  background-color: c.$lightgrey-dark;
+}
+
+.DropdownItem {
+  padding: 0.5rem 1rem;
+  width: 100%;
+  justify-content: space-between;
+  transition: background-color 500ms ease;
+}
+
+.DropdownItem:hover {
+  background-color: rgba(c.$lightblue, 0.5);
+}
+
+.DropdownItem:global(.dark):hover {
+  background-color: rgba(c.$lightblue-dark, 0.5);
+}
+
+.Summary {
+  padding: 1rem;
+  margin: 1rem;
 }

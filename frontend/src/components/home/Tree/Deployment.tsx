@@ -1,14 +1,14 @@
 import { ContainerStatus } from "@monitor/types";
 import { Component, Show } from "solid-js";
-import { useAppDimensions } from "../../state/DimensionProvider";
-import { useAppState } from "../../state/StateProvider";
-import { useUser } from "../../state/UserProvider";
-import { combineClasses, deploymentStatusClass } from "../../util/helpers";
-import Circle from "../util/Circle";
-import Icon from "../util/Icon";
-import Flex from "../util/layout/Flex";
-import HoverMenu from "../util/menu/HoverMenu";
-import s from "./home.module.scss";
+import { useAppDimensions } from "../../../state/DimensionProvider";
+import { useAppState } from "../../../state/StateProvider";
+import { useUser } from "../../../state/UserProvider";
+import { combineClasses, deploymentStatusClass } from "../../../util/helpers";
+import Circle from "../../util/Circle";
+import Icon from "../../util/Icon";
+import Flex from "../../util/layout/Flex";
+import HoverMenu from "../../util/menu/HoverMenu";
+import s from "../home.module.scss";
 
 const Deployment: Component<{ id: string }> = (p) => {
   const { deployments, selected, sidebar } = useAppState();

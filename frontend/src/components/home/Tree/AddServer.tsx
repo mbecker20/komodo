@@ -1,13 +1,13 @@
 import { Server } from "@monitor/types";
 import { Component, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
-import { pushNotification } from "../..";
+import { pushNotification } from "../../..";
 import { ADD_SERVER } from "@monitor/util";
-import { useAppState } from "../../state/StateProvider";
-import { useToggle } from "../../util/hooks";
-import Input from "../util/Input";
-import Grid from "../util/layout/Grid";
-import CenterMenu from "../util/menu/CenterMenu";
+import { useAppState } from "../../../state/StateProvider";
+import { useToggle } from "../../../util/hooks";
+import Input from "../../util/Input";
+import Grid from "../../util/layout/Grid";
+import CenterMenu from "../../util/menu/CenterMenu";
 
 const AddServer: Component<{}> = () => {
   const [show, toggleShow] = useToggle();
