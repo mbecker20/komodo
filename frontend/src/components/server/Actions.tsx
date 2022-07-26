@@ -9,6 +9,8 @@ import Flex from "../util/layout/Flex";
 import Grid from "../util/layout/Grid";
 import { useTheme } from "../../state/ThemeProvider";
 import { combineClasses } from "../../util/helpers";
+import { useActionStates } from "./ActionStateProvider";
+import Loading from "../util/loading/Loading";
 
 const Actions: Component<{}> = (p) => {
   const { ws, servers, selected } = useAppState();
@@ -20,16 +22,7 @@ const Actions: Component<{}> = (p) => {
       <Grid class={combineClasses("card shadow", themeClass())}>
         <h1>actions</h1>
         <Flex class={combineClasses("action shadow", themeClass())}>
-          prune images{" "}
-          <ConfirmButton
-            color="green"
-            onConfirm={() => {
-              ws.send(PRUNE_IMAGES, { serverID: server()._id });
-              pushNotification("ok", `pruning images on ${server().name}...`);
-            }}
-          >
-            <Icon type="cut" />
-          </ConfirmButton>
+          prune images <PruneImages />
         </Flex>
         <Flex class={combineClasses("action shadow", themeClass())}>
           prune networks{" "}
@@ -49,3 +42,29 @@ const Actions: Component<{}> = (p) => {
 };
 
 export default Actions;
+
+function PruneImages() {
+  const { ws, servers, selected } = useAppState();
+  const server = () => servers.get(selected.id())!;
+  const actions = useActionStates();
+  return (
+    <Show
+      when={!actions.pruningImages}
+      fallback={
+        <button class="green">
+          <Loading type="spinner" />
+        </button>
+      }
+    >
+      <ConfirmButton
+        color="green"
+        onConfirm={() => {
+          ws.send(PRUNE_IMAGES, { serverID: server()._id });
+          pushNotification("ok", `pruning images on ${server().name}...`);
+        }}
+      >
+        <Icon type="cut" />
+      </ConfirmButton>
+    </Show>
+  );
+}

@@ -37,6 +37,8 @@ export async function pruneServerImages(
   }
   const server = await app.servers.findById(serverID);
   if (!server) return;
+  app.serverActionStates.set(serverID, "pruningImages", true);
+  app.broadcast(PRUNE_IMAGES, { complete: false, serverID });
   const { command, log, isError } = server.isCore
     ? await pruneImages()
     : await prunePeripheryImages(server);
@@ -50,6 +52,8 @@ export async function pruneServerImages(
     note,
     isError
   );
+  app.serverActionStates.set(serverID, "pruningImages", false);
+  app.broadcast(PRUNE_IMAGES, { complete: true, serverID });
 }
 
 export async function pruneServerNetworks(

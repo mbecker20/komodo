@@ -9,7 +9,7 @@ import {
 import { createStore } from "solid-js/store";
 import { PRUNE_IMAGES } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
-import { getDeploymentActionState } from "../../util/query";
+import { getServerActionState } from "../../util/query";
 
 type State = {} & ServerActionState;
 
@@ -23,7 +23,7 @@ export const ActionStateProvider: Component<{}> = (p) => {
 		deleting: false,
   });
   createEffect(() => {
-    getDeploymentActionState(selected.id()).then(setActions);
+    getServerActionState(selected.id()).then(setActions);
   });
   onCleanup(
     ws.subscribe([PRUNE_IMAGES], ({ complete, serverID }) => {

@@ -117,6 +117,12 @@ export async function getServer(id: string) {
   return await client.get<Server>(`/api/server/${id}`);
 }
 
+export async function getServerActionState(serverID: string) {
+  return await client.get<DeployActionState>(
+    `/api/server/${serverID}/action-state`
+  );
+}
+
 export async function getServerStats(id: string) {
   return await client.get<DockerStat[]>(`/api/server/${id}/stats`);
 }
