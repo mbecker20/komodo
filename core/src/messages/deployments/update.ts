@@ -35,7 +35,11 @@ async function updateDeployment(
     return;
   }
   app.deployActionStates.set(deployment._id!, "updating", true);
-  app.broadcast(UPDATE_DEPLOYMENT, { deploymentID: deployment._id, complete: false });
+  app.broadcast(
+    UPDATE_DEPLOYMENT,
+    { deploymentID: deployment._id, complete: false },
+    app.deploymentUserFilter(deployment._id!)
+  );
   try {
     // this assumes no change to deployment name (ie cannot rename deployments after created)
     if (user.permissions! < 2) {
@@ -76,10 +80,14 @@ async function updateDeployment(
       note
     );
     app.deployActionStates.set(deployment._id!, "updating", false);
-    app.broadcast(UPDATE_DEPLOYMENT, {
-      deploymentID: deployment._id,
-      complete: true,
-    });
+    app.broadcast(
+      UPDATE_DEPLOYMENT,
+      {
+        deploymentID: deployment._id,
+        complete: true,
+      },
+      app.deploymentUserFilter(deployment._id!)
+    );
     return deployment;
   } catch (error) {
     addDeploymentUpdate(
@@ -95,10 +103,14 @@ async function updateDeployment(
       true
     );
     app.deployActionStates.set(deployment._id!, "updating", false);
-    app.broadcast(UPDATE_DEPLOYMENT, {
-      deploymentID: deployment._id,
-      complete: true,
-    });
+    app.broadcast(
+      UPDATE_DEPLOYMENT,
+      {
+        deploymentID: deployment._id,
+        complete: true,
+      },
+      app.deploymentUserFilter(deployment._id!)
+    );
   }
 }
 

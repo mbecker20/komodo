@@ -33,7 +33,7 @@ async function deleteBuild(
     return;
   }
   app.buildActionStates.set(buildID, "deleting", true);
-  app.broadcast(DELETE_BUILD, { buildID, complete: false });
+  app.broadcast(DELETE_BUILD, { buildID, complete: false }, app.buildUserFilter(buildID, build));
   try {
     await app.builds.findByIdAndDelete(buildID);
     await app.deployments.updateMany(
@@ -43,7 +43,11 @@ async function deleteBuild(
     if (build!.repo) await remove(join(BUILD_REPO_PATH, build.pullName!));
     app.buildActionStates.delete(buildID);
     addSystemUpdate(app, DELETE_BUILD, "Delete Build", {}, user.username, note);
-    app.broadcast(DELETE_BUILD, { buildID, complete: true })
+    app.broadcast(
+      DELETE_BUILD,
+      { buildID, complete: true },
+      app.buildUserFilter(buildID, build)
+    );
     return true;
   } catch (error) {
     app.buildActionStates.set(buildID, "deleting", false);

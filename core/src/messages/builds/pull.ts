@@ -35,7 +35,7 @@ async function pullRepo(
   }
   if (!app.buildActionStates.get(buildID, PULLING)) {
     app.buildActionStates.set(buildID, PULLING, true);
-    app.broadcast(PULL_BUILD, { complete: false, buildID });
+    app.broadcast(PULL_BUILD, { complete: false, buildID }, app.buildUserFilter(buildID));
     try {
       const { pullName, branch } = build;
       const { command, log, isError } = await pull(
@@ -64,7 +64,7 @@ async function pullRepo(
         true
       );
     }
-    app.broadcast(PULL_BUILD, { complete: true, buildID });
+    app.broadcast(PULL_BUILD, { complete: true, buildID }, app.buildUserFilter(buildID));
     app.buildActionStates.set(buildID, PULLING, false);
   }
 }

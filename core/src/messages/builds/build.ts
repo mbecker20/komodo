@@ -43,7 +43,7 @@ async function build(
     return;
   }
   app.buildActionStates.set(buildID, BUILDING, true);
-  app.broadcast(BUILD, { complete: false, buildID });
+  app.broadcast(BUILD, { complete: false, buildID }, app.buildUserFilter(buildID));
   const { cliBuild, dockerBuildArgs } = build;
   try {
     const pull = await execute(
@@ -94,7 +94,7 @@ async function build(
       true
     );
   }
-  app.broadcast(BUILD, { complete: true, buildID });
+  app.broadcast(BUILD, { complete: true, buildID }, app.buildUserFilter(buildID));
   app.buildActionStates.set(buildID, BUILDING, false);
 }
 

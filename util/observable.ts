@@ -23,9 +23,11 @@ export function createUserObservable<User = any, Message = any>() {
         subscribers.delete(observer);
       };
     },
-    publish: (msg: Message, userFilter?: (user: User) => boolean) => {
+    publish: (msg: Message, userFilter?: (user: User) => Promise<boolean>) => {
       if (userFilter) {
-        subscribers.forEach((observer) => {if (userFilter(observer.user)) observer.cb(JSON.stringify(msg))});
+        subscribers.forEach(async (observer) => {
+          if (await userFilter(observer.user)) observer.cb(JSON.stringify(msg));
+        });
       } else {
         subscribers.forEach((observer) => observer.cb(JSON.stringify(msg)));
       }

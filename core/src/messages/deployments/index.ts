@@ -36,9 +36,13 @@ async function deploymentMessages(
         message.deployment &&
         (await createDeployment(app, client, user, message));
       if (created) {
-        app.broadcast(CREATE_DEPLOYMENT, {
-          deployment: { ...created, status: "not deployed" },
-        });
+        app.broadcast(
+          CREATE_DEPLOYMENT,
+          {
+            deployment: { ...created, status: "not deployed" },
+          },
+          app.deploymentUserFilter(created._id!)
+        );
       }
       return true;
 
@@ -52,7 +56,11 @@ async function deploymentMessages(
         message.deployment &&
         (await updateDeployment(app, client, user, message));
       if (updated) {
-        app.broadcast(UPDATE_DEPLOYMENT, { deployment: updated });
+        app.broadcast(
+          UPDATE_DEPLOYMENT,
+          { deployment: updated },
+          app.deploymentUserFilter(updated._id!)
+        );
       }
       return true;
 

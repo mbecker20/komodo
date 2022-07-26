@@ -27,7 +27,7 @@ async function serverMessages(
     case ADD_SERVER:
       const created = message.server && (await addServer(app, user, message));
       if (created) {
-        app.broadcast(ADD_SERVER, { server: created });
+        app.broadcast(ADD_SERVER, { server: created }, app.serverUserFilter(created._id));
       }
       return true;
 
@@ -35,7 +35,7 @@ async function serverMessages(
       const removed =
         message.serverID && (await removeServer(app, user, message));
       if (removed) {
-        app.broadcast(REMOVE_SERVER, { serverID: message.serverID });
+        app.broadcast(REMOVE_SERVER, { serverID: message.serverID }, app.serverUserFilter(removed._id, removed));
       }
       return true;
 
@@ -43,7 +43,7 @@ async function serverMessages(
       const updated =
         message.server && (await updateServer(app, user, message));
       if (updated) {
-        app.broadcast(UPDATE_SERVER, { server: updated });
+        app.broadcast(UPDATE_SERVER, { server: updated }, app.serverUserFilter(updated._id));
       }
       return true;
 

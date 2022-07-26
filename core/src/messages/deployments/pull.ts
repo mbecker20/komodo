@@ -42,7 +42,11 @@ async function pullDeploymentRepo(
     return;
   }
   app.deployActionStates.set(deploymentID, "pulling", true);
-  app.broadcast(PULL_DEPLOYMENT, { deploymentID, complete: false });
+  app.broadcast(
+    PULL_DEPLOYMENT,
+    { deploymentID, complete: false },
+    app.deploymentUserFilter(deploymentID)
+  );
   if (server.isCore) {
     const pullCle = await pull(
       join(DEPLOYMENT_REPO_PATH, containerName!),
@@ -84,7 +88,11 @@ async function pullDeploymentRepo(
       isError
     );
   }
-  app.broadcast(PULL_DEPLOYMENT, { deploymentID, complete: true });
+  app.broadcast(
+    PULL_DEPLOYMENT,
+    { deploymentID, complete: true },
+    app.deploymentUserFilter(deploymentID)
+  );
   app.deployActionStates.set(deploymentID, "pulling", false);
 }
 

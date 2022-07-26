@@ -44,7 +44,7 @@ const github = fp((app: FastifyInstance, _: {}, done: () => void) => {
       );
     } else {
       const createdUser = await app.users.create(profile);
-      app.broadcast(USER_UPDATE, {});
+      app.broadcast(USER_UPDATE, {}, app.adminUserFilter);
       const jwt = app.jwt.sign(
         { id: createdUser._id!.toString() },
         { expiresIn: TOKEN_EXPIRES_IN }

@@ -19,7 +19,7 @@ const local = fp((app: FastifyInstance, _: {}, done: () => void) => {
           username,
           password: hashedPass,
         });
-        app.broadcast(USER_UPDATE, {});
+        app.broadcast(USER_UPDATE, {}, app.adminUserFilter);
         const jwt = app.jwt.sign(
           { id: user._id!.toString() },
           { expiresIn: TOKEN_EXPIRES_IN }

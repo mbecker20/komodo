@@ -33,7 +33,11 @@ async function updateBuild(
     );
     return;
   }
-  app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: false });
+  app.broadcast(
+    UPDATE_BUILD,
+    { buildID: build._id, complete: false },
+    app.buildUserFilter(build._id!)
+  );
   app.buildActionStates.set(build._id!, "updating", true);
   try {
     build.pullName = toDashedName(build.name);
@@ -67,7 +71,11 @@ async function updateBuild(
       note
     );
     app.buildActionStates.set(build._id!, "updating", false);
-    app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: true });
+    app.broadcast(
+      UPDATE_BUILD,
+      { buildID: build._id, complete: true },
+      app.buildUserFilter(build._id!)
+    );
     return build;
   } catch (error) {
     addBuildUpdate(
@@ -83,7 +91,11 @@ async function updateBuild(
       true
     );
     app.buildActionStates.set(build._id!, "updating", false);
-    app.broadcast(UPDATE_BUILD, { buildID: build._id, complete: true });
+    app.broadcast(
+      UPDATE_BUILD,
+      { buildID: build._id, complete: true },
+      app.buildUserFilter(build._id!)
+    );
   }
 }
 

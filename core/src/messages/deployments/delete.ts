@@ -44,7 +44,11 @@ async function deleteDeployment(
     return;
   }
   app.deployActionStates.set(deploymentID, "fullDeleting", true);
-  app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: false });
+  app.broadcast(
+    DELETE_DEPLOYMENT,
+    { deploymentID, complete: false },
+    app.deploymentUserFilter(deploymentID, deployment)
+  );
   try {
     if (deployment.image || deployment.buildID) {
       const server =
@@ -75,11 +79,19 @@ async function deleteDeployment(
       user.username,
       note
     );
-    app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: true });
+    app.broadcast(
+      DELETE_DEPLOYMENT,
+      { deploymentID, complete: true },
+      app.deploymentUserFilter(deploymentID, deployment)
+    );
     return true;
   } catch (error) {
     app.deployActionStates.set(deploymentID, "fullDeleting", false);
-    app.broadcast(DELETE_DEPLOYMENT, { deploymentID, complete: true });
+    app.broadcast(
+      DELETE_DEPLOYMENT,
+      { deploymentID, complete: true },
+      app.deploymentUserFilter(deploymentID, deployment)
+    );
     addSystemUpdate(
       app,
       DELETE_DEPLOYMENT,

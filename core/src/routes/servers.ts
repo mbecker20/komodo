@@ -170,7 +170,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       await app.servers.updateById(id, { $push: { owners: owner } });
-      app.broadcast(SERVER_OWNER_UPDATE, { serverID: id });
+      app.broadcast(SERVER_OWNER_UPDATE, { serverID: id }, app.serverUserFilter(id));
       res.send("owner added");
     }
   );
@@ -194,7 +194,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       await app.servers.updateById(id, { $pull: { owners: owner } });
-      app.broadcast(SERVER_OWNER_UPDATE, { serverID: id });
+      app.broadcast(SERVER_OWNER_UPDATE, { serverID: id }, app.serverUserFilter(id));
       res.send("owner removed");
     }
   );

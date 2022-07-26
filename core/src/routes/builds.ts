@@ -77,7 +77,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       await app.builds.updateById(id, { $push: { owners: owner } });
-      app.broadcast(BUILD_OWNER_UPDATE, { buildID: id });
+      app.broadcast(BUILD_OWNER_UPDATE, { buildID: id }, app.buildUserFilter(id));
       res.send("owner added");
     }
   );
@@ -101,7 +101,7 @@ const builds = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       await app.builds.updateById(id, { $pull: { owners: owner } });
-      app.broadcast(BUILD_OWNER_UPDATE, { buildID: id });
+      app.broadcast(BUILD_OWNER_UPDATE, { buildID: id }, app.buildUserFilter(id));
       res.send("owner removed");
     }
   );

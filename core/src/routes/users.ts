@@ -49,7 +49,7 @@ const users = fp((app: FastifyInstance, _: {}, done: () => void) => {
     app.deployments.updateMany({}, { $pull: { owners: toDelete.username } });
     app.builds.updateMany({}, { $pull: { owners: toDelete.username } });
     app.servers.updateMany({}, { $pull: { owners: toDelete.username } });
-    app.broadcast(USER_UPDATE, {});
+    app.broadcast(USER_UPDATE, {}, app.adminUserFilter);
     res.send(`deleted user ${id} (${toDelete.username})`);
   });
 
@@ -82,7 +82,7 @@ const users = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
     const update = filterOutUndefined({ enabled, permissions });
     await app.users.updateById(userID, filterOutUndefined(update));
-    app.broadcast(USER_UPDATE, {});
+    app.broadcast(USER_UPDATE, {}, app.adminUserFilter);
     res.send(
       `set user at ${userID} to ${Object.keys(update)
         .map((field) => `${field}: ${update[field]}`)

@@ -22,7 +22,7 @@ export async function addBuildUpdate(
     isError,
     timestamp: timestamp(),
   });
-  app.broadcast(ADD_UPDATE, { update });
+  app.broadcast(ADD_UPDATE, { update }, app.buildUserFilter(buildID));
 }
 
 export async function addDeploymentUpdate(
@@ -45,7 +45,7 @@ export async function addDeploymentUpdate(
     isError,
     timestamp: timestamp(),
   });
-  app.broadcast(ADD_UPDATE, { update });
+  app.broadcast(ADD_UPDATE, { update }, app.deploymentUserFilter(deploymentID));
 }
 
 export async function addServerUpdate(
@@ -68,7 +68,7 @@ export async function addServerUpdate(
     isError,
     timestamp: timestamp(),
   });
-  app.broadcast(ADD_UPDATE, { update });
+  app.broadcast(ADD_UPDATE, { update }, app.serverUserFilter(serverID));
 }
 
 export async function addSystemUpdate(
@@ -89,28 +89,28 @@ export async function addSystemUpdate(
     isError,
     timestamp: timestamp(),
   });
-  app.broadcast(ADD_UPDATE, { update });
+  app.broadcast(ADD_UPDATE, { update }, app.adminUserFilter);
 }
 
-export async function addPm2Update(
-  app: FastifyInstance,
-  pm2DeploymentID: string,
-  operation: string,
-  command: string,
-  log: Log,
-  operator: string,
-  note = "",
-  isError = false
-) {
-  const update = await app.updates.create({
-    pm2DeploymentID,
-    operation,
-    command,
-    log,
-    operator,
-    note,
-    isError,
-    timestamp: timestamp(),
-  });
-  app.broadcast(ADD_UPDATE, { update });
-}
+// export async function addPm2Update(
+//   app: FastifyInstance,
+//   pm2DeploymentID: string,
+//   operation: string,
+//   command: string,
+//   log: Log,
+//   operator: string,
+//   note = "",
+//   isError = false
+// ) {
+//   const update = await app.updates.create({
+//     pm2DeploymentID,
+//     operation,
+//     command,
+//     log,
+//     operator,
+//     note,
+//     isError,
+//     timestamp: timestamp(),
+//   });
+//   app.broadcast(ADD_UPDATE, { update });
+// }

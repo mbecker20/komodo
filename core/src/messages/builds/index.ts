@@ -30,7 +30,11 @@ async function buildMessages(
     case CREATE_BUILD:
       const created = message.build && (await createBuild(app, user, message));
       if (created) {
-        app.broadcast(CREATE_BUILD, { build: created });
+        app.broadcast(
+          CREATE_BUILD,
+          { build: created },
+          app.buildUserFilter(created._id!)
+        );
       }
       return true;
 
@@ -42,7 +46,11 @@ async function buildMessages(
       const updated =
         message.build && (await updateBuild(app, client, user, message));
       if (updated) {
-        app.broadcast(UPDATE_BUILD, { build: updated });
+        app.broadcast(
+          UPDATE_BUILD,
+          { build: updated },
+          app.buildUserFilter(updated._id)
+        );
       } else {
         sendAlert(client, "bad", "update not successful");
       }
@@ -63,10 +71,14 @@ async function buildMessages(
           sendAlert(client, "bad", "could not find build");
           return true;
         }
-        app.broadcast(CLONE_BUILD_REPO, {
-          buildID: message.buildID,
-          complete: false,
-        });
+        app.broadcast(
+          CLONE_BUILD_REPO,
+          {
+            buildID: message.buildID,
+            complete: false,
+          },
+          app.buildUserFilter(message.buildID)
+        );
         app.buildActionStates.set(message.buildID, "cloning", true);
         await remove(join(BUILD_REPO_PATH, build.pullName!)).catch();
         if (build.repo) {
@@ -75,10 +87,14 @@ async function buildMessages(
           sendAlert(client, "bad", "build has no repo configured");
         }
         app.buildActionStates.set(message.buildID, "cloning", false);
-        app.broadcast(CLONE_BUILD_REPO, {
-          buildID: message.buildID,
-          complete: true,
-        });
+        app.broadcast(
+          CLONE_BUILD_REPO,
+          {
+            buildID: message.buildID,
+            complete: true,
+          },
+          app.buildUserFilter(message.buildID)
+        );
       }
       return true;
 

@@ -39,10 +39,14 @@ async function recloneDeployment(
     return;
   }
   app.deployActionStates.set(deploymentID, "recloning", true);
-  app.broadcast(RECLONE_DEPLOYMENT_REPO, {
-    deploymentID,
-    complete: false,
-  });
+  app.broadcast(
+    RECLONE_DEPLOYMENT_REPO,
+    {
+      deploymentID,
+      complete: false,
+    },
+    app.deploymentUserFilter(deploymentID)
+  );
   try {
     // this assumes no change to deployment name (ie cannot rename deployments after created)
     if (deployment.repo) {
@@ -65,10 +69,14 @@ async function recloneDeployment(
     );
   }
   app.deployActionStates.set(deployment._id!, "recloning", false);
-  app.broadcast(RECLONE_DEPLOYMENT_REPO, {
-    deploymentID,
-    complete: true,
-  });
+  app.broadcast(
+    RECLONE_DEPLOYMENT_REPO,
+    {
+      deploymentID,
+      complete: true,
+    },
+    app.deploymentUserFilter(deploymentID)
+  );
 }
 
 export default recloneDeployment;

@@ -46,7 +46,11 @@ async function deployDeployment(
   }
   if (app.deployActionStates.get(deploymentID, DEPLOYING)) return;
   app.deployActionStates.set(deploymentID, DEPLOYING, true);
-  app.broadcast(DEPLOY, { complete: false, deploymentID });
+  app.broadcast(
+    DEPLOY,
+    { complete: false, deploymentID },
+    app.deploymentUserFilter(deploymentID)
+  );
   try {
     const server =
       deployment.serverID === app.core._id
@@ -117,7 +121,11 @@ async function deployDeployment(
       true
     );
   }
-  app.broadcast(DEPLOY, { complete: true, deploymentID });
+  app.broadcast(
+    DEPLOY,
+    { complete: true, deploymentID },
+    app.deploymentUserFilter(deploymentID)
+  );
   app.deployActionStates.set(deploymentID, DEPLOYING, false);
 }
 
