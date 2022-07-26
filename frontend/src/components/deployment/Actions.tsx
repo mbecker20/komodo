@@ -81,7 +81,7 @@ const Actions: Component<{}> = (p) => {
         </Switch>
         <Show when={deployment().repo}>
           <Flex class={combineClasses("action shadow", themeClass())}>
-            repo
+            frontend
             <Flex>
               <Reclone />
               <Pull />
