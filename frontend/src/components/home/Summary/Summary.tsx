@@ -1,8 +1,8 @@
-import { ContainerStatus } from "@monitor/types";
 import { Component, createMemo } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useTheme } from "../../../state/ThemeProvider";
 import { combineClasses } from "../../../util/helpers";
+import Flex from "../../util/layout/Flex";
 import Grid from "../../util/layout/Grid";
 import s from "../home.module.scss";
 
@@ -10,23 +10,33 @@ const Summary: Component<{}> = (p) => {
   const deployentCount = useDeploymentCount();
   const serverCount = useServerCount();
   const { builds } = useAppState();
-	const { themeClass } = useTheme();
+  const { themeClass } = useTheme();
   return (
     <Grid class={combineClasses(s.Summary, "card shadow", themeClass())}>
-			<h1>summary</h1>
-      <div>
-        servers: {serverCount().total} ({serverCount().healthy} healthy,{" "}
-        {serverCount().unhealthy} unhealthy, {serverCount().disabled} disabled)
-      </div>
-      <div>
-        deployments: {deployentCount().total} ({deployentCount().running}{" "}
-        running, {deployentCount().stopped} stopped,{" "}
-        {deployentCount().notDeployed} not deployed, {deployentCount().unknown}{" "}
-        unknown)
-      </div>
-			<div>
-				builds: {builds.ids()?.length}
-			</div>
+      <h1>summary</h1>
+      <Flex justifyContent="space-between">
+        <Flex gap="0.2rem">
+          deployments: <h2>{deployentCount().total}</h2>
+        </Flex>
+        <Flex gap="0.2rem">
+          <h2 class="text-green">{deployentCount().running}</h2> running,
+          <h2 class="text-red">{deployentCount().stopped}</h2> stopped,
+          <h2 class="text-blue">{deployentCount().notDeployed}</h2> not
+          deployed,
+          <h2 class="text-orange">{deployentCount().unknown}</h2> unknown
+        </Flex>
+      </Flex>
+      <Flex justifyContent="space-between">
+        <Flex gap="0.2rem" alignItems="center">
+          servers: <h2>{serverCount().total}</h2>
+        </Flex>
+        <Flex gap="0.2rem" alignItems="center">
+          <h2 class="text-green">{serverCount().healthy}</h2> healthy,
+          <h2 class="text-red">{serverCount().unhealthy}</h2> unhealthy,
+          <h2 class="text-blue">{serverCount().disabled}</h2> disabled
+        </Flex>
+      </Flex>
+      <div>builds: {builds.ids()?.length}</div>
     </Grid>
   );
 };

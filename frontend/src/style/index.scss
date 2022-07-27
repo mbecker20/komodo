@@ -257,6 +257,7 @@ svg.dark {
   border: solid 1px c.$lightgreen;
 }
 
+
 .red {
   background-color: rgba(c.$red, 0.8);
 }
@@ -287,6 +288,22 @@ svg.dark {
 
 .orange-outlined:hover {
   border: solid 1px c.$lightorange;
+}
+
+.text-green {
+  color: c.$textgreen;
+}
+
+.text-red {
+  color: c.$textred;
+}
+
+.text-blue {
+  color: c.$textblue;
+}
+
+.text-orange {
+  color: c.$textorange;
 }
 
 .shadow {
