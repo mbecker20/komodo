@@ -19,14 +19,14 @@ export async function notifySlack(text: string) {
 
 export async function notifySlackAdvanced(
   text: string,
-  blocks: (Block | KnownBlock)[]
+  blocks: (Block | KnownBlock | undefined)[]
 ) {
   try {
     await slack.chat.postMessage({
       token: SECRETS.SLACK_TOKEN,
       channel: SLACK_CHANNEL,
       text,
-      blocks,
+      blocks: blocks.filter(e => e) as (Block | KnownBlock)[],
     });
   } catch (error) {
     console.log("POST TO SLACK FAILED @", readableTimestamp(timestamp()));
@@ -68,16 +68,16 @@ export async function notifySlackCpu(
           text: `cpu: *${usage}%*`,
         },
       },
-      {
+      toNotify && toNotify.length > 0 ? {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: toNotify ? toNotify.reduce(
+          text: toNotify.reduce(
             (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
             ""
-          ) : "",
+          ),
         },
-      },
+      } : undefined,
     ]
   );
 }
@@ -110,18 +110,18 @@ export async function notifySlackMem(
           text: `memory: ${usedMem} MB of ${totalMem} MB (*${memPercentage}%*)`,
         },
       },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: toNotify
-            ? toNotify.reduce(
+      toNotify && toNotify.length > 0
+        ? {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: toNotify.reduce(
                 (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
                 ""
-              )
-            : "",
-        },
-      },
+              ),
+            },
+          }
+        : undefined,
     ]
   );
 }
@@ -154,18 +154,18 @@ export async function notifySlackDisk(
           text: `disk: using ${usedDisk} GB of ${totalDisk} GB (*${diskPercentage}%*)`,
         },
       },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: toNotify
-            ? toNotify.reduce(
+      toNotify && toNotify.length > 0
+        ? {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: toNotify.reduce(
                 (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
                 ""
-              )
-            : "",
-        },
-      },
+              ),
+            },
+          }
+        : undefined,
     ]
   );
 }
@@ -186,18 +186,18 @@ export async function notifySlackUnreachable(
           text: `*${name}*${region ? ` (${region})` : ""} is unreachable ❌`,
         },
       },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: toNotify
-            ? toNotify.reduce(
+      toNotify && toNotify.length > 0
+        ? {
+            type: "section",
+            text: {
+              type: "mrkdwn",
+              text: toNotify.reduce(
                 (prev, curr) => (prev ? " <@" + curr + ">" : "<@" + curr + ">"),
                 ""
-              )
-            : "",
-        },
-      },
+              ),
+            },
+          }
+        : undefined,
     ]
   );
 }
