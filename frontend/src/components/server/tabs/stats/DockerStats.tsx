@@ -24,7 +24,16 @@ const DockerStats: Component<{}> = (p) => {
    createEffect(load);
 	const { themeClass } = useTheme();
 	return (
-    <Show when={stats()} fallback={<Loading type="three-dot" scale={0.8} style={{ "place-self": "center" }} />}>
+    <Show
+      when={stats()}
+      fallback={
+        <Loading
+          type="three-dot"
+          scale={0.8}
+          style={{ "place-self": "center" }}
+        />
+      }
+    >
       <Grid class={combineClasses(s.StatsContainer, themeClass())}>
         <Flex justifyContent="space-between">
           <h1>container stats</h1>
@@ -43,16 +52,14 @@ const DockerStats: Component<{}> = (p) => {
             </Show>
           </Button>
         </Flex>
-        <Grid style={{ padding: "0.5rem" }}>
+        <Grid class="scroller" style={{ padding: "0.5rem", maxHeight: "30vh" }}>
           <For each={stats()}>
             {(stat) => (
               <Flex alignItems="center" justifyContent="space-between">
                 <h2>{stat.Name}</h2>
                 <Flex alignItems="center">
                   <div>cpu: {stat.CPUPerc}</div>
-                  <div>
-                    mem: {stat.MemPerc}
-                  </div>
+                  <div>mem: {stat.MemPerc}</div>
                 </Flex>
               </Flex>
             )}

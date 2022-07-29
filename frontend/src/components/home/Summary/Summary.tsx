@@ -1,4 +1,4 @@
-import { Component, createMemo } from "solid-js";
+import { Component, createMemo, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useTheme } from "../../../state/ThemeProvider";
 import { combineClasses } from "../../../util/helpers";
@@ -19,11 +19,20 @@ const Summary: Component<{}> = (p) => {
           deployments: <h2>{deployentCount().total}</h2>
         </Flex>
         <Flex gap="0.2rem">
-          <h2 class="text-green">{deployentCount().running}</h2> running,
-          <h2 class="text-red">{deployentCount().stopped}</h2> stopped,
-          <h2 class="text-blue">{deployentCount().notDeployed}</h2> not
-          deployed,
-          <h2 class="text-orange">{deployentCount().unknown}</h2> unknown
+          <h2 class="text-green">{deployentCount().running}</h2> running
+          <Show when={deployentCount().stopped > 0}>
+            {", "}
+            <h2 class="text-red">{deployentCount().stopped}</h2> stopped
+          </Show>
+          <Show when={deployentCount().notDeployed > 0}>
+            {", "}
+            <h2 class="text-blue">{deployentCount().notDeployed}</h2> not
+            deployed
+          </Show>
+          <Show when={deployentCount().unknown > 0}>
+            {", "}
+            <h2 class="text-orange">{deployentCount().unknown}</h2> unknown
+          </Show>
         </Flex>
       </Flex>
       <Flex justifyContent="space-between">
@@ -31,9 +40,15 @@ const Summary: Component<{}> = (p) => {
           servers: <h2>{serverCount().total}</h2>
         </Flex>
         <Flex gap="0.2rem" alignItems="center">
-          <h2 class="text-green">{serverCount().healthy}</h2> healthy,
-          <h2 class="text-red">{serverCount().unhealthy}</h2> unhealthy,
-          <h2 class="text-blue">{serverCount().disabled}</h2> disabled
+          <h2 class="text-green">{serverCount().healthy}</h2> healthy
+          <Show when={serverCount().unhealthy > 0}>
+            {", "}
+            <h2 class="text-red">{serverCount().unhealthy}</h2> unhealthy
+          </Show>
+          <Show when={serverCount().disabled > 0}>
+            {", "}
+            <h2 class="text-blue">{serverCount().disabled}</h2> disabled
+          </Show>
         </Flex>
       </Flex>
       <div>builds: {builds.ids()?.length}</div>
