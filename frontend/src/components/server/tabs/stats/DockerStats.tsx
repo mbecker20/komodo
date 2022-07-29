@@ -13,17 +13,17 @@ import Loading from "../../../util/loading/Loading";
 import s from "./stats.module.scss";
 
 const DockerStats: Component<{}> = (p) => {
-	const { selected } = useAppState();
-	 const [stats, setStats] = createSignal<DockerStat[]>();
-   const [refreshing, setRefreshing] = createSignal(false);
-   const load = () => {
-     if (selected.id()) {
-       getServerStats(selected.id()).then(setStats);
-     }
-   };
-   createEffect(load);
-	const { themeClass } = useTheme();
-	return (
+  const { selected } = useAppState();
+  const [stats, setStats] = createSignal<DockerStat[]>();
+  const [refreshing, setRefreshing] = createSignal(false);
+  const load = () => {
+    if (selected.id()) {
+      getServerStats(selected.id()).then(setStats);
+    }
+  };
+  createEffect(load);
+  const { themeClass } = useTheme();
+  return (
     <Show
       when={stats()}
       fallback={
@@ -52,7 +52,11 @@ const DockerStats: Component<{}> = (p) => {
             </Show>
           </Button>
         </Flex>
-        <Grid class="scroller" style={{ padding: "0.5rem", maxHeight: "30vh" }}>
+        <Grid
+          class="scroller"
+          gap="0.5rem"
+          style={{ padding: "0.5rem", "max-height": "30vh" }}
+        >
           <For each={stats()}>
             {(stat) => (
               <Flex alignItems="center" justifyContent="space-between">
@@ -68,6 +72,6 @@ const DockerStats: Component<{}> = (p) => {
       </Grid>
     </Show>
   );
-}
+};
 
 export default DockerStats;
