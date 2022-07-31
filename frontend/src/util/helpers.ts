@@ -69,7 +69,7 @@ export function deploymentStatusClass(
 }
 
 export function deploymentHeaderStatusClass(
-  status: "not deployed" | "created" | "running" | "exited",
+  status: "not deployed" | "created" | "running" | "exited" | "unknown",
   themeClass: () => string | undefined
 ) {
   switch (status) {

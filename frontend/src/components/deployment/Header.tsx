@@ -27,10 +27,13 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
     : () => deployments.get(selected.id())!;
   const { permissions, username } = useUser();
   const state = () =>
-    deployment()!.status === "not deployed"
+    deployment()!.status === "unknown"
+      ? "unknown"
+      : deployment()!.status === "not deployed"
       ? "not deployed"
       : (deployment()!.status as ContainerStatus).State;
   const status = () =>
+    deployment()!.status === "unknown" ||
     deployment()!.status === "not deployed"
       ? undefined
       : (deployment()!.status as ContainerStatus).Status.toLowerCase();
@@ -59,7 +62,7 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
         class={combineClasses("card shadow", themeClass())}
         style={{
           position: "relative",
-          cursor: (isMobile() && userCanUpdate()) ? "pointer" : undefined,
+          cursor: isMobile() && userCanUpdate() ? "pointer" : undefined,
         }}
         onClick={() => {
           if (isMobile() && userCanUpdate()) toggleShowUpdates();
