@@ -13,6 +13,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     isCore: Boolean,
     owners: { type: [String], default: [] },
     toNotify: { type: [String], default: [] },
+    statsInterval: { type: Number, default: 5 * 60 * 1000 },
     cpuAlert: { type: Number, default: CPU_USAGE_NOTIFY_LIMIT },
     memAlert: { type: Number, default: MEM_USAGE_NOTIFY_LIMIT },
     diskAlert: { type: Number, default: DISK_USAGE_NOTIFY_LIMIT },

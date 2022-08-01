@@ -51,4 +51,4 @@ export const CLEAR_ALREADY_ALERTED_INTERVAL = getNumberFromEnv("CLEAR_ALREADY_AL
 export const SLACK_CHANNEL = getStringFromEnv("SLACK_CHANNEL", "");
 export const CPU_USAGE_NOTIFY_LIMIT = getNumberFromEnv("CPU_USAGE_NOTIFY_LIMIT", 50);
 export const MEM_USAGE_NOTIFY_LIMIT = getNumberFromEnv("MEM_USAGE_NOTIFY_LIMIT", 75);
-export const DISK_USAGE_NOTIFY_LIMIT = getNumberFromEnv("DISK_USAGE_NOTIFY_LIMIT", 75);
+export const DISK_USAGE_NOTIFY_LIMIT = getNumberFromEnv("DISK_USAGE_NOTIFY_LIMIT", 75); 

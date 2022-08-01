@@ -53,6 +53,7 @@ export type Server = {
   isCore?: boolean;
   owners: string[];
   toNotify: string[];
+  statsInterval?: number;
   // usage stats threshold
   cpuAlert?: number; // 0 - 100
   memAlert?: number; // 0 - 100
@@ -230,6 +231,12 @@ export type CoreSecrets = PeripherySecrets & {
   SLACK_TOKEN: string;
   GITHUB_WEBHOOK_SECRET: string;
 };
+
+export type StoredStats = SystemStats & {
+  _id?: string,
+  serverID: string,
+  ts: number,
+}
 
 export type SystemStats = {
   cpu: number;
