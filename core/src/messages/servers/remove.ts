@@ -26,6 +26,8 @@ async function removeServer(
     }
     app.deployments.findByIdAndDelete(deployment._id!);
   });
+  app.serverActionStates.delete(serverID);
+  app.statsIntervals.remove(serverID);
   addSystemUpdate(app, REMOVE_SERVER, "Remove Server", {}, user.username, note);
   return true;
 }

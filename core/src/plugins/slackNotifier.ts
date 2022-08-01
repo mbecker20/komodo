@@ -1,3 +1,4 @@
+import { Server, SystemStats } from "@monitor/types";
 import { getSystemStats } from "@monitor/util-node";
 import { Block, KnownBlock } from "@slack/web-api";
 import { FastifyInstance } from "fastify";
@@ -23,6 +24,7 @@ import {
 declare module "fastify" {
   interface FastifyInstance {
     dailyInterval: () => Promise<void>;
+    notifySlackStats: (server: Server, stats: SystemStats) => Promise<void>;
   }
 }
 
@@ -225,6 +227,10 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       unreachable = [];
     }, CLEAR_ALREADY_ALERTED_INTERVAL);
   }
+
+  app.decorate("notifySlackStats", async () => {
+    
+  });
 
   done();
 });
