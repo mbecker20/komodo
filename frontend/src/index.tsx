@@ -16,6 +16,7 @@ export const URL =
   import.meta.env.MODE === "production"
     ? location.origin
     : "http://localhost:9000";
+    
 export const WS_URL = URL.replace("https", "wss").replace("http", "ws") + "/ws";
 
 export const client = new Client(URL);
