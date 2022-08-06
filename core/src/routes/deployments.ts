@@ -45,7 +45,7 @@ async function getDeployments(
     user.permissions! > 1
       ? { serverID: server._id }
       : { serverID: server._id, owners: user.username },
-    "name containerName serverID owners repo isCore"
+    "name containerName serverID buildID owners repo isCore"
   );
   if (await serverStatusPeriphery(server)) {
     const status = server.isCore
