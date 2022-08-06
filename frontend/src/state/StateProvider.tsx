@@ -16,6 +16,7 @@ import {
   useDeployments,
   useSelected,
   useServers,
+  useServerStats,
   useUpdates,
 } from "./hooks";
 import socket from "./socket";
@@ -23,6 +24,7 @@ import { useUser } from "./UserProvider";
 
 export type State = {
   servers: ReturnType<typeof useServers>;
+  serverStats: ReturnType<typeof useServerStats>;
   builds: ReturnType<typeof useBuilds>;
   deployments: ReturnType<typeof useDeployments>;
   updates: ReturnType<typeof useUpdates>;
@@ -57,6 +59,7 @@ export const AppStateProvider: Component<{}> = (p) => {
   );
   const state: State = {
     servers: useServers(),
+    serverStats: useServerStats(),
     builds: useBuilds(),
     deployments: useDeployments(),
     updates: useUpdates(),

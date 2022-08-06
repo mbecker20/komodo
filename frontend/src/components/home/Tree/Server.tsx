@@ -11,12 +11,10 @@ import Grid from "../../util/layout/Grid";
 import Deployment from "./Deployment";
 import s from "../home.module.scss";
 import { NewDeployment } from "./New";
-import { getServerSystemStats } from "../../../util/query";
 import Loading from "../../util/loading/Loading";
-import { SystemStats } from "@monitor/types";
 
 const Server: Component<{ id: string }> = (p) => {
-  const { servers, deployments, selected } = useAppState();
+  const { servers, serverStats, deployments, selected } = useAppState();
   const [open, toggleOpen] = useLocalStorageToggle(p.id + "-homeopen");
   const { permissions, username } = useUser();
   const server = () => servers.get(p.id);
@@ -27,14 +25,13 @@ const Server: Component<{ id: string }> = (p) => {
     );
   });
   const { themeClass } = useTheme();
-  const [stats, setStats] = createSignal<SystemStats>();
   const [reloading, setReloading] = createSignal(false);
+  const stats = () => serverStats.get(p.id);
   const reloadStats = async () => {
     setReloading(true);
-    await getServerSystemStats(p.id).then(setStats);
+    await serverStats.load(p.id);
     setReloading(false);
   };
-  reloadStats();
   return (
     <Show when={server()}>
       <div class={combineClasses(s.Server, "shadow", themeClass())}>
