@@ -4,19 +4,23 @@ import Grid from "../util/layout/Grid";
 import Update from "../update/Update";
 import { getUpdates } from "../../util/query";
 import { useAppState } from "../../state/StateProvider";
-import { ADD_UPDATE } from "@monitor/util";
+import { ADD_UPDATE, BUILD } from "@monitor/util";
 import { useTheme } from "../../state/ThemeProvider";
 import { combineClasses } from "../../util/helpers";
 import Button from "../util/Button";
 
 const Updates: Component<{}> = (p) => {
-  const { ws, selected } = useAppState();
+  const { ws, selected, deployments } = useAppState();
   const selectedUpdates = useArray(() =>
     getUpdates({ deploymentID: selected.id() })
   );
+  const buildID = () => deployments.get(selected.id())?.buildID;
   onCleanup(
     ws.subscribe([ADD_UPDATE], ({ update }) => {
-      if (update.deploymentID === selected.id()) {
+      if (
+        update.deploymentID === selected.id() ||
+        (buildID() && buildID() === update.buildID && update.operation === BUILD)
+      ) {
         selectedUpdates.add(update);
       }
     })
