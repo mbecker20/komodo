@@ -9,6 +9,7 @@ import Button from "../util/Button";
 import Circle from "../util/Circle";
 import Icon from "../util/Icon";
 import Flex from "../util/layout/Flex";
+import Grid from "../util/layout/Grid";
 import HoverMenu from "../util/menu/HoverMenu";
 import Menu from "../util/menu/Menu";
 import Account from "./Account";
@@ -24,25 +25,42 @@ const mobileStyle: JSX.CSSProperties = {
   width: "calc(100vw - 2rem)",
 };
 
+// const Topbar: Component = () => {
+//   const { themeClass } = useTheme();
+//   return (
+//     <Flex
+//       class={combineClasses(s.Topbar, "shadow", themeClass())}
+//       justifyContent="space-between"
+//       alignItems="center"
+//       style={{ height: inPx(TOPBAR_HEIGHT) }}
+//     >
+//       <LeftTopbar />
+//       <RightSide />
+//     </Flex>
+//   );
+// };
+
 const Topbar: Component = () => {
   const { themeClass } = useTheme();
   return (
-    <Flex
-      class={combineClasses(s.Topbar, "shadow", themeClass())}
-      justifyContent="space-between"
-      alignItems="center"
+    <Grid
+      class={combineClasses(s.GridTopbar, "shadow", themeClass())}
+      placeItems="center"
       style={{ height: inPx(TOPBAR_HEIGHT) }}
     >
-      <LeftTopbar />
+      <LeftSide />
+      <SearchProvider>
+        <Search />
+      </SearchProvider>
       <RightSide />
-    </Flex>
+    </Grid>
   );
 };
 
-const LeftTopbar: Component = () => {
+const LeftSide: Component = () => {
   const { sidebar, selected, ws } = useAppState();
   return (
-    <Flex alignItems="center" style={{ padding: "0rem 0.5rem" }}>
+    <Flex alignItems="center" style={{ padding: "0rem 0.5rem", "place-self": "center start" }}>
       {/* <Button class="grey" onClick={sidebar.toggle}>
         <Icon type="menu" width="1.15rem" />
       </Button> */}
@@ -70,11 +88,15 @@ const RightSide: Component = () => {
   const [menu, setMenu] = createSignal<"updates" | "account">();
   const close = () => setMenu(undefined);
   return (
-    <Flex gap="0.5rem" alignItems="center" style={{ padding: "0rem 0.5rem" }}>
-      <SearchProvider>
+    <Flex
+      gap="0.5rem"
+      alignItems="center"
+      style={{ padding: "0rem 0.5rem", "place-self": "center end" }}
+    >
+      {/* <SearchProvider>
         <Search />
-      </SearchProvider>
-      <Menu
+      </SearchProvider> */}
+      {/* <Menu
         show={menu() === "updates"}
         close={close}
         menuStyle={isMobile() ? mobileStyle : undefined}
@@ -91,7 +113,7 @@ const RightSide: Component = () => {
         content={<Updates />}
         position="bottom right"
         backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
-      />
+      /> */}
       <Menu
         show={menu() === "account"}
         close={close}

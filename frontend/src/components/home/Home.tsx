@@ -9,13 +9,13 @@ import Builds from "./Tree/Builds";
 import s from "./home.module.scss";
 import AddServer from "./Tree/AddServer";
 import Summary from "./Summary/Summary";
+import Updates from "./Updates";
 
 const Home: Component<{}> = (p) => {
   const { servers } = useAppState();
   const serverIDs = () => servers.loaded() && servers.ids();
   return (
-    <Grid class={s.Home} placeItems="start center">
-      <Summary />
+    <Grid gap="0rem" class={s.Home} placeItems="start center">
       <Tabs
         localStorageKey="home-tab"
         containerClass={s.Tabs}
@@ -35,6 +35,10 @@ const Home: Component<{}> = (p) => {
           },
         ]}
       />
+      <Grid gap="0rem" style={{ width: "80%" }}>
+        <Summary />
+        <Updates />
+      </Grid>
     </Grid>
   );
 };

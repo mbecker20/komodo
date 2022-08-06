@@ -11,6 +11,18 @@
 	background-color: c.$grey-dark;
 }
 
+.GridTopbar {
+	grid-area: topbar;
+	width: 100%;
+	background-color: c.$grey;
+	z-index: 90;
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.GridTopbar:global(.dark) {
+	background-color: c.$grey-dark;
+}
+
 .Monitor {
 	font-size: 1.5rem;
 	user-select: none;
@@ -18,7 +30,7 @@
 }
 
 .Search {
-	width: 12rem;
+	width: 30rem;
 	background-color: c.$lightgrey;
 }
 
@@ -29,10 +41,10 @@
 .SearchItem {
 	width: 100%;
 	font-size: 1.1rem;
-	display: grid;
+	display: flex;
 	gap: 0.2rem;
-	place-items: start;
-	justify-content: flex-start;
+	align-items: center;
+	justify-content: space-between;
 	transition: all 250ms ease-in-out;
 }
 

@@ -39,7 +39,7 @@ export const Search: Component<{}> = (p) => {
     <Menu
       show={open.value()}
       close={() => open.close(inputRef)}
-      position="bottom right"
+      position="bottom center"
       menuStyle={{
         gap: "0.5rem",
         ...(isMobile() ? mobileStyle : {}),
@@ -95,7 +95,7 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
       <ControlledTabs
         selected={tab.selected}
         set={tab.set}
-        containerStyle={{ width: isMobile() ? "100%" : "350px", gap: "0.5rem" }}
+        containerStyle={{ width: isMobile() ? "100%" : "30rem", gap: "0.5rem" }}
         tabs={[
           {
             title: "deployments",
@@ -138,23 +138,22 @@ const Deployments: Component<{ close: () => void }> = (p) => {
               p.close();
             }}
           >
-            <Flex alignItems="center">
-              {deployment.name}{" "}
-              <Circle
-                class={deploymentStatusClass(
-                  deployments.state(deployment._id!)
-                )}
-              />
-            </Flex>
-            <Flex
-              alignItems="center"
-              gap="0.2rem"
-              style={{ opacity: 0.6, "font-size": "0.9rem" }}
-            >
-              {servers.get(deployment.serverID!)?.name}
-              <Icon type="caret-right" width="0.7rem" />
-              deployment
-            </Flex>
+            <Grid gap="0rem">
+              <Flex alignItems="center">{deployment.name} </Flex>
+              <Flex
+                alignItems="center"
+                gap="0.2rem"
+                style={{ opacity: 0.6, "font-size": "0.9rem" }}
+              >
+                {servers.get(deployment.serverID!)?.name}
+                <Icon type="caret-right" width="0.7rem" />
+                deployment
+              </Flex>
+            </Grid>
+            <Circle
+              class={deploymentStatusClass(deployments.state(deployment._id!))}
+              size={1.25}
+            />
           </Button>
         )}
       </For>
@@ -185,8 +184,10 @@ const Builds: Component<{ close: () => void }> = (p) => {
               p.close();
             }}
           >
-            {build.name}
-            <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</div>
+            <Grid gap="0rem">
+              {build.name}
+              <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</div>
+            </Grid>
           </Button>
         )}
       </For>
@@ -217,31 +218,33 @@ const Servers: Component<{ close: () => void }> = (p) => {
               p.close();
             }}
           >
-            <Flex alignItems="center">
-              <div>{server.name}</div>
-              <div
-                class={server.status === "OK" ? "green" : "red"}
-                style={{
-                  padding: "0.25rem",
-                  "border-radius": ".35rem",
-                  transition: "background-color 125ms ease-in-out",
-                  "font-size": "0.8rem"
-                }}
+            <Grid gap="0rem">
+              <Flex alignItems="center">
+                <div>{server.name}</div>
+              </Flex>
+              <Flex
+                alignItems="center"
+                gap="0.2rem"
+                style={{ opacity: 0.6, "font-size": "0.9rem" }}
               >
-                {server.status === "OK" ? "OK" : "NOT OK"}
-              </div>
-            </Flex>
-            <Flex
-              alignItems="center"
-              gap="0.2rem"
-              style={{ opacity: 0.6, "font-size": "0.9rem" }}
+                server
+                <Show when={server.region}>
+                  <Icon type="caret-right" width="0.7rem" />
+                  {server.region}
+                </Show>
+              </Flex>
+            </Grid>
+            <div
+              class={server.status === "OK" ? "green" : "red"}
+              style={{
+                padding: "0.25rem",
+                "border-radius": ".35rem",
+                transition: "background-color 125ms ease-in-out",
+                "font-size": "0.8rem",
+              }}
             >
-              server
-              <Show when={server.region}>
-                <Icon type="caret-right" width="0.7rem" />
-                {server.region}
-              </Show>
-            </Flex>
+              {server.status === "OK" ? "OK" : "NOT OK"}
+            </div>
           </Button>
         )}
       </For>

@@ -3,10 +3,12 @@
 .Home {
 	width: 100%;
   grid-template-columns: repeat(2, 1fr);
+  padding-top: 1rem;
 }
 
 .Tabs {
   padding: 1rem;
+  width: 80%;
 }
 
 .Container {
@@ -20,6 +22,7 @@
 	background-color: c.$lightgrey;
   height: fit-content;
   cursor: pointer;
+  width: 100%;
 }
 
 .Server:global(.dark) {
@@ -69,5 +72,13 @@
 .Summary {
   padding: 1rem;
   margin: 1rem;
-  width: 30vw;
+}
+
+.Updates {
+  padding: 1rem;
+  margin: 1rem;
+}
+
+.UpdatesContainer {
+  max-height: 50vh;
 }
