@@ -24,9 +24,13 @@ import { combineClasses } from "../../util/helpers";
 import Button from "../util/Button";
 
 const Actions: Component<{}> = (p) => {
-  const { deployments, selected } = useAppState();
+  const { deployments, builds, selected } = useAppState();
   const { permissions, username } = useUser();
   const deployment = () => deployments.get(selected.id())!;
+  const showBuild = () => {
+    const build = deployment().buildID ? builds.get(deployment().buildID!) : undefined;
+    return build ? true : false;
+  }
   const { themeClass } = useTheme();
   return (
     <Show
@@ -38,7 +42,7 @@ const Actions: Component<{}> = (p) => {
     >
       <Grid class={combineClasses("card shadow", themeClass())}>
         <h1>actions</h1>
-        <Show when={deployment().buildID}>
+        <Show when={showBuild()}>
           <Build />
         </Show>
         <Switch>
