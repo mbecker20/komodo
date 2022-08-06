@@ -1,6 +1,5 @@
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import removeServer from "../messages/servers/remove";
 
 const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.get(
