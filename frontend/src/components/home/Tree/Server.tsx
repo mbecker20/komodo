@@ -54,15 +54,15 @@ const Server: Component<{ id: string }> = (p) => {
             <Show when={server()?.status === "OK"}>
               <Show when={stats()} fallback={<Loading type="three-dot" />}>
                 <div>
-                  <div style={{ opacity: 0.7 }}>cpu:</div> {stats()?.cpu}%
+                  <div style={{ opacity: 0.7 }}>cpu:</div> {stats()?.cpu.toFixed(1)}%
                 </div>
                 <div>
                   <div style={{ opacity: 0.7 }}>mem:</div>{" "}
-                  {stats()?.mem.usedMemPercentage}%
+                  {stats()?.mem.usedMemPercentage.toFixed(1)}%
                 </div>
                 <div>
                   <div style={{ opacity: 0.7 }}>disk:</div>{" "}
-                  {stats()?.disk.usedPercentage}%
+                  {stats()?.disk.usedPercentage.toFixed(1)}%
                 </div>
                 <Show when={!reloading()} fallback={<button class="blue"><Loading type="spinner" scale={0.2}/></button>}>
                   <button
