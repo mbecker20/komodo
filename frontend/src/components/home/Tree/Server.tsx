@@ -48,7 +48,7 @@ const Server: Component<{ id: string }> = (p) => {
         >
           <Flex>
             <Icon type="chevron-down" width="1rem" />
-            <h2 style={{ opacity: 0.7 }}>{server()?.name}</h2>
+            <h1 style={{ "font-size": "1.25rem" }}>{server()?.name}</h1>
           </Flex>
           <Flex alignItems="center">
             <Show when={server()?.status === "OK"}>
