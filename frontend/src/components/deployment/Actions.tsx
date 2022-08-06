@@ -26,20 +26,20 @@ import Button from "../util/Button";
 const Actions: Component<{}> = (p) => {
   const { deployments, builds, selected } = useAppState();
   const { permissions, username } = useUser();
+  const show = () =>
+    deployment() &&
+    !deployment().isCore &&
+    (permissions() >= 2 || deployment().owners.includes(username()!));
   const deployment = () => deployments.get(selected.id())!;
   const showBuild = () => {
-    const build = deployment().buildID ? builds.get(deployment().buildID!) : undefined;
+    const build = deployment().buildID
+      ? builds.get(deployment().buildID!)
+      : undefined;
     return build ? true : false;
-  }
+  };
   const { themeClass } = useTheme();
   return (
-    <Show
-      when={
-        deployment() &&
-        !deployment().isCore &&
-        (permissions() >= 2 || deployment().owners.includes(username()!))
-      }
-    >
+    <Show when={show()}>
       <Grid class={combineClasses("card shadow", themeClass())}>
         <h1>actions</h1>
         <Show when={showBuild()}>
