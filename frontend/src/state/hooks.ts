@@ -1,10 +1,14 @@
-import { Collection, ContainerStatus, SystemStats } from "@monitor/types";
+import {
+  Collection,
+  ContainerStatus,
+  Server,
+  SystemStats,
+} from "@monitor/types";
 import {
   createEffect,
   createResource,
   createSignal,
   onCleanup,
-  Signal,
 } from "solid-js";
 import { filterOutFromObj, keepOnlyInObj } from "@monitor/util";
 import {
@@ -14,7 +18,6 @@ import {
   getServerSystemStats,
   getUpdates,
 } from "../util/query";
-import { createStore } from "solid-js/store";
 
 const pages: PageType[] = ["deployment", "server", "build", "users"];
 type PageType = "deployment" | "server" | "build" | "users" | "home";
@@ -76,15 +79,17 @@ export function useServers() {
 export function useServerStats() {
   const [stats, set] = createSignal<Collection<SystemStats | undefined>>({});
   const load = async (serverID: string) => {
-    console.log(`loading ${serverID}`);
-    const newStats = await getServerSystemStats(serverID);
-    set({ ...stats(), [serverID]: newStats });
+    set({ ...stats(), [serverID]: await getServerSystemStats(serverID) });
   };
   const loading: Collection<boolean> = {};
   return {
-    get: (serverID: string) => {
+    get: (serverID: string, server?: Server) => {
       const stat = stats()[serverID];
-      if (stat === undefined && !loading[serverID]) {
+      if (
+        stat === undefined &&
+        !loading[serverID] &&
+        (server ? server.status === "OK" : true)
+      ) {
         loading[serverID] = true;
         load(serverID);
       }

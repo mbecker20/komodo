@@ -13,7 +13,7 @@ import s from "./stats.module.scss";
 const SystemStats: Component<{}> = (p) => {
   const { selected, servers, serverStats } = useAppState();
   const [refreshingStats, setRefreshingStats] = createSignal(false);
-  const sysStats = () => serverStats.get(selected.id());
+  const sysStats = () => serverStats.get(selected.id(), servers.get(selected.id()));
   const loadStats = async () => {
     if (selected.id() && servers.get(selected.id())?.status === "OK") {
       setRefreshingStats(true);
