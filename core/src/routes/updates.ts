@@ -29,12 +29,15 @@ const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       if (user.permissions! > 1) {
+        const deployment = deploymentID ? await app.deployments.findById(deploymentID, "buildID") : undefined;
         const updates = await app.updates.getMostRecent(
           10,
-          buildID
+          deploymentID
+            ? deployment?.buildID
+              ? { $or: [{ deploymentID }, { buildID: deployment.buildID }] }
+              : { deploymentID }
+            : buildID
             ? { buildID }
-            : deploymentID
-            ? { deploymentID }
             : serverID
             ? { serverID }
             : {},
@@ -59,16 +62,19 @@ const updates = fp((app: FastifyInstance, _: {}, done: () => void) => {
       } else if (deploymentID) {
         const deployment = await app.deployments.findById(
           deploymentID,
-          "owners"
+          "owners buildID"
         );
         if (!deployment || !deployment.owners.includes(user.username)) {
           res.status(403);
           res.send("user does not have permission to access this data");
           return;
         }
+        const build = deployment.buildID ? await app.builds.findById(deployment.buildID, "owners") : undefined;
         const updates = await app.updates.getMostRecent(
           10,
-          { deploymentID },
+          build && build.owners.includes(user.username)
+            ? { $or: [{ deploymentID }, { buildID: deployment.buildID }] }
+            : { deploymentID },
           offset
         );
         res.send(updates);

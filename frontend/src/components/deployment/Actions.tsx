@@ -2,6 +2,7 @@ import { ContainerStatus } from "@monitor/types";
 import { Component, Match, Show, Switch } from "solid-js";
 import { pushNotification } from "../..";
 import {
+  BUILD,
   DELETE_CONTAINER,
   DEPLOY,
   PULL_DEPLOYMENT,
@@ -37,6 +38,9 @@ const Actions: Component<{}> = (p) => {
     >
       <Grid class={combineClasses("card shadow", themeClass())}>
         <h1>actions</h1>
+        <Show when={deployment().buildID}>
+          <Build />
+        </Show>
         <Switch>
           <Match
             when={(deployment().status as ContainerStatus)?.State === "running"}
@@ -90,6 +94,36 @@ const Actions: Component<{}> = (p) => {
         </Show>
       </Grid>
     </Show>
+  );
+};
+
+const Build: Component = () => {
+  const { ws, selected, deployments } = useAppState();
+  const { themeClass } = useTheme();
+  const actions = useActionStates();
+  const buildID = () => deployments.get(selected.id())!.buildID!;
+  return (
+    <Flex class={combineClasses("action shadow", themeClass())}>
+      build{" "}
+      <Show
+        when={!actions.building}
+        fallback={
+          <button class="green">
+            <Loading type="spinner" />
+          </button>
+        }
+      >
+        <ConfirmButton
+          color="green"
+          onConfirm={() => {
+            ws.send(BUILD, { buildID: buildID() });
+            pushNotification("ok", "building...");
+          }}
+        >
+          <Icon type="build" />
+        </ConfirmButton>
+      </Show>
+    </Flex>
   );
 };
 
