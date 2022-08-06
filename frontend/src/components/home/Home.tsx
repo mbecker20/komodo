@@ -9,7 +9,7 @@ import Builds from "./Tree/Builds";
 import s from "./home.module.scss";
 import AddServer from "./Tree/AddServer";
 import Summary from "./Summary/Summary";
-import Updates from "./Updates";
+import Updates from "./Updates/Updates";
 
 const Home: Component<{}> = (p) => {
   const { servers } = useAppState();

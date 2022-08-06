@@ -1,12 +1,12 @@
 import { Component, For, Show } from "solid-js";
-import { useAppState } from "../../state/StateProvider";
-import Grid from "../util/layout/Grid";
-import s from "./home.module.scss";
-import Update from "../update/Update";
-import { combineClasses } from "../../util/helpers";
-import { useAppDimensions } from "../../state/DimensionProvider";
-import Button from "../util/Button";
-import { useTheme } from "../../state/ThemeProvider";
+import { useAppState } from "../../../state/StateProvider";
+import Grid from "../../util/layout/Grid";
+import s from "../home.module.scss";
+import Update from "./Update";
+import { combineClasses } from "../../../util/helpers";
+import { useAppDimensions } from "../../../state/DimensionProvider";
+import Button from "../../util/Button";
+import { useTheme } from "../../../state/ThemeProvider";
 
 const Updates: Component<{}> = () => {
   const { updates } = useAppState();
@@ -21,7 +21,7 @@ const Updates: Component<{}> = () => {
         <h1>updates</h1>
         <Grid class={combineClasses(s.UpdatesContainer, "scroller")}>
           <For each={updates.collection()!}>
-            {(update) => <Update update={update} showName />}
+            {(update) => <Update update={update} />}
           </For>
           <Show when={!updates.noMore()}>
             <Button
