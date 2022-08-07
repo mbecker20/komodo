@@ -6,6 +6,12 @@
   padding-top: 1rem;
 }
 
+@media only screen and (max-width: 1200px) {
+  .Home {
+    grid-template-columns: 1fr;
+  }
+}
+
 .Tabs {
   padding: 1rem;
   width: 80%;
@@ -72,6 +78,12 @@
 .Summary {
   padding: 1rem;
   margin: 1rem;
+}
+
+@media only screen and (max-width: 1200px) {
+  .Summary {
+    width: 80%;
+  }
 }
 
 .Updates {
