@@ -90,6 +90,12 @@ export const AppStateProvider: Component<{}> = (p) => {
     }
   });
 
+  useWindowKeyDown((e) => {
+    if (e.key === "H" && e.shiftKey) {
+      state.selected.set("", "home");
+    }
+  });
+
   return (
     <context.Provider
       value={{
