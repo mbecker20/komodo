@@ -15,7 +15,7 @@ import { ThemeProvider } from "./state/ThemeProvider";
 export const URL =
   import.meta.env.MODE === "production"
     ? location.origin
-    : "https://monitor.assc.ai";
+    : "http://52.193.1.140:9000";
     
 export const WS_URL = URL.replace("https", "wss").replace("http", "ws") + "/ws";
 

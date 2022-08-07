@@ -5,6 +5,7 @@ type DimensionState = {
   width: Accessor<number>;
   height: Accessor<number>;
   isMobile: () => boolean;
+  isSemiMobile: () => boolean;
 };
 
 const DimensionContext = createContext<DimensionState>();
@@ -16,6 +17,7 @@ export const DimensionProvider: Component = (p) => {
     width,
     height,
     isMobile: () => width() <= 700,
+    isSemiMobile: () => width() <= 900,
   };
   return (
     <DimensionContext.Provider value={context}>

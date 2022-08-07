@@ -79,7 +79,8 @@ export function useServers() {
 export function useServerStats() {
   const [stats, set] = createSignal<Collection<SystemStats | undefined>>({});
   const load = async (serverID: string) => {
-    set({ ...stats(), [serverID]: await getServerSystemStats(serverID) });
+    const stats = await getServerSystemStats(serverID);
+    set((s) => ({ ...s, [serverID]: stats }));
   };
   const loading: Collection<boolean> = {};
   return {

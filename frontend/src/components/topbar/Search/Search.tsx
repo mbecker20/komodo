@@ -19,9 +19,9 @@ import Grid from "../../util/layout/Grid";
 import Button from "../../util/Button";
 
 const mobileStyle: JSX.CSSProperties = {
-  position: "fixed",
-  top: inPx(44),
-  left: "1rem",
+  // position: "fixed",
+  // top: inPx(44),
+  // left: "1rem",
   width: "calc(100vw - 2rem)",
 };
 

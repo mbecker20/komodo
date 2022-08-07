@@ -18,7 +18,7 @@ const Deployment: Component<{}> = (p) => {
   const deployment = () => deployments.get(selected.id()!);
   const server = () => deployment() && servers.get(deployment()?.serverID!);
   const { themeClass } = useTheme();
-  const { isMobile } = useAppDimensions();
+  const { isSemiMobile } = useAppDimensions();
   const { permissions, username } = useUser();
   const userCanUpdate = () => {
     if (permissions() > 1) {
@@ -43,7 +43,7 @@ const Deployment: Component<{}> = (p) => {
           <Grid class="left-content">
             <Header />
             <Actions />
-            <Show when={!isMobile() && userCanUpdate()}>
+            <Show when={!isSemiMobile() && userCanUpdate()}>
               <Updates />
             </Show>
           </Grid>

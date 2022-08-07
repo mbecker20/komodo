@@ -80,15 +80,29 @@
   margin: 1rem;
 }
 
+.Updates {
+  padding: 1rem;
+  margin: 1rem;
+}
+
 @media only screen and (max-width: 1200px) {
   .Summary {
     width: 80%;
   }
+
+  .Updates {
+    width: 80%
+  }
 }
 
-.Updates {
-  padding: 1rem;
-  margin: 1rem;
+@media only screen and (max-width: 500px) {
+  .Summary {
+    width: 95%;
+  }
+
+  .Updates {
+    width: 95%
+  }
 }
 
 .UpdatesContainer {

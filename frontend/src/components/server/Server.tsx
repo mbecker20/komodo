@@ -16,7 +16,7 @@ const Server: Component<{}> = (p) => {
   const { servers, selected } = useAppState();
   const server = () => servers.get(selected.id())!;
   const { themeClass } = useTheme();
-  const { isMobile } = useAppDimensions();
+  const { isSemiMobile } = useAppDimensions();
   const { permissions, username } = useUser();
   const userCanUpdate = () => {
     if (permissions() > 1) {
@@ -35,7 +35,7 @@ const Server: Component<{}> = (p) => {
           <Grid class="left-content">
             <Header />
             <Actions />
-            <Show when={!isMobile() && userCanUpdate()}>
+            <Show when={!isSemiMobile() && userCanUpdate()}>
               <Updates />
             </Show>
           </Grid>

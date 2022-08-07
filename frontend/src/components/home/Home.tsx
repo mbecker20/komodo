@@ -17,84 +17,60 @@ const Home: Component<{}> = (p) => {
   const { width, isMobile } = useAppDimensions();
   const serverIDs = () => servers.loaded() && servers.ids();
   return (
-    <Grid gap="0rem" class={s.Home} placeItems="start center">
-      <Tabs
-        localStorageKey="home-tab"
-        containerClass={s.Tabs}
-        tabs={[
-          {
-            title: "deployments",
-            element: (
-              <Grid>
-                <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
-                <AddServer />
-              </Grid>
-            ),
-          },
-          {
-            title: "builds",
-            element: <Builds />,
-          },
-        ]}
-      />
-      <Grid gap="0rem" style={{ width: "80%" }}>
-        <Summary />
-        <Updates />
-      </Grid>
-    </Grid>
-    // <Switch>
-    //   <Match when={width() >= 1200}>
-    //     <Grid gap="0rem" class={s.Home} placeItems="start center">
-    //       <Tabs
-    //         localStorageKey="home-tab"
-    //         containerClass={s.Tabs}
-    //         tabs={[
-    //           {
-    //             title: "deployments",
-    //             element: (
-    //               <Grid>
-    //                 <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
-    //                 <AddServer />
-    //               </Grid>
-    //             ),
-    //           },
-    //           {
-    //             title: "builds",
-    //             element: <Builds />,
-    //           },
-    //         ]}
-    //       />
-    //       <Grid gap="0rem" style={{ width: "80%" }}>
-    //         <Summary />
-    //         <Updates />
-    //       </Grid>
-    //     </Grid>
-    //   </Match>
-    //   <Match when={width() < 1200}>
-    //     <Grid gap="0rem" class={s.Home} placeItems="start center">
-    //       <Summary />
-    //       <Tabs
-    //         localStorageKey="home-tab"
-    //         containerClass={s.Tabs}
-    //         tabs={[
-    //           {
-    //             title: "deployments",
-    //             element: (
-    //               <Grid>
-    //                 <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
-    //                 <AddServer />
-    //               </Grid>
-    //             ),
-    //           },
-    //           {
-    //             title: "builds",
-    //             element: <Builds />,
-    //           },
-    //         ]}
-    //       />
-    //     </Grid>
-    //   </Match>
-    // </Switch>
+    <Switch>
+      <Match when={width() >= 1200}>
+        <Grid gap="0rem" class={s.Home} placeItems="start center">
+          <Tabs
+            localStorageKey="home-tab"
+            containerClass={s.Tabs}
+            tabs={[
+              {
+                title: "deployments",
+                element: (
+                  <Grid>
+                    <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
+                    <AddServer />
+                  </Grid>
+                ),
+              },
+              {
+                title: "builds",
+                element: <Builds />,
+              },
+            ]}
+          />
+          <Grid gap="0rem" style={{ width: "80%" }}>
+            <Summary />
+            <Updates />
+          </Grid>
+        </Grid>
+      </Match>
+      <Match when={width() < 1200}>
+        <Grid gap="0rem" class={s.Home} placeItems="start center">
+          <Summary />
+          <Tabs
+            localStorageKey="home-tab"
+            containerClass={s.Tabs}
+            tabs={[
+              {
+                title: "deployments",
+                element: (
+                  <Grid>
+                    <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
+                    <AddServer />
+                  </Grid>
+                ),
+              },
+              {
+                title: "builds",
+                element: <Builds />,
+              },
+            ]}
+          />
+          <Updates />
+        </Grid>
+      </Match>
+    </Switch>
   );
 };
 

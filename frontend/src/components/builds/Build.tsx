@@ -16,7 +16,7 @@ const Build: Component<{}> = (p) => {
   const { builds, selected } = useAppState();
   const build = () => builds.get(selected.id())!;
   const { themeClass } = useTheme();
-  const { isMobile } = useAppDimensions();
+  const { isSemiMobile } = useAppDimensions();
   const { permissions, username } = useUser();
   const userCanUpdate = () => {
     if (permissions() > 1) {
@@ -35,7 +35,7 @@ const Build: Component<{}> = (p) => {
           <Grid class="left-content">
             <Header />
             <Actions />
-            <Show when={!isMobile() && userCanUpdate()}>
+            <Show when={!isSemiMobile() && userCanUpdate()}>
               <Updates />
             </Show>
           </Grid>
