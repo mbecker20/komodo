@@ -1,8 +1,5 @@
 import { intoCollection, SERVER_OWNER_UPDATE } from "@monitor/util";
-import {
-  getDockerStatsJson,
-  getSystemStats,
-} from "@monitor/util-node";
+import { getDockerStatsJson, getSystemStats } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import {
@@ -122,23 +119,28 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
   );
 
-  // app.get("/api/server/:id/pm2", { onRequest: [app.auth, app.userEnabled] }, async (req, res) => {
-  //   const { id } = req.params as { id: string };
-  //   const server = await app.servers.findById(id);
-  //   if (!server) {
-  //     res.status(400);
-  //     res.send("server not found");
-  //     return;
-  //   }
-  //   const sender = (await app.users.findById(req.user.id))!;
-  //   if (sender.permissions! < 1 && !server.owners.includes(sender.username)) {
-  //     res.status(403);
-  //     res.send("inadequate permissions");
-  //     return;
-  //   }
-  //   const processes = server.isCore ? [] : await getPeripheryPm2Processes(server);
-  //   res.send(processes);
-  // });
+  app.get(
+    "/api/server/:id/stats-history",
+    { onRequest: [app.auth, app.userEnabled] },
+    async (req, res) => {
+      const { id } = req.params as { id: string };
+      const { offset } = req.query as { offset: number };
+      const server = await app.servers.findById(id);
+      if (!server) {
+        res.status(400);
+        res.send("server not found");
+        return;
+      }
+      const sender = (await app.users.findById(req.user.id))!;
+      if (sender.permissions! < 1 && !server.owners.includes(sender.username)) {
+        res.status(403);
+        res.send("inadequate permissions");
+        return;
+      }
+      const stats = await app.stats.getMostRecent(100, {}, offset);
+      res.send(stats);
+    }
+  );
 
   app.post(
     "/api/server/:id/:owner",
@@ -170,7 +172,11 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       await app.servers.updateById(id, { $push: { owners: owner } });
-      app.broadcast(SERVER_OWNER_UPDATE, { serverID: id }, app.serverUserFilter(id));
+      app.broadcast(
+        SERVER_OWNER_UPDATE,
+        { serverID: id },
+        app.serverUserFilter(id)
+      );
       res.send("owner added");
     }
   );
@@ -194,7 +200,11 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
         return;
       }
       await app.servers.updateById(id, { $pull: { owners: owner } });
-      app.broadcast(SERVER_OWNER_UPDATE, { serverID: id }, app.serverUserFilter(id));
+      app.broadcast(
+        SERVER_OWNER_UPDATE,
+        { serverID: id },
+        app.serverUserFilter(id)
+      );
       res.send("owner removed");
     }
   );
