@@ -23,7 +23,7 @@ const collectStats = fp((app: FastifyInstance, _: {}, done: () => void) => {
 
   const storeStats = async (serverID: string) => {
     const server = await app.servers.findById(serverID);
-    if (!server) return;
+    if (!server || !server.enabled) return;
     if (server.isCore) {
       const stats = await getSystemStats();
       app.stats.create({
@@ -31,13 +31,20 @@ const collectStats = fp((app: FastifyInstance, _: {}, done: () => void) => {
         serverID,
         ts: timestamp(),
       });
-    } else if (await serverStatusPeriphery(server)) {
-      const stats = await getPeripherySystemStats(server);
-      app.stats.create({
-        ...stats,
-        serverID,
-        ts: timestamp(),
-      });
+      app.checkServerToNotify(server, stats);
+    } else {
+      const reachable = await serverStatusPeriphery(server);
+      if (reachable) {
+        const stats = await getPeripherySystemStats(server);
+        app.stats.create({
+          ...stats,
+          serverID,
+          ts: timestamp(),
+        });
+        app.checkServerToNotify(server, stats);
+      } else {
+        app.notifyServerUnreachable(server);
+      }
     }
   };
 

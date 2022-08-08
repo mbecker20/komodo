@@ -14,6 +14,7 @@ async function addServer(app: FastifyInstance, user: User, { server }: { server:
 	server.owners = [user.username];
 	const created = await app.servers.create(server);
 	app.serverActionStates.add(server._id!);
+	app.statsIntervals.add(created);
 	addServerUpdate(
 		app,
 		created._id!,

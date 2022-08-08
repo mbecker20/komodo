@@ -228,10 +228,6 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }, CLEAR_ALREADY_ALERTED_INTERVAL);
   }
 
-  app.decorate("notifySlackStats", async () => {
-    
-  });
-
   done();
 });
 
