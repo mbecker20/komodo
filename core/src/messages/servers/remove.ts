@@ -29,7 +29,7 @@ async function removeServer(
   app.serverActionStates.delete(serverID);
   app.statsIntervals.remove(serverID);
   addSystemUpdate(app, REMOVE_SERVER, "Remove Server", {}, user.username, note);
-  return true;
+  return server;
 }
 
 export default removeServer;
