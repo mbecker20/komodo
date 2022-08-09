@@ -186,7 +186,7 @@ const Builds: Component<{ close: () => void }> = (p) => {
           >
             <Grid gap="0rem">
               {build.name}
-              <div style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</div>
+              <Flex style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</Flex>
             </Grid>
           </Button>
         )}
@@ -219,9 +219,7 @@ const Servers: Component<{ close: () => void }> = (p) => {
             }}
           >
             <Grid gap="0rem">
-              <Flex alignItems="center">
-                <div>{server.name}</div>
-              </Flex>
+              <Flex alignItems="center">{server.name}</Flex>
               <Flex
                 alignItems="center"
                 gap="0.2rem"
