@@ -182,6 +182,7 @@ export type DeployActionState = {
 export type ServerActionState = {
   pruningImages: boolean;
   pruningNetworks: boolean;
+  pruningContainers: boolean;
   deleting: boolean;
 };
 

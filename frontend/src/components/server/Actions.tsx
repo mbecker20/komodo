@@ -1,6 +1,6 @@
 import { Component, Show } from "solid-js";
 import { pushNotification } from "../..";
-import { PRUNE_IMAGES, PRUNE_NETWORKS } from "@monitor/util";
+import { PRUNE_CONTAINERS, PRUNE_IMAGES, PRUNE_NETWORKS } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import ConfirmButton from "../util/ConfirmButton";
@@ -23,6 +23,9 @@ const Actions: Component<{}> = (p) => {
         <h1>actions</h1>
         <Flex class={combineClasses("action shadow", themeClass())}>
           prune images <PruneImages />
+        </Flex>
+        <Flex class={combineClasses("action shadow", themeClass())}>
+          prune containers <PruneContainers />
         </Flex>
         <Flex class={combineClasses("action shadow", themeClass())}>
           prune networks{" "}
@@ -61,6 +64,32 @@ function PruneImages() {
         onConfirm={() => {
           ws.send(PRUNE_IMAGES, { serverID: server()._id });
           pushNotification("ok", `pruning images on ${server().name}...`);
+        }}
+      >
+        <Icon type="cut" />
+      </ConfirmButton>
+    </Show>
+  );
+}
+
+function PruneContainers() {
+  const { ws, servers, selected } = useAppState();
+  const server = () => servers.get(selected.id())!;
+  const actions = useActionStates();
+  return (
+    <Show
+      when={!actions.pruningContainers}
+      fallback={
+        <button class="blue">
+          <Loading type="spinner" />
+        </button>
+      }
+    >
+      <ConfirmButton
+        color="blue"
+        onConfirm={() => {
+          ws.send(PRUNE_CONTAINERS, { serverID: server()._id });
+          pushNotification("ok", `pruning containers on ${server().name}...`);
         }}
       >
         <Icon type="cut" />

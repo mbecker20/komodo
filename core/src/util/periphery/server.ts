@@ -12,6 +12,16 @@ export async function prunePeripheryImages({ address, passkey }: Server) {
     .then(({ data }) => data);
 }
 
+export async function prunePeripheryContainers({ address, passkey }: Server) {
+  return await axios
+    .get<CommandLogError>(`${address}/containers/prune`, {
+      headers: {
+        Authorization: passkey || SECRETS.PASSKEY,
+      },
+    })
+    .then(({ data }) => data);
+}
+
 export async function getPeripheryDockerStats({ address, passkey }: Server) {
   return await axios
     .get<DockerStat[]>(`${address}/stats`, {

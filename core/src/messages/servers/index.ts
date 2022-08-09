@@ -4,6 +4,7 @@ import {
   CREATE_NETWORK,
   DELETE_NETWORK,
   GET_SERVER_STATS,
+  PRUNE_CONTAINERS,
   PRUNE_IMAGES,
   PRUNE_NETWORKS,
   REMOVE_SERVER,
@@ -13,7 +14,7 @@ import { FastifyInstance } from "fastify";
 import { WebSocket } from "ws";
 import addServer from "./add";
 import { createServerNetwork, deleteServerNetwork } from "./networks";
-import { pruneServerImages, pruneServerNetworks } from "./prune";
+import { pruneServerContainers, pruneServerImages, pruneServerNetworks } from "./prune";
 import removeServer from "./remove";
 import updateServer from "./update";
 
@@ -27,7 +28,11 @@ async function serverMessages(
     case ADD_SERVER:
       const created = message.server && (await addServer(app, user, message));
       if (created) {
-        app.broadcast(ADD_SERVER, { server: created }, app.serverUserFilter(created._id));
+        app.broadcast(
+          ADD_SERVER,
+          { server: created },
+          app.serverUserFilter(created._id)
+        );
       }
       return true;
 
@@ -35,7 +40,11 @@ async function serverMessages(
       const removed =
         message.serverID && (await removeServer(app, user, message));
       if (removed) {
-        app.broadcast(REMOVE_SERVER, { serverID: message.serverID }, app.serverUserFilter(removed._id, removed));
+        app.broadcast(
+          REMOVE_SERVER,
+          { serverID: message.serverID },
+          app.serverUserFilter(removed._id, removed)
+        );
       }
       return true;
 
@@ -43,12 +52,20 @@ async function serverMessages(
       const updated =
         message.server && (await updateServer(app, user, message));
       if (updated) {
-        app.broadcast(UPDATE_SERVER, { server: updated }, app.serverUserFilter(updated._id));
+        app.broadcast(
+          UPDATE_SERVER,
+          { server: updated },
+          app.serverUserFilter(updated._id)
+        );
       }
       return true;
 
     case PRUNE_IMAGES:
       await pruneServerImages(app, client, user, message);
+      return true;
+
+    case PRUNE_CONTAINERS:
+      await pruneServerContainers(app, client, user, message);
       return true;
 
     case CREATE_NETWORK:

@@ -31,6 +31,10 @@ export async function pruneImages() {
   return await execute("docker image prune -a -f");
 }
 
+export async function pruneContainers() {
+  return await execute("docker container prune -f");
+}
+
 export async function getNetworks(dockerode: Dockerode): Promise<Network[]> {
   const networks = await dockerode.listNetworks();
   return networks.map(({ Name, Driver }) => ({

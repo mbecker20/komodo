@@ -138,6 +138,7 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
       serverActionStates[serverID] = {
         pruningImages: false,
         pruningNetworks: false,
+        pruningContainers: false,
         deleting: false,
       };
     },
@@ -157,7 +158,7 @@ const actionStates = fp((app: FastifyInstance, _: {}, done: () => void) => {
       return false;
     },
     busy: (serverID: string) => {
-      for (const type of ["pruningImages", "pruningNetworks", "deleting"]) {
+      for (const type of ["pruningImages", "pruningNetworks", "pruningContainers", "deleting"]) {
         if (serverActionStates[serverID][type]) return true;
       }
       return false;
