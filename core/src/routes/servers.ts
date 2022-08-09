@@ -137,7 +137,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
         res.send("inadequate permissions");
         return;
       }
-      const stats = await app.stats.getMostRecent(100, {}, offset);
+      const stats = await app.stats.getMostRecent(100, { serverID: id }, offset);
       res.send(stats);
     }
   );
