@@ -108,7 +108,9 @@ const Build: Component = () => {
   const buildID = () => deployments.get(selected.id())!.buildID!;
   return (
     <Flex class={combineClasses("action shadow", themeClass())}>
-      build{" "}
+      <div class="pointer" onClick={() => selected.set(buildID(), "build")}>
+        build
+      </div>
       <Show
         when={!actions.building}
         fallback={
