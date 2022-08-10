@@ -12,6 +12,7 @@ import Deployment from "./Deployment";
 import s from "../home.module.scss";
 import { NewDeployment } from "./New";
 import Loading from "../../util/loading/Loading";
+import StatGraphs from "../../server/StatGraphs";
 
 const Server: Component<{ id: string }> = (p) => {
   const { servers, serverStats, deployments, selected } = useAppState();
@@ -72,6 +73,7 @@ const Server: Component<{ id: string }> = (p) => {
                     <Icon type="refresh" width="0.75rem" />
                   </button>
                 </Show>
+                <StatGraphs id={p.id} />
               </Show>
             </Show>
             <div

@@ -124,7 +124,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
-      const { offset } = req.query as { offset: number };
+      const { offset } = req.query as { offset?: number };
       const server = await app.servers.findById(id);
       if (!server) {
         res.status(400);

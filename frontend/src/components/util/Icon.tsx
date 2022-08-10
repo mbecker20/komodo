@@ -42,7 +42,8 @@ export type IconType =
   | "caret-right"
   | "search"
   | "cog"
-  | "home";
+  | "home"
+  | "timeline-line-chart";
 
 const Icon: Component<{
   type: IconType;

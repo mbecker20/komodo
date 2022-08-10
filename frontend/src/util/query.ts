@@ -13,6 +13,7 @@ import {
   PM2Process,
   Server,
   Servers,
+  StoredStats,
   SystemStats,
   Update,
   User,
@@ -132,7 +133,7 @@ export async function getServerSystemStats(id: string) {
 }
 
 export async function getServerStatsHistory(id: string, offset?: number) {
-  return await client.get<SystemStats[]>(
+  return await client.get<StoredStats[]>(
     `/api/server/${id}/stats-history${generateQuery({ offset })}`
   );
 }
