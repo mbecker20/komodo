@@ -1,5 +1,10 @@
-import { StoredStats } from "@monitor/types";
-import { Accessor, Component, createSignal, Show } from "solid-js";
+import { Server, StoredStats } from "@monitor/types";
+import {
+  Accessor,
+  Component,
+  createSignal,
+  Show,
+} from "solid-js";
 import { SolidApexCharts } from "solid-apexcharts";
 import { useAppState } from "../../state/StateProvider";
 import { useToggle } from "../../util/hooks";
@@ -11,7 +16,9 @@ import CenterMenu from "../util/menu/CenterMenu";
 import { readableTimestamp } from "../../util/helpers";
 
 const StatGraphs: Component<{ id: string }> = (p) => {
+  const { servers } = useAppState();
   const [show, toggleShow] = useToggle();
+  const name = () => servers.get(p.id)?.name;
   return (
     <CenterMenu
       show={show}
@@ -19,6 +26,7 @@ const StatGraphs: Component<{ id: string }> = (p) => {
       target={<Icon type="timeline-line-chart" width="0.85rem" />}
       targetClass="blue"
       content={<Graphs id={p.id} />}
+      title={`${name()} stats`}
     />
   );
 };
@@ -31,15 +39,16 @@ const Graphs: Component<{ id: string }> = (p) => {
   const reloadStats = async () => {
     setReloading(true);
     const stats = await getServerStatsHistory(p.id);
-    setStats(stats);
+    setStats(stats.reverse());
     setReloading(false);
   };
-  getServerStatsHistory(p.id).then(setStats);
+  getServerStatsHistory(p.id).then(stats => setStats(stats.reverse()));
   return (
-    <Grid placeItems="center start">
-      <h1>{server().name}</h1>
+    <Grid gap="0rem" placeItems="center start" style={{ "background-color": "white" }}>
       <Show when={stats()}>
-        <Graph stats={stats} field="cpu" />
+        <Graph stats={stats} field="cpu" server={server} />
+        <Graph stats={stats} field="mem" server={server} />
+        <Graph stats={stats} field="disk" server={server} />
       </Show>
     </Grid>
   );
@@ -47,28 +56,46 @@ const Graphs: Component<{ id: string }> = (p) => {
 
 const Graph: Component<{
   stats: Accessor<StoredStats[] | undefined>;
-  field: string;
+  field: "cpu" | "mem" | "disk";
+  server: () => Server;
 }> = (p) => {
   const options = () => ({
     chart: {
-      id: "mychart",
+      id: "stats",
     },
-    xaxis: p.stats()!.map((stat) => readableTimestamp(stat.ts / 1000))
+    xaxis: {
+      labels: {
+        show: false
+      },
+      categories: p.stats()!.map((stat) => readableTimestamp(stat.ts)),
+    },
+    // theme: {
+    //   mode: isDark() ? "dark" : "light"
+    // },
   });
   const series = () => [
     {
-      name: "CPU Usage",
-      data: p.stats()!.map((stat) => stat.cpu),
+      name: p.field,
+      data:
+        p.field === "cpu"
+          ? p.stats()!.map((stat) => stat.cpu)
+          : p.field === "mem"
+          ? p.stats()!.map((stat) => stat.mem.usedMemPercentage)
+          : p.stats()!.map((stat) => stat.disk.usedPercentage),
     },
   ];
-    
+
   return (
-    <SolidApexCharts
-      width="500"
-      type="line"
-      options={options()}
-      series={series() || []}
-    />
+    <Grid placeItems="start center" gap="0rem">
+      <h1 style={{ color: "black" }}>{p.field}</h1>
+      <SolidApexCharts
+        width="800"
+        height="200"
+        type="line"
+        options={options()}
+        series={series()}
+      />
+    </Grid>
   );
 };
 
