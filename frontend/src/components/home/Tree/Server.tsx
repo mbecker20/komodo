@@ -1,4 +1,11 @@
-import { Component, createEffect, createMemo, createSignal, For, Show } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  Show,
+} from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useTheme } from "../../../state/ThemeProvider";
 import { useUser } from "../../../state/UserProvider";
@@ -52,7 +59,8 @@ const Server: Component<{ id: string }> = (p) => {
             <Show when={server()?.status === "OK"}>
               <Show when={stats()} fallback={<Loading type="three-dot" />}>
                 <div>
-                  <div style={{ opacity: 0.7 }}>cpu:</div> {stats()?.cpu.toFixed(1)}%
+                  <div style={{ opacity: 0.7 }}>cpu:</div>{" "}
+                  {stats()?.cpu.toFixed(1)}%
                 </div>
                 <div>
                   <div style={{ opacity: 0.7 }}>mem:</div>{" "}
@@ -62,18 +70,28 @@ const Server: Component<{ id: string }> = (p) => {
                   <div style={{ opacity: 0.7 }}>disk:</div>{" "}
                   {stats()?.disk.usedPercentage.toFixed(1)}%
                 </div>
-                <Show when={!reloading()} fallback={<button class="blue"><Loading type="spinner" scale={0.2}/></button>}>
-                  <button
-                    class="blue"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      reloadStats();
-                    }}
+                <Flex gap=".5rem" alignItems="center">
+                  <Show
+                    when={!reloading()}
+                    fallback={
+                      <Button class="blue" style={{ height: "fit-content" }}>
+                        <Loading type="spinner" scale={0.2} />
+                      </Button>
+                    }
                   >
-                    <Icon type="refresh" width="0.75rem" />
-                  </button>
-                </Show>
-                <StatGraphs id={p.id} />
+                    <Button
+                      class="blue"
+                      style={{ height: "fit-content" }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        reloadStats();
+                      }}
+                    >
+                      <Icon type="refresh" width="0.85rem" />
+                    </Button>
+                  </Show>
+                  <StatGraphs id={p.id} />
+                </Flex>
               </Show>
             </Show>
             <div

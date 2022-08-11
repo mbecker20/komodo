@@ -42,7 +42,10 @@ const CenterMenu: Component<{
   return (
     <>
       <Button
-        onClick={p.toggleShow}
+        onClick={(e) => {
+          e.stopPropagation();
+          p.toggleShow();
+        }}
         class={p.targetClass}
         style={p.targetStyle}
       >
@@ -70,7 +73,10 @@ const Child: Component<{
   return (
     <Grid
       class={combineClasses(s.CenterMenuContainer, p.show() ? s.Enter : s.Exit)}
-      onClick={p.toggleShow}
+      onClick={(e) => {
+        e.stopPropagation();
+        p.toggleShow();
+      }}
       placeItems={p.position === "center" ? "center" : "start center"}
     >
       <Grid

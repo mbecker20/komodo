@@ -2,6 +2,7 @@ import { DiskStats, MemStats, StoredStats } from "@monitor/types";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { Schema } from "mongoose";
+import model from "../../util/model";
 
 const stats = fp((app: FastifyInstance, _: {}, done: () => void) => {
 	const MemSchema = new Schema<MemStats>({
@@ -22,7 +23,7 @@ const stats = fp((app: FastifyInstance, _: {}, done: () => void) => {
 		disk: DiskSchema
 	});
 	
-	app.decorate("stats", app.mongoose.model("Stats", schema));
+	app.decorate("stats", model(app, "Stats", schema));
 	
 	done();
 });
