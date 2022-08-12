@@ -2,6 +2,7 @@ import { Server, StoredStats } from "@monitor/types";
 import {
   Accessor,
   Component,
+  createEffect,
   createSignal,
   Show,
 } from "solid-js";
@@ -14,6 +15,8 @@ import Icon from "../util/Icon";
 import Grid from "../util/layout/Grid";
 import CenterMenu from "../util/menu/CenterMenu";
 import { readableTimestamp } from "../../util/helpers";
+import Flex from "../util/layout/Flex";
+import Loading from "../util/loading/Loading";
 
 const StatGraphs: Component<{ id: string }> = (p) => {
   const { servers } = useAppState();
@@ -31,21 +34,80 @@ const StatGraphs: Component<{ id: string }> = (p) => {
   );
 };
 
+const MOVEMENT = 50;
+
 const Graphs: Component<{ id: string }> = (p) => {
   const { servers } = useAppState();
   const server = () => servers.get(p.id)!;
   const [stats, setStats] = createSignal<StoredStats[]>();
-  const [reloading, setReloading] = createSignal(false);
-  const reloadStats = async () => {
-    setReloading(true);
-    const stats = await getServerStatsHistory(p.id);
+  const [offset, setOffset] = createSignal(0);
+  const [reloadingLeft, setReloadingLeft] = createSignal(false);
+  const [reloadingRight, setReloadingRight] = createSignal(false);
+  const reloadStatsLeft = async () => {
+    setReloadingLeft(true);
+    const newOffset = offset() + MOVEMENT;
+    const stats = await getServerStatsHistory(p.id, newOffset);
     setStats(stats.reverse());
-    setReloading(false);
+    setOffset(newOffset);
+    setReloadingLeft(false);
   };
-  getServerStatsHistory(p.id).then(stats => setStats(stats.reverse()));
+  const reloadStatsRight = async () => {
+    setReloadingRight(true);
+    const newOffset = Math.max(offset() - MOVEMENT, 0);
+    const stats = await getServerStatsHistory(p.id, newOffset);
+    setStats(stats.reverse());
+    setOffset(newOffset);
+    setReloadingRight(false);
+  };
+  getServerStatsHistory(p.id).then((stats) => setStats(stats.reverse()));
   return (
-    <Grid gap="0rem" placeItems="center start" style={{ "background-color": "white" }}>
+    <Grid
+      gap="0rem"
+      placeItems="start center"
+      style={{ "background-color": "white" }}
+    >
       <Show when={stats()}>
+        <Flex
+          justifyContent="space-between"
+          style={{ margin: "1rem", width: "60%" }}
+        >
+          <Show
+            when={!reloadingLeft()}
+            fallback={
+              <Button class="grey">
+                <Loading type="three-dot" scale={0.2} />
+              </Button>
+            }
+          >
+            <Button
+              class="grey"
+              onClick={(e) => {
+                e.stopPropagation();
+                reloadStatsLeft();
+              }}
+            >
+              <Icon type="arrow-left" />
+            </Button>
+          </Show>
+          <Show
+            when={!reloadingRight()}
+            fallback={
+              <Button class="grey">
+                <Loading type="three-dot" scale={0.2} />
+              </Button>
+            }
+          >
+            <Button
+              class="grey"
+              onClick={(e) => {
+                e.stopPropagation();
+                reloadStatsRight();
+              }}
+            >
+              <Icon type="arrow-right" />
+            </Button>
+          </Show>
+        </Flex>
         <Graph stats={stats} field="cpu" server={server} />
         <Graph stats={stats} field="mem" server={server} />
         <Graph stats={stats} field="disk" server={server} />
@@ -65,7 +127,7 @@ const Graph: Component<{
     },
     xaxis: {
       labels: {
-        show: false
+        show: false,
       },
       categories: p.stats()!.map((stat) => readableTimestamp(stat.ts)),
     },
@@ -90,7 +152,7 @@ const Graph: Component<{
       <h1 style={{ color: "black" }}>{p.field}</h1>
       <SolidApexCharts
         width="800"
-        height="200"
+        height="150"
         type="line"
         options={options()}
         series={series()}

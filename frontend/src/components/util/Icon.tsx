@@ -43,7 +43,8 @@ export type IconType =
   | "search"
   | "cog"
   | "home"
-  | "timeline-line-chart";
+  | "timeline-line-chart"
+  | "arrow-right";
 
 const Icon: Component<{
   type: IconType;
