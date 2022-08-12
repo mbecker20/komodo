@@ -43,6 +43,7 @@ const Graphs: Component<{ id: string }> = (p) => {
   const [offset, setOffset] = createSignal(0);
   const [reloadingLeft, setReloadingLeft] = createSignal(false);
   const [reloadingRight, setReloadingRight] = createSignal(false);
+  const [reloadingReset, setReloadingReset] = createSignal(false);
   const reloadStatsLeft = async () => {
     setReloadingLeft(true);
     const newOffset = offset() + MOVEMENT;
@@ -58,6 +59,13 @@ const Graphs: Component<{ id: string }> = (p) => {
     setStats(stats.reverse());
     setOffset(newOffset);
     setReloadingRight(false);
+  };
+  const reloadStatsReset = async () => {
+    setReloadingReset(true);
+    const stats = await getServerStatsHistory(p.id, 0);
+    setStats(stats.reverse());
+    setOffset(0);
+    setReloadingReset(false);
   };
   getServerStatsHistory(p.id).then((stats) => setStats(stats.reverse()));
   return (
@@ -89,24 +97,44 @@ const Graphs: Component<{ id: string }> = (p) => {
               <Icon type="arrow-left" />
             </Button>
           </Show>
-          <Show
-            when={!reloadingRight()}
-            fallback={
-              <Button class="grey">
-                <Loading type="three-dot" scale={0.2} />
-              </Button>
-            }
-          >
-            <Button
-              class="grey"
-              onClick={(e) => {
-                e.stopPropagation();
-                reloadStatsRight();
-              }}
+          <Flex alignItems="center" style={{ width: "fit-content" }}>
+            <Show
+              when={!reloadingRight()}
+              fallback={
+                <Button class="grey">
+                  <Loading type="three-dot" scale={0.2} />
+                </Button>
+              }
             >
-              <Icon type="arrow-right" />
-            </Button>
-          </Show>
+              <Button
+                class="grey"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  reloadStatsRight();
+                }}
+              >
+                <Icon type="arrow-right" />
+              </Button>
+            </Show>
+            <Show
+              when={!reloadingReset()}
+              fallback={
+                <Button class="grey">
+                  <Loading type="three-dot" scale={0.2} />
+                </Button>
+              }
+            >
+              <Button
+                class="grey"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  reloadStatsReset();
+                }}
+              >
+                <Icon type="double-chevron-right" />
+              </Button>
+            </Show>
+          </Flex>
         </Flex>
         <Graph stats={stats} field="cpu" server={server} />
         <Graph stats={stats} field="mem" server={server} />
