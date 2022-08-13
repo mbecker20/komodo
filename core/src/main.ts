@@ -45,9 +45,6 @@ async function main() {
       process.exit(1);
     }
     if (!LOGGER) console.log(`monitor core listening at ${address}`);
-    if (SECRETS.SLACK_TOKEN) {
-      app.dailyInterval();
-    }
   });
 }
 

@@ -4,16 +4,29 @@ import { getSystemStats } from "@monitor/util-node";
 import { Block, KnownBlock } from "@slack/web-api";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { CLEAR_ALREADY_ALERTED_INTERVAL, CPU_USAGE_NOTIFY_LIMIT, DAILY_UPDATE_UTC_HOUR, DISK_USAGE_NOTIFY_LIMIT, MEM_USAGE_NOTIFY_LIMIT, SECRETS, SERVER_STATS_INTERVAL } from "../config";
+import {
+  CLEAR_ALREADY_ALERTED_INTERVAL,
+  CPU_USAGE_NOTIFY_LIMIT,
+  DAILY_UPDATE_UTC_HOUR,
+  DISK_USAGE_NOTIFY_LIMIT,
+  MEM_USAGE_NOTIFY_LIMIT,
+  SECRETS,
+} from "../config";
 import { getPeripherySystemStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
-import { notifySlackAdvanced, notifySlackCpu, notifySlackDisk, notifySlackMem, notifySlackUnreachable } from "../util/slack";
+import {
+  notifySlackAdvanced,
+  notifySlackCpu,
+  notifySlackDisk,
+  notifySlackMem,
+  notifySlackUnreachable,
+} from "../util/slack";
 
 declare module "fastify" {
   interface FastifyInstance {
     dailyInterval: () => Promise<void>;
-		checkServerToNotify: (server: Server, stats: SystemStats) => void;
-		notifyServerUnreachable: (server: Server) => void;
+    checkServerToNotify: (server: Server, stats: SystemStats) => void;
+    notifyServerUnreachable: (server: Server) => void;
   }
 }
 
@@ -44,14 +57,14 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     return serversWithStatus;
   };
 
-	app.decorate("notifyServerUnreachable", (server: Server) => {
-		if (!unreachable.includes(server._id!)) {
+  app.decorate("notifyServerUnreachable", (server: Server) => {
+    if (!unreachable.includes(server._id!)) {
       unreachable.push(server._id!);
       notifySlackUnreachable(server.name, server.region!, server.toNotify);
     }
-	});
+  });
 
-	app.decorate("checkServerToNotify", (server: Server, stats: SystemStats) => {
+  app.decorate("checkServerToNotify", (server: Server, stats: SystemStats) => {
     if (stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT)) {
       // high cpu usage
       if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
@@ -126,7 +139,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     }
   });
 
-	app.decorate("dailyInterval", async () => {
+  app.decorate("dailyInterval", async () => {
     const servers = await getAllServerStats();
 
     const statsBlocks: (Block | KnownBlock)[] = servers
@@ -191,13 +204,18 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     ]);
   });
 
+  const clearAlreadyAlerted = () => {
+    alreadyAlerted = {};
+    unreachable = [];
+  };
+
   if (SECRETS.SLACK_TOKEN) {
     waitUntilUTCHour(DAILY_UPDATE_UTC_HOUR).then(() => {
+      app.dailyInterval();
       setInterval(() => app.dailyInterval(), 24 * 60 * 60 * 1000);
-      setInterval(() => {
-        alreadyAlerted = {};
-        unreachable = [];
-      }, CLEAR_ALREADY_ALERTED_INTERVAL);
+
+      clearAlreadyAlerted();
+      setInterval(() => clearAlreadyAlerted(), CLEAR_ALREADY_ALERTED_INTERVAL);
     });
   }
 
