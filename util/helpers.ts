@@ -1,4 +1,9 @@
-import { Collection, CommandLogError, EnvironmentVar, Log } from "@monitor/types";
+import {
+  Collection,
+  CommandLogError,
+  EnvironmentVar,
+  Log,
+} from "@monitor/types";
 
 export function objFrom2Arrays<T>(keys: string[], entries: T[]): Collection<T> {
   return Object.fromEntries(
@@ -135,7 +140,11 @@ export function readableTimestamp(unixTimeInSecs: number) {
 }
 
 export function parseEnvVarseToDotEnv(envVars: EnvironmentVar[]) {
-  return envVars.reduce((prev, { variable, value }) => prev + (prev ? "\n" : "") + `${variable}=${value}`, "");
+  return envVars.reduce(
+    (prev, { variable, value }) =>
+      prev + (prev ? "\n" : "") + `${variable}=${value}`,
+    ""
+  );
 }
 
 function shouldKeepLine(line: string) {
@@ -146,14 +155,14 @@ function shouldKeepLine(line: string) {
   for (let i = 0; i < line.length; i++) {
     if (line[i] !== " ") {
       firstIndex = i;
-      break
+      break;
     }
   }
   if (firstIndex === -1) {
     return false;
   }
   if (line[firstIndex] === "#") {
-    return false
+    return false;
   }
   return true;
 }
@@ -161,10 +170,35 @@ function shouldKeepLine(line: string) {
 export function parseDotEnvToEnvVars(env: string) {
   return env
     .split("\n")
-    .filter(line => shouldKeepLine(line))
-    .map(entry => {
+    .filter((line) => shouldKeepLine(line))
+    .map((entry) => {
       const [first, ...rest] = entry.replaceAll('"', "").split("=");
       return [first, rest.join("=")];
     })
     .map(([variable, value]) => ({ variable, value }));
+}
+
+const FIVE_MIN_MS = 1000 * 60 * 5;
+const ONE_HOUR_MS = FIVE_MIN_MS * 12;
+const ONE_DAY_MS = ONE_HOUR_MS * 24;
+
+export function waitUntilNextFiveMinute() {
+  const ts = Date.now();
+  const timeToWait = FIVE_MIN_MS - ts % FIVE_MIN_MS;
+  return new Promise<void>((res) => {
+    setInterval(() => res(), timeToWait);
+  });
+}
+
+export function waitUntilUTCHour(hour: number) {
+  const ts = Date.now();
+  const timeAfterMidnight = ts % ONE_DAY_MS;
+  const targetTime = hour * ONE_HOUR_MS;
+  const timeToWait =
+    timeAfterMidnight < targetTime
+      ? targetTime - timeAfterMidnight
+      : ONE_DAY_MS - timeAfterMidnight + targetTime;
+  return new Promise<void>((res) => {
+    setInterval(() => res(), timeToWait);
+  });
 }

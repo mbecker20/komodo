@@ -1,30 +1,19 @@
 import { Server, SystemStats } from "@monitor/types";
+import { waitUntilUTCHour } from "@monitor/util";
 import { getSystemStats } from "@monitor/util-node";
 import { Block, KnownBlock } from "@slack/web-api";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import {
-  CPU_USAGE_NOTIFY_LIMIT,
-  DISK_USAGE_NOTIFY_LIMIT,
-  MEM_USAGE_NOTIFY_LIMIT,
-  SERVER_STATS_INTERVAL,
-  SECRETS,
-  CLEAR_ALREADY_ALERTED_INTERVAL,
-} from "../config";
+import { CLEAR_ALREADY_ALERTED_INTERVAL, CPU_USAGE_NOTIFY_LIMIT, DISK_USAGE_NOTIFY_LIMIT, MEM_USAGE_NOTIFY_LIMIT, SECRETS, SERVER_STATS_INTERVAL } from "../config";
 import { getPeripherySystemStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
-import {
-  notifySlackAdvanced,
-  notifySlackCpu,
-  notifySlackDisk,
-  notifySlackMem,
-  notifySlackUnreachable,
-} from "../util/slack";
+import { notifySlackAdvanced, notifySlackCpu, notifySlackDisk, notifySlackMem, notifySlackUnreachable } from "../util/slack";
 
 declare module "fastify" {
   interface FastifyInstance {
     dailyInterval: () => Promise<void>;
-    notifySlackStats: (server: Server, stats: SystemStats) => Promise<void>;
+		checkServerToNotify: (server: Server, stats: SystemStats) => void;
+		notifyServerUnreachable: (server: Server) => void;
   }
 }
 
@@ -55,104 +44,89 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
     return serversWithStatus;
   };
 
-  const interval = async () => {
-    const allServers = await getAllServerStats();
-    const servers = allServers.filter((server) => server.stats);
-    const unreachableServers = allServers.filter(
-      (server) => server.stats === undefined
-    );
-    servers.forEach((server) => {
-      // check for out of bounds stats
-      const stats = server.stats!;
-      if (stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT)) {
-        // high cpu usage
-        if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
-          notifySlackCpu(
-            server.name,
-            server.region!,
-            stats.cpu,
-            server.toNotify
-          );
-          if (alreadyAlerted[server._id!]) {
-            alreadyAlerted[server._id!] = {
-              ...alreadyAlerted[server._id!],
-              cpu: true,
-            };
-          } else {
-            alreadyAlerted[server._id!] = {
-              cpu: true,
-              mem: false,
-              disk: false,
-            };
-          }
-        }
-      }
-      if (
-        stats.mem.usedMemPercentage >
-        (server.memAlert || MEM_USAGE_NOTIFY_LIMIT)
-      ) {
-        // high memory usage
-        if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].mem) {
-          notifySlackMem(
-            server.name,
-            server.region,
-            stats.mem.usedMemMb,
-            stats.mem.totalMemMb,
-            stats.mem.usedMemPercentage,
-            server.toNotify
-          );
-          if (alreadyAlerted[server._id!]) {
-            alreadyAlerted[server._id!] = {
-              ...alreadyAlerted[server._id!],
-              mem: true,
-            };
-          } else {
-            alreadyAlerted[server._id!] = {
-              cpu: false,
-              mem: true,
-              disk: false,
-            };
-          }
-        }
-      }
-      if (
-        stats.disk.usedPercentage >
-        (server.diskAlert || DISK_USAGE_NOTIFY_LIMIT)
-      ) {
-        // high disk usage
-        if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].disk) {
-          notifySlackDisk(
-            server.name,
-            server.region,
-            stats.disk.usedGb,
-            stats.disk.totalGb,
-            stats.disk.usedPercentage,
-            server.toNotify
-          );
-          if (alreadyAlerted[server._id!]) {
-            alreadyAlerted[server._id!] = {
-              ...alreadyAlerted[server._id!],
-              disk: true,
-            };
-          } else {
-            alreadyAlerted[server._id!] = {
-              cpu: false,
-              mem: false,
-              disk: true,
-            };
-          }
-        }
-      }
-    });
-    unreachableServers.forEach((server) => {
-      if (!unreachable.includes(server._id!)) {
-        unreachable.push(server._id!);
-        notifySlackUnreachable(server.name, server.region!, server.toNotify);
-      }
-    });
-  };
+	app.decorate("notifyServerUnreachable", (server: Server) => {
+		if (!unreachable.includes(server._id!)) {
+      unreachable.push(server._id!);
+      notifySlackUnreachable(server.name, server.region!, server.toNotify);
+    }
+	});
 
-  const dailyInterval = async () => {
+	app.decorate("checkServerToNotify", (server: Server, stats: SystemStats) => {
+    if (stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT)) {
+      // high cpu usage
+      if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].cpu) {
+        notifySlackCpu(server.name, server.region!, stats.cpu, server.toNotify);
+        if (alreadyAlerted[server._id!]) {
+          alreadyAlerted[server._id!] = {
+            ...alreadyAlerted[server._id!],
+            cpu: true,
+          };
+        } else {
+          alreadyAlerted[server._id!] = {
+            cpu: true,
+            mem: false,
+            disk: false,
+          };
+        }
+      }
+    }
+    if (
+      stats.mem.usedMemPercentage > (server.memAlert || MEM_USAGE_NOTIFY_LIMIT)
+    ) {
+      // high memory usage
+      if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].mem) {
+        notifySlackMem(
+          server.name,
+          server.region,
+          stats.mem.usedMemMb,
+          stats.mem.totalMemMb,
+          stats.mem.usedMemPercentage,
+          server.toNotify
+        );
+        if (alreadyAlerted[server._id!]) {
+          alreadyAlerted[server._id!] = {
+            ...alreadyAlerted[server._id!],
+            mem: true,
+          };
+        } else {
+          alreadyAlerted[server._id!] = {
+            cpu: false,
+            mem: true,
+            disk: false,
+          };
+        }
+      }
+    }
+    if (
+      stats.disk.usedPercentage > (server.diskAlert || DISK_USAGE_NOTIFY_LIMIT)
+    ) {
+      // high disk usage
+      if (!alreadyAlerted[server._id!] || !alreadyAlerted[server._id!].disk) {
+        notifySlackDisk(
+          server.name,
+          server.region,
+          stats.disk.usedGb,
+          stats.disk.totalGb,
+          stats.disk.usedPercentage,
+          server.toNotify
+        );
+        if (alreadyAlerted[server._id!]) {
+          alreadyAlerted[server._id!] = {
+            ...alreadyAlerted[server._id!],
+            disk: true,
+          };
+        } else {
+          alreadyAlerted[server._id!] = {
+            cpu: false,
+            mem: false,
+            disk: true,
+          };
+        }
+      }
+    }
+  });
+
+	app.decorate("dailyInterval", async () => {
     const servers = await getAllServerStats();
 
     const statsBlocks: (Block | KnownBlock)[] = servers
@@ -215,17 +189,16 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       { type: "divider" },
       ...statsBlocks,
     ]);
-  };
-
-  app.decorate("dailyInterval", dailyInterval);
+  });
 
   if (SECRETS.SLACK_TOKEN) {
-    setInterval(interval, SERVER_STATS_INTERVAL);
-    setInterval(dailyInterval, 24 * 60 * 60 * 1000);
-    setInterval(() => {
-      alreadyAlerted = {};
-      unreachable = [];
-    }, CLEAR_ALREADY_ALERTED_INTERVAL);
+    waitUntilUTCHour(15).then(() => {
+      setInterval(() => app.dailyInterval(), 24 * 60 * 60 * 1000);
+      setInterval(() => {
+        alreadyAlerted = {};
+        unreachable = [];
+      }, CLEAR_ALREADY_ALERTED_INTERVAL);
+    });
   }
 
   done();

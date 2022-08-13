@@ -1,5 +1,5 @@
 import { Server } from "@monitor/types";
-import { timestamp } from "@monitor/util";
+import { timestamp, waitUntilNextFiveMinute } from "@monitor/util";
 import { getSystemStats } from "@monitor/util-node";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
@@ -51,10 +51,12 @@ const collectStats = fp((app: FastifyInstance, _: {}, done: () => void) => {
   app.decorate("statsIntervals", {
     intervals: () => intervals,
     add: (server: Server) => {
-      intervals[server._id!] = setInterval(
-        () => storeStats(server._id!),
-        server.statsInterval || SERVER_STATS_INTERVAL
-      );
+      waitUntilNextFiveMinute().then(() => {
+        intervals[server._id!] = setInterval(
+          () => storeStats(server._id!),
+          server.statsInterval || SERVER_STATS_INTERVAL
+        );
+      });
     },
     remove: (serverID: string) => {
       if (intervals[serverID]) clearInterval(intervals[serverID]);

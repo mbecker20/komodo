@@ -9,7 +9,7 @@ import docker from "./plugins/docker";
 import frontend from "./plugins/frontend";
 import actionStates from "./plugins/actionStates";
 import routes from "./routes";
-import slackNotifier2 from "./plugins/slackNotifier2";
+import slackNotifier from "./plugins/slackNotifier";
 import statCollector from "./plugins/statRecorder";
 
 async function main() {
@@ -35,7 +35,7 @@ async function main() {
     .register(ws)
     .register(frontend)
     .register(actionStates)
-    .register(slackNotifier2)
+    .register(slackNotifier)
     .register(statCollector)
     .register(routes);
 
