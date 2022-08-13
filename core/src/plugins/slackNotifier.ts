@@ -4,7 +4,7 @@ import { getSystemStats } from "@monitor/util-node";
 import { Block, KnownBlock } from "@slack/web-api";
 import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
-import { CLEAR_ALREADY_ALERTED_INTERVAL, CPU_USAGE_NOTIFY_LIMIT, DISK_USAGE_NOTIFY_LIMIT, MEM_USAGE_NOTIFY_LIMIT, SECRETS, SERVER_STATS_INTERVAL } from "../config";
+import { CLEAR_ALREADY_ALERTED_INTERVAL, CPU_USAGE_NOTIFY_LIMIT, DAILY_UPDATE_UTC_HOUR, DISK_USAGE_NOTIFY_LIMIT, MEM_USAGE_NOTIFY_LIMIT, SECRETS, SERVER_STATS_INTERVAL } from "../config";
 import { getPeripherySystemStats } from "../util/periphery/server";
 import { serverStatusPeriphery } from "../util/periphery/status";
 import { notifySlackAdvanced, notifySlackCpu, notifySlackDisk, notifySlackMem, notifySlackUnreachable } from "../util/slack";
@@ -192,7 +192,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
   });
 
   if (SECRETS.SLACK_TOKEN) {
-    waitUntilUTCHour(15).then(() => {
+    waitUntilUTCHour(DAILY_UPDATE_UTC_HOUR).then(() => {
       setInterval(() => app.dailyInterval(), 24 * 60 * 60 * 1000);
       setInterval(() => {
         alreadyAlerted = {};
