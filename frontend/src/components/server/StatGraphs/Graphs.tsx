@@ -1,38 +1,14 @@
 import { Server, StoredStats } from "@monitor/types";
-import {
-  Accessor,
-  Component,
-  createEffect,
-  createSignal,
-  Show,
-} from "solid-js";
+import { Accessor, Component, createSignal, Show, lazy } from "solid-js";
 import { SolidApexCharts } from "solid-apexcharts";
-import { useAppState } from "../../state/StateProvider";
-import { useToggle } from "../../util/hooks";
-import { getServerStatsHistory } from "../../util/query";
-import Button from "../util/Button";
-import Icon from "../util/Icon";
-import Grid from "../util/layout/Grid";
-import CenterMenu from "../util/menu/CenterMenu";
-import { readableTimestamp } from "../../util/helpers";
-import Flex from "../util/layout/Flex";
-import Loading from "../util/loading/Loading";
-
-const StatGraphs: Component<{ id: string }> = (p) => {
-  const { servers } = useAppState();
-  const [show, toggleShow] = useToggle();
-  const name = () => servers.get(p.id)?.name;
-  return (
-    <CenterMenu
-      show={show}
-      toggleShow={toggleShow}
-      target={<Icon type="timeline-line-chart" width="0.85rem" />}
-      targetClass="blue"
-      content={<Graphs id={p.id} />}
-      title={`${name()} stats`}
-    />
-  );
-};
+import { useAppState } from "../../../state/StateProvider";
+import { getServerStatsHistory } from "../../../util/query";
+import Button from "../../util/Button";
+import Icon from "../../util/Icon";
+import Grid from "../../util/layout/Grid";
+import { readableTimestamp } from "../../../util/helpers";
+import Flex from "../../util/layout/Flex";
+import Loading from "../../util/loading/Loading";
 
 const MOVEMENT = 50;
 
@@ -189,4 +165,4 @@ const Graph: Component<{
   );
 };
 
-export default StatGraphs;
+export default Graphs;

@@ -19,7 +19,7 @@ import Deployment from "./Deployment";
 import s from "../home.module.scss";
 import { NewDeployment } from "./New";
 import Loading from "../../util/loading/Loading";
-import StatGraphs from "../../server/StatGraphs";
+import StatGraphs from "../../server/StatGraphs/StatGraphs";
 
 const Server: Component<{ id: string }> = (p) => {
   const { servers, serverStats, deployments, selected } = useAppState();
