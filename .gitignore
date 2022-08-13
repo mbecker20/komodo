@@ -4,3 +4,4 @@ build
 secrets
 bundle.*
 monitor_mount
+.env*

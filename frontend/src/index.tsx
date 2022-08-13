@@ -12,16 +12,11 @@ import LoginGuard from "./components/login/LoginGuard";
 import { AppStateProvider } from "./state/StateProvider";
 import { ThemeProvider } from "./state/ThemeProvider";
 
-// export const URL =
-//   import.meta.env.MODE === "production"
-//     ? location.origin
-//     : "http://localhost:9000";
-
 export const URL =
   import.meta.env.MODE === "production"
     ? location.origin
-    : "http://52.193.1.140:9000";
-    
+    : (import.meta.env.VITE_MONITOR_HOST as string) || "http://localhost:9000";
+
 export const WS_URL = URL.replace("https", "wss").replace("http", "ws") + "/ws";
 
 export const client = new Client(URL);

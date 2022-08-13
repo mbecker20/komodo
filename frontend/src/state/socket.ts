@@ -29,18 +29,18 @@ function socket(user: User, state: State) {
   const [isOpen, setOpen] = createSignal(false);
 
   ws.addEventListener("open", () => {
-    console.log("connection opened");
+    // console.log("connection opened");
     ws.send(JSON.stringify({ token: client.token }));
     setOpen(true);
   });
 
   ws.addEventListener("message", ({ data }) => {
     if (data === "PONG") {
-      console.log("pong");
+      // console.log("pong");
       return;
     }
     const message = JSON.parse(data);
-    console.log(message);
+    // console.log(message);
     handleMessage(user, state, message);
   });
 

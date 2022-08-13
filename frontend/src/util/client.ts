@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import { User } from "@monitor/types";
 
 export default class Client {
-  token = localStorage.getItem("access_token");
+  token = localStorage.getItem("access_token") || (import.meta.env.VITE_ACCESS_TOKEN as string || null);
 
   constructor(private baseURL: string) {
 		const params = new URLSearchParams(location.search);
