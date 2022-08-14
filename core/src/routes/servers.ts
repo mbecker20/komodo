@@ -124,7 +124,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
     { onRequest: [app.auth, app.userEnabled] },
     async (req, res) => {
       const { id } = req.params as { id: string };
-      const { numPts, skip, offset } = req.query as { numPts?: number, skip?: number, offset?: number };
+      const { numPts, offset } = req.query as { numPts?: number, skip?: number, offset?: number };
       const server = await app.servers.findById(id);
       if (!server) {
         res.status(400);
@@ -139,7 +139,7 @@ const servers = fp((app: FastifyInstance, _: {}, done: () => void) => {
       }
       const stats = await app.stats.getMostRecent(
         numPts || 200,
-        { ts: { $mod: [(skip || 1) * 300000, 0] }, serverID: id },
+        { serverID: id },
         offset,
         undefined
       );

@@ -132,9 +132,14 @@ export async function getServerSystemStats(id: string) {
   return await client.get<SystemStats>(`/api/server/${id}/sys-stats`);
 }
 
-export async function getServerStatsHistory(id: string, offset?: number) {
+export async function getServerStatsHistory(
+  id: string,
+  offset?: number,
+  numPts?: number,
+  skip?: number
+) {
   return await client.get<StoredStats[]>(
-    `/api/server/${id}/stats-history${generateQuery({ offset })}`
+    `/api/server/${id}/stats-history${generateQuery({ offset, numPts, skip })}`
   );
 }
 

@@ -11,6 +11,8 @@ import Flex from "../../util/layout/Flex";
 import Loading from "../../util/loading/Loading";
 
 const MOVEMENT = 50;
+const NUM_PTS = 200;
+const SKIP = 1;
 
 const Graphs: Component<{ id: string }> = (p) => {
   const { servers } = useAppState();
@@ -23,7 +25,7 @@ const Graphs: Component<{ id: string }> = (p) => {
   const reloadStatsLeft = async () => {
     setReloadingLeft(true);
     const newOffset = offset() + MOVEMENT;
-    const stats = await getServerStatsHistory(p.id, newOffset);
+    const stats = await getServerStatsHistory(p.id, newOffset, NUM_PTS, SKIP);
     setStats(stats.reverse());
     setOffset(newOffset);
     setReloadingLeft(false);
@@ -31,19 +33,19 @@ const Graphs: Component<{ id: string }> = (p) => {
   const reloadStatsRight = async () => {
     setReloadingRight(true);
     const newOffset = Math.max(offset() - MOVEMENT, 0);
-    const stats = await getServerStatsHistory(p.id, newOffset);
+    const stats = await getServerStatsHistory(p.id, newOffset, NUM_PTS, SKIP);
     setStats(stats.reverse());
     setOffset(newOffset);
     setReloadingRight(false);
   };
   const reloadStatsReset = async () => {
     setReloadingReset(true);
-    const stats = await getServerStatsHistory(p.id, 0);
+    const stats = await getServerStatsHistory(p.id, 0, NUM_PTS, SKIP);
     setStats(stats.reverse());
     setOffset(0);
     setReloadingReset(false);
   };
-  getServerStatsHistory(p.id).then((stats) => setStats(stats.reverse()));
+  getServerStatsHistory(p.id, 0, NUM_PTS, SKIP).then((stats) => setStats(stats.reverse()));
   return (
     <Grid
       gap="0rem"
