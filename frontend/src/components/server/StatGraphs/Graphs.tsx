@@ -10,8 +10,8 @@ import { readableTimestamp } from "../../../util/helpers";
 import Flex from "../../util/layout/Flex";
 import Loading from "../../util/loading/Loading";
 
-const MOVEMENT = 50;
-const NUM_PTS = 200;
+const MOVEMENT = 1000;
+const NUM_PTS = 2000;
 const SKIP = 1;
 
 const Graphs: Component<{ id: string }> = (p) => {
