@@ -23,6 +23,7 @@ const value = () => {
     () => {
       const searchTerms = search()
         .split(" ")
+        .filter((term) => term.length > 0)
         .map((term) => term.toLowerCase());
       return deployments.filterArray((deployment) => {
         return searchTerms.reduce((prev, search) => {
