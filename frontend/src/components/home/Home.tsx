@@ -31,7 +31,6 @@ const Home: Component<{}> = (p) => {
         .split(" ")
         .filter((term) => term.length > 0)
         .map((term) => term.toLowerCase());
-      console.log(filters);
       return servers.ids()?.filter((id) => {
         const name = servers.get(id)!.name;
         for (const term of filters) {
