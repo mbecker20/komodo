@@ -5,6 +5,7 @@
   "scripts": {
     "start": "vite",
     "build": "vite build",
+    "build-development": "vite build --mode development",
     "serve": "vite preview"
   },
   "license": "GPL v3.0",
