@@ -1,6 +1,5 @@
 import { Server, StoredStats } from "@monitor/types";
-import { Accessor, Component, createSignal, Show, lazy } from "solid-js";
-import { SolidApexCharts } from "solid-apexcharts";
+import { Accessor, Component, createSignal, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { getServerStatsHistory } from "../../../util/query";
 import Button from "../../util/Button";
@@ -9,9 +8,11 @@ import Grid from "../../util/layout/Grid";
 import { readableTimestamp } from "../../../util/helpers";
 import Flex from "../../util/layout/Flex";
 import Loading from "../../util/loading/Loading";
+import { ApexOptions } from "apexcharts";
+import ApexChart from "../../util/ApexChart";
 
-const MOVEMENT = 1000;
-const NUM_PTS = 2000;
+const MOVEMENT = 500;
+const NUM_PTS = 1000;
 const SKIP = 1;
 
 const Graphs: Component<{ id: string }> = (p) => {
@@ -45,7 +46,9 @@ const Graphs: Component<{ id: string }> = (p) => {
     setOffset(0);
     setReloadingReset(false);
   };
-  getServerStatsHistory(p.id, 0, NUM_PTS, SKIP).then((stats) => setStats(stats.reverse()));
+  getServerStatsHistory(p.id, 0, NUM_PTS, SKIP).then((stats) =>
+    setStats(stats.reverse())
+  );
   return (
     <Grid
       gap="0rem"
@@ -127,9 +130,13 @@ const Graph: Component<{
   field: "cpu" | "mem" | "disk";
   server: () => Server;
 }> = (p) => {
-  const options = () => ({
+  const options: () => ApexOptions = () => ({
     chart: {
       id: "stats",
+      type: "line",
+      width: 800,
+      height: 150,
+      events: {},
     },
     xaxis: {
       labels: {
@@ -137,32 +144,26 @@ const Graph: Component<{
       },
       categories: p.stats()!.map((stat) => readableTimestamp(stat.ts)),
     },
+    series: [
+      {
+        name: p.field,
+        data:
+          p.field === "cpu"
+            ? p.stats()!.map((stat) => stat.cpu)
+            : p.field === "mem"
+            ? p.stats()!.map((stat) => stat.mem.usedMemPercentage)
+            : p.stats()!.map((stat) => stat.disk.usedPercentage),
+      },
+    ],
     // theme: {
     //   mode: isDark() ? "dark" : "light"
     // },
   });
-  const series = () => [
-    {
-      name: p.field,
-      data:
-        p.field === "cpu"
-          ? p.stats()!.map((stat) => stat.cpu)
-          : p.field === "mem"
-          ? p.stats()!.map((stat) => stat.mem.usedMemPercentage)
-          : p.stats()!.map((stat) => stat.disk.usedPercentage),
-    },
-  ];
 
   return (
     <Grid placeItems="start center" gap="0rem">
       <h1 style={{ color: "black" }}>{p.field}</h1>
-      <SolidApexCharts
-        width="800"
-        height="150"
-        type="line"
-        options={options()}
-        series={series()}
-      />
+      <ApexChart options={options()} />
     </Grid>
   );
 };
