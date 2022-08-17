@@ -146,12 +146,15 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
       .map((server) => {
         const stats = server.stats!;
         if (stats) {
-          const inWarning =
-            stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT) ||
+          const cpuInWarning =
+            stats.cpu > (server.cpuAlert || CPU_USAGE_NOTIFY_LIMIT);
+          const memInWarning =
             stats.mem.usedMemPercentage >
-              (server.memAlert || MEM_USAGE_NOTIFY_LIMIT) ||
+            (server.memAlert || MEM_USAGE_NOTIFY_LIMIT);
+          const diskInWarning =
             stats.disk.usedPercentage >
-              (server.diskAlert || DISK_USAGE_NOTIFY_LIMIT);
+            (server.diskAlert || DISK_USAGE_NOTIFY_LIMIT);
+          const inWarning = cpuInWarning || memInWarning || diskInWarning;
           return [
             {
               type: "section",
@@ -159,13 +162,13 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
                 type: "mrkdwn",
                 text: `*${server.name}*${
                   server.region ? ` | ${server.region}` : ""
-                } | *${inWarning ? "WARNING" : "OK"}*\nCPU: *${
+                } | *${inWarning ? "WARNING 🚨" : "OK ✅"}*\nCPU: *${
                   stats.cpu
-                }%*\nMEM: *${stats.mem.usedMemPercentage}%* (${
+                }%*${cpuInWarning ? " 🚨" : ""}\nMEM: *${stats.mem.usedMemPercentage}%* (${
                   stats.mem.usedMemMb
-                } MB of ${stats.mem.totalMemMb} MB)\nDISK: *${
+                } MB of ${stats.mem.totalMemMb} MB)${memInWarning ? " 🚨" : ""}\nDISK: *${
                   stats.disk.usedPercentage
-                }%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)`,
+                }%* (${stats.disk.usedGb} GB of ${stats.disk.totalGb} GB)${diskInWarning ? " 🚨" : ""}`,
               },
             },
             {
@@ -180,7 +183,7 @@ const slackNotifier = fp((app: FastifyInstance, _: {}, done: () => void) => {
                 type: "mrkdwn",
                 text: `*${server.name}*${
                   server.region ? ` | ${server.region}` : ""
-                } | *UNREACHABLE*`,
+                } | *UNREACHABLE* ❌ `,
               },
             },
             {

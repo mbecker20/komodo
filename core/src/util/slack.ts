@@ -49,7 +49,7 @@ export async function notifySlackCpu(
   toNotify?: string[]
 ) {
   await notifySlackAdvanced(
-    `WARNING | ${name}${region ? ` (${region})` : ""} has high CPU usage`,
+    `WARNING | ${name}${region ? ` (${region})` : ""} has high CPU usage 📈 🚨`,
     [
       HEADER,
       {
@@ -91,7 +91,7 @@ export async function notifySlackMem(
   toNotify?: string[]
 ) {
   await notifySlackAdvanced(
-    `WARNING | ${name}${region ? ` (${region})` : ""} has high memory usage`,
+    `WARNING | ${name}${region ? ` (${region})` : ""} has high memory usage 💾 🚨`,
     [
       HEADER,
       {
@@ -135,7 +135,7 @@ export async function notifySlackDisk(
   toNotify?: string[]
 ) {
   await notifySlackAdvanced(
-    `WARNING | ${name}${region ? ` (${region})` : ""} has high disk usage`,
+    `WARNING | ${name}${region ? ` (${region})` : ""} has high disk usage 💿 🚨`,
     [
       HEADER,
       {
@@ -176,14 +176,14 @@ export async function notifySlackUnreachable(
   toNotify?: string[]
 ) {
   await notifySlackAdvanced(
-    `WARNING 🚨 | ${name}${region ? ` (${region})` : ""} is unreachable ❌`,
+    `WARNING 🚨 | ${name}${region ? ` (${region})` : ""} is unreachable ❌ 🚨`,
     [
       HEADER,
       {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*${name}*${region ? ` (${region})` : ""} is unreachable ❌`,
+          text: `*${name}*${region ? ` (${region})` : ""} is unreachable ❌ 🚨`,
         },
       },
       toNotify && toNotify.length > 0
