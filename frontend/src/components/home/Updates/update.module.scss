@@ -1,16 +1,26 @@
 @use "../../../style/colors.scss" as c;
 
+@keyframes Enter {
+	from {
+		transform: scaleY(0);
+		opacity: 0;
+	}
+	to {
+		transform: scaleY(1);
+		opacity: 1;
+	}
+}
+
 .Update {
 	background-color: c.$lightgrey;
 	padding: 0.75rem;
+	transform-origin: top;
+	animation-name: Enter;
+	animation-duration: 750ms;
 }
 
 .Update:global(.dark) {
 	background-color: c.$lightgrey-dark;
-}
-
-.Update.NoName {
-	height: 70px;
 }
 
 .LogContainer {
