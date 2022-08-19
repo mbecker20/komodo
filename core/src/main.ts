@@ -1,7 +1,7 @@
 import fastify from "fastify";
 import fastifyCors from "fastify-cors";
 import fastifyHelmet from "fastify-helmet";
-import { HOST, LOGGER, PORT, SECRETS } from "./config";
+import { HOST, LOGGER, PORT } from "./config";
 import auth from "./plugins/auth";
 import db from "./plugins/db";
 import ws from "./plugins/ws";
