@@ -4,7 +4,7 @@ import fastifyWebsocket from "fastify-websocket";
 import { createDecoder } from "fast-jwt";
 import { createUserObservable } from "@monitor/util";
 import handleMessage from "../messages";
-import { Action, Build, Deployment, Server, User } from "@monitor/types";
+import { Action, Build, Deployment, Server } from "@monitor/types";
 
 declare module "fastify" {
   interface FastifyInstance {
