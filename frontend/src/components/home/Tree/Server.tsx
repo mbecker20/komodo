@@ -95,7 +95,13 @@ const Server: Component<{ id: string }> = (p) => {
               </Show>
             </Show>
             <div
-              class={server()?.status === "OK" ? "green" : "red"}
+              class={
+                server()?.enabled
+                  ? server()?.status === "OK"
+                    ? "green"
+                    : "red"
+                  : "blue"
+              }
               style={{
                 padding: "0.25rem",
                 "border-radius": ".35rem",
@@ -106,7 +112,11 @@ const Server: Component<{ id: string }> = (p) => {
                 selected.set(p.id, "server");
               }}
             >
-              {server()?.status === "OK" ? "OK" : "NOT OK"}
+              {server()?.enabled
+                ? server()?.status === "OK"
+                  ? "OK"
+                  : "NOT OK"
+                : "DISABLED"}
             </div>
           </Flex>
         </Button>
