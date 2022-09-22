@@ -45,10 +45,10 @@ const Image: Component<{}> = (p) => {
                 .map((id) => builds.get(id)?.name!)
                 .filter((val) => val),
             ]}
-            onSelect={(build, index) => {
+            onSelect={(build) => {
               setDeployment(
                 "buildID",
-                build === "custom image" ? undefined : builds.ids()![index - 1]
+                build === "custom image" ? undefined : builds.ids()!.find((id) => builds.get(id)?.name === build)
               );
             }}
             position="bottom right"
