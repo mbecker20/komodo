@@ -57,16 +57,12 @@ const Actions: Component<{}> = (p) => {
                 <Delete />
               </Flex>
             </Flex>
-            {/* <Flex class="action shadow">
-              container <Stop />
-            </Flex> */}
           </Match>
 
           <Match
             when={
               (deployment().status as ContainerStatus).State === "exited" ||
-              (deployment().status as ContainerStatus).State === "created" ||
-              (deployment().status as ContainerStatus).State === "restarting"
+              (deployment().status as ContainerStatus).State === "created"
             }
           >
             <Flex class={combineClasses("action shadow", themeClass())}>
@@ -74,6 +70,20 @@ const Actions: Component<{}> = (p) => {
               <Flex>
                 <Deploy redeploy />
                 <Start />
+                <Delete />
+              </Flex>
+            </Flex>
+          </Match>
+          <Match
+            when={
+              (deployment().status as ContainerStatus).State === "restarting"
+            }
+          >
+            <Flex class={combineClasses("action shadow", themeClass())}>
+              deploy{" "}
+              <Flex>
+                <Deploy redeploy />
+                <Stop />
                 <Delete />
               </Flex>
             </Flex>
