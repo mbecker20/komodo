@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+	"cli",
+	"core",
+	"periphery",
+	"types"
+]
