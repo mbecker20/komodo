@@ -65,7 +65,8 @@ const Actions: Component<{}> = (p) => {
           <Match
             when={
               (deployment().status as ContainerStatus).State === "exited" ||
-              (deployment().status as ContainerStatus).State === "created"
+              (deployment().status as ContainerStatus).State === "created" ||
+              (deployment().status as ContainerStatus).State === "restarting"
             }
           >
             <Flex class={combineClasses("action shadow", themeClass())}>

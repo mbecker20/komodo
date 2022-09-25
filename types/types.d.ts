@@ -189,7 +189,7 @@ export type ServerActionState = {
 export type ContainerStatus = {
   name: string;
   Status: string;
-  State: "created" | "running" | "exited";
+  State: "created" | "running" | "exited" | "restarting";
 };
 
 export type Network = {
