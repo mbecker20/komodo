@@ -94,6 +94,9 @@ const Server: Component<{ id: string }> = (p) => {
                 </Flex>
               </Show>
             </Show>
+            <Show when={server()?.status !== "OK"}>
+              <StatGraphs id={p.id} />
+            </Show>
             <div
               class={
                 server()?.enabled
