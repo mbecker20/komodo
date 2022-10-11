@@ -75,8 +75,14 @@ impl Default for Server {
 pub struct Deployment {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    pub name: String,
+    pub name: String, // must be formatted to be compat with docker
+    pub server_id: String,
     pub permissions: PermissionsMap,
+    pub docker_run_args: DockerRunArgs,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub is_core: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build_id: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -100,11 +106,15 @@ pub struct Build {
     pub docker_account: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct DockerBuildArgs {
-    pub build_path: String,
-    pub dockerfile_path: Option<String>,
+pub struct BuildRecord {
+    pub start_ts: i64,
+    pub end_ts: i64,
+    pub successful: bool,
+    pub logs: Vec<Log>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<Version>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -128,7 +138,7 @@ pub struct Update {
     pub entity_id: Option<String>,
     pub operation: Operation,
     pub command: String,
-    pub log: Log,
+    pub log: Vec<Log>,
     pub ts: i64,
     pub is_error: bool,
     pub operator: String,
@@ -136,7 +146,49 @@ pub struct Update {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct DockerBuildArgs {
+    pub build_path: String,
+    pub dockerfile_path: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct DockerRunArgs {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub image: Option<String>,
+    pub ports: Vec<Conversion>,
+    pub volumes: Vec<Conversion>,
+    pub environment: Vec<EnvironmentVar>,
+    pub network: String,
+    pub restart: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub post_image: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub container_user: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub docker_account: Option<String>,
+}
+
+impl Default for DockerRunArgs {
+    fn default() -> Self {
+        Self {
+            image: None,
+            ports: Vec::new(),
+            volumes: Vec::new(),
+            environment: Vec::new(),
+            network: "bridge".to_string(),
+            restart: "no".to_string(),
+            post_image: None,
+            container_user: None,
+            docker_account: None,
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct Log {
+    pub stage: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub std_out: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -157,6 +209,20 @@ pub struct Version {
     pub minor: u64,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Conversion {
+    pub local: String,
+    pub container: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct EnvironmentVar {
+    pub variable: String,
+    pub value: String,
+}
+
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -169,4 +235,20 @@ pub enum EntityType {
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-pub enum Operation {}
+pub enum Operation {
+    // server
+    PruneImagesServer,
+    PruneContainersServer,
+    PruneNetworksServer,
+
+    // build
+    BuildBuild,
+    RecloneBuild,
+
+    // deployment
+    DeployDeployment,
+    StopDeployment,
+    StartDeployment,
+    PullDeployment,
+    RecloneDeployment,
+}

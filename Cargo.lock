@@ -979,6 +979,7 @@ dependencies = [
  "tokio",
  "tower",
  "tower-http",
+ "types",
 ]
 
 [[package]]
