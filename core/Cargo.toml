@@ -11,7 +11,7 @@ axum = { version = "0.5", features = ["ws"] }
 axum-extra = { version = "0.3", features = ["spa"] }
 tower = { version = "0.4", features = ["full"] }
 tower-http = { version = "0.3", features = ["cors"] }
-mungos = "0.2.17"
+mungos = "0.2.24"
 dotenv = "0.15"
 serde = "1.0"
 serde_derive = "1.0"
