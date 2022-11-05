@@ -4,5 +4,9 @@ members = [
 	"cli",
 	"core",
 	"periphery",
-	"types"
+	"builder",
+	"types",
+	"docker_client",
+	"git_client",
+	"db_client"
 ]

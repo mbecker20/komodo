@@ -4,7 +4,11 @@ use mungos::ObjectId;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
-pub type PermissionsMap = HashMap<String, u8>;
+pub type PermissionsMap = HashMap<String, PermissionLevel>;
+
+pub type ServerId = String;
+pub type DeploymentId = String;
+pub type BuildId = String;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
@@ -76,13 +80,13 @@ pub struct Deployment {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub name: String, // must be formatted to be compat with docker
-    pub server_id: String,
+    pub server_id: ServerId,
     pub permissions: PermissionsMap,
     pub docker_run_args: DockerRunArgs,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub is_core: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub build_id: Option<String>,
+    pub build_id: Option<BuildId>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -151,38 +155,26 @@ pub struct DockerBuildArgs {
     pub dockerfile_path: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct DockerRunArgs {
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<String>,
     pub ports: Vec<Conversion>,
     pub volumes: Vec<Conversion>,
     pub environment: Vec<EnvironmentVar>,
-    pub network: String,
-    pub restart: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    pub network: Option<String>,
+    pub restart: RestartMode,
     pub post_image: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub container_user: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub docker_account: Option<String>,
+    pub docker_account: Option<String>, // the username of the dockerhub account
 }
 
-impl Default for DockerRunArgs {
-    fn default() -> Self {
-        Self {
-            image: None,
-            ports: Vec::new(),
-            volumes: Vec::new(),
-            environment: Vec::new(),
-            network: "bridge".to_string(),
-            restart: "no".to_string(),
-            post_image: None,
-            container_user: None,
-            docker_account: None,
-        }
-    }
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct BasicContainerInfo {
+    pub name: String,
+    pub state: ContainerState,
+    pub status: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -223,6 +215,13 @@ pub struct EnvironmentVar {
     pub value: String,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Permission {
+    pub entity_type: EntityType,
+    pub id: String,
+    pub level: PermissionLevel,
+}
+
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -251,4 +250,43 @@ pub enum Operation {
     StartDeployment,
     PullDeployment,
     RecloneDeployment,
+}
+
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+pub enum PermissionLevel {
+    Read,
+    Write,
+}
+
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+pub enum ContainerState {
+    Created,
+    Restarting,
+    Running,
+    Removing,
+    Paused,
+    Exited,
+    Dead,
+}
+
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+pub enum RestartMode {
+    #[serde(rename = "no")]
+    NoRestart,
+    #[serde(rename = "on-failure")]
+    OnFailure,
+    #[serde(rename = "always")]
+    Always,
+    #[serde(rename = "unless-stopped")]
+    UnlessStopped,
+}
+
+impl Default for RestartMode {
+    fn default() -> RestartMode {
+        RestartMode::NoRestart
+    }
 }

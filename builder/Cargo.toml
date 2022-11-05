@@ -1,5 +1,5 @@
 [package]
-name = "monitor-core"
+name = "builder"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,13 +11,10 @@ git = { package = "git_client", path = "../git_client" }
 types = { path = "../types" }
 tokio = { version = "1.21", features = ["full"] }
 axum = { version = "0.5", features = ["ws"] }
-axum-extra = { version = "0.3", features = ["spa"] }
-tower = { version = "0.4", features = ["full"] }
-tower-http = { version = "0.3", features = ["cors"] }
-slack = { package = "slack_client_rs", version = "0.0.7" }
-mungos = "0.2.24"
-dotenv = "0.15"
 serde = "1.0"
 serde_derive = "1.0"
-serde_json = "1.0"
+mungos = "0.2.24"
+anyhow = "1.0"
+thiserror = "1.0"
 envy = "0.4"
+dotenv = "0.15"
