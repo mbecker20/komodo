@@ -8,9 +8,10 @@ edition = "2021"
 [dependencies]
 docker = {  package = "docker_client", path = "../lib/docker_client" }
 git = { package = "git_client", path = "../lib/git_client" }
+db = { package = "db_client", path = "../lib/db_client" }
 types = { path = "../lib/types" }
 tokio = { version = "1.21", features = ["full"] }
-axum = { version = "0.5", features = ["ws"] }
+axum = { version = "0.5", features = ["ws", "json"] }
 axum-extra = { version = "0.3", features = ["spa"] }
 tower = { version = "0.4", features = ["full"] }
 tower-http = { version = "0.3", features = ["cors"] }
@@ -21,3 +22,6 @@ serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 envy = "0.4"
+oauth2 = "4.2.3"
+anyhow = "1.0"
+bcrypt = "0.13"

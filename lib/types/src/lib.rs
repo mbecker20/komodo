@@ -10,6 +10,14 @@ pub type ServerId = String;
 pub type DeploymentId = String;
 pub type BuildId = String;
 
+pub type GithubUsername = String;
+pub type GithubToken = String;
+pub type GithubAccounts = HashMap<GithubUsername, GithubToken>;
+
+pub type DockerUsername = String;
+pub type DockerToken = String;
+pub type DockerAccounts = HashMap<DockerUsername, DockerToken>;
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct User {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
@@ -202,6 +210,39 @@ pub struct Permission {
     pub entity_type: EntityType,
     pub id: String,
     pub level: PermissionLevel,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "UPPERCASE")]
+pub struct OauthCredentials {
+    pub id: String,
+    pub secret: String,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "UPPERCASE")]
+pub struct CoreSecrets {
+    pub passkey: String,
+    pub docker_accounts: DockerAccounts,
+    pub github_accounts: GithubAccounts,
+    pub github_oauth: OauthCredentials,
+    pub jwt_secret: String,
+    pub slack_token: Option<String>,
+    pub github_webhook_secret: String,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "UPPERCASE")]
+pub struct PeripherySecrets {
+    pub passkey: String,
+    pub docker_accounts: DockerAccounts,
+    pub github_accounts: GithubAccounts,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct UserCredentials {
+    pub username: String,
+    pub password: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
