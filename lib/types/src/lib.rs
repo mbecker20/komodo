@@ -221,7 +221,7 @@ pub struct OauthCredentials {
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "UPPERCASE")]
-pub struct CoreSecrets {
+pub struct CoreConfig {
     pub passkey: String,
     pub docker_accounts: DockerAccounts,
     pub github_accounts: GithubAccounts,
@@ -229,6 +229,19 @@ pub struct CoreSecrets {
     pub jwt_secret: String,
     pub slack_token: Option<String>,
     pub github_webhook_secret: String,
+    pub mongo_uri: String,
+    #[serde(default = "default_core_mongo_app_name")]
+    pub mongo_app_name: String,
+    #[serde(default = "default_core_mongo_db_name")]
+    pub mongo_db_name: String,
+}
+
+fn default_core_mongo_app_name() -> String {
+    "monitor_core".to_string()
+}
+
+fn default_core_mongo_db_name() -> String {
+    "monitor".to_string()
 }
 
 #[derive(Deserialize, Debug)]

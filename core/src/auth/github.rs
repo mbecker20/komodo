@@ -1,8 +1,8 @@
 use oauth2::{basic::BasicClient, AuthUrl, ClientId, ClientSecret, RedirectUrl, TokenUrl};
-use types::CoreSecrets;
+use types::CoreConfig;
 
 pub fn github_oauth_client(
-    secrets: &CoreSecrets,
+    secrets: &CoreConfig,
     redirect_url: String,
 ) -> anyhow::Result<BasicClient> {
     let github_client_id = ClientId::new(secrets.github_oauth.id.clone());

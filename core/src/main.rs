@@ -7,7 +7,6 @@ mod api;
 mod auth;
 mod config;
 mod helpers;
-mod oauth;
 
 #[tokio::main]
 async fn main() {
@@ -15,6 +14,7 @@ async fn main() {
 
     let app = Router::new()
         .nest("/api", api::router())
+        .nest("/auth", auth::router())
         .layer(db_extension);
 
     axum::Server::bind(&socket_addr)

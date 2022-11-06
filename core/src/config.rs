@@ -1,4 +1,5 @@
 use std::{
+    fs::File,
     net::{IpAddr, SocketAddr},
     str::FromStr,
     time::Duration,
@@ -7,6 +8,7 @@ use std::{
 use db::{DbClient, DbExtension};
 use dotenv::dotenv;
 use mungos::{Deserialize, Mungos};
+use types::CoreConfig;
 
 #[derive(Deserialize, Debug)]
 struct Env {
@@ -30,10 +32,15 @@ pub async fn load() -> (SocketAddr, DbExtension) {
         .await
         .expect("failed to initialize db client");
 
+    let secrets = load_secrets();
+
     (socket_addr, db_client)
 }
 
-fn load_secrets() {}
+fn load_secrets() -> CoreConfig {
+    let file = File::open("/secrets/secrets.json");
+    todo!()
+}
 
 fn default_mongo_app_name() -> String {
     "monitor_core".to_string()
