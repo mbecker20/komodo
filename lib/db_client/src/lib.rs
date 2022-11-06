@@ -1,5 +1,6 @@
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
+use axum::Extension;
 use collections::{
     builds_collection, deployments_collection, procedures_collection, servers_collection,
     updates_collection, users_collection,
@@ -8,6 +9,8 @@ use mungos::{Collection, Mungos};
 use types::{Build, Deployment, Procedure, Server, Update, User};
 
 mod collections;
+
+pub type DbExtension = Extension<Arc<DbClient>>;
 
 pub struct DbClient {
     pub users: Collection<User>,
@@ -19,7 +22,11 @@ pub struct DbClient {
 }
 
 impl DbClient {
-    pub async fn new(mongo_uri: &str, app_name: &str, db_name: &str) -> anyhow::Result<DbClient> {
+    pub async fn new(
+        mongo_uri: &str,
+        app_name: &str,
+        db_name: &str,
+    ) -> anyhow::Result<DbExtension> {
         let mungos = Mungos::new(mongo_uri, app_name, Duration::from_secs(3), None).await?;
         let client = DbClient {
             users: users_collection(&mungos, db_name).await?,
@@ -29,6 +36,6 @@ impl DbClient {
             updates: updates_collection(&mungos, db_name).await?,
             procedures: procedures_collection(&mungos, db_name).await?,
         };
-        Ok(client)
+        Ok(Extension(Arc::new(client)))
     }
 }

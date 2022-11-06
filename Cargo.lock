@@ -46,6 +46,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "async_timing_util"
+version = "0.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "621343e4b8a4aed1ed909b273e2fcb1bba6e0b476ba5096c0c27117d86f29335"
+dependencies = [
+ "serde",
+ "serde_derive",
+ "strum",
+ "strum_macros",
+ "tokio",
+]
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -443,6 +456,7 @@ name = "db_client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "axum",
  "mungos",
  "types",
 ]
@@ -971,6 +985,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "jwt"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6204285f77fe7d9784db3fdc449ecce1a0114927a51d5a41c4c7a292011c015f"
+dependencies = [
+ "base64",
+ "crypto-common",
+ "digest",
+ "hmac",
+ "serde",
+ "serde_json",
+ "sha2",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1140,6 +1169,7 @@ name = "monitor-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async_timing_util",
  "axum",
  "axum-extra",
  "bcrypt",
@@ -1148,11 +1178,14 @@ dependencies = [
  "dotenv",
  "envy",
  "git_client",
+ "hmac",
+ "jwt",
  "mungos",
  "oauth2",
  "serde",
  "serde_derive",
  "serde_json",
+ "sha2",
  "slack_client_rs",
  "tokio",
  "tower",

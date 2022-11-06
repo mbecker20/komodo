@@ -4,6 +4,7 @@ use std::{
     time::Duration,
 };
 
+use db::{DbClient, DbExtension};
 use dotenv::dotenv;
 use mungos::{Deserialize, Mungos};
 
@@ -11,9 +12,13 @@ use mungos::{Deserialize, Mungos};
 struct Env {
     port: u16,
     mongo_uri: String,
+    #[serde(default = "default_mongo_app_name")]
+    mongo_app_name: String,
+    #[serde(default = "default_mongo_db_name")]
+    mongo_db_name: String,
 }
 
-pub async fn load() -> (SocketAddr, Mungos) {
+pub async fn load() -> (SocketAddr, DbExtension) {
     dotenv().ok();
 
     let env = envy::from_env::<Env>().unwrap();
@@ -21,9 +26,19 @@ pub async fn load() -> (SocketAddr, Mungos) {
     let socket_addr = SocketAddr::from_str(&format!("0.0.0.0:{}", env.port))
         .expect("failed to parse socket addr");
 
-    let mungos = Mungos::new(&env.mongo_uri, "monitor_core", Duration::from_secs(3), None)
+    let db_client = DbClient::new(&env.mongo_uri, &env.mongo_app_name, &env.mongo_db_name)
         .await
-        .expect("failed to connect to mongo");
+        .expect("failed to initialize db client");
 
-    (socket_addr, mungos)
+    (socket_addr, db_client)
+}
+
+fn load_secrets() {}
+
+fn default_mongo_app_name() -> String {
+    "monitor_core".to_string()
+}
+
+fn default_mongo_db_name() -> String {
+    "monitor".to_string()
 }

@@ -7,5 +7,6 @@ edition = "2021"
 
 [dependencies]
 types = { path = "../types" }
+axum = "0.5"
 mungos = "0.2.24"
 anyhow = "1.0"
