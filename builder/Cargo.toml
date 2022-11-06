@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-docker = {  package = "docker_client", path = "../docker_client" }
-git = { package = "git_client", path = "../git_client" }
-types = { path = "../types" }
+docker = {  package = "docker_client", path = "../lib/docker_client" }
+git = { package = "git_client", path = "../lib/git_client" }
+types = { path = "../lib/types" }
 tokio = { version = "1.21", features = ["full"] }
 axum = { version = "0.5", features = ["ws"] }
 serde = "1.0"

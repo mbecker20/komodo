@@ -11,7 +11,6 @@ pub type DeploymentId = String;
 pub type BuildId = String;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct User {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -31,7 +30,6 @@ pub struct User {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct Server {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -75,7 +73,6 @@ impl Default for Server {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct Deployment {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -90,7 +87,6 @@ pub struct Deployment {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct Build {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -111,7 +107,6 @@ pub struct Build {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct BuildRecord {
     pub start_ts: i64,
     pub end_ts: i64,
@@ -122,22 +117,10 @@ pub struct BuildRecord {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Procedure {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
-    pub name: String,
-    pub procedure: Vec<Operation>,
-    pub permissions: PermissionsMap,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct Update {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub entity_type: Option<EntityType>,
+    pub entity_type: EntityType,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub entity_id: Option<String>,
     pub operation: Operation,
@@ -149,14 +132,21 @@ pub struct Update {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
+pub struct Procedure {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub name: String,
+    pub procedure: Vec<Operation>,
+    pub permissions: PermissionsMap,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DockerBuildArgs {
     pub build_path: String,
     pub dockerfile_path: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct DockerRunArgs {
     pub image: Option<String>,
     pub ports: Vec<Conversion>,
@@ -170,7 +160,6 @@ pub struct DockerRunArgs {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct BasicContainerInfo {
     pub name: String,
     pub state: ContainerState,
@@ -178,38 +167,31 @@ pub struct BasicContainerInfo {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct Log {
     pub stage: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub std_out: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub std_err: Option<String>,
+    pub stdout: String,
+    pub stderr: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct Command {
     pub path: String,
     pub command: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct Version {
     pub major: u64,
     pub minor: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct Conversion {
     pub local: String,
     pub container: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct EnvironmentVar {
     pub variable: String,
     pub value: String,
@@ -226,6 +208,7 @@ pub struct Permission {
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum EntityType {
+    System,
     Build,
     Deployment,
     Server,
