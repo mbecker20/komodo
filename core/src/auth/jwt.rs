@@ -7,6 +7,7 @@ use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use mungos::{Deserialize, Serialize};
 use sha2::Sha256;
+use types::CoreConfig;
 
 pub type JwtExtension = Extension<Arc<JwtClient>>;
 
@@ -23,11 +24,11 @@ pub struct JwtClient {
 }
 
 impl JwtClient {
-    pub fn new(secret: &str, valid_for: Timelength) -> JwtExtension {
-        let key = Hmac::new_from_slice(secret.as_bytes()).unwrap();
+    pub fn extension(config: &CoreConfig) -> JwtExtension {
+        let key = Hmac::new_from_slice(config.jwt_secret.as_bytes()).unwrap();
         let client = JwtClient {
             key,
-            valid_for_ms: get_timelength_in_ms(valid_for),
+            valid_for_ms: get_timelength_in_ms(config.jwt_valid_for),
         };
         Extension(Arc::new(client))
     }

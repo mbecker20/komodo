@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use async_timing_util::Timelength;
 use mungos::ObjectId;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
@@ -212,16 +213,17 @@ pub struct Permission {
     pub level: PermissionLevel,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub struct OauthCredentials {
     pub id: String,
     pub secret: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub struct CoreConfig {
+    pub port: u16,
     pub passkey: String,
     pub docker_accounts: DockerAccounts,
     pub github_accounts: GithubAccounts,
@@ -229,6 +231,7 @@ pub struct CoreConfig {
     pub jwt_secret: String,
     pub slack_token: Option<String>,
     pub github_webhook_secret: String,
+    pub jwt_valid_for: Timelength,
     pub mongo_uri: String,
     #[serde(default = "default_core_mongo_app_name")]
     pub mongo_app_name: String,

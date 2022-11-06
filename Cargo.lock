@@ -2310,6 +2310,7 @@ checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
 name = "types"
 version = "0.1.0"
 dependencies = [
+ "async_timing_util",
  "mungos",
  "serde",
  "serde_derive",

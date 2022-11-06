@@ -1,7 +1,10 @@
 #![allow(unused)]
 
+use auth::JwtClient;
 use axum::Router;
+use db::DbClient;
 use docker::DockerClient;
+use helpers::get_socket_addr;
 
 mod api;
 mod auth;
@@ -10,14 +13,15 @@ mod helpers;
 
 #[tokio::main]
 async fn main() {
-    let (socket_addr, db_extension) = config::load().await;
+    let config = config::load().await;
 
     let app = Router::new()
         .nest("/api", api::router())
-        .nest("/auth", auth::router())
-        .layer(db_extension);
+        .nest("/auth", auth::router(&config))
+        .layer(DbClient::extension((&config).into()).await)
+        .layer(JwtClient::extension(&config));
 
-    axum::Server::bind(&socket_addr)
+    axum::Server::bind(&get_socket_addr(&config))
         .serve(app.into_make_service())
         .await
         .expect("server crashed");
