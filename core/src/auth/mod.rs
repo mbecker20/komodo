@@ -14,7 +14,7 @@ mod github;
 mod jwt;
 mod local;
 
-pub use self::jwt::{JwtClaims, JwtClient, JwtExtension};
+pub use self::jwt::{JwtClaims, JwtClient, JwtExtension, RequestUser, RequestUserExtension};
 
 pub fn router(config: &CoreConfig) -> Router {
     Router::new()
@@ -30,10 +30,10 @@ pub async fn auth_request(
         StatusCode::UNAUTHORIZED,
         "failed to get jwt client extension".to_string(),
     ))?;
-    let user_id: UserId = jwt_client
+    let user = jwt_client
         .authenticate(&req)
         .await
         .map_err(|e| (StatusCode::UNAUTHORIZED, format!("error: {e:#?}")))?;
-    req.extensions_mut().insert(user_id);
+    req.extensions_mut().insert(user);
     Ok(next.run(req).await)
 }

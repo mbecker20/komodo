@@ -11,6 +11,12 @@ use sha2::Sha256;
 use types::{CoreConfig, User, UserId};
 
 pub type JwtExtension = Extension<Arc<JwtClient>>;
+pub type RequestUserExtension = Extension<Arc<RequestUser>>;
+
+pub struct RequestUser {
+    pub id: String,
+    pub is_admin: bool,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct JwtClaims {
@@ -49,7 +55,7 @@ impl JwtClient {
         Ok(jwt)
     }
 
-    pub async fn authenticate(&self, req: &Request<Body>) -> anyhow::Result<UserId> {
+    pub async fn authenticate(&self, req: &Request<Body>) -> anyhow::Result<Arc<RequestUser>> {
         let jwt = req
             .headers()
             .get("authorization")
@@ -73,7 +79,11 @@ impl JwtClient {
                 .await?
                 .ok_or(anyhow!("did not find user with id {}", claims.id))?;
             if user.enabled {
-                Ok(claims.id)
+                let user = RequestUser {
+                    id: claims.id,
+                    is_admin: user.admin,
+                };
+                Ok(Arc::new(user))
             } else {
                 Err(anyhow!("user not enabled"))
             }
