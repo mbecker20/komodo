@@ -158,7 +158,7 @@ pub struct DockerBuildArgs {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct DockerRunArgs {
-    pub image: Option<String>,
+    pub image: String,
     pub ports: Vec<Conversion>,
     pub volumes: Vec<Conversion>,
     pub environment: Vec<EnvironmentVar>,
