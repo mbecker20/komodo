@@ -33,7 +33,8 @@ pub struct JwtClient {
 
 impl JwtClient {
     pub fn extension(config: &CoreConfig) -> JwtExtension {
-        let key = Hmac::new_from_slice(config.jwt_secret.as_bytes()).unwrap();
+        let key = Hmac::new_from_slice(config.jwt_secret.as_bytes())
+            .expect("failed at taking HmacSha256 of jwt secret");
         let client = JwtClient {
             key,
             valid_for_ms: get_timelength_in_ms(config.jwt_valid_for),

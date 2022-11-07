@@ -28,5 +28,5 @@ async fn main() {
     axum::Server::bind(&get_socket_addr(&config))
         .serve(app.into_make_service())
         .await
-        .expect("server crashed");
+        .expect("monitor core axum server crashed");
 }

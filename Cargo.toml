@@ -4,5 +4,10 @@ members = [
 	"cli",
 	"core",
 	"periphery",
-	"builder"
+	"builder",
+	"lib/db_client",
+	"lib/docker_client",
+	"lib/git_client",
+	"lib/periphery_client",
+	"lib/types"
 ]

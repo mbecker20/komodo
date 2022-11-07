@@ -488,6 +488,7 @@ name = "docker_client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "axum",
  "bollard",
  "run_command",
  "thiserror",
@@ -1197,14 +1198,19 @@ dependencies = [
 name = "monitor-periphery"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "axum",
  "bollard",
+ "docker_client",
  "dotenv",
+ "envy",
+ "git_client",
  "serde",
  "serde_derive",
  "serde_json",
  "tokio",
  "tower",
+ "types",
 ]
 
 [[package]]
@@ -1401,6 +1407,13 @@ name = "percent-encoding"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
+
+[[package]]
+name = "periphery_client"
+version = "0.1.0"
+dependencies = [
+ "reqwest",
+]
 
 [[package]]
 name = "pin-project"

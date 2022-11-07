@@ -17,10 +17,10 @@ tower = { version = "0.4", features = ["full"] }
 tower-http = { version = "0.3", features = ["cors"] }
 slack = { package = "slack_client_rs", version = "0.0.7" }
 mungos = "0.2.24"
-dotenv = "0.15"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
+dotenv = "0.15"
 envy = "0.4"
 oauth2 = "4.2.3"
 anyhow = "1.0"

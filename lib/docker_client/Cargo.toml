@@ -11,3 +11,4 @@ run_command = { version = "0.0.5", features = ["async_tokio"] }
 bollard = "0.13"
 anyhow = "1.0"
 thiserror = "1.0"
+axum = "0.5"
