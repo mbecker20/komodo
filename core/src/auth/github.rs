@@ -7,7 +7,10 @@ use types::CoreConfig;
 pub type GithubOauthExtension = Extension<Arc<BasicClient>>;
 
 pub fn router(config: &CoreConfig) -> Router {
-    Router::new().layer(github_oauth_extension(config, format!("")))
+    Router::new().layer(github_oauth_extension(
+        config,
+        format!("http://localhost:9000/auth/github/callback"),
+    ))
 }
 
 fn github_oauth_extension(config: &CoreConfig, redirect_url: String) -> GithubOauthExtension {

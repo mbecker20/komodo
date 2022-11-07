@@ -7,6 +7,7 @@ use strum_macros::{Display, EnumString};
 
 pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
+pub type UserId = String;
 pub type ServerId = String;
 pub type DeploymentId = String;
 pub type BuildId = String;
@@ -223,15 +224,28 @@ pub struct OauthCredentials {
 #[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub struct CoreConfig {
+    // port the core web server runs on
     pub port: u16,
+
+    // default periphery passkey
     pub passkey: String,
+
+    // docker integration
     pub docker_accounts: DockerAccounts,
+
+    // github integration
     pub github_accounts: GithubAccounts,
     pub github_oauth: OauthCredentials,
-    pub jwt_secret: String,
-    pub slack_token: Option<String>,
     pub github_webhook_secret: String,
+
+    // jwt config
+    pub jwt_secret: String,
     pub jwt_valid_for: Timelength,
+
+    // integration with slack app
+    pub slack_url: Option<String>,
+
+    //mongo config
     pub mongo_uri: String,
     #[serde(default = "default_core_mongo_app_name")]
     pub mongo_app_name: String,

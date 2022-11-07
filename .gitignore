@@ -2,3 +2,5 @@ target
 node_modules
 dist
 .env
+
+config.json

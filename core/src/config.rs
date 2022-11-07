@@ -1,4 +1,5 @@
 use std::{
+    env,
     fs::File,
     net::{IpAddr, SocketAddr},
     str::FromStr,
@@ -10,13 +11,8 @@ use dotenv::dotenv;
 use mungos::{Deserialize, Mungos};
 use types::CoreConfig;
 
-pub async fn load() -> CoreConfig {
-    let config = load_config();
-
-    config
-}
-
-fn load_config() -> CoreConfig {
-    let file = File::open("/secrets/secrets.json");
-    todo!()
+pub fn load() -> CoreConfig {
+    let config_path = env::var("CONFIG_PATH").unwrap_or("./config.json".to_string());
+    let file = File::open(config_path).expect("failed to open config file");
+    serde_json::from_reader(file).unwrap()
 }
