@@ -134,7 +134,6 @@ pub struct Update {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub entity_id: Option<String>,
     pub operation: Operation,
-    pub command: String,
     pub log: Vec<Log>,
     pub ts: i64,
     pub is_error: bool,
@@ -179,8 +178,12 @@ pub struct BasicContainerInfo {
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Log {
     pub stage: String,
+    pub command: String,
     pub stdout: String,
     pub stderr: String,
+    pub success: bool,
+    pub start_ts: i64,
+    pub end_ts: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -265,7 +268,9 @@ fn default_core_mongo_db_name() -> String {
 #[serde(rename_all = "UPPERCASE")]
 pub struct PeripherySecrets {
     pub passkey: String,
+    #[serde(default)]
     pub docker_accounts: DockerAccounts,
+    #[serde(default)]
     pub github_accounts: GithubAccounts,
 }
 

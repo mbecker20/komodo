@@ -25,5 +25,5 @@ pub fn load() -> CoreConfig {
 }
 
 pub fn default_config_path() -> String {
-    "./config.json".to_string()
+    "/config/config.json".to_string()
 }

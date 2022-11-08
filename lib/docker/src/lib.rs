@@ -1,22 +1,24 @@
 use std::sync::Arc;
 
 use anyhow::anyhow;
+use async_timing_util::unix_timestamp_ms;
 use axum::Extension;
 use bollard::{container::ListContainersOptions, Docker};
 use run_command::{async_run_command, CommandOutput};
 use types::{
-    BasicContainerInfo, Conversion, Deployment, DockerRunArgs, EnvironmentVar, Log, RestartMode,
+    BasicContainerInfo, Build, Conversion, Deployment, DockerRunArgs, EnvironmentVar, Log,
+    RestartMode,
 };
 
-pub type DeployExtension = Extension<Arc<DeployClient>>;
+pub type DockerExtension = Extension<Arc<DockerClient>>;
 
-pub struct DeployClient {
+pub struct DockerClient {
     docker: Docker,
 }
 
-impl DeployClient {
-    pub fn extension() -> DeployExtension {
-        let client = DeployClient {
+impl DockerClient {
+    pub fn extension() -> DockerExtension {
+        let client = DockerClient {
             docker: Docker::connect_with_local_defaults()
                 .expect("failed to connect to docker daemon"),
         };
@@ -50,28 +52,42 @@ impl DeployClient {
     }
 }
 
-pub async fn docker_start(container_name: &str) -> (bool, Log) {
-    let command = format!("start stop {container_name}");
-    let output = async_run_command(&command).await;
-    output_into_log("docker stop", output)
+// CONTAINER COMMANDS
+
+pub fn parse_container_name(name: &str) -> String {
+    name.to_lowercase().replace(" ", "_")
 }
 
-pub async fn docker_stop(container_name: &str) -> (bool, Log) {
+pub async fn docker_start(container_name: &str) -> Log {
+    let container_name = parse_container_name(container_name);
+    let command = format!("docker start {container_name}");
+    let start_ts = unix_timestamp_ms() as i64;
+    let output = async_run_command(&command).await;
+    output_into_log("docker start", command, start_ts, output)
+}
+
+pub async fn docker_stop(container_name: &str) -> Log {
+    let container_name = parse_container_name(container_name);
     let command = format!("docker stop {container_name}");
+    let start_ts = unix_timestamp_ms() as i64;
     let output = async_run_command(&command).await;
-    output_into_log("docker stop", output)
+    output_into_log("docker stop", command, start_ts, output)
 }
 
-pub async fn docker_stop_and_remove(container_name: &str) -> (bool, Log) {
+pub async fn docker_stop_and_remove(container_name: &str) -> Log {
+    let container_name = parse_container_name(container_name);
     let command = format!("docker stop {container_name} && docker container rm {container_name}");
+    let start_ts = unix_timestamp_ms() as i64;
     let output = async_run_command(&command).await;
-    output_into_log("docker stop and remove", output)
+    output_into_log("docker stop and remove", command, start_ts, output)
 }
 
-pub async fn deploy(deployment: &Deployment) -> (bool, Log) {
-    let docker_run = docker_run_command(deployment);
-    let output = async_run_command(&docker_run).await;
-    output_into_log("docker run", output)
+pub async fn deploy(deployment: &Deployment) -> Log {
+    let _ = docker_stop_and_remove(&parse_container_name(&deployment.name)).await;
+    let command = docker_run_command(deployment);
+    let start_ts = unix_timestamp_ms() as i64;
+    let output = async_run_command(&command).await;
+    output_into_log("docker run", command, start_ts, output)
 }
 
 pub fn docker_run_command(
@@ -100,12 +116,7 @@ pub fn docker_run_command(
     let restart = parse_restart(restart);
     let environment = parse_environment(environment);
     let post_image = parse_post_image(post_image);
-    format!("docker run -d {name}{container_user}{ports}{volumes}{network}{restart}{environment} {image}{post_image}")
-}
-
-fn parse_container_name(name: &str) -> String {
-    let name = name.to_lowercase().replace(" ", "_");
-    format!("--name {name}")
+    format!("docker run -d --name {name}{container_user}{ports}{volumes}{network}{restart}{environment} {image}{post_image}")
 }
 
 fn parse_container_user(container_user: &Option<String>) -> String {
@@ -156,12 +167,21 @@ fn parse_post_image(post_image: &Option<String>) -> String {
     }
 }
 
-fn output_into_log(stage: &str, output: CommandOutput) -> (bool, Log) {
+// BUILD COMMANDS
+
+pub async fn docker_build(_build: &Build) -> (bool, Log) {
+    todo!()
+}
+
+fn output_into_log(stage: &str, command: String, start_ts: i64, output: CommandOutput) -> Log {
     let success = output.success();
-    let log = Log {
+    Log {
         stage: stage.to_string(),
         stdout: output.stdout,
         stderr: output.stderr,
-    };
-    (success, log)
+        command,
+        success,
+        start_ts,
+        end_ts: unix_timestamp_ms() as i64,
+    }
 }

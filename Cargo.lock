@@ -250,10 +250,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
- "docker_client",
+ "docker",
  "dotenv",
  "envy",
- "git_client",
+ "git",
  "mungos",
  "serde",
  "serde_derive",
@@ -484,10 +484,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "docker_client"
+name = "docker"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async_timing_util",
  "axum",
  "bollard",
  "run_command",
@@ -693,7 +694,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "git_client"
+name = "git"
 version = "0.1.0"
 
 [[package]]
@@ -1175,10 +1176,10 @@ dependencies = [
  "axum-extra",
  "bcrypt",
  "db_client",
- "docker_client",
+ "docker",
  "dotenv",
  "envy",
- "git_client",
+ "git",
  "hmac",
  "jwt",
  "mungos",
@@ -1201,10 +1202,10 @@ dependencies = [
  "anyhow",
  "axum",
  "bollard",
- "docker_client",
+ "docker",
  "dotenv",
  "envy",
- "git_client",
+ "git",
  "run_command",
  "serde",
  "serde_derive",

@@ -1,5 +1,5 @@
 [package]
-name = "git_client"
+name = "git"
 version = "0.1.0"
 edition = "2021"
 

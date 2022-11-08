@@ -1,5 +1,5 @@
 [package]
-name = "docker_client"
+name = "docker"
 version = "0.1.0"
 edition = "2021"
 
@@ -12,3 +12,4 @@ bollard = "0.13"
 anyhow = "1.0"
 thiserror = "1.0"
 axum = "0.5"
+async_timing_util = "0.1.11"

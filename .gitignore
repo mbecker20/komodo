@@ -4,3 +4,4 @@ dist
 .env
 
 config.json
+secrets.json

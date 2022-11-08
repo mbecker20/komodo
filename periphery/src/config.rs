@@ -1,5 +1,6 @@
 use std::fs::File;
 
+use dotenv::dotenv;
 use serde::Deserialize;
 use types::PeripherySecrets;
 
@@ -12,6 +13,7 @@ struct Env {
 }
 
 pub fn load() -> (u16, PeripherySecrets) {
+    dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse env");
     let secrets_file = File::open(&env.secrets_path).expect("failed to find secrets");
     let secrets: PeripherySecrets =

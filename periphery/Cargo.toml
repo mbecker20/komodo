@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 types = { path = "../lib/types" }
-docker = {  package = "docker_client", path = "../lib/docker_client" }
+docker = { path = "../lib/docker" }
+git = { path = "../lib/git" }
 run_command = { version = "0.0.5", features = ["async_tokio"] }
-git = { package = "git_client", path = "../lib/git_client" }
 tokio = { version = "1.21", features = ["full"] }
 axum = { version = "0.5" }
 tower = { version = "0.4", features = ["full"] }

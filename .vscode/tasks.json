@@ -47,6 +47,14 @@
 		{
 			"type": "cargo",
 			"command": "run",
+			"label": "run periphery",
+			"options": {
+				"cwd": "${workspaceFolder}/periphery"
+			},
+		},
+		{
+			"type": "cargo",
+			"command": "run",
 			"label": "run cli",
 			"options": {
 				"cwd": "${workspaceFolder}/cli"
