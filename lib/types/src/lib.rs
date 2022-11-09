@@ -44,7 +44,7 @@ pub struct Server {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
     pub name: String,
-    pub host: String,
+    pub address: String,
     pub permissions: PermissionsMap,
     pub to_notify: Vec<String>,
     pub cpu_alert: f64,
@@ -67,7 +67,7 @@ impl Default for Server {
         Self {
             id: None,
             name: String::new(),
-            host: String::new(),
+            address: String::new(),
             permissions: HashMap::new(),
             to_notify: Vec::new(),
             cpu_alert: 50.0,
