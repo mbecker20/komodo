@@ -280,6 +280,30 @@ pub struct UserCredentials {
     pub password: String,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SystemStats {
+    pub cpu: f32,       // in %
+    pub mem_used: f64,  // in MB
+    pub mem_total: f64, // in MB
+    pub disk: DiskUsage,
+    pub networks: Vec<SystemNetwork>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DiskUsage {
+    pub used: f64,  // in GB
+    pub total: f64, // in GB
+    pub read: f64,  // in kB
+    pub write: f64, // in kB
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SystemNetwork {
+    pub name: String,
+    pub recieved: f64,    // in kB
+    pub transmitted: f64, // in kB
+}
+
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
