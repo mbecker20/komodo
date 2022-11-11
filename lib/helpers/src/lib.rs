@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read};
+use std::{fs::File, io::Read, net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -35,4 +35,8 @@ pub fn output_into_log(stage: &str, command: String, start_ts: i64, output: Comm
         start_ts,
         end_ts: unix_timestamp_ms() as i64,
     }
+}
+
+pub fn get_socket_addr(port: u16) -> SocketAddr {
+    SocketAddr::from_str(&format!("0.0.0.0:{}", port)).expect("failed to parse socket addr")
 }

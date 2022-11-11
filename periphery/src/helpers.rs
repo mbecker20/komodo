@@ -9,10 +9,6 @@ macro_rules! response {
 
 use axum::http::StatusCode;
 
-pub fn get_socket_addr(port: u16) -> SocketAddr {
-    SocketAddr::from_str(&format!("0.0.0.0:{}", port)).expect("failed to parse socket addr")
-}
-
 pub fn handle_anyhow_error(err: anyhow::Error) -> (StatusCode, String) {
     (
         StatusCode::INTERNAL_SERVER_ERROR,

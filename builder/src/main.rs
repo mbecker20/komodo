@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::Extension;
+use helpers::get_socket_addr;
 use types::BuilderSecrets;
 
 mod api;
@@ -10,11 +11,13 @@ type BuilderSecretsExtension = Extension<Arc<BuilderSecrets>>;
 
 #[tokio::main]
 async fn main() {
-    let (socket_addr, secrets) = config::load();
+    let (port, secrets) = config::load();
 
     let app = api::router().layer(secrets);
 
-    axum::Server::bind(&socket_addr)
+    println!("starting montior builder on port {port}");
+
+    axum::Server::bind(&get_socket_addr(port))
         .serve(app.into_make_service())
         .await
         .expect("server crashed");

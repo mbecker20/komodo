@@ -1,8 +1,8 @@
-use std::{net::SocketAddr, str::FromStr, sync::Arc};
+use std::sync::Arc;
 
+use ::helpers::parse_config_file;
 use axum::Extension;
 use dotenv::dotenv;
-use ::helpers::parse_config_file;
 use mungos::Deserialize;
 
 use crate::BuilderSecretsExtension;
@@ -15,17 +15,14 @@ struct Env {
     secrets_path: String,
 }
 
-pub fn load() -> (SocketAddr, BuilderSecretsExtension) {
+pub fn load() -> (u16, BuilderSecretsExtension) {
     dotenv().ok();
 
     let env = envy::from_env::<Env>().unwrap();
 
-    let socket_addr = SocketAddr::from_str(&format!("0.0.0.0:{}", env.port))
-        .expect("failed to parse socket addr");
-
     let secrets = parse_config_file(&env.secrets_path).expect("failed to parse config");
 
-    (socket_addr, Extension(Arc::new(secrets)))
+    (env.port, Extension(Arc::new(secrets)))
 }
 
 fn default_port() -> u16 {

@@ -1,14 +1,13 @@
 #![allow(unused)]
 
+use ::helpers::get_socket_addr;
 use axum::{extract::Path, http::StatusCode, routing::get, Extension, Json, Router};
 
 mod api;
 mod config;
 mod helpers;
 
-use crate::helpers::get_socket_addr;
-
-use api::*;
+use crate::api::*;
 
 #[tokio::main]
 async fn main() {
