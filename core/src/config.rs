@@ -8,6 +8,7 @@ use std::{
 
 use db::{DbClient, DbExtension};
 use dotenv::dotenv;
+use helpers::parse_config_file;
 use mungos::{Deserialize, Mungos};
 use types::CoreConfig;
 
@@ -20,8 +21,7 @@ struct Env {
 pub fn load() -> CoreConfig {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse environment variables");
-    let file = File::open(&env.config_path).expect("failed to open config file");
-    serde_json::from_reader(file).unwrap()
+    parse_config_file(&env.config_path)
 }
 
 pub fn default_config_path() -> String {

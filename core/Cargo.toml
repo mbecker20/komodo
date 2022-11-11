@@ -6,8 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-docker = { path = "../lib/docker" }
-git = { path = "../lib/git" }
+helpers = { path = "../lib/helpers" }
 db = { package = "db_client", path = "../lib/db_client" }
 types = { path = "../lib/types" }
 tokio = { version = "1.21", features = ["full"] }

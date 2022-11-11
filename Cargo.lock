@@ -250,10 +250,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
- "docker",
  "dotenv",
  "envy",
- "git",
+ "helpers",
  "mungos",
  "serde",
  "serde_derive",
@@ -527,19 +526,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "docker"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async_timing_util",
- "axum",
- "bollard",
- "run_command",
- "thiserror",
- "types",
-]
-
-[[package]]
 name = "dotenv"
 version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -743,15 +729,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "git"
-version = "0.1.0"
-dependencies = [
- "async_timing_util",
- "run_command",
- "types",
-]
-
-[[package]]
 name = "h2"
 version = "0.3.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -791,6 +768,22 @@ name = "heck"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2540771e65fc8cb83cd6e8a237f70c319bd5c29f78ed1084ba5d50eeac86f7f9"
+
+[[package]]
+name = "helpers"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async_timing_util",
+ "axum",
+ "bollard",
+ "run_command",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "toml",
+ "types",
+]
 
 [[package]]
 name = "hermit-abi"
@@ -1239,10 +1232,9 @@ dependencies = [
  "axum-extra",
  "bcrypt",
  "db_client",
- "docker",
  "dotenv",
  "envy",
- "git",
+ "helpers",
  "hmac",
  "jwt",
  "mungos",
@@ -1265,10 +1257,9 @@ dependencies = [
  "anyhow",
  "axum",
  "bollard",
- "docker",
  "dotenv",
  "envy",
- "git",
+ "helpers",
  "run_command",
  "serde",
  "serde_derive",

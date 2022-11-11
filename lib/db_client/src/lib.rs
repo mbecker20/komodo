@@ -6,7 +6,7 @@ use collections::{
     updates_collection, users_collection,
 };
 use mungos::{Collection, Mungos};
-use types::{Build, CoreConfig, Deployment, Procedure, Server, Update, User};
+use types::{Build, Deployment, Procedure, Server, Update, User, MongoConfig};
 
 mod collections;
 
@@ -21,28 +21,12 @@ pub struct DbClient {
     pub updates: Collection<Update>,
 }
 
-pub struct DbConfig {
-    mongo_uri: String,
-    mongo_app_name: String,
-    mongo_db_name: String,
-}
-
-impl From<&CoreConfig> for DbConfig {
-    fn from(config: &CoreConfig) -> DbConfig {
-        DbConfig {
-            mongo_uri: config.mongo_uri.clone(),
-            mongo_app_name: config.mongo_app_name.clone(),
-            mongo_db_name: config.mongo_db_name.clone(),
-        }
-    }
-}
-
 impl DbClient {
-    pub async fn extension(config: DbConfig) -> DbExtension {
-        let db_name = &config.mongo_db_name;
+    pub async fn extension(config: MongoConfig) -> DbExtension {
+        let db_name = &config.db_name;
         let mungos = Mungos::new(
-            &config.mongo_uri,
-            &config.mongo_app_name,
+            &config.uri,
+            &config.app_name,
             Duration::from_secs(3),
             None,
         )

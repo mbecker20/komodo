@@ -1,0 +1,18 @@
+{
+	"port": 9000,
+	"docker_accounts": {},
+	"github_accounts": {},
+	"github_oauth": {
+		"id": "your_client_id",
+		"secret": "your_client_secret"
+	},
+	"github_webhook_secret": "your_random_webhook_secret",
+	"jwt_secret": "your_jwt_secret",
+	"jwt_valid_for": "1-wk",
+	"slack_url": "your_slack_app_webhook_url",
+	"mongo": {
+		"uri": "your_mongo_uri",
+		"app_name": "monitor_core",
+		"db_name": "monitor"
+	}
+}

@@ -6,8 +6,7 @@ members = [
 	"periphery",
 	"builder",
 	"lib/db_client",
-	"lib/docker",
-	"lib/git",
+	"lib/helpers",
 	"lib/periphery_client",
-	"lib/types"
+	"lib/types",
 ]

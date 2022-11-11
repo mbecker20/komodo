@@ -1,12 +1,12 @@
 #![allow(unused)]
 
 use axum::{extract::Path, http::StatusCode, routing::get, Extension, Json, Router};
-use docker::{DockerClient, DockerExtension};
-use helpers::{get_socket_addr, handle_anyhow_error};
 
 mod api;
 mod config;
 mod helpers;
+
+use crate::helpers::get_socket_addr;
 
 use api::*;
 

@@ -3,13 +3,14 @@
 use auth::JwtClient;
 use axum::{http::StatusCode, Router};
 use db::DbClient;
-use docker::DockerClient;
-use helpers::get_socket_addr;
+use ::helpers::docker::DockerClient;
 
 mod api;
 mod auth;
 mod config;
 mod helpers;
+
+use crate::helpers::get_socket_addr;
 
 type ResponseResult<T> = Result<T, (StatusCode, String)>;
 
@@ -21,7 +22,7 @@ async fn main() {
         .nest("/api", api::router())
         .nest("/auth", auth::router(&config))
         .layer(JwtClient::extension(&config))
-        .layer(DbClient::extension((&config).into()).await);
+        .layer(DbClient::extension(config.mongo.clone()).await);
 
     println!("starting monitor_core on localhost:{}", config.port);
 

@@ -225,13 +225,9 @@ pub struct OauthCredentials {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-#[serde(rename_all = "UPPERCASE")]
 pub struct CoreConfig {
     // port the core web server runs on
     pub port: u16,
-
-    // default periphery passkey
-    pub passkey: String,
 
     // docker integration
     pub docker_accounts: DockerAccounts,
@@ -248,12 +244,17 @@ pub struct CoreConfig {
     // integration with slack app
     pub slack_url: Option<String>,
 
-    //mongo config
-    pub mongo_uri: String,
+    // mongo config
+    pub mongo: MongoConfig,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct MongoConfig {
+    pub uri: String,
     #[serde(default = "default_core_mongo_app_name")]
-    pub mongo_app_name: String,
+    pub app_name: String,
     #[serde(default = "default_core_mongo_db_name")]
-    pub mongo_db_name: String,
+    pub db_name: String,
 }
 
 fn default_core_mongo_app_name() -> String {
@@ -266,7 +267,6 @@ fn default_core_mongo_db_name() -> String {
 
 #[derive(Deserialize, Debug)]
 pub struct PeripherySecrets {
-    pub passkey: String,
     #[serde(default)]
     pub docker_accounts: DockerAccounts,
     #[serde(default)]

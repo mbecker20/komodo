@@ -4,5 +4,6 @@ dist
 .env
 
 config.json
+config.toml
 secrets.json
 secrets.toml

@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 use async_timing_util::unix_timestamp_ms;
 use run_command::async_run_command;
 use types::{Build, Deployment, Log};
@@ -13,10 +11,13 @@ pub async fn clone_build_repo(
         on_clone,
         ..
     }: &Build,
-) {
+) -> Log {
+    todo!()
 }
 
-pub async fn clone_deployment_repo(Deployment { .. }: &Deployment) {}
+pub async fn clone_deployment_repo(Deployment { .. }: &Deployment) -> Log {
+    todo!()
+}
 
 async fn clone(
     repo: &str,
