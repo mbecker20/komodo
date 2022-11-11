@@ -229,11 +229,7 @@ pub struct CoreConfig {
     // port the core web server runs on
     pub port: u16,
 
-    // docker integration
-    pub docker_accounts: DockerAccounts,
-
     // github integration
-    pub github_accounts: GithubAccounts,
     pub github_oauth: OauthCredentials,
     pub github_webhook_secret: String,
 
@@ -274,6 +270,14 @@ pub struct PeripherySecrets {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct BuilderSecrets {
+    #[serde(default)]
+    pub docker_accounts: DockerAccounts,
+    #[serde(default)]
+    pub github_accounts: GithubAccounts,
+}
+
+#[derive(Deserialize, Debug)]
 pub struct UserCredentials {
     pub username: String,
     pub password: String,
@@ -301,6 +305,14 @@ pub struct SystemNetwork {
     pub name: String,
     pub recieved: f64,    // in kB
     pub transmitted: f64, // in kB
+}
+
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+pub enum AccountType {
+    Github,
+    Docker,
 }
 
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]

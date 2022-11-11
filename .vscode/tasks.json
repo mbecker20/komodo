@@ -55,6 +55,14 @@
 		{
 			"type": "cargo",
 			"command": "run",
+			"label": "run builder",
+			"options": {
+				"cwd": "${workspaceFolder}/builder"
+			},
+		},
+		{
+			"type": "cargo",
+			"command": "run",
 			"label": "run cli",
 			"options": {
 				"cwd": "${workspaceFolder}/cli"

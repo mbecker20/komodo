@@ -1,9 +1,9 @@
 use std::{fs::File, io::Read};
 
 use dotenv::dotenv;
+use helpers::parse_config_file;
 use serde::Deserialize;
 use types::PeripherySecrets;
-use helpers::parse_config_file;
 
 #[derive(Deserialize)]
 struct Env {
@@ -16,7 +16,7 @@ struct Env {
 pub fn load() -> (u16, PeripherySecrets) {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse env");
-    let secrets = parse_config_file(&env.secrets_path);
+    let secrets = parse_config_file(&env.secrets_path).expect("failed to parse secrets file");
     (env.port, secrets)
 }
 

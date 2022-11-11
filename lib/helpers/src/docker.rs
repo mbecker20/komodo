@@ -4,11 +4,13 @@ use anyhow::anyhow;
 use async_timing_util::unix_timestamp_ms;
 use axum::Extension;
 use bollard::{container::ListContainersOptions, Docker};
-use run_command::{async_run_command, CommandOutput};
+use ::run_command::async_run_command;
 use types::{
     BasicContainerInfo, Build, Conversion, Deployment, DockerRunArgs, EnvironmentVar, Log,
     RestartMode,
 };
+
+use crate::output_into_log;
 
 pub type DockerExtension = Extension<Arc<DockerClient>>;
 
@@ -169,19 +171,6 @@ fn parse_post_image(post_image: &Option<String>) -> String {
 
 // BUILD COMMANDS
 
-pub async fn docker_build(_build: &Build) -> (bool, Log) {
+pub async fn docker_build(_build: &Build) -> Log {
     todo!()
-}
-
-fn output_into_log(stage: &str, command: String, start_ts: i64, output: CommandOutput) -> Log {
-    let success = output.success();
-    Log {
-        stage: stage.to_string(),
-        stdout: output.stdout,
-        stderr: output.stderr,
-        command,
-        success,
-        start_ts,
-        end_ts: unix_timestamp_ms() as i64,
-    }
 }

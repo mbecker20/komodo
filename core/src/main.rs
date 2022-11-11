@@ -1,9 +1,9 @@
 #![allow(unused)]
 
+use ::helpers::docker::DockerClient;
 use auth::JwtClient;
 use axum::{http::StatusCode, Router};
 use db::DbClient;
-use ::helpers::docker::DockerClient;
 
 mod api;
 mod auth;

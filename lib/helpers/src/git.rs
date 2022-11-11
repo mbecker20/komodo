@@ -1,5 +1,5 @@
 use async_timing_util::unix_timestamp_ms;
-use run_command::async_run_command;
+use ::run_command::async_run_command;
 use types::{Build, Deployment, Log};
 
 pub async fn clone_build_repo(

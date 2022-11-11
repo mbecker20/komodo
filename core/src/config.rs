@@ -21,7 +21,7 @@ struct Env {
 pub fn load() -> CoreConfig {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse environment variables");
-    parse_config_file(&env.config_path)
+    parse_config_file(&env.config_path).expect("failed to parse config")
 }
 
 pub fn default_config_path() -> String {

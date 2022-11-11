@@ -6,7 +6,7 @@ use collections::{
     updates_collection, users_collection,
 };
 use mungos::{Collection, Mungos};
-use types::{Build, Deployment, Procedure, Server, Update, User, MongoConfig};
+use types::{Build, Deployment, MongoConfig, Procedure, Server, Update, User};
 
 mod collections;
 
@@ -24,14 +24,9 @@ pub struct DbClient {
 impl DbClient {
     pub async fn extension(config: MongoConfig) -> DbExtension {
         let db_name = &config.db_name;
-        let mungos = Mungos::new(
-            &config.uri,
-            &config.app_name,
-            Duration::from_secs(3),
-            None,
-        )
-        .await
-        .expect("failed to initialize mungos");
+        let mungos = Mungos::new(&config.uri, &config.app_name, Duration::from_secs(3), None)
+            .await
+            .expect("failed to initialize mungos");
         let client = DbClient {
             users: users_collection(&mungos, db_name)
                 .await

@@ -12,9 +12,3 @@ secret = "your_client_secret"
 uri = "your_mongo_uri"
 app_name = "monitor_core"
 db_name = "monitor"
-
-[github_accounts]
-github_username = "github_token"
-
-[docker_accounts]
-docker_username = "docker_token"
