@@ -1,10 +1,7 @@
 use axum::{routing::get, Router};
 
-mod get_accounts;
+mod accounts;
 
 pub fn router() -> Router {
-    Router::new().route(
-        "/accounts/:account_type",
-        get(get_accounts::get_accounts),
-    )
+    Router::new().route("/accounts/:account_type", get(accounts::get_accounts))
 }
