@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::json;
-use types::{BasicContainerInfo, Server, Log, Deployment};
+use types::{BasicContainerInfo, Deployment, Log, Server};
 
 pub struct PeripheryClient {
     http_client: reqwest::Client,
@@ -32,7 +32,7 @@ impl PeripheryClient {
         .await
     }
 
-	pub async fn container_stop(
+    pub async fn container_stop(
         &self,
         server: &Server,
         container_name: &str,
@@ -45,7 +45,7 @@ impl PeripheryClient {
         .await
     }
 
-	pub async fn container_remove(
+    pub async fn container_remove(
         &self,
         server: &Server,
         container_name: &str,
@@ -59,12 +59,8 @@ impl PeripheryClient {
     }
 
     pub async fn deploy(&self, server: &Server, deployment: &Deployment) -> anyhow::Result<Log> {
-        self.post_json(
-            server,
-            &format!("/container/deploy"),
-            deployment,
-        )
-        .await
+        self.post_json(server, &format!("/container/deploy"), deployment)
+            .await
     }
 
     async fn get_json<R: DeserializeOwned>(

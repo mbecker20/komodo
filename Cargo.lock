@@ -745,6 +745,11 @@ dependencies = [
 [[package]]
 name = "git"
 version = "0.1.0"
+dependencies = [
+ "async_timing_util",
+ "run_command",
+ "types",
+]
 
 [[package]]
 name = "h2"

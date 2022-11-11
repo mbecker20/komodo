@@ -6,3 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+types = { path = "../types" }
+run_command = "0.0.5"
+async_timing_util = "0.1.11"

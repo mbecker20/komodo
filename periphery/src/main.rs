@@ -14,9 +14,7 @@ use api::*;
 async fn main() {
     let (port, secrets) = config::load();
 
-    let app = Router::new()
-        .nest("/container", container::router())
-        .nest("/stats", stats::router());
+    let app = api::router();
 
     println!("starting montior periphery on port {port}");
 
