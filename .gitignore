@@ -5,3 +5,4 @@ dist
 
 config.json
 secrets.json
+secrets.toml

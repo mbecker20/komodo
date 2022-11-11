@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::{fs::File, io::Read};
 
 use dotenv::dotenv;
 use serde::Deserialize;
@@ -15,9 +15,7 @@ struct Env {
 pub fn load() -> (u16, PeripherySecrets) {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse env");
-    let secrets_file = File::open(&env.secrets_path).expect("failed to find secrets");
-    let secrets: PeripherySecrets =
-        serde_json::from_reader(secrets_file).expect("failed to parse secrets file");
+    let secrets = read_secrets(&env.secrets_path);
     (env.port, secrets)
 }
 
@@ -26,5 +24,18 @@ fn default_port() -> u16 {
 }
 
 fn default_secrets_path() -> String {
-    "/secrets/secrets.json".to_string()
+    "/secrets/secrets.toml".to_string()
+}
+
+fn read_secrets(secrets_path: &str) -> PeripherySecrets {
+    let mut secrets_file = File::open(&secrets_path).expect("failed to find secrets");
+    if secrets_path.ends_with("toml") {
+        let mut contents = String::new();
+        secrets_file.read_to_string(&mut contents);
+        toml::from_str(&contents).expect("failed to parse secrets toml") 
+    } else if secrets_path.ends_with("json") {
+        serde_json::from_reader(secrets_file).expect("failed to parse secrets json")
+    } else {
+        panic!("unsupported secrets file type: {}", secrets_path)
+    }
 }

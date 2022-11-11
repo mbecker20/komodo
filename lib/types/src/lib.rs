@@ -265,7 +265,6 @@ fn default_core_mongo_db_name() -> String {
 }
 
 #[derive(Deserialize, Debug)]
-#[serde(rename_all = "UPPERCASE")]
 pub struct PeripherySecrets {
     pub passkey: String,
     #[serde(default)]
