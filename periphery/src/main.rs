@@ -4,23 +4,19 @@ use std::sync::Arc;
 
 use ::helpers::get_socket_addr;
 use axum::{extract::Path, http::StatusCode, routing::get, Extension, Json, Router};
-use types::PeripherySecrets;
+use types::PeripheryConfig;
 
 mod api;
 mod config;
 mod helpers;
 
-use crate::api::*;
-
-type PeripherySecretsExtension = Extension<Arc<PeripherySecrets>>;
+type PeripheryConfigExtension = Extension<Arc<PeripheryConfig>>;
 
 #[tokio::main]
 async fn main() {
-    let (port, secrets) = config::load();
+    let (port, config) = config::load();
 
-    let app = api::router().layer(secrets);
-
-    println!("starting montior periphery on port {port}");
+    let app = api::router().layer(config.clone());
 
     axum::Server::bind(&get_socket_addr(port))
         .serve(app.into_make_service())

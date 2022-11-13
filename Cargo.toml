@@ -4,7 +4,6 @@ members = [
 	"cli",
 	"core",
 	"periphery",
-	"builder",
 	"lib/db_client",
 	"lib/helpers",
 	"lib/periphery_client",

@@ -4,8 +4,11 @@ use std::{
 };
 
 use axum::{routing::get, Extension, Json, Router};
+use helpers::{docker, handle_anyhow_error};
 use sysinfo::{CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt};
-use types::{DiskUsage, SystemNetwork, SystemStats};
+use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats};
+
+use crate::response;
 
 pub fn router() -> Router {
     Router::new()
@@ -14,6 +17,15 @@ pub fn router() -> Router {
             get(|Extension(sys): StatsExtension| async move {
                 let stats = sys.write().unwrap().get_stats();
                 Json(stats)
+            }),
+        )
+        .route(
+            "/docker",
+            get(|| async {
+                let stats = docker::container_stats()
+                    .await
+                    .map_err(handle_anyhow_error)?;
+                response!(Json(stats))
             }),
         )
         .layer(StatsClient::extension())
@@ -66,11 +78,17 @@ impl StatsClient {
         self.sys.refresh_disks();
         let mut free = 0.0;
         let mut total = 0.0;
+        let mut disks = Vec::new();
         for disk in self.sys.disks() {
-            if disk.mount_point() == Path::new("/") {
-                total += disk.total_space() as f64 / BYTES_PER_GB;
-                free += disk.available_space() as f64 / BYTES_PER_GB;
-            }
+            let disk_total = disk.total_space() as f64 / BYTES_PER_GB;
+            let disk_free = disk.available_space() as f64 / BYTES_PER_GB;
+            disks.push(SingleDiskUsage {
+                mount: disk.mount_point().to_owned(),
+                used: disk_total - disk_free,
+                total: disk_total,
+            });
+            total += disk_total;
+            free += disk_free;
         }
         let used = total - free;
         self.sys
@@ -87,6 +105,7 @@ impl StatsClient {
             total,
             read,
             write,
+            disks,
         }
     }
 }

@@ -2,7 +2,7 @@ use axum::{extract::Path, Extension, Json};
 use serde::Deserialize;
 use types::AccountType;
 
-use crate::PeripherySecretsExtension;
+use crate::PeripheryConfigExtension;
 
 #[derive(Deserialize, Debug)]
 pub struct GetAccountsPath {
@@ -10,19 +10,19 @@ pub struct GetAccountsPath {
 }
 
 pub async fn get_accounts(
-    Extension(secrets): PeripherySecretsExtension,
+    Extension(config): PeripheryConfigExtension,
     Path(path): Path<GetAccountsPath>,
 ) -> Json<Vec<String>> {
     match path.account_type {
         AccountType::Github => {
             let mut accounts: Vec<String> =
-                secrets.github_accounts.keys().map(|k| k.clone()).collect();
+                config.github_accounts.keys().map(|k| k.clone()).collect();
             accounts.sort();
             Json(accounts)
         }
         AccountType::Docker => {
             let mut accounts: Vec<String> =
-                secrets.docker_accounts.keys().map(|k| k.clone()).collect();
+                config.docker_accounts.keys().map(|k| k.clone()).collect();
             accounts.sort();
             Json(accounts)
         }

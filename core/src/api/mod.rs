@@ -1,11 +1,11 @@
 use anyhow::anyhow;
 use axum::{http::StatusCode, middleware, routing::get, Extension, Json, Router};
 use db::DbExtension;
+use helpers::handle_anyhow_error;
 use types::{User, UserId};
 
 use crate::{
     auth::{auth_request, RequestUserExtension},
-    helpers::handle_anyhow_error,
     ResponseResult,
 };
 

@@ -4,14 +4,14 @@ use axum::{
     routing::{get, post},
     Extension, Json, Router,
 };
-use helpers::docker::{
-    deploy, docker_start, docker_stop, docker_stop_and_remove, parse_container_name, DockerClient,
-    DockerExtension,
+use helpers::{
+    docker::{self, parse_container_name, DockerClient, DockerExtension},
+    handle_anyhow_error,
 };
 use serde::Deserialize;
 use types::Deployment;
 
-use crate::{helpers::handle_anyhow_error, response};
+use crate::response;
 
 #[derive(Deserialize)]
 struct Container {
@@ -30,26 +30,28 @@ pub fn router() -> Router {
         .route(
             "/start",
             post(|Json(container): Json<Container>| async move {
-                Json(docker_start(&parse_container_name(&container.name)).await)
+                Json(docker::start_container(&parse_container_name(&container.name)).await)
             }),
         )
         .route(
             "/stop",
             post(|Json(container): Json<Container>| async move {
-                Json(docker_stop(&parse_container_name(&container.name)).await)
+                Json(docker::stop_container(&parse_container_name(&container.name)).await)
             }),
         )
         .route(
             "/remove",
             post(|Json(container): Json<Container>| async move {
-                Json(docker_stop_and_remove(&parse_container_name(&container.name)).await)
+                Json(
+                    docker::stop_and_remove_container(&parse_container_name(&container.name)).await,
+                )
             }),
         )
         .route(
             "/deploy",
-            post(
-                |Json(deployment): Json<Deployment>| async move { Json(deploy(&deployment).await) },
-            ),
+            post(|Json(deployment): Json<Deployment>| async move {
+                Json(docker::deploy(&deployment).await)
+            }),
         )
         .layer(DockerClient::extension())
 }

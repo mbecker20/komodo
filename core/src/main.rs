@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use ::helpers::docker::DockerClient;
+use ::helpers::{docker::DockerClient, get_socket_addr};
 use auth::JwtClient;
 use axum::{http::StatusCode, Router};
 use db::DbClient;
@@ -9,8 +9,6 @@ mod api;
 mod auth;
 mod config;
 mod helpers;
-
-use crate::helpers::get_socket_addr;
 
 type ResponseResult<T> = Result<T, (StatusCode, String)>;
 
@@ -24,9 +22,7 @@ async fn main() {
         .layer(JwtClient::extension(&config))
         .layer(DbClient::extension(config.mongo.clone()).await);
 
-    println!("starting monitor_core on localhost:{}", config.port);
-
-    axum::Server::bind(&get_socket_addr(&config))
+    axum::Server::bind(&get_socket_addr(config.port))
         .serve(app.into_make_service())
         .await
         .expect("monitor core axum server crashed");

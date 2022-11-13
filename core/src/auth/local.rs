@@ -1,10 +1,9 @@
 use anyhow::{anyhow, Context};
 use axum::{extract::Json, routing::post, Extension, Router};
 use db::{DbClient, DbExtension};
+use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize};
 use types::{User, UserCredentials};
-
-use crate::helpers::handle_anyhow_error;
 
 use super::jwt::JwtExtension;
 

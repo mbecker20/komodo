@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 use async_timing_util::Timelength;
 use mungos::ObjectId;
@@ -50,10 +50,7 @@ pub struct Server {
     pub cpu_alert: f64,
     pub mem_alert: f64,
     pub disk_alert: f64,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub passkey: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub is_core: Option<bool>,
+    pub is_builder: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stats_interval: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -73,8 +70,7 @@ impl Default for Server {
             cpu_alert: 50.0,
             mem_alert: 75.0,
             disk_alert: 75.0,
-            passkey: None,
-            is_core: None,
+            is_builder: false,
             stats_interval: None,
             region: None,
             instance_id: None,
@@ -171,8 +167,27 @@ pub struct DockerRunArgs {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BasicContainerInfo {
     pub name: String,
-    pub state: ContainerState,
+    pub id: String,
+    pub state: DockerContainerState,
     pub status: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DockerContainerStats {
+    #[serde(alias = "Name")]
+    pub name: String,
+    #[serde(alias = "CPUPerc")]
+    pub cpu_perc: String,
+    #[serde(alias = "MemPerc")]
+    pub mem_perc: String,
+    #[serde(alias = "MemUsage")]
+    pub mem_usage: String,
+    #[serde(alias = "NetIO")]
+    pub net_io: String,
+    #[serde(alias = "BlockIO")]
+    pub block_io: String,
+    #[serde(alias = "PIDs")]
+    pub pids: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -218,7 +233,6 @@ pub struct Permission {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-#[serde(rename_all = "UPPERCASE")]
 pub struct OauthCredentials {
     pub id: String,
     pub secret: String,
@@ -227,14 +241,16 @@ pub struct OauthCredentials {
 #[derive(Deserialize, Debug, Clone)]
 pub struct CoreConfig {
     // port the core web server runs on
+    #[serde(default = "default_core_port")]
     pub port: u16,
 
     // github integration
     pub github_oauth: OauthCredentials,
-    pub github_webhook_secret: String,
+    pub github_webhook_secret: Option<String>,
 
     // jwt config
     pub jwt_secret: String,
+    #[serde(default = "default_jwt_valid_for")]
     pub jwt_valid_for: Timelength,
 
     // integration with slack app
@@ -242,6 +258,14 @@ pub struct CoreConfig {
 
     // mongo config
     pub mongo: MongoConfig,
+}
+
+fn default_core_port() -> u16 {
+    9000
+}
+
+fn default_jwt_valid_for() -> Timelength {
+    Timelength::OneWeek
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -262,19 +286,19 @@ fn default_core_mongo_db_name() -> String {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct PeripherySecrets {
+pub struct PeripheryConfig {
+    #[serde(default = "default_periphery_port")]
+    pub port: u16,
+    #[serde(default)]
+    pub is_builder: bool,
     #[serde(default)]
     pub docker_accounts: DockerAccounts,
     #[serde(default)]
     pub github_accounts: GithubAccounts,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct BuilderSecrets {
-    #[serde(default)]
-    pub docker_accounts: DockerAccounts,
-    #[serde(default)]
-    pub github_accounts: GithubAccounts,
+fn default_periphery_port() -> u16 {
+    9001
 }
 
 #[derive(Deserialize, Debug)]
@@ -298,6 +322,14 @@ pub struct DiskUsage {
     pub total: f64, // in GB
     pub read: f64,  // in kB
     pub write: f64, // in kB
+    pub disks: Vec<SingleDiskUsage>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SingleDiskUsage {
+    pub mount: PathBuf,
+    pub used: f64,  // in GB
+    pub total: f64, // in GB
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -357,7 +389,7 @@ pub enum PermissionLevel {
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-pub enum ContainerState {
+pub enum DockerContainerState {
     Created,
     Restarting,
     Running,
