@@ -90,6 +90,12 @@ pub struct Deployment {
     pub is_core: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub build_id: Option<BuildId>,
+
+    // deployment repo related
+    pub repo: Option<String>,
+    pub branch: Option<String>,
+    pub github_account: Option<String>,
+    pub on_clone: Option<Command>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

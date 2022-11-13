@@ -53,5 +53,9 @@ pub fn router() -> Router {
                 Json(docker::deploy(&deployment).await)
             }),
         )
+        .route(
+            "/prune",
+            post(|| async { Json(docker::prune_containers().await) }),
+        )
         .layer(DockerClient::extension())
 }

@@ -208,7 +208,7 @@ pub async fn prune_images() -> Log {
 
 // NETWORKS
 
-pub async fn create_network(name: &str, driver: Option<&str>) -> Log {
+pub async fn create_network(name: &str, driver: Option<String>) -> Log {
     let driver = match driver {
         Some(driver) => format!(" -d {driver}"),
         None => String::new(),
