@@ -1,10 +1,11 @@
-port = 9001           # optional. 
-is_builder = false
+port = 9001           # optional. 9001 is default
+is_builder = false    # optional. false is default
+repo_dir = "/repos"   # optional. /repos is default
 
-[github_accounts]
+[github_accounts] # optional
 github_username1 = "github_token1"
 github_username2 = "github_token2"
 
-[docker_accounts]
+[docker_accounts] # optional
 docker_username1 = "docker_token1"
 docker_username2 = "docker_token2"

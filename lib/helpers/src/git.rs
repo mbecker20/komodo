@@ -1,59 +1,69 @@
 use std::{path::PathBuf, str::FromStr};
 
 use ::run_command::async_run_command;
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use async_timing_util::unix_timestamp_ms;
-use types::{Build, Deployment, GithubToken, Log};
+use serde::{Deserialize, Serialize};
+use types::{Build, Command, Deployment, GithubToken, GithubUsername, Log};
 
 use crate::run_monitor_command;
 
-pub async fn clone_build_repo(
-    Build {
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CloneArgs {
+    name: String,
+    repo: Option<String>,
+    branch: Option<String>,
+    on_clone: Option<Command>,
+    pub github_account: Option<GithubUsername>,
+}
+
+impl From<&Deployment> for CloneArgs {
+    fn from(d: &Deployment) -> Self {
+        CloneArgs {
+            name: d.name.clone(),
+            repo: d.repo.clone(),
+            branch: d.branch.clone(),
+            on_clone: d.on_clone.clone(),
+            github_account: d.github_account.clone(),
+        }
+    }
+}
+
+impl From<&Build> for CloneArgs {
+    fn from(b: &Build) -> Self {
+        CloneArgs {
+            name: b.name.clone(),
+            repo: b.repo.clone(),
+            branch: b.branch.clone(),
+            on_clone: b.on_clone.clone(),
+            github_account: b.github_account.clone(),
+        }
+    }
+}
+
+pub async fn clone_repo(
+    clone_args: impl Into<CloneArgs>,
+    repo_dir: &str,
+    access_token: Option<GithubToken>,
+) -> anyhow::Result<Vec<Log>> {
+    let CloneArgs {
+        name,
         repo,
         branch,
         on_clone,
         ..
-    }: &Build,
-    destination: &str,
-    access_token: Option<GithubToken>,
-) -> anyhow::Result<Vec<Log>> {
+    } = clone_args.into();
     let repo = repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
-    let clone_log = clone(repo, destination, branch, access_token).await;
+    let mut repo_dir = PathBuf::from_str(repo_dir)?;
+    repo_dir.push(name);
+    let destination = repo_dir.display().to_string();
+    let clone_log = clone(repo, &destination, &branch, access_token).await;
     let mut logs = vec![clone_log];
     if let Some(command) = on_clone {
-        let mut path = PathBuf::from_str(destination)
-            .context("failed to parse destination path to pathbuf")?;
-        path.push(&command.path);
+        repo_dir.push(&command.path);
         let on_clone_log = run_monitor_command(
             "on clone",
-            format!("cd {} && {}", path.display(), command.command),
-        )
-        .await;
-        logs.push(on_clone_log);
-    }
-    Ok(logs)
-}
-
-pub async fn clone_deployment_repo(
-    Deployment {
-        repo,
-        branch,
-        on_clone,
-        .. 
-    }: &Deployment,
-    destination: &str,
-    access_token: Option<GithubToken>,
-) -> anyhow::Result<Vec<Log>> {
-    let repo = repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
-    let clone_log = clone(repo, destination, branch, access_token).await;
-    let mut logs = vec![clone_log];
-    if let Some(command) = on_clone {
-        let mut path = PathBuf::from_str(destination)
-            .context("failed to parse destination path to pathbuf")?;
-        path.push(&command.path);
-        let on_clone_log = run_monitor_command(
-            "on clone",
-            format!("cd {} && {}", path.display(), command.command),
+            format!("cd {} && {}", repo_dir.display(), command.command),
         )
         .await;
         logs.push(on_clone_log);

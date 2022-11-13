@@ -1,8 +1,12 @@
 use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
-use serde_json::json;
-use types::{BasicContainerInfo, Deployment, Log, Server};
+use types::Server;
+
+mod container;
+mod git;
+mod network;
+mod stats;
 
 pub struct PeripheryClient {
     http_client: reqwest::Client,
@@ -15,52 +19,12 @@ impl PeripheryClient {
         }
     }
 
-    pub async fn container_list(&self, server: &Server) -> anyhow::Result<Vec<BasicContainerInfo>> {
-        self.get_json(server, "/container/list").await
+    pub async fn get_github_accounts(&self, server: &Server) -> anyhow::Result<Vec<String>> {
+        self.get_json(server, "/accounts/github").await
     }
 
-    pub async fn container_start(
-        &self,
-        server: &Server,
-        container_name: &str,
-    ) -> anyhow::Result<Log> {
-        self.post_json(
-            server,
-            &format!("/container/start"),
-            &json!({ "name": container_name }),
-        )
-        .await
-    }
-
-    pub async fn container_stop(
-        &self,
-        server: &Server,
-        container_name: &str,
-    ) -> anyhow::Result<Log> {
-        self.post_json(
-            server,
-            &format!("/container/stop"),
-            &json!({ "name": container_name }),
-        )
-        .await
-    }
-
-    pub async fn container_remove(
-        &self,
-        server: &Server,
-        container_name: &str,
-    ) -> anyhow::Result<Log> {
-        self.post_json(
-            server,
-            &format!("/container/remove"),
-            &json!({ "name": container_name }),
-        )
-        .await
-    }
-
-    pub async fn deploy(&self, server: &Server, deployment: &Deployment) -> anyhow::Result<Log> {
-        self.post_json(server, &format!("/container/deploy"), deployment)
-            .await
+    pub async fn get_docker_accounts(&self, server: &Server) -> anyhow::Result<Vec<String>> {
+        self.get_json(server, "/accounts/docker").await
     }
 
     async fn get_json<R: DeserializeOwned>(

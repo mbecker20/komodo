@@ -301,10 +301,16 @@ pub struct PeripheryConfig {
     pub docker_accounts: DockerAccounts,
     #[serde(default)]
     pub github_accounts: GithubAccounts,
+    #[serde(default = "default_repo_dir")]
+    pub repo_dir: String,
 }
 
 fn default_periphery_port() -> u16 {
     9001
+}
+
+fn default_repo_dir() -> String {
+    "/repos".to_string()
 }
 
 #[derive(Deserialize, Debug)]
