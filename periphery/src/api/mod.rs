@@ -14,4 +14,5 @@ pub fn router() -> Router {
         .nest("/network", network::router())
         .nest("/stats", stats::router())
         .nest("/git", git::router())
+        .nest("/build", build::router())
 }

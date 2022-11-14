@@ -42,9 +42,7 @@ pub fn router() -> Router {
         .route(
             "/remove",
             post(|Json(container): Json<Container>| async move {
-                Json(
-                    docker::stop_and_remove_container(&to_monitor_name(&container.name)).await,
-                )
+                Json(docker::stop_and_remove_container(&to_monitor_name(&container.name)).await)
             }),
         )
         .route(
