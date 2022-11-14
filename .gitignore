@@ -3,6 +3,7 @@ node_modules
 dist
 .env
 
+repos
 config.json
 config.toml
 secrets.json

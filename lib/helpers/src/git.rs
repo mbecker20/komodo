@@ -6,7 +6,7 @@ use async_timing_util::unix_timestamp_ms;
 use serde::{Deserialize, Serialize};
 use types::{Build, Command, Deployment, GithubToken, GithubUsername, Log};
 
-use crate::run_monitor_command;
+use crate::{run_monitor_command, to_monitor_name};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct CloneArgs {
@@ -41,6 +41,15 @@ impl From<&Build> for CloneArgs {
     }
 }
 
+pub async fn pull(path: &str, branch: &Option<String>) -> Log {
+    let branch = match branch {
+        Some(branch) => branch.to_owned(),
+        None => "main".to_string(),
+    };
+    let command = format!("cd path && git pull origin {branch}");
+    run_monitor_command("git pull", command).await
+}
+
 pub async fn clone_repo(
     clone_args: impl Into<CloneArgs>,
     repo_dir: &str,
@@ -55,6 +64,7 @@ pub async fn clone_repo(
     } = clone_args.into();
     let repo = repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
     let mut repo_dir = PathBuf::from_str(repo_dir)?;
+    let name = to_monitor_name(&name);
     repo_dir.push(name);
     let destination = repo_dir.display().to_string();
     let clone_log = clone(repo, &destination, &branch, access_token).await;

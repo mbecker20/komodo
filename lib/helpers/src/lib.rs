@@ -42,6 +42,10 @@ pub fn get_socket_addr(port: u16) -> SocketAddr {
     SocketAddr::from_str(&format!("0.0.0.0:{}", port)).expect("failed to parse socket addr")
 }
 
+pub fn to_monitor_name(name: &str) -> String {
+    name.to_lowercase().replace(" ", "_")
+}
+
 pub async fn run_monitor_command(stage: &str, command: String) -> Log {
     let start_ts = unix_timestamp_ms() as i64;
     let output = async_run_command(&command).await;

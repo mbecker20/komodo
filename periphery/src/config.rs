@@ -19,6 +19,7 @@ pub fn load() -> (u16, PeripheryConfigExtension) {
     let env: Env = envy::from_env().expect("failed to parse env");
     let config: PeripheryConfig =
         parse_config_file(&env.config_path).expect("failed to parse config file");
+    let _ = std::fs::create_dir(&config.repo_dir);
     print_startup_log(&config);
     (config.port, Extension(Arc::new(config)))
 }

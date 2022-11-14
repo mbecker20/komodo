@@ -1,64 +1,10 @@
-use std::sync::Arc;
-
 use anyhow::{anyhow, Context};
-use axum::Extension;
-use bollard::{container::ListContainersOptions, Docker};
 use run_command::async_run_command;
 use types::{
-    BasicContainerInfo, Build, Conversion, Deployment, DockerContainerStats, DockerRunArgs,
-    EnvironmentVar, Log, RestartMode,
+    Conversion, Deployment, DockerContainerStats, DockerRunArgs, EnvironmentVar, Log, RestartMode,
 };
 
-use crate::run_monitor_command;
-
-pub type DockerExtension = Extension<Arc<DockerClient>>;
-
-pub struct DockerClient {
-    docker: Docker,
-}
-
-impl DockerClient {
-    pub fn extension() -> DockerExtension {
-        let client = DockerClient {
-            docker: Docker::connect_with_local_defaults()
-                .expect("failed to connect to docker daemon"),
-        };
-        Extension(Arc::new(client))
-    }
-
-    pub async fn list_containers(&self) -> anyhow::Result<Vec<BasicContainerInfo>> {
-        let res = self
-            .docker
-            .list_containers(Some(ListContainersOptions::<String> {
-                all: true,
-                ..Default::default()
-            }))
-            .await?
-            .into_iter()
-            .map(|s| {
-                let info = BasicContainerInfo {
-                    id: s.id.unwrap_or_default(),
-                    name: s
-                        .names
-                        .ok_or(anyhow!("no names on container"))?
-                        .pop()
-                        .ok_or(anyhow!("no names on container (empty vec)"))?
-                        .replace("/", ""),
-                    state: s.state.unwrap().parse().unwrap(),
-                    status: s.status,
-                };
-                Ok::<_, anyhow::Error>(info)
-            })
-            .collect::<anyhow::Result<Vec<BasicContainerInfo>>>()?;
-        Ok(res)
-    }
-}
-
-// CONTAINER COMMANDS
-
-pub fn parse_container_name(name: &str) -> String {
-    name.to_lowercase().replace(" ", "_")
-}
+use crate::{run_monitor_command, to_monitor_name};
 
 pub async fn container_log(container_name: &str, tail: Option<u64>) -> Log {
     let tail = match tail {
@@ -95,25 +41,25 @@ pub async fn prune_containers() -> Log {
 }
 
 pub async fn start_container(container_name: &str) -> Log {
-    let container_name = parse_container_name(container_name);
+    let container_name = to_monitor_name(container_name);
     let command = format!("docker start {container_name}");
     run_monitor_command("docker start", command).await
 }
 
 pub async fn stop_container(container_name: &str) -> Log {
-    let container_name = parse_container_name(container_name);
+    let container_name = to_monitor_name(container_name);
     let command = format!("docker stop {container_name}");
     run_monitor_command("docker stop", command).await
 }
 
 pub async fn stop_and_remove_container(container_name: &str) -> Log {
-    let container_name = parse_container_name(container_name);
+    let container_name = to_monitor_name(container_name);
     let command = format!("docker stop {container_name} && docker container rm {container_name}");
     run_monitor_command("docker stop and remove", command).await
 }
 
 pub async fn deploy(deployment: &Deployment) -> Log {
-    let _ = stop_and_remove_container(&parse_container_name(&deployment.name)).await;
+    let _ = stop_and_remove_container(&to_monitor_name(&deployment.name)).await;
     let command = docker_run_command(deployment);
     run_monitor_command("docker run", command).await
 }
@@ -136,7 +82,7 @@ pub fn docker_run_command(
         ..
     }: &Deployment,
 ) -> String {
-    let name = parse_container_name(name);
+    let name = to_monitor_name(name);
     let container_user = parse_container_user(container_user);
     let ports = parse_conversions(ports, "-p");
     let volumes = parse_conversions(volumes, "-v");
@@ -193,36 +139,4 @@ fn parse_post_image(post_image: &Option<String>) -> String {
     } else {
         String::new()
     }
-}
-
-// BUILD COMMANDS
-
-pub async fn build(_build: &Build) -> Log {
-    todo!()
-}
-
-pub async fn prune_images() -> Log {
-    let command = format!("docker image prune -a -f");
-    run_monitor_command("prune images", command).await
-}
-
-// NETWORKS
-
-pub async fn create_network(name: &str, driver: Option<String>) -> Log {
-    let driver = match driver {
-        Some(driver) => format!(" -d {driver}"),
-        None => String::new(),
-    };
-    let command = format!("docker network create{driver} {name}");
-    run_monitor_command("create network", command).await
-}
-
-pub async fn delete_network(name: &str) -> Log {
-    let command = format!("docker network rm {name}");
-    run_monitor_command("delete network", command).await
-}
-
-pub async fn prune_networks() -> Log {
-    let command = format!("docker network prune -f");
-    run_monitor_command("prune networks", command).await
 }
