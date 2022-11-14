@@ -137,7 +137,9 @@ pub struct Update {
     pub entity_id: Option<String>,
     pub operation: Operation,
     pub log: Vec<Log>,
-    pub ts: i64,
+    pub start_ts: i64,
+    pub end_ts: i64,
+    pub in_progress: bool,
     pub is_error: bool,
     pub operator: String,
 }
