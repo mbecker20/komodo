@@ -66,16 +66,24 @@ impl JwtClient {
             .to_str()?
             .replace("Bearer ", "")
             .replace("bearer ", "");
+        let db_client = req
+            .extensions()
+            .get::<Arc<DbClient>>()
+            .ok_or(anyhow!("failed at getting db handle"))?;
+        let user = self
+            .auth_jwt(&jwt, db_client)
+            .await
+            .context("failed to authenticate jwt")?;
+        Ok(Arc::new(user))
+    }
+
+    pub async fn auth_jwt(&self, jwt: &str, db_client: &DbClient) -> anyhow::Result<RequestUser> {
         let claims: JwtClaims = jwt
             .verify_with_key(&self.key)
             .context("failed to verify claims")?;
         if claims.exp > unix_timestamp_ms() {
-            let users_collection = &req
-                .extensions()
-                .get::<Arc<DbClient>>()
-                .ok_or(anyhow!("failed at getting db handle"))?
-                .users;
-            let user = users_collection
+            let user = db_client
+                .users
                 .find_one_by_id(&claims.id)
                 .await?
                 .ok_or(anyhow!("did not find user with id {}", claims.id))?;
@@ -84,7 +92,7 @@ impl JwtClient {
                     id: claims.id,
                     is_admin: user.admin,
                 };
-                Ok(Arc::new(user))
+                Ok(user)
             } else {
                 Err(anyhow!("user not enabled"))
             }
