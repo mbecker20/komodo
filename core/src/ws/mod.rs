@@ -11,6 +11,7 @@ use axum::{
     Extension,
 };
 use db::{DbClient, DbExtension};
+use serde_json::Value;
 
 use crate::auth::{JwtClient, JwtExtension};
 use tokio::sync::watch::{self, error::SendError, Receiver, Sender};
@@ -37,7 +38,8 @@ pub async fn ws_handler(
             Some((ws, user_id)) => {
 				loop {
 					reciever.changed().await;
-					let msg = reciever.borrow();
+					let msg = serde_json::from_str::<Value>(&reciever.borrow()).unwrap();
+
 					todo!()
 				}
 			}

@@ -2,9 +2,9 @@
 
 use ::helpers::{docker::DockerClient, get_socket_addr};
 use auth::JwtClient;
-use axum::{http::StatusCode, Router};
+use axum::{http::StatusCode, Router, routing::get};
 use db::DbClient;
-use ws::make_ws_sender_reciver;
+use ws::{make_ws_sender_reciver, ws_handler};
 
 mod api;
 mod auth;
@@ -23,6 +23,7 @@ async fn main() {
     let app = Router::new()
         .nest("/api", api::router())
         .nest("/auth", auth::router(&config))
+        .route("/ws", get(ws_handler))
         .layer(sender)
         .layer(reciever)
         .layer(DbClient::extension(config.mongo.clone()).await)
