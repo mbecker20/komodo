@@ -122,6 +122,9 @@ async fn user_can_see_update(
     entity_id: &Option<String>,
     db_client: &DbClient,
 ) -> anyhow::Result<()> {
+    if user.admin {
+        return Ok(());
+    }
     match entity_type {
         EntityType::System => {
             if user.admin {

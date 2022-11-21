@@ -2,17 +2,25 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
-use axum::{Extension, Json, Router};
+use axum::{routing::post, Extension, Json, Router};
 use db::DbExtension;
+use helpers::handle_anyhow_error;
 use mungos::ObjectId;
 use types::{Build, EntityType, Operation, PermissionLevel, Update};
 
 use crate::{auth::RequestUserExtension, ws::update};
 
-use super::PeripheryExtension;
+use super::{add_update, PeripheryExtension};
 
 pub fn router() -> Router {
-    Router::new()
+    Router::new().route(
+        "/create",
+        post(|db, user, update_ws, build| async {
+            create(db, user, update_ws, build)
+                .await
+                .map_err(handle_anyhow_error);
+        }),
+    )
 }
 
 async fn create(
@@ -40,21 +48,14 @@ async fn create(
         .collect();
     let start_ts = unix_timestamp_ms() as i64;
     let build_id = db.builds.create_one(build).await?;
-    let mut update = Update {
+    let update = Update {
         entity_type: EntityType::Build,
         entity_id: Some(build_id),
         operation: Operation::CreateBuild,
         start_ts,
         end_ts: unix_timestamp_ms() as i64,
+        operator: user.id.clone(),
         ..Default::default()
     };
-    let update_id = db
-        .updates
-        .create_one(update.clone())
-        .await
-        .context("failed to insert update into db. the create build process was completed.")?;
-	update.id = Some(ObjectId::from_str(&update_id).context("failed at attaching update id")?);
-    let update_msg = serde_json::to_string(&update).unwrap();
-    let _ = update_ws.lock().await.send((update, update_msg));
-    Ok(())
+    add_update(update, &db, &update_ws).await
 }
