@@ -1,5 +1,3 @@
-use types::CoreConfig;
-
 #[macro_export]
 macro_rules! response {
     ($x:expr) => {

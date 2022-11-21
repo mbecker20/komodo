@@ -1,15 +1,6 @@
-use std::{
-    env,
-    fs::File,
-    net::{IpAddr, SocketAddr},
-    str::FromStr,
-    time::Duration,
-};
-
-use db::{DbClient, DbExtension};
 use dotenv::dotenv;
 use helpers::parse_config_file;
-use mungos::{Deserialize, Mungos};
+use mungos::Deserialize;
 use types::CoreConfig;
 
 #[derive(Deserialize, Debug)]

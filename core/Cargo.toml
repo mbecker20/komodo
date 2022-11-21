@@ -9,6 +9,7 @@ edition = "2021"
 helpers = { path = "../lib/helpers" }
 db = { package = "db_client", path = "../lib/db_client" }
 types = { path = "../lib/types" }
+periphery = { package = "periphery_client", path = "../lib/periphery_client" }
 tokio = { version = "1.21", features = ["full"] }
 axum = { version = "0.5", features = ["ws", "json"] }
 axum-extra = { version = "0.3", features = ["spa"] }

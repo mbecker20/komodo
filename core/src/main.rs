@@ -1,10 +1,10 @@
 #![allow(unused)]
 
-use ::helpers::{docker::DockerClient, get_socket_addr};
+use ::helpers::get_socket_addr;
 use auth::JwtClient;
-use axum::{http::StatusCode, Router, routing::get};
+use axum::Router;
 use db::DbClient;
-use ws::{make_ws_sender_reciver, ws_handler};
+use ws::make_update_ws_sender_reciver;
 
 mod api;
 mod auth;
@@ -12,18 +12,16 @@ mod config;
 mod helpers;
 mod ws;
 
-type ResponseResult<T> = Result<T, (StatusCode, String)>;
-
 #[tokio::main]
 async fn main() {
     let config = config::load();
 
-    let (sender, reciever) = make_ws_sender_reciver();
+    let (sender, reciever) = make_update_ws_sender_reciver();
 
     let app = Router::new()
         .nest("/api", api::router())
         .nest("/auth", auth::router(&config))
-        .route("/ws", get(ws_handler))
+        .nest("/ws", ws::router())
         .layer(sender)
         .layer(reciever)
         .layer(DbClient::extension(config.mongo.clone()).await)

@@ -1,14 +1,13 @@
 use std::sync::Arc;
 
-use anyhow::Context;
 use axum::{
     body::Body,
-    http::{header, Request, StatusCode},
+    http::{Request, StatusCode},
     middleware::Next,
-    response::{IntoResponse, Response},
+    response::Response,
     Router,
 };
-use types::{CoreConfig, UserId};
+use types::CoreConfig;
 
 mod github;
 mod jwt;

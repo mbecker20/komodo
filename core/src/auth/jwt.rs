@@ -1,14 +1,14 @@
 use std::sync::Arc;
 
 use anyhow::{anyhow, Context};
-use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms, Timelength};
+use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms};
 use axum::{body::Body, http::Request, Extension};
 use db::DbClient;
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use mungos::{Deserialize, Serialize};
 use sha2::Sha256;
-use types::{CoreConfig, User, UserId};
+use types::{CoreConfig, UserId};
 
 pub type JwtExtension = Extension<Arc<JwtClient>>;
 pub type RequestUserExtension = Extension<Arc<RequestUser>>;

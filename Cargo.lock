@@ -1222,6 +1222,7 @@ dependencies = [
  "jwt",
  "mungos",
  "oauth2",
+ "periphery_client",
  "serde",
  "serde_derive",
  "serde_json",

@@ -1,84 +1,21 @@
-use std::sync::Arc;
+use anyhow::anyhow;
+use axum::{routing::get, Router};
+use types::{PermissionLevel, PermissionsMap};
 
-use anyhow::{anyhow, Context};
-use axum::{
-    extract::{
-        ws::{Message, WebSocket},
-        WebSocketUpgrade,
-    },
-    http::StatusCode,
-    response::IntoResponse,
-    Extension,
-};
-use db::{DbClient, DbExtension};
-use serde_json::Value;
+pub mod update;
 
-use crate::auth::{JwtClient, JwtExtension};
-use tokio::sync::watch::{self, error::SendError, Receiver, Sender};
+pub use update::make_update_ws_sender_reciver;
 
-pub type WsSender = Arc<Sender<String>>;
-pub type WsSenderExtension = Extension<WsSender>;
-
-pub type WsReciever = Receiver<String>;
-pub type WsRecieverExtension = Extension<WsReciever>;
-
-pub fn make_ws_sender_reciver() -> (WsSenderExtension, WsRecieverExtension) {
-    let (sender, reciever) = watch::channel(String::new());
-    (Extension(Arc::new(sender)), Extension(reciever))
+pub fn router() -> Router {
+    Router::new().route("/update", get(update::ws_handler))
 }
 
-pub async fn ws_handler(
-    Extension(jwt_client): JwtExtension,
-    Extension(db_client): DbExtension,
-    Extension(mut reciever): WsRecieverExtension,
-    ws: WebSocketUpgrade,
-) -> impl IntoResponse {
-    ws.on_upgrade(|socket| async move {
-        match login(socket, &jwt_client, &db_client).await {
-            Some((ws, user_id)) => {
-				loop {
-					reciever.changed().await;
-					let msg = serde_json::from_str::<Value>(&reciever.borrow()).unwrap();
-
-					todo!()
-				}
-			}
-            None => {}
-        }
-    })
-}
-
-async fn login(
-    mut socket: WebSocket,
-    jwt_client: &JwtClient,
-    db_client: &DbClient,
-) -> Option<(WebSocket, String)> {
-    if let Some(jwt) = socket.recv().await {
-        match jwt {
-            Ok(jwt) => match jwt {
-                Message::Text(jwt) => match jwt_client.auth_jwt(&jwt, db_client).await {
-                    Ok(user) => Some((socket, user.id)),
-                    Err(e) => {
-                        let _ = socket
-                            .send(Message::Text(format!(
-                                "failed to authenticate user | {e:#?}"
-                            )))
-                            .await;
-                        let _ = socket.close().await;
-                        None
-                    }
-                },
-                _ => None,
-            },
-            Err(e) => {
-                let _ = socket
-                    .send(Message::Text(format!("failed to get message: {e:#?}")))
-                    .await;
-                let _ = socket.close().await;
-                None
-            }
-        }
-    } else {
-        None
+fn user_permissions(user_id: &str, permissions: &PermissionsMap) -> anyhow::Result<()> {
+    let permission_level = *permissions
+        .get(user_id)
+        .ok_or(anyhow!("user has no permissions"))?;
+    match permission_level {
+        PermissionLevel::None => Err(anyhow!("user has None permission level")),
+        _ => Ok(()),
     }
 }

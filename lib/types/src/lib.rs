@@ -104,6 +104,7 @@ pub struct Build {
     pub id: Option<ObjectId>,
     pub name: String,
     pub permissions: PermissionsMap,
+    pub server_id: String, // server which this image should be built on
     pub version: Version,
 
     // git related
@@ -128,7 +129,7 @@ pub struct BuildRecord {
     pub version: Option<Version>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Update {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
@@ -371,20 +372,38 @@ pub enum EntityType {
     Server,
 }
 
+impl Default for EntityType {
+    fn default() -> Self {
+        EntityType::System
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum Operation {
+    // do nothing
+    None,
+
     // server
+    CreateServer,
+    UpdateServer,
+    DeleteServer,
     PruneImagesServer,
     PruneContainersServer,
     PruneNetworksServer,
 
     // build
+    CreateBuild,
+    UpdateBuild,
+    DeleteBuild,
     BuildBuild,
     RecloneBuild,
 
     // deployment
+    CreateDeployment,
+    UpdateDeployment,
+    DeleteDeployment,
     DeployDeployment,
     StopDeployment,
     StartDeployment,
@@ -392,10 +411,17 @@ pub enum Operation {
     RecloneDeployment,
 }
 
+impl Default for Operation {
+    fn default() -> Self {
+        Operation::None
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum PermissionLevel {
+    None,
     Read,
     Write,
 }
