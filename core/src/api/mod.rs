@@ -57,6 +57,6 @@ async fn add_update(
         .context("failed to insert update into db. the create build process was completed.")?;
     update.id = Some(ObjectId::from_str(&update_id).context("failed at attaching update id")?);
     let update_msg = serde_json::to_string(&update).unwrap();
-    let _ = update_ws.lock().await.send((update, update_msg));
+    let _ = update_ws.lock().await.send(update);
     Ok(())
 }

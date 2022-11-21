@@ -45,12 +45,16 @@ pub struct Server {
     pub id: Option<ObjectId>,
     pub name: String,
     pub address: String,
+    #[serde(default)]
     pub permissions: PermissionsMap,
+    #[serde(default)]
     pub to_notify: Vec<String>,
+    #[serde(default = "default_cpu_alert")]
     pub cpu_alert: f64,
+    #[serde(default = "default_mem_alert")]
     pub mem_alert: f64,
+    #[serde(default = "default_disk_alert")]
     pub disk_alert: f64,
-    pub is_builder: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub stats_interval: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -67,15 +71,26 @@ impl Default for Server {
             address: String::new(),
             permissions: HashMap::new(),
             to_notify: Vec::new(),
-            cpu_alert: 50.0,
-            mem_alert: 75.0,
-            disk_alert: 75.0,
-            is_builder: false,
+            cpu_alert: default_cpu_alert(),
+            mem_alert: default_mem_alert(),
+            disk_alert: default_disk_alert(),
             stats_interval: None,
             region: None,
             instance_id: None,
         }
     }
+}
+
+fn default_cpu_alert() -> f64 {
+    50.0
+}
+
+fn default_mem_alert() -> f64 {
+    75.0
+}
+
+fn default_disk_alert() -> f64 {
+    75.0
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

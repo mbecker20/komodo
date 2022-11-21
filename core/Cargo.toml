@@ -11,6 +11,7 @@ db = { package = "db_client", path = "../lib/db_client" }
 types = { path = "../lib/types" }
 periphery = { package = "periphery_client", path = "../lib/periphery_client" }
 tokio = { version = "1.21", features = ["full"] }
+tokio-util = "0.7"
 axum = { version = "0.5", features = ["ws", "json"] }
 axum-extra = { version = "0.3", features = ["spa"] }
 tower = { version = "0.4", features = ["full"] }
@@ -29,3 +30,4 @@ jwt = "0.16"
 hmac = "0.12"
 sha2 = "0.10"
 async_timing_util = "0.1.11"
+futures-util = "0.3"

@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
-use axum::{routing::post, Extension, Json, Router};
+use axum::{
+    routing::{get, post},
+    Extension, Json, Router,
+};
 use db::DbExtension;
 use helpers::handle_anyhow_error;
 use types::{EntityType, Operation, PermissionLevel, Server, Update};
@@ -10,14 +13,44 @@ use crate::{auth::RequestUserExtension, ws::update};
 use super::add_update;
 
 pub fn router() -> Router {
-    Router::new().route(
-        "/create",
-        post(|db, user, update_ws, server| async {
-            create(db, user, update_ws, server)
-                .await
-                .map_err(handle_anyhow_error)
-        }),
-    )
+    Router::new()
+        .route(
+            "/list",
+            get(|db, user| async { list(db, user).await.map_err(handle_anyhow_error) }),
+        )
+        .route(
+            "/create",
+            post(|db, user, update_ws, server| async {
+                create(db, user, update_ws, server)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
+}
+
+async fn list(
+    Extension(db): DbExtension,
+    Extension(user): RequestUserExtension,
+) -> anyhow::Result<Json<Vec<Server>>> {
+    let mut servers: Vec<Server> = db
+        .servers
+        .get_some(None, None)
+        .await
+        .context("failed at get all servers query")?
+        .into_iter()
+        .filter(|s| {
+            if user.is_admin {
+                true
+            } else {
+                match s.permissions.get(&user.id) {
+                    Some(permissions) => *permissions != PermissionLevel::None,
+                    None => false,
+                }
+            }
+        })
+        .collect();
+    servers.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    Ok(Json(servers))
 }
 
 async fn create(
