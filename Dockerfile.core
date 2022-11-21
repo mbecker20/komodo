@@ -1,0 +1,11 @@
+FROM rust:latest as builder
+WORKDIR /core
+
+COPY . .
+
+RUN cargo build -p core --release
+
+FROM gcr.io/distroless/cc
+COPY --from=builder /core/target/release/core /
+
+CMD ["./core"]

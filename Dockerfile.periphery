@@ -1,0 +1,13 @@
+FROM rust:latest as builder
+WORKDIR /periphery
+
+COPY . .
+
+RUN cargo build -p periphery --release
+
+FROM debian:stable-slim
+# install git and docker
+
+COPY --from=builder /periphery/target/release/periphery /usr/local/bin/periphery
+
+CMD "periphery"

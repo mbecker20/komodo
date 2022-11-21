@@ -349,6 +349,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async_timing_util",
+ "axum",
+ "axum-extra",
+ "bcrypt",
+ "db_client",
+ "dotenv",
+ "envy",
+ "helpers",
+ "hmac",
+ "jwt",
+ "mungos",
+ "oauth2",
+ "periphery_client",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha2",
+ "slack_client_rs",
+ "tokio",
+ "tower",
+ "tower-http",
+ "types",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1206,56 +1235,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "monitor-core"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async_timing_util",
- "axum",
- "axum-extra",
- "bcrypt",
- "db_client",
- "dotenv",
- "envy",
- "helpers",
- "hmac",
- "jwt",
- "mungos",
- "oauth2",
- "periphery_client",
- "serde",
- "serde_derive",
- "serde_json",
- "sha2",
- "slack_client_rs",
- "tokio",
- "tower",
- "tower-http",
- "types",
-]
-
-[[package]]
-name = "monitor-periphery"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "bollard",
- "dotenv",
- "envy",
- "helpers",
- "run_command",
- "serde",
- "serde_derive",
- "serde_json",
- "sysinfo",
- "tokio",
- "toml",
- "tower",
- "types",
-]
-
-[[package]]
 name = "mungos"
 version = "0.2.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1458,6 +1437,27 @@ name = "percent-encoding"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
+
+[[package]]
+name = "periphery"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "bollard",
+ "dotenv",
+ "envy",
+ "helpers",
+ "run_command",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sysinfo",
+ "tokio",
+ "toml",
+ "tower",
+ "types",
+]
 
 [[package]]
 name = "periphery_client"

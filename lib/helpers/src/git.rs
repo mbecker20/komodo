@@ -46,7 +46,7 @@ pub async fn pull(path: &str, branch: &Option<String>) -> Log {
         Some(branch) => branch.to_owned(),
         None => "main".to_string(),
     };
-    let command = format!("cd path && git pull origin {branch}");
+    let command = format!("cd {path} && git pull origin {branch}");
     run_monitor_command("git pull", command).await
 }
 

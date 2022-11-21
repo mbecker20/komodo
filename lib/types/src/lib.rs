@@ -222,6 +222,12 @@ pub struct Version {
     pub minor: u64,
 }
 
+impl ToString for Version {
+    fn to_string(&self) -> String {
+        format!("{}.{}", self.major, self.minor)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Conversion {
     pub local: String,

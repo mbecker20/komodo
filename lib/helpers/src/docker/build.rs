@@ -2,7 +2,7 @@ use std::{path::PathBuf, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use run_command::async_run_command;
-use types::{Build, DockerBuildArgs, Log};
+use types::{Build, DockerBuildArgs, Log, Version};
 
 use crate::{git, run_monitor_command, to_monitor_name};
 
@@ -52,13 +52,14 @@ pub async fn build(
         None => "Dockerfile".to_owned(),
     };
     let image_name = get_image_name(docker_account, &name);
+    let image_tags = image_tags(&image_name, &version);
     let docker_push = if docker_account_pw.is_some() {
-        format!(" && docker push {image_name}")
+        format!(" && docker image push --all-tags {image_name}")
     } else {
         String::new()
     };
     let command =
-        format!("cd {cd} && docker build -t {image_name} -f {dockerfile_path} .{docker_push}");
+        format!("cd {cd} && docker build {image_tags} -f {dockerfile_path} .{docker_push}");
     let build_log = run_monitor_command("docker build", command).await;
     Ok(vec![pull_log, build_log])
 }
@@ -83,4 +84,20 @@ fn get_image_name(docker_account: &Option<String>, name: &str) -> String {
         Some(docker_account) => format!("{docker_account}/{name}"),
         None => name.to_string(),
     }
+}
+
+fn get_version_image_name(image_name: &str, version: &Version) -> String {
+    format!("{image_name}:{}", version.to_string())
+}
+
+fn get_latest_image_name(image_name: &str) -> String {
+    format!("{image_name}:latest")
+}
+
+fn image_tags(image_name: &str, version: &Version) -> String {
+    format!(
+        "-t {} -t {}",
+        get_version_image_name(image_name, version),
+        get_latest_image_name(image_name)
+    )
 }
