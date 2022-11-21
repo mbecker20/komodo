@@ -42,10 +42,11 @@ async fn list(
             if user.is_admin {
                 true
             } else {
-                match s.permissions.get(&user.id) {
-                    Some(permissions) => *permissions != PermissionLevel::None,
-                    None => false,
-                }
+                let permissions = *s
+                    .permissions
+                    .get(&user.id)
+                    .unwrap_or(&PermissionLevel::None);
+                permissions != PermissionLevel::None
             }
         })
         .collect();

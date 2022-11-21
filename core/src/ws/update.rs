@@ -21,7 +21,7 @@ use tokio::{
     },
 };
 use tokio_util::sync::CancellationToken;
-use types::{EntityType, Update, User};
+use types::{EntityType, PermissionLevel, Update, User};
 
 use crate::auth::{JwtClient, JwtExtension};
 
@@ -221,7 +221,11 @@ async fn user_can_see_update(
                 .await
                 .context(format!("failed at query to get server at {server_id}"))?
                 .ok_or(anyhow!("did not server with id {server_id}"))?;
-            user_permissions(user_id, &server.permissions)
+            if user_permissions(user_id, &server.permissions) != PermissionLevel::None {
+                Ok(())
+            } else {
+                Err(anyhow!("user does not have permissions on server"))
+            }
         }
         EntityType::Deployment => {
             let deployment_id = entity_id
@@ -235,7 +239,11 @@ async fn user_can_see_update(
                     "failed at query to get deployment at {deployment_id}"
                 ))?
                 .ok_or(anyhow!("did not deployment with id {deployment_id}"))?;
-            user_permissions(user_id, &deployment.permissions)
+            if user_permissions(user_id, &deployment.permissions) != PermissionLevel::None {
+                Ok(())
+            } else {
+                Err(anyhow!("user does not have permissions on deployment"))
+            }
         }
         EntityType::Build => {
             let build_id = entity_id
@@ -247,7 +255,11 @@ async fn user_can_see_update(
                 .await
                 .context(format!("failed at query to get build at {build_id}"))?
                 .ok_or(anyhow!("did not build with id {build_id}"))?;
-            user_permissions(user_id, &build.permissions)
+            if user_permissions(user_id, &build.permissions) != PermissionLevel::None {
+                Ok(())
+            } else {
+                Err(anyhow!("user does not have permissions on build"))
+            }
         }
     }
 }
