@@ -20,6 +20,8 @@ pub type DockerUsername = String;
 pub type DockerToken = String;
 pub type DockerAccounts = HashMap<DockerUsername, DockerToken>;
 
+pub type SecretsMap = HashMap<String, String>; // these are used for injection into deployments run commands
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct User {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
@@ -325,6 +327,8 @@ pub struct PeripheryConfig {
     pub docker_accounts: DockerAccounts,
     #[serde(default)]
     pub github_accounts: GithubAccounts,
+    #[serde(default)]
+    pub secrets: SecretsMap,
     #[serde(default = "default_repo_dir")]
     pub repo_dir: String,
 }

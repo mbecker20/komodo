@@ -1,6 +1,8 @@
 port = 9001           # optional. 9001 is default
-is_builder = false    # optional. false is default
-repo_dir = "/repos"   # optional. /repos is default
+repo_dir = "/repos"   # optional. /repos is default. no reason to change if running the docker container, just mount your desired repo dir to /repos in the container
+
+[secrets] # optional. can inject these values into your deployments configuration.
+secret_variable = "secret_value"
 
 [github_accounts] # optional
 github_username1 = "github_token1"
