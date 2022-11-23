@@ -6,7 +6,7 @@ use axum::{
 };
 use db::DbExtension;
 use helpers::handle_anyhow_error;
-use types::{EntityType, Operation, PermissionLevel, Server, Update};
+use types::{Operation, PermissionLevel, Server, Update, UpdateTarget};
 
 use crate::{auth::RequestUserExtension, ws::update};
 
@@ -70,8 +70,7 @@ async fn create(
         .await
         .context("failed to add server to db")?;
     let update = Update {
-        entity_type: EntityType::Server,
-        entity_id: Some(server_id),
+        target: UpdateTarget::Server(server_id),
         operation: Operation::CreateServer,
         start_ts,
         end_ts: unix_timestamp_ms() as i64,

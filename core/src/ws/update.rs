@@ -21,7 +21,7 @@ use tokio::{
     },
 };
 use tokio_util::sync::CancellationToken;
-use types::{EntityType, PermissionLevel, Update, User};
+use types::{PermissionLevel, Update, User, UpdateTarget};
 
 use crate::auth::{JwtClient, JwtExtension};
 
@@ -104,8 +104,7 @@ pub async fn ws_handler(
                         match user_can_see_update(
                             &user,
                             &user_id,
-                            update.entity_type,
-                            &update.entity_id,
+                            &update.target,
                             &db_client,
                         )
                         .await
@@ -196,25 +195,21 @@ async fn login(
 async fn user_can_see_update(
     user: &User,
     user_id: &str,
-    entity_type: EntityType,
-    entity_id: &Option<String>,
+    update_target: &UpdateTarget,
     db_client: &DbClient,
 ) -> anyhow::Result<()> {
     if user.admin {
         return Ok(());
     }
-    match entity_type {
-        EntityType::System => {
+    match update_target {
+        UpdateTarget::System => {
             if user.admin {
                 Ok(())
             } else {
                 Err(anyhow!("user not admin, can't recieve system updates"))
             }
         }
-        EntityType::Server => {
-            let server_id = entity_id
-                .as_ref()
-                .ok_or(anyhow!("must pass entity_id for {entity_type}"))?;
+        UpdateTarget::Server(server_id) => {
             let server = db_client
                 .servers
                 .find_one_by_id(server_id)
@@ -227,10 +222,7 @@ async fn user_can_see_update(
                 Err(anyhow!("user does not have permissions on server"))
             }
         }
-        EntityType::Deployment => {
-            let deployment_id = entity_id
-                .as_ref()
-                .ok_or(anyhow!("must pass entity_id for {entity_type}"))?;
+        UpdateTarget::Deployment(deployment_id) => {
             let deployment = db_client
                 .deployments
                 .find_one_by_id(deployment_id)
@@ -245,10 +237,7 @@ async fn user_can_see_update(
                 Err(anyhow!("user does not have permissions on deployment"))
             }
         }
-        EntityType::Build => {
-            let build_id = entity_id
-                .as_ref()
-                .ok_or(anyhow!("must pass entity_id for {entity_type}"))?;
+        UpdateTarget::Build(build_id) => {
             let build = db_client
                 .builds
                 .find_one_by_id(build_id)

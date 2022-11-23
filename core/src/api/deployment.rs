@@ -3,7 +3,7 @@ use async_timing_util::unix_timestamp_ms;
 use axum::{routing::post, Extension, Json, Router};
 use db::DbExtension;
 use helpers::handle_anyhow_error;
-use types::{Deployment, EntityType, Operation, PermissionLevel, Update};
+use types::{Deployment, Operation, PermissionLevel, Update, UpdateTarget};
 
 use crate::{auth::RequestUserExtension, ws::update};
 
@@ -36,8 +36,7 @@ async fn create(
         .await
         .context("failed to add server to db")?;
     let update = Update {
-        entity_type: EntityType::Deployment,
-        entity_id: Some(deployment_id),
+        target: UpdateTarget::Deployment(deployment_id),
         operation: Operation::CreateDeployment,
         start_ts,
         end_ts: unix_timestamp_ms() as i64,

@@ -7,8 +7,6 @@ use strum_macros::{Display, EnumString};
 
 pub const PERIPHERY_BUILDER_BUSY: &str = "builder is busy";
 
-pub type PermissionsMap = HashMap<String, PermissionLevel>;
-
 pub type UserId = String;
 pub type ServerId = String;
 pub type DeploymentId = String;
@@ -23,6 +21,8 @@ pub type DockerToken = String;
 pub type DockerAccounts = HashMap<DockerUsername, DockerToken>;
 
 pub type SecretsMap = HashMap<String, String>; // these are used for injection into deployments run commands
+
+pub type PermissionsMap = HashMap<UserId, PermissionLevel>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct User {
@@ -152,9 +152,7 @@ pub struct BuildRecord {
 pub struct Update {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<ObjectId>,
-    pub entity_type: EntityType,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub entity_id: Option<String>,
+    pub target: UpdateTarget,
     pub operation: Operation,
     pub log: Vec<Log>,
     pub start_ts: i64,
@@ -257,13 +255,6 @@ pub struct Conversion {
 pub struct EnvironmentVar {
     pub variable: String,
     pub value: String,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct Permission {
-    pub entity_type: EntityType,
-    pub id: String,
-    pub level: PermissionLevel,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -389,19 +380,18 @@ pub enum AccountType {
     Docker,
 }
 
-#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
-#[serde(rename_all = "snake_case")]
-#[strum(serialize_all = "snake_case")]
-pub enum EntityType {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "type", content = "id")]
+pub enum UpdateTarget {
     System,
-    Build,
-    Deployment,
-    Server,
+    Build(String),
+    Deployment(String),
+    Server(String)
 }
 
-impl Default for EntityType {
+impl Default for UpdateTarget {
     fn default() -> Self {
-        EntityType::System
+        UpdateTarget::System
     }
 }
 

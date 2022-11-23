@@ -6,7 +6,7 @@ use axum::{routing::post, Extension, Json, Router};
 use db::DbExtension;
 use helpers::handle_anyhow_error;
 use mungos::ObjectId;
-use types::{Build, EntityType, Operation, PermissionLevel, Update};
+use types::{Build, Operation, PermissionLevel, Update, UpdateTarget};
 
 use crate::{auth::RequestUserExtension, ws::update};
 
@@ -49,8 +49,7 @@ async fn create(
     let start_ts = unix_timestamp_ms() as i64;
     let build_id = db.builds.create_one(build).await?;
     let update = Update {
-        entity_type: EntityType::Build,
-        entity_id: Some(build_id),
+        target: UpdateTarget::Build(build_id),
         operation: Operation::CreateBuild,
         start_ts,
         end_ts: unix_timestamp_ms() as i64,
