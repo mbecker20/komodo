@@ -5,6 +5,8 @@ use mungos::ObjectId;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
+pub const PERIPHERY_BUILDER_BUSY: &str = "builder is busy";
+
 pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
 pub type UserId = String;

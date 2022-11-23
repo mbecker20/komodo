@@ -15,7 +15,7 @@ impl PeripheryClient {
     ) -> anyhow::Result<Log> {
         self.post_json(
             server,
-            &format!("/container/start"),
+            "/container/start",
             &json!({ "name": container_name }),
         )
         .await
@@ -28,7 +28,7 @@ impl PeripheryClient {
     ) -> anyhow::Result<Log> {
         self.post_json(
             server,
-            &format!("/container/stop"),
+            "/container/stop",
             &json!({ "name": container_name }),
         )
         .await
@@ -41,14 +41,14 @@ impl PeripheryClient {
     ) -> anyhow::Result<Log> {
         self.post_json(
             server,
-            &format!("/container/remove"),
+            "/container/remove",
             &json!({ "name": container_name }),
         )
         .await
     }
 
     pub async fn deploy(&self, server: &Server, deployment: &Deployment) -> anyhow::Result<Log> {
-        self.post_json(server, &format!("/container/deploy"), deployment)
+        self.post_json(server, "/container/deploy", deployment)
             .await
     }
 

@@ -9,6 +9,7 @@ mod stats;
 
 pub fn router() -> Router {
     Router::new()
+        .route("/health", get(|| async {}))
         .route("/accounts/:account_type", get(accounts::get_accounts))
         .nest("/container", container::router())
         .nest("/network", network::router())
