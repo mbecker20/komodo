@@ -7,6 +7,8 @@ RUN cargo build -p periphery --release
 
 FROM debian:stable-slim
 # install git and docker
+COPY ./install_periphery_dependencies.sh ./
+RUN sh ./install_periphery_dependencies.sh
 
 COPY --from=builder /periphery/target/release/periphery /usr/local/bin/periphery
 
