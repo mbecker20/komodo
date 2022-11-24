@@ -57,7 +57,7 @@ async fn list(
 async fn create(
     Extension(db): DbExtension,
     Extension(user): RequestUserExtension,
-    Extension(update_ws): update::WsSenderExtension,
+    Extension(update_ws): update::UpdateWsSenderExtension,
     Json(mut server): Json<Server>,
 ) -> anyhow::Result<()> {
     server.permissions = [(user.id.clone(), PermissionLevel::Write)]

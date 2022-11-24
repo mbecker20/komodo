@@ -6,10 +6,10 @@ pub mod update;
 
 pub use update::make_update_ws_sender_reciver;
 
-pub fn router() -> Router {
-    Router::new().route("/update", get(update::ws_handler))
-}
+use self::update::UpdateWsRecieverExtension;
 
-fn user_permissions(user_id: &str, permissions: &PermissionsMap) -> PermissionLevel {
-    *permissions.get(user_id).unwrap_or(&PermissionLevel::None)
+pub fn router(reciever: UpdateWsRecieverExtension) -> Router {
+    Router::new()
+        .route("/update", get(update::ws_handler))
+        .layer(reciever)
 }

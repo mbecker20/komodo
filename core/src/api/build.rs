@@ -26,7 +26,7 @@ pub fn router() -> Router {
 async fn create(
     Extension(db): DbExtension,
     Extension(user): RequestUserExtension,
-    Extension(update_ws): update::WsSenderExtension,
+    Extension(update_ws): update::UpdateWsSenderExtension,
     Json(mut build): Json<Build>,
 ) -> anyhow::Result<()> {
     let build_server = db

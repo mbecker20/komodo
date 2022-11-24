@@ -21,17 +21,18 @@ use tokio::{
     },
 };
 use tokio_util::sync::CancellationToken;
-use types::{PermissionLevel, Update, User, UpdateTarget};
+use types::{PermissionLevel, Update, UpdateTarget, User};
 
-use crate::auth::{JwtClient, JwtExtension};
+use crate::{
+    auth::{JwtClient, JwtExtension},
+    helpers::get_user_permissions,
+};
 
-use super::user_permissions;
+pub type UpdateWsSender = Arc<Mutex<Sender<Update>>>;
+pub type UpdateWsSenderExtension = Extension<UpdateWsSender>;
 
-pub type WsSender = Arc<Mutex<Sender<Update>>>;
-pub type WsSenderExtension = Extension<WsSender>;
-
-pub type WsReciever = Receiver<Update>;
-pub type WsRecieverExtension = Extension<WsReciever>;
+pub type UpdateWsReciever = Receiver<Update>;
+pub type UpdateWsRecieverExtension = Extension<UpdateWsReciever>;
 
 #[derive(Serialize)]
 struct UpdateMsg {
@@ -58,7 +59,7 @@ impl UpdateMsg {
     }
 }
 
-pub fn make_update_ws_sender_reciver() -> (WsSenderExtension, WsRecieverExtension) {
+pub fn make_update_ws_sender_reciver() -> (UpdateWsSenderExtension, UpdateWsRecieverExtension) {
     let (sender, reciever) = watch::channel(Default::default());
     (
         Extension(Arc::new(Mutex::new((sender)))),
@@ -69,7 +70,7 @@ pub fn make_update_ws_sender_reciver() -> (WsSenderExtension, WsRecieverExtensio
 pub async fn ws_handler(
     Extension(jwt_client): JwtExtension,
     Extension(db_client): DbExtension,
-    Extension(mut reciever): WsRecieverExtension,
+    Extension(mut reciever): UpdateWsRecieverExtension,
     ws: WebSocketUpgrade,
 ) -> impl IntoResponse {
     ws.on_upgrade(|socket| async move {
@@ -101,13 +102,7 @@ pub async fn ws_handler(
                         }
                         let user = user.unwrap().unwrap(); // already handle cases where this panics in the above early return
                         let update = reciever.borrow().to_owned();
-                        match user_can_see_update(
-                            &user,
-                            &user_id,
-                            &update.target,
-                            &db_client,
-                        )
-                        .await
+                        match user_can_see_update(&user, &user_id, &update.target, &db_client).await
                         {
                             Ok(_) => {
                                 let _ = ws_sender
@@ -216,7 +211,7 @@ async fn user_can_see_update(
                 .await
                 .context(format!("failed at query to get server at {server_id}"))?
                 .ok_or(anyhow!("did not server with id {server_id}"))?;
-            if user_permissions(user_id, &server.permissions) != PermissionLevel::None {
+            if get_user_permissions(user_id, &server.permissions) != PermissionLevel::None {
                 Ok(())
             } else {
                 Err(anyhow!("user does not have permissions on server"))
@@ -231,7 +226,7 @@ async fn user_can_see_update(
                     "failed at query to get deployment at {deployment_id}"
                 ))?
                 .ok_or(anyhow!("did not deployment with id {deployment_id}"))?;
-            if user_permissions(user_id, &deployment.permissions) != PermissionLevel::None {
+            if get_user_permissions(user_id, &deployment.permissions) != PermissionLevel::None {
                 Ok(())
             } else {
                 Err(anyhow!("user does not have permissions on deployment"))
@@ -244,7 +239,7 @@ async fn user_can_see_update(
                 .await
                 .context(format!("failed at query to get build at {build_id}"))?
                 .ok_or(anyhow!("did not build with id {build_id}"))?;
-            if user_permissions(user_id, &build.permissions) != PermissionLevel::None {
+            if get_user_permissions(user_id, &build.permissions) != PermissionLevel::None {
                 Ok(())
             } else {
                 Err(anyhow!("user does not have permissions on build"))

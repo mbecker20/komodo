@@ -269,10 +269,6 @@ pub struct CoreConfig {
     #[serde(default = "default_core_port")]
     pub port: u16,
 
-    // github integration
-    pub github_oauth: OauthCredentials,
-    pub github_webhook_secret: Option<String>,
-
     // jwt config
     pub jwt_secret: String,
     #[serde(default = "default_jwt_valid_for")]
@@ -280,6 +276,10 @@ pub struct CoreConfig {
 
     // integration with slack app
     pub slack_url: Option<String>,
+
+    // github integration
+    pub github_oauth: OauthCredentials,
+    pub github_webhook_secret: Option<String>,
 
     // mongo config
     pub mongo: MongoConfig,
@@ -386,7 +386,7 @@ pub enum UpdateTarget {
     System,
     Build(String),
     Deployment(String),
-    Server(String)
+    Server(String),
 }
 
 impl Default for UpdateTarget {
@@ -441,6 +441,15 @@ pub enum PermissionLevel {
     None,
     Read,
     Write,
+}
+
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+pub enum PermissionsTarget {
+    Server,
+    Deployment,
+    Build,
 }
 
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]

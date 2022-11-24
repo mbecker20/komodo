@@ -21,9 +21,8 @@ async fn main() {
     let app = Router::new()
         .nest("/api", api::router())
         .nest("/auth", auth::router(&config))
-        .nest("/ws", ws::router())
+        .nest("/ws", ws::router(reciever))
         .layer(sender)
-        .layer(reciever)
         .layer(DbClient::extension(config.mongo.clone()).await)
         .layer(JwtClient::extension(&config));
 

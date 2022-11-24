@@ -25,5 +25,5 @@ fn print_startup_log(config: &CoreConfig) {
 }
 
 pub fn default_config_path() -> String {
-    "/config/config.json".to_string()
+    "/config/config.toml".to_string()
 }

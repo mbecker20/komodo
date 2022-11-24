@@ -15,6 +15,7 @@ use crate::{
 
 mod build;
 mod deployment;
+mod permissions;
 mod server;
 
 type PeripheryExtension = Extension<Arc<PeripheryClient>>;
@@ -28,6 +29,7 @@ pub fn router() -> Router {
         .nest("/build", build::router())
         .nest("/deployment", deployment::router())
         .nest("/server", server::router())
+        .nest("/permissions", permissions::router())
         .layer(Extension(Arc::new(PeripheryClient::new())))
         .layer(middleware::from_fn(auth_request))
 }
@@ -48,7 +50,7 @@ async fn get_user(
 async fn add_update(
     mut update: Update,
     db: &DbClient,
-    update_ws: &update::WsSender,
+    update_ws: &update::UpdateWsSender,
 ) -> anyhow::Result<()> {
     let update_id = db
         .updates
