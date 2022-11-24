@@ -3,7 +3,7 @@ use axum::{routing::post, Extension, Json, Router};
 use db::DbExtension;
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Update};
-use types::{PermissionLevel, PermissionsTarget, Server};
+use types::{PermissionLevel, PermissionsTarget, Server, Deployment, Build};
 
 use crate::{auth::RequestUserExtension, helpers::get_user_permissions};
 
@@ -17,16 +17,16 @@ struct PermissionsUpdate {
 
 pub fn router() -> Router {
     Router::new().route(
-        "/add",
+        "/update",
         post(|db, user, update| async {
-            add_permissions(db, user, update)
+            update_permissions(db, user, update)
                 .await
                 .map_err(handle_anyhow_error)
         }),
     )
 }
 
-async fn add_permissions(
+async fn update_permissions(
     Extension(db): DbExtension,
     Extension(user): RequestUserExtension,
     Json(update): Json<PermissionsUpdate>,
@@ -42,8 +42,7 @@ async fn add_permissions(
                     "failed to find a server with id {}",
                     update.target_id
                 ))?;
-            let permissions = get_user_permissions(&user.id, &server.permissions);
-            if user.is_admin || permissions == PermissionLevel::Write {
+            if user.is_admin {
                 let target_user = db
                     .users
                     .find_one_by_id(&update.user_id)
@@ -60,14 +59,68 @@ async fn add_permissions(
                     .await?;
                 Ok(())
             } else {
-                Err(anyhow!("user is not authorized for this action"))
+                Err(anyhow!("user not authorized for this action (is not admin)"))
             }
         }
         PermissionsTarget::Deployment => {
-            todo!()
+            let deployment = db
+                .deployments
+                .find_one_by_id(&update.target_id)
+                .await
+                .context("failed at find deployment query")?
+                .ok_or(anyhow!(
+                    "failed to find a deployment with id {}",
+                    update.target_id
+                ))?;
+            if user.is_admin {
+                let target_user = db
+                    .users
+                    .find_one_by_id(&update.user_id)
+                    .await
+                    .context("failed at find target user query")?
+                    .ok_or(anyhow!("failed to find a user with id {}", update.user_id))?;
+                if !target_user.enabled {
+                    return Err(anyhow!("target user not enabled"));
+                }
+                db.deployments
+                    .update_one::<Deployment>(&update.target_id, Update::Set(doc! {
+                        format!("permissions.{}", update.user_id): update.permission.to_string()
+                    }))
+                    .await?;
+                Ok(())
+            } else {
+                Err(anyhow!("user not authorized for this action (is not admin)"))
+            }
         }
         PermissionsTarget::Build => {
-            todo!()
+            let build = db
+                .builds
+                .find_one_by_id(&update.target_id)
+                .await
+                .context("failed at find build query")?
+                .ok_or(anyhow!(
+                    "failed to find a build with id {}",
+                    update.target_id
+                ))?;
+            if user.is_admin {
+                let target_user = db
+                    .users
+                    .find_one_by_id(&update.user_id)
+                    .await
+                    .context("failed at find target user query")?
+                    .ok_or(anyhow!("failed to find a user with id {}", update.user_id))?;
+                if !target_user.enabled {
+                    return Err(anyhow!("target user not enabled"));
+                }
+                db.builds
+                    .update_one::<Build>(&update.target_id, Update::Set(doc! {
+                        format!("permissions.{}", update.user_id): update.permission.to_string()
+                    }))
+                    .await?;
+                Ok(())
+            } else {
+                Err(anyhow!("user not authorized for this action (is not admin)"))
+            }
         }
     }
 }
