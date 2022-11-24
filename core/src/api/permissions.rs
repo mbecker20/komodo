@@ -30,7 +30,7 @@ async fn update_permissions(
     Extension(db): DbExtension,
     Extension(user): RequestUserExtension,
     Json(update): Json<PermissionsUpdate>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<String> {
     if !user.is_admin {
         return Err(anyhow!(
             "user not authorized for this action (is not admin)"
@@ -64,7 +64,10 @@ async fn update_permissions(
                     }),
                 )
                 .await?;
-            Ok(())
+            Ok(format!(
+                "user {} given {} permissions on server {}",
+                target_user.username, update.permission, server.name
+            ))
         }
         PermissionsTarget::Deployment => {
             let deployment = db
@@ -84,7 +87,10 @@ async fn update_permissions(
                     }),
                 )
                 .await?;
-            Ok(())
+            Ok(format!(
+                "user {} given {} permissions on deployment {}",
+                target_user.username, update.permission, deployment.name
+            ))
         }
         PermissionsTarget::Build => {
             let build = db
@@ -104,7 +110,10 @@ async fn update_permissions(
                     }),
                 )
                 .await?;
-            Ok(())
+            Ok(format!(
+                "user {} given {} permissions on build {}",
+                target_user.username, update.permission, build.name
+            ))
         }
     }
 }
