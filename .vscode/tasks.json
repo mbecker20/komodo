@@ -67,6 +67,16 @@
 			"options": {
 				"cwd": "${workspaceFolder}/cli"
 			},
+		},
+		{
+			"type": "shell",
+			"command": "docker build -t monitor_periphery -f Dockerfile.periphery .",
+			"label": "docker build periphery"
+		},
+		{
+			"type": "shell",
+			"command": "docker build -t monitor_core -f Dockerfile.core .",
+			"label": "docker build core"
 		}
 	]
 }
