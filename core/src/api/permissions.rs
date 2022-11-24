@@ -3,7 +3,7 @@ use axum::{routing::post, Extension, Json, Router};
 use db::DbExtension;
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Update};
-use types::{PermissionLevel, PermissionsTarget, Server, Deployment, Build};
+use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server};
 
 use crate::{auth::RequestUserExtension, helpers::get_user_permissions};
 
@@ -31,96 +31,81 @@ async fn update_permissions(
     Extension(user): RequestUserExtension,
     Json(update): Json<PermissionsUpdate>,
 ) -> anyhow::Result<()> {
-    match update.target_type {
-        PermissionsTarget::Server => {
-            let server = db
-                .servers
-                .find_one_by_id(&update.target_id)
-                .await
-                .context("failed at find server query")?
-                .ok_or(anyhow!(
-                    "failed to find a server with id {}",
-                    update.target_id
-                ))?;
-            if user.is_admin {
-                let target_user = db
-                    .users
-                    .find_one_by_id(&update.user_id)
+    if user.is_admin {
+        let target_user = db
+            .users
+            .find_one_by_id(&update.user_id)
+            .await
+            .context("failed at find target user query")?
+            .ok_or(anyhow!("failed to find a user with id {}", update.user_id))?;
+        if !target_user.enabled {
+            return Err(anyhow!("target user not enabled"));
+        }
+        match update.target_type {
+            PermissionsTarget::Server => {
+                let server = db
+                    .servers
+                    .find_one_by_id(&update.target_id)
                     .await
-                    .context("failed at find target user query")?
-                    .ok_or(anyhow!("failed to find a user with id {}", update.user_id))?;
-                if !target_user.enabled {
-                    return Err(anyhow!("target user not enabled"));
-                }
+                    .context("failed at find server query")?
+                    .ok_or(anyhow!(
+                        "failed to find a server with id {}",
+                        update.target_id
+                    ))?;
                 db.servers
-                    .update_one::<Server>(&update.target_id, Update::Set(doc! {
-                        format!("permissions.{}", update.user_id): update.permission.to_string()
-                    }))
+                    .update_one::<Server>(
+                        &update.target_id,
+                        Update::Set(doc! {
+                            format!("permissions.{}", update.user_id): update.permission.to_string()
+                        }),
+                    )
                     .await?;
                 Ok(())
-            } else {
-                Err(anyhow!("user not authorized for this action (is not admin)"))
             }
-        }
-        PermissionsTarget::Deployment => {
-            let deployment = db
-                .deployments
-                .find_one_by_id(&update.target_id)
-                .await
-                .context("failed at find deployment query")?
-                .ok_or(anyhow!(
-                    "failed to find a deployment with id {}",
-                    update.target_id
-                ))?;
-            if user.is_admin {
-                let target_user = db
-                    .users
-                    .find_one_by_id(&update.user_id)
+            PermissionsTarget::Deployment => {
+                let deployment = db
+                    .deployments
+                    .find_one_by_id(&update.target_id)
                     .await
-                    .context("failed at find target user query")?
-                    .ok_or(anyhow!("failed to find a user with id {}", update.user_id))?;
-                if !target_user.enabled {
-                    return Err(anyhow!("target user not enabled"));
-                }
+                    .context("failed at find deployment query")?
+                    .ok_or(anyhow!(
+                        "failed to find a deployment with id {}",
+                        update.target_id
+                    ))?;
                 db.deployments
-                    .update_one::<Deployment>(&update.target_id, Update::Set(doc! {
-                        format!("permissions.{}", update.user_id): update.permission.to_string()
-                    }))
+                    .update_one::<Deployment>(
+                        &update.target_id,
+                        Update::Set(doc! {
+                            format!("permissions.{}", update.user_id): update.permission.to_string()
+                        }),
+                    )
                     .await?;
                 Ok(())
-            } else {
-                Err(anyhow!("user not authorized for this action (is not admin)"))
             }
-        }
-        PermissionsTarget::Build => {
-            let build = db
-                .builds
-                .find_one_by_id(&update.target_id)
-                .await
-                .context("failed at find build query")?
-                .ok_or(anyhow!(
-                    "failed to find a build with id {}",
-                    update.target_id
-                ))?;
-            if user.is_admin {
-                let target_user = db
-                    .users
-                    .find_one_by_id(&update.user_id)
+            PermissionsTarget::Build => {
+                let build = db
+                    .builds
+                    .find_one_by_id(&update.target_id)
                     .await
-                    .context("failed at find target user query")?
-                    .ok_or(anyhow!("failed to find a user with id {}", update.user_id))?;
-                if !target_user.enabled {
-                    return Err(anyhow!("target user not enabled"));
-                }
+                    .context("failed at find build query")?
+                    .ok_or(anyhow!(
+                        "failed to find a build with id {}",
+                        update.target_id
+                    ))?;
                 db.builds
-                    .update_one::<Build>(&update.target_id, Update::Set(doc! {
-                        format!("permissions.{}", update.user_id): update.permission.to_string()
-                    }))
+                    .update_one::<Build>(
+                        &update.target_id,
+                        Update::Set(doc! {
+                            format!("permissions.{}", update.user_id): update.permission.to_string()
+                        }),
+                    )
                     .await?;
                 Ok(())
-            } else {
-                Err(anyhow!("user not authorized for this action (is not admin)"))
             }
         }
+    } else {
+        Err(anyhow!(
+            "user not authorized for this action (is not admin)"
+        ))
     }
 }
