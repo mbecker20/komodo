@@ -83,7 +83,7 @@ async fn create(
         target: UpdateTarget::Server(server_id),
         operation: Operation::CreateServer,
         start_ts,
-        end_ts: unix_timestamp_ms() as i64,
+        end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
         ..Default::default()
     };

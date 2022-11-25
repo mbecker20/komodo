@@ -49,7 +49,7 @@ async fn create(
         target: UpdateTarget::Build(build_id),
         operation: Operation::CreateBuild,
         start_ts,
-        end_ts: unix_timestamp_ms() as i64,
+        end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
         ..Default::default()
     };

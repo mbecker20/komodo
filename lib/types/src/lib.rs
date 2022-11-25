@@ -156,8 +156,8 @@ pub struct Update {
     pub operation: Operation,
     pub log: Vec<Log>,
     pub start_ts: i64,
-    pub end_ts: i64,
-    pub in_progress: bool,
+    pub end_ts: Option<i64>,
+    pub status: UpdateStatus,
     pub is_error: bool,
     pub operator: String,
 }
@@ -392,6 +392,21 @@ pub enum UpdateTarget {
 impl Default for UpdateTarget {
     fn default() -> Self {
         UpdateTarget::System
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+pub enum UpdateStatus {
+    Queued,
+    InProgress,
+    Complete,
+}
+
+impl Default for UpdateStatus {
+    fn default() -> Self {
+        UpdateStatus::Complete
     }
 }
 

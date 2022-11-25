@@ -39,7 +39,7 @@ async fn create(
         target: UpdateTarget::Deployment(deployment_id),
         operation: Operation::CreateDeployment,
         start_ts,
-        end_ts: unix_timestamp_ms() as i64,
+        end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
         ..Default::default()
     };
