@@ -44,8 +44,8 @@ struct UpdateMsg {
 #[derive(Serialize)]
 #[serde(rename_all = "UPPERCASE")]
 enum MsgType {
-    Login,
-    Close,
+    // Login,
+    // Close,
     Update,
 }
 
@@ -61,10 +61,7 @@ impl UpdateMsg {
 
 pub fn make_update_ws_sender_reciver() -> (UpdateWsSenderExtension, UpdateWsRecieverExtension) {
     let (sender, reciever) = watch::channel(Default::default());
-    (
-        Extension(Arc::new(Mutex::new((sender)))),
-        Extension(reciever),
-    )
+    (Extension(Arc::new(Mutex::new(sender))), Extension(reciever))
 }
 
 pub async fn ws_handler(
@@ -74,67 +71,66 @@ pub async fn ws_handler(
     ws: WebSocketUpgrade,
 ) -> impl IntoResponse {
     ws.on_upgrade(|socket| async move {
-        match login(socket, &jwt_client, &db_client).await {
-            Some((mut socket, user_id)) => {
-                let (ws_sender, mut ws_reciever) = socket.split();
-                let ws_sender = Arc::new(Mutex::new(ws_sender));
-                let ws_sender_clone = ws_sender.clone();
-                let cancel = CancellationToken::new();
-                let cancel_clone = cancel.clone();
-                tokio::spawn(async move {
-                    loop {
-                        select! {
-                            _ = cancel_clone.cancelled() => break,
-                            _ = reciever.changed() => {}
-                        };
-                        let user = db_client.users.find_one_by_id(&user_id).await;
-                        if user.is_err()
-                            || user.as_ref().unwrap().is_none()
-                            || !user.as_ref().unwrap().as_ref().unwrap().enabled
-                        {
-                            let _ = ws_sender
-                                .lock()
-                                .await
-                                .send(Message::Text(json!({ "type": "INVALID_USER" }).to_string()))
-                                .await;
-                            let _ = ws_sender.lock().await.close().await;
-                            return;
-                        }
-                        let user = user.unwrap().unwrap(); // already handle cases where this panics in the above early return
-                        let update = reciever.borrow().to_owned();
-                        match user_can_see_update(&user, &user_id, &update.target, &db_client).await
-                        {
-                            Ok(_) => {
-                                let _ = ws_sender
-                                    .lock()
-                                    .await
-                                    .send(UpdateMsg::from_update(update))
-                                    .await;
-                            }
-                            Err(_) => {
-                                // make these error visible in some way
-                            }
-                        }
+        let login_res = login(socket, &jwt_client, &db_client).await;
+        if login_res.is_none() {
+            return;
+        }
+        let (socket, user_id) = login_res.unwrap();
+        let (ws_sender, mut ws_reciever) = socket.split();
+        let ws_sender = Arc::new(Mutex::new(ws_sender));
+        // let ws_sender_clone = ws_sender.clone();
+        let cancel = CancellationToken::new();
+        let cancel_clone = cancel.clone();
+        tokio::spawn(async move {
+            loop {
+                select! {
+                    _ = cancel_clone.cancelled() => break,
+                    _ = reciever.changed() => {}
+                };
+                let user = db_client.users.find_one_by_id(&user_id).await;
+                if user.is_err()
+                    || user.as_ref().unwrap().is_none()
+                    || !user.as_ref().unwrap().as_ref().unwrap().enabled
+                {
+                    let _ = ws_sender
+                        .lock()
+                        .await
+                        .send(Message::Text(json!({ "type": "INVALID_USER" }).to_string()))
+                        .await;
+                    let _ = ws_sender.lock().await.close().await;
+                    return;
+                }
+                let user = user.unwrap().unwrap(); // already handle cases where this panics in the above early return
+                let update = reciever.borrow().to_owned();
+                match user_can_see_update(&user, &user_id, &update.target, &db_client).await {
+                    Ok(_) => {
+                        let _ = ws_sender
+                            .lock()
+                            .await
+                            .send(UpdateMsg::from_update(update))
+                            .await;
                     }
-                });
-
-                while let Some(msg) = ws_reciever.next().await {
-                    match msg {
-                        Ok(msg) => match msg {
-                            Message::Close(_) => {
-                                cancel.cancel();
-                                return;
-                            }
-                            _ => {}
-                        },
-                        Err(_) => {
-                            cancel.cancel();
-                            return;
-                        }
+                    Err(_) => {
+                        // make these error visible in some way
                     }
                 }
             }
-            None => {}
+        });
+
+        while let Some(msg) = ws_reciever.next().await {
+            match msg {
+                Ok(msg) => match msg {
+                    Message::Close(_) => {
+                        cancel.cancel();
+                        return;
+                    }
+                    _ => {}
+                },
+                Err(_) => {
+                    cancel.cancel();
+                    return;
+                }
+            }
         }
     })
 }
@@ -149,7 +145,7 @@ async fn login(
             Ok(jwt) => match jwt {
                 Message::Text(jwt) => match jwt_client.auth_jwt(&jwt, db_client).await {
                     Ok(user) => {
-                        socket
+                        let _ = socket
                             .send(Message::Text(
                                 json!({ "type": "LOGIN", "success": true }).to_string(),
                             ))

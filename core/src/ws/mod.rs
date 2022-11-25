@@ -1,6 +1,4 @@
-use anyhow::anyhow;
 use axum::{routing::get, Router};
-use types::{PermissionLevel, PermissionsMap};
 
 pub mod update;
 

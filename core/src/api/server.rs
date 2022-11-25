@@ -1,16 +1,18 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{
+    extract::Path,
     routing::{get, post},
     Extension, Json, Router,
 };
 use db::DbExtension;
 use helpers::handle_anyhow_error;
-use types::{Operation, PermissionLevel, Server, Update, UpdateTarget};
+use mungos::Deserialize;
+use types::{Operation, PermissionLevel, Server, SystemStats, Update, UpdateTarget};
 
-use crate::{auth::RequestUserExtension, ws::update};
+use crate::{auth::RequestUserExtension, helpers::get_user_permissions, ws::update};
 
-use super::add_update;
+use super::{add_update, PeripheryExtension};
 
 pub fn router() -> Router {
     Router::new()
@@ -22,6 +24,14 @@ pub fn router() -> Router {
             "/create",
             post(|db, user, update_ws, server| async {
                 create(db, user, update_ws, server)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
+        .route(
+            "/stats/:server_id",
+            get(|db, user, periphery, path| async {
+                stats(db, user, periphery, path)
                     .await
                     .map_err(handle_anyhow_error)
             }),
@@ -78,4 +88,32 @@ async fn create(
         ..Default::default()
     };
     add_update(update, &db, &update_ws).await
+}
+
+#[derive(Deserialize)]
+struct GetStatsPath {
+    server_id: String,
+}
+
+async fn stats(
+    Extension(db): DbExtension,
+    Extension(user): RequestUserExtension,
+    Extension(periphery): PeripheryExtension,
+    Path(GetStatsPath { server_id }): Path<GetStatsPath>,
+) -> anyhow::Result<Json<SystemStats>> {
+    let server = db
+        .servers
+        .find_one_by_id(&server_id)
+        .await
+        .context("failed at query to get server")?
+        .ok_or(anyhow!("failed to find server with id {server_id}"))?;
+    let permissions = get_user_permissions(&user.id, &server.permissions);
+    if permissions == PermissionLevel::None {
+        return Err(anyhow!("user does not have permissions on this server"));
+    }
+    let stats = periphery
+        .get_system_stats(&server)
+        .await
+        .context(format!("failed to get stats from server {}", server.name))?;
+    Ok(Json(stats))
 }

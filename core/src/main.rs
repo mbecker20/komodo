@@ -1,4 +1,4 @@
-#![allow(unused)]
+// #![allow(unused)]
 
 use ::helpers::get_socket_addr;
 use auth::JwtClient;

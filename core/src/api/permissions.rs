@@ -5,7 +5,7 @@ use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Update};
 use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server};
 
-use crate::{auth::RequestUserExtension, helpers::get_user_permissions};
+use crate::auth::RequestUserExtension;
 
 #[derive(Deserialize)]
 struct PermissionsUpdate {
