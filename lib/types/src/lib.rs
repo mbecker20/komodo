@@ -384,9 +384,9 @@ pub enum AccountType {
 #[serde(tag = "type", content = "id")]
 pub enum UpdateTarget {
     System,
-    Build(String),
-    Deployment(String),
-    Server(String),
+    Build(BuildId),
+    Deployment(DeploymentId),
+    Server(ServerId),
 }
 
 impl Default for UpdateTarget {
