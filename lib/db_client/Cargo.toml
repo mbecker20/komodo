@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-types = { path = "../types" }
-axum = "0.5"
+types = { package = "monitor_types", path = "../types" }
+axum = "0.6"
 mungos = "0.2.24"
 anyhow = "1.0"

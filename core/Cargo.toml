@@ -8,12 +8,12 @@ edition = "2021"
 [dependencies]
 helpers = { path = "../lib/helpers" }
 db = { package = "db_client", path = "../lib/db_client" }
-types = { path = "../lib/types" }
+types = { package = "monitor_types", path = "../lib/types" }
 periphery = { package = "periphery_client", path = "../lib/periphery_client" }
 tokio = { version = "1.21", features = ["full"] }
 tokio-util = "0.7"
-axum = { version = "0.5", features = ["ws", "json"] }
-axum-extra = { version = "0.3", features = ["spa"] }
+axum = { version = "0.6", features = ["ws", "json"] }
+axum-extra = { version = "0.4", features = ["spa"] }
 tower = { version = "0.4", features = ["full"] }
 tower-http = { version = "0.3", features = ["cors"] }
 slack = { package = "slack_client_rs", version = "0.0.7" }

@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 helpers = { path = "../lib/helpers" }
-types = { path = "../lib/types" }
+types = { package = "monitor_types", path = "../lib/types" }
 run_command = { version = "0.0.5", features = ["async_tokio"] }
 tokio = { version = "1.21", features = ["full"] }
-axum = { version = "0.5" }
+axum = { version = "0.6" }
 tower = { version = "0.4", features = ["full"] }
 dotenv = "0.15"
 serde = "1.0"
