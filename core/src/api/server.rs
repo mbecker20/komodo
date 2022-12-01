@@ -8,9 +8,11 @@ use axum::{
 use db::DbExtension;
 use helpers::handle_anyhow_error;
 use mungos::Deserialize;
-use types::{Operation, PermissionLevel, Server, SystemStats, Update, UpdateTarget};
+use types::{
+    traits::Permissioned, Operation, PermissionLevel, Server, SystemStats, Update, UpdateTarget,
+};
 
-use crate::{auth::RequestUserExtension, helpers::get_user_permissions, ws::update};
+use crate::{auth::RequestUserExtension, ws::update};
 
 use super::{add_update, PeripheryExtension};
 
@@ -107,7 +109,7 @@ async fn stats(
         .await
         .context("failed at query to get server")?
         .ok_or(anyhow!("failed to find server with id {server_id}"))?;
-    let permissions = get_user_permissions(&user.id, &server.permissions);
+    let permissions = server.get_user_permissions(&user.id);
     if permissions == PermissionLevel::None {
         return Err(anyhow!("user does not have permissions on this server"));
     }

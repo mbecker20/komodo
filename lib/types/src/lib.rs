@@ -1,9 +1,11 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use async_timing_util::Timelength;
+use async_timing_util::{unix_timestamp_ms, Timelength};
 use mungos::ObjectId;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
+
+pub mod traits;
 
 pub const PERIPHERY_BUILDER_BUSY: &str = "builder is busy";
 
@@ -225,6 +227,19 @@ pub struct Log {
     pub success: bool,
     pub start_ts: i64,
     pub end_ts: i64,
+}
+
+impl Log {
+    pub fn simple(msg: String) -> Log {
+        let ts = unix_timestamp_ms() as i64;
+        Log {
+            stdout: msg,
+            success: true,
+            start_ts: ts,
+            end_ts: ts,
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -456,6 +471,18 @@ pub enum PermissionLevel {
     None,
     Read,
     Write,
+}
+
+impl Default for PermissionLevel {
+    fn default() -> Self {
+        PermissionLevel::None
+    }
+}
+
+impl Default for &PermissionLevel {
+    fn default() -> Self {
+        &PermissionLevel::None
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use axum::{
     extract::{
         ws::{Message, WebSocket},
@@ -23,10 +23,7 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use types::{PermissionLevel, Update, UpdateTarget, User};
 
-use crate::{
-    auth::{JwtClient, JwtExtension},
-    helpers::get_user_permissions,
-};
+use crate::auth::{JwtClient, JwtExtension};
 
 pub type UpdateWsSender = Arc<Mutex<Sender<Update>>>;
 pub type UpdateWsSenderExtension = Extension<UpdateWsSender>;
@@ -192,54 +189,32 @@ async fn user_can_see_update(
     if user.admin {
         return Ok(());
     }
-    match update_target {
-        UpdateTarget::System => {
-            if user.admin {
-                Ok(())
-            } else {
-                Err(anyhow!("user not admin, can't recieve system updates"))
-            }
-        }
+    let (permissions, target) = match update_target {
         UpdateTarget::Server(server_id) => {
-            let server = db_client
-                .servers
-                .find_one_by_id(server_id)
-                .await
-                .context(format!("failed at query to get server at {server_id}"))?
-                .ok_or(anyhow!("did not server with id {server_id}"))?;
-            if get_user_permissions(user_id, &server.permissions) != PermissionLevel::None {
-                Ok(())
-            } else {
-                Err(anyhow!("user does not have permissions on server"))
-            }
+            let permissions = db_client
+                .get_user_permission_on_server(user_id, server_id)
+                .await?;
+            (permissions, "server")
         }
         UpdateTarget::Deployment(deployment_id) => {
-            let deployment = db_client
-                .deployments
-                .find_one_by_id(deployment_id)
-                .await
-                .context(format!(
-                    "failed at query to get deployment at {deployment_id}"
-                ))?
-                .ok_or(anyhow!("did not deployment with id {deployment_id}"))?;
-            if get_user_permissions(user_id, &deployment.permissions) != PermissionLevel::None {
-                Ok(())
-            } else {
-                Err(anyhow!("user does not have permissions on deployment"))
-            }
+            let permissions = db_client
+                .get_user_permission_on_deployment(user_id, deployment_id)
+                .await?;
+            (permissions, "deployment")
         }
         UpdateTarget::Build(build_id) => {
-            let build = db_client
-                .builds
-                .find_one_by_id(build_id)
-                .await
-                .context(format!("failed at query to get build at {build_id}"))?
-                .ok_or(anyhow!("did not build with id {build_id}"))?;
-            if get_user_permissions(user_id, &build.permissions) != PermissionLevel::None {
-                Ok(())
-            } else {
-                Err(anyhow!("user does not have permissions on build"))
-            }
+            let permissions = db_client
+                .get_user_permission_on_build(user_id, build_id)
+                .await?;
+            (permissions, "build")
         }
+        UpdateTarget::System => {
+            return Err(anyhow!("user not admin, can't recieve system updates"))
+        }
+    };
+    if permissions != PermissionLevel::None {
+        Ok(())
+    } else {
+        Err(anyhow!("user does not have permissions on {target}"))
     }
 }

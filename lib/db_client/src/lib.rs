@@ -1,12 +1,13 @@
 use std::{sync::Arc, time::Duration};
 
+use anyhow::{anyhow, Context};
 use axum::Extension;
 use collections::{
     builds_collection, deployments_collection, procedures_collection, servers_collection,
     updates_collection, users_collection,
 };
 use mungos::{Collection, Mungos};
-use types::{Build, Deployment, MongoConfig, Procedure, Server, Update, User};
+use types::{Build, Deployment, MongoConfig, PermissionLevel, Procedure, Server, Update, User};
 
 mod collections;
 
@@ -48,5 +49,79 @@ impl DbClient {
                 .expect("failed to make procedures collection"),
         };
         Extension(Arc::new(client))
+    }
+
+    pub async fn get_deployment(&self, deployment_id: &str) -> anyhow::Result<Deployment> {
+        let deployment = self
+            .deployments
+            .find_one_by_id(deployment_id)
+            .await
+            .context(format!(
+                "failed at mongo query for deployment {deployment_id}"
+            ))?
+            .ok_or(anyhow!("deployment at {deployment_id} doesn't exist"))?;
+        Ok(deployment)
+    }
+
+    pub async fn get_user_permission_on_deployment(
+        &self,
+        user_id: &str,
+        deployment_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let permissions = *self
+            .get_deployment(deployment_id)
+            .await?
+            .permissions
+            .get(user_id)
+            .unwrap_or_default();
+        Ok(permissions)
+    }
+
+    pub async fn get_build(&self, build_id: &str) -> anyhow::Result<Build> {
+        let build = self
+            .builds
+            .find_one_by_id(build_id)
+            .await
+            .context(format!("failed at mongo query for build {build_id}"))?
+            .ok_or(anyhow!("build at {build_id} doesn't exist"))?;
+        Ok(build)
+    }
+
+    pub async fn get_user_permission_on_build(
+        &self,
+        user_id: &str,
+        build_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let permissions = *self
+            .get_build(build_id)
+            .await?
+            .permissions
+            .get(user_id)
+            .unwrap_or_default();
+        Ok(permissions)
+    }
+
+    pub async fn get_server(&self, server_id: &str) -> anyhow::Result<Server> {
+        let server = self
+            .servers
+            .find_one_by_id(server_id)
+            .await
+            .context(format!("failed at mongo query for server {server_id}"))?
+            .ok_or(anyhow!("server at {server_id} doesn't exist"))?;
+        Ok(server)
+    }
+
+    pub async fn get_user_permission_on_server(
+        &self,
+        user_id: &str,
+        server_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let permissions = *self
+            .get_server(server_id)
+            .await?
+            .permissions
+            .get(user_id)
+            .unwrap_or_default();
+        Ok(permissions)
     }
 }
