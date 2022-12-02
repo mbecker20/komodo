@@ -2,19 +2,31 @@ use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{
     extract::Path,
-    routing::{get, post},
+    routing::{delete, get, post},
     Extension, Json, Router,
 };
 use db::DbExtension;
 use helpers::handle_anyhow_error;
 use mungos::Deserialize;
 use types::{
-    traits::Permissioned, Operation, PermissionLevel, Server, SystemStats, Update, UpdateTarget,
+    traits::Permissioned, Log, Operation, PermissionLevel, Server, SystemStats, Update,
+    UpdateTarget,
 };
 
 use crate::{auth::RequestUserExtension, ws::update};
 
 use super::{add_update, PeripheryExtension};
+
+#[derive(Deserialize)]
+struct ServerId {
+    id: String,
+}
+
+#[derive(Deserialize)]
+struct CreateServerBody {
+    name: String,
+    address: String,
+}
 
 pub fn router() -> Router {
     Router::new()
@@ -31,9 +43,17 @@ pub fn router() -> Router {
             }),
         )
         .route(
-            "/stats/:server_id",
-            get(|db, user, periphery, path| async {
-                stats(db, user, periphery, path)
+            "/delete/:id",
+            delete(|db, user, update_ws, server_id| async {
+                delete_one(db, user, update_ws, server_id)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
+        .route(
+            "/stats/:id",
+            get(|db, user, periphery, server_id| async {
+                stats(db, user, periphery, server_id)
                     .await
                     .map_err(handle_anyhow_error)
             }),
@@ -54,10 +74,7 @@ async fn list(
             if user.is_admin {
                 true
             } else {
-                let permissions = *s
-                    .permissions
-                    .get(&user.id)
-                    .unwrap_or(&PermissionLevel::None);
+                let permissions = s.get_user_permissions(&user.id);
                 permissions != PermissionLevel::None
             }
         })
@@ -66,12 +83,28 @@ async fn list(
     Ok(Json(servers))
 }
 
+impl Into<Server> for CreateServerBody {
+    fn into(self) -> Server {
+        Server {
+            name: self.name,
+            address: self.address,
+            ..Default::default()
+        }
+    }
+}
+
 async fn create(
     Extension(db): DbExtension,
     Extension(user): RequestUserExtension,
     Extension(update_ws): update::UpdateWsSenderExtension,
-    Json(mut server): Json<Server>,
+    Json(server): Json<CreateServerBody>,
 ) -> anyhow::Result<()> {
+    if !user.is_admin {
+        return Err(anyhow!(
+            "user does not have permissions to add server (not admin)"
+        ));
+    }
+    let mut server: Server = server.into();
     server.permissions = [(user.id.clone(), PermissionLevel::Write)]
         .into_iter()
         .collect();
@@ -92,23 +125,41 @@ async fn create(
     add_update(update, &db, &update_ws).await
 }
 
-#[derive(Deserialize)]
-struct GetStatsPath {
-    server_id: String,
+async fn delete_one(
+    Extension(db): DbExtension,
+    Extension(user): RequestUserExtension,
+    Extension(update_ws): update::UpdateWsSenderExtension,
+    Path(ServerId { id }): Path<ServerId>,
+) -> anyhow::Result<()> {
+    let server = db.get_server(&id).await?;
+    let permissions = server.get_user_permissions(&user.id);
+    if !user.is_admin && permissions != PermissionLevel::Write {
+        return Err(anyhow!(
+            "user does not have permissions to delete server {} ({id})",
+            server.name
+        ));
+    }
+    let start_ts = unix_timestamp_ms() as i64;
+    db.deployments.delete_one(&id).await?;
+    let update = Update {
+        target: UpdateTarget::System,
+        operation: Operation::DeleteServer,
+        start_ts,
+        end_ts: Some(unix_timestamp_ms() as i64),
+        operator: user.id.clone(),
+        log: vec![Log::simple(format!("deleted server {}", server.name))],
+        ..Default::default()
+    };
+    add_update(update, &db, &update_ws).await
 }
 
 async fn stats(
     Extension(db): DbExtension,
     Extension(user): RequestUserExtension,
     Extension(periphery): PeripheryExtension,
-    Path(GetStatsPath { server_id }): Path<GetStatsPath>,
+    Path(ServerId { id }): Path<ServerId>,
 ) -> anyhow::Result<Json<SystemStats>> {
-    let server = db
-        .servers
-        .find_one_by_id(&server_id)
-        .await
-        .context("failed at query to get server")?
-        .ok_or(anyhow!("failed to find server with id {server_id}"))?;
+    let server = db.get_server(&id).await?;
     let permissions = server.get_user_permissions(&user.id);
     if permissions == PermissionLevel::None {
         return Err(anyhow!("user does not have permissions on this server"));
