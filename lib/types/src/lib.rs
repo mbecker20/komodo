@@ -49,8 +49,6 @@ pub struct User {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ApiSecret {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
     pub name: String,
     pub hash: String,
     pub created_at: i64,

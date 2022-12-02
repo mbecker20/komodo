@@ -2,34 +2,49 @@ use anyhow::{anyhow, Context};
 use axum::{routing::post, Extension, Json, Router};
 use db::DbExtension;
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize, Update};
+use mungos::{doc, Deserialize, Document, Update};
 use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server};
 
 use crate::auth::RequestUserExtension;
 
 #[derive(Deserialize)]
-struct PermissionsUpdate {
+struct PermissionsUpdateBody {
     user_id: String,
     permission: PermissionLevel,
     target_type: PermissionsTarget,
     target_id: String,
 }
 
+#[derive(Deserialize)]
+struct ModifyUserEnabledBody {
+    user_id: String,
+    enabled: bool,
+}
+
 pub fn router() -> Router {
-    Router::new().route(
-        "/update",
-        post(|db, user, update| async {
-            update_permissions(db, user, update)
-                .await
-                .map_err(handle_anyhow_error)
-        }),
-    )
+    Router::new()
+        .route(
+            "/update",
+            post(|db, user, update| async {
+                update_permissions(db, user, update)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
+        .route(
+            "/modify_enabled",
+            post(|db, user, body| async {
+                modify_user_enabled(db, user, body)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
 }
 
 async fn update_permissions(
     Extension(db): DbExtension,
     Extension(user): RequestUserExtension,
-    Json(update): Json<PermissionsUpdate>,
+    Json(update): Json<PermissionsUpdateBody>,
 ) -> anyhow::Result<String> {
     if !user.is_admin {
         return Err(anyhow!(
@@ -116,4 +131,25 @@ async fn update_permissions(
             ))
         }
     }
+}
+
+async fn modify_user_enabled(
+    Extension(db): DbExtension,
+    Extension(user): RequestUserExtension,
+    Json(ModifyUserEnabledBody { user_id, enabled }): Json<ModifyUserEnabledBody>,
+) -> anyhow::Result<()> {
+    if !user.is_admin {
+        return Err(anyhow!(
+            "user does not have permissions for this action (not admin)"
+        ));
+    }
+    db.users
+        .find_one_by_id(&user_id)
+        .await
+        .context("failed at mongo query to find target user")?
+        .ok_or(anyhow!("did not find any user with user_id {user_id}"))?;
+    db.users
+        .update_one::<Document>(&user_id, Update::Set(doc! { "enabled": enabled }))
+        .await?;
+    Ok(())
 }

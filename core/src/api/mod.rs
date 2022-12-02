@@ -16,6 +16,7 @@ use crate::{
 mod build;
 mod deployment;
 mod permissions;
+mod secret;
 mod server;
 
 type PeripheryExtension = Extension<Arc<PeripheryClient>>;
@@ -30,6 +31,7 @@ pub fn router() -> Router {
         .nest("/deployment", deployment::router())
         .nest("/server", server::router())
         .nest("/permissions", permissions::router())
+        .nest("/secret", secret::router())
         .layer(Extension(Arc::new(PeripheryClient::new())))
         .layer(middleware::from_fn(auth_request))
 }
@@ -44,6 +46,9 @@ async fn get_user(
         .await?
         .ok_or(anyhow!("did not find user"))?;
     user.password = None;
+    for secret in &mut user.secrets {
+        secret.hash = String::new();
+    }
     Ok(Json(user))
 }
 

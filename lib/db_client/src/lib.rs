@@ -51,6 +51,16 @@ impl DbClient {
         Extension(Arc::new(client))
     }
 
+    pub async fn get_user(&self, user_id: &str) -> anyhow::Result<User> {
+        let user = self
+            .users
+            .find_one_by_id(user_id)
+            .await
+            .context(format!("failed at mongo query for user {user_id}"))?
+            .ok_or(anyhow!("user at {user_id} doesn't exist"))?;
+        Ok(user)
+    }
+
     pub async fn get_deployment(&self, deployment_id: &str) -> anyhow::Result<Deployment> {
         let deployment = self
             .deployments

@@ -9,7 +9,7 @@ use super::JwtExtension;
 
 #[derive(Deserialize)]
 pub struct SecretLoginBody {
-    username: String,
+    user_id: String,
     secret: String,
 }
 
@@ -23,15 +23,14 @@ pub fn router() -> Router {
 pub async fn login(
     Extension(db): DbExtension,
     Extension(jwt): JwtExtension,
-    Json(SecretLoginBody { username, secret }): Json<SecretLoginBody>,
+    Json(SecretLoginBody { user_id, secret }): Json<SecretLoginBody>,
 ) -> anyhow::Result<String> {
     let user = db
         .users
-        .find_one(doc! { "username": &username }, None)
+        .find_one_by_id(&user_id)
         .await
         .context("failed at mongo query")?
-        .ok_or(anyhow!("did not find user with username {username}"))?;
-    let user_id = user.id.ok_or(anyhow!("user does not have id"))?.to_string();
+        .ok_or(anyhow!("did not find user with id {user_id}"))?;
     let ts = unix_timestamp_ms() as i64;
     for s in user.secrets {
         if let Some(expires) = s.expires {
@@ -39,7 +38,7 @@ pub async fn login(
                 db.users
                     .update_one::<Document>(
                         &user_id,
-                        Update::Custom(doc! { "$pull": { "secrets": { "_id": s.id } } }),
+                        Update::Custom(doc! { "$pull": { "secrets": { "name": s.name } } }),
                     )
                     .await
                     .context("failed to remove expired secret")?;

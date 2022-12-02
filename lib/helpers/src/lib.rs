@@ -3,6 +3,7 @@ use std::{fs::File, io::Read, net::SocketAddr, str::FromStr};
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
 use axum::http::StatusCode;
+use rand::{distributions::Alphanumeric, Rng};
 use run_command::{async_run_command, CommandOutput};
 use serde::de::DeserializeOwned;
 use types::Log;
@@ -57,4 +58,12 @@ pub fn handle_anyhow_error(err: anyhow::Error) -> (StatusCode, String) {
         StatusCode::INTERNAL_SERVER_ERROR,
         format!("Internal Error: {err:#?}"),
     )
+}
+
+pub fn generate_secret(length: usize) -> String {
+    rand::thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(length)
+        .map(char::from)
+        .collect()
 }
