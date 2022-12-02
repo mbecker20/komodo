@@ -71,9 +71,17 @@
 		{
 			"type": "cargo",
 			"command": "publish",
-			"label": "publish types",
+			"label": "publish monitor types",
 			"options": {
 				"cwd": "${workspaceFolder}/lib/types"
+			},
+		},
+		{
+			"type": "cargo",
+			"command": "publish",
+			"label": "publish monitor client",
+			"options": {
+				"cwd": "${workspaceFolder}/lib/monitor_client"
 			},
 		},
 		{

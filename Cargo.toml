@@ -8,4 +8,5 @@ members = [
 	"lib/helpers",
 	"lib/periphery_client",
 	"lib/types",
+	"lib/monitor_client"
 ]
