@@ -37,12 +37,24 @@ pub struct User {
     pub avatar: Option<String>,
 
     // used with auth
+    #[serde(default)]
+    pub secrets: Vec<ApiSecret>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub password: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub github_id: Option<i64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub google_id: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct ApiSecret {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub name: String,
+    pub hash: String,
+    pub created_at: i64,
+    pub expires: Option<i64>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

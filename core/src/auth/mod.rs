@@ -12,6 +12,7 @@ use types::CoreConfig;
 mod github;
 mod jwt;
 mod local;
+mod secret;
 
 pub use self::jwt::{JwtClaims, JwtClient, JwtExtension, RequestUser, RequestUserExtension};
 
@@ -19,6 +20,7 @@ pub fn router(config: &CoreConfig) -> Router {
     Router::new()
         .nest("/local", local::router())
         .nest("/github", github::router(config))
+        .nest("/secret", secret::router())
 }
 
 pub async fn auth_request(

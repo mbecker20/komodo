@@ -1246,6 +1246,9 @@ dependencies = [
  "anyhow",
  "monitor_types 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
 ]
 
 [[package]]
