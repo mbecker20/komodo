@@ -31,14 +31,6 @@
 		{
 			"type": "cargo",
 			"command": "run",
-			"label": "run periphery",
-			"options": {
-				"cwd": "${workspaceFolder}/periphery"
-			},
-		},
-		{
-			"type": "cargo",
-			"command": "run",
 			"label": "run core",
 			"options": {
 				"cwd": "${workspaceFolder}/core"
@@ -55,17 +47,17 @@
 		{
 			"type": "cargo",
 			"command": "run",
-			"label": "run builder",
+			"label": "run cli",
 			"options": {
-				"cwd": "${workspaceFolder}/builder"
+				"cwd": "${workspaceFolder}/cli"
 			},
 		},
 		{
 			"type": "cargo",
 			"command": "run",
-			"label": "run cli",
+			"label": "run tests",
 			"options": {
-				"cwd": "${workspaceFolder}/cli"
+				"cwd": "${workspaceFolder}/tests"
 			},
 		},
 		{

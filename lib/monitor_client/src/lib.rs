@@ -1,9 +1,17 @@
+#![allow(unused)]
+
 use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
 
 pub use monitor_types as types;
 use serde_json::json;
+
+mod build;
+mod deployment;
+mod permissions;
+mod secret;
+mod server;
 
 #[derive(Clone)]
 pub struct MonitorClient {
@@ -21,30 +29,38 @@ impl MonitorClient {
         }
     }
 
-    pub async fn new_with_credentials(
+    pub async fn new_with_password(
         url: &str,
         username: impl Into<String>,
         password: impl Into<String>,
     ) -> anyhow::Result<MonitorClient> {
         let mut client = MonitorClient::new_with_token(url, "");
-        client.login(username, password).await?;
-        Ok(client)
-    }
-
-    async fn login(
-        &mut self,
-        username: impl Into<String>,
-        password: impl Into<String>,
-    ) -> anyhow::Result<()> {
-        let token = self
+        let token = client
             .post_string(
                 "/auth/local/login",
                 json!({ "username": username.into(), "password": password.into() }),
             )
             .await
-            .context("failed to log in")?;
-        self.token = token;
-        Ok(())
+            .context("failed to log in with password")?;
+        client.token = token;
+        Ok(client)
+    }
+
+    pub async fn new_with_secret(
+        url: &str,
+        username: impl Into<String>,
+        secret: impl Into<String>,
+    ) -> anyhow::Result<MonitorClient> {
+        let mut client = MonitorClient::new_with_token(url, "");
+        let token = client
+            .post_string(
+                "/auth/secret/login",
+                json!({ "username": username.into(), "secret": secret.into() }),
+            )
+            .await
+            .context("failed to log in with secret")?;
+        client.token = token;
+        Ok(client)
     }
 
     async fn get<R: DeserializeOwned>(&self, endpoint: &str) -> anyhow::Result<R> {
