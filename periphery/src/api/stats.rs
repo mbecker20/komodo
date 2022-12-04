@@ -1,14 +1,10 @@
 use std::{
-    path::Path,
     sync::{Arc, RwLock},
 };
 
 use axum::{routing::get, Extension, Json, Router};
-use helpers::{docker, handle_anyhow_error};
 use sysinfo::{CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt};
 use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats};
-
-use crate::response;
 
 pub fn router() -> Router {
     Router::new()
@@ -17,15 +13,6 @@ pub fn router() -> Router {
             get(|Extension(sys): StatsExtension| async move {
                 let stats = sys.write().unwrap().get_stats();
                 Json(stats)
-            }),
-        )
-        .route(
-            "/docker",
-            get(|| async {
-                let stats = docker::container_stats()
-                    .await
-                    .map_err(handle_anyhow_error)?;
-                response!(Json(stats))
             }),
         )
         .layer(StatsClient::extension())

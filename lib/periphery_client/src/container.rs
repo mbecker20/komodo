@@ -1,5 +1,5 @@
 use serde_json::json;
-use types::{BasicContainerInfo, Deployment, Log, Server};
+use types::{BasicContainerInfo, Deployment, DockerContainerStats, Log, Server};
 
 use crate::PeripheryClient;
 
@@ -53,6 +53,22 @@ impl PeripheryClient {
     }
 
     pub async fn container_prune(&self, server: &Server) -> anyhow::Result<Log> {
-        self.post_json(server, "container/prune", &json!({})).await
+        self.post_json(server, "/container/prune", &json!({})).await
+    }
+
+    pub async fn container_stats(
+        &self,
+        server: &Server,
+        container_name: &str,
+    ) -> anyhow::Result<Vec<DockerContainerStats>> {
+        self.get_json(server, &format!("/container/stats/{container_name}"))
+            .await
+    }
+
+    pub async fn container_stats_list(
+        &self,
+        server: &Server,
+    ) -> anyhow::Result<Vec<DockerContainerStats>> {
+        self.get_json(server, "/container/stats/list").await
     }
 }

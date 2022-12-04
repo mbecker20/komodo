@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read, sync::Arc};
+use std::sync::Arc;
 
 use axum::Extension;
 use dotenv::dotenv;

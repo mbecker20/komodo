@@ -1,5 +1,3 @@
-use types::PeripheryConfig;
-
 #[macro_export]
 macro_rules! response {
     ($x:expr) => {

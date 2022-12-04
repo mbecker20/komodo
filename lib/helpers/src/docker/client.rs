@@ -2,8 +2,15 @@ use std::sync::Arc;
 
 use anyhow::anyhow;
 use axum::Extension;
-use bollard::{container::ListContainersOptions, Docker};
-use types::BasicContainerInfo;
+use bollard::{
+    container::{ListContainersOptions, StatsOptions},
+    Docker,
+};
+use futures::{future::join_all, Stream};
+use futures_util::stream::StreamExt;
+use types::{BasicContainerInfo, DockerContainerState};
+
+pub use bollard::container::Stats;
 
 pub type DockerExtension = Extension<Arc<DockerClient>>;
 
@@ -45,5 +52,66 @@ impl DockerClient {
             })
             .collect::<anyhow::Result<Vec<BasicContainerInfo>>>()?;
         Ok(res)
+    }
+
+    pub fn container_stats_stream(
+        &self,
+        container_name: &str,
+    ) -> impl Stream<Item = Result<Stats, bollard::errors::Error>> {
+        self.docker.stats(
+            container_name,
+            Some(StatsOptions {
+                stream: true,
+                ..Default::default()
+            }),
+        )
+    }
+
+    pub async fn get_container_stats(&self, container_name: &str) -> anyhow::Result<Stats> {
+        let mut stats = self
+            .docker
+            .stats(
+                container_name,
+                Some(StatsOptions {
+                    stream: false,
+                    ..Default::default()
+                }),
+            )
+            .take(1)
+            .next()
+            .await
+            .ok_or(anyhow!("got no stats for {container_name}"))??;
+        stats.name = stats.name.replace("/", "");
+        Ok(stats)
+    }
+
+    pub async fn get_container_stats_list(&self) -> anyhow::Result<Vec<Stats>> {
+        let futures = self
+            .list_containers()
+            .await?
+            .into_iter()
+            .filter(|c| c.state == DockerContainerState::Running)
+            .map(|c| async move {
+                let mut stats = self
+                    .docker
+                    .stats(
+                        &c.name,
+                        Some(StatsOptions {
+                            stream: false,
+                            ..Default::default()
+                        }),
+                    )
+                    .take(1)
+                    .next()
+                    .await
+                    .ok_or(anyhow!("got no stats for {}", c.name))??;
+                stats.name = stats.name.replace("/", "");
+                Ok::<_, anyhow::Error>(stats)
+            });
+        let stats = join_all(futures)
+            .await
+            .into_iter()
+            .collect::<anyhow::Result<_>>()?;
+        Ok(stats)
     }
 }

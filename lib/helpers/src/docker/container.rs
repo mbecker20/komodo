@@ -15,9 +15,16 @@ pub async fn container_log(container_name: &str, tail: Option<u64>) -> Log {
     run_monitor_command("get container log", command).await
 }
 
-pub async fn container_stats() -> anyhow::Result<Vec<DockerContainerStats>> {
-    let command = "docker stats --no-stream --format \"{{json .}}\"";
-    let output = async_run_command(command).await;
+pub async fn container_stats(
+    container_name: Option<String>,
+) -> anyhow::Result<Vec<DockerContainerStats>> {
+    let format = "--format \"{{ json . }}\"";
+    let container_name = match container_name {
+        Some(name) => format!(" {name}"),
+        None => "".to_string(),
+    };
+    let command = format!("docker stats{container_name} --no-stream {format}");
+    let output = async_run_command(&command).await;
     if output.success() {
         let res = output
             .stdout
@@ -31,7 +38,7 @@ pub async fn container_stats() -> anyhow::Result<Vec<DockerContainerStats>> {
             .collect::<anyhow::Result<Vec<DockerContainerStats>>>()?;
         Ok(res)
     } else {
-        Err(anyhow!("failed to get docker logs"))
+        Err(anyhow!("{}", output.stderr.replace("\n", "")))
     }
 }
 

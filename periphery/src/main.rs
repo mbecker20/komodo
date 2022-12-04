@@ -1,9 +1,9 @@
-#![allow(unused)]
+// #![allow(unused)]
 
 use std::sync::Arc;
 
 use ::helpers::get_socket_addr;
-use axum::{extract::Path, http::StatusCode, routing::get, Extension, Json, Router};
+use axum::Extension;
 use types::PeripheryConfig;
 
 mod api;

@@ -4,7 +4,7 @@ use helpers::{
     git::{self, CloneArgs},
     handle_anyhow_error,
 };
-use types::{Build, Deployment, GithubToken, Log, PeripheryConfig};
+use types::{GithubToken, Log, PeripheryConfig};
 
 use crate::PeripheryConfigExtension;
 

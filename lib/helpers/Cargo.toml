@@ -10,10 +10,12 @@ types = { package = "monitor_types", path = "../types" }
 async_timing_util = "0.1.11"
 bollard = "0.13"
 anyhow = "1.0"
-axum = "0.6"
+axum = { version = "0.6", features = ["ws", "json"] }
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 toml = "0.5"
 run_command = { version = "0.0.5", features = ["async_tokio"] }
 rand = "0.8"
+futures = "0.3"
+futures-util = "0.3.25"
