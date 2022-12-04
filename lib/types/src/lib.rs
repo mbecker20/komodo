@@ -250,6 +250,17 @@ impl Log {
             ..Default::default()
         }
     }
+
+    pub fn error(msg: String) -> Log {
+        let ts = unix_timestamp_ms() as i64;
+        Log {
+            stderr: msg,
+            start_ts: ts,
+            end_ts: ts,
+            success: false,
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

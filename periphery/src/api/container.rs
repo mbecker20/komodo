@@ -27,30 +27,6 @@ pub fn router() -> Router {
                 response!(Json(containers))
             }),
         )
-        // .route(
-        //     "/stats/:name",
-        //     get(
-        //         |Extension(dc): DockerExtension, Path(Container { name }): Path<Container>| async move {
-        //             let stats = dc
-        //                 .get_container_stats(&name)
-        //                 .await
-        //                 .map_err(handle_anyhow_error)?;
-        //             response!(Json(stats))
-        //         },
-        //     ),
-        // )
-        // .route(
-        //     "/stats/list",
-        //     get(
-        //         |Extension(dc): DockerExtension| async move {
-        //             let stats_list = dc
-        //                 .get_container_stats_list()
-        //                 .await
-        //                 .map_err(handle_anyhow_error)?;
-        //             response!(Json(stats_list))
-        //         },
-        //     ),
-        // )
         .route(
             "/stats/:name",
             get(|Path(c): Path<Container>| async move {
@@ -100,5 +76,29 @@ pub fn router() -> Router {
             "/prune",
             post(|| async { Json(docker::prune_containers().await) }),
         )
+        // .route(
+        //     "/stats/:name",
+        //     get(
+        //         |Extension(dc): DockerExtension, Path(Container { name }): Path<Container>| async move {
+        //             let stats = dc
+        //                 .get_container_stats(&name)
+        //                 .await
+        //                 .map_err(handle_anyhow_error)?;
+        //             response!(Json(stats))
+        //         },
+        //     ),
+        // )
+        // .route(
+        //     "/stats/list",
+        //     get(
+        //         |Extension(dc): DockerExtension| async move {
+        //             let stats_list = dc
+        //                 .get_container_stats_list()
+        //                 .await
+        //                 .map_err(handle_anyhow_error)?;
+        //             response!(Json(stats_list))
+        //         },
+        //     ),
+        // )
         .layer(DockerClient::extension())
 }

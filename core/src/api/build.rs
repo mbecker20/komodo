@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{
     extract::Path,
@@ -102,7 +102,10 @@ async fn delete_one(
     }
     let start_ts = unix_timestamp_ms() as i64;
     let server = db.get_server(&build.server_id).await?;
-    // clean up anything left by the build (delete the repo)
+    let delete_repo_log = periphery
+        .delete_repo(&server, &build.name)
+        .await
+        .context("failed at deleting repo")?;
     db.builds.delete_one(&id).await?;
     let update = Update {
         target: UpdateTarget::System,
@@ -111,7 +114,7 @@ async fn delete_one(
         end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
         log: vec![
-            // log,
+            delete_repo_log,
             Log::simple(format!(
                 "deleted build {} on server {}",
                 build.name, server.name
