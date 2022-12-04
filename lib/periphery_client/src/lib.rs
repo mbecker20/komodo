@@ -1,13 +1,12 @@
 use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
-use types::Server;
+use types::{Server, SystemStats};
 
 mod build;
 mod container;
 mod git;
 mod network;
-mod stats;
 
 pub struct PeripheryClient {
     http_client: reqwest::Client,
@@ -30,6 +29,10 @@ impl PeripheryClient {
 
     pub async fn get_docker_accounts(&self, server: &Server) -> anyhow::Result<Vec<String>> {
         self.get_json(server, "/accounts/docker").await
+    }
+
+    pub async fn get_system_stats(&self, server: &Server) -> anyhow::Result<SystemStats> {
+        self.get_json(server, "/stats/system").await
     }
 
     async fn get_text(&self, server: &Server, endpoint: &str) -> anyhow::Result<String> {
