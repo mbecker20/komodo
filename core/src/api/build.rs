@@ -9,11 +9,11 @@ use db::DbExtension;
 use diff::Diff;
 use helpers::handle_anyhow_error;
 use mungos::Deserialize;
-use types::{traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateTarget};
+use types::{traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateTarget, UpdateStatus};
 
 use crate::{
     auth::RequestUserExtension,
-    helpers::{add_update, all_logs_success, any_option_diff_is_some, option_diff_is_some},
+    helpers::{add_update, all_logs_success, any_option_diff_is_some, option_diff_is_some, update_update},
     ws::update,
 };
 
@@ -158,34 +158,39 @@ async fn update(
             current_build.id
         ));
     }
-    let start_ts = unix_timestamp_ms() as i64;
-    let server = db.get_server(&current_build.server_id).await?;
 
     new_build.permissions = current_build.permissions.clone();
     let diff = current_build.diff(&new_build);
-    let mut logs = vec![Log::simple(format!("{diff:#?}"))];
+
+    let mut update = Update {
+        operation: Operation::UpdateBuild,
+        target: UpdateTarget::Build(new_build.id.clone()),
+        start_ts: unix_timestamp_ms() as i64,
+        status: UpdateStatus::InProgress,
+        logs: vec![Log::simple(format!("{diff:#?}"))],
+        operator: user.id.clone(),
+        success: true,
+        ..Default::default()
+    };
+
+    update.id = add_update(update.clone(), &db, &update_ws).await?;
+
+    let server = db.get_server(&current_build.server_id).await?;
 
     if any_option_diff_is_some(&[&diff.repo, &diff.branch, &diff.github_account])
         || option_diff_is_some(&diff.on_clone)
     {
         match periphery.clone_repo(&server, &new_build).await {
             Ok(clone_logs) => {
-                logs.extend(clone_logs);
+                update.logs.extend(clone_logs);
             }
-            Err(e) => logs.push(Log::error("cloning repo", format!("{e:#?}"))),
+            Err(e) => update.logs.push(Log::error("cloning repo", format!("{e:#?}"))),
         }
     }
 
-    let update = Update {
-        operation: Operation::UpdateBuild,
-        target: UpdateTarget::Build(new_build.id),
-        start_ts,
-        end_ts: Some(unix_timestamp_ms() as i64),
-        success: all_logs_success(&logs),
-        logs,
-        operator: user.id.clone(),
-        ..Default::default()
-    };
-    add_update(update, &db, &update_ws).await?;
-    Ok(())
+    update.end_ts = Some(unix_timestamp_ms() as i64);
+    update.success = all_logs_success(&update.logs);
+    update.status = UpdateStatus::Complete;
+    
+    update_update(update, &db, &update_ws).await
 }
