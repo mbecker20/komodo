@@ -1,7 +1,8 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use async_timing_util::{unix_timestamp_ms, Timelength};
-use mungos::ObjectId;
+use diff::Diff;
+use mungos::mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
@@ -26,10 +27,15 @@ pub type SecretsMap = HashMap<String, String>; // these are used for injection i
 
 pub type PermissionsMap = HashMap<UserId, PermissionLevel>;
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
 pub struct User {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    #[serde(
+        default,
+        rename = "_id",
+        skip_serializing_if = "String::is_empty",
+        deserialize_with = "deserialize_hex_string_from_object_id"
+    )]
+    pub id: String,
     pub username: String,
     pub enabled: bool,
     pub admin: bool,
@@ -47,7 +53,7 @@ pub struct User {
     pub google_id: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 pub struct ApiSecret {
     pub name: String,
     pub hash: String,
@@ -55,10 +61,15 @@ pub struct ApiSecret {
     pub expires: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Diff)]
 pub struct Server {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    #[serde(
+        default,
+        rename = "_id",
+        skip_serializing_if = "String::is_empty",
+        deserialize_with = "deserialize_hex_string_from_object_id"
+    )]
+    pub id: String,
     pub name: String,
     pub address: String,
     #[serde(default)]
@@ -82,7 +93,7 @@ pub struct Server {
 impl Default for Server {
     fn default() -> Self {
         Self {
-            id: None,
+            id: String::default(),
             name: String::new(),
             address: String::new(),
             permissions: HashMap::new(),
@@ -109,10 +120,15 @@ fn default_disk_alert() -> f64 {
     75.0
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
 pub struct Deployment {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    #[serde(
+        default,
+        rename = "_id",
+        skip_serializing_if = "String::is_empty",
+        deserialize_with = "deserialize_hex_string_from_object_id"
+    )]
+    pub id: String,
     pub name: String, // must be formatted to be compat with docker
     pub server_id: ServerId,
     pub permissions: PermissionsMap,
@@ -129,10 +145,15 @@ pub struct Deployment {
     pub on_clone: Option<Command>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
 pub struct Build {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    #[serde(
+        default,
+        rename = "_id",
+        skip_serializing_if = "String::is_empty",
+        deserialize_with = "deserialize_hex_string_from_object_id"
+    )]
+    pub id: String,
     pub name: String,
     pub permissions: PermissionsMap,
     pub server_id: String, // server which this image should be built on
@@ -162,8 +183,13 @@ pub struct BuildRecord {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Update {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    #[serde(
+        default,
+        rename = "_id",
+        skip_serializing_if = "String::is_empty",
+        deserialize_with = "deserialize_hex_string_from_object_id"
+    )]
+    pub id: String,
     pub target: UpdateTarget,
     pub operation: Operation,
     pub log: Vec<Log>,
@@ -174,22 +200,27 @@ pub struct Update {
     pub operator: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Diff)]
 pub struct Procedure {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    #[serde(
+        default,
+        rename = "_id",
+        skip_serializing_if = "String::is_empty",
+        deserialize_with = "deserialize_hex_string_from_object_id"
+    )]
+    pub id: String,
     pub name: String,
     pub procedure: Vec<Operation>,
     pub permissions: PermissionsMap,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Diff)]
 pub struct DockerBuildArgs {
     pub build_path: String,
     pub dockerfile_path: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
 pub struct DockerRunArgs {
     pub image: String,
     pub ports: Vec<Conversion>,
@@ -263,13 +294,13 @@ impl Log {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Diff)]
 pub struct Command {
     pub path: String,
     pub command: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 pub struct Version {
     pub major: u64,
     pub minor: u64,
@@ -281,13 +312,13 @@ impl ToString for Version {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 pub struct Conversion {
     pub local: String,
     pub container: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 pub struct EnvironmentVar {
     pub variable: String,
     pub value: String,
@@ -446,7 +477,7 @@ impl Default for UpdateStatus {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum Operation {
@@ -485,7 +516,9 @@ impl Default for Operation {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(
+    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
+)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum PermissionLevel {
@@ -528,7 +561,7 @@ pub enum DockerContainerState {
     Dead,
 }
 
-#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff)]
 pub enum RestartMode {
     #[serde(rename = "no")]
     NoRestart,

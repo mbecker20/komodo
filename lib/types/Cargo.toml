@@ -1,6 +1,6 @@
 [package]
 name = "monitor_types"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["MoghTech"]
 description = "types for the mogh tech monitor"
@@ -15,3 +15,4 @@ mungos = "0.2.24"
 strum = "0.24"
 strum_macros = "0.24"
 async_timing_util = "0.1.11"
+diff-struct = "0.5.1"

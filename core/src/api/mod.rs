@@ -1,10 +1,9 @@
-use std::{str::FromStr, sync::Arc};
+use std::sync::Arc;
 
 use anyhow::{anyhow, Context};
 use axum::{middleware, routing::get, Extension, Json, Router};
 use db::{DbClient, DbExtension};
 use helpers::handle_anyhow_error;
-use mungos::ObjectId;
 use periphery::PeripheryClient;
 use types::{Update, User};
 
@@ -57,12 +56,12 @@ async fn add_update(
     db: &DbClient,
     update_ws: &update::UpdateWsSender,
 ) -> anyhow::Result<()> {
-    let update_id = db
+    update.id = db
         .updates
         .create_one(update.clone())
         .await
-        .context("failed to insert update into db. the create build process was completed.")?;
-    update.id = Some(ObjectId::from_str(&update_id).context("failed at attaching update id")?);
+        .context("failed to insert update into db. the create build process was completed.")?
+        .to_string();
     let _ = update_ws.lock().await.send(update);
     Ok(())
 }

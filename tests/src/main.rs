@@ -10,7 +10,6 @@ async fn main() {
         .await
         .expect("failed at list servers");
     let server = servers.get(0).unwrap();
-    let server_id = server.id.unwrap().to_string();
-    let stats = monitor.get_server_stats(&server_id).await.unwrap();
+    let stats = monitor.get_server_stats(&server.id).await.unwrap();
     println!("{stats:#?}")
 }

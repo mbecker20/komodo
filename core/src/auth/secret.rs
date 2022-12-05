@@ -31,14 +31,13 @@ pub async fn login(
         .await
         .context("failed at mongo query")?
         .ok_or(anyhow!("did not find user with username {username}"))?;
-    let user_id = user.id.unwrap().to_string();
     let ts = unix_timestamp_ms() as i64;
     for s in user.secrets {
         if let Some(expires) = s.expires {
             if expires < ts {
                 db.users
                     .update_one::<Document>(
-                        &user_id,
+                        &user.id,
                         Update::Custom(doc! { "$pull": { "secrets": { "name": s.name } } }),
                     )
                     .await
@@ -48,7 +47,7 @@ pub async fn login(
         }
         if bcrypt::verify(&secret, &s.hash).context("failed at verifying hash")? {
             let jwt = jwt
-                .generate(user_id)
+                .generate(user.id)
                 .context("failed at generating jwt for user")?;
             return Ok(jwt);
         }

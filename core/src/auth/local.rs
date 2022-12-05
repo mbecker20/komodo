@@ -77,10 +77,8 @@ async fn login_handler(
         return Err(anyhow!("invalid credentials"));
     }
 
-    let user_id = user.id.ok_or(anyhow!("user does not have id"))?.to_string();
-
     let jwt = jwt
-        .generate(user_id)
+        .generate(user.id)
         .context("failed at generating jwt for user")?;
 
     Ok(jwt)

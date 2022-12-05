@@ -124,3 +124,13 @@ async fn delete_one(
     };
     add_update(update, &db, &update_ws).await
 }
+
+async fn update(
+    Extension(db): DbExtension,
+    Extension(user): RequestUserExtension,
+    Extension(update_ws): update::UpdateWsSenderExtension,
+    Extension(periphery): PeripheryExtension,
+    Path(build): Path<Build>,
+) {
+    
+}
