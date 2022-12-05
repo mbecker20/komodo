@@ -2,17 +2,22 @@ use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{
     extract::Path,
-    routing::{delete, post},
+    routing::{delete, patch, post},
     Extension, Json, Router,
 };
 use db::DbExtension;
+use diff::Diff;
 use helpers::handle_anyhow_error;
 use mungos::Deserialize;
 use types::{traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateTarget};
 
-use crate::{auth::RequestUserExtension, ws::update};
+use crate::{
+    auth::RequestUserExtension,
+    helpers::{add_update, all_logs_success, any_option_diff_is_some, option_diff_is_some},
+    ws::update,
+};
 
-use super::{add_update, PeripheryExtension};
+use super::PeripheryExtension;
 
 #[derive(Deserialize)]
 struct BuildId {
@@ -39,6 +44,14 @@ pub fn router() -> Router {
             "/delete/:id",
             delete(|db, user, update_ws, periphery, build_id| async {
                 delete_one(db, user, update_ws, periphery, build_id)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
+        .route(
+            "/update",
+            patch(|db, user, update_ws, periphery, build| async {
+                update(db, user, update_ws, periphery, build)
                     .await
                     .map_err(handle_anyhow_error)
             }),
@@ -80,9 +93,11 @@ async fn create(
         start_ts,
         end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
+        success: true,
         ..Default::default()
     };
-    add_update(update, &db, &update_ws).await
+    add_update(update, &db, &update_ws).await?;
+    Ok(())
 }
 
 async fn delete_one(
@@ -94,7 +109,7 @@ async fn delete_one(
 ) -> anyhow::Result<()> {
     let build = db.get_build(&id).await?;
     let permissions = build.get_user_permissions(&user.id);
-    if permissions != PermissionLevel::Write {
+    if !user.is_admin && permissions != PermissionLevel::Write {
         return Err(anyhow!(
             "user does not have permissions to delete build {} ({id})",
             build.name
@@ -113,16 +128,18 @@ async fn delete_one(
         start_ts,
         end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
-        log: vec![
+        logs: vec![
             delete_repo_log,
             Log::simple(format!(
                 "deleted build {} on server {}",
                 build.name, server.name
             )),
         ],
+        success: true,
         ..Default::default()
     };
-    add_update(update, &db, &update_ws).await
+    add_update(update, &db, &update_ws).await?;
+    Ok(())
 }
 
 async fn update(
@@ -130,7 +147,45 @@ async fn update(
     Extension(user): RequestUserExtension,
     Extension(update_ws): update::UpdateWsSenderExtension,
     Extension(periphery): PeripheryExtension,
-    Path(build): Path<Build>,
-) {
-    
+    Json(mut new_build): Json<Build>,
+) -> anyhow::Result<()> {
+    let current_build = db.get_build(&new_build.id).await?;
+    let permissions = current_build.get_user_permissions(&user.id);
+    if !user.is_admin && permissions != PermissionLevel::Write {
+        return Err(anyhow!(
+            "user does not have permissions to update build {} ({})",
+            current_build.name,
+            current_build.id
+        ));
+    }
+    let start_ts = unix_timestamp_ms() as i64;
+    let server = db.get_server(&current_build.server_id).await?;
+
+    new_build.permissions = current_build.permissions.clone();
+    let diff = current_build.diff(&new_build);
+    let mut logs = vec![Log::simple(format!("{diff:#?}"))];
+
+    if any_option_diff_is_some(&[&diff.repo, &diff.branch, &diff.github_account])
+        || option_diff_is_some(&diff.on_clone)
+    {
+        match periphery.clone_repo(&server, &new_build).await {
+            Ok(clone_logs) => {
+                logs.extend(clone_logs);
+            }
+            Err(e) => logs.push(Log::error("cloning repo", format!("{e:#?}"))),
+        }
+    }
+
+    let update = Update {
+        operation: Operation::UpdateBuild,
+        target: UpdateTarget::Build(new_build.id),
+        start_ts,
+        end_ts: Some(unix_timestamp_ms() as i64),
+        success: all_logs_success(&logs),
+        logs,
+        operator: user.id.clone(),
+        ..Default::default()
+    };
+    add_update(update, &db, &update_ws).await?;
+    Ok(())
 }

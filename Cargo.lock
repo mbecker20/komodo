@@ -361,6 +361,7 @@ dependencies = [
  "axum-extra",
  "bcrypt",
  "db_client",
+ "diff-struct",
  "dotenv",
  "envy",
  "futures-util",

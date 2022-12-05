@@ -1,16 +1,13 @@
 use std::sync::Arc;
 
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use axum::{middleware, routing::get, Extension, Json, Router};
-use db::{DbClient, DbExtension};
+use db::DbExtension;
 use helpers::handle_anyhow_error;
 use periphery::PeripheryClient;
-use types::{Update, User};
+use types::User;
 
-use crate::{
-    auth::{auth_request, RequestUserExtension},
-    ws::update,
-};
+use crate::auth::{auth_request, RequestUserExtension};
 
 mod build;
 mod deployment;
@@ -49,19 +46,4 @@ async fn get_user(
         secret.hash = String::new();
     }
     Ok(Json(user))
-}
-
-async fn add_update(
-    mut update: Update,
-    db: &DbClient,
-    update_ws: &update::UpdateWsSender,
-) -> anyhow::Result<()> {
-    update.id = db
-        .updates
-        .create_one(update.clone())
-        .await
-        .context("failed to insert update into db. the create build process was completed.")?
-        .to_string();
-    let _ = update_ws.lock().await.send(update);
-    Ok(())
 }

@@ -28,6 +28,7 @@ pub type SecretsMap = HashMap<String, String>; // these are used for injection i
 pub type PermissionsMap = HashMap<UserId, PermissionLevel>;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct User {
     #[serde(
         default,
@@ -54,6 +55,7 @@ pub struct User {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct ApiSecret {
     pub name: String,
     pub hash: String,
@@ -62,6 +64,7 @@ pub struct ApiSecret {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Diff)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Server {
     #[serde(
         default,
@@ -121,6 +124,7 @@ fn default_disk_alert() -> f64 {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Deployment {
     #[serde(
         default,
@@ -146,6 +150,7 @@ pub struct Deployment {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Build {
     #[serde(
         default,
@@ -192,15 +197,16 @@ pub struct Update {
     pub id: String,
     pub target: UpdateTarget,
     pub operation: Operation,
-    pub log: Vec<Log>,
+    pub logs: Vec<Log>,
     pub start_ts: i64,
     pub end_ts: Option<i64>,
     pub status: UpdateStatus,
-    pub is_error: bool,
+    pub success: bool,
     pub operator: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Diff)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Procedure {
     #[serde(
         default,
@@ -215,12 +221,14 @@ pub struct Procedure {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Diff)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct DockerBuildArgs {
     pub build_path: String,
     pub dockerfile_path: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct DockerRunArgs {
     pub image: String,
     pub ports: Vec<Conversion>,
@@ -282,9 +290,10 @@ impl Log {
         }
     }
 
-    pub fn error(msg: String) -> Log {
+    pub fn error(stage: &str, msg: String) -> Log {
         let ts = unix_timestamp_ms() as i64;
         Log {
+            stage: stage.to_string(),
             stderr: msg,
             start_ts: ts,
             end_ts: ts,
@@ -294,13 +303,15 @@ impl Log {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Diff)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Diff)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct Command {
     pub path: String,
     pub command: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct Version {
     pub major: u64,
     pub minor: u64,
@@ -313,12 +324,14 @@ impl ToString for Version {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct Conversion {
     pub local: String,
     pub container: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct EnvironmentVar {
     pub variable: String,
     pub value: String,
@@ -477,9 +490,12 @@ impl Default for UpdateStatus {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff)]
+#[derive(
+    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
+)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum Operation {
     // do nothing
     None,
@@ -521,6 +537,7 @@ impl Default for Operation {
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum PermissionLevel {
     None,
     Read,
@@ -561,7 +578,10 @@ pub enum DockerContainerState {
     Dead,
 }
 
-#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff)]
+#[derive(
+    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
+)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum RestartMode {
     #[serde(rename = "no")]
     NoRestart,

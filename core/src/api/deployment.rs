@@ -12,9 +12,9 @@ use types::{
     traits::Permissioned, Deployment, Log, Operation, PermissionLevel, Update, UpdateTarget,
 };
 
-use crate::{auth::RequestUserExtension, ws::update};
+use crate::{auth::RequestUserExtension, helpers::add_update, ws::update};
 
-use super::{add_update, PeripheryExtension};
+use super::PeripheryExtension;
 
 #[derive(Deserialize)]
 pub struct DeploymentId {
@@ -86,9 +86,11 @@ async fn create(
         start_ts,
         end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
+        success: true,
         ..Default::default()
     };
-    add_update(update, &db, &update_ws).await
+    add_update(update, &db, &update_ws).await?;
+    Ok(())
 }
 
 async fn delete_one(
@@ -118,14 +120,16 @@ async fn delete_one(
         start_ts,
         end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
-        log: vec![
+        logs: vec![
             log,
             Log::simple(format!(
                 "deleted deployment {} on server {}",
                 deployment.name, server.name
             )),
         ],
+        success: true,
         ..Default::default()
     };
-    add_update(update, &db, &update_ws).await
+    add_update(update, &db, &update_ws).await?;
+    Ok(())
 }

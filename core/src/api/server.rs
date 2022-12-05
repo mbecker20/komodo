@@ -13,9 +13,9 @@ use types::{
     UpdateTarget,
 };
 
-use crate::{auth::RequestUserExtension, ws::update};
+use crate::{auth::RequestUserExtension, helpers::add_update, ws::update};
 
-use super::{add_update, PeripheryExtension};
+use super::PeripheryExtension;
 
 #[derive(Deserialize)]
 struct ServerId {
@@ -120,9 +120,11 @@ async fn create(
         start_ts,
         end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
+        success: true,
         ..Default::default()
     };
-    add_update(update, &db, &update_ws).await
+    add_update(update, &db, &update_ws).await?;
+    Ok(())
 }
 
 async fn delete_one(
@@ -147,10 +149,12 @@ async fn delete_one(
         start_ts,
         end_ts: Some(unix_timestamp_ms() as i64),
         operator: user.id.clone(),
-        log: vec![Log::simple(format!("deleted server {}", server.name))],
+        logs: vec![Log::simple(format!("deleted server {}", server.name))],
+        success: true,
         ..Default::default()
     };
-    add_update(update, &db, &update_ws).await
+    add_update(update, &db, &update_ws).await?;
+    Ok(())
 }
 
 async fn stats(
