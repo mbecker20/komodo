@@ -314,6 +314,7 @@ pub async fn reclone_deployment(
     };
 
     update.status = UpdateStatus::Complete;
+    update.end_ts = Some(unix_timestamp_ms() as i64);
 
     update_update(update.clone(), &db, &update_ws).await?;
 

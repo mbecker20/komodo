@@ -298,6 +298,7 @@ pub async fn reclone_build(
     };
 
     update.status = UpdateStatus::Complete;
+    update.end_ts = Some(unix_timestamp_ms() as i64);
 
     update_update(update.clone(), &db, &update_ws).await?;
 
