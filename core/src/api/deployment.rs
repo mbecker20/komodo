@@ -313,6 +313,8 @@ pub async fn reclone_deployment(
         }
     };
 
+    update.status = UpdateStatus::Complete;
+
     update_update(update.clone(), &db, &update_ws).await?;
 
     Ok(update)

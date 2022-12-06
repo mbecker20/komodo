@@ -23,12 +23,14 @@ async fn main() -> anyhow::Result<()> {
     println!("{build:#?}");
 
     // build.name = format!("{}_1", build.name);
-    build.repo = Some("mbecker20/monitor".to_string());
-    build.branch = Some("next".to_string());
+    // build.repo = Some("mbecker20/monitor".to_string());
+    // build.branch = Some("next".to_string());
 
-    let build = monitor.update_build(build).await?;
+    // let build = monitor.update_build(build).await?;
 
-    println!("{build:#?}");
+    let update = monitor.reclone_build(&build.id).await?;
+
+    println!("{update:#?}");
 
     // let mut deployments = monitor.list_deployments().await?;
     // let mut deployment = deployments.pop().unwrap();
