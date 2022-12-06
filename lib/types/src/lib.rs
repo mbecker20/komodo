@@ -1,8 +1,8 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use async_timing_util::{unix_timestamp_ms, Timelength};
-use diff::Diff;
-use mungos::mongodb::bson::serde_helpers::deserialize_hex_string_from_object_id;
+use diff::{Diff, HashMapDiff, OptionDiff, VecDiff};
+use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
@@ -34,23 +34,39 @@ pub struct User {
         default,
         rename = "_id",
         skip_serializing_if = "String::is_empty",
-        deserialize_with = "deserialize_hex_string_from_object_id"
+        with = "hex_string_as_object_id"
     )]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub id: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub username: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub enabled: bool,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub admin: bool,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub avatar: Option<String>,
 
     // used with auth
     #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub secrets: Vec<ApiSecret>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub password: Option<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub github_id: Option<i64>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub google_id: Option<String>,
 }
 
@@ -70,26 +86,42 @@ pub struct Server {
         default,
         rename = "_id",
         skip_serializing_if = "String::is_empty",
-        deserialize_with = "deserialize_hex_string_from_object_id"
+        with = "hex_string_as_object_id"
     )]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub id: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub name: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub address: String,
+
     #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
     pub permissions: PermissionsMap,
+
     #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub to_notify: Vec<String>,
+
     #[serde(default = "default_cpu_alert")]
     pub cpu_alert: f64,
     #[serde(default = "default_mem_alert")]
     pub mem_alert: f64,
     #[serde(default = "default_disk_alert")]
     pub disk_alert: f64,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub stats_interval: Option<i64>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub region: Option<String>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub instance_id: Option<String>,
 }
 
@@ -130,22 +162,47 @@ pub struct Deployment {
         default,
         rename = "_id",
         skip_serializing_if = "String::is_empty",
-        deserialize_with = "deserialize_hex_string_from_object_id"
+        with = "hex_string_as_object_id"
     )]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub id: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub name: String, // must be formatted to be compat with docker
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub server_id: ServerId,
+
+    #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
     pub permissions: PermissionsMap,
+
+    #[diff(attr(#[serde(skip_serializing_if = "docker_run_args_diff_no_change")]))]
     pub docker_run_args: DockerRunArgs,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub is_core: Option<bool>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub build_id: Option<BuildId>,
 
     // deployment repo related
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub repo: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub branch: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub github_account: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_clone: Option<Command>,
 }
 
@@ -156,23 +213,46 @@ pub struct Build {
         default,
         rename = "_id",
         skip_serializing_if = "String::is_empty",
-        deserialize_with = "deserialize_hex_string_from_object_id"
+        with = "hex_string_as_object_id"
     )]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub id: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub name: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
     pub permissions: PermissionsMap,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub server_id: String, // server which this image should be built on
+
     pub version: Version,
 
     // git related
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub repo: Option<String>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub branch: Option<String>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub github_account: Option<String>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_clone: Option<Command>,
 
     // build related
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub pre_build: Option<Command>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_build_args: Option<DockerBuildArgs>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>,
 }
 
@@ -180,7 +260,7 @@ pub struct Build {
 pub struct BuildRecord {
     pub start_ts: i64,
     pub end_ts: i64,
-    pub successful: bool,
+    pub success: bool,
     pub logs: Vec<Log>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<Version>,
@@ -192,7 +272,7 @@ pub struct Update {
         default,
         rename = "_id",
         skip_serializing_if = "String::is_empty",
-        deserialize_with = "deserialize_hex_string_from_object_id"
+        with = "hex_string_as_object_id"
     )]
     pub id: String,
     pub target: UpdateTarget,
@@ -212,7 +292,7 @@ pub struct Procedure {
         default,
         rename = "_id",
         skip_serializing_if = "String::is_empty",
-        deserialize_with = "deserialize_hex_string_from_object_id"
+        with = "hex_string_as_object_id"
     )]
     pub id: String,
     pub name: String,
@@ -221,7 +301,7 @@ pub struct Procedure {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Diff)]
-#[diff(attr(#[derive(Debug, Serialize)]))]
+#[diff(attr(#[derive(Debug, Serialize, PartialEq)]))]
 pub struct DockerBuildArgs {
     pub build_path: String,
     pub dockerfile_path: Option<String>,
@@ -230,14 +310,31 @@ pub struct DockerBuildArgs {
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct DockerRunArgs {
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub image: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub ports: Vec<Conversion>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub volumes: Vec<Conversion>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub environment: Vec<EnvironmentVar>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub network: Option<String>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "restart_mode_diff_no_change")]))]
     pub restart: RestartMode,
+
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub post_image: Option<String>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub container_user: Option<String>,
+
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>, // the username of the dockerhub account
 }
 
@@ -597,4 +694,35 @@ impl Default for RestartMode {
     fn default() -> RestartMode {
         RestartMode::NoRestart
     }
+}
+
+fn option_diff_no_change<T: Diff>(option_diff: &OptionDiff<T>) -> bool
+where
+    <T as Diff>::Repr: PartialEq,
+{
+    option_diff == &OptionDiff::NoChange || option_diff == &OptionDiff::None
+}
+
+fn vec_diff_no_change<T: Diff>(vec_diff: &VecDiff<T>) -> bool {
+    vec_diff.0.is_empty()
+}
+
+fn hashmap_diff_no_change<T: Diff>(hashmap_diff: &HashMapDiff<String, T>) -> bool {
+    hashmap_diff.altered.is_empty() && hashmap_diff.removed.is_empty()
+}
+
+fn docker_run_args_diff_no_change(dra: &DockerRunArgsDiff) -> bool {
+    dra.image.is_none()
+        && option_diff_no_change(&dra.container_user)
+        && option_diff_no_change(&dra.docker_account)
+        && option_diff_no_change(&dra.network)
+        && option_diff_no_change(&dra.post_image)
+        && vec_diff_no_change(&dra.environment)
+        && vec_diff_no_change(&dra.ports)
+        && vec_diff_no_change(&dra.volumes)
+        && restart_mode_diff_no_change(&dra.restart)
+}
+
+fn restart_mode_diff_no_change(restart_mode: &RestartModeDiff) -> bool {
+    restart_mode == &RestartModeDiff::NoChange
 }

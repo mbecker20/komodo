@@ -2223,6 +2223,7 @@ name = "tests"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async_timing_util",
  "dotenv",
  "envy",
  "monitor_client",

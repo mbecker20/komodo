@@ -165,6 +165,64 @@ impl MonitorClient {
         }
     }
 
+    async fn patch<B: Serialize, R: DeserializeOwned>(
+        &self,
+        endpoint: &str,
+        body: impl Into<Option<B>>,
+    ) -> anyhow::Result<R> {
+        let req = self
+            .http_client
+            .patch(format!("{}{endpoint}", self.url))
+            .header("Authorization", format!("Bearer {}", self.token));
+        let req = if let Some(body) = body.into() {
+            req.header("Content-Type", "application/json").json(&body)
+        } else {
+            req
+        };
+        let res = req.send().await.context("failed to reach monitor api")?;
+        let status = res.status();
+        if status == StatusCode::OK {
+            match res.json().await {
+                Ok(res) => Ok(res),
+                Err(e) => Err(anyhow!("{status}: {e:#?}")),
+            }
+        } else {
+            match res.text().await {
+                Ok(res) => Err(anyhow!("{status}: {res}")),
+                Err(e) => Err(anyhow!("{status}: {e:#?}")),
+            }
+        }
+    }
+
+    async fn patch_string<B: Serialize>(
+        &self,
+        endpoint: &str,
+        body: impl Into<Option<B>>,
+    ) -> anyhow::Result<String> {
+        let req = self
+            .http_client
+            .patch(format!("{}{endpoint}", self.url))
+            .header("Authorization", format!("Bearer {}", self.token));
+        let req = if let Some(body) = body.into() {
+            req.header("Content-Type", "application/json").json(&body)
+        } else {
+            req
+        };
+        let res = req.send().await.context("failed to reach monitor api")?;
+        let status = res.status();
+        if status == StatusCode::OK {
+            match res.text().await {
+                Ok(res) => Ok(res),
+                Err(e) => Err(anyhow!("{status}: {e:#?}")),
+            }
+        } else {
+            match res.text().await {
+                Ok(res) => Err(anyhow!("{status}: {res}")),
+                Err(e) => Err(anyhow!("{status}: {e:#?}")),
+            }
+        }
+    }
+
     async fn delete<B: Serialize, R: DeserializeOwned>(
         &self,
         endpoint: &str,

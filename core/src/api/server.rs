@@ -2,18 +2,24 @@ use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{
     extract::Path,
-    routing::{delete, get, post},
+    routing::{delete, get, patch, post},
     Extension, Json, Router,
 };
-use db::DbExtension;
+use db::{DbClient, DbExtension};
+use diff::Diff;
 use helpers::handle_anyhow_error;
 use mungos::Deserialize;
+use periphery::PeripheryClient;
 use types::{
     traits::Permissioned, Log, Operation, PermissionLevel, Server, SystemStats, Update,
-    UpdateTarget,
+    UpdateStatus, UpdateTarget,
 };
 
-use crate::{auth::RequestUserExtension, helpers::add_update, ws::update};
+use crate::{
+    auth::{RequestUser, RequestUserExtension},
+    helpers::add_update,
+    ws::update,
+};
 
 use super::PeripheryExtension;
 
@@ -23,7 +29,7 @@ struct ServerId {
 }
 
 #[derive(Deserialize)]
-struct CreateServerBody {
+pub struct CreateServerBody {
     name: String,
     address: String,
 }
@@ -46,6 +52,14 @@ pub fn router() -> Router {
             "/delete/:id",
             delete(|db, user, update_ws, server_id| async {
                 delete_one(db, user, update_ws, server_id)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
+        .route(
+            "/update",
+            patch(|db, user, update_ws, new_server| async {
+                update(db, user, update_ws, new_server)
                     .await
                     .map_err(handle_anyhow_error)
             }),
@@ -98,7 +112,17 @@ async fn create(
     Extension(user): RequestUserExtension,
     Extension(update_ws): update::UpdateWsSenderExtension,
     Json(server): Json<CreateServerBody>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Json<Server>> {
+    let server = create_server(&user, server, &db, update_ws).await?;
+    Ok(Json(server))
+}
+
+pub async fn create_server(
+    user: &RequestUser,
+    server: CreateServerBody,
+    db: &DbClient,
+    update_ws: update::UpdateWsSender,
+) -> anyhow::Result<Server> {
     if !user.is_admin {
         return Err(anyhow!(
             "user does not have permissions to add server (not admin)"
@@ -114,6 +138,7 @@ async fn create(
         .create_one(server)
         .await
         .context("failed to add server to db")?;
+    let server = db.get_server(&server_id).await?;
     let update = Update {
         target: UpdateTarget::Server(server_id),
         operation: Operation::CreateServer,
@@ -124,7 +149,7 @@ async fn create(
         ..Default::default()
     };
     add_update(update, &db, &update_ws).await?;
-    Ok(())
+    Ok(server)
 }
 
 async fn delete_one(
@@ -132,17 +157,27 @@ async fn delete_one(
     Extension(user): RequestUserExtension,
     Extension(update_ws): update::UpdateWsSenderExtension,
     Path(ServerId { id }): Path<ServerId>,
-) -> anyhow::Result<()> {
-    let server = db.get_server(&id).await?;
+) -> anyhow::Result<Json<Server>> {
+    let server = delete_server(&user, &id, &db, update_ws).await?;
+    Ok(Json(server))
+}
+
+pub async fn delete_server(
+    user: &RequestUser,
+    server_id: &str,
+    db: &DbClient,
+    update_ws: update::UpdateWsSender,
+) -> anyhow::Result<Server> {
+    let server = db.get_server(server_id).await?;
     let permissions = server.get_user_permissions(&user.id);
     if !user.is_admin && permissions != PermissionLevel::Write {
         return Err(anyhow!(
-            "user does not have permissions to delete server {} ({id})",
+            "user does not have permissions to delete server {} ({server_id})",
             server.name
         ));
     }
     let start_ts = unix_timestamp_ms() as i64;
-    db.deployments.delete_one(&id).await?;
+    db.deployments.delete_one(&server_id).await?;
     let update = Update {
         target: UpdateTarget::System,
         operation: Operation::DeleteServer,
@@ -154,7 +189,58 @@ async fn delete_one(
         ..Default::default()
     };
     add_update(update, &db, &update_ws).await?;
-    Ok(())
+    Ok(server)
+}
+
+async fn update(
+    Extension(db): DbExtension,
+    Extension(user): RequestUserExtension,
+    Extension(update_ws): update::UpdateWsSenderExtension,
+    Json(new_server): Json<Server>,
+) -> anyhow::Result<Json<Server>> {
+    let server = update_server(&user, new_server, &db, update_ws).await?;
+    Ok(Json(server))
+}
+
+pub async fn update_server(
+    user: &RequestUser,
+    mut new_server: Server,
+    db: &DbClient,
+    update_ws: update::UpdateWsSender,
+) -> anyhow::Result<Server> {
+    let current_server = db.get_server(&new_server.id).await?;
+    let permissions = current_server.get_user_permissions(&user.id);
+    if !user.is_admin && permissions != PermissionLevel::Write {
+        return Err(anyhow!(
+            "user does not have permissions to update server {} ({})",
+            current_server.name,
+            current_server.id
+        ));
+    }
+    let start_ts = unix_timestamp_ms() as i64;
+
+    new_server.permissions = current_server.permissions.clone();
+    let diff = current_server.diff(&new_server);
+
+    db.servers
+        .update_one(&new_server.id, mungos::Update::Regular(new_server.clone()))
+        .await
+        .context("failed at update one server")?;
+
+    let update = Update {
+        operation: Operation::UpdateServer,
+        target: UpdateTarget::Server(new_server.id.clone()),
+        start_ts,
+        end_ts: Some(unix_timestamp_ms() as i64),
+        status: UpdateStatus::Complete,
+        logs: vec![Log::simple(serde_json::to_string_pretty(&diff).unwrap())],
+        operator: user.id.clone(),
+        success: true,
+        ..Default::default()
+    };
+
+    add_update(update, &db, &update_ws).await?;
+    Ok(new_server)
 }
 
 async fn stats(
@@ -163,14 +249,24 @@ async fn stats(
     Extension(periphery): PeripheryExtension,
     Path(ServerId { id }): Path<ServerId>,
 ) -> anyhow::Result<Json<SystemStats>> {
-    let server = db.get_server(&id).await?;
+    let stats = get_server_stats(&user, &id, &db, &periphery).await?;
+    Ok(Json(stats))
+}
+
+pub async fn get_server_stats(
+    user: &RequestUser,
+    server_id: &str,
+    db: &DbClient,
+    periphery: &PeripheryClient,
+) -> anyhow::Result<SystemStats> {
+    let server = db.get_server(server_id).await?;
     let permissions = server.get_user_permissions(&user.id);
-    if permissions == PermissionLevel::None {
+    if !user.is_admin && permissions == PermissionLevel::None {
         return Err(anyhow!("user does not have permissions on this server"));
     }
     let stats = periphery
         .get_system_stats(&server)
         .await
         .context(format!("failed to get stats from server {}", server.name))?;
-    Ok(Json(stats))
+    Ok(stats)
 }

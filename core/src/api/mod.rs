@@ -9,11 +9,12 @@ use types::User;
 
 use crate::auth::{auth_request, RequestUserExtension};
 
-mod build;
-mod deployment;
-mod permissions;
-mod secret;
-mod server;
+pub mod build;
+pub mod deployment;
+pub mod permissions;
+pub mod secret;
+pub mod server;
+pub mod update;
 
 type PeripheryExtension = Extension<Arc<PeripheryClient>>;
 
@@ -26,6 +27,7 @@ pub fn router() -> Router {
         .nest("/build", build::router())
         .nest("/deployment", deployment::router())
         .nest("/server", server::router())
+        .nest("/update", update::router())
         .nest("/permissions", permissions::router())
         .nest("/secret", secret::router())
         .layer(Extension(Arc::new(PeripheryClient::new())))

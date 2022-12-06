@@ -18,11 +18,13 @@ pub async fn build(
         docker_build_args,
         branch,
         docker_account,
+        pre_build,
         ..
     }: &Build,
     repo_dir: &str,
     docker_token: Option<String>,
 ) -> anyhow::Result<Vec<Log>> {
+    let mut logs = Vec::new();
     let DockerBuildArgs {
         build_path,
         dockerfile_path,
@@ -41,6 +43,17 @@ pub async fn build(
         branch,
     )
     .await;
+    logs.push(pull_log);
+    if let Some(command) = pre_build {
+        let mut repo_dir = repo_dir.clone();
+        repo_dir.push(&command.path);
+        let pre_build_log = run_monitor_command(
+            "pre build",
+            format!("cd {} && {}", repo_dir.display(), command.command),
+        )
+        .await;
+        logs.push(pre_build_log);
+    }
     if let Some((username, password)) = &docker_account_pw {
         let login = format!("docker login -u {username} -p {password}");
         async_run_command(&login).await;
@@ -61,7 +74,8 @@ pub async fn build(
     let command =
         format!("cd {cd} && docker build {image_tags} -f {dockerfile_path} .{docker_push}");
     let build_log = run_monitor_command("docker build", command).await;
-    Ok(vec![pull_log, build_log])
+    logs.push(build_log);
+    Ok(logs)
 }
 
 fn get_docker_username_pw(

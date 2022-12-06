@@ -2,18 +2,24 @@ use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{
     extract::Path,
-    routing::{delete, patch, post},
+    routing::{delete, get, patch, post},
     Extension, Json, Router,
 };
-use db::DbExtension;
+use db::{DbClient, DbExtension};
 use diff::Diff;
 use helpers::handle_anyhow_error;
 use mungos::Deserialize;
-use types::{traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateTarget, UpdateStatus};
+use periphery::PeripheryClient;
+use types::{
+    traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateStatus,
+    UpdateTarget,
+};
 
 use crate::{
-    auth::RequestUserExtension,
-    helpers::{add_update, all_logs_success, any_option_diff_is_some, option_diff_is_some, update_update},
+    auth::{RequestUser, RequestUserExtension},
+    helpers::{
+        add_update, all_logs_success, any_option_diff_is_some, option_diff_is_some, update_update,
+    },
     ws::update,
 };
 
@@ -32,6 +38,10 @@ struct CreateBuildBody {
 
 pub fn router() -> Router {
     Router::new()
+        .route(
+            "/list",
+            get(|db, user| async { list(db, user).await.map_err(handle_anyhow_error) }),
+        )
         .route(
             "/create",
             post(|db, user, update_ws, build| async {
@@ -56,6 +66,14 @@ pub fn router() -> Router {
                     .map_err(handle_anyhow_error)
             }),
         )
+        .route(
+            "/reclone/:id",
+            post(|db, user, update_ws, periphery, build_id| async {
+                reclone(db, user, update_ws, periphery, build_id)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
 }
 
 impl Into<Build> for CreateBuildBody {
@@ -68,12 +86,35 @@ impl Into<Build> for CreateBuildBody {
     }
 }
 
+async fn list(
+    Extension(db): DbExtension,
+    Extension(user): RequestUserExtension,
+) -> anyhow::Result<Json<Vec<Build>>> {
+    let mut builds: Vec<Build> = db
+        .builds
+        .get_some(None, None)
+        .await
+        .context("failed at get all builds query")?
+        .into_iter()
+        .filter(|s| {
+            if user.is_admin {
+                true
+            } else {
+                let permissions = s.get_user_permissions(&user.id);
+                permissions != PermissionLevel::None
+            }
+        })
+        .collect();
+    builds.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    Ok(Json(builds))
+}
+
 async fn create(
     Extension(db): DbExtension,
     Extension(user): RequestUserExtension,
     Extension(update_ws): update::UpdateWsSenderExtension,
     Json(build): Json<CreateBuildBody>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Json<Build>> {
     let server = db.get_server(&build.server_id).await?;
     let permissions = server.get_user_permissions(&user.id);
     if !user.is_admin && permissions != PermissionLevel::Write {
@@ -87,6 +128,7 @@ async fn create(
         .collect();
     let start_ts = unix_timestamp_ms() as i64;
     let build_id = db.builds.create_one(build).await?;
+    let build = db.get_build(&build_id).await?;
     let update = Update {
         target: UpdateTarget::Build(build_id),
         operation: Operation::CreateBuild,
@@ -97,7 +139,7 @@ async fn create(
         ..Default::default()
     };
     add_update(update, &db, &update_ws).await?;
-    Ok(())
+    Ok(Json(build))
 }
 
 async fn delete_one(
@@ -106,7 +148,7 @@ async fn delete_one(
     Extension(update_ws): update::UpdateWsSenderExtension,
     Extension(periphery): PeripheryExtension,
     Path(BuildId { id }): Path<BuildId>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Json<Build>> {
     let build = db.get_build(&id).await?;
     let permissions = build.get_user_permissions(&user.id);
     if !user.is_admin && permissions != PermissionLevel::Write {
@@ -139,7 +181,7 @@ async fn delete_one(
         ..Default::default()
     };
     add_update(update, &db, &update_ws).await?;
-    Ok(())
+    Ok(Json(build))
 }
 
 async fn update(
@@ -148,7 +190,7 @@ async fn update(
     Extension(update_ws): update::UpdateWsSenderExtension,
     Extension(periphery): PeripheryExtension,
     Json(mut new_build): Json<Build>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Json<Build>> {
     let current_build = db.get_build(&new_build.id).await?;
     let permissions = current_build.get_user_permissions(&user.id);
     if !user.is_admin && permissions != PermissionLevel::Write {
@@ -160,6 +202,12 @@ async fn update(
     }
 
     new_build.permissions = current_build.permissions.clone();
+
+    db.builds
+        .update_one(&new_build.id, mungos::Update::Regular(new_build.clone()))
+        .await
+        .context("failed at update one build")?;
+
     let diff = current_build.diff(&new_build);
 
     let mut update = Update {
@@ -167,7 +215,7 @@ async fn update(
         target: UpdateTarget::Build(new_build.id.clone()),
         start_ts: unix_timestamp_ms() as i64,
         status: UpdateStatus::InProgress,
-        logs: vec![Log::simple(format!("{diff:#?}"))],
+        logs: vec![Log::simple(serde_json::to_string_pretty(&diff).unwrap())],
         operator: user.id.clone(),
         success: true,
         ..Default::default()
@@ -175,22 +223,81 @@ async fn update(
 
     update.id = add_update(update.clone(), &db, &update_ws).await?;
 
-    let server = db.get_server(&current_build.server_id).await?;
-
     if any_option_diff_is_some(&[&diff.repo, &diff.branch, &diff.github_account])
         || option_diff_is_some(&diff.on_clone)
     {
+        let server = db.get_server(&current_build.server_id).await?;
         match periphery.clone_repo(&server, &new_build).await {
             Ok(clone_logs) => {
                 update.logs.extend(clone_logs);
             }
-            Err(e) => update.logs.push(Log::error("cloning repo", format!("{e:#?}"))),
+            Err(e) => update
+                .logs
+                .push(Log::error("cloning repo", format!("{e:#?}"))),
         }
     }
 
     update.end_ts = Some(unix_timestamp_ms() as i64);
     update.success = all_logs_success(&update.logs);
     update.status = UpdateStatus::Complete;
-    
-    update_update(update, &db, &update_ws).await
+
+    update_update(update, &db, &update_ws).await?;
+    Ok(Json(new_build))
+}
+
+async fn reclone(
+    Extension(db): DbExtension,
+    Extension(user): RequestUserExtension,
+    Extension(update_ws): update::UpdateWsSenderExtension,
+    Extension(periphery): PeripheryExtension,
+    Path(BuildId { id }): Path<BuildId>,
+) -> anyhow::Result<Json<Update>> {
+    let update = reclone_build(&id, &user, &db, &periphery, update_ws).await?;
+    Ok(Json(update))
+}
+
+pub async fn reclone_build(
+    build_id: &str,
+    user: &RequestUser,
+    db: &DbClient,
+    periphery: &PeripheryClient,
+    update_ws: update::UpdateWsSender,
+) -> anyhow::Result<Update> {
+    let build = db.get_build(build_id).await?;
+    let permissions = build.get_user_permissions(&user.id);
+    if !user.is_admin && permissions != PermissionLevel::Write {
+        return Err(anyhow!(
+            "user does not have permissions to reclone build {} ({})",
+            build.name,
+            build.id
+        ));
+    }
+    let server = db.get_server(&build.server_id).await?;
+    let mut update = Update {
+        target: UpdateTarget::Build(build_id.to_string()),
+        operation: Operation::RecloneBuild,
+        start_ts: unix_timestamp_ms() as i64,
+        status: UpdateStatus::InProgress,
+        operator: user.id.clone(),
+        success: true,
+        ..Default::default()
+    };
+    update.id = add_update(update.clone(), &db, &update_ws).await?;
+
+    update.success = match periphery.clone_repo(&server, &build).await {
+        Ok(clone_logs) => {
+            update.logs.extend(clone_logs);
+            true
+        }
+        Err(e) => {
+            update
+                .logs
+                .push(Log::error("clone repo", format!("{e:#?}")));
+            false
+        }
+    };
+
+    update_update(update.clone(), &db, &update_ws).await?;
+
+    Ok(update)
 }
