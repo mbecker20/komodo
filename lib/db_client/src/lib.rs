@@ -23,12 +23,12 @@ pub struct DbClient {
 }
 
 impl DbClient {
-    pub async fn extension(config: MongoConfig) -> DbExtension {
+    pub async fn new(config: MongoConfig) -> DbClient {
         let db_name = &config.db_name;
         let mungos = Mungos::new(&config.uri, &config.app_name, Duration::from_secs(3), None)
             .await
             .expect("failed to initialize mungos");
-        let client = DbClient {
+        DbClient {
             users: users_collection(&mungos, db_name)
                 .await
                 .expect("failed to make users collection"),
@@ -47,8 +47,11 @@ impl DbClient {
             procedures: procedures_collection(&mungos, db_name)
                 .await
                 .expect("failed to make procedures collection"),
-        };
-        Extension(Arc::new(client))
+        }
+    }
+
+    pub async fn extension(config: MongoConfig) -> DbExtension {
+        Extension(Arc::new(DbClient::new(config).await))
     }
 
     pub async fn get_user(&self, user_id: &str) -> anyhow::Result<User> {

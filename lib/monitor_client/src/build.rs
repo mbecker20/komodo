@@ -26,6 +26,7 @@ impl MonitorClient {
     }
 
     pub async fn reclone_build(&self, id: &str) -> anyhow::Result<Update> {
-        self.post::<(), _>(&format!("/api/build/reclone/{id}"), None).await
+        self.post::<(), _>(&format!("/api/build/reclone/{id}"), None)
+            .await
     }
 }

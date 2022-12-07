@@ -630,7 +630,19 @@ impl Default for Operation {
 }
 
 #[derive(
-    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
+    Serialize,
+    Deserialize,
+    Debug,
+    Display,
+    EnumString,
+    Hash,
+    Clone,
+    Copy,
+    Diff,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]

@@ -9,7 +9,7 @@ use axum::{
     response::IntoResponse,
     Extension,
 };
-use db::{DbClient, DbExtension};
+use db::DbClient;
 use futures_util::{SinkExt, StreamExt};
 use mungos::Serialize;
 use serde_json::json;
@@ -23,13 +23,29 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use types::{PermissionLevel, Update, UpdateTarget, User};
 
-use crate::auth::{JwtClient, JwtExtension};
+use crate::{
+    auth::{JwtClient, JwtExtension},
+    state::StateExtension,
+};
 
-pub type UpdateWsSender = Arc<Mutex<Sender<Update>>>;
-pub type UpdateWsSenderExtension = Extension<UpdateWsSender>;
+pub type UpdateWsSender = Mutex<Sender<Update>>;
 
 pub type UpdateWsReciever = Receiver<Update>;
-pub type UpdateWsRecieverExtension = Extension<UpdateWsReciever>;
+
+pub struct UpdateWsChannel {
+    pub sender: UpdateWsSender,
+    pub reciever: UpdateWsReciever,
+}
+
+impl UpdateWsChannel {
+    pub fn new() -> UpdateWsChannel {
+        let (sender, reciever) = watch::channel(Default::default());
+        UpdateWsChannel {
+            sender: Mutex::new(sender),
+            reciever,
+        }
+    }
+}
 
 #[derive(Serialize)]
 struct UpdateMsg {
@@ -56,19 +72,19 @@ impl UpdateMsg {
     }
 }
 
-pub fn make_update_ws_sender_reciver() -> (UpdateWsSenderExtension, UpdateWsRecieverExtension) {
-    let (sender, reciever) = watch::channel(Default::default());
-    (Extension(Arc::new(Mutex::new(sender))), Extension(reciever))
-}
+// pub fn make_update_ws_sender_reciver() -> (UpdateWsSenderExtension, UpdateWsRecieverExtension) {
+//     let (sender, reciever) = watch::channel(Default::default());
+//     (Extension(Arc::new(Mutex::new(sender))), Extension(reciever))
+// }
 
 pub async fn ws_handler(
     Extension(jwt_client): JwtExtension,
-    Extension(db_client): DbExtension,
-    Extension(mut reciever): UpdateWsRecieverExtension,
+    Extension(state): StateExtension,
     ws: WebSocketUpgrade,
 ) -> impl IntoResponse {
+    let mut reciever = state.update.reciever.clone();
     ws.on_upgrade(|socket| async move {
-        let login_res = login(socket, &jwt_client, &db_client).await;
+        let login_res = login(socket, &jwt_client, &state.db).await;
         if login_res.is_none() {
             return;
         }
@@ -84,7 +100,7 @@ pub async fn ws_handler(
                     _ = cancel_clone.cancelled() => break,
                     _ = reciever.changed() => {}
                 };
-                let user = db_client.users.find_one_by_id(&user_id).await;
+                let user = state.db.users.find_one_by_id(&user_id).await;
                 if user.is_err()
                     || user.as_ref().unwrap().is_none()
                     || !user.as_ref().unwrap().as_ref().unwrap().enabled
@@ -99,7 +115,7 @@ pub async fn ws_handler(
                 }
                 let user = user.unwrap().unwrap(); // already handle cases where this panics in the above early return
                 let update = reciever.borrow().to_owned();
-                match user_can_see_update(&user, &user_id, &update.target, &db_client).await {
+                match user_can_see_update(&user, &user_id, &update.target, &state.db).await {
                     Ok(_) => {
                         let _ = ws_sender
                             .lock()

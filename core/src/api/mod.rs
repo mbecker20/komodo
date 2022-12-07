@@ -16,8 +16,6 @@ pub mod secret;
 pub mod server;
 pub mod update;
 
-type PeripheryExtension = Extension<Arc<PeripheryClient>>;
-
 pub fn router() -> Router {
     Router::new()
         .route(
