@@ -5,12 +5,11 @@ use axum::{
     routing::{delete, post},
     Extension, Json, Router,
 };
-use db::DbExtension;
 use helpers::{generate_secret, handle_anyhow_error};
 use mungos::{doc, to_bson, Deserialize, Document, Update};
 use types::ApiSecret;
 
-use crate::auth::RequestUserExtension;
+use crate::{auth::RequestUserExtension, state::StateExtension};
 
 const SECRET_LENGTH: usize = 40;
 const BCRYPT_COST: u32 = 10;
@@ -30,14 +29,16 @@ pub fn router() -> Router {
     Router::new()
         .route(
             "/create",
-            post(|db, user, secret| async {
-                create(db, user, secret).await.map_err(handle_anyhow_error)
+            post(|state, user, secret| async {
+                create(state, user, secret)
+                    .await
+                    .map_err(handle_anyhow_error)
             }),
         )
         .route(
             "/delete/:name",
-            delete(|db, user, secret_id| async {
-                delete_one(db, user, secret_id)
+            delete(|state, user, secret_id| async {
+                delete_one(state, user, secret_id)
                     .await
                     .map_err(handle_anyhow_error)
             }),
@@ -56,11 +57,11 @@ impl Into<ApiSecret> for CreateSecretBody {
 }
 
 async fn create(
-    Extension(db): DbExtension,
+    Extension(state): StateExtension,
     Extension(req_user): RequestUserExtension,
     Json(secret): Json<CreateSecretBody>,
 ) -> anyhow::Result<String> {
-    let user = db.get_user(&req_user.id).await?;
+    let user = state.db.get_user(&req_user.id).await?;
     for s in &user.secrets {
         if s.name == secret.name {
             return Err(anyhow!("secret with name {} already exists", secret.name));
@@ -70,7 +71,9 @@ async fn create(
     let secret_str = generate_secret(SECRET_LENGTH);
     secret.hash =
         bcrypt::hash(&secret_str, BCRYPT_COST).context("failed at hashing secret string")?;
-    db.users
+    state
+        .db
+        .users
         .update_one::<Document>(
             &req_user.id,
             Update::Custom(doc! {
@@ -85,11 +88,13 @@ async fn create(
 }
 
 async fn delete_one(
-    Extension(db): DbExtension,
+    Extension(state): StateExtension,
     Extension(user): RequestUserExtension,
     Path(DeleteSecretPath { name }): Path<DeleteSecretPath>,
 ) -> anyhow::Result<()> {
-    db.users
+    state
+        .db
+        .users
         .update_one::<Document>(
             &user.id,
             Update::Custom(doc! {

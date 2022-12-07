@@ -1,9 +1,10 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{routing::post, Extension, Json, Router};
-use db::DbExtension;
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Document, Update};
+
+use crate::state::StateExtension;
 
 use super::JwtExtension;
 
@@ -21,11 +22,12 @@ pub fn router() -> Router {
 }
 
 pub async fn login(
-    Extension(db): DbExtension,
+    Extension(state): StateExtension,
     Extension(jwt): JwtExtension,
     Json(SecretLoginBody { username, secret }): Json<SecretLoginBody>,
 ) -> anyhow::Result<String> {
-    let user = db
+    let user = state
+        .db
         .users
         .find_one(doc! { "username": &username }, None)
         .await
@@ -35,7 +37,9 @@ pub async fn login(
     for s in user.secrets {
         if let Some(expires) = s.expires {
             if expires < ts {
-                db.users
+                state
+                    .db
+                    .users
                     .update_one::<Document>(
                         &user.id,
                         Update::Custom(doc! { "$pull": { "secrets": { "name": s.name } } }),

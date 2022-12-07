@@ -1,7 +1,6 @@
-use std::{sync::Arc, time::Duration};
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use axum::Extension;
 use collections::{
     builds_collection, deployments_collection, procedures_collection, servers_collection,
     updates_collection, users_collection,
@@ -10,8 +9,6 @@ use mungos::{Collection, Mungos};
 use types::{Build, Deployment, MongoConfig, PermissionLevel, Procedure, Server, Update, User};
 
 mod collections;
-
-pub type DbExtension = Extension<Arc<DbClient>>;
 
 pub struct DbClient {
     pub users: Collection<User>,
@@ -48,10 +45,6 @@ impl DbClient {
                 .await
                 .expect("failed to make procedures collection"),
         }
-    }
-
-    pub async fn extension(config: MongoConfig) -> DbExtension {
-        Extension(Arc::new(DbClient::new(config).await))
     }
 
     pub async fn get_user(&self, user_id: &str) -> anyhow::Result<User> {

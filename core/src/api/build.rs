@@ -8,7 +8,11 @@ use helpers::handle_anyhow_error;
 use mungos::Deserialize;
 use types::{traits::Permissioned, Build, PermissionLevel};
 
-use crate::{auth::RequestUserExtension, response, state::StateExtension};
+use crate::{
+    auth::{RequestUser, RequestUserExtension},
+    response,
+    state::{State, StateExtension},
+};
 
 #[derive(Deserialize)]
 struct BuildId {
@@ -25,7 +29,15 @@ pub fn router() -> Router {
     Router::new()
         .route(
             "/list",
-            get(|state, user| async { list(state, user).await.map_err(handle_anyhow_error) }),
+            get(
+                |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {
+                    let builds = state
+                        .list_builds(&user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(builds))
+                },
+            ),
         )
         .route(
             "/create",
@@ -85,26 +97,25 @@ pub fn router() -> Router {
         )
 }
 
-async fn list(
-    Extension(state): StateExtension,
-    Extension(user): RequestUserExtension,
-) -> anyhow::Result<Json<Vec<Build>>> {
-    let mut builds: Vec<Build> = state
-        .db
-        .builds
-        .get_some(None, None)
-        .await
-        .context("failed at get all builds query")?
-        .into_iter()
-        .filter(|s| {
-            if user.is_admin {
-                true
-            } else {
-                let permissions = s.get_user_permissions(&user.id);
-                permissions != PermissionLevel::None
-            }
-        })
-        .collect();
-    builds.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-    Ok(Json(builds))
+impl State {
+    async fn list_builds(&self, user: &RequestUser) -> anyhow::Result<Vec<Build>> {
+        let mut builds: Vec<Build> = self
+            .db
+            .builds
+            .get_some(None, None)
+            .await
+            .context("failed at get all builds query")?
+            .into_iter()
+            .filter(|s| {
+                if user.is_admin {
+                    true
+                } else {
+                    let permissions = s.get_user_permissions(&user.id);
+                    permissions != PermissionLevel::None
+                }
+            })
+            .collect();
+        builds.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        Ok(builds)
+    }
 }

@@ -29,14 +29,22 @@ pub fn router() -> Router {
     Router::new()
         .route(
             "/list",
-            get(|state, user| async { list(state, user).await.map_err(handle_anyhow_error) }),
+            get(
+                |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {
+                    let servers = state
+                        .list_servers(&user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(servers))
+                },
+            ),
         )
         .route(
             "/create",
             post(
                 |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Json(server): Json<CreateServerBody>| async move {
+                Extension(user): RequestUserExtension,
+                Json(server): Json<CreateServerBody>| async move {
                     let server = state
                         .create_server(server.name, server.address, &user)
                         .await
@@ -49,8 +57,8 @@ pub fn router() -> Router {
             "/delete/:id",
             delete(
                 |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(server): Path<ServerId>| async move {
+                Extension(user): RequestUserExtension,
+                Path(server): Path<ServerId>| async move {
                     let server = state
                         .delete_server(&server.id, &user)
                         .await
@@ -63,8 +71,8 @@ pub fn router() -> Router {
             "/update",
             patch(
                 |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Json(server): Json<Server>| async move {
+                Extension(user): RequestUserExtension,
+                Json(server): Json<Server>| async move {
                     let server = state
                         .update_server(server, &user)
                         .await
@@ -75,59 +83,53 @@ pub fn router() -> Router {
         )
         .route(
             "/stats/:id",
-            get(|state, user, server_id| async {
-                stats(state, user, server_id)
+            get(
+            |Extension(state): StateExtension,
+            Extension(user): RequestUserExtension,
+            Path(ServerId { id }): Path<ServerId>| async move {
+                let stats = state.get_server_stats(&user, &id)
                     .await
-                    .map_err(handle_anyhow_error)
-            }),
+                    .map_err(handle_anyhow_error)?;
+                response!(Json(stats))
+            })
         )
 }
 
-async fn list(
-    Extension(state): StateExtension,
-    Extension(user): RequestUserExtension,
-) -> anyhow::Result<Json<Vec<Server>>> {
-    let mut servers: Vec<Server> = state
-        .db
-        .servers
-        .get_some(None, None)
-        .await
-        .context("failed at get all servers query")?
-        .into_iter()
-        .filter(|s| {
-            if user.is_admin {
-                true
-            } else {
-                let permissions = s.get_user_permissions(&user.id);
-                permissions != PermissionLevel::None
-            }
-        })
-        .collect();
-    servers.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-    Ok(Json(servers))
-}
+impl State {
+    async fn list_servers(&self, user: &RequestUser) -> anyhow::Result<Vec<Server>> {
+        let mut servers: Vec<Server> = self
+            .db
+            .servers
+            .get_some(None, None)
+            .await
+            .context("failed at get all servers query")?
+            .into_iter()
+            .filter(|s| {
+                if user.is_admin {
+                    true
+                } else {
+                    let permissions = s.get_user_permissions(&user.id);
+                    permissions != PermissionLevel::None
+                }
+            })
+            .collect();
+        servers.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        Ok(servers)
+    }
 
-async fn stats(
-    Extension(state): StateExtension,
-    Extension(user): RequestUserExtension,
-    Path(ServerId { id }): Path<ServerId>,
-) -> anyhow::Result<Json<SystemStats>> {
-    let stats = get_server_stats(&user, &id, &state).await?;
-    Ok(Json(stats))
-}
-
-pub async fn get_server_stats(
-    user: &RequestUser,
-    server_id: &str,
-    state: &State,
-) -> anyhow::Result<SystemStats> {
-    let server = state
-        .get_server_check_permissions(server_id, user, PermissionLevel::Read)
-        .await?;
-    let stats = state
-        .periphery
-        .get_system_stats(&server)
-        .await
-        .context(format!("failed to get stats from server {}", server.name))?;
-    Ok(stats)
+    async fn get_server_stats(
+        &self,
+        user: &RequestUser,
+        server_id: &str,
+    ) -> anyhow::Result<SystemStats> {
+        let server = self
+            .get_server_check_permissions(server_id, user, PermissionLevel::Read)
+            .await?;
+        let stats = self
+            .periphery
+            .get_system_stats(&server)
+            .await
+            .context(format!("failed to get stats from server {}", server.name))?;
+        Ok(stats)
+    }
 }

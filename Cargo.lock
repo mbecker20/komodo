@@ -516,7 +516,6 @@ name = "db_client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "axum",
  "monitor_types",
  "mungos",
 ]

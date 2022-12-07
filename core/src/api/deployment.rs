@@ -8,7 +8,11 @@ use helpers::handle_anyhow_error;
 use mungos::Deserialize;
 use types::{traits::Permissioned, Deployment, PermissionLevel};
 
-use crate::{auth::RequestUserExtension, response, state::StateExtension};
+use crate::{
+    auth::{RequestUser, RequestUserExtension},
+    response,
+    state::{State, StateExtension},
+};
 
 #[derive(Deserialize)]
 pub struct DeploymentId {
@@ -25,7 +29,15 @@ pub fn router() -> Router {
     Router::new()
         .route(
             "/list",
-            get(|state, user| async { list(state, user).await.map_err(handle_anyhow_error) }),
+            get(
+                |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {
+                    let deployments = state
+                        .list_deployments(&user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(deployments))
+                },
+            ),
         )
         .route(
             "/create",
@@ -85,26 +97,25 @@ pub fn router() -> Router {
         )
 }
 
-async fn list(
-    Extension(state): StateExtension,
-    Extension(user): RequestUserExtension,
-) -> anyhow::Result<Json<Vec<Deployment>>> {
-    let mut deployments: Vec<Deployment> = state
-        .db
-        .deployments
-        .get_some(None, None)
-        .await
-        .context("failed at get all deployments query")?
-        .into_iter()
-        .filter(|s| {
-            if user.is_admin {
-                true
-            } else {
-                let permissions = s.get_user_permissions(&user.id);
-                permissions != PermissionLevel::None
-            }
-        })
-        .collect();
-    deployments.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-    Ok(Json(deployments))
+impl State {
+    async fn list_deployments(&self, user: &RequestUser) -> anyhow::Result<Vec<Deployment>> {
+        let mut deployments: Vec<Deployment> = self
+            .db
+            .deployments
+            .get_some(None, None)
+            .await
+            .context("failed at get all deployments query")?
+            .into_iter()
+            .filter(|s| {
+                if user.is_admin {
+                    true
+                } else {
+                    let permissions = s.get_user_permissions(&user.id);
+                    permissions != PermissionLevel::None
+                }
+            })
+            .collect();
+        deployments.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        Ok(deployments)
+    }
 }

@@ -1,9 +1,10 @@
 use anyhow::{anyhow, Context};
 use axum::{extract::Json, routing::post, Extension, Router};
-use db::DbExtension;
 use helpers::handle_anyhow_error;
 use mungos::doc;
 use types::{User, UserCredentials};
+
+use crate::state::StateExtension;
 
 use super::jwt::JwtExtension;
 
@@ -30,7 +31,7 @@ pub fn router() -> Router {
 }
 
 async fn create_user_handler(
-    Extension(db): DbExtension,
+    Extension(state): StateExtension,
     Extension(jwt): JwtExtension,
     Json(UserCredentials { username, password }): Json<UserCredentials>,
 ) -> anyhow::Result<String> {
@@ -42,7 +43,8 @@ async fn create_user_handler(
         ..Default::default()
     };
 
-    let user_id = db
+    let user_id = state
+        .db
         .users
         .create_one(user)
         .await
@@ -56,11 +58,12 @@ async fn create_user_handler(
 }
 
 async fn login_handler(
-    Extension(db): DbExtension,
+    Extension(state): StateExtension,
     Extension(jwt): JwtExtension,
     Json(UserCredentials { username, password }): Json<UserCredentials>,
 ) -> anyhow::Result<String> {
-    let user = db
+    let user = state
+        .db
         .users
         .find_one(doc! { "username": &username }, None)
         .await

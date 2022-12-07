@@ -1,11 +1,10 @@
 use anyhow::{anyhow, Context};
 use axum::{routing::post, Extension, Json, Router};
-use db::DbExtension;
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Document, Update};
 use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server};
 
-use crate::auth::RequestUserExtension;
+use crate::{auth::RequestUserExtension, state::StateExtension};
 
 #[derive(Deserialize)]
 struct PermissionsUpdateBody {
@@ -25,16 +24,16 @@ pub fn router() -> Router {
     Router::new()
         .route(
             "/update",
-            post(|db, user, update| async {
-                update_permissions(db, user, update)
+            post(|state, user, update| async {
+                update_permissions(state, user, update)
                     .await
                     .map_err(handle_anyhow_error)
             }),
         )
         .route(
             "/modify_enabled",
-            post(|db, user, body| async {
-                modify_user_enabled(db, user, body)
+            post(|state, user, body| async {
+                modify_user_enabled(state, user, body)
                     .await
                     .map_err(handle_anyhow_error)
             }),
@@ -42,7 +41,7 @@ pub fn router() -> Router {
 }
 
 async fn update_permissions(
-    Extension(db): DbExtension,
+    Extension(state): StateExtension,
     Extension(user): RequestUserExtension,
     Json(update): Json<PermissionsUpdateBody>,
 ) -> anyhow::Result<String> {
@@ -51,7 +50,8 @@ async fn update_permissions(
             "user not authorized for this action (is not admin)"
         ));
     }
-    let target_user = db
+    let target_user = state
+        .db
         .users
         .find_one_by_id(&update.user_id)
         .await
@@ -62,7 +62,8 @@ async fn update_permissions(
     }
     match update.target_type {
         PermissionsTarget::Server => {
-            let server = db
+            let server = state
+                .db
                 .servers
                 .find_one_by_id(&update.target_id)
                 .await
@@ -71,7 +72,9 @@ async fn update_permissions(
                     "failed to find a server with id {}",
                     update.target_id
                 ))?;
-            db.servers
+            state
+                .db
+                .servers
                 .update_one::<Server>(
                     &update.target_id,
                     Update::Set(doc! {
@@ -85,7 +88,8 @@ async fn update_permissions(
             ))
         }
         PermissionsTarget::Deployment => {
-            let deployment = db
+            let deployment = state
+                .db
                 .deployments
                 .find_one_by_id(&update.target_id)
                 .await
@@ -94,7 +98,9 @@ async fn update_permissions(
                     "failed to find a deployment with id {}",
                     update.target_id
                 ))?;
-            db.deployments
+            state
+                .db
+                .deployments
                 .update_one::<Deployment>(
                     &update.target_id,
                     Update::Set(doc! {
@@ -108,7 +114,8 @@ async fn update_permissions(
             ))
         }
         PermissionsTarget::Build => {
-            let build = db
+            let build = state
+                .db
                 .builds
                 .find_one_by_id(&update.target_id)
                 .await
@@ -117,7 +124,9 @@ async fn update_permissions(
                     "failed to find a build with id {}",
                     update.target_id
                 ))?;
-            db.builds
+            state
+                .db
+                .builds
                 .update_one::<Build>(
                     &update.target_id,
                     Update::Set(doc! {
@@ -134,7 +143,7 @@ async fn update_permissions(
 }
 
 async fn modify_user_enabled(
-    Extension(db): DbExtension,
+    Extension(state): StateExtension,
     Extension(user): RequestUserExtension,
     Json(ModifyUserEnabledBody { user_id, enabled }): Json<ModifyUserEnabledBody>,
 ) -> anyhow::Result<()> {
@@ -143,12 +152,16 @@ async fn modify_user_enabled(
             "user does not have permissions for this action (not admin)"
         ));
     }
-    db.users
+    state
+        .db
+        .users
         .find_one_by_id(&user_id)
         .await
         .context("failed at mongo query to find target user")?
         .ok_or(anyhow!("did not find any user with user_id {user_id}"))?;
-    db.users
+    state
+        .db
+        .users
         .update_one::<Document>(&user_id, Update::Set(doc! { "enabled": enabled }))
         .await?;
     Ok(())

@@ -2,12 +2,14 @@ use std::sync::Arc;
 
 use anyhow::anyhow;
 use axum::{middleware, routing::get, Extension, Json, Router};
-use db::DbExtension;
 use helpers::handle_anyhow_error;
 use periphery::PeripheryClient;
 use types::User;
 
-use crate::auth::{auth_request, RequestUserExtension};
+use crate::{
+    auth::{auth_request, RequestUserExtension},
+    state::StateExtension,
+};
 
 pub mod build;
 pub mod deployment;
@@ -33,10 +35,11 @@ pub fn router() -> Router {
 }
 
 async fn get_user(
+    Extension(state): StateExtension,
     Extension(user): RequestUserExtension,
-    Extension(db): DbExtension,
 ) -> anyhow::Result<Json<User>> {
-    let mut user = db
+    let mut user = state
+        .db
         .users
         .find_one_by_id(&user.id)
         .await?
