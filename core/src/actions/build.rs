@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use diff::Diff;
+use mungos::{doc, to_bson};
 use types::{
     traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateStatus,
     UpdateTarget,
@@ -145,6 +146,62 @@ impl State {
 
         self.update_update(update).await?;
         Ok(new_build)
+    }
+
+    pub async fn build_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
+        let mut build = self
+            .get_build_check_permissions(build_id, user, PermissionLevel::Write)
+            .await?;
+        build.version.increment();
+
+        let mut update = Update {
+            target: UpdateTarget::Build(build_id.to_string()),
+            operation: Operation::BuildBuild,
+            start_ts: unix_timestamp_ms() as i64,
+            status: UpdateStatus::InProgress,
+            operator: user.id.clone(),
+            success: true,
+            version: build.version.clone().into(),
+            ..Default::default()
+        };
+
+        update.id = self.add_update(update.clone()).await?;
+
+        let server = self.db.get_server(&build.server_id).await?;
+
+        let update_logs = self
+            .periphery
+            .build(&server, &build)
+            .await
+            .context("failed at call to periphery to build")?;
+
+        match update_logs {
+            Some(logs) => {
+                update.logs.extend(logs);
+                update.success = all_logs_success(&update.logs);
+                if update.success {
+                    self.db
+                        .builds
+                        .update_one::<Build>(
+                            build_id,
+                            mungos::Update::Set(doc! {
+                                "version": to_bson(&build.version)
+                                    .context("failed at converting version to bson")?
+                            }),
+                        )
+                        .await?;
+                }
+            }
+            None => {
+                update
+                    .logs
+                    .push(Log::error("build", "builder busy".to_string()));
+            }
+        }
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(unix_timestamp_ms() as i64);
+        self.update_update(update.clone()).await?;
+        Ok(update)
     }
 
     pub async fn reclone_build(

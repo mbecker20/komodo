@@ -82,6 +82,20 @@ pub fn router() -> Router {
             ),
         )
         .route(
+            "/build/:id",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(build_id): Path<BuildId>| async move {
+                    let update = state
+                        .build_build(&build_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(update))
+                },
+            ),
+        )
+        .route(
             "/reclone/:id",
             post(
                 |Extension(state): StateExtension,

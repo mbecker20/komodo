@@ -25,6 +25,11 @@ impl MonitorClient {
         self.patch("/api/build/update", build).await
     }
 
+    pub async fn build_build(&self, id: &str) -> anyhow::Result<Update> {
+        self.post::<(), _>(&format!("/api/build/build/{id}"), None)
+            .await
+    }
+
     pub async fn reclone_build(&self, id: &str) -> anyhow::Result<Update> {
         self.post::<(), _>(&format!("/api/build/reclone/{id}"), None)
             .await

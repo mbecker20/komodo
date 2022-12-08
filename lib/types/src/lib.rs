@@ -257,16 +257,6 @@ pub struct Build {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct BuildRecord {
-    pub start_ts: i64,
-    pub end_ts: i64,
-    pub success: bool,
-    pub logs: Vec<Log>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub version: Option<Version>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Update {
     #[serde(
         default,
@@ -283,6 +273,8 @@ pub struct Update {
     pub status: UpdateStatus,
     pub success: bool,
     pub operator: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<Version>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Diff)]
@@ -412,11 +404,18 @@ pub struct Command {
 pub struct Version {
     pub major: u64,
     pub minor: u64,
+    pub patch: u64,
 }
 
 impl ToString for Version {
     fn to_string(&self) -> String {
-        format!("{}.{}", self.major, self.minor)
+        format!("{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
+
+impl Version {
+    pub fn increment(&mut self) {
+        self.patch += 1;
     }
 }
 
