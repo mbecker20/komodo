@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use diff::Diff;
+use helpers::to_monitor_name;
 use mungos::{doc, to_bson};
 use types::{
     traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateStatus,
@@ -33,14 +34,14 @@ impl State {
 
     pub async fn create_build(
         &self,
-        name: String,
+        name: &str,
         server_id: String,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
         self.get_server_check_permissions(&server_id, user, PermissionLevel::Write)
             .await?;
         let build = Build {
-            name,
+            name: to_monitor_name(name),
             server_id,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
@@ -148,10 +149,12 @@ impl State {
         Ok(new_build)
     }
 
-    pub async fn build_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
+    pub async fn build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
         let mut build = self
             .get_build_check_permissions(build_id, user, PermissionLevel::Write)
             .await?;
+        let server = self.db.get_server(&build.server_id).await?;
+
         build.version.increment();
 
         let mut update = Update {
@@ -167,15 +170,13 @@ impl State {
 
         update.id = self.add_update(update.clone()).await?;
 
-        let server = self.db.get_server(&build.server_id).await?;
-
-        let update_logs = self
+        let build_logs = self
             .periphery
             .build(&server, &build)
             .await
             .context("failed at call to periphery to build")?;
 
-        match update_logs {
+        match build_logs {
             Some(logs) => {
                 update.logs.extend(logs);
                 update.success = all_logs_success(&update.logs);

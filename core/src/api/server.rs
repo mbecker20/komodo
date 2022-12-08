@@ -46,7 +46,7 @@ pub fn router() -> Router {
                 Extension(user): RequestUserExtension,
                 Json(server): Json<CreateServerBody>| async move {
                     let server = state
-                        .create_server(server.name, server.address, &user)
+                        .create_server(&server.name, server.address, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(server))

@@ -9,9 +9,9 @@ use helpers::{
     handle_anyhow_error, to_monitor_name,
 };
 use serde::Deserialize;
-use types::Deployment;
+use types::{Deployment, Log};
 
-use crate::response;
+use crate::{helpers::get_docker_token, response, PeripheryConfigExtension};
 
 #[derive(Deserialize)]
 struct Container {
@@ -66,39 +66,21 @@ pub fn router() -> Router {
                 Json(docker::stop_and_remove_container(&to_monitor_name(&container.name)).await)
             }),
         )
-        .route(
-            "/deploy",
-            post(|Json(deployment): Json<Deployment>| async move {
-                Json(docker::deploy(&deployment).await)
-            }),
-        )
+        .route("/deploy", post(deploy))
         .route(
             "/prune",
             post(|| async { Json(docker::prune_containers().await) }),
         )
-        // .route(
-        //     "/stats/:name",
-        //     get(
-        //         |Extension(dc): DockerExtension, Path(Container { name }): Path<Container>| async move {
-        //             let stats = dc
-        //                 .get_container_stats(&name)
-        //                 .await
-        //                 .map_err(handle_anyhow_error)?;
-        //             response!(Json(stats))
-        //         },
-        //     ),
-        // )
-        // .route(
-        //     "/stats/list",
-        //     get(
-        //         |Extension(dc): DockerExtension| async move {
-        //             let stats_list = dc
-        //                 .get_container_stats_list()
-        //                 .await
-        //                 .map_err(handle_anyhow_error)?;
-        //             response!(Json(stats_list))
-        //         },
-        //     ),
-        // )
         .layer(DockerClient::extension())
+}
+
+async fn deploy(
+    Extension(config): PeripheryConfigExtension,
+    Json(deployment): Json<Deployment>,
+) -> Json<Log> {
+    let log = match get_docker_token(&deployment.docker_run_args.docker_account, &config) {
+        Ok(docker_token) => docker::deploy(&deployment, &docker_token).await,
+        Err(e) => Log::error("docker login", format!("{e:#?}")),
+    };
+    Json(log)
 }

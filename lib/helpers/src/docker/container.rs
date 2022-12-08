@@ -6,6 +6,8 @@ use types::{
 
 use crate::{run_monitor_command, to_monitor_name};
 
+use super::docker_login;
+
 pub async fn container_log(container_name: &str, tail: Option<u64>) -> Log {
     let tail = match tail {
         Some(tail) => format!(" --tail {tail}"),
@@ -65,7 +67,10 @@ pub async fn stop_and_remove_container(container_name: &str) -> Log {
     run_monitor_command("docker stop and remove", command).await
 }
 
-pub async fn deploy(deployment: &Deployment) -> Log {
+pub async fn deploy(deployment: &Deployment, docker_token: &Option<String>) -> Log {
+    if let Err(e) = docker_login(&deployment.docker_run_args.docker_account, docker_token).await {
+        return Log::error("docker login", format!("{e:#?}"));
+    }
     let _ = stop_and_remove_container(&to_monitor_name(&deployment.name)).await;
     let command = docker_run_command(deployment);
     run_monitor_command("docker run", command).await
@@ -134,7 +139,7 @@ fn parse_network(network: &Option<String>) -> String {
 
 fn parse_restart(restart: &RestartMode) -> String {
     let restart = match restart {
-        RestartMode::OnFailure => format!("on-failure:10"),
+        RestartMode::OnFailure => "on-failure:10".to_string(),
         _ => restart.to_string(),
     };
     format!(" --restart {restart}")

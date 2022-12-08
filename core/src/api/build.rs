@@ -46,7 +46,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Json(build): Json<CreateBuildBody>| async move {
                     let build = state
-                        .create_build(build.name, build.server_id, &user)
+                        .create_build(&build.name, build.server_id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(build))
@@ -88,7 +88,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(build_id): Path<BuildId>| async move {
                     let update = state
-                        .build_build(&build_id.id, &user)
+                        .build(&build_id.id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(update))

@@ -3,12 +3,13 @@ use std::sync::Arc;
 use anyhow::{anyhow, Context};
 use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms};
 use axum::{body::Body, http::Request, Extension};
-use db::DbClient;
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use mungos::{Deserialize, Serialize};
 use sha2::Sha256;
 use types::{CoreConfig, UserId};
+
+use crate::state::State;
 
 pub type JwtExtension = Extension<Arc<JwtClient>>;
 pub type RequestUserExtension = Extension<Arc<RequestUser>>;
@@ -66,23 +67,24 @@ impl JwtClient {
             .to_str()?
             .replace("Bearer ", "")
             .replace("bearer ", "");
-        let db_client = req
+        let state = req
             .extensions()
-            .get::<Arc<DbClient>>()
-            .ok_or(anyhow!("failed at getting db handle"))?;
+            .get::<Arc<State>>()
+            .ok_or(anyhow!("failed at getting state handle"))?;
         let user = self
-            .auth_jwt(&jwt, db_client)
+            .auth_jwt(&jwt, &state)
             .await
             .context("failed to authenticate jwt")?;
         Ok(Arc::new(user))
     }
 
-    pub async fn auth_jwt(&self, jwt: &str, db_client: &DbClient) -> anyhow::Result<RequestUser> {
+    pub async fn auth_jwt(&self, jwt: &str, state: &State) -> anyhow::Result<RequestUser> {
         let claims: JwtClaims = jwt
             .verify_with_key(&self.key)
             .context("failed to verify claims")?;
         if claims.exp > unix_timestamp_ms() {
-            let user = db_client
+            let user = state
+                .db
                 .users
                 .find_one_by_id(&claims.id)
                 .await?

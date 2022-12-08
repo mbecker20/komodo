@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use diff::Diff;
+use helpers::to_monitor_name;
 use types::{
     traits::Permissioned, Deployment, Log, Operation, PermissionLevel, Update, UpdateStatus,
     UpdateTarget,
@@ -32,14 +33,14 @@ impl State {
 
     pub async fn create_deployment(
         &self,
-        name: String,
+        name: &str,
         server_id: String,
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
         self.get_server_check_permissions(&server_id, user, PermissionLevel::Write)
             .await?;
         let deployment = Deployment {
-            name,
+            name: to_monitor_name(name),
             server_id,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
@@ -157,6 +158,46 @@ impl State {
         self.update_update(update).await?;
 
         Ok(new_deployment)
+    }
+
+    pub async fn deploy(&self, deployment_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
+        let mut deployment = self
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .await?;
+        if let Some(build_id) = &deployment.build_id {
+            let build = self.db.get_build(build_id).await?;
+            deployment.docker_run_args.image = if let Some(docker_account) = &build.docker_account {
+                if deployment.docker_run_args.docker_account.is_none() {
+                    deployment.docker_run_args.docker_account = Some(docker_account.to_string())
+                }
+                format!("{docker_account}/{}", to_monitor_name(&build.name))
+            } else {
+                to_monitor_name(&build.name)
+            };
+        };
+        let server = self.db.get_server(&deployment.server_id).await?;
+        let mut update = Update {
+            target: UpdateTarget::Deployment(deployment_id.to_string()),
+            operation: Operation::DeployDeployment,
+            start_ts: unix_timestamp_ms() as i64,
+            status: UpdateStatus::InProgress,
+            operator: user.id.clone(),
+            success: true,
+            // version: deployment.docker_run_args.,
+            ..Default::default()
+        };
+
+        update.id = self.add_update(update.clone()).await?;
+
+        let deploy_log = self.periphery.deploy(&server, &deployment).await?;
+
+        update.logs.push(deploy_log);
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(unix_timestamp_ms() as i64);
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
     }
 
     pub async fn reclone_deployment(

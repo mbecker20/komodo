@@ -46,7 +46,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Json(deployment): Json<CreateDeploymentBody>| async move {
                     let deployment = state
-                        .create_deployment(deployment.name, deployment.server_id, &user)
+                        .create_deployment(&deployment.name, deployment.server_id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(deployment))
@@ -78,6 +78,20 @@ pub fn router() -> Router {
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(deployment))
+                },
+            ),
+        )
+        .route(
+            "/deploy/:id",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>| async move {
+                    let update = state
+                        .deploy(&deployment_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(update))
                 },
             ),
         )

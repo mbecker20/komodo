@@ -17,10 +17,10 @@ async fn main() -> anyhow::Result<()> {
 
     let start_ts = unix_timestamp_ms();
 
-    let mut builds = monitor.list_builds().await?;
-    let mut build = builds.pop().unwrap();
+    // let mut builds = monitor.list_builds().await?;
+    // let mut build = builds.pop().unwrap();
 
-    println!("{build:#?}");
+    // println!("{build:#?}");
 
     // build.name = format!("{}_1", build.name);
     // build.repo = Some("mbecker20/monitor".to_string());
@@ -28,9 +28,9 @@ async fn main() -> anyhow::Result<()> {
 
     // let build = monitor.update_build(build).await?;
 
-    let update = monitor.reclone_build(&build.id).await?;
+    // let update = monitor.reclone_build(&build.id).await?;
 
-    println!("{update:#?}");
+    // println!("{update:#?}");
 
     // let mut deployments = monitor.list_deployments().await?;
     // let mut deployment = deployments.pop().unwrap();
@@ -43,6 +43,9 @@ async fn main() -> anyhow::Result<()> {
     // let deployment = monitor.update_deployment(deployment).await?;
 
     // println!("{deployment:#?}");
+
+    let update = deploy_mongo(&monitor).await?;
+    println!("{update:#?}");
 
     let end_ts = unix_timestamp_ms();
     let finished_in = (end_ts - start_ts) as f64 / 1000.0;

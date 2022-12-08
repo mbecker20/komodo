@@ -4,9 +4,9 @@ use anyhow::anyhow;
 use axum::{routing::post, Extension, Json, Router};
 use helpers::{docker, handle_anyhow_error};
 use tokio::sync::Mutex;
-use types::{Build, DockerToken, Log, PeripheryConfig, PERIPHERY_BUILDER_BUSY};
+use types::{Build, Log, PERIPHERY_BUILDER_BUSY};
 
-use crate::PeripheryConfigExtension;
+use crate::{helpers::get_docker_token, PeripheryConfigExtension};
 
 type BusyExtension = Extension<Arc<Mutex<bool>>>;
 
@@ -45,19 +45,4 @@ async fn build_image(
     let mut lock = busy.lock().await;
     *lock = false;
     Ok(Json(logs))
-}
-
-fn get_docker_token(
-    docker_account: &Option<String>,
-    config: &PeripheryConfig,
-) -> anyhow::Result<Option<DockerToken>> {
-    match docker_account {
-        Some(account) => match config.docker_accounts.get(account) {
-            Some(token) => Ok(Some(token.to_owned())),
-            None => Err(anyhow!(
-                "did not find token in config for docker account {account} "
-            )),
-        },
-        None => Ok(None),
-    }
 }

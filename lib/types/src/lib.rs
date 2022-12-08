@@ -188,6 +188,10 @@ pub struct Deployment {
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub build_id: Option<BuildId>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub build_version: Option<Version>,
+
     // deployment repo related
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
@@ -692,12 +696,16 @@ pub enum DockerContainerState {
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum RestartMode {
     #[serde(rename = "no")]
+    #[strum(serialize = "no")]
     NoRestart,
     #[serde(rename = "on-failure")]
+    #[strum(serialize = "on-failure")]
     OnFailure,
     #[serde(rename = "always")]
+    #[strum(serialize = "always")]
     Always,
     #[serde(rename = "unless-stopped")]
+    #[strum(serialize = "unless-stopped")]
     UnlessStopped,
 }
 

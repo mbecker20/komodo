@@ -1,15 +1,14 @@
 use std::{path::PathBuf, str::FromStr};
 
-use anyhow::anyhow;
 use axum::{routing::post, Extension, Json, Router};
 use helpers::{
     git::{self, CloneArgs},
     handle_anyhow_error, to_monitor_name,
 };
 use serde::Deserialize;
-use types::{GithubToken, Log, PeripheryConfig};
+use types::Log;
 
-use crate::PeripheryConfigExtension;
+use crate::{helpers::get_github_token, PeripheryConfigExtension};
 
 #[derive(Deserialize)]
 pub struct DeleteRepoBody {
@@ -57,19 +56,4 @@ async fn delete_repo(
         Err(_) => Log::simple(format!("no repo at {name} to delete")),
     };
     Ok(Json(log))
-}
-
-fn get_github_token(
-    github_account: &Option<String>,
-    config: &PeripheryConfig,
-) -> anyhow::Result<Option<GithubToken>> {
-    match github_account {
-        Some(account) => match config.github_accounts.get(account) {
-            Some(token) => Ok(Some(token.to_owned())),
-            None => Err(anyhow!(
-                "did not find token in config for github account {account} "
-            )),
-        },
-        None => Ok(None),
-    }
 }

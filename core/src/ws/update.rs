@@ -25,7 +25,7 @@ use types::{PermissionLevel, Update, UpdateTarget, User};
 
 use crate::{
     auth::{JwtClient, JwtExtension},
-    state::StateExtension,
+    state::{State, StateExtension},
 };
 
 pub type UpdateWsSender = Mutex<Sender<Update>>;
@@ -84,7 +84,7 @@ pub async fn ws_handler(
 ) -> impl IntoResponse {
     let mut reciever = state.update.reciever.clone();
     ws.on_upgrade(|socket| async move {
-        let login_res = login(socket, &jwt_client, &state.db).await;
+        let login_res = login(socket, &jwt_client, &state).await;
         if login_res.is_none() {
             return;
         }
@@ -151,12 +151,12 @@ pub async fn ws_handler(
 async fn login(
     mut socket: WebSocket,
     jwt_client: &JwtClient,
-    db_client: &DbClient,
+    state: &State,
 ) -> Option<(WebSocket, String)> {
     if let Some(jwt) = socket.recv().await {
         match jwt {
             Ok(jwt) => match jwt {
-                Message::Text(jwt) => match jwt_client.auth_jwt(&jwt, db_client).await {
+                Message::Text(jwt) => match jwt_client.auth_jwt(&jwt, state).await {
                     Ok(user) => {
                         let _ = socket
                             .send(Message::Text(

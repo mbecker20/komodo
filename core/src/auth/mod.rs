@@ -34,7 +34,7 @@ pub async fn auth_request(
     let user = jwt_client
         .authenticate(&req)
         .await
-        .map_err(|e| (StatusCode::UNAUTHORIZED, format!("error: {e:#?}")))?;
+        .map_err(|e| (StatusCode::UNAUTHORIZED, format!("{e:#?}")))?;
     req.extensions_mut().insert(user);
     Ok(next.run(req).await)
 }

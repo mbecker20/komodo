@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use diff::Diff;
+use helpers::to_monitor_name;
 use types::{
     traits::Permissioned, Log, Operation, PermissionLevel, Server, Update, UpdateStatus,
     UpdateTarget,
@@ -28,7 +29,7 @@ impl State {
 
     pub async fn create_server(
         &self,
-        name: String,
+        name: &str,
         address: String,
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
@@ -38,7 +39,7 @@ impl State {
             ));
         }
         let server = Server {
-            name,
+            name: to_monitor_name(name),
             address,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
