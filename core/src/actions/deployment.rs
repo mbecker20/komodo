@@ -166,7 +166,7 @@ impl State {
             .await?;
         if let Some(build_id) = &deployment.build_id {
             let build = self.db.get_build(build_id).await?;
-            deployment.docker_run_args.image = if let Some(docker_account) = &build.docker_account {
+            let image = if let Some(docker_account) = &build.docker_account {
                 if deployment.docker_run_args.docker_account.is_none() {
                     deployment.docker_run_args.docker_account = Some(docker_account.to_string())
                 }
@@ -174,6 +174,12 @@ impl State {
             } else {
                 to_monitor_name(&build.name)
             };
+            let version = if let Some(version) = &deployment.build_version {
+                version.to_string()
+            } else {
+                "latest".to_string()
+            };
+            deployment.docker_run_args.image = format!("{image}:{version}");
         };
         let server = self.db.get_server(&deployment.server_id).await?;
         let mut update = Update {

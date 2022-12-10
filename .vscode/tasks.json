@@ -91,7 +91,17 @@
 			"label": "docker compose down",
 			"options": {
 				"cwd": "${workspaceFolder}/tests"
-			}
+			},
+			"problemMatcher": []
+		},
+		{
+			"type": "shell",
+			"command": "docker compose build",
+			"label": "docker compose build",
+			"options": {
+				"cwd": "${workspaceFolder}/tests"
+			},
+			"problemMatcher": []
 		}
 	]
 }
