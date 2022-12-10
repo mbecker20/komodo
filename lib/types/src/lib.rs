@@ -210,6 +210,12 @@ pub struct Deployment {
     pub on_clone: Option<Command>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct DeploymentWithContainer {
+    pub deployment: Deployment,
+    pub container: Option<BasicContainerInfo>,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Build {

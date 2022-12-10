@@ -15,6 +15,11 @@ impl MonitorClient {
             .context("failed at list servers")
     }
 
+    pub async fn get_server(&self, server_id: &str) -> anyhow::Result<Server> {
+        self.get(&format!("/api/server/{server_id}"), Option::<()>::None)
+            .await
+    }
+
     pub async fn create_server(&self, name: &str, address: &str) -> anyhow::Result<Server> {
         self.post(
             "/api/server/create",

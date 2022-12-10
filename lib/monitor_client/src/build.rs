@@ -12,6 +12,11 @@ impl MonitorClient {
             .context("failed at list builds")
     }
 
+    pub async fn get_build(&self, build_id: &str) -> anyhow::Result<Build> {
+        self.get(&format!("/api/build/{build_id}"), Option::<()>::None)
+            .await
+    }
+
     pub async fn create_build(&self, name: &str, server_id: &str) -> anyhow::Result<Build> {
         self.post(
             "/api/build/create",

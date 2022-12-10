@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Deployment, SystemStats, Update};
+use monitor_types::{Deployment, DeploymentWithContainer, SystemStats, Update};
 use serde::Serialize;
 use serde_json::{json, Value};
 
@@ -9,10 +9,15 @@ impl MonitorClient {
     pub async fn list_deployments(
         &self,
         query: impl Into<Option<Value>>,
-    ) -> anyhow::Result<Vec<Deployment>> {
+    ) -> anyhow::Result<Vec<DeploymentWithContainer>> {
         self.get("/api/deployment/list", query.into())
             .await
             .context("failed at list deployments")
+    }
+
+    pub async fn get_deployment(&self, deployment_id: &str) -> anyhow::Result<DeploymentWithContainer> {
+        self.get(&format!("/api/deployment/{deployment_id}"), Option::<()>::None)
+            .await
     }
 
     pub async fn create_deployment(
