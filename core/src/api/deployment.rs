@@ -1,11 +1,11 @@
 use anyhow::Context;
 use axum::{
-    extract::Path,
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::Deserialize;
+use mungos::{Deserialize, Document};
 use types::{traits::Permissioned, Deployment, PermissionLevel};
 
 use crate::{
@@ -30,24 +30,29 @@ pub fn router() -> Router {
         .route(
             "/:id",
             get(
-                |Extension(state): StateExtension, Extension(user): RequestUserExtension, Path(deployment_id): Path<DeploymentId>| async move {
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>| async move {
                     let deployment = state
                         .get_deployment_check_permissions(
                             &deployment_id.id,
                             &user,
-                            PermissionLevel::Read
-                        ).await
+                            PermissionLevel::Read,
+                        )
+                        .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(deployment))
-                }
-            )
+                },
+            ),
         )
         .route(
             "/list",
             get(
-                |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Query(query): Query<Document>| async move {
                     let deployments = state
-                        .list_deployments(&user)
+                        .list_deployments(&user, query)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(deployments))
@@ -127,11 +132,15 @@ pub fn router() -> Router {
 }
 
 impl State {
-    async fn list_deployments(&self, user: &RequestUser) -> anyhow::Result<Vec<Deployment>> {
+    async fn list_deployments(
+        &self,
+        user: &RequestUser,
+        query: impl Into<Option<Document>>,
+    ) -> anyhow::Result<Vec<Deployment>> {
         let mut deployments: Vec<Deployment> = self
             .db
             .deployments
-            .get_some(None, None)
+            .get_some(query, None)
             .await
             .context("failed at get all deployments query")?
             .into_iter()

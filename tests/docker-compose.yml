@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+  core:
+    image: core
+    build:
+      context: ..
+      dockerfile: Dockerfile.core
+    ports:
+      - "9000:9000"
+    networks:
+      - monitor-network
+    environment:
+      - CONFIG_PATH=/config/config.toml
+    volumes:
+      - "/Users/max/monitor/core:/config"
+    depends_on:
+      - mongo
+
+  periphery:
+    image: periphery
+    build:
+      context: ..
+      dockerfile: Dockerfile.periphery
+    ports:
+      - "9001:9001"
+    networks:
+      - monitor-network
+    environment:
+      - CONFIG_PATH=/config/config.toml
+    volumes:
+      - "/Users/max/monitor/periphery:/config"
+      - "/Users/max/monitor/repos:/repos"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  mongo:
+    image: mongo
+    ports:
+      - "27019:27017"
+    networks:
+      - monitor-network
+
+networks:
+  monitor-network: {}

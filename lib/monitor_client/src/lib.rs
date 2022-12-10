@@ -63,11 +63,28 @@ impl MonitorClient {
         Ok(client)
     }
 
-    async fn get<R: DeserializeOwned>(&self, endpoint: &str) -> anyhow::Result<R> {
+    async fn create_user(
+        &self,
+        username: impl Into<String>,
+        password: impl Into<String>,
+    ) -> anyhow::Result<String> {
+        self.post_string(
+            "/auth/local/create_user",
+            json!({ "username": username.into(), "password": password.into() }),
+        )
+        .await
+    }
+
+    async fn get<R: DeserializeOwned>(
+        &self,
+        endpoint: &str,
+        query: impl Serialize,
+    ) -> anyhow::Result<R> {
         let res = self
             .http_client
             .get(format!("{}{endpoint}", self.url))
             .header("Authorization", format!("Bearer {}", self.token))
+            .query(&query)
             .send()
             .await
             .context("failed to reach monitor api")?;
@@ -85,11 +102,12 @@ impl MonitorClient {
         }
     }
 
-    async fn get_string(&self, endpoint: &str) -> anyhow::Result<String> {
+    async fn get_string(&self, endpoint: &str, query: impl Serialize) -> anyhow::Result<String> {
         let res = self
             .http_client
             .get(format!("{}{endpoint}", self.url))
             .header("Authorization", format!("Bearer {}", self.token))
+            .query(&query)
             .send()
             .await
             .context("failed to reach monitor api")?;

@@ -17,6 +17,9 @@ async fn main() -> anyhow::Result<()> {
 
     let start_ts = unix_timestamp_ms();
 
+    // let stats = get_server_stats(&monitor).await?;
+    // println!("{stats:#?}");
+
     // let (server, deployment, build) = create_test_setup(&monitor, "test").await?;
 
     // let update = deploy_mongo(&monitor).await?;

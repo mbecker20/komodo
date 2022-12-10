@@ -1,11 +1,11 @@
 use anyhow::Context;
 use axum::{
-    extract::Path,
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::Deserialize;
+use mungos::{Deserialize, Document};
 use types::{traits::Permissioned, Build, PermissionLevel};
 
 use crate::{
@@ -30,24 +30,25 @@ pub fn router() -> Router {
         .route(
             "/:id",
             get(
-                |Extension(state): StateExtension, Extension(user): RequestUserExtension, Path(build_id): Path<BuildId>| async move {
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(build_id): Path<BuildId>| async move {
                     let build = state
-                        .get_build_check_permissions(
-                            &build_id.id,
-                            &user,
-                            PermissionLevel::Read
-                        ).await
+                        .get_build_check_permissions(&build_id.id, &user, PermissionLevel::Read)
+                        .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(build))
-                }
-            )
+                },
+            ),
         )
         .route(
             "/list",
             get(
-                |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Query(query): Query<Document>| async move {
                     let builds = state
-                        .list_builds(&user)
+                        .list_builds(&user, query)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(builds))
@@ -127,11 +128,15 @@ pub fn router() -> Router {
 }
 
 impl State {
-    async fn list_builds(&self, user: &RequestUser) -> anyhow::Result<Vec<Build>> {
+    async fn list_builds(
+        &self,
+        user: &RequestUser,
+        query: impl Into<Option<Document>>,
+    ) -> anyhow::Result<Vec<Build>> {
         let mut builds: Vec<Build> = self
             .db
             .builds
-            .get_some(None, None)
+            .get_some(query, None)
             .await
             .context("failed at get all builds query")?
             .into_iter()

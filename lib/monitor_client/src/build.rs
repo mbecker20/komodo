@@ -1,12 +1,13 @@
 use anyhow::Context;
 use monitor_types::{Build, SystemStats, Update};
-use serde_json::json;
+use serde::Serialize;
+use serde_json::{json, Value};
 
 use crate::MonitorClient;
 
 impl MonitorClient {
-    pub async fn list_builds(&self) -> anyhow::Result<Vec<Build>> {
-        self.get("/api/build/list")
+    pub async fn list_builds(&self, query: impl Into<Option<Value>>) -> anyhow::Result<Vec<Build>> {
+        self.get("/api/build/list", query.into())
             .await
             .context("failed at list builds")
     }

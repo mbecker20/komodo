@@ -26,7 +26,7 @@
 			"label": "rust: cargo run",
 			"options": {
 				"cwd": "${workspaceFolder}/core"
-			},
+			}
 		},
 		{
 			"type": "cargo",
@@ -34,7 +34,7 @@
 			"label": "run core",
 			"options": {
 				"cwd": "${workspaceFolder}/core"
-			},
+			}
 		},
 		{
 			"type": "cargo",
@@ -42,7 +42,7 @@
 			"label": "run periphery",
 			"options": {
 				"cwd": "${workspaceFolder}/periphery"
-			},
+			}
 		},
 		{
 			"type": "cargo",
@@ -50,7 +50,7 @@
 			"label": "run cli",
 			"options": {
 				"cwd": "${workspaceFolder}/cli"
-			},
+			}
 		},
 		{
 			"type": "cargo",
@@ -58,7 +58,7 @@
 			"label": "run tests",
 			"options": {
 				"cwd": "${workspaceFolder}/tests"
-			},
+			}
 		},
 		{
 			"type": "cargo",
@@ -66,7 +66,7 @@
 			"label": "publish monitor types",
 			"options": {
 				"cwd": "${workspaceFolder}/lib/types"
-			},
+			}
 		},
 		{
 			"type": "cargo",
@@ -74,17 +74,24 @@
 			"label": "publish monitor client",
 			"options": {
 				"cwd": "${workspaceFolder}/lib/monitor_client"
+			}
+		},
+		{
+			"type": "shell",
+			"command": "docker compose up -d",
+			"label": "docker compose up",
+			"options": {
+				"cwd": "${workspaceFolder}/tests"
 			},
+			"problemMatcher": []
 		},
 		{
 			"type": "shell",
-			"command": "docker build -t monitor_periphery -f Dockerfile.periphery .",
-			"label": "docker build periphery"
-		},
-		{
-			"type": "shell",
-			"command": "docker build -t monitor_core -f Dockerfile.core .",
-			"label": "docker build core"
+			"command": "docker compose down",
+			"label": "docker compose down",
+			"options": {
+				"cwd": "${workspaceFolder}/tests"
+			}
 		}
 	]
 }

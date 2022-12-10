@@ -1,12 +1,16 @@
 use anyhow::Context;
 use monitor_types::{Deployment, SystemStats, Update};
-use serde_json::json;
+use serde::Serialize;
+use serde_json::{json, Value};
 
 use crate::MonitorClient;
 
 impl MonitorClient {
-    pub async fn list_deployments(&self) -> anyhow::Result<Vec<Deployment>> {
-        self.get("/api/deployment/list")
+    pub async fn list_deployments(
+        &self,
+        query: impl Into<Option<Value>>,
+    ) -> anyhow::Result<Vec<Deployment>> {
+        self.get("/api/deployment/list", query.into())
             .await
             .context("failed at list deployments")
     }

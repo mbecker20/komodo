@@ -9,7 +9,7 @@ pub async fn create_test_setup(
     group_name: &str,
 ) -> anyhow::Result<(Server, Deployment, Build)> {
     let server = monitor
-        .create_server(&format!("{group_name}_server"), "http://localhost:9001")
+        .create_server(&format!("{group_name}_server"), "http://periphery")
         .await
         .context("failed at create server")?;
     let deployment = monitor
@@ -25,7 +25,7 @@ pub async fn create_test_setup(
 
 pub async fn get_server_stats(monitor: &MonitorClient) -> anyhow::Result<SystemStats> {
     let servers = monitor
-        .list_servers()
+        .list_servers(None)
         .await
         .context("failed at list servers")?;
     let server = servers.get(0).ok_or(anyhow!("no servers"))?;
@@ -38,7 +38,7 @@ pub async fn get_server_stats(monitor: &MonitorClient) -> anyhow::Result<SystemS
 
 pub async fn deploy_mongo(monitor: &MonitorClient) -> anyhow::Result<Update> {
     let servers = monitor
-        .list_servers()
+        .list_servers(None)
         .await
         .context("failed at list servers")?;
     let server = servers.get(0).ok_or(anyhow!("no servers"))?;
@@ -58,7 +58,7 @@ pub async fn deploy_mongo(monitor: &MonitorClient) -> anyhow::Result<Update> {
 
 pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
     let servers = monitor
-        .list_servers()
+        .list_servers(None)
         .await
         .context("failed at list servers")?;
     let server = servers.get(0).ok_or(anyhow!("no servers"))?;
@@ -67,7 +67,7 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
     println!("created build");
     build.repo = Some("mbecker20/monitor".to_string());
     build.on_clone = Some(Command {
-        path: "/".to_string(),
+        path: ".".to_string(),
         command: "yarn".to_string(),
     });
     build.pre_build = Some(Command {

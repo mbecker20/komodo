@@ -1,11 +1,11 @@
 use anyhow::Context;
 use axum::{
-    extract::Path,
+    extract::{Path, Query},
     routing::{delete, get, patch, post},
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::Deserialize;
+use mungos::{Deserialize, Document};
 use types::{traits::Permissioned, PermissionLevel, Server, SystemStats};
 
 use crate::{
@@ -30,24 +30,25 @@ pub fn router() -> Router {
         .route(
             "/:id",
             get(
-                |Extension(state): StateExtension, Extension(user): RequestUserExtension, Path(server_id): Path<ServerId>| async move {
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(server_id): Path<ServerId>| async move {
                     let server = state
-                        .get_server_check_permissions(
-                            &server_id.id,
-                            &user,
-                            PermissionLevel::Read
-                        ).await
+                        .get_server_check_permissions(&server_id.id, &user, PermissionLevel::Read)
+                        .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(server))
-                }
-            )
+                },
+            ),
         )
         .route(
             "/list",
             get(
-                |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Query(query): Query<Document>| async move {
                     let servers = state
-                        .list_servers(&user)
+                        .list_servers(&user, query)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(servers))
@@ -58,8 +59,8 @@ pub fn router() -> Router {
             "/create",
             post(
                 |Extension(state): StateExtension,
-                Extension(user): RequestUserExtension,
-                Json(server): Json<CreateServerBody>| async move {
+                 Extension(user): RequestUserExtension,
+                 Json(server): Json<CreateServerBody>| async move {
                     let server = state
                         .create_server(&server.name, server.address, &user)
                         .await
@@ -72,8 +73,8 @@ pub fn router() -> Router {
             "/delete/:id",
             delete(
                 |Extension(state): StateExtension,
-                Extension(user): RequestUserExtension,
-                Path(server): Path<ServerId>| async move {
+                 Extension(user): RequestUserExtension,
+                 Path(server): Path<ServerId>| async move {
                     let server = state
                         .delete_server(&server.id, &user)
                         .await
@@ -86,8 +87,8 @@ pub fn router() -> Router {
             "/update",
             patch(
                 |Extension(state): StateExtension,
-                Extension(user): RequestUserExtension,
-                Json(server): Json<Server>| async move {
+                 Extension(user): RequestUserExtension,
+                 Json(server): Json<Server>| async move {
                     let server = state
                         .update_server(server, &user)
                         .await
@@ -99,23 +100,29 @@ pub fn router() -> Router {
         .route(
             "/stats/:id",
             get(
-            |Extension(state): StateExtension,
-            Extension(user): RequestUserExtension,
-            Path(ServerId { id }): Path<ServerId>| async move {
-                let stats = state.get_server_stats(&user, &id)
-                    .await
-                    .map_err(handle_anyhow_error)?;
-                response!(Json(stats))
-            })
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(ServerId { id }): Path<ServerId>| async move {
+                    let stats = state
+                        .get_server_stats(&user, &id)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(stats))
+                },
+            ),
         )
 }
 
 impl State {
-    async fn list_servers(&self, user: &RequestUser) -> anyhow::Result<Vec<Server>> {
+    async fn list_servers(
+        &self,
+        user: &RequestUser,
+        query: impl Into<Option<Document>>,
+    ) -> anyhow::Result<Vec<Server>> {
         let mut servers: Vec<Server> = self
             .db
             .servers
-            .get_some(None, None)
+            .get_some(query, None)
             .await
             .context("failed at get all servers query")?
             .into_iter()

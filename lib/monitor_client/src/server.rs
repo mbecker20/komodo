@@ -1,12 +1,16 @@
 use anyhow::Context;
 use monitor_types::{Server, SystemStats};
-use serde_json::json;
+use serde::Serialize;
+use serde_json::{json, Value};
 
 use crate::MonitorClient;
 
 impl MonitorClient {
-    pub async fn list_servers(&self) -> anyhow::Result<Vec<Server>> {
-        self.get("/api/server/list")
+    pub async fn list_servers(
+        &self,
+        query: impl Into<Option<Value>>,
+    ) -> anyhow::Result<Vec<Server>> {
+        self.get("/api/server/list", query.into())
             .await
             .context("failed at list servers")
     }
@@ -35,7 +39,7 @@ impl MonitorClient {
     }
 
     pub async fn get_server_stats(&self, id: &str) -> anyhow::Result<SystemStats> {
-        self.get(&format!("/api/server/stats/{id}"))
+        self.get(&format!("/api/server/stats/{id}"), Option::<()>::None)
             .await
             .context(format!("failed to get server stats at id {id}"))
     }
