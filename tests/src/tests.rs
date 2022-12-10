@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use monitor_client::{
-    types::{Build, Conversion, Deployment, Server, SystemStats, Update},
+    types::{Build, Command, Conversion, Deployment, DockerBuildArgs, Server, SystemStats, Update},
     MonitorClient,
 };
 
@@ -53,5 +53,33 @@ pub async fn deploy_mongo(monitor: &MonitorClient) -> anyhow::Result<Update> {
     let deployment = monitor.update_deployment(deployment).await?;
     println!("updated deployment");
     let update = monitor.deploy(&deployment.id).await?;
+    Ok(update)
+}
+
+pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
+    let servers = monitor
+        .list_servers()
+        .await
+        .context("failed at list servers")?;
+    let server = servers.get(0).ok_or(anyhow!("no servers"))?;
+    println!("got server");
+    let mut build = monitor.create_build("periphery", &server.id).await?;
+    println!("created build");
+    build.repo = Some("mbecker20/monitor".to_string());
+    build.on_clone = Some(Command {
+        path: "/".to_string(),
+        command: "yarn".to_string(),
+    });
+    build.pre_build = Some(Command {
+        path: "periphery".to_string(),
+        command: "yarn build".to_string(),
+    });
+    build.docker_build_args = Some(DockerBuildArgs {
+        build_path: "periphery".to_string(),
+        dockerfile_path: None,
+    });
+    let build = monitor.update_build(build).await?;
+    println!("updated build");
+    let update = monitor.build(&build.id).await?;
     Ok(update)
 }

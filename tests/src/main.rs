@@ -17,34 +17,12 @@ async fn main() -> anyhow::Result<()> {
 
     let start_ts = unix_timestamp_ms();
 
-    // let mut builds = monitor.list_builds().await?;
-    // let mut build = builds.pop().unwrap();
+    // let (server, deployment, build) = create_test_setup(&monitor, "test").await?;
 
-    // println!("{build:#?}");
-
-    // build.name = format!("{}_1", build.name);
-    // build.repo = Some("mbecker20/monitor".to_string());
-    // build.branch = Some("next".to_string());
-
-    // let build = monitor.update_build(build).await?;
-
-    // let update = monitor.reclone_build(&build.id).await?;
-
+    // let update = deploy_mongo(&monitor).await?;
     // println!("{update:#?}");
 
-    // let mut deployments = monitor.list_deployments().await?;
-    // let mut deployment = deployments.pop().unwrap();
-
-    // println!("{deployment:#?}");
-
-    // deployment.name = format!("{}_1", deployment.name);
-    // // deployment.docker_run_args.image = "test_mongo".to_string();
-
-    // let deployment = monitor.update_deployment(deployment).await?;
-
-    // println!("{deployment:#?}");
-
-    let update = deploy_mongo(&monitor).await?;
+    let update = test_build(&monitor).await?;
     println!("{update:#?}");
 
     let end_ts = unix_timestamp_ms();

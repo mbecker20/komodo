@@ -28,6 +28,21 @@ struct CreateBuildBody {
 pub fn router() -> Router {
     Router::new()
         .route(
+            "/:id",
+            get(
+                |Extension(state): StateExtension, Extension(user): RequestUserExtension, Path(build_id): Path<BuildId>| async move {
+                    let build = state
+                        .get_build_check_permissions(
+                            &build_id.id,
+                            &user,
+                            PermissionLevel::Read
+                        ).await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(build))
+                }
+            )
+        )
+        .route(
             "/list",
             get(
                 |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {

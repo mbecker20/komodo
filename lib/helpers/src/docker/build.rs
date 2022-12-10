@@ -46,6 +46,10 @@ pub async fn build(
         branch,
     )
     .await;
+    if !pull_log.success {
+        logs.push(pull_log);
+        return Ok(logs);
+    }
     logs.push(pull_log);
     if let Some(command) = pre_build {
         let mut repo_dir = repo_dir.clone();
@@ -55,6 +59,10 @@ pub async fn build(
             format!("cd {} && {}", repo_dir.display(), command.command),
         )
         .await;
+        if !pre_build_log.success {
+            logs.push(pre_build_log);
+            return Ok(logs);
+        }
         logs.push(pre_build_log);
     }
     let build_dir = repo_dir.join(build_path);

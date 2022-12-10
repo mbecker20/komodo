@@ -28,6 +28,21 @@ pub struct CreateDeploymentBody {
 pub fn router() -> Router {
     Router::new()
         .route(
+            "/:id",
+            get(
+                |Extension(state): StateExtension, Extension(user): RequestUserExtension, Path(deployment_id): Path<DeploymentId>| async move {
+                    let deployment = state
+                        .get_deployment_check_permissions(
+                            &deployment_id.id,
+                            &user,
+                            PermissionLevel::Read
+                        ).await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(deployment))
+                }
+            )
+        )
+        .route(
             "/list",
             get(
                 |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {

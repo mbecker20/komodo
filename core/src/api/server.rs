@@ -28,6 +28,21 @@ pub struct CreateServerBody {
 pub fn router() -> Router {
     Router::new()
         .route(
+            "/:id",
+            get(
+                |Extension(state): StateExtension, Extension(user): RequestUserExtension, Path(server_id): Path<ServerId>| async move {
+                    let server = state
+                        .get_server_check_permissions(
+                            &server_id.id,
+                            &user,
+                            PermissionLevel::Read
+                        ).await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(server))
+                }
+            )
+        )
+        .route(
             "/list",
             get(
                 |Extension(state): StateExtension, Extension(user): RequestUserExtension| async move {
