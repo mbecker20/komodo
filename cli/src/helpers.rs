@@ -5,7 +5,7 @@ use std::{
 
 use async_timing_util::Timelength;
 use clap::ArgMatches;
-use monitor_types::{CoreConfig, MongoConfig};
+use monitor_types::{CoreConfig, MongoConfig, PeripheryConfig};
 use rand::{distributions::Alphanumeric, Rng};
 use serde::Serialize;
 
@@ -57,14 +57,43 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
 
     write_to_toml(&path, config);
 
-    println!("core config has been generated ✅");
+    println!("\ncore config has been generated ✅");
 }
 
 pub fn start_mongo(sub_matches: &ArgMatches) {}
 
 pub fn start_core(sub_matches: &ArgMatches) {}
 
-pub fn get_periphery_config(sub_matches: &ArgMatches) {}
+pub fn gen_periphery_config(sub_matches: &ArgMatches) {
+    let path = sub_matches
+        .get_one::<String>("path")
+        .map(|p| p.as_str())
+        .unwrap_or("$HOME/.monitor/config.toml")
+        .to_string();
+    let port = sub_matches
+        .get_one::<String>("port")
+        .map(|p| p.as_str())
+        .unwrap_or("9000")
+        .parse::<u16>()
+        .expect("invalid port");
+    let repo_dir = sub_matches
+        .get_one::<String>("repo_dir")
+        .map(|p| p.as_str())
+        .unwrap_or("/repos")
+        .to_string();
+
+    let config = PeripheryConfig {
+        port,
+        repo_dir,
+        secrets: Default::default(),
+        github_accounts: Default::default(),
+        docker_accounts: Default::default(),
+    };
+
+    write_to_toml(&path, config);
+
+    println!("\nperiphery config has been generated ✅");
+}
 
 pub fn start_periphery(sub_matches: &ArgMatches) {}
 

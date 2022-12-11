@@ -531,20 +531,18 @@ fn default_core_mongo_db_name() -> String {
     "monitor".to_string()
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PeripheryConfig {
     #[serde(default = "default_periphery_port")]
     pub port: u16,
+    #[serde(default = "default_repo_dir")]
+    pub repo_dir: String,
     #[serde(default)]
-    pub is_builder: bool,
-    #[serde(default)]
-    pub docker_accounts: DockerAccounts,
+    pub secrets: SecretsMap,
     #[serde(default)]
     pub github_accounts: GithubAccounts,
     #[serde(default)]
-    pub secrets: SecretsMap,
-    #[serde(default = "default_repo_dir")]
-    pub repo_dir: String,
+    pub docker_accounts: DockerAccounts,
 }
 
 fn default_periphery_port() -> u16 {

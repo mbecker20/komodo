@@ -55,7 +55,22 @@ fn cli() -> Command {
                 .subcommand_required(true)
                 .arg_required_else_help(true)
                 .allow_external_subcommands(true)
-                .subcommand(Command::new("config_gen").about("generate a periphery config"))
+                .subcommand(
+                    Command::new("config_gen")
+                        .about("generate a periphery config")
+                        .arg(
+                            arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/config.toml'")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--port <PORT> "sets port periphery will run on. default is 9001")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--repo_dir <PATH> "sets folder that repos will be cloned into. default is /repos")
+                                .required(false)
+                        )
+                )
                 .subcommand(Command::new("start").about("start up monitor periphery")),
         )
 }
@@ -80,7 +95,7 @@ fn main() {
                 "invalid call, should be 'monitor_cli periphery <config_gen, start> <flags>'",
             );
             match periphery_command {
-                ("config_gen", sub_matches) => get_periphery_config(sub_matches),
+                ("config_gen", sub_matches) => gen_periphery_config(sub_matches),
                 ("start", sub_matches) => start_periphery(sub_matches),
                 _ => {
                     println!("invalid call, should be 'monitor_cli core <config_gen, start_mongo, start> <flags>'")
