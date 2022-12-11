@@ -19,9 +19,6 @@ pub fn load() -> CoreConfig {
 
 fn print_startup_log(config: &CoreConfig) {
     println!("starting monitor core on port {}", config.port);
-    if config.github_webhook_secret.is_none() {
-        println!("\nNOTE: you have not configured a github_webhook_secret. this is optional, but recommended if you use github repo webhooks")
-    }
 }
 
 pub fn default_config_path() -> String {

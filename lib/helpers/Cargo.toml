@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 types = { package = "monitor_types", path = "../types" }
-async_timing_util = "0.1.11"
+async_timing_util = "0.1.12"
 bollard = "0.13"
 anyhow = "1.0"
 axum = { version = "0.6", features = ["ws", "json"] }

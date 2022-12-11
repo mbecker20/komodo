@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Log, Network, Server, SystemStats, ImageSummary, BasicContainerInfo};
+use monitor_types::{BasicContainerInfo, ImageSummary, Log, Network, Server, SystemStats};
 use serde::Serialize;
 use serde_json::{json, Value};
 
@@ -58,9 +58,7 @@ impl MonitorClient {
             Option::<()>::None,
         )
         .await
-        .context(format!(
-            "failed to get networks on server id {server_id}"
-        ))
+        .context(format!("failed to get networks on server id {server_id}"))
     }
 
     pub async fn prune_docker_networks(&self, server_id: &str) -> anyhow::Result<Log> {
@@ -75,9 +73,7 @@ impl MonitorClient {
             Option::<()>::None,
         )
         .await
-        .context(format!(
-            "failed to get images on server id {server_id}"
-        ))
+        .context(format!("failed to get images on server id {server_id}"))
     }
 
     pub async fn prune_docker_images(&self, server_id: &str) -> anyhow::Result<Log> {
@@ -86,20 +82,23 @@ impl MonitorClient {
             .context(format!("failed to prune images on server id {server_id}"))
     }
 
-    pub async fn get_docker_containers(&self, server_id: &str) -> anyhow::Result<Vec<BasicContainerInfo>> {
+    pub async fn get_docker_containers(
+        &self,
+        server_id: &str,
+    ) -> anyhow::Result<Vec<BasicContainerInfo>> {
         self.get(
             &format!("/api/server/{server_id}/containers"),
             Option::<()>::None,
         )
         .await
-        .context(format!(
-            "failed to get containers on server id {server_id}"
-        ))
+        .context(format!("failed to get containers on server id {server_id}"))
     }
 
     pub async fn prune_docker_containers(&self, server_id: &str) -> anyhow::Result<Log> {
         self.post::<(), _>(&format!("/api/server/{server_id}/containers/prune"), None)
             .await
-            .context(format!("failed to prune containers on server id {server_id}"))
+            .context(format!(
+                "failed to prune containers on server id {server_id}"
+            ))
     }
 }

@@ -478,13 +478,13 @@ pub struct EnvironmentVar {
     pub value: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct OauthCredentials {
     pub id: String,
     pub secret: String,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CoreConfig {
     // port the core web server runs on
     #[serde(default = "default_core_port")]
@@ -499,8 +499,8 @@ pub struct CoreConfig {
     pub slack_url: Option<String>,
 
     // github integration
+    pub github_webhook_secret: String,
     pub github_oauth: OauthCredentials,
-    pub github_webhook_secret: Option<String>,
 
     // mongo config
     pub mongo: MongoConfig,
@@ -514,7 +514,7 @@ fn default_jwt_valid_for() -> Timelength {
     Timelength::OneWeek
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct MongoConfig {
     pub uri: String,
     #[serde(default = "default_core_mongo_app_name")]

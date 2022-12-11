@@ -47,9 +47,9 @@ dependencies = [
 
 [[package]]
 name = "async_timing_util"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "621343e4b8a4aed1ed909b273e2fcb1bba6e0b476ba5096c0c27117d86f29335"
+checksum = "62c38326e21188f3b8ccf75b2de994d2ca9fca9fcbc84420fd24569cf9aeb4b2"
 dependencies = [
  "serde",
  "serde_derive",
@@ -341,14 +341,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d4198f73e42b4936b35b5bb248d81d2b595ecb170da0bac7655c54eedfa8da8"
 dependencies = [
  "os_str_bytes",
-]
-
-[[package]]
-name = "cli"
-version = "0.1.0"
-dependencies = [
- "bollard",
- "clap",
 ]
 
 [[package]]
@@ -1262,6 +1254,20 @@ dependencies = [
  "uuid 0.8.2",
  "webpki-roots",
  "zstd",
+]
+
+[[package]]
+name = "monitor_cli"
+version = "0.1.0"
+dependencies = [
+ "async_timing_util",
+ "bollard",
+ "clap",
+ "monitor_types",
+ "rand",
+ "serde",
+ "serde_json",
+ "toml",
 ]
 
 [[package]]

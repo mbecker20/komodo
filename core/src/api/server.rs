@@ -7,7 +7,8 @@ use axum::{
 use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document};
 use types::{
-    traits::Permissioned, ImageSummary, Log, Network, PermissionLevel, Server, SystemStats, BasicContainerInfo,
+    traits::Permissioned, BasicContainerInfo, ImageSummary, Log, Network, PermissionLevel, Server,
+    SystemStats,
 };
 
 use crate::{
@@ -311,7 +312,10 @@ impl State {
             .periphery
             .container_list(&server)
             .await
-            .context(format!("failed to get containers from server {}", server.name))?;
+            .context(format!(
+                "failed to get containers from server {}",
+                server.name
+            ))?;
         Ok(images)
     }
 
@@ -323,7 +327,10 @@ impl State {
             .periphery
             .container_prune(&server)
             .await
-            .context(format!("failed to prune containers on server {}", server.name))?;
+            .context(format!(
+                "failed to prune containers on server {}",
+                server.name
+            ))?;
         Ok(log)
     }
 }
