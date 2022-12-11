@@ -55,7 +55,7 @@ impl State {
             .deployments
             .create_one(deployment)
             .await
-            .context("failed to add server to db")?;
+            .context("failed to add deployment to db")?;
         let deployment = self.db.get_deployment(&deployment_id).await?;
         let update = Update {
             target: UpdateTarget::Deployment(deployment_id),

@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Context};
 use monitor_client::{
-    types::{Build, Command, Conversion, Deployment, DockerBuildArgs, Server, SystemStats, Update},
+    types::{
+        Build, Command, Conversion, Deployment, DeploymentWithContainer, DockerBuildArgs, Server,
+        SystemStats, Update,
+    },
     MonitorClient,
 };
 
@@ -9,7 +12,7 @@ pub async fn create_test_setup(
     group_name: &str,
 ) -> anyhow::Result<(Server, Deployment, Build)> {
     let server = monitor
-        .create_server(&format!("{group_name}_server"), "http://periphery")
+        .create_server(&format!("{group_name}_server"), "http://periphery:9001")
         .await
         .context("failed at create server")?;
     let deployment = monitor
@@ -36,7 +39,9 @@ pub async fn get_server_stats(monitor: &MonitorClient) -> anyhow::Result<SystemS
     Ok(stats)
 }
 
-pub async fn deploy_mongo(monitor: &MonitorClient) -> anyhow::Result<Update> {
+pub async fn deploy_mongo(
+    monitor: &MonitorClient,
+) -> anyhow::Result<(Update, DeploymentWithContainer)> {
     let servers = monitor
         .list_servers(None)
         .await
@@ -53,7 +58,8 @@ pub async fn deploy_mongo(monitor: &MonitorClient) -> anyhow::Result<Update> {
     let deployment = monitor.update_deployment(deployment).await?;
     println!("updated deployment");
     let update = monitor.deploy(&deployment.id).await?;
-    Ok(update)
+    let container = monitor.get_deployment(&deployment.id).await?;
+    Ok((update, container))
 }
 
 pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {

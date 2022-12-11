@@ -37,9 +37,13 @@ async fn create_user_handler(
 ) -> anyhow::Result<String> {
     let password = bcrypt::hash(password, BCRYPT_COST).context("failed to hash password")?;
 
+    let no_users_exist = state.db.users.find_one(None, None).await?.is_none();
+
     let user = User {
         username,
         password: Some(password),
+        enabled: no_users_exist,
+        admin: no_users_exist,
         ..Default::default()
     };
 

@@ -22,11 +22,11 @@ async fn main() -> anyhow::Result<()> {
 
     // let (server, deployment, build) = create_test_setup(&monitor, "test").await?;
 
-    // let update = deploy_mongo(&monitor).await?;
-    // println!("{update:#?}");
+    let (update, container) = deploy_mongo(&monitor).await?;
+    println!("{update:#?}\n{container:#?}");
 
-    let update = test_build(&monitor).await?;
-    println!("{update:#?}");
+    // let update = test_build(&monitor).await?;
+    // println!("{update:#?}");
 
     let end_ts = unix_timestamp_ms();
     let finished_in = (end_ts - start_ts) as f64 / 1000.0;

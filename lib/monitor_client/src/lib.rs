@@ -63,7 +63,17 @@ impl MonitorClient {
         Ok(client)
     }
 
-    async fn create_user(
+    pub async fn new_with_new_account(
+        url: &str,
+        username: impl Into<String>,
+        password: impl Into<String>,
+    ) -> anyhow::Result<MonitorClient> {
+        let mut client = MonitorClient::new_with_token(url, "");
+        client.token = client.create_user(username, password).await?;
+        Ok(client)
+    }
+
+    pub async fn create_user(
         &self,
         username: impl Into<String>,
         password: impl Into<String>,

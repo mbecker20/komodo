@@ -52,7 +52,12 @@ impl State {
             ..Default::default()
         };
         let start_ts = unix_timestamp_ms() as i64;
-        let build_id = self.db.builds.create_one(build).await?;
+        let build_id = self
+            .db
+            .builds
+            .create_one(build)
+            .await
+            .context("failed at adding build to db")?;
         let build = self.db.get_build(&build_id).await?;
         let update = Update {
             target: UpdateTarget::Build(build_id),
