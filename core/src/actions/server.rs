@@ -33,7 +33,7 @@ impl State {
         address: String,
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
-        if !user.is_admin {
+        if !user.is_admin && !user.create_server_permissions {
             return Err(anyhow!(
                 "user does not have permissions to add server (not admin)"
             ));

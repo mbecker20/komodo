@@ -102,6 +102,24 @@
 				"cwd": "${workspaceFolder}/tests"
 			},
 			"problemMatcher": []
+		},
+		{
+			"type": "shell",
+			"command": "docker compose down && docker compose up -d",
+			"label": "docker compose restart",
+			"options": {
+				"cwd": "${workspaceFolder}/tests"
+			},
+			"problemMatcher": []
+		},
+		{
+			"type": "shell",
+			"command": "docker compose build && docker compose down && docker compose up -d",
+			"label": "docker compose build and restart",
+			"options": {
+				"cwd": "${workspaceFolder}/tests"
+			},
+			"problemMatcher": []
 		}
 	]
 }

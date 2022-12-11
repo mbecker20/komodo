@@ -47,7 +47,6 @@ pub async fn deploy_mongo(
         .await
         .context("failed at list servers")?;
     let server = servers.get(0).ok_or(anyhow!("no servers"))?;
-    println!("got server");
     let mut deployment = monitor.create_deployment("mongo_test", &server.id).await?;
     println!("created deployment");
     deployment.docker_run_args.image = "mongo".to_string();
@@ -68,9 +67,8 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
         .await
         .context("failed at list servers")?;
     let server = servers.get(0).ok_or(anyhow!("no servers"))?;
-    println!("got server");
-    let mut build = monitor.create_build("periphery", &server.id).await?;
-    println!("created build");
+    let mut build = monitor.create_build("old_periphery", &server.id).await?;
+    println!("created build. updating...");
     build.repo = Some("mbecker20/monitor".to_string());
     build.on_clone = Some(Command {
         path: ".".to_string(),
@@ -85,7 +83,7 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
         dockerfile_path: None,
     });
     let build = monitor.update_build(build).await?;
-    println!("updated build");
+    println!("updated build.");
     let update = monitor.build(&build.id).await?;
     Ok(update)
 }

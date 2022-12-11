@@ -48,6 +48,9 @@ pub struct User {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub admin: bool,
 
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub create_server_permissions: bool,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub avatar: Option<String>,
@@ -70,8 +73,10 @@ pub struct User {
     pub google_id: Option<String>,
 
     #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
     pub created_at: i64,
     #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
     pub updated_at: i64,
 }
 
@@ -130,8 +135,10 @@ pub struct Server {
     pub instance_id: Option<String>,
 
     #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
     pub created_at: i64,
     #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
     pub updated_at: i64,
 }
 
@@ -222,8 +229,10 @@ pub struct Deployment {
     pub on_clone: Option<Command>,
 
     #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
     pub created_at: i64,
     #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
     pub updated_at: i64,
 }
 
@@ -283,8 +292,10 @@ pub struct Build {
     pub docker_account: Option<String>,
 
     #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
     pub created_at: i64,
     #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
     pub updated_at: i64,
 }
 

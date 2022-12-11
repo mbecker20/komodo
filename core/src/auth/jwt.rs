@@ -17,6 +17,7 @@ pub type RequestUserExtension = Extension<Arc<RequestUser>>;
 pub struct RequestUser {
     pub id: String,
     pub is_admin: bool,
+    pub create_server_permissions: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -93,6 +94,7 @@ impl JwtClient {
                 let user = RequestUser {
                     id: claims.id,
                     is_admin: user.admin,
+                    create_server_permissions: user.create_server_permissions,
                 };
                 Ok(user)
             } else {

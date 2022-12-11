@@ -1,7 +1,11 @@
 FROM rust:latest as builder
 WORKDIR /core
 
-COPY . .
+COPY ./lib/db_client .
+COPY ./lib/helpers .
+COPY ./lib/periphery_client .
+COPY ./lib/types .
+COPY ./core .
 
 RUN cargo build -p core --release
 

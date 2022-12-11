@@ -1,7 +1,9 @@
 FROM rust:latest as builder
 WORKDIR /periphery
 
-COPY . .
+COPY ./lib/helpers .
+COPY ./lib/types .
+COPY ./periphery .
 
 RUN cargo build -p periphery --release
 

@@ -38,6 +38,7 @@ impl DbClient {
             builds: builds_collection(&mungos, db_name)
                 .await
                 .expect("failed to make builds collection"),
+            // build_records:
             updates: updates_collection(&mungos, db_name)
                 .await
                 .expect("failed to make updates collection"),
