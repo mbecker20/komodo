@@ -60,9 +60,39 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
     println!("\ncore config has been generated ✅");
 }
 
-pub fn start_mongo(sub_matches: &ArgMatches) {}
+pub fn start_mongo(sub_matches: &ArgMatches) {
+    let username = sub_matches
+        .get_one::<String>("username")
+        .map(|p| p.to_string());
+    let password = sub_matches
+        .get_one::<String>("password")
+        .map(|p| p.to_string());
 
-pub fn start_core(sub_matches: &ArgMatches) {}
+    if (username.is_some() && password.is_none()) {
+        println!("must provide --password if username is provided ❌");
+        return;
+    }
+    if (username.is_none() && password.is_some()) {
+        println!("must provide --username if password is provided ❌");
+        return;
+    }
+
+    // start mongo here
+
+    println!("\nmonitor mongo has been started up ✅")
+}
+
+pub fn start_core(sub_matches: &ArgMatches) {
+    let config_path = sub_matches
+        .get_one::<String>("config_path")
+        .map(|p| p.as_str())
+        .unwrap_or("$HOME/.monitor/config.toml")
+        .to_string();
+
+    // start core here
+
+    println!("\nmonitor core has been started up ✅");
+}
 
 pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     let path = sub_matches
@@ -76,15 +106,10 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
         .unwrap_or("9000")
         .parse::<u16>()
         .expect("invalid port");
-    let repo_dir = sub_matches
-        .get_one::<String>("repo_dir")
-        .map(|p| p.as_str())
-        .unwrap_or("/repos")
-        .to_string();
 
     let config = PeripheryConfig {
         port,
-        repo_dir,
+        repo_dir: "/repos".to_string(),
         secrets: Default::default(),
         github_accounts: Default::default(),
         docker_accounts: Default::default(),
@@ -95,7 +120,22 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     println!("\nperiphery config has been generated ✅");
 }
 
-pub fn start_periphery(sub_matches: &ArgMatches) {}
+pub fn start_periphery(sub_matches: &ArgMatches) {
+    let config_path = sub_matches
+        .get_one::<String>("config_path")
+        .map(|p| p.as_str())
+        .unwrap_or("$HOME/.monitor/config.toml")
+        .to_string();
+    let repo_dir = sub_matches
+        .get_one::<String>("repo_dir")
+        .map(|p| p.as_str())
+        .unwrap_or("$HOME/.monitor/repos")
+        .to_string();
+
+    // start periphery here
+
+    println!("\nmonitor periphery has been started up ✅");
+}
 
 fn write_to_toml(path: &str, toml: impl Serialize) {
     fs::write(
