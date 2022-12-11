@@ -38,16 +38,17 @@ impl State {
                 "user does not have permissions to add server (not admin)"
             ));
         }
+        let start_ts = unix_timestamp_ms() as i64;
         let server = Server {
             name: to_monitor_name(name),
             address,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
                 .collect(),
+            created_at: start_ts,
+            updated_at: start_ts,
             ..Default::default()
         };
-
-        let start_ts = unix_timestamp_ms() as i64;
         let server_id = self
             .db
             .servers
@@ -105,6 +106,7 @@ impl State {
 
         new_server.permissions = current_server.permissions.clone();
         let diff = current_server.diff(&new_server);
+        new_server.updated_at = start_ts;
 
         self.db
             .servers

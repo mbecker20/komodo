@@ -40,12 +40,15 @@ impl State {
     ) -> anyhow::Result<Build> {
         self.get_server_check_permissions(&server_id, user, PermissionLevel::Write)
             .await?;
+        let start_ts = unix_timestamp_ms() as i64;
         let build = Build {
             name: to_monitor_name(name),
             server_id,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
                 .collect(),
+            created_at: start_ts,
+            updated_at: start_ts,
             ..Default::default()
         };
         let start_ts = unix_timestamp_ms() as i64;
@@ -104,7 +107,9 @@ impl State {
         let current_build = self
             .get_build_check_permissions(&new_build.id, user, PermissionLevel::Write)
             .await?;
+        let start_ts = unix_timestamp_ms() as i64;
         new_build.permissions = current_build.permissions.clone();
+        new_build.updated_at = start_ts;
 
         self.db
             .builds
@@ -117,7 +122,7 @@ impl State {
         let mut update = Update {
             operation: Operation::UpdateBuild,
             target: UpdateTarget::Build(new_build.id.clone()),
-            start_ts: unix_timestamp_ms() as i64,
+            start_ts,
             status: UpdateStatus::InProgress,
             logs: vec![Log::simple(serde_json::to_string_pretty(&diff).unwrap())],
             operator: user.id.clone(),

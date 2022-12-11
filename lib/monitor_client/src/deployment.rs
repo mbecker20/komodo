@@ -15,9 +15,15 @@ impl MonitorClient {
             .context("failed at list deployments")
     }
 
-    pub async fn get_deployment(&self, deployment_id: &str) -> anyhow::Result<DeploymentWithContainer> {
-        self.get(&format!("/api/deployment/{deployment_id}"), Option::<()>::None)
-            .await
+    pub async fn get_deployment(
+        &self,
+        deployment_id: &str,
+    ) -> anyhow::Result<DeploymentWithContainer> {
+        self.get(
+            &format!("/api/deployment/{deployment_id}"),
+            Option::<()>::None,
+        )
+        .await
     }
 
     pub async fn create_deployment(

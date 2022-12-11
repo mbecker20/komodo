@@ -68,6 +68,11 @@ pub struct User {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub google_id: Option<String>,
+
+    #[serde(default)]
+    pub created_at: i64,
+    #[serde(default)]
+    pub updated_at: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
@@ -123,22 +128,29 @@ pub struct Server {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub instance_id: Option<String>,
+
+    #[serde(default)]
+    pub created_at: i64,
+    #[serde(default)]
+    pub updated_at: i64,
 }
 
 impl Default for Server {
     fn default() -> Self {
         Self {
-            id: String::default(),
-            name: String::new(),
-            address: String::new(),
-            permissions: HashMap::new(),
-            to_notify: Vec::new(),
+            id: Default::default(),
+            name: Default::default(),
+            address: Default::default(),
+            permissions: Default::default(),
+            to_notify: Default::default(),
             cpu_alert: default_cpu_alert(),
             mem_alert: default_mem_alert(),
             disk_alert: default_disk_alert(),
-            stats_interval: None,
-            region: None,
-            instance_id: None,
+            stats_interval: Default::default(),
+            region: Default::default(),
+            instance_id: Default::default(),
+            created_at: Default::default(),
+            updated_at: Default::default(),
         }
     }
 }
@@ -208,6 +220,11 @@ pub struct Deployment {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_clone: Option<Command>,
+
+    #[serde(default)]
+    pub created_at: i64,
+    #[serde(default)]
+    pub updated_at: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -264,6 +281,11 @@ pub struct Build {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>,
+
+    #[serde(default)]
+    pub created_at: i64,
+    #[serde(default)]
+    pub updated_at: i64,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

@@ -39,15 +39,17 @@ impl State {
     ) -> anyhow::Result<Deployment> {
         self.get_server_check_permissions(&server_id, user, PermissionLevel::Write)
             .await?;
+        let start_ts = unix_timestamp_ms() as i64;
         let deployment = Deployment {
             name: to_monitor_name(name),
             server_id,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
                 .collect(),
+            created_at: start_ts,
+            updated_at: start_ts,
             ..Default::default()
         };
-        let start_ts = unix_timestamp_ms() as i64;
         let deployment_id = self
             .db
             .deployments
@@ -111,7 +113,9 @@ impl State {
         let current_deployment = self
             .get_deployment_check_permissions(&new_deployment.id, user, PermissionLevel::Write)
             .await?;
+        let start_ts = unix_timestamp_ms() as i64;
         new_deployment.permissions = current_deployment.permissions.clone();
+        new_deployment.updated_at = start_ts;
 
         self.db
             .deployments
@@ -127,7 +131,7 @@ impl State {
         let mut update = Update {
             operation: Operation::UpdateDeployment,
             target: UpdateTarget::Deployment(new_deployment.id.clone()),
-            start_ts: unix_timestamp_ms() as i64,
+            start_ts,
             status: UpdateStatus::InProgress,
             logs: vec![Log::simple(serde_json::to_string_pretty(&diff).unwrap())],
             operator: user.id.clone(),
