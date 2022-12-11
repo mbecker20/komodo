@@ -1,9 +1,11 @@
 use axum::{routing::get, Router};
+use helpers::docker::DockerClient;
 
 mod accounts;
 mod build;
 mod container;
 mod git;
+mod image;
 mod network;
 mod stats;
 
@@ -16,4 +18,6 @@ pub fn router() -> Router {
         .nest("/stats", stats::router())
         .nest("/git", git::router())
         .nest("/build", build::router())
+        .nest("/image", image::router())
+        .layer(DockerClient::extension())
 }

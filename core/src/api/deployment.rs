@@ -73,7 +73,7 @@ pub fn router() -> Router {
             ),
         )
         .route(
-            "/delete/:id",
+            "/:id/delete",
             delete(
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
@@ -101,7 +101,7 @@ pub fn router() -> Router {
             ),
         )
         .route(
-            "/deploy/:id",
+            "/:id/deploy",
             post(
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
@@ -115,7 +115,7 @@ pub fn router() -> Router {
             ),
         )
         .route(
-            "/reclone/:id",
+            "/:id/reclone",
             post(
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,

@@ -1,9 +1,13 @@
 use serde_json::json;
-use types::{Log, Server};
+use types::{Log, Network, Server};
 
 use crate::PeripheryClient;
 
 impl PeripheryClient {
+    pub async fn network_list(&self, server: &Server) -> anyhow::Result<Vec<Network>> {
+        self.get_json(server, "/network/list").await
+    }
+
     pub async fn network_create(
         &self,
         server: &Server,

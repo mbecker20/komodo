@@ -8,7 +8,7 @@ use bollard::{
 };
 use futures::{future::join_all, Stream};
 use futures_util::stream::StreamExt;
-use types::{BasicContainerInfo, DockerContainerState};
+use types::{BasicContainerInfo, DockerContainerState, ImageSummary, Network};
 
 pub use bollard::container::Stats;
 
@@ -113,5 +113,15 @@ impl DockerClient {
             .into_iter()
             .collect::<anyhow::Result<_>>()?;
         Ok(stats)
+    }
+
+    pub async fn list_networks(&self) -> anyhow::Result<Vec<Network>> {
+        let networks = self.docker.list_networks::<String>(None).await?;
+        Ok(networks)
+    }
+
+    pub async fn list_images(&self) -> anyhow::Result<Vec<ImageSummary>> {
+        let images = self.docker.list_images::<String>(None).await?;
+        Ok(images)
     }
 }

@@ -6,6 +6,7 @@ use types::{Server, SystemStats};
 mod build;
 mod container;
 mod git;
+mod image;
 mod network;
 
 pub struct PeripheryClient {

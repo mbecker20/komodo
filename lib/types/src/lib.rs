@@ -6,6 +6,8 @@ use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
+pub use bollard::service::{ImageSummary, Network};
+
 pub mod traits;
 
 pub const PERIPHERY_BUILDER_BUSY: &str = "builder is busy";

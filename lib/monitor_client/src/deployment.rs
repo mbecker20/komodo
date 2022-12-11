@@ -42,7 +42,7 @@ impl MonitorClient {
     }
 
     pub async fn delete_deployment(&self, id: &str) -> anyhow::Result<Deployment> {
-        self.delete::<(), _>(&format!("/api/deployment/delete/{id}"), None)
+        self.delete::<(), _>(&format!("/api/deployment/{id}/delete"), None)
             .await
             .context(format!("failed at deleting deployment {id}"))
     }
@@ -54,13 +54,13 @@ impl MonitorClient {
     }
 
     pub async fn deploy(&self, deployment_id: &str) -> anyhow::Result<Update> {
-        self.post::<(), _>(&format!("/api/deployment/deploy/{deployment_id}"), None)
+        self.post::<(), _>(&format!("/api/deployment/{deployment_id}/deploy"), None)
             .await
             .context(format!("failed at deploy deployment {deployment_id}"))
     }
 
     pub async fn reclone_deployment(&self, id: &str) -> anyhow::Result<Update> {
-        self.post::<(), _>(&format!("/api/deployment/reclone/{id}"), None)
+        self.post::<(), _>(&format!("/api/deployment/{id}/reclone"), None)
             .await
             .context(format!("failed at reclone deployment {id}"))
     }

@@ -29,7 +29,7 @@ impl MonitorClient {
     }
 
     pub async fn delete_build(&self, id: &str) -> anyhow::Result<Build> {
-        self.delete::<(), _>(&format!("/api/build/delete/{id}"), None)
+        self.delete::<(), _>(&format!("/api/build/{id}/delete"), None)
             .await
             .context(format!("failed at deleting build {id}"))
     }
@@ -41,13 +41,13 @@ impl MonitorClient {
     }
 
     pub async fn build(&self, build_id: &str) -> anyhow::Result<Update> {
-        self.post::<(), _>(&format!("/api/build/build/{build_id}"), None)
+        self.post::<(), _>(&format!("/api/build/{build_id}/build"), None)
             .await
             .context(format!("failed at building build {build_id}"))
     }
 
     pub async fn reclone_build(&self, id: &str) -> anyhow::Result<Update> {
-        self.post::<(), _>(&format!("/api/build/reclone/{id}"), None)
+        self.post::<(), _>(&format!("/api/build/{id}/reclone"), None)
             .await
             .context(format!("failed at recloning build {id}"))
     }

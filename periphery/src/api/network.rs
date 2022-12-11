@@ -1,6 +1,14 @@
-use axum::{routing::post, Json, Router};
-use helpers::docker;
+use axum::{
+    routing::{get, post},
+    Extension, Json, Router,
+};
+use helpers::{
+    docker::{self, DockerExtension},
+    handle_anyhow_error,
+};
 use serde::Deserialize;
+
+use crate::response;
 
 #[derive(Deserialize, Clone)]
 pub struct NetworkReqBody {
@@ -10,6 +18,13 @@ pub struct NetworkReqBody {
 
 pub fn router() -> Router {
     Router::new()
+        .route(
+            "/list",
+            get(|Extension(docker): DockerExtension| async move {
+                let networks = docker.list_networks().await.map_err(handle_anyhow_error)?;
+                response!(Json(networks))
+            }),
+        )
         .route(
             "/create",
             post(|Json(body): Json<NetworkReqBody>| async move {

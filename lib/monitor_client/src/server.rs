@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Server, SystemStats};
+use monitor_types::{Log, Network, Server, SystemStats, ImageSummary, BasicContainerInfo};
 use serde::Serialize;
 use serde_json::{json, Value};
 
@@ -32,7 +32,7 @@ impl MonitorClient {
     }
 
     pub async fn delete_server(&self, id: &str) -> anyhow::Result<Server> {
-        self.delete::<(), _>(&format!("/api/server/delete/{id}"), None)
+        self.delete::<(), _>(&format!("/api/server/{id}/delete"), None)
             .await
             .context(format!("failed at delete server {id}"))
     }
@@ -43,9 +43,63 @@ impl MonitorClient {
             .context("failed at update server")
     }
 
-    pub async fn get_server_stats(&self, id: &str) -> anyhow::Result<SystemStats> {
-        self.get(&format!("/api/server/stats/{id}"), Option::<()>::None)
+    pub async fn get_server_stats(&self, server_id: &str) -> anyhow::Result<SystemStats> {
+        self.get(
+            &format!("/api/server/{server_id}/stats"),
+            Option::<()>::None,
+        )
+        .await
+        .context(format!("failed to get server stats at id {server_id}"))
+    }
+
+    pub async fn get_docker_networks(&self, server_id: &str) -> anyhow::Result<Vec<Network>> {
+        self.get(
+            &format!("/api/server/{server_id}/networks"),
+            Option::<()>::None,
+        )
+        .await
+        .context(format!(
+            "failed to get networks on server id {server_id}"
+        ))
+    }
+
+    pub async fn prune_docker_networks(&self, server_id: &str) -> anyhow::Result<Log> {
+        self.post::<(), _>(&format!("/api/server/{server_id}/networks/prune"), None)
             .await
-            .context(format!("failed to get server stats at id {id}"))
+            .context(format!("failed to prune networks on server id {server_id}"))
+    }
+
+    pub async fn get_docker_images(&self, server_id: &str) -> anyhow::Result<Vec<ImageSummary>> {
+        self.get(
+            &format!("/api/server/{server_id}/images"),
+            Option::<()>::None,
+        )
+        .await
+        .context(format!(
+            "failed to get images on server id {server_id}"
+        ))
+    }
+
+    pub async fn prune_docker_images(&self, server_id: &str) -> anyhow::Result<Log> {
+        self.post::<(), _>(&format!("/api/server/{server_id}/images/prune"), None)
+            .await
+            .context(format!("failed to prune images on server id {server_id}"))
+    }
+
+    pub async fn get_docker_containers(&self, server_id: &str) -> anyhow::Result<Vec<BasicContainerInfo>> {
+        self.get(
+            &format!("/api/server/{server_id}/containers"),
+            Option::<()>::None,
+        )
+        .await
+        .context(format!(
+            "failed to get containers on server id {server_id}"
+        ))
+    }
+
+    pub async fn prune_docker_containers(&self, server_id: &str) -> anyhow::Result<Log> {
+        self.post::<(), _>(&format!("/api/server/{server_id}/containers/prune"), None)
+            .await
+            .context(format!("failed to prune containers on server id {server_id}"))
     }
 }

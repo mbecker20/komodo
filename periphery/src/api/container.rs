@@ -5,7 +5,7 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::{
-    docker::{self, DockerClient, DockerExtension},
+    docker::{self, DockerExtension},
     handle_anyhow_error, to_monitor_name,
 };
 use serde::Deserialize;
@@ -71,7 +71,6 @@ pub fn router() -> Router {
             "/prune",
             post(|| async { Json(docker::prune_containers().await) }),
         )
-        .layer(DockerClient::extension())
 }
 
 async fn deploy(
