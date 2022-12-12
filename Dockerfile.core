@@ -1,11 +1,19 @@
 FROM rust:latest as builder
-WORKDIR /core
+WORKDIR /builder
 
-COPY . .
+COPY ./core ./core
 
-RUN cargo build -p core --release
+COPY ./lib/types ./lib/types
+COPY ./lib/helpers ./lib/helpers
+
+COPY ./lib/db_client ./lib/db_client
+COPY ./lib/periphery_client ./lib/periphery_client
+
+RUN cd core && cargo build --release
 
 FROM gcr.io/distroless/cc
-COPY --from=builder /core/target/release/core /
+COPY --from=builder /builder/core/target/release/core /
+
+EXPOSE 9000
 
 CMD ["./core"]

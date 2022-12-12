@@ -86,7 +86,10 @@ impl State {
             start_ts,
             end_ts: Some(unix_timestamp_ms() as i64),
             operator: user.id.clone(),
-            logs: vec![Log::simple(format!("deleted server {}", server.name))],
+            logs: vec![Log::simple(
+                "delete server",
+                format!("deleted server {}", server.name),
+            )],
             success: true,
             ..Default::default()
         };
@@ -120,7 +123,10 @@ impl State {
             start_ts,
             end_ts: Some(unix_timestamp_ms() as i64),
             status: UpdateStatus::Complete,
-            logs: vec![Log::simple(serde_json::to_string_pretty(&diff).unwrap())],
+            logs: vec![Log::simple(
+                "server update",
+                serde_json::to_string_pretty(&diff).unwrap(),
+            )],
             operator: user.id.clone(),
             success: true,
             ..Default::default()

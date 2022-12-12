@@ -16,11 +16,11 @@ services:
     depends_on:
       - mongo
 
-  periphery:
-    image: periphery
+  periphery-full:
+    image: periphery-full
     build:
       context: ..
-      dockerfile: Dockerfile.periphery
+      dockerfile: Dockerfile.periphery_full
     ports:
       - "9001:9001"
     networks:
@@ -29,7 +29,23 @@ services:
       - CONFIG_PATH=/config/config.toml
     volumes:
       - "/Users/max/monitor/periphery:/config"
-      - "/Users/max/monitor/repos:/repos"
+      - "/Users/max/monitor/repos-full:/repos"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  periphery-slim:
+    image: periphery-slim
+    build:
+      context: ..
+      dockerfile: Dockerfile.periphery_slim
+    ports:
+      - "9002:9001"
+    networks:
+      - monitor-network
+    environment:
+      - CONFIG_PATH=/config/config.toml
+    volumes:
+      - "/Users/max/monitor/periphery:/config"
+      - "/Users/max/monitor/repos-slim:/repos"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   mongo:

@@ -93,10 +93,13 @@ impl State {
             operator: user.id.clone(),
             logs: vec![
                 log,
-                Log::simple(format!(
-                    "deleted deployment {} on server {}",
-                    deployment.name, server.name
-                )),
+                Log::simple(
+                    "delete deployment",
+                    format!(
+                        "deleted deployment {} on server {}",
+                        deployment.name, server.name
+                    ),
+                ),
             ],
             success: true,
             ..Default::default()
@@ -133,7 +136,10 @@ impl State {
             target: UpdateTarget::Deployment(new_deployment.id.clone()),
             start_ts,
             status: UpdateStatus::InProgress,
-            logs: vec![Log::simple(serde_json::to_string_pretty(&diff).unwrap())],
+            logs: vec![Log::simple(
+                "deployment update",
+                serde_json::to_string_pretty(&diff).unwrap(),
+            )],
             operator: user.id.clone(),
             success: true,
             ..Default::default()
@@ -201,6 +207,7 @@ impl State {
 
         let deploy_log = self.periphery.deploy(&server, &deployment).await?;
 
+        update.success = deploy_log.success;
         update.logs.push(deploy_log);
         update.status = UpdateStatus::Complete;
         update.end_ts = Some(unix_timestamp_ms() as i64);

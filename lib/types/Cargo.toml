@@ -11,7 +11,7 @@ license = "MIT"
 [dependencies]
 serde = "1.0"
 serde_derive = "1.0"
-mungos = "0.2.24"
+bson = "2.4"
 strum = "0.24"
 strum_macros = "0.24"
 async_timing_util = "0.1.12"

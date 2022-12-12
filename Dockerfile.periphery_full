@@ -1,0 +1,20 @@
+FROM rust:latest as builder
+WORKDIR /builder
+
+COPY ./periphery ./periphery
+
+COPY ./lib/types ./lib/types
+COPY ./lib/helpers ./lib/helpers
+
+RUN cd periphery && cargo build --release
+
+FROM debian:stable-slim
+
+COPY ./install_full_periphery_deps.sh ./
+RUN sh ./install_full_periphery_deps.sh
+
+COPY --from=builder /builder/periphery/target/release/periphery /usr/local/bin/periphery
+
+EXPOSE 9001
+
+CMD "periphery"

@@ -51,9 +51,10 @@ async fn delete_repo(
     repo_dir.push(&name);
     let destination = repo_dir.display().to_string();
     let deleted = std::fs::remove_dir_all(destination);
-    let log = match deleted {
-        Ok(_) => Log::simple(format!("deleted repo {name}")),
-        Err(_) => Log::simple(format!("no repo at {name} to delete")),
+    let msg = match deleted {
+        Ok(_) => format!("deleted repo {name}"),
+        Err(_) => format!("no repo at {name} to delete"),
     };
+    let log = Log::simple("delete repo", msg);
     Ok(Json(log))
 }

@@ -92,10 +92,10 @@ impl State {
             operator: user.id.clone(),
             logs: vec![
                 delete_repo_log,
-                Log::simple(format!(
-                    "deleted build {} on server {}",
-                    build.name, server.name
-                )),
+                Log::simple(
+                    "delete build",
+                    format!("deleted build {} on server {}", build.name, server.name),
+                ),
             ],
             success: true,
             ..Default::default()
@@ -129,7 +129,10 @@ impl State {
             target: UpdateTarget::Build(new_build.id.clone()),
             start_ts,
             status: UpdateStatus::InProgress,
-            logs: vec![Log::simple(serde_json::to_string_pretty(&diff).unwrap())],
+            logs: vec![Log::simple(
+                "build update",
+                serde_json::to_string_pretty(&diff).unwrap(),
+            )],
             operator: user.id.clone(),
             success: true,
             ..Default::default()

@@ -57,7 +57,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
 
     write_to_toml(&path, config);
 
-    println!("\ncore config has been generated ✅");
+    println!("\n✅ core config has been generated ✅\n");
 }
 
 pub fn start_mongo(sub_matches: &ArgMatches) {
@@ -79,7 +79,7 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
 
     // start mongo here
 
-    println!("\nmonitor mongo has been started up ✅")
+    println!("\n✅ monitor mongo has been started up ✅\n")
 }
 
 pub fn start_core(sub_matches: &ArgMatches) {
@@ -91,7 +91,7 @@ pub fn start_core(sub_matches: &ArgMatches) {
 
     // start core here
 
-    println!("\nmonitor core has been started up ✅");
+    println!("\n✅ monitor core has been started up ✅\n");
 }
 
 pub fn gen_periphery_config(sub_matches: &ArgMatches) {
@@ -117,7 +117,7 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
 
     write_to_toml(&path, config);
 
-    println!("\nperiphery config has been generated ✅");
+    println!("\n✅ periphery config has been generated ✅\n");
 }
 
 pub fn start_periphery(sub_matches: &ArgMatches) {
@@ -134,7 +134,7 @@ pub fn start_periphery(sub_matches: &ArgMatches) {
 
     // start periphery here
 
-    println!("\nmonitor periphery has been started up ✅");
+    println!("\n✅ monitor periphery has been started up ✅\n");
 }
 
 fn write_to_toml(path: &str, toml: impl Serialize) {
@@ -142,7 +142,7 @@ fn write_to_toml(path: &str, toml: impl Serialize) {
         path,
         toml::to_string(&toml).expect("failed to parse config into toml"),
     )
-    .expect("failed to write toml to file");
+    .expect("❌ failed to write toml to file ❌");
 }
 
 fn generate_secret(length: usize) -> String {

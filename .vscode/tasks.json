@@ -120,6 +120,15 @@
 				"cwd": "${workspaceFolder}/tests"
 			},
 			"problemMatcher": []
+		},
+		{
+			"type": "shell",
+			"command": "docker compose build periphery",
+			"label": "docker compose build periphery",
+			"options": {
+				"cwd": "${workspaceFolder}/tests"
+			},
+			"problemMatcher": []
 		}
 	]
 }

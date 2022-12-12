@@ -1288,8 +1288,8 @@ version = "0.1.1"
 dependencies = [
  "async_timing_util",
  "bollard",
+ "bson",
  "diff-struct",
- "mungos",
  "serde",
  "serde_derive",
  "strum",

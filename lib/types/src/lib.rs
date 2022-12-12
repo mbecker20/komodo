@@ -1,8 +1,8 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use async_timing_util::{unix_timestamp_ms, Timelength};
+use bson::serde_helpers::hex_string_as_object_id;
 use diff::{Diff, HashMapDiff, OptionDiff, VecDiff};
-use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
@@ -413,9 +413,10 @@ pub struct Log {
 }
 
 impl Log {
-    pub fn simple(msg: String) -> Log {
+    pub fn simple(stage: &str, msg: String) -> Log {
         let ts = unix_timestamp_ms() as i64;
         Log {
+            stage: stage.to_string(),
             stdout: msg,
             success: true,
             start_ts: ts,
@@ -561,34 +562,34 @@ pub struct UserCredentials {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SystemStats {
-    pub cpu: f32,       // in %
-    pub mem_used: f64,  // in MB
-    pub mem_total: f64, // in MB
+    pub cpu_perc: f32,     // in %
+    pub mem_used_gb: f64,  // in GB
+    pub mem_total_gb: f64, // in GB
     pub disk: DiskUsage,
     pub networks: Vec<SystemNetwork>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DiskUsage {
-    pub used: f64,  // in GB
-    pub total: f64, // in GB
-    pub read: f64,  // in kB
-    pub write: f64, // in kB
+    pub used_gb: f64,  // in GB
+    pub total_gb: f64, // in GB
+    pub read_kb: f64,  // in kB
+    pub write_kb: f64, // in kB
     pub disks: Vec<SingleDiskUsage>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SingleDiskUsage {
     pub mount: PathBuf,
-    pub used: f64,  // in GB
-    pub total: f64, // in GB
+    pub used_gb: f64,  // in GB
+    pub total_gb: f64, // in GB
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SystemNetwork {
     pub name: String,
-    pub recieved: f64,    // in kB
-    pub transmitted: f64, // in kB
+    pub recieved_kb: f64,    // in kB
+    pub transmitted_kb: f64, // in kB
 }
 
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]

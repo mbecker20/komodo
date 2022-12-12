@@ -11,18 +11,36 @@ pub async fn create_test_setup(
     monitor: &MonitorClient,
     group_name: &str,
 ) -> anyhow::Result<(Server, Deployment, Build)> {
-    let server = monitor
-        .create_server(&format!("{group_name}_server"), "http://periphery:9001")
-        .await
-        .context("failed at create server")?;
-    let deployment = monitor
-        .create_deployment(&format!("{group_name}"), &server.id)
-        .await
-        .context("failed at create deployment")?;
-    let build = monitor
-        .create_build(&format!("{group_name}_build"), &server.id)
-        .await
-        .context("failed at create build")?;
+    let mut servers = monitor.list_servers(None).await?;
+    let server = if servers.is_empty() {
+        monitor
+            .create_server(
+                &format!("{group_name}_server"),
+                "http://periphery-full:9001",
+            )
+            .await
+            .context("failed at create server")?
+    } else {
+        servers.pop().unwrap()
+    };
+    let mut deployments = monitor.list_deployments(None).await?;
+    let deployment = if deployments.is_empty() {
+        monitor
+            .create_deployment(&format!("{group_name}_deployment"), &server.id)
+            .await
+            .context("failed at create deployment")?
+    } else {
+        deployments.pop().unwrap().deployment
+    };
+    let mut builds = monitor.list_builds(None).await?;
+    let build = if builds.is_empty() {
+        monitor
+            .create_build(&format!("{group_name}_build"), &server.id)
+            .await
+            .context("failed at create build")?
+    } else {
+        builds.pop().unwrap()
+    };
     Ok((server, deployment, build))
 }
 
