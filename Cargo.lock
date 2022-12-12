@@ -1265,6 +1265,7 @@ dependencies = [
  "clap",
  "monitor_types",
  "rand",
+ "run_command",
  "serde",
  "serde_json",
  "toml",

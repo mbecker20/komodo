@@ -1,12 +1,13 @@
 use std::{
     fs::{self, File},
-    io::Write,
+    io::{Write, Read},
 };
 
 use async_timing_util::Timelength;
 use clap::ArgMatches;
 use monitor_types::{CoreConfig, MongoConfig, PeripheryConfig};
 use rand::{distributions::Alphanumeric, Rng};
+use run_command::run_command_pipe_to_terminal;
 use serde::Serialize;
 
 pub fn gen_core_config(sub_matches: &ArgMatches) {
@@ -61,25 +62,71 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
 }
 
 pub fn start_mongo(sub_matches: &ArgMatches) {
-    let username = sub_matches
-        .get_one::<String>("username")
-        .map(|p| p.to_string());
-    let password = sub_matches
-        .get_one::<String>("password")
-        .map(|p| p.to_string());
+    let username = sub_matches.get_one::<String>("username");
+    let password = sub_matches.get_one::<String>("password");
 
     if (username.is_some() && password.is_none()) {
-        println!("must provide --password if username is provided ❌");
+        println!("❌ must provide --password if username is provided ❌");
         return;
     }
     if (username.is_none() && password.is_some()) {
-        println!("must provide --username if password is provided ❌");
+        println!("❌ must provide --username if password is provided ❌");
         return;
     }
 
-    // start mongo here
+    let name = sub_matches
+        .get_one::<String>("name")
+        .map(|p| p.as_str())
+        .unwrap_or("monitor-mongo");
 
-    println!("\n✅ monitor mongo has been started up ✅\n")
+    let port = sub_matches
+        .get_one::<String>("port")
+        .map(|p| p.as_str())
+        .unwrap_or("27017")
+        .parse::<u16>()
+        .expect("invalid port");
+
+    let network = sub_matches
+        .get_one::<String>("network")
+        .map(|p| p.as_str())
+        .unwrap_or("bridge");
+
+    let mount = sub_matches
+        .get_one::<String>("mount")
+        .map(|p| p.as_str())
+        .unwrap_or("~/.monitor/db");
+
+    let env = if username.is_some() && password.is_some() {
+        let (username, password) = (username.unwrap(), password.unwrap());
+        format!(" --env MONGO_INITDB_ROOT_USERNAME={username} --env MONGO_INITDB_ROOT_PASSWORD={password}")
+    } else {
+        String::new()
+    };
+
+    let command = format!("docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} mongo --quiet");
+
+    println!("\n==============\n mongo config \n==============\n");
+    println!("name: {name}");
+    println!("port: {port}");
+    println!("mount: {mount}");
+    println!("network: {network}");
+
+    println!("\npress ENTER to start mongo");
+
+    let buffer = &mut [0u8];
+    let res = std::io::stdin().read_exact(buffer);
+
+    if res.is_err() {
+        println!("pressed another button, exiting");
+    }
+
+    let output = run_command_pipe_to_terminal(&command);
+
+    if output.success() {
+        println!("\n✅ monitor mongo has been started up ✅\n")
+    } else {
+        eprintln!("\n❌ there was some error on startup ❌\n")
+    }
 }
 
 pub fn start_core(sub_matches: &ArgMatches) {

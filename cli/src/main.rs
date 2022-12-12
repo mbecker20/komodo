@@ -50,11 +50,27 @@ fn cli() -> Command {
                     Command::new("start_mongo")
                         .about("start up a local mongo container for monitor")
                         .arg(
-                            arg!(--username <USERNAME> "specify the default (root) username for mongo. default is mongo with no auth")
+                            arg!(--name <NAME> "specify the name of the mongo container. default is monitor-mongo")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--password <PASSWORD> "specify the default (root) password for mongo. default is mongo with no auth")
+                            arg!(--username <USERNAME> "specify the admin username for mongo. default is mongo with no auth")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--password <PASSWORD> "specify the admin password for mongo. default is mongo with no auth")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--port <PORT> "sets port mongo will run on. default is 27017")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--mount <PATH> "sets the path the mongo data is mounted into. default is ~/.monitor/db")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--network <NETWORK> "sets docker network of mongo container. default is bridge")
                                 .required(false)
                         )
                 )
