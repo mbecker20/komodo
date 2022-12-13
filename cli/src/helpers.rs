@@ -10,34 +10,42 @@ use rand::{distributions::Alphanumeric, Rng};
 use run_command::run_command_pipe_to_terminal;
 use serde::Serialize;
 
+const CORE_IMAGE_NAME: &str = "mbecker20/monitor-core";
+const PERIPHERY_IMAGE_NAME: &str = "mbecker20/monitor-periphery";
+
 pub fn gen_core_config(sub_matches: &ArgMatches) {
     let path = sub_matches
         .get_one::<String>("path")
         .map(|p| p.as_str())
-        .unwrap_or("$HOME/.monitor/config.toml")
+        .unwrap_or("$HOME/.monitor/core.config.toml")
         .to_string();
+
     let port = sub_matches
         .get_one::<String>("port")
         .map(|p| p.as_str())
         .unwrap_or("9000")
         .parse::<u16>()
         .expect("invalid port");
+
     let mongo_uri = sub_matches
         .get_one::<String>("mongo_uri")
         .map(|p| p.as_str())
         .unwrap_or("mongodb://mongo")
         .to_string();
+
     let mongo_db_name = sub_matches
         .get_one::<String>("mongo_db_name")
         .map(|p| p.as_str())
         .unwrap_or("monitor")
         .to_string();
+
     let jwt_valid_for = sub_matches
         .get_one::<String>("jwt_valid_for")
         .map(|p| p.as_str())
         .unwrap_or("1-wk")
         .parse()
         .expect("invalid jwt_valid_for");
+
     let slack_url = sub_matches
         .get_one::<String>("slack_url")
         .map(|p| p.to_owned());
@@ -103,8 +111,6 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
         String::new()
     };
 
-    let command = format!("docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} mongo --quiet");
-
     println!("\n==============\n mongo config \n==============\n");
     println!("name: {name}");
     println!("port: {port}");
@@ -120,6 +126,8 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
         println!("pressed another button, exiting");
     }
 
+    let command = format!("docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} mongo --quiet");
+
     let output = run_command_pipe_to_terminal(&command);
 
     if output.success() {
@@ -133,20 +141,59 @@ pub fn start_core(sub_matches: &ArgMatches) {
     let config_path = sub_matches
         .get_one::<String>("config_path")
         .map(|p| p.as_str())
-        .unwrap_or("$HOME/.monitor/config.toml")
+        .unwrap_or("$HOME/.monitor/core.config.toml")
         .to_string();
 
-    // start core here
+    let name = sub_matches
+        .get_one::<String>("name")
+        .map(|p| p.as_str())
+        .unwrap_or("monitor-core");
 
-    println!("\n✅ monitor core has been started up ✅\n");
+    let port = sub_matches
+        .get_one::<String>("port")
+        .map(|p| p.as_str())
+        .unwrap_or("9000")
+        .parse::<u16>()
+        .expect("invalid port");
+
+    let network = sub_matches
+        .get_one::<String>("network")
+        .map(|p| p.as_str())
+        .unwrap_or("bridge");
+
+    println!("\n=============\n core config \n=============\n");
+    println!("name: {name}");
+    println!("config path: {config_path}");
+    println!("port: {port}");
+    println!("network: {network}");
+
+    println!("\npress ENTER to start monitor core");
+
+    let buffer = &mut [0u8];
+    let res = std::io::stdin().read_exact(buffer);
+
+    if res.is_err() {
+        println!("pressed another button, exiting");
+    }
+
+    let command = format!("docker run -d --name {name} -p {port}:9000 --network {network} -v {config_path}:/config/config.toml {CORE_IMAGE_NAME}");
+
+    let output = run_command_pipe_to_terminal(&command);
+
+    if output.success() {
+        println!("\n✅ monitor core has been started up ✅\n")
+    } else {
+        eprintln!("\n❌ there was some error on startup ❌\n")
+    }
 }
 
 pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     let path = sub_matches
         .get_one::<String>("path")
         .map(|p| p.as_str())
-        .unwrap_or("$HOME/.monitor/config.toml")
+        .unwrap_or("$HOME/.monitor/periphery.config.toml")
         .to_string();
+
     let port = sub_matches
         .get_one::<String>("port")
         .map(|p| p.as_str())
@@ -171,17 +218,57 @@ pub fn start_periphery(sub_matches: &ArgMatches) {
     let config_path = sub_matches
         .get_one::<String>("config_path")
         .map(|p| p.as_str())
-        .unwrap_or("$HOME/.monitor/config.toml")
+        .unwrap_or("$HOME/.monitor/periphery.config.toml")
         .to_string();
+
     let repo_dir = sub_matches
         .get_one::<String>("repo_dir")
         .map(|p| p.as_str())
         .unwrap_or("$HOME/.monitor/repos")
         .to_string();
 
-    // start periphery here
+    let name = sub_matches
+        .get_one::<String>("name")
+        .map(|p| p.as_str())
+        .unwrap_or("monitor-periphery");
 
-    println!("\n✅ monitor periphery has been started up ✅\n");
+    let port = sub_matches
+        .get_one::<String>("port")
+        .map(|p| p.as_str())
+        .unwrap_or("8000")
+        .parse::<u16>()
+        .expect("invalid port");
+
+    let network = sub_matches
+        .get_one::<String>("network")
+        .map(|p| p.as_str())
+        .unwrap_or("bridge");
+
+    println!("\n==================\n periphery config \n==================\n");
+    println!("name: {name}");
+    println!("config path: {config_path}");
+    println!("repo dir: {repo_dir}");
+    println!("port: {port}");
+    println!("network: {network}");
+
+    println!("\npress ENTER to start monitor periphery");
+
+    let buffer = &mut [0u8];
+    let res = std::io::stdin().read_exact(buffer);
+
+    if res.is_err() {
+        println!("pressed another button, exiting");
+    }
+
+    let command = format!("docker run -d --name {name} -p {port}:8000 --network {network} -v {config_path}:/config/config.toml -v {repo_dir}:/repos -v /var/run/docker.sock:/var/run/docker.sock {PERIPHERY_IMAGE_NAME}");
+
+    let output = run_command_pipe_to_terminal(&command);
+
+    if output.success() {
+        println!("\n✅ monitor periphery has been started up ✅\n")
+    } else {
+        eprintln!("\n❌ there was some error on startup ❌\n")
+    }
 }
 
 fn write_to_toml(path: &str, toml: impl Serialize) {

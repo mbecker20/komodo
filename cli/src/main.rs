@@ -22,11 +22,11 @@ fn cli() -> Command {
                     Command::new("config_gen")
                         .about("generate a core config file")
                         .arg(
-                            arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/config.toml'")
+                            arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/core.config.toml'")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--port <PORT> "sets port core will run on. default is 9000")
+                            arg!(--port <PORT> "sets port core will run on. default is 9000. if running in docker, keep this port as is, set the external port when running core start command")
                                 .required(false)
                         )
                         .arg(
@@ -78,7 +78,18 @@ fn cli() -> Command {
                     Command::new("start")
                         .about("start up monitor core")
                         .arg(
-                            arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/config.toml")
+                            arg!(--name <NAME> "specify the name of the monitor core container. default is monitor-core")
+                        )
+                        .arg(
+                            arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/core.config.toml")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--port <PORT> "sets port monitor core will run on. default is 9000")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--network <NETWORK> "sets docker network of monitor periphery container. default is bridge")
                                 .required(false)
                         )
                 ),
@@ -93,11 +104,11 @@ fn cli() -> Command {
                     Command::new("config_gen")
                         .about("generate a periphery config file")
                         .arg(
-                            arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/config.toml'")
+                            arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/periphery.config.toml'")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--port <PORT> "sets port periphery will run on. default is 9001")
+                            arg!(--port <PORT> "sets port periphery will run on. default is 8000. if running in docker, keep this port as is, set the external port when running periphery start command")
                                 .required(false)
                         )
                 )
@@ -105,11 +116,19 @@ fn cli() -> Command {
                     Command::new("start")
                         .about("start up monitor periphery")
                         .arg(
-                            arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/config.toml")
+                            arg!(--name <NAME> "specify the name of the monitor periphery container. default is monitor-periphery")
+                        )
+                        .arg(
+                            arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                .required(false)
+                        )
+                        .arg(arg!(--repo_dir <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos"))
+                        .arg(
+                            arg!(--port <PORT> "sets port monitor periphery will run on. default is 8000")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--repo_dir <PATH> "specify the folder on system to use as cloning destination. default is ~/.monitor/repos")
+                            arg!(--network <NETWORK> "sets docker network of monitor periphery container. default is bridge")
                                 .required(false)
                         )
                 ),

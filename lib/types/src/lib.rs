@@ -557,7 +557,7 @@ pub struct PeripheryConfig {
 }
 
 fn default_periphery_port() -> u16 {
-    9001
+    8000
 }
 
 fn default_repo_dir() -> String {
