@@ -2,6 +2,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use async_timing_util::{unix_timestamp_ms, Timelength};
 use bson::serde_helpers::hex_string_as_object_id;
+use derive_builder::Builder;
 use diff::{Diff, HashMapDiff, OptionDiff, VecDiff};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
@@ -91,7 +92,7 @@ pub struct ApiSecret {
     pub expires: Option<i64>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Diff)]
+#[derive(Serialize, Deserialize, Debug, Clone, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Server {
     #[serde(
@@ -101,6 +102,7 @@ pub struct Server {
         with = "hex_string_as_object_id"
     )]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    #[builder(setter(skip))]
     pub id: String,
 
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
@@ -111,11 +113,12 @@ pub struct Server {
 
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
+    #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
-    pub to_notify: Vec<String>,
+    pub to_notify: Vec<String>, // slack users to notify
 
     #[serde(default = "default_cpu_alert")]
     pub cpu_alert: f64,
@@ -138,9 +141,11 @@ pub struct Server {
 
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
+    #[builder(setter(skip))]
     pub created_at: i64,
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
+    #[builder(setter(skip))]
     pub updated_at: i64,
 }
 
@@ -176,7 +181,7 @@ fn default_disk_alert() -> f64 {
     75.0
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Deployment {
     #[serde(
@@ -186,6 +191,7 @@ pub struct Deployment {
         with = "hex_string_as_object_id"
     )]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    #[builder(setter(skip))]
     pub id: String,
 
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
@@ -196,14 +202,11 @@ pub struct Deployment {
 
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
+    #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
     #[diff(attr(#[serde(skip_serializing_if = "docker_run_args_diff_no_change")]))]
     pub docker_run_args: DockerRunArgs,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub is_core: Option<bool>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
@@ -232,9 +235,11 @@ pub struct Deployment {
 
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
+    #[builder(setter(skip))]
     pub created_at: i64,
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
+    #[builder(setter(skip))]
     pub updated_at: i64,
 }
 
@@ -244,7 +249,7 @@ pub struct DeploymentWithContainer {
     pub container: Option<BasicContainerInfo>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Build {
     #[serde(
@@ -254,12 +259,14 @@ pub struct Build {
         with = "hex_string_as_object_id"
     )]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    #[builder(setter(skip))]
     pub id: String,
 
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub name: String,
 
     #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
+    #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
@@ -295,9 +302,11 @@ pub struct Build {
 
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
+    #[builder(setter(skip))]
     pub created_at: i64,
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
+    #[builder(setter(skip))]
     pub updated_at: i64,
 }
 
@@ -322,7 +331,7 @@ pub struct Update {
     pub version: Option<Version>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Diff)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Procedure {
     #[serde(
@@ -337,14 +346,15 @@ pub struct Procedure {
     pub permissions: PermissionsMap,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Diff)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize, PartialEq)]))]
 pub struct DockerBuildArgs {
     pub build_path: String,
     pub dockerfile_path: Option<String>,
+    pub build_args: Vec<EnvironmentVar>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct DockerRunArgs {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]

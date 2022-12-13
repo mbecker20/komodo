@@ -37,8 +37,17 @@ impl MonitorClient {
         )
         .await
         .context(format!(
-            "failed at create_deployment with name {name} and server id {server_id}"
+            "failed at create deployment with name {name} and server id {server_id}"
         ))
+    }
+
+    pub async fn create_full_deployment(
+        &self,
+        deployment: &Deployment,
+    ) -> anyhow::Result<Deployment> {
+        self.post("/api/deployment/create_full", deployment)
+            .await
+            .context(format!("failed at creating full deployment"))
     }
 
     pub async fn delete_deployment(&self, id: &str) -> anyhow::Result<Deployment> {

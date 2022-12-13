@@ -72,6 +72,19 @@ impl State {
         Ok(build)
     }
 
+    pub async fn create_full_build(
+        &self,
+        mut full_build: Build,
+        user: &RequestUser,
+    ) -> anyhow::Result<Build> {
+        let build = self
+            .create_build(&full_build.name, full_build.server_id.clone(), user)
+            .await?;
+        full_build.id = build.id;
+        let build = self.update_build(full_build, user).await?;
+        Ok(build)
+    }
+
     pub async fn delete_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Build> {
         let build = self
             .get_build_check_permissions(build_id, user, PermissionLevel::Write)
@@ -113,7 +126,12 @@ impl State {
             .get_build_check_permissions(&new_build.id, user, PermissionLevel::Write)
             .await?;
         let start_ts = unix_timestamp_ms() as i64;
+
+        // none of these should be changed through this method
+        new_build.name = current_build.name.clone();
         new_build.permissions = current_build.permissions.clone();
+        new_build.server_id = current_build.server_id.clone();
+        new_build.created_at = current_build.created_at;
         new_build.updated_at = start_ts;
 
         self.db

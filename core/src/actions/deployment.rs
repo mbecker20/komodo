@@ -70,6 +70,23 @@ impl State {
         Ok(deployment)
     }
 
+    pub async fn create_full_deployment(
+        &self,
+        mut full_deployment: Deployment,
+        user: &RequestUser,
+    ) -> anyhow::Result<Deployment> {
+        let deployment = self
+            .create_deployment(
+                &full_deployment.name,
+                full_deployment.server_id.clone(),
+                user,
+            )
+            .await?;
+        full_deployment.id = deployment.id;
+        let deployment = self.update_deployment(full_deployment, user).await?;
+        Ok(deployment)
+    }
+
     pub async fn delete_deployment(
         &self,
         deployment_id: &str,
@@ -117,7 +134,12 @@ impl State {
             .get_deployment_check_permissions(&new_deployment.id, user, PermissionLevel::Write)
             .await?;
         let start_ts = unix_timestamp_ms() as i64;
+
+        // none of these should be changed through this method
+        new_deployment.name = current_deployment.name.clone();
         new_deployment.permissions = current_deployment.permissions.clone();
+        new_deployment.server_id = current_deployment.server_id.clone();
+        new_deployment.created_at = current_deployment.created_at;
         new_deployment.updated_at = start_ts;
 
         self.db

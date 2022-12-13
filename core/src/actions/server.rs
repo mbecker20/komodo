@@ -70,6 +70,19 @@ impl State {
         Ok(server)
     }
 
+    pub async fn create_full_server(
+        &self,
+        mut full_server: Server,
+        user: &RequestUser,
+    ) -> anyhow::Result<Server> {
+        let server = self
+            .create_server(&full_server.name, full_server.address.clone(), user)
+            .await?;
+        full_server.id = server.id;
+        let server = self.update_server(full_server, user).await?;
+        Ok(server)
+    }
+
     pub async fn delete_server(
         &self,
         server_id: &str,
@@ -108,8 +121,10 @@ impl State {
         let start_ts = unix_timestamp_ms() as i64;
 
         new_server.permissions = current_server.permissions.clone();
-        let diff = current_server.diff(&new_server);
+        new_server.created_at = current_server.created_at;
         new_server.updated_at = start_ts;
+
+        let diff = current_server.diff(&new_server);
 
         self.db
             .servers

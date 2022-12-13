@@ -73,6 +73,20 @@ pub fn router() -> Router {
             ),
         )
         .route(
+            "/create_full",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Json(full_deployment): Json<Deployment>| async move {
+                    let deployment = state
+                        .create_full_deployment(full_deployment, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(deployment))
+                },
+            ),
+        )
+        .route(
             "/:id/delete",
             delete(
                 |Extension(state): StateExtension,

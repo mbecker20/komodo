@@ -59,6 +59,20 @@ pub fn router() -> Router {
             ),
         )
         .route(
+            "/create_full",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Json(full_server): Json<Server>| async move {
+                    let server = state
+                        .create_full_server(full_server, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(server))
+                },
+            ),
+        )
+        .route(
             "/:id",
             get(
                 |Extension(state): StateExtension,

@@ -1,7 +1,7 @@
 use std::{path::PathBuf, str::FromStr};
 
 use anyhow::{anyhow, Context};
-use types::{Build, DockerBuildArgs, Log, Version};
+use types::{Build, DockerBuildArgs, EnvironmentVar, Log, Version};
 
 use crate::{git, run_monitor_command, to_monitor_name};
 
@@ -29,6 +29,7 @@ pub async fn build(
     let DockerBuildArgs {
         build_path,
         dockerfile_path,
+        build_args,
     } = docker_build_args
         .as_ref()
         .ok_or(anyhow!("build missing docker build args"))?;
@@ -71,6 +72,7 @@ pub async fn build(
         Some(dockerfile_path) => dockerfile_path.to_owned(),
         None => "Dockerfile".to_owned(),
     };
+    let build_args = parse_build_args(build_args);
     let image_name = get_image_name(docker_account, &name);
     let image_tags = image_tags(&image_name, &version);
     let docker_push = if using_account {
@@ -78,8 +80,9 @@ pub async fn build(
     } else {
         String::new()
     };
-    let command =
-        format!("cd {cd} && docker build {image_tags} -f {dockerfile_path} .{docker_push}");
+    let command = format!(
+        "cd {cd} && docker build {build_args}{image_tags} -f {dockerfile_path} .{docker_push}"
+    );
     let build_log = run_monitor_command("docker build", command).await;
     logs.push(build_log);
     Ok(logs)
@@ -106,4 +109,12 @@ fn image_tags(image_name: &str, version: &Version) -> String {
         get_version_image_name(image_name, version),
         get_latest_image_name(image_name)
     )
+}
+
+fn parse_build_args(build_args: &Vec<EnvironmentVar>) -> String {
+    build_args
+        .iter()
+        .map(|p| format!(" --build-arg {}={}", p.variable, p.value))
+        .collect::<Vec<String>>()
+        .join("")
 }

@@ -1,6 +1,6 @@
 use std::{
     fs::{self, File},
-    io::{Write, Read},
+    io::{Read, Write},
 };
 
 use async_timing_util::Timelength;

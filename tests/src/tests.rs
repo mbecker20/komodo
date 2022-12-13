@@ -88,6 +88,7 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
     let mut build = monitor.create_build("old_periphery", &server.id).await?;
     println!("created build. updating...");
     build.repo = Some("mbecker20/monitor".to_string());
+    // build.branch = Some("");
     build.on_clone = Some(Command {
         path: ".".to_string(),
         command: "yarn".to_string(),
@@ -99,6 +100,7 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
     build.docker_build_args = Some(DockerBuildArgs {
         build_path: "periphery".to_string(),
         dockerfile_path: None,
+        build_args: Vec::new(),
     });
     let build = monitor.update_build(build).await?;
     println!("updated build.");
