@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use async_timing_util::Timelength;
-use serde::{Serialize, Deserialize};
+use serde_derive::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CoreConfig {

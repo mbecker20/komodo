@@ -1,6 +1,8 @@
 use std::{
     fs::{self, File},
-    io::{Read, Write}, path::PathBuf, str::FromStr,
+    io::{Read, Write},
+    path::PathBuf,
+    str::FromStr,
 };
 
 use async_timing_util::Timelength;
@@ -68,7 +70,10 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
 
     write_to_toml(&path, &config);
 
-    println!("\n✅ {} has been generated at {path} ✅\n", "core config".bold());
+    println!(
+        "\n✅ {} has been generated at {path} ✅\n",
+        "core config".bold()
+    );
 }
 
 pub fn start_mongo(sub_matches: &ArgMatches) {
@@ -76,11 +81,17 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
     let password = sub_matches.get_one::<String>("password");
 
     if (username.is_some() && password.is_none()) {
-        println!("\n❌ must provide {} if username is provided ❌\n", "--password".bold());
+        println!(
+            "\n❌ must provide {} if username is provided ❌\n",
+            "--password".bold()
+        );
         return;
     }
     if (username.is_none() && password.is_some()) {
-        println!("\n❌ must provide {} if password is provided ❌\n", "--username".bold());
+        println!(
+            "\n❌ must provide {} if password is provided ❌\n",
+            "--username".bold()
+        );
         return;
     }
 
@@ -124,7 +135,12 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
     println!("{}: {mount}", "mount".dimmed());
     println!("{}: {network}", "network".dimmed());
 
-    println!("\npress {} to start {}. {}", "ENTER".green().bold(), "MongoDB".bold(), "(ctrl-c to cancel)".dimmed());
+    println!(
+        "\npress {} to start {}. {}",
+        "ENTER".green().bold(),
+        "MongoDB".bold(),
+        "(ctrl-c to cancel)".dimmed()
+    );
 
     let buffer = &mut [0u8];
     let res = std::io::stdin().read_exact(buffer);
@@ -168,13 +184,21 @@ pub fn start_core(sub_matches: &ArgMatches) {
         .map(|p| p.as_str())
         .unwrap_or("bridge");
 
-    println!("\n===================\n    {}    \n===================\n", "core config".bold());
+    println!(
+        "\n===================\n    {}    \n===================\n",
+        "core config".bold()
+    );
     println!("{}: {name}", "container name".dimmed());
     println!("{}: {config_path}", "config path".dimmed());
     println!("{}: {port}", "port".dimmed());
     println!("{}: {network}", "network".dimmed());
 
-    println!("\npress {} to start {}. {}", "ENTER".green().bold(), "monitor core".bold(), "(ctrl-c to cancel)".dimmed());
+    println!(
+        "\npress {} to start {}. {}",
+        "ENTER".green().bold(),
+        "monitor core".bold(),
+        "(ctrl-c to cancel)".dimmed()
+    );
 
     let buffer = &mut [0u8];
     let res = std::io::stdin().read_exact(buffer);
@@ -198,7 +222,7 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     let path = sub_matches
         .get_one::<String>("path")
         .map(|p| p.as_str())
-        .unwrap_or("~/.monitor/periphery.config.toml")
+        .unwrap_or("$HOME/.monitor/periphery.config.toml")
         .to_string();
 
     let port = sub_matches
@@ -218,7 +242,10 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
 
     write_to_toml(&path, &config);
 
-    println!("\n✅ {} generated at {path} ✅\n", "periphery config".bold());
+    println!(
+        "\n✅ {} generated at {path} ✅\n",
+        "periphery config".bold()
+    );
 }
 
 pub fn start_periphery(sub_matches: &ArgMatches) {
@@ -251,14 +278,22 @@ pub fn start_periphery(sub_matches: &ArgMatches) {
         .map(|p| p.as_str())
         .unwrap_or("bridge");
 
-    println!("\n========================\n    {}    \n========================\n", "periphery config".bold());
+    println!(
+        "\n========================\n    {}    \n========================\n",
+        "periphery config".bold()
+    );
     println!("{}: {name}", "container name".dimmed());
     println!("{}: {config_path}", "config path".dimmed());
     println!("{}: {repo_dir}", "repo folder".dimmed());
     println!("{}: {port}", "port".dimmed());
     println!("{}: {network}", "network".dimmed());
 
-    println!("\npress {} to start {}. {}", "ENTER".green().bold(), "monitor periphery".bold(), "(ctrl-c to cancel)".dimmed());
+    println!(
+        "\npress {} to start {}. {}",
+        "ENTER".green().bold(),
+        "monitor periphery".bold(),
+        "(ctrl-c to cancel)".dimmed()
+    );
 
     let buffer = &mut [0u8];
     let res = std::io::stdin().read_exact(buffer);
@@ -272,14 +307,19 @@ pub fn start_periphery(sub_matches: &ArgMatches) {
     let output = run_command_pipe_to_terminal(&command);
 
     if output.success() {
-        println!("\n✅ {} has been started up ✅\n", "monitor periphery".bold())
+        println!(
+            "\n✅ {} has been started up ✅\n",
+            "monitor periphery".bold()
+        )
     } else {
         eprintln!("\n❌ there was some {} on startup ❌\n", "error".red())
     }
 }
 
 fn write_to_toml(path: &str, toml: impl Serialize) {
-    let path = PathBuf::from_str(path).expect("not a valid path");
+    let path = PathBuf::from_str(&path.replace("$HOME", &std::env::var("HOME").unwrap()))
+        .expect("not a valid path");
+    println!("is absolute: {}", path.is_absolute());
     println!("{}", path.display());
     let _ = fs::create_dir_all(pop_path(&path));
     fs::write(
