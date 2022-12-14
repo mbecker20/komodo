@@ -12,7 +12,7 @@ use rand::{distributions::Alphanumeric, Rng};
 use run_command::run_command_pipe_to_terminal;
 use serde::Serialize;
 
-use crate::types::{CoreConfig, MongoConfig, PeripheryConfig};
+use crate::types::{CoreConfig, MongoConfig, PeripheryConfig, RestartMode};
 
 const CORE_IMAGE_NAME: &str = "mbecker20/monitor-core";
 const PERIPHERY_IMAGE_NAME: &str = "mbecker20/monitor-periphery";
@@ -117,6 +117,13 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
         .map(|p| p.as_str())
         .unwrap_or("~/.monitor/db");
 
+    let restart = sub_matches
+        .get_one::<String>("restart")
+        .map(|p| p.as_str())
+        .unwrap_or("unless-stopped")
+        .parse::<RestartMode>()
+        .expect("invalid restart mode");
+
     let env = if let (Some(username), Some(password)) = (username, password) {
         format!(" --env MONGO_INITDB_ROOT_USERNAME={username} --env MONGO_INITDB_ROOT_PASSWORD={password}")
     } else {
@@ -149,7 +156,7 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
         println!("pressed another button, exiting");
     }
 
-    let command = format!("docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} mongo --quiet");
+    let command = format!("docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} --restart {restart} mongo --quiet");
 
     let output = run_command_pipe_to_terminal(&command);
 
@@ -184,6 +191,13 @@ pub fn start_core(sub_matches: &ArgMatches) {
         .map(|p| p.as_str())
         .unwrap_or("bridge");
 
+    let restart = sub_matches
+        .get_one::<String>("restart")
+        .map(|p| p.as_str())
+        .unwrap_or("unless-stopped")
+        .parse::<RestartMode>()
+        .expect("invalid restart mode");
+
     println!(
         "\n===================\n    {}    \n===================\n",
         "core config".bold()
@@ -207,7 +221,7 @@ pub fn start_core(sub_matches: &ArgMatches) {
         println!("pressed another button, exiting");
     }
 
-    let command = format!("docker run -d --name {name} -p {port}:9000 --network {network} -v {config_path}:/config/config.toml {CORE_IMAGE_NAME}");
+    let command = format!("docker run -d --name {name} -p {port}:9000 --network {network} -v {config_path}:/config/config.toml --restart {restart} {CORE_IMAGE_NAME}");
 
     let output = run_command_pipe_to_terminal(&command);
 
@@ -278,6 +292,13 @@ pub fn start_periphery(sub_matches: &ArgMatches) {
         .map(|p| p.as_str())
         .unwrap_or("bridge");
 
+    let restart = sub_matches
+        .get_one::<String>("restart")
+        .map(|p| p.as_str())
+        .unwrap_or("unless-stopped")
+        .parse::<RestartMode>()
+        .expect("invalid restart mode");
+
     println!(
         "\n========================\n    {}    \n========================\n",
         "periphery config".bold()
@@ -302,7 +323,7 @@ pub fn start_periphery(sub_matches: &ArgMatches) {
         println!("pressed another button, exiting");
     }
 
-    let command = format!("docker run -d --name {name} -p {port}:8000 --network {network} -v {config_path}:/config/config.toml -v {repo_dir}:/repos -v /var/run/docker.sock:/var/run/docker.sock {PERIPHERY_IMAGE_NAME}");
+    let command = format!("docker run -d --name {name} -p {port}:8000 --network {network} -v {config_path}:/config/config.toml -v {repo_dir}:/repos -v /var/run/docker.sock:/var/run/docker.sock --restart {restart} {PERIPHERY_IMAGE_NAME}");
 
     let output = run_command_pipe_to_terminal(&command);
 

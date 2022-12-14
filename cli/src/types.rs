@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use async_timing_util::Timelength;
 use serde_derive::{Deserialize, Serialize};
+use strum_macros::{Display, EnumString};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CoreConfig {
@@ -86,4 +87,22 @@ fn default_periphery_port() -> u16 {
 
 fn default_repo_dir() -> String {
     "/repos".to_string()
+}
+
+#[derive(
+    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy,
+)]
+pub enum RestartMode {
+    #[serde(rename = "no")]
+    #[strum(serialize = "no")]
+    NoRestart,
+    #[serde(rename = "on-failure")]
+    #[strum(serialize = "on-failure")]
+    OnFailure,
+    #[serde(rename = "always")]
+    #[strum(serialize = "always")]
+    Always,
+    #[serde(rename = "unless-stopped")]
+    #[strum(serialize = "unless-stopped")]
+    UnlessStopped,
 }

@@ -74,6 +74,9 @@ fn cli() -> Command {
                             arg!(--network <NETWORK> "sets docker network of mongo container. default is bridge")
                                 .required(false)
                         )
+                        .arg(
+                            arg!(--restart <RESTART> "sets docker restart mode of mongo container. default is unless-stopped")
+                        )
                 )
                 .subcommand(
                     Command::new("start")
@@ -90,8 +93,11 @@ fn cli() -> Command {
                                 .required(false)
                         )
                         .arg(
-                            arg!(--network <NETWORK> "sets docker network of monitor periphery container. default is bridge")
+                            arg!(--network <NETWORK> "sets docker network of monitor core container. default is bridge")
                                 .required(false)
+                        )
+                        .arg(
+                            arg!(--restart <RESTART> "sets docker restart mode of monitor core container. default is unless-stopped")
                         )
                 ),
         )
@@ -131,6 +137,9 @@ fn cli() -> Command {
                         .arg(
                             arg!(--network <NETWORK> "sets docker network of monitor periphery container. default is bridge")
                                 .required(false)
+                        )
+                        .arg(
+                            arg!(--restart <RESTART> "sets docker restart mode of monitor periphery container. default is unless-stopped")
                         )
                 ),
         )
