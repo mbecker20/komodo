@@ -14,6 +14,7 @@ use crate::{
 pub mod build;
 pub mod deployment;
 pub mod permissions;
+pub mod procedure;
 pub mod secret;
 pub mod server;
 pub mod update;
@@ -27,6 +28,7 @@ pub fn router() -> Router {
         .nest("/build", build::router())
         .nest("/deployment", deployment::router())
         .nest("/server", server::router())
+        .nest("/procedure", procedure::router())
         .nest("/update", update::router())
         .nest("/permissions", permissions::router())
         .nest("/secret", secret::router())

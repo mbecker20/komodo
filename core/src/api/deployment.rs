@@ -77,9 +77,9 @@ pub fn router() -> Router {
             post(
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
-                 Json(deployment): Json<Deployment>| async move {
+                 Json(full_deployment): Json<Deployment>| async move {
                     let deployment = state
-                        .create_full_deployment(deployment, &user)
+                        .create_full_deployment(full_deployment, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(deployment))

@@ -1,6 +1,5 @@
 use anyhow::Context;
 use monitor_types::{BasicContainerInfo, ImageSummary, Log, Network, Server, SystemStats};
-use serde::Serialize;
 use serde_json::{json, Value};
 
 use crate::MonitorClient;

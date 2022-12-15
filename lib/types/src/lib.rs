@@ -343,7 +343,7 @@ pub struct Procedure {
     #[builder(setter(skip))]
     pub id: String,
     pub name: String,
-    pub procedure: Vec<ProcedureStage>,
+    pub stages: Vec<ProcedureStage>,
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
@@ -360,7 +360,8 @@ pub struct Procedure {
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct ProcedureStage {
-    pub operation: Operation,
+    pub operation: ProcedureOperation,
+    pub target_id: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default, Diff, Builder)]
@@ -701,6 +702,42 @@ pub enum Operation {
 impl Default for Operation {
     fn default() -> Self {
         Operation::None
+    }
+}
+
+#[derive(
+    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
+)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+pub enum ProcedureOperation {
+    // do nothing
+    None,
+
+    // server
+    PruneImagesServer,
+    PruneContainersServer,
+    PruneNetworksServer,
+
+    // build
+    BuildBuild,
+    RecloneBuild,
+
+    // deployment
+    DeployDeployment,
+    StopDeployment,
+    StartDeployment,
+    PullDeployment,
+    RecloneDeployment,
+
+    // procedure
+    RunProcedure,
+}
+
+impl Default for ProcedureOperation {
+    fn default() -> Self {
+        ProcedureOperation::None
     }
 }
 

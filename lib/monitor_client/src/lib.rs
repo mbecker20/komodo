@@ -10,6 +10,7 @@ use serde_json::json;
 mod build;
 mod deployment;
 mod permissions;
+mod procedure;
 mod secret;
 mod server;
 

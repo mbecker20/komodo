@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use types::{traits::Permissioned, PermissionLevel, Procedure, Update};
+use types::{traits::Permissioned, PermissionLevel, Procedure, ProcedureStage, Update};
 
 use crate::{auth::RequestUser, state::State};
 
@@ -63,7 +63,16 @@ impl State {
         let procedure = self
             .get_procedure_check_permissions(id, user, PermissionLevel::Write)
             .await?;
-
-        todo!()
+        let mut updates = Vec::new();
+        for ProcedureStage {
+            operation,
+            target_id,
+        } in procedure.stages
+        {
+            match operation {
+                _ => {}
+            }
+        }
+        Ok(updates)
     }
 }

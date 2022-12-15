@@ -1,6 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Deployment, DeploymentWithContainer, SystemStats, Update};
-use serde::Serialize;
+use monitor_types::{Deployment, DeploymentWithContainer, Update};
 use serde_json::{json, Value};
 
 use crate::MonitorClient;

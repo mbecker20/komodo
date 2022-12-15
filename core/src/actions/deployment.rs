@@ -76,11 +76,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
         deployment.id = self
-            .create_deployment(
-                &deployment.name,
-                deployment.server_id.clone(),
-                user,
-            )
+            .create_deployment(&deployment.name, deployment.server_id.clone(), user)
             .await?
             .id;
         let deployment = self.update_deployment(deployment, user).await?;
