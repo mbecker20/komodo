@@ -89,9 +89,7 @@ fn default_repo_dir() -> String {
     "/repos".to_string()
 }
 
-#[derive(
-    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy,
-)]
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 pub enum RestartMode {
     #[serde(rename = "no")]
     #[strum(serialize = "no")]

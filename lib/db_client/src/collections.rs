@@ -18,9 +18,6 @@ pub async fn servers_collection(
     coll.create_unique_index("name")
         .await
         .context("failed at creating name index")?;
-    coll.create_index("permissions")
-        .await
-        .context("failed at creating permissions index")?;
     Ok(coll)
 }
 
@@ -32,9 +29,6 @@ pub async fn deployments_collection(
     coll.create_unique_index("name")
         .await
         .context("failed at creating name index")?;
-    coll.create_index("permissions")
-        .await
-        .context("failed at creating permissions index")?;
     Ok(coll)
 }
 
@@ -46,9 +40,6 @@ pub async fn builds_collection(
     coll.create_unique_index("name")
         .await
         .context("failed at creating name index")?;
-    coll.create_index("permissions")
-        .await
-        .context("failed at creating permissions index")?;
     Ok(coll)
 }
 
@@ -77,8 +68,5 @@ pub async fn procedures_collection(
     coll.create_index("name")
         .await
         .context("failed at creating entity_id index")?;
-    coll.create_index("permissions")
-        .await
-        .context("failed at creating permissions index")?;
     Ok(coll)
 }

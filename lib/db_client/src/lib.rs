@@ -38,7 +38,6 @@ impl DbClient {
             builds: builds_collection(&mungos, db_name)
                 .await
                 .expect("failed to make builds collection"),
-            // build_records:
             updates: updates_collection(&mungos, db_name)
                 .await
                 .expect("failed to make updates collection"),
@@ -125,6 +124,32 @@ impl DbClient {
     ) -> anyhow::Result<PermissionLevel> {
         let permissions = *self
             .get_server(server_id)
+            .await?
+            .permissions
+            .get(user_id)
+            .unwrap_or_default();
+        Ok(permissions)
+    }
+
+    pub async fn get_procedure(&self, procedure_id: &str) -> anyhow::Result<Procedure> {
+        let procedure = self
+            .procedures
+            .find_one_by_id(procedure_id)
+            .await
+            .context(format!(
+                "failed at mongo query for procedure {procedure_id}"
+            ))?
+            .ok_or(anyhow!("procedure at {procedure_id} doesn't exist"))?;
+        Ok(procedure)
+    }
+
+    pub async fn get_user_permission_on_procedure(
+        &self,
+        user_id: &str,
+        procedure_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let permissions = *self
+            .get_procedure(procedure_id)
             .await?
             .permissions
             .get(user_id)

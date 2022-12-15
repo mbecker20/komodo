@@ -72,18 +72,18 @@ impl State {
 
     pub async fn create_full_deployment(
         &self,
-        mut full_deployment: Deployment,
+        mut deployment: Deployment,
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
-        let deployment = self
+        deployment.id = self
             .create_deployment(
-                &full_deployment.name,
-                full_deployment.server_id.clone(),
+                &deployment.name,
+                deployment.server_id.clone(),
                 user,
             )
-            .await?;
-        full_deployment.id = deployment.id;
-        let deployment = self.update_deployment(full_deployment, user).await?;
+            .await?
+            .id;
+        let deployment = self.update_deployment(deployment, user).await?;
         Ok(deployment)
     }
 

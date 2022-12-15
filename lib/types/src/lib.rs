@@ -331,7 +331,7 @@ pub struct Update {
     pub version: Option<Version>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Procedure {
     #[serde(
@@ -340,10 +340,27 @@ pub struct Procedure {
         skip_serializing_if = "String::is_empty",
         with = "hex_string_as_object_id"
     )]
+    #[builder(setter(skip))]
     pub id: String,
     pub name: String,
-    pub procedure: Vec<Operation>,
+    pub procedure: Vec<ProcedureStage>,
+    #[builder(setter(skip))]
     pub permissions: PermissionsMap,
+
+    #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
+    #[builder(setter(skip))]
+    pub created_at: i64,
+    #[serde(default)]
+    #[diff(attr(#[serde(skip)]))]
+    #[builder(setter(skip))]
+    pub updated_at: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
+pub struct ProcedureStage {
+    pub operation: Operation,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default, Diff, Builder)]
@@ -674,6 +691,11 @@ pub enum Operation {
     StartDeployment,
     PullDeployment,
     RecloneDeployment,
+
+    // procedure
+    CreateProcedure,
+    UpdateProcedure,
+    DeleteProcedure,
 }
 
 impl Default for Operation {

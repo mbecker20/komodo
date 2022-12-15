@@ -1,4 +1,4 @@
-use crate::{Build, Deployment, PermissionLevel, PermissionsMap, Server};
+use crate::{Build, Deployment, PermissionLevel, PermissionsMap, Procedure, Server};
 
 pub trait Permissioned {
     fn permissions_map(&self) -> &PermissionsMap;
@@ -21,6 +21,12 @@ impl Permissioned for Build {
 }
 
 impl Permissioned for Server {
+    fn permissions_map(&self) -> &PermissionsMap {
+        &self.permissions
+    }
+}
+
+impl Permissioned for Procedure {
     fn permissions_map(&self) -> &PermissionsMap {
         &self.permissions
     }

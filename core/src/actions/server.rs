@@ -72,14 +72,14 @@ impl State {
 
     pub async fn create_full_server(
         &self,
-        mut full_server: Server,
+        mut server: Server,
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
-        let server = self
-            .create_server(&full_server.name, full_server.address.clone(), user)
-            .await?;
-        full_server.id = server.id;
-        let server = self.update_server(full_server, user).await?;
+        server.id = self
+            .create_server(&server.name, server.address.clone(), user)
+            .await?
+            .id;
+        let server = self.update_server(server, user).await?;
         Ok(server)
     }
 

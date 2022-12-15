@@ -74,14 +74,14 @@ impl State {
 
     pub async fn create_full_build(
         &self,
-        mut full_build: Build,
+        mut build: Build,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
-        let build = self
-            .create_build(&full_build.name, full_build.server_id.clone(), user)
-            .await?;
-        full_build.id = build.id;
-        let build = self.update_build(full_build, user).await?;
+        build.id = self
+            .create_build(&build.name, build.server_id.clone(), user)
+            .await?
+            .id;
+        let build = self.update_build(build, user).await?;
         Ok(build)
     }
 

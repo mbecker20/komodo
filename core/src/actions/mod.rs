@@ -5,6 +5,7 @@ use crate::state::State;
 
 mod build;
 mod deployment;
+mod procedure;
 mod server;
 
 impl State {
