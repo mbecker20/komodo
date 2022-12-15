@@ -10,8 +10,10 @@ RUN cd periphery && cargo build --release
 
 FROM debian:stable-slim
 
-COPY ./install_slim_periphery_deps.sh ./
-RUN sh ./install_slim_periphery_deps.sh
+ARG DEPS_INSTALLER
+
+COPY ./${DEPS_INSTALLER}.sh ./
+RUN sh ./${DEPS_INSTALLER}.sh
 
 COPY --from=builder /builder/periphery/target/release/periphery /usr/local/bin/periphery
 

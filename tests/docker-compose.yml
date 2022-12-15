@@ -20,7 +20,9 @@ services:
     image: periphery-full
     build:
       context: ..
-      dockerfile: Dockerfile.periphery_full
+      dockerfile: Dockerfile.periphery
+      args:
+        DEPS_INSTALLER: install_full_periphery_deps
     ports:
       - "9001:9001"
     networks:
@@ -36,7 +38,9 @@ services:
     image: periphery-slim
     build:
       context: ..
-      dockerfile: Dockerfile.periphery_slim
+      dockerfile: Dockerfile.periphery
+      args:
+        DEPS_INSTALLER: install_slim_periphery_deps
     ports:
       - "9002:9001"
     networks:
