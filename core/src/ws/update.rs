@@ -224,6 +224,12 @@ async fn user_can_see_update(
                 .await?;
             (permissions, "build")
         }
+        UpdateTarget::Procedure(procedure_id) => {
+            let permissions = db_client
+                .get_user_permission_on_procedure(user_id, procedure_id)
+                .await?;
+            (permissions, "procedure")
+        }
         UpdateTarget::System => {
             return Err(anyhow!("user not admin, can't recieve system updates"))
         }

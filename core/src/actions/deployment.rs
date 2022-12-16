@@ -97,7 +97,13 @@ impl State {
             .periphery
             .container_remove(&server, &deployment.name)
             .await?;
-        self.db.deployments.delete_one(deployment_id).await?;
+        self.db
+            .deployments
+            .delete_one(deployment_id)
+            .await
+            .context(format!(
+                "failed at deleting deployment at {deployment_id} from mongo"
+            ))?;
         let update = Update {
             target: UpdateTarget::System,
             operation: Operation::DeleteDeployment,

@@ -17,6 +17,7 @@ pub type UserId = String;
 pub type ServerId = String;
 pub type DeploymentId = String;
 pub type BuildId = String;
+pub type ProcedureId = String;
 
 pub type GithubUsername = String;
 pub type GithubToken = String;
@@ -635,6 +636,7 @@ pub enum UpdateTarget {
     Build(BuildId),
     Deployment(DeploymentId),
     Server(ServerId),
+    Procedure(ProcedureId),
 }
 
 impl Default for UpdateTarget {

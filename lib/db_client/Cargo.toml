@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 types = { package = "monitor_types", path = "../types" }
-mungos = "0.2.24"
+mungos = "0.2.26"
 anyhow = "1.0"

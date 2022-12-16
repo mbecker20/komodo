@@ -1,5 +1,10 @@
-use anyhow::anyhow;
-use types::{traits::Permissioned, PermissionLevel, Procedure, ProcedureStage, Update};
+use anyhow::{anyhow, Context};
+use async_timing_util::unix_timestamp_ms;
+use helpers::to_monitor_name;
+use types::{
+    traits::Permissioned, Log, Operation, PermissionLevel, Procedure, ProcedureStage, Update,
+    UpdateTarget,
+};
 
 use crate::{auth::RequestUser, state::State};
 
@@ -26,7 +31,34 @@ impl State {
         name: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Procedure> {
-        todo!()
+        let start_ts = unix_timestamp_ms() as i64;
+        let procedure = Procedure {
+            name: to_monitor_name(name),
+            permissions: [(user.id.clone(), PermissionLevel::Write)]
+                .into_iter()
+                .collect(),
+            created_at: start_ts,
+            updated_at: start_ts,
+            ..Default::default()
+        };
+        let procedure_id = self
+            .db
+            .procedures
+            .create_one(procedure)
+            .await
+            .context("failed to add procedure to db")?;
+        let procedure = self.db.get_procedure(&procedure_id).await?;
+        let update = Update {
+            target: UpdateTarget::Procedure(procedure_id),
+            operation: Operation::CreateProcedure,
+            start_ts,
+            end_ts: Some(unix_timestamp_ms() as i64),
+            operator: user.id.clone(),
+            success: true,
+            ..Default::default()
+        };
+        self.add_update(update).await?;
+        Ok(procedure)
     }
 
     pub async fn create_full_procedure(
@@ -45,7 +77,30 @@ impl State {
         id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Procedure> {
-        todo!()
+        let procedure = self
+            .get_procedure_check_permissions(id, user, PermissionLevel::Write)
+            .await?;
+        let start_ts = unix_timestamp_ms() as i64;
+        self.db
+            .procedures
+            .delete_one(id)
+            .await
+            .context(format!("failed at deleting procedure at {id} from mongo"))?;
+        let update = Update {
+            target: UpdateTarget::System,
+            operation: Operation::DeleteProcedure,
+            start_ts,
+            end_ts: Some(unix_timestamp_ms() as i64),
+            operator: user.id.clone(),
+            logs: vec![Log::simple(
+                "delete deployment",
+                format!("deleted procedure {}", procedure.name),
+            )],
+            success: true,
+            ..Default::default()
+        };
+        self.add_update(update).await?;
+        Ok(procedure)
     }
 
     pub async fn update_procedure(
