@@ -74,7 +74,7 @@ pub async fn deploy_mongo(
     });
     let deployment = monitor.update_deployment(deployment).await?;
     println!("updated deployment");
-    let update = monitor.deploy(&deployment.id).await?;
+    let update = monitor.deploy_container(&deployment.id).await?;
     let container = monitor.get_deployment(&deployment.id).await?;
     Ok((update, container))
 }
