@@ -1,9 +1,10 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
+use diff::Diff;
 use helpers::to_monitor_name;
 use types::{
-    traits::Permissioned, Log, Operation, PermissionLevel, Procedure, ProcedureStage, Update,
-    UpdateTarget,
+    traits::Permissioned, Log, Operation, PermissionLevel, Procedure, ProcedureOperation::*,
+    ProcedureStage, Update, UpdateStatus, UpdateTarget,
 };
 
 use crate::{auth::RequestUser, state::State};
@@ -105,13 +106,51 @@ impl State {
 
     pub async fn update_procedure(
         &self,
-        new_procedure: Procedure,
+        mut new_procedure: Procedure,
         user: &RequestUser,
     ) -> anyhow::Result<Procedure> {
         let current_procedure = self
             .get_procedure_check_permissions(&new_procedure.id, user, PermissionLevel::Write)
             .await?;
-        todo!()
+        let start_ts = unix_timestamp_ms() as i64;
+
+        // none of these should be changed through this method
+        new_procedure.name = current_procedure.name.clone();
+        new_procedure.permissions = current_procedure.permissions.clone();
+        new_procedure.created_at = current_procedure.created_at;
+        new_procedure.updated_at = start_ts;
+
+        // check to make sure no stages have been added that user does not have access to
+
+        self.db
+            .procedures
+            .update_one(
+                &new_procedure.id,
+                mungos::Update::Regular(new_procedure.clone()),
+            )
+            .await
+            .context("failed at update one deployment")?;
+
+        let diff = current_procedure.diff(&new_procedure);
+
+        let update = Update {
+            operation: Operation::UpdateProcedure,
+            target: UpdateTarget::Procedure(new_procedure.id.clone()),
+            end_ts: Some(start_ts),
+            start_ts,
+            status: UpdateStatus::Complete,
+            logs: vec![Log::simple(
+                "procedure update",
+                serde_json::to_string_pretty(&diff).unwrap(),
+            )],
+            operator: user.id.clone(),
+            success: true,
+            ..Default::default()
+        };
+
+        self.add_update(update).await?;
+
+        Ok(new_procedure)
     }
 
     pub async fn run_procedure(&self, id: &str, user: &RequestUser) -> anyhow::Result<Vec<Update>> {
@@ -125,6 +164,16 @@ impl State {
         } in procedure.stages
         {
             match operation {
+                StartContainer => {}
+                StopContainer => {}
+                RemoveContainer => {}
+                DeployContainer => {}
+                RecloneDeployment => {}
+
+                BuildBuild => {}
+                RecloneBuild => {}
+
+                PruneImagesServer => {}
                 _ => {}
             }
         }

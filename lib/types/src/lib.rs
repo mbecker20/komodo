@@ -689,9 +689,10 @@ pub enum Operation {
     CreateDeployment,
     UpdateDeployment,
     DeleteDeployment,
-    DeployDeployment,
-    StopDeployment,
-    StartDeployment,
+    DeployContainer,
+    StopContainer,
+    StartContainer,
+    RemoveContainer,
     PullDeployment,
     RecloneDeployment,
 
@@ -727,9 +728,10 @@ pub enum ProcedureOperation {
     RecloneBuild,
 
     // deployment
-    DeployDeployment,
-    StopDeployment,
-    StartDeployment,
+    DeployContainer,
+    StopContainer,
+    StartContainer,
+    RemoveContainer,
     PullDeployment,
     RecloneDeployment,
 

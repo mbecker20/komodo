@@ -21,19 +21,27 @@ impl PeripheryClient {
     }
 
     pub async fn health_check(&self, server: &Server) -> anyhow::Result<String> {
-        self.get_text(server, "health").await
+        self.get_text(server, "health")
+            .await
+            .context("failed at health check on periphery")
     }
 
     pub async fn get_github_accounts(&self, server: &Server) -> anyhow::Result<Vec<String>> {
-        self.get_json(server, "/accounts/github").await
+        self.get_json(server, "/accounts/github")
+            .await
+            .context("failed to get github accounts from periphery")
     }
 
     pub async fn get_docker_accounts(&self, server: &Server) -> anyhow::Result<Vec<String>> {
-        self.get_json(server, "/accounts/docker").await
+        self.get_json(server, "/accounts/docker")
+            .await
+            .context("failed to get docker accounts from periphery")
     }
 
     pub async fn get_system_stats(&self, server: &Server) -> anyhow::Result<SystemStats> {
-        self.get_json(server, "/stats/system").await
+        self.get_json(server, "/stats/system")
+            .await
+            .context("failed to get system stats from periphery")
     }
 
     async fn get_text(&self, server: &Server, endpoint: &str) -> anyhow::Result<String> {

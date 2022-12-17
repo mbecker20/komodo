@@ -194,53 +194,6 @@ impl State {
         Ok(new_deployment)
     }
 
-    pub async fn deploy(&self, deployment_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
-        let mut deployment = self
-            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
-            .await?;
-        if let Some(build_id) = &deployment.build_id {
-            let build = self.db.get_build(build_id).await?;
-            let image = if let Some(docker_account) = &build.docker_account {
-                if deployment.docker_run_args.docker_account.is_none() {
-                    deployment.docker_run_args.docker_account = Some(docker_account.to_string())
-                }
-                format!("{docker_account}/{}", to_monitor_name(&build.name))
-            } else {
-                to_monitor_name(&build.name)
-            };
-            let version = if let Some(version) = &deployment.build_version {
-                version.to_string()
-            } else {
-                "latest".to_string()
-            };
-            deployment.docker_run_args.image = format!("{image}:{version}");
-        };
-        let server = self.db.get_server(&deployment.server_id).await?;
-        let mut update = Update {
-            target: UpdateTarget::Deployment(deployment_id.to_string()),
-            operation: Operation::DeployDeployment,
-            start_ts: unix_timestamp_ms() as i64,
-            status: UpdateStatus::InProgress,
-            operator: user.id.clone(),
-            success: true,
-            // version: deployment.docker_run_args.,
-            ..Default::default()
-        };
-
-        update.id = self.add_update(update.clone()).await?;
-
-        let deploy_log = self.periphery.deploy(&server, &deployment).await?;
-
-        update.success = deploy_log.success;
-        update.logs.push(deploy_log);
-        update.status = UpdateStatus::Complete;
-        update.end_ts = Some(unix_timestamp_ms() as i64);
-
-        self.update_update(update.clone()).await?;
-
-        Ok(update)
-    }
-
     pub async fn reclone_deployment(
         &self,
         deployment_id: &str,
@@ -276,6 +229,200 @@ impl State {
 
         update.status = UpdateStatus::Complete;
         update.end_ts = Some(unix_timestamp_ms() as i64);
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
+    }
+
+    pub async fn deploy_container(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        let mut deployment = self
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .await?;
+        if let Some(build_id) = &deployment.build_id {
+            let build = self.db.get_build(build_id).await?;
+            let image = if let Some(docker_account) = &build.docker_account {
+                if deployment.docker_run_args.docker_account.is_none() {
+                    deployment.docker_run_args.docker_account = Some(docker_account.to_string())
+                }
+                format!("{docker_account}/{}", to_monitor_name(&build.name))
+            } else {
+                to_monitor_name(&build.name)
+            };
+            let version = if let Some(version) = &deployment.build_version {
+                version.to_string()
+            } else {
+                "latest".to_string()
+            };
+            deployment.docker_run_args.image = format!("{image}:{version}");
+        };
+        let server = self.db.get_server(&deployment.server_id).await?;
+        let mut update = Update {
+            target: UpdateTarget::Deployment(deployment_id.to_string()),
+            operation: Operation::DeployContainer,
+            start_ts: unix_timestamp_ms() as i64,
+            status: UpdateStatus::InProgress,
+            operator: user.id.clone(),
+            success: true,
+            ..Default::default()
+        };
+
+        update.id = self.add_update(update.clone()).await?;
+
+        let deploy_log = self.periphery.deploy(&server, &deployment).await?;
+
+        update.success = deploy_log.success;
+        update.logs.push(deploy_log);
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(unix_timestamp_ms() as i64);
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
+    }
+
+    pub async fn start_container(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        let start_ts = unix_timestamp_ms() as i64;
+        let deployment = self
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .await?;
+        let server = self.db.get_server(&deployment.server_id).await?;
+        let mut update = Update {
+            target: UpdateTarget::Deployment(deployment_id.to_string()),
+            operation: Operation::StartContainer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = self
+            .periphery
+            .container_start(&server, &deployment.name)
+            .await;
+
+        update.success = match log {
+            Ok(log) => {
+                let success = log.success;
+                update.logs.push(log);
+                success
+            }
+            Err(e) => {
+                update
+                    .logs
+                    .push(Log::error("start container", format!("{e:#?}")));
+                false
+            }
+        };
+
+        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.status = UpdateStatus::Complete;
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
+    }
+
+    pub async fn stop_container(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        let start_ts = unix_timestamp_ms() as i64;
+        let deployment = self
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .await?;
+        let server = self.db.get_server(&deployment.server_id).await?;
+        let mut update = Update {
+            target: UpdateTarget::Deployment(deployment_id.to_string()),
+            operation: Operation::StopContainer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = self
+            .periphery
+            .container_stop(&server, &deployment.name)
+            .await;
+
+        update.success = match log {
+            Ok(log) => {
+                let success = log.success;
+                update.logs.push(log);
+                success
+            }
+            Err(e) => {
+                update
+                    .logs
+                    .push(Log::error("stop container", format!("{e:#?}")));
+                false
+            }
+        };
+
+        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.status = UpdateStatus::Complete;
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
+    }
+
+    pub async fn remove_container(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        let start_ts = unix_timestamp_ms() as i64;
+        let deployment = self
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .await?;
+        let server = self.db.get_server(&deployment.server_id).await?;
+        let mut update = Update {
+            target: UpdateTarget::Deployment(deployment_id.to_string()),
+            operation: Operation::RemoveContainer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = self
+            .periphery
+            .container_remove(&server, &deployment.name)
+            .await;
+
+        update.success = match log {
+            Ok(log) => {
+                let success = log.success;
+                update.logs.push(log);
+                success
+            }
+            Err(e) => {
+                update
+                    .logs
+                    .push(Log::error("remove container", format!("{e:#?}")));
+                false
+            }
+        };
+
+        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.status = UpdateStatus::Complete;
 
         self.update_update(update.clone()).await?;
 

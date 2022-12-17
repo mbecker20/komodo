@@ -115,20 +115,6 @@ pub fn router() -> Router {
             ),
         )
         .route(
-            "/:id/deploy",
-            post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
-                    let update = state
-                        .deploy(&deployment_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
-                    response!(Json(update))
-                },
-            ),
-        )
-        .route(
             "/:id/reclone",
             post(
                 |Extension(state): StateExtension,
@@ -136,6 +122,62 @@ pub fn router() -> Router {
                  Path(deployment_id): Path<DeploymentId>| async move {
                     let update = state
                         .reclone_deployment(&deployment_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(update))
+                },
+            ),
+        )
+        .route(
+            "/:id/deploy",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>| async move {
+                    let update = state
+                        .deploy_container(&deployment_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(update))
+                },
+            ),
+        )
+        .route(
+            "/:id/start_container",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>| async move {
+                    let update = state
+                        .start_container(&deployment_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(update))
+                },
+            ),
+        )
+        .route(
+            "/:id/stop_container",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>| async move {
+                    let update = state
+                        .stop_container(&deployment_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(update))
+                },
+            ),
+        )
+        .route(
+            "/:id/remove_container",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>| async move {
+                    let update = state
+                        .remove_container(&deployment_id.id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(update))
