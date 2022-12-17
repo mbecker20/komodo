@@ -21,7 +21,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
     let path = sub_matches
         .get_one::<String>("path")
         .map(|p| p.as_str())
-        .unwrap_or("$HOME/.monitor/core.config.toml")
+        .unwrap_or("~/.monitor/core.config.toml")
         .to_string();
 
     let port = sub_matches
@@ -236,7 +236,7 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     let path = sub_matches
         .get_one::<String>("path")
         .map(|p| p.as_str())
-        .unwrap_or("$HOME/.monitor/periphery.config.toml")
+        .unwrap_or("~/.monitor/periphery.config.toml")
         .to_string();
 
     let port = sub_matches
@@ -338,10 +338,8 @@ pub fn start_periphery(sub_matches: &ArgMatches) {
 }
 
 fn write_to_toml(path: &str, toml: impl Serialize) {
-    let path = PathBuf::from_str(&path.replace("$HOME", &std::env::var("HOME").unwrap()))
+    let path = PathBuf::from_str(&path.replace("~", &std::env::var("HOME").unwrap()))
         .expect("not a valid path");
-    println!("is absolute: {}", path.is_absolute());
-    println!("{}", path.display());
     let _ = fs::create_dir_all(pop_path(&path));
     fs::write(
         path,
