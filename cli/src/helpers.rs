@@ -242,7 +242,7 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     let port = sub_matches
         .get_one::<String>("port")
         .map(|p| p.as_str())
-        .unwrap_or("9000")
+        .unwrap_or("8000")
         .parse::<u16>()
         .expect("invalid port");
 
