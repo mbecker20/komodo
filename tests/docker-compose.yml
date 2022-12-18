@@ -12,7 +12,7 @@ services:
     environment:
       - CONFIG_PATH=/config/config.toml
     volumes:
-      - "/Users/max/monitor/core:/config"
+      - "~/.monitor/core.config.toml:/config/config.toml"
     depends_on:
       - mongo
 
@@ -24,15 +24,16 @@ services:
       args:
         DEPS_INSTALLER: install_full_periphery_deps
     ports:
-      - "9001:9001"
+      - "8000:8000"
     networks:
       - monitor-network
     environment:
       - CONFIG_PATH=/config/config.toml
     volumes:
-      - "/Users/max/monitor/periphery:/config"
-      - "/Users/max/monitor/repos-full:/repos"
+      - "~/.monitor/periphery.config.toml:/config/config.toml"
+      - "~/.monitor/repos-full:/repos"
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - "/external:/external"
 
   periphery-slim:
     image: periphery-slim
@@ -42,20 +43,20 @@ services:
       args:
         DEPS_INSTALLER: install_slim_periphery_deps
     ports:
-      - "9002:9001"
+      - "8001:8000"
     networks:
       - monitor-network
     environment:
       - CONFIG_PATH=/config/config.toml
     volumes:
-      - "/Users/max/monitor/periphery:/config"
-      - "/Users/max/monitor/repos-slim:/repos"
+      - "~/.monitor/periphery.config.toml:/config/config.toml"
+      - "~/.monitor/repos-slim:/repos"
       - "/var/run/docker.sock:/var/run/docker.sock"
 
   mongo:
     image: mongo
     ports:
-      - "27019:27017"
+      - "27017:27017"
     networks:
       - monitor-network
 

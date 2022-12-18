@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
 
     let start_ts = unix_timestamp_ms();
 
-    // let (server, deployment, build) = create_test_setup(&monitor, "test").await?;
+    let (server, deployment, build) = create_test_setup(&monitor, "test").await?;
 
     let server_stats = get_server_stats(&monitor).await?;
     println!("server stats:\n{server_stats:#?}\n");

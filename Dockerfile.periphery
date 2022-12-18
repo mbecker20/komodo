@@ -17,6 +17,6 @@ RUN sh ./${DEPS_INSTALLER}.sh
 
 COPY --from=builder /builder/periphery/target/release/periphery /usr/local/bin/periphery
 
-EXPOSE 9001
+EXPOSE 8000
 
 CMD "periphery"
