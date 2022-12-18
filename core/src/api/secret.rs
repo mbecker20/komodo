@@ -5,7 +5,7 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::{generate_secret, handle_anyhow_error};
-use mungos::{doc, to_bson, Deserialize, Document, Update, Serialize};
+use mungos::{doc, to_bson, Deserialize, Document, Serialize, Update};
 use types::{monitor_timestamp, ApiSecret};
 use typeshare::typeshare;
 

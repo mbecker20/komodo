@@ -6,7 +6,9 @@ export function inPx(num: number) {
   return `${num}px`;
 }
 
-export function generateQuery(query?: Record<string, string | number | undefined>) {
+export type QueryObject = Record<string, string | number | undefined>;
+
+export function generateQuery(query?: QueryObject) {
   if (query) {
     const q = Object.keys(query)
       .filter((key) => query[key] !== undefined)

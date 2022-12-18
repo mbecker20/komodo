@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use axum::{routing::post, Extension, Json, Router};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize, Document, Update, Serialize};
+use mungos::{doc, Deserialize, Document, Serialize, Update};
 use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server};
 use typeshare::typeshare;
 

@@ -3,8 +3,8 @@ use diff::Diff;
 use helpers::to_monitor_name;
 use mungos::{doc, to_bson};
 use types::{
-    traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateStatus,
-    UpdateTarget, monitor_timestamp,
+    monitor_timestamp, traits::Permissioned, Build, Log, Operation, PermissionLevel, Update,
+    UpdateStatus, UpdateTarget,
 };
 
 use crate::{

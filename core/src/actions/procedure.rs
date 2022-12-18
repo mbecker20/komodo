@@ -2,8 +2,8 @@ use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::to_monitor_name;
 use types::{
-    traits::Permissioned, Log, Operation, PermissionLevel, Procedure, ProcedureOperation::*,
-    ProcedureStage, Update, UpdateStatus, UpdateTarget, monitor_timestamp,
+    monitor_timestamp, traits::Permissioned, Log, Operation, PermissionLevel, Procedure,
+    ProcedureOperation::*, ProcedureStage, Update, UpdateStatus, UpdateTarget,
 };
 
 use crate::{auth::RequestUser, state::State};

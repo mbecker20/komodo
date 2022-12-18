@@ -6,7 +6,7 @@ impl MonitorClient {
     pub async fn create_api_secret(
         &self,
         secret_name: &str,
-        expires: Option<i64>,
+        expires: Option<String>,
     ) -> anyhow::Result<String> {
         self.post(
             "/api/secret/create",

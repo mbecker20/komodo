@@ -2,8 +2,8 @@ use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::to_monitor_name;
 use types::{
-    traits::Permissioned, Deployment, Log, Operation, PermissionLevel, Update, UpdateStatus,
-    UpdateTarget, monitor_timestamp,
+    monitor_timestamp, traits::Permissioned, Deployment, Log, Operation, PermissionLevel, Update,
+    UpdateStatus, UpdateTarget,
 };
 
 use crate::{
