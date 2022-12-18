@@ -1,10 +1,9 @@
 use anyhow::{anyhow, Context};
-use async_timing_util::unix_timestamp_ms;
 use diff::Diff;
 use helpers::to_monitor_name;
 use types::{
     traits::Permissioned, Deployment, Log, Operation, PermissionLevel, Update, UpdateStatus,
-    UpdateTarget,
+    UpdateTarget, monitor_timestamp,
 };
 
 use crate::{
@@ -39,15 +38,15 @@ impl State {
     ) -> anyhow::Result<Deployment> {
         self.get_server_check_permissions(&server_id, user, PermissionLevel::Write)
             .await?;
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         let deployment = Deployment {
             name: to_monitor_name(name),
             server_id,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
                 .collect(),
-            created_at: start_ts,
-            updated_at: start_ts,
+            created_at: start_ts.clone(),
+            updated_at: start_ts.clone(),
             ..Default::default()
         };
         let deployment_id = self
@@ -61,7 +60,7 @@ impl State {
             target: UpdateTarget::Deployment(deployment_id),
             operation: Operation::CreateDeployment,
             start_ts,
-            end_ts: Some(unix_timestamp_ms() as i64),
+            end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
             success: true,
             ..Default::default()
@@ -91,7 +90,7 @@ impl State {
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
             .await?;
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         let server = self.db.get_server(&deployment.server_id).await?;
         let log = self
             .periphery
@@ -108,7 +107,7 @@ impl State {
             target: UpdateTarget::System,
             operation: Operation::DeleteDeployment,
             start_ts,
-            end_ts: Some(unix_timestamp_ms() as i64),
+            end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
             logs: vec![
                 log,
@@ -135,14 +134,14 @@ impl State {
         let current_deployment = self
             .get_deployment_check_permissions(&new_deployment.id, user, PermissionLevel::Write)
             .await?;
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
 
         // none of these should be changed through this method
         new_deployment.name = current_deployment.name.clone();
         new_deployment.permissions = current_deployment.permissions.clone();
         new_deployment.server_id = current_deployment.server_id.clone();
-        new_deployment.created_at = current_deployment.created_at;
-        new_deployment.updated_at = start_ts;
+        new_deployment.created_at = current_deployment.created_at.clone();
+        new_deployment.updated_at = start_ts.clone();
 
         self.db
             .deployments
@@ -185,7 +184,7 @@ impl State {
             }
         }
 
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
         update.success = all_logs_success(&update.logs);
         update.status = UpdateStatus::Complete;
 
@@ -206,7 +205,7 @@ impl State {
         let mut update = Update {
             target: UpdateTarget::Deployment(deployment_id.to_string()),
             operation: Operation::RecloneDeployment,
-            start_ts: unix_timestamp_ms() as i64,
+            start_ts: monitor_timestamp(),
             status: UpdateStatus::InProgress,
             operator: user.id.clone(),
             success: true,
@@ -228,7 +227,7 @@ impl State {
         };
 
         update.status = UpdateStatus::Complete;
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
 
         self.update_update(update.clone()).await?;
 
@@ -264,7 +263,7 @@ impl State {
         let mut update = Update {
             target: UpdateTarget::Deployment(deployment_id.to_string()),
             operation: Operation::DeployContainer,
-            start_ts: unix_timestamp_ms() as i64,
+            start_ts: monitor_timestamp(),
             status: UpdateStatus::InProgress,
             operator: user.id.clone(),
             success: true,
@@ -278,7 +277,7 @@ impl State {
         update.success = deploy_log.success;
         update.logs.push(deploy_log);
         update.status = UpdateStatus::Complete;
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
 
         self.update_update(update.clone()).await?;
 
@@ -290,7 +289,7 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
             .await?;
@@ -325,7 +324,7 @@ impl State {
             }
         };
 
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
         update.status = UpdateStatus::Complete;
 
         self.update_update(update.clone()).await?;
@@ -338,7 +337,7 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
             .await?;
@@ -373,7 +372,7 @@ impl State {
             }
         };
 
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
         update.status = UpdateStatus::Complete;
 
         self.update_update(update.clone()).await?;
@@ -386,7 +385,7 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
             .await?;
@@ -421,7 +420,7 @@ impl State {
             }
         };
 
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
         update.status = UpdateStatus::Complete;
 
         self.update_update(update.clone()).await?;

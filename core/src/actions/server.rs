@@ -1,10 +1,9 @@
 use anyhow::{anyhow, Context};
-use async_timing_util::unix_timestamp_ms;
 use diff::Diff;
 use helpers::to_monitor_name;
 use types::{
     traits::Permissioned, Log, Operation, PermissionLevel, Server, Update, UpdateStatus,
-    UpdateTarget,
+    UpdateTarget, monitor_timestamp,
 };
 
 use crate::{auth::RequestUser, state::State};
@@ -38,15 +37,15 @@ impl State {
                 "user does not have permissions to add server (not admin)"
             ));
         }
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         let server = Server {
             name: to_monitor_name(name),
             address,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
                 .collect(),
-            created_at: start_ts,
-            updated_at: start_ts,
+            created_at: start_ts.clone(),
+            updated_at: start_ts.clone(),
             ..Default::default()
         };
         let server_id = self
@@ -60,7 +59,7 @@ impl State {
             target: UpdateTarget::Server(server_id),
             operation: Operation::CreateServer,
             start_ts,
-            end_ts: Some(unix_timestamp_ms() as i64),
+            end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
             success: true,
             ..Default::default()
@@ -91,13 +90,13 @@ impl State {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Write)
             .await?;
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         self.db.servers.delete_one(&server_id).await?;
         let update = Update {
             target: UpdateTarget::System,
             operation: Operation::DeleteServer,
             start_ts,
-            end_ts: Some(unix_timestamp_ms() as i64),
+            end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
             logs: vec![Log::simple(
                 "delete server",
@@ -118,11 +117,11 @@ impl State {
         let current_server = self
             .get_server_check_permissions(&new_server.id, user, PermissionLevel::Write)
             .await?;
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
 
         new_server.permissions = current_server.permissions.clone();
-        new_server.created_at = current_server.created_at;
-        new_server.updated_at = start_ts;
+        new_server.created_at = current_server.created_at.clone();
+        new_server.updated_at = start_ts.clone();
 
         let diff = current_server.diff(&new_server);
 
@@ -136,7 +135,7 @@ impl State {
             operation: Operation::UpdateServer,
             target: UpdateTarget::Server(new_server.id.clone()),
             start_ts,
-            end_ts: Some(unix_timestamp_ms() as i64),
+            end_ts: Some(monitor_timestamp()),
             status: UpdateStatus::Complete,
             logs: vec![Log::simple(
                 "server update",

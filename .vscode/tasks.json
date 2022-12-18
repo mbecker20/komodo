@@ -129,6 +129,12 @@
 				"cwd": "${workspaceFolder}/tests"
 			},
 			"problemMatcher": []
+		},
+		{
+			"type": "shell",
+			"command": "typeshare ./lib/types --lang=typescript --output-file=types.d.ts",
+			"label": "generate typescript types",
+			"problemMatcher": []
 		}
 	]
 }

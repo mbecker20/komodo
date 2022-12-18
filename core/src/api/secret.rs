@@ -1,5 +1,4 @@
 use anyhow::{anyhow, Context};
-use async_timing_util::unix_timestamp_ms;
 use axum::{
     extract::Path,
     routing::{delete, post},
@@ -7,7 +6,7 @@ use axum::{
 };
 use helpers::{generate_secret, handle_anyhow_error};
 use mungos::{doc, to_bson, Deserialize, Document, Update};
-use types::ApiSecret;
+use types::{monitor_timestamp, ApiSecret};
 
 use crate::{auth::RequestUserExtension, state::StateExtension};
 
@@ -17,7 +16,7 @@ const BCRYPT_COST: u32 = 10;
 #[derive(Deserialize)]
 struct CreateSecretBody {
     name: String,
-    expires: Option<i64>,
+    expires: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -50,7 +49,7 @@ impl Into<ApiSecret> for CreateSecretBody {
         ApiSecret {
             name: self.name,
             expires: self.expires,
-            created_at: unix_timestamp_ms() as i64,
+            created_at: monitor_timestamp(),
             ..Default::default()
         }
     }

@@ -1,0 +1,2 @@
+[typescript.type_mappings]
+"PathBuf" = "string"

@@ -7,7 +7,7 @@ use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use mungos::{Deserialize, Serialize};
 use sha2::Sha256;
-use types::{CoreConfig, UserId};
+use types::CoreConfig;
 
 use crate::state::State;
 
@@ -22,7 +22,7 @@ pub struct RequestUser {
 
 #[derive(Serialize, Deserialize)]
 pub struct JwtClaims {
-    pub id: UserId,
+    pub id: String,
     pub iat: u128,
     pub exp: u128,
 }

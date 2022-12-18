@@ -1,12 +1,11 @@
 use std::{fs::File, io::Read, net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
-use async_timing_util::unix_timestamp_ms;
 use axum::http::StatusCode;
 use rand::{distributions::Alphanumeric, Rng};
 use run_command::{async_run_command, CommandOutput};
 use serde::de::DeserializeOwned;
-use types::Log;
+use types::{monitor_timestamp, Log};
 
 pub mod docker;
 pub mod git;
@@ -26,7 +25,12 @@ pub fn parse_config_file<T: DeserializeOwned>(path: &str) -> anyhow::Result<T> {
     Ok(config)
 }
 
-pub fn output_into_log(stage: &str, command: String, start_ts: i64, output: CommandOutput) -> Log {
+pub fn output_into_log(
+    stage: &str,
+    command: String,
+    start_ts: String,
+    output: CommandOutput,
+) -> Log {
     let success = output.success();
     Log {
         stage: stage.to_string(),
@@ -35,7 +39,7 @@ pub fn output_into_log(stage: &str, command: String, start_ts: i64, output: Comm
         command,
         success,
         start_ts,
-        end_ts: unix_timestamp_ms() as i64,
+        end_ts: monitor_timestamp(),
     }
 }
 
@@ -48,7 +52,7 @@ pub fn to_monitor_name(name: &str) -> String {
 }
 
 pub async fn run_monitor_command(stage: &str, command: String) -> Log {
-    let start_ts = unix_timestamp_ms() as i64;
+    let start_ts = monitor_timestamp();
     let output = async_run_command(&command).await;
     output_into_log(stage, command, start_ts, output)
 }

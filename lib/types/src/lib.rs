@@ -1,23 +1,20 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use async_timing_util::{unix_timestamp_ms, Timelength};
+use anyhow::Context;
+use async_timing_util::Timelength;
 use bson::serde_helpers::hex_string_as_object_id;
+use chrono::{DateTime, Utc};
 use derive_builder::Builder;
 use diff::{Diff, HashMapDiff, OptionDiff, VecDiff};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 
 pub use bollard::service::{ImageSummary, Network};
+use typeshare::typeshare;
 
 pub mod traits;
 
 pub const PERIPHERY_BUILDER_BUSY: &str = "builder is busy";
-
-pub type UserId = String;
-pub type ServerId = String;
-pub type DeploymentId = String;
-pub type BuildId = String;
-pub type ProcedureId = String;
 
 pub type GithubUsername = String;
 pub type GithubToken = String;
@@ -29,8 +26,10 @@ pub type DockerAccounts = HashMap<DockerUsername, DockerToken>;
 
 pub type SecretsMap = HashMap<String, String>; // these are used for injection into deployments run commands
 
-pub type PermissionsMap = HashMap<UserId, PermissionLevel>;
+#[typeshare]
+pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct User {
@@ -70,7 +69,7 @@ pub struct User {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub github_id: Option<i64>,
+    pub github_id: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
@@ -78,21 +77,23 @@ pub struct User {
 
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
-    pub created_at: i64,
+    pub created_at: String,
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
-    pub updated_at: i64,
+    pub updated_at: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct ApiSecret {
     pub name: String,
     pub hash: String,
-    pub created_at: i64,
-    pub expires: Option<i64>,
+    pub created_at: String,
+    pub expires: Option<String>,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Server {
@@ -130,7 +131,7 @@ pub struct Server {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub stats_interval: Option<i64>,
+    pub stats_interval: Option<f64>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
@@ -143,11 +144,11 @@ pub struct Server {
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
-    pub created_at: i64,
+    pub created_at: String,
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
-    pub updated_at: i64,
+    pub updated_at: String,
 }
 
 impl Default for Server {
@@ -182,6 +183,7 @@ fn default_disk_alert() -> f64 {
     75.0
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Deployment {
@@ -199,7 +201,7 @@ pub struct Deployment {
     pub name: String, // must be formatted to be compat with docker
 
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
-    pub server_id: ServerId,
+    pub server_id: String,
 
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
@@ -211,7 +213,7 @@ pub struct Deployment {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub build_id: Option<BuildId>,
+    pub build_id: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
@@ -237,19 +239,21 @@ pub struct Deployment {
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
-    pub created_at: i64,
+    pub created_at: String,
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
-    pub updated_at: i64,
+    pub updated_at: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct DeploymentWithContainer {
     pub deployment: Deployment,
     pub container: Option<BasicContainerInfo>,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Build {
@@ -304,13 +308,14 @@ pub struct Build {
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
-    pub created_at: i64,
+    pub created_at: String,
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
-    pub updated_at: i64,
+    pub updated_at: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Update {
     #[serde(
@@ -323,8 +328,8 @@ pub struct Update {
     pub target: UpdateTarget,
     pub operation: Operation,
     pub logs: Vec<Log>,
-    pub start_ts: i64,
-    pub end_ts: Option<i64>,
+    pub start_ts: String,
+    pub end_ts: Option<String>,
     pub status: UpdateStatus,
     pub success: bool,
     pub operator: String,
@@ -332,6 +337,7 @@ pub struct Update {
     pub version: Option<Version>,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Procedure {
@@ -351,13 +357,14 @@ pub struct Procedure {
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
-    pub created_at: i64,
+    pub created_at: String,
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
-    pub updated_at: i64,
+    pub updated_at: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct ProcedureStage {
@@ -365,6 +372,7 @@ pub struct ProcedureStage {
     pub target_id: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize, PartialEq)]))]
 pub struct DockerBuildArgs {
@@ -373,6 +381,7 @@ pub struct DockerBuildArgs {
     pub build_args: Vec<EnvironmentVar>,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct DockerRunArgs {
@@ -404,6 +413,7 @@ pub struct DockerRunArgs {
     pub docker_account: Option<String>, // the username of the dockerhub account
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BasicContainerInfo {
     pub name: String,
@@ -412,6 +422,7 @@ pub struct BasicContainerInfo {
     pub status: Option<String>,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DockerContainerStats {
     #[serde(alias = "Name")]
@@ -430,6 +441,7 @@ pub struct DockerContainerStats {
     pub pids: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Log {
     pub stage: String,
@@ -437,29 +449,29 @@ pub struct Log {
     pub stdout: String,
     pub stderr: String,
     pub success: bool,
-    pub start_ts: i64,
-    pub end_ts: i64,
+    pub start_ts: String,
+    pub end_ts: String,
 }
 
 impl Log {
     pub fn simple(stage: &str, msg: String) -> Log {
-        let ts = unix_timestamp_ms() as i64;
+        let ts = monitor_timestamp();
         Log {
             stage: stage.to_string(),
             stdout: msg,
             success: true,
-            start_ts: ts,
+            start_ts: ts.clone(),
             end_ts: ts,
             ..Default::default()
         }
     }
 
     pub fn error(stage: &str, msg: String) -> Log {
-        let ts = unix_timestamp_ms() as i64;
+        let ts = monitor_timestamp();
         Log {
             stage: stage.to_string(),
             stderr: msg,
-            start_ts: ts,
+            start_ts: ts.clone(),
             end_ts: ts,
             success: false,
             ..Default::default()
@@ -467,6 +479,7 @@ impl Log {
     }
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct Command {
@@ -474,12 +487,13 @@ pub struct Command {
     pub command: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct Version {
-    pub major: u64,
-    pub minor: u64,
-    pub patch: u64,
+    pub major: i32,
+    pub minor: i32,
+    pub patch: i32,
 }
 
 impl ToString for Version {
@@ -494,6 +508,7 @@ impl Version {
     }
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct Conversion {
@@ -501,6 +516,7 @@ pub struct Conversion {
     pub container: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct EnvironmentVar {
@@ -583,12 +599,14 @@ fn default_repo_dir() -> String {
     "/repos".to_string()
 }
 
+#[typeshare]
 #[derive(Deserialize, Debug)]
 pub struct UserCredentials {
     pub username: String,
     pub password: String,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SystemStats {
     pub cpu_perc: f32,     // in %
@@ -598,6 +616,7 @@ pub struct SystemStats {
     pub networks: Vec<SystemNetwork>,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DiskUsage {
     pub used_gb: f64,  // in GB
@@ -607,6 +626,7 @@ pub struct DiskUsage {
     pub disks: Vec<SingleDiskUsage>,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SingleDiskUsage {
     pub mount: PathBuf,
@@ -614,6 +634,7 @@ pub struct SingleDiskUsage {
     pub total_gb: f64, // in GB
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SystemNetwork {
     pub name: String,
@@ -621,6 +642,7 @@ pub struct SystemNetwork {
     pub transmitted_kb: f64, // in kB
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -629,14 +651,15 @@ pub enum AccountType {
     Docker,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type", content = "id")]
 pub enum UpdateTarget {
     System,
-    Build(BuildId),
-    Deployment(DeploymentId),
-    Server(ServerId),
-    Procedure(ProcedureId),
+    Build(String),
+    Deployment(String),
+    Server(String),
+    Procedure(String),
 }
 
 impl Default for UpdateTarget {
@@ -645,6 +668,7 @@ impl Default for UpdateTarget {
     }
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -660,6 +684,7 @@ impl Default for UpdateStatus {
     }
 }
 
+#[typeshare]
 #[derive(
     Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
 )]
@@ -708,6 +733,7 @@ impl Default for Operation {
     }
 }
 
+#[typeshare]
 #[derive(
     Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
 )]
@@ -745,6 +771,7 @@ impl Default for ProcedureOperation {
     }
 }
 
+#[typeshare]
 #[derive(
     Serialize,
     Deserialize,
@@ -781,6 +808,7 @@ impl Default for &PermissionLevel {
     }
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -790,6 +818,7 @@ pub enum PermissionsTarget {
     Build,
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -803,6 +832,7 @@ pub enum DockerContainerState {
     Dead,
 }
 
+#[typeshare]
 #[derive(
     Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
 )]
@@ -857,4 +887,14 @@ fn docker_run_args_diff_no_change(dra: &DockerRunArgsDiff) -> bool {
 
 fn restart_mode_diff_no_change(restart_mode: &RestartModeDiff) -> bool {
     restart_mode == &RestartModeDiff::NoChange
+}
+
+pub fn monitor_timestamp() -> String {
+    Utc::now().to_rfc3339()
+}
+
+pub fn unix_from_monitor_ts(ts: &str) -> anyhow::Result<i64> {
+    Ok(DateTime::parse_from_rfc3339(ts)
+        .context("failed to parse rfc3339 timestamp")?
+        .timestamp_millis())
 }

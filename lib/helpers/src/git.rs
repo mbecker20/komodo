@@ -2,9 +2,8 @@ use std::{path::PathBuf, str::FromStr};
 
 use ::run_command::async_run_command;
 use anyhow::anyhow;
-use async_timing_util::unix_timestamp_ms;
 use serde::{Deserialize, Serialize};
-use types::{Build, Command, Deployment, GithubToken, GithubUsername, Log};
+use types::{monitor_timestamp, Build, Command, Deployment, GithubToken, GithubUsername, Log};
 
 use crate::{run_monitor_command, to_monitor_name};
 
@@ -98,7 +97,7 @@ async fn clone(
     };
     let repo_url = format!("https://{access_token}github.com/{repo}.git");
     let command = format!("git clone {repo_url} {destination}{branch}");
-    let start_ts = unix_timestamp_ms() as i64;
+    let start_ts = monitor_timestamp();
     let output = async_run_command(&command).await;
     let command = if access_token.len() > 0 {
         command.replace(&access_token, "<TOKEN>")
@@ -112,6 +111,6 @@ async fn clone(
         stdout: output.stdout,
         stderr: output.stderr,
         start_ts,
-        end_ts: unix_timestamp_ms() as i64,
+        end_ts: monitor_timestamp(),
     }
 }

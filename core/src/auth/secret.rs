@@ -3,6 +3,7 @@ use async_timing_util::unix_timestamp_ms;
 use axum::{routing::post, Extension, Json, Router};
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Document, Update};
+use types::unix_from_monitor_ts;
 
 use crate::state::StateExtension;
 
@@ -36,6 +37,7 @@ pub async fn login(
     let ts = unix_timestamp_ms() as i64;
     for s in user.secrets {
         if let Some(expires) = s.expires {
+            let expires = unix_from_monitor_ts(&expires)?;
             if expires < ts {
                 state
                     .db

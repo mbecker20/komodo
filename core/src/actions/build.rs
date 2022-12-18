@@ -1,11 +1,10 @@
 use anyhow::{anyhow, Context};
-use async_timing_util::unix_timestamp_ms;
 use diff::Diff;
 use helpers::to_monitor_name;
 use mungos::{doc, to_bson};
 use types::{
     traits::Permissioned, Build, Log, Operation, PermissionLevel, Update, UpdateStatus,
-    UpdateTarget,
+    UpdateTarget, monitor_timestamp,
 };
 
 use crate::{
@@ -40,18 +39,17 @@ impl State {
     ) -> anyhow::Result<Build> {
         self.get_server_check_permissions(&server_id, user, PermissionLevel::Write)
             .await?;
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         let build = Build {
             name: to_monitor_name(name),
             server_id,
             permissions: [(user.id.clone(), PermissionLevel::Write)]
                 .into_iter()
                 .collect(),
-            created_at: start_ts,
-            updated_at: start_ts,
+            created_at: start_ts.clone(),
+            updated_at: start_ts.clone(),
             ..Default::default()
         };
-        let start_ts = unix_timestamp_ms() as i64;
         let build_id = self
             .db
             .builds
@@ -63,7 +61,7 @@ impl State {
             target: UpdateTarget::Build(build_id),
             operation: Operation::CreateBuild,
             start_ts,
-            end_ts: Some(unix_timestamp_ms() as i64),
+            end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
             success: true,
             ..Default::default()
@@ -89,7 +87,7 @@ impl State {
         let build = self
             .get_build_check_permissions(build_id, user, PermissionLevel::Write)
             .await?;
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
         let server = self.db.get_server(&build.server_id).await?;
         let delete_repo_log = self
             .periphery
@@ -101,7 +99,7 @@ impl State {
             target: UpdateTarget::System,
             operation: Operation::DeleteDeployment,
             start_ts,
-            end_ts: Some(unix_timestamp_ms() as i64),
+            end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
             logs: vec![
                 delete_repo_log,
@@ -125,14 +123,14 @@ impl State {
         let current_build = self
             .get_build_check_permissions(&new_build.id, user, PermissionLevel::Write)
             .await?;
-        let start_ts = unix_timestamp_ms() as i64;
+        let start_ts = monitor_timestamp();
 
         // none of these should be changed through this method
         new_build.name = current_build.name.clone();
         new_build.permissions = current_build.permissions.clone();
         new_build.server_id = current_build.server_id.clone();
-        new_build.created_at = current_build.created_at;
-        new_build.updated_at = start_ts;
+        new_build.created_at = current_build.created_at.clone();
+        new_build.updated_at = start_ts.clone();
 
         self.db
             .builds
@@ -172,7 +170,7 @@ impl State {
             }
         }
 
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
         update.success = all_logs_success(&update.logs);
         update.status = UpdateStatus::Complete;
 
@@ -191,7 +189,7 @@ impl State {
         let mut update = Update {
             target: UpdateTarget::Build(build_id.to_string()),
             operation: Operation::BuildBuild,
-            start_ts: unix_timestamp_ms() as i64,
+            start_ts: monitor_timestamp(),
             status: UpdateStatus::InProgress,
             operator: user.id.clone(),
             success: true,
@@ -231,7 +229,7 @@ impl State {
             }
         }
         update.status = UpdateStatus::Complete;
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
         self.update_update(update.clone()).await?;
         Ok(update)
     }
@@ -248,7 +246,7 @@ impl State {
         let mut update = Update {
             target: UpdateTarget::Build(build_id.to_string()),
             operation: Operation::RecloneBuild,
-            start_ts: unix_timestamp_ms() as i64,
+            start_ts: monitor_timestamp(),
             status: UpdateStatus::InProgress,
             operator: user.id.clone(),
             success: true,
@@ -270,7 +268,7 @@ impl State {
         };
 
         update.status = UpdateStatus::Complete;
-        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.end_ts = Some(monitor_timestamp());
 
         self.update_update(update.clone()).await?;
 
