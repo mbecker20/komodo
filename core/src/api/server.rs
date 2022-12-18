@@ -5,11 +5,12 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Document};
+use mungos::{Deserialize, Document, Serialize};
 use types::{
     traits::Permissioned, BasicContainerInfo, ImageSummary, Log, Network, PermissionLevel, Server,
     SystemStats,
 };
+use typeshare::typeshare;
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -17,12 +18,14 @@ use crate::{
     state::{State, StateExtension},
 };
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 struct ServerId {
     id: String,
 }
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 pub struct CreateServerBody {
     name: String,
     address: String,

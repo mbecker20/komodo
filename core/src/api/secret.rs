@@ -5,21 +5,24 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::{generate_secret, handle_anyhow_error};
-use mungos::{doc, to_bson, Deserialize, Document, Update};
+use mungos::{doc, to_bson, Deserialize, Document, Update, Serialize};
 use types::{monitor_timestamp, ApiSecret};
+use typeshare::typeshare;
 
 use crate::{auth::RequestUserExtension, state::StateExtension};
 
 const SECRET_LENGTH: usize = 40;
 const BCRYPT_COST: u32 = 10;
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 struct CreateSecretBody {
     name: String,
     expires: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 struct DeleteSecretPath {
     name: String,
 }

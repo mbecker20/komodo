@@ -8,8 +8,9 @@ use axum::{
 };
 use futures_util::future::join_all;
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Document};
+use mungos::{Deserialize, Document, Serialize};
 use types::{traits::Permissioned, Deployment, DeploymentWithContainer, PermissionLevel, Server};
+use typeshare::typeshare;
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -17,12 +18,14 @@ use crate::{
     state::{State, StateExtension},
 };
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 pub struct DeploymentId {
     id: String,
 }
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 pub struct CreateDeploymentBody {
     name: String,
     server_id: String,

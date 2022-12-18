@@ -5,8 +5,9 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Document};
+use mungos::{Deserialize, Document, Serialize};
 use types::{traits::Permissioned, PermissionLevel, Procedure};
+use typeshare::typeshare;
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -14,12 +15,13 @@ use crate::{
     state::{State, StateExtension},
 };
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct ProcedureId {
     id: String,
 }
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 pub struct CreateProcedureBody {
     name: String,
 }

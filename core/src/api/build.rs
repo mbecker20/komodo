@@ -5,8 +5,9 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Document};
+use mungos::{Deserialize, Document, Serialize};
 use types::{traits::Permissioned, Build, PermissionLevel};
+use typeshare::typeshare;
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -14,12 +15,14 @@ use crate::{
     state::{State, StateExtension},
 };
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 struct BuildId {
     id: String,
 }
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 struct CreateBuildBody {
     name: String,
     server_id: String,

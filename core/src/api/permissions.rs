@@ -1,12 +1,14 @@
 use anyhow::{anyhow, Context};
 use axum::{routing::post, Extension, Json, Router};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize, Document, Update};
+use mungos::{doc, Deserialize, Document, Update, Serialize};
 use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server};
+use typeshare::typeshare;
 
 use crate::{auth::RequestUserExtension, state::StateExtension};
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 struct PermissionsUpdateBody {
     user_id: String,
     permission: PermissionLevel,
@@ -14,7 +16,8 @@ struct PermissionsUpdateBody {
     target_id: String,
 }
 
-#[derive(Deserialize)]
+#[typeshare]
+#[derive(Serialize, Deserialize)]
 struct ModifyUserEnabledBody {
     user_id: String,
     enabled: bool,

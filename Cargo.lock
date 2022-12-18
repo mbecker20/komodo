@@ -369,6 +369,7 @@ dependencies = [
  "tokio-util",
  "tower",
  "tower-http",
+ "typeshare",
 ]
 
 [[package]]
