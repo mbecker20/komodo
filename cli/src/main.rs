@@ -31,7 +31,7 @@ fn cli() -> Command {
                                 .required(false)
                         )
                         .arg(
-                            arg!(--mongo_uri <URI> "sets the mongo uri to use. default is 'mongodb://mongo'")
+                            arg!(--mongo_uri <URI> "sets the mongo uri to use. default is 'mongodb://monitor-mongo'")
                                 .required(false)
                         )
                         .arg(

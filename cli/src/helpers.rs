@@ -34,7 +34,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
     let mongo_uri = sub_matches
         .get_one::<String>("mongo_uri")
         .map(|p| p.as_str())
-        .unwrap_or("mongodb://mongo")
+        .unwrap_or("mongodb://monitor-mongo")
         .to_string();
 
     let mongo_db_name = sub_matches

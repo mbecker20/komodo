@@ -17,12 +17,16 @@ mod ws;
 async fn main() {
     let config = config::load();
 
+    println!("starting monitor core on port {}...", config.port);
+
     let app = Router::new()
         .nest("/api", api::router())
         .nest("/auth", auth::router(&config))
         .nest("/ws", ws::router())
         .layer(JwtClient::extension(&config))
         .layer(State::extension(config.clone()).await);
+
+    println!("started monitor core on port {}", config.port);
 
     axum::Server::bind(&get_socket_addr(config.port))
         .serve(app.into_make_service())

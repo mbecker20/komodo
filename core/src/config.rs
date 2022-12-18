@@ -13,12 +13,7 @@ pub fn load() -> CoreConfig {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse environment variables");
     let config = parse_config_file(&env.config_path).expect("failed to parse config");
-    print_startup_log(&config);
     config
-}
-
-fn print_startup_log(config: &CoreConfig) {
-    println!("starting monitor core on port {}", config.port);
 }
 
 pub fn default_config_path() -> String {
