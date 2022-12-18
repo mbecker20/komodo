@@ -8,13 +8,17 @@
     "build": "vite build",
     "serve": "vite preview"
   },
-  "license": "MIT",
+  "license": "GPL v3.0",
   "devDependencies": {
+    "sass": "^1.57.0",
     "typescript": "^4.8.2",
     "vite": "^3.0.9",
     "vite-plugin-solid": "^2.3.0"
   },
   "dependencies": {
+    "apexcharts": "^3.36.3",
+    "axios": "^1.2.1",
+    "reconnecting-websocket": "^4.4.0",
     "solid-js": "^1.5.1"
   }
 }
