@@ -132,7 +132,7 @@
 		},
 		{
 			"type": "shell",
-			"command": "typeshare ./lib/types --lang=typescript --output-file=types.d.ts",
+			"command": "typeshare ./lib/types --lang=typescript --output-file=./frontend/src/types.d.ts",
 			"label": "generate typescript types",
 			"problemMatcher": []
 		}
