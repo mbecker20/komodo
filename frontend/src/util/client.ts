@@ -5,33 +5,34 @@ import {
   Deployment,
   DeploymentWithContainer,
   Log,
-  PermissionLevel,
-  PermissionsTarget,
   Server,
   SystemStats,
   Update,
   User,
+  UserCredentials,
 } from "../types";
+import {
+  CreateBuildBody,
+  CreateDeploymentBody,
+  CreateSecretBody,
+  CreateServerBody,
+  ModifyUserEnabledBody,
+  PermissionsUpdateBody,
+} from "./client_types";
 import { generateQuery, QueryObject } from "./helpers";
 
 export class Client {
   constructor(private baseURL: string, private token: string | null) {}
 
-  async login(username: string, password: string) {
-    const jwt: string = await this.post("/auth/local/login", {
-      username,
-      password,
-    });
+  async login(credentials: UserCredentials) {
+    const jwt: string = await this.post("/auth/local/login", credentials);
     this.token = jwt;
     localStorage.setItem("access_token", this.token);
     return await this.getUser();
   }
 
-  async signup(username: string, password: string) {
-    const jwt: string = await this.post("/auth/local/create_user", {
-      username,
-      password,
-    });
+  async signup(credentials: UserCredentials) {
+    const jwt: string = await this.post("/auth/local/create_user", credentials);
     this.token = jwt;
     localStorage.setItem("access_token", this.token);
     return await this.getUser();
@@ -65,8 +66,8 @@ export class Client {
     return this.get(`/api/deployment/${id}`);
   }
 
-  create_deployment(name: string, server_id: string): Promise<Deployment> {
-    return this.post("/api/deployment/create", { name, server_id });
+  create_deployment(body: CreateDeploymentBody): Promise<Deployment> {
+    return this.post("/api/deployment/create", body);
   }
 
   create_full_deployment(deployment: Deployment): Promise<Deployment> {
@@ -111,8 +112,8 @@ export class Client {
     return this.get(`/api/server/${server_id}`);
   }
 
-  create_server(name: string, address: string): Promise<Server> {
-    return this.post("/api/server/create", { name, address });
+  create_server(body: CreateServerBody): Promise<Server> {
+    return this.post("/api/server/create", body);
   }
 
   create_full_server(server: Server): Promise<Server> {
@@ -157,8 +158,8 @@ export class Client {
     return this.get(`/api/build/${build_id}`);
   }
 
-  create_build(name: string, server_id: string): Promise<Build> {
-    return this.post("/api/build/create", { name, server_id });
+  create_build(body: CreateBuildBody): Promise<Build> {
+    return this.post("/api/build/create", body);
   }
 
   create_full_build(build: Build): Promise<Build> {
@@ -183,8 +184,8 @@ export class Client {
 
   // api secrets
 
-  create_api_secret(name: string, expires?: string): Promise<string> {
-    return this.post("/api/secret/create", { name, expires });
+  create_api_secret(body: CreateSecretBody): Promise<string> {
+    return this.post("/api/secret/create", body);
   }
 
   delete_api_secret(name: string): Promise<undefined> {
@@ -194,21 +195,13 @@ export class Client {
   // permissions
 
   update_user_permissions_on_target(
-    user_id: string,
-    permission: PermissionLevel,
-    target_type: PermissionsTarget,
-    target_id: string
+    body: PermissionsUpdateBody
   ): Promise<string> {
-    return this.post("/api/permissions/update", {
-      user_id,
-      permission,
-      target_type,
-      target_id,
-    });
+    return this.post("/api/permissions/update", body);
   }
 
-  modify_user_enabled(user_id: string, enabled: boolean): Promise<undefined> {
-    return this.post("/api/permissions/update", { user_id, enabled });
+  modify_user_enabled(body: ModifyUserEnabledBody): Promise<undefined> {
+    return this.post("/api/permissions/update", body);
   }
 
   async get<R = any>(url: string): Promise<R> {

@@ -4,17 +4,9 @@
 
 import { PermissionLevel, PermissionsTarget } from "../types";
 
-export interface BuildId {
-	id: string;
-}
-
 export interface CreateBuildBody {
 	name: string;
 	server_id: string;
-}
-
-export interface DeploymentId {
-	id: string;
 }
 
 export interface CreateDeploymentBody {
@@ -41,14 +33,6 @@ export interface CreateProcedureBody {
 export interface CreateSecretBody {
 	name: string;
 	expires?: string;
-}
-
-export interface DeleteSecretPath {
-	name: string;
-}
-
-export interface ServerId {
-	id: string;
 }
 
 export interface CreateServerBody {

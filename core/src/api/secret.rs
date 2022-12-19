@@ -21,7 +21,6 @@ struct CreateSecretBody {
     expires: Option<String>,
 }
 
-#[typeshare]
 #[derive(Serialize, Deserialize)]
 struct DeleteSecretPath {
     name: String,

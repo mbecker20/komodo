@@ -18,7 +18,6 @@ use crate::{
     state::{State, StateExtension},
 };
 
-#[typeshare]
 #[derive(Serialize, Deserialize)]
 pub struct DeploymentId {
     id: String,

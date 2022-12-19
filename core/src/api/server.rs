@@ -18,7 +18,6 @@ use crate::{
     state::{State, StateExtension},
 };
 
-#[typeshare]
 #[derive(Serialize, Deserialize)]
 struct ServerId {
     id: String,

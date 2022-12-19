@@ -15,7 +15,6 @@ use crate::{
     state::{State, StateExtension},
 };
 
-#[typeshare]
 #[derive(Serialize, Deserialize)]
 struct BuildId {
     id: String,
