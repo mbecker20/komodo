@@ -7,8 +7,8 @@ use axum::{
 use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
 use types::{
-    traits::Permissioned, BasicContainerInfo, ImageSummary, Log, Network, PermissionLevel, Server,
-    SystemStats,
+    monitor_timestamp, traits::Permissioned, BasicContainerInfo, ImageSummary, Log, Network,
+    Operation, PermissionLevel, Server, SystemStats, Update, UpdateStatus, UpdateTarget,
 };
 use typeshare::typeshare;
 
@@ -124,7 +124,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(ServerId { id }): Path<ServerId>| async move {
                     let stats = state
-                        .get_server_stats(&user, &id)
+                        .get_server_stats(&id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
@@ -138,7 +138,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(ServerId { id }): Path<ServerId>| async move {
                     let stats = state
-                        .get_networks(&user, &id)
+                        .get_networks(&id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
@@ -152,7 +152,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(ServerId { id }): Path<ServerId>| async move {
                     let stats = state
-                        .prune_networks(&user, &id)
+                        .prune_networks(&id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
@@ -166,7 +166,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(ServerId { id }): Path<ServerId>| async move {
                     let stats = state
-                        .get_images(&user, &id)
+                        .get_images(&id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
@@ -180,7 +180,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(ServerId { id }): Path<ServerId>| async move {
                     let stats = state
-                        .prune_images(&user, &id)
+                        .prune_images(&id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
@@ -194,7 +194,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(ServerId { id }): Path<ServerId>| async move {
                     let stats = state
-                        .get_containers(&user, &id)
+                        .get_containers(&id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
@@ -208,7 +208,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(ServerId { id }): Path<ServerId>| async move {
                     let stats = state
-                        .prune_containers(&user, &id)
+                        .prune_containers(&id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
@@ -245,8 +245,8 @@ impl State {
 
     async fn get_server_stats(
         &self,
-        user: &RequestUser,
         server_id: &str,
+        user: &RequestUser,
     ) -> anyhow::Result<SystemStats> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Read)
@@ -261,8 +261,8 @@ impl State {
 
     async fn get_networks(
         &self,
-        user: &RequestUser,
         server_id: &str,
+        user: &RequestUser,
     ) -> anyhow::Result<Vec<Network>> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Read)
@@ -274,25 +274,49 @@ impl State {
         Ok(stats)
     }
 
-    async fn prune_networks(&self, user: &RequestUser, server_id: &str) -> anyhow::Result<Log> {
+    pub async fn prune_networks(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Write)
             .await?;
-        let log = self
-            .periphery
-            .network_prune(&server)
-            .await
-            .context(format!(
-                "failed to prune networks on server {}",
-                server.name
-            ))?;
-        Ok(log)
+
+        let start_ts = monitor_timestamp();
+        let mut update = Update {
+            target: UpdateTarget::Server(server_id.to_owned()),
+            operation: Operation::PruneNetworksServer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = match self.periphery.network_prune(&server).await.context(format!(
+            "failed to prune networks on server {}",
+            server.name
+        )) {
+            Ok(log) => log,
+            Err(e) => Log::error("prune networks", format!("{e:#?}")),
+        };
+
+        update.success = log.success;
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(monitor_timestamp());
+        update.logs.push(log);
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
     }
 
     async fn get_images(
         &self,
-        user: &RequestUser,
         server_id: &str,
+        user: &RequestUser,
     ) -> anyhow::Result<Vec<ImageSummary>> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Read)
@@ -305,27 +329,55 @@ impl State {
         Ok(images)
     }
 
-    async fn prune_images(&self, user: &RequestUser, server_id: &str) -> anyhow::Result<Log> {
+    pub async fn prune_images(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Write)
             .await?;
-        let stats = self
+        let start_ts = monitor_timestamp();
+        let mut update = Update {
+            target: UpdateTarget::Server(server_id.to_owned()),
+            operation: Operation::PruneImagesServer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = match self
             .periphery
             .image_prune(&server)
             .await
-            .context(format!("failed to prune images on server {}", server.name))?;
-        Ok(stats)
+            .context(format!("failed to prune images on server {}", server.name))
+        {
+            Ok(log) => log,
+            Err(e) => Log::error("prune images", format!("{e:#?}")),
+        };
+
+        update.success = log.success;
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(monitor_timestamp());
+        update.logs.push(log);
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
     }
 
     async fn get_containers(
         &self,
-        user: &RequestUser,
         server_id: &str,
+        user: &RequestUser,
     ) -> anyhow::Result<Vec<BasicContainerInfo>> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Read)
             .await?;
-        let images = self
+        let containers = self
             .periphery
             .container_list(&server)
             .await
@@ -333,21 +385,49 @@ impl State {
                 "failed to get containers from server {}",
                 server.name
             ))?;
-        Ok(images)
+        Ok(containers)
     }
 
-    async fn prune_containers(&self, user: &RequestUser, server_id: &str) -> anyhow::Result<Log> {
+    pub async fn prune_containers(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Write)
             .await?;
-        let log = self
+
+        let start_ts = monitor_timestamp();
+        let mut update = Update {
+            target: UpdateTarget::Server(server_id.to_owned()),
+            operation: Operation::PruneContainersServer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = match self
             .periphery
             .container_prune(&server)
             .await
             .context(format!(
                 "failed to prune containers on server {}",
                 server.name
-            ))?;
-        Ok(log)
+            )) {
+            Ok(log) => log,
+            Err(e) => Log::error("prune containers", format!("{e:#?}")),
+        };
+
+        update.success = log.success;
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(monitor_timestamp());
+        update.logs.push(log);
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
     }
 }

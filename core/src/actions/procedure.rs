@@ -163,17 +163,105 @@ impl State {
         } in procedure.stages
         {
             match operation {
-                StartContainer => {}
-                StopContainer => {}
-                RemoveContainer => {}
-                DeployContainer => {}
-                RecloneDeployment => {}
-
-                BuildBuild => {}
-                RecloneBuild => {}
-
-                PruneImagesServer => {}
-                _ => {}
+                None => {},
+                // deployment
+                StartContainer => {
+                    let update = self
+                        .start_container(&target_id, user)
+                        .await
+                        .context(format!(
+                            "failed at start container for deployment (id: {target_id})"
+                        ))?;
+                    updates.push(update);
+                }
+                StopContainer => {
+                    let update = self
+                        .stop_container(&target_id, user)
+                        .await
+                        .context(format!(
+                            "failed at stop container for deployment (id: {target_id})"
+                        ))?;
+                    updates.push(update);
+                }
+                RemoveContainer => {
+                    let update = self
+                        .remove_container(&target_id, user)
+                        .await
+                        .context(format!(
+                            "failed at remove container for deployment (id: {target_id})"
+                        ))?;
+                    updates.push(update);
+                }
+                DeployContainer => {
+                    let update = self
+                        .deploy_container(&target_id, user)
+                        .await
+                        .context(format!(
+                            "failed at deploy container for deployment (id: {target_id})"
+                        ))?;
+                    updates.push(update);
+                }
+                RecloneDeployment => {
+                    let update = self
+                        .reclone_deployment(&target_id, user)
+                        .await
+                        .context(format!("failed at reclone deployment (id: {target_id})"))?;
+                    updates.push(update);
+                }
+                PullDeployment => {
+                    // implement this one
+                    // let update = self.pull
+                }
+                // build
+                BuildBuild => {
+                    let update = self
+                        .build(&target_id, user)
+                        .await
+                        .context(format!("failed at build (id: {target_id})"))?;
+                    updates.push(update);
+                }
+                RecloneBuild => {
+                    let update = self
+                        .reclone_build(&target_id, user)
+                        .await
+                        .context(format!("failed at reclone build (id: {target_id})"))?;
+                    updates.push(update);
+                }
+                // server
+                PruneImagesServer => {
+                    let update = self.prune_images(&target_id, user).await.context(format!(
+                        "failed at prune images on server (id: {target_id})"
+                    ))?;
+                    updates.push(update);
+                }
+                PruneContainersServer => {
+                    let update = self
+                        .prune_containers(&target_id, user)
+                        .await
+                        .context(format!(
+                            "failed at prune containers on server (id: {target_id})"
+                        ))?;
+                    updates.push(update);
+                }
+                PruneNetworksServer => {
+                    let update = self
+                        .prune_networks(&target_id, user)
+                        .await
+                        .context(format!(
+                            "failed at prune networks on servers (id: {target_id})"
+                        ))?;
+                    updates.push(update);
+                }
+                // procedure
+                RunProcedure => {
+                    // need to figure out async recursion
+                    // need to guard against infinite procedure loops when they are updated
+                    // let proc_updates = self
+                    //     .run_procedure(&target_id, user)
+                    //     .await
+                    //     .context(format!("failed to run nested procedure (id: {target_id})"))?;
+                    // updates.extend(proc_updates);
+                }
             }
         }
         Ok(updates)

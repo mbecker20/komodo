@@ -87,8 +87,7 @@ impl MonitorClient {
     }
 
     pub async fn get_user(&self) -> anyhow::Result<String> {
-        self.get_string("/api/user", Option::<String>::None)
-            .await
+        self.get_string("/api/user", Option::<String>::None).await
     }
 
     async fn get<R: DeserializeOwned>(
