@@ -184,6 +184,14 @@ fn default_disk_alert() -> f64 {
 }
 
 #[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct ServerActionState {
+    pub pruning_networks: bool,
+    pub pruning_containers: bool,
+    pub pruning_images: bool,
+}
+
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Deployment {
@@ -254,6 +262,18 @@ pub struct DeploymentWithContainer {
 }
 
 #[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct DeploymentActionState {
+    pub deploying: bool,
+    pub stopping: bool,
+    pub starting: bool,
+    pub removing: bool,
+    pub pulling: bool,
+    pub recloning: bool,
+    pub updating: bool,
+}
+
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Build {
@@ -313,6 +333,14 @@ pub struct Build {
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub updated_at: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct BuildActionState {
+    pub building: bool,
+    pub recloning: bool,
+    pub updating: bool,
 }
 
 #[typeshare]
@@ -793,7 +821,8 @@ impl Default for ProcedureOperation {
 pub enum PermissionLevel {
     None,
     Read,
-    Write,
+    Execute,
+    Update,
 }
 
 impl Default for PermissionLevel {

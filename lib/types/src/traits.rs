@@ -1,4 +1,7 @@
-use crate::{Build, Deployment, PermissionLevel, PermissionsMap, Procedure, Server};
+use crate::{
+    Build, BuildActionState, Deployment, DeploymentActionState, PermissionLevel, PermissionsMap,
+    Procedure, Server, ServerActionState,
+};
 
 pub trait Permissioned {
     fn permissions_map(&self) -> &PermissionsMap;
@@ -29,5 +32,33 @@ impl Permissioned for Server {
 impl Permissioned for Procedure {
     fn permissions_map(&self) -> &PermissionsMap {
         &self.permissions
+    }
+}
+
+pub trait Busy {
+    fn busy(&self) -> bool;
+}
+
+impl Busy for ServerActionState {
+    fn busy(&self) -> bool {
+        self.pruning_containers || self.pruning_images || self.pruning_networks
+    }
+}
+
+impl Busy for DeploymentActionState {
+    fn busy(&self) -> bool {
+        self.deploying
+            || self.pulling
+            || self.recloning
+            || self.removing
+            || self.starting
+            || self.stopping
+            || self.updating
+    }
+}
+
+impl Busy for BuildActionState {
+    fn busy(&self) -> bool {
+        self.building || self.recloning || self.updating
     }
 }

@@ -34,7 +34,7 @@ impl State {
         let start_ts = monitor_timestamp();
         let procedure = Procedure {
             name: to_monitor_name(name),
-            permissions: [(user.id.clone(), PermissionLevel::Write)]
+            permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
             created_at: start_ts.clone(),
@@ -78,7 +78,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Procedure> {
         let procedure = self
-            .get_procedure_check_permissions(id, user, PermissionLevel::Write)
+            .get_procedure_check_permissions(id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
         self.db
@@ -109,7 +109,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Procedure> {
         let current_procedure = self
-            .get_procedure_check_permissions(&new_procedure.id, user, PermissionLevel::Write)
+            .get_procedure_check_permissions(&new_procedure.id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
 
@@ -154,7 +154,7 @@ impl State {
 
     pub async fn run_procedure(&self, id: &str, user: &RequestUser) -> anyhow::Result<Vec<Update>> {
         let procedure = self
-            .get_procedure_check_permissions(id, user, PermissionLevel::Write)
+            .get_procedure_check_permissions(id, user, PermissionLevel::Execute)
             .await?;
         let mut updates = Vec::new();
         for ProcedureStage {
@@ -163,7 +163,7 @@ impl State {
         } in procedure.stages
         {
             match operation {
-                None => {},
+                None => {}
                 // deployment
                 StartContainer => {
                     let update = self

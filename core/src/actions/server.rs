@@ -2,8 +2,9 @@ use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::to_monitor_name;
 use types::{
-    monitor_timestamp, traits::Permissioned, Log, Operation, PermissionLevel, Server, Update,
-    UpdateStatus, UpdateTarget,
+    monitor_timestamp,
+    traits::{Busy, Permissioned},
+    Log, Operation, PermissionLevel, Server, Update, UpdateStatus, UpdateTarget,
 };
 
 use crate::{auth::RequestUser, state::State};
@@ -26,6 +27,13 @@ impl State {
         }
     }
 
+    pub fn server_busy(&self, id: &str) -> bool {
+        match self.server_action_states.lock().unwrap().get(id) {
+            Some(a) => a.busy(),
+            None => false,
+        }
+    }
+
     pub async fn create_server(
         &self,
         name: &str,
@@ -41,7 +49,7 @@ impl State {
         let server = Server {
             name: to_monitor_name(name),
             address,
-            permissions: [(user.id.clone(), PermissionLevel::Write)]
+            permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
             created_at: start_ts.clone(),
@@ -87,8 +95,11 @@ impl State {
         server_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
+        if self.server_busy(server_id) {
+            return Err(anyhow!("server busy"))
+        }
         let server = self
-            .get_server_check_permissions(server_id, user, PermissionLevel::Write)
+            .get_server_check_permissions(server_id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
         self.db.servers.delete_one(&server_id).await?;
@@ -114,8 +125,11 @@ impl State {
         mut new_server: Server,
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
+        if self.server_busy(&new_server.id) {
+            return Err(anyhow!("server busy"))
+        }
         let current_server = self
-            .get_server_check_permissions(&new_server.id, user, PermissionLevel::Write)
+            .get_server_check_permissions(&new_server.id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
 
@@ -148,5 +162,169 @@ impl State {
 
         self.add_update(update).await?;
         Ok(new_server)
+    }
+
+    pub async fn prune_networks(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.server_busy(server_id) {
+            return Err(anyhow!("server busy"))
+        }
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_networks = true;
+        }
+        let server = self
+            .get_server_check_permissions(server_id, user, PermissionLevel::Execute)
+            .await?;
+
+        let start_ts = monitor_timestamp();
+        let mut update = Update {
+            target: UpdateTarget::Server(server_id.to_owned()),
+            operation: Operation::PruneNetworksServer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = match self.periphery.network_prune(&server).await.context(format!(
+            "failed to prune networks on server {}",
+            server.name
+        )) {
+            Ok(log) => log,
+            Err(e) => Log::error("prune networks", format!("{e:#?}")),
+        };
+
+        update.success = log.success;
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(monitor_timestamp());
+        update.logs.push(log);
+
+        self.update_update(update.clone()).await?;
+
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_networks = false;
+        }
+
+        Ok(update)
+    }
+
+    pub async fn prune_images(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.server_busy(server_id) {
+            return Err(anyhow!("server busy"))
+        }
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_images = true;
+        }
+        let server = self
+            .get_server_check_permissions(server_id, user, PermissionLevel::Execute)
+            .await?;
+        let start_ts = monitor_timestamp();
+        let mut update = Update {
+            target: UpdateTarget::Server(server_id.to_owned()),
+            operation: Operation::PruneImagesServer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = match self
+            .periphery
+            .image_prune(&server)
+            .await
+            .context(format!("failed to prune images on server {}", server.name))
+        {
+            Ok(log) => log,
+            Err(e) => Log::error("prune images", format!("{e:#?}")),
+        };
+
+        update.success = log.success;
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(monitor_timestamp());
+        update.logs.push(log);
+
+        self.update_update(update.clone()).await?;
+
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_images = false;
+        }
+
+        Ok(update)
+    }
+
+    pub async fn prune_containers(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.server_busy(server_id) {
+            return Err(anyhow!("server busy"))
+        }
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_containers = true;
+        }
+        let server = self
+            .get_server_check_permissions(server_id, user, PermissionLevel::Execute)
+            .await?;
+
+        let start_ts = monitor_timestamp();
+        let mut update = Update {
+            target: UpdateTarget::Server(server_id.to_owned()),
+            operation: Operation::PruneContainersServer,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            success: true,
+            operator: user.id.clone(),
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = match self
+            .periphery
+            .container_prune(&server)
+            .await
+            .context(format!(
+                "failed to prune containers on server {}",
+                server.name
+            )) {
+            Ok(log) => log,
+            Err(e) => Log::error("prune containers", format!("{e:#?}")),
+        };
+
+        update.success = log.success;
+        update.status = UpdateStatus::Complete;
+        update.end_ts = Some(monitor_timestamp());
+        update.logs.push(log);
+
+        self.update_update(update.clone()).await?;
+
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_containers = false;
+        }
+
+        Ok(update)
     }
 }

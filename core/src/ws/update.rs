@@ -31,7 +31,6 @@ use crate::{
 pub type UpdateWsSender = Mutex<Sender<Update>>;
 
 pub type UpdateWsReciever = Receiver<Update>;
-
 pub struct UpdateWsChannel {
     pub sender: UpdateWsSender,
     pub reciever: UpdateWsReciever,

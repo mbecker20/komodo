@@ -6,7 +6,7 @@ use axum::{
 };
 use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
-use types::{traits::Permissioned, Build, PermissionLevel};
+use types::{traits::Permissioned, Build, BuildActionState, PermissionLevel};
 use typeshare::typeshare;
 
 use crate::{
@@ -141,6 +141,20 @@ pub fn router() -> Router {
                 },
             ),
         )
+        .route(
+            "/:id/action_state",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(BuildId { id }): Path<BuildId>| async move {
+                    let action_state = state
+                        .get_build_action_states(id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(action_state))
+                },
+            ),
+        )
 }
 
 impl State {
@@ -167,5 +181,22 @@ impl State {
             .collect();
         builds.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
         Ok(builds)
+    }
+
+    async fn get_build_action_states(
+        &self,
+        id: String,
+        user: &RequestUser,
+    ) -> anyhow::Result<BuildActionState> {
+        self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let action_state = self
+            .build_action_states
+            .lock()
+            .unwrap()
+            .entry(id)
+            .or_default()
+            .clone();
+        Ok(action_state)
     }
 }

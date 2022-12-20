@@ -1,9 +1,6 @@
-use std::sync::Arc;
-
 use anyhow::anyhow;
 use axum::{middleware, routing::get, Extension, Json, Router};
 use helpers::handle_anyhow_error;
-use periphery::PeripheryClient;
 use types::User;
 
 use crate::{
@@ -32,7 +29,6 @@ pub fn router() -> Router {
         .nest("/update", update::router())
         .nest("/permissions", permissions::router())
         .nest("/secret", secret::router())
-        .layer(Extension(Arc::new(PeripheryClient::new())))
         .layer(middleware::from_fn(auth_request))
 }
 

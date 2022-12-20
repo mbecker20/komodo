@@ -9,17 +9,12 @@ mod git;
 mod image;
 mod network;
 
+#[derive(Default)]
 pub struct PeripheryClient {
     http_client: reqwest::Client,
 }
 
 impl PeripheryClient {
-    pub fn new() -> PeripheryClient {
-        PeripheryClient {
-            http_client: reqwest::Client::new(),
-        }
-    }
-
     pub async fn health_check(&self, server: &Server) -> anyhow::Result<String> {
         self.get_text(server, "health")
             .await

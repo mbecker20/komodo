@@ -3,8 +3,9 @@ use diff::Diff;
 use helpers::to_monitor_name;
 use mungos::{doc, to_bson};
 use types::{
-    monitor_timestamp, traits::Permissioned, Build, Log, Operation, PermissionLevel, Update,
-    UpdateStatus, UpdateTarget,
+    monitor_timestamp,
+    traits::{Busy, Permissioned},
+    Build, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget,
 };
 
 use crate::{
@@ -31,19 +32,26 @@ impl State {
         }
     }
 
+    pub fn build_busy(&self, id: &str) -> bool {
+        match self.build_action_states.lock().unwrap().get(id) {
+            Some(a) => a.busy(),
+            None => false,
+        }
+    }
+
     pub async fn create_build(
         &self,
         name: &str,
         server_id: String,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
-        self.get_server_check_permissions(&server_id, user, PermissionLevel::Write)
+        self.get_server_check_permissions(&server_id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
         let build = Build {
             name: to_monitor_name(name),
             server_id,
-            permissions: [(user.id.clone(), PermissionLevel::Write)]
+            permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
             created_at: start_ts.clone(),
@@ -84,8 +92,11 @@ impl State {
     }
 
     pub async fn delete_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Build> {
+        if self.build_busy(build_id) {
+            return Err(anyhow!("build busy"))
+        }
         let build = self
-            .get_build_check_permissions(build_id, user, PermissionLevel::Write)
+            .get_build_check_permissions(build_id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
         let server = self.db.get_server(&build.server_id).await?;
@@ -120,8 +131,17 @@ impl State {
         mut new_build: Build,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
+        if self.build_busy(&new_build.id) {
+            return Err(anyhow!("build busy"))
+        }
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(new_build.id.clone()).or_default();
+            entry.updating = true;
+        }
+
         let current_build = self
-            .get_build_check_permissions(&new_build.id, user, PermissionLevel::Write)
+            .get_build_check_permissions(&new_build.id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
 
@@ -175,12 +195,28 @@ impl State {
         update.status = UpdateStatus::Complete;
 
         self.update_update(update).await?;
+
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(new_build.id.clone()).or_default();
+            entry.updating = false;
+        }
+
         Ok(new_build)
     }
 
     pub async fn build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
+        if self.build_busy(build_id) {
+            return Err(anyhow!("build busy"))
+        }
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(build_id.to_string()).or_default();
+            entry.building = true;
+        }
+
         let mut build = self
-            .get_build_check_permissions(build_id, user, PermissionLevel::Write)
+            .get_build_check_permissions(build_id, user, PermissionLevel::Update)
             .await?;
         let server = self.db.get_server(&build.server_id).await?;
 
@@ -231,6 +267,13 @@ impl State {
         update.status = UpdateStatus::Complete;
         update.end_ts = Some(monitor_timestamp());
         self.update_update(update.clone()).await?;
+
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(build_id.to_string()).or_default();
+            entry.building = false;
+        }
+
         Ok(update)
     }
 
@@ -239,8 +282,16 @@ impl State {
         build_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
+        if self.build_busy(build_id) {
+            return Err(anyhow!("build busy"))
+        }
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(build_id.to_string()).or_default();
+            entry.recloning = true;
+        }
         let build = self
-            .get_build_check_permissions(build_id, user, PermissionLevel::Write)
+            .get_build_check_permissions(build_id, user, PermissionLevel::Update)
             .await?;
         let server = self.db.get_server(&build.server_id).await?;
         let mut update = Update {
@@ -271,6 +322,12 @@ impl State {
         update.end_ts = Some(monitor_timestamp());
 
         self.update_update(update.clone()).await?;
+
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(build_id.to_string()).or_default();
+            entry.recloning = false;
+        }
 
         Ok(update)
     }

@@ -9,7 +9,10 @@ use axum::{
 use futures_util::future::join_all;
 use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
-use types::{traits::Permissioned, Deployment, DeploymentWithContainer, PermissionLevel, Server};
+use types::{
+    traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainer,
+    PermissionLevel, Server,
+};
 use typeshare::typeshare;
 
 use crate::{
@@ -186,6 +189,20 @@ pub fn router() -> Router {
                 },
             ),
         )
+        .route(
+            "/:id/action_state",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(DeploymentId { id }): Path<DeploymentId>| async move {
+                    let action_state = state
+                        .get_deployment_action_states(id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(action_state))
+                },
+            ),
+        )
 }
 
 impl State {
@@ -262,5 +279,22 @@ impl State {
             })
             .collect();
         Ok(res)
+    }
+
+    async fn get_deployment_action_states(
+        &self,
+        id: String,
+        user: &RequestUser,
+    ) -> anyhow::Result<DeploymentActionState> {
+        self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let action_state = self
+            .deployment_action_states
+            .lock()
+            .unwrap()
+            .entry(id)
+            .or_default()
+            .clone();
+        Ok(action_state)
     }
 }

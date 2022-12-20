@@ -42,6 +42,12 @@ export interface Server {
 	updated_at?: string;
 }
 
+export interface ServerActionState {
+	pruning_networks: boolean;
+	pruning_containers: boolean;
+	pruning_images: boolean;
+}
+
 export interface Deployment {
 	_id?: string;
 	name: string;
@@ -63,6 +69,15 @@ export interface DeploymentWithContainer {
 	container?: BasicContainerInfo;
 }
 
+export interface DeploymentActionState {
+	deploying: boolean;
+	stopping: boolean;
+	starting: boolean;
+	removing: boolean;
+	pulling: boolean;
+	recloning: boolean;
+}
+
 export interface Build {
 	_id?: string;
 	name: string;
@@ -78,6 +93,11 @@ export interface Build {
 	docker_account?: string;
 	created_at?: string;
 	updated_at?: string;
+}
+
+export interface BuildActionState {
+	building: boolean;
+	recloning: boolean;
 }
 
 export interface Update {
@@ -270,7 +290,8 @@ export enum ProcedureOperation {
 export enum PermissionLevel {
 	None = "none",
 	Read = "read",
-	Write = "write",
+	Execute = "execute",
+	Update = "update",
 }
 
 export enum PermissionsTarget {

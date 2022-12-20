@@ -2,8 +2,9 @@ use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::to_monitor_name;
 use types::{
-    monitor_timestamp, traits::Permissioned, Deployment, Log, Operation, PermissionLevel, Update,
-    UpdateStatus, UpdateTarget,
+    monitor_timestamp,
+    traits::{Busy, Permissioned},
+    Deployment, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget,
 };
 
 use crate::{
@@ -30,19 +31,26 @@ impl State {
         }
     }
 
+    pub fn deployment_busy(&self, id: &str) -> bool {
+        match self.deployment_action_states.lock().unwrap().get(id) {
+            Some(a) => a.busy(),
+            None => false,
+        }
+    }
+
     pub async fn create_deployment(
         &self,
         name: &str,
         server_id: String,
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
-        self.get_server_check_permissions(&server_id, user, PermissionLevel::Write)
+        self.get_server_check_permissions(&server_id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
         let deployment = Deployment {
             name: to_monitor_name(name),
             server_id,
-            permissions: [(user.id.clone(), PermissionLevel::Write)]
+            permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
             created_at: start_ts.clone(),
@@ -87,8 +95,11 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
+        if self.deployment_busy(deployment_id) {
+            return Err(anyhow!("deployment busy"))
+        }
         let deployment = self
-            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
         let server = self.db.get_server(&deployment.server_id).await?;
@@ -131,8 +142,16 @@ impl State {
         mut new_deployment: Deployment,
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
+        if self.deployment_busy(&new_deployment.id) {
+            return Err(anyhow!("deployment busy"))
+        }
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(new_deployment.id.clone()).or_default();
+            entry.updating = true;
+        }
         let current_deployment = self
-            .get_deployment_check_permissions(&new_deployment.id, user, PermissionLevel::Write)
+            .get_deployment_check_permissions(&new_deployment.id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
 
@@ -190,6 +209,12 @@ impl State {
 
         self.update_update(update).await?;
 
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(new_deployment.id.clone()).or_default();
+            entry.updating = false;
+        }
+
         Ok(new_deployment)
     }
 
@@ -198,8 +223,16 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
+        if self.deployment_busy(deployment_id) {
+            return Err(anyhow!("deployment busy"))
+        }
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.recloning = true;
+        }
         let deployment = self
-            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
         let server = self.db.get_server(&deployment.server_id).await?;
         let mut update = Update {
@@ -231,6 +264,12 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.recloning = false;
+        }
+
         Ok(update)
     }
 
@@ -239,8 +278,16 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
+        if self.deployment_busy(deployment_id) {
+            return Err(anyhow!("deployment busy"))
+        }
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.deploying = true;
+        }
         let mut deployment = self
-            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
         if let Some(build_id) = &deployment.build_id {
             let build = self.db.get_build(build_id).await?;
@@ -281,6 +328,12 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.deploying = false;
+        }
+
         Ok(update)
     }
 
@@ -289,9 +342,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
+        if self.deployment_busy(deployment_id) {
+            return Err(anyhow!("deployment busy"))
+        }
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.starting = true;
+        }
         let start_ts = monitor_timestamp();
         let deployment = self
-            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
         let server = self.db.get_server(&deployment.server_id).await?;
         let mut update = Update {
@@ -329,6 +390,12 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.starting = false;
+        }
+
         Ok(update)
     }
 
@@ -337,9 +404,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
+        if self.deployment_busy(deployment_id) {
+            return Err(anyhow!("deployment busy"))
+        }
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.stopping = true;
+        }
         let start_ts = monitor_timestamp();
         let deployment = self
-            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
         let server = self.db.get_server(&deployment.server_id).await?;
         let mut update = Update {
@@ -377,6 +452,12 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.stopping = false;
+        }
+
         Ok(update)
     }
 
@@ -385,9 +466,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
+        if self.deployment_busy(deployment_id) {
+            return Err(anyhow!("deployment busy"))
+        }
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.removing = true;
+        }
         let start_ts = monitor_timestamp();
         let deployment = self
-            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Write)
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
         let server = self.db.get_server(&deployment.server_id).await?;
         let mut update = Update {
@@ -424,6 +513,12 @@ impl State {
         update.status = UpdateStatus::Complete;
 
         self.update_update(update.clone()).await?;
+
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.removing = false;
+        }
 
         Ok(update)
     }

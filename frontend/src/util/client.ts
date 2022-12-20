@@ -2,10 +2,13 @@ import axios from "axios";
 import {
   BasicContainerInfo,
   Build,
+  BuildActionState,
   Deployment,
+  DeploymentActionState,
   DeploymentWithContainer,
   Log,
   Server,
+  ServerActionState,
   SystemStats,
   Update,
   User,
@@ -102,6 +105,10 @@ export class Client {
     return this.post(`/api/deployment/${deployment_id}/remove_container`);
   }
 
+  get_deployment_action_state(id: string): Promise<DeploymentActionState> {
+    return this.get(`/api/deployment/${id}/action_state`);
+  }
+
   // server
 
   list_servers(query?: QueryObject): Promise<Server[]> {
@@ -132,8 +139,16 @@ export class Client {
     return this.get(`/api/server/${server_id}/stats`);
   }
 
+  get_docker_networks(server_id: string): Promise<any[]> {
+    return this.get(`/api/server/${server_id}/networks`);
+  }
+
   prune_docker_networks(server_id: string): Promise<Log> {
     return this.post(`/api/server/${server_id}/networks/prune`);
+  }
+
+  get_docker_images(server_id: string): Promise<any[]> {
+    return this.get(`/api/server/${server_id}/images`);
   }
 
   prune_docker_images(server_id: string): Promise<Log> {
@@ -146,6 +161,10 @@ export class Client {
 
   prune_docker_containers(server_id: string): Promise<Log> {
     return this.post(`/api/server/${server_id}/containers/prune`);
+  }
+
+  get_server_action_state(id: string): Promise<ServerActionState> {
+    return this.get(`/api/server/${id}/action_state`);
   }
 
   // build
@@ -180,6 +199,10 @@ export class Client {
 
   reclone_build(id: string): Promise<Update> {
     return this.post(`/api/build/${id}/reclone`);
+  }
+
+  get_build_action_state(id: string): Promise<BuildActionState> {
+    return this.get(`/api/build/${id}/action_state`);
   }
 
   // api secrets
