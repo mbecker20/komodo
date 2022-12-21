@@ -1,5 +1,7 @@
 use anyhow::Context;
-use monitor_types::{BasicContainerInfo, ImageSummary, Log, Network, Server, SystemStats};
+use monitor_types::{
+    BasicContainerInfo, ImageSummary, Log, Network, Server, ServerActionState, SystemStats,
+};
 use serde_json::{json, Value};
 
 use crate::MonitorClient;
@@ -17,6 +19,17 @@ impl MonitorClient {
     pub async fn get_server(&self, server_id: &str) -> anyhow::Result<Server> {
         self.get(&format!("/api/server/{server_id}"), Option::<()>::None)
             .await
+    }
+
+    pub async fn get_server_action_state(
+        &self,
+        server_id: &str,
+    ) -> anyhow::Result<ServerActionState> {
+        self.get(
+            &format!("/api/server/{server_id}/action_state"),
+            Option::<()>::None,
+        )
+        .await
     }
 
     pub async fn create_server(&self, name: &str, address: &str) -> anyhow::Result<Server> {

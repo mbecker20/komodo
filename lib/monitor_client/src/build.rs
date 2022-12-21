@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Build, Update};
+use monitor_types::{Build, BuildActionState, Update};
 use serde_json::{json, Value};
 
 use crate::MonitorClient;
@@ -14,6 +14,14 @@ impl MonitorClient {
     pub async fn get_build(&self, build_id: &str) -> anyhow::Result<Build> {
         self.get(&format!("/api/build/{build_id}"), Option::<()>::None)
             .await
+    }
+
+    pub async fn get_build_action_state(&self, build_id: &str) -> anyhow::Result<BuildActionState> {
+        self.get(
+            &format!("/api/build/{build_id}/action_state"),
+            Option::<()>::None,
+        )
+        .await
     }
 
     pub async fn create_build(&self, name: &str, server_id: &str) -> anyhow::Result<Build> {

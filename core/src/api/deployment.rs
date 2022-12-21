@@ -190,6 +190,20 @@ pub fn router() -> Router {
             ),
         )
         .route(
+            "/:id/pull",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>| async move {
+                    let update = state
+                        .pull_deployment_repo(&deployment_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(update))
+                },
+            ),
+        )
+        .route(
             "/:id/action_state",
             get(
                 |Extension(state): StateExtension,

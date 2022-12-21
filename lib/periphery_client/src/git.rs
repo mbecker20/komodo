@@ -17,6 +17,21 @@ impl PeripheryClient {
             .context("failed to clone repo on periphery")
     }
 
+    pub async fn pull_repo(
+        &self,
+        server: &Server,
+        name: &str,
+        branch: &Option<String>,
+    ) -> anyhow::Result<Log> {
+        self.post_json(
+            server,
+            "/git/pull",
+            &json!({ "name": name, "branch": branch }),
+        )
+        .await
+        .context("failed to pull repo on periphery")
+    }
+
     pub async fn delete_repo(&self, server: &Server, build_name: &str) -> anyhow::Result<Log> {
         self.post_json(server, "/git/delete", &json!({ "name": build_name }))
             .await

@@ -96,7 +96,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
         if self.deployment_busy(deployment_id) {
-            return Err(anyhow!("deployment busy"))
+            return Err(anyhow!("deployment busy"));
         }
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Update)
@@ -143,7 +143,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
         if self.deployment_busy(&new_deployment.id) {
-            return Err(anyhow!("deployment busy"))
+            return Err(anyhow!("deployment busy"));
         }
         let id = new_deployment.id.clone();
         {
@@ -233,7 +233,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
         if self.deployment_busy(deployment_id) {
-            return Err(anyhow!("deployment busy"))
+            return Err(anyhow!("deployment busy"));
         }
         {
             let mut lock = self.deployment_action_states.lock().unwrap();
@@ -296,7 +296,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
         if self.deployment_busy(deployment_id) {
-            return Err(anyhow!("deployment busy"))
+            return Err(anyhow!("deployment busy"));
         }
         {
             let mut lock = self.deployment_action_states.lock().unwrap();
@@ -317,6 +317,7 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
+        let start_ts = monitor_timestamp();
         let mut deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
@@ -341,7 +342,7 @@ impl State {
         let mut update = Update {
             target: UpdateTarget::Deployment(deployment_id.to_string()),
             operation: Operation::DeployContainer,
-            start_ts: monitor_timestamp(),
+            start_ts,
             status: UpdateStatus::InProgress,
             operator: user.id.clone(),
             success: true,
@@ -368,7 +369,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
         if self.deployment_busy(deployment_id) {
-            return Err(anyhow!("deployment busy"))
+            return Err(anyhow!("deployment busy"));
         }
         {
             let mut lock = self.deployment_action_states.lock().unwrap();
@@ -438,7 +439,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
         if self.deployment_busy(deployment_id) {
-            return Err(anyhow!("deployment busy"))
+            return Err(anyhow!("deployment busy"));
         }
         {
             let mut lock = self.deployment_action_states.lock().unwrap();
@@ -508,7 +509,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
         if self.deployment_busy(deployment_id) {
-            return Err(anyhow!("deployment busy"))
+            return Err(anyhow!("deployment busy"));
         }
         {
             let mut lock = self.deployment_action_states.lock().unwrap();
@@ -564,6 +565,65 @@ impl State {
             }
         };
 
+        update.end_ts = Some(monitor_timestamp());
+        update.status = UpdateStatus::Complete;
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
+    }
+
+    pub async fn pull_deployment_repo(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.deployment_busy(deployment_id) {
+            return Err(anyhow!("deployment busy"));
+        }
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.pulling = true;
+        }
+        let res = self.pull_deployment_repo_inner(deployment_id, user).await;
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.pulling = false;
+        }
+        res
+    }
+
+    async fn pull_deployment_repo_inner(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        let start_ts = monitor_timestamp();
+        let deployment = self
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
+            .await?;
+        let server = self.db.get_server(&deployment.server_id).await?;
+        let mut update = Update {
+            target: UpdateTarget::Deployment(deployment_id.to_string()),
+            operation: Operation::PullDeployment,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            operator: user.id.clone(),
+            success: true,
+            ..Default::default()
+        };
+
+        update.id = self.add_update(update.clone()).await?;
+
+        let log = self
+            .periphery
+            .pull_repo(&server, &deployment.name, &deployment.branch)
+            .await?;
+
+        update.success = log.success;
+        update.logs.push(log);
         update.end_ts = Some(monitor_timestamp());
         update.status = UpdateStatus::Complete;
 

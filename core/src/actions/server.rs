@@ -96,7 +96,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
         if self.server_busy(server_id) {
-            return Err(anyhow!("server busy"))
+            return Err(anyhow!("server busy"));
         }
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Update)
@@ -126,7 +126,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
         if self.server_busy(&new_server.id) {
-            return Err(anyhow!("server busy"))
+            return Err(anyhow!("server busy"));
         }
         let current_server = self
             .get_server_check_permissions(&new_server.id, user, PermissionLevel::Update)
@@ -170,7 +170,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
         if self.server_busy(server_id) {
-            return Err(anyhow!("server busy"))
+            return Err(anyhow!("server busy"));
         }
         {
             let mut lock = self.server_action_states.lock().unwrap();
@@ -231,7 +231,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
         if self.server_busy(server_id) {
-            return Err(anyhow!("server busy"))
+            return Err(anyhow!("server busy"));
         }
         {
             let mut lock = self.server_action_states.lock().unwrap();
@@ -293,7 +293,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
         if self.server_busy(server_id) {
-            return Err(anyhow!("server busy"))
+            return Err(anyhow!("server busy"));
         }
         {
             let mut lock = self.server_action_states.lock().unwrap();

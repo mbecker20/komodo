@@ -93,7 +93,7 @@ impl State {
 
     pub async fn delete_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Build> {
         if self.build_busy(build_id) {
-            return Err(anyhow!("build busy"))
+            return Err(anyhow!("build busy"));
         }
         let build = self
             .get_build_check_permissions(build_id, user, PermissionLevel::Update)
@@ -132,7 +132,7 @@ impl State {
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
         if self.build_busy(&new_build.id) {
-            return Err(anyhow!("build busy"))
+            return Err(anyhow!("build busy"));
         }
         let id = new_build.id.clone();
         {
@@ -215,7 +215,7 @@ impl State {
 
     pub async fn build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
         if self.build_busy(build_id) {
-            return Err(anyhow!("build busy"))
+            return Err(anyhow!("build busy"));
         }
         {
             let mut lock = self.build_action_states.lock().unwrap();
@@ -288,9 +288,13 @@ impl State {
         Ok(update)
     }
 
-    pub async fn reclone_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
+    pub async fn reclone_build(
+        &self,
+        build_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         if self.build_busy(build_id) {
-            return Err(anyhow!("build busy"))
+            return Err(anyhow!("build busy"));
         }
         {
             let mut lock = self.build_action_states.lock().unwrap();

@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Deployment, DeploymentWithContainer, Update};
+use monitor_types::{Deployment, DeploymentActionState, DeploymentWithContainer, Update};
 use serde_json::{json, Value};
 
 use crate::MonitorClient;
@@ -24,6 +24,17 @@ impl MonitorClient {
         )
         .await
         .context(format!("failed at get deployment {deployment_id}"))
+    }
+
+    pub async fn get_deployment_action_state(
+        &self,
+        deployment_id: &str,
+    ) -> anyhow::Result<DeploymentActionState> {
+        self.get(
+            &format!("/api/deployment/{deployment_id}/action_state"),
+            Option::<()>::None,
+        )
+        .await
     }
 
     pub async fn create_deployment(
@@ -105,5 +116,13 @@ impl MonitorClient {
         .context(format!(
             "failed at remove container for deployment {deployment_id}"
         ))
+    }
+
+    pub async fn pull_deployment_repo(&self, deployment_id: &str) -> anyhow::Result<Update> {
+        self.post::<(), _>(&format!("/api/deployment/{deployment_id}/pull"), None)
+            .await
+            .context(format!(
+                "failed at remove container for deployment {deployment_id}"
+            ))
     }
 }
