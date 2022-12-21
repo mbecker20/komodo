@@ -139,17 +139,32 @@ impl State {
 
     pub async fn update_deployment(
         &self,
-        mut new_deployment: Deployment,
+        new_deployment: Deployment,
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
         if self.deployment_busy(&new_deployment.id) {
             return Err(anyhow!("deployment busy"))
         }
+        let id = new_deployment.id.clone();
         {
             let mut lock = self.deployment_action_states.lock().unwrap();
-            let entry = lock.entry(new_deployment.id.clone()).or_default();
+            let entry = lock.entry(id.clone()).or_default();
             entry.updating = true;
         }
+        let res = self.update_deployment_inner(new_deployment, user).await;
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(id).or_default();
+            entry.updating = false;
+        }
+        res
+    }
+
+    async fn update_deployment_inner(
+        &self,
+        mut new_deployment: Deployment,
+        user: &RequestUser,
+    ) -> anyhow::Result<Deployment> {
         let current_deployment = self
             .get_deployment_check_permissions(&new_deployment.id, user, PermissionLevel::Update)
             .await?;
@@ -209,12 +224,6 @@ impl State {
 
         self.update_update(update).await?;
 
-        {
-            let mut lock = self.deployment_action_states.lock().unwrap();
-            let entry = lock.entry(new_deployment.id.clone()).or_default();
-            entry.updating = false;
-        }
-
         Ok(new_deployment)
     }
 
@@ -231,6 +240,20 @@ impl State {
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.recloning = true;
         }
+        let res = self.reclone_deployment_inner(deployment_id, user).await;
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.recloning = false;
+        }
+        res
+    }
+
+    async fn reclone_deployment_inner(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
@@ -264,12 +287,6 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
-        {
-            let mut lock = self.deployment_action_states.lock().unwrap();
-            let entry = lock.entry(deployment_id.to_string()).or_default();
-            entry.recloning = false;
-        }
-
         Ok(update)
     }
 
@@ -286,6 +303,20 @@ impl State {
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.deploying = true;
         }
+        let res = self.deploy_container_inner(deployment_id, user).await;
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.deploying = false;
+        }
+        res
+    }
+
+    async fn deploy_container_inner(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let mut deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
@@ -328,12 +359,6 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
-        {
-            let mut lock = self.deployment_action_states.lock().unwrap();
-            let entry = lock.entry(deployment_id.to_string()).or_default();
-            entry.deploying = false;
-        }
-
         Ok(update)
     }
 
@@ -350,6 +375,20 @@ impl State {
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.starting = true;
         }
+        let res = self.start_container_inner(deployment_id, user).await;
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.starting = false;
+        }
+        res
+    }
+
+    async fn start_container_inner(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let start_ts = monitor_timestamp();
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
@@ -390,12 +429,6 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
-        {
-            let mut lock = self.deployment_action_states.lock().unwrap();
-            let entry = lock.entry(deployment_id.to_string()).or_default();
-            entry.starting = false;
-        }
-
         Ok(update)
     }
 
@@ -412,6 +445,20 @@ impl State {
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.stopping = true;
         }
+        let res = self.stop_container_inner(deployment_id, user).await;
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.stopping = false;
+        }
+        res
+    }
+
+    async fn stop_container_inner(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let start_ts = monitor_timestamp();
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
@@ -452,12 +499,6 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
-        {
-            let mut lock = self.deployment_action_states.lock().unwrap();
-            let entry = lock.entry(deployment_id.to_string()).or_default();
-            entry.stopping = false;
-        }
-
         Ok(update)
     }
 
@@ -474,6 +515,20 @@ impl State {
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.removing = true;
         }
+        let res = self.remove_container_inner(deployment_id, user).await;
+        {
+            let mut lock = self.deployment_action_states.lock().unwrap();
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.removing = false;
+        }
+        res
+    }
+
+    async fn remove_container_inner(
+        &self,
+        deployment_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let start_ts = monitor_timestamp();
         let deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
@@ -513,12 +568,6 @@ impl State {
         update.status = UpdateStatus::Complete;
 
         self.update_update(update.clone()).await?;
-
-        {
-            let mut lock = self.deployment_action_states.lock().unwrap();
-            let entry = lock.entry(deployment_id.to_string()).or_default();
-            entry.removing = false;
-        }
 
         Ok(update)
     }

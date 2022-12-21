@@ -177,6 +177,20 @@ impl State {
             let entry = lock.entry(server_id.to_string()).or_default();
             entry.pruning_networks = true;
         }
+        let res = self.prune_networks_inner(server_id, user).await;
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_networks = false;
+        }
+        res
+    }
+
+    async fn prune_networks_inner(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Execute)
             .await?;
@@ -208,12 +222,6 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
-        {
-            let mut lock = self.server_action_states.lock().unwrap();
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_networks = false;
-        }
-
         Ok(update)
     }
 
@@ -230,6 +238,20 @@ impl State {
             let entry = lock.entry(server_id.to_string()).or_default();
             entry.pruning_images = true;
         }
+        let res = self.prune_images_inner(server_id, user).await;
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_images = false;
+        }
+        res
+    }
+
+    async fn prune_images_inner(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Execute)
             .await?;
@@ -262,12 +284,6 @@ impl State {
 
         self.update_update(update.clone()).await?;
 
-        {
-            let mut lock = self.server_action_states.lock().unwrap();
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_images = false;
-        }
-
         Ok(update)
     }
 
@@ -284,6 +300,20 @@ impl State {
             let entry = lock.entry(server_id.to_string()).or_default();
             entry.pruning_containers = true;
         }
+        let res = self.prune_containers_inner(server_id, user).await;
+        {
+            let mut lock = self.server_action_states.lock().unwrap();
+            let entry = lock.entry(server_id.to_string()).or_default();
+            entry.pruning_containers = false;
+        }
+        res
+    }
+
+    async fn prune_containers_inner(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Execute)
             .await?;
@@ -318,12 +348,6 @@ impl State {
         update.logs.push(log);
 
         self.update_update(update.clone()).await?;
-
-        {
-            let mut lock = self.server_action_states.lock().unwrap();
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_containers = false;
-        }
 
         Ok(update)
     }

@@ -128,18 +128,32 @@ impl State {
 
     pub async fn update_build(
         &self,
-        mut new_build: Build,
+        new_build: Build,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
         if self.build_busy(&new_build.id) {
             return Err(anyhow!("build busy"))
         }
+        let id = new_build.id.clone();
         {
             let mut lock = self.build_action_states.lock().unwrap();
-            let entry = lock.entry(new_build.id.clone()).or_default();
+            let entry = lock.entry(id.clone()).or_default();
             entry.updating = true;
         }
+        let res = self.update_build_inner(new_build, user).await;
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(id).or_default();
+            entry.updating = false;
+        }
+        res
+    }
 
+    async fn update_build_inner(
+        &self,
+        mut new_build: Build,
+        user: &RequestUser,
+    ) -> anyhow::Result<Build> {
         let current_build = self
             .get_build_check_permissions(&new_build.id, user, PermissionLevel::Update)
             .await?;
@@ -196,12 +210,6 @@ impl State {
 
         self.update_update(update).await?;
 
-        {
-            let mut lock = self.build_action_states.lock().unwrap();
-            let entry = lock.entry(new_build.id.clone()).or_default();
-            entry.updating = false;
-        }
-
         Ok(new_build)
     }
 
@@ -214,7 +222,16 @@ impl State {
             let entry = lock.entry(build_id.to_string()).or_default();
             entry.building = true;
         }
+        let res = self.build_inner(build_id, user).await;
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(build_id.to_string()).or_default();
+            entry.building = false;
+        }
+        res
+    }
 
+    async fn build_inner(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
         let mut build = self
             .get_build_check_permissions(build_id, user, PermissionLevel::Update)
             .await?;
@@ -268,20 +285,10 @@ impl State {
         update.end_ts = Some(monitor_timestamp());
         self.update_update(update.clone()).await?;
 
-        {
-            let mut lock = self.build_action_states.lock().unwrap();
-            let entry = lock.entry(build_id.to_string()).or_default();
-            entry.building = false;
-        }
-
         Ok(update)
     }
 
-    pub async fn reclone_build(
-        &self,
-        build_id: &str,
-        user: &RequestUser,
-    ) -> anyhow::Result<Update> {
+    pub async fn reclone_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
         if self.build_busy(build_id) {
             return Err(anyhow!("build busy"))
         }
@@ -290,6 +297,20 @@ impl State {
             let entry = lock.entry(build_id.to_string()).or_default();
             entry.recloning = true;
         }
+        let res = self.reclone_build_inner(build_id, user).await;
+        {
+            let mut lock = self.build_action_states.lock().unwrap();
+            let entry = lock.entry(build_id.to_string()).or_default();
+            entry.recloning = false;
+        }
+        res
+    }
+
+    async fn reclone_build_inner(
+        &self,
+        build_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
         let build = self
             .get_build_check_permissions(build_id, user, PermissionLevel::Update)
             .await?;
@@ -322,12 +343,6 @@ impl State {
         update.end_ts = Some(monitor_timestamp());
 
         self.update_update(update.clone()).await?;
-
-        {
-            let mut lock = self.build_action_states.lock().unwrap();
-            let entry = lock.entry(build_id.to_string()).or_default();
-            entry.recloning = false;
-        }
 
         Ok(update)
     }
