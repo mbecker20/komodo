@@ -79,6 +79,12 @@ impl MonitorClient {
             .context(format!("failed at reclone deployment {id}"))
     }
 
+    pub async fn pull_deployment(&self, deployment_id: &str) -> anyhow::Result<Update> {
+        self.post::<(), _>(&format!("/api/deployment/{deployment_id}/pull"), None)
+            .await
+            .context(format!("failed at pull deployment {deployment_id}"))
+    }
+
     pub async fn deploy_container(&self, deployment_id: &str) -> anyhow::Result<Update> {
         self.post::<(), _>(&format!("/api/deployment/{deployment_id}/deploy"), None)
             .await
@@ -116,13 +122,5 @@ impl MonitorClient {
         .context(format!(
             "failed at remove container for deployment {deployment_id}"
         ))
-    }
-
-    pub async fn pull_deployment_repo(&self, deployment_id: &str) -> anyhow::Result<Update> {
-        self.post::<(), _>(&format!("/api/deployment/{deployment_id}/pull"), None)
-            .await
-            .context(format!(
-                "failed at remove container for deployment {deployment_id}"
-            ))
     }
 }

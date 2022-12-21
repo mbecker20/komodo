@@ -69,6 +69,10 @@ export class Client {
     return this.get(`/api/deployment/${id}`);
   }
 
+  get_deployment_action_state(id: string): Promise<DeploymentActionState> {
+    return this.get(`/api/deployment/${id}/action_state`);
+  }
+
   create_deployment(body: CreateDeploymentBody): Promise<Deployment> {
     return this.post("/api/deployment/create", body);
   }
@@ -89,6 +93,10 @@ export class Client {
     return this.post(`/api/deployment/${deployment_id}/reclone`);
   }
 
+  pull_deployment(deployment_id: string): Promise<Update> {
+    return this.post(`/api/deployment/${deployment_id}/pull`);
+  }
+
   deploy_container(deployment_id: string): Promise<Update> {
     return this.post(`/api/deployment/${deployment_id}/deploy`);
   }
@@ -105,10 +113,6 @@ export class Client {
     return this.post(`/api/deployment/${deployment_id}/remove_container`);
   }
 
-  get_deployment_action_state(id: string): Promise<DeploymentActionState> {
-    return this.get(`/api/deployment/${id}/action_state`);
-  }
-
   // server
 
   list_servers(query?: QueryObject): Promise<Server[]> {
@@ -117,6 +121,10 @@ export class Client {
 
   get_server(server_id: string): Promise<Server> {
     return this.get(`/api/server/${server_id}`);
+  }
+
+  get_server_action_state(id: string): Promise<ServerActionState> {
+    return this.get(`/api/server/${id}/action_state`);
   }
 
   create_server(body: CreateServerBody): Promise<Server> {
@@ -163,10 +171,6 @@ export class Client {
     return this.post(`/api/server/${server_id}/containers/prune`);
   }
 
-  get_server_action_state(id: string): Promise<ServerActionState> {
-    return this.get(`/api/server/${id}/action_state`);
-  }
-
   // build
 
   list_builds(query?: QueryObject): Promise<Build[]> {
@@ -175,6 +179,10 @@ export class Client {
 
   get_build(build_id: string): Promise<Build> {
     return this.get(`/api/build/${build_id}`);
+  }
+
+  get_build_action_state(id: string): Promise<BuildActionState> {
+    return this.get(`/api/build/${id}/action_state`);
   }
 
   create_build(body: CreateBuildBody): Promise<Build> {
@@ -199,10 +207,6 @@ export class Client {
 
   reclone_build(id: string): Promise<Update> {
     return this.post(`/api/build/${id}/reclone`);
-  }
-
-  get_build_action_state(id: string): Promise<BuildActionState> {
-    return this.get(`/api/build/${id}/action_state`);
   }
 
   // api secrets
