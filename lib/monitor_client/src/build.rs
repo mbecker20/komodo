@@ -41,6 +41,20 @@ impl MonitorClient {
             .context(format!("failed at creating full build"))
     }
 
+    pub async fn copy_build(
+        &self,
+        id: &str,
+        new_name: &str,
+        new_server_id: &str,
+    ) -> anyhow::Result<Build> {
+        self.post(
+            &format!("/api/build/{id}/copy"),
+            json!({ "name": new_name, "server_id": new_server_id }),
+        )
+        .await
+        .context(format!("failed at copying build {id}"))
+    }
+
     pub async fn delete_build(&self, id: &str) -> anyhow::Result<Build> {
         self.delete::<(), _>(&format!("/api/build/{id}/delete"), None)
             .await

@@ -65,19 +65,19 @@ impl StatsClient {
         let mut total_gb = 0.0;
         let mut disks = Vec::new();
         for disk in self.sys.disks() {
-            let disk_total = disk.total_space() as f64 / BYTES_PER_GB;
-            let disk_free = disk.available_space() as f64 / BYTES_PER_GB;
             let mount = disk.mount_point().to_owned();
             let mount_str = mount.to_str().unwrap();
             if mount_str == "/" || mount_str.contains("external") {
+                let disk_total = disk.total_space() as f64 / BYTES_PER_GB;
+                let disk_free = disk.available_space() as f64 / BYTES_PER_GB;
                 total_gb += disk_total;
                 free_gb += disk_free;
+                disks.push(SingleDiskUsage {
+                    mount,
+                    used_gb: disk_total - disk_free,
+                    total_gb: disk_total,
+                });
             }
-            disks.push(SingleDiskUsage {
-                mount,
-                used_gb: disk_total - disk_free,
-                total_gb: disk_total,
-            });
         }
         let used_gb = total_gb - free_gb;
         self.sys

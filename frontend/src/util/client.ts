@@ -15,6 +15,8 @@ import {
   UserCredentials,
 } from "../types";
 import {
+  CopyBuildBody,
+  CopyDeploymentBody,
   CreateBuildBody,
   CreateDeploymentBody,
   CreateSecretBody,
@@ -81,8 +83,15 @@ export class Client {
     return this.post("/api/deployment/create_full", deployment);
   }
 
-  delete_deployment(deployment_id: string): Promise<Deployment> {
-    return this.delete(`/api/deployment/delete/${deployment_id}`);
+  copy_deployment(
+    target_id: string,
+    body: CopyDeploymentBody
+  ): Promise<Deployment> {
+    return this.post(`/api/deployment/${target_id}/copy`, body);
+  }
+
+  delete_deployment(id: string): Promise<Deployment> {
+    return this.delete(`/api/deployment/${id}/delete`);
   }
 
   update_deployment(deployment: Deployment): Promise<Deployment> {
@@ -191,6 +200,13 @@ export class Client {
 
   create_full_build(build: Build): Promise<Build> {
     return this.post("/api/build/create_full", build);
+  }
+
+  copy_build(
+    target_id: string,
+    body: CopyBuildBody
+  ): Promise<Build> {
+    return this.post(`/api/build/${target_id}/copy`, body);
   }
 
   delete_build(id: string): Promise<Build> {

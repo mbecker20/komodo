@@ -61,6 +61,20 @@ impl MonitorClient {
             .context(format!("failed at creating full deployment"))
     }
 
+    pub async fn copy_deployment(
+        &self,
+        id: &str,
+        new_name: &str,
+        new_server_id: &str,
+    ) -> anyhow::Result<Deployment> {
+        self.post(
+            &format!("/api/deployment/{id}/copy"),
+            json!({ "name": new_name, "server_id": new_server_id }),
+        )
+        .await
+        .context(format!("failed at copying deployment {id}"))
+    }
+
     pub async fn delete_deployment(&self, id: &str) -> anyhow::Result<Deployment> {
         self.delete::<(), _>(&format!("/api/deployment/{id}/delete"), None)
             .await

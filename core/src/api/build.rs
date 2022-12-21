@@ -27,6 +27,13 @@ struct CreateBuildBody {
     server_id: String,
 }
 
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+struct CopyBuildBody {
+    name: String,
+    server_id: String,
+}
+
 pub fn router() -> Router {
     Router::new()
         .route(
@@ -79,6 +86,21 @@ pub fn router() -> Router {
                  Json(build): Json<Build>| async move {
                     let build = state
                         .create_full_build(build, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(build))
+                },
+            ),
+        )
+        .route(
+            "/:id/copy",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(BuildId { id }): Path<BuildId>,
+                 Json(build): Json<CopyBuildBody>| async move {
+                    let build = state
+                        .copy_build(&id, build.name, build.server_id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(build))

@@ -76,6 +76,7 @@ export interface DeploymentActionState {
 	removing: boolean;
 	pulling: boolean;
 	recloning: boolean;
+	updating: boolean;
 }
 
 export interface Build {
@@ -98,6 +99,7 @@ export interface Build {
 export interface BuildActionState {
 	building: boolean;
 	recloning: boolean;
+	updating: boolean;
 }
 
 export interface Update {

@@ -33,6 +33,13 @@ pub struct CreateDeploymentBody {
     server_id: String,
 }
 
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+pub struct CopyDeploymentBody {
+    name: String,
+    server_id: String,
+}
+
 pub fn router() -> Router {
     Router::new()
         .route(
@@ -85,6 +92,21 @@ pub fn router() -> Router {
                  Json(full_deployment): Json<Deployment>| async move {
                     let deployment = state
                         .create_full_deployment(full_deployment, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(deployment))
+                },
+            ),
+        )
+        .route(
+            "/:id/copy",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(DeploymentId { id }): Path<DeploymentId>,
+                 Json(deployment): Json<CopyDeploymentBody>| async move {
+                    let deployment = state
+                        .copy_deployment(&id, deployment.name, deployment.server_id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(deployment))

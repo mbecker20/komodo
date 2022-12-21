@@ -1,7 +1,14 @@
 /* @refresh reload */
-import { render } from 'solid-js/web';
-import App from './App';
-import { Client } from './util/client';
+import "./style/colors.scss";
+import "./style/index.scss";
+import "./style/app.scss";
+import { render } from "solid-js/web";
+import App from "./App";
+import LoginGuard from "./components/login/LoginGuard";
+import makeNotifications from "./components/shared/notification/Notifications";
+import { DimensionProvider } from "./state/DimensionProvider";
+import { UserProvider } from "./state/UserProvider";
+import { Client } from "./util/client";
 
 export const URL =
   import.meta.env.MODE === "production"
@@ -11,10 +18,24 @@ export const URL =
 export const WS_URL = URL.replace("http", "ws") + "/ws";
 
 const token =
-  localStorage.getItem("access_token") ||
   (import.meta.env.VITE_ACCESS_TOKEN as string) ||
+  localStorage.getItem("access_token") ||
   null;
 
 export const client = new Client(URL, token);
 
-render(() => <App />, document.getElementById('root') as HTMLElement);
+export const { Notifications, pushNotification } = makeNotifications();
+
+render(
+  () => [
+    <DimensionProvider>
+      <UserProvider>
+        <LoginGuard>
+          <App />
+        </LoginGuard>
+      </UserProvider>
+    </DimensionProvider>,
+    <Notifications />,
+  ],
+  document.getElementById("root") as HTMLElement
+);

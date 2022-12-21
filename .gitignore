@@ -2,6 +2,7 @@ target
 node_modules
 dist
 .env
+.env.development
 
 repos
 config.json

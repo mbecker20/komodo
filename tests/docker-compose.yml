@@ -1,20 +1,18 @@
 version: "3.9"
 services:
-  core:
-    image: core
-    build:
-      context: ..
-      dockerfile: Dockerfile.core
-    ports:
-      - "9000:9000"
-    networks:
-      - monitor-network
-    environment:
-      - CONFIG_PATH=/config/config.toml
-    volumes:
-      - "~/.monitor/core.config.toml:/config/config.toml"
-    depends_on:
-      - mongo
+  # core:
+  #   image: core
+  #   build:
+  #     context: ..
+  #     dockerfile: Dockerfile.core
+  #   ports:
+  #     - "9000:9000"
+  #   networks:
+  #     - monitor-network
+  #   environment:
+  #     - CONFIG_PATH=/config/config.toml
+  #   volumes:
+  #     - "~/.monitor/core.config.toml:/config/config.toml"
 
   periphery-full:
     image: periphery-full
@@ -52,13 +50,6 @@ services:
       - "~/.monitor/periphery.config.toml:/config/config.toml"
       - "~/.monitor/repos-slim:/repos"
       - "/var/run/docker.sock:/var/run/docker.sock"
-
-  mongo:
-    image: mongo
-    ports:
-      - "27017:27017"
-    networks:
-      - monitor-network
 
 networks:
   monitor-network: {}

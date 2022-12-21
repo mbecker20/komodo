@@ -4,6 +4,7 @@ use ::helpers::get_socket_addr;
 use auth::JwtClient;
 use axum::Router;
 use state::State;
+use tower_http::cors::{Any, CorsLayer};
 
 mod actions;
 mod api;
@@ -24,7 +25,13 @@ async fn main() {
         .nest("/auth", auth::router(&config))
         .nest("/ws", ws::router())
         .layer(JwtClient::extension(&config))
-        .layer(State::extension(config.clone()).await);
+        .layer(State::extension(config.clone()).await)
+        .layer(
+            CorsLayer::new()
+                .allow_origin(Any)
+                .allow_methods(Any)
+                .allow_headers(Any),
+        );
 
     println!("started monitor core on port {}", config.port);
 

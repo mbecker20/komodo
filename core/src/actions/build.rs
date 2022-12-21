@@ -91,6 +91,22 @@ impl State {
         Ok(build)
     }
 
+    pub async fn copy_build(
+        &self,
+        target_id: &str,
+        new_name: String,
+        new_server_id: String,
+        user: &RequestUser,
+    ) -> anyhow::Result<Build> {
+        let mut build = self
+            .get_build_check_permissions(target_id, user, PermissionLevel::Update)
+            .await?;
+        build.name = new_name;
+        build.server_id = new_server_id;
+        let build = self.create_full_build(build, user).await?;
+        Ok(build)
+    }
+
     pub async fn delete_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Build> {
         if self.build_busy(build_id) {
             return Err(anyhow!("build busy"));

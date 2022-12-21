@@ -90,6 +90,22 @@ impl State {
         Ok(deployment)
     }
 
+    pub async fn copy_deployment(
+        &self,
+        target_id: &str,
+        new_name: String,
+        new_server_id: String,
+        user: &RequestUser,
+    ) -> anyhow::Result<Deployment> {
+        let mut deployment = self
+            .get_deployment_check_permissions(target_id, user, PermissionLevel::Update)
+            .await?;
+        deployment.name = new_name;
+        deployment.server_id = new_server_id;
+        let deployment = self.create_full_deployment(deployment, user).await?;
+        Ok(deployment)
+    }
+
     pub async fn delete_deployment(
         &self,
         deployment_id: &str,

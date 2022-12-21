@@ -9,7 +9,17 @@ export interface CreateBuildBody {
 	server_id: string;
 }
 
+export interface CopyBuildBody {
+	name: string;
+	server_id: string;
+}
+
 export interface CreateDeploymentBody {
+	name: string;
+	server_id: string;
+}
+
+export interface CopyDeploymentBody {
 	name: string;
 	server_id: string;
 }
