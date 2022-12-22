@@ -9,8 +9,10 @@ import {
   Log,
   Server,
   ServerActionState,
+  ServerWithStatus,
   SystemStats,
   Update,
+  UpdateTarget,
   User,
   UserCredentials,
 } from "../types";
@@ -124,7 +126,7 @@ export class Client {
 
   // server
 
-  list_servers(query?: QueryObject): Promise<Server[]> {
+  list_servers(query?: QueryObject): Promise<ServerWithStatus[]> {
     return this.get("/api/server/list" + generateQuery(query));
   }
 
@@ -202,10 +204,7 @@ export class Client {
     return this.post("/api/build/create_full", build);
   }
 
-  copy_build(
-    target_id: string,
-    body: CopyBuildBody
-  ): Promise<Build> {
+  copy_build(target_id: string, body: CopyBuildBody): Promise<Build> {
     return this.post(`/api/build/${target_id}/copy`, body);
   }
 
@@ -223,6 +222,18 @@ export class Client {
 
   reclone_build(id: string): Promise<Update> {
     return this.post(`/api/build/${id}/reclone`);
+  }
+
+  // updates
+
+  list_updates(offset: number, target?: UpdateTarget): Promise<Update[]> {
+    return this.get(
+      `/api/update/list${generateQuery({
+        offset,
+        type: target && target.type,
+        id: target && target.id,
+      })}`
+    );
   }
 
   // api secrets

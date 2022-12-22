@@ -13,6 +13,7 @@ mod permissions;
 mod procedure;
 mod secret;
 mod server;
+mod update;
 
 #[derive(Clone)]
 pub struct MonitorClient {

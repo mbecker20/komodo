@@ -194,8 +194,6 @@ fn default_disk_alert() -> f64 {
     75.0
 }
 
-
-
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ServerActionState {
@@ -709,6 +707,54 @@ impl Default for UpdateTarget {
     }
 }
 
+impl From<&Build> for UpdateTarget {
+    fn from(build: &Build) -> Self {
+        Self::Build(build.id.clone())
+    }
+}
+
+impl From<&Build> for Option<UpdateTarget> {
+    fn from(build: &Build) -> Self {
+        Some(UpdateTarget::Build(build.id.clone()))
+    }
+}
+
+impl From<&Deployment> for UpdateTarget {
+    fn from(deployment: &Deployment) -> Self {
+        Self::Deployment(deployment.id.clone())
+    }
+}
+
+impl From<&Deployment> for Option<UpdateTarget> {
+    fn from(deployment: &Deployment) -> Self {
+        Some(UpdateTarget::Deployment(deployment.id.clone()))
+    }
+}
+
+impl From<&Server> for UpdateTarget {
+    fn from(server: &Server) -> Self {
+        Self::Server(server.id.clone())
+    }
+}
+
+impl From<&Server> for Option<UpdateTarget> {
+    fn from(server: &Server) -> Self {
+        Some(UpdateTarget::Server(server.id.clone()))
+    }
+}
+
+impl From<&Procedure> for UpdateTarget {
+    fn from(procedure: &Procedure) -> Self {
+        Self::Procedure(procedure.id.clone())
+    }
+}
+
+impl From<&Procedure> for Option<UpdateTarget> {
+    fn from(procedure: &Procedure) -> Self {
+        Some(UpdateTarget::Procedure(procedure.id.clone()))
+    }
+}
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
@@ -867,7 +913,7 @@ pub enum PermissionsTarget {
 pub enum ServerStatus {
     Ok,
     NotOk,
-    Disabled
+    Disabled,
 }
 
 #[typeshare]

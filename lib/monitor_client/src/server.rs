@@ -1,6 +1,7 @@
 use anyhow::Context;
 use monitor_types::{
-    BasicContainerInfo, ImageSummary, Log, Network, Server, ServerActionState, SystemStats,
+    BasicContainerInfo, ImageSummary, Log, Network, Server, ServerActionState, ServerWithStatus,
+    SystemStats,
 };
 use serde_json::{json, Value};
 
@@ -10,7 +11,7 @@ impl MonitorClient {
     pub async fn list_servers(
         &self,
         query: impl Into<Option<Value>>,
-    ) -> anyhow::Result<Vec<Server>> {
+    ) -> anyhow::Result<Vec<ServerWithStatus>> {
         self.get("/api/server/list", query.into())
             .await
             .context("failed at list servers")
@@ -44,7 +45,7 @@ impl MonitorClient {
     }
 
     pub async fn create_full_server(&self, server: &Server) -> anyhow::Result<Server> {
-        self.post("/api/server/create_full", server)
+        self.post::<&Server, _>("/api/server/create_full", server)
             .await
             .context(format!("failed at creating full server"))
     }

@@ -4,11 +4,12 @@ use axum::{
     routing::{delete, get, patch, post},
     Extension, Json, Router,
 };
+use futures_util::future::join_all;
 use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
 use types::{
     traits::Permissioned, BasicContainerInfo, ImageSummary, Network, PermissionLevel, Server,
-    ServerActionState, SystemStats,
+    ServerActionState, ServerStatus, ServerWithStatus, SystemStats,
 };
 use typeshare::typeshare;
 
@@ -235,8 +236,8 @@ impl State {
         &self,
         user: &RequestUser,
         query: impl Into<Option<Document>>,
-    ) -> anyhow::Result<Vec<Server>> {
-        let mut servers: Vec<Server> = self
+    ) -> anyhow::Result<Vec<ServerWithStatus>> {
+        let futures = self
             .db
             .servers
             .get_some(query, None)
@@ -251,8 +252,26 @@ impl State {
                     permissions != PermissionLevel::None
                 }
             })
-            .collect();
-        servers.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+            .map(|server| async {
+                let status = if server.enabled {
+                    let res = self.periphery.health_check(&server).await;
+                    match res {
+                        Ok(_) => ServerStatus::Ok,
+                        Err(_) => ServerStatus::NotOk,
+                    }
+                } else {
+                    ServerStatus::Disabled
+                };
+
+                ServerWithStatus { server, status }
+            });
+        let mut servers: Vec<ServerWithStatus> = join_all(futures).await;
+        servers.sort_by(|a, b| {
+            a.server
+                .name
+                .to_lowercase()
+                .cmp(&b.server.name.to_lowercase())
+        });
         Ok(servers)
     }
 

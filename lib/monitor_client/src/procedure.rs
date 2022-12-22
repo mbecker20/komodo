@@ -29,7 +29,7 @@ impl MonitorClient {
     }
 
     pub async fn create_full_procedure(&self, procedure: &Procedure) -> anyhow::Result<Procedure> {
-        self.post("/api/procedure/create_full", procedure)
+        self.post::<&Procedure, _>("/api/procedure/create_full", procedure)
             .await
             .context(format!("failed at creating full procedure"))
     }

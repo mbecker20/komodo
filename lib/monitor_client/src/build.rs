@@ -36,7 +36,7 @@ impl MonitorClient {
     }
 
     pub async fn create_full_build(&self, build: &Build) -> anyhow::Result<Build> {
-        self.post("/api/build/create_full", build)
+        self.post::<&Build, _>("/api/build/create_full", build)
             .await
             .context(format!("failed at creating full build"))
     }

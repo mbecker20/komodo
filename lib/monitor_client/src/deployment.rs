@@ -56,7 +56,7 @@ impl MonitorClient {
         &self,
         deployment: &Deployment,
     ) -> anyhow::Result<Deployment> {
-        self.post("/api/deployment/create_full", deployment)
+        self.post::<&Deployment, _>("/api/deployment/create_full", deployment)
             .await
             .context(format!("failed at creating full deployment"))
     }

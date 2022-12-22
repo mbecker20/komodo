@@ -85,7 +85,7 @@ export function useServerStats() {
       if (
         stat === undefined &&
         !loading[serverID] &&
-        (serverStatus ? serverStatus === "ok" : true)
+        (serverStatus ? serverStatus === ServerStatus.Ok : true)
       ) {
         loading[serverID] = true;
         load(serverID);

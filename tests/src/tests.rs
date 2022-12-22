@@ -14,14 +14,11 @@ pub async fn create_test_setup(
     let mut servers = monitor.list_servers(None).await?;
     let server = if servers.is_empty() {
         monitor
-            .create_server(
-                &format!("{group_name}_server"),
-                "http://localhost:8000",
-            )
+            .create_server(&format!("{group_name}_server"), "http://localhost:8000")
             .await
             .context("failed at create server")?
     } else {
-        servers.pop().unwrap()
+        servers.pop().unwrap().server
     };
     let mut deployments = monitor.list_deployments(None).await?;
     let deployment = if deployments.is_empty() {
@@ -49,7 +46,7 @@ pub async fn get_server_stats(monitor: &MonitorClient) -> anyhow::Result<SystemS
         .list_servers(None)
         .await
         .context("failed at list servers")?;
-    let server = servers.get(0).ok_or(anyhow!("no servers"))?;
+    let server = &servers.get(0).ok_or(anyhow!("no servers"))?.server;
     let stats = monitor
         .get_server_stats(&server.id)
         .await
@@ -64,7 +61,7 @@ pub async fn deploy_mongo(
         .list_servers(None)
         .await
         .context("failed at list servers")?;
-    let server = servers.get(0).ok_or(anyhow!("no servers"))?;
+    let server = &servers.get(0).ok_or(anyhow!("no servers"))?.server;
     let mut deployment = monitor.create_deployment("mongo_test", &server.id).await?;
     println!("created deployment");
     deployment.docker_run_args.image = "mongo".to_string();
@@ -84,7 +81,7 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
         .list_servers(None)
         .await
         .context("failed at list servers")?;
-    let server = servers.get(0).ok_or(anyhow!("no servers"))?;
+    let server = &servers.get(0).ok_or(anyhow!("no servers"))?.server;
     let mut build = monitor.create_build("old_periphery", &server.id).await?;
     println!("created build. updating...");
     build.repo = Some("mbecker20/monitor".to_string());
@@ -106,4 +103,14 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
     println!("updated build.");
     let update = monitor.build(&build.id).await?;
     Ok(update)
+}
+
+pub async fn test_updates(monitor: &MonitorClient) -> anyhow::Result<()> {
+    let updates = monitor.list_updates(None, 0).await?;
+    println!("ALL UPDATES: {updates:#?}");
+    let builds = monitor.list_builds(None).await?;
+    let build = builds.get(0).unwrap();
+    let build_updates = monitor.list_updates(build, 0).await?;
+    println!("{build_updates:#?}");
+    Ok(())
 }
