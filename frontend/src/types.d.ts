@@ -31,6 +31,7 @@ export interface Server {
 	name: string;
 	address: string;
 	permissions?: PermissionsMap;
+	enabled: boolean;
 	to_notify?: string[];
 	cpu_alert?: number;
 	mem_alert?: number;
@@ -40,6 +41,11 @@ export interface Server {
 	instance_id?: string;
 	created_at?: string;
 	updated_at?: string;
+}
+
+export interface ServerWithStatus {
+	server: Server;
+	status: ServerStatus;
 }
 
 export interface ServerActionState {
@@ -300,6 +306,12 @@ export enum PermissionsTarget {
 	Server = "server",
 	Deployment = "deployment",
 	Build = "build",
+}
+
+export enum ServerStatus {
+	Ok = "ok",
+	NotOk = "not_ok",
+	Disabled = "disabled",
 }
 
 export enum DockerContainerState {

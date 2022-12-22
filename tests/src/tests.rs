@@ -16,7 +16,7 @@ pub async fn create_test_setup(
         monitor
             .create_server(
                 &format!("{group_name}_server"),
-                "http://periphery-full:8000",
+                "http://localhost:8000",
             )
             .await
             .context("failed at create server")?

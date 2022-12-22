@@ -1,0 +1,47 @@
+@use "../../style/colors.scss" as c;
+
+.Topbar {
+	grid-area: topbar;
+	width: 100%;
+	background-color: c.$grey;
+	z-index: 90;
+}
+
+.GridTopbar {
+	grid-area: topbar;
+	width: 100%;
+	background-color: c.$grey;
+	z-index: 90;
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.Monitor {
+	font-size: 1.5rem;
+	user-select: none;
+	cursor: pointer;
+}
+
+.Search {
+	width: 30rem;
+	background-color: c.$lightgrey;
+}
+
+.SearchItem {
+	width: 100%;
+	font-size: 1.1rem;
+	display: flex;
+	gap: 0.2rem;
+	align-items: center;
+	justify-content: space-between;
+	transition: all 250ms ease-in-out;
+}
+
+.Updates {
+	width: 340px;
+	z-index: 25;
+	padding-bottom: 1rem;
+}
+
+.UpdatesContainer {
+	max-height: 50vh;
+}

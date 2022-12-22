@@ -28,10 +28,6 @@
   box-sizing: border-box;
 }
 
-.Menu:global(.dark) {
-  background-color: c.$grey-dark;
-}
-
 $anim-time: 350ms;
 
 .Enter {
@@ -135,10 +131,6 @@ $anim-time: 350ms;
   white-space: nowrap;
 }
 
-.HoverMenu:global(.dark) {
-  background-color: c.$grey-dark;
-}
-
 .CenterMenuContainer {
   position: fixed;
 	z-index: 200;
@@ -157,8 +149,4 @@ $anim-time: 350ms;
 
 .SelectorItem:hover {
   background-color: c.$lightgrey;
-}
-
-.SelectorItem:global(.dark):hover {
-  background-color: c.$lightgrey-dark;
 }

@@ -35,3 +35,23 @@ export function validatePercentage(perc: string) {
   const percNum = Number(perc);
   return !isNaN(percNum) && percNum > 0 && percNum < 100;
 }
+
+export function filterOutFromObj<T>(obj: T, idsToFilterOut: string[]) {
+  return Object.fromEntries(
+    Object.entries(obj as any).filter((entry) => {
+      return !idsToFilterOut.includes(entry[0]);
+    })
+  ) as T;
+}
+
+export function keepOnlyInObj<T>(obj: T, idsToKeep: string[]) {
+  return Object.fromEntries(
+    Object.entries(obj as any).filter((entry) => {
+      return idsToKeep.includes(entry[0]);
+    })
+  ) as T;
+}
+
+export function intoCollection<T>(arr: T[]): Record<string, T> {
+  return Object.fromEntries(arr.map((item) => [(item as any)._id.$oid, item]));
+}

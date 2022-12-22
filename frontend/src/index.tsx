@@ -10,6 +10,8 @@ import { DimensionProvider } from "./state/DimensionProvider";
 import { UserProvider } from "./state/UserProvider";
 import { Client } from "./util/client";
 
+export const TOPBAR_HEIGHT = 50;
+
 export const URL =
   import.meta.env.MODE === "production"
     ? location.origin

@@ -3,7 +3,7 @@ use std::{collections::HashMap, path::PathBuf};
 use anyhow::Context;
 use async_timing_util::Timelength;
 use bson::serde_helpers::hex_string_as_object_id;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, SecondsFormat, Utc};
 use derive_builder::Builder;
 use diff::{Diff, HashMapDiff, OptionDiff, VecDiff};
 use serde::{Deserialize, Serialize};
@@ -118,6 +118,9 @@ pub struct Server {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub enabled: bool,
+
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub to_notify: Vec<String>, // slack users to notify
@@ -158,6 +161,7 @@ impl Default for Server {
             name: Default::default(),
             address: Default::default(),
             permissions: Default::default(),
+            enabled: true,
             to_notify: Default::default(),
             cpu_alert: default_cpu_alert(),
             mem_alert: default_mem_alert(),
@@ -171,6 +175,13 @@ impl Default for Server {
     }
 }
 
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ServerWithStatus {
+    pub server: Server,
+    pub status: ServerStatus,
+}
+
 fn default_cpu_alert() -> f64 {
     50.0
 }
@@ -182,6 +193,8 @@ fn default_mem_alert() -> f64 {
 fn default_disk_alert() -> f64 {
     75.0
 }
+
+
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -851,6 +864,16 @@ pub enum PermissionsTarget {
 #[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
+pub enum ServerStatus {
+    Ok,
+    NotOk,
+    Disabled
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
 pub enum DockerContainerState {
     Created,
     Restarting,
@@ -919,7 +942,7 @@ fn restart_mode_diff_no_change(restart_mode: &RestartModeDiff) -> bool {
 }
 
 pub fn monitor_timestamp() -> String {
-    Utc::now().to_rfc3339()
+    Utc::now().to_rfc3339_opts(SecondsFormat::Millis, false)
 }
 
 pub fn unix_from_monitor_ts(ts: &str) -> anyhow::Result<i64> {

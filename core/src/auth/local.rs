@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context};
 use axum::{extract::Json, routing::post, Extension, Router};
 use helpers::handle_anyhow_error;
 use mungos::doc;
-use types::{User, UserCredentials};
+use types::{monitor_timestamp, User, UserCredentials};
 
 use crate::state::StateExtension;
 
@@ -39,11 +39,16 @@ async fn create_user_handler(
 
     let no_users_exist = state.db.users.find_one(None, None).await?.is_none();
 
+    let ts = monitor_timestamp();
+
     let user = User {
         username,
         password: Some(password),
         enabled: no_users_exist,
         admin: no_users_exist,
+        create_server_permissions: no_users_exist,
+        created_at: ts.clone(),
+        updated_at: ts,
         ..Default::default()
     };
 

@@ -21,11 +21,22 @@
 			"label": "rust: cargo check"
 		},
 		{
-			"type": "cargo",
-			"command": "run",
-			"label": "rust: cargo run",
+			"label": "start dev",
+			"dependsOn": [
+				"run core",
+				"yarn: start frontend"
+			],
+			"problemMatcher": [],
+		},
+		{
+			"type": "shell",
+			"command": "yarn start",
+			"label": "yarn: start frontend",
 			"options": {
-				"cwd": "${workspaceFolder}/core"
+				"cwd": "${workspaceFolder}/frontend"
+			},
+			"presentation": {
+				"group": "start"
 			}
 		},
 		{
@@ -34,6 +45,9 @@
 			"label": "run core",
 			"options": {
 				"cwd": "${workspaceFolder}/core"
+			},
+			"presentation": {
+				"group": "start"
 			}
 		},
 		{

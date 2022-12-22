@@ -1,1 +1,11 @@
 @use "colors" as c;
+
+.app {
+	width: 100vw;
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: auto auto;
+	grid-template-areas:
+		"topbar"
+		"content";
+}
