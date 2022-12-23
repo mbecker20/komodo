@@ -1,11 +1,11 @@
 use anyhow::{anyhow, Context};
 use axum::{routing::post, Extension, Json, Router};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize, Document, Serialize, Update};
-use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server};
+use mungos::{doc, Deserialize, Document, Serialize};
+use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server, UpdateTarget, Operation, Log, monitor_timestamp, UpdateStatus, Update, Procedure};
 use typeshare::typeshare;
 
-use crate::{auth::RequestUserExtension, state::StateExtension};
+use crate::{auth::RequestUserExtension, state::StateExtension, response};
 
 #[typeshare]
 #[derive(Serialize, Deserialize)]
@@ -28,17 +28,19 @@ pub fn router() -> Router {
         .route(
             "/update",
             post(|state, user, update| async {
-                update_permissions(state, user, update)
+                let update = update_permissions(state, user, update)
                     .await
-                    .map_err(handle_anyhow_error)
+                    .map_err(handle_anyhow_error)?;
+                response!(Json(update))
             }),
         )
         .route(
             "/modify_enabled",
             post(|state, user, body| async {
-                modify_user_enabled(state, user, body)
+                let update = modify_user_enabled(state, user, body)
                     .await
-                    .map_err(handle_anyhow_error)
+                    .map_err(handle_anyhow_error)?;
+                response!(Json(update))
             }),
         )
 }
@@ -46,8 +48,8 @@ pub fn router() -> Router {
 async fn update_permissions(
     Extension(state): StateExtension,
     Extension(user): RequestUserExtension,
-    Json(update): Json<PermissionsUpdateBody>,
-) -> anyhow::Result<String> {
+    Json(permission_update): Json<PermissionsUpdateBody>,
+) -> anyhow::Result<Update> {
     if !user.is_admin {
         return Err(anyhow!(
             "user not authorized for this action (is not admin)"
@@ -56,106 +58,148 @@ async fn update_permissions(
     let target_user = state
         .db
         .users
-        .find_one_by_id(&update.user_id)
+        .find_one_by_id(&permission_update.user_id)
         .await
         .context("failed at find target user query")?
-        .ok_or(anyhow!("failed to find a user with id {}", update.user_id))?;
+        .ok_or(anyhow!("failed to find a user with id {}", permission_update.user_id))?;
     if !target_user.enabled {
         return Err(anyhow!("target user not enabled"));
     }
-    match update.target_type {
+    let mut update = Update {
+        operation: Operation::ModifyUserPermissions,
+        start_ts: monitor_timestamp(),
+        success: true,
+        operator: user.id.clone(),
+        status: UpdateStatus::Complete,
+        ..Default::default()
+    };
+    let log_text = match permission_update.target_type {
         PermissionsTarget::Server => {
             let server = state
                 .db
                 .servers
-                .find_one_by_id(&update.target_id)
+                .find_one_by_id(&permission_update.target_id)
                 .await
                 .context("failed at find server query")?
                 .ok_or(anyhow!(
                     "failed to find a server with id {}",
-                    update.target_id
+                    permission_update.target_id
                 ))?;
             state
                 .db
                 .servers
                 .update_one::<Server>(
-                    &update.target_id,
-                    Update::Set(doc! {
-                        format!("permissions.{}", update.user_id): update.permission.to_string()
+                    &permission_update.target_id,
+                    mungos::Update::Set(doc! {
+                        format!("permissions.{}", permission_update.user_id): permission_update.permission.to_string()
                     }),
                 )
                 .await?;
-            Ok(format!(
+            update.target = UpdateTarget::Server(server.id);
+            format!(
                 "user {} given {} permissions on server {}",
-                target_user.username, update.permission, server.name
-            ))
+                target_user.username, permission_update.permission, server.name
+            )
         }
         PermissionsTarget::Deployment => {
             let deployment = state
                 .db
                 .deployments
-                .find_one_by_id(&update.target_id)
+                .find_one_by_id(&permission_update.target_id)
                 .await
                 .context("failed at find deployment query")?
                 .ok_or(anyhow!(
                     "failed to find a deployment with id {}",
-                    update.target_id
+                    permission_update.target_id
                 ))?;
             state
                 .db
                 .deployments
                 .update_one::<Deployment>(
-                    &update.target_id,
-                    Update::Set(doc! {
-                        format!("permissions.{}", update.user_id): update.permission.to_string()
+                    &permission_update.target_id,
+                    mungos::Update::Set(doc! {
+                        format!("permissions.{}", permission_update.user_id): permission_update.permission.to_string()
                     }),
                 )
                 .await?;
-            Ok(format!(
-                "user {} given {} permissions on deployment {}",
-                target_user.username, update.permission, deployment.name
-            ))
+            update.target = UpdateTarget::Deployment(deployment.id);
+            format!(
+                "user {} (id: {}) given {} permissions on deployment {}",
+                target_user.username, target_user.id, permission_update.permission, deployment.name
+            )
         }
         PermissionsTarget::Build => {
             let build = state
                 .db
                 .builds
-                .find_one_by_id(&update.target_id)
+                .find_one_by_id(&permission_update.target_id)
                 .await
                 .context("failed at find build query")?
                 .ok_or(anyhow!(
                     "failed to find a build with id {}",
-                    update.target_id
+                    permission_update.target_id
                 ))?;
             state
                 .db
                 .builds
                 .update_one::<Build>(
-                    &update.target_id,
-                    Update::Set(doc! {
-                        format!("permissions.{}", update.user_id): update.permission.to_string()
+                    &permission_update.target_id,
+                    mungos::Update::Set(doc! {
+                        format!("permissions.{}", permission_update.user_id): permission_update.permission.to_string()
                     }),
                 )
                 .await?;
-            Ok(format!(
+            update.target = UpdateTarget::Build(build.id);
+            format!(
                 "user {} given {} permissions on build {}",
-                target_user.username, update.permission, build.name
-            ))
+                target_user.username, permission_update.permission, build.name
+            )
         }
-    }
+        PermissionsTarget::Procedure => {
+            let procedure = state
+                .db
+                .procedures
+                .find_one_by_id(&permission_update.target_id)
+                .await
+                .context("failed at find build query")?
+                .ok_or(anyhow!(
+                    "failed to find a build with id {}",
+                    permission_update.target_id
+                ))?;
+            state
+                .db
+                .procedures
+                .update_one::<Procedure>(
+                    &permission_update.target_id,
+                    mungos::Update::Set(doc! {
+                        format!("permissions.{}", permission_update.user_id): permission_update.permission.to_string()
+                    }),
+                )
+                .await?;
+            update.target = UpdateTarget::Procedure(procedure.id);
+            format!(
+                "user {} given {} permissions on procedure {}",
+                target_user.username, permission_update.permission, procedure.name
+            )
+        }
+    };
+    update.logs.push(Log::simple("modify permissions", log_text));
+    update.end_ts = Some(monitor_timestamp());
+    update.id = state.add_update(update.clone()).await?;
+    Ok(update)
 }
 
 async fn modify_user_enabled(
     Extension(state): StateExtension,
     Extension(user): RequestUserExtension,
     Json(ModifyUserEnabledBody { user_id, enabled }): Json<ModifyUserEnabledBody>,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<Update> {
     if !user.is_admin {
         return Err(anyhow!(
             "user does not have permissions for this action (not admin)"
         ));
     }
-    state
+    let user = state
         .db
         .users
         .find_one_by_id(&user_id)
@@ -165,7 +209,25 @@ async fn modify_user_enabled(
     state
         .db
         .users
-        .update_one::<Document>(&user_id, Update::Set(doc! { "enabled": enabled }))
+        .update_one::<Document>(&user_id, mungos::Update::Set(doc! { "enabled": enabled }))
         .await?;
-    Ok(())
+    let update_type = if enabled {
+        "enabled"
+    } else {
+        "disabled"
+    };
+    let ts = monitor_timestamp();
+    let mut update = Update {
+        target: UpdateTarget::System,
+        operation: Operation::ModifyUserEnabled,
+        logs: vec![Log::simple("modify user permissions", format!("{update_type} {} (id: {})", user.username, user.id))],
+        start_ts: ts.clone(),
+        end_ts: Some(ts),
+        status: UpdateStatus::Complete,
+        success: true,
+        operator: user.id.clone(),
+        ..Default::default()
+    };
+    update.id = state.add_update(update.clone()).await?;
+    Ok(update)
 }

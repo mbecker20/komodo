@@ -17,7 +17,7 @@ impl MonitorClient {
             .context("failed at list servers")
     }
 
-    pub async fn get_server(&self, server_id: &str) -> anyhow::Result<Server> {
+    pub async fn get_server(&self, server_id: &str) -> anyhow::Result<ServerWithStatus> {
         self.get(&format!("/api/server/{server_id}"), Option::<()>::None)
             .await
     }
@@ -28,6 +28,28 @@ impl MonitorClient {
     ) -> anyhow::Result<ServerActionState> {
         self.get(
             &format!("/api/server/{server_id}/action_state"),
+            Option::<()>::None,
+        )
+        .await
+    }
+
+    pub async fn get_server_github_accounts(
+        &self,
+        server_id: &str,
+    ) -> anyhow::Result<Vec<String>> {
+        self.get(
+            &format!("/api/server/{server_id}/github_accounts"),
+            Option::<()>::None,
+        )
+        .await
+    }
+
+    pub async fn get_server_docker_accounts(
+        &self,
+        server_id: &str,
+    ) -> anyhow::Result<Vec<String>> {
+        self.get(
+            &format!("/api/server/{server_id}/docker_accounts"),
             Option::<()>::None,
         )
         .await

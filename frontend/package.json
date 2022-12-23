@@ -10,15 +10,16 @@
   },
   "license": "GPL v3.0",
   "devDependencies": {
-    "sass": "^1.57.0",
-    "typescript": "^4.8.2",
-    "vite": "^3.0.9",
-    "vite-plugin-solid": "^2.3.0"
+    "sass": "^1.57.1",
+    "typescript": "^4.9.4",
+    "vite": "^4.0.3",
+    "vite-plugin-solid": "^2.5.0"
   },
   "dependencies": {
+    "@solidjs/router": "^0.6.0",
     "apexcharts": "^3.36.3",
     "axios": "^1.2.1",
     "reconnecting-websocket": "^4.4.0",
-    "solid-js": "^1.5.1"
+    "solid-js": "^1.6.6"
   }
 }

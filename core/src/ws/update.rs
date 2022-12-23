@@ -155,7 +155,7 @@ async fn login(
     if let Some(jwt) = socket.recv().await {
         match jwt {
             Ok(jwt) => match jwt {
-                Message::Text(jwt) => match jwt_client.auth_jwt(&jwt, state).await {
+                Message::Text(jwt) => match jwt_client.auth_jwt_check_enabled(&jwt, state).await {
                     Ok(user) => {
                         let _ = socket
                             .send(Message::Text(

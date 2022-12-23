@@ -29,7 +29,7 @@ import {
 import { generateQuery, QueryObject } from "./helpers";
 
 export class Client {
-  constructor(private baseURL: string, private token: string | null) {}
+  constructor(private baseURL: string, public token: string | null) {}
 
   async login(credentials: UserCredentials) {
     const jwt: string = await this.post("/auth/local/login", credentials);
@@ -54,7 +54,7 @@ export class Client {
     if (this.token) {
       try {
         return await this.get("/api/user");
-      } catch {
+      } catch (error: any) {
         this.logout();
         return false;
       }
@@ -130,12 +130,20 @@ export class Client {
     return this.get("/api/server/list" + generateQuery(query));
   }
 
-  get_server(server_id: string): Promise<Server> {
+  get_server(server_id: string): Promise<ServerWithStatus> {
     return this.get(`/api/server/${server_id}`);
   }
 
   get_server_action_state(id: string): Promise<ServerActionState> {
     return this.get(`/api/server/${id}/action_state`);
+  }
+
+  get_server_github_accounts(id: string): Promise<string[]> {
+    return this.get(`/api/server/${id}/github_accounts`);
+  }
+
+  get_server_docker_accounts(id: string): Promise<string[]> {
+    return this.get(`/api/server/${id}/docker_accounts`);
   }
 
   create_server(body: CreateServerBody): Promise<Server> {
@@ -250,11 +258,11 @@ export class Client {
 
   update_user_permissions_on_target(
     body: PermissionsUpdateBody
-  ): Promise<string> {
+  ): Promise<Update> {
     return this.post("/api/permissions/update", body);
   }
 
-  modify_user_enabled(body: ModifyUserEnabledBody): Promise<undefined> {
+  modify_user_enabled(body: ModifyUserEnabledBody): Promise<Update> {
     return this.post("/api/permissions/update", body);
   }
 

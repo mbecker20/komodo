@@ -1,4 +1,4 @@
-use monitor_types::{PermissionLevel, PermissionsTarget};
+use monitor_types::{PermissionLevel, PermissionsTarget, Update};
 use serde_json::json;
 
 use crate::MonitorClient;
@@ -10,7 +10,7 @@ impl MonitorClient {
         permission: PermissionLevel,
         target_type: PermissionsTarget,
         target_id: &str,
-    ) -> anyhow::Result<String> {
+    ) -> anyhow::Result<Update> {
         self.post(
             "/api/permissions/update",
             json!({
@@ -23,7 +23,7 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn modify_user_enabled(&self, user_id: &str, enabled: bool) -> anyhow::Result<()> {
+    pub async fn modify_user_enabled(&self, user_id: &str, enabled: bool) -> anyhow::Result<Update> {
         self.post(
             "/api/permissions/update",
             json!({

@@ -7,7 +7,7 @@ use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use mungos::{Deserialize, Serialize};
 use sha2::Sha256;
-use types::CoreConfig;
+use types::{CoreConfig, User};
 
 use crate::state::State;
 
@@ -58,7 +58,10 @@ impl JwtClient {
         Ok(jwt)
     }
 
-    pub async fn authenticate(&self, req: &Request<Body>) -> anyhow::Result<Arc<RequestUser>> {
+    pub async fn authenticate_check_enabled(
+        &self,
+        req: &Request<Body>,
+    ) -> anyhow::Result<Arc<RequestUser>> {
         let jwt = req
             .headers()
             .get("authorization")
@@ -73,13 +76,17 @@ impl JwtClient {
             .get::<Arc<State>>()
             .ok_or(anyhow!("failed at getting state handle"))?;
         let user = self
-            .auth_jwt(&jwt, &state)
+            .auth_jwt_check_enabled(&jwt, &state)
             .await
             .context("failed to authenticate jwt")?;
         Ok(Arc::new(user))
     }
 
-    pub async fn auth_jwt(&self, jwt: &str, state: &State) -> anyhow::Result<RequestUser> {
+    pub async fn auth_jwt_check_enabled(
+        &self,
+        jwt: &str,
+        state: &State,
+    ) -> anyhow::Result<RequestUser> {
         let claims: JwtClaims = jwt
             .verify_with_key(&self.key)
             .context("failed to verify claims")?;
@@ -100,6 +107,44 @@ impl JwtClient {
             } else {
                 Err(anyhow!("user not enabled"))
             }
+        } else {
+            Err(anyhow!("token has expired"))
+        }
+    }
+
+    pub async fn authenticate(&self, req: &Request<Body>) -> anyhow::Result<User> {
+        let jwt = req
+            .headers()
+            .get("authorization")
+            .ok_or(anyhow!(
+                "no authorization header provided. must be Bearer <jwt_token>"
+            ))?
+            .to_str()?
+            .replace("Bearer ", "")
+            .replace("bearer ", "");
+        let state = req
+            .extensions()
+            .get::<Arc<State>>()
+            .ok_or(anyhow!("failed at getting state handle"))?;
+        let user = self
+            .auth_jwt(&jwt, &state)
+            .await
+            .context("failed to authenticate jwt")?;
+        Ok(user)
+    }
+
+    pub async fn auth_jwt(&self, jwt: &str, state: &State) -> anyhow::Result<User> {
+        let claims: JwtClaims = jwt
+            .verify_with_key(&self.key)
+            .context("failed to verify claims")?;
+        if claims.exp > unix_timestamp_ms() {
+            let user = state
+                .db
+                .users
+                .find_one_by_id(&claims.id)
+                .await?
+                .ok_or(anyhow!("did not find user with id {}", claims.id))?;
+            Ok(user)
         } else {
             Err(anyhow!("token has expired"))
         }

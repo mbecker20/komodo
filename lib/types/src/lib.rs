@@ -622,6 +622,8 @@ pub struct PeripheryConfig {
     pub port: u16,
     #[serde(default = "default_repo_dir")]
     pub repo_dir: String,
+    #[serde(default = "default_stats_refresh_interval")]
+    pub stats_refresh_interval: Timelength,
     #[serde(default)]
     pub secrets: SecretsMap,
     #[serde(default)]
@@ -636,6 +638,10 @@ fn default_periphery_port() -> u16 {
 
 fn default_repo_dir() -> String {
     "/repos".to_string()
+}
+
+fn default_stats_refresh_interval() -> Timelength {
+    Timelength::FiveSeconds
 }
 
 #[typeshare]
@@ -812,6 +818,10 @@ pub enum Operation {
     CreateProcedure,
     UpdateProcedure,
     DeleteProcedure,
+
+    // user
+    ModifyUserEnabled,
+    ModifyUserPermissions,
 }
 
 impl Default for Operation {
@@ -904,6 +914,7 @@ pub enum PermissionsTarget {
     Server,
     Deployment,
     Build,
+    Procedure
 }
 
 #[typeshare]

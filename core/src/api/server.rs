@@ -34,6 +34,20 @@ pub struct CreateServerBody {
 pub fn router() -> Router {
     Router::new()
         .route(
+            "/:id",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(server_id): Path<ServerId>| async move {
+                    let server = state
+                        .get_server(&server_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(server))
+                },
+            ),
+        )
+        .route(
             "/list",
             get(
                 |Extension(state): StateExtension,
@@ -69,20 +83,6 @@ pub fn router() -> Router {
                  Json(server): Json<Server>| async move {
                     let server = state
                         .create_full_server(server, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
-                    response!(Json(server))
-                },
-            ),
-        )
-        .route(
-            "/:id",
-            get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(server_id): Path<ServerId>| async move {
-                    let server = state
-                        .get_server_check_permissions(&server_id.id, &user, PermissionLevel::Read)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(server))
@@ -216,6 +216,34 @@ pub fn router() -> Router {
             ),
         )
         .route(
+            "/:id/github_accounts",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(ServerId { id }): Path<ServerId>| async move {
+                    let github_accounts = state
+                        .get_github_accounts(&id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(github_accounts))
+                },
+            ),
+        )
+        .route(
+            "/:id/docker_accounts",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(ServerId { id }): Path<ServerId>| async move {
+                    let docker_accounts = state
+                        .get_docker_accounts(&id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(docker_accounts))
+                },
+            ),
+        )
+        .route(
             "/:id/action_state",
             get(
                 |Extension(state): StateExtension,
@@ -232,6 +260,22 @@ pub fn router() -> Router {
 }
 
 impl State {
+    async fn get_server(&self, id: &str, user: &RequestUser) -> anyhow::Result<ServerWithStatus> {
+        let server = self
+            .get_server_check_permissions(id, user, PermissionLevel::Read)
+            .await?;
+        let status = if server.enabled {
+            let res = self.periphery.health_check(&server).await;
+            match res {
+                Ok(_) => ServerStatus::Ok,
+                Err(_) => ServerStatus::NotOk,
+            }
+        } else {
+            ServerStatus::Disabled
+        };
+        Ok(ServerWithStatus { server, status })
+    }
+
     async fn list_servers(
         &self,
         user: &RequestUser,
@@ -339,6 +383,18 @@ impl State {
                 server.name
             ))?;
         Ok(containers)
+    }
+
+    async fn get_github_accounts(&self, id: &str, user: &RequestUser) -> anyhow::Result<Vec<String>> {
+        let server = self.get_server_check_permissions(id, user, PermissionLevel::Read).await?;
+        let github_accounts = self.periphery.get_github_accounts(&server).await?;
+        Ok(github_accounts)
+    }
+
+    async fn get_docker_accounts(&self, id: &str, user: &RequestUser) -> anyhow::Result<Vec<String>> {
+        let server = self.get_server_check_permissions(id, user, PermissionLevel::Read).await?;
+        let docker_accounts = self.periphery.get_docker_accounts(&server).await?;
+        Ok(docker_accounts)
     }
 
     async fn get_server_action_states(

@@ -277,6 +277,8 @@ export enum Operation {
 	CreateProcedure = "create_procedure",
 	UpdateProcedure = "update_procedure",
 	DeleteProcedure = "delete_procedure",
+	ModifyUserEnabled = "modify_user_enabled",
+	ModifyUserPermissions = "modify_user_permissions",
 }
 
 export enum ProcedureOperation {
@@ -306,6 +308,7 @@ export enum PermissionsTarget {
 	Server = "server",
 	Deployment = "deployment",
 	Build = "build",
+	Procedure = "procedure",
 }
 
 export enum ServerStatus {

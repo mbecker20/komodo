@@ -246,8 +246,16 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
         .parse::<u16>()
         .expect("invalid port");
 
+    let stats_refresh_interval = sub_matches
+        .get_one::<String>("stats_interval")
+        .map(|p| p.as_str())
+        .unwrap_or("1-sec")
+        .parse::<Timelength>()
+        .expect("invalid timelength");
+
     let config = PeripheryConfig {
         port,
+        stats_refresh_interval,
         repo_dir: "/repos".to_string(),
         secrets: Default::default(),
         github_accounts: Default::default(),

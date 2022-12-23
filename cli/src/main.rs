@@ -118,6 +118,10 @@ fn cli() -> Command {
                             arg!(--port <PORT> "sets port periphery will run on. default is 8000. if running in docker, keep this port as is, set the external port when running periphery start command")
                                 .required(false)
                         )
+                        .arg(
+                            arg!(--stats_interval <INTERVAL> "sets stats refresh interval to control granularity of system stats returned. default is 1-sec. options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min")
+                                .required(false)
+                        )
                 )
                 .subcommand(
                     Command::new("start")

@@ -1,19 +1,20 @@
 use std::sync::{Arc, RwLock};
 
+use async_timing_util::{wait_until_timelength, Timelength};
 use axum::{routing::get, Extension, Json, Router};
 use sysinfo::{CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt};
 use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats};
 
-pub fn router() -> Router {
+pub fn router(stats_refresh_interval: Timelength) -> Router {
     Router::new()
         .route(
             "/system",
             get(|Extension(sys): StatsExtension| async move {
-                let stats = sys.write().unwrap().get_stats();
+                let stats = sys.read().unwrap().get_stats();
                 Json(stats)
             }),
         )
-        .layer(StatsClient::extension())
+        .layer(StatsClient::extension(stats_refresh_interval))
 }
 
 type StatsExtension = Extension<Arc<RwLock<StatsClient>>>;
@@ -26,16 +27,33 @@ const BYTES_PER_GB: f64 = 1073741824.0;
 const BYTES_PER_KB: f64 = 1024.0;
 
 impl StatsClient {
-    pub fn extension() -> StatsExtension {
+    pub fn extension(refresh_stats_interval: Timelength) -> StatsExtension {
         let client = StatsClient {
             sys: sysinfo::System::new_all(),
         };
-        Extension(Arc::new(RwLock::new(client)))
+        let client = Arc::new(RwLock::new(client));
+        let clone = client.clone();
+        tokio::spawn(async move {
+            loop {
+                wait_until_timelength(refresh_stats_interval, 0).await;
+                {
+                    clone.write().unwrap().refresh();
+                }
+            }
+        });
+        Extension(client)
     }
 
-    pub fn get_stats(&mut self) -> SystemStats {
+    pub fn refresh(&mut self) {
         self.sys.refresh_cpu();
         self.sys.refresh_memory();
+        self.sys.refresh_networks();
+        self.sys.refresh_disks();
+        self.sys
+            .refresh_processes_specifics(ProcessRefreshKind::new().with_disk_usage());
+    }
+
+    pub fn get_stats(&self) -> SystemStats {
         SystemStats {
             cpu_perc: self.sys.global_cpu_info().cpu_usage(),
             mem_used_gb: self.sys.used_memory() as f64 / BYTES_PER_GB,
@@ -45,8 +63,7 @@ impl StatsClient {
         }
     }
 
-    fn get_networks(&mut self) -> Vec<SystemNetwork> {
-        self.sys.refresh_networks();
+    fn get_networks(&self) -> Vec<SystemNetwork> {
         self.sys
             .networks()
             .into_iter()
@@ -59,8 +76,7 @@ impl StatsClient {
             .collect()
     }
 
-    fn get_disk_usage(&mut self) -> DiskUsage {
-        self.sys.refresh_disks();
+    fn get_disk_usage(&self) -> DiskUsage {
         let mut free_gb = 0.0;
         let mut total_gb = 0.0;
         let mut disks = Vec::new();
@@ -80,8 +96,6 @@ impl StatsClient {
             }
         }
         let used_gb = total_gb - free_gb;
-        self.sys
-            .refresh_processes_specifics(ProcessRefreshKind::new().with_disk_usage());
         let mut read_kb = 0.0;
         let mut write_kb = 0.0;
         for (_, process) in self.sys.processes() {

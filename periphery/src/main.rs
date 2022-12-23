@@ -16,7 +16,7 @@ type PeripheryConfigExtension = Extension<Arc<PeripheryConfig>>;
 async fn main() {
     let (port, config) = config::load();
 
-    let app = api::router().layer(config.clone());
+    let app = api::router(&config).layer(config);
 
     axum::Server::bind(&get_socket_addr(port))
         .serve(app.into_make_service())

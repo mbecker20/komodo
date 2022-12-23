@@ -32,7 +32,7 @@ pub async fn auth_request(
         "failed to get jwt client extension".to_string(),
     ))?;
     let user = jwt_client
-        .authenticate(&req)
+        .authenticate_check_enabled(&req)
         .await
         .map_err(|e| (StatusCode::UNAUTHORIZED, format!("{e:#?}")))?;
     req.extensions_mut().insert(user);
