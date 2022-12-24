@@ -74,7 +74,7 @@ pub struct PeripheryConfig {
     #[serde(default = "default_repo_dir")]
     pub repo_dir: String,
     #[serde(default = "default_stats_refresh_interval")]
-    pub stats_refresh_interval: Timelength,
+    pub stats_polling_rate: Timelength,
     #[serde(default)]
     pub secrets: SecretsMap,
     #[serde(default)]

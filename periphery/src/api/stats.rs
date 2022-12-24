@@ -5,7 +5,7 @@ use axum::{routing::get, Extension, Json, Router};
 use sysinfo::{CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt};
 use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats};
 
-pub fn router(stats_refresh_interval: Timelength) -> Router {
+pub fn router(stats_polling_rate: Timelength) -> Router {
     Router::new()
         .route(
             "/system",
@@ -14,28 +14,30 @@ pub fn router(stats_refresh_interval: Timelength) -> Router {
                 Json(stats)
             }),
         )
-        .layer(StatsClient::extension(stats_refresh_interval))
+        .layer(StatsClient::extension(stats_polling_rate))
 }
 
 type StatsExtension = Extension<Arc<RwLock<StatsClient>>>;
 
 struct StatsClient {
     sys: sysinfo::System,
+    polling_rate: Timelength,
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
 const BYTES_PER_KB: f64 = 1024.0;
 
 impl StatsClient {
-    pub fn extension(refresh_stats_interval: Timelength) -> StatsExtension {
+    pub fn extension(polling_rate: Timelength) -> StatsExtension {
         let client = StatsClient {
             sys: sysinfo::System::new_all(),
+            polling_rate,
         };
         let client = Arc::new(RwLock::new(client));
         let clone = client.clone();
         tokio::spawn(async move {
             loop {
-                wait_until_timelength(refresh_stats_interval, 0).await;
+                wait_until_timelength(polling_rate, 0).await;
                 {
                     clone.write().unwrap().refresh();
                 }
@@ -60,6 +62,7 @@ impl StatsClient {
             mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
             disk: self.get_disk_usage(),
             networks: self.get_networks(),
+            polling_rate: self.polling_rate, 
         }
     }
 

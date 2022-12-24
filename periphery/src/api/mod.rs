@@ -16,7 +16,7 @@ pub fn router(config: &PeripheryConfig) -> Router {
         .route("/accounts/:account_type", get(accounts::get_accounts))
         .nest("/container", container::router())
         .nest("/network", network::router())
-        .nest("/stats", stats::router(config.stats_refresh_interval))
+        .nest("/stats", stats::router(config.stats_polling_rate))
         .nest("/git", git::router())
         .nest("/build", build::router())
         .nest("/image", image::router())
