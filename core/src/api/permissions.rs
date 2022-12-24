@@ -2,10 +2,13 @@ use anyhow::{anyhow, Context};
 use axum::{routing::post, Extension, Json, Router};
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Document, Serialize};
-use types::{Build, Deployment, PermissionLevel, PermissionsTarget, Server, UpdateTarget, Operation, Log, monitor_timestamp, UpdateStatus, Update, Procedure};
+use types::{
+    monitor_timestamp, Build, Deployment, Log, Operation, PermissionLevel, PermissionsTarget,
+    Procedure, Server, Update, UpdateStatus, UpdateTarget,
+};
 use typeshare::typeshare;
 
-use crate::{auth::RequestUserExtension, state::StateExtension, response};
+use crate::{auth::RequestUserExtension, response, state::StateExtension};
 
 #[typeshare]
 #[derive(Serialize, Deserialize)]
@@ -61,7 +64,10 @@ async fn update_permissions(
         .find_one_by_id(&permission_update.user_id)
         .await
         .context("failed at find target user query")?
-        .ok_or(anyhow!("failed to find a user with id {}", permission_update.user_id))?;
+        .ok_or(anyhow!(
+            "failed to find a user with id {}",
+            permission_update.user_id
+        ))?;
     if !target_user.enabled {
         return Err(anyhow!("target user not enabled"));
     }
@@ -183,7 +189,9 @@ async fn update_permissions(
             )
         }
     };
-    update.logs.push(Log::simple("modify permissions", log_text));
+    update
+        .logs
+        .push(Log::simple("modify permissions", log_text));
     update.end_ts = Some(monitor_timestamp());
     update.id = state.add_update(update.clone()).await?;
     Ok(update)
@@ -211,16 +219,15 @@ async fn modify_user_enabled(
         .users
         .update_one::<Document>(&user_id, mungos::Update::Set(doc! { "enabled": enabled }))
         .await?;
-    let update_type = if enabled {
-        "enabled"
-    } else {
-        "disabled"
-    };
+    let update_type = if enabled { "enabled" } else { "disabled" };
     let ts = monitor_timestamp();
     let mut update = Update {
         target: UpdateTarget::System,
         operation: Operation::ModifyUserEnabled,
-        logs: vec![Log::simple("modify user permissions", format!("{update_type} {} (id: {})", user.username, user.id))],
+        logs: vec![Log::simple(
+            "modify user permissions",
+            format!("{update_type} {} (id: {})", user.username, user.id),
+        )],
         start_ts: ts.clone(),
         end_ts: Some(ts),
         status: UpdateStatus::Complete,

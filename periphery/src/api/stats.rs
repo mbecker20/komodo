@@ -62,7 +62,7 @@ impl StatsClient {
             mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
             disk: self.get_disk_usage(),
             networks: self.get_networks(),
-            polling_rate: self.polling_rate, 
+            polling_rate: self.polling_rate,
         }
     }
 

@@ -8,7 +8,7 @@ import {
   useServerStats,
   useUpdates,
 } from "./hooks";
-import socket from "./socket";
+import connectToWs from "./ws";
 import { useUser } from "./UserProvider";
 
 export type State = {
@@ -21,7 +21,7 @@ export type State = {
 
 const context = createContext<
   State & {
-    ws: ReturnType<typeof socket>;
+    ws: ReturnType<typeof connectToWs>;
     logout: () => void;
   }
 >();
@@ -37,7 +37,7 @@ export const AppStateProvider: ParentComponent = (p) => {
     updates: useUpdates(),
   };
 
-  const ws = socket(state);
+  const ws = connectToWs(state);
 
   useWindowKeyDown((e) => {
     if (e.key === "H" && e.shiftKey) {
@@ -63,7 +63,7 @@ export const AppStateProvider: ParentComponent = (p) => {
 
 export function useAppState() {
   return useContext(context) as State & {
-    ws: ReturnType<typeof socket>;
+    ws: ReturnType<typeof connectToWs>;
     logout: () => void;
   };
 }

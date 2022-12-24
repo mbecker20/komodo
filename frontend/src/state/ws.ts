@@ -4,7 +4,7 @@ import { createSignal } from "solid-js";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import { Operation, Update, UpdateStatus, User } from "../types";
 
-function socket(state: State) {
+function connectToWs(state: State) {
   const ws = new ReconnectingWebSocket(WS_URL);
 
   const [isOpen, setOpen] = createSignal(false);
@@ -16,8 +16,8 @@ function socket(state: State) {
   });
 
   ws.addEventListener("message", ({ data }) => {
-    if (data === "PONG") {
-      // console.log("pong");
+    if (data === "LOGGED_IN") {
+      // console.log("logged in to ws");
       return;
     }
     const update = JSON.parse(data) as Update;
@@ -133,4 +133,4 @@ async function handleMessage(
   }
 }
 
-export default socket;
+export default connectToWs;

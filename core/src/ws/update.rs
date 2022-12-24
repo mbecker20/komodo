@@ -11,12 +11,11 @@ use axum::{
 };
 use db::DbClient;
 use futures_util::{SinkExt, StreamExt};
-use mungos::Serialize;
 use serde_json::json;
 use tokio::{
     select,
     sync::{
-        watch::{self, Receiver, Sender},
+        broadcast::{self, Receiver, Sender},
         Mutex,
     },
 };
@@ -38,7 +37,7 @@ pub struct UpdateWsChannel {
 
 impl UpdateWsChannel {
     pub fn new() -> UpdateWsChannel {
-        let (sender, reciever) = watch::channel(Default::default());
+        let (sender, reciever) = broadcast::channel(16);
         UpdateWsChannel {
             sender: Mutex::new(sender),
             reciever,
@@ -46,42 +45,12 @@ impl UpdateWsChannel {
     }
 }
 
-#[derive(Serialize)]
-struct UpdateMsg {
-    #[serde(rename = "type")]
-    msg_type: MsgType,
-    update: Update,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "UPPERCASE")]
-enum MsgType {
-    // Login,
-    // Close,
-    Update,
-}
-
-impl UpdateMsg {
-    fn from_update(update: Update) -> Message {
-        let msg = UpdateMsg {
-            msg_type: MsgType::Update,
-            update,
-        };
-        Message::Text(serde_json::to_string(&msg).unwrap())
-    }
-}
-
-// pub fn make_update_ws_sender_reciver() -> (UpdateWsSenderExtension, UpdateWsRecieverExtension) {
-//     let (sender, reciever) = watch::channel(Default::default());
-//     (Extension(Arc::new(Mutex::new(sender))), Extension(reciever))
-// }
-
 pub async fn ws_handler(
     Extension(jwt_client): JwtExtension,
     Extension(state): StateExtension,
     ws: WebSocketUpgrade,
 ) -> impl IntoResponse {
-    let mut reciever = state.update.reciever.clone();
+    let mut reciever = state.update.reciever.resubscribe();
     ws.on_upgrade(|socket| async move {
         let login_res = login(socket, &jwt_client, &state).await;
         if login_res.is_none() {
@@ -90,14 +59,13 @@ pub async fn ws_handler(
         let (socket, user_id) = login_res.unwrap();
         let (ws_sender, mut ws_reciever) = socket.split();
         let ws_sender = Arc::new(Mutex::new(ws_sender));
-        // let ws_sender_clone = ws_sender.clone();
         let cancel = CancellationToken::new();
         let cancel_clone = cancel.clone();
         tokio::spawn(async move {
             loop {
-                select! {
+                let update = select! {
                     _ = cancel_clone.cancelled() => break,
-                    _ = reciever.changed() => {}
+                    update = reciever.recv() => {update.expect("failed to recv update msg")}
                 };
                 let user = state.db.users.find_one_by_id(&user_id).await;
                 if user.is_err()
@@ -113,13 +81,12 @@ pub async fn ws_handler(
                     return;
                 }
                 let user = user.unwrap().unwrap(); // already handle cases where this panics in the above early return
-                let update = reciever.borrow().to_owned();
                 match user_can_see_update(&user, &user_id, &update.target, &state.db).await {
                     Ok(_) => {
                         let _ = ws_sender
                             .lock()
                             .await
-                            .send(UpdateMsg::from_update(update))
+                            .send(Message::Text(serde_json::to_string(&update).unwrap()))
                             .await;
                     }
                     Err(_) => {
@@ -157,11 +124,7 @@ async fn login(
             Ok(jwt) => match jwt {
                 Message::Text(jwt) => match jwt_client.auth_jwt_check_enabled(&jwt, state).await {
                     Ok(user) => {
-                        let _ = socket
-                            .send(Message::Text(
-                                json!({ "type": "LOGIN", "success": true }).to_string(),
-                            ))
-                            .await;
+                        let _ = socket.send(Message::Text("LOGGED_IN".to_string())).await;
                         Some((socket, user.id))
                     }
                     Err(e) => {

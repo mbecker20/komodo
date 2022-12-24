@@ -33,10 +33,7 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn get_server_github_accounts(
-        &self,
-        server_id: &str,
-    ) -> anyhow::Result<Vec<String>> {
+    pub async fn get_server_github_accounts(&self, server_id: &str) -> anyhow::Result<Vec<String>> {
         self.get(
             &format!("/api/server/{server_id}/github_accounts"),
             Option::<()>::None,
@@ -44,10 +41,7 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn get_server_docker_accounts(
-        &self,
-        server_id: &str,
-    ) -> anyhow::Result<Vec<String>> {
+    pub async fn get_server_docker_accounts(&self, server_id: &str) -> anyhow::Result<Vec<String>> {
         self.get(
             &format!("/api/server/{server_id}/docker_accounts"),
             Option::<()>::None,

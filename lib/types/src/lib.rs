@@ -641,7 +641,7 @@ fn default_repo_dir() -> String {
 }
 
 fn default_stats_refresh_interval() -> Timelength {
-    Timelength::FiveSeconds
+    Timelength::OneSecond
 }
 
 #[typeshare]
@@ -915,7 +915,7 @@ pub enum PermissionsTarget {
     Server,
     Deployment,
     Build,
-    Procedure
+    Procedure,
 }
 
 #[typeshare]

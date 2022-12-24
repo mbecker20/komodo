@@ -385,14 +385,26 @@ impl State {
         Ok(containers)
     }
 
-    async fn get_github_accounts(&self, id: &str, user: &RequestUser) -> anyhow::Result<Vec<String>> {
-        let server = self.get_server_check_permissions(id, user, PermissionLevel::Read).await?;
+    async fn get_github_accounts(
+        &self,
+        id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Vec<String>> {
+        let server = self
+            .get_server_check_permissions(id, user, PermissionLevel::Read)
+            .await?;
         let github_accounts = self.periphery.get_github_accounts(&server).await?;
         Ok(github_accounts)
     }
 
-    async fn get_docker_accounts(&self, id: &str, user: &RequestUser) -> anyhow::Result<Vec<String>> {
-        let server = self.get_server_check_permissions(id, user, PermissionLevel::Read).await?;
+    async fn get_docker_accounts(
+        &self,
+        id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Vec<String>> {
+        let server = self
+            .get_server_check_permissions(id, user, PermissionLevel::Read)
+            .await?;
         let docker_accounts = self.periphery.get_docker_accounts(&server).await?;
         Ok(docker_accounts)
     }

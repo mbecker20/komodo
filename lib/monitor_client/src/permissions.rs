@@ -23,7 +23,11 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn modify_user_enabled(&self, user_id: &str, enabled: bool) -> anyhow::Result<Update> {
+    pub async fn modify_user_enabled(
+        &self,
+        user_id: &str,
+        enabled: bool,
+    ) -> anyhow::Result<Update> {
         self.post(
             "/api/permissions/update",
             json!({
