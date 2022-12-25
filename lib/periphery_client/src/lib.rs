@@ -16,7 +16,7 @@ pub struct PeripheryClient {
 
 impl PeripheryClient {
     pub async fn health_check(&self, server: &Server) -> anyhow::Result<String> {
-        self.get_text(server, "health")
+        self.get_text(server, "/health")
             .await
             .context("failed at health check on periphery")
     }
