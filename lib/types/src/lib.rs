@@ -2,7 +2,9 @@ use std::collections::HashMap;
 
 use ::diff::Diff;
 use anyhow::Context;
+use bson::serde_helpers::hex_string_as_object_id;
 use chrono::{DateTime, SecondsFormat, Utc};
+use derive_builder::Builder;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
@@ -15,6 +17,7 @@ mod build;
 mod config;
 mod deployment;
 mod diff;
+mod group;
 mod procedure;
 mod server;
 mod update;
@@ -23,12 +26,13 @@ mod user;
 pub use build::*;
 pub use config::*;
 pub use deployment::*;
+pub use group::*;
 pub use procedure::*;
 pub use server::*;
 pub use update::*;
 pub use user::*;
 
-pub const PERIPHERY_BUILDER_BUSY: &str = "builder is busy";
+use crate::diff::*;
 
 #[typeshare]
 pub type PermissionsMap = HashMap<String, PermissionLevel>;

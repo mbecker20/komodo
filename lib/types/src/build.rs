@@ -7,6 +7,9 @@ use typeshare::typeshare;
 use crate::{diff::*, Command, EnvironmentVar, PermissionsMap};
 
 #[typeshare]
+pub const PERIPHERY_BUILDER_BUSY: &str = "BUILDER_BUSY";
+
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct Build {
