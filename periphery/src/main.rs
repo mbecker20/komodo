@@ -21,9 +21,7 @@ fn main() {
     if args.daemon {
         let stdout = File::create(args.stdout.replace("~", &home)).unwrap();
         let stderr = File::create(args.stderr.replace("~", &home)).unwrap();
-        let daemon = Daemonize::new()
-            .stdout(stdout)
-            .stderr(stderr);
+        let daemon = Daemonize::new().stdout(stdout).stderr(stderr);
         match daemon.start() {
             Ok(_) => println!("process sucessfully started"),
             Err(e) => eprintln!("Error, {}", e),

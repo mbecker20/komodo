@@ -60,7 +60,7 @@
 		},
 		{
 			"type": "shell",
-			"command": "cargo run -- -d",
+			"command": "cargo install --path . && pkill periphery && periphery --daemon",
 			"label": "run periphery daemon",
 			"options": {
 				"cwd": "${workspaceFolder}/periphery"
