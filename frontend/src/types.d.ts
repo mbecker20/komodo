@@ -4,54 +4,39 @@
 
 export type PermissionsMap = Record<string, PermissionLevel>;
 
-export interface User {
+export interface Build {
 	_id?: string;
-	username: string;
-	enabled: boolean;
-	admin: boolean;
-	create_server_permissions: boolean;
-	avatar?: string;
-	secrets?: ApiSecret[];
-	password?: string;
-	github_id?: string;
-	google_id?: string;
+	name: string;
+	permissions: PermissionsMap;
+	server_id: string;
+	version: Version;
+	repo?: string;
+	branch?: string;
+	github_account?: string;
+	on_clone?: Command;
+	pre_build?: Command;
+	docker_build_args?: DockerBuildArgs;
+	docker_account?: string;
 	created_at?: string;
 	updated_at?: string;
 }
 
-export interface ApiSecret {
-	name: string;
-	hash: string;
-	created_at: string;
-	expires?: string;
+export interface BuildActionState {
+	building: boolean;
+	recloning: boolean;
+	updating: boolean;
 }
 
-export interface Server {
-	_id?: string;
-	name: string;
-	address: string;
-	permissions?: PermissionsMap;
-	enabled: boolean;
-	to_notify?: string[];
-	cpu_alert?: number;
-	mem_alert?: number;
-	disk_alert?: number;
-	stats_interval?: number;
-	region?: string;
-	instance_id?: string;
-	created_at?: string;
-	updated_at?: string;
+export interface Version {
+	major: number;
+	minor: number;
+	patch: number;
 }
 
-export interface ServerWithStatus {
-	server: Server;
-	status: ServerStatus;
-}
-
-export interface ServerActionState {
-	pruning_networks: boolean;
-	pruning_containers: boolean;
-	pruning_images: boolean;
+export interface DockerBuildArgs {
+	build_path: string;
+	dockerfile_path?: string;
+	build_args: EnvironmentVar[];
 }
 
 export interface Deployment {
@@ -85,62 +70,6 @@ export interface DeploymentActionState {
 	updating: boolean;
 }
 
-export interface Build {
-	_id?: string;
-	name: string;
-	permissions: PermissionsMap;
-	server_id: string;
-	version: Version;
-	repo?: string;
-	branch?: string;
-	github_account?: string;
-	on_clone?: Command;
-	pre_build?: Command;
-	docker_build_args?: DockerBuildArgs;
-	docker_account?: string;
-	created_at?: string;
-	updated_at?: string;
-}
-
-export interface BuildActionState {
-	building: boolean;
-	recloning: boolean;
-	updating: boolean;
-}
-
-export interface Update {
-	_id?: string;
-	target: UpdateTarget;
-	operation: Operation;
-	logs: Log[];
-	start_ts: string;
-	end_ts?: string;
-	status: UpdateStatus;
-	success: boolean;
-	operator: string;
-	version?: Version;
-}
-
-export interface Procedure {
-	_id?: string;
-	name: string;
-	stages: ProcedureStage[];
-	permissions: PermissionsMap;
-	created_at?: string;
-	updated_at?: string;
-}
-
-export interface ProcedureStage {
-	operation: ProcedureOperation;
-	target_id: string;
-}
-
-export interface DockerBuildArgs {
-	build_path: string;
-	dockerfile_path?: string;
-	build_args: EnvironmentVar[];
-}
-
 export interface DockerRunArgs {
 	image: string;
 	ports: Conversion[];
@@ -160,6 +89,11 @@ export interface BasicContainerInfo {
 	status?: string;
 }
 
+export interface Conversion {
+	local: string;
+	container: string;
+}
+
 export interface DockerContainerStats {
 	name: string;
 	cpu_perc: string;
@@ -170,30 +104,22 @@ export interface DockerContainerStats {
 	pids: string;
 }
 
-export interface Log {
-	stage: string;
-	command: string;
-	stdout: string;
-	stderr: string;
-	success: boolean;
-	start_ts: string;
-	end_ts: string;
+export interface Group {
+	_id?: string;
+	name: string;
+	permissions: PermissionsMap;
+	builds: string[];
+	deployments: string[];
+	servers: string[];
+	procedures: string[];
+	groups: string[];
+	created_at?: string;
+	updated_at?: string;
 }
 
 export interface Command {
 	path: string;
 	command: string;
-}
-
-export interface Version {
-	major: number;
-	minor: number;
-	patch: number;
-}
-
-export interface Conversion {
-	local: string;
-	container: string;
 }
 
 export interface EnvironmentVar {
@@ -206,12 +132,55 @@ export interface UserCredentials {
 	password: string;
 }
 
+export interface Procedure {
+	_id?: string;
+	name: string;
+	stages: ProcedureStage[];
+	permissions: PermissionsMap;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ProcedureStage {
+	operation: ProcedureOperation;
+	target_id: string;
+}
+
+export interface Server {
+	_id?: string;
+	name: string;
+	address: string;
+	permissions?: PermissionsMap;
+	enabled: boolean;
+	to_notify?: string[];
+	cpu_alert?: number;
+	mem_alert?: number;
+	disk_alert?: number;
+	stats_interval?: number;
+	region?: string;
+	instance_id?: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ServerWithStatus {
+	server: Server;
+	status: ServerStatus;
+}
+
+export interface ServerActionState {
+	pruning_networks: boolean;
+	pruning_containers: boolean;
+	pruning_images: boolean;
+}
+
 export interface SystemStats {
 	cpu_perc: number;
 	mem_used_gb: number;
 	mem_total_gb: number;
 	disk: DiskUsage;
 	networks: SystemNetwork[];
+	polling_rate: Timelength;
 }
 
 export interface DiskUsage {
@@ -234,22 +203,71 @@ export interface SystemNetwork {
 	transmitted_kb: number;
 }
 
+export interface Update {
+	_id?: string;
+	target: UpdateTarget;
+	operation: Operation;
+	logs: Log[];
+	start_ts: string;
+	end_ts?: string;
+	status: UpdateStatus;
+	success: boolean;
+	operator: string;
+	version?: Version;
+}
+
+export interface Log {
+	stage: string;
+	command: string;
+	stdout: string;
+	stderr: string;
+	success: boolean;
+	start_ts: string;
+	end_ts: string;
+}
+
+export interface User {
+	_id?: string;
+	username: string;
+	enabled: boolean;
+	admin: boolean;
+	create_server_permissions: boolean;
+	avatar?: string;
+	secrets?: ApiSecret[];
+	password?: string;
+	github_id?: string;
+	google_id?: string;
+	created_at?: string;
+	updated_at?: string;
+}
+
+export interface ApiSecret {
+	name: string;
+	hash: string;
+	created_at: string;
+	expires?: string;
+}
+
+export enum DockerContainerState {
+	Created = "created",
+	Restarting = "restarting",
+	Running = "running",
+	Removing = "removing",
+	Paused = "paused",
+	Exited = "exited",
+	Dead = "dead",
+}
+
+export enum RestartMode {
+	NoRestart = "no",
+	OnFailure = "on-failure",
+	Always = "always",
+	UnlessStopped = "unless-stopped",
+}
+
 export enum AccountType {
 	Github = "github",
 	Docker = "docker",
-}
-
-export type UpdateTarget = 
-	| { type: "System", id?: undefined }
-	| { type: "Build", id: string }
-	| { type: "Deployment", id: string }
-	| { type: "Server", id: string }
-	| { type: "Procedure", id: string };
-
-export enum UpdateStatus {
-	Queued = "queued",
-	InProgress = "in_progress",
-	Complete = "complete",
 }
 
 export enum Operation {
@@ -277,8 +295,25 @@ export enum Operation {
 	CreateProcedure = "create_procedure",
 	UpdateProcedure = "update_procedure",
 	DeleteProcedure = "delete_procedure",
+	CreateGroup = "create_group",
+	UpdateGroup = "update_group",
+	DeleteGroup = "delete_group",
 	ModifyUserEnabled = "modify_user_enabled",
 	ModifyUserPermissions = "modify_user_permissions",
+}
+
+export enum PermissionLevel {
+	None = "none",
+	Read = "read",
+	Execute = "execute",
+	Update = "update",
+}
+
+export enum PermissionsTarget {
+	Server = "server",
+	Deployment = "deployment",
+	Build = "build",
+	Procedure = "procedure",
 }
 
 export enum ProcedureOperation {
@@ -297,40 +332,23 @@ export enum ProcedureOperation {
 	RunProcedure = "run_procedure",
 }
 
-export enum PermissionLevel {
-	None = "none",
-	Read = "read",
-	Execute = "execute",
-	Update = "update",
-}
-
-export enum PermissionsTarget {
-	Server = "server",
-	Deployment = "deployment",
-	Build = "build",
-	Procedure = "procedure",
-}
-
 export enum ServerStatus {
 	Ok = "ok",
 	NotOk = "not_ok",
 	Disabled = "disabled",
 }
 
-export enum DockerContainerState {
-	Created = "created",
-	Restarting = "restarting",
-	Running = "running",
-	Removing = "removing",
-	Paused = "paused",
-	Exited = "exited",
-	Dead = "dead",
-}
+export type UpdateTarget = 
+	| { type: "System", id?: undefined }
+	| { type: "Build", id: string }
+	| { type: "Deployment", id: string }
+	| { type: "Server", id: string }
+	| { type: "Procedure", id: string }
+	| { type: "Group", id: string };
 
-export enum RestartMode {
-	NoRestart = "no",
-	OnFailure = "on-failure",
-	Always = "always",
-	UnlessStopped = "unless-stopped",
+export enum UpdateStatus {
+	Queued = "queued",
+	InProgress = "in_progress",
+	Complete = "complete",
 }
 

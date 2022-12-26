@@ -107,6 +107,11 @@ pub enum Operation {
     UpdateProcedure,
     DeleteProcedure,
 
+    // group
+    CreateGroup,
+    UpdateGroup,
+    DeleteGroup,
+
     // user
     ModifyUserEnabled,
     ModifyUserPermissions,

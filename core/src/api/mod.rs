@@ -11,6 +11,7 @@ pub mod procedure;
 pub mod secret;
 pub mod server;
 pub mod update;
+pub mod group;
 
 pub fn router() -> Router {
     Router::new()
@@ -25,6 +26,7 @@ pub fn router() -> Router {
                 .nest("/deployment", deployment::router())
                 .nest("/server", server::router())
                 .nest("/procedure", procedure::router())
+                .nest("/group", group::router())
                 .nest("/update", update::router())
                 .nest("/permissions", permissions::router())
                 .nest("/secret", secret::router())

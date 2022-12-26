@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{monitor_timestamp, Build, Deployment, Operation, Procedure, Server, Version};
+use crate::{monitor_timestamp, Build, Deployment, Group, Operation, Procedure, Server, Version};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -74,6 +74,7 @@ pub enum UpdateTarget {
     Deployment(String),
     Server(String),
     Procedure(String),
+    Group(String),
 }
 
 impl Default for UpdateTarget {
@@ -127,6 +128,18 @@ impl From<&Procedure> for UpdateTarget {
 impl From<&Procedure> for Option<UpdateTarget> {
     fn from(procedure: &Procedure) -> Self {
         Some(UpdateTarget::Procedure(procedure.id.clone()))
+    }
+}
+
+impl From<&Group> for UpdateTarget {
+    fn from(group: &Group) -> Self {
+        Self::Group(group.id.clone())
+    }
+}
+
+impl From<&Group> for Option<UpdateTarget> {
+    fn from(group: &Group) -> Self {
+        Some(UpdateTarget::Group(group.id.clone()))
     }
 }
 

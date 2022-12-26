@@ -70,6 +70,10 @@ impl State {
                     .get_procedure_check_permissions(id, user, PermissionLevel::Read)
                     .await
                     .map(|_| ()),
+                UpdateTarget::Group(id) => self
+                    .get_group_check_permissions(id, user, PermissionLevel::Read)
+                    .await
+                    .map(|_| ()),
             }
         }
     }

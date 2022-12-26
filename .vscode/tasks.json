@@ -60,7 +60,7 @@
 		},
 		{
 			"type": "shell",
-			"command": "cargo install --path . && pkill periphery && periphery --daemon",
+			"command": "cargo install --path . && if pgrep periphery; then pkill periphery; fi && periphery --daemon --config-path ~/.monitor/local.periphery.config.toml",
 			"label": "run periphery daemon",
 			"options": {
 				"cwd": "${workspaceFolder}/periphery"

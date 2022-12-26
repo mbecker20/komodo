@@ -54,10 +54,11 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension) {
 
 fn print_startup_log(config_path: &str, args: &Args, config: &PeripheryConfig) {
     println!("\nconfig path: {config_path}");
-    println!("starting montior periphery on port {}", config.port);
+    println!("{config:#?}");
     if args.daemon {
-        println!("daemon mode enabled\n");
+        println!("daemon mode enabled");
     }
+    println!("starting montior periphery on port {}\n", config.port);
 }
 
 fn default_config_path() -> String {

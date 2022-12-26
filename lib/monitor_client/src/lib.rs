@@ -14,6 +14,7 @@ mod procedure;
 mod secret;
 mod server;
 mod update;
+mod group;
 
 #[derive(Clone)]
 pub struct MonitorClient {

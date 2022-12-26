@@ -6,7 +6,9 @@ import {
   Deployment,
   DeploymentActionState,
   DeploymentWithContainer,
+  Group,
   Log,
+  Procedure,
   Server,
   ServerActionState,
   ServerWithStatus,
@@ -21,6 +23,8 @@ import {
   CopyDeploymentBody,
   CreateBuildBody,
   CreateDeploymentBody,
+  CreateGroupBody,
+  CreateProcedureBody,
   CreateSecretBody,
   CreateServerBody,
   ModifyUserEnabledBody,
@@ -230,6 +234,62 @@ export class Client {
 
   reclone_build(id: string): Promise<Update> {
     return this.post(`/api/build/${id}/reclone`);
+  }
+
+  // procedure
+
+  list_procedures(query?: QueryObject): Promise<Procedure[]> {
+    return this.get("/api/procedure/list" + generateQuery(query));
+  }
+
+  get_procedure(procedure_id: string): Promise<Procedure> {
+    return this.get(`/api/procedure/${procedure_id}`);
+  }
+
+  create_procedure(body: CreateProcedureBody): Promise<Procedure> {
+    return this.post("/api/procedure/create", body);
+  }
+
+  create_full_procedure(procedure: Procedure): Promise<Procedure> {
+    return this.post("/api/procedure/create_full", procedure);
+  }
+
+  delete_procedure(id: string): Promise<Procedure> {
+    return this.delete(`/api/procedure/${id}/delete`);
+  }
+
+  update_procedure(procedure: Procedure): Promise<Procedure> {
+    return this.patch("/api/procedure/update", procedure);
+  }
+
+  run_procedure(id: string): Promise<Update> {
+    return this.post(`/api/procedure/${id}/run`);
+  }
+
+  // group
+
+  list_groups(query?: QueryObject): Promise<Group[]> {
+    return this.get("/api/group/list" + generateQuery(query));
+  }
+
+  get_group(group_id: string): Promise<Group> {
+    return this.get(`/api/group/${group_id}`);
+  }
+
+  create_group(body: CreateGroupBody): Promise<Group> {
+    return this.post("/api/group/create", body);
+  }
+
+  create_full_group(group: Group): Promise<Group> {
+    return this.post("/api/group/create_full", group);
+  }
+
+  delete_group(id: string): Promise<Group> {
+    return this.delete(`/api/group/${id}/delete`);
+  }
+
+  update_group(group: Group): Promise<Group> {
+    return this.patch("/api/group/update", group);
   }
 
   // updates

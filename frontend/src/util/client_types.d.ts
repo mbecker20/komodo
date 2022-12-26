@@ -24,6 +24,10 @@ export interface CopyDeploymentBody {
 	server_id: string;
 }
 
+export interface CreateGroupBody {
+	name: string;
+}
+
 export interface PermissionsUpdateBody {
 	user_id: string;
 	permission: PermissionLevel;

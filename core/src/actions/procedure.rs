@@ -93,7 +93,7 @@ impl State {
             end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
             logs: vec![Log::simple(
-                "delete deployment",
+                "delete procedure",
                 format!("deleted procedure {}", procedure.name),
             )],
             success: true,
@@ -128,7 +128,7 @@ impl State {
                 mungos::Update::Regular(new_procedure.clone()),
             )
             .await
-            .context("failed at update one deployment")?;
+            .context("failed at update one procedure")?;
 
         let diff = current_procedure.diff(&new_procedure);
 
