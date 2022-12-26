@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Deployment, DeploymentActionState, DeploymentWithContainer, Update};
+use monitor_types::{Deployment, DeploymentActionState, DeploymentWithContainerState, Update};
 use serde_json::{json, Value};
 
 use crate::MonitorClient;
@@ -8,7 +8,7 @@ impl MonitorClient {
     pub async fn list_deployments(
         &self,
         query: impl Into<Option<Value>>,
-    ) -> anyhow::Result<Vec<DeploymentWithContainer>> {
+    ) -> anyhow::Result<Vec<DeploymentWithContainerState>> {
         self.get("/api/deployment/list", query.into())
             .await
             .context("failed at list deployments")
@@ -17,7 +17,7 @@ impl MonitorClient {
     pub async fn get_deployment(
         &self,
         deployment_id: &str,
-    ) -> anyhow::Result<DeploymentWithContainer> {
+    ) -> anyhow::Result<DeploymentWithContainerState> {
         self.get(
             &format!("/api/deployment/{deployment_id}"),
             Option::<()>::None,

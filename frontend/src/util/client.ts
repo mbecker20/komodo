@@ -5,7 +5,7 @@ import {
   BuildActionState,
   Deployment,
   DeploymentActionState,
-  DeploymentWithContainer,
+  DeploymentWithContainerState,
   Group,
   Log,
   Procedure,
@@ -69,11 +69,11 @@ export class Client {
 
   // deployment
 
-  list_deployments(query?: QueryObject): Promise<DeploymentWithContainer[]> {
+  list_deployments(query?: QueryObject): Promise<DeploymentWithContainerState[]> {
     return this.get("/api/deployment/list" + generateQuery(query));
   }
 
-  get_deployment(id: string): Promise<DeploymentWithContainer> {
+  get_deployment(id: string): Promise<DeploymentWithContainerState> {
     return this.get(`/api/deployment/${id}`);
   }
 

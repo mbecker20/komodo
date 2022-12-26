@@ -10,8 +10,8 @@ use futures_util::future::join_all;
 use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
 use types::{
-    traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainer,
-    PermissionLevel, Server,
+    traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainerState,
+    PermissionLevel, Server, DockerContainerState,
 };
 use typeshare::typeshare;
 
@@ -49,7 +49,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>| async move {
                     let res = state
-                        .get_deployment_with_container(&user, &deployment_id.id)
+                        .get_deployment_with_container_state(&user, &deployment_id.id)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(res))
@@ -63,7 +63,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Query(query): Query<Document>| async move {
                     let deployments = state
-                        .list_deployments_with_container_info(&user, query)
+                        .list_deployments_with_container_state(&user, query)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(deployments))
@@ -242,31 +242,37 @@ pub fn router() -> Router {
 }
 
 impl State {
-    async fn get_deployment_with_container(
+    async fn get_deployment_with_container_state(
         &self,
         user: &RequestUser,
         id: &str,
-    ) -> anyhow::Result<DeploymentWithContainer> {
+    ) -> anyhow::Result<DeploymentWithContainerState> {
         let deployment = self
             .get_deployment_check_permissions(id, user, PermissionLevel::Read)
             .await?;
         let server = self.db.get_server(&deployment.server_id).await?;
-        let container = match self.periphery.container_list(&server).await {
-            Ok(containers) => containers.into_iter().find(|c| c.name == deployment.name),
-            Err(_) => None,
+        let (state, container) = match self.periphery.container_list(&server).await {
+            Ok(containers) => {
+                match containers.into_iter().find(|c| c.name == deployment.name) {
+                    Some(container) => (container.state, Some(container)),
+                    None => (DockerContainerState::NotDeployed, None)
+                }
+            },
+            Err(_) => (DockerContainerState::Unknown, None),
         };
-        Ok(DeploymentWithContainer {
+        Ok(DeploymentWithContainerState {
             deployment,
+            state,
             container,
         })
     }
 
-    async fn list_deployments_with_container_info(
+    async fn list_deployments_with_container_state(
         &self,
         user: &RequestUser,
         query: impl Into<Option<Document>>,
-    ) -> anyhow::Result<Vec<DeploymentWithContainer>> {
-        let mut deployments: Vec<Deployment> = self
+    ) -> anyhow::Result<Vec<DeploymentWithContainerState>> {
+        let deployments: Vec<Deployment> = self
             .db
             .deployments
             .get_some(query, None)
@@ -297,23 +303,29 @@ impl State {
             .into_iter()
             .map(|(container, server_id)| (server_id, container.ok()))
             .collect::<HashMap<_, _>>();
-        deployments.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
-        let res = deployments
+        let mut res = deployments
             .into_iter()
             .map(|deployment| {
-                let container = match containers.get(&deployment.server_id).unwrap() {
-                    Some(container) => container
+                let (state, container) = match containers.get(&deployment.server_id).unwrap() {
+                    Some(container) => {
+                        match container
                         .iter()
                         .find(|c| c.name == deployment.name)
-                        .map(|c| c.to_owned()),
-                    None => None,
+                        .map(|c| c.to_owned()) {
+                            Some(container) => (container.state, Some(container)),
+                            None => (DockerContainerState::NotDeployed, None),
+                        }
+                    },
+                    None => (DockerContainerState::Unknown, None),
                 };
-                DeploymentWithContainer {
+                DeploymentWithContainerState {
                     container,
                     deployment,
+                    state,
                 }
             })
-            .collect();
+            .collect::<Vec<DeploymentWithContainerState>>();
+        res.sort_by(|a, b| a.deployment.name.to_lowercase().cmp(&b.deployment.name.to_lowercase()));
         Ok(res)
     }
 

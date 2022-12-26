@@ -55,8 +55,9 @@ export interface Deployment {
 	updated_at?: string;
 }
 
-export interface DeploymentWithContainer {
+export interface DeploymentWithContainerState {
 	deployment: Deployment;
+	state: DockerContainerState;
 	container?: BasicContainerInfo;
 }
 
@@ -249,6 +250,8 @@ export interface ApiSecret {
 }
 
 export enum DockerContainerState {
+	Unknown = "unknown",
+	NotDeployed = "not_deployed",
 	Created = "created",
 	Restarting = "restarting",
 	Running = "running",

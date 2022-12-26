@@ -72,8 +72,9 @@ pub struct Deployment {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct DeploymentWithContainer {
+pub struct DeploymentWithContainerState {
     pub deployment: Deployment,
+    pub state: DockerContainerState,
     pub container: Option<BasicContainerInfo>,
 }
 
@@ -162,6 +163,8 @@ pub struct DockerContainerStats {
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 pub enum DockerContainerState {
+    Unknown,
+    NotDeployed,
     Created,
     Restarting,
     Running,
@@ -169,6 +172,12 @@ pub enum DockerContainerState {
     Paused,
     Exited,
     Dead,
+}
+
+impl Default for DockerContainerState {
+    fn default() -> Self {
+        Self::Unknown
+    }
 }
 
 #[typeshare]

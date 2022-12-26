@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use monitor_client::{
     types::{
-        Build, Command, Conversion, Deployment, DeploymentWithContainer, DockerBuildArgs, Server,
+        Build, Command, Conversion, Deployment, DeploymentWithContainerState, DockerBuildArgs, Server,
         SystemStats, Update,
     },
     MonitorClient,
@@ -56,7 +56,7 @@ pub async fn get_server_stats(monitor: &MonitorClient) -> anyhow::Result<SystemS
 
 pub async fn deploy_mongo(
     monitor: &MonitorClient,
-) -> anyhow::Result<(Update, DeploymentWithContainer)> {
+) -> anyhow::Result<(Update, DeploymentWithContainerState)> {
     let servers = monitor
         .list_servers(None)
         .await

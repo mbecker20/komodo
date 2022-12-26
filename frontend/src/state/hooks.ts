@@ -54,7 +54,7 @@ export function useDeployments() {
   );
   const state = (id: string) => {
     const deployment = deployments.get(id)!;
-    return deployment.container?.state;
+    return deployment.state;
   };
   const status = (id: string) => {
     const deployment = deployments.get(id)!;
