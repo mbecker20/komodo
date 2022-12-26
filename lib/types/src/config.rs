@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
-use async_timing_util::Timelength;
 use serde::{Deserialize, Serialize};
+
+use crate::Timelength;
 
 pub type GithubUsername = String;
 pub type GithubToken = String;

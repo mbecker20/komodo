@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use async_timing_util::Timelength;
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
 use diff::Diff;
@@ -8,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{diff::*, PermissionsMap};
+use crate::{diff::*, PermissionsMap, Timelength};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Diff, Builder)]

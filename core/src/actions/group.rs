@@ -1,7 +1,10 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::to_monitor_name;
-use types::{traits::Permissioned, Group, PermissionLevel, monitor_timestamp, Update, UpdateTarget, Operation, Log, UpdateStatus};
+use types::{
+    monitor_timestamp, traits::Permissioned, Group, Log, Operation, PermissionLevel, Update,
+    UpdateStatus, UpdateTarget,
+};
 
 use crate::{auth::RequestUser, state::State};
 
@@ -65,11 +68,7 @@ impl State {
         Ok(group)
     }
 
-    pub async fn delete_group(
-        &self,
-        id: &str,
-        user: &RequestUser,
-    ) -> anyhow::Result<Group> {
+    pub async fn delete_group(&self, id: &str, user: &RequestUser) -> anyhow::Result<Group> {
         let group = self
             .get_group_check_permissions(id, user, PermissionLevel::Update)
             .await?;
@@ -114,10 +113,7 @@ impl State {
 
         self.db
             .groups
-            .update_one(
-                &new_group.id,
-                mungos::Update::Regular(new_group.clone()),
-            )
+            .update_one(&new_group.id, mungos::Update::Regular(new_group.clone()))
             .await
             .context("failed at update one group")?;
 

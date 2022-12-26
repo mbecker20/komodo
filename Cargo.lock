@@ -1407,7 +1407,6 @@ name = "monitor_types"
 version = "0.1.1"
 dependencies = [
  "anyhow",
- "async_timing_util",
  "bollard",
  "bson",
  "chrono",

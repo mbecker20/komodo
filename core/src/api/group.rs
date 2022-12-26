@@ -6,7 +6,7 @@ use axum::{
 };
 use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
-use types::{traits::Permissioned, PermissionLevel, Group};
+use types::{traits::Permissioned, Group, PermissionLevel};
 use typeshare::typeshare;
 
 use crate::{
@@ -35,11 +35,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(group_id): Path<GroupId>| async move {
                     let group = state
-                        .get_group_check_permissions(
-                            &group_id.id,
-                            &user,
-                            PermissionLevel::Read,
-                        )
+                        .get_group_check_permissions(&group_id.id, &user, PermissionLevel::Read)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(group))

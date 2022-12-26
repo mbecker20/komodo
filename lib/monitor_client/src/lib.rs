@@ -9,12 +9,12 @@ use serde_json::json;
 
 mod build;
 mod deployment;
+mod group;
 mod permissions;
 mod procedure;
 mod secret;
 mod server;
 mod update;
-mod group;
 
 #[derive(Clone)]
 pub struct MonitorClient {

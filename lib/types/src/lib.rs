@@ -172,6 +172,73 @@ pub enum PermissionsTarget {
     Procedure,
 }
 
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+pub enum Timelength {
+    #[serde(rename = "1-sec")]
+    #[strum(serialize = "1-sec")]
+    OneSecond,
+    #[serde(rename = "5-sec")]
+    #[strum(serialize = "5-sec")]
+    FiveSeconds,
+    #[serde(rename = "10-sec")]
+    #[strum(serialize = "10-sec")]
+    TenSeconds,
+    #[serde(rename = "30-sec")]
+    #[strum(serialize = "30-sec")]
+    ThirtySeconds,
+    #[serde(rename = "1-min")]
+    #[strum(serialize = "1-min")]
+    OneMinute,
+    #[serde(rename = "2-min")]
+    #[strum(serialize = "2-min")]
+    TwoMinutes,
+    #[serde(rename = "5-min")]
+    #[strum(serialize = "5-min")]
+    FiveMinutes,
+    #[serde(rename = "10-min")]
+    #[strum(serialize = "10-min")]
+    TenMinutes,
+    #[serde(rename = "15-min")]
+    #[strum(serialize = "15-min")]
+    FifteenMinutes,
+    #[serde(rename = "30-min")]
+    #[strum(serialize = "30-min")]
+    ThirtyMinutes,
+    #[serde(rename = "1-hr")]
+    #[strum(serialize = "1-hr")]
+    OneHour,
+    #[serde(rename = "2-hr")]
+    #[strum(serialize = "2-hr")]
+    TwoHours,
+    #[serde(rename = "6-hr")]
+    #[strum(serialize = "6-hr")]
+    SixHours,
+    #[serde(rename = "8-hr")]
+    #[strum(serialize = "8-hr")]
+    EightHours,
+    #[serde(rename = "12-hr")]
+    #[strum(serialize = "12-hr")]
+    TwelveHours,
+    #[serde(rename = "1-day")]
+    #[strum(serialize = "1-day")]
+    OneDay,
+    #[serde(rename = "3-day")]
+    #[strum(serialize = "3-day")]
+    ThreeDay,
+    #[serde(rename = "1-wk")]
+    #[strum(serialize = "1-wk")]
+    OneWeek,
+    #[serde(rename = "2-wk")]
+    #[strum(serialize = "2-wk")]
+    TwoWeeks,
+    #[serde(rename = "30-day")]
+    #[strum(serialize = "30-day")]
+    ThirtyDays,
+}
+
 pub fn monitor_timestamp() -> String {
     Utc::now().to_rfc3339_opts(SecondsFormat::Millis, false)
 }

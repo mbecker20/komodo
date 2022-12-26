@@ -2,7 +2,7 @@ import { client, pushNotification, WS_URL } from "..";
 import { State } from "./StateProvider";
 import { createSignal } from "solid-js";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import { Operation, Update, UpdateStatus, User } from "../types";
+import { Operation, Update, UpdateStatus } from "../types";
 
 function connectToWs(state: State) {
   const ws = new ReconnectingWebSocket(WS_URL);

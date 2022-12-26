@@ -1,9 +1,9 @@
 use std::sync::{Arc, RwLock};
 
-use async_timing_util::{wait_until_timelength, Timelength};
+use async_timing_util::wait_until_timelength;
 use axum::{routing::get, Extension, Json, Router};
 use sysinfo::{CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt};
-use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats};
+use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats, Timelength};
 
 pub fn router(stats_polling_rate: Timelength) -> Router {
     Router::new()
@@ -35,6 +35,7 @@ impl StatsClient {
         };
         let client = Arc::new(RwLock::new(client));
         let clone = client.clone();
+        let polling_rate = polling_rate.to_string().parse().unwrap();
         tokio::spawn(async move {
             loop {
                 wait_until_timelength(polling_rate, 0).await;

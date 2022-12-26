@@ -316,6 +316,29 @@ export enum PermissionsTarget {
 	Procedure = "procedure",
 }
 
+export enum Timelength {
+	OneSecond = "1-sec",
+	FiveSeconds = "5-sec",
+	TenSeconds = "10-sec",
+	ThirtySeconds = "30-sec",
+	OneMinute = "1-min",
+	TwoMinutes = "2-min",
+	FiveMinutes = "5-min",
+	TenMinutes = "10-min",
+	FifteenMinutes = "15-min",
+	ThirtyMinutes = "30-min",
+	OneHour = "1-hr",
+	TwoHours = "2-hr",
+	SixHours = "6-hr",
+	EightHours = "8-hr",
+	TwelveHours = "12-hr",
+	OneDay = "1-day",
+	ThreeDay = "3-day",
+	OneWeek = "1-wk",
+	TwoWeeks = "2-wk",
+	ThirtyDays = "30-day",
+}
+
 export enum ProcedureOperation {
 	None = "none",
 	PruneImagesServer = "prune_images_server",

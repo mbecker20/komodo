@@ -39,7 +39,7 @@ impl JwtClient {
             .expect("failed at taking HmacSha256 of jwt secret");
         let client = JwtClient {
             key,
-            valid_for_ms: get_timelength_in_ms(config.jwt_valid_for),
+            valid_for_ms: get_timelength_in_ms(config.jwt_valid_for.to_string().parse().unwrap()),
         };
         Extension(Arc::new(client))
     }

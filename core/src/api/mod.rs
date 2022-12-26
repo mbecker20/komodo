@@ -6,12 +6,12 @@ use crate::auth::{auth_request, JwtExtension};
 
 pub mod build;
 pub mod deployment;
+pub mod group;
 pub mod permissions;
 pub mod procedure;
 pub mod secret;
 pub mod server;
 pub mod update;
-pub mod group;
 
 pub fn router() -> Router {
     Router::new()
