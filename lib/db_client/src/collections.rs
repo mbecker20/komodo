@@ -1,6 +1,6 @@
 use anyhow::Context;
 use mungos::{Collection, Mungos};
-use types::{Build, Deployment, Procedure, Server, Update, User};
+use types::{Build, Deployment, Group, Procedure, Server, Update, User};
 
 pub async fn users_collection(mungos: &Mungos, db_name: &str) -> anyhow::Result<Collection<User>> {
     let coll = mungos.collection(db_name, "users");
@@ -65,8 +65,19 @@ pub async fn procedures_collection(
     db_name: &str,
 ) -> anyhow::Result<Collection<Procedure>> {
     let coll = mungos.collection(db_name, "procedures");
-    coll.create_index("name")
+    coll.create_unique_index("name")
         .await
         .context("failed at creating entity_id index")?;
+    Ok(coll)
+}
+
+pub async fn groups_collection(
+    mungos: &Mungos,
+    db_name: &str,
+) -> anyhow::Result<Collection<Group>> {
+    let coll = mungos.collection(db_name, "groups");
+    coll.create_unique_index("name")
+        .await
+        .context("failed at creating name index")?;
     Ok(coll)
 }

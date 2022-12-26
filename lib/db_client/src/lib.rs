@@ -2,11 +2,13 @@ use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use collections::{
-    builds_collection, deployments_collection, procedures_collection, servers_collection,
-    updates_collection, users_collection,
+    builds_collection, deployments_collection, groups_collection, procedures_collection,
+    servers_collection, updates_collection, users_collection,
 };
 use mungos::{Collection, Mungos};
-use types::{Build, Deployment, MongoConfig, PermissionLevel, Procedure, Server, Update, User};
+use types::{
+    Build, Deployment, Group, MongoConfig, PermissionLevel, Procedure, Server, Update, User,
+};
 
 mod collections;
 
@@ -16,6 +18,7 @@ pub struct DbClient {
     pub deployments: Collection<Deployment>,
     pub builds: Collection<Build>,
     pub procedures: Collection<Procedure>,
+    pub groups: Collection<Group>,
     pub updates: Collection<Update>,
 }
 
@@ -44,6 +47,9 @@ impl DbClient {
             procedures: procedures_collection(&mungos, db_name)
                 .await
                 .expect("failed to make procedures collection"),
+            groups: groups_collection(&mungos, db_name)
+                .await
+                .expect("failed to make groups collection"),
         }
     }
 
@@ -150,6 +156,30 @@ impl DbClient {
     ) -> anyhow::Result<PermissionLevel> {
         let permissions = *self
             .get_procedure(procedure_id)
+            .await?
+            .permissions
+            .get(user_id)
+            .unwrap_or_default();
+        Ok(permissions)
+    }
+
+    pub async fn get_group(&self, group_id: &str) -> anyhow::Result<Group> {
+        let group = self
+            .groups
+            .find_one_by_id(group_id)
+            .await
+            .context(format!("failed at mongo query for group {group_id}"))?
+            .ok_or(anyhow!("group at {group_id} doesn't exist"))?;
+        Ok(group)
+    }
+
+    pub async fn get_user_permission_on_group(
+        &self,
+        user_id: &str,
+        group_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let permissions = *self
+            .get_group(group_id)
             .await?
             .permissions
             .get(user_id)

@@ -5,6 +5,7 @@ use crate::state::State;
 
 mod build;
 mod deployment;
+mod group;
 mod procedure;
 mod server;
 
