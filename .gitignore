@@ -1,4 +1,5 @@
 target
+/frontend/build
 node_modules
 dist
 .env
