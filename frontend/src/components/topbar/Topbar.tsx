@@ -22,7 +22,7 @@ const mobileStyle: JSX.CSSProperties = {
 const Topbar: Component = () => {
   return (
     <Grid
-      class={combineClasses(s.GridTopbar, "shadow")}
+      class={combineClasses(s.Topbar, "shadow")}
       placeItems="center"
       style={{ height: inPx(TOPBAR_HEIGHT) }}
     >
@@ -30,7 +30,7 @@ const Topbar: Component = () => {
       {/* <SearchProvider>
         <Search />
       </SearchProvider> */}
-	  <div>search</div>
+	    <Grid placeItems="center">search</Grid>
       <RightSide />
     </Grid>
   );

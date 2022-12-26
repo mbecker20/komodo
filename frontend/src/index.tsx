@@ -35,11 +35,11 @@ render(
     <DimensionProvider>
       <UserProvider>
         <LoginGuard>
-          <AppStateProvider>
-            <Router>
+          <Router>
+            <AppStateProvider>
               <App />
-            </Router>
-          </AppStateProvider>
+            </AppStateProvider>
+          </Router>
         </LoginGuard>
       </UserProvider>
     </DimensionProvider>,

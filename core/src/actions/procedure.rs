@@ -119,7 +119,36 @@ impl State {
         new_procedure.created_at = current_procedure.created_at.clone();
         new_procedure.updated_at = start_ts.clone();
 
-        // check to make sure no stages have been added that user does not have access to
+        for ProcedureStage {
+            operation,
+            target_id,
+        } in &new_procedure.stages
+        {
+            match operation {
+                BuildBuild | RecloneBuild => {
+                    self.get_build_check_permissions(&target_id, user, PermissionLevel::Execute)
+                        .await?;
+                }
+                DeployContainer | StartContainer | StopContainer | RemoveContainer
+                | PullDeployment | RecloneDeployment => {
+                    self.get_deployment_check_permissions(
+                        target_id,
+                        user,
+                        PermissionLevel::Execute,
+                    )
+                    .await?;
+                }
+                PruneImagesServer | PruneContainersServer | PruneNetworksServer => {
+                    self.get_server_check_permissions(target_id, user, PermissionLevel::Execute)
+                        .await?;
+                }
+                RunProcedure => {
+                    self.get_procedure_check_permissions(target_id, user, PermissionLevel::Execute)
+                        .await?;
+                }
+                None => {}
+            }
+        }
 
         self.db
             .procedures
