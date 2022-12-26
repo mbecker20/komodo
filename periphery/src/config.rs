@@ -40,11 +40,15 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension) {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse env");
     let args = Args::parse();
-    let config_path = args.config_path.as_ref().unwrap_or(&env.config_path);
+    let config_path = args
+        .config_path
+        .as_ref()
+        .unwrap_or(&env.config_path)
+        .replace("~", &std::env::var("HOME").unwrap());
     let config =
-        parse_config_file::<PeripheryConfig>(config_path).expect("failed to parse config file");
+        parse_config_file::<PeripheryConfig>(&config_path).expect("failed to parse config file");
     let _ = std::fs::create_dir(&config.repo_dir);
-    print_startup_log(config_path, &args, &config);
+    print_startup_log(&config_path, &args, &config);
     (args, config.port, Extension(Arc::new(config)))
 }
 

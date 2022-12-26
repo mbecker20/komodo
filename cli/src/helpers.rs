@@ -249,7 +249,7 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     let stats_polling_rate = sub_matches
         .get_one::<String>("stats_polling_rate")
         .map(|p| p.as_str())
-        .unwrap_or("1-sec")
+        .unwrap_or("5-sec")
         .parse::<Timelength>()
         .expect("invalid timelength");
 

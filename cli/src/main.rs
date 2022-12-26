@@ -119,7 +119,7 @@ fn cli() -> Command {
                                 .required(false)
                         )
                         .arg(
-                            arg!(--stats_polling_rate <INTERVAL> "sets stats polling rate to control granularity of system stats returned. default is 1-sec. options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min")
+                            arg!(--stats_polling_rate <INTERVAL> "sets stats polling rate to control granularity of system stats returned. default is 5-sec. options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min")
                                 .required(false)
                         )
                 )

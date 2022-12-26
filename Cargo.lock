@@ -1379,6 +1379,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "monitor_periphery"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async_timing_util",
+ "axum",
+ "bollard",
+ "clap",
+ "daemonize",
+ "dotenv",
+ "envy",
+ "helpers",
+ "monitor_types",
+ "run_command",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sysinfo",
+ "tokio",
+ "toml",
+ "tower",
+]
+
+[[package]]
 name = "monitor_types"
 version = "0.1.1"
 dependencies = [
@@ -1656,30 +1680,6 @@ name = "percent-encoding"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
-
-[[package]]
-name = "periphery"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async_timing_util",
- "axum",
- "bollard",
- "clap",
- "daemonize",
- "dotenv",
- "envy",
- "helpers",
- "monitor_types",
- "run_command",
- "serde",
- "serde_derive",
- "serde_json",
- "sysinfo",
- "tokio",
- "toml",
- "tower",
-]
 
 [[package]]
 name = "periphery_client"
