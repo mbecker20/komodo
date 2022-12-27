@@ -7,9 +7,10 @@ use axum::{
     middleware::{self, Next},
     response::Response,
     routing::get,
-    Router,
+    Router, RequestExt, Json,
 };
 use helpers::docker::DockerClient;
+use serde_json::Value;
 use types::{monitor_timestamp, PeripheryConfig};
 
 use crate::PeripheryConfigExtension;
@@ -59,12 +60,13 @@ async fn guard_request(
     if config.allowed_ips.contains(&ip) {
         Ok(next.run(req).await)
     } else {
+        let method = req.method().to_owned();
+        let uri = req.uri().to_owned();
+        let body = req.extract::<Json<Value>, _>().await.ok().map(|Json(body)| body);
         eprintln!(
-            "{} | unauthorized request from {ip} | method: {} | uri: {} | body: {:?}",
+            "{} | unauthorized request from {ip} | method: {method} | uri: {uri} | body: {:?}",
             monitor_timestamp(),
-            req.method(),
-            req.uri(),
-            req.body()
+            body
         );
         Err((
             StatusCode::UNAUTHORIZED,
