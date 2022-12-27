@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Context};
 use monitor_client::{
     types::{
-        Build, Command, Conversion, Deployment, DeploymentWithContainerState, DockerBuildArgs, Server,
-        SystemStats, Update,
+        Build, Command, Conversion, Deployment, DeploymentWithContainerState, DockerBuildArgs,
+        Server, SystemStats, Update,
     },
     MonitorClient,
 };

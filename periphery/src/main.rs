@@ -1,6 +1,6 @@
 // #![allow(unused)]
 
-use std::{env, fs::File, sync::Arc};
+use std::{env, fs::File, net::SocketAddr, sync::Arc};
 
 use ::helpers::get_socket_addr;
 use axum::Extension;
@@ -33,10 +33,10 @@ fn main() {
 
 #[tokio::main]
 async fn run_periphery_server(port: u16, config: PeripheryConfigExtension) {
-    let app = api::router(&config).layer(config);
+    let app = api::router(config);
 
     axum::Server::bind(&get_socket_addr(port))
-        .serve(app.into_make_service())
+        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
         .await
         .expect("monitor periphery axum server crashed");
 }

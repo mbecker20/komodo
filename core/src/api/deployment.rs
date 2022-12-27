@@ -11,7 +11,7 @@ use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
 use types::{
     traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainerState,
-    PermissionLevel, Server, DockerContainerState,
+    DockerContainerState, PermissionLevel, Server,
 };
 use typeshare::typeshare;
 
@@ -252,11 +252,9 @@ impl State {
             .await?;
         let server = self.db.get_server(&deployment.server_id).await?;
         let (state, container) = match self.periphery.container_list(&server).await {
-            Ok(containers) => {
-                match containers.into_iter().find(|c| c.name == deployment.name) {
-                    Some(container) => (container.state, Some(container)),
-                    None => (DockerContainerState::NotDeployed, None)
-                }
+            Ok(containers) => match containers.into_iter().find(|c| c.name == deployment.name) {
+                Some(container) => (container.state, Some(container)),
+                None => (DockerContainerState::NotDeployed, None),
             },
             Err(_) => (DockerContainerState::Unknown, None),
         };
@@ -309,13 +307,14 @@ impl State {
                 let (state, container) = match containers.get(&deployment.server_id).unwrap() {
                     Some(container) => {
                         match container
-                        .iter()
-                        .find(|c| c.name == deployment.name)
-                        .map(|c| c.to_owned()) {
+                            .iter()
+                            .find(|c| c.name == deployment.name)
+                            .map(|c| c.to_owned())
+                        {
                             Some(container) => (container.state, Some(container)),
                             None => (DockerContainerState::NotDeployed, None),
                         }
-                    },
+                    }
                     None => (DockerContainerState::Unknown, None),
                 };
                 DeploymentWithContainerState {
@@ -325,7 +324,12 @@ impl State {
                 }
             })
             .collect::<Vec<DeploymentWithContainerState>>();
-        res.sort_by(|a, b| a.deployment.name.to_lowercase().cmp(&b.deployment.name.to_lowercase()));
+        res.sort_by(|a, b| {
+            a.deployment
+                .name
+                .to_lowercase()
+                .cmp(&b.deployment.name.to_lowercase())
+        });
         Ok(res)
     }
 

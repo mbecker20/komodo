@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, net::IpAddr};
 
 use serde::{Deserialize, Serialize};
 
@@ -75,6 +75,8 @@ pub struct PeripheryConfig {
     pub repo_dir: String,
     #[serde(default = "default_stats_refresh_interval")]
     pub stats_polling_rate: Timelength,
+    #[serde(default)]
+    pub allowed_core_ip: Vec<IpAddr>,
     #[serde(default)]
     pub secrets: SecretsMap,
     #[serde(default)]
