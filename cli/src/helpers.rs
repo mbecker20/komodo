@@ -1,6 +1,7 @@
 use std::{
     fs::{self, File},
     io::{Read, Write},
+    net::IpAddr,
     path::PathBuf,
     str::FromStr,
 };
@@ -253,9 +254,21 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
         .parse::<Timelength>()
         .expect("invalid timelength");
 
+    let allowed_ips = sub_matches
+        .get_one::<String>("allowed_ips")
+        .map(|p| p.as_str())
+        .unwrap_or("")
+        .split(",")
+        .map(|ip| {
+            ip.parse()
+                .expect("given allowed ip address is not valid ip")
+        })
+        .collect::<Vec<IpAddr>>();
+
     let config = PeripheryConfig {
         port,
         stats_polling_rate,
+        allowed_ips,
         repo_dir: "/repos".to_string(),
         secrets: Default::default(),
         github_accounts: Default::default(),

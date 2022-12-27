@@ -10,7 +10,7 @@ use axum::{
     Router,
 };
 use helpers::docker::DockerClient;
-use types::PeripheryConfig;
+use types::{monitor_timestamp, PeripheryConfig};
 
 use crate::PeripheryConfigExtension;
 
@@ -44,21 +44,31 @@ async fn guard_request(
     req: Request<Body>,
     next: Next<Body>,
 ) -> Result<Response, (StatusCode, String)> {
+    let config = req.extensions().get::<Arc<PeripheryConfig>>().ok_or((
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "could not get periphery config".to_string(),
+    ))?;
+    if config.allowed_ips.is_empty() {
+        return Ok(next.run(req).await);
+    }
     let ConnectInfo(socket_addr) = req.extensions().get::<ConnectInfo<SocketAddr>>().ok_or((
         StatusCode::UNAUTHORIZED,
         "could not get socket addr of request".to_string(),
     ))?;
     let ip = socket_addr.ip();
-    let config = req.extensions().get::<Arc<PeripheryConfig>>().ok_or((
-        StatusCode::INTERNAL_SERVER_ERROR,
-        "could not get periphery config".to_string(),
-    ))?;
-    if config.allowed_core_ip.contains(&ip) {
+    if config.allowed_ips.contains(&ip) {
         Ok(next.run(req).await)
     } else {
+        eprintln!(
+            "{} | unauthorized request from {ip} | method: {} | uri: {} | body: {:?}",
+            monitor_timestamp(),
+            req.method(),
+            req.uri(),
+            req.body()
+        );
         Err((
             StatusCode::UNAUTHORIZED,
-            "requesting ip not allowed".to_string(),
+            format!("requesting ip {ip} not allowed"),
         ))
     }
 }

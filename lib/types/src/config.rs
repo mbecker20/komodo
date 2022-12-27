@@ -76,7 +76,7 @@ pub struct PeripheryConfig {
     #[serde(default = "default_stats_refresh_interval")]
     pub stats_polling_rate: Timelength,
     #[serde(default)]
-    pub allowed_core_ip: Vec<IpAddr>,
+    pub allowed_ips: Vec<IpAddr>,
     #[serde(default)]
     pub secrets: SecretsMap,
     #[serde(default)]

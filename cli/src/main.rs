@@ -20,7 +20,7 @@ fn cli() -> Command {
                 .arg_required_else_help(true)
                 .allow_external_subcommands(true)
                 .subcommand(
-                    Command::new("config_gen")
+                    Command::new("gen_config")
                         .about("generate a core config file")
                         .arg(
                             arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/core.config.toml'")
@@ -108,7 +108,7 @@ fn cli() -> Command {
                 .arg_required_else_help(true)
                 .allow_external_subcommands(true)
                 .subcommand(
-                    Command::new("config_gen")
+                    Command::new("gen_config")
                         .about("generate a periphery config file")
                         .arg(
                             arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/periphery.config.toml'")
@@ -121,6 +121,9 @@ fn cli() -> Command {
                         .arg(
                             arg!(--stats_polling_rate <INTERVAL> "sets stats polling rate to control granularity of system stats returned. default is 5-sec. options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min")
                                 .required(false)
+                        )
+                        .arg(
+                            arg!(--allowed_ips <IPS> "used to only accept requests from known ips. give ips as comma seperated list, like '--allowed_ips 127.0.0.1,10.20.30.43'. default is empty, which will not block any ip.")
                         )
                 )
                 .subcommand(
@@ -154,25 +157,25 @@ fn main() {
 
     match matches.subcommand() {
         Some(("core", sub_matches)) => {
-            let core_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor_cli core <config_gen, start_mongo, start> <flags>' ❌\n");
+            let core_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor_cli core <gen_config, start_mongo, start> <flags>' ❌\n");
             match core_command {
-                ("config_gen", sub_matches) => gen_core_config(sub_matches),
+                ("gen_config", sub_matches) => gen_core_config(sub_matches),
                 ("start_mongo", sub_matches) => start_mongo(sub_matches),
                 ("start", sub_matches) => start_core(sub_matches),
                 _ => {
-                    println!("\n❌ invalid call, should be 'monitor_cli core <config_gen, start_mongo, start> <flags>' ❌\n")
+                    println!("\n❌ invalid call, should be 'monitor_cli core <gen_config, start_mongo, start> <flags>' ❌\n")
                 }
             }
         }
         Some(("periphery", sub_matches)) => {
             let periphery_command = sub_matches.subcommand().expect(
-                "\n❌ invalid call, should be 'monitor_cli periphery <config_gen, start> <flags>' ❌\n",
+                "\n❌ invalid call, should be 'monitor_cli periphery <gen_config, start> <flags>' ❌\n",
             );
             match periphery_command {
-                ("config_gen", sub_matches) => gen_periphery_config(sub_matches),
+                ("gen_config", sub_matches) => gen_periphery_config(sub_matches),
                 ("start", sub_matches) => start_periphery(sub_matches),
                 _ => {
-                    println!("\n❌ invalid call, should be 'monitor_cli periphery <config_gen, start> <flags>' ❌\n")
+                    println!("\n❌ invalid call, should be 'monitor_cli periphery <gen_config, start> <flags>' ❌\n")
                 }
             }
         }
