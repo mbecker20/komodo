@@ -1,5 +1,5 @@
 import { Component, JSX } from "solid-js";
-import { combineClasses } from "../../../util/helpers";
+import { combineClasses, filterOutFromObj } from "../../../util/helpers";
 import s from "./Layout.module.css";
 
 const Flex: Component<
@@ -28,6 +28,14 @@ const Flex: Component<
 > = (p) => {
   return (
     <div
+      {...filterOutFromObj(p, [
+        "gap",
+        "alignItems",
+        "justifyContent",
+        "placeItems",
+        "style",
+        "class",
+      ])}
       class={combineClasses(s.Flex, p.class)}
       style={{
         gap: p.gap,
@@ -36,7 +44,6 @@ const Flex: Component<
         "place-items": p.placeItems,
         ...(p.style as any),
       }}
-      {...p}
     >
       {p.children}
     </div>

@@ -2,7 +2,7 @@ import { client, pushNotification, WS_URL } from "..";
 import { State } from "./StateProvider";
 import { createSignal } from "solid-js";
 import ReconnectingWebSocket from "reconnecting-websocket";
-import { Operation, Update, UpdateStatus } from "../types";
+import { Operation, Update, UpdateStatus, UpdateTarget } from "../types";
 
 function connectToWs(state: State) {
   const ws = new ReconnectingWebSocket(WS_URL);
@@ -17,7 +17,7 @@ function connectToWs(state: State) {
 
   ws.addEventListener("message", ({ data }) => {
     if (data === "LOGGED_IN") {
-      // console.log("logged in to ws");
+      console.log("logged in to ws");
       return;
     }
     const update = JSON.parse(data) as Update;
@@ -40,10 +40,7 @@ function connectToWs(state: State) {
   });
 
   return {
-    subscribe: (
-      operations: string[],
-      callback: (update: Update) => void
-    ) => {
+    subscribe: (operations: string[], callback: (update: Update) => void) => {
       const listener = ({ data }: { data: string }) => {
         if (data === "PONG") {
           return;
@@ -67,14 +64,27 @@ async function handleMessage(
   { deployments, builds, servers, updates }: State,
   update: Update
 ) {
-  updates.add(update);
+  updates.addOrUpdate(update);
+  let name = "";
+  if (update.target.type === "Deployment") {
+    const deployment = deployments.get(update.target.id);
+    name = deployment ? deployment.deployment.name : "";
+  } else if (update.target.type === "Build") {
+    const build = builds.get(update.target.id);
+    name = build ? build.name : "";
+  } else if (update.target.type === "Server") {
+    const server = servers.get(update.target.id);
+    name = server ? server.server.name : "";
+  }
   pushNotification(
     update.status === UpdateStatus.InProgress
       ? "ok"
       : update.success
       ? "good"
       : "bad",
-    `${update.operation} (${update.status})`
+    `${update.operation.replaceAll("_", " ")} ${name ? `on ${name} ` : ""}(${
+      update.status
+    })`
   );
 
   // deployment

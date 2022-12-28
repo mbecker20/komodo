@@ -1,6 +1,8 @@
+import { useNavigate } from "@solidjs/router";
 import { Component, createSignal, JSX, Show } from "solid-js";
 import { TOPBAR_HEIGHT } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
+import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
 import Circle from "../shared/Circle";
@@ -37,17 +39,17 @@ const Topbar: Component = () => {
 };
 
 const LeftSide: Component = () => {
+  const { ws } = useAppState();
+  const navigate = useNavigate();
   return (
     <Flex
       alignItems="center"
       style={{ padding: "0rem 0.5rem", "place-self": "center start" }}
     >
-      <button class="grey" onClick={() => {
-		// selected.set("", "home");
-	  }}>
+      <button class="grey" onClick={() => navigate("/")}>
         <Icon type="home" width="1.15rem" />
       </button>
-      {/* <HoverMenu
+      <HoverMenu
         target={
           <Circle
             size={1}
@@ -57,7 +59,7 @@ const LeftSide: Component = () => {
         }
         content={ws.isOpen() ? "connected" : "disconnected"}
         position="right center"
-      /> */}
+      />
     </Flex>
   );
 };
@@ -73,24 +75,6 @@ const RightSide: Component = () => {
       alignItems="center"
       style={{ padding: "0rem 0.5rem", "place-self": "center end" }}
     >
-      {/* <Menu
-        show={menu() === "updates"}
-        close={close}
-        menuStyle={isMobile() ? mobileStyle : undefined}
-        target={
-          <Button
-            class="grey"
-            onClick={() =>
-              menu() === "updates" ? setMenu(undefined) : setMenu("updates")
-            }
-          >
-            <Icon type="notifications" alt="updates" width="1.15rem" />
-          </Button>
-        }
-        content={<Updates />}
-        position="bottom right"
-        backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
-      /> */}
       <Menu
         show={menu() === "account"}
         close={close}

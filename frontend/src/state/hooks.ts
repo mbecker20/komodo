@@ -69,7 +69,7 @@ export function useDeployments() {
 }
 
 export function useUpdates(target?: UpdateTarget) {
-  const updates = useArray(() => client.list_updates(0, target));
+  const updates = useArrayWithId(() => client.list_updates(0, target), ["_id", "$oid"]);
   const [noMore, setNoMore] = createSignal(false);
   const loadMore = async () => {
     const offset = updates.collection()?.length;
@@ -94,15 +94,53 @@ export function useArray<T>(query: () => Promise<T[]>) {
     query().then(set);
   });
   const add = (item: T) => {
-    set((items: any) => (items ? [item, ...items] : [item]));
+    set((items: T[] | undefined) => (items ? [item, ...items] : [item]));
   };
   const addManyToEnd = (items: T[]) => {
-    set((curr: any) => (curr ? [...curr, ...items] : items));
+    set((curr: T[] | undefined) => (curr ? [...curr, ...items] : items));
   };
   const loaded = () => (collection() ? true : false);
   return {
     collection,
     add,
+    addManyToEnd,
+    loaded,
+  };
+}
+
+export function useArrayWithId<T>(query: () => Promise<T[]>, idPath: string[]) {
+  const [collection, set] = createSignal<T[]>();
+  createEffect(() => {
+    query().then(set);
+  });
+  const addOrUpdate = (item: T) => {
+    set((items: T[] | undefined) => {
+      if (items) {
+        const newId = getNestedEntry(item, idPath);
+        const existingIndex = items.findIndex(i => getNestedEntry(i, idPath) === newId);
+        if (existingIndex < 0) {
+          return [item, ...items]
+        } else {
+          return items.map((e, index) => {
+            if (index === existingIndex) {
+              return item
+            } else {
+              return e
+            }
+          });
+        }
+      } else {
+        return [item];
+      }
+    });
+  };
+  const addManyToEnd = (items: T[]) => {
+    set((curr: T[] | undefined) => (curr ? [...curr, ...items] : items));
+  };
+  const loaded = () => (collection() ? true : false);
+  return {
+    collection,
+    addOrUpdate,
     addManyToEnd,
     loaded,
   };

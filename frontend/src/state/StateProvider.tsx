@@ -10,12 +10,16 @@ import {
 } from "./hooks";
 import connectToWs from "./ws";
 import { useUser } from "./UserProvider";
+import { PermissionLevel } from "../types";
 
 export type State = {
   servers: ReturnType<typeof useServers>;
+  getPermissionOnServer: (id: string) => PermissionLevel;
   serverStats: ReturnType<typeof useServerStats>;
   builds: ReturnType<typeof useBuilds>;
+  getPermissionOnBuild: (id: string) => PermissionLevel;
   deployments: ReturnType<typeof useDeployments>;
+  getPermissionOnDeployment: (id: string) => PermissionLevel;
   updates: ReturnType<typeof useUpdates>;
 };
 
@@ -27,13 +31,50 @@ const context = createContext<
 >();
 
 export const AppStateProvider: ParentComponent = (p) => {
-  const { logout } = useUser();
+  const { user, logout } = useUser();
   const navigate = useNavigate();
+  const userId = (user()._id as any).$oid as string;
+  const servers = useServers();
+  const builds = useBuilds();
+  const deployments = useDeployments();
   const state: State = {
-    servers: useServers(),
+    servers,
+    getPermissionOnServer: (id: string) => {
+      const server = servers.get(id)!;
+      const permissions = server.server.permissions![userId] as
+        | PermissionLevel
+        | undefined;
+      if (permissions) {
+        return permissions;
+      } else {
+        return PermissionLevel.None;
+      }
+    },
+    builds,
+    getPermissionOnBuild: (id: string) => {
+      const build = builds.get(id)!;
+      const permissions = build.permissions![userId] as
+        | PermissionLevel
+        | undefined;
+      if (permissions) {
+        return permissions;
+      } else {
+        return PermissionLevel.None;
+      }
+    },
+    deployments,
+    getPermissionOnDeployment: (id: string) => {
+      const deployment = deployments.get(id)!;
+      const permissions = deployment.deployment.permissions![userId] as
+        | PermissionLevel
+        | undefined;
+      if (permissions) {
+        return permissions;
+      } else {
+        return PermissionLevel.None;
+      }
+    },
     serverStats: useServerStats(),
-    builds: useBuilds(),
-    deployments: useDeployments(),
     updates: useUpdates(),
   };
 
