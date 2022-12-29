@@ -19,6 +19,12 @@ const CORE_IMAGE_NAME: &str = "mbecker20/monitor-core";
 const PERIPHERY_IMAGE_NAME: &str = "mbecker20/monitor-periphery";
 
 pub fn gen_core_config(sub_matches: &ArgMatches) {
+    let host = sub_matches
+        .get_one::<String>("host")
+        .map(|p| p.as_str())
+        .unwrap_or("http://localhost:9000")
+        .to_string();
+
     let path = sub_matches
         .get_one::<String>("path")
         .map(|p| p.as_str())
@@ -56,10 +62,12 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         .map(|p| p.to_owned());
 
     let config = CoreConfig {
+        host,
         port,
         jwt_valid_for,
         slack_url,
         github_oauth: Default::default(),
+        google_oauth: Default::default(),
         mongo: MongoConfig {
             uri: mongo_uri,
             db_name: mongo_db_name,

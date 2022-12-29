@@ -111,6 +111,10 @@ fn cli() -> Command {
                     Command::new("gen_config")
                         .about("generate a periphery config file")
                         .arg(
+                            arg!(--host <HOST> "the host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'")
+                                .required(true)
+                        )
+                        .arg(
                             arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/periphery.config.toml'")
                                 .required(false)
                         )

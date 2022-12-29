@@ -6,6 +6,9 @@ use strum_macros::{Display, EnumString};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CoreConfig {
+    // the host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'
+    pub host: String,
+
     // port the core web server runs on
     #[serde(default = "default_core_port")]
     pub port: u16,
@@ -21,6 +24,9 @@ pub struct CoreConfig {
     // github integration
     pub github_webhook_secret: String,
     pub github_oauth: OauthCredentials,
+
+    // google integration
+    pub google_oauth: OauthCredentials,
 
     // mongo config
     pub mongo: MongoConfig,

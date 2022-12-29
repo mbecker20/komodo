@@ -54,3 +54,7 @@ export interface CreateServerBody {
 	address: string;
 }
 
+export interface TokenExchangeBody {
+	token: string;
+}
+

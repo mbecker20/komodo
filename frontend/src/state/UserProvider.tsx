@@ -23,7 +23,7 @@ export type UserState = {
 const UserContext = createContext<UserState>();
 
 export const UserProvider: ParentComponent = (p) => {
-  const [user, { mutate, refetch }] = createResource(() => client.getUser());
+  const [user, { mutate, refetch }] = createResource(() => client.get_user());
   const logout = async () => {
     client.logout();
     mutate(false);

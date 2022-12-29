@@ -16,11 +16,12 @@ mod ws;
 
 #[tokio::main]
 async fn main() {
-    let config = config::load();
+    let (config, spa_router) = config::load();
 
     println!("starting monitor core on port {}...", config.port);
 
     let app = Router::new()
+        .merge(spa_router)
         .nest("/api", api::router())
         .nest("/auth", auth::router(&config))
         .nest("/ws", ws::router())

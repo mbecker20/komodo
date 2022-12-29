@@ -30,20 +30,22 @@ export const client = new Client(URL, token);
 
 export const { Notifications, pushNotification } = makeNotifications();
 
-render(
-  () => [
-    <DimensionProvider>
-      <UserProvider>
-        <LoginGuard>
-          <Router>
-            <AppStateProvider>
-              <App />
-            </AppStateProvider>
-          </Router>
-        </LoginGuard>
-      </UserProvider>
-    </DimensionProvider>,
-    <Notifications />,
-  ],
-  document.getElementById("root") as HTMLElement
-);
+client.initialize().then(() => {
+  render(
+    () => [
+      <DimensionProvider>
+        <UserProvider>
+          <LoginGuard>
+            <Router>
+              <AppStateProvider>
+                <App />
+              </AppStateProvider>
+            </Router>
+          </LoginGuard>
+        </UserProvider>
+      </DimensionProvider>,
+      <Notifications />,
+    ],
+    document.getElementById("root") as HTMLElement
+  );
+});

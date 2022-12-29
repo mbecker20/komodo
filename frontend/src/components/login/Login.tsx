@@ -4,7 +4,7 @@ import Input from "../shared/Input";
 import Grid from "../shared/layout/Grid";
 import { createStore } from "solid-js/store";
 import Flex from "../shared/layout/Flex";
-import { client, pushNotification } from "../..";
+import { client, pushNotification, URL } from "../..";
 import { combineClasses } from "../../util/helpers";
 import Icon from "../shared/Icon";
 import { useUser } from "../../state/UserProvider";
@@ -77,12 +77,12 @@ const Login: Component<{}> = (p) => {
             sign up
           </button>
         </Flex>
-        {/* <button
+        <button
           class={combineClasses(s.LoginItem, "blue")}
-          onClick={() => client.loginGithub()}
+          onClick={() => location.replace(`${URL}/auth/github/login`)}
         >
           log in with github <Icon type="github" />
-        </button> */}
+        </button>
       </Grid>
     </div>
   );

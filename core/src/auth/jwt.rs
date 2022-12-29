@@ -1,8 +1,12 @@
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
 use anyhow::{anyhow, Context};
-use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms};
+use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms, Timelength};
 use axum::{body::Body, http::Request, Extension};
+use axum_oauth2::random_string;
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use mungos::{Deserialize, Serialize};
@@ -13,6 +17,8 @@ use crate::state::State;
 
 pub type JwtExtension = Extension<Arc<JwtClient>>;
 pub type RequestUserExtension = Extension<Arc<RequestUser>>;
+
+type ExchangeTokenMap = Mutex<HashMap<String, (String, u128)>>;
 
 pub struct RequestUser {
     pub id: String,
@@ -27,10 +33,10 @@ pub struct JwtClaims {
     pub exp: u128,
 }
 
-#[derive(Clone)]
 pub struct JwtClient {
     key: Hmac<Sha256>,
     valid_for_ms: u128,
+    exchange_tokens: ExchangeTokenMap,
 }
 
 impl JwtClient {
@@ -40,6 +46,7 @@ impl JwtClient {
         let client = JwtClient {
             key,
             valid_for_ms: get_timelength_in_ms(config.jwt_valid_for.to_string().parse().unwrap()),
+            exchange_tokens: Default::default(),
         };
         Extension(Arc::new(client))
     }
@@ -147,6 +154,32 @@ impl JwtClient {
             Ok(user)
         } else {
             Err(anyhow!("token has expired"))
+        }
+    }
+
+    pub fn create_exchange_token(&self, jwt: String) -> String {
+        let exchange_token = random_string(40);
+        self.exchange_tokens.lock().unwrap().insert(
+            exchange_token.clone(),
+            (
+                jwt,
+                unix_timestamp_ms() + get_timelength_in_ms(Timelength::OneMinute),
+            ),
+        );
+        exchange_token
+    }
+
+    pub fn redeem_exchange_token(&self, exchange_token: &str) -> anyhow::Result<String> {
+        let (jwt, valid_until) = self
+            .exchange_tokens
+            .lock()
+            .unwrap()
+            .remove(exchange_token)
+            .ok_or(anyhow!("invalid exchange token: unrecognized"))?;
+        if unix_timestamp_ms() < valid_until {
+            Ok(jwt)
+        } else {
+            Err(anyhow!("invalid exchange token: expired"))
         }
     }
 }

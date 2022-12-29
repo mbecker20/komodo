@@ -1,28 +1,28 @@
 use std::sync::Arc;
 
 use anyhow::{anyhow, Context};
-use axum::{extract::Query, response::Redirect, routing::get, Extension, Router};
-use axum_oauth2::github::{GithubOauthClient, GithubOauthExtension};
+use axum::{Router, Extension, routing::get, response::Redirect, extract::Query};
+use axum_oauth2::google::{GoogleOauthClient, GoogleOauthExtension};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize};
-use types::{monitor_timestamp, CoreConfig, User};
+use mungos::{Deserialize, doc};
+use types::{CoreConfig, monitor_timestamp, User};
 
-use crate::{response, state::StateExtension};
+use crate::{state::StateExtension, response};
 
 use super::JwtExtension;
 
 pub fn router(config: &CoreConfig) -> Router {
-    let client = GithubOauthClient::new(
-        config.github_oauth.id.clone(),
-        config.github_oauth.secret.clone(),
-        format!("{}/auth/github/callback", config.host),
+	let client = GoogleOauthClient::new(
+        config.google_oauth.id.clone(),
+        config.google_oauth.secret.clone(),
+        format!("{}/auth/google/callback", config.host),
         &[],
         "monitor".to_string(),
     );
-    Router::new()
-        .route(
+	Router::new()
+		.route(
             "/login",
-            get(|Extension(client): GithubOauthExtension| async move {
+            get(|Extension(client): GoogleOauthExtension| async move {
                 Redirect::to(&client.get_login_redirect_url())
             }),
         )
@@ -35,7 +35,7 @@ pub fn router(config: &CoreConfig) -> Router {
                 response!(redirect)
             }),
         )
-        .layer(Extension(Arc::new(client)))
+		.layer(Extension(Arc::new(client)))
 }
 
 #[derive(Deserialize)]
@@ -45,7 +45,7 @@ struct CallbackQuery {
 }
 
 async fn callback(
-    Extension(client): GithubOauthExtension,
+    Extension(client): GoogleOauthExtension,
     Extension(jwt_client): JwtExtension,
     Extension(state): StateExtension,
     Query(query): Query<CallbackQuery>,
@@ -54,12 +54,12 @@ async fn callback(
         return Err(anyhow!("state mismatch"));
     }
     let token = client.get_access_token(&query.code).await?;
-    let github_user = client.get_github_user(&token.access_token).await?;
-    let github_id = github_user.id.to_string();
+    let google_user = client.get_google_user(&token.access_token)?;
+    let google_id = google_user.id.to_string();
     let user = state
         .db
         .users
-        .find_one(doc! { "github_id": &github_id }, None)
+        .find_one(doc! { "google_id": &google_id }, None)
         .await
         .context("failed at find user query from mongo")?;
     let jwt = match user {
@@ -69,9 +69,9 @@ async fn callback(
         None => {
             let ts = monitor_timestamp();
             let user = User {
-                username: github_user.login,
-                avatar: github_user.avatar_url.into(),
-                github_id: github_id.into(),
+                username: google_user.email.split("@").collect::<Vec<&str>>().get(0).unwrap().to_string(),
+                avatar: google_user.picture.into(),
+                google_id: google_id.into(),
                 created_at: ts.clone(),
                 updated_at: ts,
                 ..Default::default()

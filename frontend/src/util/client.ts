@@ -1,4 +1,5 @@
 import axios from "axios";
+import { URL } from "..";
 import {
   BasicContainerInfo,
   Build,
@@ -35,18 +36,33 @@ import { generateQuery, QueryObject } from "./helpers";
 export class Client {
   constructor(private baseURL: string, public token: string | null) {}
 
+  async initialize() {
+    const params = new URLSearchParams(location.search);
+    const exchange_token = params.get("token");
+    if (exchange_token) {
+      history.replaceState({}, "", URL);
+      try {
+        const jwt = await this.exchange_for_jwt(exchange_token);
+        this.token = jwt;
+        localStorage.setItem("access_token", jwt);
+      } catch (error) {
+        console.warn(error);
+      }
+    }
+  }
+
   async login(credentials: UserCredentials) {
     const jwt: string = await this.post("/auth/local/login", credentials);
     this.token = jwt;
     localStorage.setItem("access_token", this.token);
-    return await this.getUser();
+    return await this.get_user();
   }
 
   async signup(credentials: UserCredentials) {
     const jwt: string = await this.post("/auth/local/create_user", credentials);
     this.token = jwt;
     localStorage.setItem("access_token", this.token);
-    return await this.getUser();
+    return await this.get_user();
   }
 
   logout() {
@@ -54,7 +70,7 @@ export class Client {
     this.token = null;
   }
 
-  async getUser(): Promise<User | false> {
+  async get_user(): Promise<User | false> {
     if (this.token) {
       try {
         return await this.get("/api/user");
@@ -65,6 +81,10 @@ export class Client {
     } else {
       return false;
     }
+  }
+
+  async exchange_for_jwt(exchange_token: string): Promise<string> {
+    return this.post("/auth/exchange", { token: exchange_token });
   }
 
   // deployment

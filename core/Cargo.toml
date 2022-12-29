@@ -10,6 +10,7 @@ helpers = { path = "../lib/helpers" }
 db = { package = "db_client", path = "../lib/db_client" }
 types = { package = "monitor_types", path = "../lib/types" }
 periphery = { package = "periphery_client", path = "../lib/periphery_client" }
+axum_oauth2 = { path = "../lib/axum_oauth2" }
 tokio = { version = "1.21", features = ["full"] }
 tokio-util = "0.7"
 axum = { version = "0.6", features = ["ws", "json"] }
@@ -23,7 +24,6 @@ serde_derive = "1.0"
 serde_json = "1.0"
 dotenv = "0.15"
 envy = "0.4"
-oauth2 = "4.2.3"
 anyhow = "1.0"
 bcrypt = "0.13"
 jwt = "0.16"

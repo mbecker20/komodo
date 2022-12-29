@@ -7,7 +7,7 @@ use axum::{
     middleware::{self, Next},
     response::Response,
     routing::get,
-    Router, RequestExt, Json,
+    Json, RequestExt, Router,
 };
 use helpers::docker::DockerClient;
 use serde_json::Value;
@@ -62,7 +62,11 @@ async fn guard_request(
     } else {
         let method = req.method().to_owned();
         let uri = req.uri().to_owned();
-        let body = req.extract::<Json<Value>, _>().await.ok().map(|Json(body)| body);
+        let body = req
+            .extract::<Json<Value>, _>()
+            .await
+            .ok()
+            .map(|Json(body)| body);
         eprintln!(
             "{} | unauthorized request from {ip} | method: {method} | uri: {uri} | body: {:?}",
             monitor_timestamp(),

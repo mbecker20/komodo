@@ -5,6 +5,7 @@ members = [
 	"core",
 	"periphery",
 	"tests",
+	"lib/axum_oauth2",
 	"lib/db_client",
 	"lib/helpers",
 	"lib/periphery_client",
