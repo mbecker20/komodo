@@ -1,10 +1,11 @@
-use std::sync::{Mutex, Arc};
+use std::sync::{Arc, Mutex};
 
 use anyhow::{anyhow, Context};
 use axum::Extension;
-use jwt::{Header, Token};
+use jwt::Token;
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::random_string;
 
@@ -77,34 +78,28 @@ impl GoogleOauthClient {
                 ("grant_type", "authorization_code"),
             ],
             None,
-            None,
         )
         .await
         .context("failed to get google access token using code")
     }
 
-    pub fn get_google_user(&self, token: &str) -> anyhow::Result<GoogleUser> {
-        let token: Token<Header, GoogleUser, jwt::Unverified> = Token::parse_unverified(token)?;
-        Ok(token.claims().to_owned())
+    pub fn get_google_user(&self, id_token: &str) -> anyhow::Result<GoogleUser> {
+        let t: Token<Value, GoogleUser, jwt::Unverified> = Token::parse_unverified(id_token).context("failed to parse id_token")?;
+        Ok(t.claims().to_owned())
     }
 
     async fn post<B: Serialize, R: DeserializeOwned>(
         &self,
         endpoint: &str,
-        query: &[(&str, &str)],
-        body: Option<&B>,
+        body: &[(&str, &str)],
         bearer_token: Option<&str>,
     ) -> anyhow::Result<R> {
         let mut req = self
             .http
             .post(endpoint)
-            .query(query)
+            .form(body)
             .header("Accept", "application/json")
             .header("User-Agent", &self.user_agent);
-
-        if let Some(body) = body {
-            req = req.json(body);
-        }
 
         if let Some(bearer_token) = bearer_token {
             req = req.header("Authorization", format!("Bearer {bearer_token}"));
@@ -132,6 +127,7 @@ impl GoogleOauthClient {
 #[derive(Deserialize)]
 pub struct AccessTokenResponse {
     pub access_token: String,
+    pub id_token: String,
     pub scope: String,
     pub token_type: String,
 }

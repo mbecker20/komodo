@@ -35,6 +35,7 @@ export type IconType =
   | "cut"
   | "fullscreen"
   | "github"
+  | "google"
   | "edit"
   | "clipboard"
   | "check"

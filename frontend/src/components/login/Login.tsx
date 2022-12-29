@@ -83,6 +83,12 @@ const Login: Component<{}> = (p) => {
         >
           log in with github <Icon type="github" />
         </button>
+        <button
+          class={combineClasses(s.LoginItem, "red")}
+          onClick={() => location.replace(`${URL}/auth/google/login`)}
+        >
+          log in with google <Icon type="google" />
+        </button>
       </Grid>
     </div>
   );

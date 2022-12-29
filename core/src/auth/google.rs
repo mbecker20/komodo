@@ -1,26 +1,26 @@
 use std::sync::Arc;
 
 use anyhow::{anyhow, Context};
-use axum::{Router, Extension, routing::get, response::Redirect, extract::Query};
+use axum::{extract::Query, response::Redirect, routing::get, Extension, Router};
 use axum_oauth2::google::{GoogleOauthClient, GoogleOauthExtension};
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, doc};
-use types::{CoreConfig, monitor_timestamp, User};
+use mungos::{doc, Deserialize};
+use types::{monitor_timestamp, CoreConfig, User};
 
-use crate::{state::StateExtension, response};
+use crate::{response, state::StateExtension};
 
 use super::JwtExtension;
 
 pub fn router(config: &CoreConfig) -> Router {
-	let client = GoogleOauthClient::new(
+    let client = GoogleOauthClient::new(
         config.google_oauth.id.clone(),
         config.google_oauth.secret.clone(),
         format!("{}/auth/google/callback", config.host),
-        &[],
+        &["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
         "monitor".to_string(),
     );
-	Router::new()
-		.route(
+    Router::new()
+        .route(
             "/login",
             get(|Extension(client): GoogleOauthExtension| async move {
                 Redirect::to(&client.get_login_redirect_url())
@@ -35,13 +35,14 @@ pub fn router(config: &CoreConfig) -> Router {
                 response!(redirect)
             }),
         )
-		.layer(Extension(Arc::new(client)))
+        .layer(Extension(Arc::new(client)))
 }
 
 #[derive(Deserialize)]
 struct CallbackQuery {
-    state: String,
-    code: String,
+    state: Option<String>,
+    code: Option<String>,
+    error: Option<String>,
 }
 
 async fn callback(
@@ -50,11 +51,24 @@ async fn callback(
     Extension(state): StateExtension,
     Query(query): Query<CallbackQuery>,
 ) -> anyhow::Result<Redirect> {
-    if !client.check_state(&query.state) {
+    if let Some(error) = query.error {
+        return Err(anyhow!("auth error from google: {error}"));
+    }
+    if !client.check_state(
+        &query
+            .state
+            .ok_or(anyhow!("callback query does not contain state"))?,
+    ) {
         return Err(anyhow!("state mismatch"));
     }
-    let token = client.get_access_token(&query.code).await?;
-    let google_user = client.get_google_user(&token.access_token)?;
+    let token = client
+        .get_access_token(
+            &query
+                .code
+                .ok_or(anyhow!("callback query does not contain code"))?,
+        )
+        .await?;
+    let google_user = client.get_google_user(&token.id_token)?;
     let google_id = google_user.id.to_string();
     let user = state
         .db
@@ -69,7 +83,13 @@ async fn callback(
         None => {
             let ts = monitor_timestamp();
             let user = User {
-                username: google_user.email.split("@").collect::<Vec<&str>>().get(0).unwrap().to_string(),
+                username: google_user
+                    .email
+                    .split("@")
+                    .collect::<Vec<&str>>()
+                    .get(0)
+                    .unwrap()
+                    .to_string(),
                 avatar: google_user.picture.into(),
                 google_id: google_id.into(),
                 created_at: ts.clone(),
