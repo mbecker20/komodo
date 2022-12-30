@@ -1,3 +1,5 @@
+import { DockerContainerState } from "../types";
+
 export function combineClasses(...classes: (string | false | undefined)[]) {
   return classes.filter((c) => (c ? true : false)).join(" ");
 }
@@ -52,6 +54,29 @@ export function keepOnlyInObj<T>(obj: T, idsToKeep: string[]) {
   ) as T;
 }
 
-export function intoCollection<T>(arr: T[]): Record<string, T> {
-  return Object.fromEntries(arr.map((item) => [(item as any)._id.$oid, item]));
+export function getNestedEntry(obj: any, idPath: string[]): any {
+  if (idPath.length === 0) {
+    return obj;
+  } else {
+    return getNestedEntry(obj[idPath[0]], idPath.slice(1));
+  }
+}
+
+export function intoCollection<T>(arr: T[], idPath: string[]): Record<string, T> {
+  return Object.fromEntries(arr.map((item) => [getNestedEntry(item, idPath), item]));
+}
+
+export function getId(entity: any): string {
+  return entity._id.$oid
+}
+
+export function deploymentStateClass(state: DockerContainerState) {
+  switch (state) {
+    case DockerContainerState.Running:
+      return "green";
+    case DockerContainerState.Exited:
+      return "red";
+    default:
+      return "blue";
+  }
 }

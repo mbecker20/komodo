@@ -1,20 +1,22 @@
-import {
-  createEffect,
-  createResource,
-  createSignal,
-} from "solid-js";
+import { createEffect, createResource, createSignal } from "solid-js";
 import { client } from "..";
 import { ServerStatus, SystemStats, UpdateTarget } from "../types";
 import {
   filterOutFromObj,
+  getNestedEntry,
   intoCollection,
   keepOnlyInObj,
 } from "../util/helpers";
 
 type Collection<T> = Record<string, T>;
 
+const serverIdPath = ["server", "_id", "$oid"];
+
 export function useServers() {
-  return useCollection(() => client.list_servers().then(intoCollection), ["_id", "$oid"]);
+  return useCollection(
+    () => client.list_servers().then(res => intoCollection(res, serverIdPath)),
+    serverIdPath
+  );
 }
 
 export function useServerStats() {
@@ -43,14 +45,24 @@ export function useServerStats() {
   };
 }
 
+const buildIdPath = ["_id", "$oid"];
+
 export function useBuilds() {
-  return useCollection(() => client.list_builds().then(intoCollection), ["_id", "$oid"]);
+  return useCollection(
+    () => client.list_builds().then(res => intoCollection(res, buildIdPath)),
+    buildIdPath,
+  );
 }
 
+const deploymentIdPath = ["deployment", "_id", "$oid"];
+
 export function useDeployments() {
-  const deployments = useCollection(() =>
-    client.list_deployments().then(intoCollection),
-    ["deployment", "_id", "$oid"]
+  const deployments = useCollection(
+    () =>
+      client
+        .list_deployments()
+        .then((res) => intoCollection(res, deploymentIdPath)),
+    deploymentIdPath
   );
   const state = (id: string) => {
     const deployment = deployments.get(id)!;
@@ -69,7 +81,10 @@ export function useDeployments() {
 }
 
 export function useUpdates(target?: UpdateTarget) {
-  const updates = useArrayWithId(() => client.list_updates(0, target), ["_id", "$oid"]);
+  const updates = useArrayWithId(
+    () => client.list_updates(0, target),
+    ["_id", "$oid"]
+  );
   const [noMore, setNoMore] = createSignal(false);
   const loadMore = async () => {
     const offset = updates.collection()?.length;
@@ -117,15 +132,17 @@ export function useArrayWithId<T>(query: () => Promise<T[]>, idPath: string[]) {
     set((items: T[] | undefined) => {
       if (items) {
         const newId = getNestedEntry(item, idPath);
-        const existingIndex = items.findIndex(i => getNestedEntry(i, idPath) === newId);
+        const existingIndex = items.findIndex(
+          (i) => getNestedEntry(i, idPath) === newId
+        );
         if (existingIndex < 0) {
-          return [item, ...items]
+          return [item, ...items];
         } else {
           return items.map((e, index) => {
             if (index === existingIndex) {
-              return item
+              return item;
             } else {
-              return e
+              return e;
             }
           });
         }
@@ -146,10 +163,16 @@ export function useArrayWithId<T>(query: () => Promise<T[]>, idPath: string[]) {
   };
 }
 
-export function useCollection<T>(query: () => Promise<Collection<T>>, idPath: string[]) {
+export function useCollection<T>(
+  query: () => Promise<Collection<T>>,
+  idPath: string[]
+) {
   const [collection, { mutate }] = createResource(query);
   const add = (item: T) => {
-    mutate((collection: any) => ({ ...collection, [getNestedEntry(item, idPath)]: item }));
+    mutate((collection: any) => ({
+      ...collection,
+      [getNestedEntry(item, idPath)]: item,
+    }));
   };
   const addMany = (items: Collection<T>) => {
     mutate((collection: any) => ({ ...collection, ...items }));
@@ -193,12 +216,4 @@ export function useCollection<T>(query: () => Promise<Collection<T>>, idPath: st
     filter,
     filterArray,
   };
-}
-
-function getNestedEntry(obj: any, path: string[]): any {
-  if (path.length === 0) {
-    return obj
-  } else {
-    return getNestedEntry(obj[path[0]], path.slice(1));
-  }
 }

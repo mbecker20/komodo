@@ -12,6 +12,8 @@ import Grid from "../shared/layout/Grid";
 import HoverMenu from "../shared/menu/HoverMenu";
 import Menu from "../shared/menu/Menu";
 import Account from "./Account";
+import { SearchProvider } from "./Search/Provider";
+import { Search } from "./Search/Search";
 import s from "./topbar.module.scss";
 
 const mobileStyle: JSX.CSSProperties = {
@@ -29,10 +31,9 @@ const Topbar: Component = () => {
       style={{ height: inPx(TOPBAR_HEIGHT) }}
     >
       <LeftSide />
-      {/* <SearchProvider>
+      <SearchProvider>
         <Search />
-      </SearchProvider> */}
-	    <Grid placeItems="center">search</Grid>
+      </SearchProvider>
       <RightSide />
     </Grid>
   );

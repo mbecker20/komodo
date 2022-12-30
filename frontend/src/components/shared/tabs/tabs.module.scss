@@ -18,16 +18,7 @@
   transition: background-color 250ms ease-in-out, border-color 250ms ease-in-out;
 }
 
-.Tab:global(.dark) {
-  border-bottom: solid 2px rgba(c.$lightgrey-dark, 0.7);
-}
-
 .Active {
   border-color: rgba(c.$lightgrey, 0.9);
   background-color: rgba(c.$lightgrey, 0.4);
-}
-
-.Active:global(.dark) {
-  border-color: rgba(c.$lightgrey-dark, 0.9);
-  background-color: rgba(c.$lightgrey-dark, 0.4);
 }
