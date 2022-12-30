@@ -28,15 +28,19 @@ import {
   CreateProcedureBody,
   CreateSecretBody,
   CreateServerBody,
+  LoginOptions,
   ModifyUserEnabledBody,
   PermissionsUpdateBody,
 } from "./client_types";
 import { generateQuery, QueryObject } from "./helpers";
 
 export class Client {
+  loginOptions: LoginOptions | undefined;
+
   constructor(private baseURL: string, public token: string | null) {}
 
   async initialize() {
+    this.loginOptions = await this.get_login_options();
     const params = new URLSearchParams(location.search);
     const exchange_token = params.get("token");
     if (exchange_token) {
@@ -49,6 +53,18 @@ export class Client {
         console.warn(error);
       }
     }
+  }
+
+  get_login_options(): Promise<LoginOptions> {
+    return this.get("/auth/options")
+  }
+
+  login_with_github() {
+    location.replace(`${URL}/auth/github/login`);
+  }
+
+  login_with_google() {
+    location.replace(`${URL}/auth/google/login`);
   }
 
   async login(credentials: UserCredentials) {
@@ -83,7 +99,7 @@ export class Client {
     }
   }
 
-  async exchange_for_jwt(exchange_token: string): Promise<string> {
+  exchange_for_jwt(exchange_token: string): Promise<string> {
     return this.post("/auth/exchange", { token: exchange_token });
   }
 

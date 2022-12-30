@@ -1,6 +1,6 @@
 import { Component, Show } from "solid-js";
-import { client } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
+import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
@@ -9,6 +9,7 @@ import s from "./topbar.module.scss";
 const Account: Component<{ close: () => void }> = (p) => {
   const { user } = useUser();
   const { isMobile } = useAppDimensions();
+  const { logout } = useAppState();
   return (
     <Grid gap="0.5rem" class={s.Account} placeItems="center end">
       <Show when={isMobile()}>
@@ -31,7 +32,7 @@ const Account: Component<{ close: () => void }> = (p) => {
         <Flex justifyContent="center">create server permissions: {user().create_server_permissions.toString()}</Flex>
       </Show>
       <button
-        onClick={() => client.logout()}
+        onClick={() => logout()}
         class="red"
         style={{ width: "100%" }}
       >

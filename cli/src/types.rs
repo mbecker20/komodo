@@ -18,11 +18,16 @@ pub struct CoreConfig {
     #[serde(default = "default_jwt_valid_for")]
     pub jwt_valid_for: Timelength,
 
+    // used to verify validity from github webhooks
+    pub github_webhook_secret: String,
+
     // integration with slack app
     pub slack_url: Option<String>,
 
+    // enable login with local auth
+    pub local_auth: bool,
+
     // github integration
-    pub github_webhook_secret: String,
     pub github_oauth: OauthCredentials,
 
     // google integration
@@ -42,7 +47,11 @@ fn default_jwt_valid_for() -> Timelength {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct OauthCredentials {
+    #[serde(default)]
+    pub enabled: bool,
+    #[serde(default)]
     pub id: String,
+    #[serde(default)]
     pub secret: String,
 }
 

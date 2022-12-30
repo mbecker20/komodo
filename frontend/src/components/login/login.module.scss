@@ -13,5 +13,10 @@
 
 .LoginItem {
 	font-size: 1.1rem;
-	width: 100%
+	width: 100%;
+}
+
+.OauthLoginItem {
+	// justify-content: space-between;
+	min-width: 200px;
 }

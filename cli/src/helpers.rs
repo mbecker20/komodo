@@ -66,6 +66,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         port,
         jwt_valid_for,
         slack_url,
+        local_auth: true,
         github_oauth: Default::default(),
         google_oauth: Default::default(),
         mongo: MongoConfig {

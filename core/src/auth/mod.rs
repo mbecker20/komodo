@@ -5,11 +5,11 @@ use axum::{
     http::{Request, StatusCode},
     middleware::Next,
     response::Response,
-    routing::post,
+    routing::{get, post},
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::Deserialize;
+use mungos::{Deserialize, Serialize};
 use types::CoreConfig;
 use typeshare::typeshare;
 
@@ -19,10 +19,34 @@ mod jwt;
 mod local;
 mod secret;
 
+use crate::state::StateExtension;
+
 pub use self::jwt::{JwtClaims, JwtClient, JwtExtension, RequestUser, RequestUserExtension};
 
+#[typeshare]
+#[derive(Serialize)]
+struct LoginOptions {
+    local: bool,
+    github: bool,
+    google: bool,
+}
+
 pub fn router(config: &CoreConfig) -> Router {
-    Router::new()
+    let mut router = Router::new()
+        .route(
+            "/options",
+            get(|Extension(state): StateExtension| async move {
+                Json(LoginOptions {
+                    local: state.config.local_auth,
+                    github: state.config.github_oauth.enabled
+                        && state.config.github_oauth.id.len() > 0
+                        && state.config.github_oauth.secret.len() > 0,
+                    google: state.config.google_oauth.enabled
+                        && state.config.google_oauth.id.len() > 0
+                        && state.config.google_oauth.secret.len() > 0,
+                })
+            }),
+        )
         .route(
             "/exchange",
             post(|jwt, body| async {
@@ -31,10 +55,27 @@ pub fn router(config: &CoreConfig) -> Router {
                     .map_err(handle_anyhow_error)
             }),
         )
-        .nest("/local", local::router())
-        .nest("/github", github::router(config))
-        .nest("/google", google::router(config))
-        .nest("/secret", secret::router())
+        .nest("/secret", secret::router());
+
+    if config.local_auth {
+        router = router.nest("/local", local::router());
+    }
+
+    if config.github_oauth.enabled
+        && config.github_oauth.id.len() > 0
+        && config.github_oauth.secret.len() > 0
+    {
+        router = router.nest("/github", github::router(config));
+    }
+
+    if config.google_oauth.enabled
+        && config.google_oauth.id.len() > 0
+        && config.google_oauth.secret.len() > 0
+    {
+        router = router.nest("/google", google::router(config));
+    }
+
+    router
 }
 
 #[typeshare]

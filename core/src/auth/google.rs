@@ -16,7 +16,10 @@ pub fn router(config: &CoreConfig) -> Router {
         config.google_oauth.id.clone(),
         config.google_oauth.secret.clone(),
         format!("{}/auth/google/callback", config.host),
-        &["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"],
+        &[
+            "https://www.googleapis.com/auth/userinfo.profile",
+            "https://www.googleapis.com/auth/userinfo.email",
+        ],
         "monitor".to_string(),
     );
     Router::new()

@@ -84,7 +84,8 @@ impl GoogleOauthClient {
     }
 
     pub fn get_google_user(&self, id_token: &str) -> anyhow::Result<GoogleUser> {
-        let t: Token<Value, GoogleUser, jwt::Unverified> = Token::parse_unverified(id_token).context("failed to parse id_token")?;
+        let t: Token<Value, GoogleUser, jwt::Unverified> =
+            Token::parse_unverified(id_token).context("failed to parse id_token")?;
         Ok(t.claims().to_owned())
     }
 

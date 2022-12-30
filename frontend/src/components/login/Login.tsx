@@ -1,10 +1,10 @@
-import { Component } from "solid-js";
+import { Component, Show } from "solid-js";
 import s from "./login.module.scss";
 import Input from "../shared/Input";
 import Grid from "../shared/layout/Grid";
 import { createStore } from "solid-js/store";
 import Flex from "../shared/layout/Flex";
-import { client, pushNotification, URL } from "../..";
+import { client, pushNotification } from "../..";
 import { combineClasses } from "../../util/helpers";
 import Icon from "../shared/Icon";
 import { useUser } from "../../state/UserProvider";
@@ -50,45 +50,56 @@ const Login: Component<{}> = (p) => {
     <div class={s.Login}>
       <Grid placeItems="center">
         <div class={s.Monitor}>monitor</div>
-        <Input
-          class={s.LoginItem}
-          style={{ width: "20rem" }}
-          placeholder="username"
-          value={info.username}
-          onEdit={(value) => set("username", value)}
-        />
-        <Input
-          class={s.LoginItem}
-          style={{ width: "20rem" }}
-          type="password"
-          placeholder="password"
-          value={info.password}
-          onEdit={(value) => set("password", value)}
-          onEnter={login}
-        />
-        <Flex style={{ width: "100%" }} justifyContent="space-between">
-          <button class={combineClasses(s.LoginItem, "green")} onClick={login}>
-            log in
-          </button>
+        <Show when={client.loginOptions?.local}>
+          <Input
+            class={s.LoginItem}
+            style={{ width: "20rem" }}
+            placeholder="username"
+            value={info.username}
+            onEdit={(value) => set("username", value)}
+          />
+          <Input
+            class={s.LoginItem}
+            style={{ width: "20rem" }}
+            type="password"
+            placeholder="password"
+            value={info.password}
+            onEdit={(value) => set("password", value)}
+            onEnter={login}
+          />
+          <Flex style={{ width: "100%" }} justifyContent="space-between">
+            <button
+              class={combineClasses(s.LoginItem, "green")}
+              onClick={login}
+            >
+              log in
+            </button>
+            <button
+              class={combineClasses(s.LoginItem, "orange")}
+              onClick={signup}
+            >
+              sign up
+            </button>
+          </Flex>
+        </Show>
+        <Show when={client.loginOptions?.github}>
           <button
-            class={combineClasses(s.LoginItem, "orange")}
-            onClick={signup}
+            class={combineClasses(s.LoginItem, s.OauthLoginItem, "blue")}
+            onClick={() => client.login_with_github()}
           >
-            sign up
+            <div style={{ "justify-self": "center" }}>log in with github</div>
+            <Icon type="github" style={{ "justify-self": "flex-end" }} />
           </button>
-        </Flex>
-        <button
-          class={combineClasses(s.LoginItem, "blue")}
-          onClick={() => location.replace(`${URL}/auth/github/login`)}
-        >
-          log in with github <Icon type="github" />
-        </button>
-        <button
-          class={combineClasses(s.LoginItem, "red")}
-          onClick={() => location.replace(`${URL}/auth/google/login`)}
-        >
-          log in with google <Icon type="google" />
-        </button>
+        </Show>
+        <Show when={client.loginOptions?.google}>
+          <button
+            class={combineClasses(s.LoginItem, s.OauthLoginItem, "red")}
+            onClick={() => client.login_with_google()}
+          >
+            <div style={{ "justify-self": "center" }}>log in with google</div>
+            <Icon type="google" style={{ "justify-self": "flex-end" }} />
+          </button>
+        </Show>
       </Grid>
     </div>
   );
