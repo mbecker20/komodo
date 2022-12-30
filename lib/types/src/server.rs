@@ -137,7 +137,10 @@ pub struct SystemStats {
     pub disk: DiskUsage,
     pub networks: Vec<SystemNetwork>,
     pub components: Vec<SystemComponent>,
+    pub processes: Vec<SystemProcess>,
     pub polling_rate: Timelength,
+    pub refresh_ts: u128,
+    pub refresh_list_ts: u128,
 }
 
 #[typeshare]
@@ -174,4 +177,11 @@ pub struct SystemComponent {
     pub max: f32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub critical: Option<f32>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SystemProcess {
+    pub pid: u32,
+    pub name: String,
 }

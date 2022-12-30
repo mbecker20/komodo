@@ -2,8 +2,13 @@ use std::sync::{Arc, RwLock};
 
 use async_timing_util::wait_until_timelength;
 use axum::{routing::get, Extension, Json, Router};
-use sysinfo::{CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt, ComponentExt};
-use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats, Timelength, SystemComponent};
+use sysinfo::{
+    ComponentExt, CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt, PidExt,
+};
+use types::{
+    DiskUsage, SingleDiskUsage, SystemComponent, SystemNetwork, SystemProcess, SystemStats,
+    Timelength,
+};
 
 pub fn router(stats_polling_rate: Timelength) -> Router {
     Router::new()
@@ -22,6 +27,8 @@ type StatsExtension = Extension<Arc<RwLock<StatsClient>>>;
 struct StatsClient {
     sys: sysinfo::System,
     polling_rate: Timelength,
+    refresh_ts: u128,
+    refresh_list_ts: u128,
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
@@ -32,32 +39,45 @@ impl StatsClient {
         let client = StatsClient {
             sys: sysinfo::System::new_all(),
             polling_rate,
+            refresh_ts: 0,
+            refresh_list_ts: 0,
         };
         let client = Arc::new(RwLock::new(client));
         let clone = client.clone();
-        let polling_rate = polling_rate.to_string().parse().unwrap();
+        tokio::spawn(async move {
+            let polling_rate = polling_rate.to_string().parse().unwrap();
+            loop {
+                let ts = wait_until_timelength(polling_rate, 0).await;
+                let mut client = clone.write().unwrap();
+                client.refresh();
+                client.refresh_ts = ts;
+            }
+        });
+        let clone = client.clone();
         tokio::spawn(async move {
             loop {
-                wait_until_timelength(polling_rate, 0).await;
-                {
-                    clone.write().unwrap().refresh();
-                }
+                let ts = wait_until_timelength(async_timing_util::Timelength::FiveMinutes, 0).await;
+                let mut client = clone.write().unwrap();
+                client.refresh_lists();
+                client.refresh_list_ts = ts;
             }
         });
         Extension(client)
     }
 
-    pub fn refresh(&mut self) {
+    fn refresh(&mut self) {
         self.sys.refresh_cpu();
         self.sys.refresh_memory();
-        self.sys.refresh_networks_list();
         self.sys.refresh_networks();
-        self.sys.refresh_disks_list();
         self.sys.refresh_disks();
-        self.sys
-            .refresh_processes_specifics(ProcessRefreshKind::new().with_disk_usage());
-        self.sys.refresh_components_list();
         self.sys.refresh_components();
+        self.sys.refresh_processes();
+    }
+
+    fn refresh_lists(&mut self) {
+        self.sys.refresh_networks_list();
+        self.sys.refresh_disks_list();
+        self.sys.refresh_components_list();
     }
 
     pub fn get_stats(&self) -> SystemStats {
@@ -68,7 +88,10 @@ impl StatsClient {
             disk: self.get_disk_usage(),
             networks: self.get_networks(),
             components: self.get_components(),
+            processes: self.get_processes(),
             polling_rate: self.polling_rate,
+            refresh_ts: self.refresh_ts,
+            refresh_list_ts: self.refresh_list_ts,
         }
     }
 
@@ -122,13 +145,27 @@ impl StatsClient {
     }
 
     fn get_components(&self) -> Vec<SystemComponent> {
-        self.sys.components().into_iter().map(|c| {
-            SystemComponent {
+        self.sys
+            .components()
+            .into_iter()
+            .map(|c| SystemComponent {
                 label: c.label().to_string(),
                 temp: c.temperature(),
                 max: c.max(),
                 critical: c.critical(),
-            }
-        }).collect()
+            })
+            .collect()
+    }
+
+    fn get_processes(&self) -> Vec<SystemProcess> {
+        self.sys
+            .processes()
+            .into_iter()
+            .map(|(pid, p)| SystemProcess {
+                pid: pid.as_u32(),
+                name: p.name().to_string(),
+
+            })
+            .collect()
     }
 }
