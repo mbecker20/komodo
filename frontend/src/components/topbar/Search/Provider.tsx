@@ -33,7 +33,7 @@ const value = () => {
           prev &&
           (deployment.deployment.name.toLowerCase().includes(search) ||
             servers
-              .get(deployment.deployment.server_id!)!
+              .get(deployment.deployment.server_id)!
               .server.name.toLowerCase()
               .includes(search))
         );
@@ -51,6 +51,11 @@ const value = () => {
       servers.filterArray((server) =>
         server.server.name.toLowerCase().includes(search().toLowerCase())
       )!
+  );
+
+  const [selectedTab, setSelectedTab] = useLocalStorage(
+    "deployments",
+    "search-tab"
   );
 
   const inputOnKeyDown =
@@ -142,11 +147,6 @@ const value = () => {
         close(inputRef);
       }
     };
-
-  const [selectedTab, setSelectedTab] = useLocalStorage(
-    "deployments",
-    "search-tab"
-  );
 
   useWindowKeyDown((e) => {
     if (open()) {

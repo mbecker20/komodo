@@ -84,7 +84,7 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
     <>
       <Show when={isMobile()}>
         <Input
-          ref={inputRef}
+          ref={() => inputRef}
           class={s.Search}
           placeholder="search"
           value={search.value()}
@@ -100,15 +100,15 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
         tabs={[
           {
             title: "deployments",
-            element: <Deployments close={p.close} />,
+            element: () => <Deployments close={p.close} />,
           },
           {
             title: "builds",
-            element: <Builds close={p.close} />,
+            element: () => <Builds close={p.close} />,
           },
           {
             title: "servers",
-            element: <Servers close={p.close} />,
+            element: () => <Servers close={p.close} />,
           },
         ]}
       />
@@ -126,7 +126,9 @@ const Deployments: Component<{ close: () => void }> = (p) => {
       gap="0.5rem"
       style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
     >
-      <Show when={filteredDeployments()?.length === 0}>no results</Show>
+      <Show when={filteredDeployments()?.length === 0}>
+        <Flex alignItems="center" justifyContent="center">no results</Flex>
+      </Show>
       <For each={filteredDeployments()}>
         {(deployment, index) => (
           <button
@@ -174,7 +176,11 @@ const Builds: Component<{ close: () => void }> = (p) => {
       gap="0.5rem"
       style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
     >
-      <Show when={filteredBuilds()?.length === 0}>no results</Show>
+      <Show when={filteredBuilds()?.length === 0}>
+        <Flex alignItems="center" justifyContent="center">
+          no results
+        </Flex>
+      </Show>
       <For each={filteredBuilds()}>
         {(build, index) => (
           <button
@@ -184,7 +190,7 @@ const Builds: Component<{ close: () => void }> = (p) => {
               "grey"
             )}
             onClick={() => {
-              navigate(`/build/${getId(build)}`)
+              navigate(`/build/${getId(build)}`);
               p.close();
             }}
           >
@@ -208,7 +214,11 @@ const Servers: Component<{ close: () => void }> = (p) => {
       gap="0.5rem"
       style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
     >
-      <Show when={filteredServers()?.length === 0}>no results</Show>
+      <Show when={filteredServers()?.length === 0}>
+        <Flex alignItems="center" justifyContent="center">
+          no results
+        </Flex>
+      </Show>
       <For each={filteredServers()}>
         {(server, index) => (
           <button
@@ -237,7 +247,13 @@ const Servers: Component<{ close: () => void }> = (p) => {
               </Flex>
             </Grid>
             <div
-              class={server.status === ServerStatus.Ok ? "green" : server.status === ServerStatus.NotOk ? "red" : "blue"}
+              class={
+                server.status === ServerStatus.Ok
+                  ? "green"
+                  : server.status === ServerStatus.NotOk
+                  ? "red"
+                  : "blue"
+              }
               style={{
                 padding: "0.25rem",
                 "border-radius": ".35rem",

@@ -1,6 +1,6 @@
 import { Component, JSX } from "solid-js";
 import { combineClasses, filterOutFromObj } from "../../../util/helpers";
-import s from "./Layout.module.css";
+import s from "./layout.module.scss";
 
 const Flex: Component<
   {

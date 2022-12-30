@@ -15,12 +15,12 @@ import s from "./tabs.module.scss";
 
 export type Tab = {
   title: string;
-  titleElement?: JSXElement;
-  element: JSXElement;
+  titleElement?: () => JSXElement;
+  element: () => JSXElement;
 };
 
 const Tabs: Component<{
-  tabs: (Tab | undefined | false)[];
+  tabs: Tab[];
   defaultSelected?: string;
   localStorageKey?: string;
   tabsGap?: string;
@@ -28,21 +28,20 @@ const Tabs: Component<{
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
-  const tabs = createMemo(() => p.tabs.filter((val) => val) as Tab[]);
-  const def = p.defaultSelected ? p.defaultSelected : tabs()[0].title;
+  const def = p.defaultSelected ? p.defaultSelected : p.tabs[0].title;
   const [selected, set] = p.localStorageKey
     ? useLocalStorage(def, p.localStorageKey)
     : createSignal(def);
   createEffect(() => {
-    if (tabs().filter((tab) => tab.title === selected())[0] === undefined) {
-      set(tabs()[0].title);
+    if (p.tabs.filter((tab) => tab.title === selected())[0] === undefined) {
+      set(p.tabs[0].title);
     }
   });
   return <ControlledTabs selected={selected} set={set} {...p} />;
 };
 
 export const ControlledTabs: Component<{
-  tabs: (Tab | undefined | false)[];
+  tabs: Tab[];
   selected: Accessor<string>;
   set: LocalStorageSetter<string>;
   tabsGap?: string;
@@ -50,12 +49,9 @@ export const ControlledTabs: Component<{
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
-  const tabs = createMemo(() => p.tabs.filter((val) => val) as Tab[]);
-  const current = () => tabs().findIndex((tab) => tab.title === p.selected());
+  const current = () => p.tabs.findIndex((tab) => tab.title === p.selected());
   const getClassName = (title: string) =>
-    p.selected() === title
-      ? combineClasses(s.Tab, s.Active)
-      : s.Tab;
+    p.selected() === title ? combineClasses(s.Tab, s.Active) : s.Tab;
   return (
     <div
       class={combineClasses(p.containerClass, s.Tabs)}
@@ -66,7 +62,7 @@ export const ControlledTabs: Component<{
         alignItems="center"
         justifyContent="space-evenly"
       >
-        <For each={tabs()}>
+        <For each={p.tabs}>
           {(tab) => (
             <button
               class={getClassName(tab.title)}
@@ -83,13 +79,13 @@ export const ControlledTabs: Component<{
           gap="0rem"
           style={{
             position: "relative",
-            width: `${tabs().length * 100}%`,
+            width: `${p.tabs.length * 100}%`,
             left: `-${current() * 100}%`,
             transition: "left 350ms ease",
           }}
         >
-          <For each={tabs()}>
-            {(tab, i) => (
+          <For each={p.tabs}>
+            {(tab) => (
               <div
                 style={{
                   width: "100%",
@@ -97,7 +93,7 @@ export const ControlledTabs: Component<{
                   // transition: "opacity 150ms ease",
                 }}
               >
-                {tab.element}
+                {tab.element()}
               </div>
             )}
           </For>

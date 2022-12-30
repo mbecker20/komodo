@@ -367,7 +367,7 @@ export class Client {
       method: "get",
       url: this.baseURL + url,
       headers: {
-        authorization: `Bearer ${this.token}`,
+        authorization: this.token ? `Bearer ${this.token}` : undefined,
       },
     }).then(({ data }) => data);
   }

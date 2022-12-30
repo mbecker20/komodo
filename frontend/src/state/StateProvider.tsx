@@ -78,6 +78,18 @@ export const AppStateProvider: ParentComponent = (p) => {
     updates: useUpdates(),
   };
 
+  // createEffect(() => {
+  //   console.log("deployments", deployments.collection());
+  // })
+
+  // createEffect(() => {
+  //   console.log("servers", servers.collection());
+  // });
+
+  // createEffect(() => {
+  //   console.log("builds", builds.collection());
+  // });
+
   const ws = connectToWs(state);
 
   useWindowKeyDown((e) => {
