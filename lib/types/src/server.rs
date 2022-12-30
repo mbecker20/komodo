@@ -136,6 +136,7 @@ pub struct SystemStats {
     pub mem_total_gb: f64, // in GB
     pub disk: DiskUsage,
     pub networks: Vec<SystemNetwork>,
+    pub components: Vec<SystemComponent>,
     pub polling_rate: Timelength,
 }
 
@@ -163,4 +164,14 @@ pub struct SystemNetwork {
     pub name: String,
     pub recieved_kb: f64,    // in kB
     pub transmitted_kb: f64, // in kB
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SystemComponent {
+    pub label: String,
+    pub temp: f32,
+    pub max: f32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub critical: Option<f32>,
 }

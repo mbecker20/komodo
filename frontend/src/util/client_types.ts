@@ -28,12 +28,6 @@ export interface CreateGroupBody {
 	name: string;
 }
 
-export interface LoginOptions {
-	local: boolean;
-	github: boolean;
-	google: boolean;
-}
-
 export interface PermissionsUpdateBody {
 	user_id: string;
 	permission: PermissionLevel;
@@ -58,6 +52,12 @@ export interface CreateSecretBody {
 export interface CreateServerBody {
 	name: string;
 	address: string;
+}
+
+export interface LoginOptions {
+	local: boolean;
+	github: boolean;
+	google: boolean;
 }
 
 export interface TokenExchangeBody {

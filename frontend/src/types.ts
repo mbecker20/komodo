@@ -181,6 +181,7 @@ export interface SystemStats {
 	mem_total_gb: number;
 	disk: DiskUsage;
 	networks: SystemNetwork[];
+	components: SystemComponent[];
 	polling_rate: Timelength;
 }
 
@@ -202,6 +203,13 @@ export interface SystemNetwork {
 	name: string;
 	recieved_kb: number;
 	transmitted_kb: number;
+}
+
+export interface SystemComponent {
+	label: string;
+	temp: number;
+	max: number;
+	critical?: number;
 }
 
 export interface Update {

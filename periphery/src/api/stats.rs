@@ -2,8 +2,8 @@ use std::sync::{Arc, RwLock};
 
 use async_timing_util::wait_until_timelength;
 use axum::{routing::get, Extension, Json, Router};
-use sysinfo::{CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt};
-use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats, Timelength};
+use sysinfo::{CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt, ComponentExt};
+use types::{DiskUsage, SingleDiskUsage, SystemNetwork, SystemStats, Timelength, SystemComponent};
 
 pub fn router(stats_polling_rate: Timelength) -> Router {
     Router::new()
@@ -50,10 +50,14 @@ impl StatsClient {
     pub fn refresh(&mut self) {
         self.sys.refresh_cpu();
         self.sys.refresh_memory();
+        self.sys.refresh_networks_list();
         self.sys.refresh_networks();
+        self.sys.refresh_disks_list();
         self.sys.refresh_disks();
         self.sys
             .refresh_processes_specifics(ProcessRefreshKind::new().with_disk_usage());
+        self.sys.refresh_components_list();
+        self.sys.refresh_components();
     }
 
     pub fn get_stats(&self) -> SystemStats {
@@ -63,6 +67,7 @@ impl StatsClient {
             mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
             disk: self.get_disk_usage(),
             networks: self.get_networks(),
+            components: self.get_components(),
             polling_rate: self.polling_rate,
         }
     }
@@ -114,5 +119,16 @@ impl StatsClient {
             write_kb,
             disks,
         }
+    }
+
+    fn get_components(&self) -> Vec<SystemComponent> {
+        self.sys.components().into_iter().map(|c| {
+            SystemComponent {
+                label: c.label().to_string(),
+                temp: c.temperature(),
+                max: c.max(),
+                critical: c.critical(),
+            }
+        }).collect()
     }
 }
