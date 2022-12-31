@@ -12,7 +12,10 @@ license = "GPL v3.0"
 # monitor_types = "0.1.0"
 monitor_types = { path = "../types" }
 reqwest = { version = "0.11", features = ["json"] }
+tokio-tungstenite = { version = "0.18", features=["native-tls"] }
+tokio = "1.23"
 anyhow = "1.0"
 serde = "1.0"
 serde_json = "1.0"
 serde_derive = "1.0"
+futures-util = "0.3"

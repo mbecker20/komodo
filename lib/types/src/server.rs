@@ -147,6 +147,10 @@ impl SystemStatsQuery {
             processes: true,
         }
     }
+
+    pub fn none() -> SystemStatsQuery {
+        Default::default()
+    }
 }
 
 #[typeshare]

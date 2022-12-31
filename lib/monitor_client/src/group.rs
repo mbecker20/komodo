@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Group, Update};
+use monitor_types::Group;
 use serde_json::{json, Value};
 
 use crate::MonitorClient;

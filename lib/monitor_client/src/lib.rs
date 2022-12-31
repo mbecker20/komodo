@@ -1,11 +1,14 @@
-#![allow(unused)]
+// #![allow(unused)]
 
 use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
+use serde_json::json;
+
+pub use futures_util;
+pub use tokio_tungstenite;
 
 pub use monitor_types as types;
-use serde_json::json;
 
 mod build;
 mod deployment;
@@ -229,7 +232,7 @@ impl MonitorClient {
         }
     }
 
-    async fn patch_string<B: Serialize>(
+    async fn _patch_string<B: Serialize>(
         &self,
         endpoint: &str,
         body: impl Into<Option<B>>,
@@ -287,7 +290,7 @@ impl MonitorClient {
         }
     }
 
-    async fn delete_string<B: Serialize>(
+    async fn _delete_string<B: Serialize>(
         &self,
         endpoint: &str,
         body: impl Into<Option<B>>,

@@ -1,9 +1,12 @@
-use anyhow::Context;
+use anyhow::{Context, anyhow};
+use futures_util::{SinkExt, StreamExt};
 use monitor_types::{
     BasicContainerInfo, ImageSummary, Log, Network, Server, ServerActionState, ServerWithStatus,
     SystemStats, SystemStatsQuery,
 };
 use serde_json::{json, Value};
+use tokio::net::TcpStream;
+use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream, tungstenite::Message};
 
 use crate::MonitorClient;
 
@@ -86,6 +89,35 @@ impl MonitorClient {
         self.get(&format!("/api/server/{server_id}/stats"), query.into())
             .await
             .context(format!("failed to get server stats at id {server_id}"))
+    }
+
+    pub async fn subscribe_to_stats_ws(
+        &self,
+        server_id: &str,
+        query: impl Into<Option<SystemStatsQuery>>,
+    ) -> anyhow::Result<WebSocketStream<MaybeTlsStream<TcpStream>>> {
+        let query = query.into().unwrap_or_default();
+        let endpoint = format!(
+            "{}/ws/stats/{server_id}?networks={}&components={}&processes={}",
+            self.url.replace("http", "ws"),
+            query.networks,
+            query.components,
+            query.processes
+        );
+        let (mut socket, _) = connect_async(endpoint).await?;
+        socket.send(Message::Text(self.token.clone())).await?;
+        let msg = socket.next().await;
+        if let Some(Ok(Message::Text(msg))) = &msg {
+            if msg.as_str() == "LOGGED_IN" {
+                Ok(socket)
+            } else {
+                Err(anyhow!("failed to log in"))
+            }
+        } else if let Some(Err(e)) = &msg {
+            Err(anyhow!("error on connection: {e:?}"))
+        } else {
+            Err(anyhow!("some other failure"))
+        }
     }
 
     pub async fn get_docker_networks(&self, server_id: &str) -> anyhow::Result<Vec<Network>> {
