@@ -1,13 +1,7 @@
-use std::sync::Arc;
-
 use anyhow::anyhow;
 use axum::{
-    extract::{
-        ws::{Message, WebSocket},
-        WebSocketUpgrade,
-    },
+    extract::{ws::Message, WebSocketUpgrade},
     response::IntoResponse,
-    Extension,
 };
 use db::DbClient;
 use futures_util::{SinkExt, StreamExt};
@@ -22,10 +16,7 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 use types::{PermissionLevel, Update, UpdateTarget, User};
 
-use crate::{
-    auth::{JwtClient, JwtExtension},
-    state::{State, StateExtension},
-};
+use crate::{auth::JwtExtension, state::StateExtension};
 
 pub type UpdateWsSender = Mutex<Sender<Update>>;
 
@@ -46,19 +37,18 @@ impl UpdateWsChannel {
 }
 
 pub async fn ws_handler(
-    Extension(jwt_client): JwtExtension,
-    Extension(state): StateExtension,
+    jwt_client: JwtExtension,
+    state: StateExtension,
     ws: WebSocketUpgrade,
 ) -> impl IntoResponse {
     let mut reciever = state.update.reciever.resubscribe();
     ws.on_upgrade(|socket| async move {
-        let login_res = login(socket, &jwt_client, &state).await;
+        let login_res = state.ws_login(socket, &jwt_client).await;
         if login_res.is_none() {
             return;
         }
-        let (socket, user_id) = login_res.unwrap();
-        let (ws_sender, mut ws_reciever) = socket.split();
-        let ws_sender = Arc::new(Mutex::new(ws_sender));
+        let (socket, user) = login_res.unwrap();
+        let (mut ws_sender, mut ws_reciever) = socket.split();
         let cancel = CancellationToken::new();
         let cancel_clone = cancel.clone();
         tokio::spawn(async move {
@@ -67,25 +57,21 @@ pub async fn ws_handler(
                     _ = cancel_clone.cancelled() => break,
                     update = reciever.recv() => {update.expect("failed to recv update msg")}
                 };
-                let user = state.db.users.find_one_by_id(&user_id).await;
+                let user = state.db.users.find_one_by_id(&user.id).await;
                 if user.is_err()
                     || user.as_ref().unwrap().is_none()
                     || !user.as_ref().unwrap().as_ref().unwrap().enabled
                 {
                     let _ = ws_sender
-                        .lock()
-                        .await
                         .send(Message::Text(json!({ "type": "INVALID_USER" }).to_string()))
                         .await;
-                    let _ = ws_sender.lock().await.close().await;
+                    let _ = ws_sender.close().await;
                     return;
                 }
                 let user = user.unwrap().unwrap(); // already handle cases where this panics in the above early return
-                match user_can_see_update(&user, &user_id, &update.target, &state.db).await {
+                match user_can_see_update(&user, &user.id, &update.target, &state.db).await {
                     Ok(_) => {
                         let _ = ws_sender
-                            .lock()
-                            .await
                             .send(Message::Text(serde_json::to_string(&update).unwrap()))
                             .await;
                     }
@@ -112,50 +98,6 @@ pub async fn ws_handler(
             }
         }
     })
-}
-
-async fn login(
-    mut socket: WebSocket,
-    jwt_client: &JwtClient,
-    state: &State,
-) -> Option<(WebSocket, String)> {
-    if let Some(jwt) = socket.recv().await {
-        match jwt {
-            Ok(jwt) => match jwt {
-                Message::Text(jwt) => match jwt_client.auth_jwt_check_enabled(&jwt, state).await {
-                    Ok(user) => {
-                        let _ = socket.send(Message::Text("LOGGED_IN".to_string())).await;
-                        Some((socket, user.id))
-                    }
-                    Err(e) => {
-                        let _ = socket
-                            .send(Message::Text(format!(
-                                "failed to authenticate user | {e:#?}"
-                            )))
-                            .await;
-                        let _ = socket.close().await;
-                        None
-                    }
-                },
-                msg => {
-                    let _ = socket
-                        .send(Message::Text(format!("invalid login msg: {msg:#?}")))
-                        .await;
-                    let _ = socket.close().await;
-                    None
-                }
-            },
-            Err(e) => {
-                let _ = socket
-                    .send(Message::Text(format!("failed to get jwt message: {e:#?}")))
-                    .await;
-                let _ = socket.close().await;
-                None
-            }
-        }
-    } else {
-        None
-    }
 }
 
 async fn user_can_see_update(

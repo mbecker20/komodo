@@ -129,7 +129,7 @@ pub enum ServerStatus {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct SystemStatsQuery {
     #[serde(default)]
     pub networks: bool,
@@ -150,7 +150,7 @@ impl SystemStatsQuery {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SystemStats {
     pub cpu_perc: f32,     // in %
     pub mem_used_gb: f64,  // in GB
@@ -165,7 +165,7 @@ pub struct SystemStats {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct DiskUsage {
     pub used_gb: f64,  // in GB
     pub total_gb: f64, // in GB
@@ -175,7 +175,7 @@ pub struct DiskUsage {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SingleDiskUsage {
     pub mount: PathBuf,
     pub used_gb: f64,  // in GB
@@ -183,7 +183,7 @@ pub struct SingleDiskUsage {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SystemNetwork {
     pub name: String,
     pub recieved_kb: f64,    // in kB
@@ -191,7 +191,7 @@ pub struct SystemNetwork {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SystemComponent {
     pub label: String,
     pub temp: f32,
@@ -201,7 +201,7 @@ pub struct SystemComponent {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SystemProcess {
     pub pid: u32,
     pub name: String,

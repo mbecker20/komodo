@@ -239,6 +239,12 @@ pub enum Timelength {
     ThirtyDays,
 }
 
+impl Default for Timelength {
+    fn default() -> Timelength {
+        Timelength::FiveMinutes
+    }
+}
+
 pub fn monitor_timestamp() -> String {
     Utc::now().to_rfc3339_opts(SecondsFormat::Millis, false)
 }

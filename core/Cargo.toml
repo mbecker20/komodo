@@ -12,13 +12,14 @@ types = { package = "monitor_types", path = "../lib/types" }
 periphery = { package = "periphery_client", path = "../lib/periphery_client" }
 axum_oauth2 = { path = "../lib/axum_oauth2" }
 tokio = { version = "1.21", features = ["full"] }
+tokio-tungstenite = "0.18"
 tokio-util = "0.7"
 axum = { version = "0.6", features = ["ws", "json"] }
 axum-extra = { version = "0.4", features = ["spa"] }
 tower = { version = "0.4", features = ["full"] }
 tower-http = { version = "0.3", features = ["cors"] }
 slack = { package = "slack_client_rs", version = "0.0.7" }
-mungos = "0.2.26"
+mungos = "0.2.27"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"

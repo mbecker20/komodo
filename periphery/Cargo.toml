@@ -15,7 +15,7 @@ types = { package = "monitor_types", path = "../lib/types" }
 run_command = { version = "0.0.5", features = ["async_tokio"] }
 async_timing_util = "0.1.12"
 tokio = { version = "1.21", features = ["full"] }
-axum = { version = "0.6" }
+axum = { version = "0.6", features = ["ws"] }
 tower = { version = "0.4", features = ["full"] }
 dotenv = "0.15"
 serde = "1.0"
@@ -28,3 +28,5 @@ sysinfo = "0.27.2"
 toml = "0.5"
 daemonize = "0.4"
 clap = { version = "4.0", features = ["derive"] }
+futures-util = "0.3"
+tokio-util = "0.7"

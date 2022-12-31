@@ -1,12 +1,16 @@
 use anyhow::Context;
 use axum::{
-    extract::{Path, Query},
+    extract::{ws::Message as AxumMessage, Path, Query, WebSocketUpgrade},
+    response::IntoResponse,
     routing::{delete, get, patch, post},
     Extension, Json, Router,
 };
-use futures_util::future::join_all;
+use futures_util::{future::join_all, SinkExt, StreamExt};
 use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
+use tokio::select;
+use tokio_tungstenite::tungstenite::Message;
+use tokio_util::sync::CancellationToken;
 use types::{
     traits::Permissioned, BasicContainerInfo, ImageSummary, Network, PermissionLevel, Server,
     ServerActionState, ServerStatus, ServerWithStatus, SystemStats, SystemStatsQuery,
@@ -129,6 +133,22 @@ pub fn router() -> Router {
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
+                },
+            ),
+        )
+        .route(
+            "/:id/stats/ws",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(ServerId { id }): Path<ServerId>,
+                 Query(query): Query<SystemStatsQuery>,
+                 ws: WebSocketUpgrade| async move {
+                    let connection = state
+                        .subscribe_to_stats_ws(&id, &user, &query, ws)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(connection)
                 },
             ),
         )
@@ -335,6 +355,51 @@ impl State {
             .await
             .context(format!("failed to get stats from server {}", server.name))?;
         Ok(stats)
+    }
+
+    async fn subscribe_to_stats_ws(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+        query: &SystemStatsQuery,
+        ws: WebSocketUpgrade,
+    ) -> anyhow::Result<impl IntoResponse> {
+        let server = self
+            .get_server_check_permissions(server_id, user, PermissionLevel::Read)
+            .await?;
+        let mut stats_reciever = self.periphery.subscribe_to_stats_ws(&server, query).await?;
+        let upgrade = ws.on_upgrade(|socket| async move {
+            let (mut ws_sender, mut ws_recv) = socket.split();
+            let cancel = CancellationToken::new();
+            let cancel_clone = cancel.clone();
+            tokio::spawn(async move {
+                loop {
+                    let stats = select! {
+                        _ = cancel_clone.cancelled() => break,
+                        stats = stats_reciever.next() => stats
+                    };
+                    if let Some(Ok(Message::Text(msg))) = stats {
+                        let _ = ws_sender.send(AxumMessage::Text(msg)).await;
+                    }
+                }
+            });
+            while let Some(msg) = ws_recv.next().await {
+                match msg {
+                    Ok(msg) => match msg {
+                        AxumMessage::Close(_) => {
+                            cancel.cancel();
+                            return;
+                        }
+                        _ => {}
+                    },
+                    Err(_) => {
+                        cancel.cancel();
+                        return;
+                    }
+                }
+            }
+        });
+        Ok(upgrade)
     }
 
     async fn get_networks(

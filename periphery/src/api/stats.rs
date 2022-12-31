@@ -1,8 +1,19 @@
 use std::sync::{Arc, RwLock};
 
 use async_timing_util::wait_until_timelength;
-use axum::{extract::Query, routing::get, Extension, Json, Router};
+use axum::{
+    extract::{ws::Message, Query, WebSocketUpgrade},
+    response::IntoResponse,
+    routing::get,
+    Extension, Json, Router,
+};
+use futures_util::{SinkExt, StreamExt};
 use sysinfo::{ComponentExt, CpuExt, DiskExt, NetworkExt, PidExt, ProcessExt, SystemExt};
+use tokio::{
+    select,
+    sync::broadcast::{self, Receiver},
+};
+use tokio_util::sync::CancellationToken;
 use types::{
     DiskUsage, SingleDiskUsage, SystemComponent, SystemNetwork, SystemProcess, SystemStats,
     SystemStatsQuery, Timelength,
@@ -11,11 +22,21 @@ use types::{
 pub fn router(stats_polling_rate: Timelength) -> Router {
     Router::new()
         .route(
-            "/system",
+            "/",
             get(
                 |Extension(sys): StatsExtension, Query(query): Query<SystemStatsQuery>| async move {
-                    let stats = sys.read().unwrap().get_stats(query);
+                    let stats = sys.read().unwrap().get_cached_stats(query);
                     Json(stats)
+                },
+            ),
+        )
+        .route(
+            "/ws",
+            get(
+                |Extension(sys): StatsExtension,
+                 Query(query): Query<SystemStatsQuery>,
+                 ws: WebSocketUpgrade| async move {
+                    sys.read().unwrap().ws_subscribe(ws, Arc::new(query))
                 },
             ),
         )
@@ -26,9 +47,11 @@ type StatsExtension = Extension<Arc<RwLock<StatsClient>>>;
 
 struct StatsClient {
     sys: sysinfo::System,
+    cache: SystemStats,
     polling_rate: Timelength,
     refresh_ts: u128,
     refresh_list_ts: u128,
+    receiver: Receiver<SystemStats>,
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
@@ -36,12 +59,15 @@ const BYTES_PER_MB: f64 = 1048576.0;
 const BYTES_PER_KB: f64 = 1024.0;
 
 impl StatsClient {
-    pub fn extension(polling_rate: Timelength) -> StatsExtension {
+    fn extension(polling_rate: Timelength) -> StatsExtension {
+        let (sender, receiver) = broadcast::channel::<SystemStats>(10);
         let client = StatsClient {
             sys: sysinfo::System::new_all(),
+            cache: SystemStats::default(),
             polling_rate,
             refresh_ts: 0,
             refresh_list_ts: 0,
+            receiver,
         };
         let client = Arc::new(RwLock::new(client));
         let clone = client.clone();
@@ -49,9 +75,15 @@ impl StatsClient {
             let polling_rate = polling_rate.to_string().parse().unwrap();
             loop {
                 let ts = wait_until_timelength(polling_rate, 0).await;
-                let mut client = clone.write().unwrap();
-                client.refresh();
-                client.refresh_ts = ts;
+                {
+                    let mut client = clone.write().unwrap();
+                    client.refresh();
+                    client.refresh_ts = ts;
+                    client.cache = client.get_stats();
+                }
+                sender
+                    .send(clone.read().unwrap().cache.clone())
+                    .expect("failed to broadcast new stats to reciever");
             }
         });
         let clone = client.clone();
@@ -64,6 +96,61 @@ impl StatsClient {
             }
         });
         Extension(client)
+    }
+
+    fn ws_subscribe(
+        &self,
+        ws: WebSocketUpgrade,
+        query: Arc<SystemStatsQuery>,
+    ) -> impl IntoResponse {
+        // println!("client subscribe");
+        let mut reciever = self.get_receiver();
+        ws.on_upgrade(|socket| async move {
+            let (mut ws_sender, mut ws_reciever) = socket.split();
+            let cancel = CancellationToken::new();
+            let cancel_clone = cancel.clone();
+            tokio::spawn(async move {
+                loop {
+                    let mut stats = select! {
+                        _ = cancel_clone.cancelled() => break,
+                        stats = reciever.recv() => { stats.expect("failed to recv stats msg") }
+                    };
+                    if !query.components {
+                        stats.components = vec![]
+                    }
+                    if !query.networks {
+                        stats.networks = vec![]
+                    }
+                    if !query.processes {
+                        stats.processes = vec![]
+                    }
+                    let _ = ws_sender
+                        .send(Message::Text(serde_json::to_string(&stats).unwrap()))
+                        .await;
+                }
+            });
+            while let Some(msg) = ws_reciever.next().await {
+                match msg {
+                    Ok(msg) => match msg {
+                        Message::Close(_) => {
+                            // println!("client CLOSE");
+                            cancel.cancel();
+                            return;
+                        }
+                        _ => {}
+                    },
+                    Err(_) => {
+                        // println!("client CLOSE");
+                        cancel.cancel();
+                        return;
+                    }
+                }
+            }
+        })
+    }
+
+    fn get_receiver(&self) -> Receiver<SystemStats> {
+        self.receiver.resubscribe()
     }
 
     fn refresh(&mut self) {
@@ -81,27 +168,29 @@ impl StatsClient {
         self.sys.refresh_components_list();
     }
 
-    pub fn get_stats(&self, query: SystemStatsQuery) -> SystemStats {
+    fn get_cached_stats(&self, query: SystemStatsQuery) -> SystemStats {
+        let mut stats = self.cache.clone();
+        if !query.networks {
+            stats.networks = Vec::new();
+        }
+        if !query.components {
+            stats.components = Vec::new();
+        }
+        if !query.processes {
+            stats.processes = Vec::new();
+        }
+        stats
+    }
+
+    fn get_stats(&self) -> SystemStats {
         SystemStats {
             cpu_perc: self.sys.global_cpu_info().cpu_usage(),
             mem_used_gb: self.sys.used_memory() as f64 / BYTES_PER_GB,
             mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
             disk: self.get_disk_usage(),
-            networks: if query.networks {
-                self.get_networks()
-            } else {
-                vec![]
-            },
-            components: if query.components {
-                self.get_components()
-            } else {
-                vec![]
-            },
-            processes: if query.processes {
-                self.get_processes()
-            } else {
-                vec![]
-            },
+            networks: self.get_networks(),
+            components: self.get_components(),
+            processes: self.get_processes(),
             polling_rate: self.polling_rate,
             refresh_ts: self.refresh_ts,
             refresh_list_ts: self.refresh_list_ts,

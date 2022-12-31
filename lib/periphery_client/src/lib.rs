@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
+use tokio::net::TcpStream;
+use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use types::{Server, SystemStats, SystemStatsQuery};
 
 mod build;
@@ -41,12 +43,30 @@ impl PeripheryClient {
         self.get_json(
             server,
             &format!(
-                "/stats/system?networks={}&components={}&processes={}",
+                "/stats?networks={}&components={}&processes={}",
                 query.networks, query.components, query.processes
             ),
         )
         .await
         .context("failed to get system stats from periphery")
+    }
+
+    pub async fn subscribe_to_stats_ws(
+        &self,
+        server: &Server,
+        query: &SystemStatsQuery,
+    ) -> anyhow::Result<WebSocketStream<MaybeTlsStream<TcpStream>>> {
+        let ws_url = format!(
+            "{}/stats/ws?networks={}&components={}&processes={}",
+            server.address.replace("http", "ws"),
+            query.networks,
+            query.components,
+            query.processes
+        );
+        let (socket, _) = connect_async(ws_url)
+            .await
+            .context("failed to connect to periphery stats ws")?;
+        Ok(socket)
     }
 
     async fn get_text(&self, server: &Server, endpoint: &str) -> anyhow::Result<String> {
