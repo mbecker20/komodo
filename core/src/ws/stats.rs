@@ -80,14 +80,14 @@ pub async fn ws_handler(
             match msg {
                 Ok(msg) => match msg {
                     AxumMessage::Close(_) => {
-                        println!("CLOSE");
+                        // println!("CLOSE");
                         cancel.cancel();
                         return;
                     }
                     _ => {}
                 },
                 Err(_) => {
-                    println!("CLOSE FROM ERR");
+                    // println!("CLOSE FROM ERR");
                     cancel.cancel();
                     return;
                 }
