@@ -1,11 +1,7 @@
 import { Component } from "solid-js";
 
 const Build: Component<{}> = (p) => {
-	return (
-		<div>
-			
-		</div>
-	);
-}
+  return <div></div>;
+};
 
 export default Build;

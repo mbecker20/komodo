@@ -5,6 +5,9 @@
 	display: grid;
 	grid-template-columns: 1fr;
 	grid-template-rows: auto auto;
+	gap: 1rem;
+	padding: 1rem;
+	box-sizing: border-box;
 	grid-template-areas:
 		"topbar"
 		"content";
@@ -12,4 +15,9 @@
 
 .selected {
 	background-color: rgba(c.$lightblue, 0.5);
+}
+
+.card {
+	background-color: c.$grey;
+	padding: 0.5rem;
 }

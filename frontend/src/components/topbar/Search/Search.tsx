@@ -41,6 +41,7 @@ export const Search: Component<{}> = (p) => {
       show={open.value()}
       close={() => open.close(inputRef)}
       position="bottom center"
+      menuClass={s.SearchMenu}
       menuStyle={{
         gap: "0.5rem",
         ...(isMobile() ? mobileStyle : {}),
@@ -57,7 +58,7 @@ export const Search: Component<{}> = (p) => {
         >
           <Input
             ref={inputRef}
-            class={s.Search}
+            class={s.SearchInput}
             placeholder="search"
             value={search.value()}
             onEdit={input.onEdit}
@@ -85,7 +86,7 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
       <Show when={isMobile()}>
         <Input
           ref={() => inputRef}
-          class={s.Search}
+          class={s.SearchInput}
           placeholder="search"
           value={search.value()}
           onEdit={input.onEdit}
