@@ -129,6 +129,27 @@ pub enum ServerStatus {
 }
 
 #[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct SystemStatsQuery {
+    #[serde(default)]
+    pub networks: bool,
+    #[serde(default)]
+    pub components: bool,
+    #[serde(default)]
+    pub processes: bool,
+}
+
+impl SystemStatsQuery {
+    pub fn all() -> SystemStatsQuery {
+        SystemStatsQuery {
+            networks: true,
+            components: true,
+            processes: true,
+        }
+    }
+}
+
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct SystemStats {
     pub cpu_perc: f32,     // in %
@@ -184,4 +205,11 @@ pub struct SystemComponent {
 pub struct SystemProcess {
     pub pid: u32,
     pub name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub exe: String,
+    pub cmd: Vec<String>,
+    pub cpu_perc: f32,
+    pub mem_mb: f64,
+    pub disk_read_kb: f64,
+    pub disk_write_kb: f64,
 }

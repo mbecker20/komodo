@@ -1,4 +1,4 @@
-import { useNavigate } from "@solidjs/router";
+import { A, useNavigate } from "@solidjs/router";
 import { Component, createSignal, JSX, Show } from "solid-js";
 import { TOPBAR_HEIGHT } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
@@ -47,9 +47,9 @@ const LeftSide: Component = () => {
       alignItems="center"
       style={{ padding: "0rem 0.5rem", "place-self": "center start" }}
     >
-      <button class="grey" onClick={() => navigate("/")}>
+      <A href="/" class="grey">
         <Icon type="home" width="1.15rem" />
-      </button>
+      </A>
       <HoverMenu
         target={
           <Circle

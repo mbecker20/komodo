@@ -16,7 +16,7 @@ import Circle from "../../shared/Circle";
 import { ControlledTabs } from "../../shared/tabs/Tabs";
 import { useAppDimensions } from "../../../state/DimensionProvider";
 import Grid from "../../shared/layout/Grid";
-import { useNavigate } from "@solidjs/router";
+import { A, useNavigate } from "@solidjs/router";
 import { ServerStatus } from "../../../types";
 
 const mobileStyle: JSX.CSSProperties = {
@@ -127,11 +127,14 @@ const Deployments: Component<{ close: () => void }> = (p) => {
       style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
     >
       <Show when={filteredDeployments()?.length === 0}>
-        <Flex alignItems="center" justifyContent="center">no results</Flex>
+        <Flex alignItems="center" justifyContent="center">
+          no results
+        </Flex>
       </Show>
       <For each={filteredDeployments()}>
         {(deployment, index) => (
-          <button
+          <A
+            href={`/deployment/${getId(deployment.deployment)}`}
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
@@ -160,7 +163,7 @@ const Deployments: Component<{ close: () => void }> = (p) => {
               )}
               size={1.25}
             />
-          </button>
+          </A>
         )}
       </For>
     </Grid>
@@ -183,14 +186,15 @@ const Builds: Component<{ close: () => void }> = (p) => {
       </Show>
       <For each={filteredBuilds()}>
         {(build, index) => (
-          <button
+          <A
+            href={`/build/${getId(build)}`}
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
               "grey"
             )}
             onClick={() => {
-              navigate(`/build/${getId(build)}`);
+              // navigate(`/build/${getId(build)}`);
               p.close();
             }}
           >
@@ -198,7 +202,7 @@ const Builds: Component<{ close: () => void }> = (p) => {
               {build.name}
               <Flex style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</Flex>
             </Grid>
-          </button>
+          </A>
         )}
       </For>
     </Grid>
@@ -206,7 +210,7 @@ const Builds: Component<{ close: () => void }> = (p) => {
 };
 
 const Servers: Component<{ close: () => void }> = (p) => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { highlighted, filteredServers } = useSearchState();
   return (
     <Grid
@@ -221,14 +225,15 @@ const Servers: Component<{ close: () => void }> = (p) => {
       </Show>
       <For each={filteredServers()}>
         {(server, index) => (
-          <button
+          <A
+            href={`/server/${getId(server.server)}`}
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
               "grey"
             )}
             onClick={() => {
-              navigate(`/server/${getId(server.server)}`);
+              // navigate(`/server/${getId(server.server)}`);
               p.close();
             }}
           >
@@ -263,7 +268,7 @@ const Servers: Component<{ close: () => void }> = (p) => {
             >
               {server.status.replaceAll("_", " ").toUpperCase()}
             </div>
-          </button>
+          </A>
         )}
       </For>
     </Grid>

@@ -1,23 +1,23 @@
 use std::sync::{Arc, RwLock};
 
 use async_timing_util::wait_until_timelength;
-use axum::{routing::get, Extension, Json, Router};
-use sysinfo::{
-    ComponentExt, CpuExt, DiskExt, NetworkExt, ProcessExt, ProcessRefreshKind, SystemExt, PidExt,
-};
+use axum::{extract::Query, routing::get, Extension, Json, Router};
+use sysinfo::{ComponentExt, CpuExt, DiskExt, NetworkExt, PidExt, ProcessExt, SystemExt};
 use types::{
     DiskUsage, SingleDiskUsage, SystemComponent, SystemNetwork, SystemProcess, SystemStats,
-    Timelength,
+    SystemStatsQuery, Timelength,
 };
 
 pub fn router(stats_polling_rate: Timelength) -> Router {
     Router::new()
         .route(
             "/system",
-            get(|Extension(sys): StatsExtension| async move {
-                let stats = sys.read().unwrap().get_stats();
-                Json(stats)
-            }),
+            get(
+                |Extension(sys): StatsExtension, Query(query): Query<SystemStatsQuery>| async move {
+                    let stats = sys.read().unwrap().get_stats(query);
+                    Json(stats)
+                },
+            ),
         )
         .layer(StatsClient::extension(stats_polling_rate))
 }
@@ -32,6 +32,7 @@ struct StatsClient {
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
+const BYTES_PER_MB: f64 = 1048576.0;
 const BYTES_PER_KB: f64 = 1024.0;
 
 impl StatsClient {
@@ -80,15 +81,27 @@ impl StatsClient {
         self.sys.refresh_components_list();
     }
 
-    pub fn get_stats(&self) -> SystemStats {
+    pub fn get_stats(&self, query: SystemStatsQuery) -> SystemStats {
         SystemStats {
             cpu_perc: self.sys.global_cpu_info().cpu_usage(),
             mem_used_gb: self.sys.used_memory() as f64 / BYTES_PER_GB,
             mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
             disk: self.get_disk_usage(),
-            networks: self.get_networks(),
-            components: self.get_components(),
-            processes: self.get_processes(),
+            networks: if query.networks {
+                self.get_networks()
+            } else {
+                vec![]
+            },
+            components: if query.components {
+                self.get_components()
+            } else {
+                vec![]
+            },
+            processes: if query.processes {
+                self.get_processes()
+            } else {
+                vec![]
+            },
             polling_rate: self.polling_rate,
             refresh_ts: self.refresh_ts,
             refresh_list_ts: self.refresh_list_ts,
@@ -161,10 +174,18 @@ impl StatsClient {
         self.sys
             .processes()
             .into_iter()
-            .map(|(pid, p)| SystemProcess {
-                pid: pid.as_u32(),
-                name: p.name().to_string(),
-
+            .map(|(pid, p)| {
+                let disk_usage = p.disk_usage();
+                SystemProcess {
+                    pid: pid.as_u32(),
+                    name: p.name().to_string(),
+                    exe: p.exe().to_str().unwrap_or("").to_string(),
+                    cmd: p.cmd().to_vec(),
+                    cpu_perc: p.cpu_usage(),
+                    mem_mb: p.memory() as f64 / BYTES_PER_MB,
+                    disk_read_kb: disk_usage.read_bytes as f64 / BYTES_PER_KB,
+                    disk_write_kb: disk_usage.written_bytes as f64 / BYTES_PER_KB,
+                }
             })
             .collect()
     }

@@ -9,7 +9,7 @@ use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
 use types::{
     traits::Permissioned, BasicContainerInfo, ImageSummary, Network, PermissionLevel, Server,
-    ServerActionState, ServerStatus, ServerWithStatus, SystemStats,
+    ServerActionState, ServerStatus, ServerWithStatus, SystemStats, SystemStatsQuery,
 };
 use typeshare::typeshare;
 
@@ -122,9 +122,10 @@ pub fn router() -> Router {
             get(
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                 Path(ServerId { id }): Path<ServerId>,
+                 Query(query): Query<SystemStatsQuery>| async move {
                     let stats = state
-                        .get_server_stats(&id, &user)
+                        .get_server_stats(&id, &user, &query)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
@@ -323,13 +324,14 @@ impl State {
         &self,
         server_id: &str,
         user: &RequestUser,
+        query: &SystemStatsQuery,
     ) -> anyhow::Result<SystemStats> {
         let server = self
             .get_server_check_permissions(server_id, user, PermissionLevel::Read)
             .await?;
         let stats = self
             .periphery
-            .get_system_stats(&server)
+            .get_system_stats(&server, query)
             .await
             .context(format!("failed to get stats from server {}", server.name))?;
         Ok(stats)

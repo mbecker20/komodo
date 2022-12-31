@@ -3,7 +3,7 @@ use std::{path::PathBuf, str::FromStr};
 use anyhow::{anyhow, Context};
 use types::{Build, DockerBuildArgs, EnvironmentVar, Log, Version};
 
-use crate::{git, run_monitor_command, to_monitor_name};
+use crate::{all_logs_success, git, run_monitor_command, to_monitor_name};
 
 use super::docker_login;
 
@@ -40,18 +40,19 @@ pub async fn build(
     let repo_dir = PathBuf::from_str(repo_dir)
         .context(format!("invalid repo dir: {repo_dir}"))?
         .join(&name);
-    let pull_log = git::pull(
+    let pull_logs = git::pull(
         &repo_dir
             .to_str()
             .context(format!("invalid repo dir: {}", repo_dir.display()))?,
         branch,
+        &None,
     )
     .await;
-    if !pull_log.success {
-        logs.push(pull_log);
+    if !all_logs_success(&pull_logs) {
+        logs.extend(pull_logs);
         return Ok(logs);
     }
-    logs.push(pull_log);
+    logs.extend(pull_logs);
     if let Some(command) = pre_build {
         let mut repo_dir = repo_dir.clone();
         repo_dir.push(&command.path);

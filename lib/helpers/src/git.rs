@@ -13,6 +13,7 @@ pub struct CloneArgs {
     repo: Option<String>,
     branch: Option<String>,
     on_clone: Option<Command>,
+    on_pull: Option<Command>,
     pub github_account: Option<GithubUsername>,
 }
 
@@ -23,6 +24,7 @@ impl From<&Deployment> for CloneArgs {
             repo: d.repo.clone(),
             branch: d.branch.clone(),
             on_clone: d.on_clone.clone(),
+            on_pull: d.on_pull.clone(),
             github_account: d.github_account.clone(),
         }
     }
@@ -35,18 +37,37 @@ impl From<&Build> for CloneArgs {
             repo: b.repo.clone(),
             branch: b.branch.clone(),
             on_clone: b.on_clone.clone(),
+            on_pull: None,
             github_account: b.github_account.clone(),
         }
     }
 }
 
-pub async fn pull(path: &str, branch: &Option<String>) -> Log {
+pub async fn pull(path: &str, branch: &Option<String>, on_pull: &Option<Command>) -> Vec<Log> {
     let branch = match branch {
         Some(branch) => branch.to_owned(),
         None => "main".to_string(),
     };
     let command = format!("cd {path} && git pull origin {branch}");
-    run_monitor_command("git pull", command).await
+    let mut logs = Vec::new();
+    let pull_log = run_monitor_command("git pull", command).await;
+    if !pull_log.success {
+        logs.push(pull_log);
+        return logs;
+    }
+    logs.push(pull_log);
+    if let Some(on_pull) = on_pull {
+        let mut path = PathBuf::from_str(path).unwrap();
+        path.push(&on_pull.path);
+        let path = path.display().to_string();
+        let on_pull_log = run_monitor_command(
+            "on pull command",
+            format!("cd {path} && {}", on_pull.command),
+        )
+        .await;
+        logs.push(on_pull_log);
+    }
+    logs
 }
 
 pub async fn clone_repo(
@@ -59,6 +80,7 @@ pub async fn clone_repo(
         repo,
         branch,
         on_clone,
+        on_pull,
         ..
     } = clone_args.into();
     let repo = repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
@@ -76,6 +98,17 @@ pub async fn clone_repo(
         )
         .await;
         logs.push(on_clone_log);
+        repo_dir.pop();
+    }
+    if let Some(command) = on_pull {
+        repo_dir.push(&command.path);
+        let on_clone_log = run_monitor_command(
+            "on clone",
+            format!("cd {} && {}", repo_dir.display(), command.command),
+        )
+        .await;
+        logs.push(on_clone_log);
+        repo_dir.pop();
     }
     Ok(logs)
 }

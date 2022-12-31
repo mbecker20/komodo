@@ -59,7 +59,7 @@ const Icon: Component<{
   return (
     <img
       class={p.class}
-      src={`/icons/${p.type}.svg`}
+      src={`/assets/icons/${p.type}.svg`}
       alt={p.alt || p.type}
       title={p.title}
       style={{

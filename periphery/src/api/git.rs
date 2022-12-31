@@ -6,7 +6,7 @@ use helpers::{
     handle_anyhow_error, to_monitor_name,
 };
 use serde::Deserialize;
-use types::Log;
+use types::{Command, Log};
 
 use crate::{helpers::get_github_token, PeripheryConfigExtension};
 
@@ -19,6 +19,7 @@ pub struct DeleteRepoBody {
 pub struct PullBody {
     name: String,
     branch: Option<String>,
+    on_pull: Option<Command>,
 }
 
 pub fn router() -> Router {
@@ -73,12 +74,16 @@ async fn delete_repo(
 
 async fn pull_repo(
     Extension(config): PeripheryConfigExtension,
-    Json(PullBody { name, branch }): Json<PullBody>,
-) -> anyhow::Result<Json<Log>> {
+    Json(PullBody {
+        name,
+        branch,
+        on_pull,
+    }): Json<PullBody>,
+) -> anyhow::Result<Json<Vec<Log>>> {
     let mut repo_dir = PathBuf::from_str(&config.repo_dir)?;
     let name = to_monitor_name(&name);
     repo_dir.push(&name);
     let path = repo_dir.display().to_string();
-    let log = git::pull(&path, &branch).await;
-    Ok(Json(log))
+    let logs = git::pull(&path, &branch, &on_pull).await;
+    Ok(Json(logs))
 }

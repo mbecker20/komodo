@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
-use types::{Server, SystemStats};
+use types::{Server, SystemStats, SystemStatsQuery};
 
 mod build;
 mod container;
@@ -33,10 +33,20 @@ impl PeripheryClient {
             .context("failed to get docker accounts from periphery")
     }
 
-    pub async fn get_system_stats(&self, server: &Server) -> anyhow::Result<SystemStats> {
-        self.get_json(server, "/stats/system")
-            .await
-            .context("failed to get system stats from periphery")
+    pub async fn get_system_stats(
+        &self,
+        server: &Server,
+        query: &SystemStatsQuery,
+    ) -> anyhow::Result<SystemStats> {
+        self.get_json(
+            server,
+            &format!(
+                "/stats/system?networks={}&components={}&processes={}",
+                query.networks, query.components, query.processes
+            ),
+        )
+        .await
+        .context("failed to get system stats from periphery")
     }
 
     async fn get_text(&self, server: &Server, endpoint: &str) -> anyhow::Result<String> {

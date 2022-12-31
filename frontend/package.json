@@ -5,7 +5,7 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node post-build.mjs",
     "serve": "vite preview"
   },
   "license": "GPL v3.0",

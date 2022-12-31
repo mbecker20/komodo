@@ -1,5 +1,4 @@
 use diff::{Diff, OptionDiff};
-use types::Log;
 
 #[macro_export]
 macro_rules! response {
@@ -25,13 +24,4 @@ where
         }
     }
     return false;
-}
-
-pub fn all_logs_success(logs: &Vec<Log>) -> bool {
-    for log in logs {
-        if !log.success {
-            return false;
-        }
-    }
-    true
 }

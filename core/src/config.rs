@@ -16,7 +16,7 @@ pub fn load() -> (CoreConfig, SpaRouter) {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse environment variables");
     let config = parse_config_file(&env.config_path).expect("failed to parse config");
-    let spa_router = SpaRouter::new("/", env.frontend_path);
+    let spa_router = SpaRouter::new("/assets", env.frontend_path);
     (config, spa_router)
 }
 

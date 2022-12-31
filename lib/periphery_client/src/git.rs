@@ -1,7 +1,7 @@
 use anyhow::Context;
 use helpers::git::CloneArgs;
 use serde_json::json;
-use types::{Log, Server};
+use types::{Command, Log, Server};
 
 use crate::PeripheryClient;
 
@@ -22,11 +22,12 @@ impl PeripheryClient {
         server: &Server,
         name: &str,
         branch: &Option<String>,
-    ) -> anyhow::Result<Log> {
+        on_pull: &Option<Command>,
+    ) -> anyhow::Result<Vec<Log>> {
         self.post_json(
             server,
             "/git/pull",
-            &json!({ "name": name, "branch": branch }),
+            &json!({ "name": name, "branch": branch, "on_pull": on_pull }),
         )
         .await
         .context("failed to pull repo on periphery")

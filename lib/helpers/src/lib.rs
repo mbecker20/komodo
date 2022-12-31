@@ -71,3 +71,12 @@ pub fn generate_secret(length: usize) -> String {
         .map(char::from)
         .collect()
 }
+
+pub fn all_logs_success(logs: &Vec<Log>) -> bool {
+    for log in logs {
+        if !log.success {
+            return false;
+        }
+    }
+    true
+}

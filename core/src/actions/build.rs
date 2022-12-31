@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
-use helpers::to_monitor_name;
+use helpers::{all_logs_success, to_monitor_name};
 use mungos::{doc, to_bson};
 use types::{
     monitor_timestamp,
@@ -10,7 +10,7 @@ use types::{
 
 use crate::{
     auth::RequestUser,
-    helpers::{all_logs_success, any_option_diff_is_some, option_diff_is_some},
+    helpers::{any_option_diff_is_some, option_diff_is_some},
     state::State,
 };
 

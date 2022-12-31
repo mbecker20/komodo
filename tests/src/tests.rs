@@ -48,7 +48,7 @@ pub async fn get_server_stats(monitor: &MonitorClient) -> anyhow::Result<SystemS
         .context("failed at list servers")?;
     let server = &servers.get(0).ok_or(anyhow!("no servers"))?.server;
     let stats = monitor
-        .get_server_stats(&server.id)
+        .get_server_stats(&server.id, None)
         .await
         .context("failed at get server stats")?;
     Ok(stats)

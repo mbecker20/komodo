@@ -1,7 +1,7 @@
 use anyhow::Context;
 use monitor_types::{
     BasicContainerInfo, ImageSummary, Log, Network, Server, ServerActionState, ServerWithStatus,
-    SystemStats,
+    SystemStats, SystemStatsQuery,
 };
 use serde_json::{json, Value};
 
@@ -78,13 +78,14 @@ impl MonitorClient {
             .context("failed at update server")
     }
 
-    pub async fn get_server_stats(&self, server_id: &str) -> anyhow::Result<SystemStats> {
-        self.get(
-            &format!("/api/server/{server_id}/stats"),
-            Option::<()>::None,
-        )
-        .await
-        .context(format!("failed to get server stats at id {server_id}"))
+    pub async fn get_server_stats(
+        &self,
+        server_id: &str,
+        query: impl Into<Option<&SystemStatsQuery>>,
+    ) -> anyhow::Result<SystemStats> {
+        self.get(&format!("/api/server/{server_id}/stats"), query.into())
+            .await
+            .context(format!("failed to get server stats at id {server_id}"))
     }
 
     pub async fn get_docker_networks(&self, server_id: &str) -> anyhow::Result<Vec<Network>> {

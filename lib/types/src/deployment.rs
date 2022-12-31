@@ -60,6 +60,14 @@ pub struct Deployment {
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_clone: Option<Command>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub on_pull: Option<Command>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub repo_mount: Option<Conversion>,
+
     #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]

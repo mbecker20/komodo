@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
-use helpers::to_monitor_name;
+use helpers::{all_logs_success, to_monitor_name};
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
@@ -9,7 +9,7 @@ use types::{
 
 use crate::{
     auth::RequestUser,
-    helpers::{all_logs_success, any_option_diff_is_some, option_diff_is_some},
+    helpers::{any_option_diff_is_some, option_diff_is_some},
     state::State,
 };
 
@@ -633,13 +633,18 @@ impl State {
 
         update.id = self.add_update(update.clone()).await?;
 
-        let log = self
+        let logs = self
             .periphery
-            .pull_repo(&server, &deployment.name, &deployment.branch)
+            .pull_repo(
+                &server,
+                &deployment.name,
+                &deployment.branch,
+                &deployment.on_pull,
+            )
             .await?;
 
-        update.success = log.success;
-        update.logs.push(log);
+        update.success = all_logs_success(&logs);
+        update.logs.extend(logs);
         update.end_ts = Some(monitor_timestamp());
         update.status = UpdateStatus::Complete;
 
