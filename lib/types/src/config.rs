@@ -1,4 +1,4 @@
-use std::{collections::HashMap, net::IpAddr};
+use std::{collections::HashMap, net::IpAddr, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -87,7 +87,7 @@ pub struct PeripheryConfig {
     #[serde(default = "default_periphery_port")]
     pub port: u16,
     #[serde(default = "default_repo_dir")]
-    pub repo_dir: String,
+    pub repo_dir: PathBuf,
     #[serde(default = "default_stats_refresh_interval")]
     pub stats_polling_rate: Timelength,
     #[serde(default)]
@@ -104,8 +104,8 @@ fn default_periphery_port() -> u16 {
     8000
 }
 
-fn default_repo_dir() -> String {
-    "/repos".to_string()
+fn default_repo_dir() -> PathBuf {
+    "/repos".parse().unwrap()
 }
 
 fn default_stats_refresh_interval() -> Timelength {

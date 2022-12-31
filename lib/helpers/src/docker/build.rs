@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
 
 use anyhow::{anyhow, Context};
 use types::{Build, DockerBuildArgs, EnvironmentVar, Log, Version};
@@ -22,7 +22,7 @@ pub async fn build(
         pre_build,
         ..
     }: &Build,
-    repo_dir: &str,
+    mut repo_dir: PathBuf,
     docker_token: Option<String>,
 ) -> anyhow::Result<Vec<Log>> {
     let mut logs = Vec::new();
@@ -37,28 +37,18 @@ pub async fn build(
     let using_account = docker_login(docker_account, &docker_token)
         .await
         .context("failed to login to docker")?;
-    let repo_dir = PathBuf::from_str(repo_dir)
-        .context(format!("invalid repo dir: {repo_dir}"))?
-        .join(&name);
-    let pull_logs = git::pull(
-        &repo_dir
-            .to_str()
-            .context(format!("invalid repo dir: {}", repo_dir.display()))?,
-        branch,
-        &None,
-    )
-    .await;
+    repo_dir.push(&name);
+    let pull_logs = git::pull(repo_dir.clone(), branch, &None).await;
     if !all_logs_success(&pull_logs) {
         logs.extend(pull_logs);
         return Ok(logs);
     }
     logs.extend(pull_logs);
     if let Some(command) = pre_build {
-        let mut repo_dir = repo_dir.clone();
-        repo_dir.push(&command.path);
+        let dir = repo_dir.join(&command.path);
         let pre_build_log = run_monitor_command(
             "pre build",
-            format!("cd {} && {}", repo_dir.display(), command.command),
+            format!("cd {} && {}", dir.display(), command.command),
         )
         .await;
         if !pre_build_log.success {
@@ -68,7 +58,6 @@ pub async fn build(
         logs.push(pre_build_log);
     }
     let build_dir = repo_dir.join(build_path);
-    let cd = build_dir.display();
     let dockerfile_path = match dockerfile_path {
         Some(dockerfile_path) => dockerfile_path.to_owned(),
         None => "Dockerfile".to_owned(),
@@ -82,7 +71,8 @@ pub async fn build(
         String::new()
     };
     let command = format!(
-        "cd {cd} && docker build {build_args}{image_tags} -f {dockerfile_path} .{docker_push}"
+        "cd {} && docker build {build_args}{image_tags} -f {dockerfile_path} .{docker_push}",
+        build_dir.display()
     );
     let build_log = run_monitor_command("docker build", command).await;
     logs.push(build_log);

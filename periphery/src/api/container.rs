@@ -78,7 +78,9 @@ async fn deploy(
     Json(deployment): Json<Deployment>,
 ) -> Json<Log> {
     let log = match get_docker_token(&deployment.docker_run_args.docker_account, &config) {
-        Ok(docker_token) => docker::deploy(&deployment, &docker_token).await,
+        Ok(docker_token) => {
+            docker::deploy(&deployment, &docker_token, config.repo_dir.clone()).await
+        }
         Err(e) => Log::error("docker login", format!("{e:#?}")),
     };
     Json(log)

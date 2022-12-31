@@ -1,5 +1,3 @@
-use std::{path::PathBuf, str::FromStr};
-
 use axum::{routing::post, Extension, Json, Router};
 use helpers::{
     git::{self, CloneArgs},
@@ -51,7 +49,7 @@ async fn clone_repo(
     Json(clone_args): Json<CloneArgs>,
 ) -> anyhow::Result<Json<Vec<Log>>> {
     let access_token = get_github_token(&clone_args.github_account, &config)?;
-    let logs = git::clone_repo(clone_args, &config.repo_dir, access_token).await?;
+    let logs = git::clone_repo(clone_args, config.repo_dir.clone(), access_token).await?;
     Ok(Json(logs))
 }
 
@@ -59,11 +57,8 @@ async fn delete_repo(
     Extension(config): PeripheryConfigExtension,
     Json(DeleteRepoBody { name }): Json<DeleteRepoBody>,
 ) -> anyhow::Result<Json<Log>> {
-    let mut repo_dir = PathBuf::from_str(&config.repo_dir)?;
     let name = to_monitor_name(&name);
-    repo_dir.push(&name);
-    let destination = repo_dir.display().to_string();
-    let deleted = std::fs::remove_dir_all(destination);
+    let deleted = std::fs::remove_dir_all(config.repo_dir.join(&name));
     let msg = match deleted {
         Ok(_) => format!("deleted repo {name}"),
         Err(_) => format!("no repo at {name} to delete"),
@@ -80,10 +75,7 @@ async fn pull_repo(
         on_pull,
     }): Json<PullBody>,
 ) -> anyhow::Result<Json<Vec<Log>>> {
-    let mut repo_dir = PathBuf::from_str(&config.repo_dir)?;
     let name = to_monitor_name(&name);
-    repo_dir.push(&name);
-    let path = repo_dir.display().to_string();
-    let logs = git::pull(&path, &branch, &on_pull).await;
+    let logs = git::pull(config.repo_dir.join(name), &branch, &on_pull).await;
     Ok(Json(logs))
 }

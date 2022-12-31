@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::{anyhow, Context};
 use run_command::async_run_command;
 use types::{
@@ -67,18 +69,23 @@ pub async fn stop_and_remove_container(container_name: &str) -> Log {
     run_monitor_command("docker stop and remove", command).await
 }
 
-pub async fn deploy(deployment: &Deployment, docker_token: &Option<String>) -> Log {
+pub async fn deploy(
+    deployment: &Deployment,
+    docker_token: &Option<String>,
+    repo_dir: PathBuf,
+) -> Log {
     if let Err(e) = docker_login(&deployment.docker_run_args.docker_account, docker_token).await {
         return Log::error("docker login", format!("{e:#?}"));
     }
     let _ = stop_and_remove_container(&to_monitor_name(&deployment.name)).await;
-    let command = docker_run_command(deployment);
+    let command = docker_run_command(deployment, repo_dir);
     run_monitor_command("docker run", command).await
 }
 
 pub fn docker_run_command(
     Deployment {
         name,
+        repo_mount,
         docker_run_args:
             DockerRunArgs {
                 image,
@@ -93,11 +100,22 @@ pub fn docker_run_command(
             },
         ..
     }: &Deployment,
+    mut repo_dir: PathBuf,
 ) -> String {
     let name = to_monitor_name(name);
     let container_user = parse_container_user(container_user);
     let ports = parse_conversions(ports, "-p");
-    let volumes = parse_conversions(volumes, "-v");
+    let mut volumes = volumes.to_owned();
+    if let Some(repo_mount) = repo_mount {
+        repo_dir.push(&name);
+        repo_dir.push(&repo_mount.local);
+        let repo_mount = Conversion {
+            local: repo_dir.display().to_string(),
+            container: repo_mount.container.clone(),
+        };
+        volumes.push(repo_mount);
+    }
+    let volumes = parse_conversions(&volumes, "-v");
     let network = parse_network(network);
     let restart = parse_restart(restart);
     let environment = parse_environment(environment);

@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr};
+use std::path::PathBuf;
 
 use ::run_command::async_run_command;
 use anyhow::anyhow;
@@ -43,12 +43,16 @@ impl From<&Build> for CloneArgs {
     }
 }
 
-pub async fn pull(path: &str, branch: &Option<String>, on_pull: &Option<Command>) -> Vec<Log> {
+pub async fn pull(
+    mut path: PathBuf,
+    branch: &Option<String>,
+    on_pull: &Option<Command>,
+) -> Vec<Log> {
     let branch = match branch {
         Some(branch) => branch.to_owned(),
         None => "main".to_string(),
     };
-    let command = format!("cd {path} && git pull origin {branch}");
+    let command = format!("cd {} && git pull origin {branch}", path.display());
     let mut logs = Vec::new();
     let pull_log = run_monitor_command("git pull", command).await;
     if !pull_log.success {
@@ -57,7 +61,6 @@ pub async fn pull(path: &str, branch: &Option<String>, on_pull: &Option<Command>
     }
     logs.push(pull_log);
     if let Some(on_pull) = on_pull {
-        let mut path = PathBuf::from_str(path).unwrap();
         path.push(&on_pull.path);
         let path = path.display().to_string();
         let on_pull_log = run_monitor_command(
@@ -72,7 +75,7 @@ pub async fn pull(path: &str, branch: &Option<String>, on_pull: &Option<Command>
 
 pub async fn clone_repo(
     clone_args: impl Into<CloneArgs>,
-    repo_dir: &str,
+    mut repo_dir: PathBuf,
     access_token: Option<GithubToken>,
 ) -> anyhow::Result<Vec<Log>> {
     let CloneArgs {
@@ -84,31 +87,28 @@ pub async fn clone_repo(
         ..
     } = clone_args.into();
     let repo = repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
-    let mut repo_dir = PathBuf::from_str(repo_dir)?;
     let name = to_monitor_name(&name);
     repo_dir.push(name);
     let destination = repo_dir.display().to_string();
     let clone_log = clone(repo, &destination, &branch, access_token).await;
     let mut logs = vec![clone_log];
     if let Some(command) = on_clone {
-        repo_dir.push(&command.path);
+        let on_clone_path = repo_dir.join(&command.path);
         let on_clone_log = run_monitor_command(
             "on clone",
-            format!("cd {} && {}", repo_dir.display(), command.command),
+            format!("cd {} && {}", on_clone_path.display(), command.command),
         )
         .await;
         logs.push(on_clone_log);
-        repo_dir.pop();
     }
     if let Some(command) = on_pull {
-        repo_dir.push(&command.path);
-        let on_clone_log = run_monitor_command(
-            "on clone",
-            format!("cd {} && {}", repo_dir.display(), command.command),
+        let on_pull_path = repo_dir.join(&command.path);
+        let on_pull_log = run_monitor_command(
+            "on pull",
+            format!("cd {} && {}", on_pull_path.display(), command.command),
         )
         .await;
-        logs.push(on_clone_log);
-        repo_dir.pop();
+        logs.push(on_pull_log);
     }
     Ok(logs)
 }
