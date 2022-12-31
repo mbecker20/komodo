@@ -1,4 +1,4 @@
-use anyhow::{Context, anyhow};
+use anyhow::{anyhow, Context};
 use futures_util::{SinkExt, StreamExt};
 use monitor_types::{
     BasicContainerInfo, ImageSummary, Log, Network, Server, ServerActionState, ServerWithStatus,
@@ -6,7 +6,7 @@ use monitor_types::{
 };
 use serde_json::{json, Value};
 use tokio::net::TcpStream;
-use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream, tungstenite::Message};
+use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 use crate::MonitorClient;
 

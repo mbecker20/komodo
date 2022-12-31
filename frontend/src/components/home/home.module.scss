@@ -1,3 +1,11 @@
+@use "../../style/colors.scss" as c;
+
 .Summary {
 	padding: 1rem;
+}
+
+.SummaryItem {
+	background-color: c.$lightgrey;
+	padding: 1rem;
+	min-width: 75px;
 }

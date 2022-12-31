@@ -1,10 +1,12 @@
 use anyhow::{anyhow, Context};
 use monitor_client::{
+    futures_util::StreamExt,
+    tokio_tungstenite::tungstenite::Message,
     types::{
         Build, Command, Conversion, Deployment, DeploymentWithContainerState, DockerBuildArgs,
         Server, SystemStats, Update,
     },
-    MonitorClient, futures_util::StreamExt, tokio_tungstenite::tungstenite::Message,
+    MonitorClient,
 };
 
 pub async fn create_test_setup(

@@ -11,47 +11,67 @@ const Summary: Component<{}> = (p) => {
   const serverCount = useServerCount();
   const { builds } = useAppState();
   return (
-    <Grid class={combineClasses(s.Summary, "card shadow")}>
+    <Flex
+      justifyContent="space-between"
+      class={combineClasses(s.Summary, "card shadow")}
+    >
       <h1>summary</h1>
-      <Flex justifyContent="space-between">
-        <Flex gap="0.2rem">
-          deployments: <h2>{deployentCount().total}</h2>
-        </Flex>
-        <Flex gap="0.2rem">
-          <h2 class="text-green">{deployentCount().running}</h2> running
+      <Flex gap="2rem" justifyContent="flex-end">
+        <Grid
+          placeItems="center end"
+          class={combineClasses(s.SummaryItem, "shadow")}
+        >
+          <h2>deployments</h2>
+          <Flex gap="0.4rem">
+            <h2 class="text-green">{deployentCount().running}</h2> running
+          </Flex>
           <Show when={deployentCount().stopped > 0}>
-            {", "}
-            <h2 class="text-red">{deployentCount().stopped}</h2> stopped
+            <Flex gap="0.4rem">
+              <h2 class="text-red">{deployentCount().stopped}</h2> stopped
+            </Flex>
           </Show>
           <Show when={deployentCount().notDeployed > 0}>
-            {", "}
-            <h2 class="text-blue">{deployentCount().notDeployed}</h2> not
-            deployed
+            <Flex gap="0.4rem">
+              <h2 class="text-blue">{deployentCount().notDeployed}</h2> not
+              deployed
+            </Flex>
           </Show>
           <Show when={deployentCount().unknown > 0}>
-            {", "}
-            <h2 class="text-orange">{deployentCount().unknown}</h2> unknown
+            <Flex gap="0.4rem">
+              <h2 class="text-orange">{deployentCount().unknown}</h2> unknown
+            </Flex>
           </Show>
-        </Flex>
-      </Flex>
-      <Flex justifyContent="space-between">
-        <Flex gap="0.2rem" alignItems="center">
-          servers: <h2>{serverCount().total}</h2>
-        </Flex>
-        <Flex gap="0.2rem" alignItems="center">
-          <h2 class="text-green">{serverCount().healthy}</h2> healthy
+        </Grid>
+        <Grid
+          placeItems="center end"
+          class={combineClasses(s.SummaryItem, "shadow")}
+        >
+          <h2>servers</h2>
+          <Flex gap="0.4rem">
+            <h2 class="text-green">{serverCount().healthy}</h2> healthy
+          </Flex>
           <Show when={serverCount().unhealthy > 0}>
-            {", "}
-            <h2 class="text-red">{serverCount().unhealthy}</h2> unhealthy
+            <Flex gap="0.4rem">
+              <h2 class="text-red">{serverCount().unhealthy}</h2> unhealthy
+            </Flex>
           </Show>
           <Show when={serverCount().disabled > 0}>
-            {", "}
-            <h2 class="text-blue">{serverCount().disabled}</h2> disabled
+            <Flex gap="0.4rem">
+              <h2 class="text-blue">{serverCount().disabled}</h2> disabled
+            </Flex>
           </Show>
-        </Flex>
+        </Grid>
+        <Grid
+          placeItems="center end"
+          class={combineClasses(s.SummaryItem, "shadow")}
+        >
+          <h2>builds</h2>
+          <Flex gap="0.4rem">
+            <h2 class="text-green">{builds.ids()?.length}</h2> total
+          </Flex>
+        </Grid>
       </Flex>
-      <div>builds: {builds.ids()?.length}</div>
-    </Grid>
+    </Flex>
   );
 };
 
