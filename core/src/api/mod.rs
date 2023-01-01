@@ -1,8 +1,14 @@
-use axum::{body::Body, http::Request, middleware, routing::get, Extension, Json, Router};
+use axum::{
+    body::Body, extract::Path, http::Request, middleware, routing::get, Extension, Json, Router,
+};
 use helpers::handle_anyhow_error;
+use mungos::Deserialize;
 use types::User;
 
-use crate::auth::{auth_request, JwtExtension};
+use crate::{
+    auth::{auth_request, JwtExtension},
+    state::StateExtension,
+};
 
 pub mod build;
 pub mod deployment;
@@ -22,6 +28,14 @@ pub fn router() -> Router {
         .nest(
             "/",
             Router::new()
+                .route(
+                    "/username/:id",
+                    get(|state, user_id| async {
+                        get_username(state, user_id)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    }),
+                )
                 .nest("/build", build::router())
                 .nest("/deployment", deployment::router())
                 .nest("/server", server::router())
@@ -41,4 +55,17 @@ async fn get_user(Extension(jwt): JwtExtension, req: Request<Body>) -> anyhow::R
         secret.hash = String::new();
     }
     Ok(Json(user))
+}
+
+#[derive(Deserialize)]
+struct UserId {
+    id: String,
+}
+
+async fn get_username(
+    state: StateExtension,
+    Path(UserId { id }): Path<UserId>,
+) -> anyhow::Result<String> {
+    let user = state.db.get_user(&id).await?;
+    Ok(user.username)
 }
