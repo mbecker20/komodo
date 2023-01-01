@@ -99,6 +99,10 @@ export class Client {
     }
   }
 
+  async get_username(user_id: string): Promise<string> {
+    return this.get(`/api/username/${user_id}`);
+  }
+
   exchange_for_jwt(exchange_token: string): Promise<string> {
     return this.post("/auth/exchange", { token: exchange_token });
   }

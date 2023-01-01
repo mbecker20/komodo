@@ -18,8 +18,9 @@ const Summary: Component<{}> = (p) => {
       <h1>summary</h1>
       <Flex gap="1rem" justifyContent="flex-end" class="wrap">
         <Grid
-          placeItems="center end"
+          placeItems="start end"
           class={combineClasses(s.SummaryItem, "shadow")}
+          gap="0.5rem"
         >
           <h2>servers</h2>
           <Flex gap="0.4rem">
@@ -40,8 +41,9 @@ const Summary: Component<{}> = (p) => {
           </Flex>
         </Grid>
         <Grid
-          placeItems="center end"
+          placeItems="start end"
           class={combineClasses(s.SummaryItem, "shadow")}
+          gap="0.5rem"
         >
           <h2>deployments</h2>
           <Flex gap="0.4rem">
@@ -68,8 +70,9 @@ const Summary: Component<{}> = (p) => {
           </Flex>
         </Grid>
         <Grid
-          placeItems="center end"
+          placeItems="start end"
           class={combineClasses(s.SummaryItem, "shadow")}
+          gap="0.5rem"
         >
           <h2>builds</h2>
           <Flex gap="0.4rem">
