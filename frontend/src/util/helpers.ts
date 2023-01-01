@@ -44,6 +44,14 @@ export function readableMonitorTimestamp(rfc3339_ts: string) {
   } ${pm ? "PM" : "AM"}`;
 }
 
+export function readableDuration(start_ts: string, end_ts: string) {
+  const start = new Date(start_ts);
+  const end = new Date(end_ts);
+  const durr = end.getTime() - start.getTime();
+  const seconds = (durr / 1000).toFixed(1);
+  return `${seconds} seconds`
+}
+
 export function validatePercentage(perc: string) {
   // validates that a string represents a percentage
   const percNum = Number(perc);

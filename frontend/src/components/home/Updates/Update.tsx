@@ -1,8 +1,9 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
-import { Update as UpdateType } from "../../../types";
+import { Operation, Update as UpdateType } from "../../../types";
 import {
   combineClasses,
+  readableDuration,
   readableMonitorTimestamp,
 } from "../../../util/helpers";
 import { useToggle } from "../../../util/hooks";
@@ -26,6 +27,9 @@ const Update: Component<{ update: UpdateType }> = (p) => {
     }
   };
   const operation = () => {
+    if (p.update.operation === Operation.BuildBuild) {
+      return "build";
+    }
     return p.update.operation.replaceAll("_", " ");
   };
   const [showLog, toggleShowLog] = useToggle();
@@ -56,7 +60,7 @@ const Update: Component<{ update: UpdateType }> = (p) => {
           </Flex>
         </Grid>
         <CenterMenu
-          title={operation()}
+          title={`${operation()} | ${name()}`}
           show={showLog}
           toggleShow={toggleShowLog}
           target={<Icon type="console" />}
@@ -65,14 +69,28 @@ const Update: Component<{ update: UpdateType }> = (p) => {
           padding="1rem 2rem"
           content={
             <Grid class={s.LogContainer} gap="1rem">
+              <Grid gap="0.5rem" class="card lightgrey shadow">
+                <div>
+                  started at: {readableMonitorTimestamp(p.update.start_ts)}
+                </div>
+                <Show when={p.update.end_ts}>
+                  <div>
+                    duration:{" "}
+                    {readableDuration(p.update.start_ts, p.update.end_ts!)}
+                  </div>
+                </Show>
+              </Grid>
               <For each={p.update.logs}>
                 {(log, index) => {
                   return (
                     <Grid gap="0.5rem" class="card lightgrey shadow">
-                      <Flex alignItems="center">
+                      <Flex alignItems="center" class="wrap">
                         <h1>{log.stage}</h1>
                         <div style={{ opacity: 0.7 }}>
                           (stage {index() + 1} of {p.update.logs.length})
+                        </div>
+                        <div style={{ opacity: 0.7 }}>
+                          {readableDuration(log.start_ts, log.end_ts)}
                         </div>
                       </Flex>
                       <div>command</div>

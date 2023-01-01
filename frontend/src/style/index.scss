@@ -76,6 +76,7 @@ a {
   background-color: transparent;
   transition: background-color 500ms ease-in-out;
   text-decoration: none;
+  box-sizing: border-box;
 }
 
 a:focus {
