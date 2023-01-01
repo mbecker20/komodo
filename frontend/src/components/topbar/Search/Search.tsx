@@ -46,7 +46,7 @@ export const Search: Component<{}> = (p) => {
         gap: "0.5rem",
         ...(isMobile() ? mobileStyle : {}),
       }}
-      backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
+      backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.4)"}
       target={
         <Show
           when={!isMobile()}

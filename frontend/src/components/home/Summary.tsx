@@ -13,10 +13,32 @@ const Summary: Component<{}> = (p) => {
   return (
     <Flex
       justifyContent="space-between"
-      class={combineClasses(s.Summary, "card shadow")}
+      class={combineClasses(s.Summary, "card shadow wrap")}
     >
       <h1>summary</h1>
-      <Flex gap="2rem" justifyContent="flex-end">
+      <Flex gap="1rem" justifyContent="flex-end" class="wrap">
+        <Grid
+          placeItems="center end"
+          class={combineClasses(s.SummaryItem, "shadow")}
+        >
+          <h2>servers</h2>
+          <Flex gap="0.4rem">
+            <h2 class="text-green">{serverCount().healthy}</h2> healthy
+          </Flex>
+          <Show when={serverCount().unhealthy > 0}>
+            <Flex gap="0.4rem">
+              <h2 class="text-red">{serverCount().unhealthy}</h2> unhealthy
+            </Flex>
+          </Show>
+          <Show when={serverCount().disabled > 0}>
+            <Flex gap="0.4rem">
+              <h2 class="text-blue">{serverCount().disabled}</h2> disabled
+            </Flex>
+          </Show>
+          <Flex gap="0.4rem">
+            <h2 class="text-green">{serverCount().total}</h2> total
+          </Flex>
+        </Grid>
         <Grid
           placeItems="center end"
           class={combineClasses(s.SummaryItem, "shadow")}
@@ -41,25 +63,9 @@ const Summary: Component<{}> = (p) => {
               <h2 class="text-orange">{deployentCount().unknown}</h2> unknown
             </Flex>
           </Show>
-        </Grid>
-        <Grid
-          placeItems="center end"
-          class={combineClasses(s.SummaryItem, "shadow")}
-        >
-          <h2>servers</h2>
           <Flex gap="0.4rem">
-            <h2 class="text-green">{serverCount().healthy}</h2> healthy
+            <h2 class="text-green">{deployentCount().total}</h2> total
           </Flex>
-          <Show when={serverCount().unhealthy > 0}>
-            <Flex gap="0.4rem">
-              <h2 class="text-red">{serverCount().unhealthy}</h2> unhealthy
-            </Flex>
-          </Show>
-          <Show when={serverCount().disabled > 0}>
-            <Flex gap="0.4rem">
-              <h2 class="text-blue">{serverCount().disabled}</h2> disabled
-            </Flex>
-          </Show>
         </Grid>
         <Grid
           placeItems="center end"

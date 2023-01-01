@@ -32,6 +32,18 @@ export function readableTimestamp(unixTimeInSecs: number) {
   } ${pm ? "PM" : "AM"}`;
 }
 
+export function readableMonitorTimestamp(rfc3339_ts: string) {
+  const date = new Date(rfc3339_ts);
+  const hours24 = date.getHours();
+  let hours = hours24 % 12;
+  if (hours === 0) hours = 12;
+  const pm = hours24 > 11;
+  const minutes = date.getMinutes();
+  return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${
+    minutes > 9 ? minutes : "0" + minutes
+  } ${pm ? "PM" : "AM"}`;
+}
+
 export function validatePercentage(perc: string) {
   // validates that a string represents a percentage
   const percNum = Number(perc);

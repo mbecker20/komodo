@@ -1,0 +1,38 @@
+@use "../../../style/colors.scss" as c;
+
+@keyframes Enter {
+	from {
+		transform: scaleY(0);
+		opacity: 0;
+	}
+	to {
+		transform: scaleY(1);
+		opacity: 1;
+	}
+}
+
+.Update {
+	background-color: c.$lightgrey;
+	padding: 0.75rem;
+	transform-origin: top;
+	animation-name: Enter;
+	animation-duration: 750ms;
+}
+
+.LogContainer {
+	max-height: 80vh;
+	overflow: scroll;
+}
+
+.Log {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	/* word-wrap: break-word; */
+	tab-size: 2;
+	width: 40rem;
+	max-width: 90vw;
+	box-sizing: border-box;
+	// max-height: 30vh;
+	background-color: rgba(c.$darkgrey, 0.6);
+	padding: 1rem;
+}

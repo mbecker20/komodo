@@ -17,6 +17,10 @@ code {
     monospace;
 }
 
+pre {
+  margin: 0;
+}
+
 h1 {
   font-size: 1.5rem;
   font-weight: 500;
@@ -294,4 +298,8 @@ svg {
 
 .pointer {
   cursor: pointer;
+}
+
+.wrap {
+  flex-wrap: wrap;
 }

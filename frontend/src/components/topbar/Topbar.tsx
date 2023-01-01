@@ -79,6 +79,7 @@ const RightSide: Component = () => {
       <Menu
         show={menu() === "account"}
         close={close}
+        containerStyle={{ cursor: "pointer" }}
         target={
           <button
             class="grey"
@@ -87,9 +88,10 @@ const RightSide: Component = () => {
             }
           >
             <Show when={!isMobile()}>{username()}</Show>
-            <Icon type={!isMobile() ? "chevron-down" : "user"} />
+            <Icon style={{cursor: "pointer"}} type={!isMobile() ? "chevron-down" : "user"} />
           </button>
         }
+        
         content={<Account close={close} />}
         position="bottom right"
       />
