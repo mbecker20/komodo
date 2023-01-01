@@ -1,6 +1,7 @@
 // #![allow(unused)]
 
 use anyhow::{anyhow, Context};
+use monitor_types::User;
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::json;
@@ -91,8 +92,13 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn get_user(&self) -> anyhow::Result<String> {
-        self.get_string("/api/user", Option::<String>::None).await
+    pub async fn get_user(&self) -> anyhow::Result<User> {
+        self.get("/api/user", Option::<()>::None).await
+    }
+
+    pub async fn get_username(&self, user_id: &str) -> anyhow::Result<String> {
+        self.get_string(&format!("/api/username/{user_id}"), Option::<()>::None)
+            .await
     }
 
     async fn get<R: DeserializeOwned>(
