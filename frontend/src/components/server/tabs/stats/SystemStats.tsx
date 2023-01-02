@@ -1,31 +1,28 @@
 import { Component, createSignal, Show } from "solid-js";
 import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
-import { useTheme } from "../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../util/helpers";
-import Button from "../../../util/Button";
-import Icon from "../../../util/Icon";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import Loading from "../../../util/loading/Loading";
+import Icon from "../../../shared/Icon";
+import Flex from "../../../shared/layout/Flex";
+import Grid from "../../../shared/layout/Grid";
+import Loading from "../../../shared/loading/Loading";
 import s from "./stats.module.scss";
 
 const SystemStats: Component<{}> = (p) => {
-  const { selected, servers, serverStats } = useAppState();
+  const { servers, serverStats } = useAppState();
   const [refreshingStats, setRefreshingStats] = createSignal(false);
-  const sysStats = () => serverStats.get(selected.id(), servers.get(selected.id()));
-  const loadStats = async () => {
-    if (selected.id() && servers.get(selected.id())?.status === "OK") {
-      setRefreshingStats(true);
-      await serverStats.load(selected.id());
-      setRefreshingStats(false);
-      pushNotification("good", "system stats refreshed");
-    }
-  };
-  const { themeClass } = useTheme();
+  // const sysStats = () => serverStats.get(selected.id(), servers.get(selected.id()));
+  // const loadStats = async () => {
+  //   if (selected.id() && servers.get(selected.id())?.status === "OK") {
+  //     setRefreshingStats(true);
+  //     await serverStats.load(selected.id());
+  //     setRefreshingStats(false);
+  //     pushNotification("good", "system stats refreshed");
+  //   }
+  // };
   return (
-    <Show when={sysStats()}>
-      <Grid class={combineClasses(s.StatsContainer, themeClass())}>
+    <Show when={true}>
+      {/* <Grid class={combineClasses(s.StatsContainer, themeClass())}>
         <Flex justifyContent="space-between">
           <h1>system stats</h1>
           <Button
@@ -58,7 +55,7 @@ const SystemStats: Component<{}> = (p) => {
             gb)
           </div>
         </Flex>
-      </Grid>
+      </Grid> */}
     </Show>
   );
 };

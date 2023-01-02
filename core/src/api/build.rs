@@ -185,7 +185,7 @@ impl State {
         user: &RequestUser,
         query: impl Into<Option<Document>>,
     ) -> anyhow::Result<Vec<Build>> {
-        let mut builds: Vec<Build> = self
+        let builds: Vec<Build> = self
             .db
             .builds
             .get_some(query, None)
@@ -201,7 +201,6 @@ impl State {
                 }
             })
             .collect();
-        builds.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
         Ok(builds)
     }
 

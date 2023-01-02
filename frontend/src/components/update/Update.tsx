@@ -1,6 +1,6 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
-import { Update } from "../../types";
+import { Update as UpdateType } from "../../types";
 import {
   combineClasses,
   readableDuration,
@@ -12,8 +12,9 @@ import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
 import CenterMenu from "../shared/menu/CenterMenu";
 import s from "./update.module.scss";
+import UpdateMenu from "./UpdateMenu";
 
-const Update: Component<{ update: Update; showName: boolean }> = (p) => {
+const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
   const { deployments, servers, builds } = useAppState();
   const name = () => {
     if (p.update.target.type === "Deployment" && deployments.loaded()) {
@@ -60,71 +61,7 @@ const Update: Component<{ update: Update; showName: boolean }> = (p) => {
           <Icon type="user" />
           <div>{p.update.operator}</div>
         </Flex>
-        <CenterMenu
-          title={`${operation()} | ${name()}`}
-          show={showLog}
-          toggleShow={toggleShowLog}
-          target={<Icon type="console" />}
-          targetStyle={{ "place-self": "center end" }}
-          targetClass="blue"
-          padding="1rem 2rem"
-          content={
-            <Grid class={s.LogContainer} gap="1rem">
-              <Grid gap="0.5rem" class="card lightgrey shadow">
-                <div>
-                  started at: {readableMonitorTimestamp(p.update.start_ts)}
-                </div>
-                <Show when={p.update.end_ts}>
-                  <div>
-                    duration:{" "}
-                    {readableDuration(p.update.start_ts, p.update.end_ts!)}
-                  </div>
-                </Show>
-              </Grid>
-              <For each={p.update.logs}>
-                {(log, index) => {
-                  return (
-                    <Grid gap="0.5rem" class="card lightgrey shadow">
-                      <Flex alignItems="center" class="wrap">
-                        <h1>{log.stage}</h1>
-                        <div style={{ opacity: 0.7 }}>
-                          (stage {index() + 1} of {p.update.logs.length})
-                        </div>
-                        <div style={{ opacity: 0.7 }}>
-                          {readableDuration(log.start_ts, log.end_ts)}
-                        </div>
-                      </Flex>
-                      <div>command</div>
-                      <pre class={combineClasses(s.Log)}>{log.command}</pre>
-                      <Show when={log.stdout}>
-                        <div>stdout</div>
-                        <pre
-                          class={combineClasses(s.Log)}
-                          // style={{
-                          //   "max-height": log.stderr ? "30vh" : "60vh",
-                          // }}
-                        >
-                          {log.stdout}
-                        </pre>
-                      </Show>
-                      <Show when={log.stderr}>
-                        <div>stderr</div>
-                        <pre
-                          class={combineClasses(s.Log)}
-                          // style={{
-                          //   "max-height": log.stdout ? "30vh" : "60vh",
-                          // }}
-                        >
-                          {log.stderr}
-                        </pre>
-                      </Show>
-                    </Grid>
-                  );
-                }}
-              </For>
-            </Grid>
-          }
-        />
+        <UpdateMenu update={p.update} />
       </Grid>
     </Grid>
   );

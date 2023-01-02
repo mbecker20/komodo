@@ -22,7 +22,7 @@ services:
       args:
         DEPS_INSTALLER: install_full_periphery_deps
     ports:
-      - "8000:8000"
+      - "8001:8000"
     networks:
       - monitor-network
     environment:
@@ -41,7 +41,7 @@ services:
       args:
         DEPS_INSTALLER: install_slim_periphery_deps
     ports:
-      - "8001:8000"
+      - "8002:8000"
     networks:
       - monitor-network
     environment:

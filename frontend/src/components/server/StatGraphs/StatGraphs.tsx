@@ -1,15 +1,15 @@
 import { Component, lazy } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useToggle } from "../../../util/hooks";
-import Icon from "../../util/Icon";
-import CenterMenu from "../../util/menu/CenterMenu";
+import Icon from "../../shared/Icon";
+import CenterMenu from "../../shared/menu/CenterMenu";
 
 const Graphs = lazy(() => import("./Graphs"))
 
 const StatGraphs: Component<{ id: string }> = (p) => {
   const { servers } = useAppState();
   const [show, toggleShow] = useToggle();
-  const name = () => servers.get(p.id)?.name;
+  const name = () => servers.get(p.id)?.server.name;
   return (
     <CenterMenu
       show={show}

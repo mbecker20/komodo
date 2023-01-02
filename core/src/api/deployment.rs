@@ -11,7 +11,7 @@ use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
 use types::{
     traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainerState,
-    DockerContainerState, PermissionLevel, Server,
+    DockerContainerState, Log, PermissionLevel, Server,
 };
 use typeshare::typeshare;
 
@@ -38,6 +38,12 @@ pub struct CreateDeploymentBody {
 pub struct CopyDeploymentBody {
     name: String,
     server_id: String,
+}
+
+#[typeshare]
+#[derive(Deserialize)]
+pub struct GetContainerLogQuery {
+    tail: Option<u64>,
 }
 
 pub fn router() -> Router {
@@ -239,6 +245,21 @@ pub fn router() -> Router {
                 },
             ),
         )
+        .route(
+            "/:id/log",
+            post(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>,
+                 Query(query): Query<GetContainerLogQuery>| async move {
+                    let log = state
+                        .get_deployment_container_log(&deployment_id.id, &user, query.tail)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(log))
+                },
+            ),
+        )
 }
 
 impl State {
@@ -301,7 +322,7 @@ impl State {
             .into_iter()
             .map(|(container, server_id)| (server_id, container.ok()))
             .collect::<HashMap<_, _>>();
-        let mut res = deployments
+        let deployments_with_containers = deployments
             .into_iter()
             .map(|deployment| {
                 let (state, container) = match containers.get(&deployment.server_id).unwrap() {
@@ -324,13 +345,7 @@ impl State {
                 }
             })
             .collect::<Vec<DeploymentWithContainerState>>();
-        res.sort_by(|a, b| {
-            a.deployment
-                .name
-                .to_lowercase()
-                .cmp(&b.deployment.name.to_lowercase())
-        });
-        Ok(res)
+        Ok(deployments_with_containers)
     }
 
     async fn get_deployment_action_states(
@@ -338,7 +353,7 @@ impl State {
         id: String,
         user: &RequestUser,
     ) -> anyhow::Result<DeploymentActionState> {
-        self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
+        self.get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let action_state = self
             .deployment_action_states
@@ -348,5 +363,22 @@ impl State {
             .or_default()
             .clone();
         Ok(action_state)
+    }
+
+    async fn get_deployment_container_log(
+        &self,
+        id: &str,
+        user: &RequestUser,
+        tail: Option<u64>,
+    ) -> anyhow::Result<Log> {
+        let deployment = self
+            .get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let server = self.db.get_server(&deployment.server_id).await?;
+        let log = self
+            .periphery
+            .container_log(&server, &deployment.name, tail)
+            .await?;
+        Ok(log)
     }
 }

@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Deployment, DeploymentActionState, DeploymentWithContainerState, Update};
+use monitor_types::{Deployment, DeploymentActionState, DeploymentWithContainerState, Log, Update};
 use serde_json::{json, Value};
 
 use crate::MonitorClient;
@@ -35,6 +35,19 @@ impl MonitorClient {
             Option::<()>::None,
         )
         .await
+    }
+
+    pub async fn get_deployment_container_log(
+        &self,
+        deployment_id: &str,
+        tail: Option<u64>,
+    ) -> anyhow::Result<Log> {
+        self.get(
+            &format!("/api/deployment/{deployment_id}/log"),
+            json!({ "tail": tail }),
+        )
+        .await
+        .context("failed at get_deployment_container_log")
     }
 
     pub async fn create_deployment(

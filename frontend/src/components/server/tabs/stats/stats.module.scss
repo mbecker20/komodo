@@ -11,10 +11,6 @@
 	padding: 0.5rem;
 }
 
-.StatsContainer:global(.dark) {
-  background-color: rgba(c.$darkgrey-dark, 0.6);
-}
-
 .Stats {
 	padding: 0rem 1rem;
 }
@@ -29,8 +25,4 @@
 	height: 87vh;
 	background-color: rgba(c.$darkgrey, 0.6);
 	padding: 1rem;
-}
-
-.Pm2Log:global(.dark) {
-	background-color: rgba(c.$darkgrey-dark, 0.6);
 }

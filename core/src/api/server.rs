@@ -330,14 +330,7 @@ impl State {
 
                 ServerWithStatus { server, status }
             });
-        let mut servers: Vec<ServerWithStatus> = join_all(futures).await;
-        servers.sort_by(|a, b| {
-            a.server
-                .name
-                .to_lowercase()
-                .cmp(&b.server.name.to_lowercase())
-        });
-        Ok(servers)
+        Ok(join_all(futures).await)
     }
 
     async fn get_server_stats(

@@ -1,49 +1,46 @@
 import { Component, For, Show } from "solid-js";
-import Icon from "../../../util/Icon";
-import Input from "../../../util/Input";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
+import Icon from "../../../shared/Icon";
+import Input from "../../../shared/Input";
+import Flex from "../../../shared/layout/Flex";
+import Grid from "../../../shared/layout/Grid";
 import { useConfig } from "./Provider";
-import { useTheme } from "../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../util/helpers";
-import Button from "../../../util/Button";
 
 const ToNotify: Component<{}> = (p) => {
   const { server, setServer } = useConfig();
-  const { themeClass } = useTheme();
   return (
-    <Grid class={combineClasses("config-item shadow", themeClass())}>
+    <Grid class={combineClasses("config-item shadow")}>
       <Flex alignItems="center" justifyContent="space-between">
         <h1>notify</h1>
-        <Button
+        <button
           class="green"
-          onClick={() => setServer("toNotify", (toNotify) => [...toNotify, ""])}
+          onClick={() => setServer("to_notify", (toNotify) => toNotify ? [...toNotify, ""] : [""])}
         >
           <Icon type="plus" />
-        </Button>
+        </button>
       </Flex>
-      <For each={server.toNotify}>
+      <For each={server.to_notify}>
         {(user, index) => (
           <Flex justifyContent="space-between" alignItems="center">
             <Input
               placeholder="slack user id"
               value={user}
-              onEdit={(user) => setServer("toNotify", index(), user)}
+              onEdit={(user) => setServer("to_notify", index(), user)}
             />
-            <Button
+            <button
               class="red"
               onClick={() =>
-                setServer("toNotify", (toNotify) =>
-                  toNotify.filter((_, i) => i !== index())
+                setServer("to_notify", (toNotify) =>
+                  toNotify!.filter((_, i) => i !== index())
                 )
               }
             >
               <Icon type="trash" />
-            </Button>
+            </button>
           </Flex>
         )}
       </For>
-			<Show when={server.toNotify?.length === 0}>
+			<Show when={server.to_notify?.length === 0}>
 				<div>no slack users to notify</div>
 			</Show>
     </Grid>

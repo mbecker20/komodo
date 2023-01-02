@@ -1,31 +1,26 @@
-import { DockerStat } from "@monitor/types";
 import { Component, createEffect, createSignal, Show, For } from "solid-js";
 import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
-import { useTheme } from "../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../util/helpers";
-import { getServerStats } from "../../../../util/query";
-import Button from "../../../util/Button";
-import Icon from "../../../util/Icon";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
-import Loading from "../../../util/loading/Loading";
+import Icon from "../../../shared/Icon";
+import Flex from "../../../shared/layout/Flex";
+import Grid from "../../../shared/layout/Grid";
+import Loading from "../../../shared/loading/Loading";
 import s from "./stats.module.scss";
 
 const DockerStats: Component<{}> = (p) => {
-  const { selected } = useAppState();
-  const [stats, setStats] = createSignal<DockerStat[]>();
+  // const [stats, setStats] = createSignal<DockerStat[]>();
   const [refreshing, setRefreshing] = createSignal(false);
-  const load = () => {
-    if (selected.id()) {
-      getServerStats(selected.id()).then(setStats);
-    }
-  };
-  createEffect(load);
-  const { themeClass } = useTheme();
+  // const load = () => {
+  //   if (selected.id()) {
+  //     getServerStats(selected.id()).then(setStats);
+  //   }
+  // };
+  // createEffect(load);
+  // const { themeClass } = useTheme();
   return (
     <Show
-      when={stats()}
+      when={true}
       fallback={
         <Loading
           type="three-dot"
@@ -34,7 +29,7 @@ const DockerStats: Component<{}> = (p) => {
         />
       }
     >
-      <Grid class={combineClasses(s.StatsContainer, themeClass())}>
+      {/* <Grid class={combineClasses(s.StatsContainer, themeClass())}>
         <Flex justifyContent="space-between">
           <h1>container stats</h1>
           <Button
@@ -69,7 +64,7 @@ const DockerStats: Component<{}> = (p) => {
             )}
           </For>
         </Grid>
-      </Grid>
+      </Grid> */}
     </Show>
   );
 };

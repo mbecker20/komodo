@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use axum::{
-    extract::Path,
+    extract::{Path, Query},
     routing::{get, post},
     Extension, Json, Router,
 };
@@ -18,6 +18,11 @@ struct Container {
     name: String,
 }
 
+#[derive(Deserialize)]
+struct GetLogQuery {
+    tail: Option<u64>, // default is 1000 if not passed
+}
+
 pub fn router() -> Router {
     Router::new()
         .route(
@@ -26,6 +31,15 @@ pub fn router() -> Router {
                 let containers = dc.list_containers().await.map_err(handle_anyhow_error)?;
                 response!(Json(containers))
             }),
+        )
+        .route(
+            "/log/:name",
+            get(
+                |Path(c): Path<Container>, Query(q): Query<GetLogQuery>| async move {
+                    let log = docker::container_log(&c.name, q.tail).await;
+                    response!(Json(log))
+                },
+            ),
         )
         .route(
             "/stats/:name",

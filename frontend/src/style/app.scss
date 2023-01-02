@@ -13,6 +13,15 @@
 		"content";
 }
 
+@media only screen and (max-width: 1200px) {
+	.app {
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"topbar"
+			"content";
+	}
+}
+
 .selected {
 	background-color: rgba(c.$lightblue, 0.5);
 }
@@ -20,4 +29,138 @@
 .card {
 	background-color: c.$grey;
 	padding: 0.5rem;
+}
+
+.card.light {
+	background-color: c.$lightgrey;
+}
+
+.content {
+	grid-template-columns: auto 1fr;
+	background-color: c.$darkgrey;
+}
+
+.left-content {
+	height: fit-content;
+	width: fit-content;
+	min-width: 325px;
+	max-width: 450px;
+}
+
+@media only screen and (max-width: 900px) {
+	.content {
+		grid-template-columns: 1fr;
+	}
+
+	.left-content {
+		width: auto;
+	}
+}
+
+$anim-time: 500ms;
+
+.content-enter {
+	grid-area: content;
+	// animation-name: content-enter;
+	// animation-duration: $anim-time;
+	// animation-timing-function: ease-out;
+}
+
+.content-exit {
+	grid-area: content;
+	animation-name: content-exit;
+	animation-duration: $anim-time;
+	animation-timing-function: ease-out;
+}
+
+@keyframes content-enter {
+	from {
+		opacity: 0;
+		transform: translateX(100%);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateX(0%);
+	}
+}
+
+@keyframes content-exit {
+	from {
+		opacity: 0;
+		transform: translateX(0%);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateX(-100%);
+	}
+}
+
+.action {
+	background-color: c.$lightgrey;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem;
+	box-sizing: border-box;
+}
+
+.updates-container {
+	max-height: calc(225px + 5.5rem);
+}
+
+.show-updates-indicator {
+	font-size: 0.8rem;
+	position: absolute;
+	bottom: 0.5rem;
+	left: 50%;
+	transform: translateX(-50%);
+	opacity: .7;
+}
+
+.tabs {
+	height: fit-content;
+}
+
+.config {
+	height: 100%;
+	place-items: start center;
+	grid-template-rows: 70vh auto;
+}
+
+.config-items {
+	height: fit-content;
+	max-height: 65vh;
+	padding: 0rem 0.5rem;
+}
+
+.config-item {
+	width: 450px;
+	flex-wrap: wrap;
+	background-color: c.$lightgrey;
+	box-sizing: border-box;
+	padding: 0.5rem;
+	height: fit-content;
+	box-sizing: border-box;
+}
+
+@media only screen and (max-width: 700px) {
+	.config-item {
+		width: calc(100vw - 6rem);
+	}
+}
+
+.running {
+	color: c.$textgreen;
+	// text-shadow: 0px 0px 1px c.$textgreen;
+}
+
+.exited {
+	color: c.$textred;
+	// text-shadow: 0px 0px 1px c.$textred;
+}
+
+.apexcharts-tooltip {
+	background: #f3f3f3;
+	color: black;
 }

@@ -56,7 +56,7 @@ export class Client {
   }
 
   get_login_options(): Promise<LoginOptions> {
-    return this.get("/auth/options")
+    return this.get("/auth/options");
   }
 
   login_with_github() {
@@ -109,7 +109,9 @@ export class Client {
 
   // deployment
 
-  list_deployments(query?: QueryObject): Promise<DeploymentWithContainerState[]> {
+  list_deployments(
+    query?: QueryObject
+  ): Promise<DeploymentWithContainerState[]> {
     return this.get("/api/deployment/list" + generateQuery(query));
   }
 
@@ -119,6 +121,10 @@ export class Client {
 
   get_deployment_action_state(id: string): Promise<DeploymentActionState> {
     return this.get(`/api/deployment/${id}/action_state`);
+  }
+
+  get_deployment_container_log(id: string, tail?: number): Promise<Log> {
+    return this.get(`/api/deployment/${id}/log${generateQuery({ tail })}`);
   }
 
   create_deployment(body: CreateDeploymentBody): Promise<Deployment> {

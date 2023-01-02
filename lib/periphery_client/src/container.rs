@@ -11,6 +11,23 @@ impl PeripheryClient {
             .context("failed to get container list on periphery")
     }
 
+    pub async fn container_log(
+        &self,
+        server: &Server,
+        container_name: &str,
+        tail: Option<u64>,
+    ) -> anyhow::Result<Log> {
+        self.get_json(
+            server,
+            &format!(
+                "/container/log/{container_name}?tail={}",
+                tail.unwrap_or(50)
+            ),
+        )
+        .await
+        .context("failed to get container log from periphery")
+    }
+
     pub async fn container_start(
         &self,
         server: &Server,

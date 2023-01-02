@@ -11,11 +11,10 @@ use crate::{run_monitor_command, to_monitor_name};
 use super::docker_login;
 
 pub async fn container_log(container_name: &str, tail: Option<u64>) -> Log {
-    let tail = match tail {
-        Some(tail) => format!(" --tail {tail}"),
-        None => String::new(),
-    };
-    let command = format!("docker logs {container_name}{tail}");
+    let command = format!(
+        "docker logs {container_name} --tail {}",
+        tail.unwrap_or(1000)
+    );
     run_monitor_command("get container log", command).await
 }
 
