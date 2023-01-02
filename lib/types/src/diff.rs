@@ -1,6 +1,6 @@
 use diff::{Diff, HashMapDiff, OptionDiff, VecDiff};
 
-use crate::deployment::{DockerRunArgsDiff, RestartModeDiff};
+use crate::{deployment::{DockerRunArgsDiff, RestartModeDiff}, TimelengthDiff};
 
 pub fn f64_diff_no_change(f64_diff: &f64) -> bool {
     *f64_diff == 0.0
@@ -35,4 +35,8 @@ pub fn docker_run_args_diff_no_change(dra: &DockerRunArgsDiff) -> bool {
 
 pub fn restart_mode_diff_no_change(restart_mode: &RestartModeDiff) -> bool {
     restart_mode == &RestartModeDiff::NoChange
+}
+
+pub fn timelength_diff_no_change(timelength: &TimelengthDiff) -> bool {
+    timelength == &TimelengthDiff::NoChange
 }

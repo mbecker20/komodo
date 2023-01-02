@@ -53,9 +53,9 @@ pub struct Server {
     #[diff(attr(#[serde(skip_serializing_if = "f64_diff_no_change")]))]
     pub disk_alert: f64,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub stats_interval: Option<f64>,
+    #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "timelength_diff_no_change")]))]
+    pub stats_interval: Timelength,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]

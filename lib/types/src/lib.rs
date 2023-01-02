@@ -174,9 +174,10 @@ pub enum PermissionsTarget {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum Timelength {
     #[serde(rename = "1-sec")]
     #[strum(serialize = "1-sec")]
@@ -242,7 +243,7 @@ pub enum Timelength {
 
 impl Default for Timelength {
     fn default() -> Timelength {
-        Timelength::FiveMinutes
+        Timelength::OneMinute
     }
 }
 
