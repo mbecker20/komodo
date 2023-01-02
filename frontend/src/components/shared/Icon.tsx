@@ -46,6 +46,8 @@ export type IconType =
   | "timeline-line-chart"
   | "arrow-right";
 
+const ICON_DIR = import.meta.env.VITE_ICON_DIR || "/assets/icons"
+
 const Icon: Component<{
   type: IconType;
   alt?: string;
@@ -59,7 +61,7 @@ const Icon: Component<{
   return (
     <img
       class={p.class}
-      src={`/assets/icons/${p.type}.svg`}
+      src={`${ICON_DIR}/${p.type}.svg`}
       alt={p.alt || p.type}
       title={p.title}
       style={{
