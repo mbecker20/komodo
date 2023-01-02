@@ -17,7 +17,7 @@ import s from "./menu.module.scss";
 const CenterMenu: Component<{
   show: Accessor<boolean>;
   toggleShow: () => void;
-  content: JSXElement;
+  content: () => JSXElement;
   target: JSXElement;
   targetStyle?: JSX.CSSProperties;
   targetClass?: string;
@@ -58,7 +58,7 @@ const CenterMenu: Component<{
 
 const Child: Component<{
   title?: string;
-  content: JSXElement;
+  content: () => JSXElement;
   show: Accessor<boolean>;
   toggleShow: () => void;
   padding?: string | number;
@@ -95,7 +95,7 @@ const Child: Component<{
             </button>
           </Flex>
         </Flex>
-        {p.content}
+        {p.content()}
       </Grid>
     </Grid>
   );

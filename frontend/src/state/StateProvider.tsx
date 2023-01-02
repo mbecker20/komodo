@@ -7,12 +7,14 @@ import {
   useServers,
   useServerStats,
   useUpdates,
+  useUsernames,
 } from "./hooks";
 import connectToWs from "./ws";
 import { useUser } from "./UserProvider";
 import { PermissionLevel } from "../types";
 
 export type State = {
+  usernames: ReturnType<typeof useUsernames>
   servers: ReturnType<typeof useServers>;
   getPermissionOnServer: (id: string) => PermissionLevel;
   serverStats: ReturnType<typeof useServerStats>;
@@ -37,7 +39,9 @@ export const AppStateProvider: ParentComponent = (p) => {
   const servers = useServers();
   const builds = useBuilds();
   const deployments = useDeployments();
+  const usernames = useUsernames();
   const state: State = {
+    usernames,
     servers,
     getPermissionOnServer: (id: string) => {
       const server = servers.get(id)!;

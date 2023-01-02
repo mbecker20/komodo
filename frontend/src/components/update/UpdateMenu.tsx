@@ -1,4 +1,5 @@
-import { Component, For, Show } from "solid-js";
+import { Component, createResource, For, Show } from "solid-js";
+import { client } from "../..";
 import { useAppState } from "../../state/StateProvider";
 import { Update as UpdateType } from "../../types";
 import { combineClasses, readableDuration, readableMonitorTimestamp } from "../../util/helpers";
@@ -36,63 +37,70 @@ const UpdateMenu: Component<{ update: UpdateType }> = (p) => {
       targetClass="blue"
       padding="1rem 2rem"
       content={
-        <Grid class={s.LogContainer} gap="1rem">
-          <Grid gap="0.5rem" class="card light shadow">
-            <div>started at: {readableMonitorTimestamp(p.update.start_ts)}</div>
-            <Show when={p.update.end_ts}>
-              <div>
-                duration:{" "}
-                {readableDuration(p.update.start_ts, p.update.end_ts!)}
-              </div>
-            </Show>
-          </Grid>
-          <For each={p.update.logs}>
-            {(log, index) => {
-              return (
-                <Grid gap="0.5rem" class="card light shadow">
-                  <Flex alignItems="center" class="wrap">
-                    <h1>{log.stage}</h1>
-                    <div style={{ opacity: 0.7 }}>
-                      (stage {index() + 1} of {p.update.logs.length})
-                    </div>
-                    <div style={{ opacity: 0.7 }}>
-                      {readableDuration(log.start_ts, log.end_ts)}
-                    </div>
-                  </Flex>
-                  <Show when={log.command}>
-                    <div>command</div>
-                    <pre class={combineClasses(s.Log)}>{log.command}</pre>
-                  </Show>
-                  <Show when={log.stdout}>
-                    <div>stdout</div>
-                    <pre
-                      class={combineClasses(s.Log)}
-                      // style={{
-                      //   "max-height": log.stderr ? "30vh" : "60vh",
-                      // }}
-                    >
-                      {log.stdout}
-                    </pre>
-                  </Show>
-                  <Show when={log.stderr}>
-                    <div>stderr</div>
-                    <pre
-                      class={combineClasses(s.Log)}
-                      // style={{
-                      //   "max-height": log.stdout ? "30vh" : "60vh",
-                      // }}
-                    >
-                      {log.stderr}
-                    </pre>
-                  </Show>
-                </Grid>
-              );
-            }}
-          </For>
-        </Grid>
+        () => <UpdateMenuContent update={p.update} />
       }
     />
   );
 };
 
 export default UpdateMenu;
+
+const UpdateMenuContent: Component<{ update: UpdateType }> = (p) => {
+  const { usernames } = useAppState();
+  return (
+    <Grid class={s.LogContainer} gap="1rem">
+      <Grid gap="0.5rem" class="card light shadow">
+        <div>operator: {usernames.get(p.update.operator)}</div>
+        <div>started at: {readableMonitorTimestamp(p.update.start_ts)}</div>
+        <Show when={p.update.end_ts}>
+          <div>
+            duration: {readableDuration(p.update.start_ts, p.update.end_ts!)}
+          </div>
+        </Show>
+      </Grid>
+      <For each={p.update.logs}>
+        {(log, index) => {
+          return (
+            <Grid gap="0.5rem" class="card light shadow">
+              <Flex alignItems="center" class="wrap">
+                <h1>{log.stage}</h1>
+                <div style={{ opacity: 0.7 }}>
+                  (stage {index() + 1} of {p.update.logs.length})
+                </div>
+                <div style={{ opacity: 0.7 }}>
+                  {readableDuration(log.start_ts, log.end_ts)}
+                </div>
+              </Flex>
+              <Show when={log.command}>
+                <div>command</div>
+                <pre class={combineClasses(s.Log)}>{log.command}</pre>
+              </Show>
+              <Show when={log.stdout}>
+                <div>stdout</div>
+                <pre
+                  class={combineClasses(s.Log)}
+                  // style={{
+                  //   "max-height": log.stderr ? "30vh" : "60vh",
+                  // }}
+                >
+                  {log.stdout}
+                </pre>
+              </Show>
+              <Show when={log.stderr}>
+                <div>stderr</div>
+                <pre
+                  class={combineClasses(s.Log)}
+                  // style={{
+                  //   "max-height": log.stdout ? "30vh" : "60vh",
+                  // }}
+                >
+                  {log.stderr}
+                </pre>
+              </Show>
+            </Grid>
+          );
+        }}
+      </For>
+    </Grid>
+  );
+}

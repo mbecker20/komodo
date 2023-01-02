@@ -12,7 +12,7 @@ import UpdateMenu from "../../update/UpdateMenu";
 import s from "./update.module.scss";
 
 const Update: Component<{ update: UpdateType }> = (p) => {
-  const { deployments, servers, builds } = useAppState();
+  const { deployments, servers, builds, usernames } = useAppState();
   const name = () => {
     if (p.update.target.type === "Deployment" && deployments.loaded()) {
       return deployments.get(p.update.target.id!)?.deployment.name || "deleted";
@@ -53,7 +53,7 @@ const Update: Component<{ update: UpdateType }> = (p) => {
           </div>
           <Flex gap="0.5rem">
             <Icon type="user" />
-            <div>{p.update.operator}</div>
+            <div>{usernames.get(p.update.operator)}</div>
           </Flex>
         </Grid>
         <UpdateMenu update={p.update} />

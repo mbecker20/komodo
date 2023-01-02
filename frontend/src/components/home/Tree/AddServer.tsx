@@ -18,7 +18,7 @@ const AddServer: Component<{}> = () => {
       target="add server"
       targetClass="green shadow"
       targetStyle={{ width: "100%" }}
-      content={<Content close={toggleShow} />}
+      content={() => <Content close={toggleShow} />}
       position="center"
     />
   );

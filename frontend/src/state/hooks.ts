@@ -45,6 +45,31 @@ export function useServerStats() {
   };
 }
 
+export function useUsernames() {
+  const [usernames, set] = createSignal<Record<string, string | undefined>>(
+    {}
+  );
+  const load = async (userID: string) => {
+    const username = await client.get_username(userID);
+    set((s) => ({ ...s, [userID]: username }));
+  };
+  const loading: Record<string, boolean> = {};
+  return {
+    get: (userID: string) => {
+      const username = usernames()[userID];
+      if (
+        username === undefined &&
+        !loading[userID]
+      ) {
+        loading[userID] = true;
+        load(userID);
+      }
+      return username;
+    },
+    load,
+  };
+}
+
 const buildIdPath = ["_id", "$oid"];
 
 export function useBuilds() {

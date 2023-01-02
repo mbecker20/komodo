@@ -16,7 +16,7 @@ const StatGraphs: Component<{ id: string }> = (p) => {
       toggleShow={toggleShow}
       target={<Icon type="timeline-line-chart" width="0.85rem" />}
       targetClass="blue"
-      content={<Graphs id={p.id} />}
+      content={() => <Graphs id={p.id} />}
       title={`${name()} stats`}
     />
   );
