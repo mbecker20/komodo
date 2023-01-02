@@ -1379,6 +1379,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tokio-tungstenite 0.18.0",
+ "tokio-util",
 ]
 
 [[package]]

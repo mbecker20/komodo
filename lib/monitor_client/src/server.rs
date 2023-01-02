@@ -5,8 +5,9 @@ use monitor_types::{
     SystemStats, SystemStatsQuery,
 };
 use serde_json::{json, Value};
-use tokio::net::TcpStream;
-use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
+use tokio::{task::JoinHandle, sync::broadcast::{Receiver, self}};
+use tokio_tungstenite::{connect_async, tungstenite::Message};
+use tokio_util::sync::CancellationToken;
 
 use crate::MonitorClient;
 
@@ -95,7 +96,7 @@ impl MonitorClient {
         &self,
         server_id: &str,
         query: impl Into<Option<SystemStatsQuery>>,
-    ) -> anyhow::Result<WebSocketStream<MaybeTlsStream<TcpStream>>> {
+    ) -> anyhow::Result<(Receiver<SystemStats>, JoinHandle<anyhow::Result<()>>, CancellationToken)> {
         let query = query.into().unwrap_or_default();
         let endpoint = format!(
             "{}/ws/stats/{server_id}?networks={}&components={}&processes={}",
@@ -109,7 +110,26 @@ impl MonitorClient {
         let msg = socket.next().await;
         if let Some(Ok(Message::Text(msg))) = &msg {
             if msg.as_str() == "LOGGED_IN" {
-                Ok(socket)
+                let cancel = CancellationToken::new();
+                let cancel_clone = cancel.clone();
+                let (sender, receiver) = broadcast::channel(100);
+                let handle = tokio::spawn(async move {
+                    loop {
+                        let stats = tokio::select! {
+                            _ = cancel_clone.cancelled() => {
+                                let _ = socket.close(None).await;
+                                break;
+                            },
+                            stats = socket.next() => stats,
+                        };
+                        if let Some(Ok(Message::Text(stats))) = stats {
+                            let stats: SystemStats = serde_json::from_str(&stats).context("failed to parse msg as SystemStats")?;
+                            sender.send(stats).context("failed to send stats through broadcast channel")?;
+                        }
+                    }
+                    Ok(())
+                });
+                Ok((receiver, handle, cancel))
             } else {
                 Err(anyhow!("failed to log in"))
             }

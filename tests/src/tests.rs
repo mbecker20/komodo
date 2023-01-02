@@ -62,9 +62,8 @@ pub async fn subscribe_to_server_stats(monitor: &MonitorClient) -> anyhow::Resul
         .await
         .context("failed at list servers")?;
     let server = &servers.get(0).ok_or(anyhow!("no servers"))?.server;
-    let mut stats_stream = monitor.subscribe_to_stats_ws(&server.id, None).await?;
-    while let Some(Ok(Message::Text(msg))) = stats_stream.next().await {
-        let stats: SystemStats = serde_json::from_str(&msg)?;
+    let (mut recv, _, _) = monitor.subscribe_to_stats_ws(&server.id, None).await?;
+    while let Ok(stats) = recv.recv().await {
         println!("{stats:#?}");
     }
     Ok(())
