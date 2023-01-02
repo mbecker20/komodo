@@ -209,7 +209,7 @@ impl State {
         id: String,
         user: &RequestUser,
     ) -> anyhow::Result<BuildActionState> {
-        self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
+        self.get_build_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let action_state = self
             .build_action_states

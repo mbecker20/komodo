@@ -18,6 +18,7 @@ const App: Component = () => {
         <Route path="/" component={Home} />
         <Route path="/build/:id" component={Build} />
         <Route path="/deployment/:id" component={Deployment} />
+        <Route path="/server/:id" component={Server} />
         <Show when={user().admin}>
           <Route path="/users" component={Users} />
         </Show>

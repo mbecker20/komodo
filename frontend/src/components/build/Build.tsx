@@ -1,9 +1,9 @@
-import { useParams } from "@solidjs/router";
-import { Component, Show } from "solid-js";
+import { useNavigate, useParams } from "@solidjs/router";
+import { Component, createEffect, onCleanup, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { PermissionLevel } from "../../types";
+import { Operation, PermissionLevel } from "../../types";
 import { combineClasses, getId } from "../../util/helpers";
 import NotFound from "../NotFound";
 import Grid from "../shared/layout/Grid";
@@ -14,7 +14,8 @@ import BuildTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
 const Build: Component<{}> = (p) => {
-  const { builds } = useAppState();
+  const { builds, ws } = useAppState();
+  const navigate = useNavigate();
   const params = useParams();
   const build = () => builds.get(params.id)!;
   const { isSemiMobile } = useAppDimensions();
@@ -22,6 +23,15 @@ const Build: Component<{}> = (p) => {
   const userCanUpdate = () =>
     user().admin ||
     build().permissions[getId(user())] === PermissionLevel.Update;
+  createEffect(() => {
+    onCleanup(
+      ws.subscribe([Operation.DeleteBuild], (update) => {
+        if (update.target.id === params.id) {
+          navigate("/");
+        }
+      })
+    );
+  });
   return (
     <Show when={build()} fallback={<NotFound type="build" />}>
       <ActionStateProvider>

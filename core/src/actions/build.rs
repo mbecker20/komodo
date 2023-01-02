@@ -124,7 +124,7 @@ impl State {
         self.db.builds.delete_one(build_id).await?;
         let update = Update {
             target: UpdateTarget::System,
-            operation: Operation::DeleteDeployment,
+            operation: Operation::DeleteBuild,
             start_ts,
             end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
