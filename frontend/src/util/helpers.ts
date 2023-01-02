@@ -110,3 +110,7 @@ export function serverStatusClass(
     return "exited"
   }
 }
+
+export function copyToClipboard(text: string) {
+  navigator.clipboard.writeText(text);
+}
