@@ -14,7 +14,7 @@ import Grid from "../shared/layout/Grid";
 import Tabs from "../shared/tabs/Tabs";
 import s from "./home.module.scss";
 import Summary from "./Summary";
-import Builds from "./Tree/Builds";
+import Builds from "./Tree/Build";
 import Servers from "./Tree/Servers";
 import Updates from "./Updates/Updates";
 

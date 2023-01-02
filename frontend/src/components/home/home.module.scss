@@ -31,13 +31,16 @@
 }
 
 .Server {
-	background-color: c.$lightgrey;
+	
 	height: fit-content;
 	cursor: pointer;
 	width: 100%;
+	display: grid;
+	gap: 1rem;
 }
 
 .ServerButton {
+	background-color: c.$lightgrey;
 	justify-content: space-between;
 	z-index: 5;
 	transition: background-color 500ms ease;

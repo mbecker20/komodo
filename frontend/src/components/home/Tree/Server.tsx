@@ -1,4 +1,4 @@
-import { Component, createMemo, createSignal, For, Show } from "solid-js";
+import { Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { combineClasses, getId } from "../../../util/helpers";
@@ -8,15 +8,17 @@ import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
 import Deployment from "./Deployment";
 import s from "../home.module.scss";
-import { NewDeployment } from "./New";
+import { NewBuild, NewDeployment } from "./New";
 import Loading from "../../shared/loading/Loading";
 import { useNavigate } from "@solidjs/router";
 import { PermissionLevel, ServerStatus } from "../../../types";
 import { useAppDimensions } from "../../../state/DimensionProvider";
+import Tabs from "../../shared/tabs/Tabs";
+import Build from "./Build";
 // import StatGraphs from "../../server/StatGraphs/StatGraphs";
 
 const Server: Component<{ id: string }> = (p) => {
-  const { servers, serverStats, deployments } = useAppState();
+  const { servers, serverStats, deployments, builds } = useAppState();
   const { width } = useAppDimensions();
   const { user } = useUser();
   const navigate = useNavigate();
@@ -28,7 +30,15 @@ const Server: Component<{ id: string }> = (p) => {
       deployments
         .ids()!
         .filter((id) => deployments.get(id)?.deployment.server_id === p.id)
-    );
+    ) as string[];
+  });
+  const buildIDs = createMemo(() => {
+    return (
+      builds.loaded() &&
+      builds
+        .ids()!
+        .filter((id) => builds.get(id)?.server_id === p.id)
+    ) as string[];
   });
   const [reloading, setReloading] = createSignal(false);
   const stats = () => serverStats.get(p.id);
@@ -45,7 +55,7 @@ const Server: Component<{ id: string }> = (p) => {
           onClick={toggleOpen}
         >
           <Flex>
-            <Icon type="chevron-down" width="1rem" />
+            <Icon type={open() ? "chevron-up" : "chevron-down"} width="1rem" />
             <h1 style={{ "font-size": "1.25rem" }}>{server()?.server.name}</h1>
           </Flex>
           <Flex alignItems="center">
@@ -121,21 +131,60 @@ const Server: Component<{ id: string }> = (p) => {
           </Flex>
         </button>
         <Show when={open()}>
-          <Grid
-            gap=".5rem"
-            class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}
-          >
-            <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
-            <Show
-              when={
-                user().admin ||
-                server()?.server.permissions![getId(user())] ===
-                  PermissionLevel.Update
-              }
-            >
-              <NewDeployment serverID={p.id} />
-            </Show>
-          </Grid>
+          <Tabs
+            containerClass="card shadow"
+            localStorageKey={`${p.id}-home-tab`}
+            tabs={[
+              {
+                title: "deployments",
+                element: () => (
+                  <Grid
+                    gap=".5rem"
+                    class={combineClasses(
+                      s.Deployments,
+                      open() ? s.Enter : s.Exit
+                    )}
+                  >
+                    <For each={deploymentIDs()}>
+                      {(id) => <Deployment id={id} />}
+                    </For>
+                    <Show
+                      when={
+                        user().admin ||
+                        server()?.server.permissions![getId(user())] ===
+                          PermissionLevel.Update
+                      }
+                    >
+                      <NewDeployment serverID={p.id} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+              {
+                title: "builds",
+                element: () => (
+                  <Grid
+                    gap=".5rem"
+                    class={combineClasses(
+                      s.Deployments,
+                      open() ? s.Enter : s.Exit
+                    )}
+                  >
+                    <For each={buildIDs()}>{(id) => <Build id={id} />}</For>
+                    <Show
+                      when={
+                        user().admin ||
+                        server()?.server.permissions![getId(user())] ===
+                          PermissionLevel.Update
+                      }
+                    >
+                      <NewBuild serverID={p.id} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+            ]}
+          />
         </Show>
       </div>
     </Show>
