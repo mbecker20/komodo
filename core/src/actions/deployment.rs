@@ -131,7 +131,7 @@ impl State {
                 "failed at deleting deployment at {deployment_id} from mongo"
             ))?;
         let update = Update {
-            target: UpdateTarget::System,
+            target: UpdateTarget::Deployment(deployment_id.to_string()),
             operation: Operation::DeleteDeployment,
             start_ts,
             end_ts: Some(monitor_timestamp()),

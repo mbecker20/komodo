@@ -87,7 +87,7 @@ impl State {
             .await
             .context(format!("failed at deleting procedure at {id} from mongo"))?;
         let update = Update {
-            target: UpdateTarget::System,
+            target: UpdateTarget::Procedure(id.to_string()),
             operation: Operation::DeleteProcedure,
             start_ts,
             end_ts: Some(monitor_timestamp()),

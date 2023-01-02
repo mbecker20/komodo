@@ -104,7 +104,7 @@ impl State {
         let start_ts = monitor_timestamp();
         self.db.servers.delete_one(&server_id).await?;
         let update = Update {
-            target: UpdateTarget::System,
+            target: UpdateTarget::Server(server_id.to_string()),
             operation: Operation::DeleteServer,
             start_ts,
             end_ts: Some(monitor_timestamp()),

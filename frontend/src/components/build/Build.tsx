@@ -23,14 +23,15 @@ const Build: Component<{}> = (p) => {
   const userCanUpdate = () =>
     user().admin ||
     build().permissions[getId(user())] === PermissionLevel.Update;
+  let unsub = () => {};
   createEffect(() => {
-    onCleanup(
-      ws.subscribe([Operation.DeleteBuild], (update) => {
-        if (update.target.id === params.id) {
-          navigate("/");
-        }
-      })
-    );
+    unsub();
+    unsub = ws.subscribe([Operation.DeleteBuild], (update) => {
+      if (update.target.id === params.id) {
+        navigate("/");
+      }
+    });
+    onCleanup(unsub);
   });
   return (
     <Show when={build()} fallback={<NotFound type="build" />}>

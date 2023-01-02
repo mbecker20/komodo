@@ -123,7 +123,7 @@ impl State {
             .context("failed at deleting repo")?;
         self.db.builds.delete_one(build_id).await?;
         let update = Update {
-            target: UpdateTarget::System,
+            target: UpdateTarget::Build(build_id.to_string()),
             operation: Operation::DeleteBuild,
             start_ts,
             end_ts: Some(monitor_timestamp()),

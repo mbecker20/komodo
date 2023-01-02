@@ -43,7 +43,7 @@ function connectToWs(state: State) {
     subscribe: (operations: Operation[], callback: (update: Update) => void) => {
       const listener = ({ data }: { data: string }) => {
         if (data === "PONG") return;
-        if (data = "LOGGED_IN") return;
+        if (data === "LOGGED_IN") return;
         const update = JSON.parse(data) as Update;
         if (operations.length === 0 || operations.includes(update.operation)) {
           callback(update);

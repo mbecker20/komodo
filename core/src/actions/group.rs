@@ -79,7 +79,7 @@ impl State {
             .await
             .context(format!("failed at deleting group at {id} from mongo"))?;
         let update = Update {
-            target: UpdateTarget::System,
+            target: UpdateTarget::Group(id.to_string()),
             operation: Operation::DeleteGroup,
             start_ts,
             end_ts: Some(monitor_timestamp()),
