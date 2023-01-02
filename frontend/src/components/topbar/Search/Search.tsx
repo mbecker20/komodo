@@ -119,14 +119,9 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
 
 const Deployments: Component<{ close: () => void }> = (p) => {
   const { servers, deployments } = useAppState();
-  const navigate = useNavigate();
   const { highlighted, filteredDeployments } = useSearchState();
   return (
-    <Grid
-      class="scroller"
-      gap="0.5rem"
-      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
-    >
+    <Grid class="scroller" gap="0.5rem" style={{ "max-height": "70vh" }}>
       <Show when={filteredDeployments()?.length === 0}>
         <Flex alignItems="center" justifyContent="center">
           no results
@@ -141,10 +136,7 @@ const Deployments: Component<{ close: () => void }> = (p) => {
               index() === highlighted.value() && "selected",
               "grey"
             )}
-            onClick={() => {
-              navigate(`/deployment/${getId(deployment.deployment)}`);
-              p.close();
-            }}
+            onClick={() => p.close()}
           >
             <Grid gap="0rem">
               <Flex alignItems="center">{deployment.deployment.name} </Flex>
@@ -172,14 +164,10 @@ const Deployments: Component<{ close: () => void }> = (p) => {
 };
 
 const Builds: Component<{ close: () => void }> = (p) => {
-  const navigate = useNavigate();
+  const { servers } = useAppState();
   const { highlighted, filteredBuilds } = useSearchState();
   return (
-    <Grid
-      class="scroller"
-      gap="0.5rem"
-      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
-    >
+    <Grid class="scroller" gap="0.5rem" style={{ "max-height": "70vh" }}>
       <Show when={filteredBuilds()?.length === 0}>
         <Flex alignItems="center" justifyContent="center">
           no results
@@ -194,14 +182,19 @@ const Builds: Component<{ close: () => void }> = (p) => {
               index() === highlighted.value() && "selected",
               "grey"
             )}
-            onClick={() => {
-              // navigate(`/build/${getId(build)}`);
-              p.close();
-            }}
+            onClick={() => p.close()}
           >
             <Grid gap="0rem">
-              {build.name}
-              <Flex style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</Flex>
+              <Flex alignItems="center">{build.name} </Flex>
+              <Flex
+                alignItems="center"
+                gap="0.2rem"
+                style={{ opacity: 0.6, "font-size": "0.9rem" }}
+              >
+                {servers.get(build.server_id)?.server.name}
+                <Icon type="caret-right" width="0.7rem" />
+                build
+              </Flex>
             </Grid>
           </A>
         )}
@@ -217,7 +210,7 @@ const Servers: Component<{ close: () => void }> = (p) => {
     <Grid
       class="scroller"
       gap="0.5rem"
-      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
+      style={{ "max-height": "70vh" }}
     >
       <Show when={filteredServers()?.length === 0}>
         <Flex alignItems="center" justifyContent="center">

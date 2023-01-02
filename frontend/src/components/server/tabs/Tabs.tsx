@@ -12,9 +12,9 @@ import Stats from "./stats/Stats";
 
 const ServerTabs: Component<{}> = (p) => {
   const { servers } = useAppState();
-  const { id } = useParams();
+  const params = useParams();
   const { user } = useUser();
-  const server = () => servers.get(id)!;
+  const server = () => servers.get(params.id)!;
   const userCanUpdate = () =>
     user().admin ||
     server()!.server.permissions![getId(user())] === PermissionLevel.Update;

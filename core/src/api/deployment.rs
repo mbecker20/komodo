@@ -43,7 +43,7 @@ pub struct CopyDeploymentBody {
 #[typeshare]
 #[derive(Deserialize)]
 pub struct GetContainerLogQuery {
-    tail: Option<u64>,
+    tail: Option<u32>,
 }
 
 pub fn router() -> Router {
@@ -369,7 +369,7 @@ impl State {
         &self,
         id: &str,
         user: &RequestUser,
-        tail: Option<u64>,
+        tail: Option<u32>,
     ) -> anyhow::Result<Log> {
         let deployment = self
             .get_deployment_check_permissions(&id, &user, PermissionLevel::Read)

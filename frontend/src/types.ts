@@ -51,6 +51,8 @@ export interface Deployment {
 	branch?: string;
 	github_account?: string;
 	on_clone?: Command;
+	on_pull?: Command;
+	repo_mount?: Conversion;
 	created_at?: string;
 	updated_at?: string;
 }
@@ -175,6 +177,12 @@ export interface ServerActionState {
 	pruning_images: boolean;
 }
 
+export interface SystemStatsQuery {
+	networks?: boolean;
+	components?: boolean;
+	processes?: boolean;
+}
+
 export interface SystemStats {
 	cpu_perc: number;
 	mem_used_gb: number;
@@ -182,7 +190,10 @@ export interface SystemStats {
 	disk: DiskUsage;
 	networks: SystemNetwork[];
 	components: SystemComponent[];
+	processes: SystemProcess[];
 	polling_rate: Timelength;
+	refresh_ts: number;
+	refresh_list_ts: number;
 }
 
 export interface DiskUsage {
@@ -210,6 +221,17 @@ export interface SystemComponent {
 	temp: number;
 	max: number;
 	critical?: number;
+}
+
+export interface SystemProcess {
+	pid: number;
+	name: string;
+	exe?: string;
+	cmd: string[];
+	cpu_perc: number;
+	mem_mb: number;
+	disk_read_kb: number;
+	disk_write_kb: number;
 }
 
 export interface Update {
@@ -310,6 +332,7 @@ export enum Operation {
 	UpdateGroup = "update_group",
 	DeleteGroup = "delete_group",
 	ModifyUserEnabled = "modify_user_enabled",
+	ModifyUserCreateServerPermissions = "modify_user_create_server_permissions",
 	ModifyUserPermissions = "modify_user_permissions",
 }
 

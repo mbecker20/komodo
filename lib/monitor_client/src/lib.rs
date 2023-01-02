@@ -101,6 +101,10 @@ impl MonitorClient {
             .await
     }
 
+    pub async fn list_users(&self) -> anyhow::Result<Vec<User>> {
+        self.get("/api/users", Option::<()>::None).await
+    }
+
     async fn get<R: DeserializeOwned>(
         &self,
         endpoint: &str,

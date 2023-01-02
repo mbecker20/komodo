@@ -5,7 +5,10 @@ use monitor_types::{
     SystemStats, SystemStatsQuery,
 };
 use serde_json::{json, Value};
-use tokio::{task::JoinHandle, sync::broadcast::{Receiver, self}};
+use tokio::{
+    sync::broadcast::{self, Receiver},
+    task::JoinHandle,
+};
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tokio_util::sync::CancellationToken;
 
@@ -96,7 +99,11 @@ impl MonitorClient {
         &self,
         server_id: &str,
         query: impl Into<Option<SystemStatsQuery>>,
-    ) -> anyhow::Result<(Receiver<SystemStats>, JoinHandle<anyhow::Result<()>>, CancellationToken)> {
+    ) -> anyhow::Result<(
+        Receiver<SystemStats>,
+        JoinHandle<anyhow::Result<()>>,
+        CancellationToken,
+    )> {
         let query = query.into().unwrap_or_default();
         let endpoint = format!(
             "{}/ws/stats/{server_id}?networks={}&components={}&processes={}",
@@ -123,8 +130,11 @@ impl MonitorClient {
                             stats = socket.next() => stats,
                         };
                         if let Some(Ok(Message::Text(stats))) = stats {
-                            let stats: SystemStats = serde_json::from_str(&stats).context("failed to parse msg as SystemStats")?;
-                            sender.send(stats).context("failed to send stats through broadcast channel")?;
+                            let stats: SystemStats = serde_json::from_str(&stats)
+                                .context("failed to parse msg as SystemStats")?;
+                            sender
+                                .send(stats)
+                                .context("failed to send stats through broadcast channel")?;
                         }
                     }
                     Ok(())

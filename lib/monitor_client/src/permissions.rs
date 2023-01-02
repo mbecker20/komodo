@@ -29,10 +29,25 @@ impl MonitorClient {
         enabled: bool,
     ) -> anyhow::Result<Update> {
         self.post(
-            "/api/permissions/update",
+            "/api/permissions/modify_enabled",
             json!({
                 "user_id": user_id,
                 "enabled": enabled,
+            }),
+        )
+        .await
+    }
+
+    pub async fn modify_user_create_server_permissions(
+        &self,
+        user_id: &str,
+        create_server_permissions: bool,
+    ) -> anyhow::Result<Update> {
+        self.post(
+            "/api/permissions/modify_create_server",
+            json!({
+                "user_id": user_id,
+                "create_server_permissions": create_server_permissions,
             }),
         )
         .await

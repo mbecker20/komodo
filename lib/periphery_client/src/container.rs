@@ -15,7 +15,7 @@ impl PeripheryClient {
         &self,
         server: &Server,
         container_name: &str,
-        tail: Option<u64>,
+        tail: Option<u32>,
     ) -> anyhow::Result<Log> {
         self.get_json(
             server,

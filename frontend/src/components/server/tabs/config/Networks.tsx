@@ -13,8 +13,7 @@ import { useParams } from "@solidjs/router";
 const BASE_NETWORKS = ["bridge", "host", "none"];
 
 const Networks: Component<{}> = (p) => {
-  const { ws } = useAppState();
-  const { id } = useParams();
+  const params = useParams();
   const { networks } = useConfig();
   const filteredNetworks = () => {
     return networks().filter(

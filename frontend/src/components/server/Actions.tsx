@@ -14,9 +14,9 @@ import { PermissionLevel, ServerStatus } from "../../types";
 
 const Actions: Component<{}> = (p) => {
   const { ws, servers } = useAppState();
-  const { id } = useParams();
+  const params = useParams();
   const { user } = useUser();
-  const server = () => servers.get(id)!;
+  const server = () => servers.get(params.id)!;
   const userCanExecute = () =>
     user().admin ||
     server().server.permissions![getId(user())] === PermissionLevel.Execute ||
@@ -38,7 +38,7 @@ const Actions: Component<{}> = (p) => {
           <ConfirmButton
             color="green"
             onConfirm={() => {
-              client.prune_docker_networks(id);
+              client.prune_docker_networks(params.id);
             }}
           >
             <Icon type="cut" />
@@ -52,7 +52,7 @@ const Actions: Component<{}> = (p) => {
 export default Actions;
 
 function PruneImages() {
-  const { id } = useParams();
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
@@ -66,7 +66,7 @@ function PruneImages() {
       <ConfirmButton
         color="green"
         onConfirm={() => {
-          client.prune_docker_images(id);
+          client.prune_docker_images(params.id);
         }}
       >
         <Icon type="cut" />
@@ -76,7 +76,7 @@ function PruneImages() {
 }
 
 function PruneContainers() {
-  const { id } = useParams();
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
@@ -90,7 +90,7 @@ function PruneContainers() {
       <ConfirmButton
         color="blue"
         onConfirm={() => {
-          client.prune_docker_containers(id);
+          client.prune_docker_containers(params.id);
         }}
       >
         <Icon type="cut" />

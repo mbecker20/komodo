@@ -1,12 +1,16 @@
 import { Route, Routes } from "@solidjs/router";
-import type { Component } from "solid-js";
-import Build from "./components/build/Build";
-import Deployment from "./components/deployment/Deployment";
-import Home from "./components/home/Home";
-import Server from "./components/server/Server";
+import { Component, lazy, Show } from "solid-js";
 import Topbar from "./components/topbar/Topbar";
+import { useUser } from "./state/UserProvider";
+
+const Home = lazy(() => import("./components/home/Home"));
+const Deployment = lazy(() => import("./components/deployment/Deployment"));
+const Server = lazy(() => import("./components/server/Server"));
+const Build = lazy(() => import("./components/build/Build"));
+const Users = lazy(() => import("./components/users/Users"));
 
 const App: Component = () => {
+  const { user } = useUser();
   return (
     <>
       <Topbar />
@@ -14,7 +18,9 @@ const App: Component = () => {
         <Route path="/" component={Home} />
         <Route path="/build/:id" component={Build} />
         <Route path="/deployment/:id" component={Deployment} />
-        <Route path="/server/:id" component={Server} />
+        <Show when={user().admin}>
+          <Route path="/users" component={Users} />
+        </Show>
       </Routes>
     </>
   );

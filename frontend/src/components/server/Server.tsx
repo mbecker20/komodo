@@ -15,8 +15,8 @@ import Updates from "./Updates";
 
 const Server: Component<{}> = (p) => {
   const { servers } = useAppState();
-  const { id } = useParams();
-  const server = () => servers.get(id)!;
+  const params = useParams();
+  const server = () => servers.get(params.id)!;
   const { isSemiMobile } = useAppDimensions();
   const { user } = useUser();
   const userCanUpdate = () =>

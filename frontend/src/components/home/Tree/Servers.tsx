@@ -1,11 +1,13 @@
-import { Component, createMemo, createSignal, For } from "solid-js";
+import { Component, createMemo, createSignal, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
+import { useUser } from "../../../state/UserProvider";
 import Input from "../../shared/Input";
 import Grid from "../../shared/layout/Grid";
 import AddServer from "./AddServer";
 import Server from "./Server";
 
 const Servers: Component = () => {
+  const { user } = useUser();
 	const { servers } = useAppState();
 	const [serverFilter, setServerFilter] = createSignal("");
   const serverIDs = createMemo(() => {
@@ -36,7 +38,9 @@ const Servers: Component = () => {
         style={{ width: "100%", padding: "0.5rem" }}
       />
       <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
-      <AddServer />
+      <Show when={user().admin || user().create_server_permissions}>
+        <AddServer />
+      </Show>
     </Grid>
   );
 }

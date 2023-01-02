@@ -26,6 +26,13 @@ struct ModifyUserEnabledBody {
     enabled: bool,
 }
 
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+struct ModifyUserCreateServerBody {
+    user_id: String,
+    create_server_permissions: bool,
+}
+
 pub fn router() -> Router {
     Router::new()
         .route(
@@ -41,6 +48,15 @@ pub fn router() -> Router {
             "/modify_enabled",
             post(|state, user, body| async {
                 let update = modify_user_enabled(state, user, body)
+                    .await
+                    .map_err(handle_anyhow_error)?;
+                response!(Json(update))
+            }),
+        )
+        .route(
+            "/modify_create_server",
+            post(|state, user, body| async {
+                let update = modify_user_create_server_permissions(state, user, body)
                     .await
                     .map_err(handle_anyhow_error)?;
                 response!(Json(update))
@@ -225,8 +241,50 @@ async fn modify_user_enabled(
         target: UpdateTarget::System,
         operation: Operation::ModifyUserEnabled,
         logs: vec![Log::simple(
-            "modify user permissions",
+            "modify user enabled",
             format!("{update_type} {} (id: {})", user.username, user.id),
+        )],
+        start_ts: ts.clone(),
+        end_ts: Some(ts),
+        status: UpdateStatus::Complete,
+        success: true,
+        operator: user.id.clone(),
+        ..Default::default()
+    };
+    update.id = state.add_update(update.clone()).await?;
+    Ok(update)
+}
+
+async fn modify_user_create_server_permissions(
+    Extension(state): StateExtension,
+    Extension(user): RequestUserExtension,
+    Json(ModifyUserCreateServerBody { user_id, create_server_permissions }): Json<ModifyUserCreateServerBody>,
+) -> anyhow::Result<Update> {
+    if !user.is_admin {
+        return Err(anyhow!(
+            "user does not have permissions for this action (not admin)"
+        ));
+    }
+    let user = state
+        .db
+        .users
+        .find_one_by_id(&user_id)
+        .await
+        .context("failed at mongo query to find target user")?
+        .ok_or(anyhow!("did not find any user with user_id {user_id}"))?;
+    state
+        .db
+        .users
+        .update_one::<Document>(&user_id, mungos::Update::Set(doc! { "create_server_permissions": create_server_permissions }))
+        .await?;
+    let update_type = if create_server_permissions { "enabled" } else { "disabled" };
+    let ts = monitor_timestamp();
+    let mut update = Update {
+        target: UpdateTarget::System,
+        operation: Operation::ModifyUserCreateServerPermissions,
+        logs: vec![Log::simple(
+            "modify user create server permissions",
+            format!("{update_type} create server permissions for {} (id: {})", user.username, user.id),
         )],
         start_ts: ts.clone(),
         end_ts: Some(ts),

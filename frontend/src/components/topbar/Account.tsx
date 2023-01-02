@@ -1,3 +1,4 @@
+import { A } from "@solidjs/router";
 import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
@@ -17,25 +18,22 @@ const Account: Component<{ close: () => void }> = (p) => {
       </Show>
       <Flex justifyContent="center">admin: {user().admin.toString()}</Flex>
       <Show when={user().admin}>
-        <button
+        <A
+          href="/users"
           class="grey"
-          onClick={() => {
-            // selected.set("", "users");
-            p.close();
-          }}
+          onClick={() => p.close()}
           style={{ "font-size": "1rem", width: "100%" }}
         >
           manage users
-        </button>
+        </A>
       </Show>
       <Show when={!user().admin}>
-        <Flex justifyContent="center">create server permissions: {user().create_server_permissions.toString()}</Flex>
+        <Flex justifyContent="center">
+          create server permissions:{" "}
+          {user().create_server_permissions.toString()}
+        </Flex>
       </Show>
-      <button
-        onClick={() => logout()}
-        class="red"
-        style={{ width: "100%" }}
-      >
+      <button onClick={() => logout()} class="red" style={{ width: "100%" }}>
         log out
       </button>
     </Grid>

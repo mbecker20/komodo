@@ -24,6 +24,10 @@ export interface CopyDeploymentBody {
 	server_id: string;
 }
 
+export interface GetContainerLogQuery {
+	tail?: number;
+}
+
 export interface CreateGroupBody {
 	name: string;
 }
@@ -38,6 +42,11 @@ export interface PermissionsUpdateBody {
 export interface ModifyUserEnabledBody {
 	user_id: string;
 	enabled: boolean;
+}
+
+export interface ModifyUserCreateServerBody {
+	user_id: string;
+	create_server_permissions: boolean;
 }
 
 export interface CreateProcedureBody {

@@ -13,8 +13,7 @@ import { useConfig } from "./config/Provider";
 
 const Owners: Component<{}> = (p) => {
   const { server } = useConfig();
-  const { id } = useParams();
-  const { user } = useUser();
+  const params = useParams();
   const [userSearch, setUserSearch] = createSignal("");
   const [users, setUsers] = createSignal<User[]>([]);
   createEffect(() => {
@@ -58,7 +57,7 @@ const Owners: Component<{}> = (p) => {
                           "justify-content": "flex-start",
                         }}
                         onConfirm={async () => {
-                          await client.update_user_permissions_on_target({ user_id: getId(user), permission: PermissionLevel.Read, target_type: PermissionsTarget.Server, target_id: id });
+                          await client.update_user_permissions_on_target({ user_id: getId(user), permission: PermissionLevel.Read, target_type: PermissionsTarget.Server, target_id: params.id });
                           pushNotification("good", "owner added to server");
                           setUserSearch("");
                         }}

@@ -30,10 +30,10 @@ const context = createContext<State>();
 
 export const ConfigProvider: ParentComponent<{}> = (p) => {
   const { ws, servers } = useAppState();
-  const { id } = useParams();
+  const params = useParams();
   const { user } = useUser();
   const [server, set] = createStore({
-    ...servers.get(id)!.server,
+    ...servers.get(params.id)!.server,
     loaded: false,
     updated: false,
   });
@@ -46,7 +46,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   const load = () => {
     // console.log("load server");
-    client.get_server(id).then((server) => {
+    client.get_server(params.id).then((server) => {
       set({
         ...server.server,
         loaded: true,
@@ -59,7 +59,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
   const [networks, setNetworks] = createSignal<any[]>([]);
   const loadNetworks = () => {
     console.log("load networks");
-    client.get_docker_networks(id).then(setNetworks);
+    client.get_docker_networks(params.id).then(setNetworks);
   };
   createEffect(loadNetworks);
 
@@ -69,7 +69,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   onCleanup(
     ws.subscribe([Operation.UpdateServer], (update) => {
-      if (update.target.id === id) {
+      if (update.target.id === params.id) {
         load();
       }
     })
@@ -89,7 +89,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   const userCanUpdate = () =>
     user().admin ||
-    servers.get(id)!.server.permissions![getId(user())] === PermissionLevel.Update;
+    servers.get(params.id)!.server.permissions![getId(user())] === PermissionLevel.Update;
 
   const state = {
     server,

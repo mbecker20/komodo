@@ -114,6 +114,7 @@ pub enum Operation {
 
     // user
     ModifyUserEnabled,
+    ModifyUserCreateServerPermissions,
     ModifyUserPermissions,
 }
 

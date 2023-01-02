@@ -14,9 +14,9 @@ import { useParams } from "@solidjs/router";
 import { client } from "../..";
 
 const Header: Component<{}> = (p) => {
-  const { servers, ws } = useAppState();
-  const { id } = useParams();
-  const server = () => servers.get(id)!;
+  const { servers } = useAppState();
+  const params = useParams();
+  const server = () => servers.get(params.id)!;
   const status = () => server().status.replaceAll("_", " ").toUpperCase();
   const { user } = useUser();
   const { isMobile } = useAppDimensions();
@@ -54,7 +54,7 @@ const Header: Component<{}> = (p) => {
           <Show when={userCanUpdate()}>
             <ConfirmButton
               onConfirm={() => {
-                client.delete_server(id);
+                client.delete_server(params.id);
               }}
               color="red"
             >

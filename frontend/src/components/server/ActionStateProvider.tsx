@@ -16,7 +16,7 @@ type State = {} & ServerActionState;
 const context = createContext<State>();
 
 export const ActionStateProvider: ParentComponent<{}> = (p) => {
-  const { id } = useParams();
+  const params = useParams();
   const { ws } = useAppState();
   const [actions, setActions] = createStore<ServerActionState>({
     pruning_networks: false,
@@ -24,25 +24,25 @@ export const ActionStateProvider: ParentComponent<{}> = (p) => {
     pruning_images: false,
   });
   createEffect(() => {
-    client.get_server_action_state(id).then(setActions);
+    client.get_server_action_state(params.id).then(setActions);
   });
   onCleanup(
     ws.subscribe([Operation.PruneImagesServer], (update) => {
-      if (update.target.id === id) {
+      if (update.target.id === params.id) {
         setActions("pruning_images", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
     ws.subscribe([Operation.PruneNetworksServer], (update) => {
-      if (update.target.id === id) {
+      if (update.target.id === params.id) {
         setActions("pruning_networks", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
     ws.subscribe([Operation.PruneContainersServer], (update) => {
-      if (update.target.id === id) {
+      if (update.target.id === params.id) {
         setActions(
           "pruning_containers",
           update.status !== UpdateStatus.Complete

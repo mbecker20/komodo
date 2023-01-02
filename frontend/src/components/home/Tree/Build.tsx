@@ -19,7 +19,7 @@ const Build: Component<{ id: string }> = (p) => {
   return (
     <Show when={build()}>
       <A href={`/build/${p.id}`} class={combineClasses(s.DropdownItem)}>
-        <div>{build().name}</div>
+        <h2>{build().name}</h2>
         <Show
           when={!user().admin && permissionLevel() !== PermissionLevel.None}
         >

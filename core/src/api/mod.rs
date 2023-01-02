@@ -1,12 +1,18 @@
+use anyhow::Context;
 use axum::{
-    body::Body, extract::Path, http::Request, middleware, routing::get, Extension, Json, Router,
+    body::Body,
+    extract::Path,
+    http::{Request, StatusCode},
+    middleware,
+    routing::get,
+    Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
 use mungos::Deserialize;
 use types::User;
 
 use crate::{
-    auth::{auth_request, JwtExtension},
+    auth::{auth_request, JwtExtension, RequestUserExtension},
     state::StateExtension,
 };
 
@@ -36,6 +42,7 @@ pub fn router() -> Router {
                             .map_err(handle_anyhow_error)
                     }),
                 )
+                .route("/users", get(get_users))
                 .nest("/build", build::router())
                 .nest("/deployment", deployment::router())
                 .nest("/server", server::router())
@@ -68,4 +75,29 @@ async fn get_username(
 ) -> anyhow::Result<String> {
     let user = state.db.get_user(&id).await?;
     Ok(user.username)
+}
+
+async fn get_users(
+    state: StateExtension,
+    user: RequestUserExtension,
+) -> Result<Json<Vec<User>>, (StatusCode, String)> {
+    if user.is_admin {
+        let users = state
+            .db
+            .users
+            .get_some(None, None)
+            .await
+            .context("failed to get users from db")
+            .map_err(handle_anyhow_error)?
+            .into_iter()
+            .map(|u| User {
+                password: None,
+                secrets: vec![],
+                ..u
+            })
+            .collect::<Vec<_>>();
+        Ok(Json(users))
+    } else {
+        Err((StatusCode::UNAUTHORIZED, "user is not admin".to_string()))
+    }
 }

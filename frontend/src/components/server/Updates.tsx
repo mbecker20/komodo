@@ -9,12 +9,12 @@ import { client } from "../..";
 
 const Updates: Component<{}> = (p) => {
 	const { ws } = useAppState();
-  const { id } = useParams();
+  const params = useParams();
   const selectedUpdates = useArray(() =>
-    client.list_updates(0, { type: "Server", id })
+    client.list_updates(0, { type: "Server", id: params.id })
   );
   const unsub = ws.subscribe([], (update) => {
-    if (update.target.type === "Server" && update.target.id === id) {
+    if (update.target.type === "Server" && update.target.id === params.id) {
       selectedUpdates.add(update);
     }
   });
@@ -23,7 +23,7 @@ const Updates: Component<{}> = (p) => {
   const loadMore = async () => {
     const offset = selectedUpdates.collection()?.length;
     if (offset) {
-      const updates = await client.list_updates(offset, { type: "Server", id });
+      const updates = await client.list_updates(offset, { type: "Server", id: params.id });
       selectedUpdates.addManyToEnd(updates);
       if (updates.length !== 10) {
         setNoMore(true);
@@ -41,7 +41,7 @@ const Updates: Component<{}> = (p) => {
         <h1>updates</h1>
         <Grid class="updates-container scroller">
           <For each={selectedUpdates.collection()}>
-            {(update) => <Update update={update} showName={false} />}
+            {(update) => <Update update={update} />}
           </For>
           <Show when={!noMoreUpdates()}>
             <button class="grey" style={{ width: "100%" }} onClick={loadMore}>

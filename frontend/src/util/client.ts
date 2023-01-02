@@ -29,6 +29,7 @@ import {
   CreateSecretBody,
   CreateServerBody,
   LoginOptions,
+  ModifyUserCreateServerBody,
   ModifyUserEnabledBody,
   PermissionsUpdateBody,
 } from "./client_types";
@@ -101,6 +102,10 @@ export class Client {
 
   async get_username(user_id: string): Promise<string> {
     return this.get(`/api/username/${user_id}`);
+  }
+
+  async list_users(): Promise<User[]> {
+    return this.get("/api/users");
   }
 
   exchange_for_jwt(exchange_token: string): Promise<string> {
@@ -369,7 +374,11 @@ export class Client {
   }
 
   modify_user_enabled(body: ModifyUserEnabledBody): Promise<Update> {
-    return this.post("/api/permissions/update", body);
+    return this.post("/api/permissions/modify_enabled", body);
+  }
+
+  modify_user_create_server_permissions(body: ModifyUserCreateServerBody): Promise<Update> {
+    return this.post("/api/permissions/modify_create_server", body);
   }
 
   async get<R = any>(url: string): Promise<R> {
