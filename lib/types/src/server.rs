@@ -222,3 +222,33 @@ pub struct SystemProcess {
     pub disk_read_kb: f64,
     pub disk_write_kb: f64,
 }
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct SystemStatsRecord {
+    pub server_id: String,
+    pub ts: i64,           // unix ts milliseconds
+    pub cpu_perc: f32,     // in %
+    pub mem_used_gb: f64,  // in GB
+    pub mem_total_gb: f64, // in GB
+    pub disk: DiskUsage,
+    pub networks: Vec<SystemNetwork>,
+    pub components: Vec<SystemComponent>,
+    pub polling_rate: Timelength,
+}
+
+impl SystemStatsRecord {
+    pub fn from_stats(server_id: String, ts: i64, stats: SystemStats) -> SystemStatsRecord {
+        SystemStatsRecord {
+            server_id,
+            ts,
+            cpu_perc: stats.cpu_perc,
+            mem_used_gb: stats.mem_used_gb,
+            mem_total_gb: stats.mem_total_gb,
+            disk: stats.disk,
+            networks: stats.networks,
+            components: stats.components,
+            polling_rate: stats.polling_rate,
+        }
+    }
+}

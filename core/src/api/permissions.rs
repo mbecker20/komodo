@@ -258,7 +258,10 @@ async fn modify_user_enabled(
 async fn modify_user_create_server_permissions(
     Extension(state): StateExtension,
     Extension(user): RequestUserExtension,
-    Json(ModifyUserCreateServerBody { user_id, create_server_permissions }): Json<ModifyUserCreateServerBody>,
+    Json(ModifyUserCreateServerBody {
+        user_id,
+        create_server_permissions,
+    }): Json<ModifyUserCreateServerBody>,
 ) -> anyhow::Result<Update> {
     if !user.is_admin {
         return Err(anyhow!(
@@ -275,16 +278,26 @@ async fn modify_user_create_server_permissions(
     state
         .db
         .users
-        .update_one::<Document>(&user_id, mungos::Update::Set(doc! { "create_server_permissions": create_server_permissions }))
+        .update_one::<Document>(
+            &user_id,
+            mungos::Update::Set(doc! { "create_server_permissions": create_server_permissions }),
+        )
         .await?;
-    let update_type = if create_server_permissions { "enabled" } else { "disabled" };
+    let update_type = if create_server_permissions {
+        "enabled"
+    } else {
+        "disabled"
+    };
     let ts = monitor_timestamp();
     let mut update = Update {
         target: UpdateTarget::System,
         operation: Operation::ModifyUserCreateServerPermissions,
         logs: vec![Log::simple(
             "modify user create server permissions",
-            format!("{update_type} create server permissions for {} (id: {})", user.username, user.id),
+            format!(
+                "{update_type} create server permissions for {} (id: {})",
+                user.username, user.id
+            ),
         )],
         start_ts: ts.clone(),
         end_ts: Some(ts),
