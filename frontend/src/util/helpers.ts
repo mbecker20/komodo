@@ -1,4 +1,4 @@
-import { DockerContainerState } from "../types";
+import { DockerContainerState, ServerStatus } from "../types";
 
 export function combineClasses(...classes: (string | false | undefined)[]) {
   return classes.filter((c) => (c ? true : false)).join(" ");
@@ -98,5 +98,15 @@ export function deploymentStateClass(state: DockerContainerState) {
       return "red";
     default:
       return "blue";
+  }
+}
+
+export function serverStatusClass(
+  status: ServerStatus
+) {
+  if (status === ServerStatus.Ok) {
+    return "running"
+  } else if (status === ServerStatus.NotOk) {
+    return "exited"
   }
 }

@@ -3,6 +3,7 @@ import { useAppState } from "../../state/StateProvider";
 import { Update } from "../../types";
 import {
   combineClasses,
+  readableDuration,
   readableMonitorTimestamp,
 } from "../../util/helpers";
 import { useToggle } from "../../util/hooks";
@@ -60,33 +61,48 @@ const Update: Component<{ update: Update; showName: boolean }> = (p) => {
           <div>{p.update.operator}</div>
         </Flex>
         <CenterMenu
-          title={operation()}
+          title={`${operation()} | ${name()}`}
           show={showLog}
           toggleShow={toggleShowLog}
           target={<Icon type="console" />}
           targetStyle={{ "place-self": "center end" }}
           targetClass="blue"
+          padding="1rem 2rem"
           content={
-            <Grid
-              class={s.LogContainer}
-              gap="0.25rem"
-            >
+            <Grid class={s.LogContainer} gap="1rem">
+              <Grid gap="0.5rem" class="card lightgrey shadow">
+                <div>
+                  started at: {readableMonitorTimestamp(p.update.start_ts)}
+                </div>
+                <Show when={p.update.end_ts}>
+                  <div>
+                    duration:{" "}
+                    {readableDuration(p.update.start_ts, p.update.end_ts!)}
+                  </div>
+                </Show>
+              </Grid>
               <For each={p.update.logs}>
                 {(log, index) => {
                   return (
-                    <>
-                      <div>stage: {log.stage}</div>
+                    <Grid gap="0.5rem" class="card lightgrey shadow">
+                      <Flex alignItems="center" class="wrap">
+                        <h1>{log.stage}</h1>
+                        <div style={{ opacity: 0.7 }}>
+                          (stage {index() + 1} of {p.update.logs.length})
+                        </div>
+                        <div style={{ opacity: 0.7 }}>
+                          {readableDuration(log.start_ts, log.end_ts)}
+                        </div>
+                      </Flex>
                       <div>command</div>
-                      <pre class={combineClasses(s.Log, "scroller")}>
-                        {log.command}
-                      </pre>
+                      <pre class={combineClasses(s.Log)}>{log.command}</pre>
                       <Show when={log.stdout}>
                         <div>stdout</div>
                         <pre
-                          class={combineClasses(s.Log, "scroller")}
-                          style={{
-                            "max-height": log.stderr ? "30vh" : "60vh",
-                          }}
+                          class={combineClasses(s.Log)}
+                          // style={{
+                          //   "max-height": log.stderr ? "30vh" : "60vh",
+                          // }}
                         >
                           {log.stdout}
                         </pre>
@@ -94,15 +110,15 @@ const Update: Component<{ update: Update; showName: boolean }> = (p) => {
                       <Show when={log.stderr}>
                         <div>stderr</div>
                         <pre
-                          class={combineClasses(s.Log, "scroller")}
-                          style={{
-                            "max-height": log.stdout ? "30vh" : "60vh",
-                          }}
+                          class={combineClasses(s.Log)}
+                          // style={{
+                          //   "max-height": log.stdout ? "30vh" : "60vh",
+                          // }}
                         >
                           {log.stderr}
                         </pre>
                       </Show>
-                    </>
+                    </Grid>
                   );
                 }}
               </For>
