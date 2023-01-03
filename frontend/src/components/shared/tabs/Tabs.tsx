@@ -2,7 +2,6 @@ import {
   Accessor,
   Component,
   createEffect,
-  createMemo,
   createSignal,
   For,
   JSX,
@@ -44,44 +43,51 @@ export const ControlledTabs: Component<{
   tabs: Tab[];
   selected: Accessor<string>;
   set: LocalStorageSetter<string>;
-  tabsGap?: string;
-  tabStyle?: JSX.CSSProperties;
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
+  tabTitlesClass?: string;
+  tabTitlesStyle?: JSX.CSSProperties;
+  tabTitleGap?: string;
+  tabTitleClass?: string;
+  tabTitleStyle?: JSX.CSSProperties;
+  tabContentClass?: string;
 }> = (p) => {
   const current = () => p.tabs.findIndex((tab) => tab.title === p.selected());
-  const getClassName = (title: string) =>
-    p.selected() === title ? combineClasses(s.Tab, s.Active) : s.Tab;
+  const getTitleClassName = (title: string) =>
+    p.selected() === title
+      ? combineClasses(s.TabTitle, s.Active, p.tabTitleClass)
+      : combineClasses(s.TabTitle, p.tabTitleClass);
   return (
     <div
-      class={combineClasses(p.containerClass, s.Tabs)}
+      class={combineClasses(s.Tabs, p.containerClass)}
       style={p.containerStyle}
     >
       <Flex
-        gap={p.tabsGap || "0rem"}
+        class={p.tabTitlesClass}
+        style={p.tabTitlesStyle}
+        gap={p.tabTitleGap || "0rem"}
         alignItems="center"
         justifyContent="space-evenly"
       >
         <For each={p.tabs}>
           {(tab) => (
             <button
-              class={getClassName(tab.title)}
-              style={p.tabStyle}
+              class={getTitleClassName(tab.title)}
+              style={p.tabTitleStyle}
               onClick={() => p.set(tab.title)}
             >
-              {tab.titleElement || tab.title}
+              {tab.titleElement ? tab.titleElement() : tab.title}
             </button>
           )}
         </For>
       </Flex>
       <div style={{ overflow: "hidden" }}>
         <Flex
+          class={combineClasses(s.TabContent, p.tabContentClass)}
           gap="0rem"
           style={{
-            position: "relative",
             width: `${p.tabs.length * 100}%`,
             left: `-${current() * 100}%`,
-            transition: "left 350ms ease",
           }}
         >
           <For each={p.tabs}>
@@ -99,7 +105,6 @@ export const ControlledTabs: Component<{
           </For>
         </Flex>
       </div>
-      {/* {tabs()[current()].element} */}
     </div>
   );
 };

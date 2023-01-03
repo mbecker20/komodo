@@ -22,7 +22,7 @@ async fn main() -> anyhow::Result<()> {
     // let server_stats = get_server_stats(&monitor).await?;
     // println!("server stats:\n{server_stats:#?}\n");
 
-    subscribe_to_server_stats(&monitor).await?;
+    // subscribe_to_server_stats(&monitor).await?;
 
     // let (update, container) = deploy_mongo(&monitor).await?;
     // println!(
@@ -30,8 +30,8 @@ async fn main() -> anyhow::Result<()> {
     //     container.container
     // );
 
-    // let update = test_build(&monitor).await?;
-    // println!("build update:\n{update:#?}");
+    let update = test_build(&monitor).await?;
+    println!("build update:\n{update:#?}");
 
     // test_updates(&monitor).await.unwrap();
 

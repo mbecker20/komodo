@@ -10,8 +10,8 @@ use futures_util::future::join_all;
 use mungos::doc;
 use periphery::PeripheryClient;
 use types::{
-    BuildActionState, CoreConfig, DeploymentActionState, ServerActionState, SystemStatsQuery,
-    SystemStatsRecord,
+    BuildActionState, CoreConfig, DeploymentActionState, Server, ServerActionState,
+    SystemStatsQuery, SystemStatsRecord,
 };
 
 use crate::ws::update::UpdateWsChannel;
@@ -81,10 +81,13 @@ impl State {
             });
             for (server, res) in join_all(futures).await {
                 if let Err(e) = res {
+                    println!("server unreachable: {e:?}");
                     if let Some(slack) = &self.slack {
-                        let res = slack
-                            .send_message_with_header(format!(""), format!(""))
-                            .await;
+                        let (header, info) = generate_unreachable_message(&server);
+                        let res = slack.send_message_with_header(&header, info.clone()).await;
+                        if let Err(e) = res {
+                            eprintln!("failed to send message to slack: {e} | header: {header} | info: {info:?}")
+                        }
                     }
                     continue;
                 }
@@ -94,7 +97,30 @@ impl State {
                     .stats
                     .create_one(SystemStatsRecord::from_stats(server.id, ts, stats))
                     .await;
+                if let Err(e) = res {
+                    eprintln!("failed to insert stats into mongo | {e}");
+                }
             }
         }
     }
+}
+
+fn generate_unreachable_message(server: &Server) -> (String, Option<String>) {
+    let region = match &server.region {
+        Some(region) => format!(" ({region})"),
+        None => String::new(),
+    };
+    let header = format!("WARNING 🚨 | {}{region} is unreachable ❌", server.name);
+    let to_notify = server
+        .to_notify
+        .iter()
+        .map(|u| format!("<@{u}>"))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let info = if to_notify.len() > 0 {
+        Some(to_notify)
+    } else {
+        None
+    };
+    (header, info)
 }

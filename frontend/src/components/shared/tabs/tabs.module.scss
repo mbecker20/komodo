@@ -6,7 +6,7 @@
   gap: 1rem;
 }
 
-.Tab {
+.TabTitle {
   display: grid;
   place-items: center;
   padding: 0.25rem 0.5rem;
@@ -21,4 +21,9 @@
 .Active {
   border-color: rgba(c.$lightgrey, 0.9);
   background-color: rgba(c.$lightgrey, 0.4);
+}
+
+.TabContent {
+  position: relative;
+  transition: left 350ms ease;
 }
