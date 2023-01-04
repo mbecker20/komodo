@@ -358,7 +358,7 @@ impl State {
         let action_state = self
             .deployment_action_states
             .lock()
-            .unwrap()
+            .await
             .entry(id)
             .or_default()
             .clone();

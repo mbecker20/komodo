@@ -42,8 +42,8 @@ pub struct Server {
     pub to_notify: Vec<String>, // slack users to notify
 
     #[serde(default = "default_cpu_alert")]
-    #[diff(attr(#[serde(skip_serializing_if = "f64_diff_no_change")]))]
-    pub cpu_alert: f64,
+    #[diff(attr(#[serde(skip_serializing_if = "f32_diff_no_change")]))]
+    pub cpu_alert: f32,
 
     #[serde(default = "default_mem_alert")]
     #[diff(attr(#[serde(skip_serializing_if = "f64_diff_no_change")]))]
@@ -96,7 +96,7 @@ impl Default for Server {
     }
 }
 
-fn default_cpu_alert() -> f64 {
+fn default_cpu_alert() -> f32 {
     50.0
 }
 

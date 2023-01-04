@@ -28,6 +28,13 @@ pub struct CoreConfig {
     #[serde(default = "default_jwt_valid_for")]
     pub jwt_valid_for: Timelength,
 
+    // interval at which to collect server stats and alert for out of bounds
+    pub monitoring_interval: Timelength,
+
+    // daily utc offset in hours to run daily update. eg 8:00 eastern time is 13:00 UTC, so offset should be 13. default of 0 runs at UTC midnight.
+    #[serde(default)]
+    pub daily_offset_hours: u8,
+
     // used to verify validity from github webhooks
     pub github_webhook_secret: String,
 

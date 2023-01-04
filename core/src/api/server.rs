@@ -479,7 +479,7 @@ impl State {
         let action_state = self
             .server_action_states
             .lock()
-            .unwrap()
+            .await
             .entry(id)
             .or_default()
             .clone();

@@ -1,12 +1,37 @@
+# this should be the url used to access monitor in browser, potentially behind DNS, eg https://monitor.mogh.tech or http://12.34.56.78:9000
+host = "http://localhost:9000"
+
+# the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
 port = 9000
+
+# daily utc offset in hours to run daily update. eg 8:00 eastern time is 13:00 UTC, so offset should be 13. default of 0 runs at UTC midnight.
+daily_offset_hours = 13
+
+# secret used to generate the jwt. should be some randomly generated hash.
 jwt_secret = "your_jwt_secret"
+
+# can be 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
 jwt_valid_for = "1-wk"
+
+# webhook url given by slack app
 slack_url = "your_slack_app_webhook_url"
+
+# token that has to be given to github during webhook config as the Secret
 github_webhook_secret = "your_random_webhook_secret"
 
+# can be 30-sec, 1-min, 2-min, 5-min
+monitoring_interval = "1-min"
+
+# allow or deny user login with username / password
+local_auth = true
+
 [github_oauth]
-id = "your_client_id"
-secret = "your_client_secret"
+id = "your_github_client_id"
+secret = "your_github_client_secret"
+
+[google_oauth]
+id = "your_google_client_id"
+secret = "your_google_client_secret"
 
 [mongo]
 uri = "your_mongo_uri"

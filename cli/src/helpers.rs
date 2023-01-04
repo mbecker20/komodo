@@ -65,6 +65,8 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         host,
         port,
         jwt_valid_for,
+        monitoring_interval: Timelength::OneMinute,
+        daily_offset_hours: 0,
         slack_url,
         local_auth: true,
         github_oauth: Default::default(),

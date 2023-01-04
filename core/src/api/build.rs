@@ -214,7 +214,7 @@ impl State {
         let action_state = self
             .build_action_states
             .lock()
-            .unwrap()
+            .await
             .entry(id)
             .or_default()
             .clone();

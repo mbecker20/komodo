@@ -31,8 +31,8 @@ impl State {
         }
     }
 
-    pub fn deployment_busy(&self, id: &str) -> bool {
-        match self.deployment_action_states.lock().unwrap().get(id) {
+    pub async fn deployment_busy(&self, id: &str) -> bool {
+        match self.deployment_action_states.lock().await.get(id) {
             Some(a) => a.busy(),
             None => false,
         }
@@ -111,7 +111,7 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
-        if self.deployment_busy(deployment_id) {
+        if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
         }
         let deployment = self
@@ -158,18 +158,18 @@ impl State {
         new_deployment: Deployment,
         user: &RequestUser,
     ) -> anyhow::Result<Deployment> {
-        if self.deployment_busy(&new_deployment.id) {
+        if self.deployment_busy(&new_deployment.id).await {
             return Err(anyhow!("deployment busy"));
         }
         let id = new_deployment.id.clone();
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(id.clone()).or_default();
             entry.updating = true;
         }
         let res = self.update_deployment_inner(new_deployment, user).await;
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(id).or_default();
             entry.updating = false;
         }
@@ -248,17 +248,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.deployment_busy(deployment_id) {
+        if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
         }
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.recloning = true;
         }
         let res = self.reclone_deployment_inner(deployment_id, user).await;
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.recloning = false;
         }
@@ -311,17 +311,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.deployment_busy(deployment_id) {
+        if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
         }
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.deploying = true;
         }
         let res = self.deploy_container_inner(deployment_id, user).await;
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.deploying = false;
         }
@@ -384,17 +384,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.deployment_busy(deployment_id) {
+        if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
         }
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.starting = true;
         }
         let res = self.start_container_inner(deployment_id, user).await;
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.starting = false;
         }
@@ -454,17 +454,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.deployment_busy(deployment_id) {
+        if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
         }
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.stopping = true;
         }
         let res = self.stop_container_inner(deployment_id, user).await;
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.stopping = false;
         }
@@ -524,17 +524,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.deployment_busy(deployment_id) {
+        if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
         }
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.removing = true;
         }
         let res = self.remove_container_inner(deployment_id, user).await;
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.removing = false;
         }
@@ -594,17 +594,17 @@ impl State {
         deployment_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.deployment_busy(deployment_id) {
+        if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
         }
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.pulling = true;
         }
         let res = self.pull_deployment_repo_inner(deployment_id, user).await;
         {
-            let mut lock = self.deployment_action_states.lock().unwrap();
+            let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.pulling = false;
         }

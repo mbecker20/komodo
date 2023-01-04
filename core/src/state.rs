@@ -1,20 +1,12 @@
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
+use std::{collections::HashMap, sync::Arc};
 
-use async_timing_util::{wait_until_timelength, Timelength};
 use axum::Extension;
 use db::DbClient;
-use futures_util::future::join_all;
-use mungos::doc;
 use periphery::PeripheryClient;
-use types::{
-    BuildActionState, CoreConfig, DeploymentActionState, Server, ServerActionState,
-    SystemStatsQuery, SystemStatsRecord,
-};
+use tokio::sync::Mutex;
+use types::{BuildActionState, CoreConfig, DeploymentActionState, ServerActionState};
 
-use crate::ws::update::UpdateWsChannel;
+use crate::{monitoring::AlertStatus, ws::update::UpdateWsChannel};
 
 pub type StateExtension = Extension<Arc<State>>;
 
@@ -29,6 +21,7 @@ pub struct State {
     pub build_action_states: ActionStateMap<BuildActionState>,
     pub deployment_action_states: ActionStateMap<DeploymentActionState>,
     pub server_action_states: ActionStateMap<ServerActionState>,
+    pub server_alert_status: Mutex<HashMap<String, AlertStatus>>, // (server_id, AlertStatus)
 }
 
 impl State {
@@ -42,85 +35,19 @@ impl State {
             build_action_states: Default::default(),
             deployment_action_states: Default::default(),
             server_action_states: Default::default(),
+            server_alert_status: Default::default(),
         };
         let state = Arc::new(state);
         let state_clone = state.clone();
         tokio::spawn(async move { state_clone.collect_server_stats().await });
+        if state.slack.is_some() {
+            let state_clone = state.clone();
+            tokio::spawn(async move { state_clone.daily_update().await });
+        }
         state
     }
 
     pub async fn extension(config: CoreConfig) -> StateExtension {
         Extension(State::new(config).await)
     }
-
-    pub async fn collect_server_stats(&self) {
-        loop {
-            let ts = wait_until_timelength(Timelength::OneMinute, 0).await as i64;
-            let servers = self
-                .db
-                .servers
-                .get_some(doc! { "enabled": true }, None)
-                .await;
-            if let Err(e) = servers {
-                eprintln!("failed to get server list from db: {e:?}");
-                continue;
-            }
-            let futures = servers.unwrap().into_iter().map(|server| async move {
-                let stats = self
-                    .periphery
-                    .get_system_stats(
-                        &server,
-                        &SystemStatsQuery {
-                            networks: true,
-                            components: true,
-                            processes: false,
-                        },
-                    )
-                    .await;
-                (server, stats)
-            });
-            for (server, res) in join_all(futures).await {
-                if let Err(e) = res {
-                    println!("server unreachable: {e:?}");
-                    if let Some(slack) = &self.slack {
-                        let (header, info) = generate_unreachable_message(&server);
-                        let res = slack.send_message_with_header(&header, info.clone()).await;
-                        if let Err(e) = res {
-                            eprintln!("failed to send message to slack: {e} | header: {header} | info: {info:?}")
-                        }
-                    }
-                    continue;
-                }
-                let stats = res.unwrap();
-                let res = self
-                    .db
-                    .stats
-                    .create_one(SystemStatsRecord::from_stats(server.id, ts, stats))
-                    .await;
-                if let Err(e) = res {
-                    eprintln!("failed to insert stats into mongo | {e}");
-                }
-            }
-        }
-    }
-}
-
-fn generate_unreachable_message(server: &Server) -> (String, Option<String>) {
-    let region = match &server.region {
-        Some(region) => format!(" ({region})"),
-        None => String::new(),
-    };
-    let header = format!("WARNING 🚨 | {}{region} is unreachable ❌", server.name);
-    let to_notify = server
-        .to_notify
-        .iter()
-        .map(|u| format!("<@{u}>"))
-        .collect::<Vec<_>>()
-        .join(" ");
-    let info = if to_notify.len() > 0 {
-        Some(to_notify)
-    } else {
-        None
-    };
-    (header, info)
 }

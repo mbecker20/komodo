@@ -18,7 +18,7 @@ axum = { version = "0.6", features = ["ws", "json"] }
 axum-extra = { version = "0.4", features = ["spa"] }
 tower = { version = "0.4", features = ["full"] }
 tower-http = { version = "0.3", features = ["cors"] }
-slack = { package = "slack_client_rs", version = "0.0.7" }
+slack = { package = "slack_client_rs", version = "0.0.8" }
 mungos = "0.2.27"
 serde = "1.0"
 serde_derive = "1.0"

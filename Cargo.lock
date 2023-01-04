@@ -2169,9 +2169,9 @@ dependencies = [
 
 [[package]]
 name = "slack_client_rs"
-version = "0.0.7"
+version = "0.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "920a08baac5050ace95378c15984e2ee5552fdcd193302e0f80e294190b8c148"
+checksum = "a9c9597f2b960b592f97701c89c9ceb2658c8f804f39f876e1ab25379080fe2e"
 dependencies = [
  "anyhow",
  "reqwest",

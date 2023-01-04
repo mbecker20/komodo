@@ -9,6 +9,10 @@ pub fn f64_diff_no_change(f64_diff: &f64) -> bool {
     *f64_diff == 0.0
 }
 
+pub fn f32_diff_no_change(f32_diff: &f32) -> bool {
+    *f32_diff == 0.0
+}
+
 pub fn option_diff_no_change<T: Diff>(option_diff: &OptionDiff<T>) -> bool
 where
     <T as Diff>::Repr: PartialEq,

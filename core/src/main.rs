@@ -11,6 +11,7 @@ mod api;
 mod auth;
 mod config;
 mod helpers;
+mod monitoring;
 mod state;
 mod ws;
 

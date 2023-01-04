@@ -32,8 +32,8 @@ impl State {
         }
     }
 
-    pub fn build_busy(&self, id: &str) -> bool {
-        match self.build_action_states.lock().unwrap().get(id) {
+    pub async fn build_busy(&self, id: &str) -> bool {
+        match self.build_action_states.lock().await.get(id) {
             Some(a) => a.busy(),
             None => false,
         }
@@ -108,7 +108,7 @@ impl State {
     }
 
     pub async fn delete_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Build> {
-        if self.build_busy(build_id) {
+        if self.build_busy(build_id).await {
             return Err(anyhow!("build busy"));
         }
         let build = self
@@ -147,18 +147,18 @@ impl State {
         new_build: Build,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
-        if self.build_busy(&new_build.id) {
+        if self.build_busy(&new_build.id).await {
             return Err(anyhow!("build busy"));
         }
         let id = new_build.id.clone();
         {
-            let mut lock = self.build_action_states.lock().unwrap();
+            let mut lock = self.build_action_states.lock().await;
             let entry = lock.entry(id.clone()).or_default();
             entry.updating = true;
         }
         let res = self.update_build_inner(new_build, user).await;
         {
-            let mut lock = self.build_action_states.lock().unwrap();
+            let mut lock = self.build_action_states.lock().await;
             let entry = lock.entry(id).or_default();
             entry.updating = false;
         }
@@ -230,17 +230,17 @@ impl State {
     }
 
     pub async fn build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
-        if self.build_busy(build_id) {
+        if self.build_busy(build_id).await {
             return Err(anyhow!("build busy"));
         }
         {
-            let mut lock = self.build_action_states.lock().unwrap();
+            let mut lock = self.build_action_states.lock().await;
             let entry = lock.entry(build_id.to_string()).or_default();
             entry.building = true;
         }
         let res = self.build_inner(build_id, user).await;
         {
-            let mut lock = self.build_action_states.lock().unwrap();
+            let mut lock = self.build_action_states.lock().await;
             let entry = lock.entry(build_id.to_string()).or_default();
             entry.building = false;
         }
@@ -309,17 +309,17 @@ impl State {
         build_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.build_busy(build_id) {
+        if self.build_busy(build_id).await {
             return Err(anyhow!("build busy"));
         }
         {
-            let mut lock = self.build_action_states.lock().unwrap();
+            let mut lock = self.build_action_states.lock().await;
             let entry = lock.entry(build_id.to_string()).or_default();
             entry.recloning = true;
         }
         let res = self.reclone_build_inner(build_id, user).await;
         {
-            let mut lock = self.build_action_states.lock().unwrap();
+            let mut lock = self.build_action_states.lock().await;
             let entry = lock.entry(build_id.to_string()).or_default();
             entry.recloning = false;
         }
