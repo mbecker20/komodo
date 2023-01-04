@@ -4,8 +4,11 @@ host = "http://localhost:9000"
 # the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
 port = 9000
 
-# daily utc offset in hours to run daily update. eg 8:00 eastern time is 13:00 UTC, so offset should be 13. default of 0 runs at UTC midnight.
+# daily utc offset in hours to send daily update. eg 8:00 eastern time is 13:00 UTC, so offset should be 13. default of 0 runs at UTC midnight.
 daily_offset_hours = 13
+
+# number of days to keep stats around, or 0 to disable pruning. stats older than this number of days are deleted daily
+keep_stats_for_days = 120
 
 # secret used to generate the jwt. should be some randomly generated hash.
 jwt_secret = "your_jwt_secret"

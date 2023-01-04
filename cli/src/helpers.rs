@@ -67,6 +67,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         jwt_valid_for,
         monitoring_interval: Timelength::OneMinute,
         daily_offset_hours: 0,
+        keep_stats_for_days: 120,
         slack_url,
         local_auth: true,
         github_oauth: Default::default(),

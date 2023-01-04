@@ -44,6 +44,10 @@ impl State {
             let state_clone = state.clone();
             tokio::spawn(async move { state_clone.daily_update().await });
         }
+        if state.config.keep_stats_for_days != 0 {
+            let state_clone = state.clone();
+            tokio::spawn(async move { state_clone.prune_stats_on_mongo().await });
+        }
         state
     }
 

@@ -1,4 +1,6 @@
-use async_timing_util::{unix_timestamp_ms, wait_until_timelength, Timelength, ONE_HOUR_MS};
+use async_timing_util::{
+    unix_timestamp_ms, wait_until_timelength, Timelength, ONE_DAY_MS, ONE_HOUR_MS,
+};
 use futures_util::future::join_all;
 use mungos::doc;
 use slack::types::Block;
@@ -49,6 +51,22 @@ impl State {
                 if let Err(e) = res {
                     eprintln!("failed to insert stats into mongo | {e}");
                 }
+            }
+        }
+    }
+
+    pub async fn prune_stats_on_mongo(&self) {
+        let days_ago_ms = self.config.keep_stats_for_days as u128 * ONE_DAY_MS;
+        loop {
+            let ts = wait_until_timelength(Timelength::OneDay, 0).await;
+            let delete_before_ts = ts - days_ago_ms;
+            let res = self
+                .db
+                .stats
+                .delete_many(doc! { "ts": { "$lte": delete_before_ts as i64 } })
+                .await;
+            if let Err(e) = res {
+                eprintln!("{ts} | failed to delete old stats | {e:?}");
             }
         }
     }

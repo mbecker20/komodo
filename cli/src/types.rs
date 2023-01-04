@@ -17,6 +17,10 @@ pub struct CoreConfig {
     #[serde(default)]
     pub daily_offset_hours: u8,
 
+    // number of days to keep stats around, or 0 to disable pruning. stats older than this number of days are deleted daily
+    #[serde(default)]
+    pub keep_stats_for_days: u64, // 0 means never prune
+
     // jwt config
     pub jwt_secret: String,
     #[serde(default = "default_jwt_valid_for")]
