@@ -24,7 +24,7 @@ pub fn router() -> Router {
              Query(value): Query<Value>| async move {
                 let offset = value
                     .get("offset")
-                    .map(|v| v.as_u64().unwrap_or(0))
+                    .map(|v| v.as_str().unwrap_or("0").parse().unwrap_or(0))
                     .unwrap_or(0);
                 let target = serde_json::from_str::<UpdateTarget>(&value.to_string()).ok();
                 let updates = state
