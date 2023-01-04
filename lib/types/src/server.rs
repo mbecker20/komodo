@@ -234,6 +234,7 @@ pub struct SystemStatsRecord {
     pub disk: DiskUsage,
     pub networks: Vec<SystemNetwork>,
     pub components: Vec<SystemComponent>,
+    pub processes: Vec<SystemProcess>,
     pub polling_rate: Timelength,
 }
 
@@ -248,6 +249,7 @@ impl SystemStatsRecord {
             disk: stats.disk,
             networks: stats.networks,
             components: stats.components,
+            processes: stats.processes,
             polling_rate: stats.polling_rate,
         }
     }

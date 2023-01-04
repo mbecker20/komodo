@@ -83,14 +83,7 @@ impl State {
         let futures = servers.into_iter().map(|server| async move {
             let stats = self
                 .periphery
-                .get_system_stats(
-                    &server,
-                    &SystemStatsQuery {
-                        networks: true,
-                        components: true,
-                        processes: false,
-                    },
-                )
+                .get_system_stats(&server, &SystemStatsQuery::all())
                 .await;
             (server, stats)
         });
