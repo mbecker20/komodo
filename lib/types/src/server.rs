@@ -226,6 +226,13 @@ pub struct SystemProcess {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SystemStatsRecord {
+    #[serde(
+        default,
+        rename = "_id",
+        skip_serializing_if = "String::is_empty",
+        with = "hex_string_as_object_id"
+    )]
+    pub id: String,
     pub server_id: String,
     pub ts: i64,           // unix ts milliseconds
     pub cpu_perc: f32,     // in %
@@ -241,6 +248,7 @@ pub struct SystemStatsRecord {
 impl SystemStatsRecord {
     pub fn from_stats(server_id: String, ts: i64, stats: SystemStats) -> SystemStatsRecord {
         SystemStatsRecord {
+            id: String::new(),
             server_id,
             ts,
             cpu_perc: stats.cpu_perc,
