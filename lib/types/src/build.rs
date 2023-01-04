@@ -106,5 +106,6 @@ impl Version {
 pub struct DockerBuildArgs {
     pub build_path: String,
     pub dockerfile_path: Option<String>,
+    #[serde(default)]
     pub build_args: Vec<EnvironmentVar>,
 }

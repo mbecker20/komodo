@@ -268,18 +268,23 @@ impl State {
 
         update.id = self.add_update(update.clone()).await?;
 
-        let build_logs = self
+        let build_logs = match self
             .periphery
             .build(&server, &build)
             .await
-            .context("failed at call to periphery to build")?;
+            .context("failed at call to periphery to build")
+        {
+            Ok(logs) => logs,
+            Err(e) => Some(vec![Log::error("build", format!("{e:#?}"))]),
+        };
 
         match build_logs {
             Some(logs) => {
                 update.logs.extend(logs);
                 update.success = all_logs_success(&update.logs);
                 if update.success {
-                    self.db
+                    let _ = self
+                        .db
                         .builds
                         .update_one::<Build>(
                             build_id,
@@ -288,7 +293,7 @@ impl State {
                                     .context("failed at converting version to bson")?
                             }),
                         )
-                        .await?;
+                        .await;
                 }
             }
             None => {

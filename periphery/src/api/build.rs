@@ -40,9 +40,13 @@ async fn build_image(
     if is_busy {
         return Err(anyhow!("{PERIPHERY_BUILDER_BUSY}"));
     }
-    let docker_token = get_docker_token(&build.docker_account, &config)?;
-    let logs = docker::build(&build, config.repo_dir.clone(), docker_token).await?;
+    let res = async {
+        let docker_token = get_docker_token(&build.docker_account, &config)?;
+        let logs = docker::build(&build, config.repo_dir.clone(), docker_token).await?;
+        anyhow::Ok(logs)
+    }
+    .await;
     let mut lock = busy.lock().await;
     *lock = false;
-    Ok(Json(logs))
+    res.map(|logs| Json(logs))
 }
