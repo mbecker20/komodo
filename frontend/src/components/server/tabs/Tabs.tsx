@@ -2,8 +2,6 @@ import { useParams } from "@solidjs/router";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
-import { PermissionLevel } from "../../../types";
-import { getId } from "../../../util/helpers";
 import Tabs, { Tab } from "../../shared/tabs/Tabs";
 import Config from "./config/Config";
 import { ConfigProvider } from "./config/Provider";
@@ -15,9 +13,6 @@ const ServerTabs: Component<{}> = (p) => {
   const params = useParams();
   const { user } = useUser();
   const server = () => servers.get(params.id)!;
-  const userCanUpdate = () =>
-    user().admin ||
-    server()!.server.permissions![getId(user())] === PermissionLevel.Update;
   return (
     <Show when={server()}>
       <ConfigProvider>
@@ -33,7 +28,7 @@ const ServerTabs: Component<{}> = (p) => {
                 title: "stats",
                 element: () => <Stats />,
               },
-              userCanUpdate() && {
+              user().admin && {
                 title: "collaborators",
                 element: () => <Owners />,
               },

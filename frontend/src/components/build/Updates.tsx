@@ -2,6 +2,7 @@ import {
   Component,
   createEffect,
   For,
+  onCleanup,
   Show,
 } from "solid-js";
 import { useUpdates } from "../../state/hooks";
@@ -25,6 +26,7 @@ const Updates: Component<{}> = (p) => {
       }
     });
   });
+  onCleanup(() => unsub())
   return (
     <Show
       when={

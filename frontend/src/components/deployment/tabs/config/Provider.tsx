@@ -4,6 +4,7 @@ import {
   createContext,
   createEffect,
   createSignal,
+  onCleanup,
   ParentComponent,
   useContext,
 } from "solid-js";
@@ -108,6 +109,8 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     });
   });
 
+  onCleanup(() => update_unsub());
+
   let modify_unsub = () => {};
 
   createEffect(() => {
@@ -122,6 +125,8 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
       }
     );
   });
+
+  onCleanup(() => modify_unsub());
 
   const userCanUpdate = () =>
     user().admin ||

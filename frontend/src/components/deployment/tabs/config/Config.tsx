@@ -19,13 +19,15 @@ import { OnClone, OnPull } from "./mount-repo/OnGit";
 import Loading from "../../../shared/loading/Loading";
 import Owners from "./Owners";
 import { pushNotification, URL } from "../../../..";
-import { combineClasses, copyToClipboard } from "../../../../util/helpers";
+import { combineClasses, copyToClipboard, getId } from "../../../../util/helpers";
 import { useAppDimensions } from "../../../../state/DimensionProvider";
+import { useUser } from "../../../../state/UserProvider";
 
 const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
+  const { user } = useUser();
   const { isMobile } = useAppDimensions();
-  const listenerUrl = () => `${URL}/api/listener/deployment/${deployment._id}`;
+  const listenerUrl = () => `${URL}/api/listener/deployment/${getId(deployment)}`;
   return (
     <Show when={deployment.loaded}>
       <Grid class="config">
@@ -97,7 +99,7 @@ const Config: Component<{}> = () => {
                 </Grid>
               ),
             },
-            userCanUpdate() && {
+            user().admin && {
               title: "collaborators",
               element: () => (
                 <Grid

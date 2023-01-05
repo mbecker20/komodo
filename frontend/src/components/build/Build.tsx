@@ -31,8 +31,8 @@ const Build: Component<{}> = (p) => {
         navigate("/");
       }
     });
-    onCleanup(unsub);
   });
+  onCleanup(() => unsub);
   return (
     <Show when={build()} fallback={<NotFound type="build" />}>
       <ActionStateProvider>

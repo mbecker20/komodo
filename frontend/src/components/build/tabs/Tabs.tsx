@@ -33,7 +33,7 @@ const BuildTabs: Component<{}> = (p) => {
                 title: "build",
                 element: () => <BuildConfig />,
               },
-              userCanUpdate() && {
+              user().admin && {
                 title: "collaborators",
                 element: () => <Owners />,
               },

@@ -67,13 +67,16 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     client.update_server(server);
   };
 
-  onCleanup(
-    ws.subscribe([Operation.UpdateServer], (update) => {
+  let unsub = () => {}
+  createEffect(() => {
+    unsub();
+    unsub = ws.subscribe([Operation.UpdateServer], (update) => {
       if (update.target.id === params.id) {
         load();
       }
-    })
-  );
+    });
+  });
+  onCleanup(() => unsub());
 
   // onCleanup(
   //   ws.subscribe(

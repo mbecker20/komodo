@@ -2,6 +2,7 @@ import {
   Component,
   createEffect,
   For,
+  onCleanup,
   Show,
 } from "solid-js";
 import { useUpdates } from "../../state/hooks";
@@ -24,6 +25,7 @@ const Updates: Component<{}> = (p) => {
       }
     });
   });
+  onCleanup(() => unsub());
   return (
     <Show when={updates.loaded() && (updates.collection()?.length || 0) > 0}>
       <Grid class={combineClasses("card shadow")}>
