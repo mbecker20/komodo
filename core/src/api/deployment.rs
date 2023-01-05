@@ -247,7 +247,7 @@ pub fn router() -> Router {
         )
         .route(
             "/:id/log",
-            post(
+            get(
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>,
