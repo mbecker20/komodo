@@ -49,6 +49,9 @@ const Image: Component<{}> = (p) => {
                   ? undefined
                   : builds.ids()!.find((id) => builds.get(id)?.name === build)
               );
+              setDeployment(
+                "docker_run_args", { image: undefined }
+              );
             }}
             position="bottom right"
             disabled={!userCanUpdate()}
