@@ -23,6 +23,10 @@ fn cli() -> Command {
                     Command::new("gen_config")
                         .about("generate a core config file")
                         .arg(
+                            arg!(--host <HOST> "the host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'")
+                                .required(true)
+                        )
+                        .arg(
                             arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/core.config.toml'")
                                 .required(false)
                         )
@@ -111,10 +115,6 @@ fn cli() -> Command {
                     Command::new("gen_config")
                         .about("generate a periphery config file")
                         .arg(
-                            arg!(--host <HOST> "the host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'")
-                                .required(true)
-                        )
-                        .arg(
                             arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/periphery.config.toml'")
                                 .required(false)
                         )
@@ -128,6 +128,10 @@ fn cli() -> Command {
                         )
                         .arg(
                             arg!(--allowed_ips <IPS> "used to only accept requests from known ips. give ips as comma seperated list, like '--allowed_ips 127.0.0.1,10.20.30.43'. default is empty, which will not block any ip.")
+                                .required(false)
+                        )
+                        .arg(
+                            arg!(--repo_dir <PATH> "if running in container, this should be '/repos'. default is ~/.monitor/repos").required(false)
                         )
                 )
                 .subcommand(

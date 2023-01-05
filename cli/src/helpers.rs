@@ -1,4 +1,5 @@
 use std::{
+    env,
     fs::{self, File},
     io::{Read, Write},
     net::IpAddr,
@@ -272,11 +273,19 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
         .map(|p| p.as_str())
         .unwrap_or("")
         .split(",")
+        .filter(|ip| ip.len() > 0)
         .map(|ip| {
             ip.parse()
                 .expect("given allowed ip address is not valid ip")
         })
         .collect::<Vec<IpAddr>>();
+
+    let repo_dir = sub_matches
+        .get_one::<String>("repo_dir")
+        .map(|p| p.as_str())
+        .unwrap_or("~/.monitor/repos")
+        .to_string()
+        .replace("~", env::var("HOME").unwrap().as_str());
 
     let config = PeripheryConfig {
         port,
@@ -344,7 +353,10 @@ pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
     if install_output.success() {
         println!("\ninstallation finished, starting monitor periphery daemon\n")
     } else {
-        eprintln!("\n❌ there was some {} during periphery installation ❌\n", "error".red());
+        eprintln!(
+            "\n❌ there was some {} during periphery installation ❌\n",
+            "error".red()
+        );
         return;
     }
 
