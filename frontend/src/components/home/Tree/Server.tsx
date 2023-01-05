@@ -13,8 +13,8 @@ import Loading from "../../shared/loading/Loading";
 import { useNavigate } from "@solidjs/router";
 import { PermissionLevel, ServerStatus } from "../../../types";
 import { useAppDimensions } from "../../../state/DimensionProvider";
-import Tabs from "../../shared/tabs/Tabs";
 import Build from "./Build";
+import SimpleTabs from "../../shared/tabs/SimpleTabs";
 // import StatGraphs from "../../server/StatGraphs/StatGraphs";
 
 const Server: Component<{ id: string }> = (p) => {
@@ -131,7 +131,7 @@ const Server: Component<{ id: string }> = (p) => {
           </Flex>
         </button>
         <Show when={open()}>
-          <Tabs
+          <SimpleTabs
             containerClass="card shadow"
             localStorageKey={`${p.id}-home-tab`}
             tabs={[
