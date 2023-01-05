@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 types = { package = "monitor_types", path = "../types" }
-helpers = { path = "../helpers" }
+helpers = { package = "monitor_helpers", path = "../helpers" }
 tokio-tungstenite = { version = "0.18", features=["native-tls"] }
 tokio = "1.23"
 reqwest = { version = "0.11", features = ["json"] }

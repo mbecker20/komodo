@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-helpers = { path = "../lib/helpers" }
+helpers = { package = "monitor_helpers", path = "../lib/helpers" }
 db = { package = "db_client", path = "../lib/db_client" }
 types = { package = "monitor_types", path = "../lib/types" }
 periphery = { package = "periphery_client", path = "../lib/periphery_client" }
