@@ -2,7 +2,6 @@ import { useParams } from "@solidjs/router";
 import {
   createContext,
   createEffect,
-  onCleanup,
   ParentComponent,
   useContext,
 } from "solid-js";
@@ -70,16 +69,22 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     client.update_build(build)
   };
 
-  onCleanup(
-    ws.subscribe([Operation.UpdateBuild], (update) => {
+  let update_unsub = () => {};
+
+  createEffect(() => {
+    update_unsub();
+    update_unsub = ws.subscribe([Operation.UpdateBuild], (update) => {
       if (update.target.id === params.id) {
         load();
       }
-    })
-  );
+    });
+  });
 
-  onCleanup(
-    ws.subscribe(
+  let modify_unsub = () => {};
+
+  createEffect(() => {
+    modify_unsub();
+    modify_unsub = ws.subscribe(
       [Operation.ModifyUserPermissions],
       async (update) => {
         if (update.target.id === params.id) {
@@ -87,8 +92,8 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
           set("permissions", build.permissions);
         }
       }
-    )
-  );
+    );
+  });
 
   const userCanUpdate = () => user().admin || build.permissions[getId(user())] === PermissionLevel.Update;
 

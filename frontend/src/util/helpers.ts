@@ -1,4 +1,4 @@
-import { DockerContainerState, ServerStatus } from "../types";
+import { DockerContainerState, EnvironmentVar, ServerStatus } from "../types";
 
 export function combineClasses(...classes: (string | false | undefined)[]) {
   return classes.filter((c) => (c ? true : false)).join(" ");
@@ -49,7 +49,7 @@ export function readableDuration(start_ts: string, end_ts: string) {
   const end = new Date(end_ts);
   const durr = end.getTime() - start.getTime();
   const seconds = (durr / 1000).toFixed(1);
-  return `${seconds} seconds`
+  return `${seconds} seconds`;
 }
 
 export function validatePercentage(perc: string) {
@@ -82,12 +82,17 @@ export function getNestedEntry(obj: any, idPath: string[]): any {
   }
 }
 
-export function intoCollection<T>(arr: T[], idPath: string[]): Record<string, T> {
-  return Object.fromEntries(arr.map((item) => [getNestedEntry(item, idPath), item]));
+export function intoCollection<T>(
+  arr: T[],
+  idPath: string[]
+): Record<string, T> {
+  return Object.fromEntries(
+    arr.map((item) => [getNestedEntry(item, idPath), item])
+  );
 }
 
 export function getId(entity: any): string {
-  return entity._id.$oid
+  return entity._id.$oid;
 }
 
 export function deploymentStateClass(state: DockerContainerState) {
@@ -101,16 +106,64 @@ export function deploymentStateClass(state: DockerContainerState) {
   }
 }
 
-export function serverStatusClass(
-  status: ServerStatus
-) {
+export function serverStatusClass(status: ServerStatus) {
   if (status === ServerStatus.Ok) {
-    return "running"
+    return "running";
   } else if (status === ServerStatus.NotOk) {
-    return "exited"
+    return "exited";
   }
 }
 
 export function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
+}
+
+export function parseEnvVarseToDotEnv(envVars: EnvironmentVar[]) {
+  return envVars.reduce(
+    (prev, { variable, value }) =>
+      prev + (prev ? "\n" : "") + `${variable}=${value}`,
+    ""
+  );
+}
+
+function shouldKeepLine(line: string) {
+  if (line.length === 0) {
+    return false;
+  }
+  let firstIndex = -1;
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] !== " ") {
+      firstIndex = i;
+      break;
+    }
+  }
+  if (firstIndex === -1) {
+    return false;
+  }
+  if (line[firstIndex] === "#") {
+    return false;
+  }
+  return true;
+}
+
+export function parseDotEnvToEnvVars(env: string): EnvironmentVar[] {
+  return env
+    .split("\n")
+    .filter((line) => shouldKeepLine(line))
+    .map((entry) => {
+      const [first, ...rest] = entry.replaceAll('"', "").split("=");
+      return [first, rest.join("=")];
+    })
+    .map(([variable, value]) => ({ variable, value }));
+}
+
+export function deploymentHeaderStateClass(
+  state: DockerContainerState,
+) {
+  switch (state) {
+    case DockerContainerState.Running:
+      return "running";
+    case DockerContainerState.Exited:
+      return "exited";
+  }
 }

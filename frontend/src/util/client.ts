@@ -1,4 +1,5 @@
 import axios from "axios";
+import fileDownload from "js-file-download";
 import { URL } from "..";
 import {
   BasicContainerInfo,
@@ -177,6 +178,21 @@ export class Client {
 
   remove_container(deployment_id: string): Promise<Update> {
     return this.post(`/api/deployment/${deployment_id}/remove_container`);
+  }
+
+  async download_container_log(
+    id: string,
+    name: string,
+    error?: boolean | undefined
+  ) {
+    const log = await this.get_deployment_container_log(id, 5000);
+    const date = new Date();
+    fileDownload(
+      (error ? log.stderr : log.stdout) || "no log",
+      `${name}-${error ? "error-" : ""}log-${date
+        .toLocaleDateString()
+        .replaceAll("/", "-")}.txt`
+    );
   }
 
   // server
@@ -377,7 +393,9 @@ export class Client {
     return this.post("/api/permissions/modify_enabled", body);
   }
 
-  modify_user_create_server_permissions(body: ModifyUserCreateServerBody): Promise<Update> {
+  modify_user_create_server_permissions(
+    body: ModifyUserCreateServerBody
+  ): Promise<Update> {
     return this.post("/api/permissions/modify_create_server", body);
   }
 

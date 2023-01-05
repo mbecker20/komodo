@@ -22,10 +22,10 @@ const CenterMenu: Component<{
   targetStyle?: JSX.CSSProperties;
   targetClass?: string;
   title?: string;
-  leftOfX?: JSXElement;
+  leftOfX?: () => JSXElement;
   padding?: string | number;
   style?: JSX.CSSProperties;
-  position?: "top" | "center"
+  position?: "top" | "center";
 }> = (p) => {
   const [buffer, set] = createSignal(p.show());
   createEffect(() => {
@@ -64,7 +64,7 @@ const Child: Component<{
   padding?: string | number;
   style?: JSX.CSSProperties;
   position?: "top" | "center";
-  leftOfX?: JSXElement;
+  leftOfX?: () => JSXElement;
 }> = (p) => {
   useKeyDown("Escape", p.toggleShow);
   return (
@@ -78,7 +78,7 @@ const Child: Component<{
     >
       <Grid
         class={combineClasses(s.Menu, "shadow")}
-        style={{ padding: p.padding as any || "1rem", ...p.style }}
+        style={{ padding: (p.padding as any) || "1rem", ...p.style }}
         onClick={(e) => e.stopPropagation()}
       >
         <Flex
@@ -89,7 +89,7 @@ const Child: Component<{
         >
           <div class={s.CenterMenuTitle}>{p.title}</div>
           <Flex alignItems="center">
-            {p.leftOfX}
+            {p.leftOfX && p.leftOfX()}
             <button class="red" onClick={p.toggleShow}>
               <Icon type="cross" />
             </button>

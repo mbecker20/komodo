@@ -1,53 +1,45 @@
-import { Component, createSignal, For, onCleanup, Show } from "solid-js";
-import { useArray } from "../../state/hooks";
+import {
+  Component,
+  createEffect,
+  For,
+  Show,
+} from "solid-js";
+import { useUpdates } from "../../state/hooks";
 import { useAppState } from "../../state/StateProvider";
 import Update from "../update/Update";
 import Grid from "../shared/layout/Grid";
 import { combineClasses } from "../../util/helpers";
-import { client } from "../..";
 import { useParams } from "@solidjs/router";
 
 const Updates: Component<{}> = (p) => {
   const { ws } = useAppState();
   const params = useParams();
-  const selectedUpdates = useArray(() =>
-    client.list_updates(0, { type: "Build", id: params.id })
-  );
-  const unsub = ws.subscribe([], (update) => {
-    if (update.target.id === params.id) {
-      selectedUpdates.add(update);
-    }
-  });
-  onCleanup(unsub);
-  const [noMoreUpdates, setNoMore] = createSignal(false);
-  const loadMore = async () => {
-    const offset = selectedUpdates.collection()?.length;
-    if (offset) {
-      const updates = await client.list_updates(offset, {
-        type: "Build",
-        id: params.id,
-      });
-      selectedUpdates.addManyToEnd(updates);
-      if (updates.length !== 10) {
-        setNoMore(true);
+  const updates = useUpdates({ type: "Build", id: params.id });
+
+  let unsub = () => {};
+  createEffect(() => {
+    unsub();
+    unsub = ws.subscribe([], (update) => {
+      if (update.target.id === params.id) {
+        updates.addOrUpdate(update);
       }
-    }
-  };
+    });
+  });
   return (
     <Show
       when={
-        selectedUpdates.loaded() &&
-        (selectedUpdates.collection()?.length || 0) > 0
+        updates.loaded() &&
+        (updates.collection()?.length || 0) > 0
       }
     >
       <Grid class={combineClasses("card shadow")}>
         <h1>updates</h1>
         <Grid class="updates-container scroller">
-          <For each={selectedUpdates.collection()}>
+          <For each={updates.collection()}>
             {(update) => <Update update={update} />}
           </For>
-          <Show when={!noMoreUpdates()}>
-            <button class="grey" style={{ width: "100%" }} onClick={loadMore}>
+          <Show when={!updates.noMore()}>
+            <button class="grey" style={{ width: "100%" }} onClick={() => updates.loadMore()}>
               load more
             </button>
           </Show>
