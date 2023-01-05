@@ -12,9 +12,10 @@ path = "src/main.rs"
 [dependencies]
 helpers = { path = "../lib/helpers" }
 types = { package = "monitor_types", path = "../lib/types" }
+# types = { package = "monitor_types", version = "0.1.0" }
 run_command = { version = "0.0.5", features = ["async_tokio"] }
 async_timing_util = "0.1.12"
-tokio = { version = "1.21", features = ["full"] }
+tokio = { version = "1.23", features = ["full"] }
 axum = { version = "0.6", features = ["ws"] }
 tower = { version = "0.4", features = ["full"] }
 dotenv = "0.15"
