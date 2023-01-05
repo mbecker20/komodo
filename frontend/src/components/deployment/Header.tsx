@@ -6,9 +6,7 @@ import ConfirmButton from "../shared/ConfirmButton";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
-import Loading from "../shared/loading/Loading";
 import HoverMenu from "../shared/menu/HoverMenu";
-import { useActionStates } from "./ActionStateProvider";
 import { useLocalStorageToggle } from "../../util/hooks";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import Updates from "./Updates";
@@ -17,7 +15,7 @@ import { useParams } from "@solidjs/router";
 import { client } from "../..";
 
 const Header: Component<{}> = (p) => {
-  const { deployments, ws } = useAppState();
+  const { deployments } = useAppState();
   const params = useParams();
   const deployment = () => deployments.get(params.id)!;
   const { user } = useUser();
@@ -26,7 +24,6 @@ const Header: Component<{}> = (p) => {
     deployment()!.state === DockerContainerState.NotDeployed
       ? undefined
       : deployment().container?.status?.toLowerCase();
-  const actions = useActionStates();
   const { isMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
     useLocalStorageToggle("show-updates");

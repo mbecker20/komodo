@@ -1,7 +1,6 @@
-import { Component, createResource, For, Show } from "solid-js";
-import { client } from "../..";
+import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
-import { Update as UpdateType } from "../../types";
+import { Update as UpdateType, UpdateStatus } from "../../types";
 import { combineClasses, readableDuration, readableMonitorTimestamp } from "../../util/helpers";
 import { useToggle } from "../../util/hooks";
 import Icon from "../shared/Icon";
@@ -50,6 +49,7 @@ const UpdateMenuContent: Component<{ update: UpdateType }> = (p) => {
   return (
     <Grid class={s.LogContainer} gap="1rem">
       <Grid gap="0.5rem" class="card light shadow">
+        <div>status: {p.update.status.replaceAll("_", " ")}</div>
         <div>operator: {usernames.get(p.update.operator)}</div>
         <div>started at: {readableMonitorTimestamp(p.update.start_ts)}</div>
         <Show when={p.update.end_ts}>

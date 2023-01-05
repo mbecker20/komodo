@@ -5,7 +5,6 @@ import ConfirmButton from "../shared/ConfirmButton";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
-import { useActionStates } from "./ActionStateProvider";
 import { combineClasses, getId } from "../../util/helpers";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import Updates from "./Updates";
@@ -15,10 +14,9 @@ import { PermissionLevel } from "../../types";
 import { client } from "../..";
 
 const Header: Component<{}> = (p) => {
-  const { builds, ws } = useAppState();
+  const { builds } = useAppState();
   const params = useParams();
   const build = () => builds.get(params.id)!;
-  const actions = useActionStates();
   const { user } = useUser();
   const { isMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
