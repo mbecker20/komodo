@@ -94,6 +94,14 @@
 		{
 			"type": "cargo",
 			"command": "publish",
+			"label": "publish monitor helpers",
+			"options": {
+				"cwd": "${workspaceFolder}/lib/helpers"
+			}
+		},
+		{
+			"type": "cargo",
+			"command": "publish",
 			"label": "publish monitor client",
 			"options": {
 				"cwd": "${workspaceFolder}/lib/monitor_client"
