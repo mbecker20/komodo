@@ -43,7 +43,7 @@ const Owners: Component<{}> = (p) => {
     client.list_users().then(setUsers);
   });
   const getUser = (user_id: string) =>
-    users().find((u) => getId(u) === user_id)!;
+    users().find((u) => getId(u) === user_id);
   const searchUsers = createMemo(() =>
     users().filter(
       (u) =>
@@ -66,7 +66,7 @@ const Owners: Component<{}> = (p) => {
   });
   onCleanup(() => unsub());
   return (
-    <Show when={deployment.loaded}>
+    <Show when={deployment.loaded && users().length > 0}>
       <Grid class="config">
         <Grid class="config-items scroller" style={{ height: "100%" }}>
           <Grid class={combineClasses("config-item shadow")} gap="0.5rem">
@@ -111,52 +111,62 @@ const Owners: Component<{}> = (p) => {
               }
               menuStyle={{ width: "12rem" }}
             />
-            <For each={Object.keys(deployment.permissions!)}>
+            <For
+              each={Object.entries(deployment.permissions!)
+                .filter(
+                  ([_, permission]) => permission !== PermissionLevel.None
+                )
+                .map(([user_id, _]) => user_id)}
+            >
               {(user_id) => {
-                const u = () => getUser(user_id);
+                const u = () => getUser(user_id)!;
                 const permissions = () => deployment.permissions![user_id];
                 return (
-                  <Flex
-                    alignItems="center"
-                    justifyContent="space-between"
-                    class={combineClasses("grey-no-hover")}
-                    style={{
-                      padding: "0.5rem",
-                    }}
-                  >
-                    <div class="big-text">
-                      {u().username}
-                      {user_id === getId(user()) && " ( you )"}
-                    </div>
-                    <Flex alignItems="center">
-                      <Selector
-                        selected={permissions()}
-                        items={PERMISSIONS_OPTIONS}
-                        onSelect={(permission) => {
-                          client.update_user_permissions_on_target({
-                            user_id,
-                            permission: permission as PermissionLevel,
-                            target_type: PermissionsTarget.Deployment,
-                            target_id: params.id,
-                          });
-                        }}
-                        position="bottom right"
-                      />
-                      <ConfirmButton
-                        color="red"
-                        onConfirm={() => {
-                          client.update_user_permissions_on_target({
-                            user_id,
-                            permission: PermissionLevel.None,
-                            target_type: PermissionsTarget.Deployment,
-                            target_id: params.id,
-                          });
-                        }}
-                      >
-                        remove
-                      </ConfirmButton>
+                  <Show when={u()}>
+                    <Flex
+                      alignItems="center"
+                      justifyContent="space-between"
+                      class={combineClasses("grey-no-hover")}
+                      style={{
+                        padding: "0.5rem",
+                      }}
+                    >
+                      <div class="big-text">
+                        {u().username}
+                        {user_id === getId(user()) && " ( you )"}
+                      </div>
+                      <Show when={!u().admin && user_id !== getId(user())}>
+                        <Flex alignItems="center">
+                          <Selector
+                            selected={permissions()}
+                            items={PERMISSIONS_OPTIONS}
+                            onSelect={(permission) => {
+                              client.update_user_permissions_on_target({
+                                user_id,
+                                permission: permission as PermissionLevel,
+                                target_type: PermissionsTarget.Deployment,
+                                target_id: params.id,
+                              });
+                            }}
+                            position="bottom center"
+                          />
+                          <ConfirmButton
+                            color="red"
+                            onConfirm={() => {
+                              client.update_user_permissions_on_target({
+                                user_id,
+                                permission: PermissionLevel.None,
+                                target_type: PermissionsTarget.Deployment,
+                                target_id: params.id,
+                              });
+                            }}
+                          >
+                            remove
+                          </ConfirmButton>
+                        </Flex>
+                      </Show>
                     </Flex>
-                  </Flex>
+                  </Show>
                 );
               }}
             </For>
