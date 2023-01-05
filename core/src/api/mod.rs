@@ -18,6 +18,7 @@ use crate::{
 
 pub mod build;
 pub mod deployment;
+mod github_listener;
 pub mod group;
 pub mod permissions;
 pub mod procedure;
@@ -31,6 +32,7 @@ pub fn router() -> Router {
             "/user",
             get(|jwt, req| async { get_user(jwt, req).await.map_err(handle_anyhow_error) }),
         )
+        .nest("/listener", github_listener::router())
         .nest(
             "/",
             Router::new()
