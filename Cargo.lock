@@ -1373,7 +1373,7 @@ dependencies = [
  "bollard",
  "futures",
  "futures-util",
- "monitor_types 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.1",
  "rand",
  "run_command",
  "serde",

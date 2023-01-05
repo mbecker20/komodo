@@ -337,7 +337,18 @@ pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
         println!("pressed another button, exiting");
     }
 
-    let command = format!("");
+    println!("\ninstalling periphery binary...\n");
+
+    let install_output = run_command_pipe_to_terminal(&format!("cargo install {PERIPHERY_CRATE}"));
+
+    if install_output.success() {
+        println!("\ninstallation finished, starting monitor periphery daemon\n")
+    } else {
+        eprintln!("\n❌ there was some {} during periphery installation ❌\n", "error".red());
+        return;
+    }
+
+    let command = format!("periphery --daemon --config-path {config_path} --stdout {stdout} --stderr {stderr}");
 
     let output = run_command_pipe_to_terminal(&command);
 
