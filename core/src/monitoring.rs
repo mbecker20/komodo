@@ -30,17 +30,13 @@ impl State {
                 continue;
             }
             for (server, res) in servers.unwrap() {
-                if let Err(e) = res {
-                    if e.to_string().contains("error trying to connect") {
-                        if let Some(slack) = &self.slack {
-                            let (header, info) = generate_unreachable_message(&server);
-                            let res = slack.send_message_with_header(&header, info.clone()).await;
-                            if let Err(e) = res {
-                                eprintln!("failed to send message to slack: {e} | header: {header} | info: {info:?}")
-                            }
+                if let Err(_) = res {
+                    if let Some(slack) = &self.slack {
+                        let (header, info) = generate_unreachable_message(&server);
+                        let res = slack.send_message_with_header(&header, info.clone()).await;
+                        if let Err(e) = res {
+                            eprintln!("failed to send message to slack: {e} | header: {header} | info: {info:?}")
                         }
-                    } else {
-                        println!("failed to get stats from {}: {e:?}", server.name);
                     }
                     continue;
                 }

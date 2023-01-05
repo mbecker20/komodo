@@ -367,7 +367,10 @@ impl State {
 
         update.id = self.add_update(update.clone()).await?;
 
-        let deploy_log = self.periphery.deploy(&server, &deployment).await?;
+        let deploy_log = match self.periphery.deploy(&server, &deployment).await {
+            Ok(log) => log,
+            Err(e) => Log::error("deploy container", format!("{e:#?}"))
+        };
 
         update.success = deploy_log.success;
         update.logs.push(deploy_log);
