@@ -100,6 +100,14 @@
 			}
 		},
 		{
+			"type": "cargo",
+			"command": "publish",
+			"label": "publish monitor periphery",
+			"options": {
+				"cwd": "${workspaceFolder}/periphery"
+			}
+		},
+		{
 			"type": "shell",
 			"command": "docker compose up -d",
 			"label": "docker compose up",
