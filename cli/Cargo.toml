@@ -2,6 +2,9 @@
 name = "monitor_cli"
 version = "0.1.0"
 edition = "2021"
+authors = ["MoghTech"]
+description = "monitor cli | tools to setup monitor system"
+license = "GPL-3.0-or-later"
 
 [[bin]]
 name = "monitor"

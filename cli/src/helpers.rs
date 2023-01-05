@@ -348,7 +348,7 @@ pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
         return;
     }
 
-    let command = format!("periphery --daemon --config-path {config_path} --stdout {stdout} --stderr {stderr}");
+    let command = format!("if pgrep periphery; then pkill periphery; fi && periphery --daemon --config-path {config_path} --stdout {stdout} --stderr {stderr}");
 
     let output = run_command_pipe_to_terminal(&command);
 
