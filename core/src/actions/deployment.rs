@@ -369,7 +369,7 @@ impl State {
 
         let deploy_log = match self.periphery.deploy(&server, &deployment).await {
             Ok(log) => log,
-            Err(e) => Log::error("deploy container", format!("{e:#?}"))
+            Err(e) => Log::error("deploy container", format!("{e:#?}")),
         };
 
         update.success = deploy_log.success;

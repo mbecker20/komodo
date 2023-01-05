@@ -80,7 +80,7 @@ fn cli() -> Command {
                 )
                 .subcommand(
                     Command::new("start")
-                        .about("start up monitor core")
+                        .about("start up monitor core in container")
                         .arg(
                             arg!(--name <NAME> "specify the name of the monitor core container. default is monitor-core")
                         )
@@ -132,25 +132,45 @@ fn cli() -> Command {
                 )
                 .subcommand(
                     Command::new("start")
-                        .about("start up monitor periphery")
-                        .arg(
-                            arg!(--name <NAME> "specify the name of the monitor periphery container. default is monitor-periphery")
+                        .about("tools to start periphery as daemon or container")
+                        .subcommand(
+                            Command::new("daemon")
+                                .about("start up monitor periphery daemon")
+                                .arg(
+                                    arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                        .required(false)
+                                )
+                                .arg(
+                                    arg!(--stdout <PATH> "specify the file path for periphery to log stdout to. default is ~/.monitor/periphery.log.out")
+                                        .required(false)
+                                )
+                                .arg(
+                                    arg!(--stderr <PATH> "specify the file path for periphery to log stderr to. default is ~/.monitor/periphery.log.err")
+                                        .required(false)
+                                )
                         )
-                        .arg(
-                            arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
-                                .required(false)
-                        )
-                        .arg(arg!(--repo_dir <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos"))
-                        .arg(
-                            arg!(--port <PORT> "sets port monitor periphery will run on. default is 8000")
-                                .required(false)
-                        )
-                        .arg(
-                            arg!(--network <NETWORK> "sets docker network of monitor periphery container. default is bridge")
-                                .required(false)
-                        )
-                        .arg(
-                            arg!(--restart <RESTART> "sets docker restart mode of monitor periphery container. default is unless-stopped")
+                        .subcommand(
+                            Command::new("container")
+                                .about("start up monitor periphery in docker container")
+                                .arg(
+                                    arg!(--name <NAME> "specify the name of the monitor periphery container. default is monitor-periphery")
+                                )
+                                .arg(
+                                    arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                        .required(false)
+                                )
+                                .arg(arg!(--repo_dir <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos"))
+                                .arg(
+                                    arg!(--port <PORT> "sets port monitor periphery will run on. default is 8000")
+                                        .required(false)
+                                )
+                                .arg(
+                                    arg!(--network <NETWORK> "sets docker network of monitor periphery container. default is bridge")
+                                        .required(false)
+                                )
+                                .arg(
+                                    arg!(--restart <RESTART> "sets docker restart mode of monitor periphery container. default is unless-stopped")
+                                )
                         )
                 ),
         )
@@ -177,12 +197,19 @@ fn main() {
             );
             match periphery_command {
                 ("gen_config", sub_matches) => gen_periphery_config(sub_matches),
-                ("start", sub_matches) => start_periphery(sub_matches),
+                ("start", sub_matches) => {
+                    let periphery_start_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor_cli periphery start <daemon, container> <flags>' ❌\n");
+                    match periphery_start_command {
+                        ("daemon", sub_matches) => start_periphery_daemon(sub_matches),
+                        ("container", sub_matches) => start_periphery_container(sub_matches),
+                        _ => println!("\n❌ invalid call, should be 'monitor_cli periphery start <daemon, container> <flags>' ❌\n")
+                    }
+                }
                 _ => {
-                    println!("\n❌ invalid call, should be 'monitor_cli periphery <gen_config, start> <flags>' ❌\n")
+                    println!("\n❌ invalid call, should be 'monitor_cli periphery <gen_config, start>...' ❌\n")
                 }
             }
         }
-        _ => unreachable!(),
+        _ => println!("\n❌ invalid call, should be 'monitor_cli <core, periphery> ...' ❌\n"),
     }
 }

@@ -15,8 +15,9 @@ use serde::Serialize;
 
 use crate::types::{CoreConfig, MongoConfig, PeripheryConfig, RestartMode};
 
-const CORE_IMAGE_NAME: &str = "mbecker20/monitor-core";
-const PERIPHERY_IMAGE_NAME: &str = "mbecker20/monitor-periphery";
+const CORE_IMAGE_NAME: &str = "mbecker20/monitor_core";
+const PERIPHERY_IMAGE_NAME: &str = "mbecker20/monitor_periphery";
+const PERIPHERY_CRATE: &str = "monitor_periphery";
 
 pub fn gen_core_config(sub_matches: &ArgMatches) {
     let host = sub_matches
@@ -295,7 +296,62 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     );
 }
 
-pub fn start_periphery(sub_matches: &ArgMatches) {
+pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
+    let config_path = sub_matches
+        .get_one::<String>("config_path")
+        .map(|p| p.as_str())
+        .unwrap_or("~/.monitor/periphery.config.toml")
+        .to_string();
+
+    let stdout = sub_matches
+        .get_one::<String>("stdout")
+        .map(|p| p.as_str())
+        .unwrap_or("~/.monitor/periphery.log.out")
+        .to_string();
+
+    let stderr = sub_matches
+        .get_one::<String>("stderr")
+        .map(|p| p.as_str())
+        .unwrap_or("~/.monitor/periphery.log.err")
+        .to_string();
+
+    println!(
+        "\n========================\n    {}    \n========================\n",
+        "periphery config".bold()
+    );
+    println!("{}: {config_path}", "config path".dimmed());
+    println!("{}: {stdout}", "stdout".dimmed());
+    println!("{}: {stderr}", "stderr".dimmed());
+
+    println!(
+        "\npress {} to start {}. {}",
+        "ENTER".green().bold(),
+        "monitor periphery".bold(),
+        "(ctrl-c to cancel)".dimmed()
+    );
+
+    let buffer = &mut [0u8];
+    let res = std::io::stdin().read_exact(buffer);
+
+    if res.is_err() {
+        println!("pressed another button, exiting");
+    }
+
+    let command = format!("");
+
+    let output = run_command_pipe_to_terminal(&command);
+
+    if output.success() {
+        println!(
+            "\n✅ {} has been started up ✅\n",
+            "monitor periphery".bold()
+        )
+    } else {
+        eprintln!("\n❌ there was some {} on startup ❌\n", "error".red())
+    }
+}
+
+pub fn start_periphery_container(sub_matches: &ArgMatches) {
     let config_path = sub_matches
         .get_one::<String>("config_path")
         .map(|p| p.as_str())
