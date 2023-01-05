@@ -1,8 +1,10 @@
+import { useParams } from "@solidjs/router";
 import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { combineClasses } from "../../util/helpers";
+import { PermissionLevel } from "../../types";
+import { combineClasses, getId } from "../../util/helpers";
 import NotFound from "../NotFound";
 import Grid from "../shared/layout/Grid";
 import Actions from "./Actions";
@@ -13,31 +15,20 @@ import DeploymentTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
 const Deployment: Component<{}> = (p) => {
-  const { servers, deployments, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id()!);
-  const server = () => deployment() && servers.get(deployment()?.serverID!);
-  const { themeClass } = useTheme();
+  const { servers, deployments } = useAppState();
+  const params = useParams();
+  const deployment = () => deployments.get(params.id);
+  const server = () => deployment() && servers.get(deployment()!.deployment.server_id);
   const { isSemiMobile } = useAppDimensions();
-  const { permissions, username } = useUser();
-  const userCanUpdate = () => {
-    if (permissions() > 1) {
-      return true;
-    } else if (
-      permissions() > 0 &&
-      deployment()!.owners.includes(username()!)
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+  const { user } = useUser();
+  const userCanUpdate = () => user().admin || deployment()?.deployment.permissions![getId(user())] === PermissionLevel.Update;
   return (
     <Show
       when={deployment() && server()}
       fallback={<NotFound type="deployment" />}
     >
       <ActionStateProvider>
-        <Grid class={combineClasses("content", themeClass())}>
+        <Grid class={combineClasses("content")}>
           {/* left / actions */}
           <Grid class="left-content">
             <Header />
@@ -50,7 +41,7 @@ const Deployment: Component<{}> = (p) => {
           <Show
             when={userCanUpdate()}
             fallback={
-              <h2 class={combineClasses("card tabs shadow", themeClass())}>
+              <h2 class={combineClasses("card tabs shadow")}>
                 you do not have permission to view this deployment
               </h2>
             }
