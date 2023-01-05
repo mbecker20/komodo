@@ -93,7 +93,7 @@ fn default_core_mongo_db_name() -> String {
     "monitor".to_string()
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PeripheryConfig {
     #[serde(default = "default_periphery_port")]
     pub port: u16,

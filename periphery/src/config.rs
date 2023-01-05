@@ -54,6 +54,10 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension) {
 
 fn print_startup_log(config_path: &str, args: &Args, config: &PeripheryConfig) {
     println!("\nconfig path: {config_path}");
+    let mut config = config.clone();
+    config.github_accounts = config.github_accounts.into_iter().map(|(a, _)| (a, "<SECRET>".to_string())).collect();
+    config.docker_accounts = config.docker_accounts.into_iter().map(|(a, _)| (a, "<SECRET>".to_string())).collect();
+    config.secrets = config.secrets.into_iter().map(|(s, _)| (s, "<SECRET>".to_string())).collect();
     println!("{config:#?}");
     if args.daemon {
         println!("daemon mode enabled");
