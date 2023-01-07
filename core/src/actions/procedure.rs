@@ -181,9 +181,13 @@ impl State {
         Ok(new_procedure)
     }
 
-    pub async fn run_procedure(&self, id: &str, user: &RequestUser) -> anyhow::Result<Vec<Update>> {
+    pub async fn run_procedure(
+        &self,
+        procedure_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Vec<Update>> {
         let procedure = self
-            .get_procedure_check_permissions(id, user, PermissionLevel::Execute)
+            .get_procedure_check_permissions(procedure_id, user, PermissionLevel::Execute)
             .await?;
         let mut updates = Vec::new();
         for ProcedureStage {

@@ -29,6 +29,9 @@ pub async fn deployments_collection(
     coll.create_unique_index("name")
         .await
         .context("failed at creating name index")?;
+    coll.create_index("server_id")
+        .await
+        .context("failed at creating server_id index")?;
     Ok(coll)
 }
 
@@ -40,6 +43,9 @@ pub async fn builds_collection(
     coll.create_unique_index("name")
         .await
         .context("failed at creating name index")?;
+    coll.create_index("server_id")
+        .await
+        .context("failed at creating server_id index")?;
     Ok(coll)
 }
 
@@ -48,15 +54,30 @@ pub async fn updates_collection(
     db_name: &str,
 ) -> anyhow::Result<Collection<Update>> {
     let coll = mungos.collection(db_name, "updates");
-    coll.create_index("entity_id")
+    coll.create_index("target.type")
         .await
-        .context("failed at creating entity_id index")?;
-    coll.create_index("ts")
+        .context("failed at creating target type index")?;
+    coll.create_index("target.id")
         .await
-        .context("failed at creating ts index")?;
+        .context("failed at creating target id index")?;
+    coll.create_index("start_ts")
+        .await
+        .context("failed at creating start_ts index")?;
+    coll.create_index("end_ts")
+        .await
+        .context("failed at creating start_ts index")?;
     coll.create_index("operator")
         .await
         .context("failed at creating operator index")?;
+    coll.create_index("success")
+        .await
+        .context("failed at creating success index")?;
+    coll.create_index("status")
+        .await
+        .context("failed at creating status index")?;
+    coll.create_index("operation")
+        .await
+        .context("failed at creating success index")?;
     Ok(coll)
 }
 

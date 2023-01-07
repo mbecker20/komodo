@@ -21,6 +21,10 @@ pub struct Procedure {
     pub id: String,
     pub name: String,
     pub stages: Vec<ProcedureStage>,
+    pub webhook_branches: Vec<String>,
+
+    #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing)]))]
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 

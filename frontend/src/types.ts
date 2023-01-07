@@ -7,7 +7,7 @@ export type PermissionsMap = Record<string, PermissionLevel>;
 export interface Build {
 	_id?: string;
 	name: string;
-	permissions: PermissionsMap;
+	permissions?: PermissionsMap;
 	server_id: string;
 	version: Version;
 	repo?: string;
@@ -36,7 +36,7 @@ export interface Version {
 export interface DockerBuildArgs {
 	build_path: string;
 	dockerfile_path?: string;
-	build_args: EnvironmentVar[];
+	build_args?: EnvironmentVar[];
 }
 
 export interface Deployment {
@@ -110,7 +110,7 @@ export interface DockerContainerStats {
 export interface Group {
 	_id?: string;
 	name: string;
-	permissions: PermissionsMap;
+	permissions?: PermissionsMap;
 	builds: string[];
 	deployments: string[];
 	servers: string[];
@@ -139,7 +139,8 @@ export interface Procedure {
 	_id?: string;
 	name: string;
 	stages: ProcedureStage[];
-	permissions: PermissionsMap;
+	webhook_branches: string[];
+	permissions?: PermissionsMap;
 	created_at?: string;
 	updated_at?: string;
 }
@@ -159,7 +160,7 @@ export interface Server {
 	cpu_alert?: number;
 	mem_alert?: number;
 	disk_alert?: number;
-	stats_interval?: number;
+	stats_interval?: Timelength;
 	region?: string;
 	instance_id?: string;
 	created_at?: string;
@@ -178,6 +179,7 @@ export interface ServerActionState {
 }
 
 export interface SystemStatsQuery {
+	disks?: boolean;
 	networks?: boolean;
 	components?: boolean;
 	processes?: boolean;
@@ -188,9 +190,9 @@ export interface SystemStats {
 	mem_used_gb: number;
 	mem_total_gb: number;
 	disk: DiskUsage;
-	networks: SystemNetwork[];
-	components: SystemComponent[];
-	processes: SystemProcess[];
+	networks?: SystemNetwork[];
+	components?: SystemComponent[];
+	processes?: SystemProcess[];
 	polling_rate: Timelength;
 	refresh_ts: number;
 	refresh_list_ts: number;
@@ -201,7 +203,7 @@ export interface DiskUsage {
 	total_gb: number;
 	read_kb: number;
 	write_kb: number;
-	disks: SingleDiskUsage[];
+	disks?: SingleDiskUsage[];
 }
 
 export interface SingleDiskUsage {
@@ -232,6 +234,28 @@ export interface SystemProcess {
 	mem_mb: number;
 	disk_read_kb: number;
 	disk_write_kb: number;
+}
+
+export interface SystemStatsRecord {
+	_id?: string;
+	server_id: string;
+	ts: number;
+	cpu_perc: number;
+	mem_used_gb: number;
+	mem_total_gb: number;
+	disk: DiskUsage;
+	networks: SystemNetwork[];
+	components: SystemComponent[];
+	processes: SystemProcess[];
+	polling_rate: Timelength;
+}
+
+export interface HistoricalStatsQuery {
+	interval?: Timelength;
+	limit?: number;
+	page?: number;
+	networks?: boolean;
+	components?: boolean;
 }
 
 export interface Update {
@@ -334,6 +358,8 @@ export enum Operation {
 	ModifyUserEnabled = "modify_user_enabled",
 	ModifyUserCreateServerPermissions = "modify_user_create_server_permissions",
 	ModifyUserPermissions = "modify_user_permissions",
+	AutoBuild = "auto_build",
+	AutoPull = "auto_pull",
 }
 
 export enum PermissionLevel {

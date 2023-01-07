@@ -115,6 +115,9 @@ impl StatsClient {
                         _ = cancel_clone.cancelled() => break,
                         stats = reciever.recv() => { stats.expect("failed to recv stats msg") }
                     };
+                    if !query.disks {
+                        stats.disk.disks = vec![]
+                    }
                     if !query.components {
                         stats.components = vec![]
                     }
@@ -170,14 +173,17 @@ impl StatsClient {
 
     fn get_cached_stats(&self, query: SystemStatsQuery) -> SystemStats {
         let mut stats = self.cache.clone();
+        if !query.disks {
+            stats.disk.disks = vec![]
+        }
         if !query.networks {
-            stats.networks = Vec::new();
+            stats.networks = vec![];
         }
         if !query.components {
-            stats.components = Vec::new();
+            stats.components = vec![];
         }
         if !query.processes {
-            stats.processes = Vec::new();
+            stats.processes = vec![];
         }
         stats
     }

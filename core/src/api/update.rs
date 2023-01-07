@@ -154,7 +154,13 @@ impl State {
         let mut updates = self
             .db
             .updates
-            .get_most_recent(NUM_UPDATES_PER_PAGE as i64, offset, filter, None)
+            .get_most_recent(
+                "start_ts",
+                NUM_UPDATES_PER_PAGE as i64,
+                offset,
+                filter,
+                None,
+            )
             .await
             .context("mongo get most recent updates query failed")?;
         updates.reverse();

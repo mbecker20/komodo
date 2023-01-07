@@ -1,21 +1,25 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
+use async_timing_util::get_timelength_in_ms;
 use axum::{
     extract::{ws::Message as AxumMessage, Path, Query, WebSocketUpgrade},
     response::IntoResponse,
     routing::{delete, get, patch, post},
-    Extension, Json, Router,
+    Json, Router,
 };
 use futures_util::{future::join_all, SinkExt, StreamExt};
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Document, Serialize};
+use mungos::{doc, Deserialize, Document};
 use tokio::select;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_util::sync::CancellationToken;
 use types::{
-    traits::Permissioned, BasicContainerInfo, ImageSummary, Network, PermissionLevel, Server,
-    ServerActionState, ServerStatus, ServerWithStatus, SystemStats, SystemStatsQuery,
+    traits::Permissioned, BasicContainerInfo, HistoricalStatsQuery, ImageSummary, Network,
+    PermissionLevel, Server, ServerActionState, ServerStatus, ServerWithStatus, SystemStats,
+    SystemStatsQuery, SystemStatsRecord,
 };
 use typeshare::typeshare;
+
+const MAX_HISTORICAL_STATS_LIMIT: i64 = 1000;
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -23,13 +27,18 @@ use crate::{
     state::{State, StateExtension},
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 struct ServerId {
     id: String,
 }
 
+#[derive(Deserialize)]
+struct Ts {
+    ts: i64,
+}
+
 #[typeshare]
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize)]
 pub struct CreateServerBody {
     name: String,
     address: String,
@@ -40,8 +49,8 @@ pub fn router() -> Router {
         .route(
             "/:id",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Path(server_id): Path<ServerId>| async move {
                     let server = state
                         .get_server(&server_id.id, &user)
@@ -54,8 +63,8 @@ pub fn router() -> Router {
         .route(
             "/list",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Query(query): Query<Document>| async move {
                     let servers = state
                         .list_servers(&user, query)
@@ -68,8 +77,8 @@ pub fn router() -> Router {
         .route(
             "/create",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Json(server): Json<CreateServerBody>| async move {
                     let server = state
                         .create_server(&server.name, server.address, &user)
@@ -82,8 +91,8 @@ pub fn router() -> Router {
         .route(
             "/create_full",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Json(server): Json<Server>| async move {
                     let server = state
                         .create_full_server(server, &user)
@@ -96,8 +105,8 @@ pub fn router() -> Router {
         .route(
             "/:id/delete",
             delete(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Path(server): Path<ServerId>| async move {
                     let server = state
                         .delete_server(&server.id, &user)
@@ -110,8 +119,8 @@ pub fn router() -> Router {
         .route(
             "/update",
             patch(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Json(server): Json<Server>| async move {
                     let server = state
                         .update_server(server, &user)
@@ -124,10 +133,10 @@ pub fn router() -> Router {
         .route(
             "/:id/stats",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>,
-                 Query(query): Query<SystemStatsQuery>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id }),
+                 query: Query<SystemStatsQuery>| async move {
                     let stats = state
                         .get_server_stats(&id, &user, &query)
                         .await
@@ -137,11 +146,41 @@ pub fn router() -> Router {
             ),
         )
         .route(
+            "/:id/stats/history",
+            get(
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id }),
+                 query: Query<HistoricalStatsQuery>| async move {
+                    let stats = state
+                        .get_historical_stats(&id, &user, &query)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(stats))
+                },
+            ),
+        )
+        .route(
+            "/:id/stats/at_ts",
+            get(
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id }),
+                 Query(Ts { ts })| async move {
+                    let stats = state
+                        .get_stats_at_ts(&id, &user, ts)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(stats))
+                },
+            ),
+        )
+        .route(
             "/:id/stats/ws",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>,
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id }),
                  Query(query): Query<SystemStatsQuery>,
                  ws: WebSocketUpgrade| async move {
                     let connection = state
@@ -155,9 +194,9 @@ pub fn router() -> Router {
         .route(
             "/:id/networks",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let stats = state
                         .get_networks(&id, &user)
                         .await
@@ -169,9 +208,9 @@ pub fn router() -> Router {
         .route(
             "/:id/networks/prune",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let stats = state
                         .prune_networks(&id, &user)
                         .await
@@ -183,9 +222,9 @@ pub fn router() -> Router {
         .route(
             "/:id/images",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let stats = state
                         .get_images(&id, &user)
                         .await
@@ -197,9 +236,9 @@ pub fn router() -> Router {
         .route(
             "/:id/images/prune",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let stats = state
                         .prune_images(&id, &user)
                         .await
@@ -211,9 +250,9 @@ pub fn router() -> Router {
         .route(
             "/:id/containers",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let stats = state
                         .get_containers(&id, &user)
                         .await
@@ -225,9 +264,9 @@ pub fn router() -> Router {
         .route(
             "/:id/containers/prune",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let stats = state
                         .prune_containers(&id, &user)
                         .await
@@ -239,9 +278,9 @@ pub fn router() -> Router {
         .route(
             "/:id/github_accounts",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let github_accounts = state
                         .get_github_accounts(&id, &user)
                         .await
@@ -253,9 +292,9 @@ pub fn router() -> Router {
         .route(
             "/:id/docker_accounts",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let docker_accounts = state
                         .get_docker_accounts(&id, &user)
                         .await
@@ -267,9 +306,9 @@ pub fn router() -> Router {
         .route(
             "/:id/action_state",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(ServerId { id }): Path<ServerId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
                     let action_state = state
                         .get_server_action_states(id, &user)
                         .await
@@ -348,6 +387,56 @@ impl State {
             .await
             .context(format!("failed to get stats from server {}", server.name))?;
         Ok(stats)
+    }
+
+    async fn get_historical_stats(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+        query: &HistoricalStatsQuery,
+    ) -> anyhow::Result<Vec<SystemStatsRecord>> {
+        let limit = if query.limit as i64 > MAX_HISTORICAL_STATS_LIMIT {
+            MAX_HISTORICAL_STATS_LIMIT
+        } else {
+            query.limit as i64
+        };
+        self.get_server_check_permissions(server_id, user, PermissionLevel::Read)
+            .await?;
+        let ts_mod = get_timelength_in_ms(query.interval.to_string().parse().unwrap()) as i64;
+        let mut projection = doc! { "processes": 0, "disk.disks": 0 };
+        if !query.networks {
+            projection.insert("networks", 0);
+        }
+        if !query.components {
+            projection.insert("components", 0);
+        }
+        self.db
+            .stats
+            .get_most_recent(
+                "ts",
+                limit,
+                query.page as u64 * limit as u64,
+                doc! { "ts": { "$mod": [ts_mod, 0] } },
+                None,
+            )
+            .await
+            .context("failed at mongo query to get stats")
+    }
+
+    async fn get_stats_at_ts(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+        ts: i64,
+    ) -> anyhow::Result<SystemStatsRecord> {
+        self.get_server_check_permissions(server_id, user, PermissionLevel::Read)
+            .await?;
+        self.db
+            .stats
+            .find_one(doc! { "server_id": server_id, "ts": ts }, None)
+            .await
+            .context("failed at mongo query to get full stat entry")?
+            .ok_or(anyhow!("did not find entry for server at time"))
     }
 
     async fn subscribe_to_stats_ws(

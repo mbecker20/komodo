@@ -28,7 +28,7 @@ pub struct Deployment {
     pub server_id: String,
 
     #[serde(default)]
-    #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
+    #[diff(attr(#[serde(skip_serializing)]))]
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 

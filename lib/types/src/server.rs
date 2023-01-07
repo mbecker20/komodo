@@ -30,7 +30,7 @@ pub struct Server {
     pub address: String,
 
     #[serde(default)]
-    #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
+    #[diff(attr(#[serde(skip_serializing)]))]
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
@@ -137,6 +137,8 @@ pub enum ServerStatus {
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct SystemStatsQuery {
     #[serde(default)]
+    pub disks: bool,
+    #[serde(default)]
     pub networks: bool,
     #[serde(default)]
     pub components: bool,
@@ -147,6 +149,7 @@ pub struct SystemStatsQuery {
 impl SystemStatsQuery {
     pub fn all() -> SystemStatsQuery {
         SystemStatsQuery {
+            disks: true,
             networks: true,
             components: true,
             processes: true,
@@ -165,8 +168,11 @@ pub struct SystemStats {
     pub mem_used_gb: f64,  // in GB
     pub mem_total_gb: f64, // in GB
     pub disk: DiskUsage,
+    #[serde(default)]
     pub networks: Vec<SystemNetwork>,
+    #[serde(default)]
     pub components: Vec<SystemComponent>,
+    #[serde(default)]
     pub processes: Vec<SystemProcess>,
     pub polling_rate: Timelength,
     pub refresh_ts: u128,
@@ -180,6 +186,7 @@ pub struct DiskUsage {
     pub total_gb: f64, // in GB
     pub read_kb: f64,  // in kB
     pub write_kb: f64, // in kB
+    #[serde(default)]
     pub disks: Vec<SingleDiskUsage>,
 }
 
@@ -234,7 +241,7 @@ pub struct SystemStatsRecord {
     )]
     pub id: String,
     pub server_id: String,
-    pub ts: i64,           // unix ts milliseconds
+    pub ts: f64,           // unix ts milliseconds
     pub cpu_perc: f32,     // in %
     pub mem_used_gb: f64,  // in GB
     pub mem_total_gb: f64, // in GB
@@ -250,7 +257,7 @@ impl SystemStatsRecord {
         SystemStatsRecord {
             id: String::new(),
             server_id,
-            ts,
+            ts: ts as f64,
             cpu_perc: stats.cpu_perc,
             mem_used_gb: stats.mem_used_gb,
             mem_total_gb: stats.mem_total_gb,
@@ -261,4 +268,39 @@ impl SystemStatsRecord {
             polling_rate: stats.polling_rate,
         }
     }
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug)]
+pub struct HistoricalStatsQuery {
+    #[serde(default = "default_interval")]
+    pub interval: Timelength,
+    #[serde(default = "default_limit")]
+    pub limit: f64,
+    #[serde(default)]
+    pub page: f64,
+    #[serde(default)]
+    pub networks: bool,
+    #[serde(default)]
+    pub components: bool,
+}
+
+impl Default for HistoricalStatsQuery {
+    fn default() -> Self {
+        HistoricalStatsQuery {
+            interval: default_interval(),
+            limit: default_limit(),
+            page: Default::default(),
+            networks: Default::default(),
+            components: Default::default(),
+        }
+    }
+}
+
+fn default_interval() -> Timelength {
+    Timelength::OneHour
+}
+
+fn default_limit() -> f64 {
+    100.0
 }

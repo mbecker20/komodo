@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Context};
 use futures_util::{SinkExt, StreamExt};
 use monitor_types::{
-    BasicContainerInfo, ImageSummary, Log, Network, Server, ServerActionState, ServerWithStatus,
-    SystemStats, SystemStatsQuery,
+    BasicContainerInfo, HistoricalStatsQuery, ImageSummary, Log, Network, Server,
+    ServerActionState, ServerWithStatus, SystemStats, SystemStatsQuery, SystemStatsRecord,
 };
 use serde_json::{json, Value};
 use tokio::{
@@ -93,6 +93,36 @@ impl MonitorClient {
         self.get(&format!("/api/server/{server_id}/stats"), query.into())
             .await
             .context(format!("failed to get server stats at id {server_id}"))
+    }
+
+    pub async fn get_server_stats_history(
+        &self,
+        server_id: &str,
+        query: impl Into<Option<&HistoricalStatsQuery>>,
+    ) -> anyhow::Result<Vec<SystemStatsRecord>> {
+        self.get(
+            &format!("/api/server/{server_id}/stats/history"),
+            query.into(),
+        )
+        .await
+        .context(format!(
+            "failed to get historical server stats at id {server_id}"
+        ))
+    }
+
+    pub async fn get_server_stats_at_ts(
+        &self,
+        server_id: &str,
+        ts: i64,
+    ) -> anyhow::Result<Vec<SystemStatsRecord>> {
+        self.get(
+            &format!("/api/server/{server_id}/stats/at_ts"),
+            json!({ "ts": ts }),
+        )
+        .await
+        .context(format!(
+            "failed to get historical server stats at id {server_id}"
+        ))
     }
 
     pub async fn subscribe_to_stats_ws(

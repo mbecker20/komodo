@@ -9,12 +9,14 @@ import {
   DeploymentActionState,
   DeploymentWithContainerState,
   Group,
+  HistoricalStatsQuery,
   Log,
   Procedure,
   Server,
   ServerActionState,
   ServerWithStatus,
   SystemStats,
+  SystemStatsRecord,
   Update,
   UpdateTarget,
   User,
@@ -235,6 +237,22 @@ export class Client {
 
   get_server_stats(server_id: string): Promise<SystemStats> {
     return this.get(`/api/server/${server_id}/stats`);
+  }
+
+  get_server_stats_history(
+    server_id: string,
+    query?: HistoricalStatsQuery
+  ): Promise<SystemStatsRecord[]> {
+    return this.get(
+      `/api/server/${server_id}/history${generateQuery(query as any)}`
+    );
+  }
+
+  get_server_stats_at_ts(
+    server_id: string,
+    ts: number
+  ): Promise<SystemStatsRecord> {
+    return this.get(`/api/server/${server_id}/at_ts?ts=${ts}`);
   }
 
   get_docker_networks(server_id: string): Promise<any[]> {

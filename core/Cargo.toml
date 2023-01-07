@@ -21,7 +21,7 @@ axum-extra = { version = "0.4", features = ["spa"] }
 tower = { version = "0.4", features = ["full"] }
 tower-http = { version = "0.3", features = ["cors"] }
 slack = { package = "slack_client_rs", version = "0.0.8" }
-mungos = "0.2.27"
+mungos = "0.3.0"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
@@ -36,3 +36,4 @@ async_timing_util = "0.1.12"
 futures-util = "0.3"
 diff-struct = "0.5"
 typeshare = "1.0.0"
+hex = "0.4"
