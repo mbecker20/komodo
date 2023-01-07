@@ -28,26 +28,26 @@ const Updates: Component<{}> = (p) => {
   });
   onCleanup(() => unsub())
   return (
-    <Show
-      when={
-        updates.loaded() &&
-        (updates.collection()?.length || 0) > 0
-      }
+    <Grid
+      class={combineClasses("card shadow")}
+      style={{ "min-width": "350px" }}
     >
-      <Grid class={combineClasses("card shadow")}>
-        <h1>updates</h1>
-        <Grid class="updates-container scroller">
-          <For each={updates.collection()}>
-            {(update) => <Update update={update} />}
-          </For>
-          <Show when={!updates.noMore()}>
-            <button class="grey" style={{ width: "100%" }} onClick={() => updates.loadMore()}>
-              load more
-            </button>
-          </Show>
-        </Grid>
+      <h1>updates</h1>
+      <Grid class="updates-container scroller">
+        <For each={updates.collection()}>
+          {(update) => <Update update={update} />}
+        </For>
+        <Show when={!updates.noMore()}>
+          <button
+            class="grey"
+            style={{ width: "100%" }}
+            onClick={() => updates.loadMore()}
+          >
+            load more
+          </button>
+        </Show>
       </Grid>
-    </Show>
+    </Grid>
   );
 };
 

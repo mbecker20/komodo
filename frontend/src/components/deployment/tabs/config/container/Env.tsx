@@ -63,17 +63,22 @@ const EditDotEnv: Component<{}> = (p) => {
       title={`${deployment.name} environment`}
       target="edit"
       targetClass="blue"
-      leftOfX={
-        () => <button class="green" onClick={toggleShow}>
+      leftOfX={() => (
+        <button class="green" onClick={toggleShow}>
           confirm
         </button>
-      }
+      )}
       content={() => (
         <TextArea
           class="scroller"
           value={dotenv()}
           onEdit={setDotEnv}
-          style={{ width: "40rem", "max-width": "90vw", height: "80vh" }}
+          style={{
+            width: "700px",
+            "max-width": "90vw",
+            height: "80vh",
+            padding: "1rem",
+          }}
           spellcheck={false}
         />
       )}

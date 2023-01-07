@@ -32,7 +32,7 @@ const PERMISSIONS_OPTIONS = [
   PermissionLevel.Update,
 ];
 
-const Owners: Component<{}> = (p) => {
+const Permissions: Component<{}> = (p) => {
   const { ws } = useAppState();
   const { deployment } = useConfig();
   const { user } = useUser();
@@ -66,8 +66,7 @@ const Owners: Component<{}> = (p) => {
   });
   onCleanup(() => unsub());
   return (
-    <Show when={deployment.loaded && users().length > 0}>
-      <Grid class="config">
+    <Grid class="config">
         <Grid class="config-items scroller" style={{ height: "100%" }}>
           <Grid class={combineClasses("config-item shadow")} gap="0.5rem">
             <Menu
@@ -173,8 +172,7 @@ const Owners: Component<{}> = (p) => {
           </Grid>
         </Grid>
       </Grid>
-    </Show>
   );
 };
 
-export default Owners;
+export default Permissions;

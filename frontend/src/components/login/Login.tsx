@@ -22,7 +22,7 @@ const Login: Component<{}> = (p) => {
       try {
         const user = await client.login(info);
         setUser(() => user);
-        pushNotification("good", "logged in!");
+        // pushNotification("good", "logged in!");
       } catch {
         pushNotification("bad", "login failed!");
       }

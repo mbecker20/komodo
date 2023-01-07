@@ -14,7 +14,7 @@ const Updates: Component<{}> = (p) => {
   const params = useParams();
   const updates = useUpdates({ type: "Deployment", id: params.id });
   const buildID = () => deployments.get(params.id)?.deployment.build_id;
-  let unsub = () => {}
+  let unsub = () => {};
   createEffect(() => {
     unsub();
     unsub = ws.subscribe([], (update) => {
@@ -30,11 +30,19 @@ const Updates: Component<{}> = (p) => {
   });
   onCleanup(() => unsub());
   return (
-    <Grid class={combineClasses("card shadow")}>
+    <Grid
+      class={combineClasses("card shadow")}
+      style={{ "min-width": "350px" }}
+    >
       <h1>updates</h1>
-      <Show when={updates.loaded()} fallback={<Flex justifyContent="center">
-        <Loading type="three-dot" />
-      </Flex>}>
+      <Show
+        when={updates.loaded()}
+        fallback={
+          <Flex justifyContent="center">
+            <Loading type="three-dot" />
+          </Flex>
+        }
+      >
         <Grid class="updates-container scroller">
           <For each={updates.collection()}>
             {(update) => <Update update={update} />}

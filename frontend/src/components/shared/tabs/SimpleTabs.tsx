@@ -6,6 +6,7 @@ import {
   For,
   JSX,
   JSXElement,
+  Show,
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
 import { LocalStorageSetter, useLocalStorage } from "../../../util/hooks";
@@ -81,13 +82,15 @@ export const ControlledTabs: Component<{
           )}
         </For>
       </Flex>
-      <div
-        style={{
-          width: "100%",
-        }}
-      >
-        {p.tabs[current()].element()}
-      </div>
+      <Show when={p.tabs[current()]} fallback={<div>invalid tab selected</div>}>
+        <div
+          style={{
+            width: "100%",
+          }}
+        >
+          {p.tabs[current()].element()}
+        </div>
+      </Show>
     </div>
   );
 };

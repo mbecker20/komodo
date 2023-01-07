@@ -17,7 +17,7 @@ import { Tab } from "../../../shared/tabs/Tabs";
 import RepoMount from "./mount-repo/RepoMount";
 import { OnClone, OnPull } from "./mount-repo/OnGit";
 import Loading from "../../../shared/loading/Loading";
-import Owners from "./Owners";
+import Permissions from "./Permissions";
 import { pushNotification, URL } from "../../../..";
 import { combineClasses, copyToClipboard, getId } from "../../../../util/helpers";
 import { useAppDimensions } from "../../../../state/DimensionProvider";
@@ -33,10 +33,7 @@ const Config: Component<{}> = () => {
     <Show when={deployment.loaded}>
       <Grid class="config">
         <SimpleTabs
-          containerStyle={{
-            height: "100%",
-            width: "100%",
-          }}
+          containerClass="config-items"
           tabsGap="0rem"
           localStorageKey="deployment-config-tab"
           tabs={[
@@ -101,14 +98,14 @@ const Config: Component<{}> = () => {
               ),
             },
             user().admin && {
-              title: "collaborators",
+              title: "permissions",
               element: () => (
                 <Grid
                   class="config-items scroller"
                   style={{ height: "100%" }}
                   placeItems="start center"
                 >
-                  <Owners />
+                  <Permissions />
                 </Grid>
               ),
             },

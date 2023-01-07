@@ -7,8 +7,6 @@ import s from "./home.module.scss";
 import Flex from "../shared/layout/Flex";
 
 const Summary: Component<{}> = (p) => {
-  const deployentCount = useDeploymentCount();
-  const serverCount = useServerCount();
   const { builds } = useAppState();
   return (
     <Flex
@@ -17,74 +15,150 @@ const Summary: Component<{}> = (p) => {
     >
       <h1>summary</h1>
       <Flex gap="1rem" justifyContent="flex-end" class="wrap">
-        <Grid
-          placeItems="start end"
-          class={combineClasses(s.SummaryItem, "shadow")}
-          gap="0.5rem"
-        >
-          <h2>servers</h2>
-          <Flex gap="0.4rem">
-            <h2 class="text-green">{serverCount().healthy}</h2> healthy
-          </Flex>
-          <Show when={serverCount().unhealthy > 0}>
-            <Flex gap="0.4rem">
-              <h2 class="text-red">{serverCount().unhealthy}</h2> unhealthy
-            </Flex>
-          </Show>
-          <Show when={serverCount().disabled > 0}>
-            <Flex gap="0.4rem">
-              <h2 class="text-blue">{serverCount().disabled}</h2> disabled
-            </Flex>
-          </Show>
-          <Flex gap="0.4rem">
-            <h2 class="text-green">{serverCount().total}</h2> total
-          </Flex>
-        </Grid>
-        <Grid
-          placeItems="start end"
-          class={combineClasses(s.SummaryItem, "shadow")}
-          gap="0.5rem"
-        >
-          <h2>deployments</h2>
-          <Flex gap="0.4rem">
-            <h2 class="text-green">{deployentCount().running}</h2> running
-          </Flex>
-          <Show when={deployentCount().stopped > 0}>
-            <Flex gap="0.4rem">
-              <h2 class="text-red">{deployentCount().stopped}</h2> stopped
-            </Flex>
-          </Show>
-          <Show when={deployentCount().notDeployed > 0}>
-            <Flex gap="0.4rem">
-              <h2 class="text-blue">{deployentCount().notDeployed}</h2> not
-              deployed
-            </Flex>
-          </Show>
-          <Show when={deployentCount().unknown > 0}>
-            <Flex gap="0.4rem">
-              <h2 class="text-orange">{deployentCount().unknown}</h2> unknown
-            </Flex>
-          </Show>
-          <Flex gap="0.4rem">
-            <h2 class="text-green">{deployentCount().total}</h2> total
-          </Flex>
-        </Grid>
-        <Grid
-          placeItems="start end"
-          class={combineClasses(s.SummaryItem, "shadow")}
-          gap="0.5rem"
-        >
-          <h2>builds</h2>
-          <Flex gap="0.4rem">
-            <h2 class="text-green">{builds.ids()?.length}</h2> total
-          </Flex>
-        </Grid>
+        <ServersSummary />
+        <DeploymentsSummary />
+        <BuildsSummary />
       </Flex>
     </Flex>
   );
 };
 
 export default Summary;
+
+const BuildsSummary = () => {
+  const { builds } = useAppState();
+  return (
+    <Grid
+      placeItems="start center"
+      class={combineClasses(s.SummaryItem, "shadow")}
+      gap="0.5rem"
+    >
+      <h2>builds</h2>
+      <Grid gap="0.5rem" style={{ width: "100%", height: "100%" }}>
+        <Flex
+          gap="0.4rem"
+          justifyContent="space-between"
+          style={{ width: "100%" }}
+        >
+          <div>total</div>
+          <h2 class="text-green">{builds.ids()?.length}</h2>
+        </Flex>
+      </Grid>
+    </Grid>
+  );
+};
+
+const DeploymentsSummary = () => {
+  const deployentCount = useDeploymentCount();
+  return (
+    <Grid
+      placeItems="start center"
+      class={combineClasses(s.SummaryItem, "shadow")}
+      gap="0.5rem"
+    >
+      <h2>deployments</h2>
+      <Grid gap="0.5rem" style={{ width: "100%", height: "100%" }}>
+        <Flex
+          gap="0.4rem"
+          justifyContent="space-between"
+          style={{ width: "100%" }}
+        >
+          <div>total</div>
+          <h2 class="text-green">{deployentCount().total}</h2>
+        </Flex>
+        <Flex
+          gap="0.4rem"
+          justifyContent="space-between"
+          style={{ width: "100%" }}
+        >
+          <div>running</div>
+          <h2 class="text-green">{deployentCount().running}</h2>
+        </Flex>
+        <Show when={deployentCount().stopped > 0}>
+          <Flex
+            gap="0.4rem"
+            justifyContent="space-between"
+            style={{ width: "100%" }}
+          >
+            <div>stopped</div>
+            <h2 class="text-red">{deployentCount().stopped}</h2>
+          </Flex>
+        </Show>
+        <Show when={deployentCount().notDeployed > 0}>
+          <Flex
+            gap="0.4rem"
+            justifyContent="space-between"
+            style={{ width: "100%" }}
+          >
+            <div>not deployed</div>
+            <h2 class="text-blue">{deployentCount().notDeployed}</h2>
+          </Flex>
+        </Show>
+        <Show when={deployentCount().unknown > 0}>
+          <Flex
+            gap="0.4rem"
+            justifyContent="space-between"
+            style={{ width: "100%" }}
+          >
+            <div>unknown</div>
+            <h2 class="text-orange">{deployentCount().unknown}</h2>
+          </Flex>
+        </Show>
+      </Grid>
+    </Grid>
+  );
+};
+
+const ServersSummary = () => {
+  const serverCount = useServerCount();
+  return (
+    <Grid
+      placeItems="start center"
+      class={combineClasses(s.SummaryItem, "shadow")}
+      gap="0.5rem"
+    >
+      <h2>servers</h2>
+      <Grid gap="0.5rem" style={{ width: "100%", height: "100%" }}>
+        <Flex
+          gap="0.4rem"
+          justifyContent="space-between"
+          style={{ width: "100%" }}
+        >
+          <div>total</div>
+          <h2 class="text-green">{serverCount().total}</h2>
+        </Flex>
+        <Flex
+          gap="0.4rem"
+          justifyContent="space-between"
+          style={{ width: "100%" }}
+        >
+          <div>healthy</div>
+          <h2 class="text-green">{serverCount().healthy}</h2>
+        </Flex>
+        <Show when={serverCount().unhealthy > 0}>
+          <Flex
+            gap="0.4rem"
+            justifyContent="space-between"
+            style={{ width: "100%" }}
+          >
+            <div>unhealthy</div>
+            <h2 class="text-red">{serverCount().unhealthy}</h2>
+          </Flex>
+        </Show>
+        <Show when={serverCount().disabled > 0}>
+          <Flex
+            gap="0.4rem"
+            justifyContent="space-between"
+            style={{ width: "100%" }}
+          >
+            <div>disabled</div>
+            <h2 class="text-blue">{serverCount().disabled}</h2>
+          </Flex>
+        </Show>
+      </Grid>
+    </Grid>
+  );
+};
 
 function useDeploymentCount() {
   const { deployments } = useAppState();
@@ -99,13 +173,13 @@ function useDeploymentCount() {
     for (const id of ids) {
       const state = deployments.get(id)!.state;
       if (state === DockerContainerState.NotDeployed) {
-        notDeployed++
+        notDeployed++;
       } else if (state === DockerContainerState.Running) {
-        running++
+        running++;
       } else if (state === DockerContainerState.Exited) {
-        stopped++
+        stopped++;
       } else if (state === DockerContainerState.Unknown) {
-        unknown++
+        unknown++;
       }
     }
     return { total: ids.length, running, stopped, notDeployed, unknown };

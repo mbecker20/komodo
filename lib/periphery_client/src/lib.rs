@@ -43,8 +43,8 @@ impl PeripheryClient {
         self.get_json(
             server,
             &format!(
-                "/stats?networks={}&components={}&processes={}",
-                query.networks, query.components, query.processes
+                "/stats?networks={}&components={}&processes={}&disks={}",
+                query.networks, query.components, query.processes, query.disks
             ),
         )
         .await
