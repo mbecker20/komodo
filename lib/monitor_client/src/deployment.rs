@@ -50,6 +50,15 @@ impl MonitorClient {
         .context("failed at get_deployment_container_log")
     }
 
+    pub async fn get_deployment_container_stats(&self, deployment_id: &str) -> anyhow::Result<Log> {
+        self.get(
+            &format!("/api/deployment/{deployment_id}/stats"),
+            Option::<()>::None,
+        )
+        .await
+        .context("failed at get_deployment_container_log")
+    }
+
     pub async fn create_deployment(
         &self,
         name: &str,

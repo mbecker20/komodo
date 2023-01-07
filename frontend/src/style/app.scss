@@ -125,17 +125,20 @@ $anim-time: 500ms;
 .config {
 	height: 100%;
 	place-items: start center;
-	grid-template-rows: 70vh auto;
+	width: 100%;
+	// grid-template-rows: 70vh auto;
 }
 
 .config-items {
 	height: fit-content;
-	max-height: 65vh;
+	// max-height: 65vh;
+	width: 100%;
+	max-width: 700px;
 	padding: 0rem 0.5rem;
 }
 
 .config-item {
-	width: 450px;
+	width: 100%;
 	flex-wrap: wrap;
 	background-color: c.$lightgrey;
 	box-sizing: border-box;

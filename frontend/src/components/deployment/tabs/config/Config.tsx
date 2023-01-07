@@ -13,7 +13,7 @@ import ConfirmButton from "../../../shared/ConfirmButton";
 import Restart from "./container/Restart";
 import DockerAccount from "./container/DockerAccount";
 import Git from "./mount-repo/Git";
-import Tabs, { Tab } from "../../../shared/tabs/Tabs";
+import { Tab } from "../../../shared/tabs/Tabs";
 import RepoMount from "./mount-repo/RepoMount";
 import { OnClone, OnPull } from "./mount-repo/OnGit";
 import Loading from "../../../shared/loading/Loading";
@@ -22,6 +22,7 @@ import { pushNotification, URL } from "../../../..";
 import { combineClasses, copyToClipboard, getId } from "../../../../util/helpers";
 import { useAppDimensions } from "../../../../state/DimensionProvider";
 import { useUser } from "../../../../state/UserProvider";
+import SimpleTabs from "../../../shared/tabs/SimpleTabs";
 
 const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
@@ -31,10 +32,10 @@ const Config: Component<{}> = () => {
   return (
     <Show when={deployment.loaded}>
       <Grid class="config">
-        <Tabs
+        <SimpleTabs
           containerStyle={{
             height: "100%",
-            width: isMobile() ? undefined : "500px",
+            width: "100%",
           }}
           tabsGap="0rem"
           localStorageKey="deployment-config-tab"

@@ -17,6 +17,7 @@ export interface Build {
 	pre_build?: Command;
 	docker_build_args?: DockerBuildArgs;
 	docker_account?: string;
+	last_built_at?: string;
 	created_at?: string;
 	updated_at?: string;
 }

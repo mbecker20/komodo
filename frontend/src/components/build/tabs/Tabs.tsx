@@ -4,7 +4,8 @@ import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { PermissionLevel } from "../../../types";
 import { getId } from "../../../util/helpers";
-import Tabs, { Tab } from "../../shared/tabs/Tabs";
+import SimpleTabs from "../../shared/tabs/SimpleTabs";
+import { Tab } from "../../shared/tabs/Tabs";
 import BuildConfig from "./build-config/BuildConfig";
 import GitConfig from "./git-config/GitConfig";
 import Owners from "./Owners";
@@ -15,13 +16,10 @@ const BuildTabs: Component<{}> = (p) => {
   const params = useParams();
   const { user } = useUser();
   const build = () => builds.get(params.id)!;
-  const userCanUpdate = () =>
-    user().admin ||
-    build().permissions[getId(user())] === PermissionLevel.Update;
   return (
     <Show when={build()}>
       <ConfigProvider>
-        <Tabs
+        <SimpleTabs
           containerClass="card shadow"
           tabs={
             [

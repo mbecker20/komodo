@@ -48,28 +48,26 @@ const Docker: Component<{}> = (p) => {
           disabled={!userCanUpdate()}
         />
       </Flex>
-      <Show when={dockerAccounts() && dockerAccounts()!.length > 0}>
-        <Flex
-          justifyContent={userCanUpdate() ? "space-between" : undefined}
-          alignItems="center"
-          style={{ "flex-wrap": "wrap" }}
-        >
-          <h2>dockerhub account: </h2>
-          <Selector
-            targetClass="blue"
-            selected={build.docker_account || "none"}
-            items={["none", ...dockerAccounts()!]}
-            onSelect={(account) => {
-              setBuild(
-                "docker_account",
-                account === "none" ? undefined : account
-              );
-            }}
-            position="bottom right"
-            disabled={!userCanUpdate()}
-          />
-        </Flex>
-      </Show>
+      <Flex
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+        alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
+      >
+        <h2>dockerhub account: </h2>
+        <Selector
+          targetClass="blue"
+          selected={build.docker_account || "none"}
+          items={["none", ...dockerAccounts()!]}
+          onSelect={(account) => {
+            setBuild(
+              "docker_account",
+              account === "none" ? undefined : account
+            );
+          }}
+          position="bottom right"
+          disabled={!userCanUpdate()}
+        />
+      </Flex>
     </Grid>
   );
 };

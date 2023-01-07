@@ -11,7 +11,7 @@ use helpers::handle_anyhow_error;
 use mungos::{Deserialize, Document, Serialize};
 use types::{
     traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainerState,
-    DockerContainerState, Log, PermissionLevel, Server,
+    DockerContainerState, DockerContainerStats, Log, PermissionLevel, Server,
 };
 use typeshare::typeshare;
 
@@ -260,6 +260,20 @@ pub fn router() -> Router {
                 },
             ),
         )
+        .route(
+            "/:id/stats",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(deployment_id): Path<DeploymentId>| async move {
+                    let stats = state
+                        .get_deployment_container_stats(&deployment_id.id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(stats))
+                },
+            ),
+        )
 }
 
 impl State {
@@ -380,5 +394,21 @@ impl State {
             .container_log(&server, &deployment.name, tail)
             .await?;
         Ok(log)
+    }
+
+    async fn get_deployment_container_stats(
+        &self,
+        id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<DockerContainerStats> {
+        let deployment = self
+            .get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let server = self.db.get_server(&deployment.server_id).await?;
+        let stats = self
+            .periphery
+            .container_stats(&server, &deployment.name)
+            .await?;
+        Ok(stats)
     }
 }

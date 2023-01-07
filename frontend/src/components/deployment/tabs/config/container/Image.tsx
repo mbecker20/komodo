@@ -21,7 +21,6 @@ const Image: Component<{}> = (p) => {
             placeholder="image"
             spellcheck={false}
             value={deployment.docker_run_args.image || ""}
-            style={{ width: userCanUpdate() ? "12rem" : undefined }}
             onEdit={(image) => setDeployment("docker_run_args", { image })}
             disabled={!userCanUpdate()}
           />

@@ -15,28 +15,26 @@ const DockerAccount: Component<{}> = (p) => {
       .then(setDockerAccounts);
   });
   return (
-    <Show when={dockerAccounts() && dockerAccounts()!.length > 0}>
-      <Flex
-        class={combineClasses("config-item shadow")}
-        justifyContent="space-between"
-        alignItems="center"
-        style={{ "flex-wrap": "wrap" }}
-      >
-        <h1>docker account</h1>
-        <Selector
-          targetClass="blue"
-          items={["none", ...dockerAccounts()!]}
-          selected={deployment.docker_run_args.docker_account || "none"}
-          onSelect={(account) =>
-            setDeployment("docker_run_args", {
-              docker_account: account === "none" ? undefined : account,
-            })
-          }
-          position="bottom right"
-          disabled={!userCanUpdate()}
-        />
-      </Flex>
-    </Show>
+    <Flex
+      class={combineClasses("config-item shadow")}
+      justifyContent="space-between"
+      alignItems="center"
+      style={{ "flex-wrap": "wrap" }}
+    >
+      <h1>docker account</h1>
+      <Selector
+        targetClass="blue"
+        items={["none", ...dockerAccounts()!]}
+        selected={deployment.docker_run_args.docker_account || "none"}
+        onSelect={(account) =>
+          setDeployment("docker_run_args", {
+            docker_account: account === "none" ? undefined : account,
+          })
+        }
+        position="bottom right"
+        disabled={!userCanUpdate()}
+      />
+    </Flex>
   );
 };
 

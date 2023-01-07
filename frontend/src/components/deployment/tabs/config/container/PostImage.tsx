@@ -16,7 +16,6 @@ const PostImage: Component<{}> = (p) => {
         placeholder="post image"
         spellcheck={false}
         value={deployment.docker_run_args.post_image || ""}
-        style={{ width: userCanUpdate() ? "16rem" : undefined }}
         onEdit={(post_image) =>
           setDeployment("docker_run_args", { post_image })
         }

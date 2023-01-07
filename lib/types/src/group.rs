@@ -43,7 +43,7 @@ pub struct Group {
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub groups: Vec<String>,
 
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub created_at: String,

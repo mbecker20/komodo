@@ -5,7 +5,7 @@ import {
   onCleanup,
   Show,
 } from "solid-js";
-import Tabs, { Tab } from "../../shared/tabs/Tabs";
+import { Tab } from "../../shared/tabs/Tabs";
 import Config from "./config/Config";
 import Log from "./log/Log";
 import { useAppState } from "../../../state/StateProvider";
@@ -19,6 +19,7 @@ import {
   Operation,
 } from "../../../types";
 import { client } from "../../..";
+import SimpleTabs from "../../shared/tabs/SimpleTabs";
 
 const DeploymentTabs: Component<{}> = () => {
   const { deployments, ws } = useAppState();
@@ -63,7 +64,7 @@ const DeploymentTabs: Component<{}> = () => {
   );
   return (
     <Show when={deployment()}>
-      <Tabs
+      <SimpleTabs
         containerClass={combineClasses("card tabs shadow")}
         containerStyle={{ gap: "0.5rem" }}
         tabs={

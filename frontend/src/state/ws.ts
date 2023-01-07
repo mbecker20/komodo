@@ -40,7 +40,10 @@ function connectToWs(state: State) {
   });
 
   return {
-    subscribe: (operations: Operation[], callback: (update: Update) => void) => {
+    subscribe: (
+      operations: Operation[],
+      callback: (update: Update) => void
+    ) => {
       const listener = ({ data }: { data: string }) => {
         if (data === "PONG") return;
         if (data === "LOGGED_IN") return;
@@ -99,21 +102,6 @@ async function handleMessage(
       const deployment = await client.get_deployment(update.target.id!);
       deployments.update(deployment);
     }
-  }
-
-  // build
-  else if (update.operation === Operation.CreateBuild) {
-    const build = await client.get_build(update.target.id!);
-    builds.add(build);
-  } else if (update.operation === Operation.DeleteBuild) {
-    if (update.status === UpdateStatus.Complete) {
-      builds.delete(update.target.id!);
-    }
-  } else if (update.operation === Operation.UpdateBuild) {
-    if (update.status === UpdateStatus.Complete) {
-      const build = await client.get_build(update.target.id!);
-      builds.update(build);
-    }
   } else if (
     [
       Operation.DeployContainer,
@@ -124,6 +112,23 @@ async function handleMessage(
   ) {
     const deployment = await client.get_deployment(update.target.id!);
     deployments.update(deployment);
+  }
+
+  // build
+  else if (update.operation === Operation.CreateBuild) {
+    const build = await client.get_build(update.target.id!);
+    builds.add(build);
+  } else if (update.operation === Operation.DeleteBuild) {
+    if (update.status === UpdateStatus.Complete) {
+      builds.delete(update.target.id!);
+    }
+  } else if (
+    [Operation.UpdateBuild, Operation.BuildBuild].includes(update.operation)
+  ) {
+    if (update.status === UpdateStatus.Complete) {
+      const build = await client.get_build(update.target.id!);
+      builds.update(build);
+    }
   }
 
   // server

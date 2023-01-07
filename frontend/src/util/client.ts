@@ -8,6 +8,7 @@ import {
   Deployment,
   DeploymentActionState,
   DeploymentWithContainerState,
+  DockerContainerStats,
   Group,
   HistoricalStatsQuery,
   Log,
@@ -133,6 +134,10 @@ export class Client {
 
   get_deployment_container_log(id: string, tail?: number): Promise<Log> {
     return this.get(`/api/deployment/${id}/log${generateQuery({ tail })}`);
+  }
+
+  get_deployment_container_stats(id: string): Promise<DockerContainerStats> {
+    return this.get(`/api/deployment/${id}/stats`);
   }
 
   create_deployment(body: CreateDeploymentBody): Promise<Deployment> {

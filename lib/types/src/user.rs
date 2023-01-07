@@ -51,7 +51,7 @@ pub struct User {
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub google_id: Option<String>,
 
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     #[diff(attr(#[serde(skip)]))]
     pub created_at: String,
     #[serde(default)]

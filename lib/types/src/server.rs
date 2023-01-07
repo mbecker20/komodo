@@ -65,7 +65,7 @@ pub struct Server {
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub instance_id: Option<String>,
 
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub created_at: String,

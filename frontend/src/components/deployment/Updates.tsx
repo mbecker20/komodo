@@ -6,6 +6,8 @@ import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
 import { useParams } from "@solidjs/router";
 import { Operation } from "../../types";
+import Flex from "../shared/layout/Flex";
+import Loading from "../shared/loading/Loading";
 
 const Updates: Component<{}> = (p) => {
   const { ws, deployments } = useAppState();
@@ -28,26 +30,27 @@ const Updates: Component<{}> = (p) => {
   });
   onCleanup(() => unsub());
   return (
-    <Show
-      when={
-        updates.loaded() &&
-        (updates.collection()?.length || 0) > 0
-      }
-    >
-      <Grid class={combineClasses("card shadow")}>
-        <h1>updates</h1>
+    <Grid class={combineClasses("card shadow")}>
+      <h1>updates</h1>
+      <Show when={updates.loaded()} fallback={<Flex justifyContent="center">
+        <Loading type="three-dot" />
+      </Flex>}>
         <Grid class="updates-container scroller">
           <For each={updates.collection()}>
             {(update) => <Update update={update} />}
           </For>
           <Show when={!updates.noMore()}>
-            <button class="grey" style={{ width: "100%" }} onClick={() => updates.loadMore()}>
+            <button
+              class="grey"
+              style={{ width: "100%" }}
+              onClick={() => updates.loadMore()}
+            >
               load more
             </button>
           </Show>
         </Grid>
-      </Grid>
-    </Show>
+      </Show>
+    </Grid>
   );
 };
 

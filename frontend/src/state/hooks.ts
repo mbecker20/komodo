@@ -50,8 +50,12 @@ export function useUsernames() {
     {}
   );
   const load = async (userID: string) => {
-    const username = await client.get_username(userID);
-    set((s) => ({ ...s, [userID]: username }));
+    if (userID === "github") {
+      set((s) => ({ ...s, [userID]: "github" }));
+    } else {
+      const username = await client.get_username(userID);
+      set((s) => ({ ...s, [userID]: username }));
+    }
   };
   const loading: Record<string, boolean> = {};
   return {

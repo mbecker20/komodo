@@ -42,28 +42,26 @@ const Git: Component<{}> = (p) => {
           disabled={!userCanUpdate()}
         />
       </Flex>
-      <Show when={githubAccounts() && githubAccounts()!.length > 0}>
-        <Flex
-          justifyContent={userCanUpdate() ? "space-between" : undefined}
-          alignItems="center"
-          style={{ "flex-wrap": "wrap" }}
-        >
-          <h2>github account: </h2>
-          <Selector
-            targetClass="blue"
-            selected={build.github_account || "none"}
-            items={["none", ...githubAccounts()!]}
-            onSelect={(account) => {
-              setBuild(
-                "github_account",
-                account === "none" ? undefined : account
-              );
-            }}
-            position="bottom right"
-            disabled={!userCanUpdate()}
-          />
-        </Flex>
-      </Show>
+      <Flex
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+        alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
+      >
+        <h2>github account: </h2>
+        <Selector
+          targetClass="blue"
+          selected={build.github_account || "none"}
+          items={["none", ...githubAccounts()!]}
+          onSelect={(account) => {
+            setBuild(
+              "github_account",
+              account === "none" ? undefined : account
+            );
+          }}
+          position="bottom right"
+          disabled={!userCanUpdate()}
+        />
+      </Flex>
     </Grid>
   );
 };

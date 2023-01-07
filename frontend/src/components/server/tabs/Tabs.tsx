@@ -2,7 +2,8 @@ import { useParams } from "@solidjs/router";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
-import Tabs, { Tab } from "../../shared/tabs/Tabs";
+import SimpleTabs from "../../shared/tabs/SimpleTabs";
+import { Tab } from "../../shared/tabs/Tabs";
 import Config from "./config/Config";
 import { ConfigProvider } from "./config/Provider";
 import Owners from "./Owners";
@@ -16,7 +17,7 @@ const ServerTabs: Component<{}> = (p) => {
   return (
     <Show when={server()}>
       <ConfigProvider>
-        <Tabs
+        <SimpleTabs
           containerClass="card shadow"
           tabs={
             [

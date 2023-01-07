@@ -50,8 +50,8 @@ const Owners: Component<{}> = (p) => {
         !u.admin &&
         u.enabled &&
         u.username.includes(userSearch()) &&
-        (build.permissions[getId(u)] === undefined ||
-          build.permissions[getId(u)] === PermissionLevel.None)
+        (build.permissions![getId(u)] === undefined ||
+          build.permissions![getId(u)] === PermissionLevel.None)
     )
   );
   let unsub = () => {};
@@ -111,52 +111,60 @@ const Owners: Component<{}> = (p) => {
               }
               menuStyle={{ width: "12rem" }}
             />
-            <For each={Object.keys(build.permissions)}>
+            <For
+              each={Object.entries(build.permissions!)
+                .filter(
+                  ([_, permission]) => permission !== PermissionLevel.None
+                )
+                .map(([user_id, _]) => user_id)}
+            >
               {(user_id) => {
                 const u = () => getUser(user_id);
-                const permissions = () => build.permissions[user_id];
+                const permissions = () => build.permissions![user_id];
                 return (
-                  <Flex
-                    alignItems="center"
-                    justifyContent="space-between"
-                    class={combineClasses("grey-no-hover")}
-                    style={{
-                      padding: "0.5rem",
-                    }}
-                  >
-                    <div class="big-text">
-                      {u().username}
-                      {user_id === getId(user()) && " ( you )"}
-                    </div>
-                    <Flex alignItems="center">
-                      <Selector
-                        selected={permissions()}
-                        items={PERMISSIONS_OPTIONS}
-                        onSelect={(permission) => {
-                          client.update_user_permissions_on_target({
-                            user_id,
-                            permission: permission as PermissionLevel,
-                            target_type: PermissionsTarget.Build,
-                            target_id: params.id,
-                          });
-                        }}
-                        position="bottom right"
-                      />
-                      <ConfirmButton
-                        color="red"
-                        onConfirm={() => {
-                          client.update_user_permissions_on_target({
-                            user_id,
-                            permission: PermissionLevel.None,
-                            target_type: PermissionsTarget.Build,
-                            target_id: params.id,
-                          });
-                        }}
-                      >
-                        remove
-                      </ConfirmButton>
+                  <Show when={u()}>
+                    <Flex
+                      alignItems="center"
+                      justifyContent="space-between"
+                      class={combineClasses("grey-no-hover")}
+                      style={{
+                        padding: "0.5rem",
+                      }}
+                    >
+                      <div class="big-text">
+                        {u().username}
+                        {user_id === getId(user()) && " ( you )"}
+                      </div>
+                      <Flex alignItems="center">
+                        <Selector
+                          selected={permissions()}
+                          items={PERMISSIONS_OPTIONS}
+                          onSelect={(permission) => {
+                            client.update_user_permissions_on_target({
+                              user_id,
+                              permission: permission as PermissionLevel,
+                              target_type: PermissionsTarget.Build,
+                              target_id: params.id,
+                            });
+                          }}
+                          position="bottom right"
+                        />
+                        <ConfirmButton
+                          color="red"
+                          onConfirm={() => {
+                            client.update_user_permissions_on_target({
+                              user_id,
+                              permission: PermissionLevel.None,
+                              target_type: PermissionsTarget.Build,
+                              target_id: params.id,
+                            });
+                          }}
+                        >
+                          remove
+                        </ConfirmButton>
+                      </Flex>
                     </Flex>
-                  </Flex>
+                  </Show>
                 );
               }}
             </For>

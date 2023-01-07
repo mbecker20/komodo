@@ -1,6 +1,6 @@
-import { Component } from "solid-js";
+import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
-import { Operation, Update as UpdateType } from "../../../types";
+import { Operation, Update as UpdateType, UpdateStatus } from "../../../types";
 import {
   combineClasses,
   readableMonitorTimestamp,
@@ -38,13 +38,18 @@ const Update: Component<{ update: UpdateType }> = (p) => {
     >
       <Grid gap="0.5rem" placeItems="center start">
         <h2>{name()}</h2>
-        <div
-          style={{
-            color: !p.update.success ? "rgb(182, 47, 52)" : "inherit",
-          }}
-        >
-          {operation()}
-        </div>
+        <Flex gap="0.5rem">
+          <div
+            style={{
+              color: !p.update.success ? "rgb(182, 47, 52)" : "inherit",
+            }}
+          >
+            {operation()}
+          </div>
+          <Show when={p.update.status === UpdateStatus.InProgress}>
+            <div style={{ opacity: 0.7 }}>(in progress)</div>
+          </Show>
+        </Flex>
       </Grid>
       <Flex>
         <Grid gap="0.5rem">

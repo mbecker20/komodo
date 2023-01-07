@@ -54,6 +54,7 @@ impl State {
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
+            last_built_at: "never".to_string(),
             created_at: start_ts.clone(),
             updated_at: start_ts.clone(),
             ..Default::default()
@@ -179,6 +180,7 @@ impl State {
         new_build.name = current_build.name.clone();
         new_build.permissions = current_build.permissions.clone();
         new_build.server_id = current_build.server_id.clone();
+        new_build.last_built_at = String::new();
         new_build.created_at = current_build.created_at.clone();
         new_build.updated_at = start_ts.clone();
 
@@ -290,7 +292,8 @@ impl State {
                             build_id,
                             mungos::Update::Set(doc! {
                                 "version": to_bson(&build.version)
-                                    .context("failed at converting version to bson")?
+                                    .context("failed at converting version to bson")?,
+                                "last_built_at": monitor_timestamp(),
                             }),
                         )
                         .await;

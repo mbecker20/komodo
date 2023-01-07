@@ -86,7 +86,7 @@ impl PeripheryClient {
         &self,
         server: &Server,
         container_name: &str,
-    ) -> anyhow::Result<Vec<DockerContainerStats>> {
+    ) -> anyhow::Result<DockerContainerStats> {
         self.get_json(server, &format!("/container/stats/{container_name}"))
             .await
             .context("failed to get container stats from periphery")
