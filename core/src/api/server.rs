@@ -27,6 +27,8 @@ use crate::{
     state::{State, StateExtension},
 };
 
+use super::spawn_request_action;
+
 #[derive(Deserialize)]
 struct ServerId {
     id: String,
@@ -211,10 +213,12 @@ pub fn router() -> Router {
                 |state: StateExtension,
                  user: RequestUserExtension,
                  Path(ServerId { id })| async move {
-                    let stats = state
+                    let stats = spawn_request_action(async move {
+                        state
                         .prune_networks(&id, &user)
                         .await
-                        .map_err(handle_anyhow_error)?;
+                        .map_err(handle_anyhow_error)
+                    }).await??;
                     response!(Json(stats))
                 },
             ),
@@ -239,10 +243,12 @@ pub fn router() -> Router {
                 |state: StateExtension,
                  user: RequestUserExtension,
                  Path(ServerId { id })| async move {
-                    let stats = state
+                    let stats = spawn_request_action(async move {
+                        state
                         .prune_images(&id, &user)
                         .await
-                        .map_err(handle_anyhow_error)?;
+                        .map_err(handle_anyhow_error)
+                    }).await??;
                     response!(Json(stats))
                 },
             ),
@@ -267,10 +273,12 @@ pub fn router() -> Router {
                 |state: StateExtension,
                  user: RequestUserExtension,
                  Path(ServerId { id })| async move {
-                    let stats = state
+                    let stats = spawn_request_action(async move {
+                        state
                         .prune_containers(&id, &user)
                         .await
-                        .map_err(handle_anyhow_error)?;
+                        .map_err(handle_anyhow_error)
+                    }).await??;
                     response!(Json(stats))
                 },
             ),

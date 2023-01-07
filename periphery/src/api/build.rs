@@ -1,53 +1,37 @@
-use std::sync::Arc;
-
+use anyhow::Context;
 use axum::{routing::post, Extension, Json, Router};
-use helpers::docker;
-use tokio::sync::Mutex;
+use helpers::{docker, handle_anyhow_error};
 use types::{Build, Log};
 
 use crate::{helpers::get_docker_token, PeripheryConfigExtension};
 
-type BusyExtension = Extension<Arc<Mutex<bool>>>;
-
 pub fn router() -> Router {
-    Router::new()
-        .route(
-            "/",
-            post(|config, busy, build| async move { build_image(config, busy, build).await }),
-        )
-        .layer(Extension(Arc::new(Mutex::new(false))))
+    Router::new().route(
+        "/",
+        post(|config, build| async move {
+            build_image(config, build)
+                .await
+                .map_err(handle_anyhow_error)
+        }),
+    )
 }
 
 async fn build_image(
     Extension(config): PeripheryConfigExtension,
-    Extension(busy): BusyExtension,
     Json(build): Json<Build>,
-) -> Json<Vec<Log>> {
-    let is_busy = {
-        let mut lock = busy.lock().await;
-        if *lock {
-            true
-        } else {
-            *lock = true;
-            false
-        }
-    };
-    if is_busy {
-        return Json(vec![Log::error(
-            "build",
-            "builder busy, try again when other build finishes".to_string(),
-        )]);
-    }
-    let logs = match get_docker_token(&build.docker_account, &config) {
-        Ok(docker_token) => {
-            match docker::build(&build, config.repo_dir.clone(), docker_token).await {
-                Ok(logs) => logs,
-                Err(e) => vec![Log::error("build", format!("{e:#?}"))],
+) -> anyhow::Result<Json<Vec<Log>>> {
+    tokio::spawn(async move {
+        let logs = match get_docker_token(&build.docker_account, &config) {
+            Ok(docker_token) => {
+                match docker::build(&build, config.repo_dir.clone(), docker_token).await {
+                    Ok(logs) => logs,
+                    Err(e) => vec![Log::error("build", format!("{e:#?}"))],
+                }
             }
-        }
-        Err(e) => vec![Log::error("build", format!("{e:#?}"))],
-    };
-    let mut lock = busy.lock().await;
-    *lock = false;
-    Json(logs)
+            Err(e) => vec![Log::error("build", format!("{e:#?}"))],
+        };
+        Json(logs)
+    })
+    .await
+    .context("build thread panicked")
 }

@@ -21,6 +21,8 @@ use crate::{
     state::{State, StateExtension},
 };
 
+use super::spawn_request_action;
+
 #[derive(Serialize, Deserialize)]
 pub struct DeploymentId {
     id: String,
@@ -96,10 +98,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Json(full_deployment): Json<Deployment>| async move {
-                    let deployment = state
-                        .create_full_deployment(full_deployment, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let deployment = spawn_request_action(async move {
+                        state
+                            .create_full_deployment(full_deployment, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(deployment))
                 },
             ),
@@ -111,10 +116,13 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(DeploymentId { id }): Path<DeploymentId>,
                  Json(deployment): Json<CopyDeploymentBody>| async move {
-                    let deployment = state
-                        .copy_deployment(&id, deployment.name, deployment.server_id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let deployment = spawn_request_action(async move {
+                        state
+                            .copy_deployment(&id, deployment.name, deployment.server_id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(deployment))
                 },
             ),
@@ -125,10 +133,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>| async move {
-                    let deployment = state
-                        .delete_deployment(&deployment_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let deployment = spawn_request_action(async move {
+                        state
+                            .delete_deployment(&deployment_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(deployment))
                 },
             ),
@@ -139,10 +150,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Json(deployment): Json<Deployment>| async move {
-                    let deployment = state
-                        .update_deployment(deployment, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let deployment = spawn_request_action(async move {
+                        state
+                            .update_deployment(deployment, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(deployment))
                 },
             ),
@@ -153,10 +167,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>| async move {
-                    let update = state
-                        .reclone_deployment(&deployment_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .reclone_deployment(&deployment_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),
@@ -167,10 +184,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>| async move {
-                    let update = state
-                        .deploy_container(&deployment_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .deploy_container(&deployment_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),
@@ -181,10 +201,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>| async move {
-                    let update = state
-                        .start_container(&deployment_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .start_container(&deployment_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),
@@ -195,10 +218,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>| async move {
-                    let update = state
-                        .stop_container(&deployment_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .stop_container(&deployment_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),
@@ -209,10 +235,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>| async move {
-                    let update = state
-                        .remove_container(&deployment_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .remove_container(&deployment_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),
@@ -223,10 +252,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(deployment_id): Path<DeploymentId>| async move {
-                    let update = state
-                        .pull_deployment_repo(&deployment_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .pull_deployment_repo(&deployment_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),

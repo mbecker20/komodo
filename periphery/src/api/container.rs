@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use axum::{
     extract::{Path, Query},
     routing::{get, post},
@@ -80,22 +80,37 @@ pub fn router() -> Router {
                 Json(docker::stop_and_remove_container(&to_monitor_name(&container.name)).await)
             }),
         )
-        .route("/deploy", post(deploy))
+        .route(
+            "/deploy",
+            post(|config, deployment| async move {
+                deploy(config, deployment)
+                    .await
+                    .map_err(handle_anyhow_error)
+            }),
+        )
         .route(
             "/prune",
-            post(|| async { Json(docker::prune_containers().await) }),
+            post(|| async {
+                let logs = tokio::spawn(async move { docker::prune_containers().await })
+                    .await
+                    .context("failed at spawned prune containers task")
+                    .map_err(handle_anyhow_error)?;
+                response!(Json(logs))
+            }),
         )
 }
 
 async fn deploy(
     Extension(config): PeripheryConfigExtension,
     Json(deployment): Json<Deployment>,
-) -> Json<Log> {
+) -> anyhow::Result<Json<Log>> {
     let log = match get_docker_token(&deployment.docker_run_args.docker_account, &config) {
-        Ok(docker_token) => {
+        Ok(docker_token) => tokio::spawn(async move {
             docker::deploy(&deployment, &docker_token, config.repo_dir.clone()).await
-        }
+        })
+        .await
+        .context("failed at spawn thread for deploy")?,
         Err(e) => Log::error("docker login", format!("{e:#?}")),
     };
-    Json(log)
+    Ok(Json(log))
 }

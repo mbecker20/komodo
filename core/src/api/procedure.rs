@@ -15,6 +15,8 @@ use crate::{
     state::{State, StateExtension},
 };
 
+use super::spawn_request_action;
+
 #[derive(Serialize, Deserialize)]
 pub struct ProcedureId {
     id: String,
@@ -122,10 +124,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(procedure_id): Path<ProcedureId>| async move {
-                    let update = state
-                        .run_procedure(&procedure_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .run_procedure(&procedure_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),

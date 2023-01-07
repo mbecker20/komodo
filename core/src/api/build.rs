@@ -15,6 +15,8 @@ use crate::{
     state::{State, StateExtension},
 };
 
+use super::spawn_request_action;
+
 #[derive(Serialize, Deserialize)]
 struct BuildId {
     id: String,
@@ -84,10 +86,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Json(build): Json<Build>| async move {
-                    let build = state
-                        .create_full_build(build, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let build = spawn_request_action(async move {
+                        state
+                            .create_full_build(build, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(build))
                 },
             ),
@@ -99,10 +104,13 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Path(BuildId { id }): Path<BuildId>,
                  Json(build): Json<CopyBuildBody>| async move {
-                    let build = state
-                        .copy_build(&id, build.name, build.server_id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let build = spawn_request_action(async move {
+                        state
+                            .copy_build(&id, build.name, build.server_id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(build))
                 },
             ),
@@ -113,10 +121,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(build_id): Path<BuildId>| async move {
-                    let build = state
-                        .delete_build(&build_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let build = spawn_request_action(async move {
+                        state
+                            .delete_build(&build_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(build))
                 },
             ),
@@ -127,10 +138,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Json(build): Json<Build>| async move {
-                    let build = state
-                        .update_build(build, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let build = spawn_request_action(async move {
+                        state
+                            .update_build(build, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(build))
                 },
             ),
@@ -141,10 +155,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(build_id): Path<BuildId>| async move {
-                    let update = state
-                        .build(&build_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .build(&build_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),
@@ -155,10 +172,13 @@ pub fn router() -> Router {
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(build_id): Path<BuildId>| async move {
-                    let update = state
-                        .reclone_build(&build_id.id, &user)
-                        .await
-                        .map_err(handle_anyhow_error)?;
+                    let update = spawn_request_action(async move {
+                        state
+                            .reclone_build(&build_id.id, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
                     response!(Json(update))
                 },
             ),

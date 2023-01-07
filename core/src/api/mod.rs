@@ -7,6 +7,7 @@ use axum::{
     routing::get,
     Extension, Json, Router,
 };
+use futures_util::Future;
 use helpers::handle_anyhow_error;
 use mungos::Deserialize;
 use types::User;
@@ -102,4 +103,17 @@ async fn get_users(
     } else {
         Err((StatusCode::UNAUTHORIZED, "user is not admin".to_string()))
     }
+}
+
+// need to run requested actions in here to prevent them being dropped mid action when user disconnects prematurely
+pub async fn spawn_request_action<A>(action: A) -> Result<A::Output, (StatusCode, String)>
+where
+    A: Future + Send + 'static,
+    A::Output: Send + 'static,
+{
+    let res = tokio::spawn(action)
+        .await
+        .context("failure at action thread spawn")
+        .map_err(handle_anyhow_error)?;
+    Ok(res)
 }

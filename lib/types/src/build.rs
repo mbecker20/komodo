@@ -66,7 +66,7 @@ pub struct Build {
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub last_built_at: String,
-    
+
     #[serde(default, skip_serializing_if = "String::is_empty")]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]

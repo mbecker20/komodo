@@ -13,6 +13,8 @@ use crate::{
     state::{State, StateExtension},
 };
 
+use super::spawn_request_action;
+
 type HmacSha256 = Hmac<Sha256>;
 
 #[derive(Deserialize)]
@@ -25,19 +27,25 @@ pub fn router() -> Router {
         .route(
             "/build/:id",
             post(|state: StateExtension, Path(Id { id }), headers: HeaderMap, body: String| async move {
-				state.handle_build_webhook(&id, headers, body).await.map_err(handle_anyhow_error)
+                spawn_request_action(async move {
+                    state.handle_build_webhook(&id, headers, body).await.map_err(handle_anyhow_error)
+                }).await?
 			}),
         )
         .route(
             "/deployment/:id",
             post(|state: StateExtension, Path(Id { id }), headers: HeaderMap, body: String| async move {
-				state.handle_deployment_webhook(&id, headers, body).await.map_err(handle_anyhow_error)
+				spawn_request_action(async move {
+                    state.handle_deployment_webhook(&id, headers, body).await.map_err(handle_anyhow_error)
+                }).await?
 			}),
         )
 		.route(
 			"/procedure/:id",
 			post(|state: StateExtension, Path(Id { id }), headers: HeaderMap, body: String| async move {
-				state.handle_procedure_webhook(&id, headers, body).await.map_err(handle_anyhow_error)
+				spawn_request_action(async move {
+                    state.handle_procedure_webhook(&id, headers, body).await.map_err(handle_anyhow_error)
+                }).await?
 			}),
 		)
 }
