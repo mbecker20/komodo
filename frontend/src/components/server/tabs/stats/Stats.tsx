@@ -66,23 +66,23 @@ const Stats: Component<{}> = (p) => {
               cpu: <h2>{currStats()!.cpu_perc.toFixed(1)}%</h2>
             </Grid>
             <Grid gap="0" placeItems="start center">
-              mem:{" "}
+              mem: {currStats()!.mem_total_gb.toFixed(1)} GB
               <h2>
                 {(
                   (100 * currStats()!.mem_used_gb) /
                   currStats()!.mem_total_gb
                 ).toFixed(1)}
-                %
+                % full
               </h2>
             </Grid>
             <Grid gap="0" placeItems="start center">
-              disk:{" "}
+              disk: {currStats()!.disk.total_gb.toFixed(1)} GB
               <h2>
                 {(
                   (100 * currStats()!.disk.used_gb) /
                   currStats()!.disk.total_gb
                 ).toFixed(1)}
-                %
+                % full
               </h2>
             </Grid>
           </Show>
@@ -105,6 +105,7 @@ const Stats: Component<{}> = (p) => {
           <CpuChart stats={stats} />
           <MemChart stats={stats} />
           <DiskChart stats={stats} />
+          <NetworkChart stats={stats} />
         </Grid>
       </Show>
     </Grid>
@@ -127,7 +128,7 @@ const CpuChart: Component<{
   return (
     <Show when={line()}>
       <Grid gap="0" class="card dark shadow" style={{ height: "fit-content" }}>
-        <h2>cpu %</h2>
+        <h2>cpu</h2>
         <LightweightChart
           class={s.LightweightChart}
           style={{ height: "200px" }}
@@ -157,7 +158,7 @@ const MemChart: Component<{
     <Show when={line()}>
       <Grid gap="0" class="card dark shadow" style={{ height: "fit-content" }}>
         <Flex alignItems="center" justifyContent="space-between">
-          <h2>memory %</h2>
+          <h2>memory</h2>
           <Selector
             selected={selected()}
             items={["%", "GB"]}
@@ -193,7 +194,7 @@ const DiskChart: Component<{
     <Show when={line()}>
       <Grid gap="0" class="card dark shadow" style={{ height: "fit-content" }}>
         <Flex alignItems="center" justifyContent="space-between">
-          <h2>disk %</h2>
+          <h2>disk</h2>
           <Selector
             selected={selected()}
             items={["%", "GB"]}
@@ -204,6 +205,44 @@ const DiskChart: Component<{
           class={s.LightweightChart}
           style={{ height: "200px" }}
           lines={() => [{ color: "#184e9f", line: line()! }]}
+        />
+      </Grid>
+    </Show>
+  );
+};
+
+const NetworkChart: Component<{
+  stats: Accessor<SystemStatsRecord[] | undefined>;
+}> = (p) => {
+  const recv_line = () => {
+    return p.stats()?.map((s) => {
+      return {
+        time: convertTsMsToLocalUnixTsInSecs(s.ts),
+        value: s.networks.map((n) => n.recieved_kb).reduce((p, c) => p + c),
+      };
+    });
+  };
+  const trans_line = () => {
+    return p.stats()?.map((s) => {
+      return {
+        time: convertTsMsToLocalUnixTsInSecs(s.ts),
+        value: s.networks.map((n) => n.transmitted_kb).reduce((p, c) => p + c),
+      };
+    });
+  };
+  return (
+    <Show when={recv_line()}>
+      <Grid gap="0" class="card dark shadow" style={{ height: "fit-content" }}>
+        <Flex alignItems="center" justifyContent="space-between">
+          <h2>network kb</h2>
+        </Flex>
+        <LightweightChart
+          class={s.LightweightChart}
+          style={{ height: "200px" }}
+          lines={() => [
+            { color: "#41764c", line: recv_line()! },
+            { color: "#952E23", line: trans_line()! },
+          ]}
         />
       </Grid>
     </Show>
