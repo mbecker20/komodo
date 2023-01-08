@@ -3,7 +3,11 @@ import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { PermissionLevel } from "../../../types";
-import { combineClasses, getId, readableMonitorTimestamp } from "../../../util/helpers";
+import {
+  combineClasses,
+  getId,
+  readableMonitorTimestamp,
+} from "../../../util/helpers";
 import Icon from "../../shared/Icon";
 import Flex from "../../shared/layout/Flex";
 import HoverMenu from "../../shared/menu/HoverMenu";
@@ -18,15 +22,21 @@ const Build: Component<{ id: string }> = (p) => {
     return level ? level : PermissionLevel.None;
   };
   const version = () => {
-    return `v${build().version.major}.${build().version.minor}.${build().version.patch}`
-  }
+    return `v${build().version.major}.${build().version.minor}.${
+      build().version.patch
+    }`;
+  };
   const lastBuiltAt = () => {
-    if (build().last_built_at === "never") {
-      return "not built"
+    if (
+      build().last_built_at === undefined ||
+      build().last_built_at?.length === 0 ||
+      build().last_built_at === "never"
+    ) {
+      return "not built";
     } else {
       return readableMonitorTimestamp(build().last_built_at!);
     }
-  }
+  };
   return (
     <Show when={build()}>
       <A href={`/build/${p.id}`} class={combineClasses(s.DropdownItem)}>
