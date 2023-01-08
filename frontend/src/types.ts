@@ -40,6 +40,11 @@ export interface DockerBuildArgs {
 	build_args?: EnvironmentVar[];
 }
 
+export interface BuildVersionsReponse {
+	version: Version;
+	ts: string;
+}
+
 export interface Deployment {
 	_id?: string;
 	name: string;
@@ -245,9 +250,9 @@ export interface SystemStatsRecord {
 	mem_used_gb: number;
 	mem_total_gb: number;
 	disk: DiskUsage;
-	networks: SystemNetwork[];
-	components: SystemComponent[];
-	processes: SystemProcess[];
+	networks?: SystemNetwork[];
+	components?: SystemComponent[];
+	processes?: SystemProcess[];
 	polling_rate: Timelength;
 }
 

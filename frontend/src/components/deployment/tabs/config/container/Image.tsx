@@ -1,6 +1,8 @@
-import { Component, Show } from "solid-js";
+import { Component, createEffect, createSignal, Show } from "solid-js";
+import { client } from "../../../../..";
 import { useAppState } from "../../../../../state/StateProvider";
-import { combineClasses } from "../../../../../util/helpers";
+import { BuildVersionsReponse } from "../../../../../types";
+import { combineClasses, string_to_version, version_to_string } from "../../../../../util/helpers";
 import Input from "../../../../shared/Input";
 import Flex from "../../../../shared/layout/Flex";
 import Selector from "../../../../shared/menu/Selector";
@@ -9,6 +11,12 @@ import { useConfig } from "../Provider";
 const Image: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
   const { builds } = useAppState();
+  const [versions, setVersions] = createSignal<BuildVersionsReponse[]>([]);
+  createEffect(() => {
+    if (deployment.build_id) {
+      client.get_build_versions(deployment.build_id).then(setVersions);
+    }
+  });
   return (
     <Flex
       class={combineClasses("config-item shadow")}
@@ -48,14 +56,39 @@ const Image: Component<{}> = (p) => {
                   ? undefined
                   : builds.ids()!.find((id) => builds.get(id)?.name === build)
               );
-              setDeployment(
-                "docker_run_args", { image: undefined }
-              );
+              setDeployment("docker_run_args", { image: "" });
             }}
             position="bottom right"
             disabled={!userCanUpdate()}
             useSearch
           />
+          <Show when={deployment.build_id}>
+            <Selector
+              targetClass="blue"
+              selected={
+                deployment.build_version
+                  ? `v${version_to_string(deployment.build_version)}`
+                  : "latest"
+              }
+              items={[
+                "latest",
+                ...versions().map((v) => `v${version_to_string(v.version)}`),
+              ]}
+              onSelect={(version) => {
+                if (version === "latest") {
+                  setDeployment("build_version", undefined);
+                } else {
+                  setDeployment(
+                    "build_version",
+                    string_to_version(version.replace("v", ""))
+                  );
+                }
+              }}
+              position="bottom right"
+              disabled={!userCanUpdate()}
+              useSearch
+            />
+          </Show>
         </Show>
       </Flex>
     </Flex>

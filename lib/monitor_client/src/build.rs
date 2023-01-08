@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Build, BuildActionState, Update};
+use monitor_types::{Build, BuildActionState, BuildVersionsReponse, Update};
 use serde_json::{json, Value};
 
 use crate::MonitorClient;
@@ -20,6 +20,21 @@ impl MonitorClient {
         self.get(
             &format!("/api/build/{build_id}/action_state"),
             Option::<()>::None,
+        )
+        .await
+    }
+
+    pub async fn get_build_versions(
+        &self,
+        build_id: &str,
+        page: u32,
+        major: impl Into<Option<u32>>,
+        minor: impl Into<Option<u32>>,
+        patch: impl Into<Option<u32>>,
+    ) -> anyhow::Result<BuildVersionsReponse> {
+        self.get(
+            &format!("/api/build/{build_id}/versions"),
+            json!({ "page": page, "major": major.into(), "minor": minor.into(), "patch": patch.into() }),
         )
         .await
     }

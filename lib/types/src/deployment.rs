@@ -35,36 +35,28 @@ pub struct Deployment {
     #[diff(attr(#[serde(skip_serializing_if = "docker_run_args_diff_no_change")]))]
     pub docker_run_args: DockerRunArgs,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub build_id: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub build_version: Option<Version>,
 
     // deployment repo related
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub repo: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub branch: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub github_account: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_clone: Option<Command>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_pull: Option<Command>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub repo_mount: Option<Conversion>,
 

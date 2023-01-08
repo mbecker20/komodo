@@ -5,6 +5,7 @@ import {
   BasicContainerInfo,
   Build,
   BuildActionState,
+  BuildVersionsReponse,
   Deployment,
   DeploymentActionState,
   DeploymentWithContainerState,
@@ -25,6 +26,7 @@ import {
   UserCredentials,
 } from "../types";
 import {
+  BuildVersionsQuery,
   CopyBuildBody,
   CopyDeploymentBody,
   CreateBuildBody,
@@ -241,8 +243,13 @@ export class Client {
     return this.patch("/api/server/update", server);
   }
 
-  get_server_stats(server_id: string, query?: SystemStatsQuery): Promise<SystemStats> {
-    return this.get(`/api/server/${server_id}/stats${generateQuery(query as any)}`);
+  get_server_stats(
+    server_id: string,
+    query?: SystemStatsQuery
+  ): Promise<SystemStats> {
+    return this.get(
+      `/api/server/${server_id}/stats${generateQuery(query as any)}`
+    );
   }
 
   get_server_stats_history(
@@ -297,6 +304,9 @@ export class Client {
 
   get_build_action_state(id: string): Promise<BuildActionState> {
     return this.get(`/api/build/${id}/action_state`);
+  }
+  get_build_versions(id: string, query?: BuildVersionsQuery): Promise<BuildVersionsReponse> {
+    return this.get(`/api/build/${id}/versions${generateQuery(query)}`);
   }
 
   create_build(body: CreateBuildBody): Promise<Build> {

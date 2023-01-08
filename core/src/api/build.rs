@@ -5,9 +5,14 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Document, Serialize};
-use types::{traits::Permissioned, Build, BuildActionState, PermissionLevel};
+use mungos::{doc, Deserialize, Document, FindOptions, Serialize};
+use types::{
+    traits::Permissioned, Build, BuildActionState, BuildVersionsReponse, Operation,
+    PermissionLevel, UpdateStatus,
+};
 use typeshare::typeshare;
+
+const NUM_VERSIONS_PER_PAGE: u64 = 10;
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -34,6 +39,16 @@ struct CreateBuildBody {
 struct CopyBuildBody {
     name: String,
     server_id: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+pub struct BuildVersionsQuery {
+    #[serde(default)]
+    page: u32,
+    major: Option<i32>,
+    minor: Option<i32>,
+    patch: Option<i32>,
 }
 
 pub fn router() -> Router {
@@ -197,6 +212,21 @@ pub fn router() -> Router {
                 },
             ),
         )
+        .route(
+            "/:id/versions",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(BuildId { id }),
+                 Query(query): Query<BuildVersionsQuery>| async move {
+                    let versions = state
+                        .get_build_versions(&id, &user, query)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(versions))
+                },
+            ),
+        )
 }
 
 impl State {
@@ -239,5 +269,55 @@ impl State {
             .or_default()
             .clone();
         Ok(action_state)
+    }
+
+    pub async fn get_build_versions(
+        &self,
+        id: &str,
+        user: &RequestUser,
+        query: BuildVersionsQuery,
+    ) -> anyhow::Result<Vec<BuildVersionsReponse>> {
+        self.get_build_check_permissions(&id, user, PermissionLevel::Read)
+            .await?;
+        let mut filter = doc! {
+            "target": {
+                "type": "Build",
+                "id": id
+            },
+            "operation": Operation::BuildBuild.to_string(),
+            "status": UpdateStatus::Complete.to_string(),
+            "success": true
+        };
+        if let Some(major) = query.major {
+            filter.insert("version.major", major);
+        }
+        if let Some(minor) = query.minor {
+            filter.insert("version.minor", minor);
+        }
+        if let Some(patch) = query.patch {
+            filter.insert("version.patch", patch);
+        }
+        let versions = self
+            .db
+            .updates
+            .get_some(
+                filter,
+                FindOptions::builder()
+                    .sort(doc! { "_id": -1 })
+                    .limit(NUM_VERSIONS_PER_PAGE as i64)
+                    .skip(query.page as u64 * NUM_VERSIONS_PER_PAGE)
+                    .build(),
+            )
+            .await
+            .context("failed to pull versions from mongo")?
+            .into_iter()
+            .map(|u| (u.version, u.start_ts))
+            .filter(|(v, _)| v.is_some())
+            .map(|(v, ts)| BuildVersionsReponse {
+                version: v.unwrap(),
+                ts,
+            })
+            .collect();
+        Ok(versions)
     }
 }

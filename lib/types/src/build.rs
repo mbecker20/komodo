@@ -50,19 +50,16 @@ pub struct Build {
     pub on_clone: Option<Command>,
 
     // build related
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub pre_build: Option<Command>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_build_args: Option<DockerBuildArgs>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>,
 
-    #[serde(default, skip_serializing_if = "String::is_empty")]
+    #[serde(default)]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub last_built_at: String,
@@ -114,4 +111,11 @@ pub struct DockerBuildArgs {
     pub dockerfile_path: Option<String>,
     #[serde(default)]
     pub build_args: Vec<EnvironmentVar>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct BuildVersionsReponse {
+    pub version: Version,
+    pub ts: String,
 }

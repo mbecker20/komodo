@@ -1,4 +1,4 @@
-import { DockerContainerState, EnvironmentVar, ServerStatus } from "../types";
+import { DockerContainerState, EnvironmentVar, ServerStatus, Timelength, Version } from "../types";
 
 export function combineClasses(...classes: (string | false | undefined)[]) {
   return classes.filter((c) => (c ? true : false)).join(" ");
@@ -171,5 +171,31 @@ export function deploymentHeaderStateClass(
       return "running";
     case DockerContainerState.Exited:
       return "exited";
+  }
+}
+
+export function version_to_string(version: Version) {
+  return `${version.major}.${version.minor}.${version.patch}`
+}
+
+export function string_to_version(version: string): Version {
+  const [major, minor, patch] = version.split(".")
+  return {
+    major: Number(major),
+    minor: Number(minor),
+    patch: Number(patch),
+  }
+}
+
+export function get_to_one_sec_divisor(timelength: Timelength) {
+  // returns what the timelength needs to be divided to convert to per second values
+  if (timelength === Timelength.OneSecond) {
+    return 1
+  } else if (timelength === Timelength.FiveSeconds) {
+    return 5
+  } else if (timelength === Timelength.ThirtySeconds) {
+    return 30
+  } else if (timelength === Timelength.OneMinute) {
+    return 60
   }
 }

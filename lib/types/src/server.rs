@@ -57,11 +57,9 @@ pub struct Server {
     #[diff(attr(#[serde(skip_serializing_if = "timelength_diff_no_change")]))]
     pub stats_interval: Timelength,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub region: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub instance_id: Option<String>,
 

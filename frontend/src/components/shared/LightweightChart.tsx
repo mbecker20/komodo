@@ -1,17 +1,35 @@
-import { ColorType, createChart, IChartApi, ISeriesApi } from "lightweight-charts";
-import { Component, createEffect, createSignal, JSX, onCleanup, onMount } from "solid-js";
+import {
+  ColorType,
+  createChart,
+  IChartApi,
+  ISeriesApi,
+} from "lightweight-charts";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  JSX,
+  onCleanup,
+  onMount,
+} from "solid-js";
 
 type LinesData = {
-	color: string,
-	line: LineDataPoint[]
-}
+  title: string;
+  color: string;
+  priceLineVisible?: boolean;
+  line: LineDataPoint[];
+};
 
 type LineDataPoint = {
   time: number;
-	value: number;
+  value: number;
 };
 
-const LightweightChart: Component<{ style?: JSX.CSSProperties, class?: string, lines?: () => LinesData[] }> = (p) => {
+const LightweightChart: Component<{
+  style?: JSX.CSSProperties;
+  class?: string;
+  lines?: () => LinesData[];
+}> = (p) => {
   let el: HTMLDivElement;
   const [chart, setChart] = createSignal<IChartApi>();
   let lineSeries: ISeriesApi<"Line">[] = [];
@@ -41,24 +59,34 @@ const LightweightChart: Component<{ style?: JSX.CSSProperties, class?: string, l
         chart()!.removeSeries(series);
       }
       const series = p.lines().map((line) => {
-        const series = chart()!.addLineSeries({ color: line.color });
+        const series = chart()!.addLineSeries({
+          color: line.color,
+          title: line.title,
+          priceLineVisible: line.priceLineVisible || false
+        });
         series.setData(line.line as any);
         return series;
       });
       lineSeries = series;
     }
-  })
+  });
   const handleResize = () => {
     if (el && chart()) {
       chart()!.applyOptions({ width: el.clientWidth });
     }
   };
-	addEventListener("resize", handleResize);
-	onCleanup(() => {
-		chart()?.remove();
-		removeEventListener("resize", handleResize);
-	})
-  return <div ref={el!} class={p.class} style={{ width: "100%", height: "100%", ...p.style }} />;
+  addEventListener("resize", handleResize);
+  onCleanup(() => {
+    chart()?.remove();
+    removeEventListener("resize", handleResize);
+  });
+  return (
+    <div
+      ref={el!}
+      class={p.class}
+      style={{ width: "100%", height: "100%", ...p.style }}
+    />
+  );
 };
 
 export default LightweightChart;

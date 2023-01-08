@@ -14,6 +14,7 @@ export type IconType =
   | "star-empty"
   | "star"
   | "chevron-left"
+  | "chevron-right"
   | "trash"
   | "info-sign"
   | "menu"

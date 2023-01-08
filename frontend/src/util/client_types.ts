@@ -14,6 +14,13 @@ export interface CopyBuildBody {
 	server_id: string;
 }
 
+export interface BuildVersionsQuery {
+	page?: number;
+	major?: number;
+	minor?: number;
+	patch?: number;
+}
+
 export interface CreateDeploymentBody {
 	name: string;
 	server_id: string;

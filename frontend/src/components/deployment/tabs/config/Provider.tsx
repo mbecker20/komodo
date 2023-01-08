@@ -9,7 +9,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
-import { client } from "../../../..";
+import { client, pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
 import { Deployment, Operation, PermissionLevel } from "../../../../types";
@@ -95,7 +95,11 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   const save = () => {
     setDeployment("updating", true);
-    client.update_deployment(deployment);
+    client.update_deployment(deployment).catch(e => {
+      console.error(e);
+      pushNotification("bad", "update deployment failed");
+      setDeployment("updating", false);
+    });
   };
 
   let update_unsub = () => {};
