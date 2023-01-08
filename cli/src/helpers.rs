@@ -16,8 +16,8 @@ use serde::Serialize;
 
 use crate::types::{CoreConfig, MongoConfig, PeripheryConfig, RestartMode};
 
-const CORE_IMAGE_NAME: &str = "mbecker20/monitor_core";
-const PERIPHERY_IMAGE_NAME: &str = "mbecker20/monitor_periphery";
+const CORE_IMAGE_NAME: &str = "mbecker2020/monitor_core";
+const PERIPHERY_IMAGE_NAME: &str = "mbecker2020/monitor_periphery";
 const PERIPHERY_CRATE: &str = "monitor_periphery";
 
 pub fn gen_core_config(sub_matches: &ArgMatches) {
