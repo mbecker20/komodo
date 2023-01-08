@@ -19,7 +19,7 @@ export const URL =
     ? location.origin
     : (import.meta.env.VITE_MONITOR_HOST as string) || "http://localhost:9000";
 
-export const WS_URL = URL.replace("http", "ws") + "/ws/update";
+export const UPDATE_WS_URL = URL.replace("http", "ws") + "/ws/update";
 
 const token =
   (import.meta.env.VITE_ACCESS_TOKEN as string) ||

@@ -10,7 +10,7 @@ import Deployment from "./Deployment";
 import s from "../home.module.scss";
 import { NewBuild, NewDeployment } from "./New";
 import Loading from "../../shared/loading/Loading";
-import { useNavigate } from "@solidjs/router";
+import { A, useNavigate } from "@solidjs/router";
 import { PermissionLevel, ServerStatus } from "../../../types";
 import { useAppDimensions } from "../../../state/DimensionProvider";
 import Build from "./Build";
@@ -101,7 +101,9 @@ const Server: Component<{ id: string }> = (p) => {
                       <Icon type="refresh" width="0.85rem" />
                     </button>
                   </Show>
-                  {/* <StatGraphs id={p.id} /> */}
+                  <A href={`/server/${p.id}/stats`} class="blue">
+                    <Icon type="timeline-line-chart" />
+                  </A>
                 </Flex>
               </Show>
             </Show>

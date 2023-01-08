@@ -7,7 +7,6 @@ import { Tab } from "../../shared/tabs/Tabs";
 import Config from "./config/Config";
 import { ConfigProvider } from "./config/Provider";
 import Owners from "./Owners";
-import Stats from "./stats/Stats";
 
 const ServerTabs: Component<{}> = (p) => {
   const { servers } = useAppState();
@@ -24,10 +23,6 @@ const ServerTabs: Component<{}> = (p) => {
               {
                 title: "config",
                 element: () => <Config />,
-              },
-              {
-                title: "stats",
-                element: () => <Stats />,
               },
               user().admin && {
                 title: "collaborators",

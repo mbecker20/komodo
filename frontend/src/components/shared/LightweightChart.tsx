@@ -45,10 +45,12 @@ const LightweightChart: Component<{
         textColor: "white",
       },
       grid: {
-        horzLines: { color: "transparent" },
-        vertLines: { color: "transparent" },
+        horzLines: { color: "#3f454d" },
+        vertLines: { color: "#3f454d" },
       },
       timeScale: { timeVisible: true },
+      // handleScroll: false,
+      // handleScale: false,
     });
     chart.timeScale().fitContent();
     setChart(chart);

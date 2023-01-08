@@ -1,5 +1,6 @@
 import { Route, Routes } from "@solidjs/router";
 import { Component, lazy, Show } from "solid-js";
+import Stats from "./components/stats/Stats";
 import Topbar from "./components/topbar/Topbar";
 import { useUser } from "./state/UserProvider";
 
@@ -19,6 +20,7 @@ const App: Component = () => {
         <Route path="/build/:id" component={Build} />
         <Route path="/deployment/:id" component={Deployment} />
         <Route path="/server/:id" component={Server} />
+        <Route path="/server/:id/stats" component={Stats} />
         <Show when={user().admin}>
           <Route path="/users" component={Users} />
         </Show>
