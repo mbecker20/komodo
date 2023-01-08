@@ -103,9 +103,13 @@ fn image_tags(image_name: &str, version: &Version) -> String {
 }
 
 fn parse_build_args(build_args: &Vec<EnvironmentVar>) -> String {
-    build_args
+    let mut args = build_args
         .iter()
         .map(|p| format!(" --build-arg {}={}", p.variable, p.value))
         .collect::<Vec<String>>()
-        .join("")
+        .join("");
+    if args.len() > 0 {
+        args.push(' ');
+    }
+    args
 }

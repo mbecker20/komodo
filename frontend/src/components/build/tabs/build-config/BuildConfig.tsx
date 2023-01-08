@@ -7,6 +7,7 @@ import CliBuild from "./CliBuild";
 import Docker from "./Docker";
 import { useConfig } from "../Provider";
 import Loading from "../../../shared/loading/Loading";
+import BuildArgs from "./BuildArgs";
 
 const BuildConfig: Component<{}> = (p) => {
   const { build, reset, save, userCanUpdate } = useConfig();
@@ -15,6 +16,7 @@ const BuildConfig: Component<{}> = (p) => {
       <Grid class="config">
         <Grid class="config-items scroller">
           <Docker />
+          <BuildArgs />
           <CliBuild />
         </Grid>
         <Show when={userCanUpdate() && build.updated}>
