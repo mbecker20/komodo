@@ -32,7 +32,7 @@ const COLORS = {
 
 const VIEWS = [
   "basic",
-  "i/o",
+  "i / o",
   "temp"
 ];
 
@@ -113,9 +113,10 @@ const HistoricalStats: Component<{}> = (p) => {
               <DiskChart stats={stats} />
             </Grid>
           </Match>
-          <Match when={view() === "i/o"}>
+          <Match when={view() === "i / o"}>
             <Grid class={s.Charts}>
-              <NetworkChart stats={stats} />
+              <DiskIoCharts stats={stats} />
+              <NetworkIoCharts stats={stats} />
             </Grid>
           </Match>
           <Match when={view() === "temp"}>
@@ -226,7 +227,7 @@ const DiskChart: Component<{
   );
 };
 
-const NetworkChart: Component<{
+const NetworkIoCharts: Component<{
   stats: Accessor<SystemStatsRecord[] | undefined>;
 }> = (p) => {
   const recv_line = () => {
@@ -276,6 +277,62 @@ const NetworkChart: Component<{
           style={{ height: "200px" }}
           lines={() => [
             { title: "kb/s", color: "#184e9f", line: recv_line()! },
+          ]}
+        />
+      </Grid>
+    </Show>
+  );
+};
+
+const DiskIoCharts: Component<{
+  stats: Accessor<SystemStatsRecord[] | undefined>;
+}> = (p) => {
+  const read_line = () => {
+    return p.stats()?.map((s) => {
+      return {
+        time: convertTsMsToLocalUnixTsInSecs(s.ts),
+        value:
+          s.disk.disks?.length || 0 > 0
+            ? s.disk.read_kb /
+              get_to_one_sec_divisor(s.polling_rate)!
+            : 0,
+      };
+    });
+  };
+  const write_line = () => {
+    return p.stats()?.map((s) => {
+      return {
+        time: convertTsMsToLocalUnixTsInSecs(s.ts),
+        value:
+          s.disk.disks?.length || 0 > 0
+            ? s.disk.write_kb / get_to_one_sec_divisor(s.polling_rate)!
+            : 0,
+      };
+    });
+  };
+  return (
+    <Show when={read_line()}>
+      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
+        <Flex alignItems="center" justifyContent="space-between">
+          <h2>disk read kb/s</h2>
+        </Flex>
+        <LightweightChart
+          class={s.LightweightChart}
+          style={{ height: "200px" }}
+          lines={() => [
+            { title: "kb/s", color: "#184e9f", line: read_line()! },
+          ]}
+        />
+      </Grid>
+      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
+        <Flex alignItems="center" justifyContent="space-between">
+          <h2>disk write kb/s</h2>
+        </Flex>
+        <LightweightChart
+          class={s.LightweightChart}
+          style={{ height: "200px" }}
+          lines={() => [
+            { title: "kb/s", color: "#184e9f", line: write_line()! },
           ]}
         />
       </Grid>
