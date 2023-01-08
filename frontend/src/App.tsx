@@ -1,6 +1,5 @@
 import { Route, Routes } from "@solidjs/router";
 import { Component, lazy, Show } from "solid-js";
-import Stats from "./components/stats/Stats";
 import Topbar from "./components/topbar/Topbar";
 import { useUser } from "./state/UserProvider";
 
@@ -9,6 +8,7 @@ const Deployment = lazy(() => import("./components/deployment/Deployment"));
 const Server = lazy(() => import("./components/server/Server"));
 const Build = lazy(() => import("./components/build/Build"));
 const Users = lazy(() => import("./components/users/Users"));
+const Stats = lazy(() => import("./components/stats/Stats"))
 
 const App: Component = () => {
   const { user } = useUser();
