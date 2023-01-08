@@ -58,7 +58,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   const [networks, setNetworks] = createSignal<any[]>([]);
   const loadNetworks = () => {
-    console.log("load networks");
+    // console.log("load networks");
     client.get_docker_networks(params.id).then(setNetworks);
   };
   createEffect(loadNetworks);

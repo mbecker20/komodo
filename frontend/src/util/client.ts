@@ -17,6 +17,7 @@ import {
   ServerActionState,
   ServerWithStatus,
   SystemStats,
+  SystemStatsQuery,
   SystemStatsRecord,
   Update,
   UpdateTarget,
@@ -240,8 +241,8 @@ export class Client {
     return this.patch("/api/server/update", server);
   }
 
-  get_server_stats(server_id: string): Promise<SystemStats> {
-    return this.get(`/api/server/${server_id}/stats`);
+  get_server_stats(server_id: string, query?: SystemStatsQuery): Promise<SystemStats> {
+    return this.get(`/api/server/${server_id}/stats${generateQuery(query as any)}`);
   }
 
   get_server_stats_history(
@@ -249,7 +250,7 @@ export class Client {
     query?: HistoricalStatsQuery
   ): Promise<SystemStatsRecord[]> {
     return this.get(
-      `/api/server/${server_id}/history${generateQuery(query as any)}`
+      `/api/server/${server_id}/stats/history${generateQuery(query as any)}`
     );
   }
 
@@ -257,7 +258,7 @@ export class Client {
     server_id: string,
     ts: number
   ): Promise<SystemStatsRecord> {
-    return this.get(`/api/server/${server_id}/at_ts?ts=${ts}`);
+    return this.get(`/api/server/${server_id}/stats/at_ts?ts=${ts}`);
   }
 
   get_docker_networks(server_id: string): Promise<any[]> {

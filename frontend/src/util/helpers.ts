@@ -20,8 +20,8 @@ export function generateQuery(query?: QueryObject) {
   } else return "";
 }
 
-export function readableTimestamp(unixTimeInSecs: number) {
-  const date = new Date(unixTimeInSecs * 1000);
+export function readableTimestamp(unix_time_ms: number) {
+  const date = new Date(unix_time_ms);
   const hours24 = date.getHours();
   let hours = hours24 % 12;
   if (hours === 0) hours = 12;
@@ -50,6 +50,12 @@ export function readableDuration(start_ts: string, end_ts: string) {
   const durr = end.getTime() - start.getTime();
   const seconds = (durr / 1000).toFixed(1);
   return `${seconds} seconds`;
+}
+
+const tzOffset = new Date().getTimezoneOffset() * 60;
+
+export function convertTsMsToLocalUnixTsInSecs(ts: number) {
+  return ts / 1000 - tzOffset;
 }
 
 export function validatePercentage(perc: string) {

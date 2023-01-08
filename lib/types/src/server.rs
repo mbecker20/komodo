@@ -246,8 +246,11 @@ pub struct SystemStatsRecord {
     pub mem_used_gb: f64,  // in GB
     pub mem_total_gb: f64, // in GB
     pub disk: DiskUsage,
+    #[serde(default)]
     pub networks: Vec<SystemNetwork>,
+    #[serde(default)]
     pub components: Vec<SystemComponent>,
+    #[serde(default)]
     pub processes: Vec<SystemProcess>,
     pub polling_rate: Timelength,
 }

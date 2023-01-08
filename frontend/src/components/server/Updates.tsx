@@ -29,7 +29,7 @@ const Updates: Component<{}> = (p) => {
   return (
     <Grid
       class={combineClasses("card shadow")}
-      style={{ "min-width": "350px" }}
+      style={{ "width": "400px" }}
     >
       <h1>updates</h1>
       <Grid class="updates-container scroller">

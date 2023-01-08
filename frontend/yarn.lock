@@ -628,6 +628,11 @@ escape-string-regexp@^1.0.5:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
   integrity sha512-vbRorB5FUQWvla16U8R/qgaFIya2qGzwDrNmCZuYKrbdSUMG6I1ZCGQRefkRVhuOkIGVne7BQ35DSfo1qvJqFg==
 
+fancy-canvas@0.2.2:
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/fancy-canvas/-/fancy-canvas-0.2.2.tgz#33fd4976724169a1eda5015f515a2a1302d1ec91"
+  integrity sha512-50qi8xA0QkHbjmb8h7XQ6k2fvD7y/yMfiUw9YTarJ7rWrq6o5/3CCXPouYk+XSLASvvxtjyiQLRBFt3qkE3oyA==
+
 fill-range@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-7.0.1.tgz#1919a6a7c75fe38b2c7c77e5198535da9acdda40"
@@ -753,6 +758,13 @@ json5@^2.2.1:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.2.tgz#64471c5bdcc564c18f7c1d4df2e2297f2457c5ab"
   integrity sha512-46Tk9JiOL2z7ytNQWFLpj99RZkVgeHf87yGQKsIkaPz1qSH9UczKH1rO7K3wgRselo0tYMUNfecYpm/p1vC7tQ==
+
+lightweight-charts@^3.8.0:
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/lightweight-charts/-/lightweight-charts-3.8.0.tgz#8c41ad7c1c083f18621f11ece7fc1096e131a0d3"
+  integrity sha512-7yFGnYuE1RjRJG9RwUTBz5wvF1QtjBOSW4FFlikr8Dh+/TDNt4ci+HsWSYmStgQUpawpvkCJ3j5/W25GppGj9Q==
+  dependencies:
+    fancy-canvas "0.2.2"
 
 lru-cache@^5.1.1:
   version "5.1.1"

@@ -425,7 +425,7 @@ impl State {
                 limit,
                 query.page as u64 * limit as u64,
                 doc! { "ts": { "$mod": [ts_mod, 0] } },
-                None,
+                projection,
             )
             .await
             .context("failed at mongo query to get stats")

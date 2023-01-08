@@ -1,28 +1,9 @@
 @use "../../../../style/colors.scss" as c;
 
-.StatsContainer {
-	max-height: 75vh;
-  height: fit-content;
-	margin: 0.5rem;
-  margin-top: 0rem;
-	background-color: rgba(c.$darkgrey, 0.6);
-	box-sizing: border-box;
-	position: relative;
-	padding: 0.5rem;
+.Charts {
+	grid-template-columns: repeat(auto-fit, minmax(520px, 1fr));
 }
 
-.Stats {
-	padding: 0rem 1rem;
-}
-
-.Pm2Log {
-	white-space: pre-wrap;
-	overflow-wrap: anywhere;
-	word-wrap: break-word;
-	tab-size: 2;
-	width: 80vw;
-	box-sizing: border-box;
-	height: 87vh;
-	background-color: rgba(c.$darkgrey, 0.6);
-	padding: 1rem;
+.LightweightChart {
+	background-color: c.$darkgrey;
 }

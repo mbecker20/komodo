@@ -35,6 +35,10 @@
 	background-color: c.$lightgrey;
 }
 
+.card.dark {
+	background-color: c.$darkgrey;
+}
+
 .content {
 	grid-template-columns: auto 1fr;
 	background-color: c.$darkgrey;
