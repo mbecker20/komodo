@@ -5,7 +5,7 @@ import ConfirmButton from "../shared/ConfirmButton";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
-import { combineClasses, getId } from "../../util/helpers";
+import { combineClasses, getId, version_to_string } from "../../util/helpers";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import Updates from "./Updates";
 import { useLocalStorageToggle } from "../../util/hooks";
@@ -23,7 +23,7 @@ const Header: Component<{}> = (p) => {
     useLocalStorageToggle("show-updates");
   const userCanUpdate = () =>
     user().admin ||
-    build().permissions[getId(user())] === PermissionLevel.Update;
+    build().permissions![getId(user())] === PermissionLevel.Update;
   return (
     <>
       <Flex
@@ -40,7 +40,9 @@ const Header: Component<{}> = (p) => {
       >
         <Grid gap="0.1rem">
           <h1>{build().name}</h1>
-          <div style={{ opacity: 0.8 }}>build</div>
+          <div style={{ opacity: 0.8 }}>
+            build - v{version_to_string(build().version)}
+          </div>
         </Grid>
         <Show when={userCanUpdate()}>
           <ConfirmButton
