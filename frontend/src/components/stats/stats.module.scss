@@ -13,3 +13,7 @@
 	height: fit-content;
 	box-sizing: border-box;
 }
+
+.HeatBars {
+	grid-template-columns: repeat(3, auto);
+}
