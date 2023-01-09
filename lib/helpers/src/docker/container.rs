@@ -68,6 +68,11 @@ pub async fn stop_and_remove_container(container_name: &str) -> Log {
     run_monitor_command("docker stop and remove", command).await
 }
 
+pub async fn pull_image(image: &str) -> Log {
+    let command = format!("docker pull {image}");
+    run_monitor_command("docker pull", command).await
+}
+
 pub async fn deploy(
     deployment: &Deployment,
     docker_token: &Option<String>,
@@ -76,6 +81,7 @@ pub async fn deploy(
     if let Err(e) = docker_login(&deployment.docker_run_args.docker_account, docker_token).await {
         return Log::error("docker login", format!("{e:#?}"));
     }
+    let _ = pull_image(&deployment.docker_run_args.image).await;
     let _ = stop_and_remove_container(&to_monitor_name(&deployment.name)).await;
     let command = docker_run_command(deployment, repo_dir);
     run_monitor_command("docker run", command).await
