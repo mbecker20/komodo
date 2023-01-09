@@ -7,7 +7,7 @@ use helpers::parse_config_file;
 use serde::Deserialize;
 use types::PeripheryConfig;
 
-use crate::{PeripheryConfigExtension, HomeDirExtension};
+use crate::{HomeDirExtension, PeripheryConfigExtension};
 
 #[derive(Parser)]
 #[command(author = "mbecker20 <becker.maxh@gmail.com>")]
@@ -60,7 +60,12 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
         parse_config_file::<PeripheryConfig>(&config_path).expect("failed to parse config file");
     let _ = std::fs::create_dir(&config.repo_dir);
     print_startup_log(&config_path, &args, &config);
-    (args, config.port, Extension(Arc::new(config)), Extension(Arc::new(home_dir)))
+    (
+        args,
+        config.port,
+        Extension(Arc::new(config)),
+        Extension(Arc::new(home_dir)),
+    )
 }
 
 fn print_startup_log(config_path: &str, args: &Args, config: &PeripheryConfig) {

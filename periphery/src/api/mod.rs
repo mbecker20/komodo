@@ -13,7 +13,7 @@ use helpers::docker::DockerClient;
 use serde_json::Value;
 use types::{monitor_timestamp, PeripheryConfig};
 
-use crate::{PeripheryConfigExtension, HomeDirExtension};
+use crate::{HomeDirExtension, PeripheryConfigExtension};
 
 mod accounts;
 mod build;
