@@ -1,0 +1,13 @@
+[Unit]
+Description=agent to connect with monitor core
+After=network.target
+
+[Service]
+Type=simple
+User=max
+WorkingDirectory=/home/max
+ExecStart=/bin/bash --login -c 'source /home/max/.bashrc; $HOME/.cargo/bin/periphery --config-path ~/.monitor/local.periphery.config.toml --home-dir $HOME'
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target
