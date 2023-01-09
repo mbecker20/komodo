@@ -10,6 +10,7 @@ use helpers::*;
 fn cli() -> Command {
     Command::new("monitor")
         .about("\na cli to set up monitor components, like the periphery client")
+        .version(env!("CARGO_PKG_VERSION"))
         .subcommand_required(true)
         .arg_required_else_help(true)
         .allow_external_subcommands(true)

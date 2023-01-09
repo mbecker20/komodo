@@ -13,7 +13,7 @@ use helpers::docker::DockerClient;
 use serde_json::Value;
 use types::{monitor_timestamp, PeripheryConfig};
 
-use crate::PeripheryConfigExtension;
+use crate::{PeripheryConfigExtension, HomeDirExtension};
 
 mod accounts;
 mod build;
@@ -24,9 +24,10 @@ mod image;
 mod network;
 mod stats;
 
-pub fn router(config: PeripheryConfigExtension) -> Router {
+pub fn router(config: PeripheryConfigExtension, home_dir: HomeDirExtension) -> Router {
     Router::new()
         .route("/health", get(|| async {}))
+        .route("/version", get(|| async { env!("CARGO_PKG_VERSION") }))
         .route("/accounts/:account_type", get(accounts::get_accounts))
         .nest("/command", command::router())
         .nest("/container", container::router())
@@ -41,6 +42,7 @@ pub fn router(config: PeripheryConfigExtension) -> Router {
         .layer(DockerClient::extension())
         .layer(middleware::from_fn(guard_request))
         .layer(config)
+        .layer(home_dir)
 }
 
 async fn guard_request(
