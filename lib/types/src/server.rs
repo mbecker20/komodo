@@ -41,6 +41,10 @@ pub struct Server {
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub to_notify: Vec<String>, // slack users to notify
 
+    #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub auto_prune: bool,
+
     #[serde(default = "default_cpu_alert")]
     #[diff(attr(#[serde(skip_serializing_if = "f32_diff_no_change")]))]
     pub cpu_alert: f32,
@@ -81,6 +85,7 @@ impl Default for Server {
             address: Default::default(),
             permissions: Default::default(),
             enabled: true,
+            auto_prune: false,
             to_notify: Default::default(),
             cpu_alert: default_cpu_alert(),
             mem_alert: default_mem_alert(),

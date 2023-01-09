@@ -18,6 +18,12 @@ pub async fn servers_collection(
     coll.create_unique_index("name")
         .await
         .context("failed at creating name index")?;
+    coll.create_index("enabled")
+        .await
+        .context("failed to create enabled index")?;
+    coll.create_index("auto_prune")
+        .await
+        .context("failed to create auto_prune index")?;
     Ok(coll)
 }
 

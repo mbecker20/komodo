@@ -1,7 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
+use async_timing_util::{ONE_HOUR_MS, wait_until_timelength, Timelength, unix_timestamp_ms};
 use axum::Extension;
 use db::DbClient;
+use futures_util::future::join_all;
+use mungos::doc;
 use periphery::PeripheryClient;
 use tokio::sync::Mutex;
 use types::{BuildActionState, CoreConfig, DeploymentActionState, ServerActionState};
@@ -40,6 +43,8 @@ impl State {
         let state = Arc::new(state);
         let state_clone = state.clone();
         tokio::spawn(async move { state_clone.collect_server_stats().await });
+        let state_clone = state.clone();
+        tokio::spawn(async move { state_clone.daily_image_prune().await });
         if state.slack.is_some() {
             let state_clone = state.clone();
             tokio::spawn(async move { state_clone.daily_update().await });
@@ -53,5 +58,29 @@ impl State {
 
     pub async fn extension(config: CoreConfig) -> StateExtension {
         Extension(State::new(config).await)
+    }
+
+    async fn daily_image_prune(&self) {
+        let offset = self.config.daily_offset_hours as u128 * ONE_HOUR_MS;
+        loop {
+            wait_until_timelength(Timelength::OneDay, offset).await;
+            let servers = self
+                .db
+                .servers
+                .get_some(doc! { "enabled": true, "auto_prune": true }, None)
+                .await;
+            if let Err(e) = &servers {
+                eprintln!(
+                    "{} | failed to get servers for daily prune | {e:#?}",
+                    unix_timestamp_ms()
+                );
+                continue;
+            }
+            let futures = servers.unwrap().into_iter().map(|server| async move {
+                let _ = self.periphery.image_prune(&server).await;
+                let _ = self.periphery.container_prune(&server).await;
+            });
+            join_all(futures).await;
+        }
     }
 }
