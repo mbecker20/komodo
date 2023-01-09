@@ -4,7 +4,7 @@ use diff::Diff;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{diff::*, Command};
+use crate::{diff::*, Command, PermissionsMap};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
@@ -42,6 +42,11 @@ pub struct Action {
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub run_on_all: bool,
+
+    #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing)]))]
+    #[builder(setter(skip))]
+    pub permissions: PermissionsMap,
 
     #[serde(default, skip_serializing_if = "String::is_empty")]
     #[diff(attr(#[serde(skip)]))]
