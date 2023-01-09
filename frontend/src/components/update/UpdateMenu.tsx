@@ -1,6 +1,6 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
-import { Update as UpdateType, UpdateStatus } from "../../types";
+import { Operation, Update as UpdateType, UpdateStatus } from "../../types";
 import { combineClasses, readableDuration, readableMonitorTimestamp } from "../../util/helpers";
 import { useToggle } from "../../util/hooks";
 import Icon from "../shared/Icon";
@@ -23,6 +23,9 @@ const UpdateMenu: Component<{ update: UpdateType }> = (p) => {
     }
   };
   const operation = () => {
+    if (p.update.operation === Operation.BuildBuild) {
+      return "build"
+    }
     return p.update.operation.replaceAll("_", " ");
   };
   const [showLog, toggleShowLog] = useToggle();

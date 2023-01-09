@@ -1,6 +1,6 @@
 import { Component, Show } from "solid-js";
 import { pushNotification, URL } from "../../../..";
-import { combineClasses, copyToClipboard } from "../../../../util/helpers";
+import { combineClasses, copyToClipboard, getId } from "../../../../util/helpers";
 import ConfirmButton from "../../../shared/ConfirmButton";
 import Icon from "../../../shared/Icon";
 import Flex from "../../../shared/layout/Flex";
@@ -12,7 +12,7 @@ import OnClone from "./OnClone";
 
 const GitConfig: Component<{}> = (p) => {
   const { build, reset, save, userCanUpdate } = useConfig();
-  const listenerUrl = () => `${URL}/api/listener/build/${build._id}`;
+  const listenerUrl = () => `${URL}/api/listener/build/${getId(build)}`;
   return (
     <Show when={build.loaded}>
       <Grid class="config">
