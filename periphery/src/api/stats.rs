@@ -1,4 +1,7 @@
-use std::sync::{Arc, RwLock};
+use std::{
+    cmp::Ordering,
+    sync::{Arc, RwLock},
+};
 
 use async_timing_util::wait_until_timelength;
 use axum::{
@@ -253,7 +256,8 @@ impl StatsClient {
     }
 
     fn get_components(&self) -> Vec<SystemComponent> {
-        self.sys
+        let mut comps: Vec<_> = self
+            .sys
             .components()
             .into_iter()
             .map(|c| SystemComponent {
@@ -262,11 +266,34 @@ impl StatsClient {
                 max: c.max(),
                 critical: c.critical(),
             })
-            .collect()
+            .collect();
+        comps.sort_by(|a, b| {
+            if a.critical.is_some() {
+                if b.critical.is_some() {
+                    let a_perc = a.temp / a.critical.as_ref().unwrap();
+                    let b_perc = b.temp / b.critical.as_ref().unwrap();
+                    if a_perc > b_perc {
+                        Ordering::Less
+                    } else {
+                        Ordering::Greater
+                    }
+                } else {
+                    Ordering::Less
+                }
+            } else {
+                if b.critical.is_some() {
+                    Ordering::Greater
+                } else {
+                    Ordering::Equal
+                }
+            }
+        });
+        comps
     }
 
     fn get_processes(&self) -> Vec<SystemProcess> {
-        self.sys
+        let mut procs: Vec<_> = self
+            .sys
             .processes()
             .into_iter()
             .map(|(pid, p)| {
@@ -282,6 +309,14 @@ impl StatsClient {
                     disk_write_kb: disk_usage.written_bytes as f64 / BYTES_PER_KB,
                 }
             })
-            .collect()
+            .collect();
+        procs.sort_by(|a, b| {
+            if a.cpu_perc > b.cpu_perc {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }
+        });
+        procs
     }
 }

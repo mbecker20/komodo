@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Context};
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
 use diff::Diff;
@@ -94,6 +95,25 @@ pub struct Version {
 impl ToString for Version {
     fn to_string(&self) -> String {
         format!("{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
+
+impl TryFrom<&str> for Version {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let vals = value
+            .split(".")
+            .map(|v| anyhow::Ok(v.parse().context("failed at parsing value into i32")?))
+            .collect::<anyhow::Result<Vec<i32>>>()?;
+        let version = Version {
+            major: *vals
+                .get(0)
+                .ok_or(anyhow!("must include at least major version"))?,
+            minor: *vals.get(1).unwrap_or(&0),
+            patch: *vals.get(2).unwrap_or(&0),
+        };
+        Ok(version)
     }
 }
 
