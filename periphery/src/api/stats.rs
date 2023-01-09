@@ -270,8 +270,8 @@ impl StatsClient {
         comps.sort_by(|a, b| {
             if a.critical.is_some() {
                 if b.critical.is_some() {
-                    let a_perc = a.temp / a.critical.as_ref().unwrap();
-                    let b_perc = b.temp / b.critical.as_ref().unwrap();
+                    let a_perc = a.temp as f32 / *a.critical.as_ref().unwrap() as f32;
+                    let b_perc = b.temp as f32 / *b.critical.as_ref().unwrap() as f32;
                     if a_perc > b_perc {
                         Ordering::Less
                     } else {
