@@ -2,13 +2,14 @@ use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use collections::{
-    builds_collection, deployments_collection, groups_collection, procedures_collection,
-    server_stats_collection, servers_collection, updates_collection, users_collection,
+    actions_collection, builds_collection, deployments_collection, groups_collection,
+    procedures_collection, server_stats_collection, servers_collection, updates_collection,
+    users_collection,
 };
 use mungos::{Collection, Mungos};
 use types::{
-    Build, Deployment, Group, MongoConfig, PermissionLevel, Procedure, Server, SystemStatsRecord,
-    Update, User,
+    Action, Build, Deployment, Group, MongoConfig, PermissionLevel, Procedure, Server,
+    SystemStatsRecord, Update, User,
 };
 
 mod collections;
@@ -19,6 +20,7 @@ pub struct DbClient {
     pub deployments: Collection<Deployment>,
     pub builds: Collection<Build>,
     pub procedures: Collection<Procedure>,
+    pub actions: Collection<Action>,
     pub groups: Collection<Group>,
     pub updates: Collection<Update>,
     pub stats: Collection<SystemStatsRecord>,
@@ -49,6 +51,9 @@ impl DbClient {
             procedures: procedures_collection(&mungos, db_name)
                 .await
                 .expect("failed to make procedures collection"),
+            actions: actions_collection(&mungos, db_name)
+                .await
+                .expect("failed to make actions collection"),
             groups: groups_collection(&mungos, db_name)
                 .await
                 .expect("failed to make groups collection"),

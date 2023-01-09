@@ -17,6 +17,7 @@ use crate::PeripheryConfigExtension;
 
 mod accounts;
 mod build;
+mod command;
 mod container;
 mod git;
 mod image;
@@ -27,6 +28,7 @@ pub fn router(config: PeripheryConfigExtension) -> Router {
     Router::new()
         .route("/health", get(|| async {}))
         .route("/accounts/:account_type", get(accounts::get_accounts))
+        .nest("/command", command::router())
         .nest("/container", container::router())
         .nest("/network", network::router())
         .nest(

@@ -11,6 +11,7 @@ pub use bollard::service::{ImageSummary, Network};
 
 pub mod traits;
 
+mod action;
 mod build;
 mod config;
 mod deployment;
@@ -21,6 +22,7 @@ mod server;
 mod update;
 mod user;
 
+pub use action::*;
 pub use build::*;
 pub use config::*;
 pub use deployment::*;
@@ -40,7 +42,9 @@ pub type PermissionsMap = HashMap<String, PermissionLevel>;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct Command {
+    #[serde(default)]
     pub path: String,
+    #[serde(default)]
     pub command: String,
 }
 

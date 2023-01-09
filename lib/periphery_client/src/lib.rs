@@ -6,6 +6,7 @@ use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
 use types::{Server, SystemStats, SystemStatsQuery};
 
 mod build;
+mod command;
 mod container;
 mod git;
 mod image;

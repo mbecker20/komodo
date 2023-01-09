@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::PermissionsMap;
+use crate::{diff::*, PermissionsMap};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
@@ -19,8 +19,16 @@ pub struct Procedure {
     )]
     #[builder(setter(skip))]
     pub id: String,
+
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub name: String,
+
+    #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub stages: Vec<ProcedureStage>,
+
+    #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub webhook_branches: Vec<String>,
 
     #[serde(default)]
