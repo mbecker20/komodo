@@ -136,6 +136,10 @@ fn cli() -> Command {
                         )
                 )
                 .subcommand(
+                    Command::new("gen_service")
+                        .about("generate a periphery systemd service file")
+                )
+                .subcommand(
                     Command::new("start")
                         .about("tools to start periphery as daemon or container")
                         .subcommand(
@@ -202,6 +206,7 @@ fn main() {
             );
             match periphery_command {
                 ("gen_config", sub_matches) => gen_periphery_config(sub_matches),
+                ("gen_service", sub_matches) => gen_periphery_service_file(sub_matches),
                 ("start", sub_matches) => {
                     let periphery_start_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor_cli periphery start <daemon, container> <flags>' ❌\n");
                     match periphery_start_command {

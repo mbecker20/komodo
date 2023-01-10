@@ -392,8 +392,8 @@ dependencies = [
  "hex",
  "hmac",
  "jwt",
- "monitor_helpers 0.1.1",
- "monitor_types 0.1.2",
+ "monitor_helpers 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "mungos",
  "periphery_client",
  "serde",
@@ -587,7 +587,7 @@ name = "db_client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "monitor_types 0.1.2",
+ "monitor_types 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "mungos",
 ]
 
@@ -1334,7 +1334,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_cli"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "async_timing_util",
  "clap",
@@ -1354,7 +1354,7 @@ version = "0.1.1"
 dependencies = [
  "anyhow",
  "futures-util",
- "monitor_types 0.1.2",
+ "monitor_types 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
  "serde",
  "serde_derive",
@@ -1714,8 +1714,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "futures-util",
- "monitor_helpers 0.1.1",
- "monitor_types 0.1.2",
+ "monitor_helpers 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
  "serde",
  "serde_json",

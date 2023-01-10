@@ -449,6 +449,23 @@ pub fn start_periphery_container(sub_matches: &ArgMatches) {
     }
 }
 
+pub fn gen_periphery_service_file(sub_matches: &ArgMatches) {
+    let mut file = File::create("/etc/systemd/system/periphery.service")
+        .expect("failed to create config file. user must be root for this operation.");
+    file.write_all(generate_periphery_unit_file().as_bytes())
+        .expect("failed to write config file. user must be root for this operation");
+
+    let output = run_command_pipe_to_terminal("systemctl daemon-reload");
+
+    if output.success() {
+        println!(
+            "\n✅ successfully added service to systemd ✅\n"
+        )
+    } else {
+        eprintln!("\n❌ there was some {} adding service to systemd ❌\n", "error".red())
+    }
+}
+
 fn write_to_toml(path: &str, toml: impl Serialize) {
     let path = PathBuf::from_str(&path.replace("~", &std::env::var("HOME").unwrap()))
         .expect("not a valid path");
@@ -472,4 +489,22 @@ fn generate_secret(length: usize) -> String {
         .take(length)
         .map(char::from)
         .collect()
+}
+
+fn generate_periphery_unit_file() -> String {
+    let home = env::var("HOME").expect("failed to find $HOME env var");
+    let user = env::var("USER").expect("failed to find $USER env var");
+    format!("[Unit]
+Description=agent to connect with monitor core
+After=network.target
+
+[Service]
+Type=simple
+User={user}
+WorkingDirectory={home}
+ExecStart=/bin/bash --login -c 'source {home}/.bashrc; $HOME/.cargo/bin/periphery --config-path ~/.monitor/periphery.config.toml --home-dir $HOME'
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target")
 }
