@@ -1411,7 +1411,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_types"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "bollard",
