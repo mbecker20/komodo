@@ -21,6 +21,7 @@ const Selector: Component<{
   position?: Position;
   targetClass?: string;
   targetStyle?: JSX.CSSProperties;
+  containerStyle?: JSX.CSSProperties;
   disabled?: boolean;
   disabledClass?: string;
   disabledStyle?: JSX.CSSProperties;
@@ -49,6 +50,7 @@ const Selector: Component<{
           toggle();
           setSearch("");
         }}
+        containerStyle={p.containerStyle}
         target={
           <button class={p.targetClass} onClick={toggle} style={p.targetStyle}>
             {p.selected}

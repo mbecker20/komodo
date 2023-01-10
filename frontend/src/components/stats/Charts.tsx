@@ -1,12 +1,11 @@
-import { Accessor, Component, createSignal, For, Show } from "solid-js";
+import { Accessor, Component, For, Show } from "solid-js";
 import { SystemStats, SystemStatsRecord } from "../../types";
 import {
   convertTsMsToLocalUnixTsInSecs,
   get_to_one_sec_divisor,
 } from "../../util/helpers";
-import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
-import LightweightChart from "../shared/LightweightChart";
+import LightweightChart, { LineDataPoint } from "../shared/LightweightChart";
 import s from "./stats.module.scss";
 
 export const COLORS = {
@@ -17,8 +16,43 @@ export const COLORS = {
   red: "#952E23",
 };
 
-const CHART_HEIGHT = "200px";
+const CHART_HEIGHT = "250px";
 const SMALL_CHART_HEIGHT = "150px";
+
+const SingleStatChart: Component<{
+  line: () => LineDataPoint[] | undefined;
+  header: string;
+  label: string;
+  color: string;
+  small?: boolean;
+  disableScroll?: boolean;
+}> = (p) => {
+  return (
+    <Show when={p.line()}>
+      <Grid
+        gap="0.5rem"
+        class="card shadow"
+        style={{
+          height: "fit-content",
+          width: "100%",
+          "box-sizing": "border-box",
+          "padding-top": "0.5rem",
+          "padding-bottom": "0.2rem",
+        }}
+      >
+        <Show when={!p.small}>
+          <h2>{p.header}</h2>
+        </Show>
+        <LightweightChart
+          class={s.LightweightChart}
+          height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
+          lines={() => [{ title: p.label, color: p.color, line: p.line()! }]}
+          disableScroll={p.disableScroll}
+        />
+      </Grid>
+    </Show>
+  );
+};
 
 export const CpuChart: Component<{
   stats: Accessor<(SystemStatsRecord | SystemStats)[] | undefined>;
@@ -36,28 +70,14 @@ export const CpuChart: Component<{
     });
   };
   return (
-    <Show when={line()}>
-      <Grid
-        gap="0"
-        class="card shadow"
-        style={{
-          height: "fit-content",
-          width: "100%",
-          "box-sizing": "border-box",
-          "padding-bottom": "0.2rem",
-        }}
-      >
-        <Show when={!p.small}>
-          <h2>cpu</h2>
-        </Show>
-        <LightweightChart
-          class={s.LightweightChart}
-          height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-          lines={() => [{ title: "%", color: COLORS.blue, line: line()! }]}
-          disableScroll={p.disableScroll}
-        />
-      </Grid>
-    </Show>
+    <SingleStatChart
+      header="cpu"
+      label="cpu %"
+      color={COLORS.blue}
+      line={line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
   );
 };
 
@@ -77,28 +97,14 @@ export const MemChart: Component<{
     });
   };
   return (
-    <Show when={line()}>
-      <Grid
-        gap="0"
-        class="card shadow"
-        style={{
-          height: "fit-content",
-          width: "100%",
-          "box-sizing": "border-box",
-          "padding-bottom": "0.2rem",
-        }}
-      >
-        <Show when={!p.small}>
-          <h2>memory</h2>
-        </Show>
-        <LightweightChart
-          class={s.LightweightChart}
-          height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-          lines={() => [{ title: "mem %", color: COLORS.blue, line: line()! }]}
-          disableScroll={p.disableScroll}
-        />
-      </Grid>
-    </Show>
+    <SingleStatChart
+      header="memory"
+      label="mem %"
+      color={COLORS.blue}
+      line={line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
   );
 };
 
@@ -118,28 +124,14 @@ export const DiskChart: Component<{
     });
   };
   return (
-    <Show when={line()}>
-      <Grid
-        gap="0"
-        class="card shadow"
-        style={{
-          height: "fit-content",
-          width: "100%",
-          "box-sizing": "border-box",
-          "padding-bottom": "0.2rem",
-        }}
-      >
-        <Show when={!p.small}>
-          <h2>disk</h2>
-        </Show>
-        <LightweightChart
-          class={s.LightweightChart}
-          height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-          lines={() => [{ title: "disk %", color: "#184e9f", line: line()! }]}
-          disableScroll={p.disableScroll}
-        />
-      </Grid>
-    </Show>
+    <SingleStatChart
+      header="disk"
+      label="disk %"
+      color={COLORS.blue}
+      line={line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
   );
 };
 
@@ -177,51 +169,24 @@ export const NetworkIoCharts: Component<{
     });
   };
   return (
-    <Show when={recv_line()}>
-      <Grid
-        gap="0"
-        class="card shadow"
-        style={{
-          height: "fit-content",
-          width: "100%",
-          "box-sizing": "border-box",
-          "padding-bottom": "0.2rem",
-        }}
-      >
-        <Show when={!p.small}>
-          <h2>network sent kb/s</h2>
-        </Show>
-        <LightweightChart
-          class={s.LightweightChart}
-          height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-          lines={() => [
-            { title: "sent kb/s", color: "#184e9f", line: trans_line()! },
-          ]}
-        />
-      </Grid>
-      <Grid
-        gap="0"
-        class="card shadow"
-        style={{
-          height: "fit-content",
-          width: "100%",
-          "box-sizing": "border-box",
-          "padding-bottom": "0.2rem",
-        }}
-      >
-        <Show when={!p.small}>
-          <h2>network received kb/s</h2>
-        </Show>
-        <LightweightChart
-          class={s.LightweightChart}
-          height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-          lines={() => [
-            { title: "recv kb/s", color: "#184e9f", line: recv_line()! },
-          ]}
-          disableScroll={p.disableScroll}
-        />
-      </Grid>
-    </Show>
+    <>
+      <SingleStatChart
+        header="network sent kb/s"
+        label="sent kb/s"
+        color={COLORS.green}
+        line={trans_line}
+        small={p.small}
+        disableScroll={p.disableScroll}
+      />
+      <SingleStatChart
+        header="network received kb/s"
+        label="recv kb/s"
+        color={COLORS.green}
+        line={recv_line}
+        small={p.small}
+        disableScroll={p.disableScroll}
+      />
+    </>
   );
 };
 
@@ -257,49 +222,24 @@ export const DiskIoCharts: Component<{
     });
   };
   return (
-    <Show when={read_line()}>
-      <Grid
-        gap="0"
-        class="card shadow"
-        style={{
-          height: "fit-content",
-          width: "100%",
-          "box-sizing": "border-box",
-          "padding-bottom": "0.2rem",
-        }}
-      >
-        <Show when={!p.small}>
-          <h2>disk read kb/s</h2>
-        </Show>
-        <LightweightChart
-          class={s.LightweightChart}
-          height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-          lines={() => [
-            { title: "kb/s", color: "#184e9f", line: read_line()! },
-          ]}
-        />
-      </Grid>
-      <Grid
-        gap="0"
-        class="card shadow"
-        style={{
-          height: "fit-content",
-          width: "100%",
-          "box-sizing": "border-box",
-          "padding-bottom": "0.2rem",
-        }}
-      >
-        <h2>disk write kb/s</h2>
-        <LightweightChart
-          class={s.LightweightChart}
-          height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-          lines={() => [
-            { title: "kb/s", color: "#184e9f", line: write_line()! },
-          ]}
-          disableScroll={p.disableScroll}
-        />
-      </Grid>
-    </Show>
+    <>
+      <SingleStatChart
+        header="disk read kb/s"
+        label="read kb/s"
+        color={COLORS.orange}
+        line={read_line}
+        small={p.small}
+        disableScroll={p.disableScroll}
+      />
+      <SingleStatChart
+        header="disk write kb/s"
+        label="write kb/s"
+        color={COLORS.orange}
+        line={write_line}
+        small={p.small}
+        disableScroll={p.disableScroll}
+      />
+    </>
   );
 };
 
@@ -312,7 +252,7 @@ export const TempuratureChart: Component<{
   const labels = () => {
     return p.stats()![p.stats()!.length - 1].components!.map((c) => c.label);
   };
-  const line = (component: string) => {
+  const line = (component: string) => () => {
     return p.stats()?.map((s) => {
       const temp = s.components!.find((c) => c.label === component)?.temp;
       return {
@@ -325,34 +265,15 @@ export const TempuratureChart: Component<{
   };
   return (
     <For each={labels()}>
-      {(label) => (
-        <Grid
-          gap="0"
-          class="card shadow"
-          style={{
-            height: "fit-content",
-            width: "100%",
-            "box-sizing": "border-box",
-            "padding-bottom": "0.2rem",
-          }}
-        >
-          <Flex alignItems="center" justifyContent="space-between">
-            <h2>{label}</h2>
-            {/* <Selector
-          selected={selected()}
-          items={labels()}
-          onSelect={setSelected}
-        /> */}
-          </Flex>
-          <LightweightChart
-            class={s.LightweightChart}
-            height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-            lines={() => [
-              { title: "temp", color: "#184e9f", line: line(label)! },
-            ]}
-            disableScroll={p.disableScroll}
-          />
-        </Grid>
+      {(component) => (
+        <SingleStatChart
+          header={component}
+          label="temp"
+          color={COLORS.red}
+          line={line(component)}
+          small={p.small}
+          disableScroll={p.disableScroll}
+        />
       )}
     </For>
   );

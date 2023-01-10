@@ -13,25 +13,26 @@ import {
   onMount,
 } from "solid-js";
 
-type LinesData = {
+export type LineData = {
   title: string;
   color: string;
   priceLineVisible?: boolean;
   line: LineDataPoint[];
 };
 
-type LineDataPoint = {
+export type LineDataPoint = {
   time: number;
   value: number;
 };
 
 const LightweightChart: Component<{
-  lines?: () => LinesData[];
+  lines: () => LineData[];
   class?: string;
   style?: JSX.CSSProperties;
   width?: string;
   height?: string;
-  disableScroll?: boolean
+  disableScroll?: boolean;
+  onCreateLineSeries?: (series: ISeriesApi<"Line">) => void;
 }> = (p) => {
   let el: HTMLDivElement;
   const [chart, setChart] = createSignal<IChartApi>();
@@ -59,7 +60,7 @@ const LightweightChart: Component<{
     setChart(chart);
   });
   createEffect(() => {
-    if (chart() && p.lines) {
+    if (chart()) {
       for (const series of lineSeries) {
         chart()!.removeSeries(series);
       }
@@ -70,6 +71,9 @@ const LightweightChart: Component<{
           priceLineVisible: line.priceLineVisible || false,
         });
         series.setData(line.line as any);
+        if (p.onCreateLineSeries) {
+          p.onCreateLineSeries(series);
+        }
         return series;
       });
       chart()!.timeScale().fitContent();

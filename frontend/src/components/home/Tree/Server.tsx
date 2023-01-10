@@ -1,4 +1,12 @@
-import { Component, createMemo, createSignal, For, Match, Show, Switch } from "solid-js";
+import {
+  Component,
+  createMemo,
+  createSignal,
+  For,
+  Match,
+  Show,
+  Switch,
+} from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { combineClasses, getId } from "../../../util/helpers";
@@ -25,20 +33,18 @@ const Server: Component<{ id: string }> = (p) => {
   const [open, toggleOpen] = useLocalStorageToggle(p.id + "-homeopen");
   const server = () => servers.get(p.id);
   const deploymentIDs = createMemo(() => {
-    return (
-      deployments.loaded() &&
+    return (deployments.loaded() &&
       deployments
         .ids()!
-        .filter((id) => deployments.get(id)?.deployment.server_id === p.id)
-    ) as string[];
+        .filter(
+          (id) => deployments.get(id)?.deployment.server_id === p.id
+        )) as string[];
   });
   const buildIDs = createMemo(() => {
-    return (
-      builds.loaded() &&
+    return (builds.loaded() &&
       builds
         .ids()!
-        .filter((id) => builds.get(id)?.server_id === p.id)
-    ) as string[];
+        .filter((id) => builds.get(id)?.server_id === p.id)) as string[];
   });
   const [reloading, setReloading] = createSignal(false);
   const stats = () => serverStats.get(p.id);
@@ -110,7 +116,8 @@ const Server: Component<{ id: string }> = (p) => {
             <Show when={server()?.status !== ServerStatus.Ok}>
               {/* <StatGraphs id={p.id} /> */}
             </Show>
-            <div
+            <A
+              href={`/server/${p.id}`}
               class={
                 server()?.server.enabled
                   ? server()?.status === ServerStatus.Ok
@@ -125,11 +132,10 @@ const Server: Component<{ id: string }> = (p) => {
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/server/${p.id}`);
               }}
             >
               {server()?.status.replaceAll("_", " ").toUpperCase()}
-            </div>
+            </A>
           </Flex>
         </button>
         <Show when={open()}>

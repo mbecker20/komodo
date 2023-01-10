@@ -1,5 +1,9 @@
 @use "../../style/colors.scss" as c;
 
+.HeaderArea {
+	grid-template-columns: repeat(3, 1fr);
+}
+
 .Charts {
 	grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
 }

@@ -1,4 +1,5 @@
 import { Params, useParams } from "@solidjs/router";
+import { ISeriesApi } from "lightweight-charts";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import {
   Component,
