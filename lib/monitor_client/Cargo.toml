@@ -1,6 +1,6 @@
 [package]
 name = "monitor_client"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["MoghTech"]
 description = "a client to interact with the monitor system"
