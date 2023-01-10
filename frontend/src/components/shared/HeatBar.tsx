@@ -18,6 +18,7 @@ const HeatBar: Component<{
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
   barHeight?: string;
+  onClick?: () => void;
 }> = (p) => {
   let el: HTMLDivElement;
   const [width, setWidth] = createSignal<number>();
@@ -32,18 +33,26 @@ const HeatBar: Component<{
     removeEventListener("resize", handleResize);
   });
   return (
-    <Flex ref={el!} gap={`${BAR_GAP}px`} class={p.containerClass} style={p.containerStyle}>
+    <Flex
+      ref={el!}
+      gap={`${BAR_GAP}px`}
+      class={p.containerClass}
+      style={{
+        cursor: p.onClick && "pointer",
+        ...p.containerStyle,
+      }}
+      onClick={p.onClick}
+    >
       <For each={[...Array(p.total).keys()]}>
         {(index) => (
           <div
             style={{
               height: p.barHeight || "2rem",
               width: `${width()!}px`,
-              "background-color": index <= p.filled ? blendColors(
-                BLUE,
-                RED,
-                index / p.total
-              ) : "transparent",
+              "background-color":
+                index <= p.filled
+                  ? blendColors(BLUE, RED, index / p.total)
+                  : "transparent",
             }}
           />
         )}

@@ -38,7 +38,7 @@
 		"scope": "typescriptreact,javascriptreact",
 		"prefix": "provider",
 		"body": [
-			"import { Component, createContext, useContext } from \"solid-js\";",
+			"import { ParentComponent, createContext, useContext } from \"solid-js\";",
 			"",
 			"const value = () => {",
 			"\treturn {};",
@@ -48,7 +48,7 @@
 			"",
 			"const context = createContext<Value>();",
 			"",
-			"export const Provider: Component<{}> = (p) => {",
+			"export const Provider: ParentComponent<{}> = (p) => {",
 			"\treturn (",
 			"\t\t<context.Provider value={value()}>",
 			"\t\t\t{p.children}",

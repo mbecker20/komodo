@@ -26,9 +26,12 @@ type LineDataPoint = {
 };
 
 const LightweightChart: Component<{
-  style?: JSX.CSSProperties;
-  class?: string;
   lines?: () => LinesData[];
+  class?: string;
+  style?: JSX.CSSProperties;
+  width?: string;
+  height?: string;
+  disableScroll?: boolean
 }> = (p) => {
   let el: HTMLDivElement;
   const [chart, setChart] = createSignal<IChartApi>();
@@ -49,8 +52,8 @@ const LightweightChart: Component<{
         vertLines: { color: "#3f454d" },
       },
       timeScale: { timeVisible: true },
-      // handleScroll: false,
-      // handleScale: false,
+      handleScroll: p.disableScroll ? false : true,
+      handleScale: p.disableScroll ? false : true,
     });
     chart.timeScale().fitContent();
     setChart(chart);
@@ -64,11 +67,12 @@ const LightweightChart: Component<{
         const series = chart()!.addLineSeries({
           color: line.color,
           title: line.title,
-          priceLineVisible: line.priceLineVisible || false
+          priceLineVisible: line.priceLineVisible || false,
         });
         series.setData(line.line as any);
         return series;
       });
+      chart()!.timeScale().fitContent();
       lineSeries = series;
     }
   });
@@ -86,7 +90,11 @@ const LightweightChart: Component<{
     <div
       ref={el!}
       class={p.class}
-      style={{ width: "100%", height: "100%", ...p.style }}
+      style={{
+        width: p.width || "100%",
+        height: p.height || "100%",
+        ...p.style,
+      }}
     />
   );
 };

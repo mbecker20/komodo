@@ -1,15 +1,14 @@
 import { useParams } from "@solidjs/router";
-import { Accessor, Component, createEffect, createSignal, For, Match, Show, Switch } from "solid-js";
+import { Component, createEffect, createSignal, Match, Show, Switch } from "solid-js";
 import { client } from "../..";
 import { SystemStatsRecord, Timelength } from "../../types";
-import { convertTsMsToLocalUnixTsInSecs, get_to_one_sec_divisor } from "../../util/helpers";
 import { useLocalStorage } from "../../util/hooks";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
-import LightweightChart from "../shared/LightweightChart";
 import Loading from "../shared/loading/Loading";
 import Selector from "../shared/menu/Selector";
+import { CpuChart, DiskChart, DiskIoCharts, MemChart, NetworkIoCharts, TempuratureChart } from "./Charts";
 import s from "./stats.module.scss";
 
 const TIMELENGTHS = [
@@ -22,13 +21,7 @@ const TIMELENGTHS = [
   Timelength.OneDay,
 ];
 
-const COLORS = {
-  blue: "#184e9f",
-  orange: "#ac5c36",
-  purple: "#5A0B4D",
-  green: "#41764c",
-  red: "#952E23",
-};
+
 
 const VIEWS = [
   "basic",
@@ -58,7 +51,7 @@ const HistoricalStats: Component<{}> = (p) => {
   });
   return (
     <Grid class={s.Content}>
-      <Flex alignItems="center">
+      <Flex alignItems="center" justifyContent="center">
         <Flex class="card light shadow" alignItems="center">
           <button
             class="darkgrey"
@@ -115,8 +108,8 @@ const HistoricalStats: Component<{}> = (p) => {
           </Match>
           <Match when={view() === "i / o"}>
             <Grid class={s.Charts}>
-              <DiskIoCharts stats={stats} />
               <NetworkIoCharts stats={stats} />
+              <DiskIoCharts stats={stats} />
             </Grid>
           </Match>
           <Match when={view() === "temp"}>
@@ -127,261 +120,6 @@ const HistoricalStats: Component<{}> = (p) => {
         </Switch>
       </Show>
     </Grid>
-  );
-};
-
-const CpuChart: Component<{
-  stats: Accessor<SystemStatsRecord[] | undefined>;
-}> = (p) => {
-  const line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(s.ts),
-        value: s.cpu_perc,
-      };
-    });
-  };
-  return (
-    <Show when={line()}>
-      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
-        <h2>cpu</h2>
-        <LightweightChart
-          class={s.LightweightChart}
-          style={{ height: "200px" }}
-          lines={() => [{ title: "%", color: COLORS.blue, line: line()! }]}
-        />
-      </Grid>
-    </Show>
-  );
-};
-
-const MemChart: Component<{
-  stats: Accessor<SystemStatsRecord[] | undefined>;
-}> = (p) => {
-  const [selected, setSelected] = createSignal("%");
-  const line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(s.ts),
-        value:
-          selected() === "%"
-            ? (100 * s.mem_used_gb) / s.mem_total_gb
-            : s.mem_used_gb,
-      };
-    });
-  };
-  return (
-    <Show when={line()}>
-      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
-        <Flex alignItems="center" justifyContent="space-between">
-          <h2>memory</h2>
-          {/* <Selector
-            selected={selected()}
-            items={["%", "GB"]}
-            onSelect={setSelected}
-          /> */}
-        </Flex>
-        <LightweightChart
-          class={s.LightweightChart}
-          style={{ height: "200px" }}
-          lines={() => [{ title: selected(), color: COLORS.blue, line: line()! }]}
-        />
-      </Grid>
-    </Show>
-  );
-};
-
-const DiskChart: Component<{
-  stats: Accessor<SystemStatsRecord[] | undefined>;
-}> = (p) => {
-  const [selected, setSelected] = createSignal("%");
-  const line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(s.ts),
-        value:
-          selected() === "%"
-            ? (100 * s.disk.used_gb) / s.disk.total_gb
-            : s.disk.used_gb,
-      };
-    });
-  };
-  return (
-    <Show when={line()}>
-      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
-        <Flex alignItems="center" justifyContent="space-between">
-          <h2>disk</h2>
-          {/* <Selector
-            selected={selected()}
-            items={["%", "GB"]}
-            onSelect={setSelected}
-          /> */}
-        </Flex>
-        <LightweightChart
-          class={s.LightweightChart}
-          style={{ height: "200px" }}
-          lines={() => [{ title: selected(), color: "#184e9f", line: line()! }]}
-        />
-      </Grid>
-    </Show>
-  );
-};
-
-const NetworkIoCharts: Component<{
-  stats: Accessor<SystemStatsRecord[] | undefined>;
-}> = (p) => {
-  const recv_line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(s.ts),
-        value:
-          s.networks?.length || 0 > 0
-            ? s.networks!.map((n) => n.recieved_kb).reduce((p, c) => p + c) /
-              get_to_one_sec_divisor(s.polling_rate)!
-            : 0,
-      };
-    });
-  };
-  const trans_line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(s.ts),
-        value:
-          s.networks?.length || 0 > 0
-            ? s.networks!.map((n) => n.transmitted_kb).reduce((p, c) => p + c) /
-              get_to_one_sec_divisor(s.polling_rate)!
-            : 0,
-      };
-    });
-  };
-  return (
-    <Show when={recv_line()}>
-      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
-        <Flex alignItems="center" justifyContent="space-between">
-          <h2>network sent kb/s</h2>
-        </Flex>
-        <LightweightChart
-          class={s.LightweightChart}
-          style={{ height: "200px" }}
-          lines={() => [
-            { title: "kb/s", color: "#184e9f", line: trans_line()! },
-          ]}
-        />
-      </Grid>
-      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
-        <Flex alignItems="center" justifyContent="space-between">
-          <h2>network received kb/s</h2>
-        </Flex>
-        <LightweightChart
-          class={s.LightweightChart}
-          style={{ height: "200px" }}
-          lines={() => [
-            { title: "kb/s", color: "#184e9f", line: recv_line()! },
-          ]}
-        />
-      </Grid>
-    </Show>
-  );
-};
-
-const DiskIoCharts: Component<{
-  stats: Accessor<SystemStatsRecord[] | undefined>;
-}> = (p) => {
-  const read_line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(s.ts),
-        value:
-          s.disk.disks?.length || 0 > 0
-            ? s.disk.read_kb /
-              get_to_one_sec_divisor(s.polling_rate)!
-            : 0,
-      };
-    });
-  };
-  const write_line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(s.ts),
-        value:
-          s.disk.disks?.length || 0 > 0
-            ? s.disk.write_kb / get_to_one_sec_divisor(s.polling_rate)!
-            : 0,
-      };
-    });
-  };
-  return (
-    <Show when={read_line()}>
-      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
-        <Flex alignItems="center" justifyContent="space-between">
-          <h2>disk read kb/s</h2>
-        </Flex>
-        <LightweightChart
-          class={s.LightweightChart}
-          style={{ height: "200px" }}
-          lines={() => [
-            { title: "kb/s", color: "#184e9f", line: read_line()! },
-          ]}
-        />
-      </Grid>
-      <Grid gap="0" class="card shadow" style={{ height: "fit-content" }}>
-        <Flex alignItems="center" justifyContent="space-between">
-          <h2>disk write kb/s</h2>
-        </Flex>
-        <LightweightChart
-          class={s.LightweightChart}
-          style={{ height: "200px" }}
-          lines={() => [
-            { title: "kb/s", color: "#184e9f", line: write_line()! },
-          ]}
-        />
-      </Grid>
-    </Show>
-  );
-};
-
-const TempuratureChart: Component<{
-  stats: Accessor<SystemStatsRecord[] | undefined>;
-}> = (p) => {
-  // const [selected, setSelected] = createSignal(p.stats()![p.stats()!.length - 1].components![0].label);
-  const labels = () => {
-    return p.stats()![p.stats()!.length - 1].components!.map((c) => c.label);
-  };
-  const line = (component: string) => {
-    return p.stats()?.map((s) => {
-      const temp = s.components!.find((c) => c.label === component)?.temp;
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(s.ts),
-        value: temp || 0,
-      };
-    });
-  };
-  return (
-    <For each={labels()}>
-      {(label) => (
-        <Grid
-          gap="0"
-          class="card shadow"
-          style={{ height: "fit-content" }}
-        >
-          <Flex alignItems="center" justifyContent="space-between">
-            <h2>{label}</h2>
-            {/* <Selector
-          selected={selected()}
-          items={labels()}
-          onSelect={setSelected}
-        /> */}
-          </Flex>
-          <LightweightChart
-            class={s.LightweightChart}
-            style={{ height: "200px" }}
-            lines={() => [
-              { title: "temp", color: "#184e9f", line: line(label)! },
-            ]}
-          />
-        </Grid>
-      )}
-    </For>
   );
 };
 

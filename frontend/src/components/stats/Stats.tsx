@@ -18,7 +18,7 @@ const Stats: Component<{}> = (p) => {
   const [view, setView] = useLocalStorage("current", "stats-view-v1");
   return (
     <Grid class={s.Content}>
-      <Flex alignItems="center">
+      <Flex alignItems="center" justifyContent="space-between">
         <Header />
         <Selector
           targetClass="grey"
