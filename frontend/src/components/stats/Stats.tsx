@@ -1,5 +1,5 @@
 import { useParams } from "@solidjs/router";
-import { Accessor, Component, createSignal, Match, Setter, Signal, Switch } from "solid-js";
+import { Accessor, Component, createSignal, Match, Setter, Show, Signal, Switch } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { Timelength } from "../../types";
 import { useLocalStorage } from "../../util/hooks";
@@ -37,18 +37,20 @@ const Stats: Component<{}> = () => {
     <Grid class={s.Content}>
       <Grid class={s.HeaderArea} placeItems="center start">
         <Header />
-        <Flex alignItems="center" style={{ "place-self": "center" }}>
-          <PageManager page={page} setPage={setPage} />
-          <Selector
-            targetClass="grey"
-            selected={timelength()}
-            items={TIMELENGTHS}
-            onSelect={(selected) => {
-              setPage(0);
-              setTimelength(selected as Timelength);
-            }}
-          />
-        </Flex>
+        <Show when={view() === "historical"} fallback={<div />}>
+          <Flex alignItems="center" style={{ "place-self": "center" }}>
+            <PageManager page={page} setPage={setPage} />
+            <Selector
+              targetClass="grey"
+              selected={timelength()}
+              items={TIMELENGTHS}
+              onSelect={(selected) => {
+                setPage(0);
+                setTimelength(selected as Timelength);
+              }}
+            />
+          </Flex>
+        </Show>
         <Selector
           containerStyle={{ "place-self": "center end" }}
           targetClass="grey"

@@ -15,9 +15,11 @@ import SimpleTabs from "../shared/tabs/SimpleTabs";
 import {
   CpuChart,
   DiskChart,
-  DiskIoCharts,
+  DiskReadChart,
+  DiskWriteChart,
   MemChart,
-  NetworkIoCharts,
+  NetworkRecvChart,
+  NetworkSentChart,
   TempuratureChart,
 } from "./Charts";
 import s from "./stats.module.scss";
@@ -52,8 +54,10 @@ const HistoricalStats: Component<{
               title: "io",
               element: () => (
                 <Grid class={s.Charts}>
-                  <NetworkIoCharts stats={stats} />
-                  <DiskIoCharts stats={stats} />
+                  <NetworkRecvChart stats={stats} />
+                  <NetworkSentChart stats={stats} />
+                  <DiskReadChart stats={stats} />
+                  <DiskWriteChart stats={stats} />
                 </Grid>
               ),
             },
@@ -77,26 +81,6 @@ const HistoricalStats: Component<{
             },
           ]}
         />
-        {/* <Switch>
-          <Match when={view() === "basic"}>
-            <Grid class={s.Charts}>
-              <CpuChart stats={stats} />
-              <MemChart stats={stats} />
-              <DiskChart stats={stats} />
-            </Grid>
-          </Match>
-          <Match when={view() === "i / o"}>
-            <Grid class={s.Charts}>
-              <NetworkIoCharts stats={stats} />
-              <DiskIoCharts stats={stats} />
-            </Grid>
-          </Match>
-          <Match when={view() === "temp"}>
-            <Grid class={s.Charts}>
-              <TempuratureChart stats={stats} />
-            </Grid>
-          </Match>
-        </Switch> */}
       </Show>
     </Grid>
   );

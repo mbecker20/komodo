@@ -239,18 +239,18 @@ impl StatsClient {
             }
         }
         let used_gb = total_gb - free_gb;
-        let mut read_kb = 0.0;
-        let mut write_kb = 0.0;
+        let mut read_bytes = 0;
+        let mut write_bytes = 0;
         for (_, process) in self.sys.processes() {
             let disk_usage = process.disk_usage();
-            read_kb += disk_usage.read_bytes as f64 / BYTES_PER_KB;
-            write_kb += disk_usage.written_bytes as f64 / BYTES_PER_KB;
+            read_bytes += disk_usage.read_bytes;
+            write_bytes += disk_usage.written_bytes;
         }
         DiskUsage {
             used_gb,
             total_gb,
-            read_kb,
-            write_kb,
+            read_kb: read_bytes as f64 / BYTES_PER_KB,
+            write_kb: write_bytes as f64 / BYTES_PER_KB,
             disks,
         }
     }

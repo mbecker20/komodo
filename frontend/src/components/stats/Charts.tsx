@@ -100,7 +100,7 @@ export const MemChart: Component<{
     <SingleStatChart
       header="memory"
       label="mem %"
-      color={COLORS.blue}
+      color={COLORS.green}
       line={line}
       small={p.small}
       disableScroll={p.disableScroll}
@@ -127,7 +127,7 @@ export const DiskChart: Component<{
     <SingleStatChart
       header="disk"
       label="disk %"
-      color={COLORS.blue}
+      color={COLORS.orange}
       line={line}
       small={p.small}
       disableScroll={p.disableScroll}
@@ -135,7 +135,7 @@ export const DiskChart: Component<{
   );
 };
 
-export const NetworkIoCharts: Component<{
+export const NetworkRecvChart: Component<{
   stats: Accessor<(SystemStatsRecord | SystemStats)[] | undefined>;
   small?: boolean;
   disableScroll?: boolean;
@@ -154,7 +154,24 @@ export const NetworkIoCharts: Component<{
       };
     });
   };
-  const trans_line = () => {
+  return (
+    <SingleStatChart
+      header="network received kb/s"
+      label="recv kb/s"
+      color={COLORS.green}
+      line={recv_line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
+  );
+};
+
+export const NetworkSentChart: Component<{
+  stats: Accessor<(SystemStatsRecord | SystemStats)[] | undefined>;
+  small?: boolean;
+  disableScroll?: boolean;
+}> = (p) => {
+  const sent_line = () => {
     return p.stats()?.map((s) => {
       return {
         time: convertTsMsToLocalUnixTsInSecs(
@@ -169,31 +186,22 @@ export const NetworkIoCharts: Component<{
     });
   };
   return (
-    <>
-      <SingleStatChart
-        header="network sent kb/s"
-        label="sent kb/s"
-        color={COLORS.green}
-        line={trans_line}
-        small={p.small}
-        disableScroll={p.disableScroll}
-      />
-      <SingleStatChart
-        header="network received kb/s"
-        label="recv kb/s"
-        color={COLORS.green}
-        line={recv_line}
-        small={p.small}
-        disableScroll={p.disableScroll}
-      />
-    </>
+    <SingleStatChart
+      header="network sent kb/s"
+      label="sent kb/s"
+      color={COLORS.red}
+      line={sent_line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
   );
 };
 
-export const DiskIoCharts: Component<{
+export const DiskReadChart: Component<{
   stats: Accessor<(SystemStatsRecord | SystemStats)[] | undefined>;
   small?: boolean;
   disableScroll?: boolean;
+  gridFillers?: boolean;
 }> = (p) => {
   const read_line = () => {
     return p.stats()?.map((s) => {
@@ -201,45 +209,47 @@ export const DiskIoCharts: Component<{
         time: convertTsMsToLocalUnixTsInSecs(
           (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
         ),
-        value:
-          s.disk.disks?.length || 0 > 0
-            ? s.disk.read_kb / get_to_one_sec_divisor(s.polling_rate)!
-            : 0,
+        value: s.disk.read_kb / get_to_one_sec_divisor(s.polling_rate)!,
       };
     });
   };
+  return (
+    <SingleStatChart
+      header="disk read kb/s"
+      label="read kb/s"
+      color={COLORS.green}
+      line={read_line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
+  );
+};
+
+export const DiskWriteChart: Component<{
+  stats: Accessor<(SystemStatsRecord | SystemStats)[] | undefined>;
+  small?: boolean;
+  disableScroll?: boolean;
+  gridFillers?: boolean;
+}> = (p) => {
   const write_line = () => {
     return p.stats()?.map((s) => {
       return {
         time: convertTsMsToLocalUnixTsInSecs(
           (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
         ),
-        value:
-          s.disk.disks?.length || 0 > 0
-            ? s.disk.write_kb / get_to_one_sec_divisor(s.polling_rate)!
-            : 0,
+        value: s.disk.write_kb / get_to_one_sec_divisor(s.polling_rate)!,
       };
     });
   };
   return (
-    <>
-      <SingleStatChart
-        header="disk read kb/s"
-        label="read kb/s"
-        color={COLORS.orange}
-        line={read_line}
-        small={p.small}
-        disableScroll={p.disableScroll}
-      />
-      <SingleStatChart
-        header="disk write kb/s"
-        label="write kb/s"
-        color={COLORS.orange}
-        line={write_line}
-        small={p.small}
-        disableScroll={p.disableScroll}
-      />
-    </>
+    <SingleStatChart
+      header="disk write kb/s"
+      label="write kb/s"
+      color={COLORS.red}
+      line={write_line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
   );
 };
 
@@ -248,13 +258,32 @@ export const TempuratureChart: Component<{
   small?: boolean;
   disableScroll?: boolean;
 }> = (p) => {
-  // const [selected, setSelected] = createSignal(p.stats()![p.stats()!.length - 1].components![0].label);
   const labels = () => {
     return p.stats()![p.stats()!.length - 1].components!.map((c) => c.label);
   };
-  const line = (component: string) => () => {
+  return (
+    <For each={labels()}>
+      {(component) => (
+        <SingleTempuratureChart
+          component={component}
+          stats={p.stats}
+          small={p.small}
+          disableScroll={p.disableScroll}
+        />
+      )}
+    </For>
+  );
+};
+
+export const SingleTempuratureChart: Component<{
+  stats: Accessor<(SystemStatsRecord | SystemStats)[] | undefined>;
+  component: string;
+  small?: boolean;
+  disableScroll?: boolean;
+}> = (p) => {
+  const line = () => {
     return p.stats()?.map((s) => {
-      const temp = s.components!.find((c) => c.label === component)?.temp;
+      const temp = s.components!.find((c) => c.label === p.component)?.temp;
       return {
         time: convertTsMsToLocalUnixTsInSecs(
           (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
@@ -264,17 +293,13 @@ export const TempuratureChart: Component<{
     });
   };
   return (
-    <For each={labels()}>
-      {(component) => (
-        <SingleStatChart
-          header={component}
-          label="temp"
-          color={COLORS.red}
-          line={line(component)}
-          small={p.small}
-          disableScroll={p.disableScroll}
-        />
-      )}
-    </For>
+    <SingleStatChart
+      header={p.component}
+      label="temp"
+      color={COLORS.red}
+      line={line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
   );
 };

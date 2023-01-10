@@ -41,7 +41,6 @@ const Topbar: Component = () => {
 
 const LeftSide: Component = () => {
   const { ws } = useAppState();
-  const navigate = useNavigate();
   return (
     <Flex
       alignItems="center"
