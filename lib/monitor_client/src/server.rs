@@ -7,7 +7,7 @@ use monitor_types::{
 use serde_json::{json, Value};
 use tokio::{
     sync::broadcast::{self, Receiver},
-    task::JoinHandle,
+    task::JoinHandle, select,
 };
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tokio_util::sync::CancellationToken;
@@ -152,7 +152,7 @@ impl MonitorClient {
                 let (sender, receiver) = broadcast::channel(100);
                 let handle = tokio::spawn(async move {
                     loop {
-                        let stats = tokio::select! {
+                        let stats = select! {
                             _ = cancel_clone.cancelled() => {
                                 let _ = socket.close(None).await;
                                 break;

@@ -13,7 +13,7 @@ types = { package = "monitor_types", version = "0.1.2" }
 db = { package = "db_client", path = "../lib/db_client" }
 periphery = { package = "periphery_client", path = "../lib/periphery_client" }
 axum_oauth2 = { path = "../lib/axum_oauth2" }
-tokio = { version = "1.21", features = ["full"] }
+tokio = { version = "1.24", features = ["full"] }
 tokio-tungstenite = { version = "0.18", features=["native-tls"] }
 tokio-util = "0.7"
 axum = { version = "0.6", features = ["ws", "json"] }
