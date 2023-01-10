@@ -84,9 +84,11 @@ async function handleMessage(
       : update.success
       ? "good"
       : "bad",
-    `${update.operation.replaceAll("_", " ")} ${name ? `on ${name} ` : ""}(${
-      update.status
-    })`
+    `${
+      update.operation === Operation.BuildBuild
+        ? "build"
+        : update.operation.replaceAll("_", " ")
+    } ${name ? `on ${name} ` : ""}(${update.status})`
   );
 
   // deployment

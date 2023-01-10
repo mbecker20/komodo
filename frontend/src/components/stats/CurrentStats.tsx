@@ -14,7 +14,7 @@ import {
   Switch,
 } from "solid-js";
 import { client, URL } from "../..";
-import { SystemStats } from "../../types";
+import { SystemProcess, SystemStats } from "../../types";
 import { generateQuery } from "../../util/helpers";
 import { useLocalStorage } from "../../util/hooks";
 import Circle from "../shared/Circle";
@@ -45,7 +45,7 @@ const CurrentStats: Component<{}> = (p) => {
       .get_server_stats(params.id, {
         networks: true,
         components: true,
-        processes: false,
+        processes: true,
       })
       .then((stats) => setStats([stats]));
   });
@@ -82,10 +82,6 @@ const CurrentStats: Component<{}> = (p) => {
           />
           <div />
 
-          <div />
-          <h1>tempurature</h1>
-          <div />
-
           <For
             each={latest().components?.filter((c) => c.critical !== undefined)}
           >
@@ -100,6 +96,24 @@ const CurrentStats: Component<{}> = (p) => {
                   <div style={{ opacity: 0.7 }}>{comp.temp.toFixed(1)}°</div>
                 }
               />
+            )}
+          </For>
+
+          <div />
+          <h1>processes</h1>
+          <div />
+
+          <For
+            each={latest().processes?.filter(
+              (p) => p.cpu_perc > 0 || p.mem_mb > 0
+            )}
+          >
+            {(proc) => (
+              <>
+                <div />
+                <Process proc={proc} />
+                <div />
+              </>
             )}
           </For>
         </Grid>
@@ -124,20 +138,17 @@ const BasicInfo: Component<{
   return (
     <>
       <div />
-      <Flex alignItems="center">
-        <h1>basic</h1>
-        <HoverMenu
-          target={
-            <Circle
-              size={1}
-              class={p.open() ? "green" : "red"}
-              style={{ transition: "all 500ms ease-in-out" }}
-            />
-          }
-          content={p.open() ? "connected" : "disconnected"}
-          position="right center"
-        />
-      </Flex>
+      <HoverMenu
+        target={
+          <Circle
+            size={1}
+            class={p.open() ? "green" : "red"}
+            style={{ transition: "all 500ms ease-in-out" }}
+          />
+        }
+        content={p.open() ? "connected" : "disconnected"}
+        position="right center"
+      />
       <div />
 
       <StatsHeatbarRow
@@ -192,13 +203,10 @@ const StatsHeatbarRow: Component<{
     <>
       <Show when={p.type === "temp"}>
         <div />
-        <div>{p.label}</div>
+        <h2>{p.label}</h2>
         <div />
       </Show>
-      <Show
-        when={p.type !== "temp"}
-        fallback={<div />}
-      >
+      <Show when={p.type !== "temp"} fallback={<div />}>
         <h1 style={{ "place-self": "center end" }}>{p.label}</h1>
       </Show>
       <HeatBar
@@ -236,6 +244,41 @@ const StatsHeatbarRow: Component<{
         <div />
       </Show>
     </>
+  );
+};
+
+const Process: Component<{ proc: SystemProcess }> = (p) => {
+  return (
+    <Flex
+      class="card shadow"
+      alignItems="center"
+      justifyContent="space-between"
+      style={{ width: "100%", "box-sizing": "border-box" }}
+    >
+      <h2>{p.proc.name}</h2>
+      <Flex alignItems="center">
+        <Flex gap="0.3rem" alignItems="center">
+          <div>cpu:</div>
+          <h2>{p.proc.cpu_perc.toFixed(1)}%</h2>
+        </Flex>
+        <Flex gap="0.3rem" alignItems="center">
+          <div>mem:</div>
+          <h2>{p.proc.mem_mb.toFixed(1)} mb</h2>
+        </Flex>
+        <Flex gap="0.3rem" alignItems="center">
+          <div>disk read:</div>
+          <h2>{p.proc.disk_read_kb.toFixed(1)} kb</h2>
+        </Flex>
+        <Flex gap="0.3rem" alignItems="center">
+          <div>disk write:</div>
+          <h2>{p.proc.disk_write_kb.toFixed(1)} kb</h2>
+        </Flex>
+        <Flex gap="0.3rem" alignItems="center">
+          <div>pid:</div>
+          <h2>{p.proc.pid}</h2>
+        </Flex>
+      </Flex>
+    </Flex>
   );
 };
 
