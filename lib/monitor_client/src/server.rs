@@ -6,8 +6,9 @@ use monitor_types::{
 };
 use serde_json::{json, Value};
 use tokio::{
+    select,
     sync::broadcast::{self, Receiver},
-    task::JoinHandle, select,
+    task::JoinHandle,
 };
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tokio_util::sync::CancellationToken;

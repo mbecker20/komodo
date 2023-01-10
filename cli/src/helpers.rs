@@ -458,11 +458,12 @@ pub fn gen_periphery_service_file(sub_matches: &ArgMatches) {
     let output = run_command_pipe_to_terminal("systemctl daemon-reload");
 
     if output.success() {
-        println!(
-            "\n✅ successfully added service to systemd ✅\n"
-        )
+        println!("\n✅ successfully added service to systemd ✅\n")
     } else {
-        eprintln!("\n❌ there was some {} adding service to systemd ❌\n", "error".red())
+        eprintln!(
+            "\n❌ there was some {} adding service to systemd ❌\n",
+            "error".red()
+        )
     }
 }
 
