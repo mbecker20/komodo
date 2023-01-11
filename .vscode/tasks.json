@@ -86,6 +86,7 @@
 		{
 			"type": "cargo",
 			"command": "publish",
+			"args": ["--allow-dirty"],
 			"label": "publish monitor types",
 			"options": {
 				"cwd": "${workspaceFolder}/lib/types"
@@ -94,6 +95,7 @@
 		{
 			"type": "cargo",
 			"command": "publish",
+			"args": ["--allow-dirty"],
 			"label": "publish monitor helpers",
 			"options": {
 				"cwd": "${workspaceFolder}/lib/helpers"

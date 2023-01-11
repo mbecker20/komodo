@@ -21,7 +21,7 @@ fn cli() -> Command {
                 .arg_required_else_help(true)
                 .allow_external_subcommands(true)
                 .subcommand(
-                    Command::new("gen_config")
+                    Command::new("gen-config")
                         .about("generate a core config file")
                         .arg(
                             arg!(--host <HOST> "the host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'")
@@ -36,25 +36,25 @@ fn cli() -> Command {
                                 .required(false)
                         )
                         .arg(
-                            arg!(--mongo_uri <URI> "sets the mongo uri to use. default is 'mongodb://monitor-mongo'")
+                            arg!(--mongo-uri <URI> "sets the mongo uri to use. default is 'mongodb://monitor-mongo'")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--mongo_db_name <NAME> "sets the db name to use. default is 'monitor'")
+                            arg!(--mongo-db-name <NAME> "sets the db name to use. default is 'monitor'")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--jwt_valid_for <TIMELENGTH> "sets the length of time jwt stays valid for. default is 1-wk (one week)")
+                            arg!(--jwt-valid-for <TIMELENGTH> "sets the length of time jwt stays valid for. default is 1-wk (one week)")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--slack_url <URL> "sets the slack url to use for slack notifications")
+                            arg!(--slack-url <URL> "sets the slack url to use for slack notifications")
                                 .required(false)
                         ),
                 )
                 .subcommand(
-                    Command::new("start_mongo")
-                        .about("start up a local mongo container for monitor")
+                    Command::new("start-mongo")
+                        .about("start up a local mongo container for monitor core")
                         .arg(
                             arg!(--name <NAME> "specify the name of the mongo container. default is monitor-mongo")
                                 .required(false)
@@ -90,7 +90,7 @@ fn cli() -> Command {
                             arg!(--name <NAME> "specify the name of the monitor core container. default is monitor-core")
                         )
                         .arg(
-                            arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/core.config.toml")
+                            arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/core.config.toml")
                                 .required(false)
                         )
                         .arg(
@@ -113,7 +113,7 @@ fn cli() -> Command {
                 .arg_required_else_help(true)
                 .allow_external_subcommands(true)
                 .subcommand(
-                    Command::new("gen_config")
+                    Command::new("gen-config")
                         .about("generate a periphery config file")
                         .arg(
                             arg!(--path <PATH> "sets path of generated config file. default is '~/.monitor/periphery.config.toml'")
@@ -124,21 +124,21 @@ fn cli() -> Command {
                                 .required(false)
                         )
                         .arg(
-                            arg!(--stats_polling_rate <INTERVAL> "sets stats polling rate to control granularity of system stats returned. default is 5-sec. options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min")
+                            arg!(--stats-polling-rate <INTERVAL> "sets stats polling rate to control granularity of system stats returned. default is 5-sec. options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--allowed_ips <IPS> "used to only accept requests from known ips. give ips as comma seperated list, like '--allowed_ips 127.0.0.1,10.20.30.43'. default is empty, which will not block any ip.")
+                            arg!(--allowed-ips <IPS> "used to only accept requests from known ips. give ips as comma seperated list, like '--allowed_ips 127.0.0.1,10.20.30.43'. default is empty, which will not block any ip.")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--repo_dir <PATH> "if running in container, this should be '/repos'. default is ~/.monitor/repos").required(false)
+                            arg!(--repo-dir <PATH> "if running in container, this should be '/repos'. default is ~/.monitor/repos").required(false)
                         )
                 )
-                .subcommand(
-                    Command::new("gen_service")
-                        .about("generate a periphery systemd service file")
-                )
+                // .subcommand(
+                //     Command::new("gen-service-file")
+                //         .about("generate a periphery systemd service file")
+                // )
                 .subcommand(
                     Command::new("start")
                         .about("tools to start periphery as daemon or container")
@@ -146,7 +146,7 @@ fn cli() -> Command {
                             Command::new("daemon")
                                 .about("start up monitor periphery daemon")
                                 .arg(
-                                    arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                    arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
                                         .required(false)
                                 )
                                 .arg(
@@ -165,10 +165,10 @@ fn cli() -> Command {
                                     arg!(--name <NAME> "specify the name of the monitor periphery container. default is monitor-periphery")
                                 )
                                 .arg(
-                                    arg!(--config_path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                    arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
                                         .required(false)
                                 )
-                                .arg(arg!(--repo_dir <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos"))
+                                .arg(arg!(--repo-dir <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos"))
                                 .arg(
                                     arg!(--port <PORT> "sets port monitor periphery will run on. default is 8000")
                                         .required(false)
@@ -190,36 +190,36 @@ fn main() {
 
     match matches.subcommand() {
         Some(("core", sub_matches)) => {
-            let core_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor_cli core <gen_config, start_mongo, start> <flags>' ❌\n");
+            let core_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor core <gen-config, start-mongo, start> <flags>' ❌\n");
             match core_command {
-                ("gen_config", sub_matches) => gen_core_config(sub_matches),
-                ("start_mongo", sub_matches) => start_mongo(sub_matches),
+                ("gen-config", sub_matches) => gen_core_config(sub_matches),
+                ("start-mongo", sub_matches) => start_mongo(sub_matches),
                 ("start", sub_matches) => start_core(sub_matches),
                 _ => {
-                    println!("\n❌ invalid call, should be 'monitor_cli core <gen_config, start_mongo, start> <flags>' ❌\n")
+                    println!("\n❌ invalid call, should be 'monitor core <gen-config, start-mongo, start> <flags>' ❌\n")
                 }
             }
         }
         Some(("periphery", sub_matches)) => {
             let periphery_command = sub_matches.subcommand().expect(
-                "\n❌ invalid call, should be 'monitor_cli periphery <gen_config, start> <flags>' ❌\n",
+                "\n❌ invalid call, should be 'monitor periphery <gen-config, start> <flags>' ❌\n",
             );
             match periphery_command {
-                ("gen_config", sub_matches) => gen_periphery_config(sub_matches),
-                ("gen_service", sub_matches) => gen_periphery_service_file(sub_matches),
+                ("gen-config", sub_matches) => gen_periphery_config(sub_matches),
+                // ("gen-service-file", sub_matches) => gen_periphery_service_file(sub_matches),
                 ("start", sub_matches) => {
-                    let periphery_start_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor_cli periphery start <daemon, container> <flags>' ❌\n");
+                    let periphery_start_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor periphery start <daemon, container> <flags>' ❌\n");
                     match periphery_start_command {
                         ("daemon", sub_matches) => start_periphery_daemon(sub_matches),
                         ("container", sub_matches) => start_periphery_container(sub_matches),
-                        _ => println!("\n❌ invalid call, should be 'monitor_cli periphery start <daemon, container> <flags>' ❌\n")
+                        _ => println!("\n❌ invalid call, should be 'monitor periphery start <daemon, container> <flags>' ❌\n")
                     }
                 }
                 _ => {
-                    println!("\n❌ invalid call, should be 'monitor_cli periphery <gen_config, start>...' ❌\n")
+                    println!("\n❌ invalid call, should be 'monitor periphery <gen-config, start>...' ❌\n")
                 }
             }
         }
-        _ => println!("\n❌ invalid call, should be 'monitor_cli <core, periphery> ...' ❌\n"),
+        _ => println!("\n❌ invalid call, should be 'monitor <core, periphery> ...' ❌\n"),
     }
 }

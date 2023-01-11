@@ -41,26 +41,26 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         .expect("invalid port");
 
     let mongo_uri = sub_matches
-        .get_one::<String>("mongo_uri")
+        .get_one::<String>("mongo-uri")
         .map(|p| p.as_str())
         .unwrap_or("mongodb://monitor-mongo")
         .to_string();
 
     let mongo_db_name = sub_matches
-        .get_one::<String>("mongo_db_name")
+        .get_one::<String>("mongo-db-name")
         .map(|p| p.as_str())
         .unwrap_or("monitor")
         .to_string();
 
     let jwt_valid_for = sub_matches
-        .get_one::<String>("jwt_valid_for")
+        .get_one::<String>("jwt-valid-for")
         .map(|p| p.as_str())
         .unwrap_or("1-wk")
         .parse()
-        .expect("invalid jwt_valid_for");
+        .expect("invalid jwt-valid-for");
 
     let slack_url = sub_matches
-        .get_one::<String>("slack_url")
+        .get_one::<String>("slack-url")
         .map(|p| p.to_owned());
 
     let config = CoreConfig {
@@ -156,6 +156,7 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
     println!("{}: {port}", "port".dimmed());
     println!("{}: {mount}", "mount".dimmed());
     println!("{}: {network}", "network".dimmed());
+    println!("{}: {restart}", "restart".dimmed());
 
     println!(
         "\npress {} to start {}. {}",
@@ -184,7 +185,7 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
 
 pub fn start_core(sub_matches: &ArgMatches) {
     let config_path = sub_matches
-        .get_one::<String>("config_path")
+        .get_one::<String>("config-path")
         .map(|p| p.as_str())
         .unwrap_or("~/.monitor/core.config.toml")
         .to_string();
@@ -221,6 +222,7 @@ pub fn start_core(sub_matches: &ArgMatches) {
     println!("{}: {config_path}", "config path".dimmed());
     println!("{}: {port}", "port".dimmed());
     println!("{}: {network}", "network".dimmed());
+    println!("{}: {restart}", "restart".dimmed());
 
     println!(
         "\npress {} to start {}. {}",
@@ -262,14 +264,14 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
         .expect("invalid port");
 
     let stats_polling_rate = sub_matches
-        .get_one::<String>("stats_polling_rate")
+        .get_one::<String>("stats-polling-rate")
         .map(|p| p.as_str())
         .unwrap_or("5-sec")
         .parse::<Timelength>()
         .expect("invalid timelength");
 
     let allowed_ips = sub_matches
-        .get_one::<String>("allowed_ips")
+        .get_one::<String>("allowed-ips")
         .map(|p| p.as_str())
         .unwrap_or("")
         .split(",")
@@ -281,7 +283,7 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
         .collect::<Vec<IpAddr>>();
 
     let repo_dir = sub_matches
-        .get_one::<String>("repo_dir")
+        .get_one::<String>("repo-dir")
         .map(|p| p.as_str())
         .unwrap_or("~/.monitor/repos")
         .to_string()
@@ -307,7 +309,7 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
 
 pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
     let config_path = sub_matches
-        .get_one::<String>("config_path")
+        .get_one::<String>("config-path")
         .map(|p| p.as_str())
         .unwrap_or("~/.monitor/periphery.config.toml")
         .to_string();
@@ -376,13 +378,13 @@ pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
 
 pub fn start_periphery_container(sub_matches: &ArgMatches) {
     let config_path = sub_matches
-        .get_one::<String>("config_path")
+        .get_one::<String>("config-path")
         .map(|p| p.as_str())
         .unwrap_or("~/.monitor/periphery.config.toml")
         .to_string();
 
     let repo_dir = sub_matches
-        .get_one::<String>("repo_dir")
+        .get_one::<String>("repo-dir")
         .map(|p| p.as_str())
         .unwrap_or("~/.monitor/repos")
         .to_string();
@@ -420,6 +422,7 @@ pub fn start_periphery_container(sub_matches: &ArgMatches) {
     println!("{}: {repo_dir}", "repo folder".dimmed());
     println!("{}: {port}", "port".dimmed());
     println!("{}: {network}", "network".dimmed());
+    println!("{}: {restart}", "restart".dimmed());
 
     println!(
         "\npress {} to start {}. {}",
