@@ -273,7 +273,7 @@ impl State {
             .iter()
             .map(|c| {
                 if let Some(critical) = c.critical {
-                    if c.temp / critical > 0.75 {
+                    if c.temp / critical > 0.85 {
                         format!(
                             "{}: *{:.1}°* (*{:.1}%* to critical) 🌡️",
                             c.label,
