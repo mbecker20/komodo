@@ -36,10 +36,10 @@ import {
 } from "./Charts";
 import s from "./stats.module.scss";
 
-const CurrentStats: Component<{}> = (p) => {
+const CurrentStats: Component<{ setWsOpen: Setter<boolean> }> = (p) => {
   const params = useParams();
   const [stats, setStats] = createSignal<SystemStats[]>([]);
-  const { open } = useStatsWs(params, setStats);
+  useStatsWs(params, setStats, p.setWsOpen);
   createEffect(() => {
     client
       .get_server_stats(params.id, {
@@ -54,7 +54,7 @@ const CurrentStats: Component<{}> = (p) => {
     <Grid class={s.Content} placeItems="start center">
       <Show when={stats().length > 0} fallback={<Loading type="three-dot" />}>
         <Grid class={s.HeatBars} placeItems="center start">
-          <BasicInfo stats={stats} open={open} />
+          <BasicInfo stats={stats} />
           <div />
           <SimpleTabs
             containerStyle={{ width: "100%", "min-width": "300px" }}
@@ -126,7 +126,6 @@ export default CurrentStats;
 
 const BasicInfo: Component<{
   stats: Accessor<SystemStats[]>;
-  open: Accessor<boolean>;
 }> = (p) => {
   const latest = () => p.stats()[p.stats().length - 1];
   const mem_perc = () => {
@@ -137,20 +136,6 @@ const BasicInfo: Component<{
   };
   return (
     <>
-      <div />
-      <HoverMenu
-        target={
-          <Circle
-            size={1}
-            class={p.open() ? "green" : "red"}
-            style={{ transition: "all 500ms ease-in-out" }}
-          />
-        }
-        content={p.open() ? "connected" : "disconnected"}
-        position="right center"
-      />
-      <div />
-
       <StatsHeatbarRow
         label="cpu"
         type="cpu"
@@ -282,7 +267,7 @@ const Process: Component<{ proc: SystemProcess }> = (p) => {
   );
 };
 
-function useStatsWs(params: Params, setStats: Setter<SystemStats[]>) {
+function useStatsWs(params: Params, setStats: Setter<SystemStats[]>, setWsOpen: Setter<boolean>) {
   const ws = new ReconnectingWebSocket(
     `${URL.replace("http", "ws")}/ws/stats/${params.id}${generateQuery({
       networks: "true",
@@ -290,11 +275,10 @@ function useStatsWs(params: Params, setStats: Setter<SystemStats[]>) {
       processes: "true",
     })}`
   );
-  const [open, setOpen] = createSignal(false);
   ws.addEventListener("open", () => {
     // console.log("connection opened");
     ws.send(client.token!);
-    setOpen(true);
+    setWsOpen(true);
   });
   ws.addEventListener("message", ({ data }) => {
     if (data === "LOGGED_IN") {
@@ -311,15 +295,12 @@ function useStatsWs(params: Params, setStats: Setter<SystemStats[]>) {
   ws.addEventListener("close", () => {
     console.log("stats connection closed");
     // clearInterval(int);
-    setOpen(false);
+    setWsOpen(false);
   });
   onCleanup(() => {
     console.log("closing stats ws");
     ws.close();
   });
-  return {
-    open,
-  };
 }
 
 // const NetworkIoInfo: Component<{ stats: Accessor<SystemStats[]> }> = (p) => {

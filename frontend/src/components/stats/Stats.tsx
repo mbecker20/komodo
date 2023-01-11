@@ -3,9 +3,11 @@ import { Accessor, Component, createSignal, Match, Setter, Show, Signal, Switch 
 import { useAppState } from "../../state/StateProvider";
 import { Timelength } from "../../types";
 import { useLocalStorage } from "../../util/hooks";
+import Circle from "../shared/Circle";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
+import HoverMenu from "../shared/menu/HoverMenu";
 import Selector from "../shared/menu/Selector";
 import CurrentStats from "./CurrentStats";
 import HistoricalStats from "./HistoricalStats";
@@ -33,10 +35,11 @@ const Stats: Component<{}> = () => {
     "stats-timelength-v3"
   );
   const [page, setPage] = createSignal(0);
+  const [wsOpen, setWsOpen] = createSignal(false);
   return (
     <Grid class={s.Content}>
       <Grid class={s.HeaderArea} placeItems="center start">
-        <Header />
+        <Header view={view()} open={wsOpen()} />
         <Show when={view() === "historical"} fallback={<div />}>
           <Flex alignItems="center" style={{ "place-self": "center" }}>
             <PageManager page={page} setPage={setPage} />
@@ -62,7 +65,7 @@ const Stats: Component<{}> = () => {
       </Grid>
       <Switch>
         <Match when={view() === "current"}>
-          <CurrentStats />
+          <CurrentStats setWsOpen={setWsOpen} />
         </Match>
         <Match when={view() === "historical"}>
           <HistoricalStats page={page} timelength={timelength} />
@@ -72,14 +75,27 @@ const Stats: Component<{}> = () => {
   );
 };
 
-export const Header = () => {
+export const Header: Component<{ view: string, open: boolean }> = (p) => {
   const { servers } = useAppState();
   const params = useParams();
   const server = () => servers.get(params.id);
   return (
-    <Grid gap="0.1rem">
+    <Flex alignItems="center">
       <h1>{server()?.server.name} - system stats</h1>
-    </Grid>
+      <Show when={p.view === "current"}>
+        <HoverMenu
+          target={
+            <Circle
+              size={1}
+              class={p.open ? "green" : "red"}
+              style={{ transition: "all 500ms ease-in-out" }}
+            />
+          }
+          content={p.open ? "connected" : "disconnected"}
+          position="right center"
+        />
+      </Show>
+    </Flex>
   );
 }
 
