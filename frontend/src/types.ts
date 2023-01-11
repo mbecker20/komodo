@@ -4,6 +4,19 @@
 
 export type PermissionsMap = Record<string, PermissionLevel>;
 
+export interface Action {
+	_id?: string;
+	name: string;
+	path: string;
+	command: string;
+	server_ids?: string[];
+	group_ids?: string[];
+	run_on_all?: boolean;
+	permissions?: PermissionsMap;
+	created_at?: string;
+	updated_at?: string;
+}
+
 export interface Build {
 	_id?: string;
 	name: string;
@@ -81,13 +94,14 @@ export interface DeploymentActionState {
 
 export interface DockerRunArgs {
 	image: string;
-	ports: Conversion[];
-	volumes: Conversion[];
-	environment: EnvironmentVar[];
+	ports?: Conversion[];
+	volumes?: Conversion[];
+	environment?: EnvironmentVar[];
 	network?: string;
-	restart: RestartMode;
+	restart?: RestartMode;
 	post_image?: string;
 	container_user?: string;
+	extra_args?: string[];
 	docker_account?: string;
 }
 
@@ -127,8 +141,8 @@ export interface Group {
 }
 
 export interface Command {
-	path: string;
-	command: string;
+	path?: string;
+	command?: string;
 }
 
 export interface EnvironmentVar {
@@ -144,8 +158,8 @@ export interface UserCredentials {
 export interface Procedure {
 	_id?: string;
 	name: string;
-	stages: ProcedureStage[];
-	webhook_branches: string[];
+	stages?: ProcedureStage[];
+	webhook_branches?: string[];
 	permissions?: PermissionsMap;
 	created_at?: string;
 	updated_at?: string;
@@ -163,6 +177,7 @@ export interface Server {
 	permissions?: PermissionsMap;
 	enabled: boolean;
 	to_notify?: string[];
+	auto_prune?: boolean;
 	cpu_alert?: number;
 	mem_alert?: number;
 	disk_alert?: number;

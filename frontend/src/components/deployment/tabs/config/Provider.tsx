@@ -65,6 +65,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
           restart: deployment.deployment.docker_run_args.restart,
           post_image: deployment.deployment.docker_run_args.post_image,
           container_user: deployment.deployment.docker_run_args.container_user,
+          extra_args: deployment.deployment.docker_run_args.extra_args,
           docker_account: deployment.deployment.docker_run_args.docker_account,
         },
         build_id: deployment.deployment.build_id,

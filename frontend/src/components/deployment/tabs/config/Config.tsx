@@ -23,6 +23,7 @@ import { combineClasses, copyToClipboard, getId } from "../../../../util/helpers
 import { useAppDimensions } from "../../../../state/DimensionProvider";
 import { useUser } from "../../../../state/UserProvider";
 import SimpleTabs from "../../../shared/tabs/SimpleTabs";
+import ExtraArgs from "./container/ExtraArgs";
 
 const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
@@ -36,80 +37,84 @@ const Config: Component<{}> = () => {
           containerClass="config-items"
           tabsGap="0rem"
           localStorageKey="deployment-config-tab"
-          tabs={[
-            {
-              title: "container",
-              element: () => (
-                <Grid class="config-items scroller" placeItems="start center">
-                  <Image />
-                  <Show when={deployment.docker_run_args.image}>
-                    <DockerAccount />
-                  </Show>
-                  <Network />
-                  <Restart />
-                  <Ports />
-                  <Mounts />
-                  <Env />
-                  <PostImage />
-                  <Show when={isMobile()}>
-                    <div style={{ height: "1rem" }} />
-                  </Show>
-                </Grid>
-              ),
-            },
-            (userCanUpdate() || deployment.repo ? true : false) && {
-              title: "frontend",
-              element: () => (
-                <Grid class="config-items scroller" placeItems="start center">
-                  <Git />
-                  <Show when={userCanUpdate()}>
-                    <Grid
-                      class={combineClasses("config-item shadow",)}
-                    >
-                      <h1>webhook url</h1>
-                      <Flex
-                        justifyContent="space-between"
-                        alignItems="center"
-                        style={{ "flex-wrap": "wrap" }}
-                      >
-                        <div class="ellipsis" style={{ width: "250px" }}>
-                          {listenerUrl()}
-                        </div>
-                        <ConfirmButton
-                          color="blue"
-                          onFirstClick={() => {
-                            copyToClipboard(listenerUrl());
-                            pushNotification("good", "copied url to clipboard");
-                          }}
-                          confirm={<Icon type="check" />}
+          tabs={
+            [
+              {
+                title: "container",
+                element: () => (
+                  <Grid class="config-items scroller" placeItems="start center">
+                    <Image />
+                    <Show when={deployment.docker_run_args.image}>
+                      <DockerAccount />
+                    </Show>
+                    <Network />
+                    <Restart />
+                    <Ports />
+                    <Mounts />
+                    <Env />
+                    <ExtraArgs />
+                    <PostImage />
+                    <Show when={isMobile()}>
+                      <div style={{ height: "1rem" }} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+              (userCanUpdate() || deployment.repo ? true : false) && {
+                title: "frontend",
+                element: () => (
+                  <Grid class="config-items scroller" placeItems="start center">
+                    <Git />
+                    <Show when={userCanUpdate()}>
+                      <Grid class={combineClasses("config-item shadow")}>
+                        <h1>webhook url</h1>
+                        <Flex
+                          justifyContent="space-between"
+                          alignItems="center"
+                          style={{ "flex-wrap": "wrap" }}
                         >
-                          <Icon type="clipboard" />
-                        </ConfirmButton>
-                      </Flex>
-                    </Grid>
-                  </Show>
-                  <RepoMount />
-                  <OnClone />
-                  <OnPull />
-                  <Show when={isMobile()}>
-                    <div style={{ height: "1rem" }} />
-                  </Show>
-                </Grid>
-              ),
-            },
-            user().admin && {
-              title: "permissions",
-              element: () => (
-                <Grid
-                  class="config-items scroller"
-                  style={{ height: "100%" }}
-                  placeItems="start center"
-                >
-                  <Permissions />
-                </Grid>
-              ),
-            },
-          ].filter(e => e) as Tab[]}
+                          <div class="ellipsis" style={{ width: "250px" }}>
+                            {listenerUrl()}
+                          </div>
+                          <ConfirmButton
+                            color="blue"
+                            onFirstClick={() => {
+                              copyToClipboard(listenerUrl());
+                              pushNotification(
+                                "good",
+                                "copied url to clipboard"
+                              );
+                            }}
+                            confirm={<Icon type="check" />}
+                          >
+                            <Icon type="clipboard" />
+                          </ConfirmButton>
+                        </Flex>
+                      </Grid>
+                    </Show>
+                    <RepoMount />
+                    <OnClone />
+                    <OnPull />
+                    <Show when={isMobile()}>
+                      <div style={{ height: "1rem" }} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+              user().admin && {
+                title: "permissions",
+                element: () => (
+                  <Grid
+                    class="config-items scroller"
+                    style={{ height: "100%" }}
+                    placeItems="start center"
+                  >
+                    <Permissions />
+                  </Grid>
+                ),
+              },
+            ].filter((e) => e) as Tab[]
+          }
         />
         <Show when={deployment.updated}>
           <Show
