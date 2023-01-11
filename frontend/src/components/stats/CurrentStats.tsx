@@ -17,18 +17,18 @@ import { client, URL } from "../..";
 import { SystemProcess, SystemStats } from "../../types";
 import { generateQuery } from "../../util/helpers";
 import { useLocalStorage } from "../../util/hooks";
-import Circle from "../shared/Circle";
 import HeatBar from "../shared/HeatBar";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
 import Loading from "../shared/loading/Loading";
-import HoverMenu from "../shared/menu/HoverMenu";
 import SimpleTabs from "../shared/tabs/SimpleTabs";
 import {
   CpuChart,
+  CpuFreqChart,
   DiskChart,
   DiskReadChart,
   DiskWriteChart,
+  LoadChart,
   MemChart,
   NetworkRecvChart,
   NetworkSentChart,
@@ -64,8 +64,8 @@ const CurrentStats: Component<{ setWsOpen: Setter<boolean> }> = (p) => {
                 title: "network io",
                 element: () => (
                   <Flex>
-                    <NetworkRecvChart stats={stats} />
-                    <NetworkSentChart stats={stats} />
+                    <NetworkRecvChart stats={stats} small disableScroll />
+                    <NetworkSentChart stats={stats} small disableScroll />
                   </Flex>
                 ),
               },
@@ -73,8 +73,8 @@ const CurrentStats: Component<{ setWsOpen: Setter<boolean> }> = (p) => {
                 title: "disk io",
                 element: () => (
                   <Flex>
-                    <DiskReadChart stats={stats} />
-                    <DiskWriteChart stats={stats} />
+                    <DiskReadChart stats={stats} small disableScroll />
+                    <DiskWriteChart stats={stats} small disableScroll />
                   </Flex>
                 ),
               },
@@ -137,11 +137,24 @@ const BasicInfo: Component<{
   return (
     <>
       <StatsHeatbarRow
+        label="load"
+        type="load"
+        stats={p.stats}
+        percentage={latest().system_load!}
+        localStorageKey="current-stats-load-graph-v1"
+      />
+
+      <StatsHeatbarRow
         label="cpu"
         type="cpu"
         stats={p.stats}
         percentage={latest().cpu_perc}
         localStorageKey="current-stats-cpu-graph-v1"
+        additionalInfo={
+          <div style={{ opacity: 0.7 }}>
+            {(latest().cpu_freq_mhz / 1000).toFixed(1)} GHz
+          </div>
+        }
       />
 
       <StatsHeatbarRow
@@ -176,7 +189,7 @@ const BasicInfo: Component<{
 };
 
 const StatsHeatbarRow: Component<{
-  type: "cpu" | "mem" | "disk" | "temp";
+  type: "cpu" | "load" | "mem" | "disk" | "temp";
   label: string;
   stats: Accessor<SystemStats[]>;
   percentage: number;
@@ -208,8 +221,14 @@ const StatsHeatbarRow: Component<{
       <Show when={showGraph()}>
         <div />
         <Switch>
+          <Match when={p.type === "load"}>
+            <LoadChart stats={p.stats} small disableScroll />
+          </Match>
           <Match when={p.type === "cpu"}>
-            <CpuChart stats={p.stats} small disableScroll />
+            <Flex style={{ width: "100%" }}>
+              <CpuChart stats={p.stats} small disableScroll />
+              <CpuFreqChart stats={p.stats} small disableScroll />
+            </Flex>
           </Match>
           <Match when={p.type === "mem"}>
             <MemChart stats={p.stats} small disableScroll />
@@ -273,6 +292,7 @@ function useStatsWs(params: Params, setStats: Setter<SystemStats[]>, setWsOpen: 
       networks: "true",
       components: "true",
       processes: "true",
+      cpus: "true",
     })}`
   );
   ws.addEventListener("open", () => {

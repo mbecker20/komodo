@@ -1,7 +1,7 @@
 @use "../../style/colors.scss" as c;
 
 .HeaderArea {
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: 2fr 1fr 2fr;
 }
 
 .Charts {

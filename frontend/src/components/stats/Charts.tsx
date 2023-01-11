@@ -40,7 +40,7 @@ const SingleStatChart: Component<{
           "padding-bottom": "0.2rem",
         }}
       >
-        <Show when={!p.small}>
+        <Show when={!p.small} fallback={<div>{p.header}</div>}>
           <h2>{p.header}</h2>
         </Show>
         <LightweightChart
@@ -51,6 +51,33 @@ const SingleStatChart: Component<{
         />
       </Grid>
     </Show>
+  );
+};
+
+export const LoadChart: Component<{
+  stats: Accessor<(SystemStatsRecord | SystemStats)[] | undefined>;
+  small?: boolean;
+  disableScroll?: boolean;
+}> = (p) => {
+  const line = () => {
+    return p.stats()?.map((s) => {
+      return {
+        time: convertTsMsToLocalUnixTsInSecs(
+          (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
+        ),
+        value: s.system_load!,
+      };
+    });
+  };
+  return (
+    <SingleStatChart
+      header="system load %"
+      label="load %"
+      color={COLORS.blue}
+      line={line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
   );
 };
 
@@ -71,8 +98,35 @@ export const CpuChart: Component<{
   };
   return (
     <SingleStatChart
-      header="cpu"
+      header="cpu %"
       label="cpu %"
+      color={COLORS.blue}
+      line={line}
+      small={p.small}
+      disableScroll={p.disableScroll}
+    />
+  );
+};
+
+export const CpuFreqChart: Component<{
+  stats: Accessor<(SystemStatsRecord | SystemStats)[] | undefined>;
+  small?: boolean;
+  disableScroll?: boolean;
+}> = (p) => {
+  const line = () => {
+    return p.stats()?.map((s) => {
+      return {
+        time: convertTsMsToLocalUnixTsInSecs(
+          (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
+        ),
+        value: s.cpu_freq_mhz! / 1000,
+      };
+    });
+  };
+  return (
+    <SingleStatChart
+      header="cpu frequency"
+      label="GHz"
       color={COLORS.blue}
       line={line}
       small={p.small}

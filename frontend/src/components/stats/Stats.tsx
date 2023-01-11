@@ -5,7 +5,6 @@ import {
   createResource,
   createSignal,
   Match,
-  Resource,
   Setter,
   Show,
   Switch,
@@ -64,8 +63,14 @@ const Stats: Component<{}> = () => {
             />
           </Flex>
         </Show>
-        <Flex alignItems="center">
-          
+        <Flex
+          alignItems="center"
+          style={{ "place-self": "center end", width: "fit-content" }}
+        >
+          <div>{sysInfo()?.os}</div>
+          {/* <div>{sysInfo()?.kernel}</div> */}
+          <div>{sysInfo()?.cpu_brand}</div>
+          <div>{sysInfo()?.core_count} cores</div>
         </Flex>
       </Grid>
       <Switch>
