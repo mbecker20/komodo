@@ -548,13 +548,9 @@ fn periphery_unit_file(config_path: &str) -> String {
     let user = env::var("USER").expect("failed to find $USER env var");
     format!("[Unit]
 Description=agent to connect with monitor core
-After=network.target
 
 [Service]
-Type=simple
-User={user}
-WorkingDirectory={home}
-ExecStart=/bin/bash --login -c 'source {home}/.bashrc; $HOME/.cargo/bin/periphery --config-path {config_path} --home-dir $HOME'
+ExecStart={home}/.cargo/bin/periphery --config-path {config_path} --home-dir {home}
 TimeoutStartSec=0
 
 [Install]
