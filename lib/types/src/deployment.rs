@@ -97,18 +97,22 @@ pub struct DockerRunArgs {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub image: String,
 
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub ports: Vec<Conversion>,
 
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub volumes: Vec<Conversion>,
 
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub environment: Vec<EnvironmentVar>,
 
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub network: Option<String>,
 
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "restart_mode_diff_no_change")]))]
     pub restart: RestartMode,
 
@@ -117,6 +121,10 @@ pub struct DockerRunArgs {
 
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub container_user: Option<String>,
+
+    #[serde(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
+    pub extra_args: Vec<String>,
 
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>, // the username of the dockerhub account
