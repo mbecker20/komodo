@@ -260,8 +260,10 @@ pub struct SystemStatsRecord {
     pub id: String,
     pub server_id: String,
     pub ts: f64, // unix ts milliseconds
+    #[serde(default)]
     pub system_load: f64,
     pub cpu_perc: f32,     // in %
+    #[serde(default)]
     pub cpu_freq_mhz: f64, // in MHz
     pub mem_used_gb: f64,  // in GB
     pub mem_total_gb: f64, // in GB

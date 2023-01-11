@@ -17,6 +17,7 @@ import {
   Server,
   ServerActionState,
   ServerWithStatus,
+  SystemInformation,
   SystemStats,
   SystemStatsQuery,
   SystemStatsRecord,
@@ -227,6 +228,14 @@ export class Client {
     return this.get(`/api/server/${id}/docker_accounts`);
   }
 
+  get_server_version(id: string): Promise<string> {
+    return this.get(`/api/server/${id}/version`);
+  }
+
+  get_server_system_info(id: string): Promise<SystemInformation> {
+    return this.get(`/api/server/${id}/system_information`)
+  }
+
   create_server(body: CreateServerBody): Promise<Server> {
     return this.post("/api/server/create", body);
   }
@@ -305,8 +314,9 @@ export class Client {
   get_build_action_state(id: string): Promise<BuildActionState> {
     return this.get(`/api/build/${id}/action_state`);
   }
+  
   get_build_versions(id: string, query?: BuildVersionsQuery): Promise<BuildVersionsReponse> {
-    return this.get(`/api/build/${id}/versions${generateQuery(query)}`);
+    return this.get(`/api/build/${id}/versions${generateQuery(query as any)}`);
   }
 
   create_build(body: CreateBuildBody): Promise<Build> {

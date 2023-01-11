@@ -1,7 +1,18 @@
 import { useParams } from "@solidjs/router";
-import { Accessor, Component, createSignal, Match, Setter, Show, Signal, Switch } from "solid-js";
+import {
+  Accessor,
+  Component,
+  createResource,
+  createSignal,
+  Match,
+  Resource,
+  Setter,
+  Show,
+  Switch,
+} from "solid-js";
+import { client } from "../..";
 import { useAppState } from "../../state/StateProvider";
-import { Timelength } from "../../types";
+import { SystemInformation, Timelength } from "../../types";
 import { useLocalStorage } from "../../util/hooks";
 import Circle from "../shared/Circle";
 import Icon from "../shared/Icon";
@@ -12,11 +23,6 @@ import Selector from "../shared/menu/Selector";
 import CurrentStats from "./CurrentStats";
 import HistoricalStats from "./HistoricalStats";
 import s from "./stats.module.scss";
-
-const VIEWS = [
-  "current",
-  "historical"
-];
 
 const TIMELENGTHS = [
   Timelength.OneMinute,
@@ -29,6 +35,7 @@ const TIMELENGTHS = [
 ];
 
 const Stats: Component<{}> = () => {
+  const params = useParams();
   const [view, setView] = useLocalStorage("current", "stats-view-v1");
   const [timelength, setTimelength] = useLocalStorage(
     Timelength.OneMinute,
@@ -36,6 +43,9 @@ const Stats: Component<{}> = () => {
   );
   const [page, setPage] = createSignal(0);
   const [wsOpen, setWsOpen] = createSignal(false);
+  const [sysInfo] = createResource<SystemInformation>(() =>
+    client.get_server_system_info(params.id)
+  );
   return (
     <Grid class={s.Content}>
       <Grid class={s.HeaderArea}>
@@ -54,14 +64,9 @@ const Stats: Component<{}> = () => {
             />
           </Flex>
         </Show>
-        {/* <Selector
-          containerStyle={{ "place-self": "center end" }}
-          targetClass="grey"
-          selected={view()}
-          items={VIEWS}
-          onSelect={setView}
-          position="bottom right"
-        /> */}
+        <Flex alignItems="center">
+          
+        </Flex>
       </Grid>
       <Switch>
         <Match when={view() === "current"}>
@@ -75,7 +80,11 @@ const Stats: Component<{}> = () => {
   );
 };
 
-export const Header: Component<{ view: string, setView: (view: string) => void; open: boolean }> = (p) => {
+export const Header: Component<{
+  view: string;
+  setView: (view: string) => void;
+  open: boolean;
+}> = (p) => {
   const { servers } = useAppState();
   const params = useParams();
   const server = () => servers.get(params.id);
@@ -113,11 +122,18 @@ export const Header: Component<{ view: string, setView: (view: string) => void; 
       </Show>
     </Flex>
   );
-}
+};
 
-const PageManager: Component<{ page: Accessor<number>, setPage: Setter<number> }> = (p) => {
+const PageManager: Component<{
+  page: Accessor<number>;
+  setPage: Setter<number>;
+}> = (p) => {
   return (
-    <Flex class="card light shadow" alignItems="center" style={{ padding: "0.5rem" }}>
+    <Flex
+      class="card light shadow"
+      alignItems="center"
+      style={{ padding: "0.5rem" }}
+    >
       <button
         class="darkgrey"
         onClick={() => {
@@ -145,6 +161,6 @@ const PageManager: Component<{ page: Accessor<number>, setPage: Setter<number> }
       <div>page: {p.page() + 1}</div>
     </Flex>
   );
-}
+};
 
 export default Stats;

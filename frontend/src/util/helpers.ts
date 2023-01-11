@@ -8,7 +8,7 @@ export function inPx(num: number) {
   return `${num}px`;
 }
 
-export type QueryObject = Record<string, string | number | undefined>;
+export type QueryObject = Record<string, string | number | boolean | undefined>;
 
 export function generateQuery(query?: QueryObject) {
   if (query) {
