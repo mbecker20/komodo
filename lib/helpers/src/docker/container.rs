@@ -101,6 +101,7 @@ pub fn docker_run_command(
                 post_image,
                 restart,
                 environment,
+                extra_args,
                 ..
             },
         ..
@@ -125,7 +126,8 @@ pub fn docker_run_command(
     let restart = parse_restart(restart);
     let environment = parse_environment(environment);
     let post_image = parse_post_image(post_image);
-    format!("docker run -d --name {name}{container_user}{ports}{volumes}{network}{restart}{environment} {image}{post_image}")
+    let extra_args = parse_extra_args(extra_args);
+    format!("docker run -d --name {name}{container_user}{ports}{volumes}{network}{restart}{environment}{extra_args} {image}{post_image}")
 }
 
 fn parse_container_user(container_user: &Option<String>) -> String {
@@ -173,5 +175,14 @@ fn parse_post_image(post_image: &Option<String>) -> String {
         format!(" {post_image}")
     } else {
         String::new()
+    }
+}
+
+fn parse_extra_args(extra_args: &Vec<String>) -> String {
+    let args = extra_args.join(" ");
+    if args.len() > 0 {
+        format!(" {args}")
+    } else {
+        args
     }
 }
