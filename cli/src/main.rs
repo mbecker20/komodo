@@ -56,6 +56,9 @@ fn cli() -> Command {
                     Command::new("start-mongo")
                         .about("start up a local mongo container for monitor core")
                         .arg(
+                            arg!(-y --yes "used in scripts to skip 'enter to continue' step")
+                        )
+                        .arg(
                             arg!(--name <NAME> "specify the name of the mongo container. default is monitor-mongo")
                                 .required(false)
                         )
@@ -86,6 +89,9 @@ fn cli() -> Command {
                 .subcommand(
                     Command::new("start")
                         .about("start up monitor core in container")
+                        .arg(
+                            arg!(-y --yes "used in scripts to skip 'enter to continue' step")
+                        )
                         .arg(
                             arg!(--name <NAME> "specify the name of the monitor core container. default is monitor-core")
                         )
@@ -142,6 +148,9 @@ fn cli() -> Command {
                             Command::new("systemd")
                                 .about("manage periphery with systemd running under current user")
                                 .arg(
+                                    arg!(-y --yes "used in scripts to skip 'enter to continue' step")
+                                )
+                                .arg(
                                     arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
                                         .required(false)
                                 )
@@ -150,6 +159,9 @@ fn cli() -> Command {
                         .subcommand(
                             Command::new("daemon")
                                 .about("start up monitor periphery daemon")
+                                .arg(
+                                    arg!(-y --yes "used in scripts to skip 'enter to continue' step")
+                                )
                                 .arg(
                                     arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
                                         .required(false)
@@ -166,6 +178,9 @@ fn cli() -> Command {
                         .subcommand(
                             Command::new("container")
                                 .about("start up monitor periphery in docker container")
+                                .arg(
+                                    arg!(-y --yes "used in scripts to skip 'enter to continue' step")
+                                )
                                 .arg(
                                     arg!(--name <NAME> "specify the name of the monitor periphery container. default is monitor-periphery")
                                 )

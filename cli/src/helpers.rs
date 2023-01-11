@@ -110,6 +110,8 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
         return;
     }
 
+    let skip_enter = *sub_matches.get_one::<bool>("yes").unwrap_or(&false);
+
     let name = sub_matches
         .get_one::<String>("name")
         .map(|p| p.as_str())
@@ -158,18 +160,20 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
     println!("{}: {network}", "network".dimmed());
     println!("{}: {restart}", "restart".dimmed());
 
-    println!(
-        "\npress {} to start {}. {}",
-        "ENTER".green().bold(),
-        "MongoDB".bold(),
-        "(ctrl-c to cancel)".dimmed()
-    );
+    if !skip_enter {
+        println!(
+            "\npress {} to start {}. {}",
+            "ENTER".green().bold(),
+            "MongoDB".bold(),
+            "(ctrl-c to cancel)".dimmed()
+        );
 
-    let buffer = &mut [0u8];
-    let res = std::io::stdin().read_exact(buffer);
+        let buffer = &mut [0u8];
+        let res = std::io::stdin().read_exact(buffer);
 
-    if res.is_err() {
-        println!("pressed another button, exiting");
+        if res.is_err() {
+            println!("pressed another button, exiting");
+        }
     }
 
     let command = format!("docker stop {name} && docker container rm {name} && docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} --restart {restart} mongo --quiet");
@@ -184,6 +188,8 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
 }
 
 pub fn start_core(sub_matches: &ArgMatches) {
+    let skip_enter = *sub_matches.get_one::<bool>("yes").unwrap_or(&false);
+
     let config_path = sub_matches
         .get_one::<String>("config-path")
         .map(|p| p.as_str())
@@ -224,18 +230,20 @@ pub fn start_core(sub_matches: &ArgMatches) {
     println!("{}: {network}", "network".dimmed());
     println!("{}: {restart}", "restart".dimmed());
 
-    println!(
-        "\npress {} to start {}. {}",
-        "ENTER".green().bold(),
-        "monitor core".bold(),
-        "(ctrl-c to cancel)".dimmed()
-    );
+    if !skip_enter {
+        println!(
+            "\npress {} to start {}. {}",
+            "ENTER".green().bold(),
+            "monitor core".bold(),
+            "(ctrl-c to cancel)".dimmed()
+        );
 
-    let buffer = &mut [0u8];
-    let res = std::io::stdin().read_exact(buffer);
+        let buffer = &mut [0u8];
+        let res = std::io::stdin().read_exact(buffer);
 
-    if res.is_err() {
-        println!("pressed another button, exiting");
+        if res.is_err() {
+            println!("pressed another button, exiting");
+        }
     }
 
     let command = format!("docker stop {name} && docker container rm {name} && docker pull {CORE_IMAGE_NAME} && docker run -d --name {name} -p {port}:9000 --network {network} -v {config_path}:/config/config.toml --restart {restart} --add-host host.docker.internal:host-gateway {CORE_IMAGE_NAME}");
@@ -308,6 +316,8 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
 }
 
 pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
+    let skip_enter = *sub_matches.get_one::<bool>("yes").unwrap_or(&false);
+
     let config_path = sub_matches
         .get_one::<String>("config-path")
         .map(|p| p.as_str())
@@ -318,20 +328,23 @@ pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
         "\n========================\n    {}    \n========================\n",
         "periphery config".bold()
     );
+    println!("{}: systemd", "run with".dimmed());
     println!("{}: {config_path}", "config path".dimmed());
 
-    println!(
-        "\npress {} to start {}. {}",
-        "ENTER".green().bold(),
-        "monitor periphery".bold(),
-        "(ctrl-c to cancel)".dimmed()
-    );
+    if !skip_enter {
+        println!(
+            "\npress {} to start {}. {}",
+            "ENTER".green().bold(),
+            "monitor periphery".bold(),
+            "(ctrl-c to cancel)".dimmed()
+        );
 
-    let buffer = &mut [0u8];
-    let res = std::io::stdin().read_exact(buffer);
+        let buffer = &mut [0u8];
+        let res = std::io::stdin().read_exact(buffer);
 
-    if res.is_err() {
-        println!("pressed another button, exiting");
+        if res.is_err() {
+            println!("pressed another button, exiting");
+        }
     }
 
     println!("\ninstalling periphery binary...\n");
@@ -350,7 +363,8 @@ pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
 
     gen_periphery_service_file(&config_path);
 
-    let command = format!("systemctl --user daemon-reload && systemctl --user enable --now periphery");
+    let command =
+        format!("systemctl --user daemon-reload && systemctl --user enable --now periphery");
 
     let output = run_command_pipe_to_terminal(&command);
 
@@ -365,6 +379,8 @@ pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
 }
 
 pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
+    let skip_enter = *sub_matches.get_one::<bool>("yes").unwrap_or(&false);
+
     let config_path = sub_matches
         .get_one::<String>("config-path")
         .map(|p| p.as_str())
@@ -387,22 +403,25 @@ pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
         "\n========================\n    {}    \n========================\n",
         "periphery config".bold()
     );
+    println!("{}: daemon", "run as".dimmed());
     println!("{}: {config_path}", "config path".dimmed());
     println!("{}: {stdout}", "stdout".dimmed());
     println!("{}: {stderr}", "stderr".dimmed());
 
-    println!(
-        "\npress {} to start {}. {}",
-        "ENTER".green().bold(),
-        "monitor periphery".bold(),
-        "(ctrl-c to cancel)".dimmed()
-    );
+    if !skip_enter {
+        println!(
+            "\npress {} to start {}. {}",
+            "ENTER".green().bold(),
+            "monitor periphery".bold(),
+            "(ctrl-c to cancel)".dimmed()
+        );
 
-    let buffer = &mut [0u8];
-    let res = std::io::stdin().read_exact(buffer);
+        let buffer = &mut [0u8];
+        let res = std::io::stdin().read_exact(buffer);
 
-    if res.is_err() {
-        println!("pressed another button, exiting");
+        if res.is_err() {
+            println!("pressed another button, exiting");
+        }
     }
 
     println!("\ninstalling periphery binary...\n");
@@ -434,6 +453,8 @@ pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
 }
 
 pub fn start_periphery_container(sub_matches: &ArgMatches) {
+    let skip_enter = *sub_matches.get_one::<bool>("yes").unwrap_or(&false);
+
     let config_path = sub_matches
         .get_one::<String>("config-path")
         .map(|p| p.as_str())
@@ -474,6 +495,7 @@ pub fn start_periphery_container(sub_matches: &ArgMatches) {
         "\n========================\n    {}    \n========================\n",
         "periphery config".bold()
     );
+    println!("{}: container", "run as".dimmed());
     println!("{}: {name}", "container name".dimmed());
     println!("{}: {config_path}", "config path".dimmed());
     println!("{}: {repo_dir}", "repo folder".dimmed());
@@ -481,18 +503,20 @@ pub fn start_periphery_container(sub_matches: &ArgMatches) {
     println!("{}: {network}", "network".dimmed());
     println!("{}: {restart}", "restart".dimmed());
 
-    println!(
-        "\npress {} to start {}. {}",
-        "ENTER".green().bold(),
-        "monitor periphery".bold(),
-        "(ctrl-c to cancel)".dimmed()
-    );
+    if !skip_enter {
+        println!(
+            "\npress {} to start {}. {}",
+            "ENTER".green().bold(),
+            "monitor periphery".bold(),
+            "(ctrl-c to cancel)".dimmed()
+        );
 
-    let buffer = &mut [0u8];
-    let res = std::io::stdin().read_exact(buffer);
+        let buffer = &mut [0u8];
+        let res = std::io::stdin().read_exact(buffer);
 
-    if res.is_err() {
-        println!("pressed another button, exiting");
+        if res.is_err() {
+            println!("pressed another button, exiting");
+        }
     }
 
     let command = format!("docker stop {name} && docker container rm {name} && docker pull {PERIPHERY_IMAGE_NAME} && docker run -d --name {name} -p {port}:8000 --network {network} -v {config_path}:/config/config.toml -v {repo_dir}:/repos -v /var/run/docker.sock:/var/run/docker.sock --restart {restart} {PERIPHERY_IMAGE_NAME}");
@@ -546,7 +570,8 @@ fn generate_secret(length: usize) -> String {
 fn periphery_unit_file(config_path: &str) -> String {
     let home = env::var("HOME").expect("failed to find $HOME env var");
     let user = env::var("USER").expect("failed to find $USER env var");
-    format!("[Unit]
+    format!(
+        "[Unit]
 Description=agent to connect with monitor core
 
 [Service]
@@ -554,5 +579,6 @@ ExecStart={home}/.cargo/bin/periphery --config-path {config_path} --home-dir {ho
 TimeoutStartSec=0
 
 [Install]
-WantedBy=default.target")
+WantedBy=default.target"
+    )
 }
