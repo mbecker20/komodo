@@ -307,6 +307,63 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
     );
 }
 
+pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
+    let config_path = sub_matches
+        .get_one::<String>("config-path")
+        .map(|p| p.as_str())
+        .unwrap_or("~/.monitor/periphery.config.toml")
+        .to_string();
+
+    println!(
+        "\n========================\n    {}    \n========================\n",
+        "periphery config".bold()
+    );
+    println!("{}: {config_path}", "config path".dimmed());
+
+    println!(
+        "\npress {} to start {}. {}",
+        "ENTER".green().bold(),
+        "monitor periphery".bold(),
+        "(ctrl-c to cancel)".dimmed()
+    );
+
+    let buffer = &mut [0u8];
+    let res = std::io::stdin().read_exact(buffer);
+
+    if res.is_err() {
+        println!("pressed another button, exiting");
+    }
+
+    println!("\ninstalling periphery binary...\n");
+
+    let install_output = run_command_pipe_to_terminal(&format!("cargo install {PERIPHERY_CRATE}"));
+
+    if install_output.success() {
+        println!("\ninstallation finished, starting monitor periphery...\n")
+    } else {
+        eprintln!(
+            "\n❌ there was some {} during periphery installation ❌\n",
+            "error".red()
+        );
+        return;
+    }
+
+    gen_periphery_service_file(&config_path);
+
+    let command = format!("systemctl --user daemon-reload && systemctl --user enable --now periphery");
+
+    let output = run_command_pipe_to_terminal(&command);
+
+    if output.success() {
+        println!(
+            "\n✅ {} has been started up ✅\n",
+            "monitor periphery".bold()
+        )
+    } else {
+        eprintln!("\n❌ there was some {} on startup ❌\n", "error".red())
+    }
+}
+
 pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
     let config_path = sub_matches
         .get_one::<String>("config-path")
@@ -452,22 +509,13 @@ pub fn start_periphery_container(sub_matches: &ArgMatches) {
     }
 }
 
-pub fn gen_periphery_service_file(sub_matches: &ArgMatches) {
-    let mut file = File::create("/etc/systemd/system/periphery.service")
-        .expect("failed to create config file. user must be root for this operation.");
-    file.write_all(generate_periphery_unit_file().as_bytes())
-        .expect("failed to write config file. user must be root for this operation");
-
-    let output = run_command_pipe_to_terminal("systemctl daemon-reload");
-
-    if output.success() {
-        println!("\n✅ successfully added service to systemd ✅\n")
-    } else {
-        eprintln!(
-            "\n❌ there was some {} adding service to systemd ❌\n",
-            "error".red()
-        )
-    }
+pub fn gen_periphery_service_file(config_path: &str) {
+    let home = env::var("HOME").expect("failed to find $HOME env var");
+    let _ = std::fs::create_dir_all(format!("{home}/.config/systemd/user"));
+    let mut file = File::create(format!("{home}/.config/systemd/user/periphery.service"))
+        .expect("failed to create user systemd unit file");
+    file.write_all(periphery_unit_file(config_path).as_bytes())
+        .expect("failed to write config file");
 }
 
 fn write_to_toml(path: &str, toml: impl Serialize) {
@@ -495,7 +543,7 @@ fn generate_secret(length: usize) -> String {
         .collect()
 }
 
-fn generate_periphery_unit_file() -> String {
+fn periphery_unit_file(config_path: &str) -> String {
     let home = env::var("HOME").expect("failed to find $HOME env var");
     let user = env::var("USER").expect("failed to find $USER env var");
     format!("[Unit]
@@ -506,7 +554,7 @@ After=network.target
 Type=simple
 User={user}
 WorkingDirectory={home}
-ExecStart=/bin/bash --login -c 'source {home}/.bashrc; $HOME/.cargo/bin/periphery --config-path ~/.monitor/periphery.config.toml --home-dir $HOME'
+ExecStart=/bin/bash --login -c 'source {home}/.bashrc; $HOME/.cargo/bin/periphery --config-path {config_path} --home-dir $HOME'
 TimeoutStartSec=0
 
 [Install]

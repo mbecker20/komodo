@@ -135,13 +135,18 @@ fn cli() -> Command {
                             arg!(--repo-dir <PATH> "if running in container, this should be '/repos'. default is ~/.monitor/repos").required(false)
                         )
                 )
-                // .subcommand(
-                //     Command::new("gen-service-file")
-                //         .about("generate a periphery systemd service file")
-                // )
                 .subcommand(
                     Command::new("start")
                         .about("tools to start periphery as daemon or container")
+                        .subcommand(
+                            Command::new("systemd")
+                                .about("manage periphery with systemd running under current user")
+                                .arg(
+                                    arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                        .required(false)
+                                )
+                                
+                        )
                         .subcommand(
                             Command::new("daemon")
                                 .about("start up monitor periphery daemon")
@@ -206,10 +211,10 @@ fn main() {
             );
             match periphery_command {
                 ("gen-config", sub_matches) => gen_periphery_config(sub_matches),
-                // ("gen-service-file", sub_matches) => gen_periphery_service_file(sub_matches),
                 ("start", sub_matches) => {
                     let periphery_start_command = sub_matches.subcommand().expect("\n❌ invalid call, should be 'monitor periphery start <daemon, container> <flags>' ❌\n");
                     match periphery_start_command {
+                        ("systemd", sub_matches) => start_periphery_systemd(sub_matches),
                         ("daemon", sub_matches) => start_periphery_daemon(sub_matches),
                         ("container", sub_matches) => start_periphery_container(sub_matches),
                         _ => println!("\n❌ invalid call, should be 'monitor periphery start <daemon, container> <flags>' ❌\n")
