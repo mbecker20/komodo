@@ -10,7 +10,7 @@ license = "GPL-3.0-or-later"
 
 [dependencies]
 # types = { package = "monitor_types", path = "../types" }
-types = { package = "monitor_types", version = "0.1.3" }
+types = { package = "monitor_types", version = "0.1.4" }
 async_timing_util = "0.1.12"
 bollard = "0.13"
 anyhow = "1.0"
