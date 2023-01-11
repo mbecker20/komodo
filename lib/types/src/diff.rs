@@ -37,6 +37,7 @@ pub fn docker_run_args_diff_no_change(dra: &DockerRunArgsDiff) -> bool {
         && vec_diff_no_change(&dra.environment)
         && vec_diff_no_change(&dra.ports)
         && vec_diff_no_change(&dra.volumes)
+        && vec_diff_no_change(&dra.extra_args)
         && restart_mode_diff_no_change(&dra.restart)
 }
 
