@@ -3,7 +3,7 @@ use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
 use tokio::net::TcpStream;
 use tokio_tungstenite::{connect_async, MaybeTlsStream, WebSocketStream};
-use types::{Server, SystemStats, SystemStatsQuery};
+use types::{Server, SystemInformation, SystemStats, SystemStatsQuery};
 
 mod build;
 mod command;
@@ -40,6 +40,15 @@ impl PeripheryClient {
         self.get_json(server, "/accounts/docker")
             .await
             .context("failed to get docker accounts from periphery")
+    }
+
+    pub async fn get_system_information(
+        &self,
+        server: &Server,
+    ) -> anyhow::Result<SystemInformation> {
+        self.get_json(server, "/system_information")
+            .await
+            .context("failed to get system information from periphery")
     }
 
     pub async fn get_system_stats(

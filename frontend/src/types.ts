@@ -200,6 +200,7 @@ export interface ServerActionState {
 }
 
 export interface SystemStatsQuery {
+	cpus?: boolean;
 	disks?: boolean;
 	networks?: boolean;
 	components?: boolean;
@@ -207,16 +208,24 @@ export interface SystemStatsQuery {
 }
 
 export interface SystemStats {
+	system_load?: number;
 	cpu_perc: number;
+	cpu_freq_mhz: number;
 	mem_used_gb: number;
 	mem_total_gb: number;
 	disk: DiskUsage;
+	cpus?: SingleCpuUsage[];
 	networks?: SystemNetwork[];
 	components?: SystemComponent[];
 	processes?: SystemProcess[];
 	polling_rate: Timelength;
 	refresh_ts: number;
 	refresh_list_ts: number;
+}
+
+export interface SingleCpuUsage {
+	name: string;
+	usage: number;
 }
 
 export interface DiskUsage {
@@ -261,10 +270,13 @@ export interface SystemStatsRecord {
 	_id?: string;
 	server_id: string;
 	ts: number;
+	system_load: number;
 	cpu_perc: number;
+	cpu_freq_mhz: number;
 	mem_used_gb: number;
 	mem_total_gb: number;
 	disk: DiskUsage;
+	cpus?: SingleCpuUsage[];
 	networks?: SystemNetwork[];
 	components?: SystemComponent[];
 	processes?: SystemProcess[];
@@ -277,6 +289,15 @@ export interface HistoricalStatsQuery {
 	page?: number;
 	networks?: boolean;
 	components?: boolean;
+}
+
+export interface SystemInformation {
+	name?: string;
+	os?: string;
+	kernel?: string;
+	core_count?: number;
+	host_name?: string;
+	cpu_brand: string;
 }
 
 export interface Update {

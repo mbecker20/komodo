@@ -140,6 +140,8 @@ pub enum ServerStatus {
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct SystemStatsQuery {
     #[serde(default)]
+    pub cpus: bool,
+    #[serde(default)]
     pub disks: bool,
     #[serde(default)]
     pub networks: bool,
@@ -152,6 +154,7 @@ pub struct SystemStatsQuery {
 impl SystemStatsQuery {
     pub fn all() -> SystemStatsQuery {
         SystemStatsQuery {
+            cpus: true,
             disks: true,
             networks: true,
             components: true,
@@ -167,10 +170,15 @@ impl SystemStatsQuery {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SystemStats {
-    pub cpu_perc: f32,     // in %
+    #[serde(default)]
+    pub system_load: f64,
+    pub cpu_perc: f32,
+    pub cpu_freq_mhz: f64,
     pub mem_used_gb: f64,  // in GB
     pub mem_total_gb: f64, // in GB
     pub disk: DiskUsage,
+    #[serde(default)]
+    pub cpus: Vec<SingleCpuUsage>,
     #[serde(default)]
     pub networks: Vec<SystemNetwork>,
     #[serde(default)]
@@ -180,6 +188,13 @@ pub struct SystemStats {
     pub polling_rate: Timelength,
     pub refresh_ts: u128,
     pub refresh_list_ts: u128,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SingleCpuUsage {
+    pub name: String,
+    pub usage: f32,
 }
 
 #[typeshare]
@@ -244,11 +259,15 @@ pub struct SystemStatsRecord {
     )]
     pub id: String,
     pub server_id: String,
-    pub ts: f64,           // unix ts milliseconds
+    pub ts: f64, // unix ts milliseconds
+    pub system_load: f64,
     pub cpu_perc: f32,     // in %
+    pub cpu_freq_mhz: f64, // in MHz
     pub mem_used_gb: f64,  // in GB
     pub mem_total_gb: f64, // in GB
     pub disk: DiskUsage,
+    #[serde(default)]
+    pub cpus: Vec<SingleCpuUsage>,
     #[serde(default)]
     pub networks: Vec<SystemNetwork>,
     #[serde(default)]
@@ -264,10 +283,13 @@ impl SystemStatsRecord {
             id: String::new(),
             server_id,
             ts: ts as f64,
+            system_load: stats.system_load,
             cpu_perc: stats.cpu_perc,
+            cpu_freq_mhz: stats.cpu_freq_mhz,
             mem_used_gb: stats.mem_used_gb,
             mem_total_gb: stats.mem_total_gb,
             disk: stats.disk,
+            cpus: stats.cpus,
             networks: stats.networks,
             components: stats.components,
             processes: stats.processes,
@@ -309,4 +331,15 @@ fn default_interval() -> Timelength {
 
 fn default_limit() -> f64 {
     100.0
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SystemInformation {
+    pub name: Option<String>,
+    pub os: Option<String>,
+    pub kernel: Option<String>,
+    pub core_count: Option<u32>,
+    pub host_name: Option<String>,
+    pub cpu_brand: String,
 }

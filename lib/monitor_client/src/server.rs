@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context};
 use futures_util::{SinkExt, StreamExt};
 use monitor_types::{
     BasicContainerInfo, HistoricalStatsQuery, ImageSummary, Log, Network, Server,
-    ServerActionState, ServerWithStatus, SystemStats, SystemStatsQuery, SystemStatsRecord,
+    ServerActionState, ServerWithStatus, SystemStats, SystemStatsQuery, SystemStatsRecord, SystemInformation,
 };
 use serde_json::{json, Value};
 use tokio::{
@@ -84,6 +84,24 @@ impl MonitorClient {
         self.patch("/api/server/update", server)
             .await
             .context("failed at update server")
+    }
+
+    pub async fn get_server_version(
+        &self,
+        server_id: &str
+    ) -> anyhow::Result<String> {
+        self.get(&format!("/api/server/{server_id}/version"), Option::<()>::None)
+            .await
+            .context(format!("failed to get server version at id {server_id}"))
+    }
+
+    pub async fn get_server_system_information(
+        &self,
+        server_id: &str
+    ) -> anyhow::Result<SystemInformation> {
+        self.get(&format!("/api/server/{server_id}/system_information"), Option::<()>::None)
+            .await
+            .context(format!("failed to get server system information at id {server_id}"))
     }
 
     pub async fn get_server_stats(

@@ -15,8 +15,8 @@ path = "src/main.rs"
 [dependencies]
 # helpers = { package = "monitor_helpers", path = "../lib/helpers" }
 # types = { package = "monitor_types", path = "../lib/types" }
-helpers = { package = "monitor_helpers", version = "0.1.4" }
-types = { package = "monitor_types", version = "0.1.4" }
+helpers = { package = "monitor_helpers", version = "0.1.5" }
+types = { package = "monitor_types", version = "0.1.5" }
 run_command = { version = "0.0.5", features = ["async_tokio"] }
 async_timing_util = "0.1.12"
 tokio = { version = "1.24", features = ["full"] }
@@ -29,7 +29,7 @@ serde_json = "1.0"
 bollard = "0.13"
 anyhow = "1.0"
 envy = "0.4"
-sysinfo = "0.27.2"
+sysinfo = "0.27.5"
 toml = "0.5"
 daemonize = "0.4"
 clap = { version = "4.0", features = ["derive"] }

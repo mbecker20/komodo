@@ -18,16 +18,16 @@ use tokio::{
 };
 use tokio_util::sync::CancellationToken;
 use types::{
-    DiskUsage, SingleDiskUsage, SystemComponent, SystemNetwork, SystemProcess, SystemStats,
-    SystemStatsQuery, Timelength,
+    DiskUsage, SingleCpuUsage, SingleDiskUsage, SystemComponent, SystemInformation, SystemNetwork,
+    SystemProcess, SystemStats, SystemStatsQuery, Timelength,
 };
 
-pub fn router(stats_polling_rate: Timelength) -> Router {
+pub fn router() -> Router {
     Router::new()
         .route(
             "/",
             get(
-                |Extension(sys): StatsExtension, Query(query): Query<SystemStatsQuery>| async move {
+                |sys: StatsExtension, Query(query): Query<SystemStatsQuery>| async move {
                     let stats = sys.read().unwrap().get_cached_stats(query);
                     Json(stats)
                 },
@@ -36,19 +36,19 @@ pub fn router(stats_polling_rate: Timelength) -> Router {
         .route(
             "/ws",
             get(
-                |Extension(sys): StatsExtension,
+                |sys: StatsExtension,
                  Query(query): Query<SystemStatsQuery>,
                  ws: WebSocketUpgrade| async move {
                     sys.read().unwrap().ws_subscribe(ws, Arc::new(query))
                 },
             ),
         )
-        .layer(StatsClient::extension(stats_polling_rate))
 }
 
-type StatsExtension = Extension<Arc<RwLock<StatsClient>>>;
+pub type StatsExtension = Extension<Arc<RwLock<StatsClient>>>;
 
-struct StatsClient {
+pub struct StatsClient {
+    pub info: SystemInformation,
     sys: sysinfo::System,
     cache: SystemStats,
     polling_rate: Timelength,
@@ -62,10 +62,12 @@ const BYTES_PER_MB: f64 = 1048576.0;
 const BYTES_PER_KB: f64 = 1024.0;
 
 impl StatsClient {
-    fn extension(polling_rate: Timelength) -> StatsExtension {
+    pub fn extension(polling_rate: Timelength) -> StatsExtension {
         let (sender, receiver) = broadcast::channel::<SystemStats>(10);
+        let sys = sysinfo::System::new_all();
         let client = StatsClient {
-            sys: sysinfo::System::new_all(),
+            info: get_system_information(&sys),
+            sys,
             cache: SystemStats::default(),
             polling_rate,
             refresh_ts: 0,
@@ -118,6 +120,9 @@ impl StatsClient {
                         _ = cancel_clone.cancelled() => break,
                         stats = reciever.recv() => { stats.expect("failed to recv stats msg") }
                     };
+                    if query.cpus {
+                        stats.cpus = vec![]
+                    }
                     if !query.disks {
                         stats.disk.disks = vec![]
                     }
@@ -175,28 +180,59 @@ impl StatsClient {
     }
 
     fn get_cached_stats(&self, query: SystemStatsQuery) -> SystemStats {
-        let mut stats = self.cache.clone();
-        if !query.disks {
-            stats.disk.disks = vec![]
+        SystemStats {
+            system_load: self.cache.system_load,
+            cpu_perc: self.cache.cpu_perc,
+            cpu_freq_mhz: self.cache.cpu_freq_mhz,
+            mem_used_gb: self.cache.mem_used_gb,
+            mem_total_gb: self.cache.mem_total_gb,
+            disk: DiskUsage {
+                used_gb: self.cache.disk.used_gb,
+                total_gb: self.cache.disk.total_gb,
+                read_kb: self.cache.disk.read_kb,
+                write_kb: self.cache.disk.write_kb,
+                disks: if query.disks {
+                    self.cache.disk.disks.clone()
+                } else {
+                    vec![]
+                },
+            },
+            cpus: if query.cpus {
+                self.cache.cpus.clone()
+            } else {
+                vec![]
+            },
+            networks: if query.networks {
+                self.cache.networks.clone()
+            } else {
+                vec![]
+            },
+            components: if query.components {
+                self.cache.components.clone()
+            } else {
+                vec![]
+            },
+            processes: if query.processes {
+                self.cache.processes.clone()
+            } else {
+                vec![]
+            },
+            polling_rate: self.cache.polling_rate,
+            refresh_ts: self.cache.refresh_ts,
+            refresh_list_ts: self.cache.refresh_list_ts,
         }
-        if !query.networks {
-            stats.networks = vec![];
-        }
-        if !query.components {
-            stats.components = vec![];
-        }
-        if !query.processes {
-            stats.processes = vec![];
-        }
-        stats
     }
 
     fn get_stats(&self) -> SystemStats {
+        let cpu = self.sys.global_cpu_info();
         SystemStats {
+            system_load: self.sys.load_average().one,
             cpu_perc: self.sys.global_cpu_info().cpu_usage(),
+            cpu_freq_mhz: cpu.frequency() as f64,
             mem_used_gb: self.sys.used_memory() as f64 / BYTES_PER_GB,
             mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
             disk: self.get_disk_usage(),
+            cpus: self.get_cpus(),
             networks: self.get_networks(),
             components: self.get_components(),
             processes: self.get_processes(),
@@ -204,6 +240,17 @@ impl StatsClient {
             refresh_ts: self.refresh_ts,
             refresh_list_ts: self.refresh_list_ts,
         }
+    }
+
+    fn get_cpus(&self) -> Vec<SingleCpuUsage> {
+        self.sys
+            .cpus()
+            .into_iter()
+            .map(|cpu| SingleCpuUsage {
+                name: cpu.name().to_string(),
+                usage: cpu.cpu_usage(),
+            })
+            .collect()
     }
 
     fn get_networks(&self) -> Vec<SystemNetwork> {
@@ -314,5 +361,17 @@ impl StatsClient {
             }
         });
         procs
+    }
+}
+
+fn get_system_information(sys: &sysinfo::System) -> SystemInformation {
+    let cpu = sys.global_cpu_info();
+    SystemInformation {
+        name: sys.name(),
+        os: sys.long_os_version(),
+        kernel: sys.kernel_version(),
+        core_count: sys.physical_core_count().map(|c| c as u32),
+        host_name: sys.host_name(),
+        cpu_brand: cpu.brand().to_string(),
     }
 }

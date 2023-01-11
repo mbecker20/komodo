@@ -14,8 +14,8 @@ use tokio_tungstenite::tungstenite::Message;
 use tokio_util::sync::CancellationToken;
 use types::{
     traits::Permissioned, BasicContainerInfo, HistoricalStatsQuery, ImageSummary, Network,
-    PermissionLevel, Server, ServerActionState, ServerStatus, ServerWithStatus, SystemStats,
-    SystemStatsQuery, SystemStatsRecord,
+    PermissionLevel, Server, ServerActionState, ServerStatus, ServerWithStatus, SystemInformation,
+    SystemStats, SystemStatsQuery, SystemStatsRecord,
 };
 use typeshare::typeshare;
 
@@ -129,6 +129,34 @@ pub fn router() -> Router {
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(server))
+                },
+            ),
+        )
+        .route(
+            "/:id/version",
+            get(
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
+                    let stats = state
+                        .get_server_version(&id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(stats))
+                },
+            ),
+        )
+        .route(
+            "/:id/system_information",
+            get(
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
+                    let stats = state
+                        .get_server_system_info(&id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(stats))
                 },
             ),
         )
@@ -378,6 +406,40 @@ impl State {
                 ServerWithStatus { server, status }
             });
         Ok(join_all(futures).await)
+    }
+
+    async fn get_server_version(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<String> {
+        let server = self
+            .get_server_check_permissions(server_id, user, PermissionLevel::Read)
+            .await?;
+        let version = self.periphery.get_version(&server).await.context(format!(
+            "failed to get system information from server {}",
+            server.name
+        ))?;
+        Ok(version)
+    }
+
+    async fn get_server_system_info(
+        &self,
+        server_id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<SystemInformation> {
+        let server = self
+            .get_server_check_permissions(server_id, user, PermissionLevel::Read)
+            .await?;
+        let stats = self
+            .periphery
+            .get_system_information(&server)
+            .await
+            .context(format!(
+                "failed to get system information from server {}",
+                server.name
+            ))?;
+        Ok(stats)
     }
 
     async fn get_server_stats(

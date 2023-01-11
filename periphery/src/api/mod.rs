@@ -15,6 +15,8 @@ use types::{monitor_timestamp, PeripheryConfig};
 
 use crate::{HomeDirExtension, PeripheryConfigExtension};
 
+use self::stats::{StatsClient, StatsExtension};
+
 mod accounts;
 mod build;
 mod command;
@@ -28,19 +30,23 @@ pub fn router(config: PeripheryConfigExtension, home_dir: HomeDirExtension) -> R
     Router::new()
         .route("/health", get(|| async {}))
         .route("/version", get(|| async { env!("CARGO_PKG_VERSION") }))
+        .route(
+            "/system_information",
+            get(|sys: StatsExtension| async move { Json(sys.read().unwrap().info.clone()) }),
+        )
         .route("/accounts/:account_type", get(accounts::get_accounts))
         .nest("/command", command::router())
         .nest("/container", container::router())
         .nest("/network", network::router())
-        .nest(
-            "/stats",
-            stats::router(config.stats_polling_rate.to_string().parse().unwrap()),
-        )
+        .nest("/stats", stats::router())
         .nest("/git", git::router())
         .nest("/build", build::router())
         .nest("/image", image::router())
         .layer(DockerClient::extension())
         .layer(middleware::from_fn(guard_request))
+        .layer(StatsClient::extension(
+            config.stats_polling_rate.to_string().parse().unwrap(),
+        ))
         .layer(config)
         .layer(home_dir)
 }

@@ -38,8 +38,8 @@ const Stats: Component<{}> = () => {
   const [wsOpen, setWsOpen] = createSignal(false);
   return (
     <Grid class={s.Content}>
-      <Grid class={s.HeaderArea} placeItems="center start">
-        <Header view={view()} open={wsOpen()} />
+      <Grid class={s.HeaderArea}>
+        <Header view={view()} open={wsOpen()} setView={setView} />
         <Show when={view() === "historical"} fallback={<div />}>
           <Flex alignItems="center" style={{ "place-self": "center" }}>
             <PageManager page={page} setPage={setPage} />
@@ -54,14 +54,14 @@ const Stats: Component<{}> = () => {
             />
           </Flex>
         </Show>
-        <Selector
+        {/* <Selector
           containerStyle={{ "place-self": "center end" }}
           targetClass="grey"
           selected={view()}
           items={VIEWS}
           onSelect={setView}
           position="bottom right"
-        />
+        /> */}
       </Grid>
       <Switch>
         <Match when={view() === "current"}>
@@ -75,13 +75,29 @@ const Stats: Component<{}> = () => {
   );
 };
 
-export const Header: Component<{ view: string, open: boolean }> = (p) => {
+export const Header: Component<{ view: string, setView: (view: string) => void; open: boolean }> = (p) => {
   const { servers } = useAppState();
   const params = useParams();
   const server = () => servers.get(params.id);
   return (
-    <Flex alignItems="center">
-      <h1>{server()?.server.name} - system stats</h1>
+    <Flex alignItems="center" style={{ height: "fit-content" }}>
+      <h1>{server()?.server.name}</h1>
+      <Grid gap="0" gridTemplateColumns="repeat(2, 1fr)">
+        <button
+          class={p.view === "current" ? "selected" : "grey"}
+          style={{ width: "100%" }}
+          onClick={() => p.setView("current")}
+        >
+          current
+        </button>
+        <button
+          class={p.view === "historical" ? "selected" : "grey"}
+          style={{ width: "100%" }}
+          onClick={() => p.setView("historical")}
+        >
+          historical
+        </button>
+      </Grid>
       <Show when={p.view === "current"}>
         <HoverMenu
           target={
