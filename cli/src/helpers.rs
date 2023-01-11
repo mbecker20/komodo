@@ -293,7 +293,7 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
         port,
         stats_polling_rate,
         allowed_ips,
-        repo_dir: "/repos".to_string(),
+        repo_dir,
         secrets: Default::default(),
         github_accounts: Default::default(),
         docker_accounts: Default::default(),
