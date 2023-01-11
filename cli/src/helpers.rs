@@ -172,7 +172,7 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
         println!("pressed another button, exiting");
     }
 
-    let command = format!("docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} --restart {restart} mongo --quiet");
+    let command = format!("docker stop {name} && docker container rm {name} && docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} --restart {restart} mongo --quiet");
 
     let output = run_command_pipe_to_terminal(&command);
 
@@ -238,7 +238,7 @@ pub fn start_core(sub_matches: &ArgMatches) {
         println!("pressed another button, exiting");
     }
 
-    let command = format!("docker run -d --name {name} -p {port}:9000 --network {network} -v {config_path}:/config/config.toml --restart {restart} --add-host host.docker.internal:host-gateway {CORE_IMAGE_NAME}");
+    let command = format!("docker stop {name} && docker container rm {name} && docker pull {CORE_IMAGE_NAME} && docker run -d --name {name} -p {port}:9000 --network {network} -v {config_path}:/config/config.toml --restart {restart} --add-host host.docker.internal:host-gateway {CORE_IMAGE_NAME}");
 
     let output = run_command_pipe_to_terminal(&command);
 
@@ -438,7 +438,7 @@ pub fn start_periphery_container(sub_matches: &ArgMatches) {
         println!("pressed another button, exiting");
     }
 
-    let command = format!("docker run -d --name {name} -p {port}:8000 --network {network} -v {config_path}:/config/config.toml -v {repo_dir}:/repos -v /var/run/docker.sock:/var/run/docker.sock --restart {restart} {PERIPHERY_IMAGE_NAME}");
+    let command = format!("docker stop {name} && docker container rm {name} && docker pull {PERIPHERY_IMAGE_NAME} && docker run -d --name {name} -p {port}:8000 --network {network} -v {config_path}:/config/config.toml -v {repo_dir}:/repos -v /var/run/docker.sock:/var/run/docker.sock --restart {restart} {PERIPHERY_IMAGE_NAME}");
 
     let output = run_command_pipe_to_terminal(&command);
 

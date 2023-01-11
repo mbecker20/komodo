@@ -14,9 +14,11 @@ import Loading from "../shared/loading/Loading";
 import SimpleTabs from "../shared/tabs/SimpleTabs";
 import {
   CpuChart,
+  CpuFreqChart,
   DiskChart,
   DiskReadChart,
   DiskWriteChart,
+  LoadChart,
   MemChart,
   NetworkRecvChart,
   NetworkSentChart,
@@ -65,7 +67,9 @@ const HistoricalStats: Component<{
               title: "basic",
               element: () => (
                 <Grid class={s.Charts}>
+                  <LoadChart stats={stats} />
                   <CpuChart stats={stats} />
+                  <CpuFreqChart stats={stats} />
                   <MemChart stats={stats} />
                   <DiskChart stats={stats} />
                 </Grid>
