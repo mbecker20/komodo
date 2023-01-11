@@ -408,7 +408,7 @@ dependencies = [
  "hex",
  "hmac",
  "jwt",
- "monitor_helpers 0.1.1",
+ "monitor_helpers 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "monitor_types 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "mungos",
  "periphery_client",
@@ -1504,9 +1504,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_helpers"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b911c6eb8fb6c1dbd706d5daf715acd3c97a4992cb9fc4bf86a5c0dab4e61eae"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -1526,6 +1524,8 @@ dependencies = [
 [[package]]
 name = "monitor_helpers"
 version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ecd14e2022c3381028a5c94bf9a2cc591367a21d82a9126b991db9ddd091fb63"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -1544,7 +1544,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_periphery"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -1555,7 +1555,7 @@ dependencies = [
  "dotenv",
  "envy",
  "futures-util",
- "monitor_helpers 0.1.1",
+ "monitor_helpers 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "monitor_types 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "run_command",
  "serde",
@@ -1843,7 +1843,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "futures-util",
- "monitor_helpers 0.1.1",
+ "monitor_helpers 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "monitor_types 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
  "serde",
