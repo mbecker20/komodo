@@ -381,8 +381,10 @@ pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
 
     gen_periphery_service_file(&config_path);
 
+    let user = env::var("USER").expect("failed to find $USER env var");
+
     let command =
-        format!("systemctl --user daemon-reload && systemctl --user enable --now periphery");
+        format!("systemctl --user daemon-reload && systemctl --user enable --now periphery && loginctl enable-linger {user}");
 
     let output = run_command_pipe_to_terminal(&command);
 
