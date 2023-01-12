@@ -60,7 +60,7 @@ export const LoadChart: Component<{
   disableScroll?: boolean;
 }> = (p) => {
   const line = () => {
-    return p.stats()?.map((s) => {
+    return p.stats()?.filter(s => s.system_load !== undefined).map((s) => {
       return {
         time: convertTsMsToLocalUnixTsInSecs(
           (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
@@ -114,14 +114,17 @@ export const CpuFreqChart: Component<{
   disableScroll?: boolean;
 }> = (p) => {
   const line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(
-          (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
-        ),
-        value: s.cpu_freq_mhz! / 1000,
-      };
-    });
+    return p
+      .stats()
+      ?.filter((s) => s.cpu_freq_mhz !== undefined)
+      .map((s) => {
+        return {
+          time: convertTsMsToLocalUnixTsInSecs(
+            (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
+          ),
+          value: s.cpu_freq_mhz! / 1000,
+        };
+      });
   };
   return (
     <SingleStatChart

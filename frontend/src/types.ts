@@ -260,6 +260,7 @@ export interface SystemProcess {
 	name: string;
 	exe?: string;
 	cmd: string[];
+	start_time?: number;
 	cpu_perc: number;
 	mem_mb: number;
 	disk_read_kb: number;
@@ -270,9 +271,9 @@ export interface SystemStatsRecord {
 	_id?: string;
 	server_id: string;
 	ts: number;
-	system_load: number;
+	system_load?: number;
 	cpu_perc: number;
-	cpu_freq_mhz: number;
+	cpu_freq_mhz?: number;
 	mem_used_gb: number;
 	mem_total_gb: number;
 	disk: DiskUsage;
