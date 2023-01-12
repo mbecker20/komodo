@@ -242,6 +242,8 @@ pub struct SystemProcess {
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub exe: String,
     pub cmd: Vec<String>,
+    #[serde(default)]
+    pub start_time: f64,
     pub cpu_perc: f32,
     pub mem_mb: f64,
     pub disk_read_kb: f64,

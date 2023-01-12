@@ -346,6 +346,7 @@ impl StatsClient {
                     name: p.name().to_string(),
                     exe: p.exe().to_str().unwrap_or("").to_string(),
                     cmd: p.cmd().to_vec(),
+                    start_time: (p.start_time() * 1000) as f64,
                     cpu_perc: p.cpu_usage(),
                     mem_mb: p.memory() as f64 / BYTES_PER_MB,
                     disk_read_kb: disk_usage.read_bytes as f64 / BYTES_PER_KB,
