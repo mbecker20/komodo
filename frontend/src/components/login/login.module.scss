@@ -1,6 +1,5 @@
 .Login {
-	width: 100vw;
-	height: 100vh;
+	height: calc(100vh - 4rem);
 	display: grid;
 	place-items: center;
 }
