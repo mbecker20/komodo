@@ -486,7 +486,7 @@ impl State {
                 "ts",
                 limit,
                 query.page as u64 * limit as u64,
-                doc! { "ts": { "$mod": [ts_mod, 0] } },
+                doc! { "server_id": server_id, "ts": { "$mod": [ts_mod, 0] } },
                 projection,
             )
             .await

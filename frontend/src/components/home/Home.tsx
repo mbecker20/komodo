@@ -25,7 +25,7 @@ const Home: Component<{}> = (p) => {
       <Match when={width() >= 1200}>
         <Grid class={combineClasses(s.Home)}>
           <Servers />
-          <Grid>
+          <Grid style={{ height: "fit-content" }}>
             <Summary />
             <Updates />
           </Grid>

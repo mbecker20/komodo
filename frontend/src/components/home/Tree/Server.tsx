@@ -107,7 +107,7 @@ const Server: Component<{ id: string }> = (p) => {
                       <Icon type="refresh" width="0.85rem" />
                     </button>
                   </Show>
-                  <A href={`/server/${p.id}/stats`} class="blue">
+                  <A href={`/server/${p.id}/stats`} class="blue" onClick={e => e.stopPropagation()}>
                     <Icon type="timeline-line-chart" />
                   </A>
                 </Flex>
