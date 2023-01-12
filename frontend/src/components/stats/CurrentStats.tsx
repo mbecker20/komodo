@@ -210,8 +210,8 @@ const StatsHeatbarRow: Component<{
       <HeatBar
         containerClass="card shadow"
         containerStyle={{ width: "60vw", "min-width": "300px" }}
-        filled={Math.floor(p.percentage)}
-        total={100}
+        filled={Math.floor(p.percentage / 2)}
+        total={50}
         onClick={() => setShowGraph((curr) => !curr)}
       />
       <Grid gap="0">
