@@ -220,6 +220,11 @@ pub fn start_core(sub_matches: &ArgMatches) {
         .parse::<RestartMode>()
         .expect("invalid restart mode");
 
+    let add_host = sub_matches
+        .get_one::<bool>("add-internal-host")
+        .map(|p| *p)
+        .unwrap_or(true);
+
     println!(
         "\n===================\n    {}    \n===================\n",
         "core config".bold()
@@ -229,6 +234,7 @@ pub fn start_core(sub_matches: &ArgMatches) {
     println!("{}: {port}", "port".dimmed());
     println!("{}: {network}", "network".dimmed());
     println!("{}: {restart}", "restart".dimmed());
+    println!("{}: {add_host}", "add internal host".dimmed());
 
     if !skip_enter {
         println!(
@@ -252,7 +258,13 @@ pub fn start_core(sub_matches: &ArgMatches) {
 
     let _ = run_command_pipe_to_terminal(&format!("docker stop {name} && docker container rm {name}"));
 
-    let command = format!("docker run -d --name {name} -p {port}:9000 --network {network} -v {config_path}:/config/config.toml --restart {restart} --add-host host.docker.internal:host-gateway {CORE_IMAGE_NAME}");
+    let add_host = if add_host {
+        " --add-host host.docker.internal:host-gateway"
+    } else {
+        ""
+    };
+
+    let command = format!("docker run -d --name {name} -p {port}:9000 --network {network} -v {config_path}:/config/config.toml --restart {restart}{add_host} {CORE_IMAGE_NAME}");
 
     let output = run_command_pipe_to_terminal(&command);
 

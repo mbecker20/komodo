@@ -110,6 +110,9 @@ fn cli() -> Command {
                         .arg(
                             arg!(--restart <RESTART> "sets docker restart mode of monitor core container. default is unless-stopped")
                         )
+                        .arg(
+                            arg!(--add-internal-host "adds the docker flag '--add-host=host.docker.internal:host-gateway'. default is true")
+                        )
                 ),
         )
         .subcommand(
