@@ -113,9 +113,6 @@ const Server: Component<{ id: string }> = (p) => {
                 </Flex>
               </Show>
             </Show>
-            <Show when={server()?.status !== ServerStatus.Ok}>
-              {/* <StatGraphs id={p.id} /> */}
-            </Show>
             <A
               href={`/server/${p.id}`}
               class={
