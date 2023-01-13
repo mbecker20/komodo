@@ -18,28 +18,3 @@
 	animation-name: Enter;
 	animation-duration: 750ms;
 }
-
-.Update:global(.dark) {
-	background-color: c.$lightgrey-dark;
-}
-
-.LogContainer {
-	max-height: 80vh;
-}
-
-.Log {
-	white-space: pre-wrap;
-	overflow-wrap: anywhere;
-	/* word-wrap: break-word; */
-	tab-size: 2;
-	width: 40rem;
-	max-width: 90vw;
-	box-sizing: border-box;
-	max-height: 30vh;
-	background-color: rgba(c.$darkgrey, 0.6);
-	padding: 1rem;
-}
-
-.Log:global(.dark) {
-	background-color: rgba(c.$darkgrey-dark, 0.6);
-}

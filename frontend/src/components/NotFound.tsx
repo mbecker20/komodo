@@ -1,6 +1,6 @@
 import { Component } from "solid-js";
-import Grid from "./util/layout/Grid";
-import Loading from "./util/loading/Loading";
+import Grid from "./shared/layout/Grid";
+import Loading from "./shared/loading/Loading";
 
 const NotFound: Component<{ type: "deployment" | "server" | "build" }> = (p) => {
 	return (

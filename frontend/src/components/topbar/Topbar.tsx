@@ -1,22 +1,20 @@
+import { A, useNavigate } from "@solidjs/router";
 import { Component, createSignal, JSX, Show } from "solid-js";
 import { TOPBAR_HEIGHT } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
-import { useTheme } from "../../state/ThemeProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, inPx } from "../../util/helpers";
-import Button from "../util/Button";
-import Circle from "../util/Circle";
-import Icon from "../util/Icon";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
-import HoverMenu from "../util/menu/HoverMenu";
-import Menu from "../util/menu/Menu";
+import Circle from "../shared/Circle";
+import Icon from "../shared/Icon";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
+import HoverMenu from "../shared/menu/HoverMenu";
+import Menu from "../shared/menu/Menu";
 import Account from "./Account";
 import { SearchProvider } from "./Search/Provider";
 import { Search } from "./Search/Search";
 import s from "./topbar.module.scss";
-import Updates from "./Updates";
 
 const mobileStyle: JSX.CSSProperties = {
   position: "fixed",
@@ -25,26 +23,10 @@ const mobileStyle: JSX.CSSProperties = {
   width: "calc(100vw - 2rem)",
 };
 
-// const Topbar: Component = () => {
-//   const { themeClass } = useTheme();
-//   return (
-//     <Flex
-//       class={combineClasses(s.Topbar, "shadow", themeClass())}
-//       justifyContent="space-between"
-//       alignItems="center"
-//       style={{ height: inPx(TOPBAR_HEIGHT) }}
-//     >
-//       <LeftTopbar />
-//       <RightSide />
-//     </Flex>
-//   );
-// };
-
 const Topbar: Component = () => {
-  const { themeClass } = useTheme();
   return (
     <Grid
-      class={combineClasses(s.GridTopbar, "shadow", themeClass())}
+      class={combineClasses(s.Topbar, "shadow")}
       placeItems="center"
       style={{ height: inPx(TOPBAR_HEIGHT) }}
     >
@@ -58,15 +40,15 @@ const Topbar: Component = () => {
 };
 
 const LeftSide: Component = () => {
-  const { sidebar, selected, ws } = useAppState();
+  const { ws } = useAppState();
   return (
-    <Flex alignItems="center" style={{ padding: "0rem 0.5rem", "place-self": "center start" }}>
-      {/* <Button class="grey" onClick={sidebar.toggle}>
-        <Icon type="menu" width="1.15rem" />
-      </Button> */}
-      <Button class="grey" onClick={() => selected.set("", "home")}>
+    <Flex
+      alignItems="center"
+      style={{ padding: "0rem 0.5rem", "place-self": "center start" }}
+    >
+      <A href="/" class="grey">
         <Icon type="home" width="1.15rem" />
-      </Button>
+      </A>
       <HoverMenu
         target={
           <Circle
@@ -80,7 +62,7 @@ const LeftSide: Component = () => {
       />
     </Flex>
   );
-} 
+};
 
 const RightSide: Component = () => {
   const { isMobile } = useAppDimensions();
@@ -93,46 +75,27 @@ const RightSide: Component = () => {
       alignItems="center"
       style={{ padding: "0rem 0.5rem", "place-self": "center end" }}
     >
-      {/* <SearchProvider>
-        <Search />
-      </SearchProvider> */}
-      {/* <Menu
-        show={menu() === "updates"}
-        close={close}
-        menuStyle={isMobile() ? mobileStyle : undefined}
-        target={
-          <Button
-            class="grey"
-            onClick={() =>
-              menu() === "updates" ? setMenu(undefined) : setMenu("updates")
-            }
-          >
-            <Icon type="notifications" alt="updates" width="1.15rem" />
-          </Button>
-        }
-        content={<Updates />}
-        position="bottom right"
-        backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
-      /> */}
       <Menu
         show={menu() === "account"}
         close={close}
+        containerStyle={{ cursor: "pointer" }}
         target={
-          <Button
+          <button
             class="grey"
             onClick={() =>
               menu() === "account" ? setMenu(undefined) : setMenu("account")
             }
           >
             <Show when={!isMobile()}>{username()}</Show>
-            <Icon type={!isMobile() ? "chevron-down" : "user"} />
-          </Button>
+            <Icon style={{cursor: "pointer"}} type={!isMobile() ? "chevron-down" : "user"} />
+          </button>
         }
+        
         content={<Account close={close} />}
         position="bottom right"
       />
     </Flex>
   );
-}
+};
 
 export default Topbar;

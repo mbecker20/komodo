@@ -1,59 +1,53 @@
-import { Component, createSignal, For, onCleanup, Show } from "solid-js";
-import { ADD_UPDATE } from "@monitor/util";
-import { useArray } from "../../state/hooks";
+import {
+  Component,
+  createEffect,
+  For,
+  onCleanup,
+  Show,
+} from "solid-js";
+import { useUpdates } from "../../state/hooks";
 import { useAppState } from "../../state/StateProvider";
-import { getUpdates } from "../../util/query";
 import Update from "../update/Update";
-import Grid from "../util/layout/Grid";
-import { useTheme } from "../../state/ThemeProvider";
+import Grid from "../shared/layout/Grid";
 import { combineClasses } from "../../util/helpers";
-import Button from "../util/Button";
+import { useParams } from "@solidjs/router";
 
 const Updates: Component<{}> = (p) => {
-	const { ws, selected } = useAppState();
-  const selectedUpdates = useArray(() =>
-    getUpdates({ serverID: selected.id() })
-  );
-  const unsub = ws.subscribe([ADD_UPDATE], ({ update }) => {
-    if (update.serverID === selected.id()) {
-      selectedUpdates.add(update);
-    }
+  const { ws } = useAppState();
+  const params = useParams();
+  const updates = useUpdates({ type: "Server", id: params.id });
+  let unsub = () => {};
+  createEffect(() => {
+    unsub();
+    unsub = ws.subscribe([], (update) => {
+      if (update.target.type === "Server" && update.target.id === params.id) {
+        updates.addOrUpdate(update);
+      }
+    });
   });
-  onCleanup(unsub);
-  const [noMoreUpdates, setNoMore] = createSignal(false);
-  const loadMore = async () => {
-    const offset = selectedUpdates.collection()?.length;
-    if (offset) {
-      const updates = await getUpdates({ offset, serverID: selected.id() });
-      selectedUpdates.addManyToEnd(updates);
-      if (updates.length !== 10) {
-        setNoMore(true);
-      }
-    }
-  };
-  const { themeClass } = useTheme();
-	return (
-    <Show
-      when={
-        selectedUpdates.loaded() &&
-        (selectedUpdates.collection()?.length || 0) > 0
-      }
+  onCleanup(() => unsub());
+  return (
+    <Grid
+      class={combineClasses("card shadow")}
+      style={{ "width": "400px" }}
     >
-      <Grid class={combineClasses("card shadow", themeClass())}>
-        <h1>updates</h1>
-        <Grid class="updates-container scroller">
-          <For each={selectedUpdates.collection()}>
-            {(update) => <Update update={update} showName={false} />}
-          </For>
-          <Show when={!noMoreUpdates()}>
-            <Button class="grey" style={{ width: "100%" }} onClick={loadMore}>
-              load more
-            </Button>
-          </Show>
-        </Grid>
+      <h1>updates</h1>
+      <Grid class="updates-container scroller">
+        <For each={updates.collection()}>
+          {(update) => <Update update={update} />}
+        </For>
+        <Show when={!updates.noMore()}>
+          <button
+            class="grey"
+            style={{ width: "100%" }}
+            onClick={() => updates.loadMore()}
+          >
+            load more
+          </button>
+        </Show>
       </Grid>
-    </Show>
+    </Grid>
   );
-}
+};
 
 export default Updates;

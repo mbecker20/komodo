@@ -1,44 +1,56 @@
 @use "colors" as c;
 
 .app {
-  width: 100vw;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto 1fr;
-  grid-template-areas:
-    "topbar"
-    "content";
-}
-
-/* CONTENT */
-
-.content {
-  grid-template-columns: auto 1fr;
-  background-color: c.$darkgrey;
-  padding: 1rem;
-}
-
-.content.dark {
-  background-color: c.$darkgrey-dark;
-}
-
-.left-content {
-  height: fit-content;
-  width: fit-content;
-  min-width: 325px;
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: auto auto;
+	gap: 1rem;
+	padding: 1rem;
+	box-sizing: border-box;
+	grid-template-areas:
+		"topbar"
+		"content";
 }
 
 @media only screen and (max-width: 1200px) {
-  .app {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "topbar"
-      "content";
-  }
+	.app {
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			"topbar"
+			"content";
+	}
 }
 
-@media only screen and (max-width: 900px) {	
+.selected {
+	background-color: rgba(c.$lightblue, 0.5);
+}
+
+.card {
+	background-color: c.$grey;
+	padding: 1rem;
+}
+
+.card.light {
+	background-color: c.$lightgrey;
+}
+
+.card.dark {
+	background-color: c.$darkgrey;
+}
+
+.content {
+	grid-template-columns: auto 1fr;
+	background-color: c.$darkgrey;
+}
+
+.left-content {
+	height: fit-content;
+	width: fit-content;
+	min-width: 325px;
+	max-width: 450px;
+}
+
+@media only screen and (max-width: 900px) {
 	.content {
 		grid-template-columns: 1fr;
 	}
@@ -51,138 +63,110 @@
 $anim-time: 500ms;
 
 .content-enter {
-  grid-area: content;
-  // animation-name: content-enter;
-  // animation-duration: $anim-time;
-  // animation-timing-function: ease-out;
+	grid-area: content;
+	// animation-name: content-enter;
+	// animation-duration: $anim-time;
+	// animation-timing-function: ease-out;
 }
 
 .content-exit {
-  grid-area: content;
-  animation-name: content-exit;
-  animation-duration: $anim-time;
-  animation-timing-function: ease-out;
+	grid-area: content;
+	animation-name: content-exit;
+	animation-duration: $anim-time;
+	animation-timing-function: ease-out;
 }
 
 @keyframes content-enter {
-  from {
-    opacity: 0;
-    transform: translateX(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0%);
-  }
+	from {
+		opacity: 0;
+		transform: translateX(100%);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateX(0%);
+	}
 }
 
 @keyframes content-exit {
-  from {
-    opacity: 0;
-    transform: translateX(0%);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(-100%);
-  }
-}
+	from {
+		opacity: 0;
+		transform: translateX(0%);
+	}
 
-.card {
-  background-color: c.$grey;
-  padding: 0.5rem;
-}
-
-.card.dark {
-  background-color: c.$grey-dark;
+	to {
+		opacity: 1;
+		transform: translateX(-100%);
+	}
 }
 
 .action {
-  background-color: c.$lightgrey;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem;
-  box-sizing: border-box;
-}
-
-.action.dark {
-  background-color: c.$lightgrey-dark;
+	background-color: c.$lightgrey;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.5rem;
+	box-sizing: border-box;
 }
 
 .updates-container {
-  max-height: calc(225px + 5.5rem);
+	max-height: calc(225px + 5.5rem);
 }
 
 .show-updates-indicator {
-  font-size: 0.8rem;
-  position: absolute;
-  bottom: 0.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: .7;
+	font-size: 0.8rem;
+	position: absolute;
+	bottom: 0.5rem;
+	left: 50%;
+	transform: translateX(-50%);
+	opacity: .7;
 }
 
 .tabs {
-  height: fit-content;
+	height: fit-content;
 }
 
 .config {
-  height: 100%;
-  place-items: start center;
-  grid-template-rows: 70vh auto;
+	height: 100%;
+	place-items: start center;
+	width: 100%;
+	// grid-template-rows: 70vh auto;
 }
 
 .config-items {
-  height: fit-content;
-  max-height: 65vh;
-  padding: 0rem 0.5rem;
+	height: fit-content;
+	// max-height: 65vh;
+	width: 100%;
+	max-width: 700px;
+	padding: 0rem 0.5rem;
 }
 
 .config-item {
-  width: 450px;
-  flex-wrap: wrap;
-  background-color: c.$lightgrey;
-  box-sizing: border-box;
-  padding: 0.5rem;
-  height: fit-content;
-  box-sizing: border-box;
-}
-
-.config-item.dark {
-  background-color: c.$lightgrey-dark;
+	width: 100%;
+	flex-wrap: wrap;
+	background-color: c.$lightgrey;
+	box-sizing: border-box;
+	padding: 0.5rem;
+	height: fit-content;
+	box-sizing: border-box;
 }
 
 @media only screen and (max-width: 700px) {
-  .config-item {
-    width: calc(100vw - 6rem);
-  }
-}
-
-.selected {
-  background-color: rgba(c.$lightblue, 0.5);
-}
-
-.selected.dark {
-  background-color: rgba(c.$lightblue-dark, 0.5);
+	.config-item {
+		width: calc(100vw - 6rem);
+	}
 }
 
 .running {
-  color: c.$textgreen;
-  // text-shadow: 0px 0px 1px c.$textgreen;
-}
-
-.running.dark {
-  color: c.$textgreen-dark;
+	color: c.$textgreen;
+	// text-shadow: 0px 0px 1px c.$textgreen;
 }
 
 .exited {
-  color: c.$textred;
-  // text-shadow: 0px 0px 1px c.$textred;
-}
-
-.exited-dark {
-  color: c.$textred-dark
+	color: c.$textred;
+	// text-shadow: 0px 0px 1px c.$textred;
 }
 
 .apexcharts-tooltip {
-  background: #f3f3f3;
-  color: black;
+	background: #f3f3f3;
+	color: black;
 }

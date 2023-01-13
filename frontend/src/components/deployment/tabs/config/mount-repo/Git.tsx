@@ -1,19 +1,20 @@
-import { Component, Show } from "solid-js";
-import { useAppState } from "../../../../../state/StateProvider";
-import { useTheme } from "../../../../../state/ThemeProvider";
+import { Component, createEffect, createSignal } from "solid-js";
+import { client } from "../../../../..";
 import { combineClasses } from "../../../../../util/helpers";
-import Input from "../../../../util/Input";
-import Flex from "../../../../util/layout/Flex";
-import Grid from "../../../../util/layout/Grid";
-import Selector from "../../../../util/menu/Selector";
+import Input from "../../../../shared/Input";
+import Flex from "../../../../shared/layout/Flex";
+import Grid from "../../../../shared/layout/Grid";
+import Selector from "../../../../shared/menu/Selector";
 import { useConfig } from "../Provider";
 
 const Git: Component<{}> = (p) => {
-  const { githubAccounts } = useAppState();
   const { deployment, setDeployment, userCanUpdate } = useConfig();
-  const { themeClass } = useTheme();
+  const [githubAccounts, setGithubAccounts] = createSignal<string[]>();
+  createEffect(() => {
+    client.get_server_github_accounts(deployment.server_id).then(setGithubAccounts);
+  });
   return (
-    <Grid class={combineClasses("config-item shadow", themeClass())}>
+    <Grid class={combineClasses("config-item shadow")}>
       <h1>github config</h1>
       <Flex
         justifyContent={userCanUpdate() ? "space-between" : undefined}
@@ -41,28 +42,26 @@ const Git: Component<{}> = (p) => {
           disabled={!userCanUpdate()}
         />
       </Flex>
-      <Show when={githubAccounts() && githubAccounts()!.length > 0}>
-        <Flex
-          justifyContent={userCanUpdate() ? "space-between" : undefined}
-          alignItems="center"
-          style={{ "flex-wrap": "wrap" }}
-        >
-          <h2>github account: </h2>
-          <Selector
-            targetClass="blue"
-            selected={deployment.githubAccount || "none"}
-            items={["none", ...githubAccounts()!]}
-            onSelect={(account) => {
-              setDeployment(
-                "githubAccount",
-                account === "none" ? undefined : account
-              );
-            }}
-            position="bottom right"
-            disabled={!userCanUpdate()}
-          />
-        </Flex>
-      </Show>
+      <Flex
+        justifyContent={userCanUpdate() ? "space-between" : undefined}
+        alignItems="center"
+        style={{ "flex-wrap": "wrap" }}
+      >
+        <h2>github account: </h2>
+        <Selector
+          targetClass="blue"
+          selected={deployment.github_account || "none"}
+          items={["none", ...githubAccounts()!]}
+          onSelect={(account) => {
+            setDeployment(
+              "github_account",
+              account === "none" ? undefined : account
+            );
+          }}
+          position="bottom right"
+          disabled={!userCanUpdate()}
+        />
+      </Flex>
     </Grid>
   );
 };

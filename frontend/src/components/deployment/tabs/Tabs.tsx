@@ -1,4 +1,3 @@
-import { ContainerStatus, Log as LogType, Update } from "@monitor/types";
 import {
   Component,
   createEffect,
@@ -6,107 +5,116 @@ import {
   onCleanup,
   Show,
 } from "solid-js";
-import Tabs from "../../util/tabs/Tabs";
+import { Tab } from "../../shared/tabs/Tabs";
 import Config from "./config/Config";
 import Log from "./log/Log";
 import { useAppState } from "../../../state/StateProvider";
-import { getDeploymentLog } from "../../../util/query";
-import Icon from "../../util/Icon";
-import Flex from "../../util/layout/Flex";
-import {
-  ADD_UPDATE,
-  DELETE_CONTAINER,
-  DEPLOY,
-  START_CONTAINER,
-  STOP_CONTAINER,
-} from "@monitor/util";
-import { useTheme } from "../../../state/ThemeProvider";
+import Icon from "../../shared/Icon";
+import Flex from "../../shared/layout/Flex";
 import { combineClasses } from "../../../util/helpers";
+import { useParams } from "@solidjs/router";
+import {
+  DockerContainerState,
+  Log as LogType,
+  Operation,
+} from "../../../types";
+import { client } from "../../..";
+import SimpleTabs from "../../shared/tabs/SimpleTabs";
 
 const DeploymentTabs: Component<{}> = () => {
-  const { selected, deployments, ws } = useAppState();
-  const deployment = () => deployments.get(selected.id());
+  const { deployments, ws } = useAppState();
+  const params = useParams();
+  const deployment = () => deployments.get(params.id);
   const [logTail, setLogTail] = createSignal(50);
-  const [log, setLog] = createSignal<LogType>({});
+  const [log, setLog] = createSignal<LogType>();
   const status = () =>
-    deployment()!.status === "not deployed"
+    deployment()!.state === DockerContainerState.NotDeployed
       ? "not deployed"
-      : (deployment()!.status as ContainerStatus).State;
+      : deployment()!.container?.state;
   const loadLog = async () => {
     console.log("load log");
-    if (deployment()?.status !== "not deployed") {
-      const log = await getDeploymentLog(selected.id(), logTail());
+    if (deployment()?.state !== DockerContainerState.NotDeployed) {
+      const log = await client.get_deployment_container_log(
+        params.id,
+        logTail()
+      );
       setLog(log);
     } else {
-      setLog({});
+      setLog();
     }
   };
   createEffect(loadLog);
   onCleanup(
-    ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
-      if (
-        update.deploymentID === selected.id() &&
-        (update.operation === DEPLOY ||
-          update.operation === START_CONTAINER ||
-          update.operation === STOP_CONTAINER ||
-          update.operation === DELETE_CONTAINER)
-      ) {
-        // console.log("updating log");
-        setTimeout(() => {
-          getDeploymentLog(selected.id()).then(setLog);
-        }, 2000);
+    ws.subscribe(
+      [
+        Operation.DeployContainer,
+        Operation.StartContainer,
+        Operation.StopContainer,
+        Operation.RemoveContainer,
+      ],
+      (update) => {
+        if (update.target.id === params.id) {
+          // console.log("updating log");
+          setTimeout(() => {
+            client.get_deployment_container_log(params.id).then(setLog);
+          }, 2000);
+        }
       }
-    })
+    )
   );
-  const { themeClass } = useTheme();
   return (
     <Show when={deployment()}>
-      <Tabs
-        containerClass={combineClasses("card tabs shadow", themeClass())}
+      <SimpleTabs
+        containerClass={combineClasses("card tabs shadow")}
         containerStyle={{ gap: "0.5rem" }}
-        tabs={[
-          {
-            title: "config",
-            element: <Config />,
-          },
-          status() !== "not deployed" && [
+        tabs={
+          [
             {
-              title: "log",
-              element: (
-                <Log
-                  reload={loadLog}
-                  log={log()}
-                  logTail={logTail()}
-                  setLogTail={setLogTail}
-                />
-              ),
+              title: "config",
+              element: () => <Config />,
             },
-            status() !== "not deployed" && {
-              title: "error log",
-              titleElement: (
-                <Flex gap="0.5rem" alignItems="center">
-                  error log{" "}
-                  <Show
-                    when={
-                      deployment()!.status !== "not deployed" && log().stderr
-                    }
-                  >
-                    <Icon type="error" />
-                  </Show>
-                </Flex>
-              ),
-              element: (
-                <Log
-                  reload={loadLog}
-                  log={log()}
-                  logTail={logTail()}
-                  setLogTail={setLogTail}
-                  error
-                />
-              ),
-            },
-          ],
-        ].flat()}
+            status() !== "not deployed" && [
+              {
+                title: "log",
+                element: () => (
+                  <Log
+                    reload={loadLog}
+                    log={log()}
+                    logTail={logTail()}
+                    setLogTail={setLogTail}
+                  />
+                ),
+              },
+              status() !== "not deployed" && {
+                title: "error log",
+                titleElement: () => (
+                  <Flex gap="0.5rem" alignItems="center">
+                    error log{" "}
+                    <Show
+                      when={
+                        deployment()!.state !==
+                          DockerContainerState.NotDeployed && log()?.stderr
+                      }
+                    >
+                      <Icon type="error" />
+                    </Show>
+                  </Flex>
+                ),
+                element: () => (
+                  <Log
+                    reload={loadLog}
+                    log={log()}
+                    logTail={logTail()}
+                    setLogTail={setLogTail}
+                    error
+                  />
+                ),
+              },
+            ],
+          ]
+            .flat()
+            .filter((e) => e) as Tab[]
+        }
         localStorageKey="deployment-tab"
       />
     </Show>

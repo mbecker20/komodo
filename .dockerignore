@@ -1,0 +1,4 @@
+/target
+/config_example
+config.*
+.env

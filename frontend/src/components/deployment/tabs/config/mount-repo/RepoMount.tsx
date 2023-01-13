@@ -1,16 +1,14 @@
 import { Component } from "solid-js";
-import { useTheme } from "../../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../../util/helpers";
-import Input from "../../../../util/Input";
-import Flex from "../../../../util/layout/Flex";
-import Grid from "../../../../util/layout/Grid";
+import Input from "../../../../shared/Input";
+import Flex from "../../../../shared/layout/Flex";
+import Grid from "../../../../shared/layout/Grid";
 import { useConfig } from "../Provider";
 
 const RepoMount: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
-  const { themeClass } = useTheme();
   return (
-    <Grid class={combineClasses("config-item shadow", themeClass())}>
+    <Grid class={combineClasses("config-item shadow")}>
       <h1>mount</h1>
       <Flex
         alignItems="center"
@@ -19,17 +17,17 @@ const RepoMount: Component<{}> = (p) => {
       >
         <Input
           placeholder="repo folder to mount"
-          value={deployment.repoMount || ""}
+          value={deployment.repo_mount?.local || ""}
           style={{ width: "40%" }}
-          onEdit={(value) => setDeployment("repoMount", value)}
+          onEdit={(local) => setDeployment("repo_mount", { local })}
           disabled={!userCanUpdate()}
         />
         {" : "}
         <Input
           placeholder="container mount point"
-          value={deployment.containerMount || ""}
+          value={deployment.repo_mount?.container || ""}
           style={{ width: "40%" }}
-          onEdit={(value) => setDeployment("containerMount", value)}
+          onEdit={(container) => setDeployment("repo_mount", { container })}
           disabled={!userCanUpdate()}
         />
       </Flex>

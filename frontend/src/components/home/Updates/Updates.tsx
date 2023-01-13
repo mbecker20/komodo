@@ -1,21 +1,18 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
-import Grid from "../../util/layout/Grid";
+import Grid from "../../shared/layout/Grid";
 import s from "../home.module.scss";
 import Update from "./Update";
 import { combineClasses } from "../../../util/helpers";
 import { useAppDimensions } from "../../../state/DimensionProvider";
-import Button from "../../util/Button";
-import { useTheme } from "../../../state/ThemeProvider";
 
 const Updates: Component<{}> = () => {
   const { updates } = useAppState();
   const { isMobile } = useAppDimensions();
-	const { themeClass } = useTheme();
   return (
     <Show when={updates.loaded()}>
       <Grid
-        class={combineClasses(s.Updates, "card shadow", themeClass())}
+        class={combineClasses(s.Updates, "card shadow")}
         style={isMobile() ? { width: "100%" } : undefined}
       >
         <h1>updates</h1>
@@ -24,13 +21,13 @@ const Updates: Component<{}> = () => {
             {(update) => <Update update={update} />}
           </For>
           <Show when={!updates.noMore()}>
-            <Button
+            <button
               class="grey"
               style={{ width: "100%" }}
               onClick={updates.loadMore}
             >
               load more
-            </Button>
+            </button>
           </Show>
         </Grid>
       </Grid>

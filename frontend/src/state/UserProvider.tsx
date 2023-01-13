@@ -1,6 +1,6 @@
-import { User } from "@monitor/types";
-import { Component, createContext, createMemo, createResource, Setter, useContext } from "solid-js";
+import { createContext, createMemo, createResource, ParentComponent, Setter, useContext } from "solid-js";
 import { client } from "..";
+import { User } from "../types";
 
 export const LOGGED_IN_ENABLED = "LOGGED_IN_ENABLED";
 export const LOGGED_IN_DISABLED = "LOGGED_IN_DISABLED";
@@ -12,7 +12,6 @@ export type UserState = {
   setUser: Setter<false | User | undefined>;
   logout: () => void;
   username: () => string;
-  permissions: () => number;
   loginStatus: () =>
     | "LOGGED_IN_ENABLED"
     | "LOGGED_IN_DISABLED"
@@ -23,8 +22,8 @@ export type UserState = {
 
 const UserContext = createContext<UserState>();
 
-export const UserProvider: Component = (p) => {
-  const [user, { mutate, refetch }] = createResource(() => client.getUser());
+export const UserProvider: ParentComponent = (p) => {
+  const [user, { mutate, refetch }] = createResource(() => client.get_user());
   const logout = async () => {
     client.logout();
     mutate(false);
@@ -43,19 +42,11 @@ export const UserProvider: Component = (p) => {
     } else if (_user === false) return SIGNED_OUT;
     else return UNKNOWN;
   });
-  const permissions = () => {
-    if (user()) {
-      return (user() as User).permissions!
-    } else {
-      return 0;
-    }
-  }
   const context: UserState = {
     user: () => user() as User,
     setUser: mutate,
     logout,
     username,
-    permissions,
     loginStatus,
     reloadUser: refetch,
   };

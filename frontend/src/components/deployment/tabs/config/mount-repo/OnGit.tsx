@@ -1,16 +1,14 @@
 import { Component } from "solid-js";
-import { useTheme } from "../../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../../util/helpers";
-import Input from "../../../../util/Input";
-import Flex from "../../../../util/layout/Flex";
-import Grid from "../../../../util/layout/Grid";
+import Input from "../../../../shared/Input";
+import Flex from "../../../../shared/layout/Flex";
+import Grid from "../../../../shared/layout/Grid";
 import { useConfig } from "../Provider";
 
 export const OnClone: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
-  const { themeClass } = useTheme();
   return (
-    <Grid class={combineClasses("config-item shadow", themeClass())}>
+    <Grid class={combineClasses("config-item shadow")}>
       <h1>on clone</h1>
       <Flex
         alignItems="center"
@@ -20,17 +18,17 @@ export const OnClone: Component<{}> = (p) => {
         <h2>path:</h2>
         <Input
           placeholder="relative to repo"
-          value={deployment.onClone?.path || (userCanUpdate() ? "" : "/")}
+          value={deployment.on_clone?.path || (userCanUpdate() ? "" : "/")}
           onEdit={(path) => {
             if (
               path.length === 0 &&
-              (!deployment.onClone ||
-                !deployment.onClone.command ||
-                deployment.onClone.command.length === 0)
+              (!deployment.on_clone ||
+                !deployment.on_clone.command ||
+                deployment.on_clone.command.length === 0)
             ) {
-              setDeployment("onClone", undefined);
+              setDeployment("on_clone", undefined);
             }
-            setDeployment("onClone", { path });
+            setDeployment("on_clone", { path });
           }}
           disabled={!userCanUpdate()}
         />
@@ -43,17 +41,17 @@ export const OnClone: Component<{}> = (p) => {
         <h2>command:</h2>
         <Input
           placeholder="command"
-          value={deployment.onClone?.command || ""}
+          value={deployment.on_clone?.command || ""}
           onEdit={(command) => {
             if (
               command.length === 0 &&
-              (!deployment.onClone ||
-                !deployment.onClone.path ||
-                deployment.onClone.path.length === 0)
+              (!deployment.on_clone ||
+                !deployment.on_clone.path ||
+                deployment.on_clone.path.length === 0)
             ) {
-              setDeployment("onClone", undefined);
+              setDeployment("on_clone", undefined);
             }
-            setDeployment("onClone", { command });
+            setDeployment("on_clone", { command });
           }}
           disabled={!userCanUpdate()}
         />
@@ -64,9 +62,8 @@ export const OnClone: Component<{}> = (p) => {
 
 export const OnPull: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
-  const { themeClass } = useTheme();
   return (
-    <Grid class={combineClasses("config-item shadow", themeClass())}>
+    <Grid class={combineClasses("config-item shadow")}>
       <h1>on pull</h1>
       <Flex
         alignItems="center"
@@ -76,17 +73,17 @@ export const OnPull: Component<{}> = (p) => {
         <h2>path:</h2>
         <Input
           placeholder="relative to repo"
-          value={deployment.onPull?.path || ""}
+          value={deployment.on_pull?.path || ""}
           onEdit={(path) => {
             if (
               path.length === 0 &&
-              (!deployment.onPull ||
-                !deployment.onPull.command ||
-                deployment.onPull.command.length === 0)
+              (!deployment.on_pull ||
+                !deployment.on_pull.command ||
+                deployment.on_pull.command.length === 0)
             ) {
-              setDeployment("onPull", undefined);
+              setDeployment("on_pull", undefined);
             }
-            setDeployment("onPull", { path });
+            setDeployment("on_pull", { path });
           }}
           disabled={!userCanUpdate()}
         />
@@ -99,17 +96,17 @@ export const OnPull: Component<{}> = (p) => {
         <h2>command:</h2>
         <Input
           placeholder="command"
-          value={deployment.onPull?.command || ""}
+          value={deployment.on_pull?.command || ""}
           onEdit={(command) => {
             if (
               command.length === 0 &&
-              (!deployment.onPull ||
-                !deployment.onPull.path ||
-                deployment.onPull.path.length === 0)
+              (!deployment.on_pull ||
+                !deployment.on_pull.path ||
+                deployment.on_pull.path.length === 0)
             ) {
-              setDeployment("onPull", undefined);
+              setDeployment("on_pull", undefined);
             }
-            setDeployment("onPull", { command });
+            setDeployment("on_pull", { command });
           }}
           disabled={!userCanUpdate()}
         />

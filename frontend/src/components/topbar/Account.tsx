@@ -1,49 +1,41 @@
+import { A } from "@solidjs/router";
 import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
-import { useTheme } from "../../state/ThemeProvider";
 import { useUser } from "../../state/UserProvider";
-import { readablePermissions } from "../../util/helpers";
-import Button from "../util/Button";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
 import s from "./topbar.module.scss";
 
 const Account: Component<{ close: () => void }> = (p) => {
-  const { logout, selected } = useAppState();
-  const { username, permissions } = useUser();
-  const { isDark, toggleDarkTheme } = useTheme();
+  const { user } = useUser();
   const { isMobile } = useAppDimensions();
+  const { logout } = useAppState();
   return (
     <Grid gap="0.5rem" class={s.Account} placeItems="center end">
       <Show when={isMobile()}>
-        <Flex justifyContent="center">{username()}</Flex>
+        <Flex justifyContent="center">{user().username}</Flex>
       </Show>
-      <Flex justifyContent="center">
-        permissions: {readablePermissions(permissions())}
-      </Flex>
-      <Show when={permissions() > 1}>
-        <Button
+      <Flex justifyContent="center">admin: {user().admin.toString()}</Flex>
+      <Show when={user().admin}>
+        <A
+          href="/users"
           class="grey"
-          onClick={() => {
-            selected.set("", "users");
-            p.close();
-          }}
+          onClick={() => p.close()}
           style={{ "font-size": "1rem", width: "100%" }}
         >
           manage users
-        </Button>
+        </A>
       </Show>
-      <Button
-        class="grey"
-        onClick={toggleDarkTheme}
-        style={{ "font-size": "1rem", width: "100%" }}
-      >
-        {isDark() ? "dark" : "light"} theme
-      </Button>
-      <Button onClick={logout} class="red" style={{ width: "100%" }}>
+      <Show when={!user().admin}>
+        <Flex justifyContent="center">
+          create server permissions:{" "}
+          {user().create_server_permissions.toString()}
+        </Flex>
+      </Show>
+      <button onClick={() => logout()} class="red" style={{ width: "100%" }}>
         log out
-      </Button>
+      </button>
     </Grid>
   );
 };

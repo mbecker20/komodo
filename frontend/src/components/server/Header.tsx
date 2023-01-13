@@ -1,45 +1,34 @@
-import { Server } from "@monitor/types";
 import { Component, Show } from "solid-js";
-import { REMOVE_SERVER } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { combineClasses, serverStatusClass } from "../../util/helpers";
-import ConfirmButton from "../util/ConfirmButton";
-import Icon from "../util/Icon";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
-import { useTheme } from "../../state/ThemeProvider";
+import { combineClasses, getId, serverStatusClass } from "../../util/helpers";
+import ConfirmButton from "../shared/ConfirmButton";
+import Icon from "../shared/Icon";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useLocalStorageToggle } from "../../util/hooks";
 import Updates from "./Updates";
+import { PermissionLevel, Server } from "../../types";
+import { useParams } from "@solidjs/router";
+import { client } from "../..";
 
 const Header: Component<{}> = (p) => {
-  const { servers, selected, ws } = useAppState();
-  const server = () => servers.get(selected.id()) as Server;
-  const status = () =>
-    server().enabled
-      ? server().status === "OK"
-        ? "OK"
-        : "NOT OK"
-      : "DISABLED";
-  const { permissions, username } = useUser();
-  const { themeClass } = useTheme();
+  const { servers } = useAppState();
+  const params = useParams();
+  const server = () => servers.get(params.id)!;
+  const status = () => server().status.replaceAll("_", " ").toUpperCase();
+  const { user } = useUser();
   const { isMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
     useLocalStorageToggle("show-updates");
-  const userCanUpdate = () => {
-    if (permissions() > 1) {
-      return true;
-    } else if (permissions() > 0 && server()!.owners.includes(username()!)) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+  const userCanUpdate = () =>
+    user().admin ||
+    server().server.permissions![getId(user())] === PermissionLevel.Update;
   return (
     <>
       <Flex
-        class={combineClasses("card shadow", themeClass())}
+        class={combineClasses("card shadow")}
         justifyContent="space-between"
         alignItems="center"
         style={{
@@ -51,34 +40,28 @@ const Header: Component<{}> = (p) => {
         }}
       >
         <Grid gap="0.1rem">
-          <h1>{server().name}</h1>
+          <h1>{server().server.name}</h1>
           <Flex gap="0.2rem" alignItems="center" style={{ opacity: 0.8 }}>
             <div>server</div>
-            <Show when={server().region}>
+            <Show when={server().server.region}>
               <Icon type="caret-right" width="0.7rem" />
-              {server().region}
+              {server().server.region}
             </Show>
           </Flex>
         </Grid>
-        <Show when={!server().isCore}>
-          <Flex alignItems="center">
-            <div class={serverStatusClass(status(), themeClass)}>
-              {status()}
-            </div>
-            <Show
-              when={permissions() > 1 || server().owners.includes(username())}
+        <Flex alignItems="center">
+          <div class={serverStatusClass(server().status)}>{status()}</div>
+          <Show when={userCanUpdate()}>
+            <ConfirmButton
+              onConfirm={() => {
+                client.delete_server(params.id);
+              }}
+              color="red"
             >
-              <ConfirmButton
-                onConfirm={() => {
-                  ws.send(REMOVE_SERVER, { serverID: selected.id() });
-                }}
-                color="red"
-              >
-                <Icon type="trash" />
-              </ConfirmButton>
-            </Show>
-          </Flex>
-        </Show>
+              <Icon type="trash" />
+            </ConfirmButton>
+          </Show>
+        </Flex>
         <Show when={isMobile() && userCanUpdate()}>
           <Flex gap="0.5rem" alignItems="center" class="show-updates-indicator">
             updates{" "}

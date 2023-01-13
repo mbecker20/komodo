@@ -1,0 +1,14 @@
+[workspace]
+
+members = [
+	"cli",
+	"core",
+	"periphery",
+	"tests",
+	"lib/axum_oauth2",
+	"lib/db_client",
+	"lib/helpers",
+	"lib/periphery_client",
+	"lib/types",
+	"lib/monitor_client"
+]

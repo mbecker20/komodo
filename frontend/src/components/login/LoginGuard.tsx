@@ -1,4 +1,4 @@
-import { Component, Match, Switch } from "solid-js";
+import { Match, ParentComponent, Switch } from "solid-js";
 import {
   LOGGED_IN_DISABLED,
   LOGGED_IN_ENABLED,
@@ -6,12 +6,12 @@ import {
   UNKNOWN,
   useUser,
 } from "../../state/UserProvider";
-import Loading from "../util/loading/Loading";
+import Loading from "../shared/loading/Loading";
 import Login from "./Login";
 import s from "./login.module.scss";
 import NotActivated from "./NotActivated";
 
-const LoginGuard: Component = (p) => {
+const LoginGuard: ParentComponent = (p) => {
   const { loginStatus } = useUser();
   return (
     <Switch>

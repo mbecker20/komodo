@@ -1,14 +1,13 @@
 import { Component, Show } from "solid-js";
-import ConfirmButton from "../../../util/ConfirmButton";
-import Icon from "../../../util/Icon";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
+import ConfirmButton from "../../../shared/ConfirmButton";
+import Icon from "../../../shared/Icon";
+import Flex from "../../../shared/layout/Flex";
+import Grid from "../../../shared/layout/Grid";
 import Address from "./Address";
 import Alerts from "./Alerts";
 import Enabled from "./Enabled";
 import Info from "./Info";
 import Networks from "./Networks";
-import Passkey from "./Passkey";
 import { useConfig } from "./Provider";
 import ToNotify from "./ToNotify";
 
@@ -18,11 +17,8 @@ const Config: Component<{}> = (p) => {
     <Show when={server.loaded}>
       <Grid class="config">
         <Grid class="config-items scroller">
-          <Show when={!server.isCore}>
-            <Address />
-            <Enabled />
-            <Passkey />
-          </Show>
+          <Address />
+          <Enabled />
           <Networks />
           <Info />
           <Alerts />

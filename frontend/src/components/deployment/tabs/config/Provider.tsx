@@ -1,22 +1,19 @@
-import { Deployment, Network, Update } from "@monitor/types";
+import { useParams } from "@solidjs/router";
 import {
   Accessor,
-  Component,
   createContext,
   createEffect,
   createSignal,
   onCleanup,
+  ParentComponent,
   useContext,
 } from "solid-js";
-import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
-import {
-  ADD_UPDATE,
-  DEPLOYMENT_OWNER_UPDATE,
-  UPDATE_DEPLOYMENT,
-} from "@monitor/util";
+import { createStore, SetStoreFunction } from "solid-js/store";
+import { client, pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
-import { getDeployment, getNetworks } from "../../../../util/query";
+import { Deployment, Operation, PermissionLevel } from "../../../../types";
+import { getId } from "../../../../util/helpers";
 
 type ConfigDeployment = Deployment & {
   loaded: boolean;
@@ -26,22 +23,23 @@ type ConfigDeployment = Deployment & {
 
 type State = {
   editing: Accessor<boolean>;
-  deployment: DeepReadonly<ConfigDeployment>;
+  deployment: ConfigDeployment;
   setDeployment: SetStoreFunction<ConfigDeployment>;
   reset: () => void;
   save: () => void;
-  networks: Accessor<Network[]>;
+  networks: Accessor<any[]>;
   userCanUpdate: () => boolean;
 };
 
 const context = createContext<State>();
 
-export const ConfigProvider: Component<{}> = (p) => {
-  const { ws, deployments, selected } = useAppState();
-  const { username, permissions } = useUser();
+export const ConfigProvider: ParentComponent<{}> = (p) => {
+  const { ws, deployments } = useAppState();
+  const params = useParams();
+  const { user } = useUser();
   const [editing] = createSignal(false);
   const [deployment, set] = createStore({
-    ...deployments.get(selected.id())!,
+    ...deployments.get(params.id)!.deployment,
     loaded: false,
     updated: false,
     updating: false,
@@ -52,21 +50,34 @@ export const ConfigProvider: Component<{}> = (p) => {
     set("updated", true);
   };
   const load = () => {
-    console.log("loading deployment");
-    getDeployment(selected.id()).then((deployment) =>
+    // console.log("loading deployment");
+    client.get_deployment(params.id).then((deployment) =>
       set({
-        ...deployment,
-        image: deployment.image,
-        network: deployment.network,
-        buildID: deployment.buildID,
-        dockerAccount: deployment.dockerAccount,
-        githubAccount: deployment.githubAccount,
-        repo: deployment.repo,
-        branch: deployment.branch,
-        onPull: deployment.onPull,
-        onClone: deployment.onClone,
-        containerMount: deployment.containerMount,
-        repoMount: deployment.repoMount,
+        name: deployment.deployment.name,
+        server_id: deployment.deployment.server_id,
+        permissions: deployment.deployment.permissions,
+        docker_run_args: {
+          image: deployment.deployment.docker_run_args.image,
+          ports: deployment.deployment.docker_run_args.ports,
+          volumes: deployment.deployment.docker_run_args.volumes,
+          environment: deployment.deployment.docker_run_args.environment,
+          network: deployment.deployment.docker_run_args.network,
+          restart: deployment.deployment.docker_run_args.restart,
+          post_image: deployment.deployment.docker_run_args.post_image,
+          container_user: deployment.deployment.docker_run_args.container_user,
+          extra_args: deployment.deployment.docker_run_args.extra_args,
+          docker_account: deployment.deployment.docker_run_args.docker_account,
+        },
+        build_id: deployment.deployment.build_id,
+        build_version: deployment.deployment.build_version,
+        repo: deployment.deployment.repo,
+        branch: deployment.deployment.branch,
+        github_account: deployment.deployment.github_account,
+        on_clone: deployment.deployment.on_clone,
+        on_pull: deployment.deployment.on_pull,
+        repo_mount: deployment.deployment.repo_mount,
+        created_at: deployment.deployment.created_at,
+        updated_at: deployment.deployment.updated_at,
         loaded: true,
         updated: false,
         updating: false,
@@ -75,48 +86,56 @@ export const ConfigProvider: Component<{}> = (p) => {
   };
   createEffect(load);
 
-  const [networks, setNetworks] = createSignal<Network[]>([]);
+  const [networks, setNetworks] = createSignal<any[]>([]);
   createEffect(() => {
     console.log("load networks");
-    getNetworks(deployments.get(selected.id())!.serverID!).then(setNetworks);
+    client
+      .get_docker_networks(deployments.get(params.id)!.deployment.server_id)
+      .then(setNetworks);
   });
 
   const save = () => {
     setDeployment("updating", true);
-    ws.send(UPDATE_DEPLOYMENT, { deployment });
+    client.update_deployment(deployment).catch(e => {
+      console.error(e);
+      pushNotification("bad", "update deployment failed");
+      setDeployment("updating", false);
+    });
   };
 
-  onCleanup(
-    ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
-      if (update.deploymentID === selected.id()) {
-        if ([UPDATE_DEPLOYMENT].includes(update.operation)) {
-          load();
+  let update_unsub = () => {};
+
+  createEffect(() => {
+    update_unsub();
+    update_unsub = ws.subscribe([Operation.UpdateDeployment], (update) => {
+      if (update.target.id === params.id) {
+        load();
+      }
+    });
+  });
+
+  onCleanup(() => update_unsub());
+
+  let modify_unsub = () => {};
+
+  createEffect(() => {
+    modify_unsub();
+    modify_unsub = ws.subscribe(
+      [Operation.ModifyUserPermissions],
+      async (update) => {
+        if (update.target.id === params.id) {
+          const dep = await client.get_deployment(params.id);
+          set("permissions", dep.deployment.permissions);
         }
       }
-    })
-  );
+    );
+  });
 
-  onCleanup(
-    ws.subscribe(
-      [DEPLOYMENT_OWNER_UPDATE],
-      async ({ deploymentID }: { deploymentID: string }) => {
-        if (deploymentID === selected.id()) {
-          const dep = await getDeployment(selected.id());
-          set("owners", dep.owners);
-        }
-      }
-    )
-  );
+  onCleanup(() => modify_unsub());
 
-  const userCanUpdate = () => {
-    if (permissions() > 1) {
-      return true;
-    } else if (permissions() > 0 && deployment.owners.includes(username()!)) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+  const userCanUpdate = () =>
+    user().admin ||
+    deployment.permissions![getId(user())] === PermissionLevel.Update;
 
   const state = {
     editing,

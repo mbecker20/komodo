@@ -1,95 +1,40 @@
+import { createEffect, createResource, createSignal } from "solid-js";
+import { client } from "..";
+import { ServerStatus, SystemStats, UpdateTarget } from "../types";
 import {
-  Collection,
-  ContainerStatus,
-  Server,
-  SystemStats,
-} from "@monitor/types";
-import {
-  createEffect,
-  createResource,
-  createSignal,
-  onCleanup,
-} from "solid-js";
-import { filterOutFromObj, keepOnlyInObj } from "@monitor/util";
-import {
-  getBuilds,
-  getDeployments,
-  getServers,
-  getServerSystemStats,
-  getUpdates,
-} from "../util/query";
+  filterOutFromObj,
+  getNestedEntry,
+  intoCollection,
+  keepOnlyInObj,
+} from "../util/helpers";
 
-const pages: PageType[] = ["deployment", "server", "build", "users"];
-type PageType = "deployment" | "server" | "build" | "users" | "home";
+type Collection<T> = Record<string, T>;
 
-export function useSelected() {
-  const [_type, id] = location.pathname.split("/").filter((val) => val);
-  const type = (
-    pages.includes(_type as PageType) ? _type : undefined
-  ) as PageType;
-  const [selected, setSelected] = createSignal<{
-    id: string;
-    type: PageType;
-  }>({ id: id || "", type: type || "home" });
-
-  history.replaceState(
-    { type: selected().type, id: selected().id },
-    "",
-    selected().type === "home"
-      ? location.origin
-      : `${location.origin}/${selected().type}/${selected().id}`
-  );
-
-  const [prevSelected, setPrevSelected] = createSignal<{
-    id: string;
-    type: PageType;
-  }>();
-
-  const set = (id: string, type: PageType) => {
-    setPrevSelected({ id: selected().id, type: selected().type });
-    setSelected({ id, type });
-    if (type === "home") {
-      history.pushState({ id, type }, "", location.origin);
-    } else {
-      history.pushState({ id, type }, "", `${location.origin}/${type}/${id}`);
-    }
-  };
-
-  const popstate = (e: any) => {
-    setSelected({ id: e.state.id, type: e.state.type });
-  };
-
-  window.addEventListener("popstate", popstate);
-
-  onCleanup(() => window.removeEventListener("popstate", popstate));
-
-  return {
-    id: () => selected().id,
-    type: () => selected().type,
-    set,
-    prevId: () => prevSelected()?.id,
-    prevType: () => prevSelected()?.type,
-  };
-}
+const serverIdPath = ["server", "_id", "$oid"];
 
 export function useServers() {
-  return useCollection(getServers);
+  return useCollection(
+    () => client.list_servers().then(res => intoCollection(res, serverIdPath)),
+    serverIdPath
+  );
 }
 
 export function useServerStats() {
-  const [stats, set] = createSignal<Collection<SystemStats | undefined>>({});
+  const [stats, set] = createSignal<Record<string, SystemStats | undefined>>(
+    {}
+  );
   const load = async (serverID: string) => {
-    const stats = await getServerSystemStats(serverID);
+    const stats = await client.get_server_stats(serverID);
     set((s) => ({ ...s, [serverID]: stats }));
   };
-  const loading: Collection<boolean> = {};
+  const loading: Record<string, boolean> = {};
   return {
-    get: (serverID: string, server?: Server) => {
+    get: (serverID: string, serverStatus?: ServerStatus) => {
       const stat = stats()[serverID];
       if (
         stat === undefined &&
         !loading[serverID] &&
-        (server ? server.status === "OK" : true)
+        (serverStatus ? serverStatus === ServerStatus.Ok : true)
       ) {
         loading[serverID] = true;
         load(serverID);
@@ -100,25 +45,62 @@ export function useServerStats() {
   };
 }
 
-export function useBuilds() {
-  return useCollection(getBuilds);
+export function useUsernames() {
+  const [usernames, set] = createSignal<Record<string, string | undefined>>(
+    {}
+  );
+  const load = async (userID: string) => {
+    if (userID === "github") {
+      set((s) => ({ ...s, [userID]: "github" }));
+    } else {
+      const username = await client.get_username(userID);
+      set((s) => ({ ...s, [userID]: username }));
+    }
+  };
+  const loading: Record<string, boolean> = {};
+  return {
+    get: (userID: string) => {
+      const username = usernames()[userID];
+      if (
+        username === undefined &&
+        !loading[userID]
+      ) {
+        loading[userID] = true;
+        load(userID);
+      }
+      return username;
+    },
+    load,
+  };
 }
 
+const buildIdPath = ["_id", "$oid"];
+
+export function useBuilds() {
+  return useCollection(
+    () => client.list_builds().then(res => intoCollection(res, buildIdPath)),
+    buildIdPath,
+  );
+}
+
+const deploymentIdPath = ["deployment", "_id", "$oid"];
+
 export function useDeployments() {
-  const deployments = useCollection(getDeployments);
+  const deployments = useCollection(
+    () =>
+      client
+        .list_deployments()
+        .then((res) => intoCollection(res, deploymentIdPath)),
+    deploymentIdPath
+  );
   const state = (id: string) => {
     const deployment = deployments.get(id)!;
-    return deployment.status === "not deployed" ||
-      deployment.status === "unknown"
-      ? deployment.status
-      : (deployments.get(id)!.status as ContainerStatus).State;
+    return deployment.state;
   };
   const status = (id: string) => {
     const deployment = deployments.get(id)!;
-    return deployment.status === "not deployed" ||
-      deployment.status === "unknown"
-      ? deployment.status
-      : (deployments.get(id)!.status as ContainerStatus).Status.toLowerCase();
+    const status = deployment.container?.status;
+    return status;
   };
   return {
     ...deployments,
@@ -127,13 +109,16 @@ export function useDeployments() {
   };
 }
 
-export function useUpdates(query?: Parameters<typeof getUpdates>[0]) {
-  const updates = useArray(() => getUpdates(query));
+export function useUpdates(target?: UpdateTarget) {
+  const updates = useArrayWithId(
+    () => client.list_updates(0, target),
+    ["_id", "$oid"]
+  );
   const [noMore, setNoMore] = createSignal(false);
   const loadMore = async () => {
     const offset = updates.collection()?.length;
     if (offset) {
-      const newUpdates = await getUpdates({ offset });
+      const newUpdates = await client.list_updates(offset, target);
       updates.addManyToEnd(newUpdates);
       if (newUpdates.length !== 10) {
         setNoMore(true);
@@ -153,10 +138,10 @@ export function useArray<T>(query: () => Promise<T[]>) {
     query().then(set);
   });
   const add = (item: T) => {
-    set((items: any) => (items ? [item, ...items] : [item]));
+    set((items: T[] | undefined) => (items ? [item, ...items] : [item]));
   };
   const addManyToEnd = (items: T[]) => {
-    set((curr: any) => (curr ? [...curr, ...items] : items));
+    set((curr: T[] | undefined) => (curr ? [...curr, ...items] : items));
   };
   const loaded = () => (collection() ? true : false);
   return {
@@ -167,10 +152,56 @@ export function useArray<T>(query: () => Promise<T[]>) {
   };
 }
 
-export function useCollection<T>(query: () => Promise<Collection<T>>) {
+export function useArrayWithId<T>(query: () => Promise<T[]>, idPath: string[]) {
+  const [collection, set] = createSignal<T[]>();
+  createEffect(() => {
+    query().then(set);
+  });
+  const addOrUpdate = (item: T) => {
+    set((items: T[] | undefined) => {
+      if (items) {
+        const newId = getNestedEntry(item, idPath);
+        const existingIndex = items.findIndex(
+          (i) => getNestedEntry(i, idPath) === newId
+        );
+        if (existingIndex < 0) {
+          return [item, ...items];
+        } else {
+          return items.map((e, index) => {
+            if (index === existingIndex) {
+              return item;
+            } else {
+              return e;
+            }
+          });
+        }
+      } else {
+        return [item];
+      }
+    });
+  };
+  const addManyToEnd = (items: T[]) => {
+    set((curr: T[] | undefined) => (curr ? [...curr, ...items] : items));
+  };
+  const loaded = () => (collection() ? true : false);
+  return {
+    collection,
+    addOrUpdate,
+    addManyToEnd,
+    loaded,
+  };
+}
+
+export function useCollection<T>(
+  query: () => Promise<Collection<T>>,
+  idPath: string[]
+) {
   const [collection, { mutate }] = createResource(query);
-  const add = (item: T & { _id?: string }) => {
-    mutate((collection: any) => ({ ...collection, [item._id!]: item }));
+  const add = (item: T) => {
+    mutate((collection: any) => ({
+      ...collection,
+      [getNestedEntry(item, idPath)]: item,
+    }));
   };
   const addMany = (items: Collection<T>) => {
     mutate((collection: any) => ({ ...collection, ...items }));
@@ -178,10 +209,13 @@ export function useCollection<T>(query: () => Promise<Collection<T>>) {
   const del = (id: string) => {
     mutate((collection: any) => filterOutFromObj(collection, [id]));
   };
-  const update = (item: T & { _id?: string }) => {
+  const update = (item: T) => {
     mutate((collection: any) => ({
       ...collection,
-      [item._id!]: { ...collection[item._id!], ...item },
+      [getNestedEntry(item, idPath)]: {
+        ...collection[getNestedEntry(item, idPath)],
+        ...item,
+      },
     }));
   };
   const get = (id: string) => {

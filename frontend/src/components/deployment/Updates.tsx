@@ -1,63 +1,64 @@
-import { Component, createSignal, For, onCleanup, Show } from "solid-js";
-import { useArray } from "../../state/hooks";
-import Grid from "../util/layout/Grid";
+import { Component, createEffect, For, onCleanup, Show } from "solid-js";
+import { useUpdates } from "../../state/hooks";
+import Grid from "../shared/layout/Grid";
 import Update from "../update/Update";
-import { getUpdates } from "../../util/query";
 import { useAppState } from "../../state/StateProvider";
-import { ADD_UPDATE, BUILD } from "@monitor/util";
-import { useTheme } from "../../state/ThemeProvider";
 import { combineClasses } from "../../util/helpers";
-import Button from "../util/Button";
+import { useParams } from "@solidjs/router";
+import { Operation } from "../../types";
+import Flex from "../shared/layout/Flex";
+import Loading from "../shared/loading/Loading";
 
 const Updates: Component<{}> = (p) => {
-  const { ws, selected, deployments } = useAppState();
-  const selectedUpdates = useArray(() =>
-    getUpdates({ deploymentID: selected.id() })
-  );
-  const buildID = () => deployments.get(selected.id())?.buildID;
-  onCleanup(
-    ws.subscribe([ADD_UPDATE], ({ update }) => {
+  const { ws, deployments } = useAppState();
+  const params = useParams();
+  const updates = useUpdates({ type: "Deployment", id: params.id });
+  const buildID = () => deployments.get(params.id)?.deployment.build_id;
+  let unsub = () => {};
+  createEffect(() => {
+    unsub();
+    unsub = ws.subscribe([], (update) => {
       if (
-        update.deploymentID === selected.id() ||
-        (buildID() && buildID() === update.buildID && update.operation === BUILD)
+        update.target.id === params.id ||
+        (buildID() &&
+          buildID() === update.target.id &&
+          update.operation === Operation.BuildBuild)
       ) {
-        selectedUpdates.add(update);
+        updates.addOrUpdate(update);
       }
-    })
-  );
-  const [noMoreUpdates, setNoMore] = createSignal(false);
-  const loadMore = async () => {
-    const offset = selectedUpdates.collection()?.length;
-    if (offset) {
-      const updates = await getUpdates({ offset, deploymentID: selected.id() });
-      selectedUpdates.addManyToEnd(updates);
-      if (updates.length !== 10) {
-        setNoMore(true);
-      }
-    }
-  };
-  const { themeClass } = useTheme();
+    });
+  });
+  onCleanup(() => unsub());
   return (
-    <Show
-      when={
-        selectedUpdates.loaded() &&
-        (selectedUpdates.collection()?.length || 0) > 0
-      }
+    <Grid
+      class={combineClasses("card shadow")}
+      style={{ "min-width": "350px" }}
     >
-      <Grid class={combineClasses("card shadow", themeClass())}>
-        <h1>updates</h1>
+      <h1>updates</h1>
+      <Show
+        when={updates.loaded()}
+        fallback={
+          <Flex justifyContent="center">
+            <Loading type="three-dot" />
+          </Flex>
+        }
+      >
         <Grid class="updates-container scroller">
-          <For each={selectedUpdates.collection()}>
-            {(update) => <Update update={update} showName={false} />}
+          <For each={updates.collection()}>
+            {(update) => <Update update={update} />}
           </For>
-          <Show when={!noMoreUpdates()}>
-            <Button class="grey" style={{ width: "100%" }} onClick={loadMore}>
+          <Show when={!updates.noMore()}>
+            <button
+              class="grey"
+              style={{ width: "100%" }}
+              onClick={() => updates.loadMore()}
+            >
               load more
-            </Button>
+            </button>
           </Show>
         </Grid>
-      </Grid>
-    </Show>
+      </Show>
+    </Grid>
   );
 };
 

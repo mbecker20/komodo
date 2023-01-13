@@ -1,13 +1,12 @@
-import { Server } from "@monitor/types";
 import { Component, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
-import { pushNotification } from "../../..";
-import { ADD_SERVER } from "@monitor/util";
+import { client, pushNotification } from "../../..";
 import { useAppState } from "../../../state/StateProvider";
+import { CreateServerBody } from "../../../util/client_types";
 import { useToggle } from "../../../util/hooks";
-import Input from "../../util/Input";
-import Grid from "../../util/layout/Grid";
-import CenterMenu from "../../util/menu/CenterMenu";
+import Input from "../../shared/Input";
+import Grid from "../../shared/layout/Grid";
+import CenterMenu from "../../shared/menu/CenterMenu";
 
 const AddServer: Component<{}> = () => {
   const [show, toggleShow] = useToggle();
@@ -19,7 +18,7 @@ const AddServer: Component<{}> = () => {
       target="add server"
       targetClass="green shadow"
       targetStyle={{ width: "100%" }}
-      content={<Content close={toggleShow} />}
+      content={() => <Content close={toggleShow} />}
       position="center"
     />
   );
@@ -28,19 +27,14 @@ const AddServer: Component<{}> = () => {
 const Content: Component<{ close: () => void }> = (p) => {
   const { ws } = useAppState();
   let nameInput: HTMLInputElement | undefined;
-  const [server, setServer] = createStore<Server>({
+  const [server, setServer] = createStore<CreateServerBody>({
     name: "",
     address: "",
-    enabled: true,
-    owners: [],
-    toNotify: [],
   });
   onMount(() => nameInput?.focus());
-  const create = () => {
+  const create = async () => {
     if (server.name.length > 0 && server.address.length > 0) {
-      ws.send(ADD_SERVER, {
-        server,
-      });
+      await client.create_server(server);
       p.close();
     } else {
       pushNotification("bad", "a field is empty. fill in all fields");

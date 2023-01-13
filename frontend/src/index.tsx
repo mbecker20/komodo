@@ -1,44 +1,51 @@
 /* @refresh reload */
-import { render } from "solid-js/web";
 import "./style/colors.scss";
 import "./style/index.scss";
 import "./style/app.scss";
+import { render } from "solid-js/web";
 import App from "./App";
-import Client from "./util/client";
-import makeNotifications from "./components/util/notification/Notifications";
-import { UserProvider } from "./state/UserProvider";
-import { DimensionProvider } from "./state/DimensionProvider";
 import LoginGuard from "./components/login/LoginGuard";
+import makeNotifications from "./components/shared/notification/Notifications";
+import { DimensionProvider } from "./state/DimensionProvider";
+import { UserProvider } from "./state/UserProvider";
+import { Client } from "./util/client";
+import { Router } from "@solidjs/router";
 import { AppStateProvider } from "./state/StateProvider";
-import { ThemeProvider } from "./state/ThemeProvider";
+
+export const TOPBAR_HEIGHT = 50;
 
 export const URL =
   import.meta.env.MODE === "production"
     ? location.origin
     : (import.meta.env.VITE_MONITOR_HOST as string) || "http://localhost:9000";
 
-export const WS_URL = URL.replace("https", "wss").replace("http", "ws") + "/ws";
+export const UPDATE_WS_URL = URL.replace("http", "ws") + "/ws/update";
 
-export const client = new Client(URL);
+const token =
+  (import.meta.env.VITE_ACCESS_TOKEN as string) ||
+  localStorage.getItem("access_token") ||
+  null;
+
+export const client = new Client(URL, token);
 
 export const { Notifications, pushNotification } = makeNotifications();
 
-export const TOPBAR_HEIGHT = 50;
-
-render(
-  () => [
-    <DimensionProvider>
-      <ThemeProvider>
+client.initialize().then(() => {
+  render(
+    () => [
+      <DimensionProvider>
         <UserProvider>
           <LoginGuard>
-            <AppStateProvider>
-              <App />
-            </AppStateProvider>
+            <Router>
+              <AppStateProvider>
+                <App />
+              </AppStateProvider>
+            </Router>
           </LoginGuard>
         </UserProvider>
-      </ThemeProvider>
-    </DimensionProvider>,
-    <Notifications />,
-  ],
-  document.getElementById("root") as HTMLElement
-);
+      </DimensionProvider>,
+      <Notifications />,
+    ],
+    document.getElementById("root") as HTMLElement
+  );
+});

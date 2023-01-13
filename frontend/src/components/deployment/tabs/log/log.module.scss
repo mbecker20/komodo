@@ -10,15 +10,11 @@
 	position: relative;
 }
 
-.LogContainer:global(.dark) {
-  background-color: rgba(c.$darkgrey-dark, 0.6);
-}
-
 .Log {
 	white-space: pre-line;
 	overflow-wrap: anywhere;
 	tab-size: 2;
-	padding: 0rem 1rem;
+	padding: 1rem;
 	margin-bottom: 40vh;
 }
 

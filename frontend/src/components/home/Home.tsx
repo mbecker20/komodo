@@ -4,109 +4,37 @@ import {
   createSignal,
   For,
   Match,
-  Show,
   Switch,
 } from "solid-js";
-import { useAppState } from "../../state/StateProvider";
-import { useTheme } from "../../state/ThemeProvider";
-import { useUser } from "../../state/UserProvider";
-import Grid from "../util/layout/Grid";
-import Tabs from "../util/tabs/Tabs";
-import Server from "./Tree/Server";
-import Builds from "./Tree/Builds";
-import s from "./home.module.scss";
-import AddServer from "./Tree/AddServer";
-import Summary from "./Summary/Summary";
-import Updates from "./Updates/Updates";
 import { useAppDimensions } from "../../state/DimensionProvider";
-import Input from "../util/Input";
+import { useAppState } from "../../state/StateProvider";
+import { combineClasses } from "../../util/helpers";
+import Input from "../shared/Input";
+import Grid from "../shared/layout/Grid";
+import Tabs from "../shared/tabs/Tabs";
+import s from "./home.module.scss";
+import Summary from "./Summary";
+import Builds from "./Tree/Build";
+import Servers from "./Tree/Servers";
+import Updates from "./Updates/Updates";
 
 const Home: Component<{}> = (p) => {
-  const { servers } = useAppState();
   const { width } = useAppDimensions();
-  const [serverFilter, setServerFilter] = createSignal("");
-  const serverIDs = createMemo(() => {
-    if (servers.loaded()) {
-      const filters = serverFilter()
-        .split(" ")
-        .filter((term) => term.length > 0)
-        .map((term) => term.toLowerCase());
-      return servers.ids()?.filter((id) => {
-        const name = servers.get(id)!.name;
-        for (const term of filters) {
-          if (!name.includes(term)) {
-            return false;
-          }
-        }
-        return true;
-      });
-    } else {
-      return undefined;
-    }
-  });
   return (
     <Switch>
       <Match when={width() >= 1200}>
-        <Grid gap="0rem" class={s.Home} placeItems="start center">
-          <Tabs
-            localStorageKey="home-tab"
-            containerClass={s.Tabs}
-            tabs={[
-              {
-                title: "deployments",
-                element: (
-                  <Grid gap="0.5rem">
-                    <Input
-                      placeholder="filter servers"
-                      value={serverFilter()}
-                      onEdit={setServerFilter}
-                      style={{ width: "100%", padding: "0.5rem" }}
-                    />
-                    <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
-                    <AddServer />
-                  </Grid>
-                ),
-              },
-              {
-                title: "builds",
-                element: <Builds />,
-              },
-            ]}
-          />
-          <Grid gap="0rem" style={{ width: "80%" }}>
+        <Grid class={combineClasses(s.Home)}>
+          <Servers />
+          <Grid style={{ height: "fit-content" }}>
             <Summary />
             <Updates />
           </Grid>
         </Grid>
       </Match>
       <Match when={width() < 1200}>
-        <Grid gap="0rem" class={s.Home} placeItems="start center">
-          <Summary />
-          <Tabs
-            localStorageKey="home-tab"
-            containerClass={s.Tabs}
-            tabs={[
-              {
-                title: "deployments",
-                element: (
-                  <Grid gap="0.5rem">
-                    <Input
-                      placeholder="filter servers"
-                      value={serverFilter()}
-                      onEdit={setServerFilter}
-                      style={{ width: "100%", padding: "0.5rem" }}
-                    />
-                    <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
-                    <AddServer />
-                  </Grid>
-                ),
-              },
-              {
-                title: "builds",
-                element: <Builds />,
-              },
-            ]}
-          />
+        <Grid class={s.Home}>
+          {/* <Summary /> */}
+          <Servers />
           <Updates />
         </Grid>
       </Match>

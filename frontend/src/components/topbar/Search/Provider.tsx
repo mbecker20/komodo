@@ -1,15 +1,18 @@
+import { useNavigate } from "@solidjs/router";
 import {
-  Component,
   createContext,
   createMemo,
   createSignal,
+  ParentComponent,
   useContext,
 } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
+import { getId } from "../../../util/helpers";
 import { useLocalStorage, useWindowKeyDown } from "../../../util/hooks";
 
 const value = () => {
-  const { deployments, builds, servers, selected } = useAppState();
+  const { deployments, builds, servers } = useAppState();
+  const navigate = useNavigate();
   const [search, setSearch] = createSignal("");
   const [open, setOpen] = createSignal(false);
   const close = (inputRef: HTMLInputElement | undefined) => {
@@ -19,26 +22,24 @@ const value = () => {
   };
   const [highlighted, setHighlighted] = createSignal(0);
 
-  const filteredDeployments = createMemo(
-    () => {
-      const searchTerms = search()
-        .split(" ")
-        .filter((term) => term.length > 0)
-        .map((term) => term.toLowerCase());
-      return deployments.filterArray((deployment) => {
-        return searchTerms.reduce((prev, search) => {
-          return (
-            prev &&
-            (deployment.name.toLowerCase().includes(search) ||
-              servers
-                .get(deployment.serverID!)!
-                .name.toLowerCase()
-                .includes(search))
-          );
-        }, true);
-      })!;
-    }
-  );
+  const filteredDeployments = createMemo(() => {
+    const searchTerms = search()
+      .split(" ")
+      .filter((term) => term.length > 0)
+      .map((term) => term.toLowerCase());
+    return deployments.filterArray((deployment) => {
+      return searchTerms.reduce((prev, search) => {
+        return (
+          prev &&
+          (deployment.deployment.name.toLowerCase().includes(search) ||
+            servers
+              .get(deployment.deployment.server_id)!
+              .server.name.toLowerCase()
+              .includes(search))
+        );
+      }, true);
+    })!;
+  });
   const filteredBuilds = createMemo(
     () =>
       builds.filterArray((build) =>
@@ -48,8 +49,13 @@ const value = () => {
   const filteredServers = createMemo(
     () =>
       servers.filterArray((server) =>
-        server.name.toLowerCase().includes(search().toLowerCase())
+        server.server.name.toLowerCase().includes(search().toLowerCase())
       )!
+  );
+
+  const [selectedTab, setSelectedTab] = useLocalStorage(
+    "deployments",
+    "search-tab"
   );
 
   const inputOnKeyDown =
@@ -121,16 +127,19 @@ const value = () => {
       } else if (e.key === "Enter") {
         switch (selectedTab()) {
           case "deployments":
-            selected.set(
-              filteredDeployments()![highlighted()]._id!,
-              "deployment"
+            navigate(
+              `/deployment/${getId(
+                filteredDeployments()![highlighted()].deployment
+              )}`
             );
             break;
           case "builds":
-            selected.set(filteredBuilds()![highlighted()]._id!, "build");
+            navigate(`/build/${getId(filteredBuilds()![highlighted()])}`);
             break;
           case "servers":
-            selected.set(filteredServers()![highlighted()]._id!, "server");
+            navigate(
+              `/server/${getId(filteredServers()![highlighted()].server)}`
+            );
             break;
         }
         close(inputRef);
@@ -138,11 +147,6 @@ const value = () => {
         close(inputRef);
       }
     };
-
-  const [selectedTab, setSelectedTab] = useLocalStorage(
-    "deployments",
-    "search-tab"
-  );
 
   useWindowKeyDown((e) => {
     if (open()) {
@@ -209,16 +213,19 @@ const value = () => {
       } else if (e.key === "Enter") {
         switch (selectedTab()) {
           case "deployments":
-            selected.set(
-              filteredDeployments()![highlighted()]._id!,
-              "deployment"
+            navigate(
+              `/deployment/${getId(
+                filteredDeployments()![highlighted()].deployment
+              )}`
             );
             break;
           case "builds":
-            selected.set(filteredBuilds()![highlighted()]._id!, "build");
+            navigate(`/build/${getId(filteredBuilds()![highlighted()])}`);
             break;
           case "servers":
-            selected.set(filteredServers()![highlighted()]._id!, "server");
+            navigate(
+              `/server/${getId(filteredServers()![highlighted()].server)}`
+            );
             break;
         }
         close(undefined);
@@ -262,7 +269,7 @@ export type Value = ReturnType<typeof value>;
 
 const context = createContext<Value>();
 
-export const SearchProvider: Component<{}> = (p) => {
+export const SearchProvider: ParentComponent<{}> = (p) => {
   const val = value();
   return <context.Provider value={val}>{p.children}</context.Provider>;
 };

@@ -1,15 +1,13 @@
 import { Component } from "solid-js";
-import { useTheme } from "../../../../state/ThemeProvider";
 import { combineClasses } from "../../../../util/helpers";
-import Flex from "../../../util/layout/Flex";
+import Flex from "../../../shared/layout/Flex";
 import { useConfig } from "./Provider";
 
 const Enabled: Component<{}> = (p) => {
   const { server, setServer } = useConfig();
-  const { themeClass } = useTheme();
   return (
     <Flex
-      class={combineClasses("config-item shadow", themeClass())}
+      class={combineClasses("config-item shadow")}
       justifyContent="space-between"
       alignItems="center"
     >

@@ -1,49 +1,52 @@
-import { ServerActionState } from "@monitor/types";
+import { useParams } from "@solidjs/router";
 import {
-  Component,
   createContext,
   createEffect,
   onCleanup,
+  ParentComponent,
   useContext,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import { PRUNE_CONTAINERS, PRUNE_IMAGES, PRUNE_NETWORKS } from "@monitor/util";
+import { client } from "../..";
 import { useAppState } from "../../state/StateProvider";
-import { getServerActionState } from "../../util/query";
+import { Operation, ServerActionState, UpdateStatus } from "../../types";
 
 type State = {} & ServerActionState;
 
 const context = createContext<State>();
 
-export const ActionStateProvider: Component<{}> = (p) => {
-  const { selected, ws } = useAppState();
+export const ActionStateProvider: ParentComponent<{}> = (p) => {
+  const params = useParams();
+  const { ws } = useAppState();
   const [actions, setActions] = createStore<ServerActionState>({
-    pruningImages: false,
-		pruningNetworks: false,
-    pruningContainers: false,
-		deleting: false,
+    pruning_networks: false,
+    pruning_containers: false,
+    pruning_images: false,
   });
   createEffect(() => {
-    getServerActionState(selected.id()).then(setActions);
+    client.get_server_action_state(params.id).then(setActions);
   });
   onCleanup(
-    ws.subscribe([PRUNE_IMAGES], ({ complete, serverID }) => {
-      if (serverID === selected.id()) {
-        setActions("pruningImages", !complete);
+    ws.subscribe([Operation.PruneImagesServer], (update) => {
+      if (update.target.id === params.id) {
+        setActions("pruning_images", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
-    ws.subscribe([PRUNE_NETWORKS], ({ complete, serverID }) => {
-      if (serverID === selected.id()) {
-        setActions("pruningNetworks", !complete);
+    ws.subscribe([Operation.PruneNetworksServer], (update) => {
+      if (update.target.id === params.id) {
+        setActions("pruning_networks", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
-    ws.subscribe([PRUNE_CONTAINERS], ({ complete, serverID }) => {
-      if (serverID === selected.id()) {
-        setActions("pruningContainers", !complete);
+    ws.subscribe([Operation.PruneContainersServer], (update) => {
+      if (update.target.id === params.id) {
+        setActions(
+          "pruning_containers",
+          update.status !== UpdateStatus.Complete
+        );
       }
     })
   );

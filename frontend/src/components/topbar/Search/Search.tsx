@@ -1,22 +1,23 @@
 import { Component, For, JSX, onMount, Show } from "solid-js";
 import s from "../topbar.module.scss";
-import Input from "../../util/Input";
-import Menu from "../../util/menu/Menu";
+import Input from "../../shared/Input";
+import Menu from "../../shared/menu/Menu";
 import { useSearchState } from "./Provider";
 import {
   combineClasses,
-  deploymentStatusClass,
-  inPx,
+  deploymentStateClass,
+  getId,
 } from "../../../util/helpers";
 import { useAppState } from "../../../state/StateProvider";
-import Flex from "../../util/layout/Flex";
-import Icon from "../../util/Icon";
+import Flex from "../../shared/layout/Flex";
+import Icon from "../../shared/Icon";
 import { useWindowKeyDown } from "../../../util/hooks";
-import Circle from "../../util/Circle";
-import { ControlledTabs } from "../../util/tabs/Tabs";
+import Circle from "../../shared/Circle";
+import { ControlledTabs } from "../../shared/tabs/Tabs";
 import { useAppDimensions } from "../../../state/DimensionProvider";
-import Grid from "../../util/layout/Grid";
-import Button from "../../util/Button";
+import Grid from "../../shared/layout/Grid";
+import { A, useNavigate } from "@solidjs/router";
+import { ServerStatus } from "../../../types";
 
 const mobileStyle: JSX.CSSProperties = {
   // position: "fixed",
@@ -40,23 +41,24 @@ export const Search: Component<{}> = (p) => {
       show={open.value()}
       close={() => open.close(inputRef)}
       position="bottom center"
+      menuClass={s.SearchMenu}
       menuStyle={{
         gap: "0.5rem",
         ...(isMobile() ? mobileStyle : {}),
       }}
-      backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : undefined}
+      backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.4)"}
       target={
         <Show
           when={!isMobile()}
           fallback={
-            <Button class="grey" onClick={() => open.set(true)}>
+            <button class="grey" onClick={() => open.set(true)}>
               <Icon type="search" width="1.15rem" />
-            </Button>
+            </button>
           }
         >
           <Input
             ref={inputRef}
-            class={s.Search}
+            class={s.SearchInput}
             placeholder="search"
             value={search.value()}
             onEdit={input.onEdit}
@@ -83,8 +85,8 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
     <>
       <Show when={isMobile()}>
         <Input
-          ref={inputRef}
-          class={s.Search}
+          ref={() => inputRef}
+          class={s.SearchInput}
           placeholder="search"
           value={search.value()}
           onEdit={input.onEdit}
@@ -99,15 +101,15 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
         tabs={[
           {
             title: "deployments",
-            element: <Deployments close={p.close} />,
+            element: () => <Deployments close={p.close} />,
           },
           {
             title: "builds",
-            element: <Builds close={p.close} />,
+            element: () => <Builds close={p.close} />,
           },
           {
             title: "servers",
-            element: <Servers close={p.close} />,
+            element: () => <Servers close={p.close} />,
           },
         ]}
       />
@@ -116,45 +118,45 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
 };
 
 const Deployments: Component<{ close: () => void }> = (p) => {
-  const { selected, servers, deployments } = useAppState();
+  const { servers, deployments } = useAppState();
   const { highlighted, filteredDeployments } = useSearchState();
   return (
-    <Grid
-      class="scroller"
-      gap="0.5rem"
-      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
-    >
-      <Show when={filteredDeployments()?.length === 0}>no results</Show>
+    <Grid class="scroller" gap="0.5rem" style={{ "max-height": "70vh" }}>
+      <Show when={filteredDeployments()?.length === 0}>
+        <Flex alignItems="center" justifyContent="center">
+          no results
+        </Flex>
+      </Show>
       <For each={filteredDeployments()}>
         {(deployment, index) => (
-          <Button
+          <A
+            href={`/deployment/${getId(deployment.deployment)}`}
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
               "grey"
             )}
-            onClick={() => {
-              selected.set(deployment._id!, "deployment");
-              p.close();
-            }}
+            onClick={() => p.close()}
           >
             <Grid gap="0rem">
-              <Flex alignItems="center">{deployment.name} </Flex>
+              <Flex alignItems="center">{deployment.deployment.name} </Flex>
               <Flex
                 alignItems="center"
                 gap="0.2rem"
                 style={{ opacity: 0.6, "font-size": "0.9rem" }}
               >
-                {servers.get(deployment.serverID!)?.name}
+                {servers.get(deployment.deployment.server_id)?.server.name}
                 <Icon type="caret-right" width="0.7rem" />
                 deployment
               </Flex>
             </Grid>
             <Circle
-              class={deploymentStatusClass(deployments.state(deployment._id!))}
+              class={deploymentStateClass(
+                deployments.state(getId(deployment.deployment))
+              )}
               size={1.25}
             />
-          </Button>
+          </A>
         )}
       </For>
     </Grid>
@@ -162,33 +164,39 @@ const Deployments: Component<{ close: () => void }> = (p) => {
 };
 
 const Builds: Component<{ close: () => void }> = (p) => {
-  const { selected } = useAppState();
+  const { servers } = useAppState();
   const { highlighted, filteredBuilds } = useSearchState();
   return (
-    <Grid
-      class="scroller"
-      gap="0.5rem"
-      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
-    >
-      <Show when={filteredBuilds()?.length === 0}>no results</Show>
+    <Grid class="scroller" gap="0.5rem" style={{ "max-height": "70vh" }}>
+      <Show when={filteredBuilds()?.length === 0}>
+        <Flex alignItems="center" justifyContent="center">
+          no results
+        </Flex>
+      </Show>
       <For each={filteredBuilds()}>
         {(build, index) => (
-          <Button
+          <A
+            href={`/build/${getId(build)}`}
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
               "grey"
             )}
-            onClick={() => {
-              selected.set(build._id!, "build");
-              p.close();
-            }}
+            onClick={() => p.close()}
           >
             <Grid gap="0rem">
-              {build.name}
-              <Flex style={{ opacity: 0.6, "font-size": "0.9rem" }}>build</Flex>
+              <Flex alignItems="center">{build.name} </Flex>
+              <Flex
+                alignItems="center"
+                gap="0.2rem"
+                style={{ opacity: 0.6, "font-size": "0.9rem" }}
+              >
+                {servers.get(build.server_id)?.server.name}
+                <Icon type="caret-right" width="0.7rem" />
+                build
+              </Flex>
             </Grid>
-          </Button>
+          </A>
         )}
       </For>
     </Grid>
@@ -196,44 +204,55 @@ const Builds: Component<{ close: () => void }> = (p) => {
 };
 
 const Servers: Component<{ close: () => void }> = (p) => {
-  const { selected } = useAppState();
+  // const navigate = useNavigate();
   const { highlighted, filteredServers } = useSearchState();
   return (
     <Grid
       class="scroller"
       gap="0.5rem"
-      style={{ "max-height": "70vh", "padding-right": "0.5rem" }}
+      style={{ "max-height": "70vh" }}
     >
-      <Show when={filteredServers()?.length === 0}>no results</Show>
+      <Show when={filteredServers()?.length === 0}>
+        <Flex alignItems="center" justifyContent="center">
+          no results
+        </Flex>
+      </Show>
       <For each={filteredServers()}>
         {(server, index) => (
-          <Button
+          <A
+            href={`/server/${getId(server.server)}`}
             class={combineClasses(
               s.SearchItem,
               index() === highlighted.value() && "selected",
               "grey"
             )}
             onClick={() => {
-              selected.set(server._id!, "server");
+              // navigate(`/server/${getId(server.server)}`);
               p.close();
             }}
           >
             <Grid gap="0rem">
-              <Flex alignItems="center">{server.name}</Flex>
+              <Flex alignItems="center">{server.server.name}</Flex>
               <Flex
                 alignItems="center"
                 gap="0.2rem"
                 style={{ opacity: 0.6, "font-size": "0.9rem" }}
               >
                 server
-                <Show when={server.region}>
+                <Show when={server.server.region}>
                   <Icon type="caret-right" width="0.7rem" />
-                  {server.region}
+                  {server.server.region}
                 </Show>
               </Flex>
             </Grid>
             <div
-              class={server.status === "OK" ? "green" : "red"}
+              class={
+                server.status === ServerStatus.Ok
+                  ? "green"
+                  : server.status === ServerStatus.NotOk
+                  ? "red"
+                  : "blue"
+              }
               style={{
                 padding: "0.25rem",
                 "border-radius": ".35rem",
@@ -241,9 +260,9 @@ const Servers: Component<{ close: () => void }> = (p) => {
                 "font-size": "0.8rem",
               }}
             >
-              {server.status === "OK" ? "OK" : "NOT OK"}
+              {server.status.replaceAll("_", " ").toUpperCase()}
             </div>
-          </Button>
+          </A>
         )}
       </For>
     </Grid>

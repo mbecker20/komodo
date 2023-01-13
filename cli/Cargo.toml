@@ -1,0 +1,25 @@
+[package]
+name = "monitor_cli"
+version = "0.1.13"
+edition = "2021"
+authors = ["MoghTech"]
+description = "monitor cli | tools to setup monitor system"
+license = "GPL-3.0-or-later"
+
+[[bin]]
+name = "monitor"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "4.0"
+async_timing_util = "0.1.12"
+rand = "0.8"
+serde = "1.0"
+serde_derive = "1.0"
+toml = "0.5"
+run_command = "0.0.5"
+colored = "2"
+strum = "0.24"
+strum_macros = "0.24"

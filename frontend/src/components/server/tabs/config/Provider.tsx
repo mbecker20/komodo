@@ -1,44 +1,39 @@
-import { Network, Server, Update } from "@monitor/types";
+import { useParams } from "@solidjs/router";
 import {
   Accessor,
-  Component,
   createContext,
   createEffect,
   createSignal,
   onCleanup,
+  ParentComponent,
   useContext,
 } from "solid-js";
-import { createStore, DeepReadonly, SetStoreFunction } from "solid-js/store";
-import {
-  ADD_UPDATE,
-  CREATE_NETWORK,
-  DELETE_NETWORK,
-  PRUNE_NETWORKS,
-  SERVER_OWNER_UPDATE,
-  UPDATE_SERVER,
-} from "@monitor/util";
+import { createStore, SetStoreFunction } from "solid-js/store";
+import { client } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
-import { getNetworks, getServer } from "../../../../util/query";
+import { Server, Operation, PermissionLevel } from "../../../../types";
+import { getId } from "../../../../util/helpers";
 
 type ConfigServer = Server & { loaded: boolean; updated: boolean };
 
 type State = {
-  server: DeepReadonly<ConfigServer>;
+  server: ConfigServer;
   setServer: SetStoreFunction<ConfigServer>;
   reset: () => void;
   save: () => void;
-  networks: Accessor<Network[]>;
+  networks: Accessor<any[]>;
   userCanUpdate: () => boolean;
 };
 
 const context = createContext<State>();
 
-export const ConfigProvider: Component<{}> = (p) => {
-  const { ws, selected, servers } = useAppState();
-  const { username, permissions } = useUser();
+export const ConfigProvider: ParentComponent<{}> = (p) => {
+  const { ws, servers } = useAppState();
+  const params = useParams();
+  const { user } = useUser();
   const [server, set] = createStore({
-    ...servers.get(selected.id())!,
+    ...servers.get(params.id)!.server,
     loaded: false,
     updated: false,
   });
@@ -50,11 +45,10 @@ export const ConfigProvider: Component<{}> = (p) => {
   };
 
   const load = () => {
-    console.log("load server");
-    getServer(selected.id()).then((server) => {
+    // console.log("load server");
+    client.get_server(params.id).then((server) => {
       set({
-        ...server,
-        isCore: server.isCore,
+        ...server.server,
         loaded: true,
         updated: false,
       });
@@ -62,54 +56,43 @@ export const ConfigProvider: Component<{}> = (p) => {
   };
   createEffect(load);
 
-  const [networks, setNetworks] = createSignal<Network[]>([]);
+  const [networks, setNetworks] = createSignal<any[]>([]);
   const loadNetworks = () => {
-    console.log("load networks");
-    getNetworks(selected.id()).then(setNetworks);
+    // console.log("load networks");
+    client.get_docker_networks(params.id).then(setNetworks);
   };
   createEffect(loadNetworks);
 
   const save = () => {
-    ws.send(UPDATE_SERVER, { server });
+    client.update_server(server);
   };
 
-  onCleanup(
-    ws.subscribe([ADD_UPDATE], ({ update }: { update: Update }) => {
-      if (update.serverID === selected.id()) {
-        if (
-          [CREATE_NETWORK, DELETE_NETWORK, PRUNE_NETWORKS].includes(
-            update.operation
-          )
-        ) {
-          loadNetworks();
-        } else if ([UPDATE_SERVER].includes(update.operation)) {
-          load();
-        }
+  let unsub = () => {}
+  createEffect(() => {
+    unsub();
+    unsub = ws.subscribe([Operation.UpdateServer], (update) => {
+      if (update.target.id === params.id) {
+        load();
       }
-    })
-  );
+    });
+  });
+  onCleanup(() => unsub());
 
-  onCleanup(
-    ws.subscribe(
-      [SERVER_OWNER_UPDATE],
-      async ({ serverID }: { serverID: string }) => {
-        if (serverID === selected.id()) {
-          const server = await getServer(selected.id());
-          set("owners", server.owners);
-        }
-      }
-    )
-  );
+  // onCleanup(
+  //   ws.subscribe(
+  //     [SERVER_OWNER_UPDATE],
+  //     async ({ serverID }: { serverID: string }) => {
+  //       if (serverID === selected.id()) {
+  //         const server = await getServer(selected.id());
+  //         set("owners", server.owners);
+  //       }
+  //     }
+  //   )
+  // );
 
-  const userCanUpdate = () => {
-    if (permissions() > 1) {
-      return true;
-    } else if (permissions() > 0 && server.owners.includes(username()!)) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+  const userCanUpdate = () =>
+    user().admin ||
+    servers.get(params.id)!.server.permissions![getId(user())] === PermissionLevel.Update;
 
   const state = {
     server,

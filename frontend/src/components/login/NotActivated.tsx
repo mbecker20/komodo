@@ -1,9 +1,9 @@
 import { Component } from "solid-js";
 import s from "./login.module.scss";
-import Grid from "../util/layout/Grid";
-import Loading from "../util/loading/Loading";
+import Grid from "../shared/layout/Grid";
+import Loading from "../shared/loading/Loading";
 import { useUser } from "../../state/UserProvider";
-import Flex from "../util/layout/Flex";
+import Flex from "../shared/layout/Flex";
 
 const NotActivated: Component<{}> = (p) => {
 	const { logout } = useUser();

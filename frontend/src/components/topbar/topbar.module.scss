@@ -5,22 +5,8 @@
 	width: 100%;
 	background-color: c.$grey;
 	z-index: 90;
-}
-
-.Topbar:global(.dark) {
-	background-color: c.$grey-dark;
-}
-
-.GridTopbar {
-	grid-area: topbar;
-	width: 100%;
-	background-color: c.$grey;
-	z-index: 90;
+	display: grid;
 	grid-template-columns: repeat(3, 1fr);
-}
-
-.GridTopbar:global(.dark) {
-	background-color: c.$grey-dark;
 }
 
 .Monitor {
@@ -29,23 +15,27 @@
 	cursor: pointer;
 }
 
-.Search {
+.SearchInput {
 	width: 30rem;
 	background-color: c.$lightgrey;
 }
 
-.Search:global(.dark) {
-	background-color: c.$lightgrey-dark;
+.SearchMenu {
+	// background-color: c.$grey;
+	padding: 1rem 1.5rem;
+	box-sizing: border-box;
 }
 
 .SearchItem {
 	width: 100%;
+	box-sizing: border-box;
 	font-size: 1.1rem;
 	display: flex;
 	gap: 0.2rem;
 	align-items: center;
 	justify-content: space-between;
 	transition: all 250ms ease-in-out;
+	padding: 0.5rem 1.5rem;
 }
 
 .Updates {

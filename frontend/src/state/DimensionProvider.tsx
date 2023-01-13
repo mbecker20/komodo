@@ -1,4 +1,4 @@
-import { Accessor, Component, createContext, useContext } from "solid-js";
+import { Accessor, createContext, ParentComponent, useContext } from "solid-js";
 import { useInnerHeight, useInnerWidth } from "../util/hooks";
 
 type DimensionState = {
@@ -10,7 +10,7 @@ type DimensionState = {
 
 const DimensionContext = createContext<DimensionState>();
 
-export const DimensionProvider: Component = (p) => {
+export const DimensionProvider: ParentComponent = (p) => {
   const width = useInnerWidth();
   const height = useInnerHeight();
   const context = {

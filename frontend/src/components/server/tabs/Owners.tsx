@@ -1,46 +1,75 @@
-import { User } from "@monitor/types";
-import { Component, createEffect, createSignal, For, Show } from "solid-js";
-import { pushNotification } from "../../..";
-import { useTheme } from "../../../state/ThemeProvider";
-import { useUser } from "../../../state/UserProvider";
-import { combineClasses } from "../../../util/helpers";
+import { useParams } from "@solidjs/router";
 import {
-  addOwnerToServer,
-  getUsers,
-  removeOwnerFromServer,
-} from "../../../util/query";
-import ConfirmButton from "../../util/ConfirmButton";
-import Input from "../../util/Input";
-import Flex from "../../util/layout/Flex";
-import Grid from "../../util/layout/Grid";
-import Menu from "../../util/menu/Menu";
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  onCleanup,
+  Show,
+} from "solid-js";
+import { client } from "../../..";
+import { useAppState } from "../../../state/StateProvider";
+import { useUser } from "../../../state/UserProvider";
+import {
+  Operation,
+  PermissionLevel,
+  PermissionsTarget,
+  User,
+} from "../../../types";
+import { combineClasses, getId } from "../../../util/helpers";
+import ConfirmButton from "../../shared/ConfirmButton";
+import Input from "../../shared/Input";
+import Flex from "../../shared/layout/Flex";
+import Grid from "../../shared/layout/Grid";
+import Menu from "../../shared/menu/Menu";
+import Selector from "../../shared/menu/Selector";
 import { useConfig } from "./config/Provider";
 
+const PERMISSIONS_OPTIONS = [
+  PermissionLevel.Read,
+  PermissionLevel.Execute,
+  PermissionLevel.Update,
+];
+
 const Owners: Component<{}> = (p) => {
+  const { ws } = useAppState();
   const { server } = useConfig();
-  const { permissions, username } = useUser();
+  const { user } = useUser();
+  const params = useParams();
   const [userSearch, setUserSearch] = createSignal("");
   const [users, setUsers] = createSignal<User[]>([]);
   createEffect(() => {
-    if (userSearch().length > 0) {
-      getUsers(userSearch(), true).then((users) => {
-        setUsers(
-          users.filter((user) => !server.owners.includes(user.username))
-        );
-      });
-    } else {
-      setUsers([]);
-    }
+    client.list_users().then(setUsers);
   });
-  const { themeClass } = useTheme();
+  const getUser = (user_id: string) =>
+    users().find((u) => getId(u) === user_id)!;
+  const searchUsers = createMemo(() =>
+    users().filter(
+      (u) =>
+        !u.admin &&
+        u.enabled &&
+        u.username.includes(userSearch()) &&
+        (server.permissions![getId(u)] === undefined ||
+          server.permissions![getId(u)] === PermissionLevel.None)
+    )
+  );
+  let unsub = () => {};
+  createEffect(() => {
+    unsub();
+    unsub = ws.subscribe(
+      [Operation.ModifyUserPermissions, Operation.ModifyUserEnabled],
+      () => {
+        client.list_users().then(setUsers);
+      }
+    );
+  });
+  onCleanup(() => unsub());
   return (
     <Show when={server.loaded}>
       <Grid class="config">
         <Grid class="config-items scroller" style={{ height: "100%" }}>
-          <Grid
-            class={combineClasses("config-item shadow", themeClass())}
-            gap="0.5rem"
-          >
+          <Grid class={combineClasses("config-item shadow")} gap="0.5rem">
             <Menu
               show={userSearch() ? true : false}
               close={() => setUserSearch("")}
@@ -54,7 +83,7 @@ const Owners: Component<{}> = (p) => {
               }
               content={
                 <>
-                  <For each={users()}>
+                  <For each={searchUsers()}>
                     {(user) => (
                       <ConfirmButton
                         color="grey"
@@ -62,9 +91,13 @@ const Owners: Component<{}> = (p) => {
                           width: "100%",
                           "justify-content": "flex-start",
                         }}
-                        onConfirm={async () => {
-                          await addOwnerToServer(server._id!, user.username);
-                          pushNotification("good", "owner added to server");
+                        onConfirm={() => {
+                          client.update_user_permissions_on_target({
+                            user_id: getId(user),
+                            permission: PermissionLevel.Read,
+                            target_type: PermissionsTarget.Server,
+                            target_id: params.id,
+                          });
                           setUserSearch("");
                         }}
                         confirm="add user"
@@ -78,36 +111,62 @@ const Owners: Component<{}> = (p) => {
               }
               menuStyle={{ width: "12rem" }}
             />
-            <For each={server.owners}>
-              {(owner) => (
-                <Flex
-                  alignItems="center"
-                  justifyContent="space-between"
-                  class={combineClasses("grey-no-hover", themeClass())}
-                  style={{
-                    padding: "0.5rem",
-                  }}
-                >
-                  <div class="big-text">
-                    {owner}
-                    {owner === username() && " ( you )"}
-                  </div>
-                  <Show when={permissions() > 1}>
-                    <ConfirmButton
-                      color="red"
-                      onConfirm={async () => {
-                        await removeOwnerFromServer(server._id!, owner);
-                        pushNotification(
-                          "good",
-                          "user removed from collaborators"
-                        );
+            <For
+              each={Object.entries(server.permissions!)
+                .filter(
+                  ([_, permission]) => permission !== PermissionLevel.None
+                )
+                .map(([user_id, _]) => user_id)}
+            >
+              {(user_id) => {
+                const u = () => getUser(user_id);
+                const permissions = () => server.permissions![user_id];
+                return (
+                  <Show when={u()}>
+                    <Flex
+                      alignItems="center"
+                      justifyContent="space-between"
+                      class={combineClasses("grey-no-hover")}
+                      style={{
+                        padding: "0.5rem",
                       }}
                     >
-                      remove
-                    </ConfirmButton>
+                      <div class="big-text">
+                        {u().username}
+                        {user_id === getId(user()) && " ( you )"}
+                      </div>
+                      <Flex alignItems="center">
+                        <Selector
+                          selected={permissions()}
+                          items={PERMISSIONS_OPTIONS}
+                          onSelect={(permission) => {
+                            client.update_user_permissions_on_target({
+                              user_id,
+                              permission: permission as PermissionLevel,
+                              target_type: PermissionsTarget.Server,
+                              target_id: params.id,
+                            });
+                          }}
+                          position="bottom right"
+                        />
+                        <ConfirmButton
+                          color="red"
+                          onConfirm={() => {
+                            client.update_user_permissions_on_target({
+                              user_id,
+                              permission: PermissionLevel.None,
+                              target_type: PermissionsTarget.Server,
+                              target_id: params.id,
+                            });
+                          }}
+                        >
+                          remove
+                        </ConfirmButton>
+                      </Flex>
+                    </Flex>
                   </Show>
-                </Flex>
-              )}
+                );
+              }}
             </For>
           </Grid>
         </Grid>

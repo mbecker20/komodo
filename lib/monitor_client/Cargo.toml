@@ -1,0 +1,22 @@
+[package]
+name = "monitor_client"
+version = "0.1.8"
+edition = "2021"
+authors = ["MoghTech"]
+description = "a client to interact with the monitor system"
+license = "GPL-3.0-or-later"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+monitor_types = "0.1.8"
+# monitor_types = { path = "../types" }
+reqwest = { version = "0.11", features = ["json"] }
+tokio-tungstenite = { version = "0.18", features=["native-tls"] }
+tokio = { version = "1.24", features = ["full"] }
+tokio-util = "0.7"
+anyhow = "1.0"
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+futures-util = "0.3"

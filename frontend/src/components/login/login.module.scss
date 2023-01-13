@@ -1,6 +1,5 @@
 .Login {
-	width: 100vw;
-	height: 100vh;
+	height: calc(100vh - 4rem);
 	display: grid;
 	place-items: center;
 }
@@ -13,5 +12,10 @@
 
 .LoginItem {
 	font-size: 1.1rem;
-	width: 100%
+	width: 100%;
+}
+
+.OauthLoginItem {
+	// justify-content: space-between;
+	min-width: 200px;
 }

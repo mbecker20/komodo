@@ -1,90 +1,77 @@
-import { ContainerStatus } from "@monitor/types";
 import { Component, Match, Show, Switch } from "solid-js";
-import { pushNotification } from "../..";
-import {
-  BUILD,
-  DELETE_CONTAINER,
-  DEPLOY,
-  PULL_DEPLOYMENT,
-  RECLONE_DEPLOYMENT_REPO,
-  START_CONTAINER,
-  STOP_CONTAINER,
-} from "@monitor/util";
+import { client, pushNotification } from "../..";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import ConfirmButton from "../util/ConfirmButton";
-import Icon from "../util/Icon";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
-import Loading from "../util/loading/Loading";
-import HoverMenu from "../util/menu/HoverMenu";
+import ConfirmButton from "../shared/ConfirmButton";
+import Icon from "../shared/Icon";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
+import Loading from "../shared/loading/Loading";
+import HoverMenu from "../shared/menu/HoverMenu";
 import { useActionStates } from "./ActionStateProvider";
-import { useTheme } from "../../state/ThemeProvider";
-import { combineClasses } from "../../util/helpers";
-import Button from "../util/Button";
+import { combineClasses, getId } from "../../util/helpers";
+import { A, useParams } from "@solidjs/router";
+import { DockerContainerState, PermissionLevel } from "../../types";
 
 const Actions: Component<{}> = (p) => {
-  const { deployments, builds, selected } = useAppState();
-  const { permissions, username } = useUser();
+  const { deployments, builds } = useAppState();
+  const params = useParams();
+  const { user } = useUser();
   const show = () =>
     deployment() &&
-    !deployment().isCore &&
-    (permissions() >= 2 || deployment().owners.includes(username()!));
-  const deployment = () => deployments.get(selected.id())!;
+    (user().admin ||
+      deployment().deployment.permissions![getId(user())] ===
+        PermissionLevel.Execute ||
+      deployment().deployment.permissions![getId(user())] ===
+        PermissionLevel.Update);
+  const deployment = () => deployments.get(params.id)!;
   const showBuild = () => {
-    const build = deployment().buildID
-      ? builds.get(deployment().buildID!)
+    const build = deployment().deployment.build_id
+      ? builds.get(deployment().deployment.build_id!)
       : undefined;
     return build ? true : false;
   };
-  const { themeClass } = useTheme();
   return (
     <Show when={show()}>
-      <Grid class={combineClasses("card shadow", themeClass())}>
+      <Grid class={combineClasses("card shadow")}>
         <h1>actions</h1>
         <Show when={showBuild()}>
           <Build />
         </Show>
         <Switch>
-          <Match
-            when={(deployment().status as ContainerStatus)?.State === "running"}
-          >
-            <Flex class={combineClasses("action shadow", themeClass())}>
+          <Match when={deployment().state === DockerContainerState.Running}>
+            <Flex class={combineClasses("action shadow")}>
               deploy{" "}
               <Flex>
                 <Deploy redeploy />
                 <Stop />
-                <Delete />
+                <RemoveContainer />
               </Flex>
             </Flex>
           </Match>
 
           <Match
             when={
-              (deployment().status as ContainerStatus).State === "exited" ||
-              (deployment().status as ContainerStatus).State === "created"
+              deployment().state === DockerContainerState.Exited ||
+              deployment().state === DockerContainerState.Created
             }
           >
-            <Flex class={combineClasses("action shadow", themeClass())}>
+            <Flex class={combineClasses("action shadow")}>
               deploy{" "}
               <Flex>
                 <Deploy redeploy />
                 <Start />
-                <Delete />
+                <RemoveContainer />
               </Flex>
             </Flex>
           </Match>
-          <Match
-            when={
-              (deployment().status as ContainerStatus).State === "restarting"
-            }
-          >
-            <Flex class={combineClasses("action shadow", themeClass())}>
+          <Match when={deployment().state === DockerContainerState.Restarting}>
+            <Flex class={combineClasses("action shadow")}>
               deploy{" "}
               <Flex>
                 <Deploy redeploy />
                 <Stop />
-                <Delete />
+                <RemoveContainer />
               </Flex>
             </Flex>
             {/* <Flex class="action shadow">
@@ -92,14 +79,14 @@ const Actions: Component<{}> = (p) => {
             </Flex> */}
           </Match>
 
-          <Match when={deployment().status === "not deployed"}>
-            <Flex class={combineClasses("action shadow", themeClass())}>
+          <Match when={deployment().state === DockerContainerState.NotDeployed}>
+            <Flex class={combineClasses("action shadow")}>
               deploy <Deploy />
             </Flex>
           </Match>
         </Switch>
-        <Show when={deployment().repo}>
-          <Flex class={combineClasses("action shadow", themeClass())}>
+        <Show when={deployment().deployment.repo}>
+          <Flex class={combineClasses("action shadow")}>
             frontend
             <Flex>
               <Reclone />
@@ -113,15 +100,15 @@ const Actions: Component<{}> = (p) => {
 };
 
 const Build: Component = () => {
-  const { ws, selected, deployments } = useAppState();
-  const { themeClass } = useTheme();
+  const { ws, deployments } = useAppState();
+  const params = useParams();
   const actions = useActionStates();
-  const buildID = () => deployments.get(selected.id())!.buildID!;
+  const buildID = () => deployments.get(params.id)!.deployment.build_id!;
   return (
-    <Flex class={combineClasses("action shadow", themeClass())}>
-      <div class="pointer" onClick={() => selected.set(buildID(), "build")}>
+    <Flex class={combineClasses("action shadow")}>
+      <A href={`/build/${buildID()}`} class="pointer">
         build
-      </div>
+      </A>
       <Show
         when={!actions.building}
         fallback={
@@ -133,8 +120,7 @@ const Build: Component = () => {
         <ConfirmButton
           color="green"
           onConfirm={() => {
-            ws.send(BUILD, { buildID: buildID() });
-            pushNotification("ok", "building...");
+            client.build(buildID());
           }}
         >
           <Icon type="build" />
@@ -145,8 +131,9 @@ const Build: Component = () => {
 };
 
 const Deploy: Component<{ redeploy?: boolean }> = (p) => {
-  const { ws, deployments, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id())!;
+  // const { deployments } = useAppState();
+  const params = useParams();
+  // const deployment = () => deployments.get(params.id)!;
   const actions = useActionStates();
   return (
     <Show
@@ -162,8 +149,7 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
           <ConfirmButton
             color="green"
             onConfirm={() => {
-              ws.send(DEPLOY, { deploymentID: selected.id() });
-              pushNotification("ok", `deploying ${deployment().name}...`);
+              client.deploy_container(params.id);
             }}
           >
             <Icon type={p.redeploy ? "reset" : "play"} />
@@ -177,12 +163,12 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
   );
 };
 
-const Delete = () => {
-  const { ws, selected } = useAppState();
+const RemoveContainer = () => {
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
-      when={!actions.deleting}
+      when={!actions.removing}
       fallback={
         <button class="red">
           <Loading type="spinner" />
@@ -194,10 +180,7 @@ const Delete = () => {
           <ConfirmButton
             color="red"
             onConfirm={() => {
-              ws.send(DELETE_CONTAINER, {
-                deploymentID: selected.id(),
-              });
-              pushNotification("ok", `removing container...`);
+              client.remove_container(params.id);
             }}
           >
             <Icon type="trash" />
@@ -212,8 +195,7 @@ const Delete = () => {
 };
 
 const Start = () => {
-  const { ws, deployments, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id())!;
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
@@ -229,10 +211,7 @@ const Start = () => {
           <ConfirmButton
             color="green"
             onConfirm={() => {
-              ws.send(START_CONTAINER, {
-                deploymentID: deployment()._id,
-              });
-              pushNotification("ok", `starting container`);
+              client.start_container(params.id);
             }}
           >
             <Icon type="play" />
@@ -247,8 +226,7 @@ const Start = () => {
 };
 
 const Stop = () => {
-  const { ws, deployments, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id())!;
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
@@ -264,10 +242,7 @@ const Stop = () => {
           <ConfirmButton
             color="orange"
             onConfirm={() => {
-              ws.send(STOP_CONTAINER, {
-                deploymentID: deployment()._id,
-              });
-              pushNotification("ok", `stopping container`);
+              client.stop_container(params.id);
             }}
           >
             <Icon type="pause" />
@@ -282,16 +257,15 @@ const Stop = () => {
 };
 
 const Pull = () => {
-  const { ws, deployments, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id())!;
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
       when={!actions.pulling}
       fallback={
-        <Button class="blue">
+        <button class="blue">
           <Loading type="spinner" />
-        </Button>
+        </button>
       }
     >
       <HoverMenu
@@ -299,8 +273,7 @@ const Pull = () => {
           <ConfirmButton
             color="blue"
             onConfirm={() => {
-              ws.send(PULL_DEPLOYMENT, { deploymentID: selected.id() });
-              pushNotification("ok", `pulling ${deployment().name}...`);
+              client.pull_deployment(params.id);
             }}
           >
             <Icon type="arrow-down" />
@@ -315,8 +288,7 @@ const Pull = () => {
 };
 
 const Reclone = () => {
-  const { ws, deployments, selected } = useAppState();
-  const deployment = () => deployments.get(selected.id())!;
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
@@ -332,8 +304,7 @@ const Reclone = () => {
           <ConfirmButton
             color="orange"
             onConfirm={() => {
-              ws.send(RECLONE_DEPLOYMENT_REPO, { deploymentID: selected.id() });
-              pushNotification("ok", `recloning ${deployment().name}...`);
+              client.reclone_deployment(params.id);
             }}
           >
             <Icon type="reset" />

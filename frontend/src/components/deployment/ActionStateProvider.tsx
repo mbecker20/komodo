@@ -1,110 +1,97 @@
-import { BuildActionState, DeployActionState } from "@monitor/types";
+import { useParams } from "@solidjs/router";
 import {
-  Component,
   createContext,
   createEffect,
-  createSignal,
   onCleanup,
+  ParentComponent,
   useContext,
 } from "solid-js";
 import { createStore } from "solid-js/store";
-import {
-  BUILD,
-  DELETE_CONTAINER,
-  DELETE_DEPLOYMENT,
-  DEPLOY,
-  PULL_DEPLOYMENT,
-  RECLONE_DEPLOYMENT_REPO,
-  START_CONTAINER,
-  STOP_CONTAINER,
-} from "@monitor/util";
+import { client } from "../..";
 import { useAppState } from "../../state/StateProvider";
-import {
-  getBuildActionState,
-  getDeploymentActionState,
-} from "../../util/query";
+import { BuildActionState, DeploymentActionState, Operation, UpdateStatus } from "../../types";
 
-type State = DeployActionState & Partial<BuildActionState>;
+type State = DeploymentActionState & Partial<BuildActionState>;
 
 const context = createContext<State>();
 
-export const ActionStateProvider: Component<{ exiting?: boolean }> = (p) => {
-  const { selected, deployments, builds, ws } = useAppState();
+export const ActionStateProvider: ParentComponent<{ exiting?: boolean }> = (p) => {
+  const { deployments, builds, ws } = useAppState();
+  const params = useParams();
   const [actions, setActions] = createStore<
-    DeployActionState & Partial<BuildActionState>
+    DeploymentActionState & Partial<BuildActionState>
   >({
     deploying: false,
-    deleting: false,
     starting: false,
     stopping: false,
-    fullDeleting: false,
+    removing: false,
     updating: false,
     pulling: false,
     recloning: false,
     building: false,
   });
-  const deployment = () => deployments.get(selected.id())!
+  const deployment = () => deployments.get(params.id)!
   createEffect(() => {
-    getDeploymentActionState(selected.id()).then(setActions);
-    const buildID = deployment().buildID;
+    client.get_deployment_action_state(params.id).then(setActions);
+    const buildID = deployment().deployment.build_id;
     if (buildID && builds.get(buildID)) {
-      getBuildActionState(buildID).then((state) => {
+      client.get_build_action_state(buildID).then((state) => {
         setActions("building", state.building);
       });
     }
   });
   onCleanup(
-    ws.subscribe([DEPLOY], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("deploying", !complete);
+    ws.subscribe([Operation.DeployContainer], (update) => {
+      if (update.target.id === params.id) {
+        setActions("deploying", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
-    ws.subscribe([DELETE_CONTAINER], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("deleting", !complete);
+    ws.subscribe([Operation.RemoveContainer], (update) => {
+      if (update.target.id === params.id) {
+        setActions("removing", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
-    ws.subscribe([START_CONTAINER], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("starting", !complete);
+    ws.subscribe([Operation.StartContainer], (update) => {
+      if (update.target.id === params.id) {
+        setActions("starting", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
-    ws.subscribe([STOP_CONTAINER], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("stopping", !complete);
+    ws.subscribe([Operation.StopContainer], (update) => {
+      if (update.target.id === params.id) {
+        setActions("stopping", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
-    ws.subscribe([DELETE_DEPLOYMENT], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("fullDeleting", !complete);
+    ws.subscribe([Operation.DeleteDeployment], (update) => {
+      // if (update.target.id === params.id) {
+      //   setActions("deploying", update.status !== UpdateStatus.Complete);
+      // }
+    })
+  );
+  onCleanup(
+    ws.subscribe([Operation.PullDeployment], (update) => {
+      if (update.target.id === params.id) {
+        setActions("pulling", update.status !== UpdateStatus.Complete);
       }
     })
   );
   onCleanup(
-    ws.subscribe([PULL_DEPLOYMENT], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("pulling", !complete);
+    ws.subscribe([Operation.RecloneDeployment], (update) => {
+      if (update.target.id === params.id) {
+        setActions("recloning", update.status !== UpdateStatus.Complete);
       }
     })
   );
-  onCleanup(
-    ws.subscribe([RECLONE_DEPLOYMENT_REPO], ({ complete, deploymentID }) => {
-      if (deploymentID === selected.id()) {
-        setActions("recloning", !complete);
-      }
-    })
-  );
-  onCleanup(ws.subscribe([BUILD], ({ complete, buildID }) => {
-    if (deployment().buildID === buildID) {
-      setActions("building", !complete);
+  onCleanup(ws.subscribe([Operation.BuildBuild], (update) => {
+    if (deployment().deployment.build_id === update.target.id) {
+      setActions("building", update.status !== UpdateStatus.Complete);
     }
   }));
   return <context.Provider value={actions}>{p.children}</context.Provider>;

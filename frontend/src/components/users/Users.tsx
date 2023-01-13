@@ -7,29 +7,24 @@ import {
   onCleanup,
   Show,
 } from "solid-js";
-import { USER_UPDATE } from "@monitor/util";
+import { client } from "../..";
 import { useAppState } from "../../state/StateProvider";
-import { combineClasses, readablePermissions } from "../../util/helpers";
-import { deleteUser, getUsers, updateUser } from "../../util/query";
-import ConfirmButton from "../util/ConfirmButton";
-import Icon from "../util/Icon";
-import Input from "../util/Input";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
-import Loading from "../util/loading/Loading";
-import Selector from "../util/menu/Selector";
+import { Operation } from "../../types";
+import { combineClasses, getId } from "../../util/helpers";
+import Input from "../shared/Input";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
+import Loading from "../shared/loading/Loading";
 import s from "./users.module.scss";
-import { useTheme } from "../../state/ThemeProvider";
 
 const Users: Component<{}> = (p) => {
   const { ws } = useAppState();
-  const [users, { refetch }] = createResource(() => getUsers());
-  onCleanup(ws.subscribe([USER_UPDATE], refetch));
+  const [users, { refetch }] = createResource(() => client.list_users());
+  onCleanup(ws.subscribe([Operation.ModifyUserEnabled], refetch));
   const [search, setSearch] = createSignal("");
   const filteredUsers = createMemo(() =>
     users()?.filter((user) => user.username.includes(search()))
   );
-  const { themeClass } = useTheme();
   return (
     <Show
       when={users()}
@@ -40,7 +35,7 @@ const Users: Component<{}> = (p) => {
       }
     >
       <Grid class={s.UsersContent}>
-        <Grid class={combineClasses(s.Users, "card shadow", themeClass())}>
+        <Grid class={combineClasses(s.Users, "card shadow")}>
           <Flex justifyContent="space-between">
             <h1>users</h1>
             <Input
@@ -52,30 +47,37 @@ const Users: Component<{}> = (p) => {
           </Flex>
           <For each={filteredUsers()}>
             {(user) => (
-              <Flex class={combineClasses(s.User, "shadow", themeClass())}>
+              <Flex class={combineClasses(s.User, "shadow")}>
                 <div class={s.Username}>{user.username}</div>
                 <Flex alignItems="center">
-                  <Selector
-                    items={["view only", "user"]}
-                    selected={readablePermissions(user.permissions!)}
-                    onSelect={(_, permissions) => {
-                      updateUser({ userID: user._id!, permissions });
-                    }}
-                  />
                   <button
                     class={user.enabled ? "green" : "red"}
                     onClick={() => {
-                      updateUser({ userID: user._id!, enabled: !user.enabled });
+                      client.modify_user_enabled({
+                        user_id: getId(user),
+                        enabled: !user.enabled,
+                      });
                     }}
                   >
                     {user.enabled ? "enabled" : "disabled"}
                   </button>
-                  <ConfirmButton
+                  <button
+                    class={user.create_server_permissions ? "green" : "red"}
+                    onClick={() => {
+                      client.modify_user_create_server_permissions({
+                        user_id: getId(user),
+                        create_server_permissions: !user.create_server_permissions,
+                      });
+                    }}
+                  >
+                    {user.create_server_permissions ? "can create servers" : "cannot create servers"}
+                  </button>
+                  {/* <ConfirmButton
                     color="red"
                     onConfirm={() => deleteUser(user._id!)}
                   >
                     <Icon type="trash" />
-                  </ConfirmButton>
+                  </ConfirmButton> */}
                 </Flex>
               </Flex>
             )}

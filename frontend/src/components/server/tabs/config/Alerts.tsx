@@ -1,22 +1,20 @@
 import { Component } from "solid-js";
 import { createStore } from "solid-js/store";
-import { useTheme } from "../../../../state/ThemeProvider";
 import { combineClasses, validatePercentage } from "../../../../util/helpers";
-import Input from "../../../util/Input";
-import Flex from "../../../util/layout/Flex";
-import Grid from "../../../util/layout/Grid";
+import Input from "../../../shared/Input";
+import Flex from "../../../shared/layout/Flex";
+import Grid from "../../../shared/layout/Grid";
 import { useConfig } from "./Provider";
 
 const Alerts: Component<{}> = (p) => {
   const { server, setServer } = useConfig();
-  const { themeClass } = useTheme();
   const [alerts, setAlerts] = createStore({
-    cpu: server.cpuAlert?.toString(),
-    mem: server.memAlert?.toString(),
-    disk: server.diskAlert?.toString(),
+    cpu: server.cpu_alert?.toString(),
+    mem: server.mem_alert?.toString(),
+    disk: server.disk_alert?.toString(),
   });
   return (
-    <Grid class={combineClasses("config-item shadow", themeClass())}>
+    <Grid class={combineClasses("config-item shadow")}>
       <h1>alerts</h1>
       <Grid style={{ padding: "0.5rem" }}>
         <Flex justifyContent="space-between" alignItems="center">
@@ -28,9 +26,9 @@ const Alerts: Component<{}> = (p) => {
               onEdit={(val) => setAlerts("cpu", val)}
               onConfirm={(val) => {
                 if (validatePercentage(val)) {
-                  setServer("cpuAlert", Number(val));
+                  setServer("cpu_alert", Number(val));
                 } else {
-                  setAlerts("cpu", server.cpuAlert?.toString());
+                  setAlerts("cpu", server.cpu_alert?.toString());
                 }
               }}
               style={{ width: "4rem" }}
@@ -47,9 +45,9 @@ const Alerts: Component<{}> = (p) => {
               onEdit={(val) => setAlerts("mem", val)}
               onConfirm={(val) => {
                 if (validatePercentage(val)) {
-                  setServer("memAlert", Number(val));
+                  setServer("mem_alert", Number(val));
                 } else {
-                  setAlerts("mem", server.memAlert?.toString());
+                  setAlerts("mem", server.mem_alert?.toString());
                 }
               }}
               style={{ width: "4rem" }}
@@ -66,9 +64,9 @@ const Alerts: Component<{}> = (p) => {
               onEdit={(val) => setAlerts("disk", val)}
               onConfirm={(val) => {
                 if (validatePercentage(val)) {
-                  setServer("diskAlert", Number(val));
+                  setServer("disk_alert", Number(val));
                 } else {
-                  setAlerts("disk", server.diskAlert?.toString());
+                  setAlerts("disk", server.disk_alert?.toString());
                 }
               }}
               style={{ width: "4rem" }}

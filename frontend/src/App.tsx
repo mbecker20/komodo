@@ -1,81 +1,30 @@
-import {
-  Component,
-  createEffect,
-  createSignal,
-  JSXElement,
-} from "solid-js";
-import Build from "./components/builds/Build";
-import Deployment from "./components/deployment/Deployment";
-import Home from "./components/home/Home";
-import Server from "./components/server/Server";
-// import Sidebar from "./components/sidebar/Sidebar";
+import { Route, Routes } from "@solidjs/router";
+import { Component, lazy, Show } from "solid-js";
 import Topbar from "./components/topbar/Topbar";
-import Users from "./components/users/Users";
-import { useAppState } from "./state/StateProvider";
 import { useUser } from "./state/UserProvider";
 
+const Home = lazy(() => import("./components/home/Home"));
+const Deployment = lazy(() => import("./components/deployment/Deployment"));
+const Server = lazy(() => import("./components/server/Server"));
+const Build = lazy(() => import("./components/build/Build"));
+const Users = lazy(() => import("./components/users/Users"));
+const Stats = lazy(() => import("./components/stats/Stats"))
+
 const App: Component = () => {
-  const { selected } = useAppState();
-  const { permissions } = useUser();
-  const [element, setElement] = createSignal<JSXElement>();
-  createEffect(() => {
-    if (selected.id()) {
-    }
-    switch (selected.type()) {
-      case "home":
-        setElement(
-          <div class="content-enter">
-            <Home />
-          </div>
-        );
-        return;
-
-      case "deployment":
-        setElement(
-          <div class="content-enter">
-            <Deployment />
-          </div>
-        );
-        break;
-
-      case "build":
-        setElement(
-          <div class="content-enter">
-            <Build />
-          </div>
-        );
-        break;
-
-      case "server":
-        setElement(
-          <div class="content-enter">
-            <Server />
-          </div>
-        );
-        break;
-
-      case "users":
-        if (permissions() > 1) {
-          setElement(
-            <div class="content-enter">
-              <Users />
-            </div>
-          );
-        } else {
-          setElement(
-            <div class="content-enter">
-              <Home />
-            </div>
-          );
-        }
-        break;
-    }
-  });
+  const { user } = useUser();
   return (
     <>
       <Topbar />
-      {/* <Sidebar /> */}
-      {element()}
+      <Routes>
+        <Route path="/" component={Home} />
+        <Route path="/build/:id" component={Build} />
+        <Route path="/deployment/:id" component={Deployment} />
+        <Route path="/server/:id" component={Server} />
+        <Route path="/server/:id/stats" component={Stats} />
+        <Show when={user().admin}>
+          <Route path="/users" component={Users} />
+        </Show>
+      </Routes>
     </>
   );
 };

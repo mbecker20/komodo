@@ -1,20 +1,14 @@
-import { CREATE_BUILD, CREATE_DEPLOYMENT } from "@monitor/util";
 import { Component, createSignal, onMount, Show } from "solid-js";
-import { pushNotification } from "../../..";
-import { defaultDeployment } from "../../../state/defaults";
-import { useAppState } from "../../../state/StateProvider";
+import { client, pushNotification } from "../../..";
 import { useKeyDown, useToggle } from "../../../util/hooks";
-import Icon from "../../util/Icon";
-import Input from "../../util/Input";
-import Flex from "../../util/layout/Flex";
+import Icon from "../../shared/Icon";
+import Input from "../../shared/Input";
+import Flex from "../../shared/layout/Flex";
 
 export const NewDeployment: Component<{ serverID: string }> = (p) => {
-  const { ws } = useAppState();
   const [showNew, toggleShowNew] = useToggle();
   const create = (name: string) => {
-    ws.send(CREATE_DEPLOYMENT, {
-      deployment: defaultDeployment(name, p.serverID),
-    });
+    client.create_deployment({ name, server_id: p.serverID });
   };
   return (
     <Show
@@ -34,13 +28,10 @@ export const NewDeployment: Component<{ serverID: string }> = (p) => {
   );
 };
 
-export const NewBuild: Component<{}> = (p) => {
-  const { ws } = useAppState();
+export const NewBuild: Component<{ serverID: string }> = (p) => {
   const [showNew, toggleShowNew] = useToggle();
   const create = (name: string) => {
-    ws.send(CREATE_BUILD, {
-      build: { name },
-    });
+    client.create_build({ name, server_id: p.serverID });
   };
   return (
     <Show

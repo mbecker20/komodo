@@ -1,8 +1,8 @@
 import { Component } from "solid-js";
-import { useTheme } from "../../../../../state/ThemeProvider";
+import { RestartMode } from "../../../../../types";
 import { combineClasses } from "../../../../../util/helpers";
-import Flex from "../../../../util/layout/Flex";
-import Selector from "../../../../util/menu/Selector";
+import Flex from "../../../../shared/layout/Flex";
+import Selector from "../../../../shared/menu/Selector";
 import { useConfig } from "../Provider";
 
 const RESTART_MODES = [
@@ -14,10 +14,9 @@ const RESTART_MODES = [
 
 const Restart: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
-  const { themeClass } = useTheme();
   return (
     <Flex
-      class={combineClasses("config-item shadow", themeClass())}
+      class={combineClasses("config-item shadow")}
       justifyContent="space-between"
       alignItems="center"
     >
@@ -26,15 +25,18 @@ const Restart: Component<{}> = (p) => {
         targetClass="blue"
         items={RESTART_MODES}
         selected={
-          (deployment.restart === "no"
+          (deployment.docker_run_args.restart === "no"
             ? "don't restart"
-            : deployment.restart?.replace("-", " ")) || "don't restart"
+            : deployment.docker_run_args.restart?.replace("-", " ")) ||
+          "don't restart"
         }
         onSelect={(restart) =>
-          setDeployment(
-            "restart",
-            restart === "don't restart" ? "no" : restart.replace(" ", "-")
-          )
+          setDeployment("docker_run_args", {
+            restart:
+              restart === "don't restart"
+                ? RestartMode.NoRestart
+                : (restart.replace(" ", "-") as RestartMode),
+          })
         }
         position="bottom right"
         disabled={!userCanUpdate()}

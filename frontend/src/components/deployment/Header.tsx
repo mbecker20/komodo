@@ -1,65 +1,41 @@
-import { ContainerStatus } from "@monitor/types";
 import { Component, Show } from "solid-js";
-import { DELETE_DEPLOYMENT } from "@monitor/util";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import {
-  combineClasses,
-  deploymentHeaderStatusClass,
-} from "../../util/helpers";
-import ConfirmButton from "../util/ConfirmButton";
-import Icon from "../util/Icon";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
-import Loading from "../util/loading/Loading";
-import HoverMenu from "../util/menu/HoverMenu";
-import { useActionStates } from "./ActionStateProvider";
-import { useTheme } from "../../state/ThemeProvider";
-import Button from "../util/Button";
+import { combineClasses, deploymentHeaderStateClass, getId } from "../../util/helpers";
+import ConfirmButton from "../shared/ConfirmButton";
+import Icon from "../shared/Icon";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
+import HoverMenu from "../shared/menu/HoverMenu";
 import { useLocalStorageToggle } from "../../util/hooks";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import Updates from "./Updates";
+import { DockerContainerState, PermissionLevel } from "../../types";
+import { useParams } from "@solidjs/router";
+import { client } from "../..";
 
-const Header: Component<{ exiting?: boolean }> = (p) => {
-  const { deployments, ws, selected } = useAppState();
-  const deployment = p.exiting
-    ? () => deployments.get(selected.prevId()!)!
-    : () => deployments.get(selected.id())!;
-  const { permissions, username } = useUser();
-  const state = () =>
-    deployment()!.status === "unknown"
-      ? "unknown"
-      : deployment()!.status === "not deployed"
-      ? "not deployed"
-      : (deployment()!.status as ContainerStatus).State;
+const Header: Component<{}> = (p) => {
+  const { deployments } = useAppState();
+  const params = useParams();
+  const deployment = () => deployments.get(params.id)!;
+  const { user } = useUser();
   const status = () =>
-    deployment()!.status === "unknown" ||
-    deployment()!.status === "not deployed"
+    deployment()!.state === DockerContainerState.Unknown ||
+    deployment()!.state === DockerContainerState.NotDeployed
       ? undefined
-      : (deployment()!.status as ContainerStatus).Status.toLowerCase();
-  const actions = useActionStates();
-  const { themeClass } = useTheme();
+      : deployment().container?.status?.toLowerCase();
   const { isMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
     useLocalStorageToggle("show-updates");
-
-  const userCanUpdate = () => {
-    if (permissions() > 1) {
-      return true;
-    } else if (
-      permissions() > 0 &&
-      deployment()!.owners.includes(username()!)
-    ) {
-      return true;
-    } else {
-      return false;
-    }
-  };
+  const userCanUpdate = () =>
+    user().admin ||
+    deployment().deployment.permissions![getId(user())] ===
+      PermissionLevel.Update;
   return (
     <>
       <Grid
         gap="0.5rem"
-        class={combineClasses("card shadow", themeClass())}
+        class={combineClasses("card shadow")}
         style={{
           position: "relative",
           cursor: isMobile() && userCanUpdate() ? "pointer" : undefined,
@@ -69,52 +45,28 @@ const Header: Component<{ exiting?: boolean }> = (p) => {
         }}
       >
         <Flex alignItems="center" justifyContent="space-between">
-          <h1>{deployment()!.name}</h1>
-          <Show
-            when={
-              permissions() >= 2 || deployment().owners.includes(username()!)
-            }
-          >
-            <Show
-              when={!actions.fullDeleting}
-              fallback={
-                <Button class="red">
+          <h1>{deployment()!.deployment.name}</h1>
+          <Show when={userCanUpdate()}>
+            <HoverMenu
+              target={
+                <ConfirmButton
+                  onConfirm={() => {
+                    client.delete_deployment(params.id)
+                  }}
+                  color="red"
+                >
                   <Icon type="trash" />
-                </Button>
+                </ConfirmButton>
               }
-            >
-              <HoverMenu
-                target={
-                  <Show
-                    when={!actions.fullDeleting}
-                    fallback={
-                      <Button class="red">
-                        <Loading />
-                      </Button>
-                    }
-                  >
-                    <ConfirmButton
-                      onConfirm={() => {
-                        ws.send(DELETE_DEPLOYMENT, {
-                          deploymentID: selected.id(),
-                        });
-                      }}
-                      color="red"
-                    >
-                      <Icon type="trash" />
-                    </ConfirmButton>
-                  </Show>
-                }
-                content="delete deployment"
-                position="bottom center"
-                padding="0.5rem"
-              />
-            </Show>
+              content="delete deployment"
+              position="bottom center"
+              padding="0.5rem"
+            />
           </Show>
         </Flex>
         <Flex alignItems="center" justifyContent="space-between">
-          <div class={deploymentHeaderStatusClass(state(), themeClass)}>
-            {state()}
+          <div class={deploymentHeaderStateClass(deployment().state)}>
+            {deployment().state}
           </div>
           <Show when={status()}>
             <div style={{ opacity: 0.7 }}>{status()}</div>

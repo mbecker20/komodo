@@ -1,98 +1,104 @@
-import {
-  Accessor,
-  Component,
-  createContext,
-  createResource,
-  onCleanup,
-  Resource,
-  useContext,
-} from "solid-js";
-import { useLocalStorageToggle, useWindowKeyDown } from "../util/hooks";
-import { getDockerAccounts, getGithubAccounts } from "../util/query";
-import { USER_UPDATE } from "@monitor/util";
-import { useAppDimensions } from "./DimensionProvider";
+import { useNavigate } from "@solidjs/router";
+import { createContext, ParentComponent, useContext } from "solid-js";
+import { useWindowKeyDown } from "../util/hooks";
 import {
   useBuilds,
   useDeployments,
-  useSelected,
   useServers,
   useServerStats,
   useUpdates,
+  useUsernames,
 } from "./hooks";
-import socket from "./socket";
+import connectToWs from "./ws";
 import { useUser } from "./UserProvider";
+import { PermissionLevel } from "../types";
 
 export type State = {
+  usernames: ReturnType<typeof useUsernames>
   servers: ReturnType<typeof useServers>;
+  getPermissionOnServer: (id: string) => PermissionLevel;
   serverStats: ReturnType<typeof useServerStats>;
   builds: ReturnType<typeof useBuilds>;
+  getPermissionOnBuild: (id: string) => PermissionLevel;
   deployments: ReturnType<typeof useDeployments>;
+  getPermissionOnDeployment: (id: string) => PermissionLevel;
   updates: ReturnType<typeof useUpdates>;
-  dockerAccounts: Resource<string[] | undefined>;
-  githubAccounts: Resource<string[] | undefined>;
-  selected: ReturnType<typeof useSelected>;
-  sidebar: {
-    open: Accessor<boolean>;
-    toggle: () => void;
-  };
 };
 
 const context = createContext<
   State & {
-    ws: ReturnType<typeof socket>;
+    ws: ReturnType<typeof connectToWs>;
     logout: () => void;
   }
 >();
 
-export const AppStateProvider: Component<{}> = (p) => {
-  const { user, permissions, reloadUser, logout } = useUser();
-  const [sidebarOpen, toggleSidebarOpen] = useLocalStorageToggle(
-    "sidebar-open",
-    true
-  );
-  const { width } = useAppDimensions();
-  const [dockerAccounts] = createResource(async () =>
-    permissions() >= 1 ? getDockerAccounts() : undefined
-  );
-  const [githubAccounts] = createResource(async () =>
-    permissions() >= 1 ? getGithubAccounts() : undefined
-  );
+export const AppStateProvider: ParentComponent = (p) => {
+  const { user, logout } = useUser();
+  const navigate = useNavigate();
+  const userId = (user()._id as any).$oid as string;
+  const servers = useServers();
+  const builds = useBuilds();
+  const deployments = useDeployments();
+  const usernames = useUsernames();
   const state: State = {
-    servers: useServers(),
-    serverStats: useServerStats(),
-    builds: useBuilds(),
-    deployments: useDeployments(),
-    updates: useUpdates(),
-    selected: useSelected(),
-    dockerAccounts,
-    githubAccounts,
-    sidebar: {
-      open: sidebarOpen,
-      toggle: toggleSidebarOpen,
+    usernames,
+    servers,
+    getPermissionOnServer: (id: string) => {
+      const server = servers.get(id)!;
+      const permissions = server.server.permissions![userId] as
+        | PermissionLevel
+        | undefined;
+      if (permissions) {
+        return permissions;
+      } else {
+        return PermissionLevel.None;
+      }
     },
+    builds,
+    getPermissionOnBuild: (id: string) => {
+      const build = builds.get(id)!;
+      const permissions = build.permissions![userId] as
+        | PermissionLevel
+        | undefined;
+      if (permissions) {
+        return permissions;
+      } else {
+        return PermissionLevel.None;
+      }
+    },
+    deployments,
+    getPermissionOnDeployment: (id: string) => {
+      const deployment = deployments.get(id)!;
+      const permissions = deployment.deployment.permissions![userId] as
+        | PermissionLevel
+        | undefined;
+      if (permissions) {
+        return permissions;
+      } else {
+        return PermissionLevel.None;
+      }
+    },
+    serverStats: useServerStats(),
+    updates: useUpdates(),
   };
 
-  const ws = socket(user(), state);
+  // createEffect(() => {
+  //   console.log("deployments", deployments.collection());
+  // })
 
-  onCleanup(ws.subscribe([USER_UPDATE], reloadUser));
+  // createEffect(() => {
+  //   console.log("servers", servers.collection());
+  // });
 
-  const resizeListener = () => {
-    if (width() < 1200 && sidebarOpen()) {
-      toggleSidebarOpen();
-    }
-  };
-  addEventListener("resize", resizeListener);
-  onCleanup(() => removeEventListener("resize", resizeListener));
+  // createEffect(() => {
+  //   console.log("builds", builds.collection());
+  // });
 
-  useWindowKeyDown((e) => {
-    if (e.key === "M" && e.shiftKey) {
-      toggleSidebarOpen();
-    }
-  });
+  const ws = connectToWs(state);
 
   useWindowKeyDown((e) => {
     if (e.key === "H" && e.shiftKey) {
-      state.selected.set("", "home");
+      navigate("/");
     }
   });
 
@@ -102,8 +108,8 @@ export const AppStateProvider: Component<{}> = (p) => {
         ...state,
         ws,
         logout: () => {
-          logout();
           ws.close();
+          logout();
         },
       }}
     >
@@ -114,8 +120,7 @@ export const AppStateProvider: Component<{}> = (p) => {
 
 export function useAppState() {
   return useContext(context) as State & {
-    ws: ReturnType<typeof socket>;
-    selected: ReturnType<typeof useSelected>;
+    ws: ReturnType<typeof connectToWs>;
     logout: () => void;
   };
 }

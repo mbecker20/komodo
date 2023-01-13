@@ -1,123 +1,45 @@
-import { Update as UpdateType } from "@monitor/types";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
-import { useTheme } from "../../state/ThemeProvider";
-import {
-  combineClasses,
-  readableOperation,
-  readableTimestamp,
-} from "../../util/helpers";
-import { useToggle } from "../../util/hooks";
-import Icon from "../util/Icon";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
-import CenterMenu from "../util/menu/CenterMenu";
+import { Operation, Update as UpdateType, UpdateStatus } from "../../types";
+import { combineClasses, readableMonitorTimestamp } from "../../util/helpers";
+import Icon from "../shared/Icon";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
 import s from "./update.module.scss";
+import UpdateMenu from "./UpdateMenu";
 
-const Update: Component<{ update: UpdateType; showName: boolean }> = (p) => {
-  const { deployments, servers, builds } = useAppState();
-  const { themeClass } = useTheme();
-  const name = () => {
-    if (p.update.deploymentID && deployments.loaded()) {
-      return deployments.get(p.update.deploymentID)?.name || "deleted";
-    } else if (p.update.serverID && servers.loaded()) {
-      return servers.get(p.update.serverID)?.name || "deleted";
-    } else if (p.update.buildID && builds.loaded()) {
-      return builds.get(p.update.buildID)?.name || "deleted";
-    } else {
-      return "monitor";
-    }
-  };
+const Update: Component<{ update: UpdateType }> = (p) => {
+  const { usernames } = useAppState();
   const operation = () => {
-    const op = readableOperation(p.update.operation);
-    if (!p.showName) {
-      if (p.update.deploymentID) {
-        return op.replaceAll(" deployment", "");
-      } else if (p.update.buildID) {
-        return op.replaceAll(" build", "");
-      } else if (p.update.serverID) {
-        return op.replaceAll(" server", "");
-      }
-    } else {
-      return op;
+    if (p.update.operation === Operation.BuildBuild) {
+      return "build";
     }
+    return p.update.operation.replaceAll("_", " ");
   };
-  const [showLog, toggleShowLog] = useToggle();
   return (
-    <Grid
-      gap="0.25rem"
-      class={combineClasses(s.Update, !p.showName && s.NoName, "shadow", themeClass())}
-    >
-      <Show when={p.showName}>
-        <h2 style={{ "place-self": "center" }}>{name()}</h2>
-      </Show>
-      <Grid
-        gap="0.25rem"
-        style={{
-          "grid-template-columns": "1fr 1fr",
-          "grid-template-rows": "1fr 1fr",
-        }}
-        placeItems="center start"
-      >
+    <Grid gap="0.25rem" class={combineClasses(s.Update, "shadow")}>
+      <Flex gap="0.5rem">
         <div
           style={{
-            color: p.update.isError ? "rgb(182, 47, 52)" : "inherit",
+            color: !p.update.success ? "rgb(182, 47, 52)" : "inherit",
           }}
         >
           {operation()}
         </div>
-        <div style={{ "place-self": "center end" }}>
-          {readableTimestamp(p.update.timestamp)}
-        </div>
-        <Flex alignItems="center">
-          <Icon type="user" />
-          <div>{p.update.operator}</div>
-        </Flex>
-        <CenterMenu
-          title={readableOperation(p.update.operation)}
-          show={showLog}
-          toggleShow={toggleShowLog}
-          target={<Icon type="console" />}
-          targetStyle={{ "place-self": "center end" }}
-          targetClass="blue"
-          content={
-            <Grid
-              class={s.LogContainer}
-              gap="0.25rem"
-            >
-              <Show when={p.update.note}>
-                <pre>note: {p.update.note}</pre>
-              </Show>
-              <div>command</div>
-              <pre class={combineClasses(s.Log, "scroller", themeClass())}>
-                {p.update.command}
-              </pre>
-              <Show when={p.update.log.stdout}>
-                <div>stdout</div>
-                <pre
-                  class={combineClasses(s.Log, "scroller", themeClass())}
-                  style={{
-                    "max-height": p.update.log.stderr ? "30vh" : "60vh",
-                  }}
-                >
-                  {p.update.log.stdout}
-                </pre>
-              </Show>
-              <Show when={p.update.log.stderr}>
-                <div>stderr</div>
-                <pre
-                  class={combineClasses(s.Log, "scroller", themeClass())}
-                  style={{
-                    "max-height": p.update.log.stdout ? "30vh" : "60vh",
-                  }}
-                >
-                  {p.update.log.stderr}
-                </pre>
-              </Show>
-            </Grid>
-          }
-        />
-      </Grid>
+        <Show when={p.update.status === UpdateStatus.InProgress}>
+          <div style={{ opacity: 0.7 }}>(in progress)</div>
+        </Show>
+      </Flex>
+      <div style={{ "place-self": "start end" }}>
+        {readableMonitorTimestamp(p.update.start_ts)}
+      </div>
+      <Flex gap="0.5rem" alignItems="center">
+        <Icon type="user" />
+        <div>{usernames.get(p.update.operator)}</div>
+      </Flex>
+      <Flex style={{ "place-self": "center end" }} alignItems="center">
+        <UpdateMenu update={p.update} />
+      </Flex>
     </Grid>
   );
 };

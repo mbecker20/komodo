@@ -1,39 +1,44 @@
 import { Component, Show } from "solid-js";
-import { pushNotification } from "../..";
-import { PRUNE_CONTAINERS, PRUNE_IMAGES, PRUNE_NETWORKS } from "@monitor/util";
+import { client, pushNotification } from "../..";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import ConfirmButton from "../util/ConfirmButton";
-import Icon from "../util/Icon";
-import Flex from "../util/layout/Flex";
-import Grid from "../util/layout/Grid";
-import { useTheme } from "../../state/ThemeProvider";
-import { combineClasses } from "../../util/helpers";
+import ConfirmButton from "../shared/ConfirmButton";
+import Icon from "../shared/Icon";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
+import { combineClasses, getId } from "../../util/helpers";
 import { useActionStates } from "./ActionStateProvider";
-import Loading from "../util/loading/Loading";
+import Loading from "../shared/loading/Loading";
+import { useParams } from "@solidjs/router";
+import { PermissionLevel, ServerStatus } from "../../types";
 
 const Actions: Component<{}> = (p) => {
-  const { ws, servers, selected } = useAppState();
-  const { permissions } = useUser();
-  const server = () => servers.get(selected.id())!;
-  const { themeClass } = useTheme();
+  const { ws, servers } = useAppState();
+  const params = useParams();
+  const { user } = useUser();
+  const server = () => servers.get(params.id)!;
+  const userCanExecute = () =>
+    user().admin ||
+    server().server.permissions![getId(user())] === PermissionLevel.Execute ||
+    server().server.permissions![getId(user())] === PermissionLevel.Update;
   return (
-    <Show when={server() && server().status === "OK" && permissions() > 1}>
-      <Grid class={combineClasses("card shadow", themeClass())}>
+    <Show
+      when={server() && server().status === ServerStatus.Ok && userCanExecute()}
+    >
+      <Grid class={combineClasses("card shadow")}>
         <h1>actions</h1>
-        <Flex class={combineClasses("action shadow", themeClass())}>
+        <Flex class={combineClasses("action shadow")}>
           prune images <PruneImages />
         </Flex>
-        <Flex class={combineClasses("action shadow", themeClass())}>
+        <Flex class={combineClasses("action shadow")}>
           prune containers <PruneContainers />
         </Flex>
-        <Flex class={combineClasses("action shadow", themeClass())}>
+        <Flex class={combineClasses("action shadow")}>
           prune networks{" "}
           <ConfirmButton
             color="green"
             onConfirm={() => {
-              ws.send(PRUNE_NETWORKS, { serverID: server()._id });
-              pushNotification("ok", `pruning networks on ${server().name}...`);
+              client.prune_docker_networks(params.id);
             }}
           >
             <Icon type="cut" />
@@ -47,12 +52,11 @@ const Actions: Component<{}> = (p) => {
 export default Actions;
 
 function PruneImages() {
-  const { ws, servers, selected } = useAppState();
-  const server = () => servers.get(selected.id())!;
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
-      when={!actions.pruningImages}
+      when={!actions.pruning_images}
       fallback={
         <button class="green">
           <Loading type="spinner" />
@@ -62,8 +66,7 @@ function PruneImages() {
       <ConfirmButton
         color="green"
         onConfirm={() => {
-          ws.send(PRUNE_IMAGES, { serverID: server()._id });
-          pushNotification("ok", `pruning images on ${server().name}...`);
+          client.prune_docker_images(params.id);
         }}
       >
         <Icon type="cut" />
@@ -73,12 +76,11 @@ function PruneImages() {
 }
 
 function PruneContainers() {
-  const { ws, servers, selected } = useAppState();
-  const server = () => servers.get(selected.id())!;
+  const params = useParams();
   const actions = useActionStates();
   return (
     <Show
-      when={!actions.pruningContainers}
+      when={!actions.pruning_containers}
       fallback={
         <button class="blue">
           <Loading type="spinner" />
@@ -88,8 +90,7 @@ function PruneContainers() {
       <ConfirmButton
         color="blue"
         onConfirm={() => {
-          ws.send(PRUNE_CONTAINERS, { serverID: server()._id });
-          pushNotification("ok", `pruning containers on ${server().name}...`);
+          client.prune_docker_containers(params.id);
         }}
       >
         <Icon type="cut" />

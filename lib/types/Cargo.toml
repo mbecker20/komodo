@@ -1,0 +1,22 @@
+[package]
+name = "monitor_types"
+version = "0.1.8"
+edition = "2021"
+authors = ["MoghTech"]
+description = "types for the mogh tech monitor"
+license = "GPL-3.0-or-later"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = "1.0"
+serde_derive = "1.0"
+bson = "2.4"
+strum = "0.24"
+strum_macros = "0.24"
+diff-struct = "0.5"
+bollard = "0.13"
+derive_builder = "0.12"
+typeshare = "1.0.0"
+chrono = "0.4"
+anyhow = "1.0"

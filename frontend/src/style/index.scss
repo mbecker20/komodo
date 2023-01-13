@@ -1,18 +1,10 @@
 @use "colors" as c;
-// @import url("https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;500&display=swap");
-// @import url("https://fonts.googleapis.com/css2?family=Work+Sans&display=swap");
-// @import url("https://fonts.googleapis.com/css2?family=Ubuntu+Mono&display=swap");
-// @import url("https://fonts.googleapis.com/css2?family=Tajawal&display=swap");
 
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
     "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
-  // font-family: "Chakra Petch", sans-serif;
-  // font-family: "Work Sans", sans-serif;
-  // font-family: 'Ubuntu Mono', monospace;
-  // font-family: "Tajawal", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
@@ -20,14 +12,13 @@ body {
   color: c.$app-color;
 }
 
-body.dark {
-  background-color: c.$darkgrey-dark;
-  color: c.$app-color-dark;
-}
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+pre {
+  margin: 0;
 }
 
 h1 {
@@ -67,7 +58,33 @@ button:focus {
   outline: none;
 }
 
+a {
+  color: inherit;
+  padding: 0.5rem;
+  margin: 0;
+  cursor: pointer;
+  border: none;
+  width: fit-content;
+  border-radius: 0.25rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  transition: background-color 500ms ease-in-out;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+a:focus {
+  outline: none;
+}
+
 input {
+  width: 300px;
   font-family: inherit;
   font-size: 1.05rem;
   color: inherit;
@@ -75,19 +92,12 @@ input {
   padding: 0.25rem;
   box-sizing: border-box;
   border: none;
+  appearance: none;
   -webkit-appearance: none;
 }
 
 input:focus {
   outline: solid 1px rgba(c.$lightgrey, 0.7);
-}
-
-input.dark {
-  background-color: rgba(c.$grey-dark, 0.5);
-}
-
-input.dark:focus {
-  outline: solid 1px rgba(c.$lightgrey-dark, 0.7);
 }
 
 input::placeholder {
@@ -103,20 +113,13 @@ textarea {
   padding: 0.25rem;
   box-sizing: border-box;
   border: none;
+  appearance: none;
   -webkit-appearance: none;
   line-height: 150%;
 }
 
 textarea:focus {
   outline: solid 1px rgba(c.$lightgrey, 0.7);
-}
-
-textarea.dark {
-  background-color: rgba(c.$darkgrey-dark, 0.5);
-}
-
-textarea.dark:focus {
-  outline: solid 1px rgba(c.$lightgrey-dark, 0.7);
 }
 
 textarea::placeholder {
@@ -126,10 +129,6 @@ textarea::placeholder {
 
 svg {
   color: c.$app-color;
-}
-
-svg.dark {
-  color: c.$app-color-dark;
 }
 
 .big-text {
@@ -145,20 +144,8 @@ svg.dark {
   background-color: c.$lightgrey;
 }
 
-.lightgrey.dark {
-  background-color: rgba(c.$lightgrey-dark, 0.6);
-}
-
-.lightgrey.dark:hover {
-  background-color: c.$lightgrey-dark;
-}
-
 .grey-no-hover {
   background-color: rgba(c.$grey, 0.8);
-}
-
-.grey-no-hover.dark {
-  background-color: rgba(c.$grey-dark, 0.8);
 }
 
 .grey {
@@ -177,36 +164,12 @@ svg.dark {
   background-color: c.$grey;
 }
 
-.grey.dark {
-  background-color: rgba(c.$grey-dark, 0.8);
-}
-
-.grey.dark:not(.selected):hover {
-  background-color: c.$lightgrey-dark;
-}
-
 .darkgrey {
   background-color: rgba(c.$darkgrey, 0.8);
 }
 
 .darkgrey:hover {
   background-color: c.$grey;
-}
-
-.darkgrey.dark {
-  background-color: rgba(c.$darkgrey-dark, 0.8);
-}
-
-.darkgrey.dark:hover {
-  background-color: c.$grey-dark;
-}
-
-.lightgrey {
-  background-color: rgba(c.$lightgrey, 0.8);
-}
-
-.lightgrey.dark {
-  background-color: rgba(c.$lightgrey-dark, 0.8);
 }
 
 .blue {
@@ -223,22 +186,6 @@ svg.dark {
 
 .blue-outlined:hover {
   border: solid 1px c.$lightblue;
-}
-
-.blue.dark {
-  background-color: rgba(c.$blue-dark, 0.8);
-}
-
-.blue.dark:hover {
-  background-color: c.$lightblue-dark;
-}
-
-.blue-outlined.dark {
-  border: solid 1px c.$blue-dark;
-}
-
-.blue-outlined.dark:hover {
-  border: solid 1px c.$lightblue-dark;
 }
 
 .green {
@@ -349,4 +296,8 @@ svg.dark {
 
 .pointer {
   cursor: pointer;
+}
+
+.wrap {
+  flex-wrap: wrap;
 }

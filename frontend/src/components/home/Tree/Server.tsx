@@ -1,38 +1,51 @@
 import {
   Component,
-  createEffect,
   createMemo,
   createSignal,
   For,
+  Match,
   Show,
+  Switch,
 } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
-import { useTheme } from "../../../state/ThemeProvider";
 import { useUser } from "../../../state/UserProvider";
-import { combineClasses } from "../../../util/helpers";
+import { combineClasses, getId } from "../../../util/helpers";
 import { useLocalStorageToggle } from "../../../util/hooks";
-import Button from "../../util/Button";
-import Icon from "../../util/Icon";
-import Flex from "../../util/layout/Flex";
-import Grid from "../../util/layout/Grid";
+import Icon from "../../shared/Icon";
+import Flex from "../../shared/layout/Flex";
+import Grid from "../../shared/layout/Grid";
 import Deployment from "./Deployment";
 import s from "../home.module.scss";
-import { NewDeployment } from "./New";
-import Loading from "../../util/loading/Loading";
-import StatGraphs from "../../server/StatGraphs/StatGraphs";
+import { NewBuild, NewDeployment } from "./New";
+import Loading from "../../shared/loading/Loading";
+import { A, useNavigate } from "@solidjs/router";
+import { PermissionLevel, ServerStatus } from "../../../types";
+import { useAppDimensions } from "../../../state/DimensionProvider";
+import Build from "./Build";
+import SimpleTabs from "../../shared/tabs/SimpleTabs";
+// import StatGraphs from "../../server/StatGraphs/StatGraphs";
 
 const Server: Component<{ id: string }> = (p) => {
-  const { servers, serverStats, deployments, selected } = useAppState();
+  const { servers, serverStats, deployments, builds } = useAppState();
+  const { width } = useAppDimensions();
+  const { user } = useUser();
+  const navigate = useNavigate();
   const [open, toggleOpen] = useLocalStorageToggle(p.id + "-homeopen");
-  const { permissions, username } = useUser();
   const server = () => servers.get(p.id);
   const deploymentIDs = createMemo(() => {
-    return (
-      deployments.loaded() &&
-      deployments.ids()!.filter((id) => deployments.get(id)?.serverID === p.id)
-    );
+    return (deployments.loaded() &&
+      deployments
+        .ids()!
+        .filter(
+          (id) => deployments.get(id)?.deployment.server_id === p.id
+        )) as string[];
   });
-  const { themeClass } = useTheme();
+  const buildIDs = createMemo(() => {
+    return (builds.loaded() &&
+      builds
+        .ids()!
+        .filter((id) => builds.get(id)?.server_id === p.id)) as string[];
+  });
   const [reloading, setReloading] = createSignal(false);
   const stats = () => serverStats.get(p.id);
   const reloadStats = async () => {
@@ -42,44 +55,48 @@ const Server: Component<{ id: string }> = (p) => {
   };
   return (
     <Show when={server()}>
-      <div class={combineClasses(s.Server, "shadow", themeClass())}>
-        <Button
-          class={combineClasses(
-            s.ServerButton,
-            selected.id() === p.id && "selected",
-            "shadow"
-          )}
+      <div class={combineClasses(s.Server, "shadow")}>
+        <button
+          class={combineClasses(s.ServerButton, "shadow")}
           onClick={toggleOpen}
         >
           <Flex>
-            <Icon type="chevron-down" width="1rem" />
-            <h1 style={{ "font-size": "1.25rem" }}>{server()?.name}</h1>
+            <Icon type={open() ? "chevron-up" : "chevron-down"} width="1rem" />
+            <h1 style={{ "font-size": "1.25rem" }}>{server()?.server.name}</h1>
           </Flex>
           <Flex alignItems="center">
-            <Show when={server()?.status === "OK"}>
+            <Show when={width() > 500 && server()?.status === ServerStatus.Ok}>
               <Show when={stats()} fallback={<Loading type="three-dot" />}>
                 <div>
                   <div style={{ opacity: 0.7 }}>cpu:</div>{" "}
-                  {stats()?.cpu.toFixed(1)}%
+                  {stats()!.cpu_perc.toFixed(1)}%
                 </div>
                 <div>
                   <div style={{ opacity: 0.7 }}>mem:</div>{" "}
-                  {stats()?.mem.usedMemPercentage.toFixed(1)}%
+                  {(
+                    (100 * stats()!.mem_used_gb) /
+                    stats()!.mem_total_gb
+                  ).toFixed(1)}
+                  %
                 </div>
                 <div>
                   <div style={{ opacity: 0.7 }}>disk:</div>{" "}
-                  {stats()?.disk.usedPercentage.toFixed(1)}%
+                  {(
+                    (100 * stats()!.disk.used_gb) /
+                    stats()!.disk.total_gb
+                  ).toFixed(1)}
+                  %
                 </div>
                 <Flex gap=".5rem" alignItems="center">
                   <Show
                     when={!reloading()}
                     fallback={
-                      <Button class="blue" style={{ height: "fit-content" }}>
+                      <button class="blue" style={{ height: "fit-content" }}>
                         <Loading type="spinner" scale={0.2} />
-                      </Button>
+                      </button>
                     }
                   >
-                    <Button
+                    <button
                       class="blue"
                       style={{ height: "fit-content" }}
                       onClick={(e) => {
@@ -88,19 +105,19 @@ const Server: Component<{ id: string }> = (p) => {
                       }}
                     >
                       <Icon type="refresh" width="0.85rem" />
-                    </Button>
+                    </button>
                   </Show>
-                  <StatGraphs id={p.id} />
+                  <A href={`/server/${p.id}/stats`} class="blue" onClick={e => e.stopPropagation()}>
+                    <Icon type="timeline-line-chart" />
+                  </A>
                 </Flex>
               </Show>
             </Show>
-            <Show when={server()?.status !== "OK"}>
-              <StatGraphs id={p.id} />
-            </Show>
-            <div
+            <A
+              href={`/server/${p.id}`}
               class={
-                server()?.enabled
-                  ? server()?.status === "OK"
+                server()?.server.enabled
+                  ? server()?.status === ServerStatus.Ok
                     ? "green"
                     : "red"
                   : "blue"
@@ -112,36 +129,67 @@ const Server: Component<{ id: string }> = (p) => {
               }}
               onClick={(e) => {
                 e.stopPropagation();
-                selected.set(p.id, "server");
               }}
             >
-              {server()?.enabled
-                ? server()?.status === "OK"
-                  ? "OK"
-                  : "NOT OK"
-                : "DISABLED"}
-            </div>
+              {server()?.status.replaceAll("_", " ").toUpperCase()}
+            </A>
           </Flex>
-        </Button>
+        </button>
         <Show when={open()}>
-          <Grid
-            gap=".5rem"
-            class={combineClasses(
-              s.Deployments,
-              open() ? s.Enter : s.Exit,
-              themeClass()
-            )}
-          >
-            <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
-            <Show
-              when={
-                permissions() > 1 ||
-                (permissions() > 0 && server()!.owners.includes(username()!))
-              }
-            >
-              <NewDeployment serverID={p.id} />
-            </Show>
-          </Grid>
+          <SimpleTabs
+            containerClass="card shadow"
+            localStorageKey={`${p.id}-home-tab`}
+            tabs={[
+              {
+                title: "deployments",
+                element: () => (
+                  <Grid
+                    gap=".5rem"
+                    class={combineClasses(
+                      s.Deployments,
+                      open() ? s.Enter : s.Exit
+                    )}
+                  >
+                    <For each={deploymentIDs()}>
+                      {(id) => <Deployment id={id} />}
+                    </For>
+                    <Show
+                      when={
+                        user().admin ||
+                        server()?.server.permissions![getId(user())] ===
+                          PermissionLevel.Update
+                      }
+                    >
+                      <NewDeployment serverID={p.id} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+              {
+                title: "builds",
+                element: () => (
+                  <Grid
+                    gap=".5rem"
+                    class={combineClasses(
+                      s.Deployments,
+                      open() ? s.Enter : s.Exit
+                    )}
+                  >
+                    <For each={buildIDs()}>{(id) => <Build id={id} />}</For>
+                    <Show
+                      when={
+                        user().admin ||
+                        server()?.server.permissions![getId(user())] ===
+                          PermissionLevel.Update
+                      }
+                    >
+                      <NewBuild serverID={p.id} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+            ]}
+          />
         </Show>
       </div>
     </Show>

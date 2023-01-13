@@ -1,5 +1,5 @@
 import { Component, Show } from "solid-js";
-import Grid from "../../../util/layout/Grid";
+import Grid from "../../../shared/layout/Grid";
 import Image from "./container/Image";
 import Network from "./container/Network";
 import Mounts from "./container/Volumes";
@@ -7,111 +7,114 @@ import Env from "./container/Env";
 import PostImage from "./container/PostImage";
 import Ports from "./container/Ports";
 import { useConfig } from "./Provider";
-import Flex from "../../../util/layout/Flex";
-import Icon from "../../../util/Icon";
-import ConfirmButton from "../../../util/ConfirmButton";
+import Flex from "../../../shared/layout/Flex";
+import Icon from "../../../shared/Icon";
+import ConfirmButton from "../../../shared/ConfirmButton";
 import Restart from "./container/Restart";
 import DockerAccount from "./container/DockerAccount";
 import Git from "./mount-repo/Git";
-import Tabs from "../../../util/tabs/Tabs";
+import { Tab } from "../../../shared/tabs/Tabs";
 import RepoMount from "./mount-repo/RepoMount";
 import { OnClone, OnPull } from "./mount-repo/OnGit";
-import Loading from "../../../util/loading/Loading";
-import Owners from "./Owners";
+import Loading from "../../../shared/loading/Loading";
+import Permissions from "./Permissions";
 import { pushNotification, URL } from "../../../..";
-import { combineClasses, copyToClipboard } from "../../../../util/helpers";
+import { combineClasses, copyToClipboard, getId } from "../../../../util/helpers";
 import { useAppDimensions } from "../../../../state/DimensionProvider";
-import { useTheme } from "../../../../state/ThemeProvider";
+import { useUser } from "../../../../state/UserProvider";
+import SimpleTabs from "../../../shared/tabs/SimpleTabs";
+import ExtraArgs from "./container/ExtraArgs";
 
 const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
+  const { user } = useUser();
   const { isMobile } = useAppDimensions();
-  const listenerUrl = () => `${URL}/api/listener/deployment/${deployment._id}`;
-  const { themeClass } = useTheme();
+  const listenerUrl = () => `${URL}/api/listener/deployment/${getId(deployment)}`;
   return (
     <Show when={deployment.loaded}>
       <Grid class="config">
-        <Tabs
-          containerStyle={{
-            height: "100%",
-            width: isMobile() ? undefined : "500px",
-          }}
+        <SimpleTabs
+          containerClass="config-items"
           tabsGap="0rem"
           localStorageKey="deployment-config-tab"
-          tabs={[
-            {
-              title: "container",
-              element: (
-                <Grid class="config-items scroller" placeItems="start center">
-                  <Image />
-                  <Show when={deployment.image}>
-                    <DockerAccount />
-                  </Show>
-                  <Network />
-                  <Restart />
-                  <Ports />
-                  <Mounts />
-                  <Env />
-                  <PostImage />
-                  <Show when={isMobile()}>
-                    <div style={{ height: "1rem" }} />
-                  </Show>
-                </Grid>
-              ),
-            },
-            (userCanUpdate() || deployment.repo ? true : false) && {
-              title: "frontend",
-              element: (
-                <Grid class="config-items scroller" placeItems="start center">
-                  <Git />
-                  <Show when={userCanUpdate()}>
-                    <Grid
-                      class={combineClasses("config-item shadow", themeClass())}
-                    >
-                      <h1>webhook url</h1>
-                      <Flex
-                        justifyContent="space-between"
-                        alignItems="center"
-                        style={{ "flex-wrap": "wrap" }}
-                      >
-                        <div class="ellipsis" style={{ width: "250px" }}>
-                          {listenerUrl()}
-                        </div>
-                        <ConfirmButton
-                          color="blue"
-                          onFirstClick={() => {
-                            copyToClipboard(listenerUrl());
-                            pushNotification("good", "copied url to clipboard");
-                          }}
-                          confirm={<Icon type="check" />}
+          tabs={
+            [
+              {
+                title: "container",
+                element: () => (
+                  <Grid class="config-items scroller" placeItems="start center">
+                    <Image />
+                    <Show when={deployment.docker_run_args.image}>
+                      <DockerAccount />
+                    </Show>
+                    <Network />
+                    <Restart />
+                    <Ports />
+                    <Mounts />
+                    <Env />
+                    <ExtraArgs />
+                    <PostImage />
+                    <Show when={isMobile()}>
+                      <div style={{ height: "1rem" }} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+              (userCanUpdate() || deployment.repo ? true : false) && {
+                title: "frontend",
+                element: () => (
+                  <Grid class="config-items scroller" placeItems="start center">
+                    <Git />
+                    <Show when={userCanUpdate()}>
+                      <Grid class={combineClasses("config-item shadow")}>
+                        <h1>webhook url</h1>
+                        <Flex
+                          justifyContent="space-between"
+                          alignItems="center"
+                          style={{ "flex-wrap": "wrap" }}
                         >
-                          <Icon type="clipboard" />
-                        </ConfirmButton>
-                      </Flex>
-                    </Grid>
-                  </Show>
-                  <RepoMount />
-                  <OnClone />
-                  <OnPull />
-                  <Show when={isMobile()}>
-                    <div style={{ height: "1rem" }} />
-                  </Show>
-                </Grid>
-              ),
-            },
-            userCanUpdate() && {
-              title: "collaborators",
-              element: (
-                <Grid
-                  class="config-items scroller"
-                  style={{ height: "100%" }}
-                  placeItems="start center"
-                >
-                  <Owners />
-                </Grid>
-              ),
-            },
-          ]}
+                          <div class="ellipsis" style={{ width: "250px" }}>
+                            {listenerUrl()}
+                          </div>
+                          <ConfirmButton
+                            color="blue"
+                            onFirstClick={() => {
+                              copyToClipboard(listenerUrl());
+                              pushNotification(
+                                "good",
+                                "copied url to clipboard"
+                              );
+                            }}
+                            confirm={<Icon type="check" />}
+                          >
+                            <Icon type="clipboard" />
+                          </ConfirmButton>
+                        </Flex>
+                      </Grid>
+                    </Show>
+                    <RepoMount />
+                    <OnClone />
+                    <OnPull />
+                    <Show when={isMobile()}>
+                      <div style={{ height: "1rem" }} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+              user().admin && {
+                title: "permissions",
+                element: () => (
+                  <Grid
+                    class="config-items scroller"
+                    style={{ height: "100%" }}
+                    placeItems="start center"
+                  >
+                    <Permissions />
+                  </Grid>
+                ),
+              },
+            ].filter((e) => e) as Tab[]
+          }
         />
         <Show when={deployment.updated}>
           <Show

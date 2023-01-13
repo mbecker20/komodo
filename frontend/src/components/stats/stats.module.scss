@@ -1,0 +1,23 @@
+@use "../../style/colors.scss" as c;
+
+.HeaderArea {
+	grid-template-columns: 2fr 1fr 2fr;
+}
+
+.Charts {
+	grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+}
+
+.LightweightChart {
+	background-color: c.$grey;
+}
+
+.Content {
+	width: 100%;
+	height: fit-content;
+	box-sizing: border-box;
+}
+
+.HeatBars {
+	grid-template-columns: repeat(3, auto);
+}

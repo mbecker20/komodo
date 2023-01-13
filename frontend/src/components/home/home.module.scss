@@ -2,21 +2,27 @@
 
 .Home {
 	width: 100%;
-  grid-template-columns: repeat(2, 1fr);
-  padding-top: 1rem;
+	grid-template-columns: repeat(2, 1fr);
 }
 
 @media only screen and (max-width: 1200px) {
-  .Home {
-    grid-template-columns: 1fr;
-  }
+	.Home {
+		grid-template-columns: 1fr;
+	}
 }
 
-.Tabs {
-  padding: 1rem;
-  width: 80%;
-  gap: 0.5rem;
+.SummaryItem {
+	background-color: c.$lightgrey;
+	padding: 1rem;
+	min-width: 100px;
+	grid-template-rows: auto 1fr;
 }
+
+// .Tabs {
+// 	// padding: 1rem;
+// 	// width: 80%;
+// 	gap: 0.5rem;
+// }
 
 .Container {
 	width: fit-content;
@@ -26,86 +32,71 @@
 }
 
 .Server {
-	background-color: c.$lightgrey;
-  height: fit-content;
-  cursor: pointer;
-  width: 100%;
-}
-
-.Server:global(.dark) {
-  background-color: c.$lightgrey-dark;
+	
+	height: fit-content;
+	cursor: pointer;
+	width: 100%;
+	display: grid;
+	gap: 1rem;
 }
 
 .ServerButton {
-  justify-content: space-between;
-  z-index: 5;
-  transition: background-color 500ms ease;
-  width: 100%;
+	background-color: c.$lightgrey;
+	justify-content: space-between;
+	z-index: 5;
+	transition: background-color 500ms ease;
+	width: 100%;
 }
 
 .ServerButton:hover {
-  background-color: rgba(c.$lightblue, 0.5);
-}
-
-.ServerButton:global(.dark):hover {
-  background-color: rgba(c.$lightblue-dark, 0.5);
+	background-color: rgba(c.$lightblue, 0.5);
 }
 
 .Deployments {
-  background-color: c.$lightgrey;
-  transform-origin: top;
-  padding: 0.5rem;
-}
-
-.Deployments:global(.dark) {
-  background-color: c.$lightgrey-dark;
+	background-color: c.$lightgrey;
+	transform-origin: top;
+	padding: 0.5rem;
 }
 
 .DropdownItem {
-  padding: 0.5rem 1rem;
-  width: 100%;
-  justify-content: space-between;
-  transition: background-color 500ms ease;
+	padding: 0.5rem 1rem;
+	width: 100%;
+	justify-content: space-between;
+	transition: background-color 500ms ease;
 }
 
 .DropdownItem:hover {
-  background-color: rgba(c.$lightblue, 0.5);
-}
-
-.DropdownItem:global(.dark):hover {
-  background-color: rgba(c.$lightblue-dark, 0.5);
-}
-
-.Summary {
-  padding: 1rem;
-  margin: 1rem;
-}
-
-.Updates {
-  padding: 1rem;
-  margin: 1rem;
-}
-
-@media only screen and (max-width: 1200px) {
-  .Summary {
-    width: 80%;
-  }
-
-  .Updates {
-    width: 80%
-  }
-}
-
-@media only screen and (max-width: 500px) {
-  .Summary {
-    width: 95%;
-  }
-
-  .Updates {
-    width: 95%
-  }
+	background-color: rgba(c.$lightblue, 0.5);
 }
 
 .UpdatesContainer {
-  max-height: 50vh;
+	max-height: 50vh;
 }
+
+.Summary {
+	padding: 1rem;
+}
+
+.Updates {
+	padding: 1rem;
+}
+
+// @media only screen and (max-width: 1200px) {
+// 	.Summary {
+// 		width: 80%;
+// 	}
+
+// 	.Updates {
+// 		width: 80%
+// 	}
+// }
+
+// @media only screen and (max-width: 500px) {
+// 	.Summary {
+// 		width: 95%;
+// 	}
+
+// 	.Updates {
+// 		width: 95%
+// 	}
+// }
