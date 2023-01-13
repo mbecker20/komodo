@@ -306,7 +306,7 @@ function useStatsWs(params: Params, setStats: Setter<SystemStats[]>, setWsOpen: 
       return;
     }
     const stats = JSON.parse(data) as SystemStats;
-    console.log(stats);
+    // console.log(stats);
     setStats((stats_arr) => [
       ...(stats_arr.length > 200 ? stats_arr.slice(1) : stats_arr),
       stats,
