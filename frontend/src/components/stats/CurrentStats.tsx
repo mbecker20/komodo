@@ -1,5 +1,4 @@
-import { Params, useParams } from "@solidjs/router";
-import ReconnectingWebSocket from "reconnecting-websocket";
+import { useParams } from "@solidjs/router";
 import {
   Accessor,
   Component,
@@ -8,23 +7,23 @@ import {
   For,
   JSXElement,
   Match,
-  onCleanup,
-  Setter,
   Show,
   Switch,
 } from "solid-js";
-import { client, URL } from "../..";
+import { client } from "../..";
 import { SystemProcess, SystemStats } from "../../types";
-import { generateQuery } from "../../util/helpers";
+import { convert_timelength_to_ms } from "../../util/helpers";
 import { useLocalStorage } from "../../util/hooks";
 import HeatBar from "../shared/HeatBar";
+import Icon from "../shared/Icon";
+import Input from "../shared/Input";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
 import Loading from "../shared/loading/Loading";
+import Selector from "../shared/menu/Selector";
 import SimpleTabs from "../shared/tabs/SimpleTabs";
 import {
   CpuChart,
-  CpuFreqChart,
   DiskChart,
   DiskReadChart,
   DiskWriteChart,
@@ -34,21 +33,34 @@ import {
   NetworkSentChart,
   SingleTempuratureChart,
 } from "./Charts";
+import { useStatsState } from "./Provider";
 import s from "./stats.module.scss";
 
-const CurrentStats: Component<{ setWsOpen: Setter<boolean> }> = (p) => {
+const CurrentStats: Component<{}> = (p) => {
   const params = useParams();
+  const { pollRate } = useStatsState();
   const [stats, setStats] = createSignal<SystemStats[]>([]);
-  useStatsWs(params, setStats, p.setWsOpen);
+  // useStatsWs(params, setStats, p.setWsOpen);
+  const load = async () => {
+    const stats = await client.get_server_stats(params.id, {
+      networks: true,
+      components: true,
+      processes: true,
+    });
+    setStats((curr) => [...(curr.length > 200 ? curr.slice(1) : curr), stats]);
+  };
+  let timeout = -1;
+  let interval = -1;
   createEffect(() => {
-    client
-      .get_server_stats(params.id, {
-        networks: true,
-        components: true,
-        processes: true,
-      })
-      .then((stats) => setStats([stats]));
+    clearInterval(interval);
+    clearTimeout(timeout);
+    const pollRateMs = convert_timelength_to_ms(pollRate())!;
+    timeout = setTimeout(() => {
+      load();
+      interval = setInterval(() => load(), pollRateMs);
+    }, pollRateMs - (new Date().getTime() % pollRateMs));
   });
+  load();
   const latest = () => stats()[stats().length - 1];
   return (
     <Grid class={s.Content} placeItems="start center">
@@ -99,23 +111,7 @@ const CurrentStats: Component<{ setWsOpen: Setter<boolean> }> = (p) => {
             )}
           </For>
 
-          <div />
-          <h1>processes</h1>
-          <div />
-
-          <For
-            each={latest().processes?.filter(
-              (p) => p.cpu_perc > 0 || p.mem_mb > 0
-            )}
-          >
-            {(proc) => (
-              <>
-                <div />
-                <Process proc={proc} />
-                <div />
-              </>
-            )}
-          </For>
+          <Processes latest={latest()} />
         </Grid>
       </Show>
     </Grid>
@@ -136,14 +132,6 @@ const BasicInfo: Component<{
   };
   return (
     <>
-      <StatsHeatbarRow
-        label="load"
-        type="load"
-        stats={p.stats}
-        percentage={latest().system_load!}
-        localStorageKey="current-stats-load-graph-v1"
-      />
-
       <StatsHeatbarRow
         label="cpu"
         type="cpu"
@@ -169,6 +157,14 @@ const BasicInfo: Component<{
             {latest().mem_total_gb.toFixed()} GB
           </div>
         }
+      />
+
+      <StatsHeatbarRow
+        label="load"
+        type="load"
+        stats={p.stats}
+        percentage={latest().system_load!}
+        localStorageKey="current-stats-load-graph-v1"
       />
 
       <StatsHeatbarRow
@@ -225,10 +221,7 @@ const StatsHeatbarRow: Component<{
             <LoadChart stats={p.stats} small disableScroll />
           </Match>
           <Match when={p.type === "cpu"}>
-            <Flex style={{ width: "100%" }}>
-              <CpuChart stats={p.stats} small disableScroll />
-              <CpuFreqChart stats={p.stats} small disableScroll />
-            </Flex>
+            <CpuChart stats={p.stats} small disableScroll />
           </Match>
           <Match when={p.type === "mem"}>
             <MemChart stats={p.stats} small disableScroll />
@@ -251,6 +244,88 @@ const StatsHeatbarRow: Component<{
   );
 };
 
+const Processes: Component<{ latest: SystemStats }> = (p) => {
+  const params = useParams();
+  const [sortBy, setSortBy] = useLocalStorage(
+    "cpu",
+    `${params.id}-processes-sortby-v1`
+  );
+  const [filter, setFilter] = useLocalStorage("", `${params.id}-processes-filter-v1`);
+  const sort: () =>
+    | ((a: SystemProcess, b: SystemProcess) => number)
+    | undefined = () => {
+    if (sortBy() === "cpu") {
+      return (a, b) => {
+        return b.cpu_perc - a.cpu_perc;
+      };
+    } else if (sortBy() === "mem") {
+      return (a, b) => {
+        return b.mem_mb - a.mem_mb;
+      };
+    } else if (sortBy() === "name") {
+      return (a, b) => {
+        if (a.name > b.name) {
+          return 1;
+        } else {
+          return -1;
+        }
+      };
+    }
+  };
+  const processes = () => {
+    return p.latest.processes
+      ?.filter((p) => {
+        if (filter().length === 0) {
+          return true
+        }
+        return filter()
+          .split(" ")
+          .filter((i) => i.length > 0)
+          .reduce((prev, curr) => {
+            return prev || p.name.includes(curr);
+          }, false);
+      }
+        
+      )
+      .sort(sort());
+  };
+  return (
+    <>
+      <div />
+      <Flex alignItems="center">
+        <h1>processes</h1>
+        <Selector
+          label="sort by: "
+          selected={sortBy()}
+          items={["name", "cpu", "mem"]}
+          onSelect={(item) => setSortBy(item)}
+          position="bottom right"
+          targetClass="grey"
+        />
+        <Flex alignItems="center">
+          <Input placeholder="filter" value={filter()} onEdit={setFilter} />
+          <Show when={filter().length > 0}>
+            <button class="grey" onClick={() => setFilter("")}>
+              <Icon type="cross" />
+            </button>
+          </Show>
+        </Flex>
+      </Flex>
+      <div />
+
+      <For each={processes()}>
+        {(proc) => (
+          <>
+            <div />
+            <Process proc={proc} />
+            <div />
+          </>
+        )}
+      </For>
+    </>
+  );
+};
+
 const Process: Component<{ proc: SystemProcess }> = (p) => {
   return (
     <Flex
@@ -269,14 +344,14 @@ const Process: Component<{ proc: SystemProcess }> = (p) => {
           <div>mem:</div>
           <h2>{p.proc.mem_mb.toFixed(1)} mb</h2>
         </Flex>
-        <Flex gap="0.3rem" alignItems="center">
+        {/* <Flex gap="0.3rem" alignItems="center">
           <div>disk read:</div>
           <h2>{p.proc.disk_read_kb.toFixed(1)} kb</h2>
         </Flex>
         <Flex gap="0.3rem" alignItems="center">
           <div>disk write:</div>
           <h2>{p.proc.disk_write_kb.toFixed(1)} kb</h2>
-        </Flex>
+        </Flex> */}
         <Flex gap="0.3rem" alignItems="center">
           <div>pid:</div>
           <h2>{p.proc.pid}</h2>
@@ -286,42 +361,42 @@ const Process: Component<{ proc: SystemProcess }> = (p) => {
   );
 };
 
-function useStatsWs(params: Params, setStats: Setter<SystemStats[]>, setWsOpen: Setter<boolean>) {
-  const ws = new ReconnectingWebSocket(
-    `${URL.replace("http", "ws")}/ws/stats/${params.id}${generateQuery({
-      networks: "true",
-      components: "true",
-      processes: "true",
-      cpus: "true",
-    })}`
-  );
-  ws.addEventListener("open", () => {
-    // console.log("connection opened");
-    ws.send(client.token!);
-    setWsOpen(true);
-  });
-  ws.addEventListener("message", ({ data }) => {
-    if (data === "LOGGED_IN") {
-      console.log("logged in to ws");
-      return;
-    }
-    const stats = JSON.parse(data) as SystemStats;
-    // console.log(stats);
-    setStats((stats_arr) => [
-      ...(stats_arr.length > 200 ? stats_arr.slice(1) : stats_arr),
-      stats,
-    ]);
-  });
-  ws.addEventListener("close", () => {
-    console.log("stats connection closed");
-    // clearInterval(int);
-    setWsOpen(false);
-  });
-  onCleanup(() => {
-    console.log("closing stats ws");
-    ws.close();
-  });
-}
+// function useStatsWs(params: Params, setStats: Setter<SystemStats[]>, setWsOpen: Setter<boolean>) {
+//   const ws = new ReconnectingWebSocket(
+//     `${URL.replace("http", "ws")}/ws/stats/${params.id}${generateQuery({
+//       networks: "true",
+//       // components: "true",
+//       // processes: "true",
+//       // cpus: "true",
+//     })}`
+//   );
+//   ws.addEventListener("open", () => {
+//     // console.log("connection opened");
+//     ws.send(client.token!);
+//     setWsOpen(true);
+//   });
+//   ws.addEventListener("message", ({ data }) => {
+//     if (data === "LOGGED_IN") {
+//       console.log("logged in to ws");
+//       return;
+//     }
+//     const stats = JSON.parse(data) as SystemStats;
+//     console.log(stats);
+//     setStats((stats_arr) => [
+//       ...(stats_arr.length > 200 ? stats_arr.slice(1) : stats_arr),
+//       stats,
+//     ]);
+//   });
+//   ws.addEventListener("close", () => {
+//     console.log("stats connection closed");
+//     // clearInterval(int);
+//     setWsOpen(false);
+//   });
+//   onCleanup(() => {
+//     console.log("closing stats ws");
+//     ws.close();
+//   });
+// }
 
 // const NetworkIoInfo: Component<{ stats: Accessor<SystemStats[]> }> = (p) => {
 //   const latest = () => p.stats()[p.stats().length - 1];

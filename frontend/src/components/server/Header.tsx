@@ -10,7 +10,7 @@ import { useAppDimensions } from "../../state/DimensionProvider";
 import { useLocalStorageToggle } from "../../util/hooks";
 import Updates from "./Updates";
 import { PermissionLevel, Server } from "../../types";
-import { useParams } from "@solidjs/router";
+import { A, useParams } from "@solidjs/router";
 import { client } from "../..";
 
 const Header: Component<{}> = (p) => {
@@ -51,6 +51,13 @@ const Header: Component<{}> = (p) => {
         </Grid>
         <Flex alignItems="center">
           <div class={serverStatusClass(server().status)}>{status()}</div>
+          <A
+            href={`/server/${params.id}/stats`}
+            class="blue"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Icon type="timeline-line-chart" />
+          </A>
           <Show when={userCanUpdate()}>
             <ConfirmButton
               onConfirm={() => {

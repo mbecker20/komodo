@@ -199,3 +199,16 @@ export function get_to_one_sec_divisor(timelength: Timelength) {
     return 60
   }
 }
+
+export function convert_timelength_to_ms(timelength: Timelength) {
+  // returns what the timelength needs to be divided to convert to per second values
+  if (timelength === Timelength.OneSecond) {
+    return 1000;
+  } else if (timelength === Timelength.FiveSeconds) {
+    return 5000;
+  } else if (timelength === Timelength.ThirtySeconds) {
+    return 30000;
+  } else if (timelength === Timelength.OneMinute) {
+    return 60000;
+  }
+}

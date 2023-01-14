@@ -1,8 +1,10 @@
 import {
+  AreaSeriesPartialOptions,
   ColorType,
   createChart,
   IChartApi,
   ISeriesApi,
+  LineSeriesPartialOptions,
 } from "lightweight-charts";
 import {
   Component,
@@ -13,30 +15,34 @@ import {
   onMount,
 } from "solid-js";
 
-export type LineData = {
-  title: string;
-  color: string;
-  priceLineVisible?: boolean;
-  line: LineDataPoint[];
-};
-
-export type LineDataPoint = {
-  time: number;
+export type LightweightValue = {
+  time: number | string;
   value: number;
 };
 
+export type LightweightLine = {
+  line: LightweightValue[];
+} & LineSeriesPartialOptions;
+
+export type LightweightArea = {
+  line: LightweightValue[];
+} & AreaSeriesPartialOptions;
+
 const LightweightChart: Component<{
-  lines: () => LineData[];
+  lines?: LightweightLine[];
+  areas?: LightweightArea[];
   class?: string;
   style?: JSX.CSSProperties;
   width?: string;
   height?: string;
   disableScroll?: boolean;
   onCreateLineSeries?: (series: ISeriesApi<"Line">) => void;
+  onCreateAreaSeries?: (series: ISeriesApi<"Area">) => void;
 }> = (p) => {
   let el: HTMLDivElement;
   const [chart, setChart] = createSignal<IChartApi>();
   let lineSeries: ISeriesApi<"Line">[] = [];
+  let areaSeries: ISeriesApi<"Area">[] = [];
   const [loaded, setLoaded] = createSignal(false);
   onMount(() => {
     if (loaded()) return;
@@ -64,20 +70,32 @@ const LightweightChart: Component<{
       for (const series of lineSeries) {
         chart()!.removeSeries(series);
       }
-      const series = p.lines().map((line) => {
-        const series = chart()!.addLineSeries({
-          color: line.color,
-          title: line.title,
-          priceLineVisible: line.priceLineVisible || false,
+      if (p.lines) {
+        const series = p.lines.map((line) => {
+          const series = chart()!.addLineSeries(line);
+          series.setData(line.line as any);
+          if (p.onCreateLineSeries) {
+            p.onCreateLineSeries(series);
+          }
+          return series;
         });
-        series.setData(line.line as any);
-        if (p.onCreateLineSeries) {
-          p.onCreateLineSeries(series);
-        }
-        return series;
-      });
+        lineSeries = series;
+      }
+      for (const series of areaSeries) {
+        chart()!.removeSeries(series);
+      }
+      if (p.areas) {
+        const series = p.areas.map((line) => {
+          const series = chart()!.addAreaSeries(line);
+          series.setData(line.line as any);
+          if (p.onCreateAreaSeries) {
+            p.onCreateAreaSeries(series);
+          }
+          return series;
+        });
+        areaSeries = series;
+      }
       chart()!.timeScale().fitContent();
-      lineSeries = series;
     }
   });
   const handleResize = () => {

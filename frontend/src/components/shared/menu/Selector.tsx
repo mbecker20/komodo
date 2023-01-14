@@ -4,6 +4,7 @@ import {
   createSignal,
   For,
   JSX,
+  JSXElement,
   Show,
 } from "solid-js";
 import { combineClasses } from "../../../util/helpers";
@@ -28,6 +29,7 @@ const Selector: Component<{
   useSearch?: boolean;
   itemClass?: string;
   itemStyle?: JSX.CSSProperties;
+  label?: JSXElement;
 }> = (p) => {
   const [show, toggle] = useToggle();
   const [search, setSearch] = createSignal("");
@@ -40,6 +42,7 @@ const Selector: Component<{
       when={!p.disabled}
       fallback={
         <div class={p.disabledClass} style={p.disabledStyle}>
+          <Show when={p.label}>{p.label}</Show>
           {p.selected}
         </div>
       }
@@ -53,6 +56,7 @@ const Selector: Component<{
         containerStyle={p.containerStyle}
         target={
           <button class={p.targetClass} onClick={toggle} style={p.targetStyle}>
+            <Show when={p.label}>{p.label}</Show>
             {p.selected}
             <Icon type="chevron-down" />
           </button>
