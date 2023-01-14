@@ -24,20 +24,20 @@ import {
   NetworkSentChart,
   TempuratureChart,
 } from "./Charts";
+import { useStatsState } from "./Provider";
 import s from "./stats.module.scss";
 
 const HistoricalStats: Component<{
-  page: Accessor<number>;
-  timelength: Accessor<Timelength>;
 }> = (p) => {
   const { isMobile } = useAppDimensions();
   const params = useParams();
+  const { timelength, page } = useStatsState();
   const [stats, setStats] = createSignal<SystemStatsRecord[]>();
   createEffect(() => {
     client
       .get_server_stats_history(params.id, {
-        interval: p.timelength(),
-        page: p.page(),
+        interval: timelength(),
+        page: page(),
         limit: 1000,
         networks: true,
         components: true,

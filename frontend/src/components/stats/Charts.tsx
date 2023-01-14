@@ -1,11 +1,12 @@
-import { Accessor, Component, For, Show } from "solid-js";
+import { LineData, SingleValueData } from "lightweight-charts";
+import { Accessor, Component, For, ParentComponent, Show } from "solid-js";
 import { SystemStats, SystemStatsRecord } from "../../types";
 import {
   convertTsMsToLocalUnixTsInSecs,
   get_to_one_sec_divisor,
 } from "../../util/helpers";
 import Grid from "../shared/layout/Grid";
-import LightweightChart, { LineDataPoint } from "../shared/LightweightChart";
+import LightweightChart, { LightweightValue } from "../shared/LightweightChart";
 import s from "./stats.module.scss";
 
 export const COLORS = {
@@ -20,7 +21,7 @@ const CHART_HEIGHT = "250px";
 const SMALL_CHART_HEIGHT = "150px";
 
 const SingleStatChart: Component<{
-  line: () => LineDataPoint[] | undefined;
+  line?: LightweightValue[];
   header: string;
   label: string;
   color: string;
@@ -28,29 +29,48 @@ const SingleStatChart: Component<{
   disableScroll?: boolean;
 }> = (p) => {
   return (
-    <Show when={p.line()}>
-      <Grid
-        gap="0.5rem"
-        class="card shadow"
-        style={{
-          height: "fit-content",
-          width: "100%",
-          "box-sizing": "border-box",
-          "padding-top": "0.5rem",
-          "padding-bottom": "0.2rem",
-        }}
-      >
-        <Show when={!p.small} fallback={<div>{p.header}</div>}>
-          <h2>{p.header}</h2>
-        </Show>
+    <StatChartContainer header={p.header} small={p.small}>
+      <Show when={p.line}>
         <LightweightChart
           class={s.LightweightChart}
           height={p.small ? SMALL_CHART_HEIGHT : CHART_HEIGHT}
-          lines={() => [{ title: p.label, color: p.color, line: p.line()! }]}
+          areas={[
+            {
+              line: p.line!,
+              title: p.label,
+              lineColor: p.color,
+              topColor: `${p.color}B3`,
+              bottomColor: `${p.color}0D`,
+            },
+          ]}
           disableScroll={p.disableScroll}
         />
-      </Grid>
-    </Show>
+      </Show>
+    </StatChartContainer>
+  );
+};
+
+const StatChartContainer: ParentComponent<{
+  header: string;
+  small?: boolean;
+}> = (p) => {
+  return (
+    <Grid
+      gap="0.5rem"
+      class="card shadow"
+      style={{
+        height: "fit-content",
+        width: "100%",
+        "box-sizing": "border-box",
+        "padding-top": "0.5rem",
+        "padding-bottom": "0.2rem",
+      }}
+    >
+      <Show when={!p.small} fallback={<div>{p.header}</div>}>
+        <h2>{p.header}</h2>
+      </Show>
+      {p.children}
+    </Grid>
   );
 };
 
@@ -74,7 +94,7 @@ export const LoadChart: Component<{
       header="system load %"
       label="load %"
       color={COLORS.blue}
-      line={line}
+      line={line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -101,7 +121,7 @@ export const CpuChart: Component<{
       header="cpu %"
       label="cpu %"
       color={COLORS.blue}
-      line={line}
+      line={line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -128,7 +148,7 @@ export const CpuFreqChart: Component<{
       header="cpu frequency"
       label="GHz"
       color={COLORS.blue}
-      line={line}
+      line={line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -155,7 +175,7 @@ export const MemChart: Component<{
       header="memory"
       label="mem %"
       color={COLORS.green}
-      line={line}
+      line={line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -182,7 +202,7 @@ export const DiskChart: Component<{
       header="disk"
       label="disk %"
       color={COLORS.orange}
-      line={line}
+      line={line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -213,7 +233,7 @@ export const NetworkRecvChart: Component<{
       header="network received kb/s"
       label="recv kb/s"
       color={COLORS.green}
-      line={recv_line}
+      line={recv_line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -244,7 +264,7 @@ export const NetworkSentChart: Component<{
       header="network sent kb/s"
       label="sent kb/s"
       color={COLORS.red}
-      line={sent_line}
+      line={sent_line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -272,7 +292,7 @@ export const DiskReadChart: Component<{
       header="disk read kb/s"
       label="read kb/s"
       color={COLORS.green}
-      line={read_line}
+      line={read_line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -300,7 +320,7 @@ export const DiskWriteChart: Component<{
       header="disk write kb/s"
       label="write kb/s"
       color={COLORS.red}
-      line={write_line}
+      line={write_line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
@@ -351,7 +371,7 @@ export const SingleTempuratureChart: Component<{
       header={p.component}
       label="temp"
       color={COLORS.red}
-      line={line}
+      line={line()}
       small={p.small}
       disableScroll={p.disableScroll}
     />
