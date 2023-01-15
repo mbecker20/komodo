@@ -338,6 +338,7 @@ impl State {
         let offset = self.config.daily_offset_hours as u128 * ONE_HOUR_MS;
         loop {
             wait_until_timelength(Timelength::OneDay, offset).await;
+            println!("running daily update");
             let servers = self.get_enabled_servers_with_stats().await;
             if let Err(e) = &servers {
                 eprintln!(
