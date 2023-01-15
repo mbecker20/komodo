@@ -33,67 +33,73 @@ const Actions: Component<{}> = (p) => {
   };
   return (
     <Show when={show()}>
-      <Grid class={combineClasses("card shadow")}>
+      <Grid class={combineClasses("card shadow")} gridTemplateRows="auto 1fr">
         <h1>actions</h1>
-        <Show when={showBuild()}>
-          <Build />
-        </Show>
-        <Switch>
-          <Match when={deployment().state === DockerContainerState.Running}>
-            <Flex class={combineClasses("action shadow")}>
-              deploy{" "}
-              <Flex>
-                <Deploy redeploy />
-                <Stop />
-                <RemoveContainer />
+        <Grid style={{ height: "fit-content" }}>
+          <Show when={showBuild()}>
+            <Build />
+          </Show>
+          <Switch>
+            <Match when={deployment().state === DockerContainerState.Running}>
+              <Flex class={combineClasses("action shadow")}>
+                deploy{" "}
+                <Flex>
+                  <Deploy redeploy />
+                  <Stop />
+                  <RemoveContainer />
+                </Flex>
               </Flex>
-            </Flex>
-          </Match>
+            </Match>
 
-          <Match
-            when={
-              deployment().state === DockerContainerState.Exited ||
-              deployment().state === DockerContainerState.Created
-            }
-          >
-            <Flex class={combineClasses("action shadow")}>
-              deploy{" "}
-              <Flex>
-                <Deploy redeploy />
-                <Start />
-                <RemoveContainer />
+            <Match
+              when={
+                deployment().state === DockerContainerState.Exited ||
+                deployment().state === DockerContainerState.Created
+              }
+            >
+              <Flex class={combineClasses("action shadow")}>
+                deploy{" "}
+                <Flex>
+                  <Deploy redeploy />
+                  <Start />
+                  <RemoveContainer />
+                </Flex>
               </Flex>
-            </Flex>
-          </Match>
-          <Match when={deployment().state === DockerContainerState.Restarting}>
-            <Flex class={combineClasses("action shadow")}>
-              deploy{" "}
-              <Flex>
-                <Deploy redeploy />
-                <Stop />
-                <RemoveContainer />
+            </Match>
+            <Match
+              when={deployment().state === DockerContainerState.Restarting}
+            >
+              <Flex class={combineClasses("action shadow")}>
+                deploy{" "}
+                <Flex>
+                  <Deploy redeploy />
+                  <Stop />
+                  <RemoveContainer />
+                </Flex>
               </Flex>
-            </Flex>
-            {/* <Flex class="action shadow">
+              {/* <Flex class="action shadow">
               container <Start />
             </Flex> */}
-          </Match>
+            </Match>
 
-          <Match when={deployment().state === DockerContainerState.NotDeployed}>
+            <Match
+              when={deployment().state === DockerContainerState.NotDeployed}
+            >
+              <Flex class={combineClasses("action shadow")}>
+                deploy <Deploy />
+              </Flex>
+            </Match>
+          </Switch>
+          <Show when={deployment().deployment.repo}>
             <Flex class={combineClasses("action shadow")}>
-              deploy <Deploy />
+              frontend
+              <Flex>
+                <Reclone />
+                <Pull />
+              </Flex>
             </Flex>
-          </Match>
-        </Switch>
-        <Show when={deployment().deployment.repo}>
-          <Flex class={combineClasses("action shadow")}>
-            frontend
-            <Flex>
-              <Reclone />
-              <Pull />
-            </Flex>
-          </Flex>
-        </Show>
+          </Show>
+        </Grid>
       </Grid>
     </Show>
   );

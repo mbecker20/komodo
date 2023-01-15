@@ -1,5 +1,6 @@
 import { useParams } from "@solidjs/router";
 import { Component, Show } from "solid-js";
+import { MAX_PAGE_WIDTH } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
@@ -13,6 +14,39 @@ import Header from "./Header";
 import { ConfigProvider } from "./tabs/config/Provider";
 import DeploymentTabs from "./tabs/Tabs";
 import Updates from "./Updates";
+
+const Deployment2: Component<{}> = (p) => {
+  const { servers, deployments } = useAppState();
+  const params = useParams();
+  const deployment = () => deployments.get(params.id);
+  const server = () =>
+    deployment() && servers.get(deployment()!.deployment.server_id);
+  return (
+    <Show
+      when={deployment() && server()}
+      fallback={<NotFound type="deployment" />}
+    >
+      <ActionStateProvider>
+        <Grid
+          style={{
+            width: "100vw",
+            "max-width": `${MAX_PAGE_WIDTH}px`,
+            "box-sizing": "border-box",
+          }}
+        >
+          <Grid style={{ width: "100%" }} gridTemplateColumns="1fr 1fr">
+            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto 1fr" }}>
+              <Header />
+              <Actions />
+            </Grid>
+            <Updates />
+          </Grid>
+          <DeploymentTabs />
+        </Grid>
+      </ActionStateProvider>
+    </Show>
+  );
+};
 
 const Deployment: Component<{}> = (p) => {
   const { servers, deployments } = useAppState();
@@ -56,4 +90,4 @@ const Deployment: Component<{}> = (p) => {
   );
 };
 
-export default Deployment;
+export default Deployment2;

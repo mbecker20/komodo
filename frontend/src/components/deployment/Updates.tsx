@@ -30,10 +30,7 @@ const Updates: Component<{}> = (p) => {
   });
   onCleanup(() => unsub());
   return (
-    <Grid
-      class={combineClasses("card shadow")}
-      style={{ "min-width": "350px" }}
-    >
+    <Grid class={combineClasses("card shadow")} style={{ "flex-grow": 1 }}>
       <h1>updates</h1>
       <Show
         when={updates.loaded()}

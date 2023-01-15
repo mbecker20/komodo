@@ -1,11 +1,9 @@
 import {
   Component,
-  createMemo,
-  createSignal,
-  For,
   Match,
   Switch,
 } from "solid-js";
+import { MAX_PAGE_WIDTH } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
@@ -16,6 +14,31 @@ import Summary from "./Summary";
 import Groups from "./Tree/Groups";
 import Servers from "./Tree/Servers";
 import Updates from "./Updates/Updates";
+
+const Home2: Component<{}> = (p) => {
+  // const { width } = useAppDimensions();
+  const { servers } = useAppState();
+  return (
+    <Grid placeItems="center start" style={{ "width": "100vw", "max-width": `${MAX_PAGE_WIDTH}px`, "box-sizing": "border-box" }}>
+      {/* <Summary /> */}
+      <SimpleTabs
+        containerStyle={{ width: "100%" }}
+        localStorageKey="home-groups-servers-tab-v1"
+        tabs={[
+          {
+            title: "groups",
+            element: () => <Groups />,
+          },
+          {
+            title: "servers",
+            element: () => <Servers serverIDs={servers.ids()!} showAdd />,
+          },
+        ]}
+      />
+      {/* <Updates /> */}
+    </Grid>
+  );
+};
 
 const Home: Component<{}> = (p) => {
   const { width } = useAppDimensions();
@@ -68,4 +91,4 @@ const Home: Component<{}> = (p) => {
   );
 };
 
-export default Home;
+export default Home2;

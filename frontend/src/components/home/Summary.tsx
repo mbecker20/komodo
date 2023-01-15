@@ -12,6 +12,7 @@ const Summary: Component<{}> = (p) => {
     <Flex
       justifyContent="space-between"
       class={combineClasses(s.Summary, "card shadow wrap")}
+      style={{ width: "100%", "box-sizing": "border-box" }}
     >
       <h1>summary</h1>
       <Flex gap="1rem" justifyContent="flex-end" class="wrap">

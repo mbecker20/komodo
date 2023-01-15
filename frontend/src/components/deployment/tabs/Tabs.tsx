@@ -20,6 +20,7 @@ import {
 } from "../../../types";
 import { client } from "../../..";
 import SimpleTabs from "../../shared/tabs/SimpleTabs";
+import { ConfigProvider } from "./config/Provider";
 
 const DeploymentTabs: Component<{}> = () => {
   const { deployments, ws } = useAppState();
@@ -64,59 +65,61 @@ const DeploymentTabs: Component<{}> = () => {
   );
   return (
     <Show when={deployment()}>
-      <SimpleTabs
-        containerClass={combineClasses("card tabs shadow")}
-        containerStyle={{ gap: "0.5rem" }}
-        tabs={
-          [
-            {
-              title: "config",
-              element: () => <Config />,
-            },
-            status() !== "not deployed" && [
+      <ConfigProvider>
+        <SimpleTabs
+          containerClass={combineClasses("card tabs shadow")}
+          containerStyle={{ gap: "0.5rem" }}
+          tabs={
+            [
               {
-                title: "log",
-                element: () => (
-                  <Log
-                    reload={loadLog}
-                    log={log()}
-                    logTail={logTail()}
-                    setLogTail={setLogTail}
-                  />
-                ),
+                title: "config",
+                element: () => <Config />,
               },
-              status() !== "not deployed" && {
-                title: "error log",
-                titleElement: () => (
-                  <Flex gap="0.5rem" alignItems="center">
-                    error log{" "}
-                    <Show
-                      when={
-                        deployment()!.state !==
-                          DockerContainerState.NotDeployed && log()?.stderr
-                      }
-                    >
-                      <Icon type="error" />
-                    </Show>
-                  </Flex>
-                ),
-                element: () => (
-                  <Log
-                    reload={loadLog}
-                    log={log()}
-                    logTail={logTail()}
-                    setLogTail={setLogTail}
-                    error
-                  />
-                ),
-              },
-            ],
-          ]
-            .flat()
-            .filter((e) => e) as Tab[]
-        }
-        localStorageKey="deployment-tab"
-      />
+              status() !== "not deployed" && [
+                {
+                  title: "log",
+                  element: () => (
+                    <Log
+                      reload={loadLog}
+                      log={log()}
+                      logTail={logTail()}
+                      setLogTail={setLogTail}
+                    />
+                  ),
+                },
+                status() !== "not deployed" && {
+                  title: "error log",
+                  titleElement: () => (
+                    <Flex gap="0.5rem" alignItems="center">
+                      error log{" "}
+                      <Show
+                        when={
+                          deployment()!.state !==
+                            DockerContainerState.NotDeployed && log()?.stderr
+                        }
+                      >
+                        <Icon type="error" />
+                      </Show>
+                    </Flex>
+                  ),
+                  element: () => (
+                    <Log
+                      reload={loadLog}
+                      log={log()}
+                      logTail={logTail()}
+                      setLogTail={setLogTail}
+                      error
+                    />
+                  ),
+                },
+              ],
+            ]
+              .flat()
+              .filter((e) => e) as Tab[]
+          }
+          localStorageKey="deployment-tab"
+        />
+      </ConfigProvider>
     </Show>
   );
 };

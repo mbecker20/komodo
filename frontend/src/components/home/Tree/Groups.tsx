@@ -68,8 +68,8 @@ const Group: Component<{ id: string }> = (p) => {
           <Icon type={open() ? "chevron-up" : "chevron-down"} width="1rem" />
           <h1 style={{ "font-size": "1.25rem" }}>{group()?.name}</h1>
         </Flex>
-        <Show when={open()}>
-          <Flex alignItems="center">
+        <Flex alignItems="center">
+          <Show when={open()}>
             <button
               class="blue"
               onClick={(e) => {
@@ -125,14 +125,14 @@ const Group: Component<{ id: string }> = (p) => {
                 }
               />
             </Show>
-            <ConfirmButton
-              class="red"
-              onConfirm={() => client.delete_group(p.id)}
-            >
-              <Icon type="trash" />
-            </ConfirmButton>
-          </Flex>
-        </Show>
+          </Show>
+          <ConfirmButton
+            class="red"
+            onConfirm={() => client.delete_group(p.id)}
+          >
+            <Icon type="trash" />
+          </ConfirmButton>
+        </Flex>
       </button>
       <Show when={serverIDs() && open()}>
         <Grid

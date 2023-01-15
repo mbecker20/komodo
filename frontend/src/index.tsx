@@ -13,6 +13,7 @@ import { Router } from "@solidjs/router";
 import { AppStateProvider } from "./state/StateProvider";
 
 export const TOPBAR_HEIGHT = 50;
+export const MAX_PAGE_WIDTH = 1200;
 
 export const URL =
   import.meta.env.MODE === "production"

@@ -13,10 +13,10 @@ const Updates: Component<{}> = () => {
     <Show when={updates.loaded()}>
       <Grid
         class={combineClasses(s.Updates, "card shadow")}
-        style={isMobile() ? { width: "100%" } : undefined}
+        style={{ width: "100%", "box-sizing": "border-box" }}
       >
         <h1>updates</h1>
-        <Grid class={combineClasses(s.UpdatesContainer, "scroller")}>
+        <Grid>
           <For each={updates.collection()!}>
             {(update) => <Update update={update} />}
           </For>

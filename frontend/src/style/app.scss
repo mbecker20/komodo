@@ -10,6 +10,7 @@
 	grid-template-areas:
 		"topbar"
 		"content";
+	place-items: start center;
 }
 
 @media only screen and (max-width: 1200px) {

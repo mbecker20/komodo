@@ -15,6 +15,7 @@ import Account from "./Account";
 import { SearchProvider } from "./Search/Provider";
 import { Search } from "./Search/Search";
 import s from "./topbar.module.scss";
+import Updates from "./Updates/Updates";
 
 const mobileStyle: JSX.CSSProperties = {
   position: "fixed",
@@ -64,6 +65,8 @@ const LeftSide: Component = () => {
   );
 };
 
+const NUM_UPDATES = 5;
+
 const RightSide: Component = () => {
   const { isMobile } = useAppDimensions();
   const { username } = useUser();
@@ -76,6 +79,30 @@ const RightSide: Component = () => {
       style={{ padding: "0rem 0.5rem", "place-self": "center end" }}
     >
       <Menu
+        show={menu() === "updates"}
+        close={close}
+        containerStyle={{ cursor: "pointer" }}
+        menuClass="card shadow scroller"
+        menuStyle={{
+          gap: "0.5rem",
+          "height": `calc(${71.5 * NUM_UPDATES}px + ${NUM_UPDATES + 1}rem)`,
+          "margin-top": "1.5rem",
+          padding: "1rem"
+        }}
+        target={
+          <button
+            class="grey"
+            onClick={() =>
+              menu() === "updates" ? setMenu(undefined) : setMenu("updates")
+            }
+          >
+            <Icon type="notifications" />
+          </button>
+        }
+        content={<Updates />}
+        position="bottom right"
+      />
+      <Menu
         show={menu() === "account"}
         close={close}
         containerStyle={{ cursor: "pointer" }}
@@ -87,10 +114,12 @@ const RightSide: Component = () => {
             }
           >
             <Show when={!isMobile()}>{username()}</Show>
-            <Icon style={{cursor: "pointer"}} type={!isMobile() ? "chevron-down" : "user"} />
+            <Icon
+              style={{ cursor: "pointer" }}
+              type={!isMobile() ? "chevron-down" : "user"}
+            />
           </button>
         }
-        
         content={<Account close={close} />}
         position="bottom right"
       />

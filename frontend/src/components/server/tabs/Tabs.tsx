@@ -18,6 +18,7 @@ const ServerTabs: Component<{}> = (p) => {
       <ConfigProvider>
         <SimpleTabs
           containerClass="card shadow"
+          containerStyle={{ "width": "100%", "box-sizing": "border-box" }}
           tabs={
             [
               {

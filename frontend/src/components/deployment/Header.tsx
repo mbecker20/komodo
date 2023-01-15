@@ -39,6 +39,7 @@ const Header: Component<{}> = (p) => {
         style={{
           position: "relative",
           cursor: isMobile() && userCanUpdate() ? "pointer" : undefined,
+          height: "fit-content"
         }}
         onClick={() => {
           if (isMobile() && userCanUpdate()) toggleShowUpdates();
