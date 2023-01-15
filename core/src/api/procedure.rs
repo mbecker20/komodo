@@ -143,7 +143,7 @@ impl State {
         user: &RequestUser,
         query: impl Into<Option<Document>>,
     ) -> anyhow::Result<Vec<Procedure>> {
-        let mut procedures: Vec<Procedure> = self
+        let procedures: Vec<Procedure> = self
             .db
             .procedures
             .get_some(query, None)
@@ -159,7 +159,7 @@ impl State {
                 }
             })
             .collect();
-        procedures.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        // procedures.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
         Ok(procedures)
     }
 }

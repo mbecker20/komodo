@@ -120,7 +120,7 @@ impl State {
         user: &RequestUser,
         query: impl Into<Option<Document>>,
     ) -> anyhow::Result<Vec<Group>> {
-        let mut groups: Vec<Group> = self
+        let groups: Vec<Group> = self
             .db
             .groups
             .get_some(query, None)
@@ -136,7 +136,7 @@ impl State {
                 }
             })
             .collect();
-        groups.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        // groups.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
         Ok(groups)
     }
 }

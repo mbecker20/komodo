@@ -6,7 +6,6 @@ import Input from "../../shared/Input";
 import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
 import { NewGroup } from "./New";
-import Servers from "./Servers";
 import s from "../home.module.scss";
 import { combineClasses } from "../../../util/helpers";
 import Server from "./Server";
@@ -175,6 +174,10 @@ const Group: Component<{ id: string }> = (p) => {
             );
           }}
         </For>
+        <div
+          class="lightgrey"
+          style={{ opacity: 0.7, width: "100%", height: "3px" }}
+        />
       </Show>
     </Show>
   );
