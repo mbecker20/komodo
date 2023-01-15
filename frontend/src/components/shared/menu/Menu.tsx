@@ -14,7 +14,7 @@ const Menu: Component<{
   content: JSXElement;
   target: JSXElement;
   show: boolean;
-  close: () => void;
+  close: (e: MouseEvent) => void;
   position?: Position;
   padding?: string | number;
   menuClass?: string;
@@ -39,7 +39,7 @@ const Menu: Component<{
         <div
           class={s.MenuBackground}
           style={{ "background-color": p.backgroundColor }}
-          onClick={p.close}
+          onClick={e => p.close(e)}
         />
         <div
           class={combineClasses(

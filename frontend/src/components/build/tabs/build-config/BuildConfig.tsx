@@ -35,7 +35,7 @@ const BuildConfig: Component<{}> = (p) => {
                 reset
                 <Icon type="reset" />
               </button>
-              <ConfirmButton onConfirm={save} color="green">
+              <ConfirmButton onConfirm={save} class="green">
                 save
                 <Icon type="floppy-disk" />
               </ConfirmButton>

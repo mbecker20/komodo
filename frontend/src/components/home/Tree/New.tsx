@@ -5,6 +5,25 @@ import Icon from "../../shared/Icon";
 import Input from "../../shared/Input";
 import Flex from "../../shared/layout/Flex";
 
+export const NewGroup: Component<{}> = (p) => {
+  const [showNew, toggleShowNew] = useToggle();
+  const create = (name: string) => {
+    client.create_group({ name });
+  };
+  return (
+    <Show
+      when={showNew()}
+      fallback={
+        <button class="green" onClick={toggleShowNew} style={{ width: "100%" }}>
+          <Icon type="plus" />
+        </button>
+      }
+    >
+      <New create={create} close={toggleShowNew} placeholder="name group" />
+    </Show>
+  );
+};
+
 export const NewDeployment: Component<{ serverID: string }> = (p) => {
   const [showNew, toggleShowNew] = useToggle();
   const create = (name: string) => {
@@ -82,7 +101,7 @@ const New: Component<{
           create
         </button>
         {/* <ConfirmButton
-          color="green"
+          class="green"
           onConfirm={create}
         >
           create

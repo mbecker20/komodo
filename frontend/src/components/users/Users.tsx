@@ -73,7 +73,7 @@ const Users: Component<{}> = (p) => {
                     {user.create_server_permissions ? "can create servers" : "cannot create servers"}
                   </button>
                   {/* <ConfirmButton
-                    color="red"
+                    class="red"
                     onConfirm={() => deleteUser(user._id!)}
                   >
                     <Icon type="trash" />

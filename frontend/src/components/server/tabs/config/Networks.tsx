@@ -69,7 +69,7 @@ const Networks: Component<{}> = (p) => {
 //     >
 //       <div>{p.network.name}</div>
 //       <ConfirmButton
-//         color="red"
+//         class="red"
 //         onConfirm={() => {
 //           ws.send(DELETE_NETWORK, {
 //             serverID: selected.id(),

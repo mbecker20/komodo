@@ -77,7 +77,7 @@ const Config: Component<{}> = () => {
                             {listenerUrl()}
                           </div>
                           <ConfirmButton
-                            color="blue"
+                            class="blue"
                             onFirstClick={() => {
                               copyToClipboard(listenerUrl());
                               pushNotification(
@@ -130,7 +130,7 @@ const Config: Component<{}> = () => {
                 reset
                 <Icon type="reset" />
               </button>
-              <ConfirmButton onConfirm={save} color="green">
+              <ConfirmButton onConfirm={save} class="green">
                 save
                 <Icon type="floppy-disk" />
               </ConfirmButton>

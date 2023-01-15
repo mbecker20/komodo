@@ -27,7 +27,7 @@ const GitConfig: Component<{}> = (p) => {
                   {listenerUrl()}
                 </div>
                 <ConfirmButton
-                  color="blue"
+                  class="blue"
                   onFirstClick={() => {
                     copyToClipboard(listenerUrl());
                     pushNotification("good", "copied url to clipboard");
@@ -54,7 +54,7 @@ const GitConfig: Component<{}> = (p) => {
                 reset
                 <Icon type="reset" />
               </button>
-              <ConfirmButton onConfirm={save} color="green">
+              <ConfirmButton onConfirm={save} class="green">
                 save
                 <Icon type="floppy-disk" />
               </ConfirmButton>

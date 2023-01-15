@@ -36,7 +36,7 @@ const Actions: Component<{}> = (p) => {
         <Flex class={combineClasses("action shadow")}>
           prune networks{" "}
           <ConfirmButton
-            color="green"
+            class="green"
             onConfirm={() => {
               client.prune_docker_networks(params.id);
             }}
@@ -64,7 +64,7 @@ function PruneImages() {
       }
     >
       <ConfirmButton
-        color="green"
+        class="green"
         onConfirm={() => {
           client.prune_docker_images(params.id);
         }}
@@ -88,7 +88,7 @@ function PruneContainers() {
       }
     >
       <ConfirmButton
-        color="blue"
+        class="blue"
         onConfirm={() => {
           client.prune_docker_containers(params.id);
         }}

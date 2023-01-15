@@ -3,7 +3,7 @@ import { Component, createSignal, JSX } from "solid-js";
 const ConfirmButton: Component<{
   onConfirm?: () => void;
   onFirstClick?: () => void;
-  color?: "red" | "green" | "blue" | "orange" | "grey";
+  class?: string
   style?: JSX.CSSProperties;
   confirm?: JSX.Element;
   children: JSX.Element;
@@ -12,7 +12,7 @@ const ConfirmButton: Component<{
 
   return (
     <button
-      class={p.color || "green"}
+      class={p.class || "green"}
       style={p.style}
       onBlur={() => set(false)}
       onClick={(e) => {

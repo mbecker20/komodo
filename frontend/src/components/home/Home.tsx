@@ -9,22 +9,36 @@ import {
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
-import Input from "../shared/Input";
 import Grid from "../shared/layout/Grid";
-import Tabs from "../shared/tabs/Tabs";
+import SimpleTabs from "../shared/tabs/SimpleTabs";
 import s from "./home.module.scss";
 import Summary from "./Summary";
-import Builds from "./Tree/Build";
+import Groups from "./Tree/Groups";
 import Servers from "./Tree/Servers";
 import Updates from "./Updates/Updates";
 
 const Home: Component<{}> = (p) => {
   const { width } = useAppDimensions();
+  const { servers } = useAppState();
   return (
     <Switch>
       <Match when={width() >= 1200}>
         <Grid class={combineClasses(s.Home)}>
-          <Servers />
+          <Grid style={{ height: "fit-content" }}>
+            <SimpleTabs
+              localStorageKey="home-groups-servers-tab-v1"
+              tabs={[
+                {
+                  title: "groups",
+                  element: () => <Groups />,
+                },
+                {
+                  title: "servers",
+                  element: () => <Servers serverIDs={servers.ids()!} showAdd />,
+                },
+              ]}
+            />
+          </Grid>
           <Grid style={{ height: "fit-content" }}>
             <Summary />
             <Updates />
@@ -34,7 +48,19 @@ const Home: Component<{}> = (p) => {
       <Match when={width() < 1200}>
         <Grid class={s.Home}>
           {/* <Summary /> */}
-          <Servers />
+          <SimpleTabs
+            localStorageKey="home-groups-servers-tab-v1"
+            tabs={[
+              {
+                title: "groups",
+                element: () => <Groups />,
+              },
+              {
+                title: "servers",
+                element: () => <Servers serverIDs={servers.ids()!} showAdd />,
+              },
+            ]}
+          />
           <Updates />
         </Grid>
       </Match>

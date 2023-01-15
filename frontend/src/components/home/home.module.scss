@@ -32,7 +32,6 @@
 }
 
 .Server {
-	
 	height: fit-content;
 	cursor: pointer;
 	width: 100%;
@@ -43,7 +42,6 @@
 .ServerButton {
 	background-color: c.$lightgrey;
 	justify-content: space-between;
-	z-index: 5;
 	transition: background-color 500ms ease;
 	width: 100%;
 }

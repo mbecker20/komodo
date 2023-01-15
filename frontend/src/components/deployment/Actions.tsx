@@ -118,7 +118,7 @@ const Build: Component = () => {
         }
       >
         <ConfirmButton
-          color="green"
+          class="green"
           onConfirm={() => {
             client.build(buildID());
           }}
@@ -147,7 +147,7 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
       <HoverMenu
         target={
           <ConfirmButton
-            color="green"
+            class="green"
             onConfirm={() => {
               client.deploy_container(params.id);
             }}
@@ -178,7 +178,7 @@ const RemoveContainer = () => {
       <HoverMenu
         target={
           <ConfirmButton
-            color="red"
+            class="red"
             onConfirm={() => {
               client.remove_container(params.id);
             }}
@@ -209,7 +209,7 @@ const Start = () => {
       <HoverMenu
         target={
           <ConfirmButton
-            color="green"
+            class="green"
             onConfirm={() => {
               client.start_container(params.id);
             }}
@@ -240,7 +240,7 @@ const Stop = () => {
       <HoverMenu
         target={
           <ConfirmButton
-            color="orange"
+            class="orange"
             onConfirm={() => {
               client.stop_container(params.id);
             }}
@@ -271,7 +271,7 @@ const Pull = () => {
       <HoverMenu
         target={
           <ConfirmButton
-            color="blue"
+            class="blue"
             onConfirm={() => {
               client.pull_deployment(params.id);
             }}
@@ -302,7 +302,7 @@ const Reclone = () => {
       <HoverMenu
         target={
           <ConfirmButton
-            color="orange"
+            class="orange"
             onConfirm={() => {
               client.reclone_deployment(params.id);
             }}

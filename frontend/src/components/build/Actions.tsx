@@ -37,7 +37,7 @@ const Actions: Component<{}> = (p) => {
             }
           >
             <ConfirmButton
-              color="green"
+              class="green"
               onConfirm={() => {
                 client.build(params.id);
               }}
@@ -57,7 +57,7 @@ const Actions: Component<{}> = (p) => {
             }
           >
             <ConfirmButton
-              color="orange"
+              class="orange"
               onConfirm={() => {
                 client.reclone_build(params.id)
               }}

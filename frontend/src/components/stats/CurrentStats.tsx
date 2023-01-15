@@ -3,6 +3,7 @@ import {
   Accessor,
   Component,
   createEffect,
+  createMemo,
   createSignal,
   For,
   JSXElement,
@@ -250,7 +251,10 @@ const Processes: Component<{ latest: SystemStats }> = (p) => {
     "cpu",
     `${params.id}-processes-sortby-v1`
   );
-  const [filter, setFilter] = useLocalStorage("", `${params.id}-processes-filter-v1`);
+  const [filter, setFilter] = useLocalStorage(
+    "",
+    `${params.id}-processes-filter-v1`
+  );
   const sort: () =>
     | ((a: SystemProcess, b: SystemProcess) => number)
     | undefined = () => {
@@ -272,23 +276,21 @@ const Processes: Component<{ latest: SystemStats }> = (p) => {
       };
     }
   };
-  const processes = () => {
+  const processes = createMemo(() => {
+    const filters = filter()
+      .split(" ")
+      .filter((i) => i.length > 0);
+    if (filters.length === 0) {
+      return p.latest.processes?.sort(sort());
+    }
     return p.latest.processes
       ?.filter((p) => {
-        if (filter().length === 0) {
-          return true
-        }
-        return filter()
-          .split(" ")
-          .filter((i) => i.length > 0)
-          .reduce((prev, curr) => {
-            return prev || p.name.includes(curr);
-          }, false);
-      }
-        
-      )
+        return filters.reduce((prev, curr) => {
+          return prev || p.name.includes(curr);
+        }, false);
+      })
       .sort(sort());
-  };
+  });
   return (
     <>
       <div />

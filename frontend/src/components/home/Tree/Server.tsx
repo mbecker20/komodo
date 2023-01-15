@@ -3,9 +3,7 @@ import {
   createMemo,
   createSignal,
   For,
-  Match,
   Show,
-  Switch,
 } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
@@ -18,7 +16,7 @@ import Deployment from "./Deployment";
 import s from "../home.module.scss";
 import { NewBuild, NewDeployment } from "./New";
 import Loading from "../../shared/loading/Loading";
-import { A, useNavigate } from "@solidjs/router";
+import { A } from "@solidjs/router";
 import { PermissionLevel, ServerStatus } from "../../../types";
 import { useAppDimensions } from "../../../state/DimensionProvider";
 import Build from "./Build";
@@ -29,7 +27,6 @@ const Server: Component<{ id: string }> = (p) => {
   const { servers, serverStats, deployments, builds } = useAppState();
   const { width } = useAppDimensions();
   const { user } = useUser();
-  const navigate = useNavigate();
   const [open, toggleOpen] = useLocalStorageToggle(p.id + "-homeopen");
   const server = () => servers.get(p.id);
   const deploymentIDs = createMemo(() => {

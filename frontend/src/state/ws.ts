@@ -63,7 +63,7 @@ function connectToWs(state: State) {
 }
 
 async function handleMessage(
-  { deployments, builds, servers, updates }: State,
+  { deployments, builds, servers, groups, procedures, updates }: State,
   update: Update
 ) {
   updates.addOrUpdate(update);
@@ -77,6 +77,12 @@ async function handleMessage(
   } else if (update.target.type === "Server") {
     const server = servers.get(update.target.id);
     name = server ? server.server.name : "";
+  } else if (update.target.type === "Group") {
+    const group = groups.get(update.target.id);
+    name = group ? group.name : "";
+  } else if (update.target.type === "Procedure") {
+    const procedure = procedures.get(update.target.id);
+    name = procedure ? procedure.name : "";
   }
   pushNotification(
     update.status === UpdateStatus.InProgress
@@ -145,6 +151,36 @@ async function handleMessage(
     if (update.status === UpdateStatus.Complete) {
       const server = await client.get_server(update.target.id!);
       servers.update(server);
+    }
+  }
+
+  // group
+  else if (update.operation === Operation.CreateGroup) {
+    const group = await client.get_group(update.target.id!);
+    groups.add(group);
+  } else if (update.operation === Operation.DeleteGroup) {
+    if (update.status === UpdateStatus.Complete) {
+      groups.delete(update.target.id!);
+    }
+  } else if (update.operation === Operation.UpdateGroup) {
+    if (update.status === UpdateStatus.Complete) {
+      const group = await client.get_group(update.target.id!);
+      groups.update(group);
+    }
+  }
+
+  // procedure
+  else if (update.operation === Operation.CreateProcedure) {
+    const procedure = await client.get_procedure(update.target.id!);
+    procedures.add(procedure);
+  } else if (update.operation === Operation.DeleteProcedure) {
+    if (update.status === UpdateStatus.Complete) {
+      procedures.delete(update.target.id!);
+    }
+  } else if (update.operation === Operation.UpdateProcedure) {
+    if (update.status === UpdateStatus.Complete) {
+      const procedure = await client.get_procedure(update.target.id!);
+      procedures.update(procedure);
     }
   }
 }

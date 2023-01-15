@@ -10,11 +10,31 @@ import {
 
 type Collection<T> = Record<string, T>;
 
+const groupIdPath = ["_id", "$oid"];
+
+export function useGroups() {
+  return useCollection(
+    () => client.list_groups().then((res) => intoCollection(res, groupIdPath)),
+    groupIdPath
+  );
+}
+
+const procedureIdPath = ["_id", "$oid"];
+
+export function useProcedures() {
+  return useCollection(
+    () =>
+      client.list_procedures().then((res) => intoCollection(res, procedureIdPath)),
+    procedureIdPath
+  );
+}
+
 const serverIdPath = ["server", "_id", "$oid"];
 
 export function useServers() {
   return useCollection(
-    () => client.list_servers().then(res => intoCollection(res, serverIdPath)),
+    () =>
+      client.list_servers().then((res) => intoCollection(res, serverIdPath)),
     serverIdPath
   );
 }
@@ -46,9 +66,7 @@ export function useServerStats() {
 }
 
 export function useUsernames() {
-  const [usernames, set] = createSignal<Record<string, string | undefined>>(
-    {}
-  );
+  const [usernames, set] = createSignal<Record<string, string | undefined>>({});
   const load = async (userID: string) => {
     if (userID === "github") {
       set((s) => ({ ...s, [userID]: "github" }));
@@ -61,10 +79,7 @@ export function useUsernames() {
   return {
     get: (userID: string) => {
       const username = usernames()[userID];
-      if (
-        username === undefined &&
-        !loading[userID]
-      ) {
+      if (username === undefined && !loading[userID]) {
         loading[userID] = true;
         load(userID);
       }
@@ -78,8 +93,8 @@ const buildIdPath = ["_id", "$oid"];
 
 export function useBuilds() {
   return useCollection(
-    () => client.list_builds().then(res => intoCollection(res, buildIdPath)),
-    buildIdPath,
+    () => client.list_builds().then((res) => intoCollection(res, buildIdPath)),
+    buildIdPath
   );
 }
 

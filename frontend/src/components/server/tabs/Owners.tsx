@@ -86,7 +86,7 @@ const Owners: Component<{}> = (p) => {
                   <For each={searchUsers()}>
                     {(user) => (
                       <ConfirmButton
-                        color="grey"
+                        class="grey"
                         style={{
                           width: "100%",
                           "justify-content": "flex-start",
@@ -150,7 +150,7 @@ const Owners: Component<{}> = (p) => {
                           position="bottom right"
                         />
                         <ConfirmButton
-                          color="red"
+                          class="red"
                           onConfirm={() => {
                             client.update_user_permissions_on_target({
                               user_id,

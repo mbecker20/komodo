@@ -63,7 +63,7 @@ const Header: Component<{}> = (p) => {
               onConfirm={() => {
                 client.delete_server(params.id);
               }}
-              color="red"
+              class="red"
             >
               <Icon type="trash" />
             </ConfirmButton>
