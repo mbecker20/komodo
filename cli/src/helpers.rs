@@ -337,6 +337,8 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
 pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
     let skip_enter = *sub_matches.get_one::<bool>("yes").unwrap_or(&false);
 
+    let install = *sub_matches.get_one::<bool>("install").unwrap_or(&false);
+
     let config_path = sub_matches
         .get_one::<String>("config-path")
         .map(|p| p.as_str())
@@ -366,18 +368,8 @@ pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
         }
     }
 
-    println!("\ninstalling periphery binary...\n");
-
-    let install_output = run_command_pipe_to_terminal(&format!("cargo install {PERIPHERY_CRATE}"));
-
-    if install_output.success() {
-        println!("\ninstallation finished, starting monitor periphery...\n")
-    } else {
-        eprintln!(
-            "\n❌ there was some {} during periphery installation ❌\n",
-            "error".red()
-        );
-        return;
+    if install {
+        install_periphery_from_crates_io();
     }
 
     gen_periphery_service_file(&config_path);
@@ -401,6 +393,8 @@ pub fn start_periphery_systemd(sub_matches: &ArgMatches) {
 
 pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
     let skip_enter = *sub_matches.get_one::<bool>("yes").unwrap_or(&false);
+
+    let install = *sub_matches.get_one::<bool>("install").unwrap_or(&false);
 
     let config_path = sub_matches
         .get_one::<String>("config-path")
@@ -445,18 +439,8 @@ pub fn start_periphery_daemon(sub_matches: &ArgMatches) {
         }
     }
 
-    println!("\ninstalling periphery binary...\n");
-
-    let install_output = run_command_pipe_to_terminal(&format!("cargo install {PERIPHERY_CRATE}"));
-
-    if install_output.success() {
-        println!("\ninstallation finished, starting monitor periphery daemon\n")
-    } else {
-        eprintln!(
-            "\n❌ there was some {} during periphery installation ❌\n",
-            "error".red()
-        );
-        return;
+    if install {
+        install_periphery_from_crates_io();
     }
 
     let command = format!("if pgrep periphery; then pkill periphery; fi && periphery --daemon --config-path {config_path} --stdout {stdout} --stderr {stderr}");
@@ -609,4 +593,19 @@ TimeoutStartSec=0
 [Install]
 WantedBy=default.target"
     )
+}
+
+fn install_periphery_from_crates_io() {
+    println!("\ninstalling periphery binary...\n");
+
+    let install_output = run_command_pipe_to_terminal(&format!("cargo install {PERIPHERY_CRATE}"));
+
+    if install_output.success() {
+        println!("\ninstallation finished, starting monitor periphery daemon\n");
+    } else {
+        panic!(
+            "\n❌ there was some {} during periphery installation ❌\n",
+            "error".red()
+        )
+    }
 }

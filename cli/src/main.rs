@@ -154,6 +154,9 @@ fn cli() -> Command {
                                     arg!(--yes "used in scripts to skip 'enter to continue' step")
                                 )
                                 .arg(
+                                    arg!(--install "specify this to install periphery from crates.io")
+                                )
+                                .arg(
                                     arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
                                         .required(false)
                                 )
@@ -163,6 +166,9 @@ fn cli() -> Command {
                                 .about("start up monitor periphery daemon")
                                 .arg(
                                     arg!(--yes "used in scripts to skip 'enter to continue' step")
+                                )
+                                .arg(
+                                    arg!(--install "specify this to install periphery from crates.io")
                                 )
                                 .arg(
                                     arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
