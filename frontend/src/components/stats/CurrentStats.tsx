@@ -3,7 +3,6 @@ import {
   Accessor,
   Component,
   createEffect,
-  createMemo,
   createSignal,
   For,
   JSXElement,
@@ -128,9 +127,9 @@ const CurrentStats2: Component<{}> = (p) => {
             />
           )}
         </For>
-
-        <Processes latest={latest()} />
       </Show>
+
+      <Processes stats={stats()} />
     </Grid>
   );
 };
@@ -266,7 +265,7 @@ const StatsHeatbarRow: Component<{
   );
 };
 
-const Processes: Component<{ latest: SystemStats }> = (p) => {
+const Processes: Component<{ stats: SystemStats[] }> = (p) => {
   const params = useParams();
   const [sortBy, setSortBy] = useLocalStorage(
     "cpu",
@@ -276,42 +275,7 @@ const Processes: Component<{ latest: SystemStats }> = (p) => {
     "",
     `${params.id}-processes-filter-v1`
   );
-  const sort: () =>
-    | ((a: SystemProcess, b: SystemProcess) => number)
-    | undefined = () => {
-    if (sortBy() === "cpu") {
-      return (a, b) => {
-        return b.cpu_perc - a.cpu_perc;
-      };
-    } else if (sortBy() === "mem") {
-      return (a, b) => {
-        return b.mem_mb - a.mem_mb;
-      };
-    } else if (sortBy() === "name") {
-      return (a, b) => {
-        if (a.name > b.name) {
-          return 1;
-        } else {
-          return -1;
-        }
-      };
-    }
-  };
-  const processes = createMemo(() => {
-    const filters = filter()
-      .split(" ")
-      .filter((i) => i.length > 0);
-    if (filters.length === 0) {
-      return p.latest.processes?.sort(sort());
-    }
-    return p.latest.processes
-      ?.filter((p) => {
-        return filters.reduce((prev, curr) => {
-          return prev || p.name.includes(curr);
-        }, false);
-      })
-      .sort(sort());
-  });
+  const [showProcs, setShowProcs] = createSignal(true);
   return (
     <>
       <div />
@@ -326,7 +290,15 @@ const Processes: Component<{ latest: SystemStats }> = (p) => {
           targetClass="grey"
         />
         <Flex alignItems="center">
-          <Input placeholder="filter" value={filter()} onEdit={setFilter} />
+          <Input
+            placeholder="filter"
+            value={filter()}
+            onFocus={() => setShowProcs(false)}
+            onConfirm={(filt) => {
+              setShowProcs(true);
+              setFilter(filt);
+            }}
+          />
           <Show when={filter().length > 0}>
             <button class="grey" onClick={() => setFilter("")}>
               <Icon type="cross" />
@@ -336,16 +308,63 @@ const Processes: Component<{ latest: SystemStats }> = (p) => {
       </Flex>
       <div />
 
-      <For each={processes()}>
-        {(proc) => (
-          <>
-            <div />
-            <Process proc={proc} />
-            <div />
-          </>
-        )}
-      </For>
+      <Show when={showProcs()}>
+        <ProcessFor stats={p.stats} filter={filter()} sortBy={sortBy()} />
+      </Show>
     </>
+  );
+};
+
+const ProcessFor: Component<{
+  filter: string;
+  stats: SystemStats[];
+  sortBy: string;
+}> = (p) => {
+  const latest = () => p.stats[p.stats.length - 1];
+  const sort: () =>
+    | ((a: SystemProcess, b: SystemProcess) => number)
+    | undefined = () => {
+    if (p.sortBy === "cpu") {
+      return (a, b) => {
+        return b.cpu_perc - a.cpu_perc;
+      };
+    } else if (p.sortBy === "mem") {
+      return (a, b) => {
+        return b.mem_mb - a.mem_mb;
+      };
+    } else if (p.sortBy === "name") {
+      return (a, b) => {
+        if (a.name > b.name) {
+          return 1;
+        } else {
+          return -1;
+        }
+      };
+    }
+  };
+  const processes = () => {
+    const filters = p.filter.split(" ").filter((i) => i.length > 0);
+    if (filters.length === 0) {
+      return latest()?.processes?.sort(sort());
+    }
+    return latest()
+      ?.processes?.filter((p) => {
+        return filters.reduce((prev, curr) => {
+          return prev || p.name.includes(curr);
+        }, false);
+      })
+      .sort(sort());
+  };
+  return (
+    <For each={processes()}>
+      {(proc) => (
+        <>
+          <div />
+          <Process proc={proc} />
+          <div />
+        </>
+      )}
+    </For>
   );
 };
 
