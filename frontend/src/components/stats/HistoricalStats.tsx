@@ -1,14 +1,12 @@
 import { useParams } from "@solidjs/router";
 import {
-  Accessor,
   Component,
   createEffect,
   createSignal,
   Show,
 } from "solid-js";
 import { client } from "../..";
-import { useAppDimensions } from "../../state/DimensionProvider";
-import { SystemStatsRecord, Timelength } from "../../types";
+import { SystemStatsRecord } from "../../types";
 import Grid from "../shared/layout/Grid";
 import Loading from "../shared/loading/Loading";
 import SimpleTabs from "../shared/tabs/SimpleTabs";
@@ -29,7 +27,6 @@ import s from "./stats.module.scss";
 
 const HistoricalStats: Component<{
 }> = (p) => {
-  const { isMobile } = useAppDimensions();
   const params = useParams();
   const { timelength, page } = useStatsState();
   const [stats, setStats] = createSignal<SystemStatsRecord[]>();
@@ -50,7 +47,7 @@ const HistoricalStats: Component<{
         <SimpleTabs
           localStorageKey="historical-stats-view-v3"
           defaultSelected="basic"
-          containerStyle={{ width: isMobile() ? "100%" : "90%" }}
+          containerStyle={{ width: "100%" }}
           tabs={[
             {
               title: "io",
@@ -67,11 +64,11 @@ const HistoricalStats: Component<{
               title: "basic",
               element: () => (
                 <Grid class={s.Charts}>
-                  <LoadChart stats={stats} />
                   <CpuChart stats={stats} />
-                  <CpuFreqChart stats={stats} />
                   <MemChart stats={stats} />
+                  <LoadChart stats={stats} />
                   <DiskChart stats={stats} />
+                  {/* <CpuFreqChart stats={stats} /> */}
                 </Grid>
               ),
             },

@@ -1,7 +1,6 @@
-import { Component, onMount } from "solid-js";
+import { Component, JSX, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
 import { client, pushNotification } from "../../..";
-import { useAppState } from "../../../state/StateProvider";
 import { CreateServerBody } from "../../../util/client_types";
 import { useToggle } from "../../../util/hooks";
 import Input from "../../shared/Input";
@@ -24,8 +23,13 @@ const AddServer: Component<{}> = () => {
   );
 };
 
+const INPUT_STYLE: JSX.CSSProperties = {
+  "font-size": "1.25rem",
+  width: "500px",
+  "max-width": "90vw",
+};
+
 const Content: Component<{ close: () => void }> = (p) => {
-  const { ws } = useAppState();
   let nameInput: HTMLInputElement | undefined;
   const [server, setServer] = createStore<CreateServerBody>({
     name: "",
@@ -43,17 +47,19 @@ const Content: Component<{ close: () => void }> = (p) => {
   return (
     <Grid placeItems="center" style={{ padding: "2rem 1rem 1rem 1rem" }}>
       <Input
+        class="darkgrey"
         ref={nameInput}
         value={server.name}
         onEdit={(name) => setServer("name", name)}
         placeholder="name"
-        style={{ "font-size": "1.5rem" }}
+        style={INPUT_STYLE}
       />
       <Input
+        class="darkgrey"
         value={server.address}
         onEdit={(address) => setServer("address", address)}
         placeholder="address"
-        style={{ "font-size": "1.5rem" }}
+        style={INPUT_STYLE}
       />
       <button class="green" style={{ width: "100%" }} onClick={create}>
         add

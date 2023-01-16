@@ -160,15 +160,7 @@ svg {
   background-color: rgba(c.$darkgrey, 0.8);
 }
 
-.darkgrey:hover {
-  background-color: c.$grey;
-}
-
-.darkgrey {
-  background-color: rgba(c.$darkgrey, 0.8);
-}
-
-.darkgrey:hover {
+.darkgrey:not(input):hover {
   background-color: c.$grey;
 }
 

@@ -5,6 +5,7 @@ import {
   Show,
   Switch,
 } from "solid-js";
+import { MAX_PAGE_WIDTH } from "../..";
 import { useAppState } from "../../state/StateProvider";
 import { ServerStatus, Timelength } from "../../types";
 import Icon from "../shared/Icon";
@@ -14,7 +15,6 @@ import Selector from "../shared/menu/Selector";
 import CurrentStats from "./CurrentStats";
 import HistoricalStats from "./HistoricalStats";
 import { StatsProvider, useStatsState } from "./Provider";
-import s from "./stats.module.scss";
 
 const TIMELENGTHS = [
   Timelength.OneMinute,
@@ -37,16 +37,22 @@ const Stats = () => {
 const StatsComp: Component<{}> = () => {
   const { view } = useStatsState();
   return (
-    <Grid class={s.Content}>
-      <Grid class={s.HeaderArea}>
+    <Grid
+      style={{
+        width: "100vw",
+        "max-width": `${MAX_PAGE_WIDTH}px`,
+        "box-sizing": "border-box",
+      }}
+    >
+      <Flex justifyContent="space-between" style={{ width: "100%" }}>
         <Header />
-        <Show when={view() === "historical"} fallback={<div />}>
-          <Flex alignItems="center" style={{ "place-self": "center" }}>
-            <PageManager />
-          </Flex>
-        </Show>
         <SysInfo />
-      </Grid>
+      </Flex>
+      <Show when={view() === "historical"}>
+        <Flex alignItems="center" style={{ "place-self": "center" }}>
+          <PageManager />
+        </Flex>
+      </Show>
       <Switch>
         <Match when={view() === "current"}>
           <CurrentStats />

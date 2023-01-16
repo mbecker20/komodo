@@ -11,7 +11,7 @@ import {
   Show,
   Switch,
 } from "solid-js";
-import { client } from "../..";
+import { client, MAX_PAGE_WIDTH } from "../..";
 import { SystemProcess, SystemStats } from "../../types";
 import { convert_timelength_to_ms } from "../../util/helpers";
 import { useLocalStorage } from "../../util/hooks";
@@ -64,10 +64,17 @@ const CurrentStats: Component<{}> = (p) => {
   load();
   const latest = () => stats()[stats().length - 1];
   return (
-    <Grid class={s.Content} placeItems="start center">
+    <Grid
+      style={{
+        width: "100vw",
+        "max-width": `${MAX_PAGE_WIDTH}px`,
+        "box-sizing": "border-box",
+      }}
+    >
       <Show when={stats().length > 0} fallback={<Loading type="three-dot" />}>
         <Grid class={s.HeatBars} placeItems="center start">
           <BasicInfo stats={stats} />
+          
           <div />
           <SimpleTabs
             containerStyle={{ width: "100%", "min-width": "300px" }}
@@ -206,7 +213,7 @@ const StatsHeatbarRow: Component<{
       </Show>
       <HeatBar
         containerClass="card shadow"
-        containerStyle={{ width: "60vw", "min-width": "300px" }}
+        containerStyle={{ width: "100%", "box-sizing": "border-box" }}
         filled={Math.floor(p.percentage / 2)}
         total={50}
         onClick={() => setShowGraph((curr) => !curr)}
