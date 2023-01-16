@@ -1472,7 +1472,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_cli"
-version = "0.1.13"
+version = "0.1.14"
 dependencies = [
  "async_timing_util",
  "clap",

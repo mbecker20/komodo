@@ -603,7 +603,7 @@ fn periphery_unit_file(config_path: &str) -> String {
 Description=agent to connect with monitor core
 
 [Service]
-ExecStart={home}/.cargo/bin/periphery --config-path {config_path} --home-dir {home}
+ExecStart={home}/.monitor/bin/periphery --config-path {config_path} --home-dir {home}
 TimeoutStartSec=0
 
 [Install]
