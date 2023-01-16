@@ -101,18 +101,6 @@ const Config: Component<{}> = () => {
                   </Grid>
                 ),
               },
-              user().admin && {
-                title: "permissions",
-                element: () => (
-                  <Grid
-                    class="config-items scroller"
-                    style={{ height: "100%" }}
-                    placeItems="start center"
-                  >
-                    <Permissions />
-                  </Grid>
-                ),
-              },
             ].filter((e) => e) as Tab[]
           }
         />

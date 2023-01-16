@@ -174,10 +174,21 @@ const Group: Component<{ id: string }> = (p) => {
             );
           }}
         </For>
-        <div
-          class="lightgrey"
-          style={{ opacity: 0.7, width: "100%", height: "3px" }}
-        />
+        <Grid
+          placeItems="center"
+          gridTemplateColumns="1fr auto 1fr"
+          style={{ width: "100%" }}
+        >
+          <div
+            class="lightgrey"
+            style={{ opacity: 0.7, width: "100%", height: "3px" }}
+          />
+          <div style={{ opacity: 0.7 }}>end</div>
+          <div
+            class="lightgrey"
+            style={{ opacity: 0.7, width: "100%", height: "3px" }}
+          />
+        </Grid>
       </Show>
     </Show>
   );

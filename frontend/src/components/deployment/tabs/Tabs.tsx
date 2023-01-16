@@ -21,8 +21,11 @@ import {
 import { client } from "../../..";
 import SimpleTabs from "../../shared/tabs/SimpleTabs";
 import { ConfigProvider } from "./config/Provider";
+import Permissions from "./config/Permissions";
+import { useUser } from "../../../state/UserProvider";
 
 const DeploymentTabs: Component<{}> = () => {
+  const { user } = useUser();
   const { deployments, ws } = useAppState();
   const params = useParams();
   const deployment = () => deployments.get(params.id);
@@ -113,6 +116,10 @@ const DeploymentTabs: Component<{}> = () => {
                   ),
                 },
               ],
+              user().admin && {
+                title: "collaborators",
+                element: <Permissions />,
+              },
             ]
               .flat()
               .filter((e) => e) as Tab[]
