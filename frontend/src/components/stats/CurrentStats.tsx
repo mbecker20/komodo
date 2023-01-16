@@ -35,9 +35,9 @@ import {
   SingleTempuratureChart,
 } from "./Charts";
 import { useStatsState } from "./Provider";
-import s from "./stats.module.scss";
+// import s from "./stats.module.scss";
 
-const CurrentStats: Component<{}> = (p) => {
+function useCurrentStats() {
   const params = useParams();
   const { pollRate } = useStatsState();
   const [stats, setStats] = createSignal<SystemStats[]>([]);
@@ -63,70 +63,79 @@ const CurrentStats: Component<{}> = (p) => {
   });
   load();
   const latest = () => stats()[stats().length - 1];
+
+  return {
+    params,
+    stats,
+    latest,
+  };
+}
+
+const CurrentStats2: Component<{}> = (p) => {
+  const { params, stats, latest } = useCurrentStats();
   return (
     <Grid
       style={{
-        width: "100vw",
-        "max-width": `${MAX_PAGE_WIDTH}px`,
+        width: "100%",
         "box-sizing": "border-box",
+        "max-width": `${MAX_PAGE_WIDTH}px`,
       }}
+      gridTemplateColumns="auto 1fr auto"
     >
       <Show when={stats().length > 0} fallback={<Loading type="three-dot" />}>
-        <Grid class={s.HeatBars} placeItems="center start">
-          <BasicInfo stats={stats} />
-          
-          <div />
-          <SimpleTabs
-            containerStyle={{ width: "100%", "min-width": "300px" }}
-            localStorageKey={`${params.id}-io-tab-v1`}
-            tabs={[
-              {
-                title: "network io",
-                element: () => (
-                  <Flex>
-                    <NetworkRecvChart stats={stats} small disableScroll />
-                    <NetworkSentChart stats={stats} small disableScroll />
-                  </Flex>
-                ),
-              },
-              {
-                title: "disk io",
-                element: () => (
-                  <Flex>
-                    <DiskReadChart stats={stats} small disableScroll />
-                    <DiskWriteChart stats={stats} small disableScroll />
-                  </Flex>
-                ),
-              },
-            ]}
-          />
-          <div />
+        <BasicInfo stats={stats} />
 
-          <For
-            each={latest().components?.filter((c) => c.critical !== undefined)}
-          >
-            {(comp) => (
-              <StatsHeatbarRow
-                type="temp"
-                label={comp.label}
-                stats={stats}
-                percentage={(100 * comp.temp) / comp.critical!}
-                localStorageKey={`${params.id}-temp-${comp.label}-v1`}
-                additionalInfo={
-                  <div style={{ opacity: 0.7 }}>{comp.temp.toFixed(1)}°</div>
-                }
-              />
-            )}
-          </For>
+        <div />
+        <SimpleTabs
+          containerStyle={{ width: "100%", "min-width": "300px" }}
+          localStorageKey={`${params.id}-io-tab-v1`}
+          tabs={[
+            {
+              title: "network io",
+              element: () => (
+                <Flex>
+                  <NetworkRecvChart stats={stats} small disableScroll />
+                  <NetworkSentChart stats={stats} small disableScroll />
+                </Flex>
+              ),
+            },
+            {
+              title: "disk io",
+              element: () => (
+                <Flex>
+                  <DiskReadChart stats={stats} small disableScroll />
+                  <DiskWriteChart stats={stats} small disableScroll />
+                </Flex>
+              ),
+            },
+          ]}
+        />
+        <div />
 
-          <Processes latest={latest()} />
-        </Grid>
+        <For
+          each={latest().components?.filter((c) => c.critical !== undefined)}
+        >
+          {(comp) => (
+            <StatsHeatbarRow
+              type="temp"
+              label={comp.label}
+              stats={stats}
+              percentage={(100 * comp.temp) / comp.critical!}
+              localStorageKey={`${params.id}-temp-${comp.label}-v1`}
+              additionalInfo={
+                <div style={{ opacity: 0.7 }}>{comp.temp.toFixed(1)}°</div>
+              }
+            />
+          )}
+        </For>
+
+        <Processes latest={latest()} />
       </Show>
     </Grid>
   );
 };
 
-export default CurrentStats;
+export default CurrentStats2;
 
 const BasicInfo: Component<{
   stats: Accessor<SystemStats[]>;
@@ -213,12 +222,17 @@ const StatsHeatbarRow: Component<{
       </Show>
       <HeatBar
         containerClass="card shadow"
-        containerStyle={{ width: "100%", "box-sizing": "border-box" }}
+        containerStyle={{
+          width: "90vw",
+          "max-width": "1050px",
+          "place-self": "center",
+          "box-sizing": "border-box",
+        }}
         filled={Math.floor(p.percentage / 2)}
         total={50}
         onClick={() => setShowGraph((curr) => !curr)}
       />
-      <Grid gap="0">
+      <Grid gap="0" style={{ "box-sizing": "border-box" }}>
         <h1>{p.percentage.toFixed(1)}%</h1>
         {p.additionalInfo}
       </Grid>
@@ -369,116 +383,3 @@ const Process: Component<{ proc: SystemProcess }> = (p) => {
     </Flex>
   );
 };
-
-// function useStatsWs(params: Params, setStats: Setter<SystemStats[]>, setWsOpen: Setter<boolean>) {
-//   const ws = new ReconnectingWebSocket(
-//     `${URL.replace("http", "ws")}/ws/stats/${params.id}${generateQuery({
-//       networks: "true",
-//       // components: "true",
-//       // processes: "true",
-//       // cpus: "true",
-//     })}`
-//   );
-//   ws.addEventListener("open", () => {
-//     // console.log("connection opened");
-//     ws.send(client.token!);
-//     setWsOpen(true);
-//   });
-//   ws.addEventListener("message", ({ data }) => {
-//     if (data === "LOGGED_IN") {
-//       console.log("logged in to ws");
-//       return;
-//     }
-//     const stats = JSON.parse(data) as SystemStats;
-//     console.log(stats);
-//     setStats((stats_arr) => [
-//       ...(stats_arr.length > 200 ? stats_arr.slice(1) : stats_arr),
-//       stats,
-//     ]);
-//   });
-//   ws.addEventListener("close", () => {
-//     console.log("stats connection closed");
-//     // clearInterval(int);
-//     setWsOpen(false);
-//   });
-//   onCleanup(() => {
-//     console.log("closing stats ws");
-//     ws.close();
-//   });
-// }
-
-// const NetworkIoInfo: Component<{ stats: Accessor<SystemStats[]> }> = (p) => {
-//   const latest = () => p.stats()[p.stats().length - 1];
-//   const network_recv = () => {
-//     return latest().networks?.length || 0 > 0
-//       ? latest()
-//           .networks!.map((n) => n.recieved_kb)
-//           .reduce((p, c) => p + c) /
-//           get_to_one_sec_divisor(latest().polling_rate)!
-//       : 0;
-//   };
-//   const network_sent = () => {
-//     return latest().networks?.length || 0 > 0
-//       ? latest()
-//           .networks!.map((n) => n.transmitted_kb)
-//           .reduce((p, c) => p + c) /
-//           get_to_one_sec_divisor(latest().polling_rate)!
-//       : 0;
-//   };
-//   return (
-//     <>
-//       <div />
-//       <Flex alignItems="center">
-//         <h1>network recv</h1>
-//         <h2 style={{ opacity: 0.7 }}>{network_recv().toFixed(1)} kb/s</h2>
-//       </Flex>
-//       <div />
-
-//       <div />
-//       <NetworkRecvChart stats={p.stats} small disableScroll />
-//       <div />
-
-//       <div />
-//       <Flex alignItems="center">
-//         <h1>network sent</h1>
-//         <h2 style={{ opacity: 0.7 }}>{network_sent().toFixed(1)} kb/s</h2>
-//       </Flex>
-//       <div />
-
-//       <div />
-//       <NetworkSentChart stats={p.stats} small disableScroll />
-//       <div />
-//     </>
-//   );
-// };
-
-// const DiskIoInfo: Component<{ stats: Accessor<SystemStats[]> }> = (p) => {
-//   const latest = () => p.stats()[p.stats().length - 1];
-//   const disk_read = () => latest().disk.read_kb;
-//   const disk_write = () => latest().disk.write_kb;
-//   return (
-//     <>
-//       <div />
-//       <Flex alignItems="center">
-//         <h1>disk read</h1>
-//         <h2 style={{ opacity: 0.7 }}>{disk_read().toFixed(1)} kb/s</h2>
-//       </Flex>
-//       <div />
-
-//       <div />
-//       <DiskReadChart stats={p.stats} small disableScroll />
-//       <div />
-
-//       <div />
-//       <Flex alignItems="center">
-//         <h1>disk write</h1>
-//         <h2 style={{ opacity: 0.7 }}>{disk_write().toFixed(1)} kb/s</h2>
-//       </Flex>
-//       <div />
-
-//       <div />
-//       <DiskWriteChart stats={p.stats} small disableScroll />
-//       <div />
-//     </>
-//   );
-// };
