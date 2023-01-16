@@ -68,7 +68,7 @@ const Owners: Component<{}> = (p) => {
   return (
     <Show when={server.loaded}>
       <Grid class="config">
-        <Grid class="config-items scroller" style={{ height: "100%" }}>
+        <Grid class="config-items scroller" style={{ height: "100%", "min-height": "400px" }}>
           <Grid class={combineClasses("config-item shadow")} gap="0.5rem">
             <Menu
               show={userSearch() ? true : false}
@@ -78,7 +78,6 @@ const Owners: Component<{}> = (p) => {
                   placeholder="add user"
                   value={userSearch()}
                   onEdit={setUserSearch}
-                  style={{ width: "12rem" }}
                 />
               }
               content={

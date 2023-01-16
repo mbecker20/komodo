@@ -15,7 +15,6 @@ const Info: Component<{}> = (p) => {
         <Input
           value={server.region}
           onEdit={(value) => setServer("region", value)}
-          style={{ width: "12rem" }}
         />
       </Flex>
       {/* <Flex justifyContent="space-between" alignItems="center">
@@ -23,7 +22,6 @@ const Info: Component<{}> = (p) => {
         <Input
           value={server.instanceID}
           onEdit={(value) => setServer("instanceID", value)}
-          style={{ width: "12rem" }}
         />
       </Flex> */}
     </Grid>

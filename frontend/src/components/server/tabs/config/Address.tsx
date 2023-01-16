@@ -16,7 +16,6 @@ const Address: Component<{}> = (p) => {
         value={server.address}
         placeholder="address"
         onEdit={(value) => setServer("address", value)}
-        style={{ width: "13rem" }}
       />
     </Flex>
   );

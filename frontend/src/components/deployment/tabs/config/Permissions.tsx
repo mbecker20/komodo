@@ -67,111 +67,111 @@ const Permissions: Component<{}> = (p) => {
   onCleanup(() => unsub());
   return (
     <Grid class="config">
-        <Grid class="config-items scroller" style={{ height: "100%" }}>
-          <Grid class={combineClasses("config-item shadow")} gap="0.5rem">
-            <Menu
-              show={userSearch() ? true : false}
-              close={() => setUserSearch("")}
-              target={
-                <Input
-                  placeholder="add user"
-                  value={userSearch()}
-                  onEdit={setUserSearch}
-                  style={{ width: "12rem" }}
-                />
-              }
-              content={
-                <>
-                  <For each={searchUsers()}>
-                    {(user) => (
-                      <ConfirmButton
-                        class="grey"
-                        style={{
-                          width: "100%",
-                          "justify-content": "flex-start",
-                        }}
-                        onConfirm={() => {
-                          client.update_user_permissions_on_target({
-                            user_id: getId(user),
-                            permission: PermissionLevel.Read,
-                            target_type: PermissionsTarget.Deployment,
-                            target_id: params.id,
-                          });
-                          setUserSearch("");
-                        }}
-                        confirm="add user"
-                      >
-                        {user.username}
-                      </ConfirmButton>
-                    )}
-                  </For>
-                  <Show when={users().length === 0}>no matching users</Show>
-                </>
-              }
-              menuStyle={{ width: "12rem" }}
-            />
-            <For
-              each={Object.entries(deployment.permissions!)
-                .filter(
-                  ([_, permission]) => permission !== PermissionLevel.None
-                )
-                .map(([user_id, _]) => user_id)}
-            >
-              {(user_id) => {
-                const u = () => getUser(user_id)!;
-                const permissions = () => deployment.permissions![user_id];
-                return (
-                  <Show when={u()}>
-                    <Flex
-                      alignItems="center"
-                      justifyContent="space-between"
-                      class={combineClasses("grey-no-hover")}
+      <Grid
+        class="config-items scroller"
+        style={{ height: "100%", "min-height": "400px" }}
+      >
+        <Grid class={combineClasses("config-item shadow")} gap="0.5rem">
+          <Menu
+            show={userSearch() ? true : false}
+            close={() => setUserSearch("")}
+            target={
+              <Input
+                placeholder="add user"
+                value={userSearch()}
+                onEdit={setUserSearch}
+              />
+            }
+            content={
+              <>
+                <For each={searchUsers()}>
+                  {(user) => (
+                    <ConfirmButton
+                      class="grey"
                       style={{
-                        padding: "0.5rem",
+                        width: "100%",
+                        "justify-content": "flex-start",
                       }}
+                      onConfirm={() => {
+                        client.update_user_permissions_on_target({
+                          user_id: getId(user),
+                          permission: PermissionLevel.Read,
+                          target_type: PermissionsTarget.Deployment,
+                          target_id: params.id,
+                        });
+                        setUserSearch("");
+                      }}
+                      confirm="add user"
                     >
-                      <div class="big-text">
-                        {u().username}
-                        {user_id === getId(user()) && " ( you )"}
-                      </div>
-                      <Show when={!u().admin && user_id !== getId(user())}>
-                        <Flex alignItems="center">
-                          <Selector
-                            selected={permissions()}
-                            items={PERMISSIONS_OPTIONS}
-                            onSelect={(permission) => {
-                              client.update_user_permissions_on_target({
-                                user_id,
-                                permission: permission as PermissionLevel,
-                                target_type: PermissionsTarget.Deployment,
-                                target_id: params.id,
-                              });
-                            }}
-                            position="bottom center"
-                          />
-                          <ConfirmButton
-                            class="red"
-                            onConfirm={() => {
-                              client.update_user_permissions_on_target({
-                                user_id,
-                                permission: PermissionLevel.None,
-                                target_type: PermissionsTarget.Deployment,
-                                target_id: params.id,
-                              });
-                            }}
-                          >
-                            remove
-                          </ConfirmButton>
-                        </Flex>
-                      </Show>
-                    </Flex>
-                  </Show>
-                );
-              }}
-            </For>
-          </Grid>
+                      {user.username}
+                    </ConfirmButton>
+                  )}
+                </For>
+                <Show when={users().length === 0}>no matching users</Show>
+              </>
+            }
+            menuStyle={{ width: "12rem" }}
+          />
+          <For
+            each={Object.entries(deployment.permissions!)
+              .filter(([_, permission]) => permission !== PermissionLevel.None)
+              .map(([user_id, _]) => user_id)}
+          >
+            {(user_id) => {
+              const u = () => getUser(user_id)!;
+              const permissions = () => deployment.permissions![user_id];
+              return (
+                <Show when={u()}>
+                  <Flex
+                    alignItems="center"
+                    justifyContent="space-between"
+                    class={combineClasses("grey-no-hover")}
+                    style={{
+                      padding: "0.5rem",
+                    }}
+                  >
+                    <div class="big-text">
+                      {u().username}
+                      {user_id === getId(user()) && " ( you )"}
+                    </div>
+                    <Show when={!u().admin && user_id !== getId(user())}>
+                      <Flex alignItems="center">
+                        <Selector
+                          selected={permissions()}
+                          items={PERMISSIONS_OPTIONS}
+                          onSelect={(permission) => {
+                            client.update_user_permissions_on_target({
+                              user_id,
+                              permission: permission as PermissionLevel,
+                              target_type: PermissionsTarget.Deployment,
+                              target_id: params.id,
+                            });
+                          }}
+                          position="bottom center"
+                        />
+                        <ConfirmButton
+                          class="red"
+                          onConfirm={() => {
+                            client.update_user_permissions_on_target({
+                              user_id,
+                              permission: PermissionLevel.None,
+                              target_type: PermissionsTarget.Deployment,
+                              target_id: params.id,
+                            });
+                          }}
+                        >
+                          remove
+                        </ConfirmButton>
+                      </Flex>
+                    </Show>
+                  </Flex>
+                </Show>
+              );
+            }}
+          </For>
         </Grid>
       </Grid>
+    </Grid>
   );
 };
 
