@@ -21,13 +21,13 @@ pub struct PeripheryClient {
 
 impl PeripheryClient {
     pub async fn health_check(&self, server: &Server) -> anyhow::Result<String> {
-        self.get_text(server, "/health", 500)
+        self.get_text(server, "/health", 1000)
             .await
             .context("failed at health check on periphery")
     }
 
     pub async fn get_version(&self, server: &Server) -> anyhow::Result<String> {
-        self.get_text(server, "/version", 500)
+        self.get_text(server, "/version", 1000)
             .await
             .context("failed to get version from periphery")
     }
