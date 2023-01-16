@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
@@ -19,13 +21,13 @@ pub struct PeripheryClient {
 
 impl PeripheryClient {
     pub async fn health_check(&self, server: &Server) -> anyhow::Result<String> {
-        self.get_text(server, "/health")
+        self.get_text(server, "/health", 500)
             .await
             .context("failed at health check on periphery")
     }
 
     pub async fn get_version(&self, server: &Server) -> anyhow::Result<String> {
-        self.get_text(server, "/version")
+        self.get_text(server, "/version", 500)
             .await
             .context("failed to get version from periphery")
     }
@@ -85,11 +87,16 @@ impl PeripheryClient {
         Ok(socket)
     }
 
-    async fn get_text(&self, server: &Server, endpoint: &str) -> anyhow::Result<String> {
-        let res = self
+    async fn get_text(&self, server: &Server, endpoint: &str, timeout_ms: impl Into<Option<u64>>) -> anyhow::Result<String> {
+        let mut req = self
             .http_client
-            .get(format!("{}{endpoint}", server.address))
-            .send()
+            .get(format!("{}{endpoint}", server.address));
+            
+        if let Some(timeout) = timeout_ms.into() {
+            req = req.timeout(Duration::from_millis(timeout))
+        }
+
+        let res = req.send()
             .await
             .context(format!(
                 "failed at get request to server {} | not reachable",
@@ -116,6 +123,7 @@ impl PeripheryClient {
         server: &Server,
         endpoint: &str,
     ) -> anyhow::Result<R> {
+        self.health_check(server).await?;
         let res = self
             .http_client
             .get(format!("{}{endpoint}", server.address))
@@ -150,6 +158,7 @@ impl PeripheryClient {
         endpoint: &str,
         body: &B,
     ) -> anyhow::Result<R> {
+        self.health_check(server).await?;
         let res = self
             .http_client
             .post(format!("{}{endpoint}", server.address))
