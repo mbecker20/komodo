@@ -47,6 +47,7 @@ function useCurrentStats() {
       components: true,
       processes: true,
     });
+    stats.refresh_ts = Date.now();
     setStats((curr) => [...(curr.length > 200 ? curr.slice(1) : curr), stats]);
   };
   let timeout = -1;
