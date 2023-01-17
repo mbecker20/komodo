@@ -337,7 +337,7 @@ impl State {
         let mut deployment = self
             .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Execute)
             .await?;
-        if let Some(build_id) = &deployment.build_id {
+        let version = if let Some(build_id) = &deployment.build_id {
             let build = self.db.get_build(build_id).await?;
             let image = if let Some(docker_account) = &build.docker_account {
                 if deployment.docker_run_args.docker_account.is_none() {
@@ -348,11 +348,14 @@ impl State {
                 to_monitor_name(&build.name)
             };
             let version = if let Some(version) = &deployment.build_version {
-                version.to_string()
+                version.clone()
             } else {
-                "latest".to_string()
+                build.version.clone()
             };
-            deployment.docker_run_args.image = format!("{image}:{version}");
+            deployment.docker_run_args.image = format!("{image}:{}", version.to_string());
+            Some(version)
+        } else {
+            None
         };
         let server = self.db.get_server(&deployment.server_id).await?;
         let mut update = Update {
@@ -362,6 +365,7 @@ impl State {
             status: UpdateStatus::InProgress,
             operator: user.id.clone(),
             success: true,
+            version,
             ..Default::default()
         };
 
