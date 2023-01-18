@@ -69,6 +69,7 @@ const Group: Component<{ id: string }> = (p) => {
           <h1 style={{ "font-size": "1.25rem" }}>{group()?.name}</h1>
         </Flex>
         <Flex alignItems="center">
+          <h2>{serverIDs()!.length} server{serverIDs()!.length > 1 ? "s" : ""}</h2>
           <Show when={open()}>
             <button
               class="blue"

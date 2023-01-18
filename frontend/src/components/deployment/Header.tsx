@@ -24,7 +24,7 @@ const Header: Component<{}> = (p) => {
     deployment()!.state === DockerContainerState.NotDeployed
       ? undefined
       : deployment().container?.status?.toLowerCase();
-  const { isMobile } = useAppDimensions();
+  const { isSemiMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
     useLocalStorageToggle("show-updates");
   const userCanUpdate = () =>
@@ -38,11 +38,11 @@ const Header: Component<{}> = (p) => {
         class={combineClasses("card shadow")}
         style={{
           position: "relative",
-          cursor: isMobile() && userCanUpdate() ? "pointer" : undefined,
-          height: "fit-content"
+          cursor: isSemiMobile() && userCanUpdate() ? "pointer" : undefined,
+          height: "fit-content",
         }}
         onClick={() => {
-          if (isMobile() && userCanUpdate()) toggleShowUpdates();
+          if (isSemiMobile() && userCanUpdate()) toggleShowUpdates();
         }}
       >
         <Flex alignItems="center" justifyContent="space-between">
@@ -52,7 +52,7 @@ const Header: Component<{}> = (p) => {
               target={
                 <ConfirmButton
                   onConfirm={() => {
-                    client.delete_deployment(params.id)
+                    client.delete_deployment(params.id);
                   }}
                   class="red"
                 >
@@ -73,7 +73,7 @@ const Header: Component<{}> = (p) => {
             <div style={{ opacity: 0.7 }}>{status()}</div>
           </Show>
         </Flex>
-        <Show when={isMobile() && userCanUpdate()}>
+        <Show when={isSemiMobile()}>
           <Flex gap="0.5rem" alignItems="center" class="show-updates-indicator">
             updates{" "}
             <Icon
@@ -83,7 +83,7 @@ const Header: Component<{}> = (p) => {
           </Flex>
         </Show>
       </Grid>
-      <Show when={isMobile() && userCanUpdate() && showUpdates()}>
+      <Show when={isSemiMobile() && showUpdates()}>
         <Updates />
       </Show>
     </>

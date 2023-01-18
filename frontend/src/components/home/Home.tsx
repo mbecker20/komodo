@@ -19,24 +19,20 @@ const Home2: Component<{}> = (p) => {
   // const { width } = useAppDimensions();
   const { servers } = useAppState();
   return (
-    <Grid placeItems="center start" style={{ "width": "100vw", "max-width": `${MAX_PAGE_WIDTH}px`, "box-sizing": "border-box" }}>
-      {/* <Summary /> */}
-      <SimpleTabs
-        containerStyle={{ width: "100%" }}
-        localStorageKey="home-groups-servers-tab-v1"
-        tabs={[
-          {
-            title: "groups",
-            element: () => <Groups />,
-          },
-          {
-            title: "servers",
-            element: () => <Servers serverIDs={servers.ids()!} showAdd />,
-          },
-        ]}
-      />
-      {/* <Updates /> */}
-    </Grid>
+    <SimpleTabs
+      containerStyle={{ width: "100%" }}
+      localStorageKey="home-groups-servers-tab-v1"
+      tabs={[
+        {
+          title: "groups",
+          element: () => <Groups />,
+        },
+        {
+          title: "servers",
+          element: () => <Servers serverIDs={servers.ids()!} showAdd />,
+        },
+      ]}
+    />
   );
 };
 

@@ -212,3 +212,11 @@ export function convert_timelength_to_ms(timelength: Timelength) {
     return 60000;
   }
 }
+
+export function readableStorageAmount(gb: number) {
+  if (gb > 512) {
+    return `${(gb / 1024).toFixed(1)} TB`
+  } else {
+    return `${gb.toFixed()} GiB`
+  }
+}

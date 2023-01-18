@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "@solidjs/router";
 import { Component, createEffect, onCleanup, Show } from "solid-js";
-import { MAX_PAGE_WIDTH } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
@@ -14,16 +13,16 @@ import Header from "./Header";
 import BuildTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
-const Build2: Component<{}> = (p) => {
+const Build: Component<{}> = (p) => {
   const { builds, ws } = useAppState();
   const navigate = useNavigate();
   const params = useParams();
   const build = () => builds.get(params.id)!;
   const { isSemiMobile } = useAppDimensions();
-  const { user } = useUser();
-  const userCanUpdate = () =>
-    user().admin ||
-    build().permissions![getId(user())] === PermissionLevel.Update;
+  // const { user } = useUser();
+  // const userCanUpdate = () =>
+  //   user().admin ||
+  //   build().permissions![getId(user())] === PermissionLevel.Update;
   let unsub = () => {};
   createEffect(() => {
     unsub();
@@ -39,58 +38,22 @@ const Build2: Component<{}> = (p) => {
       <ActionStateProvider>
         <Grid
           style={{
-            width: "100vw",
-            "max-width": `${MAX_PAGE_WIDTH}px`,
+            width: "100%",
             "box-sizing": "border-box",
           }}
         >
-          <Grid style={{ width: "100%" }} gridTemplateColumns="1fr 1fr">
+          <Grid
+            style={{ width: "100%" }}
+            gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
+          >
             <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto 1fr" }}>
               <Header />
               <Actions />
             </Grid>
-            <Updates />
-          </Grid>
-          <BuildTabs />
-        </Grid>
-      </ActionStateProvider>
-    </Show>
-  );
-};
-
-const Build: Component<{}> = (p) => {
-  const { builds, ws } = useAppState();
-  const navigate = useNavigate();
-  const params = useParams();
-  const build = () => builds.get(params.id)!;
-  const { isSemiMobile } = useAppDimensions();
-  const { user } = useUser();
-  const userCanUpdate = () =>
-    user().admin ||
-    build().permissions![getId(user())] === PermissionLevel.Update;
-  let unsub = () => {};
-  createEffect(() => {
-    unsub();
-    unsub = ws.subscribe([Operation.DeleteBuild], (update) => {
-      if (update.target.id === params.id) {
-        navigate("/");
-      }
-    });
-  });
-  onCleanup(() => unsub);
-  return (
-    <Show when={build()} fallback={<NotFound type="build" />}>
-      <ActionStateProvider>
-        <Grid class={combineClasses("content")}>
-          {/* left / actions */}
-          <Grid class="left-content">
-            <Header />
-            <Actions />
-            <Show when={!isSemiMobile() && userCanUpdate()}>
+            <Show when={!isSemiMobile()}>
               <Updates />
             </Show>
           </Grid>
-          {/* right / tabs */}
           <BuildTabs />
         </Grid>
       </ActionStateProvider>
@@ -98,4 +61,4 @@ const Build: Component<{}> = (p) => {
   );
 };
 
-export default Build2;
+export default Build;

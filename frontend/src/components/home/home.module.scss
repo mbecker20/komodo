@@ -1,16 +1,5 @@
 @use "../../style/colors.scss" as c;
 
-.Home {
-	width: 100%;
-	grid-template-columns: repeat(2, 1fr);
-}
-
-@media only screen and (max-width: 1200px) {
-	.Home {
-		grid-template-columns: 1fr;
-	}
-}
-
 .SummaryItem {
 	background-color: c.$lightgrey;
 	padding: 1rem;

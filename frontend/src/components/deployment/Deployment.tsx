@@ -17,6 +17,7 @@ import Updates from "./Updates";
 
 const Deployment2: Component<{}> = (p) => {
   const { servers, deployments } = useAppState();
+  const { isSemiMobile, isMobile } = useAppDimensions();
   const params = useParams();
   const deployment = () => deployments.get(params.id);
   const server = () =>
@@ -29,17 +30,21 @@ const Deployment2: Component<{}> = (p) => {
       <ActionStateProvider>
         <Grid
           style={{
-            width: "100vw",
-            "max-width": `${MAX_PAGE_WIDTH}px`,
+            width: "100%",
             "box-sizing": "border-box",
           }}
         >
-          <Grid style={{ width: "100%" }} gridTemplateColumns="1fr 1fr">
+          <Grid
+            style={{ width: "100%" }}
+            gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
+          >
             <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto 1fr" }}>
               <Header />
               <Actions />
             </Grid>
-            <Updates />
+            <Show when={!isMobile()}>
+              <Updates />
+            </Show>
           </Grid>
           <DeploymentTabs />
         </Grid>

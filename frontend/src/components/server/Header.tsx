@@ -1,4 +1,4 @@
-import { Component, Show } from "solid-js";
+import { Component, createResource, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, getId, serverStatusClass } from "../../util/helpers";
@@ -12,6 +12,7 @@ import Updates from "./Updates";
 import { PermissionLevel, Server } from "../../types";
 import { A, useParams } from "@solidjs/router";
 import { client } from "../..";
+import Loading from "../shared/loading/Loading";
 
 const Header: Component<{}> = (p) => {
   const { servers } = useAppState();
@@ -19,12 +20,15 @@ const Header: Component<{}> = (p) => {
   const server = () => servers.get(params.id)!;
   const status = () => server().status.replaceAll("_", " ").toUpperCase();
   const { user } = useUser();
-  const { isMobile } = useAppDimensions();
+  const { isMobile, isSemiMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
     useLocalStorageToggle("show-updates");
   const userCanUpdate = () =>
     user().admin ||
     server().server.permissions![getId(user())] === PermissionLevel.Update;
+  const [version] = createResource(async () => {
+    return await client.get_server_version(params.id).catch();
+  });
   return (
     <>
       <Flex
@@ -33,10 +37,10 @@ const Header: Component<{}> = (p) => {
         alignItems="center"
         style={{
           position: "relative",
-          cursor: isMobile() && userCanUpdate() ? "pointer" : undefined,
+          cursor: isSemiMobile() ? "pointer" : undefined,
         }}
         onClick={() => {
-          if (isMobile() && userCanUpdate()) toggleShowUpdates();
+          if (isSemiMobile()) toggleShowUpdates();
         }}
       >
         <Grid gap="0.1rem">
@@ -50,6 +54,11 @@ const Header: Component<{}> = (p) => {
           </Flex>
         </Grid>
         <Flex alignItems="center">
+          <Show when={!isMobile()}>
+            <Show when={version()} fallback={<Loading type="three-dot" />}>
+              <div style={{ opacity: 0.7 }}>periphery v{version()}</div>
+            </Show>
+          </Show>
           <div class={serverStatusClass(server().status)}>{status()}</div>
           <A
             href={`/server/${params.id}/stats`}
@@ -69,7 +78,7 @@ const Header: Component<{}> = (p) => {
             </ConfirmButton>
           </Show>
         </Flex>
-        <Show when={isMobile() && userCanUpdate()}>
+        <Show when={isSemiMobile()}>
           <Flex gap="0.5rem" alignItems="center" class="show-updates-indicator">
             updates{" "}
             <Icon
@@ -79,7 +88,7 @@ const Header: Component<{}> = (p) => {
           </Flex>
         </Show>
       </Flex>
-      <Show when={isMobile() && userCanUpdate() && showUpdates()}>
+      <Show when={isSemiMobile() && showUpdates()}>
         <Updates />
       </Show>
     </>
