@@ -27,7 +27,7 @@ const mobileStyle: JSX.CSSProperties = {
 };
 
 export const Search: Component<{}> = (p) => {
-  const { isMobile } = useAppDimensions();
+  const { isSemiMobile } = useAppDimensions();
   const { search, open, input } = useSearchState();
   let inputRef: HTMLInputElement | undefined;
   useWindowKeyDown((e) => {
@@ -44,12 +44,12 @@ export const Search: Component<{}> = (p) => {
       menuClass={s.SearchMenu}
       menuStyle={{
         gap: "0.5rem",
-        ...(isMobile() ? mobileStyle : {}),
+        ...(isSemiMobile() ? mobileStyle : {}),
       }}
-      backgroundColor={isMobile() ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.4)"}
+      backgroundColor={isSemiMobile() ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.4)"}
       target={
         <Show
-          when={!isMobile()}
+          when={!isSemiMobile()}
           fallback={
             <button class="grey" onClick={() => open.set(true)}>
               <Icon type="search" width="1.15rem" />

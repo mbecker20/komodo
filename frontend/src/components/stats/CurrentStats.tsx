@@ -78,7 +78,6 @@ const CurrentStats2: Component<{}> = (p) => {
       style={{
         width: "100%",
         "box-sizing": "border-box",
-        "max-width": `${MAX_PAGE_WIDTH}px`,
       }}
       gridTemplateColumns="auto 1fr auto"
     >

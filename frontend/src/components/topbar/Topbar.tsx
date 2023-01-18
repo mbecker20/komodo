@@ -29,7 +29,7 @@ const Topbar: Component = () => {
     <Grid
       class={combineClasses(s.Topbar, "shadow")}
       placeItems="center"
-      style={{ height: inPx(TOPBAR_HEIGHT) }}
+      style={{ height: inPx(TOPBAR_HEIGHT), width: "100%" }}
     >
       <LeftSide />
       <SearchProvider>

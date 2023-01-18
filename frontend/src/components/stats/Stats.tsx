@@ -39,8 +39,7 @@ const StatsComp: Component<{}> = () => {
   return (
     <Grid
       style={{
-        width: "100vw",
-        "max-width": `${MAX_PAGE_WIDTH}px`,
+        width: "100%",
         "box-sizing": "border-box",
       }}
     >
