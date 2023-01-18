@@ -3,8 +3,8 @@ WORKDIR /builder
 
 COPY ./core ./core
 
-COPY ./lib/types ./lib/types
-COPY ./lib/helpers ./lib/helpers
+# COPY ./lib/types ./lib/types
+# COPY ./lib/helpers ./lib/helpers
 
 COPY ./lib/db_client ./lib/db_client
 COPY ./lib/periphery_client ./lib/periphery_client
