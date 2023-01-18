@@ -13,7 +13,7 @@ import { useParams } from "@solidjs/router";
 import { PermissionLevel, ServerStatus } from "../../types";
 
 const Actions: Component<{}> = (p) => {
-  const { ws, servers } = useAppState();
+  const { servers } = useAppState();
   const params = useParams();
   const { user } = useUser();
   const server = () => servers.get(params.id)!;

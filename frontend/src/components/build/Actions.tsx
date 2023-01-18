@@ -15,13 +15,13 @@ import { PermissionLevel } from "../../types";
 const Actions: Component<{}> = (p) => {
   const { user } = useUser();
   const params = useParams() as { id: string };
-  const { builds, ws } = useAppState();
+  const { builds } = useAppState();
   const build = () => builds.get(params.id)!;
   const actions = useActionStates();
   const userCanExecute = () =>
     user().admin ||
     build().permissions![getId(user())] === PermissionLevel.Execute ||
-    build().permissions![getId(user())] === PermissionLevel.Execute;
+    build().permissions![getId(user())] === PermissionLevel.Update;
   return (
     <Show when={userCanExecute()}>
       <Grid class={combineClasses("card shadow")} gridTemplateRows="auto 1fr">

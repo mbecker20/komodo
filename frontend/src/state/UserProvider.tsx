@@ -1,6 +1,7 @@
 import { createContext, createMemo, createResource, ParentComponent, Setter, useContext } from "solid-js";
 import { client } from "..";
 import { User } from "../types";
+import { getId } from "../util/helpers";
 
 export const LOGGED_IN_ENABLED = "LOGGED_IN_ENABLED";
 export const LOGGED_IN_DISABLED = "LOGGED_IN_DISABLED";
@@ -9,6 +10,7 @@ export const UNKNOWN = "UNKNOWN";
 
 export type UserState = {
   user: () => User;
+  user_id: () => string;
   setUser: Setter<false | User | undefined>;
   logout: () => void;
   username: () => string;
@@ -44,6 +46,7 @@ export const UserProvider: ParentComponent = (p) => {
   });
   const context: UserState = {
     user: () => user() as User,
+    user_id: () => getId(user()),
     setUser: mutate,
     logout,
     username,

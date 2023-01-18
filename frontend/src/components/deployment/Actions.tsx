@@ -14,22 +14,33 @@ import { A, useParams } from "@solidjs/router";
 import { DockerContainerState, PermissionLevel } from "../../types";
 
 const Actions: Component<{}> = (p) => {
-  const { deployments, builds } = useAppState();
+  const { deployments, builds, getPermissionOnDeployment } = useAppState();
   const params = useParams();
-  const { user } = useUser();
-  const show = () =>
-    deployment() &&
-    (user().admin ||
-      deployment().deployment.permissions![getId(user())] ===
-        PermissionLevel.Execute ||
-      deployment().deployment.permissions![getId(user())] ===
-        PermissionLevel.Update);
+  const { user, user_id } = useUser();
+  const show = () => {
+    const permissions = getPermissionOnDeployment(params.id);
+    return (
+      deployment() &&
+      (user().admin ||
+        permissions === PermissionLevel.Execute ||
+        permissions === PermissionLevel.Update)
+    );
+  };
   const deployment = () => deployments.get(params.id)!;
   const showBuild = () => {
     const build = deployment().deployment.build_id
       ? builds.get(deployment().deployment.build_id!)
       : undefined;
-    return build ? true : false;
+    if (build !== undefined) {
+      const permissions = build.permissions![user_id()];
+      return (
+        user().admin ||
+        permissions === PermissionLevel.Execute ||
+        permissions === PermissionLevel.Update
+      );
+    } else {
+      return false;
+    }
   };
   return (
     <Show when={show()}>
