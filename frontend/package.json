@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.6.0",
-    "apexcharts": "^3.36.3",
     "axios": "^1.2.1",
     "js-file-download": "^0.4.12",
     "lightweight-charts": "^3.8.0",

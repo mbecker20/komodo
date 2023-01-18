@@ -43,7 +43,7 @@ const SingleStatChart: Component<{
               bottomColor: `${p.color}0D`,
             },
           ]}
-          disableScroll
+          disableScroll={p.disableScroll}
         />
       </Show>
     </StatChartContainer>
