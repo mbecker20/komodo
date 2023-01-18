@@ -7,17 +7,23 @@ import { useConfig } from "./Provider";
 import { combineClasses } from "../../../../util/helpers";
 
 const ToNotify: Component<{}> = (p) => {
-  const { server, setServer } = useConfig();
+  const { server, setServer, userCanUpdate } = useConfig();
   return (
     <Grid class={combineClasses("config-item shadow")}>
       <Flex alignItems="center" justifyContent="space-between">
         <h1>notify</h1>
-        <button
-          class="green"
-          onClick={() => setServer("to_notify", (toNotify) => toNotify ? [...toNotify, ""] : [""])}
-        >
-          <Icon type="plus" />
-        </button>
+        <Show when={userCanUpdate()}>
+          <button
+            class="green"
+            onClick={() =>
+              setServer("to_notify", (toNotify) =>
+                toNotify ? [...toNotify, ""] : [""]
+              )
+            }
+          >
+            <Icon type="plus" />
+          </button>
+        </Show>
       </Flex>
       <For each={server.to_notify}>
         {(user, index) => (
@@ -26,23 +32,26 @@ const ToNotify: Component<{}> = (p) => {
               placeholder="slack user id"
               value={user}
               onEdit={(user) => setServer("to_notify", index(), user)}
+              disabled={!userCanUpdate()}
             />
-            <button
-              class="red"
-              onClick={() =>
-                setServer("to_notify", (toNotify) =>
-                  toNotify!.filter((_, i) => i !== index())
-                )
-              }
-            >
-              <Icon type="trash" />
-            </button>
+            <Show when={userCanUpdate()}>
+              <button
+                class="red"
+                onClick={() =>
+                  setServer("to_notify", (toNotify) =>
+                    toNotify!.filter((_, i) => i !== index())
+                  )
+                }
+              >
+                <Icon type="trash" />
+              </button>
+            </Show>
           </Flex>
         )}
       </For>
-			<Show when={server.to_notify?.length === 0}>
-				<div>no slack users to notify</div>
-			</Show>
+      <Show when={server.to_notify?.length === 0}>
+        <div>no slack users to notify</div>
+      </Show>
     </Grid>
   );
 };

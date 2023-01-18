@@ -183,6 +183,28 @@ async function handleMessage(
       procedures.update(procedure);
     }
   }
+
+  // permissions
+  else if (update.operation === Operation.ModifyUserPermissions) {
+    if (update.status === UpdateStatus.Complete) {
+      if (update.target.type === "Build") {
+        const build = await client.get_build(update.target.id);
+        builds.update(build);
+      } else if (update.target.type === "Deployment") {
+        const deployment = await client.get_deployment(update.target.id);
+        deployments.update(deployment);
+      } else if (update.target.type === "Server") {
+        const server = await client.get_server(update.target.id);
+        servers.update(server);
+      } else if (update.target.type === "Group") {
+        const group = await client.get_group(update.target.id);
+        groups.update(group);
+      } else if (update.target.type === "Procedure") {
+        const procedure = await client.get_procedure(update.target.id);
+        procedures.update(procedure);
+      }
+    }
+  }
 }
 
 export default connectToWs;

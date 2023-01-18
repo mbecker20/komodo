@@ -38,11 +38,11 @@ const Header: Component<{}> = (p) => {
         class={combineClasses("card shadow")}
         style={{
           position: "relative",
-          cursor: isSemiMobile() && userCanUpdate() ? "pointer" : undefined,
+          cursor: isSemiMobile() ? "pointer" : undefined,
           height: "fit-content",
         }}
         onClick={() => {
-          if (isSemiMobile() && userCanUpdate()) toggleShowUpdates();
+          if (isSemiMobile()) toggleShowUpdates();
         }}
       >
         <Flex alignItems="center" justifyContent="space-between">

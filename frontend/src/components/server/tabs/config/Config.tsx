@@ -19,7 +19,7 @@ const Config: Component<{}> = (p) => {
         <Grid class="config-items scroller">
           <Address />
           <Enabled />
-          <Networks />
+          {/* <Networks /> */}
           <Info />
           <Alerts />
           <ToNotify />

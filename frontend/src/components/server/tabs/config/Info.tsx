@@ -6,7 +6,7 @@ import Grid from "../../../shared/layout/Grid";
 import { useConfig } from "./Provider";
 
 const Info: Component<{}> = (p) => {
-  const { server, setServer } = useConfig();
+  const { server, setServer, userCanUpdate } = useConfig();
   return (
     <Grid class={combineClasses("config-item shadow")}>
       <h1>info</h1>
@@ -15,6 +15,7 @@ const Info: Component<{}> = (p) => {
         <Input
           value={server.region}
           onEdit={(value) => setServer("region", value)}
+          disabled={!userCanUpdate()}
         />
       </Flex>
       {/* <Flex justifyContent="space-between" alignItems="center">

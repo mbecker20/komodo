@@ -74,16 +74,16 @@ export const Search: Component<{}> = (p) => {
 
 const SearchMenu: Component<{ close: () => void }> = (p) => {
   const { tab, input, search } = useSearchState();
-  const { isMobile } = useAppDimensions();
+  const { isSemiMobile } = useAppDimensions();
   let inputRef: HTMLInputElement | undefined;
   onMount(() => {
-    if (isMobile()) {
+    if (isSemiMobile()) {
       inputRef?.focus();
     }
   });
   return (
     <>
-      <Show when={isMobile()}>
+      <Show when={isSemiMobile()}>
         <Input
           ref={() => inputRef}
           class={s.SearchInput}
@@ -91,13 +91,13 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
           value={search.value()}
           onEdit={input.onEdit}
           onKeyDown={input.onKeyDown(inputRef)}
-          style={{ width: isMobile() ? "100%" : undefined }}
+          style={{ width: isSemiMobile() ? "100%" : undefined }}
         />
       </Show>
       <ControlledTabs
         selected={tab.selected}
         set={tab.set}
-        containerStyle={{ width: isMobile() ? "100%" : "30rem", gap: "0.5rem" }}
+        containerStyle={{ width: isSemiMobile() ? "100%" : "30rem", gap: "0.5rem" }}
         tabs={[
           {
             title: "deployments",

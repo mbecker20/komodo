@@ -21,7 +21,7 @@ import {
 import { client } from "../../..";
 import SimpleTabs from "../../shared/tabs/SimpleTabs";
 import { ConfigProvider } from "./config/Provider";
-import Permissions from "./config/Permissions";
+import Permissions from "./Permissions";
 import { useUser } from "../../../state/UserProvider";
 
 const DeploymentTabs: Component<{}> = () => {

@@ -211,7 +211,7 @@ export function useCollection<T>(
   query: () => Promise<Collection<T>>,
   idPath: string[]
 ) {
-  const [collection, { mutate }] = createResource(query);
+  const [collection, { mutate, refetch }] = createResource(query);
   const add = (item: T) => {
     mutate((collection: any) => ({
       ...collection,
@@ -225,10 +225,11 @@ export function useCollection<T>(
     mutate((collection: any) => filterOutFromObj(collection, [id]));
   };
   const update = (item: T) => {
+    const id = getNestedEntry(item, idPath);
     mutate((collection: any) => ({
       ...collection,
-      [getNestedEntry(item, idPath)]: {
-        ...collection[getNestedEntry(item, idPath)],
+      [id]: {
+        ...collection[id],
         ...item,
       },
     }));
@@ -259,5 +260,6 @@ export function useCollection<T>(
     loaded,
     filter,
     filterArray,
+    refetch,
   };
 }

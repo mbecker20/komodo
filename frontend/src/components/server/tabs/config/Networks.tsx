@@ -1,5 +1,5 @@
 import { Component, createSignal, For } from "solid-js";
-import { pushNotification } from "../../../..";
+import { client, pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import ConfirmButton from "../../../shared/ConfirmButton";
 import Icon from "../../../shared/Icon";

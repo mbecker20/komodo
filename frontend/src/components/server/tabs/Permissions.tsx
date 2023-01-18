@@ -24,7 +24,7 @@ import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
 import Menu from "../../shared/menu/Menu";
 import Selector from "../../shared/menu/Selector";
-import { useConfig } from "./Provider";
+import { useConfig } from "./config/Provider";
 
 const PERMISSIONS_OPTIONS = [
   PermissionLevel.Read,
@@ -32,9 +32,9 @@ const PERMISSIONS_OPTIONS = [
   PermissionLevel.Update,
 ];
 
-const Owners: Component<{}> = (p) => {
+const Permissions: Component<{}> = (p) => {
   const { ws } = useAppState();
-  const { build } = useConfig();
+  const { server, reset } = useConfig();
   const { user } = useUser();
   const params = useParams();
   const [userSearch, setUserSearch] = createSignal("");
@@ -50,23 +50,28 @@ const Owners: Component<{}> = (p) => {
         !u.admin &&
         u.enabled &&
         u.username.includes(userSearch()) &&
-        (build.permissions![getId(u)] === undefined ||
-          build.permissions![getId(u)] === PermissionLevel.None)
+        (server.permissions![getId(u)] === undefined ||
+          server.permissions![getId(u)] === PermissionLevel.None)
     )
   );
-  let unsub = () => {};
+  let unsub_permissions = () => {};
   createEffect(() => {
-    unsub();
-    unsub = ws.subscribe(
-      [Operation.ModifyUserPermissions, Operation.ModifyUserEnabled],
-      () => {
-        client.list_users().then(setUsers);
-      }
+    unsub_permissions();
+    unsub_permissions = ws.subscribe([Operation.ModifyUserPermissions], () =>
+      reset()
     );
   });
-  onCleanup(() => unsub());
+  onCleanup(() => unsub_permissions());
+  let unsub_enabled = () => {};
+  createEffect(() => {
+    unsub_enabled();
+    unsub_enabled = ws.subscribe([Operation.ModifyUserEnabled], () =>
+      client.list_users().then(setUsers)
+    );
+  });
+  onCleanup(() => unsub_enabled());
   return (
-    <Show when={build.loaded}>
+    <Show when={server.loaded}>
       <Grid class="config">
         <Grid
           class="config-items scroller"
@@ -97,7 +102,7 @@ const Owners: Component<{}> = (p) => {
                           client.update_user_permissions_on_target({
                             user_id: getId(user),
                             permission: PermissionLevel.Read,
-                            target_type: PermissionsTarget.Build,
+                            target_type: PermissionsTarget.Server,
                             target_id: params.id,
                           });
                           setUserSearch("");
@@ -114,7 +119,7 @@ const Owners: Component<{}> = (p) => {
               menuStyle={{ width: "12rem" }}
             />
             <For
-              each={Object.entries(build.permissions!)
+              each={Object.entries(server.permissions!)
                 .filter(
                   ([_, permission]) => permission !== PermissionLevel.None
                 )
@@ -122,7 +127,7 @@ const Owners: Component<{}> = (p) => {
             >
               {(user_id) => {
                 const u = () => getUser(user_id);
-                const permissions = () => build.permissions![user_id];
+                const permissions = () => server.permissions![user_id];
                 return (
                   <Show when={u()}>
                     <Flex
@@ -137,34 +142,36 @@ const Owners: Component<{}> = (p) => {
                         {u().username}
                         {user_id === getId(user()) && " ( you )"}
                       </div>
-                      <Flex alignItems="center">
-                        <Selector
-                          selected={permissions()}
-                          items={PERMISSIONS_OPTIONS}
-                          onSelect={(permission) => {
-                            client.update_user_permissions_on_target({
-                              user_id,
-                              permission: permission as PermissionLevel,
-                              target_type: PermissionsTarget.Build,
-                              target_id: params.id,
-                            });
-                          }}
-                          position="bottom right"
-                        />
-                        <ConfirmButton
-                          class="red"
-                          onConfirm={() => {
-                            client.update_user_permissions_on_target({
-                              user_id,
-                              permission: PermissionLevel.None,
-                              target_type: PermissionsTarget.Build,
-                              target_id: params.id,
-                            });
-                          }}
-                        >
-                          remove
-                        </ConfirmButton>
-                      </Flex>
+                      <Show when={!u().admin && user_id !== getId(user())}>
+                        <Flex alignItems="center">
+                          <Selector
+                            selected={permissions()}
+                            items={PERMISSIONS_OPTIONS}
+                            onSelect={(permission) => {
+                              client.update_user_permissions_on_target({
+                                user_id,
+                                permission: permission as PermissionLevel,
+                                target_type: PermissionsTarget.Server,
+                                target_id: params.id,
+                              });
+                            }}
+                            position="bottom right"
+                          />
+                          <ConfirmButton
+                            class="red"
+                            onConfirm={() => {
+                              client.update_user_permissions_on_target({
+                                user_id,
+                                permission: PermissionLevel.None,
+                                target_type: PermissionsTarget.Server,
+                                target_id: params.id,
+                              });
+                            }}
+                          >
+                            remove
+                          </ConfirmButton>
+                        </Flex>
+                      </Show>
                     </Flex>
                   </Show>
                 );
@@ -177,4 +184,4 @@ const Owners: Component<{}> = (p) => {
   );
 };
 
-export default Owners;
+export default Permissions;

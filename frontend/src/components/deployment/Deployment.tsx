@@ -17,7 +17,7 @@ import Updates from "./Updates";
 
 const Deployment2: Component<{}> = (p) => {
   const { servers, deployments } = useAppState();
-  const { isSemiMobile, isMobile } = useAppDimensions();
+  const { isSemiMobile } = useAppDimensions();
   const params = useParams();
   const deployment = () => deployments.get(params.id);
   const server = () =>
@@ -42,7 +42,7 @@ const Deployment2: Component<{}> = (p) => {
               <Header />
               <Actions />
             </Grid>
-            <Show when={!isMobile()}>
+            <Show when={!isSemiMobile()}>
               <Updates />
             </Show>
           </Grid>

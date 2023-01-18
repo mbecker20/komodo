@@ -7,7 +7,7 @@ import Grid from "../../../shared/layout/Grid";
 import { useConfig } from "./Provider";
 
 const Alerts: Component<{}> = (p) => {
-  const { server, setServer } = useConfig();
+  const { server, setServer, userCanUpdate } = useConfig();
   const [alerts, setAlerts] = createStore({
     cpu: server.cpu_alert?.toString(),
     mem: server.mem_alert?.toString(),
@@ -32,6 +32,7 @@ const Alerts: Component<{}> = (p) => {
                 }
               }}
               style={{ width: "4rem" }}
+              disabled={!userCanUpdate()}
             />
             <div>%</div>
           </Flex>
@@ -51,6 +52,7 @@ const Alerts: Component<{}> = (p) => {
                 }
               }}
               style={{ width: "4rem" }}
+              disabled={!userCanUpdate()}
             />
             <div>%</div>
           </Flex>
@@ -70,6 +72,7 @@ const Alerts: Component<{}> = (p) => {
                 }
               }}
               style={{ width: "4rem" }}
+              disabled={!userCanUpdate()}
             />
             <div>%</div>
           </Flex>

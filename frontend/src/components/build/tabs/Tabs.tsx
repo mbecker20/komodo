@@ -8,7 +8,7 @@ import SimpleTabs from "../../shared/tabs/SimpleTabs";
 import { Tab } from "../../shared/tabs/Tabs";
 import BuildConfig from "./build-config/BuildConfig";
 import GitConfig from "./git-config/GitConfig";
-import Owners from "./Owners";
+import Owners from "./Permissions";
 import { ConfigProvider } from "./Provider";
 
 const BuildTabs: Component<{}> = (p) => {

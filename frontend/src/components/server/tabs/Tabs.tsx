@@ -6,7 +6,7 @@ import SimpleTabs from "../../shared/tabs/SimpleTabs";
 import { Tab } from "../../shared/tabs/Tabs";
 import Config from "./config/Config";
 import { ConfigProvider } from "./config/Provider";
-import Owners from "./Owners";
+import Permissions from "./Permissions";
 
 const ServerTabs: Component<{}> = (p) => {
   const { servers } = useAppState();
@@ -18,7 +18,7 @@ const ServerTabs: Component<{}> = (p) => {
       <ConfigProvider>
         <SimpleTabs
           containerClass="card shadow"
-          containerStyle={{ "width": "100%", "box-sizing": "border-box" }}
+          containerStyle={{ width: "100%", "box-sizing": "border-box" }}
           tabs={
             [
               {
@@ -26,8 +26,8 @@ const ServerTabs: Component<{}> = (p) => {
                 element: () => <Config />,
               },
               user().admin && {
-                title: "collaborators",
-                element: () => <Owners />,
+                title: "permissions",
+                element: () => <Permissions />,
               },
             ].filter((e) => e) as Tab[]
           }

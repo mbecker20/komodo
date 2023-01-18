@@ -4,7 +4,7 @@ import Flex from "../../../shared/layout/Flex";
 import { useConfig } from "./Provider";
 
 const Enabled: Component<{}> = (p) => {
-  const { server, setServer } = useConfig();
+  const { server, setServer, userCanUpdate } = useConfig();
   return (
     <Flex
       class={combineClasses("config-item shadow")}
@@ -15,6 +15,7 @@ const Enabled: Component<{}> = (p) => {
       <button
         class={server.enabled ? "green" : "red"}
         onClick={() => setServer("enabled", !server.enabled)}
+        disabled={!userCanUpdate()}
       >
         {server.enabled ? "yes" : "no"}
       </button>
