@@ -17,6 +17,7 @@ import HistoricalStats from "./HistoricalStats";
 import { StatsProvider, useStatsState } from "./Provider";
 
 const TIMELENGTHS = [
+  Timelength.FifteenSeconds,
   Timelength.OneMinute,
   Timelength.FiveMinutes,
   Timelength.FifteenMinutes,

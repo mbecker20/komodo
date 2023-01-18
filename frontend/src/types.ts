@@ -423,6 +423,7 @@ export enum Timelength {
 	OneSecond = "1-sec",
 	FiveSeconds = "5-sec",
 	TenSeconds = "10-sec",
+	FifteenSeconds = "15-sec",
 	ThirtySeconds = "30-sec",
 	OneMinute = "1-min",
 	TwoMinutes = "2-min",

@@ -201,6 +201,9 @@ pub enum Timelength {
     #[serde(rename = "10-sec")]
     #[strum(serialize = "10-sec")]
     TenSeconds,
+    #[serde(rename = "15-sec")]
+    #[strum(serialize = "15-sec")]
+    FifteenSeconds,
     #[serde(rename = "30-sec")]
     #[strum(serialize = "30-sec")]
     ThirtySeconds,
