@@ -47,9 +47,9 @@ dependencies = [
 
 [[package]]
 name = "async_timing_util"
-version = "0.1.12"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62c38326e21188f3b8ccf75b2de994d2ca9fca9fcbc84420fd24569cf9aeb4b2"
+checksum = "2269c2e26c5df69e4f5ac02118d3922e151ecf680dac2427bdf6fa51c7d6cdff"
 dependencies = [
  "serde",
  "serde_derive",

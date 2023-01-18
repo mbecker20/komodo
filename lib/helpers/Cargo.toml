@@ -11,7 +11,7 @@ license = "GPL-3.0-or-later"
 [dependencies]
 # types = { package = "monitor_types", path = "../types" }
 types = { package = "monitor_types", version = "0.1.8" }
-async_timing_util = "0.1.12"
+async_timing_util = "0.1.13"
 bollard = "0.13"
 anyhow = "1.0"
 axum = { version = "0.6", features = ["ws", "json"] }

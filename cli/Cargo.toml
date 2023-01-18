@@ -14,7 +14,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "4.0"
-async_timing_util = "0.1.12"
+async_timing_util = "0.1.13"
 rand = "0.8"
 serde = "1.0"
 serde_derive = "1.0"
