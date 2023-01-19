@@ -33,6 +33,14 @@ const Account: Component<{ close: () => void }> = (p) => {
           {user().create_server_permissions.toString()}
         </Flex>
       </Show>
+      <A
+        href="/account"
+        class="grey"
+        onClick={() => p.close()}
+        style={{ "font-size": "1rem", width: "100%" }}
+      >
+        account
+      </A>
       <button onClick={() => logout()} class="red" style={{ width: "100%" }}>
         log out
       </button>
