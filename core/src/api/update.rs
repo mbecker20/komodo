@@ -5,7 +5,7 @@ use axum::{extract::Query, routing::get, Extension, Json, Router};
 use helpers::handle_anyhow_error;
 use mungos::{doc, to_bson, ObjectId};
 use serde_json::Value;
-use types::{PermissionLevel, Update, UpdateTarget};
+use types::{Operation, PermissionLevel, Update, UpdateTarget};
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -95,7 +95,7 @@ impl State {
                     let deployment = self
                         .get_deployment_check_permissions(id, user, PermissionLevel::Read)
                         .await?;
-                    if let Some(build_id) = &deployment.branch {
+                    if let Some(build_id) = &deployment.build_id {
                         let build = self
                             .get_build_check_permissions(build_id, user, PermissionLevel::Read)
                             .await;
@@ -103,7 +103,7 @@ impl State {
                             Some(doc! {
                                 "$or": [
                                     {"target": to_bson(&target).unwrap()},
-                                    {"target": { "type": "Build", "id": build_id }, "operation": "build_build"}
+                                    {"target": { "type": "Build", "id": build_id }, "operation": Operation::BuildBuild.to_string()}
                                 ],
                             })
                         } else {

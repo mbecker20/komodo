@@ -1,7 +1,7 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { Operation, Update as UpdateType, UpdateStatus } from "../../types";
-import { combineClasses, readableMonitorTimestamp } from "../../util/helpers";
+import { combineClasses, readableMonitorTimestamp, readableVersion } from "../../util/helpers";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
@@ -12,9 +12,11 @@ const Update: Component<{ update: UpdateType }> = (p) => {
   const { usernames } = useAppState();
   const operation = () => {
     if (p.update.operation === Operation.BuildBuild) {
-      return "build";
+      return `build ${readableVersion(p.update.version!)}`;
     }
-    return p.update.operation.replaceAll("_", " ");
+    return `${p.update.operation.replaceAll("_", " ")}${
+      p.update.version ? " " + readableVersion(p.update.version) : ""
+    }`;
   };
   return (
     <Grid gap="0.25rem" class={combineClasses(s.Update, "shadow")}>
