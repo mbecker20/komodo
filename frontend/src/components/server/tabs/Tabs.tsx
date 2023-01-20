@@ -6,6 +6,7 @@ import SimpleTabs from "../../shared/tabs/SimpleTabs";
 import { Tab } from "../../shared/tabs/Tabs";
 import Config from "./config/Config";
 import { ConfigProvider } from "./config/Provider";
+import Info from "./Info";
 import Permissions from "./Permissions";
 
 const ServerTabs: Component<{}> = (p) => {
@@ -24,6 +25,10 @@ const ServerTabs: Component<{}> = (p) => {
               {
                 title: "config",
                 element: () => <Config />,
+              },
+              {
+                title: "info",
+                element: () => <Info />
               },
               user().admin && {
                 title: "permissions",

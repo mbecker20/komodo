@@ -216,7 +216,13 @@ export function convert_timelength_to_ms(timelength: Timelength) {
 export function readableStorageAmount(gb: number) {
   if (gb > 512) {
     return `${(gb / 1024).toFixed(1)} TB`
+  } else if (gb < 1) {
+    return `${(gb * 1024).toFixed()} MiB`
   } else {
     return `${gb.toFixed()} GiB`
   }
+}
+
+export function readableVersion(version: Version) {
+  return `v${version.major}.${version.minor}.${version.patch}`;
 }

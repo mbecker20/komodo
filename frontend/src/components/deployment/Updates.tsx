@@ -7,10 +7,13 @@ import { combineClasses } from "../../util/helpers";
 import { Operation } from "../../types";
 import Flex from "../shared/layout/Flex";
 import Loading from "../shared/loading/Loading";
+import { useParams } from "@solidjs/router";
 
 const Updates: Component<{}> = (p) => {
-  const { ws, params, deployment } = useAppState();
-  const updates = useUpdates({ type: "Deployment", id: params.id! }, true);
+  const { ws, deployments } = useAppState();
+  const params = useParams();
+  const deployment = () => deployments.get(params.id)!
+  const updates = useUpdates({ type: "Deployment", id: params.id }, true);
   const buildID = () => deployment()?.deployment.build_id;
   let unsub = () => {};
   createEffect(() => {

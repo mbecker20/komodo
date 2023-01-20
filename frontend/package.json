@@ -5,6 +5,7 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
+    "check": "tsc",
     "build": "vite build && node post-build.mjs",
     "serve": "vite preview"
   },

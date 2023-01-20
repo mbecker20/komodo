@@ -1,6 +1,6 @@
 import { createEffect, createResource, createSignal } from "solid-js";
 import { client } from "..";
-import { ServerStatus, SystemStats, UpdateTarget } from "../types";
+import { ServerStatus, SystemInformation, SystemStats, UpdateTarget } from "../types";
 import {
   filterOutFromObj,
   getNestedEntry,
@@ -60,6 +60,32 @@ export function useServerStats() {
         load(serverID);
       }
       return stat;
+    },
+    load,
+  };
+}
+
+export function useServerInfo() {
+  const [info, set] = createSignal<Record<string, SystemInformation | undefined>>(
+    {}
+  );
+  const load = async (serverID: string) => {
+    const info = await client.get_server_system_info(serverID);
+    set((s) => ({ ...s, [serverID]: info }));
+  };
+  const loading: Record<string, boolean> = {};
+  return {
+    get: (serverID: string, serverStatus?: ServerStatus) => {
+      const information = info()[serverID];
+      if (
+        information === undefined &&
+        !loading[serverID] &&
+        (serverStatus ? serverStatus === ServerStatus.Ok : true)
+      ) {
+        loading[serverID] = true;
+        load(serverID);
+      }
+      return information;
     },
     load,
   };

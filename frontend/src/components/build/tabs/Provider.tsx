@@ -100,7 +100,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   onCleanup(() => modify_unsub());
 
-  const userCanUpdate = () => user().admin || build.permissions[getId(user())] === PermissionLevel.Update;
+  const userCanUpdate = () => user().admin || build.permissions![getId(user())] === PermissionLevel.Update;
 
   const state = {
     build,

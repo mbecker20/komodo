@@ -1,4 +1,4 @@
-import { Params, useNavigate, useParams } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 import { createContext, ParentComponent, useContext } from "solid-js";
 import { useWindowKeyDown } from "../util/hooks";
 import {
@@ -6,6 +6,7 @@ import {
   useDeployments,
   useGroups,
   useProcedures,
+  useServerInfo,
   useServers,
   useServerStats,
   useUpdates,
@@ -13,19 +14,17 @@ import {
 } from "./hooks";
 import connectToWs from "./ws";
 import { useUser } from "./UserProvider";
-import { Build, DeploymentWithContainerState, PermissionLevel, ServerWithStatus } from "../types";
+import { PermissionLevel } from "../types";
 
 export type State = {
   usernames: ReturnType<typeof useUsernames>;
   servers: ReturnType<typeof useServers>;
-  server: () => ServerWithStatus | undefined;
   getPermissionOnServer: (id: string) => PermissionLevel;
   serverStats: ReturnType<typeof useServerStats>;
+  serverInfo: ReturnType<typeof useServerInfo>;
   ungroupedServerIds: () => string[] | undefined;
-  build: () => Build | undefined;
   builds: ReturnType<typeof useBuilds>;
   getPermissionOnBuild: (id: string) => PermissionLevel;
-  deployment: () => DeploymentWithContainerState | undefined;
   deployments: ReturnType<typeof useDeployments>;
   getPermissionOnDeployment: (id: string) => PermissionLevel;
   groups: ReturnType<typeof useGroups>;
@@ -33,7 +32,6 @@ export type State = {
   procedures: ReturnType<typeof useProcedures>;
   getPermissionOnProcedure: (id: string) => PermissionLevel;
   updates: ReturnType<typeof useUpdates>;
-  params: { id?: string };
 };
 
 const context = createContext<
@@ -45,7 +43,6 @@ const context = createContext<
 
 export const AppStateProvider: ParentComponent = (p) => {
   const { user, logout } = useUser();
-  const params = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const userId = (user()._id as any).$oid as string;
   const servers = useServers();
@@ -57,7 +54,6 @@ export const AppStateProvider: ParentComponent = (p) => {
   const state: State = {
     usernames,
     servers,
-    server: () => servers.get(params.id!),
     getPermissionOnServer: (id: string) => {
       const server = servers.get(id)!;
       const permissions = server.server.permissions![userId] as
@@ -83,7 +79,6 @@ export const AppStateProvider: ParentComponent = (p) => {
       });
     },
     builds,
-    build: () => builds.get(params.id!),
     getPermissionOnBuild: (id: string) => {
       const build = builds.get(id)!;
       const permissions = build.permissions![userId] as
@@ -95,7 +90,6 @@ export const AppStateProvider: ParentComponent = (p) => {
         return PermissionLevel.None;
       }
     },
-    deployment: () => deployments.get(params.id!),
     deployments,
     getPermissionOnDeployment: (id: string) => {
       const deployment = deployments.get(id)!;
@@ -109,6 +103,7 @@ export const AppStateProvider: ParentComponent = (p) => {
       }
     },
     serverStats: useServerStats(),
+    serverInfo: useServerInfo(),
     groups,
     getPermissionOnGroup: (id: string) => {
       const group = groups.get(id)!;
@@ -134,7 +129,6 @@ export const AppStateProvider: ParentComponent = (p) => {
       }
     },
     updates: useUpdates(),
-    params,
   };
 
   // createEffect(() => {

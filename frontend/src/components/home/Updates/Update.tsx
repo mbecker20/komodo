@@ -4,6 +4,7 @@ import { Operation, Update as UpdateType, UpdateStatus } from "../../../types";
 import {
   combineClasses,
   readableMonitorTimestamp,
+  readableVersion,
 } from "../../../util/helpers";
 import Icon from "../../shared/Icon";
 import Flex from "../../shared/layout/Flex";
@@ -26,9 +27,9 @@ const Update: Component<{ update: UpdateType }> = (p) => {
   };
   const operation = () => {
     if (p.update.operation === Operation.BuildBuild) {
-      return "build";
+      return `build ${readableVersion(p.update.version!)}`;
     }
-    return p.update.operation.replaceAll("_", " ");
+    return `${p.update.operation.replaceAll("_", " ")}${p.update.version ? " " + readableVersion(p.update.version) : ""}`;
   };
   return (
     <Flex
