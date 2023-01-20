@@ -404,13 +404,14 @@ export class Client {
   }
 
   // updates
-
-  list_updates(offset: number, target?: UpdateTarget): Promise<Update[]> {
+  // show_builds is only relevant for Deployment targets, must pass show_builds = true to include build updates of attached build_id
+  list_updates(offset: number, target?: UpdateTarget, show_builds?: boolean): Promise<Update[]> {
     return this.get(
       `/api/update/list${generateQuery({
         offset,
         type: target && target.type,
         id: target && target.id,
+        show_builds,
       })}`
     );
   }

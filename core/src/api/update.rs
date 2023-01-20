@@ -27,8 +27,12 @@ pub fn router() -> Router {
                     .map(|v| v.as_str().unwrap_or("0").parse().unwrap_or(0))
                     .unwrap_or(0);
                 let target = serde_json::from_str::<UpdateTarget>(&value.to_string()).ok();
+                let show_builds = value
+                    .get("show_builds")
+                    .map(|b| b.as_bool().unwrap_or_default())
+                    .unwrap_or_default();
                 let updates = state
-                    .list_updates(target, offset, &user)
+                    .list_updates(target, offset, show_builds, &user)
                     .await
                     .map_err(handle_anyhow_error)?;
                 response!(Json(updates))
@@ -82,14 +86,42 @@ impl State {
         &self,
         target: Option<UpdateTarget>,
         offset: u64,
+        show_builds: bool,
         user: &RequestUser,
     ) -> anyhow::Result<Vec<Update>> {
         let filter = match target {
             Some(target) => {
-                self.permission_on_update_target(&target, user).await?;
-                Some(doc! {
-                    "target": to_bson(&target).unwrap()
-                })
+                if let (UpdateTarget::Deployment(id), true) = (&target, show_builds) {
+                    let deployment = self
+                        .get_deployment_check_permissions(id, user, PermissionLevel::Read)
+                        .await?;
+                    if let Some(build_id) = &deployment.branch {
+                        let build = self
+                            .get_build_check_permissions(build_id, user, PermissionLevel::Read)
+                            .await;
+                        if let Ok(_) = build {
+                            Some(doc! {
+                                "$or": [
+                                    {"target": to_bson(&target).unwrap()},
+                                    {"target": { "type": "Build", "id": build_id }, "operation": "build_build"}
+                                ],
+                            })
+                        } else {
+                            Some(doc! {
+                                "target": to_bson(&target).unwrap()
+                            })
+                        }
+                    } else {
+                        Some(doc! {
+                            "target": to_bson(&target).unwrap()
+                        })
+                    }
+                } else {
+                    self.permission_on_update_target(&target, user).await?;
+                    Some(doc! {
+                        "target": to_bson(&target).unwrap()
+                    })
+                }
             }
             None => {
                 if user.is_admin {

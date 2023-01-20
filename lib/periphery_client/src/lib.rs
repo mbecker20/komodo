@@ -87,21 +87,24 @@ impl PeripheryClient {
         Ok(socket)
     }
 
-    async fn get_text(&self, server: &Server, endpoint: &str, timeout_ms: impl Into<Option<u64>>) -> anyhow::Result<String> {
+    async fn get_text(
+        &self,
+        server: &Server,
+        endpoint: &str,
+        timeout_ms: impl Into<Option<u64>>,
+    ) -> anyhow::Result<String> {
         let mut req = self
             .http_client
             .get(format!("{}{endpoint}", server.address));
-            
+
         if let Some(timeout) = timeout_ms.into() {
             req = req.timeout(Duration::from_millis(timeout))
         }
 
-        let res = req.send()
-            .await
-            .context(format!(
-                "failed at get request to server {} | not reachable",
-                server.name
-            ))?;
+        let res = req.send().await.context(format!(
+            "failed at get request to server {} | not reachable",
+            server.name
+        ))?;
         let status = res.status();
         if status == StatusCode::OK {
             let text = res.text().await.context("failed at parsing response")?;

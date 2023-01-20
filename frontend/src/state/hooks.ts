@@ -124,9 +124,9 @@ export function useDeployments() {
   };
 }
 
-export function useUpdates(target?: UpdateTarget) {
+export function useUpdates(target?: UpdateTarget, show_builds?: boolean) {
   const updates = useArrayWithId(
-    () => client.list_updates(0, target),
+    () => client.list_updates(0, target, show_builds),
     ["_id", "$oid"]
   );
   const [noMore, setNoMore] = createSignal(false);

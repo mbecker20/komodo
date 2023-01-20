@@ -4,16 +4,14 @@ import Grid from "../shared/layout/Grid";
 import Update from "../update/Update";
 import { useAppState } from "../../state/StateProvider";
 import { combineClasses } from "../../util/helpers";
-import { useParams } from "@solidjs/router";
 import { Operation } from "../../types";
 import Flex from "../shared/layout/Flex";
 import Loading from "../shared/loading/Loading";
 
 const Updates: Component<{}> = (p) => {
-  const { ws, deployments } = useAppState();
-  const params = useParams();
-  const updates = useUpdates({ type: "Deployment", id: params.id });
-  const buildID = () => deployments.get(params.id)?.deployment.build_id;
+  const { ws, params, deployment } = useAppState();
+  const updates = useUpdates({ type: "Deployment", id: params.id! }, true);
+  const buildID = () => deployment()?.deployment.build_id;
   let unsub = () => {};
   createEffect(() => {
     unsub();
