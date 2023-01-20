@@ -29,7 +29,12 @@ pub fn router() -> Router {
                 let target = serde_json::from_str::<UpdateTarget>(&value.to_string()).ok();
                 let show_builds = value
                     .get("show_builds")
-                    .map(|b| b.as_bool().unwrap_or_default())
+                    .map(|b| {
+                        b.as_str()
+                            .unwrap_or("false")
+                            .parse::<bool>()
+                            .unwrap_or_default()
+                    })
                     .unwrap_or_default();
                 let updates = state
                     .list_updates(target, offset, show_builds, &user)
