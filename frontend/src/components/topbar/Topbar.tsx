@@ -78,7 +78,7 @@ const RightSide: Component = () => {
       alignItems="center"
       style={{ padding: "0rem 0.5rem", "place-self": "center end" }}
     >
-      <Menu
+      {/* <Menu
         show={menu() === "updates"}
         close={close}
         containerStyle={{ cursor: "pointer" }}
@@ -101,7 +101,7 @@ const RightSide: Component = () => {
         }
         content={<Updates />}
         position="bottom right"
-      />
+      /> */}
       <Menu
         show={menu() === "account"}
         close={close}

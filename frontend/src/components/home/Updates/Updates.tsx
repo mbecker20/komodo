@@ -1,22 +1,24 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
+import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
-import s from "../home.module.scss";
+import Loading from "../../shared/loading/Loading";
 import Update from "./Update";
-import { combineClasses } from "../../../util/helpers";
-import { useAppDimensions } from "../../../state/DimensionProvider";
 
 const Updates: Component<{}> = () => {
   const { updates } = useAppState();
-  const { isMobile } = useAppDimensions();
   return (
-    <Show when={updates.loaded()}>
-      <Grid
-        class={combineClasses(s.Updates, "card shadow")}
-        style={{ width: "100%", "box-sizing": "border-box" }}
+    <Grid class="card shadow" style={{ "flex-grow": 1 }}>
+      <h1>updates</h1>
+      <Show
+        when={updates.loaded()}
+        fallback={
+          <Flex justifyContent="center">
+            <Loading type="three-dot" />
+          </Flex>
+        }
       >
-        <h1>updates</h1>
-        <Grid>
+        <Grid class="updates-container scroller">
           <For each={updates.collection()!}>
             {(update) => <Update update={update} />}
           </For>
@@ -30,8 +32,8 @@ const Updates: Component<{}> = () => {
             </button>
           </Show>
         </Grid>
-      </Grid>
-    </Show>
+      </Show>
+    </Grid>
   );
 };
 
