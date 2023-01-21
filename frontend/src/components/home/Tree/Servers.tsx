@@ -2,6 +2,7 @@ import { Component, createMemo, createSignal, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import Input from "../../shared/Input";
+import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
 import AddServer from "./AddServer";
 import Server from "./Server";
@@ -31,18 +32,20 @@ const Servers: Component<{ serverIDs: string[]; showAdd?: boolean }> = (p) => {
   });
   return (
     <Grid style={{ height: "fit-content" }}>
-      <Input
-        placeholder="filter servers"
-        value={serverFilter()}
-        onEdit={setServerFilter}
-        style={{ width: "100%", padding: "0.5rem" }}
-      />
+      <Grid gridTemplateColumns="1fr auto">
+        <Input
+          placeholder="filter servers"
+          value={serverFilter()}
+          onEdit={setServerFilter}
+          style={{ width: "100%", padding: "0.5rem" }}
+        />
+        <Show
+          when={p.showAdd && (user().admin || user().create_server_permissions)}
+        >
+          <AddServer />
+        </Show>
+      </Grid>
       <For each={serverIDs()}>{(id) => <Server id={id} />}</For>
-      <Show
-        when={p.showAdd && (user().admin || user().create_server_permissions)}
-      >
-        <AddServer />
-      </Show>
     </Grid>
   );
 };

@@ -18,7 +18,7 @@ const Updates: Component<{}> = () => {
           </Flex>
         }
       >
-        <Grid class="updates-container scroller">
+        <Grid class="updates-container-small scroller">
           <For each={updates.collection()!}>
             {(update) => <Update update={update} />}
           </For>

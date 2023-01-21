@@ -37,14 +37,16 @@ const Groups: Component<{}> = (p) => {
   });
   return (
     <Grid style={{ height: "fit-content" }}>
-      <Input
-        placeholder="filter groups"
-        value={groupFilter()}
-        onEdit={setGroupFilter}
-        style={{ width: "100%", padding: "0.5rem" }}
-      />
+      <Grid gridTemplateColumns="1fr auto">
+        <Input
+          placeholder="filter groups"
+          value={groupFilter()}
+          onEdit={setGroupFilter}
+          style={{ width: "100%", padding: "0.5rem" }}
+        />
+        <NewGroup />
+      </Grid>
       <For each={groupIDs()}>{(id) => <Group id={id} />}</For>
-      <NewGroup />
     </Grid>
   );
 };

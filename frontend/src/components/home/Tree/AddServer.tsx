@@ -13,10 +13,9 @@ const AddServer: Component<{}> = () => {
     <CenterMenu
       show={show}
       toggleShow={toggleShow}
-      title="add server"
       target="add server"
+      title="add server"
       targetClass="green shadow"
-      targetStyle={{ width: "100%" }}
       content={() => <Content close={toggleShow} />}
       position="center"
     />
