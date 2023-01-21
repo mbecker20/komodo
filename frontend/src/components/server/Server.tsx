@@ -3,7 +3,7 @@ import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import NotFound from "../NotFound";
-import ServerChildren from "../ServerChildren/ServerChildren";
+import ServerChildren from "../server_children/ServerChildren";
 import Grid from "../shared/layout/Grid";
 import Actions from "./Actions";
 import { ActionStateProvider } from "./ActionStateProvider";

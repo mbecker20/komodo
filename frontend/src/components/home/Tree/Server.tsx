@@ -14,7 +14,7 @@ import Loading from "../../shared/loading/Loading";
 import { A } from "@solidjs/router";
 import { ServerStatus } from "../../../types";
 import { useAppDimensions } from "../../../state/DimensionProvider";
-import ServerChildren from "../../ServerChildren/ServerChildren";
+import ServerChildren from "../../server_children/ServerChildren";
 
 const Server: Component<{ id: string }> = (p) => {
   const { servers } = useAppState();

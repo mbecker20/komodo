@@ -1,3 +1,5 @@
+use std::{cmp::Ordering, collections::HashMap, path::PathBuf};
+
 use async_timing_util::{
     unix_timestamp_ms, wait_until_timelength, Timelength, ONE_DAY_MS, ONE_HOUR_MS,
 };
@@ -12,7 +14,7 @@ use crate::state::State;
 pub struct AlertStatus {
     cpu_alert: bool,
     mem_alert: bool,
-    disk_alert: bool,
+    disk_alert: HashMap<PathBuf, bool>,
     component_alert: bool,
 }
 
@@ -98,17 +100,40 @@ impl State {
     }
 
     async fn check_cpu(&self, server: &Server, stats: &SystemStats) {
-        let lock = self.server_alert_status.lock().await;
-        if self.slack.is_none() || lock.get(&server.id).map(|s| s.cpu_alert).unwrap_or(false) {
+        let server_alert_status = self.server_alert_status.lock().await;
+        if self.slack.is_none() || server_alert_status.get(&server.id).map(|s| s.cpu_alert).unwrap_or(false) {
             return;
         }
-        drop(lock);
+        drop(server_alert_status);
         if stats.cpu_perc > server.cpu_alert {
             let region = if let Some(region) = &server.region {
                 format!(" ({region})")
             } else {
                 String::new()
             };
+            let mut top_procs = stats.processes.clone();
+            top_procs.sort_by(|a, b| {
+                if a.cpu_perc > b.cpu_perc {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
+                }
+            });
+            let top_procs = top_procs
+                .into_iter()
+                .take(3)
+                .enumerate()
+                .map(|(i, p)| {
+                    format!(
+                        "\n{}. *{}* | *{:.1}%* CPU | *{:.1} GiB* MEM",
+                        i + 1,
+                        p.name,
+                        p.cpu_perc,
+                        p.mem_mb / 1024.0,
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("");
             let mut blocks = vec![
                 Block::header("WARNING 🚨"),
                 Block::section(format!(
@@ -116,6 +141,7 @@ impl State {
                     server.name
                 )),
                 Block::section(format!("cpu: *{:.1}%*", stats.cpu_perc)),
+                Block::section(format!("*top cpu processes*{top_procs}",)),
             ];
 
             if let Some(to_notify) = generate_to_notify(server) {
@@ -148,17 +174,41 @@ impl State {
     }
 
     async fn check_mem(&self, server: &Server, stats: &SystemStats) {
-        let lock = self.server_alert_status.lock().await;
-        if self.slack.is_none() || lock.get(&server.id).map(|s| s.mem_alert).unwrap_or(false) {
+        let server_alert_status = self.server_alert_status.lock().await;
+        if self.slack.is_none() || server_alert_status.get(&server.id).map(|s| s.mem_alert).unwrap_or(false) {
             return;
         }
-        drop(lock);
-        if (stats.mem_used_gb / stats.mem_total_gb) * 100.0 > server.mem_alert {
+        drop(server_alert_status);
+        let usage_perc = (stats.mem_used_gb / stats.mem_total_gb) * 100.0;
+        if usage_perc > server.mem_alert {
             let region = if let Some(region) = &server.region {
                 format!(" ({region})")
             } else {
                 String::new()
             };
+            let mut top_procs = stats.processes.clone();
+            top_procs.sort_by(|a, b| {
+                if a.mem_mb > b.mem_mb {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
+                }
+            });
+            let top_procs = top_procs
+                .into_iter()
+                .take(3)
+                .enumerate()
+                .map(|(i, p)| {
+                    format!(
+                        "\n{}. *{}* | *{:.1}%* CPU | *{:.1} GiB* MEM",
+                        i + 1,
+                        p.name,
+                        p.cpu_perc,
+                        p.mem_mb / 1024.0,
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("");
             let mut blocks = vec![
                 Block::header("WARNING 🚨"),
                 Block::section(format!(
@@ -167,10 +217,9 @@ impl State {
                 )),
                 Block::section(format!(
                     "memory: used *{:.2} GB* of *{:.2} GB* (*{:.1}%*)",
-                    stats.mem_used_gb,
-                    stats.mem_total_gb,
-                    (stats.mem_used_gb / stats.mem_total_gb) * 100.0
+                    stats.mem_used_gb, stats.mem_total_gb, usage_perc
                 )),
+                Block::section(format!("*top mem processes*{top_procs}",)),
             ];
 
             if let Some(to_notify) = generate_to_notify(server) {
@@ -203,56 +252,63 @@ impl State {
     }
 
     async fn check_disk(&self, server: &Server, stats: &SystemStats) {
-        let lock = self.server_alert_status.lock().await;
-        if self.slack.is_none() || lock.get(&server.id).map(|s| s.disk_alert).unwrap_or(false) {
-            return;
-        }
-        drop(lock);
-        if (stats.disk.used_gb / stats.disk.total_gb) * 100.0 > server.disk_alert {
-            let region = if let Some(region) = &server.region {
-                format!(" ({region})")
-            } else {
-                String::new()
-            };
-            let mut blocks = vec![
-                Block::header("WARNING 🚨"),
-                Block::section(format!(
-                    "*{}*{region} has high *disk usage* 💿 🚨",
-                    server.name
-                )),
-                Block::section(format!(
-                    "disk: used *{:.2} GB* of *{:.2} GB* (*{:.1}%*)",
-                    stats.disk.used_gb,
-                    stats.disk.total_gb,
-                    (stats.disk.used_gb / stats.disk.total_gb) * 100.0
-                )),
-            ];
-
-            if let Some(to_notify) = generate_to_notify(server) {
-                blocks.push(Block::section(to_notify))
+        for disk in &stats.disk.disks {
+            let server_alert_status = self.server_alert_status.lock().await;
+            if self.slack.is_none()
+                || server_alert_status
+                    .get(&server.id)
+                    .map(|s| *s.disk_alert.get(&disk.mount).unwrap_or(&false))
+                    .unwrap_or(false)
+            {
+                return;
             }
+            drop(server_alert_status);
+            let usage_perc = (disk.used_gb / disk.total_gb) * 100.0;
+            if usage_perc > server.disk_alert {
+                let region = if let Some(region) = &server.region {
+                    format!(" ({region})")
+                } else {
+                    String::new()
+                };
+                let mut blocks = vec![
+                    Block::header("WARNING 🚨"),
+                    Block::section(format!(
+                        "*{}*{region} has high *disk usage* (mount point *{}*) 💿 🚨",
+                        server.name,
+                        disk.mount.display()
+                    )),
+                    Block::section(format!(
+                        "disk: used *{:.2} GB* of *{:.2} GB* (*{:.1}%*)",
+                        disk.used_gb, disk.total_gb, usage_perc
+                    )),
+                ];
 
-            let res = self
-                .slack
-                .as_ref()
-                .unwrap()
-                .send_message(
-                    format!(
-                        "WARNING 🚨 | *{}*{region} has high *disk usage* 💿 🚨",
-                        server.name
-                    ),
-                    blocks,
-                )
-                .await;
-            if let Err(e) = res {
-                eprintln!(
+                if let Some(to_notify) = generate_to_notify(server) {
+                    blocks.push(Block::section(to_notify))
+                }
+
+                let res = self
+                    .slack
+                    .as_ref()
+                    .unwrap()
+                    .send_message(
+                        format!(
+                            "WARNING 🚨 | *{}*{region} has high *disk usage* 💿 🚨",
+                            server.name
+                        ),
+                        blocks,
+                    )
+                    .await;
+                if let Err(e) = res {
+                    eprintln!(
                     "failed to send message to slack | high disk usage on {} | usage: {:.2}GB of {:.2}GB | {e:?}",
                     server.name, stats.disk.used_gb, stats.disk.total_gb,
                 )
-            } else {
-                let mut lock = self.server_alert_status.lock().await;
-                let entry = lock.entry(server.id.clone()).or_default();
-                entry.disk_alert = true;
+                } else {
+                    let mut lock = self.server_alert_status.lock().await;
+                    let entry = lock.entry(server.id.clone()).or_default();
+                    entry.disk_alert.insert(disk.mount.clone(), true);
+                }
             }
         }
     }
@@ -338,7 +394,6 @@ impl State {
         let offset = self.config.daily_offset_hours as u128 * ONE_HOUR_MS;
         loop {
             wait_until_timelength(Timelength::OneDay, offset).await;
-            println!("running daily update");
             let servers = self.get_enabled_servers_with_stats().await;
             if let Err(e) = &servers {
                 eprintln!(

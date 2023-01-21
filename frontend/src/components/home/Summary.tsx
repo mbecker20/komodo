@@ -1,4 +1,4 @@
-import { Component, createMemo, Show } from "solid-js";
+import { Component, createMemo, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { DockerContainerState, ServerStatus } from "../../types";
 import Grid from "../shared/layout/Grid";
@@ -17,94 +17,101 @@ const Summary: Component<{}> = (p) => {
 
 export default Summary;
 
-const BuildsSummary = () => {
-  const { builds } = useAppState();
+const SummaryItem: Component<{
+  title: string;
+  metrics: Array<{ title: string; class: string; count?: number }>;
+}> = (p) => {
   return (
     <Flex
       class="card light shadow"
       justifyContent="space-between"
       alignItems="center"
     >
-      <h2>builds</h2>
-      <Flex gap="0.4rem" alignItems="center">
-        <div>total</div>
-        <h2 class="text-green">{builds.ids()?.length}</h2>
+      <h2>{p.title}</h2>
+      <Flex>
+        <For each={p.metrics}>
+          {(metric) => (
+            <Show when={metric?.count && metric.count > 0}>
+              <Flex gap="0.4rem" alignItems="center">
+                <div>{metric.title}</div>
+                <h2 class={metric.class}>{metric.count}</h2>
+              </Flex>
+            </Show>
+          )}
+        </For>
       </Flex>
     </Flex>
+  );
+};
+
+const BuildsSummary = () => {
+  const { builds } = useAppState();
+  return (
+    <SummaryItem
+      title="builds"
+      metrics={[
+        { title: "total", class: "text-green", count: builds.ids()?.length },
+      ]}
+    />
   );
 };
 
 const DeploymentsSummary = () => {
   const deployentCount = useDeploymentCount();
   return (
-    <Flex
-      class="card light shadow"
-      justifyContent="space-between"
-      alignItems="center"
-    >
-      <h2>deployments</h2>
-      <Flex>
-        <Flex gap="0.4rem" alignItems="center">
-          <div>total</div>
-          <h2 class="text-green">{deployentCount().total}</h2>
-        </Flex>
-        <Flex gap="0.4rem" alignItems="center">
-          <div>running</div>
-          <h2 class="text-green">{deployentCount().running}</h2>
-        </Flex>
-        <Show when={deployentCount().stopped > 0}>
-          <Flex gap="0.4rem" alignItems="center">
-            <div>stopped</div>
-            <h2 class="text-red">{deployentCount().stopped}</h2>
-          </Flex>
-        </Show>
-        <Show when={deployentCount().notDeployed > 0}>
-          <Flex gap="0.4rem" alignItems="center">
-            <div>not deployed</div>
-            <h2 class="text-blue">{deployentCount().notDeployed}</h2>
-          </Flex>
-        </Show>
-        <Show when={deployentCount().unknown > 0}>
-          <Flex gap="0.4rem" alignItems="center">
-            <div>unknown</div>
-            <h2 class="text-blue">{deployentCount().unknown}</h2>
-          </Flex>
-        </Show>
-      </Flex>
-    </Flex>
+    <SummaryItem
+      title="deployments"
+      metrics={[
+        {
+          title: "total",
+          class: "text-green",
+          count: deployentCount().total,
+        },
+        {
+          title: "running",
+          class: "text-green",
+          count: deployentCount().running,
+        },
+        {
+          title: "stopped",
+          class: "text-red",
+          count: deployentCount().stopped,
+        },
+        {
+          title: "not deployed",
+          class: "text-blue",
+          count: deployentCount().notDeployed,
+        },
+        {
+          title: "unknown",
+          class: "text-blue",
+          count: deployentCount().notDeployed,
+        },
+      ]}
+    />
   );
-}
+};
 
 const ServersSummary = () => {
   const serverCount = useServerCount();
   return (
-    <Flex
-      class="card light shadow"
-      justifyContent="space-between"
-      alignItems="center"
-    >
-      <h2>servers</h2>
-      <Flex>
-        <Flex gap="0.4rem" alignItems="center">
-          <div>total</div>
-          <h2 class="text-green">{serverCount().total}</h2>
-        </Flex>
-        <Flex gap="0.4rem" alignItems="center">
-          <div>healthy</div>
-          <h2 class="text-green">{serverCount().healthy}</h2>
-        </Flex>
-        <Flex gap="0.4rem" alignItems="center">
-          <div>unhealthy</div>
-          <h2 class="text-red">{serverCount().unhealthy}</h2>
-        </Flex>
-        <Show when={serverCount().disabled > 0}>
-          <Flex gap="0.4rem" alignItems="center">
-            <div>disabled</div>
-            <h2 class="text-blue">{serverCount().disabled}</h2>
-          </Flex>
-        </Show>
-      </Flex>
-    </Flex>
+    <SummaryItem
+      title="servers"
+      metrics={[
+        { title: "total", class: "text-green", count: serverCount().total },
+        { title: "healthy", class: "text-green", count: serverCount().healthy },
+        {
+          title: "unhealthy",
+          class: "text-red",
+          count: serverCount().unhealthy,
+        },
+        {
+          title: "disabled",
+          class: "text-blue",
+          count: serverCount().disabled,
+        },
+      ]}
+    />
   );
 };
 
