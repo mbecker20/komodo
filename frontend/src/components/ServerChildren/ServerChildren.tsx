@@ -40,7 +40,7 @@ const ServerChildren: Component<{ id: string }> = (p) => {
           element: () => (
             <Grid
               gap=".5rem"
-              class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}
+              class={combineClasses(s.Deployments)}
               gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
             >
               <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>
@@ -61,7 +61,7 @@ const ServerChildren: Component<{ id: string }> = (p) => {
           element: () => (
             <Grid
               gap=".5rem"
-              class={combineClasses(s.Deployments, open() ? s.Enter : s.Exit)}
+              class={combineClasses(s.Deployments)}
               gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
             >
               <For each={buildIDs()}>{(id) => <Build id={id} />}</For>
