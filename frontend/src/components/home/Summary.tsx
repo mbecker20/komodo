@@ -85,7 +85,7 @@ const DeploymentsSummary = () => {
         {
           title: "unknown",
           class: "text-blue",
-          count: deployentCount().notDeployed,
+          count: deployentCount().unknown,
         },
       ]}
     />
