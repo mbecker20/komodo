@@ -5,7 +5,7 @@ import Icon from "../../shared/Icon";
 import Input from "../../shared/Input";
 import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
-import { NewGroup } from "./New";
+import { NewGroup } from "../../New";
 import s from "../home.module.scss";
 import { combineClasses } from "../../../util/helpers";
 import Server from "./Server";

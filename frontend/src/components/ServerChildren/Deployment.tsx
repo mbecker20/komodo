@@ -1,10 +1,10 @@
 import { A } from "@solidjs/router";
 import { Component, Show } from "solid-js";
-import { useAppState } from "../../../state/StateProvider";
-import { combineClasses, deploymentStateClass, getId } from "../../../util/helpers";
-import Circle from "../../shared/Circle";
-import Flex from "../../shared/layout/Flex";
-import s from "../home.module.scss";
+import { useAppState } from "../../state/StateProvider";
+import { combineClasses, deploymentStateClass, getId } from "../../util/helpers";
+import Circle from "../shared/Circle";
+import Flex from "../shared/layout/Flex";
+import s from "./serverchildren.module.scss";
 
 const Deployment: Component<{ id: string }> = (p) => {
   const { deployments } = useAppState();

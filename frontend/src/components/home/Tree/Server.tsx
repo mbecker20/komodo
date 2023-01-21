@@ -1,48 +1,25 @@
 import {
   Component,
-  createMemo,
   createSignal,
-  For,
   Show,
 } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
-import { useUser } from "../../../state/UserProvider";
-import { combineClasses, getId, readableStorageAmount } from "../../../util/helpers";
+import { combineClasses, readableStorageAmount } from "../../../util/helpers";
 import { useLocalStorageToggle } from "../../../util/hooks";
 import Icon from "../../shared/Icon";
 import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
-import Deployment from "./Deployment";
 import s from "../home.module.scss";
-import { NewBuild, NewDeployment } from "./New";
 import Loading from "../../shared/loading/Loading";
 import { A } from "@solidjs/router";
-import { PermissionLevel, ServerStatus } from "../../../types";
+import { ServerStatus } from "../../../types";
 import { useAppDimensions } from "../../../state/DimensionProvider";
-import Build from "./Build";
-import SimpleTabs from "../../shared/tabs/SimpleTabs";
-// import StatGraphs from "../../server/StatGraphs/StatGraphs";
+import ServerChildren from "../../ServerChildren/ServerChildren";
 
 const Server: Component<{ id: string }> = (p) => {
-  const { servers, serverStats, deployments, builds } = useAppState();
-  const { isSemiMobile } = useAppDimensions();
-  const { user } = useUser();
+  const { servers } = useAppState();
   const [open, toggleOpen] = useLocalStorageToggle(p.id + "-homeopen");
   const server = () => servers.get(p.id);
-  const deploymentIDs = createMemo(() => {
-    return (deployments.loaded() &&
-      deployments
-        .ids()!
-        .filter(
-          (id) => deployments.get(id)?.deployment.server_id === p.id
-        )) as string[];
-  });
-  const buildIDs = createMemo(() => {
-    return (builds.loaded() &&
-      builds
-        .ids()!
-        .filter((id) => builds.get(id)?.server_id === p.id)) as string[];
-  });
   return (
     <Show when={server()}>
       <div class={combineClasses(s.Server, "shadow")}>
@@ -79,62 +56,7 @@ const Server: Component<{ id: string }> = (p) => {
           </Flex>
         </button>
         <Show when={open()}>
-          <SimpleTabs
-            containerClass="card shadow"
-            localStorageKey={`${p.id}-home-tab`}
-            tabs={[
-              {
-                title: "deployments",
-                element: () => (
-                  <Grid
-                    gap=".5rem"
-                    class={combineClasses(
-                      s.Deployments,
-                      open() ? s.Enter : s.Exit
-                    )}
-                    gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
-                  >
-                    <For each={deploymentIDs()}>
-                      {(id) => <Deployment id={id} />}
-                    </For>
-                    <Show
-                      when={
-                        user().admin ||
-                        server()?.server.permissions![getId(user())] ===
-                          PermissionLevel.Update
-                      }
-                    >
-                      <NewDeployment serverID={p.id} />
-                    </Show>
-                  </Grid>
-                ),
-              },
-              {
-                title: "builds",
-                element: () => (
-                  <Grid
-                    gap=".5rem"
-                    class={combineClasses(
-                      s.Deployments,
-                      open() ? s.Enter : s.Exit
-                    )}
-                    gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
-                  >
-                    <For each={buildIDs()}>{(id) => <Build id={id} />}</For>
-                    <Show
-                      when={
-                        user().admin ||
-                        server()?.server.permissions![getId(user())] ===
-                          PermissionLevel.Update
-                      }
-                    >
-                      <NewBuild serverID={p.id} />
-                    </Show>
-                  </Grid>
-                ),
-              },
-            ]}
-          />
+          <ServerChildren id={p.id} />
         </Show>
       </div>
     </Show>

@@ -1,9 +1,9 @@
 import { Component, createSignal, onMount, Show } from "solid-js";
-import { client, pushNotification } from "../../..";
-import { useKeyDown, useToggle } from "../../../util/hooks";
-import Icon from "../../shared/Icon";
-import Input from "../../shared/Input";
-import Flex from "../../shared/layout/Flex";
+import { client, pushNotification } from "..";
+import { useKeyDown, useToggle } from "../util/hooks";
+import Icon from "./shared/Icon";
+import Input from "./shared/Input";
+import Flex from "./shared/layout/Flex";
 
 export const NewGroup: Component<{}> = (p) => {
   const [showNew, toggleShowNew] = useToggle();

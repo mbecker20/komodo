@@ -1,12 +1,12 @@
 import { A } from "@solidjs/router";
 import { Component, Show } from "solid-js";
-import { useAppState } from "../../../state/StateProvider";
+import { useAppState } from "../../state/StateProvider";
 import {
   combineClasses,
   readableMonitorTimestamp,
-} from "../../../util/helpers";
-import Flex from "../../shared/layout/Flex";
-import s from "../home.module.scss";
+} from "../../util/helpers";
+import Flex from "../shared/layout/Flex";
+import s from "./serverchildren.module.scss";
 
 const Build: Component<{ id: string }> = (p) => {
   const { builds } = useAppState();

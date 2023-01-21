@@ -3,6 +3,7 @@ import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import NotFound from "../NotFound";
+import ServerChildren from "../ServerChildren/ServerChildren";
 import Grid from "../shared/layout/Grid";
 import Actions from "./Actions";
 import { ActionStateProvider } from "./ActionStateProvider";
@@ -39,6 +40,7 @@ const Server: Component<{}> = (p) => {
               <Updates />
             </Show>
           </Grid>
+          <ServerChildren id={params.id} />
           <ServerTabs />
         </Grid>
       </ActionStateProvider>
