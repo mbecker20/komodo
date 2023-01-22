@@ -1,6 +1,6 @@
 import { Component, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
-import { Operation, Update as UpdateType, UpdateStatus } from "../../types";
+import { Operation, Update as UpdateType } from "../../types";
 import {
   combineClasses,
   readableDuration,
@@ -51,45 +51,54 @@ const UpdateMenu: Component<{ update: UpdateType }> = (p) => {
 export default UpdateMenu;
 
 const UpdateMenuContent: Component<{ update: UpdateType }> = (p) => {
-  const { usernames } = useAppState();
   return (
     <Grid class={s.LogContainer}>
-      <Grid
-        gap="0.5rem"
-        class="card light shadow"
-        gridTemplateColumns="1fr 1fr"
-      >
-        <Flex gap="0.5rem" alignItems="center">
-          status: <h2>{p.update.status.replaceAll("_", " ")}</h2>
-        </Flex>
-        <h2 style={{ "place-self": "center end" }}>
-          {readableMonitorTimestamp(p.update.start_ts)}
-        </h2>
-        <Show when={p.update.end_ts}>
-          <Flex gap="0.5rem" alignItems="center">
-            duration:
-            <h2>{readableDuration(p.update.start_ts, p.update.end_ts!)}</h2>
-          </Flex>
-        </Show>
-        <Flex
-          gap="0.5rem"
-          alignItems="center"
-          style={{ "place-self": "center end" }}
-        >
-          <Icon type="user" width="1.25rem" />
-          <h2>{usernames.get(p.update.operator)}</h2>
-        </Flex>
-        <Show when={p.update.version}>
-          <Flex gap="0.5rem" alignItems="center">
-            version:
-            <h2>{readableVersion(p.update.version!)}</h2>
-          </Flex>
-        </Show>
-      </Grid>
+      <UpdateSummary update={p.update} />
       <UpdateLogs update={p.update} />
     </Grid>
   );
 };
+
+const UpdateSummary: Component<{ update: UpdateType }> = (p) => {
+  const { usernames } = useAppState();
+  return (
+    <Grid
+      gap="0.5rem"
+      class="card light shadow"
+      gridTemplateColumns="1fr 1fr"
+      style={{ width: "40rem", "max-width": "90vw" }}
+    >
+      <Flex gap="0.5rem" alignItems="center">
+        status: <h2>{p.update.status.replaceAll("_", " ")}</h2>
+      </Flex>
+      <h2 style={{ "place-self": "center end" }}>
+        {readableMonitorTimestamp(p.update.start_ts)}
+      </h2>
+      <Flex gap="0.5rem" alignItems="center">
+        duration:
+        <h2>
+          {p.update.end_ts
+            ? readableDuration(p.update.start_ts, p.update.end_ts)
+            : "unknown"}
+        </h2>
+      </Flex>
+      <Flex
+        gap="0.5rem"
+        alignItems="center"
+        style={{ "place-self": "center end" }}
+      >
+        <Icon type="user" width="1.25rem" />
+        <h2>{usernames.get(p.update.operator)}</h2>
+      </Flex>
+      <Show when={p.update.version}>
+        <Flex gap="0.5rem" alignItems="center">
+          version:
+          <h2>{readableVersion(p.update.version!)}</h2>
+        </Flex>
+      </Show>
+    </Grid>
+  );
+}
 
 const UpdateLogs: Component<{ update: UpdateType }> = (p) => {
   return (
