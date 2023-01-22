@@ -1,7 +1,11 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { combineClasses, deploymentHeaderStateClass, getId } from "../../util/helpers";
+import {
+  combineClasses,
+  deploymentHeaderStateClass,
+  getId,
+} from "../../util/helpers";
 import ConfirmButton from "../shared/ConfirmButton";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
@@ -11,11 +15,11 @@ import { useLocalStorageToggle } from "../../util/hooks";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import Updates from "./Updates";
 import { DockerContainerState, PermissionLevel } from "../../types";
-import { useParams } from "@solidjs/router";
+import { A, useParams } from "@solidjs/router";
 import { client } from "../..";
 
 const Header: Component<{}> = (p) => {
-  const { deployments } = useAppState();
+  const { deployments, servers } = useAppState();
   const params = useParams();
   const deployment = () => deployments.get(params.id)!;
   const { user } = useUser();
@@ -31,6 +35,7 @@ const Header: Component<{}> = (p) => {
     user().admin ||
     deployment().deployment.permissions![getId(user())] ===
       PermissionLevel.Update;
+  const server = () => servers.get(deployment().deployment.server_id);
   return (
     <>
       <Grid
@@ -66,9 +71,18 @@ const Header: Component<{}> = (p) => {
           </Show>
         </Flex>
         <Flex alignItems="center" justifyContent="space-between">
-          <div class={deploymentHeaderStateClass(deployment().state)}>
-            {deployment().state}
-          </div>
+          <Flex alignItems="center">
+            <A
+              href={`/server/${deployment().deployment.server_id}`}
+              class="text-hover"
+              style={{ opacity: 0.7, padding: 0 }}
+            >
+              {server()?.server.name}
+            </A>
+            <div class={deploymentHeaderStateClass(deployment().state)}>
+              {deployment().state}
+            </div>
+          </Flex>
           <Show when={status()}>
             <div style={{ opacity: 0.7 }}>{status()}</div>
           </Show>

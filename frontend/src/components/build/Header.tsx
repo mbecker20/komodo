@@ -9,12 +9,13 @@ import { combineClasses, getId, version_to_string } from "../../util/helpers";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import Updates from "./Updates";
 import { useLocalStorageToggle } from "../../util/hooks";
-import { useParams } from "@solidjs/router";
+import { A, useParams } from "@solidjs/router";
 import { PermissionLevel } from "../../types";
 import { client } from "../..";
+import HoverMenu from "../shared/menu/HoverMenu";
 
 const Header: Component<{}> = (p) => {
-  const { builds } = useAppState();
+  const { builds, servers } = useAppState();
   const params = useParams();
   const build = () => builds.get(params.id)!;
   const { user } = useUser();
@@ -24,36 +25,56 @@ const Header: Component<{}> = (p) => {
   const userCanUpdate = () =>
     user().admin ||
     build().permissions![getId(user())] === PermissionLevel.Update;
+  const server = () => servers.get(build().server_id);
   return (
     <>
-      <Flex
+      <Grid
+        gap="0.5rem"
         class={combineClasses("card shadow")}
-        justifyContent="space-between"
-        alignItems="center"
         style={{
           position: "relative",
           cursor: isSemiMobile() ? "pointer" : undefined,
+          height: "fit-content",
         }}
         onClick={() => {
           if (isSemiMobile()) toggleShowUpdates();
         }}
       >
-        <Grid gap="0.1rem">
+        <Flex alignItems="center" justifyContent="space-between">
           <h1>{build().name}</h1>
-          <div style={{ opacity: 0.8 }}>
-            build - v{version_to_string(build().version)}
+          <Show when={userCanUpdate()}>
+            <HoverMenu
+              target={
+                <ConfirmButton
+                  onConfirm={() => {
+                    client.delete_build(params.id);
+                  }}
+                  class="red"
+                >
+                  <Icon type="trash" />
+                </ConfirmButton>
+              }
+              content="delete build"
+              position="bottom center"
+              padding="0.5rem"
+            />
+          </Show>
+        </Flex>
+        <Flex alignItems="center" justifyContent="space-between">
+          <Flex alignItems="center">
+            <A
+              href={`/server/${build().server_id}`}
+              class="text-hover"
+              style={{ opacity: 0.7, padding: 0 }}
+            >
+              {server()?.server.name}
+            </A>
+            <div style={{ opacity: 0.7 }}>build</div>
+          </Flex>
+          <div style={{ opacity: 0.7 }}>
+            v{version_to_string(build().version)}
           </div>
-        </Grid>
-        <Show when={userCanUpdate()}>
-          <ConfirmButton
-            onConfirm={() => {
-              client.delete_build(params.id);
-            }}
-            class="red"
-          >
-            <Icon type="trash" />
-          </ConfirmButton>
-        </Show>
+        </Flex>
         <Show when={isSemiMobile()}>
           <Flex gap="0.5rem" alignItems="center" class="show-updates-indicator">
             updates{" "}
@@ -63,7 +84,7 @@ const Header: Component<{}> = (p) => {
             />
           </Flex>
         </Show>
-      </Flex>
+      </Grid>
       <Show when={isSemiMobile() && showUpdates()}>
         <Updates />
       </Show>

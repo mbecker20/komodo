@@ -1,3 +1,4 @@
+import { A } from "@solidjs/router";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { Operation, Update as UpdateType, UpdateStatus } from "../../../types";
@@ -29,7 +30,14 @@ const Update: Component<{ update: UpdateType }> = (p) => {
     if (p.update.operation === Operation.BuildBuild) {
       return `build ${readableVersion(p.update.version!)}`;
     }
-    return `${p.update.operation.replaceAll("_", " ")}${p.update.version ? " " + readableVersion(p.update.version) : ""}`;
+    return `${p.update.operation.replaceAll("_", " ")}${
+      p.update.version ? " " + readableVersion(p.update.version) : ""
+    }`;
+  };
+  const link_to = () => {
+    return p.update.target.type === "System"
+      ? "/"
+      : `/${p.update.target.type.toLowerCase()}/${p.update.target.id}`;
   };
   return (
     <Flex
@@ -38,7 +46,9 @@ const Update: Component<{ update: UpdateType }> = (p) => {
       alignItems="center"
     >
       <Grid gap="0.5rem" placeItems="center start">
-        <h2>{name()}</h2>
+        <A style={{ padding: 0 }} href={link_to()}>
+          <h2 class="text-hover">{name()}</h2>
+        </A>
         <Flex gap="0.5rem">
           <div
             style={{
