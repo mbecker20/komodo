@@ -28,7 +28,7 @@ const SummaryItem: Component<{
       alignItems="center"
     >
       <h2>{p.title}</h2>
-      <Flex>
+      <Flex class="wrap">
         <For each={p.metrics}>
           {(metric) => (
             <Show when={metric?.count && metric.count > 0}>
