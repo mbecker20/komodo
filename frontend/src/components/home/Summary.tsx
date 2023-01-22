@@ -23,7 +23,7 @@ const SummaryItem: Component<{
 }> = (p) => {
   return (
     <Flex
-      class="card light shadow"
+      class="card light shadow wrap"
       justifyContent="space-between"
       alignItems="center"
     >

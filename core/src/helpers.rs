@@ -1,3 +1,6 @@
+use std::str::FromStr;
+
+use anyhow::anyhow;
 use diff::{Diff, OptionDiff};
 
 #[macro_export]
@@ -24,4 +27,17 @@ where
         }
     }
     return false;
+}
+
+pub fn parse_comma_seperated_list<T: FromStr>(comma_sep_list: &str) -> anyhow::Result<Vec<T>> {
+    comma_sep_list
+        .split(",")
+        .filter(|item| item.len() > 0)
+        .map(|item| {
+            let item = item
+                .parse()
+                .map_err(|_| anyhow!("error parsing string {item} into type T"))?;
+            Ok::<T, anyhow::Error>(item)
+        })
+        .collect()
 }

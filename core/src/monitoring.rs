@@ -101,7 +101,12 @@ impl State {
 
     async fn check_cpu(&self, server: &Server, stats: &SystemStats) {
         let server_alert_status = self.server_alert_status.lock().await;
-        if self.slack.is_none() || server_alert_status.get(&server.id).map(|s| s.cpu_alert).unwrap_or(false) {
+        if self.slack.is_none()
+            || server_alert_status
+                .get(&server.id)
+                .map(|s| s.cpu_alert)
+                .unwrap_or(false)
+        {
             return;
         }
         drop(server_alert_status);
@@ -175,7 +180,12 @@ impl State {
 
     async fn check_mem(&self, server: &Server, stats: &SystemStats) {
         let server_alert_status = self.server_alert_status.lock().await;
-        if self.slack.is_none() || server_alert_status.get(&server.id).map(|s| s.mem_alert).unwrap_or(false) {
+        if self.slack.is_none()
+            || server_alert_status
+                .get(&server.id)
+                .map(|s| s.mem_alert)
+                .unwrap_or(false)
+        {
             return;
         }
         drop(server_alert_status);

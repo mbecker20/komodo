@@ -9,6 +9,7 @@ use types::{PermissionLevel, Update, UpdateTarget};
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
+    helpers::parse_comma_seperated_list,
     response,
     state::{State, StateExtension},
 };
@@ -36,8 +37,18 @@ pub fn router() -> Router {
                             .unwrap_or_default()
                     })
                     .unwrap_or_default();
+                let operations = value
+                    .get("operations")
+                    .map(|o| {
+                        let o = o.as_str().unwrap_or_default();
+                        if o.len() == 0 {
+                            return None;
+                        }
+                        parse_comma_seperated_list::<String>(o).ok()
+                    })
+                    .flatten();
                 let updates = state
-                    .list_updates(target, offset, show_builds, &user)
+                    .list_updates(target, offset, show_builds, operations, &user)
                     .await
                     .map_err(handle_anyhow_error)?;
                 response!(Json(updates))
@@ -92,9 +103,10 @@ impl State {
         target: Option<UpdateTarget>,
         offset: u64,
         show_builds: bool,
+        operations: Option<Vec<String>>,
         user: &RequestUser,
     ) -> anyhow::Result<Vec<Update>> {
-        let filter = match target {
+        let mut filter = match target {
             Some(target) => {
                 if let (UpdateTarget::Deployment(id), true) = (&target, show_builds) {
                     let deployment = self
@@ -105,32 +117,32 @@ impl State {
                             .get_build_check_permissions(build_id, user, PermissionLevel::Read)
                             .await;
                         if let Ok(_) = build {
-                            Some(doc! {
+                            doc! {
                                 "$or": [
                                     {"target": to_bson(&target).unwrap()},
                                     {"target": { "type": "Build", "id": build_id }, "operation": "build_build"}
                                 ],
-                            })
+                            }
                         } else {
-                            Some(doc! {
+                            doc! {
                                 "target": to_bson(&target).unwrap()
-                            })
+                            }
                         }
                     } else {
-                        Some(doc! {
+                        doc! {
                             "target": to_bson(&target).unwrap()
-                        })
+                        }
                     }
                 } else {
                     self.permission_on_update_target(&target, user).await?;
-                    Some(doc! {
+                    doc! {
                         "target": to_bson(&target).unwrap()
-                    })
+                    }
                 }
             }
             None => {
                 if user.is_admin {
-                    None
+                    doc! {}
                 } else {
                     let permissions_field = format!("permissions.{}", user.id);
                     let target_filter = doc! {
@@ -184,10 +196,13 @@ impl State {
                            { "target.type": "Procedure", "target.id": { "$in": &procedure_ids } }
                         ]
                     };
-                    Some(filter)
+                    filter
                 }
             }
         };
+        if let Some(operations) = operations {
+            filter.insert("operation", doc! { "$in": operations });
+        }
         let mut updates = self
             .db
             .updates

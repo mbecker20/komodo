@@ -1,4 +1,10 @@
-import { DockerContainerState, EnvironmentVar, ServerStatus, Timelength, Version } from "../types";
+import {
+  DockerContainerState,
+  EnvironmentVar,
+  ServerStatus,
+  Timelength,
+  Version,
+} from "../types";
 
 export function combineClasses(...classes: (string | false | undefined)[]) {
   return classes.filter((c) => (c ? true : false)).join(" ");
@@ -48,8 +54,12 @@ export function readableDuration(start_ts: string, end_ts: string) {
   const start = new Date(start_ts);
   const end = new Date(end_ts);
   const durr = end.getTime() - start.getTime();
-  const seconds = (durr / 1000).toFixed(1);
-  return `${seconds} seconds`;
+  const seconds = durr / 1000;
+  const minutes = Math.floor(seconds / 60);
+  const remaining_seconds = seconds % 60;
+  return `${
+    minutes > 0 ? `${minutes} minute${minutes > 1 ? "s" : ""} ` : ""
+  }${remaining_seconds.toFixed(minutes > 0 ? 0 : 1)} seconds`;
 }
 
 const tzOffset = new Date().getTimezoneOffset() * 60;
@@ -163,9 +173,7 @@ export function parseDotEnvToEnvVars(env: string): EnvironmentVar[] {
     .map(([variable, value]) => ({ variable, value }));
 }
 
-export function deploymentHeaderStateClass(
-  state: DockerContainerState,
-) {
+export function deploymentHeaderStateClass(state: DockerContainerState) {
   switch (state) {
     case DockerContainerState.Running:
       return "running";
@@ -175,28 +183,28 @@ export function deploymentHeaderStateClass(
 }
 
 export function version_to_string(version: Version) {
-  return `${version.major}.${version.minor}.${version.patch}`
+  return `${version.major}.${version.minor}.${version.patch}`;
 }
 
 export function string_to_version(version: string): Version {
-  const [major, minor, patch] = version.split(".")
+  const [major, minor, patch] = version.split(".");
   return {
     major: Number(major),
     minor: Number(minor),
     patch: Number(patch),
-  }
+  };
 }
 
 export function get_to_one_sec_divisor(timelength: Timelength) {
   // returns what the timelength needs to be divided to convert to per second values
   if (timelength === Timelength.OneSecond) {
-    return 1
+    return 1;
   } else if (timelength === Timelength.FiveSeconds) {
-    return 5
+    return 5;
   } else if (timelength === Timelength.ThirtySeconds) {
-    return 30
+    return 30;
   } else if (timelength === Timelength.OneMinute) {
-    return 60
+    return 60;
   }
 }
 
@@ -215,11 +223,11 @@ export function convert_timelength_to_ms(timelength: Timelength) {
 
 export function readableStorageAmount(gb: number) {
   if (gb > 512) {
-    return `${(gb / 1024).toFixed(1)} TB`
+    return `${(gb / 1024).toFixed(1)} TB`;
   } else if (gb < 1) {
-    return `${(gb * 1024).toFixed()} MiB`
+    return `${(gb * 1024).toFixed()} MiB`;
   } else {
-    return `${gb.toFixed()} GiB`
+    return `${gb.toFixed()} GiB`;
   }
 }
 

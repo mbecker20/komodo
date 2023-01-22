@@ -13,6 +13,7 @@ import {
   Group,
   HistoricalStatsQuery,
   Log,
+  Operation,
   Procedure,
   Server,
   ServerActionState,
@@ -233,7 +234,7 @@ export class Client {
   }
 
   get_server_system_info(id: string): Promise<SystemInformation> {
-    return this.get(`/api/server/${id}/system_information`)
+    return this.get(`/api/server/${id}/system_information`);
   }
 
   create_server(body: CreateServerBody): Promise<Server> {
@@ -314,8 +315,11 @@ export class Client {
   get_build_action_state(id: string): Promise<BuildActionState> {
     return this.get(`/api/build/${id}/action_state`);
   }
-  
-  get_build_versions(id: string, query?: BuildVersionsQuery): Promise<BuildVersionsReponse> {
+
+  get_build_versions(
+    id: string,
+    query?: BuildVersionsQuery
+  ): Promise<BuildVersionsReponse> {
     return this.get(`/api/build/${id}/versions${generateQuery(query as any)}`);
   }
 
@@ -405,13 +409,19 @@ export class Client {
 
   // updates
   // show_builds is only relevant for Deployment targets, must pass show_builds = true to include build updates of attached build_id
-  list_updates(offset: number, target?: UpdateTarget, show_builds?: boolean): Promise<Update[]> {
+  list_updates(
+    offset: number,
+    target?: UpdateTarget,
+    show_builds?: boolean,
+    operations?: Operation[]
+  ): Promise<Update[]> {
     return this.get(
       `/api/update/list${generateQuery({
         offset,
         type: target && target.type,
         id: target && target.id,
         show_builds,
+        operations: operations?.join(","),
       })}`
     );
   }

@@ -1,6 +1,6 @@
 import { createEffect, createResource, createSignal } from "solid-js";
 import { client } from "..";
-import { ServerStatus, SystemInformation, SystemStats, UpdateTarget } from "../types";
+import { Operation, ServerStatus, SystemInformation, SystemStats, UpdateTarget } from "../types";
 import {
   filterOutFromObj,
   getNestedEntry,
@@ -152,7 +152,7 @@ export function useDeployments() {
 
 export function useUpdates(target?: UpdateTarget, show_builds?: boolean) {
   const updates = useArrayWithId(
-    () => client.list_updates(0, target, show_builds),
+    (operations?: Operation[]) => client.list_updates(0, target, show_builds, operations),
     ["_id", "$oid"]
   );
   const [noMore, setNoMore] = createSignal(false);
@@ -173,10 +173,13 @@ export function useUpdates(target?: UpdateTarget, show_builds?: boolean) {
   };
 }
 
-export function useArray<T>(query: () => Promise<T[]>) {
+export function useArray<T, O>(query: (options?: O) => Promise<T[]>, options?: O) {
   const [collection, set] = createSignal<T[]>();
+  const load = (options?: O) => {
+    query(options).then(set);
+  }
   createEffect(() => {
-    query().then(set);
+    load(options);
   });
   const add = (item: T) => {
     set((items: T[] | undefined) => (items ? [item, ...items] : [item]));
@@ -186,6 +189,7 @@ export function useArray<T>(query: () => Promise<T[]>) {
   };
   const loaded = () => (collection() ? true : false);
   return {
+    load,
     collection,
     add,
     addManyToEnd,
@@ -193,10 +197,13 @@ export function useArray<T>(query: () => Promise<T[]>) {
   };
 }
 
-export function useArrayWithId<T>(query: () => Promise<T[]>, idPath: string[]) {
+export function useArrayWithId<T, O>(query: (options?: O) => Promise<T[]>, idPath: string[], options?: O) {
   const [collection, set] = createSignal<T[]>();
+  const load = (options?: O) => {
+    query(options).then(set);
+  };
   createEffect(() => {
-    query().then(set);
+    load(options);
   });
   const addOrUpdate = (item: T) => {
     set((items: T[] | undefined) => {
@@ -226,6 +233,7 @@ export function useArrayWithId<T>(query: () => Promise<T[]>, idPath: string[]) {
   };
   const loaded = () => (collection() ? true : false);
   return {
+    load,
     collection,
     addOrUpdate,
     addManyToEnd,

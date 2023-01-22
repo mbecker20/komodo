@@ -22,11 +22,14 @@ const Selector: Component<{
   position?: Position;
   targetClass?: string;
   targetStyle?: JSX.CSSProperties;
+  menuClass?: string;
+  menuStyle?: JSX.CSSProperties;
   containerStyle?: JSX.CSSProperties;
   disabled?: boolean;
   disabledClass?: string;
   disabledStyle?: JSX.CSSProperties;
   useSearch?: boolean;
+  searchStyle?: JSX.CSSProperties;
   itemClass?: string;
   itemStyle?: JSX.CSSProperties;
   label?: JSXElement;
@@ -35,7 +38,7 @@ const Selector: Component<{
   const [search, setSearch] = createSignal("");
   let ref: HTMLInputElement | undefined;
   createEffect(() => {
-    if (show()) ref?.focus();
+    if (show()) setTimeout(() => ref?.focus(), 200);
   });
   return (
     <Show
@@ -69,7 +72,7 @@ const Selector: Component<{
                 placeholder="search"
                 value={search()}
                 onEdit={setSearch}
-                style={{ "text-align": "end" }}
+                style={{ "text-align": "end", ...p.searchStyle }}
                 onKeyDown={(e: any) => {
                   if (e.key === "Escape") {
                     toggle();
@@ -104,6 +107,8 @@ const Selector: Component<{
             </For>
           </>
         }
+        menuClass={p.menuClass}
+        menuStyle={p.menuStyle}
         position={p.position}
         padding="0.25rem"
       />
