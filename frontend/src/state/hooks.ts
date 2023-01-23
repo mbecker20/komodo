@@ -1,6 +1,12 @@
 import { createEffect, createResource, createSignal } from "solid-js";
 import { client } from "..";
-import { Operation, ServerStatus, SystemInformation, SystemStats, UpdateTarget } from "../types";
+import {
+  Operation,
+  ServerStatus,
+  SystemInformation,
+  SystemStats,
+  UpdateTarget,
+} from "../types";
 import {
   filterOutFromObj,
   getNestedEntry,
@@ -24,7 +30,9 @@ const procedureIdPath = ["_id", "$oid"];
 export function useProcedures() {
   return useCollection(
     () =>
-      client.list_procedures().then((res) => intoCollection(res, procedureIdPath)),
+      client
+        .list_procedures()
+        .then((res) => intoCollection(res, procedureIdPath)),
     procedureIdPath
   );
 }
@@ -66,9 +74,9 @@ export function useServerStats() {
 }
 
 export function useServerInfo() {
-  const [info, set] = createSignal<Record<string, SystemInformation | undefined>>(
-    {}
-  );
+  const [info, set] = createSignal<
+    Record<string, SystemInformation | undefined>
+  >({});
   const load = async (serverID: string) => {
     const info = await client.get_server_system_info(serverID);
     set((s) => ({ ...s, [serverID]: info }));
@@ -152,14 +160,20 @@ export function useDeployments() {
 
 export function useUpdates(target?: UpdateTarget, show_builds?: boolean) {
   const updates = useArrayWithId(
-    (operations?: Operation[]) => client.list_updates(0, target, show_builds, operations),
+    (operations?: Operation[]) =>
+      client.list_updates(0, target, show_builds, operations),
     ["_id", "$oid"]
   );
   const [noMore, setNoMore] = createSignal(false);
-  const loadMore = async () => {
+  const loadMore = async (operations?: Operation[]) => {
     const offset = updates.collection()?.length;
     if (offset) {
-      const newUpdates = await client.list_updates(offset, target);
+      const newUpdates = await client.list_updates(
+        offset,
+        target,
+        show_builds,
+        operations
+      );
       updates.addManyToEnd(newUpdates);
       if (newUpdates.length !== 10) {
         setNoMore(true);
@@ -173,11 +187,14 @@ export function useUpdates(target?: UpdateTarget, show_builds?: boolean) {
   };
 }
 
-export function useArray<T, O>(query: (options?: O) => Promise<T[]>, options?: O) {
+export function useArray<T, O>(
+  query: (options?: O) => Promise<T[]>,
+  options?: O
+) {
   const [collection, set] = createSignal<T[]>();
   const load = (options?: O) => {
     query(options).then(set);
-  }
+  };
   createEffect(() => {
     load(options);
   });
@@ -197,7 +214,11 @@ export function useArray<T, O>(query: (options?: O) => Promise<T[]>, options?: O
   };
 }
 
-export function useArrayWithId<T, O>(query: (options?: O) => Promise<T[]>, idPath: string[], options?: O) {
+export function useArrayWithId<T, O>(
+  query: (options?: O) => Promise<T[]>,
+  idPath: string[],
+  options?: O
+) {
   const [collection, set] = createSignal<T[]>();
   const load = (options?: O) => {
     query(options).then(set);

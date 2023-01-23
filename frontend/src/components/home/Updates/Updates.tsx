@@ -57,7 +57,11 @@ const Updates: Component<{}> = () => {
             <button
               class="grey"
               style={{ width: "100%" }}
-              onClick={updates.loadMore}
+              onClick={() =>
+                operation()
+                  ? updates.loadMore([operation()!])
+                  : updates.loadMore()
+              }
             >
               load more
             </button>
