@@ -56,6 +56,7 @@ export function useServerStats() {
     set((s) => ({ ...s, [serverID]: stats }));
   };
   const loading: Record<string, boolean> = {};
+  setTimeout(() => Object.keys(stats()).forEach(load), 30000);
   return {
     get: (serverID: string, serverStatus?: ServerStatus) => {
       const stat = stats()[serverID];

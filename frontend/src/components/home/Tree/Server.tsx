@@ -1,8 +1,4 @@
-import {
-  Component,
-  createSignal,
-  Show,
-} from "solid-js";
+import { Component, createSignal, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { combineClasses, readableStorageAmount } from "../../../util/helpers";
 import { useLocalStorageToggle } from "../../../util/hooks";
@@ -76,6 +72,29 @@ const ServerStats: Component<{ id: string }> = (p) => {
     await serverStats.load(p.id);
     setReloading(false);
   };
+  const mem_perc = () => {
+    return stats() && (100 * stats()!.mem_used_gb) / stats()!.mem_total_gb;
+  };
+  const disk_perc = () => {
+    return stats() && (100 * stats()!.disk.used_gb) / stats()!.disk.total_gb;
+  };
+  const cpu_high = () => {
+    return (
+      server() &&
+      stats() &&
+      stats()!.cpu_perc > (server()!.server.cpu_alert || 75)
+    );
+  };
+  const mem_high = () => {
+    return (
+      server() && stats() && mem_perc()! > (server()!.server.mem_alert || 75)
+    );
+  };
+  const disk_high = () => {
+    return (
+      server() && stats() && disk_perc()! > (server()!.server.disk_alert || 75)
+    );
+  };
   return (
     <Show when={!isMobile() && server()?.status === ServerStatus.Ok}>
       <Show when={stats()} fallback={<Loading type="three-dot" />}>
@@ -96,7 +115,9 @@ const ServerStats: Component<{ id: string }> = (p) => {
             justifyContent="center"
           >
             <div style={{ opacity: 0.7 }}>cpu:</div>
-            <h2>{stats()!.cpu_perc.toFixed(1)}%</h2>
+            <h2 class={cpu_high() ? "text-red" : undefined}>
+              {stats()!.cpu_perc.toFixed(1)}%
+            </h2>
           </Flex>
           <Flex
             style={{
@@ -108,11 +129,8 @@ const ServerStats: Component<{ id: string }> = (p) => {
             justifyContent="center"
           >
             <div style={{ opacity: 0.7 }}>mem:</div>
-            <h2>
-              {((100 * stats()!.mem_used_gb) / stats()!.mem_total_gb).toFixed(
-                1
-              )}
-              %
+            <h2 class={mem_high() ? "text-red" : undefined}>
+              {mem_perc()?.toFixed(1)}%
             </h2>
             <Show when={!isSemiMobile()}>
               <div>{stats()!.mem_total_gb.toFixed()} GiB</div>
@@ -128,11 +146,8 @@ const ServerStats: Component<{ id: string }> = (p) => {
             justifyContent="center"
           >
             <div style={{ opacity: 0.7 }}>disk:</div>
-            <h2>
-              {((100 * stats()!.disk.used_gb) / stats()!.disk.total_gb).toFixed(
-                1
-              )}
-              %
+            <h2 class={disk_high() ? "text-red" : undefined}>
+              {disk_perc()?.toFixed(1)}%
             </h2>
             <Show when={!isSemiMobile()}>
               <div>{readableStorageAmount(stats()!.disk.total_gb)}</div>
@@ -170,4 +185,4 @@ const ServerStats: Component<{ id: string }> = (p) => {
       </Show>
     </Show>
   );
-}
+};
