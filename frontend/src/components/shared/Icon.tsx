@@ -45,7 +45,8 @@ export type IconType =
   | "cog"
   | "home"
   | "timeline-line-chart"
-  | "arrow-right";
+  | "arrow-right"
+  | "duplicate";
 
 const ICON_DIR = import.meta.env.VITE_ICON_DIR || "/assets/icons"
 

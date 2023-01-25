@@ -5,7 +5,7 @@ use mungos::{doc, to_bson};
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
-    Build, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget,
+    Build, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget, Version,
 };
 
 use crate::{
@@ -104,6 +104,7 @@ impl State {
             .await?;
         build.name = new_name;
         build.server_id = new_server_id;
+        build.version = Version::default();
         let build = self.create_full_build(build, user).await?;
         Ok(build)
     }

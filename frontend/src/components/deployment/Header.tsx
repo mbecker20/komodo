@@ -17,6 +17,7 @@ import Updates from "./Updates";
 import { DockerContainerState, PermissionLevel } from "../../types";
 import { A, useParams } from "@solidjs/router";
 import { client } from "../..";
+import CopyMenu from "../CopyMenu";
 
 const Header: Component<{}> = (p) => {
   const { deployments, servers } = useAppState();
@@ -53,21 +54,24 @@ const Header: Component<{}> = (p) => {
         <Flex alignItems="center" justifyContent="space-between">
           <h1>{deployment()!.deployment.name}</h1>
           <Show when={userCanUpdate()}>
-            <HoverMenu
-              target={
-                <ConfirmButton
-                  onConfirm={() => {
-                    client.delete_deployment(params.id);
-                  }}
-                  class="red"
-                >
-                  <Icon type="trash" />
-                </ConfirmButton>
-              }
-              content="delete deployment"
-              position="bottom center"
-              padding="0.5rem"
-            />
+            <Flex alignItems="center">
+              <CopyMenu type="deployment" id={params.id} />
+              <HoverMenu
+                target={
+                  <ConfirmButton
+                    onConfirm={() => {
+                      client.delete_deployment(params.id);
+                    }}
+                    class="red"
+                  >
+                    <Icon type="trash" />
+                  </ConfirmButton>
+                }
+                content="delete deployment"
+                position="bottom center"
+                padding="0.5rem"
+              />
+            </Flex>
           </Show>
         </Flex>
         <Flex alignItems="center" justifyContent="space-between">

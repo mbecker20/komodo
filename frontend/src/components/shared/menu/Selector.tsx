@@ -33,10 +33,13 @@ const Selector: Component<{
   itemClass?: string;
   itemStyle?: JSX.CSSProperties;
   label?: JSXElement;
+  itemMap?: (item: string) => string;
 }> = (p) => {
   const [show, toggle] = useToggle();
   const [search, setSearch] = createSignal("");
   let ref: HTMLInputElement | undefined;
+  const current = () =>
+    p.itemMap ? p.itemMap(p.selected) : p.selected;
   createEffect(() => {
     if (show()) setTimeout(() => ref?.focus(), 200);
   });
@@ -46,7 +49,7 @@ const Selector: Component<{
       fallback={
         <div class={p.disabledClass} style={p.disabledStyle}>
           <Show when={p.label}>{p.label}</Show>
-          {p.selected}
+          {current()}
         </div>
       }
     >
@@ -60,7 +63,7 @@ const Selector: Component<{
         target={
           <button class={p.targetClass} onClick={toggle} style={p.targetStyle}>
             <Show when={p.label}>{p.label}</Show>
-            {p.selected}
+            {current()}
             <Icon type="chevron-down" />
           </button>
         }
@@ -101,7 +104,7 @@ const Selector: Component<{
                   }}
                   class={combineClasses(p.itemClass, s.SelectorItem)}
                 >
-                  {item}
+                  {p.itemMap ? p.itemMap(item) : item}
                 </button>
               )}
             </For>

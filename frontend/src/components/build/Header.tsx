@@ -13,6 +13,7 @@ import { A, useParams } from "@solidjs/router";
 import { PermissionLevel } from "../../types";
 import { client } from "../..";
 import HoverMenu from "../shared/menu/HoverMenu";
+import CopyMenu from "../CopyMenu";
 
 const Header: Component<{}> = (p) => {
   const { builds, servers } = useAppState();
@@ -43,21 +44,24 @@ const Header: Component<{}> = (p) => {
         <Flex alignItems="center" justifyContent="space-between">
           <h1>{build().name}</h1>
           <Show when={userCanUpdate()}>
-            <HoverMenu
-              target={
-                <ConfirmButton
-                  onConfirm={() => {
-                    client.delete_build(params.id);
-                  }}
-                  class="red"
-                >
-                  <Icon type="trash" />
-                </ConfirmButton>
-              }
-              content="delete build"
-              position="bottom center"
-              padding="0.5rem"
-            />
+            <Flex alignItems="center">
+              <CopyMenu type="build" id={params.id} />
+              <HoverMenu
+                target={
+                  <ConfirmButton
+                    onConfirm={() => {
+                      client.delete_build(params.id);
+                    }}
+                    class="red"
+                  >
+                    <Icon type="trash" />
+                  </ConfirmButton>
+                }
+                content="delete build"
+                position="bottom center"
+                padding="0.5rem"
+              />
+            </Flex>
           </Show>
         </Flex>
         <Flex alignItems="center" justifyContent="space-between">
