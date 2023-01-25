@@ -12,7 +12,6 @@ import Loading from "../shared/loading/Loading";
 import SimpleTabs from "../shared/tabs/SimpleTabs";
 import {
   CpuChart,
-  CpuFreqChart,
   DiskChart,
   DiskReadChart,
   DiskWriteChart,
@@ -35,7 +34,7 @@ const HistoricalStats: Component<{
       .get_server_stats_history(params.id, {
         interval: timelength(),
         page: page(),
-        limit: 1000,
+        limit: 500,
         networks: true,
         components: true,
       })
