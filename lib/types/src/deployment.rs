@@ -109,8 +109,9 @@ pub struct DockerRunArgs {
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub environment: Vec<EnvironmentVar>,
 
-    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub network: Option<String>,
+    #[serde(default = "default_network")]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub network: String,
 
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "restart_mode_diff_no_change")]))]
@@ -128,6 +129,10 @@ pub struct DockerRunArgs {
 
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>, // the username of the dockerhub account
+}
+
+fn default_network() -> String {
+    String::from("host")
 }
 
 #[typeshare]

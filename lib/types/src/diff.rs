@@ -30,9 +30,9 @@ pub fn vec_diff_no_change<T: Diff>(vec_diff: &VecDiff<T>) -> bool {
 
 pub fn docker_run_args_diff_no_change(dra: &DockerRunArgsDiff) -> bool {
     dra.image.is_none()
+        && dra.network.is_none()
         && option_diff_no_change(&dra.container_user)
         && option_diff_no_change(&dra.docker_account)
-        && option_diff_no_change(&dra.network)
         && option_diff_no_change(&dra.post_image)
         && vec_diff_no_change(&dra.environment)
         && vec_diff_no_change(&dra.ports)

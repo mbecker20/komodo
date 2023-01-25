@@ -154,12 +154,8 @@ fn parse_environment(environment: &Vec<EnvironmentVar>) -> String {
         .join("")
 }
 
-fn parse_network(network: &Option<String>) -> String {
-    if let Some(network) = network {
-        format!(" --network {network}")
-    } else {
-        String::new()
-    }
+fn parse_network(network: &str) -> String {
+    format!(" --network {network}")
 }
 
 fn parse_restart(restart: &RestartMode) -> String {
