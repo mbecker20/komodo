@@ -38,8 +38,7 @@ const Selector: Component<{
   const [show, toggle] = useToggle();
   const [search, setSearch] = createSignal("");
   let ref: HTMLInputElement | undefined;
-  const current = () =>
-    p.itemMap ? p.itemMap(p.selected) : p.selected;
+  const current = () => (p.itemMap ? p.itemMap(p.selected) : p.selected);
   createEffect(() => {
     if (show()) setTimeout(() => ref?.focus(), 200);
   });
@@ -87,7 +86,11 @@ const Selector: Component<{
             <For
               each={
                 p.useSearch
-                  ? p.items.filter((item) => item.includes(search()))
+                  ? p.items.filter((item) =>
+                      p.itemMap
+                        ? p.itemMap(item).includes(search())
+                        : item.includes(search())
+                    )
                   : p.items
               }
             >
