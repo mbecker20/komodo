@@ -21,7 +21,14 @@ const CopyMenu: Component<{
   const [show, toggleShow] = useToggle();
   const [newName, setNewName] = createSignal("");
   const { builds, deployments, servers } = useAppState();
-  const [selectedId, setSelected] = createSignal(servers.ids()![0]);
+  const curr_server = () => {
+    if (p.type === "build") {
+      return builds.get(p.id)!.server_id;
+    } else {
+      return deployments.get(p.id)!.deployment.server_id;
+    }
+  }
+  const [selectedId, setSelected] = createSignal(curr_server());
   const name = () => {
     if (p.type === "build") {
       return builds.get(p.id)?.name;
@@ -76,7 +83,7 @@ const CopyMenu: Component<{
               itemMap={(id) => servers.get(id)!.server.name}
               targetClass="blue"
               targetStyle={{ display: "flex", gap: "0.5rem" }}
-              searchStyle={{ width: "12rem" }}
+              searchStyle={{ width: "100%" }}
 							position="bottom right"
               useSearch
             />
