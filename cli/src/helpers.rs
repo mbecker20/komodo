@@ -588,6 +588,7 @@ Description=agent to connect with monitor core
 
 [Service]
 ExecStart={home}/.monitor/bin/periphery --config-path {config_path} --home-dir {home}
+Restart=on-failure
 TimeoutStartSec=0
 
 [Install]
