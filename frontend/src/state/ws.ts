@@ -94,7 +94,7 @@ async function handleMessage(
       update.operation === Operation.BuildBuild
         ? "build"
         : update.operation.replaceAll("_", " ")
-    } ${name ? `on ${name} ` : ""}(${update.status})`
+    } ${name ? `on ${name} ` : ""} | ${update.status}`
   );
 
   // deployment
