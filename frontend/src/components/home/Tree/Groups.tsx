@@ -12,37 +12,52 @@ import Server from "./Server";
 import Menu from "../../shared/menu/Menu";
 import { client } from "../../..";
 import ConfirmButton from "../../shared/ConfirmButton";
+import { TreeSortType, TREE_SORTS, useTreeState } from "./Provider";
+import Selector from "../../shared/menu/Selector";
 
 const Groups: Component<{}> = (p) => {
   const { groups } = useAppState();
   const [groupFilter, setGroupFilter] = createSignal("");
+  const { sort, setSort, group_sorter } = useTreeState();
   const groupIDs = createMemo(() => {
     if (groups.loaded()) {
       const filters = groupFilter()
         .split(" ")
         .filter((term) => term.length > 0)
         .map((term) => term.toLowerCase());
-      return groups.ids()?.filter((id) => {
-        const name = groups.get(id)!.name;
-        for (const term of filters) {
-          if (!name.includes(term)) {
-            return false;
+      return groups
+        .ids()
+        ?.filter((id) => {
+          const name = groups.get(id)!.name;
+          for (const term of filters) {
+            if (!name.includes(term)) {
+              return false;
+            }
           }
-        }
-        return true;
-      });
+          return true;
+        })
+        .sort(group_sorter());
     } else {
       return undefined;
     }
   });
   return (
     <Grid style={{ height: "fit-content" }}>
-      <Grid gridTemplateColumns="1fr auto">
+      <Grid gridTemplateColumns="1fr auto auto">
         <Input
           placeholder="filter groups"
           value={groupFilter()}
           onEdit={setGroupFilter}
           style={{ width: "100%", padding: "0.5rem" }}
+        />
+        <Selector
+          selected={sort()}
+          items={TREE_SORTS as any as string[]}
+          onSelect={(mode) => setSort(mode as TreeSortType)}
+          position="bottom right"
+          targetClass="blue"
+          targetStyle={{ height: "100%" }}
+          containerStyle={{ height: "100%" }}
         />
         <NewGroup />
       </Grid>
@@ -55,8 +70,9 @@ export default Groups;
 
 const Group: Component<{ id: string }> = (p) => {
   const { groups, servers, ungroupedServerIds } = useAppState();
+  const { server_sorter } = useTreeState();
   const group = () => groups.get(p.id);
-  const serverIDs = () => group()?.servers;
+  const serverIDs = () => group()?.servers.sort(server_sorter());
   const [open, toggleOpen] = useLocalStorageToggle(p.id + "-group-homeopen-v1");
   const [showAdd, setShowAdd] = createSignal(false);
   const [edit, setEdit] = createSignal(false);
@@ -71,7 +87,9 @@ const Group: Component<{ id: string }> = (p) => {
           <h1 style={{ "font-size": "1.25rem" }}>{group()?.name}</h1>
         </Flex>
         <Flex alignItems="center">
-          <h2>{serverIDs()!.length} server{serverIDs()!.length > 1 ? "s" : ""}</h2>
+          <h2>
+            {serverIDs()!.length} server{serverIDs()!.length > 1 ? "s" : ""}
+          </h2>
           <Show when={open()}>
             <button
               class="blue"

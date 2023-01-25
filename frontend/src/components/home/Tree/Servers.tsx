@@ -2,14 +2,16 @@ import { Component, createMemo, createSignal, For, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import Input from "../../shared/Input";
-import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
+import Selector from "../../shared/menu/Selector";
 import AddServer from "./AddServer";
+import { TreeSortType, TREE_SORTS, useTreeState } from "./Provider";
 import Server from "./Server";
 
 const Servers: Component<{ serverIDs: string[]; showAdd?: boolean }> = (p) => {
   const { user } = useUser();
   const { servers } = useAppState();
+  const { sort, setSort, server_sorter } = useTreeState();
   const [serverFilter, setServerFilter] = createSignal("");
   const serverIDs = createMemo(() => {
     if (servers.loaded()) {
@@ -25,19 +27,29 @@ const Servers: Component<{ serverIDs: string[]; showAdd?: boolean }> = (p) => {
           }
         }
         return true;
-      });
+      })
+      .sort(server_sorter());
     } else {
       return undefined;
     }
   });
   return (
     <Grid style={{ height: "fit-content" }}>
-      <Grid gridTemplateColumns="1fr auto">
+      <Grid gridTemplateColumns="1fr auto auto">
         <Input
           placeholder="filter servers"
           value={serverFilter()}
           onEdit={setServerFilter}
           style={{ width: "100%", padding: "0.5rem" }}
+        />
+        <Selector 
+          selected={sort()}
+          items={TREE_SORTS as any as string[]}
+          onSelect={(mode) => setSort(mode as TreeSortType)}
+          position="bottom right"
+          targetClass="blue"
+          targetStyle={{ height: "100%" }}
+          containerStyle={{ height: "100%" }}
         />
         <Show
           when={p.showAdd && (user().admin || user().create_server_permissions)}

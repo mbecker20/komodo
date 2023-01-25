@@ -3,6 +3,7 @@ import { createStore } from "solid-js/store";
 import { client, pushNotification } from "../../..";
 import { CreateServerBody } from "../../../util/client_types";
 import { useToggle } from "../../../util/hooks";
+import Icon from "../../shared/Icon";
 import Input from "../../shared/Input";
 import Grid from "../../shared/layout/Grid";
 import CenterMenu from "../../shared/menu/CenterMenu";
@@ -13,7 +14,7 @@ const AddServer: Component<{}> = () => {
     <CenterMenu
       show={show}
       toggleShow={toggleShow}
-      target="add server"
+      target={<Icon type="plus" />}
       title="add server"
       targetClass="green shadow"
       content={() => <Content close={toggleShow} />}
