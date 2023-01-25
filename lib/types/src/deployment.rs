@@ -91,7 +91,7 @@ pub struct DeploymentActionState {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
+#[derive(Serialize, Deserialize, Debug, Clone, Diff, Builder)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct DockerRunArgs {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
@@ -129,6 +129,23 @@ pub struct DockerRunArgs {
 
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>, // the username of the dockerhub account
+}
+
+impl Default for DockerRunArgs {
+    fn default() -> DockerRunArgs {
+        DockerRunArgs {
+            network: "host".to_string(),
+            image: Default::default(),
+            ports: Default::default(),
+            volumes: Default::default(),
+            environment: Default::default(),
+            restart: Default::default(),
+            post_image: Default::default(),
+            container_user: Default::default(),
+            extra_args: Default::default(),
+            docker_account: Default::default(),
+        }
+    }
 }
 
 fn default_network() -> String {

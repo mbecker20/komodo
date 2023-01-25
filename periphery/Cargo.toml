@@ -1,6 +1,6 @@
 [package]
 name = "monitor_periphery"
-version = "0.1.10"
+version = "0.1.11"
 edition = "2021"
 authors = ["MoghTech"]
 description = "monitor periphery binary | run monitor periphery as system daemon"
@@ -15,8 +15,8 @@ path = "src/main.rs"
 [dependencies]
 # helpers = { package = "monitor_helpers", path = "../lib/helpers" }
 # types = { package = "monitor_types", path = "../lib/types" }
-helpers = { package = "monitor_helpers", version = "0.1.10" }
-types = { package = "monitor_types", version = "0.1.10" }
+helpers = { package = "monitor_helpers", version = "0.1.11" }
+types = { package = "monitor_types", version = "0.1.11" }
 run_command = { version = "0.0.5", features = ["async_tokio"] }
 async_timing_util = "0.1.14"
 tokio = { version = "1.24", features = ["full"] }
@@ -29,8 +29,8 @@ serde_json = "1.0"
 bollard = "0.13"
 anyhow = "1.0"
 envy = "0.4"
-sysinfo = "0.27.5"
-toml = "0.5"
+sysinfo = "0.27.7"
+toml = "0.6"
 daemonize = "0.4"
 clap = { version = "4.0", features = ["derive"] }
 futures-util = "0.3"
