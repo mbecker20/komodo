@@ -1,5 +1,5 @@
 import { Component, Match, Show, Switch } from "solid-js";
-import { client, pushNotification } from "../..";
+import { client } from "../..";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import ConfirmButton from "../shared/ConfirmButton";
@@ -9,24 +9,32 @@ import Grid from "../shared/layout/Grid";
 import Loading from "../shared/loading/Loading";
 import HoverMenu from "../shared/menu/HoverMenu";
 import { useActionStates } from "./ActionStateProvider";
-import { combineClasses, getId } from "../../util/helpers";
+import { combineClasses } from "../../util/helpers";
 import { A, useParams } from "@solidjs/router";
-import { DockerContainerState, PermissionLevel } from "../../types";
+import {
+  DockerContainerState,
+  PermissionLevel,
+  ServerStatus,
+} from "../../types";
 
 const Actions: Component<{}> = (p) => {
-  const { deployments, builds, getPermissionOnDeployment } = useAppState();
+  const { deployments, builds, servers, getPermissionOnDeployment } =
+    useAppState();
   const params = useParams();
   const { user, user_id } = useUser();
+  const deployment = () => deployments.get(params.id)!;
+  const server = () =>
+    deployment() && servers.get(deployment()!.deployment.server_id);
   const show = () => {
     const permissions = getPermissionOnDeployment(params.id);
     return (
+      server()?.status === ServerStatus.Ok &&
       deployment() &&
       (user().admin ||
         permissions === PermissionLevel.Execute ||
         permissions === PermissionLevel.Update)
     );
   };
-  const deployment = () => deployments.get(params.id)!;
   const showBuild = () => {
     const build = deployment().deployment.build_id
       ? builds.get(deployment().deployment.build_id!)

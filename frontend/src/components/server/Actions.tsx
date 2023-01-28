@@ -25,25 +25,27 @@ const Actions: Component<{}> = (p) => {
     <Show
       when={server() && server().status === ServerStatus.Ok && userCanExecute()}
     >
-      <Grid class={combineClasses("card shadow")}>
+      <Grid class={combineClasses("card shadow")} gridTemplateRows="auto 1fr">
         <h1>actions</h1>
-        <Flex class={combineClasses("action shadow")}>
-          prune images <PruneImages />
-        </Flex>
-        <Flex class={combineClasses("action shadow")}>
-          prune containers <PruneContainers />
-        </Flex>
-        <Flex class={combineClasses("action shadow")}>
-          prune networks{" "}
-          <ConfirmButton
-            class="green"
-            onConfirm={() => {
-              client.prune_docker_networks(params.id);
-            }}
-          >
-            <Icon type="cut" />
-          </ConfirmButton>
-        </Flex>
+        <Grid style={{ height: "fit-content" }}>
+          <Flex class={combineClasses("action shadow")}>
+            prune images <PruneImages />
+          </Flex>
+          <Flex class={combineClasses("action shadow")}>
+            prune containers <PruneContainers />
+          </Flex>
+          <Flex class={combineClasses("action shadow")}>
+            prune networks{" "}
+            <ConfirmButton
+              class="green"
+              onConfirm={() => {
+                client.prune_docker_networks(params.id);
+              }}
+            >
+              <Icon type="cut" />
+            </ConfirmButton>
+          </Flex>
+        </Grid>
       </Grid>
     </Show>
   );

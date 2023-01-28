@@ -17,6 +17,7 @@ import {
   DockerContainerState,
   Log as LogType,
   Operation,
+  ServerStatus,
 } from "../../../types";
 import { client } from "../../..";
 import SimpleTabs from "../../shared/tabs/SimpleTabs";
@@ -26,18 +27,22 @@ import { useUser } from "../../../state/UserProvider";
 
 const DeploymentTabs: Component<{}> = () => {
   const { user } = useUser();
-  const { deployments, ws } = useAppState();
+  const { deployments, ws, servers } = useAppState();
   const params = useParams();
   const deployment = () => deployments.get(params.id);
+  const server = () => deployment() && servers.get(deployment()!.deployment.server_id)
   const [logTail, setLogTail] = createSignal(50);
   const [log, setLog] = createSignal<LogType>();
   const status = () =>
     deployment()!.state === DockerContainerState.NotDeployed
       ? "not deployed"
       : deployment()!.container?.state;
+  const log_available = () =>
+    server()?.status === ServerStatus.Ok &&
+    deployment()?.state !== DockerContainerState.NotDeployed;
   const loadLog = async () => {
-    console.log("load log");
-    if (deployment()?.state !== DockerContainerState.NotDeployed) {
+    if (log_available()) {
+      console.log("load log");
       const log = await client.get_deployment_container_log(
         params.id,
         logTail()
@@ -78,7 +83,7 @@ const DeploymentTabs: Component<{}> = () => {
                 title: "config",
                 element: () => <Config />,
               },
-              status() !== "not deployed" && [
+              log_available() && [
                 {
                   title: "log",
                   element: () => (
@@ -90,7 +95,7 @@ const DeploymentTabs: Component<{}> = () => {
                     />
                   ),
                 },
-                status() !== "not deployed" && {
+                {
                   title: "error log",
                   titleElement: () => (
                     <Flex gap="0.5rem" alignItems="center">

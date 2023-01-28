@@ -102,8 +102,8 @@ export const AppStateProvider: ParentComponent = (p) => {
         return PermissionLevel.None;
       }
     },
-    serverStats: useServerStats(),
-    serverInfo: useServerInfo(),
+    serverStats: useServerStats(servers),
+    serverInfo: useServerInfo(servers),
     groups,
     getPermissionOnGroup: (id: string) => {
       const group = groups.get(id)!;

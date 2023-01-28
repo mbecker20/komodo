@@ -12,7 +12,7 @@ import { createStore, SetStoreFunction } from "solid-js/store";
 import { client, pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
-import { Deployment, Operation, PermissionLevel } from "../../../../types";
+import { Deployment, Operation, PermissionLevel, ServerStatus, ServerWithStatus } from "../../../../types";
 import { getId } from "../../../../util/helpers";
 
 type ConfigDeployment = Deployment & {
@@ -25,6 +25,7 @@ type State = {
   editing: Accessor<boolean>;
   deployment: ConfigDeployment;
   setDeployment: SetStoreFunction<ConfigDeployment>;
+  server: () => ServerWithStatus | undefined;
   reset: () => void;
   save: () => void;
   networks: Accessor<any[]>;
@@ -34,7 +35,7 @@ type State = {
 const context = createContext<State>();
 
 export const ConfigProvider: ParentComponent<{}> = (p) => {
-  const { ws, deployments } = useAppState();
+  const { ws, deployments, servers } = useAppState();
   const params = useParams();
   const { user } = useUser();
   const [editing] = createSignal(false);
@@ -87,11 +88,13 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
   createEffect(load);
 
   const [networks, setNetworks] = createSignal<any[]>([]);
+  const server = () => servers.get(deployments.get(params.id)!.deployment.server_id);
   createEffect(() => {
-    console.log("load networks");
-    client
-      .get_docker_networks(deployments.get(params.id)!.deployment.server_id)
-      .then(setNetworks);
+    if (server()?.status === ServerStatus.Ok) {
+      client
+        .get_docker_networks(deployments.get(params.id)!.deployment.server_id)
+        .then(setNetworks);
+    }
   });
 
   const save = () => {
@@ -141,6 +144,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     editing,
     deployment,
     setDeployment,
+    server,
     reset: load,
     save,
     networks,

@@ -2,6 +2,7 @@ import { useParams } from "@solidjs/router";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
+import { ServerStatus } from "../../../types";
 import SimpleTabs from "../../shared/tabs/SimpleTabs";
 import { Tab } from "../../shared/tabs/Tabs";
 import Config from "./config/Config";
@@ -26,7 +27,7 @@ const ServerTabs: Component<{}> = (p) => {
                 title: "config",
                 element: () => <Config />,
               },
-              {
+              server()?.status === ServerStatus.Ok && {
                 title: "info",
                 element: () => <Info />
               },

@@ -1,5 +1,6 @@
 import { Component, createEffect, createSignal } from "solid-js";
 import { client } from "../../../../..";
+import { ServerStatus } from "../../../../../types";
 import { combineClasses } from "../../../../../util/helpers";
 import Input from "../../../../shared/Input";
 import Flex from "../../../../shared/layout/Flex";
@@ -8,10 +9,14 @@ import Selector from "../../../../shared/menu/Selector";
 import { useConfig } from "../Provider";
 
 const Git: Component<{}> = (p) => {
-  const { deployment, setDeployment, userCanUpdate } = useConfig();
+  const { deployment, server, setDeployment, userCanUpdate } = useConfig();
   const [githubAccounts, setGithubAccounts] = createSignal<string[]>();
   createEffect(() => {
-    client.get_server_github_accounts(deployment.server_id).then(setGithubAccounts);
+    if (server()?.status === ServerStatus.Ok) {
+      client
+        .get_server_github_accounts(deployment.server_id)
+        .then(setGithubAccounts);
+    }
   });
   return (
     <Grid class={combineClasses("config-item shadow")}>

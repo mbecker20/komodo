@@ -47,13 +47,19 @@ export function useServers() {
   );
 }
 
-export function useServerStats() {
+export function useServerStats(servers: ReturnType<typeof useServers>) {
   const [stats, set] = createSignal<Record<string, SystemStats | undefined>>(
     {}
   );
   const load = async (serverID: string) => {
-    const stats = await client.get_server_stats(serverID);
-    set((s) => ({ ...s, [serverID]: stats }));
+    if (servers.get(serverID)?.status === ServerStatus.Ok) {
+      try {
+        const stats = await client.get_server_stats(serverID);
+        set((s) => ({ ...s, [serverID]: stats }));
+      } catch (error) {
+        console.log("error getting server stats");
+      }
+    }
   };
   const loading: Record<string, boolean> = {};
   setTimeout(() => Object.keys(stats()).forEach(load), 30000);
@@ -74,13 +80,19 @@ export function useServerStats() {
   };
 }
 
-export function useServerInfo() {
+export function useServerInfo(servers: ReturnType<typeof useServers>) {
   const [info, set] = createSignal<
     Record<string, SystemInformation | undefined>
   >({});
   const load = async (serverID: string) => {
-    const info = await client.get_server_system_info(serverID);
-    set((s) => ({ ...s, [serverID]: info }));
+    if (servers.get(serverID)?.status === ServerStatus.Ok) {
+      try {
+        const info = await client.get_server_system_info(serverID);
+        set((s) => ({ ...s, [serverID]: info }));
+      } catch (error) {
+        console.log("error getting server info", error);
+      }
+    }
   };
   const loading: Record<string, boolean> = {};
   return {

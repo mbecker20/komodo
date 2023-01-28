@@ -32,7 +32,7 @@ const Server: Component<{}> = (p) => {
             style={{ width: "100%" }}
             gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
           >
-            <Grid>
+            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto 1fr" }}>
               <Header />
               <Actions />
             </Grid>

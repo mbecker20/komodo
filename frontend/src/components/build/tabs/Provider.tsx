@@ -10,7 +10,7 @@ import { createStore, SetStoreFunction } from "solid-js/store";
 import { client } from "../../..";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
-import { Build, Operation, PermissionLevel } from "../../../types";
+import { Build, Operation, PermissionLevel, ServerWithStatus } from "../../../types";
 import { getId } from "../../../util/helpers";
 
 type ConfigBuild = Build & {
@@ -22,6 +22,7 @@ type ConfigBuild = Build & {
 type State = {
   build: ConfigBuild;
   setBuild: SetStoreFunction<ConfigBuild>;
+  server: () => ServerWithStatus | undefined
   reset: () => void;
   save: () => void;
   userCanUpdate: () => boolean;
@@ -30,7 +31,7 @@ type State = {
 const context = createContext<State>();
 
 export const ConfigProvider: ParentComponent<{}> = (p) => {
-  const { ws, builds } = useAppState();
+  const { ws, builds, servers } = useAppState();
   const params = useParams();
   const { user } = useUser();
   const [build, set] = createStore({
@@ -44,6 +45,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     set(...args);
     set("updated", true);
   };
+  const server = () => servers.get(builds.get(params.id)!.server_id);
 
   const load = () => {
     // console.log("load build");
@@ -105,6 +107,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
   const state = {
     build,
     setBuild,
+    server,
     reset: load,
     save,
     userCanUpdate,

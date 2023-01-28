@@ -9,10 +9,11 @@ import Grid from "../shared/layout/Grid";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useLocalStorageToggle } from "../../util/hooks";
 import Updates from "./Updates";
-import { PermissionLevel, Server } from "../../types";
+import { PermissionLevel, ServerStatus } from "../../types";
 import { A, useParams } from "@solidjs/router";
 import { client } from "../..";
 import Loading from "../shared/loading/Loading";
+import HoverMenu from "../shared/menu/HoverMenu";
 
 const Header: Component<{}> = (p) => {
   const { servers } = useAppState();
@@ -26,25 +27,58 @@ const Header: Component<{}> = (p) => {
   const userCanUpdate = () =>
     user().admin ||
     server().server.permissions![getId(user())] === PermissionLevel.Update;
-  const [version] = createResource(async () => {
-    return await client.get_server_version(params.id).catch();
-  });
+  const [version] = createResource(
+    () => server() && server().status === ServerStatus.Ok,
+    async (do_it?: boolean) => {
+      if (!do_it) return;
+      return await client.get_server_version(params.id).catch();
+    }
+  );
   return (
     <>
-      <Flex
+      <Grid
+        gap="0.5rem"
         class={combineClasses("card shadow")}
-        justifyContent="space-between"
-        alignItems="center"
         style={{
           position: "relative",
           cursor: isSemiMobile() ? "pointer" : undefined,
+          height: "fit-content",
         }}
         onClick={() => {
           if (isSemiMobile()) toggleShowUpdates();
         }}
       >
-        <Grid gap="0.1rem">
+        <Flex alignItems="center" justifyContent="space-between">
           <h1>{server().server.name}</h1>
+          <Show when={userCanUpdate()}>
+            <Flex alignItems="center">
+              <div class={serverStatusClass(server().status)}>{status()}</div>
+              <A
+                href={`/server/${params.id}/stats`}
+                class="blue"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Icon type="timeline-line-chart" />
+              </A>
+              <HoverMenu
+                target={
+                  <ConfirmButton
+                    onConfirm={() => {
+                      client.delete_server(params.id);
+                    }}
+                    class="red"
+                  >
+                    <Icon type="trash" />
+                  </ConfirmButton>
+                }
+                content="delete server"
+                position="bottom center"
+                padding="0.5rem"
+              />
+            </Flex>
+          </Show>
+        </Flex>
+        <Flex alignItems="center" justifyContent="space-between">
           <Flex gap="0.2rem" alignItems="center" style={{ opacity: 0.8 }}>
             <div>server</div>
             <Show when={server().server.region}>
@@ -52,42 +86,13 @@ const Header: Component<{}> = (p) => {
               {server().server.region}
             </Show>
           </Flex>
-        </Grid>
-        <Flex alignItems="center">
           <Show when={!isMobile()}>
-            <Show when={version()} fallback={<Loading type="three-dot" />}>
+            <Show when={version()}>
               <div style={{ opacity: 0.7 }}>periphery v{version()}</div>
             </Show>
           </Show>
-          <div class={serverStatusClass(server().status)}>{status()}</div>
-          <A
-            href={`/server/${params.id}/stats`}
-            class="blue"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Icon type="timeline-line-chart" />
-          </A>
-          <Show when={userCanUpdate()}>
-            <ConfirmButton
-              onConfirm={() => {
-                client.delete_server(params.id);
-              }}
-              class="red"
-            >
-              <Icon type="trash" />
-            </ConfirmButton>
-          </Show>
         </Flex>
-        <Show when={isSemiMobile()}>
-          <Flex gap="0.5rem" alignItems="center" class="show-updates-indicator">
-            updates{" "}
-            <Icon
-              type={showUpdates() ? "chevron-up" : "chevron-down"}
-              width="0.9rem"
-            />
-          </Flex>
-        </Show>
-      </Flex>
+      </Grid>
       <Show when={isSemiMobile() && showUpdates()}>
         <Updates />
       </Show>

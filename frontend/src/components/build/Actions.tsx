@@ -10,20 +10,21 @@ import { useActionStates } from "./ActionStateProvider";
 import { client } from "../..";
 import { combineClasses, getId } from "../../util/helpers";
 import { useParams } from "@solidjs/router";
-import { PermissionLevel } from "../../types";
+import { PermissionLevel, ServerStatus } from "../../types";
 
 const Actions: Component<{}> = (p) => {
   const { user } = useUser();
   const params = useParams() as { id: string };
-  const { builds } = useAppState();
+  const { builds, servers } = useAppState();
   const build = () => builds.get(params.id)!;
+  const server = () => build() && servers.get(build()!.server_id);
   const actions = useActionStates();
   const userCanExecute = () =>
     user().admin ||
     build().permissions![getId(user())] === PermissionLevel.Execute ||
     build().permissions![getId(user())] === PermissionLevel.Update;
   return (
-    <Show when={userCanExecute()}>
+    <Show when={userCanExecute() && server()?.status === ServerStatus.Ok}>
       <Grid class={combineClasses("card shadow")} gridTemplateRows="auto 1fr">
         <h1>actions</h1>
         <Grid style={{ height: "fit-content" }}>

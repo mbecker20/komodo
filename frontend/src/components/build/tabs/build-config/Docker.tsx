@@ -1,6 +1,7 @@
 import { Component, createEffect, createSignal, Show } from "solid-js";
 import { client } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
+import { ServerStatus } from "../../../../types";
 import { combineClasses } from "../../../../util/helpers";
 import Input from "../../../shared/Input";
 import Flex from "../../../shared/layout/Flex";
@@ -9,10 +10,14 @@ import Selector from "../../../shared/menu/Selector";
 import { useConfig } from "../Provider";
 
 const Docker: Component<{}> = (p) => {
-  const { build, setBuild, userCanUpdate } = useConfig();
+  const { build, setBuild, server, userCanUpdate } = useConfig();
   const [dockerAccounts, setDockerAccounts] = createSignal<string[]>();
   createEffect(() => {
-    client.get_server_docker_accounts(build.server_id).then(setDockerAccounts);
+    if (server()?.status === ServerStatus.Ok) {
+      client
+        .get_server_docker_accounts(build.server_id)
+        .then(setDockerAccounts);
+    }
   });
   return (
     <Grid class={combineClasses("config-item shadow")}>

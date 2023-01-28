@@ -12,7 +12,7 @@ import { createStore, SetStoreFunction } from "solid-js/store";
 import { client } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
-import { Server, Operation, PermissionLevel } from "../../../../types";
+import { Server, Operation, PermissionLevel, ServerStatus } from "../../../../types";
 import { getId } from "../../../../util/helpers";
 
 type ConfigServer = Server & { loaded: boolean; updated: boolean };
@@ -59,7 +59,9 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
   const [networks, setNetworks] = createSignal<any[]>([]);
   const loadNetworks = () => {
     // console.log("load networks");
-    client.get_docker_networks(params.id).then(setNetworks);
+    if (servers.get(params.id)?.status === ServerStatus.Ok) {
+      client.get_docker_networks(params.id).then(setNetworks);
+    }
   };
   createEffect(loadNetworks);
 
