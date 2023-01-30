@@ -32,31 +32,40 @@ pub struct Deployment {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "docker_run_args_diff_no_change")]))]
     pub docker_run_args: DockerRunArgs,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub build_id: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub build_version: Option<Version>,
 
     // deployment repo related
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub repo: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub branch: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub github_account: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_clone: Option<Command>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_pull: Option<Command>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub repo_mount: Option<Conversion>,
 
