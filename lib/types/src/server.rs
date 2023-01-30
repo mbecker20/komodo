@@ -34,36 +34,45 @@ pub struct Server {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
+    #[builder(default = "true")]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub enabled: bool,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub to_notify: Vec<String>, // slack users to notify
 
     #[serde(default)]
+    #[builder(default = "true")]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub auto_prune: bool,
 
     #[serde(default = "default_cpu_alert")]
+    #[builder(default = "default_cpu_alert()")]
     #[diff(attr(#[serde(skip_serializing_if = "f32_diff_no_change")]))]
     pub cpu_alert: f32,
 
     #[serde(default = "default_mem_alert")]
+    #[builder(default = "default_mem_alert()")]
     #[diff(attr(#[serde(skip_serializing_if = "f64_diff_no_change")]))]
     pub mem_alert: f64,
 
     #[serde(default = "default_disk_alert")]
+    #[builder(default = "default_disk_alert()")]
     #[diff(attr(#[serde(skip_serializing_if = "f64_diff_no_change")]))]
     pub disk_alert: f64,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "timelength_diff_no_change")]))]
     pub stats_interval: Timelength,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub region: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub instance_id: Option<String>,
 

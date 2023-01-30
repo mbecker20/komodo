@@ -28,18 +28,23 @@ pub struct Group {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub builds: Vec<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub deployments: Vec<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub servers: Vec<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub procedures: Vec<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub groups: Vec<String>,
 

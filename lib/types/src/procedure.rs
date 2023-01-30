@@ -24,10 +24,12 @@ pub struct Procedure {
     pub name: String,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub stages: Vec<ProcedureStage>,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub webhook_branches: Vec<String>,
 

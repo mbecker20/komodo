@@ -35,28 +35,36 @@ pub struct Build {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub server_id: String, // server which this image should be built on
 
+    #[builder(default)]
     pub version: Version,
 
     // git related
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub repo: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub branch: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub github_account: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub on_clone: Option<Command>,
 
     // build related
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub pre_build: Option<Command>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_build_args: Option<DockerBuildArgs>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>,
 
@@ -128,8 +136,10 @@ impl Version {
 #[diff(attr(#[derive(Debug, Serialize, PartialEq)]))]
 pub struct DockerBuildArgs {
     pub build_path: String,
+    #[builder(default)]
     pub dockerfile_path: Option<String>,
     #[serde(default)]
+    #[builder(default)]
     pub build_args: Vec<EnvironmentVar>,
 }
 

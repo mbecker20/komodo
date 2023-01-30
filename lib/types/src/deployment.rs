@@ -94,39 +94,49 @@ pub struct DeploymentActionState {
 #[derive(Serialize, Deserialize, Debug, Clone, Diff, Builder)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct DockerRunArgs {
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub image: String,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub ports: Vec<Conversion>,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub volumes: Vec<Conversion>,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub environment: Vec<EnvironmentVar>,
 
     #[serde(default = "default_network")]
+    #[builder(default = "default_network()")]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub network: String,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "restart_mode_diff_no_change")]))]
     pub restart: RestartMode,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub post_image: Option<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub container_user: Option<String>,
 
     #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub extra_args: Vec<String>,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>, // the username of the dockerhub account
 }
