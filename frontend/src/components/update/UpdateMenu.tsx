@@ -52,7 +52,7 @@ export default UpdateMenu;
 
 const UpdateMenuContent: Component<{ update: UpdateType }> = (p) => {
   return (
-    <Grid class={s.LogContainer}>
+    <Grid class={combineClasses(s.LogContainer, "scroller")}>
       <UpdateSummary update={p.update} />
       <UpdateLogs update={p.update} />
     </Grid>
