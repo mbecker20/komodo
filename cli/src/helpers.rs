@@ -176,7 +176,7 @@ pub fn start_mongo(sub_matches: &ArgMatches) {
         }
     }
 
-    let command = format!("docker stop {name} && docker container rm {name} && docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} --restart {restart} mongo --quiet");
+    let command = format!("docker stop {name} && docker container rm {name} && docker run -d --name {name} -p {port}:27017 --network {network} -v {mount}:/data/db{env} --restart {restart} --log-opt max-size=15m --log-opt max-file=3 mongo --quiet");
 
     let output = run_command_pipe_to_terminal(&command);
 
