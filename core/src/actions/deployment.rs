@@ -119,10 +119,14 @@ impl State {
             .await?;
         let start_ts = monitor_timestamp();
         let server = self.db.get_server(&deployment.server_id).await?;
-        let log = self
+        let log = match self
             .periphery
             .container_remove(&server, &deployment.name)
-            .await?;
+            .await
+        {
+            Ok(log) => log,
+            Err(e) => Log::error("destroy container", format!("{e:#?}")),
+        };
         self.db
             .deployments
             .delete_one(deployment_id)

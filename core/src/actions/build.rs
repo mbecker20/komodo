@@ -118,11 +118,10 @@ impl State {
             .await?;
         let start_ts = monitor_timestamp();
         let server = self.db.get_server(&build.server_id).await?;
-        let delete_repo_log = self
-            .periphery
-            .delete_repo(&server, &build.name)
-            .await
-            .context("failed at deleting repo")?;
+        let delete_repo_log = match self.periphery.delete_repo(&server, &build.name).await {
+            Ok(log) => log,
+            Err(e) => Log::error("delete repo", format!("{e:#?}")),
+        };
         self.db.builds.delete_one(build_id).await?;
         let update = Update {
             target: UpdateTarget::Build(build_id.to_string()),
