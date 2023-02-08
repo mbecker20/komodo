@@ -66,7 +66,7 @@ const UpdateSummary: Component<{ update: UpdateType }> = (p) => {
       gap="0.5rem"
       class="card light shadow"
       gridTemplateColumns="1fr 1fr"
-      style={{ width: "40rem", "max-width": "90vw" }}
+      style={{ width: "100%", "box-sizing": "border-box" }}
     >
       <Flex gap="0.5rem" alignItems="center">
         status: <h2>{p.update.status.replaceAll("_", " ")}</h2>
