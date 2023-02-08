@@ -16,6 +16,7 @@ import {
   PermissionLevel,
   ServerStatus,
 } from "../../types";
+import ConfirmMenuButton from "../shared/ConfirmMenuButton";
 
 const Actions: Component<{}> = (p) => {
   const { deployments, builds, servers, getPermissionOnDeployment } =
@@ -160,6 +161,8 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
   const params = useParams();
   // const deployment = () => deployments.get(params.id)!;
   const actions = useActionStates();
+  const { deployments } = useAppState();
+  const name = () => deployments.get(params.id)?.deployment.name;
   return (
     <Show
       when={!actions.deploying}
@@ -171,14 +174,30 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
     >
       <HoverMenu
         target={
-          <ConfirmButton
-            class="green"
-            onConfirm={() => {
-              client.deploy_container(params.id);
-            }}
+          <Show
+            when={p.redeploy}
+            fallback={
+              <ConfirmButton
+                class="green"
+                onConfirm={() => {
+                  client.deploy_container(params.id);
+                }}
+              >
+                <Icon type={"play"} />
+              </ConfirmButton>
+            }
           >
-            <Icon type={p.redeploy ? "reset" : "play"} />
-          </ConfirmButton>
+            <ConfirmMenuButton
+              class="green"
+              onConfirm={() => {
+                client.deploy_container(params.id);
+              }}
+              title={`redeploy container | ${name()}`}
+              match={name()!}
+            >
+              <Icon type={"reset"} />
+            </ConfirmMenuButton>
+          </Show>
         }
         content={p.redeploy ? "redeploy container" : "deploy container"}
         position="bottom center"
@@ -191,6 +210,8 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
 const RemoveContainer = () => {
   const params = useParams();
   const actions = useActionStates();
+  const { deployments } = useAppState();
+  const name = () => deployments.get(params.id)?.deployment.name;
   return (
     <Show
       when={!actions.removing}
@@ -202,14 +223,16 @@ const RemoveContainer = () => {
     >
       <HoverMenu
         target={
-          <ConfirmButton
+          <ConfirmMenuButton
             class="red"
             onConfirm={() => {
               client.remove_container(params.id);
             }}
+            title={`destroy container | ${name()}`}
+            match={name()!}
           >
             <Icon type="trash" />
-          </ConfirmButton>
+          </ConfirmMenuButton>
         }
         content="delete container"
         position="bottom center"
@@ -253,6 +276,8 @@ const Start = () => {
 const Stop = () => {
   const params = useParams();
   const actions = useActionStates();
+  const { deployments } = useAppState();
+  const name = () => deployments.get(params.id)?.deployment.name;
   return (
     <Show
       when={!actions.stopping}
@@ -264,14 +289,16 @@ const Stop = () => {
     >
       <HoverMenu
         target={
-          <ConfirmButton
+          <ConfirmMenuButton
             class="orange"
             onConfirm={() => {
               client.stop_container(params.id);
             }}
+            title={`stop container | ${name()}`}
+            match={name()!}
           >
             <Icon type="pause" />
-          </ConfirmButton>
+          </ConfirmMenuButton>
         }
         content="stop container"
         position="bottom center"

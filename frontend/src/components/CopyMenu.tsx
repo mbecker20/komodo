@@ -90,6 +90,7 @@ const CopyMenu: Component<{
           </Flex>
           <ConfirmButton
             class="green"
+            style={{ width: "100%" }}
             onConfirm={copy}
           >
             copy {p.type}

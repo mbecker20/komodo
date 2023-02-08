@@ -14,6 +14,7 @@ import { A, useParams } from "@solidjs/router";
 import { client } from "../..";
 import Loading from "../shared/loading/Loading";
 import HoverMenu from "../shared/menu/HoverMenu";
+import ConfirmMenuButton from "../shared/ConfirmMenuButton";
 
 const Header: Component<{}> = (p) => {
   const { servers } = useAppState();
@@ -53,23 +54,38 @@ const Header: Component<{}> = (p) => {
           <Show when={userCanUpdate()}>
             <Flex alignItems="center">
               <div class={serverStatusClass(server().status)}>{status()}</div>
-              <A
-                href={`/server/${params.id}/stats`}
-                class="blue"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Icon type="timeline-line-chart" />
-              </A>
               <HoverMenu
                 target={
-                  <ConfirmButton
+                  <A
+                    href={`/server/${params.id}/stats`}
+                    class="blue"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Icon type="timeline-line-chart" />
+                  </A>
+                }
+                content="server stats"
+                position="bottom center"
+                padding="0.5rem"
+              />
+              <HoverMenu
+                target={
+                  <ConfirmMenuButton
                     onConfirm={() => {
                       client.delete_server(params.id);
                     }}
                     class="red"
+                    title={`delete server | ${server().server.name}`}
+                    match={server().server.name}
+                    info={
+                      <div style={{ opacity: 0.7 }}>
+                        warning! this will also delete all builds and
+                        deployments on this server
+                      </div>
+                    }
                   >
                     <Icon type="trash" />
-                  </ConfirmButton>
+                  </ConfirmMenuButton>
                 }
                 content="delete server"
                 position="bottom center"

@@ -12,6 +12,7 @@ const ConfirmMenuButton: Component<{
   style?: JSX.CSSProperties;
   title: string;
   match: string;
+  info?: JSX.Element;
   children: JSX.Element;
 }> = (p) => {
   const [show, toggleShow] = useToggle();
@@ -21,23 +22,14 @@ const ConfirmMenuButton: Component<{
       show={show}
       toggleShow={toggleShow}
       title={p.title}
-      target={
-        <button
-          class={p.class || "green"}
-          style={p.style}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleShow();
-          }}
-        >
-          {p.children}
-        </button>
-      }
+      targetClass={p.class}
+      target={p.children}
       content={() => (
         <ConfirmMenuContent
           class={p.class}
           title={p.title}
           match={p.match}
+          info={p.info}
           onConfirm={p.onConfirm}
         />
       )}
@@ -51,11 +43,21 @@ const ConfirmMenuContent: Component<{
   title: string;
   match: string;
   onConfirm?: () => void;
+  info?: JSX.Element;
 }> = (p) => {
   const [input, setInput] = createSignal("");
   return (
     <Grid placeItems="center">
+      {p.info}
       <Input
+        class="darkgrey"
+        style={{
+          padding: "0.5rem",
+          width: "100%",
+          "border-style": "solid",
+          "border-width": "1px",
+          "border-color": input() === p.match ? "#41764c" : "#952E23",
+        }}
         placeholder={`enter '${p.match}'`}
         onEdit={setInput}
         value={input()}
@@ -63,6 +65,7 @@ const ConfirmMenuContent: Component<{
       />
       <ConfirmButton
         class={p.class}
+        style={{ width: "100%" }}
         onConfirm={() => {
           if (input() === p.match) {
             p.onConfirm && p.onConfirm();

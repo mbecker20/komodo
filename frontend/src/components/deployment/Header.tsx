@@ -6,7 +6,6 @@ import {
   deploymentHeaderStateClass,
   getId,
 } from "../../util/helpers";
-import ConfirmButton from "../shared/ConfirmButton";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
@@ -18,6 +17,7 @@ import { DockerContainerState, PermissionLevel } from "../../types";
 import { A, useParams } from "@solidjs/router";
 import { client } from "../..";
 import CopyMenu from "../CopyMenu";
+import ConfirmMenuButton from "../shared/ConfirmMenuButton";
 
 const Header: Component<{}> = (p) => {
   const { deployments, servers } = useAppState();
@@ -58,14 +58,25 @@ const Header: Component<{}> = (p) => {
               <CopyMenu type="deployment" id={params.id} />
               <HoverMenu
                 target={
-                  <ConfirmButton
+                  <ConfirmMenuButton
                     onConfirm={() => {
                       client.delete_deployment(params.id);
                     }}
                     class="red"
+                    title={`delete deployment | ${
+                      deployment().deployment.name
+                    }`}
+                    match={deployment().deployment.name}
+                    info={
+                      <Show when={deployment().container}>
+                        <div style={{ opacity: 0.7 }}>
+                          warning! this will destroy this deployments container
+                        </div>
+                      </Show>
+                    }
                   >
                     <Icon type="trash" />
-                  </ConfirmButton>
+                  </ConfirmMenuButton>
                 }
                 content="delete deployment"
                 position="bottom center"

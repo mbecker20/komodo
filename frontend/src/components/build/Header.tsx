@@ -14,6 +14,7 @@ import { PermissionLevel } from "../../types";
 import { client } from "../..";
 import HoverMenu from "../shared/menu/HoverMenu";
 import CopyMenu from "../CopyMenu";
+import ConfirmMenuButton from "../shared/ConfirmMenuButton";
 
 const Header: Component<{}> = (p) => {
   const { builds, servers } = useAppState();
@@ -48,14 +49,16 @@ const Header: Component<{}> = (p) => {
               <CopyMenu type="build" id={params.id} />
               <HoverMenu
                 target={
-                  <ConfirmButton
+                  <ConfirmMenuButton
                     onConfirm={() => {
                       client.delete_build(params.id);
                     }}
                     class="red"
+                    title={`delete build | ${build().name}`}
+                    match={build().name}
                   >
                     <Icon type="trash" />
-                  </ConfirmButton>
+                  </ConfirmMenuButton>
                 }
                 content="delete build"
                 position="bottom center"
