@@ -11,9 +11,12 @@ body {
   background-color: c.$darkgrey;
   color: c.$app-color;
 
+  scrollbar-color: rgba(252, 234, 222, 0.3) transparent;
+  scrollbar-width: thin;
+
   display: grid;
   grid-template-columns: 1fr;
-  place-items: center;
+  place-items: center;  
 }
 
 code {

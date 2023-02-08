@@ -74,7 +74,7 @@ const EditDotEnv: Component<{}> = (p) => {
           value={dotenv()}
           onEdit={setDotEnv}
           style={{
-            width: "700px",
+            width: "1000px",
             "max-width": "90vw",
             height: "80vh",
             padding: "1rem",
