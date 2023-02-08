@@ -3,7 +3,7 @@
 use anyhow::{anyhow, Context};
 use monitor_types::User;
 use reqwest::StatusCode;
-use serde::{de::DeserializeOwned, Serialize, Deserialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::json;
 
 pub use futures_util;
@@ -90,14 +90,19 @@ impl MonitorClient {
     }
 
     pub async fn new_from_env() -> anyhow::Result<MonitorClient> {
-        let env = envy::from_env::<MonitorEnv>().context("failed to parse environment for monitor client")?;
+        let env = envy::from_env::<MonitorEnv>()
+            .context("failed to parse environment for monitor client")?;
         if let Some(token) = env.monitor_token {
             Ok(MonitorClient::new_with_token(&env.monitor_url, token))
         } else if let Some(password) = env.monitor_password {
-            let username = env.monitor_username.ok_or(anyhow!("must provide MONITOR_USERNAME to authenticate with MONITOR_PASSWORD"))?;
+            let username = env.monitor_username.ok_or(anyhow!(
+                "must provide MONITOR_USERNAME to authenticate with MONITOR_PASSWORD"
+            ))?;
             MonitorClient::new_with_password(&env.monitor_url, username, password).await
         } else if let Some(secret) = env.monitor_secret {
-            let username = env.monitor_username.ok_or(anyhow!("must provide MONITOR_USERNAME to authenticate with MONITOR_SECRET"))?;
+            let username = env.monitor_username.ok_or(anyhow!(
+                "must provide MONITOR_USERNAME to authenticate with MONITOR_SECRET"
+            ))?;
             MonitorClient::new_with_secret(&env.monitor_url, username, secret).await
         } else {
             Err(anyhow!("failed to initialize monitor client from env | must provide one of: (MONITOR_TOKEN), (MONITOR_USERNAME and MONITOR_PASSWORD), (MONITOR_USERNAME and MONITOR_SECRET)"))

@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
+use futures_util::future::join_all;
 use helpers::to_monitor_name;
+use mungos::doc;
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
@@ -102,21 +104,59 @@ impl State {
             .get_server_check_permissions(server_id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
-        self.db.servers.delete_one(&server_id).await?;
-        let update = Update {
+        let mut update = Update {
             target: UpdateTarget::Server(server_id.to_string()),
             operation: Operation::DeleteServer,
             start_ts,
-            end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
-            logs: vec![Log::simple(
-                "delete server",
-                format!("deleted server {}", server.name),
-            )],
             success: true,
+            status: UpdateStatus::InProgress,
             ..Default::default()
         };
-        self.add_update(update).await?;
+        update.id = self.add_update(update.clone()).await?;
+
+        let res = {
+            let delete_deployments = self
+                .db
+                .deployments
+                .get_some(doc! { "server_id": server_id }, None)
+                .await?
+                .into_iter()
+                .map(|d| async move { self.delete_deployment(&d.id, user).await });
+            let delete_builds = self
+                .db
+                .builds
+                .get_some(doc! { "server_id": server_id }, None)
+                .await?
+                .into_iter()
+                .map(|d| async move { self.delete_deployment(&d.id, user).await });
+            let update_groups = self
+                .db
+                .groups
+                .update_many(doc! {}, doc! { "$pull": { "servers": server_id } });
+            let (dep_res, build_res, group_res) = tokio::join!(
+                join_all(delete_deployments),
+                join_all(delete_builds),
+                update_groups
+            );
+            dep_res.into_iter().collect::<anyhow::Result<Vec<_>>>()?;
+            build_res.into_iter().collect::<anyhow::Result<Vec<_>>>()?;
+            group_res?;
+            self.db.servers.delete_one(&server_id).await?;
+            anyhow::Ok(())
+        };
+
+        let log = match res {
+            Ok(_) => Log::simple("delete server", format!("deleted server {}", server.name)),
+            Err(e) => Log::error("delete server", format!("failed to delete server\n{e:#?}")),
+        };
+
+        update.end_ts = Some(monitor_timestamp());
+        update.status = UpdateStatus::Complete;
+        update.success = log.success;
+        update.logs.push(log);
+
+        self.update_update(update).await?;
         Ok(server)
     }
 
