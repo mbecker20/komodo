@@ -126,13 +126,17 @@ const Actions: Component<{}> = (p) => {
 };
 
 const Build: Component = () => {
-  const { ws, deployments } = useAppState();
+  const { deployments } = useAppState();
   const params = useParams();
   const actions = useActionStates();
   const buildID = () => deployments.get(params.id)!.deployment.build_id!;
   return (
     <Flex class={combineClasses("action shadow")}>
-      <A href={`/build/${buildID()}`} class="pointer">
+      <A
+        href={`/build/${buildID()}`}
+        class="pointer"
+        style={{ padding: 0, "font-size": "16px" }}
+      >
         build
       </A>
       <Show
