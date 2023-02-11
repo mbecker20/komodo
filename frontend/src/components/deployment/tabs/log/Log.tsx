@@ -74,7 +74,7 @@ const Log: Component<{
   );
   clearInterval(interval);
   interval = setInterval(() => {
-    if (poll()) {
+    if (poll() && deployment()?.state === DockerContainerState.Running) {
       p.reload();
     }
   }, POLLING_RATE);
