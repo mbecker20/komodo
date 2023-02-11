@@ -1,16 +1,27 @@
 import { useParams } from "@solidjs/router";
-import { Component, createEffect, createSignal, Show } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  onCleanup,
+  Show,
+} from "solid-js";
 import { client, pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { DockerContainerState, Log as LogType } from "../../../../types";
 import { combineClasses } from "../../../../util/helpers";
-import { useBuffer } from "../../../../util/hooks";
+import { useBuffer, useLocalStorageToggle } from "../../../../util/hooks";
 import Icon from "../../../shared/Icon";
 import Flex from "../../../shared/layout/Flex";
 import Grid from "../../../shared/layout/Grid";
 import Selector from "../../../shared/menu/Selector";
 import { useConfig } from "../config/Provider";
 import s from "./log.module.scss";
+
+const POLLING_RATE = 5000;
+
+let interval = -1;
 
 const Log: Component<{
   log?: LogType;
@@ -57,9 +68,23 @@ const Log: Component<{
     }
   };
   const buffer = useBuffer(scrolled, 250);
+  const [poll, togglePoll] = useLocalStorageToggle(
+    "deployment-log-polling",
+    true
+  );
+  clearInterval(interval);
+  interval = setInterval(() => {
+    if (poll()) {
+      p.reload();
+    }
+  }, POLLING_RATE);
+  onCleanup(() => clearInterval(interval));
   return (
     <Show when={p.log}>
-      <Grid gap="0.5rem" style={{ height: "100%", "grid-template-rows": "auto 1fr" }}>
+      <Grid
+        gap="0.5rem"
+        style={{ height: "100%", "grid-template-rows": "auto 1fr" }}
+      >
         <Flex
           alignItems="center"
           justifyContent="flex-end"
@@ -99,6 +124,9 @@ const Log: Component<{
             style={{ padding: "0.4rem" }}
           >
             <Icon type="refresh" />
+          </button>
+          <button class={poll() ? "green" : "red"} onClick={togglePoll}>
+            {poll() ? "" : "don't "}poll
           </button>
         </Flex>
         <div style={{ position: "relative", height: "100%" }}>

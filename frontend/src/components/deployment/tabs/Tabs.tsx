@@ -30,13 +30,14 @@ const DeploymentTabs: Component<{}> = () => {
   const { deployments, ws, servers } = useAppState();
   const params = useParams();
   const deployment = () => deployments.get(params.id);
-  const server = () => deployment() && servers.get(deployment()!.deployment.server_id)
+  const server = () =>
+    deployment() && servers.get(deployment()!.deployment.server_id);
   const [logTail, setLogTail] = createSignal(50);
   const [log, setLog] = createSignal<LogType>();
-  const status = () =>
-    deployment()!.state === DockerContainerState.NotDeployed
-      ? "not deployed"
-      : deployment()!.container?.state;
+  // const status = () =>
+  //   deployment()!.state === DockerContainerState.NotDeployed
+  //     ? "not deployed"
+  //     : deployment()!.container?.state;
   const log_available = () =>
     server()?.status === ServerStatus.Ok &&
     deployment()?.state !== DockerContainerState.NotDeployed;

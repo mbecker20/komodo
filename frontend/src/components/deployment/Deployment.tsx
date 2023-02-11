@@ -1,27 +1,35 @@
 import { useParams } from "@solidjs/router";
-import { Component, Show } from "solid-js";
-import { MAX_PAGE_WIDTH } from "../..";
+import { Component, onCleanup, Show } from "solid-js";
+import { client } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
-import { useUser } from "../../state/UserProvider";
-import { PermissionLevel } from "../../types";
-import { combineClasses, getId } from "../../util/helpers";
+import { ServerStatus } from "../../types";
 import NotFound from "../NotFound";
 import Grid from "../shared/layout/Grid";
 import Actions from "./Actions";
 import { ActionStateProvider } from "./ActionStateProvider";
 import Header from "./Header";
-import { ConfigProvider } from "./tabs/config/Provider";
 import DeploymentTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
-const Deployment2: Component<{}> = (p) => {
+const POLLING_RATE = 10000;
+let interval = -1;
+
+const Deployment: Component<{}> = (p) => {
   const { servers, deployments } = useAppState();
   const { isSemiMobile } = useAppDimensions();
   const params = useParams();
   const deployment = () => deployments.get(params.id);
   const server = () =>
     deployment() && servers.get(deployment()!.deployment.server_id);
+  clearInterval(interval);
+  interval = setInterval(async () => {
+    if (server()?.status === ServerStatus.Ok) {
+      const deployment = await client.get_deployment(params.id);
+      deployments.update(deployment);
+    }
+  }, POLLING_RATE);
+  onCleanup(() => clearInterval(interval));
   return (
     <Show
       when={deployment() && server()}
@@ -53,46 +61,4 @@ const Deployment2: Component<{}> = (p) => {
   );
 };
 
-const Deployment: Component<{}> = (p) => {
-  const { servers, deployments } = useAppState();
-  const params = useParams();
-  const deployment = () => deployments.get(params.id);
-  const server = () => deployment() && servers.get(deployment()!.deployment.server_id);
-  const { isSemiMobile } = useAppDimensions();
-  const { user } = useUser();
-  const userCanUpdate = () => user().admin || deployment()?.deployment.permissions![getId(user())] === PermissionLevel.Update;
-  return (
-    <Show
-      when={deployment() && server()}
-      fallback={<NotFound type="deployment" />}
-    >
-      <ActionStateProvider>
-        <Grid class={combineClasses("content")}>
-          {/* left / actions */}
-          <Grid class="left-content">
-            <Header />
-            <Actions />
-            <Show when={!isSemiMobile() && userCanUpdate()}>
-              <Updates />
-            </Show>
-          </Grid>
-          {/* right / tabs */}
-          <Show
-            when={userCanUpdate()}
-            fallback={
-              <h2 class={combineClasses("card tabs shadow")}>
-                you do not have permission to view this deployment
-              </h2>
-            }
-          >
-            <ConfigProvider>
-              <DeploymentTabs />
-            </ConfigProvider>
-          </Show>
-        </Grid>
-      </ActionStateProvider>
-    </Show>
-  );
-};
-
-export default Deployment2;
+export default Deployment;
