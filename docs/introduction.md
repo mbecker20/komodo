@@ -1,3 +1,5 @@
+
+
 # introduction
 
 If you have many servers running many applications, it can be a challenge to keep things organized and easily accessible. Without structure, things can become messy quickly, which means operational issues are more likely to arise and they can take longer to resolve. Ultimately these issues hinder productivity and waste valuable time.
@@ -32,3 +34,4 @@ Monitor is a system designed to be used by many users, whether they are develope
 
 The permissioning system is explained in detail in the [permissioning](https://github.com/mbecker20/monitor/blob/main/docs/permissions.md) section.
 
+[back to table of contents](https://github.com/mbecker20/monitor/blob/main/readme.md)
