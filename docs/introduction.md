@@ -26,7 +26,7 @@ Monitor is composed of a single core and any amount of connected servers running
 The core is a web server that hosts the core API and serves the frontend to be accessed in a web browser. All user interaction with the connected servers flow through the core. It is the stateful part of the system, with the application state stored on an instance of MongoDB.
 
 ### monitor periphery
-The periphery is a stateless web server that exposes API called by the core. The core calls this API to get system usage and container status / logs, clone git repos, and perform docker actions. It is only intended to be reached from the core, and has an address whitelist limit the IPs allowed to call this API.
+The periphery is a stateless web server that exposes API called by the core. The core calls this API to get system usage and container status / logs, clone git repos, and perform docker actions. It is only intended to be reached from the core, and has an address whitelist to limit the IPs allowed to call this API.
 
 ## permissioning
 
