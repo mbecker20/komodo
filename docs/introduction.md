@@ -34,4 +34,6 @@ Monitor is a system designed to be used by many users, whether they are develope
 
 The permissioning system is explained in detail in the [permissioning](https://github.com/mbecker20/monitor/blob/main/docs/permissions.md) section.
 
+[next: connecting servers](https://github.com/mbecker20/monitor/blob/main/docs/servers.md)
+
 [back to table of contents](https://github.com/mbecker20/monitor/blob/main/readme.md)
