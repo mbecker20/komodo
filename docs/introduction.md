@@ -2,11 +2,11 @@
 
 # introduction
 
-If you have many servers running many applications, it can be a challenge to keep things organized and easily accessible. Without structure, things can become messy quickly, which means operational issues are more likely to arise and they can take longer to resolve. Ultimately these issues hinder productivity and waste valuable time.
+If you have many servers running many applications, it can be a challenge to keep things organized and easily accessible. Without structure, things can become messy quickly, which means operational issues are more likely to arise and they can take longer to resolve. Ultimately these issues hinder productivity and waste valuable time. Monitor is a web app and API to provide the needed structure for how applications are built, deployed, and managed across many servers.
 
 ## docker
 
-Monitor is a web app and API to provide structure to how applications are built and deployed. It is opiniated by design, and [docker](https://docs.docker.com/) is the tool of choice. Docker provides the ability to package applications and their runtime dependencies into a standalone bundle, called an *image*. This makes them easy to "ship" to any server and run without the hassle of setting up the necessary runtime environment. Docker uses the image as a sort of template to create *containers*. Containers are kind of like virtual machines but with different performance characteristics, namely that processes contained still run natively on the system kernel. The file system is seperate though, and like virtual machines, they can be created, started, stopped, and destroyed.
+Monitor is opiniated by design, and [docker](https://docs.docker.com/) is the tool of choice. Docker provides the ability to package applications and their runtime dependencies into a standalone bundle, called an *image*. This makes them easy to "ship" to any server and run without the hassle of setting up the necessary runtime environment. Docker uses the image as a sort of template to create *containers*. Containers are kind of like virtual machines but with different performance characteristics, namely that processes contained still run natively on the system kernel. The file system is seperate though, and like virtual machines, they can be created, started, stopped, and destroyed.
 
 ## monitor
 
