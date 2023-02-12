@@ -16,7 +16,7 @@ Monitor is a solution for handling for the following:
  4. View realtime and historical system resource usage.
  5. Alerting for server health, like high cpu, memory, disk, etc.
 
-## archetecture and components
+## architecture and components
 
 Monitor is composed of a single core and any amount of connected servers running the periphery application. 
 
