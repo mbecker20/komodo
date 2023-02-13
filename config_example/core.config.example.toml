@@ -29,10 +29,12 @@ monitoring_interval = "1-min"
 local_auth = true
 
 [github_oauth]
+enabled = true
 id = "your_github_client_id"
 secret = "your_github_client_secret"
 
 [google_oauth]
+enabled = true
 id = "your_google_client_id"
 secret = "your_google_client_secret"
 
