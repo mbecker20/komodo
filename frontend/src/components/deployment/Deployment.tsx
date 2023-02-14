@@ -13,7 +13,7 @@ import DeploymentTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
 const POLLING_RATE = 10000;
-let interval = -1;
+// let interval = -1;
 
 const Deployment: Component<{}> = (p) => {
   const { servers, deployments } = useAppState();
@@ -22,14 +22,14 @@ const Deployment: Component<{}> = (p) => {
   const deployment = () => deployments.get(params.id);
   const server = () =>
     deployment() && servers.get(deployment()!.deployment.server_id);
-  clearInterval(interval);
-  interval = setInterval(async () => {
-    if (server()?.status === ServerStatus.Ok) {
-      const deployment = await client.get_deployment(params.id);
-      deployments.update(deployment);
-    }
-  }, POLLING_RATE);
-  onCleanup(() => clearInterval(interval));
+  // clearInterval(interval);
+  // interval = setInterval(async () => {
+  //   if (server()?.status === ServerStatus.Ok) {
+  //     const deployment = await client.get_deployment(params.id);
+  //     deployments.update(deployment);
+  //   }
+  // }, POLLING_RATE);
+  // onCleanup(() => clearInterval(interval));
   return (
     <Show
       when={deployment() && server()}
