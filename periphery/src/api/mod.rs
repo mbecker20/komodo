@@ -59,6 +59,10 @@ async fn guard_request(
         StatusCode::INTERNAL_SERVER_ERROR,
         "could not get periphery config".to_string(),
     ))?;
+    let passkey = req.headers().get("authorization");
+    if passkey.is_none() {
+        return Err((StatusCode::UNAUTHORIZED, format!("")))
+    }
     if config.allowed_ips.is_empty() {
         return Ok(next.run(req).await);
     }

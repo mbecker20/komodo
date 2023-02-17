@@ -42,6 +42,9 @@ pub struct CoreConfig {
     // used to verify validity from github webhooks
     pub github_webhook_secret: String,
 
+    // sent in auth header with req to periphery
+    pub passkey: String,
+
     // integration with slack app
     pub slack_url: Option<String>,
 
@@ -103,6 +106,8 @@ pub struct PeripheryConfig {
     pub stats_polling_rate: Timelength,
     #[serde(default)]
     pub allowed_ips: Vec<IpAddr>,
+    #[serde(default)]
+    pub passkeys: Vec<String>,
     #[serde(default)]
     pub secrets: SecretsMap,
     #[serde(default)]

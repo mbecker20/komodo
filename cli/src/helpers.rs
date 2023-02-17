@@ -81,6 +81,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         },
         jwt_secret: generate_secret(40),
         github_webhook_secret: generate_secret(30),
+        passkey: generate_secret(30),
     };
 
     write_to_toml(&path, &config);
@@ -318,9 +319,10 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
 
     let config = PeripheryConfig {
         port,
+        repo_dir,
         stats_polling_rate,
         allowed_ips,
-        repo_dir,
+        passkeys: vec![],
         secrets: Default::default(),
         github_accounts: Default::default(),
         docker_accounts: Default::default(),
