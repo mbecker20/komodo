@@ -32,9 +32,9 @@ impl State {
         let state = State {
             db: DbClient::new(config.mongo.clone()).await,
             slack: config.slack_url.clone().map(|url| slack::Client::new(&url)),
+            periphery: PeripheryClient::new(config.passkey.clone()),
             config,
             update: UpdateWsChannel::new(),
-            periphery: PeripheryClient::default(),
             build_action_states: Default::default(),
             deployment_action_states: Default::default(),
             server_action_states: Default::default(),

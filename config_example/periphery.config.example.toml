@@ -2,6 +2,7 @@ port = 8000           # optional. 8000 is default
 repo_dir = "/repos"   # optional. /repos is default. no reason to change if running the docker container, just mount your desired repo dir to /repos in the container
 stats_polling_rate = "5-sec" # optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
 allowed_ips = ["127.0.0.1"] # optional. default is empty, which will not block any request by ip.
+passkeys = ["abcdefghijk"] # optional. default is empty, which will not require any passkey to be passed by core.
 
 [secrets] # optional. can inject these values into your deployments configuration.
 secret_variable = "secret_value"

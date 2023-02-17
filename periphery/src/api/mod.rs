@@ -43,7 +43,8 @@ pub fn router(config: PeripheryConfigExtension, home_dir: HomeDirExtension) -> R
         .nest("/build", build::router())
         .nest("/image", image::router())
         .layer(DockerClient::extension())
-        .layer(middleware::from_fn(guard_request))
+        .layer(middleware::from_fn(guard_request_by_ip))
+        .layer(middleware::from_fn(guard_request_by_passkey))
         .layer(StatsClient::extension(
             config.stats_polling_rate.to_string().parse().unwrap(),
         ))
@@ -51,7 +52,7 @@ pub fn router(config: PeripheryConfigExtension, home_dir: HomeDirExtension) -> R
         .layer(home_dir)
 }
 
-async fn guard_request(
+async fn guard_request_by_passkey(
     req: Request<Body>,
     next: Next<Body>,
 ) -> Result<Response, (StatusCode, String)> {
@@ -59,10 +60,58 @@ async fn guard_request(
         StatusCode::INTERNAL_SERVER_ERROR,
         "could not get periphery config".to_string(),
     ))?;
-    let passkey = req.headers().get("authorization");
-    if passkey.is_none() {
-        return Err((StatusCode::UNAUTHORIZED, format!("")))
+    if config.passkeys.is_empty() {
+        return Ok(next.run(req).await);
     }
+    let req_passkey = req.headers().get("authorization");
+    if req_passkey.is_none() {
+        return Err((
+            StatusCode::UNAUTHORIZED,
+            format!("request was not sent with passkey"),
+        ));
+    }
+    let req_passkey = req_passkey
+        .unwrap()
+        .to_str()
+        .map_err(|e| {
+            (
+                StatusCode::UNAUTHORIZED,
+                format!("failed to get passkey from authorization header as str: {e:?}"),
+            )
+        })?
+        .to_string();
+    if config.passkeys.contains(&req_passkey) {
+        Ok(next.run(req).await)
+    } else {
+        let ConnectInfo(socket_addr) =
+            req.extensions().get::<ConnectInfo<SocketAddr>>().ok_or((
+                StatusCode::UNAUTHORIZED,
+                "could not get socket addr of request".to_string(),
+            ))?;
+        let ip = socket_addr.ip();
+        let method = req.method().to_owned();
+        let uri = req.uri().to_owned();
+        let body = req
+            .extract::<Json<Value>, _>()
+            .await
+            .ok()
+            .map(|Json(body)| body);
+        eprintln!(
+            "{} | unauthorized request from {ip} (bad passkey) | method: {method} | uri: {uri} | body: {body:?}",
+            monitor_timestamp(),
+        );
+        Err((StatusCode::UNAUTHORIZED, format!("request passkey invalid")))
+    }
+}
+
+async fn guard_request_by_ip(
+    req: Request<Body>,
+    next: Next<Body>,
+) -> Result<Response, (StatusCode, String)> {
+    let config = req.extensions().get::<Arc<PeripheryConfig>>().ok_or((
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "could not get periphery config".to_string(),
+    ))?;
     if config.allowed_ips.is_empty() {
         return Ok(next.run(req).await);
     }
@@ -82,9 +131,8 @@ async fn guard_request(
             .ok()
             .map(|Json(body)| body);
         eprintln!(
-            "{} | unauthorized request from {ip} | method: {method} | uri: {uri} | body: {:?}",
-            monitor_timestamp(),
-            body
+            "{} | unauthorized request from {ip} | method: {method} | uri: {uri} | body: {body:?}",
+            monitor_timestamp()
         );
         Err((
             StatusCode::UNAUTHORIZED,

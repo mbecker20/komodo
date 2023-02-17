@@ -14,12 +14,19 @@ mod git;
 mod image;
 mod network;
 
-#[derive(Default)]
 pub struct PeripheryClient {
     http_client: reqwest::Client,
+    passkey: String,
 }
 
 impl PeripheryClient {
+    pub fn new(passkey: String) -> PeripheryClient {
+        PeripheryClient {
+            http_client: Default::default(),
+            passkey
+        }
+    }
+
     pub async fn health_check(&self, server: &Server) -> anyhow::Result<String> {
         self.get_text(server, "/health", 1000)
             .await
@@ -95,7 +102,8 @@ impl PeripheryClient {
     ) -> anyhow::Result<String> {
         let mut req = self
             .http_client
-            .get(format!("{}{endpoint}", server.address));
+            .get(format!("{}{endpoint}", server.address))
+            .header("authorization", &self.passkey);
 
         if let Some(timeout) = timeout_ms.into() {
             req = req.timeout(Duration::from_millis(timeout))
@@ -130,6 +138,7 @@ impl PeripheryClient {
         let res = self
             .http_client
             .get(format!("{}{endpoint}", server.address))
+            .header("authorization", &self.passkey)
             .send()
             .await
             .context(format!(
@@ -165,6 +174,7 @@ impl PeripheryClient {
         let res = self
             .http_client
             .post(format!("{}{endpoint}", server.address))
+            .header("authorization", &self.passkey)
             .json(body)
             .send()
             .await

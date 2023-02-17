@@ -130,9 +130,9 @@ dependencies = [
 
 [[package]]
 name = "axum-extra"
-version = "0.4.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9a320103719de37b7b4da4c8eb629d4573f6bcfd3dfe80d3208806895ccf81d"
+checksum = "51227033e4d3acad15c879092ac8a228532707b5db5ff2628f638334f63e1b7a"
 dependencies = [
  "axum",
  "bytes",
@@ -182,13 +182,14 @@ checksum = "a4a4ddaa51a5bc52a6948f74c06d20aaaddb71924eab79b8c97a8c556e942d6a"
 
 [[package]]
 name = "bcrypt"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7e7c93a3fb23b2fdde989b2c9ec4dd153063ec81f408507f84c090cd91c6641"
+checksum = "9df288bec72232f78c1ec5fe4e8f1d108aa0265476e93097593c803c8c02062a"
 dependencies = [
- "base64 0.13.1",
+ "base64 0.21.0",
  "blowfish",
  "getrandom",
+ "subtle",
  "zeroize",
 ]
 
@@ -398,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "core"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -414,8 +415,8 @@ dependencies = [
  "hex",
  "hmac",
  "jwt",
- "monitor_helpers 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
- "monitor_types 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_helpers 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "mungos",
  "periphery_client",
  "serde",
@@ -650,10 +651,10 @@ checksum = "23d8666cb01533c39dde32bcbab8e227b4ed6679b2c925eba05feabea39508fb"
 
 [[package]]
 name = "db_client"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "anyhow",
- "monitor_types 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "mungos",
 ]
 
@@ -1478,7 +1479,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_cli"
-version = "0.1.20"
+version = "0.1.21"
 dependencies = [
  "async_timing_util",
  "clap",
@@ -1489,17 +1490,17 @@ dependencies = [
  "serde_derive",
  "strum",
  "strum_macros",
- "toml 0.6.0",
+ "toml",
 ]
 
 [[package]]
 name = "monitor_client"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "anyhow",
  "envy",
  "futures-util",
- "monitor_types 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
  "serde",
  "serde_derive",
@@ -1511,7 +1512,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_helpers"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -1519,20 +1520,20 @@ dependencies = [
  "bollard",
  "futures",
  "futures-util",
- "monitor_types 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand",
  "run_command",
  "serde",
  "serde_derive",
  "serde_json",
- "toml 0.7.0",
+ "toml",
 ]
 
 [[package]]
 name = "monitor_helpers"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a00461b6920a64cd7320fa6c9a78cf336359d95b64877c64a19dcdaf96c30580"
+checksum = "f2e58a1c8a1e92c967b5c4ba10511bc4bbf65c824230d234b78ad9d3ed992b75"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -1540,18 +1541,18 @@ dependencies = [
  "bollard",
  "futures",
  "futures-util",
- "monitor_types 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand",
  "run_command",
  "serde",
  "serde_derive",
  "serde_json",
- "toml 0.7.0",
+ "toml",
 ]
 
 [[package]]
 name = "monitor_periphery"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -1562,8 +1563,8 @@ dependencies = [
  "dotenv",
  "envy",
  "futures-util",
- "monitor_helpers 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
- "monitor_types 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_helpers 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "run_command",
  "serde",
  "serde_derive",
@@ -1571,13 +1572,13 @@ dependencies = [
  "sysinfo",
  "tokio",
  "tokio-util",
- "toml 0.6.0",
+ "toml",
  "tower",
 ]
 
 [[package]]
 name = "monitor_types"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "anyhow",
  "bollard",
@@ -1594,9 +1595,9 @@ dependencies = [
 
 [[package]]
 name = "monitor_types"
-version = "0.1.14"
+version = "0.1.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f38791a17b5c6501d757c433808c134a2c747ba72e7ce5883b94e68b312f3f5"
+checksum = "bc2fc31230469c5a56e57eacf0200422897d4e0808ba176a767ceb59a872d543"
 dependencies = [
  "anyhow",
  "bollard",
@@ -1855,12 +1856,12 @@ checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
 name = "periphery_client"
-version = "0.1.14"
+version = "0.1.15"
 dependencies = [
  "anyhow",
  "futures-util",
- "monitor_helpers 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
- "monitor_types 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_helpers 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
  "serde",
  "serde_json",
@@ -2695,35 +2696,14 @@ dependencies = [
 
 [[package]]
 name = "toml"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fb9d890e4dc9298b70f740f615f2e05b9db37dce531f6b24fb77ac993f9f217"
-dependencies = [
- "serde",
- "serde_spanned",
- "toml_datetime 0.5.1",
- "toml_edit 0.18.1",
-]
-
-[[package]]
-name = "toml"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f560bc7fb3eb31f5eee1340c68a2160cad39605b7b9c9ec32045ddbdee13b85"
 dependencies = [
  "serde",
  "serde_spanned",
- "toml_datetime 0.6.0",
- "toml_edit 0.19.0",
-]
-
-[[package]]
-name = "toml_datetime"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4553f467ac8e3d374bc9a177a26801e5d0f9b211aa1673fb137a403afd1c9cf5"
-dependencies = [
- "serde",
+ "toml_datetime",
+ "toml_edit",
 ]
 
 [[package]]
@@ -2737,19 +2717,6 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.18.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56c59d8dd7d0dcbc6428bf7aa2f0e823e26e43b3c9aca15bbc9475d23e5fa12b"
-dependencies = [
- "indexmap",
- "nom8",
- "serde",
- "serde_spanned",
- "toml_datetime 0.5.1",
-]
-
-[[package]]
-name = "toml_edit"
 version = "0.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "233d8716cdc5d20ec88a18a839edaf545edc71efa4a5ff700ef4a102c26cd8fa"
@@ -2758,7 +2725,7 @@ dependencies = [
  "nom8",
  "serde",
  "serde_spanned",
- "toml_datetime 0.6.0",
+ "toml_datetime",
 ]
 
 [[package]]

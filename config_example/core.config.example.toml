@@ -22,6 +22,9 @@ slack_url = "your_slack_app_webhook_url"
 # token that has to be given to github during webhook config as the Secret
 github_webhook_secret = "your_random_webhook_secret"
 
+# token used to authenticate core requests to periphery
+passkey = "your_random_passkey"
+
 # can be 30-sec, 1-min, 2-min, 5-min
 monitoring_interval = "1-min"
 
