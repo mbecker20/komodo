@@ -106,7 +106,6 @@ pub enum Operation {
     UpdateBuild,
     DeleteBuild,
     BuildBuild,
-    RecloneBuild,
 
     // deployment
     CreateDeployment,

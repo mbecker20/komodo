@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::{anyhow, Context};
 use types::{Build, DockerBuildArgs, EnvironmentVar, Log, Version};
 
-use crate::{all_logs_success, git, run_monitor_command, to_monitor_name};
+use crate::{run_monitor_command, to_monitor_name};
 
 use super::docker_login;
 
@@ -17,9 +17,7 @@ pub async fn build(
         name,
         version,
         docker_build_args,
-        branch,
         docker_account,
-        pre_build,
         ..
     }: &Build,
     mut repo_dir: PathBuf,
@@ -38,25 +36,25 @@ pub async fn build(
         .await
         .context("failed to login to docker")?;
     repo_dir.push(&name);
-    let pull_logs = git::pull(repo_dir.clone(), branch, &None).await;
-    if !all_logs_success(&pull_logs) {
-        logs.extend(pull_logs);
-        return Ok(logs);
-    }
-    logs.extend(pull_logs);
-    if let Some(command) = pre_build {
-        let dir = repo_dir.join(&command.path);
-        let pre_build_log = run_monitor_command(
-            "pre build",
-            format!("cd {} && {}", dir.display(), command.command),
-        )
-        .await;
-        if !pre_build_log.success {
-            logs.push(pre_build_log);
-            return Ok(logs);
-        }
-        logs.push(pre_build_log);
-    }
+    // let pull_logs = git::pull(repo_dir.clone(), branch, &None).await;
+    // if !all_logs_success(&pull_logs) {
+    //     logs.extend(pull_logs);
+    //     return Ok(logs);
+    // }
+    // logs.extend(pull_logs);
+    // if let Some(command) = pre_build {
+    //     let dir = repo_dir.join(&command.path);
+    //     let pre_build_log = run_monitor_command(
+    //         "pre build",
+    //         format!("cd {} && {}", dir.display(), command.command),
+    //     )
+    //     .await;
+    //     if !pre_build_log.success {
+    //         logs.push(pre_build_log);
+    //         return Ok(logs);
+    //     }
+    //     logs.push(pre_build_log);
+    // }
     let build_dir = repo_dir.join(build_path);
     let dockerfile_path = match dockerfile_path {
         Some(dockerfile_path) => dockerfile_path.to_owned(),

@@ -74,7 +74,6 @@ pub enum ProcedureOperation {
 
     // build
     BuildBuild,
-    RecloneBuild,
 
     // deployment
     DeployContainer,

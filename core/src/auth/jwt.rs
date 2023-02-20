@@ -24,6 +24,7 @@ pub struct RequestUser {
     pub id: String,
     pub is_admin: bool,
     pub create_server_permissions: bool,
+    pub create_build_permissions: bool,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -109,6 +110,7 @@ impl JwtClient {
                     id: claims.id,
                     is_admin: user.admin,
                     create_server_permissions: user.create_server_permissions,
+                    create_build_permissions: user.create_build_permissions,
                 };
                 Ok(user)
             } else {

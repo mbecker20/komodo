@@ -31,14 +31,12 @@ struct BuildId {
 #[derive(Serialize, Deserialize)]
 struct CreateBuildBody {
     name: String,
-    server_id: String,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize)]
 struct CopyBuildBody {
     name: String,
-    server_id: String,
 }
 
 #[typeshare]
@@ -88,7 +86,7 @@ pub fn router() -> Router {
                  Extension(user): RequestUserExtension,
                  Json(build): Json<CreateBuildBody>| async move {
                     let build = state
-                        .create_build(&build.name, build.server_id, &user)
+                        .create_build(&build.name, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(build))
@@ -121,7 +119,7 @@ pub fn router() -> Router {
                  Json(build): Json<CopyBuildBody>| async move {
                     let build = spawn_request_action(async move {
                         state
-                            .copy_build(&id, build.name, build.server_id, &user)
+                            .copy_build(&id, build.name, &user)
                             .await
                             .map_err(handle_anyhow_error)
                     })
@@ -173,23 +171,6 @@ pub fn router() -> Router {
                     let update = spawn_request_action(async move {
                         state
                             .build(&build_id.id, &user)
-                            .await
-                            .map_err(handle_anyhow_error)
-                    })
-                    .await??;
-                    response!(Json(update))
-                },
-            ),
-        )
-        .route(
-            "/:id/reclone",
-            post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(build_id): Path<BuildId>| async move {
-                    let update = spawn_request_action(async move {
-                        state
-                            .reclone_build(&build_id.id, &user)
                             .await
                             .map_err(handle_anyhow_error)
                     })

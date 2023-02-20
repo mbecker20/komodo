@@ -23,8 +23,8 @@ pub struct CoreConfig {
     #[serde(default = "default_core_port")]
     pub port: u16,
 
-    // jwt config
     pub jwt_secret: String,
+
     #[serde(default = "default_jwt_valid_for")]
     pub jwt_valid_for: Timelength,
 
@@ -51,14 +51,16 @@ pub struct CoreConfig {
     // enable login with local auth
     pub local_auth: bool,
 
-    // github integration
+    pub mongo: MongoConfig,
+
+    #[serde(default)]
     pub github_oauth: OauthCredentials,
 
-    // google integration
+    #[serde(default)]
     pub google_oauth: OauthCredentials,
 
-    // mongo config
-    pub mongo: MongoConfig,
+    #[serde(default)]
+    pub aws: AwsBuilderConfig,
 }
 
 fn default_core_port() -> u16 {
@@ -94,6 +96,34 @@ fn default_core_mongo_app_name() -> String {
 
 fn default_core_mongo_db_name() -> String {
     "monitor".to_string()
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct AwsBuilderConfig {
+    pub access_key_id: String,
+    pub secret_access_key: String,
+    pub default_ami_id: String,
+    pub default_subnet_id: String,
+    #[serde(default = "default_aws_region")]
+    pub default_region: String,
+    #[serde(default = "default_volume_gb")]
+    pub default_volume_gb: i32,
+    #[serde(default = "default_instance_type")]
+    pub default_instance_type: String,
+    #[serde(default)]
+    pub default_security_group_ids: Vec<String>,
+}
+
+fn default_aws_region() -> String {
+    String::from("us-east-1")
+}
+
+fn default_volume_gb() -> i32 {
+    8
+}
+
+fn default_instance_type() -> String {
+    String::from("m5.2xlarge")
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

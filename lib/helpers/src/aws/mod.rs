@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use aws_sdk_ec2::model::{
-    BlockDeviceMapping, EbsBlockDevice, InstanceStateChange, InstanceStateName, InstanceStatus,
+    BlockDeviceMapping, EbsBlockDevice, InstanceStateChange, InstanceStateName, InstanceStatus, InstanceNetworkInterfaceSpecification,
 };
 pub use aws_sdk_ec2::{
     model::InstanceType,
@@ -11,24 +11,22 @@ pub use aws_sdk_ec2::{
 };
 use types::Server;
 
-/// must provide creds in env or with ~/.aws/credentials
 pub async fn create_ec2_client(
     region: String,
     access_key_id: &str,
     secret_access_key: String,
 ) -> Client {
+    // There may be a better way to pass these keys to client
     std::env::set_var("AWS_ACCESS_KEY_ID", access_key_id);
     std::env::set_var("AWS_SECRET_ACCESS_KEY", secret_access_key);
     let region = Region::new(region);
     let config = aws_config::from_env().region(region).load().await;
     let client = Client::new(&config);
-    std::env::remove_var("AWS_ACCESS_KEY_ID");
-    std::env::remove_var("AWS_SECRET_ACCESS_KEY");
     client
 }
 
 pub struct Ec2Instance {
-    pub id: String,
+    pub instance_id: String,
     pub server: Server,
 }
 
@@ -41,7 +39,8 @@ pub async fn create_instance_with_ami(
     client: &Client,
     ami_id: &str,
     instance_type: &str,
-    security_groups_ids: &Vec<String>,
+    subnet_id: &str,
+    security_group_ids: Vec<String>,
     volume_size_gb: i32,
 ) -> anyhow::Result<Ec2Instance> {
     let instance_type = InstanceType::from(instance_type);
@@ -57,17 +56,19 @@ pub async fn create_instance_with_ami(
                 .into(),
         )
         .build();
-    let mut req = client
+    let res = client
         .run_instances()
         .image_id(ami_id)
         .instance_type(instance_type)
         .block_device_mappings(block_device_mapping)
+        .network_interfaces(
+            InstanceNetworkInterfaceSpecification::builder()
+                .subnet_id(subnet_id)
+                .associate_public_ip_address(false)
+                .set_groups(security_group_ids.into())
+                .build())
         .min_count(1)
-        .max_count(1);
-    for sg_id in security_groups_ids {
-        req = req.security_group_ids(sg_id);
-    }
-    let res = req
+        .max_count(1)
         .send()
         .await
         .context("failed to start builder ec2 instance")?;
@@ -91,7 +92,7 @@ pub async fn create_instance_with_ami(
         let state_name = get_ec2_instance_state_name(&client, &instance_id).await?;
         if state_name == Some(InstanceStateName::Running) {
             return Ok(Ec2Instance {
-                id: instance_id,
+                instance_id,
                 server,
             });
         }

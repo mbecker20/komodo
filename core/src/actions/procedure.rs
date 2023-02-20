@@ -125,7 +125,7 @@ impl State {
         } in &new_procedure.stages
         {
             match operation {
-                BuildBuild | RecloneBuild => {
+                BuildBuild => {
                     self.get_build_check_permissions(&target_id, user, PermissionLevel::Execute)
                         .await?;
                 }
@@ -251,13 +251,6 @@ impl State {
                         .build(&target_id, user)
                         .await
                         .context(format!("failed at build (id: {target_id})"))?;
-                    updates.push(update);
-                }
-                RecloneBuild => {
-                    let update = self
-                        .reclone_build(&target_id, user)
-                        .await
-                        .context(format!("failed at reclone build (id: {target_id})"))?;
                     updates.push(update);
                 }
                 // server

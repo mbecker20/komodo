@@ -74,6 +74,7 @@ impl State {
                 id: String::from(GITHUB_WEBHOOK_USER_ID),
                 is_admin: true,
                 create_server_permissions: false,
+                create_build_permissions: false,
             },
         )
         .await?;
@@ -103,6 +104,7 @@ impl State {
                 id: String::from(GITHUB_WEBHOOK_USER_ID),
                 is_admin: true,
                 create_server_permissions: false,
+                create_build_permissions: false,
             },
         )
         .await?;
@@ -127,6 +129,7 @@ impl State {
                 id: String::from(GITHUB_WEBHOOK_USER_ID),
                 is_admin: true,
                 create_server_permissions: false,
+                create_build_permissions: false,
             },
         )
         .await?;

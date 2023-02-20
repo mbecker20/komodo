@@ -1,6 +1,10 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
-use helpers::{all_logs_success, to_monitor_name};
+use helpers::{
+    all_logs_success,
+    aws::{self, create_ec2_client, create_instance_with_ami, terminate_ec2_instance, Ec2Instance},
+    to_monitor_name,
+};
 use mungos::{doc, to_bson};
 use types::{
     monitor_timestamp,
@@ -8,11 +12,7 @@ use types::{
     Build, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget, Version,
 };
 
-use crate::{
-    auth::RequestUser,
-    helpers::{any_option_diff_is_some, option_diff_is_some},
-    state::State,
-};
+use crate::{auth::RequestUser, state::State};
 
 impl State {
     pub async fn get_build_check_permissions(
@@ -39,18 +39,13 @@ impl State {
         }
     }
 
-    pub async fn create_build(
-        &self,
-        name: &str,
-        server_id: String,
-        user: &RequestUser,
-    ) -> anyhow::Result<Build> {
-        self.get_server_check_permissions(&server_id, user, PermissionLevel::Update)
-            .await?;
+    pub async fn create_build(&self, name: &str, user: &RequestUser) -> anyhow::Result<Build> {
+        if !user.create_build_permissions {
+            return Err(anyhow!("user does not have permission to create builds"));
+        }
         let start_ts = monitor_timestamp();
         let build = Build {
             name: to_monitor_name(name),
-            server_id,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
@@ -84,10 +79,7 @@ impl State {
         mut build: Build,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
-        build.id = self
-            .create_build(&build.name, build.server_id.clone(), user)
-            .await?
-            .id;
+        build.id = self.create_build(&build.name, user).await?.id;
         let build = self.update_build(build, user).await?;
         Ok(build)
     }
@@ -96,14 +88,12 @@ impl State {
         &self,
         target_id: &str,
         new_name: String,
-        new_server_id: String,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
         let mut build = self
             .get_build_check_permissions(target_id, user, PermissionLevel::Update)
             .await?;
         build.name = new_name;
-        build.server_id = new_server_id;
         build.version = Version::default();
         let build = self.create_full_build(build, user).await?;
         Ok(build)
@@ -117,11 +107,6 @@ impl State {
             .get_build_check_permissions(build_id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
-        let server = self.db.get_server(&build.server_id).await?;
-        let delete_repo_log = match self.periphery.delete_repo(&server, &build.name).await {
-            Ok(log) => log,
-            Err(e) => Log::error("delete repo", format!("{e:#?}")),
-        };
         self.db.builds.delete_one(build_id).await?;
         let update = Update {
             target: UpdateTarget::Build(build_id.to_string()),
@@ -129,13 +114,10 @@ impl State {
             start_ts,
             end_ts: Some(monitor_timestamp()),
             operator: user.id.clone(),
-            logs: vec![
-                delete_repo_log,
-                Log::simple(
-                    "delete build",
-                    format!("deleted build {} on server {}", build.name, server.name),
-                ),
-            ],
+            logs: vec![Log::simple(
+                "delete build",
+                format!("deleted build {}", build.name),
+            )],
             success: true,
             ..Default::default()
         };
@@ -179,7 +161,6 @@ impl State {
         // none of these should be changed through this method
         new_build.name = current_build.name.clone();
         new_build.permissions = current_build.permissions.clone();
-        new_build.server_id = current_build.server_id.clone();
         new_build.last_built_at = String::new();
         new_build.created_at = current_build.created_at.clone();
         new_build.updated_at = start_ts.clone();
@@ -192,41 +173,42 @@ impl State {
 
         let diff = current_build.diff(&new_build);
 
-        let mut update = Update {
+        let update = Update {
             operation: Operation::UpdateBuild,
             target: UpdateTarget::Build(new_build.id.clone()),
             start_ts,
-            status: UpdateStatus::InProgress,
+            status: UpdateStatus::Complete,
             logs: vec![Log::simple(
                 "build update",
                 serde_json::to_string_pretty(&diff).unwrap(),
             )],
             operator: user.id.clone(),
+            end_ts: Some(monitor_timestamp()),
             success: true,
             ..Default::default()
         };
 
-        update.id = self.add_update(update.clone()).await?;
+        // update.id = self.add_update(update.clone()).await?;
 
-        if any_option_diff_is_some(&[&diff.repo, &diff.branch, &diff.github_account])
-            || option_diff_is_some(&diff.on_clone)
-        {
-            let server = self.db.get_server(&current_build.server_id).await?;
-            match self.periphery.clone_repo(&server, &new_build).await {
-                Ok(clone_logs) => {
-                    update.logs.extend(clone_logs);
-                }
-                Err(e) => update
-                    .logs
-                    .push(Log::error("cloning repo", format!("{e:#?}"))),
-            }
-        }
+        // if any_option_diff_is_some(&[&diff.repo, &diff.branch, &diff.github_account])
+        //     || option_diff_is_some(&diff.on_clone)
+        // {
+        //     let server = self.db.get_server(&current_build.server_id).await?;
+        //     match self.periphery.clone_repo(&server, &new_build).await {
+        //         Ok(clone_logs) => {
+        //             update.logs.extend(clone_logs);
+        //         }
+        //         Err(e) => update
+        //             .logs
+        //             .push(Log::error("cloning repo", format!("{e:#?}"))),
+        //     }
+        // }
 
-        update.end_ts = Some(monitor_timestamp());
-        update.success = all_logs_success(&update.logs);
-        update.status = UpdateStatus::Complete;
+        // update.end_ts = Some(monitor_timestamp());
+        // update.success = all_logs_success(&update.logs);
+        // update.status = UpdateStatus::Complete;
 
-        self.update_update(update).await?;
+        self.add_update(update).await?;
 
         Ok(new_build)
     }
@@ -253,10 +235,7 @@ impl State {
         let mut build = self
             .get_build_check_permissions(build_id, user, PermissionLevel::Update)
             .await?;
-        let server = self.db.get_server(&build.server_id).await?;
-
         build.version.increment();
-
         let mut update = Update {
             target: UpdateTarget::Build(build_id.to_string()),
             operation: Operation::BuildBuild,
@@ -267,12 +246,89 @@ impl State {
             version: build.version.clone().into(),
             ..Default::default()
         };
-
         update.id = self.add_update(update.clone()).await?;
+
+        let (server, aws_client) = if let Some(server_id) = &build.server_id {
+            let server = self.db.get_server(server_id).await;
+            if let Err(e) = server {
+                update.status = UpdateStatus::Complete;
+                update.end_ts = Some(monitor_timestamp());
+                update.success = false;
+                update
+                    .logs
+                    .push(Log::error("get build server", format!("{e:#?}")));
+                self.update_update(update.clone()).await?;
+                return Err(e);
+            }
+            let server = Ec2Instance {
+                instance_id: String::new(),
+                server: server.unwrap(),
+            };
+            (server, None)
+        } else if build.aws_config.is_some() {
+            let start_ts = monitor_timestamp();
+            let res = self.create_ec2_instance_for_build(&build).await;
+            if let Err(e) = res {
+                update.status = UpdateStatus::Complete;
+                update.end_ts = Some(monitor_timestamp());
+                update.success = false;
+                update.logs.push(Log {
+                    stage: "start build server".to_string(),
+                    stderr: format!("{e:#?}"),
+                    success: false,
+                    start_ts,
+                    end_ts: monitor_timestamp(),
+                    ..Default::default()
+                });
+                self.update_update(update.clone()).await?;
+                return Err(e);
+            }
+            update.logs.push(Log {
+                stage: "start build server".to_string(),
+                stdout: "build server started".to_string(),
+                success: true,
+                start_ts: start_ts.clone(),
+                end_ts: monitor_timestamp(),
+                ..Default::default()
+            });
+            self.update_update(update.clone()).await?;
+            res.unwrap()
+        } else {
+            return Err(anyhow!(
+                "build has neither server_id or aws_config attached"
+            ));
+        };
+
+        let clone_success = match self.periphery.clone_repo(&server.server, &build).await {
+            Ok(clone_logs) => {
+                update.logs.extend(clone_logs);
+                true
+            }
+            Err(e) => {
+                update
+                    .logs
+                    .push(Log::error("clone repo", format!("{e:#?}")));
+                false
+            }
+        };
+
+        if !clone_success {
+            let _ = self
+                .periphery
+                .delete_repo(&server.server, &build.name)
+                .await;
+            update.status = UpdateStatus::Complete;
+            update.end_ts = Some(monitor_timestamp());
+            update.success = false;
+            self.update_update(update.clone()).await?;
+            return Ok(update);
+        }
+
+        self.update_update(update.clone()).await?;
 
         let build_logs = match self
             .periphery
-            .build(&server, &build)
+            .build(&server.server, &build)
             .await
             .context("failed at call to periphery to build")
         {
@@ -283,8 +339,8 @@ impl State {
         match build_logs {
             Some(logs) => {
                 update.logs.extend(logs);
-                update.success = all_logs_success(&update.logs);
-                if update.success {
+                let success = all_logs_success(&update.logs);
+                if success {
                     let _ = self
                         .db
                         .builds
@@ -305,68 +361,27 @@ impl State {
                     .push(Log::error("build", "builder busy".to_string()));
             }
         }
-        update.status = UpdateStatus::Complete;
-        update.end_ts = Some(monitor_timestamp());
-        self.update_update(update.clone()).await?;
 
-        Ok(update)
-    }
+        let _ = self
+            .periphery
+            .delete_repo(&server.server, &build.name)
+            .await;
 
-    pub async fn reclone_build(
-        &self,
-        build_id: &str,
-        user: &RequestUser,
-    ) -> anyhow::Result<Update> {
-        if self.build_busy(build_id).await {
-            return Err(anyhow!("build busy"));
-        }
-        {
-            let mut lock = self.build_action_states.lock().await;
-            let entry = lock.entry(build_id.to_string()).or_default();
-            entry.recloning = true;
-        }
-        let res = self.reclone_build_inner(build_id, user).await;
-        {
-            let mut lock = self.build_action_states.lock().await;
-            let entry = lock.entry(build_id.to_string()).or_default();
-            entry.recloning = false;
-        }
-        res
-    }
-
-    async fn reclone_build_inner(
-        &self,
-        build_id: &str,
-        user: &RequestUser,
-    ) -> anyhow::Result<Update> {
-        let build = self
-            .get_build_check_permissions(build_id, user, PermissionLevel::Update)
-            .await?;
-        let server = self.db.get_server(&build.server_id).await?;
-        let mut update = Update {
-            target: UpdateTarget::Build(build_id.to_string()),
-            operation: Operation::RecloneBuild,
-            start_ts: monitor_timestamp(),
-            status: UpdateStatus::InProgress,
-            operator: user.id.clone(),
-            success: true,
-            ..Default::default()
-        };
-        update.id = self.add_update(update.clone()).await?;
-
-        update.success = match self.periphery.clone_repo(&server, &build).await {
-            Ok(clone_logs) => {
-                update.logs.extend(clone_logs);
-                true
-            }
-            Err(e) => {
+        if let Some(aws_client) = aws_client {
+            let res = terminate_ec2_instance(&aws_client, &server.instance_id).await;
+            if let Err(e) = res {
                 update
                     .logs
-                    .push(Log::error("clone repo", format!("{e:#?}")));
-                false
+                    .push(Log::error("terminate instance", format!("{e:#?}")))
+            } else {
+                update.logs.push(Log::simple(
+                    "terminate instance",
+                    "instance terminated".to_string(),
+                ))
             }
-        };
+        }
 
+        update.success = all_logs_success(&update.logs);
         update.status = UpdateStatus::Complete;
         update.end_ts = Some(monitor_timestamp());
 
@@ -374,4 +389,119 @@ impl State {
 
         Ok(update)
     }
+
+    async fn create_ec2_instance_for_build(
+        &self,
+        build: &Build,
+    ) -> anyhow::Result<(Ec2Instance, Option<aws::Client>)> {
+        if build.aws_config.is_none() {
+            return Err(anyhow!("build has no aws_config attached"));
+        }
+        let aws_config = build.aws_config.as_ref().unwrap();
+        let region = aws_config
+            .region
+            .as_ref()
+            .unwrap_or(&self.config.aws.default_region)
+            .to_string();
+        let aws_client = create_ec2_client(
+            region,
+            &self.config.aws.access_key_id,
+            self.config.aws.secret_access_key.clone(),
+        )
+        .await;
+        let ami_id = aws_config
+            .ami_id
+            .as_ref()
+            .unwrap_or(&self.config.aws.default_ami_id);
+        let instance_type = aws_config
+            .instance_type
+            .as_ref()
+            .unwrap_or(&self.config.aws.default_instance_type);
+        let subnet_id = aws_config
+            .subnet_id
+            .as_ref()
+            .unwrap_or(&self.config.aws.default_subnet_id);
+        let security_group_ids = aws_config
+            .security_group_ids
+            .as_ref()
+            .unwrap_or(&self.config.aws.default_security_group_ids)
+            .to_owned();
+        let volume_size_gb = *aws_config
+            .volume_gb
+            .as_ref()
+            .unwrap_or(&self.config.aws.default_volume_gb);
+        let instance = create_instance_with_ami(
+            &aws_client,
+            ami_id,
+            instance_type,
+            subnet_id,
+            security_group_ids,
+            volume_size_gb,
+        )
+        .await?;
+        Ok((instance, Some(aws_client)))
+    }
+
+    // pub async fn reclone_build(
+    //     &self,
+    //     build_id: &str,
+    //     user: &RequestUser,
+    // ) -> anyhow::Result<Update> {
+    //     if self.build_busy(build_id).await {
+    //         return Err(anyhow!("build busy"));
+    //     }
+    //     {
+    //         let mut lock = self.build_action_states.lock().await;
+    //         let entry = lock.entry(build_id.to_string()).or_default();
+    //         entry.recloning = true;
+    //     }
+    //     let res = self.reclone_build_inner(build_id, user).await;
+    //     {
+    //         let mut lock = self.build_action_states.lock().await;
+    //         let entry = lock.entry(build_id.to_string()).or_default();
+    //         entry.recloning = false;
+    //     }
+    //     res
+    // }
+
+    // async fn reclone_build_inner(
+    //     &self,
+    //     build_id: &str,
+    //     user: &RequestUser,
+    // ) -> anyhow::Result<Update> {
+    //     let build = self
+    //         .get_build_check_permissions(build_id, user, PermissionLevel::Update)
+    //         .await?;
+    //     let server = self.db.get_server(&build.server_id).await?;
+    //     let mut update = Update {
+    //         target: UpdateTarget::Build(build_id.to_string()),
+    //         operation: Operation::RecloneBuild,
+    //         start_ts: monitor_timestamp(),
+    //         status: UpdateStatus::InProgress,
+    //         operator: user.id.clone(),
+    //         success: true,
+    //         ..Default::default()
+    //     };
+    //     update.id = self.add_update(update.clone()).await?;
+
+    //     update.success = match self.periphery.clone_repo(&server, &build).await {
+    //         Ok(clone_logs) => {
+    //             update.logs.extend(clone_logs);
+    //             true
+    //         }
+    //         Err(e) => {
+    //             update
+    //                 .logs
+    //                 .push(Log::error("clone repo", format!("{e:#?}")));
+    //             false
+    //         }
+    //     };
+
+    //     update.status = UpdateStatus::Complete;
+    //     update.end_ts = Some(monitor_timestamp());
+
+    //     self.update_update(update.clone()).await?;
+
+    //     Ok(update)
+    // }
 }

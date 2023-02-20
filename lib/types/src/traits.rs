@@ -88,7 +88,7 @@ impl From<&Build> for CloneArgs {
             name: b.name.clone(),
             repo: b.repo.clone(),
             branch: b.branch.clone(),
-            on_clone: b.on_clone.clone(),
+            on_clone: b.pre_build.clone(),
             on_pull: None,
             github_account: b.github_account.clone(),
         }

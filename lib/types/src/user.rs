@@ -30,6 +30,9 @@ pub struct User {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub create_server_permissions: bool,
 
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub create_build_permissions: bool,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub avatar: Option<String>,

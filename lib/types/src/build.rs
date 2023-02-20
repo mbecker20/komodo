@@ -32,8 +32,11 @@ pub struct Build {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
-    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
-    pub server_id: String, // server which this image should be built on
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub server_id: Option<String>, // server which this image should be built on
+
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub aws_config: Option<AwsBuilderConfig>,
 
     #[builder(default)]
     pub version: Version,
@@ -50,10 +53,6 @@ pub struct Build {
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub github_account: Option<String>,
-
-    #[builder(default)]
-    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub on_clone: Option<Command>,
 
     // build related
     #[builder(default)]
@@ -148,4 +147,28 @@ pub struct DockerBuildArgs {
 pub struct BuildVersionsReponse {
     pub version: Version,
     pub ts: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default, Diff, Builder)]
+#[diff(attr(#[derive(Debug, Serialize, PartialEq)]))]
+pub struct AwsBuilderConfig {
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub region: Option<String>,
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub instance_type: Option<String>,
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub ami_id: Option<String>,
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub volume_gb: Option<i32>,
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub subnet_id: Option<String>,
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub security_group_ids: Option<Vec<String>>,
 }

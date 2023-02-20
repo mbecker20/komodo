@@ -74,6 +74,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         local_auth: true,
         github_oauth: Default::default(),
         google_oauth: Default::default(),
+        aws: Default::default(),
         mongo: MongoConfig {
             uri: mongo_uri,
             db_name: mongo_db_name,
