@@ -7,6 +7,7 @@ use run_command::{async_run_command, CommandOutput};
 use serde::de::DeserializeOwned;
 use types::{monitor_timestamp, Log};
 
+pub mod aws;
 pub mod docker;
 pub mod git;
 

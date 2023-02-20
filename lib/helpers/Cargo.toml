@@ -9,8 +9,8 @@ license = "GPL-3.0-or-later"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# types = { package = "monitor_types", path = "../types" }
-types = { package = "monitor_types", version = "0.1.15" }
+types = { package = "monitor_types", path = "../types" }
+periphery_client = { path = "../periphery_client" }
 async_timing_util = "0.1.14"
 bollard = "0.13"
 anyhow = "1.0"
@@ -23,3 +23,5 @@ run_command = { version = "0.0.5", features = ["async_tokio"] }
 rand = "0.8"
 futures = "0.3"
 futures-util = "0.3.25"
+aws-config = "0.54"
+aws-sdk-ec2 = "0.24"

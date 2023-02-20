@@ -1,5 +1,5 @@
 use crate::{
-    Build, BuildActionState, Deployment, DeploymentActionState, Group, PermissionLevel,
+    Build, BuildActionState, CloneArgs, Deployment, DeploymentActionState, Group, PermissionLevel,
     PermissionsMap, Procedure, Server, ServerActionState,
 };
 
@@ -66,5 +66,31 @@ impl Busy for DeploymentActionState {
 impl Busy for BuildActionState {
     fn busy(&self) -> bool {
         self.building || self.recloning || self.updating
+    }
+}
+
+impl From<&Deployment> for CloneArgs {
+    fn from(d: &Deployment) -> Self {
+        CloneArgs {
+            name: d.name.clone(),
+            repo: d.repo.clone(),
+            branch: d.branch.clone(),
+            on_clone: d.on_clone.clone(),
+            on_pull: d.on_pull.clone(),
+            github_account: d.github_account.clone(),
+        }
+    }
+}
+
+impl From<&Build> for CloneArgs {
+    fn from(b: &Build) -> Self {
+        CloneArgs {
+            name: b.name.clone(),
+            repo: b.repo.clone(),
+            branch: b.branch.clone(),
+            on_clone: b.on_clone.clone(),
+            on_pull: None,
+            github_account: b.github_account.clone(),
+        }
     }
 }

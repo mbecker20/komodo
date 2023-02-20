@@ -2,46 +2,9 @@ use std::path::PathBuf;
 
 use ::run_command::async_run_command;
 use anyhow::anyhow;
-use serde::{Deserialize, Serialize};
-use types::{monitor_timestamp, Build, Command, Deployment, GithubToken, GithubUsername, Log};
+use types::{monitor_timestamp, CloneArgs, Command, GithubToken, Log};
 
 use crate::{run_monitor_command, to_monitor_name};
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct CloneArgs {
-    name: String,
-    repo: Option<String>,
-    branch: Option<String>,
-    on_clone: Option<Command>,
-    on_pull: Option<Command>,
-    pub github_account: Option<GithubUsername>,
-}
-
-impl From<&Deployment> for CloneArgs {
-    fn from(d: &Deployment) -> Self {
-        CloneArgs {
-            name: d.name.clone(),
-            repo: d.repo.clone(),
-            branch: d.branch.clone(),
-            on_clone: d.on_clone.clone(),
-            on_pull: d.on_pull.clone(),
-            github_account: d.github_account.clone(),
-        }
-    }
-}
-
-impl From<&Build> for CloneArgs {
-    fn from(b: &Build) -> Self {
-        CloneArgs {
-            name: b.name.clone(),
-            repo: b.repo.clone(),
-            branch: b.branch.clone(),
-            on_clone: b.on_clone.clone(),
-            on_pull: None,
-            github_account: b.github_account.clone(),
-        }
-    }
-}
 
 pub async fn pull(
     mut path: PathBuf,

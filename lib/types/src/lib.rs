@@ -38,6 +38,16 @@ pub const GITHUB_WEBHOOK_USER_ID: &str = "github";
 #[typeshare]
 pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CloneArgs {
+    pub name: String,
+    pub repo: Option<String>,
+    pub branch: Option<String>,
+    pub on_clone: Option<Command>,
+    pub on_pull: Option<Command>,
+    pub github_account: Option<GithubUsername>,
+}
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]

@@ -23,7 +23,7 @@ impl PeripheryClient {
     pub fn new(passkey: String) -> PeripheryClient {
         PeripheryClient {
             http_client: Default::default(),
-            passkey
+            passkey,
         }
     }
 

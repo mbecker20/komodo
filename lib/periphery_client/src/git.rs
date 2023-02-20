@@ -1,7 +1,6 @@
 use anyhow::Context;
-use helpers::git::CloneArgs;
 use serde_json::json;
-use types::{Command, Log, Server};
+use types::{CloneArgs, Command, Log, Server};
 
 use crate::PeripheryClient;
 

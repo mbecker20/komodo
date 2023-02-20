@@ -10,7 +10,6 @@ license = "GPL-3.0-or-later"
 
 [dependencies]
 monitor_types = "0.1.15"
-# monitor_types = { path = "../types" }
 reqwest = { version = "0.11", features = ["json"] }
 tokio-tungstenite = { version = "0.18", features=["native-tls"] }
 tokio = { version = "1.25", features = ["full"] }
