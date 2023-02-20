@@ -2,7 +2,8 @@ use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use aws_sdk_ec2::model::{
-    BlockDeviceMapping, EbsBlockDevice, InstanceStateChange, InstanceStateName, InstanceStatus, InstanceNetworkInterfaceSpecification,
+    BlockDeviceMapping, EbsBlockDevice, InstanceNetworkInterfaceSpecification, InstanceStateChange,
+    InstanceStateName, InstanceStatus,
 };
 pub use aws_sdk_ec2::{
     model::InstanceType,
@@ -66,7 +67,8 @@ pub async fn create_instance_with_ami(
                 .subnet_id(subnet_id)
                 .associate_public_ip_address(false)
                 .set_groups(security_group_ids.into())
-                .build())
+                .build(),
+        )
         .min_count(1)
         .max_count(1)
         .send()

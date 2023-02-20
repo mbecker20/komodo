@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::{
@@ -13,6 +15,9 @@ use types::{
 };
 
 use crate::{auth::RequestUser, state::State};
+
+const BUILDER_POLL_RATE_SECS: u64 = 2;
+const BUILDER_POLL_MAX_TRIES: usize = 30;
 
 impl State {
     pub async fn get_build_check_permissions(
@@ -280,20 +285,22 @@ impl State {
                     end_ts: monitor_timestamp(),
                     ..Default::default()
                 });
-                self.update_update(update.clone()).await?;
+                self.update_update(update).await?;
                 return Err(e);
             }
-            update.logs.push(Log {
-                stage: "start build server".to_string(),
-                stdout: "build server started".to_string(),
-                success: true,
-                start_ts: start_ts.clone(),
-                end_ts: monitor_timestamp(),
-                ..Default::default()
-            });
+            let (server, aws_client, log) = res.unwrap();
+            update.logs.push(log);
             self.update_update(update.clone()).await?;
-            res.unwrap()
+            (server, aws_client)
         } else {
+            update.status = UpdateStatus::Complete;
+            update.end_ts = Some(monitor_timestamp());
+            update.success = false;
+            update.logs.push(Log::error(
+                "start build",
+                "build has neither server_id nor aws_config attached".to_string(),
+            ));
+            self.update_update(update).await?;
             return Err(anyhow!(
                 "build has neither server_id or aws_config attached"
             ));
@@ -376,7 +383,7 @@ impl State {
             } else {
                 update.logs.push(Log::simple(
                     "terminate instance",
-                    "instance terminated".to_string(),
+                    format!("instance with id {}", server.instance_id),
                 ))
             }
         }
@@ -393,10 +400,11 @@ impl State {
     async fn create_ec2_instance_for_build(
         &self,
         build: &Build,
-    ) -> anyhow::Result<(Ec2Instance, Option<aws::Client>)> {
+    ) -> anyhow::Result<(Ec2Instance, Option<aws::Client>, Log)> {
         if build.aws_config.is_none() {
             return Err(anyhow!("build has no aws_config attached"));
         }
+        let start_ts = monitor_timestamp();
         let aws_config = build.aws_config.as_ref().unwrap();
         let region = aws_config
             .region
@@ -426,6 +434,7 @@ impl State {
             .as_ref()
             .unwrap_or(&self.config.aws.default_security_group_ids)
             .to_owned();
+        let readable_sec_group_ids = security_group_ids.join(", ");
         let volume_size_gb = *aws_config
             .volume_gb
             .as_ref()
@@ -439,7 +448,23 @@ impl State {
             volume_size_gb,
         )
         .await?;
-        Ok((instance, Some(aws_client)))
+        let instance_id = &instance.instance_id;
+        for _ in 0..BUILDER_POLL_MAX_TRIES {
+            let status = self.periphery.health_check(&instance.server).await;
+            if let Ok(_) = status {
+                let log = Log {
+                    stage: "start build instance".to_string(),
+                    success: true,
+                    stdout: format!("instance id: {instance_id}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_size_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}"),
+                    start_ts,
+                    end_ts: monitor_timestamp(),
+                    ..Default::default()
+                };
+                return Ok((instance, Some(aws_client), log))
+            }
+            tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS)).await;
+        }
+        Err(anyhow!("unable to reach periphery agent on build server"))
     }
 
     // pub async fn reclone_build(
