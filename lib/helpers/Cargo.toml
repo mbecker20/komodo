@@ -9,6 +9,7 @@ license = "GPL-3.0-or-later"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tokio = "1.25"
 types = { package = "monitor_types", path = "../types" }
 periphery_client = { path = "../periphery_client" }
 async_timing_util = "0.1.14"
