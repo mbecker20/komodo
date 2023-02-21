@@ -88,7 +88,6 @@ pub struct Build {
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BuildActionState {
     pub building: bool,
-    pub recloning: bool,
     pub updating: bool,
 }
 

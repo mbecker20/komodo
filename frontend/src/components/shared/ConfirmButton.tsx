@@ -17,6 +17,7 @@ const ConfirmButton: Component<{
       onBlur={() => set(false)}
       onClick={(e) => {
         e.stopPropagation();
+        e.preventDefault();
         if (confirm()) {
           p.onConfirm && p.onConfirm();
         } else {

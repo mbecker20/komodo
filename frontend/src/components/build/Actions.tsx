@@ -10,14 +10,14 @@ import { useActionStates } from "./ActionStateProvider";
 import { client } from "../..";
 import { combineClasses, getId } from "../../util/helpers";
 import { useParams } from "@solidjs/router";
-import { PermissionLevel, ServerStatus } from "../../types";
+import { PermissionLevel, ServerStatus, ServerWithStatus } from "../../types";
 
 const Actions: Component<{}> = (p) => {
   const { user } = useUser();
   const params = useParams() as { id: string };
   const { builds, servers } = useAppState();
   const build = () => builds.get(params.id)!;
-  const server = () => build() && servers.get(build()!.server_id);
+  const server = () => (build() && build().server_id) ? servers.get(build()!.server_id!) : undefined;
   const actions = useActionStates();
   const userCanExecute = () =>
     user().admin ||
@@ -48,7 +48,7 @@ const Actions: Component<{}> = (p) => {
               </ConfirmButton>
             </Show>
           </Flex>
-          <Flex class={combineClasses("action shadow")}>
+          {/* <Flex class={combineClasses("action shadow")}>
             reclone{" "}
             <Show
               when={!actions.recloning}
@@ -67,7 +67,7 @@ const Actions: Component<{}> = (p) => {
                 <Icon type="reset" />
               </ConfirmButton>
             </Show>
-          </Flex>
+          </Flex> */}
         </Grid>
       </Grid>
     </Show>

@@ -6,6 +6,7 @@ import { useAppState } from "../../state/StateProvider";
 import Grid from "../shared/layout/Grid";
 import SimpleTabs from "../shared/tabs/SimpleTabs";
 import Summary from "./Summary";
+import Builds from "./Tree/Builds";
 import Groups from "./Tree/Groups";
 import { TreeProvider } from "./Tree/Provider";
 import Servers from "./Tree/Servers";
@@ -36,6 +37,10 @@ const Home: Component<{}> = (p) => {
               title: "servers",
               element: () => <Servers serverIDs={servers.ids()!} showAdd />,
             },
+            {
+              title: "builds",
+              element: () => <Builds />
+            }
           ]}
         />
       </TreeProvider>

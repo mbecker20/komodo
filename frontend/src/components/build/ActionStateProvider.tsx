@@ -11,31 +11,29 @@ type State = {
 
 const context = createContext<State>();
 
-export const ActionStateProvider: ParentComponent<{}> = (p) => {
+export const ActionStateProvider: ParentComponent<{ build_id: string }> = (p) => {
 	const { ws } = useAppState();
-  const params = useParams();
   const [actions, setActions] = createStore<BuildActionState>({
     building: false,
-	  recloning: false,
 	  updating: false,
   });
 	createEffect(() => {
-    client.get_build_action_state(params.id).then(setActions);
+    client.get_build_action_state(p.build_id).then(setActions);
   });
   onCleanup(
     ws.subscribe([Operation.BuildBuild], (update) => {
-      if (update.target.id === params.id) {
+      if (update.target.id === p.build_id) {
         setActions("building", update.status !== UpdateStatus.Complete);
       }
     })
   );
-  onCleanup(
-    ws.subscribe([Operation.RecloneBuild], (update) => {
-      if (update.target.id === params.id) {
-        setActions("recloning", update.status !== UpdateStatus.Complete);
-      }
-    })
-  );
+  // onCleanup(
+  //   ws.subscribe([Operation.RecloneBuild], (update) => {
+  //     if (update.target.id === params.id) {
+  //       setActions("recloning", update.status !== UpdateStatus.Complete);
+  //     }
+  //   })
+  // );
 	// onCleanup(
   //   ws.subscribe([DELETE_BUILD], ({ complete, buildID }) => {
   //     if (buildID === selected.id()) {

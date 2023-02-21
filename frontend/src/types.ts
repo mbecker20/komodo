@@ -21,12 +21,12 @@ export interface Build {
 	_id?: string;
 	name: string;
 	permissions?: PermissionsMap;
-	server_id: string;
+	server_id?: string;
+	aws_config?: AwsBuilderConfig;
 	version: Version;
 	repo?: string;
 	branch?: string;
 	github_account?: string;
-	on_clone?: Command;
 	pre_build?: Command;
 	docker_build_args?: DockerBuildArgs;
 	docker_account?: string;
@@ -37,7 +37,6 @@ export interface Build {
 
 export interface BuildActionState {
 	building: boolean;
-	recloning: boolean;
 	updating: boolean;
 }
 
@@ -56,6 +55,17 @@ export interface DockerBuildArgs {
 export interface BuildVersionsReponse {
 	version: Version;
 	ts: string;
+}
+
+export interface AwsBuilderConfig {
+	region?: string;
+	instance_type?: string;
+	ami_id?: string;
+	volume_gb?: number;
+	subnet_id?: string;
+	security_group_ids?: string[];
+	key_pair_name?: string;
+	assign_public_ip?: boolean;
 }
 
 export interface Deployment {
@@ -327,9 +337,10 @@ export interface Log {
 export interface User {
 	_id?: string;
 	username: string;
-	enabled: boolean;
-	admin: boolean;
-	create_server_permissions: boolean;
+	enabled?: boolean;
+	admin?: boolean;
+	create_server_permissions?: boolean;
+	create_build_permissions?: boolean;
 	avatar?: string;
 	secrets?: ApiSecret[];
 	password?: string;
@@ -382,7 +393,6 @@ export enum Operation {
 	UpdateBuild = "update_build",
 	DeleteBuild = "delete_build",
 	BuildBuild = "build_build",
-	RecloneBuild = "reclone_build",
 	CreateDeployment = "create_deployment",
 	UpdateDeployment = "update_deployment",
 	DeleteDeployment = "delete_deployment",
@@ -449,7 +459,6 @@ export enum ProcedureOperation {
 	PruneContainersServer = "prune_containers_server",
 	PruneNetworksServer = "prune_networks_server",
 	BuildBuild = "build_build",
-	RecloneBuild = "reclone_build",
 	DeployContainer = "deploy_container",
 	StopContainer = "stop_container",
 	StartContainer = "start_container",

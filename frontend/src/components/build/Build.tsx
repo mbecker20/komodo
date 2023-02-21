@@ -35,7 +35,7 @@ const Build: Component<{}> = (p) => {
   onCleanup(() => unsub);
   return (
     <Show when={build()} fallback={<NotFound type="build" />}>
-      <ActionStateProvider>
+      <ActionStateProvider build_id={params.id}>
         <Grid
           style={{
             width: "100%",

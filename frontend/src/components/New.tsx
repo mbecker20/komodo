@@ -47,10 +47,10 @@ export const NewDeployment: Component<{ serverID: string }> = (p) => {
   );
 };
 
-export const NewBuild: Component<{ serverID: string }> = (p) => {
+export const NewBuild: Component<{}> = (p) => {
   const [showNew, toggleShowNew] = useToggle();
   const create = (name: string) => {
-    client.create_build({ name, server_id: p.serverID });
+    client.create_build({ name });
   };
   return (
     <Show

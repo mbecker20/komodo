@@ -65,7 +65,7 @@ impl Busy for DeploymentActionState {
 
 impl Busy for BuildActionState {
     fn busy(&self) -> bool {
-        self.building || self.recloning || self.updating
+        self.building || self.updating
     }
 }
 

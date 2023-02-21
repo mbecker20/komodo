@@ -6,7 +6,7 @@ export const TREE_SORTS = ["name", "created"] as const;
 export type TreeSortType = typeof TREE_SORTS[number];
 
 const value = () => {
-	const { servers, groups } = useAppState();
+	const { servers, groups, builds } = useAppState();
 	const [sort, setSort] = useLocalStorage<TreeSortType>(
     TREE_SORTS[0],
     "home-sort-v1"
@@ -29,7 +29,7 @@ const value = () => {
     }
   };
 	const group_sorter = () => {
-    if (!groups.loaded) return () => 0;
+    if (!groups.loaded()) return () => 0;
     if (sort() === "name") {
       return (a: string, b: string) => {
         const ga = groups.get(a)!;
@@ -45,11 +45,29 @@ const value = () => {
       return () => 0;
     }
   };
+  const build_sorter = () => {
+    if (!builds.loaded()) return () => 0;
+    if (sort() === "name") {
+      return (a: string, b: string) => {
+        const ba = builds.get(a)!;
+        const bb = builds.get(b)!;
+        if (ba.name < bb.name) {
+          return -1;
+        } else if (ba.name > bb.name) {
+          return 1;
+        }
+        return 0;
+      };
+    } else {
+      return () => 0;
+    }
+  };
 	return {
     sort,
 		setSort,
 		server_sorter,
 		group_sorter,
+    build_sorter
 	};
 }
 
