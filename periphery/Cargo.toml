@@ -1,6 +1,6 @@
 [package]
 name = "monitor_periphery"
-version = "0.1.15"
+version = "0.1.16"
 edition = "2021"
 authors = ["MoghTech"]
 description = "monitor periphery binary | run monitor periphery as system daemon"

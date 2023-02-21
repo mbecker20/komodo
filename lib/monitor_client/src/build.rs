@@ -88,9 +88,9 @@ impl MonitorClient {
             .context(format!("failed at building build {build_id}"))
     }
 
-    pub async fn reclone_build(&self, id: &str) -> anyhow::Result<Update> {
-        self.post::<(), _>(&format!("/api/build/{id}/reclone"), None)
-            .await
-            .context(format!("failed at recloning build {id}"))
-    }
+    // pub async fn reclone_build(&self, id: &str) -> anyhow::Result<Update> {
+    //     self.post::<(), _>(&format!("/api/build/{id}/reclone"), None)
+    //         .await
+    //         .context(format!("failed at recloning build {id}"))
+    // }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "monitor_cli"
-version = "0.1.21"
+version = "0.1.22"
 edition = "2021"
 authors = ["MoghTech"]
 description = "monitor cli | tools to setup monitor system"
