@@ -3,8 +3,9 @@ use monitor_client::{
     futures_util::StreamExt,
     tokio_tungstenite::tungstenite::Message,
     types::{
-        Build, Command, Conversion, Deployment, DeploymentWithContainerState, DockerBuildArgs,
-        Server, SystemStats, Update,
+        AwsBuilderConfigBuilder, Build, BuildBuilder, Command, Conversion, Deployment,
+        DeploymentWithContainerState, DockerBuildArgs, DockerBuildArgsBuilder, Server, SystemStats,
+        Update,
     },
     MonitorClient,
 };
@@ -101,13 +102,9 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
     println!("created build. updating...");
     build.repo = Some("mbecker20/monitor".to_string());
     // build.branch = Some("");
-    build.on_clone = Some(Command {
-        path: ".".to_string(),
-        command: "yarn".to_string(),
-    });
     build.pre_build = Some(Command {
-        path: "periphery".to_string(),
-        command: "yarn build".to_string(),
+        path: ".".to_string(),
+        command: "yarn && cd periphery && yarn build".to_string(),
     });
     build.docker_build_args = Some(DockerBuildArgs {
         build_path: "periphery".to_string(),
@@ -127,5 +124,33 @@ pub async fn test_updates(monitor: &MonitorClient) -> anyhow::Result<()> {
     let build = builds.get(0).unwrap();
     let build_updates = monitor.list_updates(build, 0).await?;
     println!("{build_updates:#?}");
+    Ok(())
+}
+
+pub async fn test_aws_build(monitor: &MonitorClient) -> anyhow::Result<()> {
+    let build = BuildBuilder::default()
+        .name("test_tram".to_string())
+        .repo(Some(String::from("SocialSocialTrading/master")))
+        .branch(Some(String::from("master")))
+        .docker_build_args(
+            DockerBuildArgsBuilder::default()
+                .build_path("backend".to_string())
+                .dockerfile_path("Dockerfile".to_string().into())
+                .build()
+                .context("failed to construct DockerBuildArgs struct")?
+                .into(),
+        )
+        .aws_config(
+            AwsBuilderConfigBuilder::default()
+                .build()
+                .context("failed to construct AwsBuilderConfig struct")?
+                .into(),
+        )
+        .build()
+        .context("failed to construct Build struct")?;
+    let build = monitor.create_full_build(&build).await?;
+    println!("{build:#?}\n");
+    let update = monitor.build(&build.id).await?;
+    println!("{update:#?}");
     Ok(())
 }

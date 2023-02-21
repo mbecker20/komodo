@@ -32,9 +32,11 @@ pub struct Build {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub server_id: Option<String>, // server which this image should be built on
 
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub aws_config: Option<AwsBuilderConfig>,
 
@@ -156,19 +158,32 @@ pub struct AwsBuilderConfig {
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub region: Option<String>,
+
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub instance_type: Option<String>,
+
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub ami_id: Option<String>,
+
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub volume_gb: Option<i32>,
+
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub subnet_id: Option<String>,
+
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub security_group_ids: Option<Vec<String>>,
+
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub key_pair_name: Option<String>,
+
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub assign_public_ip: Option<bool>,
 }

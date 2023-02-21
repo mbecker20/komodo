@@ -45,7 +45,7 @@ impl State {
     }
 
     pub async fn create_build(&self, name: &str, user: &RequestUser) -> anyhow::Result<Build> {
-        if !user.create_build_permissions {
+        if !user.is_admin && !user.create_build_permissions {
             return Err(anyhow!("user does not have permission to create builds"));
         }
         let start_ts = monitor_timestamp();
@@ -324,6 +324,10 @@ impl State {
                 .periphery
                 .delete_repo(&server.server, &build.name)
                 .await;
+            if let Some(aws_client) = aws_client {
+                self.terminate_ec2_instance(aws_client, &server, &mut update)
+                    .await;
+            }
             update.status = UpdateStatus::Complete;
             update.end_ts = Some(monitor_timestamp());
             update.success = false;
@@ -345,8 +349,8 @@ impl State {
 
         match build_logs {
             Some(logs) => {
+                let success = all_logs_success(&logs);
                 update.logs.extend(logs);
-                let success = all_logs_success(&update.logs);
                 if success {
                     let _ = self
                         .db
@@ -375,17 +379,8 @@ impl State {
             .await;
 
         if let Some(aws_client) = aws_client {
-            let res = terminate_ec2_instance(&aws_client, &server.instance_id).await;
-            if let Err(e) = res {
-                update
-                    .logs
-                    .push(Log::error("terminate instance", format!("{e:#?}")))
-            } else {
-                update.logs.push(Log::simple(
-                    "terminate instance",
-                    format!("instance with id {}", server.instance_id),
-                ))
-            }
+            self.terminate_ec2_instance(aws_client, &server, &mut update)
+                .await;
         }
 
         update.success = all_logs_success(&update.logs);
@@ -439,19 +434,31 @@ impl State {
             .volume_gb
             .as_ref()
             .unwrap_or(&self.config.aws.default_volume_gb);
+        let key_pair_name = aws_config
+            .key_pair_name
+            .as_ref()
+            .unwrap_or(&self.config.aws.default_key_pair_name);
+        let assign_public_ip = *aws_config
+            .assign_public_ip
+            .as_ref()
+            .unwrap_or(&self.config.aws.default_assign_public_ip);
         let instance = create_instance_with_ami(
             &aws_client,
+            &format!("BUILDER-{}-v{}", build.name, build.version.to_string()),
             ami_id,
             instance_type,
             subnet_id,
             security_group_ids,
             volume_size_gb,
+            key_pair_name,
+            assign_public_ip,
         )
         .await?;
-        let instance_id = &instance.instance_id;
+        let mut res = Ok(String::new());
         for _ in 0..BUILDER_POLL_MAX_TRIES {
             let status = self.periphery.health_check(&instance.server).await;
             if let Ok(_) = status {
+                let instance_id = &instance.instance_id;
                 let log = Log {
                     stage: "start build instance".to_string(),
                     success: true,
@@ -460,11 +467,32 @@ impl State {
                     end_ts: monitor_timestamp(),
                     ..Default::default()
                 };
-                return Ok((instance, Some(aws_client), log))
+                return Ok((instance, Some(aws_client), log));
             }
+            res = status;
             tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS)).await;
         }
-        Err(anyhow!("unable to reach periphery agent on build server"))
+        let _ = terminate_ec2_instance(&aws_client, &instance.instance_id).await;
+        Err(anyhow!("unable to reach periphery agent on build server\n{res:#?}"))
+    }
+
+    async fn terminate_ec2_instance(
+        &self,
+        aws_client: aws::Client,
+        server: &Ec2Instance,
+        update: &mut Update,
+    ) {
+        let res = terminate_ec2_instance(&aws_client, &server.instance_id).await;
+        if let Err(e) = res {
+            update
+                .logs
+                .push(Log::error("terminate instance", format!("{e:#?}")))
+        } else {
+            update.logs.push(Log::simple(
+                "terminate instance",
+                format!("terminate instance id {}", server.instance_id),
+            ))
+        }
     }
 
     // pub async fn reclone_build(

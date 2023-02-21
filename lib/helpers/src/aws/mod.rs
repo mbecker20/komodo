@@ -3,7 +3,7 @@ use std::time::Duration;
 use anyhow::{anyhow, Context};
 use aws_sdk_ec2::model::{
     BlockDeviceMapping, EbsBlockDevice, InstanceNetworkInterfaceSpecification, InstanceStateChange,
-    InstanceStateName, InstanceStatus,
+    InstanceStateName, InstanceStatus, ResourceType, Tag, TagSpecification,
 };
 pub use aws_sdk_ec2::{
     model::InstanceType,
@@ -38,35 +38,47 @@ const MAX_POLL_TRIES: usize = 30;
 /// should still poll the periphery agent after creation
 pub async fn create_instance_with_ami(
     client: &Client,
+    instance_name: &str,
     ami_id: &str,
     instance_type: &str,
     subnet_id: &str,
     security_group_ids: Vec<String>,
     volume_size_gb: i32,
+    key_pair_name: &str,
+    assign_public_ip: bool,
 ) -> anyhow::Result<Ec2Instance> {
     let instance_type = InstanceType::from(instance_type);
     if let InstanceType::Unknown(t) = instance_type {
         return Err(anyhow!("unknown instance type {t:?}"));
     }
-    let block_device_mapping = BlockDeviceMapping::builder()
-        .set_device_name(String::from("/dev/sda1").into())
-        .set_ebs(
-            EbsBlockDevice::builder()
-                .volume_size(volume_size_gb)
-                .build()
-                .into(),
-        )
-        .build();
     let res = client
         .run_instances()
         .image_id(ami_id)
         .instance_type(instance_type)
-        .block_device_mappings(block_device_mapping)
+        .block_device_mappings(
+            BlockDeviceMapping::builder()
+                .set_device_name(String::from("/dev/sda1").into())
+                .set_ebs(
+                    EbsBlockDevice::builder()
+                        .volume_size(volume_size_gb)
+                        .build()
+                        .into(),
+                )
+                .build(),
+        )
         .network_interfaces(
             InstanceNetworkInterfaceSpecification::builder()
                 .subnet_id(subnet_id)
-                .associate_public_ip_address(false)
+                .associate_public_ip_address(assign_public_ip)
                 .set_groups(security_group_ids.into())
+                .device_index(0)
+                .build(),
+        )
+        .key_name(key_pair_name)
+        .tag_specifications(
+            TagSpecification::builder()
+                .tags(Tag::builder().key("Name").value(instance_name).build())
+                .resource_type(ResourceType::Instance)
                 .build(),
         )
         .min_count(1)
@@ -83,16 +95,21 @@ pub async fn create_instance_with_ami(
         .instance_id()
         .ok_or(anyhow!("instance does not have instance_id"))?
         .to_string();
-    let ip = instance
-        .private_ip_address()
-        .ok_or(anyhow!("instance does not have private ip"))?;
-    let server = Server {
-        address: format!("http://{ip}:8000"),
-        ..Default::default()
-    };
     for _ in 0..MAX_POLL_TRIES {
         let state_name = get_ec2_instance_state_name(&client, &instance_id).await?;
         if state_name == Some(InstanceStateName::Running) {
+            let ip = if assign_public_ip {
+                get_ec2_instance_public_ip(client, &instance_id).await?
+            } else {
+                instance
+                    .private_ip_address()
+                    .ok_or(anyhow!("instance does not have private ip"))?
+                    .to_string()
+            };
+            let server = Server {
+                address: format!("http://{ip}:8000"),
+                ..Default::default()
+            };
             return Ok(Ec2Instance {
                 instance_id,
                 server,
@@ -136,6 +153,31 @@ pub async fn get_ec2_instance_state_name(
         .ok_or(anyhow!("instance state name is None"))?
         .to_owned();
     Ok(Some(state))
+}
+
+pub async fn get_ec2_instance_public_ip(
+    client: &Client,
+    instance_id: &str,
+) -> anyhow::Result<String> {
+    let ip = client
+        .describe_instances()
+        .instance_ids(instance_id)
+        .send()
+        .await
+        .context("failed to get instance status from aws")?
+        .reservations()
+        .ok_or(anyhow!("instance reservations is None"))?
+        .get(0)
+        .ok_or(anyhow!("instance reservations is empty"))?
+        .instances()
+        .ok_or(anyhow!("instances is None"))?
+        .get(0)
+        .ok_or(anyhow!("instances is empty"))?
+        .public_ip_address()
+        .ok_or(anyhow!("instance has no public ip"))?
+        .to_string();
+
+    Ok(ip)
 }
 
 pub async fn terminate_ec2_instance(

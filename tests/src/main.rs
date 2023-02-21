@@ -30,10 +30,12 @@ async fn main() -> anyhow::Result<()> {
     //     container.container
     // );
 
-    let update = test_build(&monitor).await?;
-    println!("build update:\n{update:#?}");
+    // let update = test_build(&monitor).await?;
+    // println!("build update:\n{update:#?}");
 
     // test_updates(&monitor).await.unwrap();
+
+    let update = test_aws_build(&monitor).await?;
 
     let end_ts = unix_timestamp_ms();
     let finished_in = (end_ts - start_ts) as f64 / 1000.0;

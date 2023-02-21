@@ -93,6 +93,7 @@ pub struct AwsBuilderConfig {
     pub secret_access_key: String,
     pub default_ami_id: String,
     pub default_subnet_id: String,
+    pub default_key_pair_name: String,
     #[serde(default = "default_aws_region")]
     pub default_region: String,
     #[serde(default = "default_volume_gb")]
@@ -101,6 +102,8 @@ pub struct AwsBuilderConfig {
     pub default_instance_type: String,
     #[serde(default)]
     pub default_security_group_ids: Vec<String>,
+    #[serde(default)]
+    pub default_assign_public_ip: bool,
 }
 
 fn default_aws_region() -> String {

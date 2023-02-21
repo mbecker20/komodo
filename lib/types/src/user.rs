@@ -21,15 +21,19 @@ pub struct User {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub username: String,
 
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub enabled: bool,
 
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub admin: bool,
 
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub create_server_permissions: bool,
 
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub create_build_permissions: bool,
 
