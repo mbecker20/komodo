@@ -5,7 +5,10 @@ import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { PermissionLevel } from "../../../types";
 import { getId, readableMonitorTimestamp } from "../../../util/helpers";
-import { ActionStateProvider, useActionStates } from "../../build/ActionStateProvider";
+import {
+  ActionStateProvider,
+  useActionStates,
+} from "../../build/ActionStateProvider";
 import { NewBuild } from "../../New";
 import ConfirmButton from "../../shared/ConfirmButton";
 import Icon from "../../shared/Icon";
@@ -78,8 +81,10 @@ const Builds: Component<{}> = (p) => {
 
 const Build: Component<{ id: string }> = (p) => {
   const { user } = useUser();
-  const { builds } = useAppState();
-  const build = () => builds.get(p.id)!
+  const { builds, servers } = useAppState();
+  const build = () => builds.get(p.id)!;
+  const server = () =>
+    build().server_id ? servers.get(build().server_id!) : undefined;
   const version = () => {
     return `v${build().version.major}.${build().version.minor}.${
       build().version.patch
@@ -101,6 +106,7 @@ const Build: Component<{ id: string }> = (p) => {
     user().admin ||
     build().permissions![getId(user())] === PermissionLevel.Execute ||
     build().permissions![getId(user())] === PermissionLevel.Update;
+  const isAwsBuild = () => build().aws_config ? true : false;
   return (
     <A
       href={`/build/${p.id}`}
@@ -110,9 +116,23 @@ const Build: Component<{ id: string }> = (p) => {
         height: "fit-content",
         "box-sizing": "border-box",
         "justify-content": "space-between",
+        padding: "0.5rem",
       }}
     >
-      <h1 style={{ "font-size": "1.25rem" }}>{build().name}</h1>
+      <Flex alignItems="center">
+        <h1 style={{ "font-size": "1.25rem" }}>{build().name}</h1>
+        <Show when={server()}>
+          <A
+            href={`/server/${build().server_id!}`}
+            style={{ padding: 0, opacity: 0.7 }}
+          >
+            <div class="text-hover">{server()?.server.name}</div>
+          </A>
+        </Show>
+        <Show when={isAwsBuild()}>
+          <div style={{ opacity: 0.7 }}>aws build</div>
+        </Show>
+      </Flex>
       <Flex alignItems="center">
         <div>{version()}</div>
         <div style={{ opacity: 0.7 }}>{lastBuiltAt()}</div>
@@ -120,10 +140,13 @@ const Build: Component<{ id: string }> = (p) => {
           <Show
             when={!actions.building}
             fallback={
-              <button class="green" onClick={e => {
-                e.stopPropagation();
-                e.preventDefault();
-              }}>
+              <button
+                class="green"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                }}
+              >
                 <Loading type="spinner" />
               </button>
             }

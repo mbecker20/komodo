@@ -27,7 +27,8 @@ const Header: Component<{}> = (p) => {
   const userCanUpdate = () =>
     user().admin ||
     build().permissions![getId(user())] === PermissionLevel.Update;
-  const server = () => servers.get(build().server_id);
+  const server = () =>
+    build().server_id ? servers.get(build().server_id!) : undefined;
   return (
     <>
       <Grid

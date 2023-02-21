@@ -166,7 +166,7 @@ impl State {
         // none of these should be changed through this method
         new_build.name = current_build.name.clone();
         new_build.permissions = current_build.permissions.clone();
-        new_build.last_built_at = String::new();
+        new_build.last_built_at = current_build.last_built_at.clone();
         new_build.created_at = current_build.created_at.clone();
         new_build.updated_at = start_ts.clone();
 
