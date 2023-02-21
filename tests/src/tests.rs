@@ -129,13 +129,14 @@ pub async fn test_updates(monitor: &MonitorClient) -> anyhow::Result<()> {
 
 pub async fn test_aws_build(monitor: &MonitorClient) -> anyhow::Result<()> {
     let build = BuildBuilder::default()
-        .name("test_tram".to_string())
-        .repo(Some(String::from("SocialSocialTrading/master")))
-        .branch(Some(String::from("master")))
+        .name("test_monitor".to_string())
+        .repo(Some(String::from("mbecker20/monitor")))
+        .branch(Some(String::from("main")))
+        .docker_account(Some(String::from("mbecker2020")))
         .docker_build_args(
             DockerBuildArgsBuilder::default()
-                .build_path("backend".to_string())
-                .dockerfile_path("Dockerfile".to_string().into())
+                .build_path(".".to_string())
+                .dockerfile_path("Dockerfile.core".to_string().into())
                 .build()
                 .context("failed to construct DockerBuildArgs struct")?
                 .into(),
