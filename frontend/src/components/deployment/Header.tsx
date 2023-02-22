@@ -1,10 +1,11 @@
-import { Component, Show } from "solid-js";
+import { Component, createResource, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import {
   combineClasses,
   deploymentHeaderStateClass,
   getId,
+  readableVersion,
 } from "../../util/helpers";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
@@ -20,7 +21,7 @@ import CopyMenu from "../CopyMenu";
 import ConfirmMenuButton from "../shared/ConfirmMenuButton";
 
 const Header: Component<{}> = (p) => {
-  const { deployments, servers } = useAppState();
+  const { deployments, servers, builds } = useAppState();
   const params = useParams();
   const deployment = () => deployments.get(params.id)!;
   const { user } = useUser();
@@ -37,6 +38,27 @@ const Header: Component<{}> = (p) => {
     deployment().deployment.permissions![getId(user())] ===
       PermissionLevel.Update;
   const server = () => servers.get(deployment().deployment.server_id);
+  const [deployed_version] = createResource(() =>
+    client.get_deployment_deployed_version(params.id)
+  );
+  const image = () => {
+    if (deployment().deployment.build_id) {
+      const build = builds.get(deployment().deployment.build_id!)!;
+      if (deployment().state === DockerContainerState.NotDeployed) {
+        const version = deployment().deployment.build_version
+          ? readableVersion(deployment().deployment.build_version!).replaceAll(
+              "v",
+              ""
+            )
+          : "latest";
+        return `${build.name}:${version}`;
+      } else {
+        return deployed_version() && `${build.name}:${deployed_version()}`;
+      }
+    } else {
+      return deployment().deployment.docker_run_args.image || "unknown";
+    }
+  };
   return (
     <>
       <Grid
@@ -52,7 +74,10 @@ const Header: Component<{}> = (p) => {
         }}
       >
         <Flex alignItems="center" justifyContent="space-between">
-          <h1>{deployment()!.deployment.name}</h1>
+          <Flex alignItems="center">
+            <h1>{deployment()!.deployment.name}</h1>
+            <div style={{ opacity: 0.7 }}>{image()}</div>
+          </Flex>
           <Show when={userCanUpdate()}>
             <Flex alignItems="center">
               <CopyMenu type="deployment" id={params.id} />

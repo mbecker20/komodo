@@ -11,6 +11,7 @@ import {
 } from "../../util/helpers";
 import Circle from "../shared/Circle";
 import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
 import s from "./serverchildren.module.scss";
 
 const Deployment: Component<{ id: string }> = (p) => {
@@ -40,9 +41,11 @@ const Deployment: Component<{ id: string }> = (p) => {
   return (
     <Show when={deployment()}>
       <A href={`/deployment/${p.id}`} class={combineClasses(s.DropdownItem)}>
-        <h2>{deployment().deployment.name}</h2>
-        <Flex alignItems="center">
+        <Grid gap="0">
+          <h2>{deployment().deployment.name}</h2>
           <div style={{ opacity: 0.7 }}>{image()}</div>
+        </Grid>
+        <Flex alignItems="center">
           <div style={{ opacity: 0.7 }}>{deployments.status(p.id)}</div>
           <Circle
             size={1}
