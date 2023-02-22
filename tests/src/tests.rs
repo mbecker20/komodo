@@ -3,9 +3,9 @@ use monitor_client::{
     futures_util::StreamExt,
     tokio_tungstenite::tungstenite::Message,
     types::{
-        AwsBuilderConfigBuilder, Build, BuildBuilder, Command, Conversion, Deployment,
-        DeploymentWithContainerState, DockerBuildArgs, DockerBuildArgsBuilder, Server, SystemStats,
-        Update,
+        AwsBuilderBuildConfig, AwsBuilderConfig, Build, BuildBuilder, Command, Conversion,
+        Deployment, DeploymentWithContainerState, DockerBuildArgs, DockerBuildArgsBuilder, Server,
+        SystemStats, Update,
     },
     MonitorClient,
 };
@@ -141,12 +141,7 @@ pub async fn test_aws_build(monitor: &MonitorClient) -> anyhow::Result<()> {
                 .context("failed to construct DockerBuildArgs struct")?
                 .into(),
         )
-        .aws_config(
-            AwsBuilderConfigBuilder::default()
-                .build()
-                .context("failed to construct AwsBuilderConfig struct")?
-                .into(),
-        )
+        .aws_config(AwsBuilderBuildConfig::default().into())
         .build()
         .context("failed to construct Build struct")?;
     let build = monitor.create_full_build(&build).await?;

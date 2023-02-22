@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::{Build, BuildActionState, BuildVersionsReponse, Update};
+use monitor_types::{AwsBuilderConfig, Build, BuildActionState, BuildVersionsReponse, Update};
 use serde_json::{json, Value};
 
 use crate::MonitorClient;
@@ -91,11 +91,11 @@ impl MonitorClient {
             .context(format!("failed at building build {build_id}"))
     }
 
-    // pub async fn get_aws_builder_defaults(&self) -> anyhow::Result<AwsBuilderConfig> {
-    //     self.get("/api/build/aws_builder_defaults", Option::<()>::None)
-    //         .await
-    //         .context("failed at getting aws builder defaults")
-    // }
+    pub async fn get_aws_builder_defaults(&self) -> anyhow::Result<AwsBuilderConfig> {
+        self.get("/api/build/aws_builder_defaults", Option::<()>::None)
+            .await
+            .context("failed at getting aws builder defaults")
+    }
 
     // pub async fn reclone_build(&self, id: &str) -> anyhow::Result<Update> {
     //     self.post::<(), _>(&format!("/api/build/{id}/reclone"), None)
