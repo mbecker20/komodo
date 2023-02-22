@@ -1,5 +1,5 @@
 import { useNavigate } from "@solidjs/router";
-import { Component, createSignal } from "solid-js";
+import { Component, createSignal, Show } from "solid-js";
 import { client, pushNotification } from "..";
 import { useAppState } from "../state/StateProvider";
 import { Build, Deployment } from "../types";
@@ -42,12 +42,11 @@ const CopyMenu: Component<{
       if (p.type === "build") {
         promise = client.copy_build(p.id, {
           name: newName(),
-          server_id: selectedId(),
         });
       } else {
         promise = client.copy_deployment(p.id, {
           name: newName(),
-          server_id: selectedId(),
+          server_id: selectedId()!,
         });
       }
       toggleShow();
@@ -75,18 +74,20 @@ const CopyMenu: Component<{
               value={newName()}
               onEdit={setNewName}
             />
-            <Selector
-              label="target: "
-              selected={selectedId()}
-              items={servers.ids()!}
-              onSelect={setSelected}
-              itemMap={(id) => servers.get(id)!.server.name}
-              targetClass="blue"
-              targetStyle={{ display: "flex", gap: "0.5rem" }}
-              searchStyle={{ width: "100%" }}
-							position="bottom right"
-              useSearch
-            />
+            <Show when={p.type === "deployment"}>
+              <Selector
+                label="target: "
+                selected={selectedId()!}
+                items={servers.ids()!}
+                onSelect={setSelected}
+                itemMap={(id) => servers.get(id)!.server.name}
+                targetClass="blue"
+                targetStyle={{ display: "flex", gap: "0.5rem" }}
+                searchStyle={{ width: "100%" }}
+                position="bottom right"
+                useSearch
+              />
+            </Show>
           </Flex>
           <ConfirmButton
             class="green"

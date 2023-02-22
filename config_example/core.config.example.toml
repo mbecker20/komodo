@@ -43,6 +43,9 @@ default_subnet_id = "your_default_subnet_id"
 default_security_group_ids = ["sg_id_1", "sg_id_2"]
 default_assign_public_ip = false
 
+[aws.available_ami_accounts]
+your_periphery_ami = { name = "default ami", github = ["github_username"], docker = ["docker_username"] }
+
 [github_oauth]
 enabled = true
 id = "your_github_client_id"

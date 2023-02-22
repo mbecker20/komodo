@@ -89,19 +89,31 @@ fn default_core_mongo_db_name() -> String {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct AwsBuilderConfig {
+    #[serde(skip_serializing)]
     pub access_key_id: String,
+
+    #[serde(skip_serializing)]
     pub secret_access_key: String,
+
     pub default_ami_id: String,
     pub default_subnet_id: String,
     pub default_key_pair_name: String,
+
+    #[serde(default)]
+    pub available_ami_accounts: AvailableAmiAccounts,
+
     #[serde(default = "default_aws_region")]
     pub default_region: String,
+
     #[serde(default = "default_volume_gb")]
     pub default_volume_gb: i32,
+
     #[serde(default = "default_instance_type")]
     pub default_instance_type: String,
+
     #[serde(default)]
     pub default_security_group_ids: Vec<String>,
+
     #[serde(default)]
     pub default_assign_public_ip: bool,
 }
@@ -116,6 +128,17 @@ fn default_volume_gb() -> i32 {
 
 fn default_instance_type() -> String {
     String::from("m5.2xlarge")
+}
+
+pub type AvailableAmiAccounts = HashMap<String, AmiAccounts>; // (ami_id, AmiAccounts)
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct AmiAccounts {
+    pub name: String,
+    #[serde(default)]
+    pub github: Vec<String>,
+    #[serde(default)]
+    pub docker: Vec<String>,
 }
 
 pub type GithubUsername = String;

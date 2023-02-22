@@ -112,6 +112,9 @@ pub struct AwsBuilderConfig {
     pub default_subnet_id: String,
     pub default_key_pair_name: String,
 
+    #[serde(default)]
+    pub available_ami_accounts: AvailableAmiAccounts,
+
     #[serde(default = "default_aws_region")]
     pub default_region: String,
 
@@ -138,6 +141,19 @@ fn default_volume_gb() -> i32 {
 
 fn default_instance_type() -> String {
     String::from("m5.2xlarge")
+}
+
+#[typeshare]
+pub type AvailableAmiAccounts = HashMap<String, AmiAccounts>; // (ami_id, AmiAccounts)
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct AmiAccounts {
+    pub name: String,
+    #[serde(default)]
+    pub github: Vec<String>,
+    #[serde(default)]
+    pub docker: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

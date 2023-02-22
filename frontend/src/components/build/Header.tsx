@@ -70,13 +70,15 @@ const Header: Component<{}> = (p) => {
         </Flex>
         <Flex alignItems="center" justifyContent="space-between">
           <Flex alignItems="center">
-            <A
-              href={`/server/${build().server_id}`}
-              class="text-hover"
-              style={{ opacity: 0.7, padding: 0 }}
-            >
-              {server()?.server.name}
-            </A>
+            <Show when={server()} fallback={<div style={{ opacity: 0.7 }}>{build().aws_config ? "aws build" : ""}</div>}>
+              <A
+                href={`/server/${build().server_id}`}
+                class="text-hover"
+                style={{ opacity: 0.7, padding: 0 }}
+              >
+                {server()?.server.name}
+              </A>
+            </Show>
             <div style={{ opacity: 0.7 }}>build</div>
           </Flex>
           <div style={{ opacity: 0.7 }}>

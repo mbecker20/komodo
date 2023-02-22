@@ -3,23 +3,26 @@ import ConfirmButton from "../../../shared/ConfirmButton";
 import Icon from "../../../shared/Icon";
 import Flex from "../../../shared/layout/Flex";
 import Grid from "../../../shared/layout/Grid";
-import CliBuild from "./CliBuild";
-import Docker from "./Docker";
 import { useConfig } from "../Provider";
 import Loading from "../../../shared/loading/Loading";
-import BuildArgs from "./BuildArgs";
-import Version from "./Version";
+import BuilderType from "./BuilderType";
+import BuilderServer from "./BuilderServer";
+import AwsBuilderConfig from "./AwsBuilderConfig";
 
-const BuildConfig: Component<{}> = (p) => {
+const BuilderConfig: Component<{}> = (p) => {
   const { build, reset, save, userCanUpdate } = useConfig();
   return (
     <Show when={build.loaded}>
       <Grid class="config">
         <Grid class="config-items scroller">
-          <Version />
-          <Docker />
-          <BuildArgs />
-          <CliBuild />
+          <BuilderType />
+          <Show when={build.server_id}>
+            <BuilderServer />
+            <div style={{ height: "12rem" }} />
+          </Show>
+          <Show when={build.aws_config}>
+            <AwsBuilderConfig />
+          </Show>
         </Grid>
         <Show when={userCanUpdate() && build.updated}>
           <Show
@@ -47,4 +50,4 @@ const BuildConfig: Component<{}> = (p) => {
   );
 };
 
-export default BuildConfig;
+export default BuilderConfig;

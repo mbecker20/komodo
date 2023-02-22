@@ -298,8 +298,8 @@ impl State {
                 self.update_update(update).await?;
                 return Err(e);
             }
-            let (server, aws_client, log) = res.unwrap();
-            update.logs.push(log);
+            let (server, aws_client, logs) = res.unwrap();
+            update.logs.extend(logs);
             self.update_update(update.clone()).await?;
             (server, aws_client)
         } else {
@@ -405,11 +405,11 @@ impl State {
     async fn create_ec2_instance_for_build(
         &self,
         build: &Build,
-    ) -> anyhow::Result<(Ec2Instance, Option<aws::Client>, Log)> {
+    ) -> anyhow::Result<(Ec2Instance, Option<aws::Client>, Vec<Log>)> {
         if build.aws_config.is_none() {
             return Err(anyhow!("build has no aws_config attached"));
         }
-        let start_ts = monitor_timestamp();
+        let start_instance_ts = monitor_timestamp();
         let aws_config = build.aws_config.as_ref().unwrap();
         let region = aws_config
             .region
@@ -464,20 +464,29 @@ impl State {
             assign_public_ip,
         )
         .await?;
+        let instance_id = &instance.instance_id;
+        let start_log = Log {
+            stage: "start build instance".to_string(),
+            success: true,
+            stdout: format!("instance id: {instance_id}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_size_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}"),
+            start_ts: start_instance_ts,
+            end_ts: monitor_timestamp(),
+            ..Default::default()
+        };
+        let start_connect_ts = monitor_timestamp();
         let mut res = Ok(String::new());
         for _ in 0..BUILDER_POLL_MAX_TRIES {
             let status = self.periphery.health_check(&instance.server).await;
             if let Ok(_) = status {
-                let instance_id = &instance.instance_id;
-                let log = Log {
-                    stage: "start build instance".to_string(),
+                let connect_log = Log {
+                    stage: "build instance connected".to_string(),
                     success: true,
-                    stdout: format!("instance id: {instance_id}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_size_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}"),
-                    start_ts,
+                    stdout: "established contact with periphery on builder".to_string(),
+                    start_ts: start_connect_ts,
                     end_ts: monitor_timestamp(),
                     ..Default::default()
                 };
-                return Ok((instance, Some(aws_client), log));
+                return Ok((instance, Some(aws_client), vec![start_log, connect_log]));
             }
             res = status;
             tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS)).await;

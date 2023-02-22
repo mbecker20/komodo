@@ -2,12 +2,10 @@ import { useParams } from "@solidjs/router";
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
-import { PermissionLevel } from "../../../types";
-import { getId } from "../../../util/helpers";
 import SimpleTabs from "../../shared/tabs/SimpleTabs";
 import { Tab } from "../../shared/tabs/Tabs";
-import BuildConfig from "./build-config/BuildConfig";
-import GitConfig from "./git-config/GitConfig";
+import BuilderConfig from "./builder/BuilderConfig";
+import BuildConfig from "./config/BuildConfig";
 import Owners from "./Permissions";
 import { ConfigProvider } from "./Provider";
 
@@ -24,12 +22,12 @@ const BuildTabs: Component<{}> = (p) => {
           tabs={
             [
               {
-                title: "repo",
-                element: () => <GitConfig />,
+                title: "config",
+                element: () => <BuildConfig />,
               },
               {
-                title: "build",
-                element: () => <BuildConfig />,
+                title: "builder",
+                element: () => <BuilderConfig />
               },
               user().admin && {
                 title: "collaborators",

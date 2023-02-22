@@ -10,15 +10,28 @@ import Selector from "../../../shared/menu/Selector";
 import { useConfig } from "../Provider";
 
 const Docker: Component<{}> = (p) => {
+  const { aws_builder_config } = useAppState();
   const { build, setBuild, server, userCanUpdate } = useConfig();
-  const [dockerAccounts, setDockerAccounts] = createSignal<string[]>();
+  const [peripheryDockerAccounts, setPeripheryDockerAccounts] =
+    createSignal<string[]>();
   createEffect(() => {
     if (server()?.status === ServerStatus.Ok) {
       client
-        .get_server_docker_accounts(build.server_id)
-        .then(setDockerAccounts);
+        .get_server_docker_accounts(build.server_id!)
+        .then(setPeripheryDockerAccounts);
     }
   });
+  const dockerAccounts = () => {
+    if (build.server_id) {
+      return peripheryDockerAccounts() || [];
+    } else if (build.aws_config) {
+      const ami_id =
+        build.aws_config?.ami_id || aws_builder_config()?.default_ami_id;
+      return ami_id
+        ? aws_builder_config()?.available_ami_accounts![ami_id].docker || []
+        : [];
+    } else return [];
+  };
   return (
     <Grid class={combineClasses("config-item shadow")}>
       <h1>docker build</h1> {/* checkbox here? */}
@@ -62,7 +75,7 @@ const Docker: Component<{}> = (p) => {
         <Selector
           targetClass="blue"
           selected={build.docker_account || "none"}
-          items={["none", ...dockerAccounts()!]}
+          items={["none", ...dockerAccounts()]}
           onSelect={(account) => {
             setBuild(
               "docker_account",

@@ -1,5 +1,5 @@
 import { useNavigate } from "@solidjs/router";
-import { createContext, ParentComponent, useContext } from "solid-js";
+import { createContext, createResource, ParentComponent, Resource, useContext } from "solid-js";
 import { useWindowKeyDown } from "../util/hooks";
 import {
   useBuilds,
@@ -14,7 +14,8 @@ import {
 } from "./hooks";
 import connectToWs from "./ws";
 import { useUser } from "./UserProvider";
-import { PermissionLevel } from "../types";
+import { AwsBuilderConfig, PermissionLevel } from "../types";
+import { client } from "..";
 
 export type State = {
   usernames: ReturnType<typeof useUsernames>;
@@ -32,6 +33,7 @@ export type State = {
   procedures: ReturnType<typeof useProcedures>;
   getPermissionOnProcedure: (id: string) => PermissionLevel;
   updates: ReturnType<typeof useUpdates>;
+  aws_builder_config: Resource<AwsBuilderConfig>;
 };
 
 const context = createContext<
@@ -51,6 +53,7 @@ export const AppStateProvider: ParentComponent = (p) => {
   const procedures = useProcedures();
   const deployments = useDeployments();
   const usernames = useUsernames();
+  const [aws_builder_config] = createResource(() => client.get_aws_builder_defaults());
   const state: State = {
     usernames,
     servers,
@@ -129,6 +132,7 @@ export const AppStateProvider: ParentComponent = (p) => {
       }
     },
     updates: useUpdates(),
+    aws_builder_config,
   };
 
   // createEffect(() => {

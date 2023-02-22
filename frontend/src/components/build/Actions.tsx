@@ -24,7 +24,7 @@ const Actions: Component<{}> = (p) => {
     build().permissions![getId(user())] === PermissionLevel.Execute ||
     build().permissions![getId(user())] === PermissionLevel.Update;
   return (
-    <Show when={userCanExecute() && server()?.status === ServerStatus.Ok}>
+    <Show when={userCanExecute() && (server() ? server()?.status === ServerStatus.Ok : true)}>
       <Grid class={combineClasses("card shadow")} gridTemplateRows="auto 1fr">
         <h1>actions</h1>
         <Grid style={{ height: "fit-content" }}>
