@@ -7,8 +7,8 @@ use axum::{
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Document, FindOptions, Serialize};
 use types::{
-    traits::Permissioned, Build, BuildActionState, BuildVersionsReponse, Operation,
-    PermissionLevel, UpdateStatus,
+    traits::Permissioned, AwsBuilderConfig, Build, BuildActionState, BuildVersionsReponse,
+    Operation, PermissionLevel, UpdateStatus,
 };
 use typeshare::typeshare;
 
@@ -207,6 +207,16 @@ pub fn router() -> Router {
                     response!(Json(versions))
                 },
             ),
+        )
+        .route(
+            "/aws_builder_defaults",
+            get(|Extension(state): StateExtension| async move {
+                Json(AwsBuilderConfig {
+                    access_key_id: String::new(),
+                    secret_access_key: String::new(),
+                    ..state.config.aws.clone()
+                })
+            }),
         )
 }
 

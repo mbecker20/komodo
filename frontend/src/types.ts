@@ -22,7 +22,7 @@ export interface Build {
 	name: string;
 	permissions?: PermissionsMap;
 	server_id?: string;
-	aws_config?: AwsBuilderConfig;
+	aws_config?: AwsBuilderBuildConfig;
 	version: Version;
 	repo?: string;
 	branch?: string;
@@ -57,7 +57,7 @@ export interface BuildVersionsReponse {
 	ts: string;
 }
 
-export interface AwsBuilderConfig {
+export interface AwsBuilderBuildConfig {
 	region?: string;
 	instance_type?: string;
 	ami_id?: string;
@@ -66,6 +66,19 @@ export interface AwsBuilderConfig {
 	security_group_ids?: string[];
 	key_pair_name?: string;
 	assign_public_ip?: boolean;
+}
+
+export interface AwsBuilderConfig {
+	access_key_id: string;
+	secret_access_key: string;
+	default_ami_id: string;
+	default_subnet_id: string;
+	default_key_pair_name: string;
+	default_region?: string;
+	default_volume_gb?: number;
+	default_instance_type?: string;
+	default_security_group_ids?: string[];
+	default_assign_public_ip?: boolean;
 }
 
 export interface Deployment {

@@ -38,7 +38,7 @@ pub struct Build {
 
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub aws_config: Option<AwsBuilderConfig>,
+    pub aws_config: Option<AwsBuilderBuildConfig>,
 
     #[builder(default)]
     pub version: Version,
@@ -153,7 +153,7 @@ pub struct BuildVersionsReponse {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize, PartialEq)]))]
-pub struct AwsBuilderConfig {
+pub struct AwsBuilderBuildConfig {
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub region: Option<String>,

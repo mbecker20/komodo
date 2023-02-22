@@ -2,6 +2,7 @@ import axios from "axios";
 import fileDownload from "js-file-download";
 import { URL } from "..";
 import {
+  AwsBuilderConfig,
   BasicContainerInfo,
   Build,
   BuildActionState,
@@ -143,6 +144,10 @@ export class Client {
 
   get_deployment_container_stats(id: string): Promise<DockerContainerStats> {
     return this.get(`/api/deployment/${id}/stats`);
+  }
+
+  get_deployment_deployed_version(id: string): Promise<string> {
+    return this.get(`/api/deployment/${id}/deployed_version`);
   }
 
   create_deployment(body: CreateDeploymentBody): Promise<Deployment> {
@@ -349,6 +354,10 @@ export class Client {
 
   reclone_build(id: string): Promise<Update> {
     return this.post(`/api/build/${id}/reclone`);
+  }
+
+  get_aws_builder_defaults(): Promise<AwsBuilderConfig> {
+    return this.get("/api/build/aws_builder_defaults");
   }
 
   // procedure

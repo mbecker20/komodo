@@ -8,10 +8,11 @@ use axum::{
 };
 use futures_util::future::join_all;
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Document, Serialize};
+use mungos::{doc, options::FindOneOptions, Deserialize, Document, Serialize};
 use types::{
     traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainerState,
-    DockerContainerState, DockerContainerStats, Log, PermissionLevel, Server,
+    DockerContainerState, DockerContainerStats, Log, Operation, PermissionLevel, Server,
+    UpdateStatus,
 };
 use typeshare::typeshare;
 
@@ -297,12 +298,26 @@ pub fn router() -> Router {
             get(
                 |Extension(state): StateExtension,
                  Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                 Path(DeploymentId { id })| async move {
                     let stats = state
-                        .get_deployment_container_stats(&deployment_id.id, &user)
+                        .get_deployment_container_stats(&id, &user)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(stats))
+                },
+            ),
+        )
+        .route(
+            "/:id/deployed_version",
+            get(
+                |Extension(state): StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Path(DeploymentId { id })| async move {
+                    let version = state
+                        .get_deployment_deployed_version(&id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(version)
                 },
             ),
         )
@@ -442,5 +457,54 @@ impl State {
             .container_stats(&server, &deployment.name)
             .await?;
         Ok(stats)
+    }
+
+    async fn get_deployment_deployed_version(
+        &self,
+        id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<String> {
+        let deployment = self
+            .get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        if deployment.build_id.is_some() {
+            let latest_deploy_update = self
+                .db
+                .updates
+                .find_one(
+                    doc! {
+                        "target": {
+                            "type": "Deployment",
+                            "id": id
+                        },
+                        "operation": Operation::DeployContainer.to_string(),
+                        "status": UpdateStatus::Complete.to_string(),
+                        "success": true,
+                    },
+                    FindOneOptions::builder().sort(doc! { "_id": -1 }).build(),
+                )
+                .await
+                .context("failed at query to get latest deploy update from mongo")?;
+            if let Some(update) = latest_deploy_update {
+                if let Some(version) = update.version {
+                    Ok(version.to_string())
+                } else {
+                    Ok("latest".to_string())
+                }
+            } else {
+                Ok("latest".to_string())
+            }
+        } else {
+            let split = deployment
+                .docker_run_args
+                .image
+                .split(':')
+                .collect::<Vec<&str>>();
+            if let Some(version) = split.get(1) {
+                Ok(version.to_string())
+            } else {
+                Ok("latest".to_string())
+            }
+        }
     }
 }

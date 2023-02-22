@@ -1,6 +1,7 @@
 use std::{collections::HashMap, net::IpAddr, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::Timelength;
 
@@ -98,21 +99,31 @@ fn default_core_mongo_db_name() -> String {
     "monitor".to_string()
 }
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct AwsBuilderConfig {
+    #[serde(skip_serializing)]
     pub access_key_id: String,
+
+    #[serde(skip_serializing)]
     pub secret_access_key: String,
+
     pub default_ami_id: String,
     pub default_subnet_id: String,
     pub default_key_pair_name: String,
+
     #[serde(default = "default_aws_region")]
     pub default_region: String,
+
     #[serde(default = "default_volume_gb")]
     pub default_volume_gb: i32,
+
     #[serde(default = "default_instance_type")]
     pub default_instance_type: String,
+
     #[serde(default)]
     pub default_security_group_ids: Vec<String>,
+
     #[serde(default)]
     pub default_assign_public_ip: bool,
 }

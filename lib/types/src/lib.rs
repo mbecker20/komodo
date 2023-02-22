@@ -281,24 +281,3 @@ pub fn unix_from_monitor_ts(ts: &str) -> anyhow::Result<i64> {
         .context("failed to parse rfc3339 timestamp")?
         .timestamp_millis())
 }
-
-// pub mod i64_to_str {
-//     use serde::{Deserializer, Serializer};
-//     pub fn serialize<S>(t: &i64, s: S) -> Result<S::Ok, S::Error> where S: Serializer {
-//         s.serialize_str(&t.to_string())
-//     }
-//     pub fn deserialize<'de, D>(d: D) -> Result<i64, D::Error> where D: Deserializer<'de> {
-//         let str = d.deserialize_str(StrVisitor)
-//     }
-// }
-
-// struct StrVisitor;
-
-// impl<'de> Visitor<'de> for StrVisitor {
-//     type Value = &'de str;
-
-//     fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-//         formatter.write_str("a json string value")
-//     }
-
-// }

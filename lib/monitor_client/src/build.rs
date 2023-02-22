@@ -14,6 +14,7 @@ impl MonitorClient {
     pub async fn get_build(&self, build_id: &str) -> anyhow::Result<Build> {
         self.get(&format!("/api/build/{build_id}"), Option::<()>::None)
             .await
+            .context(format!("failed at getting build {build_id}"))
     }
 
     pub async fn get_build_action_state(&self, build_id: &str) -> anyhow::Result<BuildActionState> {
@@ -22,6 +23,9 @@ impl MonitorClient {
             Option::<()>::None,
         )
         .await
+        .context(format!(
+            "failed at getting action state for build {build_id}"
+        ))
     }
 
     pub async fn get_build_versions(
@@ -37,6 +41,7 @@ impl MonitorClient {
             json!({ "page": page, "major": major.into(), "minor": minor.into(), "patch": patch.into() }),
         )
         .await
+        .context("failed at getting build versions")
     }
 
     pub async fn create_build(&self, name: &str, server_id: &str) -> anyhow::Result<Build> {
@@ -53,18 +58,16 @@ impl MonitorClient {
     pub async fn create_full_build(&self, build: &Build) -> anyhow::Result<Build> {
         self.post::<&Build, _>("/api/build/create_full", build)
             .await
-            .context(format!("failed at creating full build"))
+            .context(format!(
+                "failed at creating full build with name {}",
+                build.name
+            ))
     }
 
-    pub async fn copy_build(
-        &self,
-        id: &str,
-        new_name: &str,
-        new_server_id: &str,
-    ) -> anyhow::Result<Build> {
+    pub async fn copy_build(&self, id: &str, new_name: &str) -> anyhow::Result<Build> {
         self.post(
             &format!("/api/build/{id}/copy"),
-            json!({ "name": new_name, "server_id": new_server_id }),
+            json!({ "name": new_name }),
         )
         .await
         .context(format!("failed at copying build {id}"))
@@ -87,6 +90,12 @@ impl MonitorClient {
             .await
             .context(format!("failed at building build {build_id}"))
     }
+
+    // pub async fn get_aws_builder_defaults(&self) -> anyhow::Result<AwsBuilderConfig> {
+    //     self.get("/api/build/aws_builder_defaults", Option::<()>::None)
+    //         .await
+    //         .context("failed at getting aws builder defaults")
+    // }
 
     // pub async fn reclone_build(&self, id: &str) -> anyhow::Result<Update> {
     //     self.post::<(), _>(&format!("/api/build/{id}/reclone"), None)

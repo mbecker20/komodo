@@ -1,6 +1,7 @@
 import { A } from "@solidjs/router";
 import { Component, createMemo, createSignal, For, Show } from "solid-js";
 import { client } from "../../..";
+import { useAppDimensions } from "../../../state/DimensionProvider";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { PermissionLevel } from "../../../types";
@@ -80,6 +81,7 @@ const Builds: Component<{}> = (p) => {
 };
 
 const Build: Component<{ id: string }> = (p) => {
+  const { isMobile } = useAppDimensions();
   const { user } = useUser();
   const { builds, servers } = useAppState();
   const build = () => builds.get(p.id)!;
@@ -119,8 +121,8 @@ const Build: Component<{ id: string }> = (p) => {
         padding: "0.5rem",
       }}
     >
+      <h1 style={{ "font-size": "1.25rem" }}>{build().name}</h1>
       <Flex alignItems="center">
-        <h1 style={{ "font-size": "1.25rem" }}>{build().name}</h1>
         <Show when={server()}>
           <A
             href={`/server/${build().server_id!}`}
@@ -132,10 +134,10 @@ const Build: Component<{ id: string }> = (p) => {
         <Show when={isAwsBuild()}>
           <div style={{ opacity: 0.7 }}>aws build</div>
         </Show>
-      </Flex>
-      <Flex alignItems="center">
         <div>{version()}</div>
-        <div style={{ opacity: 0.7 }}>{lastBuiltAt()}</div>
+        <Show when={!isMobile()}>
+          <div style={{ opacity: 0.7 }}>{lastBuiltAt()}</div>
+        </Show>
         <Show when={userCanExecute()}>
           <Show
             when={!actions.building}

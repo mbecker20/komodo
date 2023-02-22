@@ -35,6 +35,7 @@ impl MonitorClient {
             Option::<()>::None,
         )
         .await
+        .context("failed at get_deployment_action_state")
     }
 
     pub async fn get_deployment_container_log(
@@ -56,7 +57,21 @@ impl MonitorClient {
             Option::<()>::None,
         )
         .await
-        .context("failed at get_deployment_container_log")
+        .context("failed at get_deployment_container_stats")
+    }
+
+    pub async fn get_deployment_deployed_version(
+        &self,
+        deployment_id: &str,
+    ) -> anyhow::Result<String> {
+        self.get(
+            &format!("/api/deployment/{deployment_id}/deployed_version"),
+            Option::<()>::None,
+        )
+        .await
+        .context(format!(
+            "failed at get_deployment_deployed_version for id {deployment_id}"
+        ))
     }
 
     pub async fn create_deployment(

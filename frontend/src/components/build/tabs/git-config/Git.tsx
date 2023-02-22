@@ -10,12 +10,12 @@ import { ServerStatus } from "../../../../types";
 
 const Git: Component<{}> = (p) => {
   const { build, setBuild, server, userCanUpdate } = useConfig();
-  const [githubAccounts, setGithubAccounts] = createSignal<string[]>();
-  createEffect(() => {
-    if (server()?.status === ServerStatus.Ok) {
-      client.get_server_github_accounts(build.server_id).then(setGithubAccounts);
-    }
-  });
+  // const [githubAccounts, setGithubAccounts] = createSignal<string[]>();
+  // createEffect(() => {
+  //   if (server()?.status === ServerStatus.Ok) {
+  //     client.get_server_github_accounts(build.server_id).then(setGithubAccounts);
+  //   }
+  // });
   return (
     <Grid class={combineClasses("config-item shadow")}>
       <h1>github config</h1>
@@ -51,7 +51,7 @@ const Git: Component<{}> = (p) => {
         style={{ "flex-wrap": "wrap" }}
       >
         <h2>github account: </h2>
-        <Selector
+        {/* <Selector
           targetClass="blue"
           selected={build.github_account || "none"}
           items={["none", ...githubAccounts()!]}
@@ -62,6 +62,12 @@ const Git: Component<{}> = (p) => {
             );
           }}
           position="bottom right"
+          disabled={!userCanUpdate()}
+        /> */}
+        <Input
+          placeholder="github username"
+          value={build.github_account}
+          onEdit={value => setBuild("github_account", value)}
           disabled={!userCanUpdate()}
         />
       </Flex>

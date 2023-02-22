@@ -158,10 +158,20 @@ impl State {
         mut new_build: Build,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
+        let start_ts = monitor_timestamp();
         let current_build = self
             .get_build_check_permissions(&new_build.id, user, PermissionLevel::Update)
             .await?;
-        let start_ts = monitor_timestamp();
+
+        if let Some(new_server_id) = &new_build.server_id {
+            if current_build.server_id.is_none()
+                || new_server_id != current_build.server_id.as_ref().unwrap()
+            {
+                self.get_server_check_permissions(new_server_id, user, PermissionLevel::Update)
+                    .await
+                    .context("user does not have permission to attach build to this server")?;
+            }
+        }
 
         // none of these should be changed through this method
         new_build.name = current_build.name.clone();
@@ -473,7 +483,9 @@ impl State {
             tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS)).await;
         }
         let _ = terminate_ec2_instance(&aws_client, &instance.instance_id).await;
-        Err(anyhow!("unable to reach periphery agent on build server\n{res:#?}"))
+        Err(anyhow!(
+            "unable to reach periphery agent on build server\n{res:#?}"
+        ))
     }
 
     async fn terminate_ec2_instance(

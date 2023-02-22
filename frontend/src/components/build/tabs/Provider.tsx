@@ -45,7 +45,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     set(...args);
     set("updated", true);
   };
-  const server = () => servers.get(builds.get(params.id)!.server_id);
+  const server = () => build.server_id ? servers.get(build.server_id) : undefined;
 
   const load = () => {
     // console.log("load build");
@@ -54,11 +54,11 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
         ...build,
         repo: build.repo,
         branch: build.branch,
-        on_clone: build.on_clone,
         pre_build: build.pre_build,
         docker_build_args: build.docker_build_args,
         docker_account: build.docker_account,
         github_account: build.github_account,
+        aws_config: build.aws_config,
         loaded: true,
         updated: false,
         saving: false,

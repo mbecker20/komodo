@@ -9,7 +9,7 @@ const OnClone: Component = () => {
   const { build, setBuild, userCanUpdate } = useConfig();
   return (
     <Grid class={combineClasses("config-item shadow")}>
-      <h1>on clone</h1>
+      {/* <h1>on clone</h1>
       <Flex
         alignItems="center"
         justifyContent={userCanUpdate() ? "space-between" : undefined}
@@ -55,7 +55,7 @@ const OnClone: Component = () => {
           }}
           disabled={!userCanUpdate()}
         />
-      </Flex>
+      </Flex> */}
     </Grid>
   );
 };

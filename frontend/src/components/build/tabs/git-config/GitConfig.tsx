@@ -8,7 +8,7 @@ import Grid from "../../../shared/layout/Grid";
 import Loading from "../../../shared/loading/Loading";
 import { useConfig } from "../Provider";
 import Git from "./Git";
-import OnClone from "./OnClone";
+// import OnClone from "./OnClone";
 
 const GitConfig: Component<{}> = (p) => {
   const { build, reset, save, userCanUpdate } = useConfig();
@@ -18,7 +18,7 @@ const GitConfig: Component<{}> = (p) => {
       <Grid class="config">
         <Grid class="config-items scroller">
           <Git />
-          <OnClone />
+          {/* <OnClone /> */}
           <Show when={userCanUpdate()}>
             <Grid class={combineClasses("config-item shadow")}>
               <h1>webhook url</h1>
