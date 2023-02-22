@@ -134,7 +134,7 @@ const Build: Component<{ id: string }> = (p) => {
         <Show when={isAwsBuild()}>
           <div style={{ opacity: 0.7 }}>aws build</div>
         </Show>
-        <div>{version()}</div>
+        <h2>{version()}</h2>
         <Show when={!isMobile()}>
           <div style={{ opacity: 0.7 }}>{lastBuiltAt()}</div>
         </Show>
