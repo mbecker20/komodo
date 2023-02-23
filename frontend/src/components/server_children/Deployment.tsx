@@ -22,7 +22,8 @@ const Deployment: Component<{ id: string }> = (p) => {
   );
   const image = () => {
     if (deployment().deployment.build_id) {
-      const build = builds.get(deployment().deployment.build_id!)!;
+      const build = builds.get(deployment().deployment.build_id!);
+      if (build === undefined) return "unknown"
       if (deployment().state === DockerContainerState.NotDeployed) {
         const version = deployment().deployment.build_version
           ? readableVersion(deployment().deployment.build_version!).replaceAll(
