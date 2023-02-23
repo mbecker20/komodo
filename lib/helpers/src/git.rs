@@ -83,7 +83,7 @@ async fn clone(
     access_token: Option<GithubToken>,
 ) -> Log {
     let _ = std::fs::remove_dir_all(destination);
-    let access_token = match access_token {
+    let access_token_at = match &access_token {
         Some(token) => format!("{token}@"),
         None => String::new(),
     };
@@ -91,12 +91,12 @@ async fn clone(
         Some(branch) => format!(" -b {branch}"),
         None => String::new(),
     };
-    let repo_url = format!("https://{access_token}github.com/{repo}.git");
+    let repo_url = format!("https://{access_token_at}github.com/{repo}.git");
     let command = format!("git clone {repo_url} {destination}{branch}");
     let start_ts = monitor_timestamp();
     let output = async_run_command(&command).await;
-    let command = if access_token.len() > 0 {
-        command.replace(&access_token, "<TOKEN>")
+    let command = if access_token_at.len() > 0 {
+        command.replace(&access_token.unwrap(), "<TOKEN>")
     } else {
         command
     };
