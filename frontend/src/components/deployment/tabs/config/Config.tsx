@@ -49,9 +49,9 @@ const Config: Component<{}> = () => {
                     </Show>
                     <Network />
                     <Restart />
+                    <Env />
                     <Ports />
                     <Mounts />
-                    <Env />
                     <ExtraArgs />
                     <PostImage />
                     <Show when={isMobile()}>

@@ -23,21 +23,11 @@ const Volumes: Component<{}> = (p) => {
     <Grid class={combineClasses("config-item shadow")}>
       <Flex justifyContent="space-between" alignItems="center">
         <h1>volumes</h1>
-        <Flex alignItems="center">
-          <Show
-            when={
-              !deployment.docker_run_args.volumes ||
-              deployment.docker_run_args.volumes.length === 0
-            }
-          >
-            <div>none</div>
-          </Show>
-          <Show when={userCanUpdate()}>
-            <button class="green" onClick={onAdd}>
-              <Icon type="plus" />
-            </button>
-          </Show>
-        </Flex>
+        <Show when={userCanUpdate()}>
+          <button class="green" onClick={onAdd}>
+            <Icon type="plus" />
+          </button>
+        </Show>
       </Flex>
       <For each={deployment.docker_run_args.volumes}>
         {({ local, container }, index) => (

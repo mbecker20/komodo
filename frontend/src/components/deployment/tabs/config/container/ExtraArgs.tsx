@@ -22,21 +22,11 @@ const ExtraArgs: Component<{}> = (p) => {
     <Grid class="config-item shadow">
       <Flex justifyContent="space-between" alignItems="center">
         <h1>extra args</h1>
-        <Flex alignItems="center">
-          <Show
-            when={
-              !deployment.docker_run_args.extra_args ||
-              deployment.docker_run_args.extra_args.length === 0
-            }
-          >
-            <div>none</div>
-          </Show>
-          <Show when={userCanUpdate()}>
-            <button class="green" onClick={onAdd}>
-              <Icon type="plus" />
-            </button>
-          </Show>
-        </Flex>
+        <Show when={userCanUpdate()}>
+          <button class="green" onClick={onAdd}>
+            <Icon type="plus" />
+          </button>
+        </Show>
       </Flex>
       <For each={[...deployment.docker_run_args.extra_args!.keys()]}>
         {(_, index) => (

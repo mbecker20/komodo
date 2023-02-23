@@ -17,7 +17,7 @@ import { ControlledTabs } from "../../shared/tabs/Tabs";
 import { useAppDimensions } from "../../../state/DimensionProvider";
 import Grid from "../../shared/layout/Grid";
 import { A, useNavigate } from "@solidjs/router";
-import { ServerStatus } from "../../../types";
+import { Build, ServerStatus } from "../../../types";
 
 const mobileStyle: JSX.CSSProperties = {
   // position: "fixed",
@@ -191,8 +191,10 @@ const Builds: Component<{ close: () => void }> = (p) => {
                 gap="0.2rem"
                 style={{ opacity: 0.6, "font-size": "0.9rem" }}
               >
-                {servers.get(build.server_id)?.server.name}
-                <Icon type="caret-right" width="0.7rem" />
+                <Show when={build.server_id}>
+                  {build.server_id && servers.get(build.server_id)?.server.name}
+                  <Icon type="caret-right" width="0.7rem" />
+                </Show>
                 build
               </Flex>
             </Grid>

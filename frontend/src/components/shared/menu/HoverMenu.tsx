@@ -22,18 +22,18 @@ const HoverMenu: Component<{
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
   const [show, set] = createSignal(false);
-  const [buffer, setBuffer] = createSignal(false);
-  let timeout: number;
-  createEffect(() => {
-    clearTimeout(timeout);
-    if (show()) {
-      setBuffer(true);
-    } else {
-      timeout = setTimeout(() => {
-        setBuffer(false);
-      }, 350);
-    }
-  });
+  // const [buffer, setBuffer] = createSignal(false);
+  // let timeout: number;
+  // createEffect(() => {
+  //   clearTimeout(timeout);
+  //   if (show()) {
+  //     setBuffer(true);
+  //   } else {
+  //     timeout = setTimeout(() => {
+  //       setBuffer(false);
+  //     }, 350);
+  //   }
+  // });
   return (
     <Flex
       class={s.HoverMenuTarget}
@@ -44,13 +44,13 @@ const HoverMenu: Component<{
       alignItems="center"
     >
       {p.target}
-      <Show when={buffer()}>
+      <Show when={show()}>
         <div
           class={combineClasses(
             p.contentClass,
             getPositionClass(p.position),
             s.HoverMenu,
-            show() ? s.Enter : s.Exit,
+            // show() ? s.Enter : s.Exit,
           )}
           onMouseOut={() => {
             set(false);
@@ -59,7 +59,7 @@ const HoverMenu: Component<{
             set(false)
             e.stopPropagation();
           }}
-          style={{ ...p.contentStyle, padding: p.padding }}
+          style={{ ...p.contentStyle, padding: p.padding || "0.5rem" }}
         >
           {p.content}
         </div>

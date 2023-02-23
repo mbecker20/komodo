@@ -11,6 +11,7 @@ import Input from "./shared/Input";
 import Flex from "./shared/layout/Flex";
 import Grid from "./shared/layout/Grid";
 import CenterMenu from "./shared/menu/CenterMenu";
+import HoverMenu from "./shared/menu/HoverMenu";
 import Selector from "./shared/menu/Selector";
 
 const CopyMenu: Component<{
@@ -58,47 +59,53 @@ const CopyMenu: Component<{
     }
   };
   return (
-    <CenterMenu
-      show={show}
-      toggleShow={toggleShow}
-      title={`copy ${p.type} | ${name()}`}
-      target={<Icon type="duplicate" />}
-      targetClass="blue"
-      content={() => (
-        <Grid placeItems="center">
-          <Flex alignItems="center">
-            <Input
-              placeholder="copy name"
-              class="card dark"
-              style={{ padding: "0.5rem" }}
-              value={newName()}
-              onEdit={setNewName}
-            />
-            <Show when={p.type === "deployment"}>
-              <Selector
-                label="target: "
-                selected={selectedId()!}
-                items={servers.ids()!}
-                onSelect={setSelected}
-                itemMap={(id) => servers.get(id)!.server.name}
-                targetClass="blue"
-                targetStyle={{ display: "flex", gap: "0.5rem" }}
-                searchStyle={{ width: "100%" }}
-                position="bottom right"
-                useSearch
-              />
-            </Show>
-          </Flex>
-          <ConfirmButton
-            class="green"
-            style={{ width: "100%" }}
-            onConfirm={copy}
-          >
-            copy {p.type}
-          </ConfirmButton>
-        </Grid>
-      )}
-      position="center"
+    <HoverMenu
+      target={
+        <CenterMenu
+          show={show}
+          toggleShow={toggleShow}
+          title={`copy ${p.type} | ${name()}`}
+          target={<Icon type="duplicate" />}
+          targetClass="blue"
+          content={() => (
+            <Grid placeItems="center">
+              <Flex alignItems="center">
+                <Input
+                  placeholder="copy name"
+                  class="card dark"
+                  style={{ padding: "0.5rem" }}
+                  value={newName()}
+                  onEdit={setNewName}
+                />
+                <Show when={p.type === "deployment"}>
+                  <Selector
+                    label="target: "
+                    selected={selectedId()!}
+                    items={servers.ids()!}
+                    onSelect={setSelected}
+                    itemMap={(id) => servers.get(id)!.server.name}
+                    targetClass="blue"
+                    targetStyle={{ display: "flex", gap: "0.5rem" }}
+                    searchStyle={{ width: "100%" }}
+                    position="bottom right"
+                    useSearch
+                  />
+                </Show>
+              </Flex>
+              <ConfirmButton
+                class="green"
+                style={{ width: "100%" }}
+                onConfirm={copy}
+              >
+                copy {p.type}
+              </ConfirmButton>
+            </Grid>
+          )}
+          position="center"
+        />
+      }
+      content={`copy ${p.type}`}
+      position="bottom center"
     />
   );
 };

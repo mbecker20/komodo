@@ -1,7 +1,5 @@
 import {
   Component,
-  createEffect,
-  createSignal,
   JSX,
   JSXElement,
   Show,
@@ -22,20 +20,20 @@ const Menu: Component<{
   containerStyle?: JSX.CSSProperties;
   backgroundColor?: string;
 }> = (p) => {
-  const [buffer, set] = createSignal(p.show);
-  createEffect(() => {
-    if (p.show) {
-      set(true);
-    } else {
-      setTimeout(() => {
-        set(false);
-      }, 350);
-    }
-  });
+  // const [buffer, set] = createSignal(p.show);
+  // createEffect(() => {
+  //   if (p.show) {
+  //     set(true);
+  //   } else {
+  //     setTimeout(() => {
+  //       set(false);
+  //     }, 350);
+  //   }
+  // });
   return (
     <div class={s.MenuContainer} style={p.containerStyle}>
       {p.target}
-      <Show when={buffer()}>
+      <Show when={p.show}>
         <div
           class={s.MenuBackground}
           style={{ "background-color": p.backgroundColor }}
@@ -47,7 +45,7 @@ const Menu: Component<{
             s.Menu,
             "shadow",
             getPositionClass(p.position),
-            p.show ? s.Enter : s.Exit
+            // p.show ? s.Enter : s.Exit
           )}
           style={{ padding: p.padding as any, ...p.menuStyle }}
           onClick={(e) => e.stopPropagation()}

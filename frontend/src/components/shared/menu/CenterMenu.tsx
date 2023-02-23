@@ -1,8 +1,6 @@
 import {
   Accessor,
   Component,
-  createEffect,
-  createSignal,
   JSX,
   JSXElement,
   Show,
@@ -27,16 +25,16 @@ const CenterMenu: Component<{
   style?: JSX.CSSProperties;
   position?: "top" | "center";
 }> = (p) => {
-  const [buffer, set] = createSignal(p.show());
-  createEffect(() => {
-    if (p.show()) {
-      set(true);
-    } else {
-      setTimeout(() => {
-        set(false);
-      }, 350);
-    }
-  });
+  // const [buffer, set] = createSignal(p.show());
+  // createEffect(() => {
+  //   if (p.show()) {
+  //     set(true);
+  //   } else {
+  //     setTimeout(() => {
+  //       set(false);
+  //     }, 350);
+  //   }
+  // });
   return (
     <>
       <button
@@ -49,7 +47,7 @@ const CenterMenu: Component<{
       >
         {p.target}
       </button>
-      <Show when={buffer()}>
+      <Show when={p.show()}>
         <Child {...p} show={p.show} toggleShow={p.toggleShow} />
       </Show>
     </>
@@ -69,7 +67,7 @@ const Child: Component<{
   useKeyDown("Escape", p.toggleShow);
   return (
     <Grid
-      class={combineClasses(s.CenterMenuContainer, p.show() ? s.Enter : s.Exit)}
+      class={combineClasses(s.CenterMenuContainer)}
       onClick={(e) => {
         e.stopPropagation();
         p.toggleShow();

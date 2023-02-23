@@ -17,7 +17,7 @@ const Env: Component<{}> = (p) => {
     <Grid class={combineClasses("config-item shadow")}>
       <Flex alignItems="center" justifyContent="space-between">
         <h1>environment</h1>
-        <Flex alignItems="center" gap="0.2rem">
+        <Flex alignItems="center">
           <Show
             when={
               !deployment.docker_run_args.environment ||

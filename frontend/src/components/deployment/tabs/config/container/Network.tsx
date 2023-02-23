@@ -20,6 +20,7 @@ const Network: Component<{}> = (p) => {
         onSelect={(network) => setDeployment("docker_run_args", { network })}
         position="bottom right"
         disabled={!userCanUpdate()}
+        searchStyle={{ width: "100%", "min-width": "12rem" }}
         useSearch
       />
     </Flex>
