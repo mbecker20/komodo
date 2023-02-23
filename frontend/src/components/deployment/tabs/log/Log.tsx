@@ -70,7 +70,7 @@ const Log: Component<{
   const buffer = useBuffer(scrolled, 250);
   const [poll, togglePoll] = useLocalStorageToggle(
     "deployment-log-polling",
-    true
+    false
   );
   clearInterval(interval);
   interval = setInterval(() => {
