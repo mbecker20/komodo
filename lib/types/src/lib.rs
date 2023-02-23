@@ -131,6 +131,7 @@ pub enum Operation {
     // user
     ModifyUserEnabled,
     ModifyUserCreateServerPermissions,
+    ModifyUserCreateBuildPermissions,
     ModifyUserPermissions,
 
     // github webhook automation

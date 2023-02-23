@@ -39,6 +39,7 @@ import {
   CreateSecretBody,
   CreateServerBody,
   LoginOptions,
+  ModifyUserCreateBuildBody,
   ModifyUserCreateServerBody,
   ModifyUserEnabledBody,
   PermissionsUpdateBody,
@@ -461,6 +462,12 @@ export class Client {
     body: ModifyUserCreateServerBody
   ): Promise<Update> {
     return this.post("/api/permissions/modify_create_server", body);
+  }
+
+  modify_user_create_build_permissions(
+    body: ModifyUserCreateBuildBody
+  ): Promise<Update> {
+    return this.post("/api/permissions/modify_create_build", body);
   }
 
   async get<R = any>(url: string): Promise<R> {

@@ -432,6 +432,7 @@ export enum Operation {
 	DeleteGroup = "delete_group",
 	ModifyUserEnabled = "modify_user_enabled",
 	ModifyUserCreateServerPermissions = "modify_user_create_server_permissions",
+	ModifyUserCreateBuildPermissions = "modify_user_create_build_permissions",
 	ModifyUserPermissions = "modify_user_permissions",
 	AutoBuild = "auto_build",
 	AutoPull = "auto_pull",

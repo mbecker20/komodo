@@ -54,6 +54,11 @@ export interface ModifyUserCreateServerBody {
 	create_server_permissions: boolean;
 }
 
+export interface ModifyUserCreateBuildBody {
+	user_id: string;
+	create_build_permissions: boolean;
+}
+
 export interface CreateProcedureBody {
 	name: string;
 }

@@ -16,7 +16,6 @@ const Account: Component<{ close: () => void }> = (p) => {
       <Show when={isMobile()}>
         <Flex justifyContent="center">{user().username}</Flex>
       </Show>
-      <Flex justifyContent="center">admin: {user().admin.toString()}</Flex>
       <Show when={user().admin}>
         <A
           href="/users"
@@ -27,12 +26,12 @@ const Account: Component<{ close: () => void }> = (p) => {
           manage users
         </A>
       </Show>
-      <Show when={!user().admin}>
+      {/* <Show when={!user().admin}>
         <Flex justifyContent="center">
           create server permissions:{" "}
-          {user().create_server_permissions.toString()}
+          {user().create_server_permissions?.toString()}
         </Flex>
-      </Show>
+      </Show> */}
       <A
         href="/account"
         class="grey"
