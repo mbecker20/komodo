@@ -8,6 +8,7 @@ import {
   Show,
 } from "solid-js";
 import { client } from "../..";
+import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { Operation } from "../../types";
 import { combineClasses, getId } from "../../util/helpers";
@@ -18,6 +19,7 @@ import Loading from "../shared/loading/Loading";
 import s from "./users.module.scss";
 
 const Users: Component<{}> = (p) => {
+  const { isMobile } = useAppDimensions();
   const { ws } = useAppState();
   const [users, { refetch }] = createResource(() => client.list_users());
   onCleanup(
@@ -60,10 +62,13 @@ const Users: Component<{}> = (p) => {
           {(user) => (
             <Flex class={combineClasses(s.User, "shadow")}>
               <div class={s.Username}>{user.username}</div>
-              <Flex alignItems="center">
+              <Grid
+                placeItems="center end"
+                gridTemplateColumns={!isMobile() ? "1fr 1fr 1fr" : undefined}
+              >
                 <button
                   class={user.enabled ? "green" : "red"}
-                  style={{ width: "6rem" }}
+                  style={{ width: isMobile() ? "11rem" : "6rem" }}
                   onClick={() => {
                     client.modify_user_enabled({
                       user_id: getId(user),
@@ -108,7 +113,7 @@ const Users: Component<{}> = (p) => {
                   >
                     <Icon type="trash" />
                   </ConfirmButton> */}
-              </Flex>
+              </Grid>
             </Flex>
           )}
         </For>
