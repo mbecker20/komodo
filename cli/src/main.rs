@@ -36,19 +36,19 @@ fn cli() -> Command {
                                 .required(false)
                         )
                         .arg(
-                            arg!(--mongo-uri <URI> "sets the mongo uri to use. default is 'mongodb://monitor-mongo'")
+                            arg!(--"mongo-uri" <URI> "sets the mongo uri to use. default is 'mongodb://monitor-mongo'")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--mongo-db-name <NAME> "sets the db name to use. default is 'monitor'")
+                            arg!(--"mongo-db-name" <NAME> "sets the db name to use. default is 'monitor'")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--jwt-valid-for <TIMELENGTH> "sets the length of time jwt stays valid for. default is 1-wk (one week)")
+                            arg!(--"jwt-valid-for" <TIMELENGTH> "sets the length of time jwt stays valid for. default is 1-wk (one week)")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--slack-url <URL> "sets the slack url to use for slack notifications")
+                            arg!(--"slack-url" <URL> "sets the slack url to use for slack notifications")
                                 .required(false)
                         ),
                 )
@@ -96,7 +96,7 @@ fn cli() -> Command {
                             arg!(--name <NAME> "specify the name of the monitor core container. default is monitor-core")
                         )
                         .arg(
-                            arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/core.config.toml")
+                            arg!(--"config-path" <PATH> "specify the file path to use for config. default is ~/.monitor/core.config.toml")
                                 .required(false)
                         )
                         .arg(
@@ -111,7 +111,7 @@ fn cli() -> Command {
                             arg!(--restart <RESTART> "sets docker restart mode of monitor core container. default is unless-stopped")
                         )
                         .arg(
-                            arg!(--add-internal-host "adds the docker flag '--add-host=host.docker.internal:host-gateway'. default is true")
+                            arg!(--"add-internal-host" "adds the docker flag '--add-host=host.docker.internal:host-gateway'. default is true")
                         )
                 ),
         )
@@ -133,15 +133,15 @@ fn cli() -> Command {
                                 .required(false)
                         )
                         .arg(
-                            arg!(--stats-polling-rate <INTERVAL> "sets stats polling rate to control granularity of system stats returned. default is 5-sec. options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min")
+                            arg!(--"stats-polling-rate" <INTERVAL> "sets stats polling rate to control granularity of system stats returned. default is 5-sec. options: 1-sec, 5-sec, 10-sec, 30-sec, 1-min")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--allowed-ips <IPS> "used to only accept requests from known ips. give ips as comma seperated list, like '--allowed_ips 127.0.0.1,10.20.30.43'. default is empty, which will not block any ip.")
+                            arg!(--"allowed-ips" <IPS> "used to only accept requests from known ips. give ips as comma seperated list, like '--allowed_ips 127.0.0.1,10.20.30.43'. default is empty, which will not block any ip.")
                                 .required(false)
                         )
                         .arg(
-                            arg!(--repo-dir <PATH> "if running in container, this should be '/repos'. default is ~/.monitor/repos").required(false)
+                            arg!(--"repo-dir" <PATH> "if running in container, this should be '/repos'. default is ~/.monitor/repos").required(false)
                         )
                 )
                 .subcommand(
@@ -157,7 +157,7 @@ fn cli() -> Command {
                                     arg!(--install "specify this to install periphery from crates.io")
                                 )
                                 .arg(
-                                    arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                    arg!(--"config-path" <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
                                         .required(false)
                                 )
                         )
@@ -171,7 +171,7 @@ fn cli() -> Command {
                                     arg!(--install "specify this to install periphery from crates.io")
                                 )
                                 .arg(
-                                    arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                    arg!(--"config-path" <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
                                         .required(false)
                                 )
                                 .arg(
@@ -193,10 +193,10 @@ fn cli() -> Command {
                                     arg!(--name <NAME> "specify the name of the monitor periphery container. default is monitor-periphery")
                                 )
                                 .arg(
-                                    arg!(--config-path <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                                    arg!(--"config-path" <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
                                         .required(false)
                                 )
-                                .arg(arg!(--repo-dir <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos").required(false))
+                                .arg(arg!(--"repo-dir" <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos").required(false))
                                 .arg(
                                     arg!(--port <PORT> "sets port monitor periphery will run on. default is 8000")
                                         .required(false)
