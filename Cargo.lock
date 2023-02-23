@@ -743,7 +743,7 @@ dependencies = [
 
 [[package]]
 name = "core"
-version = "0.1.17"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -760,7 +760,7 @@ dependencies = [
  "hmac",
  "jwt",
  "monitor_helpers",
- "monitor_types 0.1.17",
+ "monitor_types 0.2.0",
  "mungos",
  "periphery_client",
  "serde",
@@ -995,10 +995,10 @@ checksum = "23d8666cb01533c39dde32bcbab8e227b4ed6679b2c925eba05feabea39508fb"
 
 [[package]]
 name = "db_client"
-version = "0.1.17"
+version = "0.2.0"
 dependencies = [
  "anyhow",
- "monitor_types 0.1.17",
+ "monitor_types 0.2.0",
  "mungos",
 ]
 
@@ -1854,12 +1854,12 @@ dependencies = [
 
 [[package]]
 name = "monitor_client"
-version = "0.1.17"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "envy",
  "futures-util",
- "monitor_types 0.1.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "monitor_types 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
  "serde",
  "serde_derive",
@@ -1871,7 +1871,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_helpers"
-version = "0.1.17"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -1881,7 +1881,7 @@ dependencies = [
  "bollard",
  "futures",
  "futures-util",
- "monitor_types 0.1.17",
+ "monitor_types 0.2.0",
  "periphery_client",
  "rand",
  "run_command",
@@ -1894,7 +1894,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_periphery"
-version = "0.1.17"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -1906,7 +1906,7 @@ dependencies = [
  "envy",
  "futures-util",
  "monitor_helpers",
- "monitor_types 0.1.17",
+ "monitor_types 0.2.0",
  "run_command",
  "serde",
  "serde_derive",
@@ -1920,7 +1920,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_types"
-version = "0.1.17"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "bollard",
@@ -1937,9 +1937,9 @@ dependencies = [
 
 [[package]]
 name = "monitor_types"
-version = "0.1.17"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cadc2581c18f79aa663ecdedceac23f8118a9c724c50458f593d3b1f40d182f"
+checksum = "62e9379ee43474ebac60b639f9094343b92cc9cbee55d8a447a65cd46305feee"
 dependencies = [
  "anyhow",
  "bollard",
@@ -2204,11 +2204,11 @@ checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
 name = "periphery_client"
-version = "0.1.17"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "futures-util",
- "monitor_types 0.1.17",
+ "monitor_types 0.2.0",
  "reqwest",
  "serde",
  "serde_json",
