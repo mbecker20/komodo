@@ -33,6 +33,7 @@ const Updates: Component<{}> = () => {
               ? setOperation(undefined)
               : setOperation(o.replaceAll(" ", "_") as Operation)
           }
+          targetClass="blue"
           targetStyle={{ padding: "0" }}
           position="bottom right"
           searchStyle={{ width: "15rem" }}
