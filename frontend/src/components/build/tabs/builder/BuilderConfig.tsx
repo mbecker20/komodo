@@ -23,6 +23,9 @@ const BuilderConfig: Component<{}> = (p) => {
           <Show when={build.aws_config}>
             <AwsBuilderConfig />
           </Show>
+          <Show when={!build.server_id && !build.aws_config}>
+            <div style={{ height: "12rem" }} />
+          </Show>
         </Grid>
         <Show when={userCanUpdate() && build.updated}>
           <Show
