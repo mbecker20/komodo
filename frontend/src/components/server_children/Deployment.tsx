@@ -1,12 +1,10 @@
 import { A } from "@solidjs/router";
-import { Component, createResource, Show } from "solid-js";
-import { client } from "../..";
+import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { DockerContainerState } from "../../types";
 import {
   combineClasses,
   deploymentStateClass,
-  getId,
   readableVersion,
 } from "../../util/helpers";
 import Circle from "../shared/Circle";
@@ -17,28 +15,24 @@ import s from "./serverchildren.module.scss";
 const Deployment: Component<{ id: string }> = (p) => {
   const { deployments, builds } = useAppState();
   const deployment = () => deployments.get(p.id)!;
-  const [deployed_version] = createResource(() =>
-    client.get_deployment_deployed_version(p.id)
-  );
   const image = () => {
-    return deployment().container?.image || "unknown";
-    // if (deployment().deployment.build_id) {
-    //   const build = builds.get(deployment().deployment.build_id!);
-    //   if (build === undefined) return "unknown"
-    //   if (deployment().state === DockerContainerState.NotDeployed) {
-    //     const version = deployment().deployment.build_version
-    //       ? readableVersion(deployment().deployment.build_version!).replaceAll(
-    //           "v",
-    //           ""
-    //         )
-    //       : "latest";
-    //     return `${build.name}:${version}`;
-    //   } else {
-    //     return deployed_version() && `${build.name}:${deployed_version()}`;
-    //   }
-    // } else {
-    //   return deployment().deployment.docker_run_args.image || "unknown";
-    // }
+    if (deployment().state === DockerContainerState.NotDeployed) {
+      if (deployment().deployment.build_id) {
+        const build = builds.get(deployment().deployment.build_id!);
+        if (build === undefined) return "unknown"
+        const version = deployment().deployment.build_version
+          ? readableVersion(deployment().deployment.build_version!).replaceAll(
+              "v",
+              ""
+            )
+          : "latest";
+        return `${build.name}:${version}`;
+      } else {
+        return deployment().deployment.docker_run_args.image || "unknown";
+      }
+    } else {
+      return deployment().container?.image || "unknown"
+    }
   };
   return (
     <Show when={deployment()}>
