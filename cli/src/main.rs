@@ -183,32 +183,32 @@ fn cli() -> Command {
                                         .required(false)
                                 )
                         )
-                        .subcommand(
-                            Command::new("container")
-                                .about("start up monitor periphery in docker container")
-                                .arg(
-                                    arg!(--yes "used in scripts to skip 'enter to continue' step")
-                                )
-                                .arg(
-                                    arg!(--name <NAME> "specify the name of the monitor periphery container. default is monitor-periphery")
-                                )
-                                .arg(
-                                    arg!(--"config-path" <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
-                                        .required(false)
-                                )
-                                .arg(arg!(--"repo-dir" <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos").required(false))
-                                .arg(
-                                    arg!(--port <PORT> "sets port monitor periphery will run on. default is 8000")
-                                        .required(false)
-                                )
-                                .arg(
-                                    arg!(--network <NETWORK> "sets docker network of monitor periphery container. default is bridge")
-                                        .required(false)
-                                )
-                                .arg(
-                                    arg!(--restart <RESTART> "sets docker restart mode of monitor periphery container. default is unless-stopped")
-                                )
-                        )
+                        // .subcommand(
+                        //     Command::new("container")
+                        //         .about("start up monitor periphery in docker container")
+                        //         .arg(
+                        //             arg!(--yes "used in scripts to skip 'enter to continue' step")
+                        //         )
+                        //         .arg(
+                        //             arg!(--name <NAME> "specify the name of the monitor periphery container. default is monitor-periphery")
+                        //         )
+                        //         .arg(
+                        //             arg!(--"config-path" <PATH> "specify the file path to use for config. default is ~/.monitor/periphery.config.toml")
+                        //                 .required(false)
+                        //         )
+                        //         .arg(arg!(--"repo-dir" <PATH> "specify the folder on host to clone repos into. default is ~/.monitor/repos").required(false))
+                        //         .arg(
+                        //             arg!(--port <PORT> "sets port monitor periphery will run on. default is 8000")
+                        //                 .required(false)
+                        //         )
+                        //         .arg(
+                        //             arg!(--network <NETWORK> "sets docker network of monitor periphery container. default is bridge")
+                        //                 .required(false)
+                        //         )
+                        //         .arg(
+                        //             arg!(--restart <RESTART> "sets docker restart mode of monitor periphery container. default is unless-stopped")
+                        //         )
+                        // )
                 ),
         )
 }
@@ -239,7 +239,7 @@ fn main() {
                     match periphery_start_command {
                         ("systemd", sub_matches) => start_periphery_systemd(sub_matches),
                         ("daemon", sub_matches) => start_periphery_daemon(sub_matches),
-                        ("container", sub_matches) => start_periphery_container(sub_matches),
+                        // ("container", sub_matches) => start_periphery_container(sub_matches),
                         _ => println!("\n❌ invalid call, should be 'monitor periphery start <daemon, container> <flags>' ❌\n")
                     }
                 }

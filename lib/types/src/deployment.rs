@@ -176,6 +176,7 @@ fn default_network() -> String {
 pub struct BasicContainerInfo {
     pub name: String,
     pub id: String,
+    pub image: String,
     pub state: DockerContainerState,
     pub status: Option<String>,
 }

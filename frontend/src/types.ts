@@ -140,6 +140,7 @@ export interface DockerRunArgs {
 export interface BasicContainerInfo {
 	name: string;
 	id: string;
+	image: string;
 	state: DockerContainerState;
 	status?: string;
 }

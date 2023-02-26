@@ -1,6 +1,6 @@
 [package]
 name = "monitor_helpers"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["MoghTech"]
 description = "helpers used as dependency for mogh tech monitor"
@@ -13,7 +13,7 @@ tokio = "1.25"
 types = { package = "monitor_types", path = "../types" }
 periphery_client = { path = "../periphery_client" }
 async_timing_util = "0.1.14"
-bollard = "0.13"
+bollard = "0.14.0"
 anyhow = "1.0"
 axum = { version = "0.6", features = ["ws", "json"] }
 serde = "1.0"

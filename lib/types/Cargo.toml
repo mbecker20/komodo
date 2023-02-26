@@ -1,6 +1,6 @@
 [package]
 name = "monitor_types"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["MoghTech"]
 description = "types for the mogh tech monitor"
@@ -15,7 +15,7 @@ bson = "2.4"
 strum = "0.24"
 strum_macros = "0.24"
 diff-struct = "0.5"
-bollard = "0.13"
+bollard = "0.14.0"
 derive_builder = "0.12"
 typeshare = "1.0.0"
 chrono = "0.4"

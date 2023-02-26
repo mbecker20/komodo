@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::Extension;
 use clap::Parser;
 use dotenv::dotenv;
-use helpers::parse_config_file;
+use helpers::{parse_comma_seperated_list, parse_config_files};
 use serde::Deserialize;
 use types::PeripheryConfig;
 
@@ -25,9 +25,12 @@ pub struct Args {
     #[arg(long, default_value = "~/.monitor/periphery.log.err")]
     pub stderr: String,
 
-    /// Sets the path of config file to use
+    /// Sets the path of a config file to use. can use multiple times
     #[arg(short, long)]
-    pub config_path: Option<String>,
+    pub config_path: Option<Vec<String>>,
+
+    #[arg(short, long)]
+    pub merge_nested_config: bool,
 
     #[arg(short, long)]
     pub home_dir: Option<String>,
@@ -39,7 +42,7 @@ pub struct Args {
 #[derive(Deserialize)]
 struct Env {
     #[serde(default = "default_config_path")]
-    config_path: String,
+    config_paths: String,
 }
 
 pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
@@ -51,15 +54,24 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
         std::process::exit(0)
     }
     let home_dir = get_home_dir(&args.home_dir);
-    let config_path = args
+    let config_paths = args
         .config_path
         .as_ref()
-        .unwrap_or(&env.config_path)
-        .replace("~", &home_dir);
-    let config =
-        parse_config_file::<PeripheryConfig>(&config_path).expect("failed to parse config file");
+        .unwrap_or(
+            &parse_comma_seperated_list(env.config_paths)
+                .expect("failed to parse config paths on environment into comma seperated list"),
+        )
+        .into_iter()
+        .map(|p| p.replace("~", &home_dir))
+        .collect();
+    let config = parse_config_files::<PeripheryConfig>(
+        &config_paths,
+        args.merge_nested_config,
+        args.merge_nested_config,
+    )
+    .expect("failed at parsing config");
     let _ = std::fs::create_dir(&config.repo_dir);
-    print_startup_log(&config_path, &args, &config);
+    print_startup_log(config_paths, &args, &config);
     (
         args,
         config.port,
@@ -68,8 +80,8 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
     )
 }
 
-fn print_startup_log(config_path: &str, args: &Args, config: &PeripheryConfig) {
-    println!("\nconfig path: {config_path}");
+fn print_startup_log(config_paths: Vec<String>, args: &Args, config: &PeripheryConfig) {
+    println!("\nconfig paths: {config_paths:?}");
     let mut config = config.clone();
     config.github_accounts = config
         .github_accounts
@@ -94,7 +106,7 @@ fn print_startup_log(config_path: &str, args: &Args, config: &PeripheryConfig) {
 }
 
 fn default_config_path() -> String {
-    "/config/periphery.config.toml".to_string()
+    "~/.monitor/periphery.config.toml".to_string()
 }
 
 fn get_home_dir(home_dir_arg: &Option<String>) -> String {

@@ -21,23 +21,24 @@ const Deployment: Component<{ id: string }> = (p) => {
     client.get_deployment_deployed_version(p.id)
   );
   const image = () => {
-    if (deployment().deployment.build_id) {
-      const build = builds.get(deployment().deployment.build_id!);
-      if (build === undefined) return "unknown"
-      if (deployment().state === DockerContainerState.NotDeployed) {
-        const version = deployment().deployment.build_version
-          ? readableVersion(deployment().deployment.build_version!).replaceAll(
-              "v",
-              ""
-            )
-          : "latest";
-        return `${build.name}:${version}`;
-      } else {
-        return deployed_version() && `${build.name}:${deployed_version()}`;
-      }
-    } else {
-      return deployment().deployment.docker_run_args.image || "unknown";
-    }
+    return deployment().container?.image || "unknown";
+    // if (deployment().deployment.build_id) {
+    //   const build = builds.get(deployment().deployment.build_id!);
+    //   if (build === undefined) return "unknown"
+    //   if (deployment().state === DockerContainerState.NotDeployed) {
+    //     const version = deployment().deployment.build_version
+    //       ? readableVersion(deployment().deployment.build_version!).replaceAll(
+    //           "v",
+    //           ""
+    //         )
+    //       : "latest";
+    //     return `${build.name}:${version}`;
+    //   } else {
+    //     return deployed_version() && `${build.name}:${deployed_version()}`;
+    //   }
+    // } else {
+    //   return deployment().deployment.docker_run_args.image || "unknown";
+    // }
   };
   return (
     <Show when={deployment()}>

@@ -1,6 +1,6 @@
 [package]
 name = "monitor_periphery"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["MoghTech"]
 description = "monitor periphery binary | run monitor periphery as system daemon"
@@ -24,12 +24,12 @@ dotenv = "0.15"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-bollard = "0.13"
+bollard = "0.14.0"
 anyhow = "1.0"
 envy = "0.4"
 sysinfo = "0.28"
 toml = "0.7"
-daemonize = "0.4"
-clap = { version = "4.0", features = ["derive"] }
+daemonize = "0.5.0"
+clap = { version = "4.1", features = ["derive"] }
 futures-util = "0.3"
 tokio-util = "0.7"

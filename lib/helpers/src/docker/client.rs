@@ -45,6 +45,7 @@ impl DockerClient {
                         .pop()
                         .ok_or(anyhow!("no names on container (empty vec)"))?
                         .replace("/", ""),
+                    image: s.image.unwrap_or(String::from("unknown")),
                     state: s.state.unwrap().parse().unwrap(),
                     status: s.status,
                 };
