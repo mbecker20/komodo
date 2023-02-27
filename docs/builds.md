@@ -11,7 +11,7 @@ Many repos are private, in this case a Github access token is required in the pe
 
 In order to docker build, monitor just needs to know the build directory and the path of the Dockerfile, you can configure these in the *build config* section.
 
-If the build directory is the root of the repository, you pass ```.```. If the build directory is some folder of the repo, just pass the name of the the folder, no need to the preceding "/", eg ```build/directory```
+If the build directory is the root of the repository, you pass the build path as ```.```. If the build directory is some folder of the repo, just pass the name of the the folder, no need to the preceding "/", eg ```build/directory```
 
 The dockerfile's path is given relative to the build directory. So if your build directory is ```build/directory``` and the dockerfile is in ```build/directory/Dockerfile.example```, you give the dockerfile path simply as ```Dockerfile.example```.
 
