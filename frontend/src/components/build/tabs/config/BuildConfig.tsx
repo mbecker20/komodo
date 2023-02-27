@@ -21,8 +21,8 @@ const BuildConfig: Component<{}> = (p) => {
           <Version />
           <Repo />
           <Docker />
-          <BuildArgs />
           <CliBuild />
+          <BuildArgs />
           <ListenerUrl />
         </Grid>
         <Show when={userCanUpdate() && build.updated}>
