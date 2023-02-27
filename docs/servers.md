@@ -39,7 +39,7 @@ there are two ways to merge config files. The default behavior is to completely 
 
 ```--merge-nested-config``` will merge config fields recursively and extend config array fields. 
 
-For example, with ```--merge-nested-config``` you can specify an allowed ip in the base config, and other in the overide config, they will both be present in the final config.
+For example, with ```--merge-nested-config``` you can specify an allowed ip in the base config, and another in the overide config, they will both be present in the final config.
 
 Similarly, you can specify a base docker / github account pair, and extend them with additional accounts in the overide config.
 
