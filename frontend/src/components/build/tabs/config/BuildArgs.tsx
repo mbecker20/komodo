@@ -18,7 +18,7 @@ const BuildArgs: Component<{}> = (p) => {
       justifyContent="space-between"
     >
       <h1>build args</h1>
-      <Flex alignItems="center" gap="0.2rem">
+      <Flex alignItems="center">
         <Show
           when={
             !build.docker_build_args?.build_args ||
