@@ -1,5 +1,5 @@
 import { Component, Show } from "solid-js";
-import { pushNotification, URL } from "../../../..";
+import { pushNotification, MONITOR_BASE_URL } from "../../../..";
 import { copyToClipboard, getId } from "../../../../util/helpers";
 import ConfirmButton from "../../../shared/ConfirmButton";
 import Icon from "../../../shared/Icon";
@@ -9,7 +9,7 @@ import { useConfig } from "../Provider";
 
 const ListenerUrl: Component<{}> = (p) => {
 	const { build, userCanUpdate } = useConfig();
-  const listenerUrl = () => `${URL}/api/listener/build/${getId(build)}`;
+  const listenerUrl = () => `${MONITOR_BASE_URL}/api/listener/build/${getId(build)}`;
 	return (
     <Show when={userCanUpdate()}>
       <Grid class="config-item shadow">

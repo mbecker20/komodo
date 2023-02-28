@@ -1,6 +1,6 @@
 import axios from "axios";
 import fileDownload from "js-file-download";
-import { URL } from "..";
+import { MONITOR_BASE_URL } from "..";
 import {
   AwsBuilderConfig,
   BasicContainerInfo,
@@ -56,7 +56,7 @@ export class Client {
     const params = new URLSearchParams(location.search);
     const exchange_token = params.get("token");
     if (exchange_token) {
-      history.replaceState({}, "", URL);
+      history.replaceState({}, "", MONITOR_BASE_URL);
       try {
         const jwt = await this.exchange_for_jwt(exchange_token);
         this.token = jwt;
@@ -72,11 +72,11 @@ export class Client {
   }
 
   login_with_github() {
-    location.replace(`${URL}/auth/github/login`);
+    location.replace(`${MONITOR_BASE_URL}/auth/github/login`);
   }
 
   login_with_google() {
-    location.replace(`${URL}/auth/google/login`);
+    location.replace(`${MONITOR_BASE_URL}/auth/google/login`);
   }
 
   async login(credentials: UserCredentials) {
@@ -111,16 +111,20 @@ export class Client {
     }
   }
 
-  async get_username(user_id: string): Promise<string> {
+ get_username(user_id: string): Promise<string> {
     return this.get(`/api/username/${user_id}`);
   }
 
-  async list_users(): Promise<User[]> {
+  list_users(): Promise<User[]> {
     return this.get("/api/users");
   }
 
   exchange_for_jwt(exchange_token: string): Promise<string> {
     return this.post("/auth/exchange", { token: exchange_token });
+  }
+
+  get_github_webhook_base_url(): Promise<string> {
+    return this.get("/api/github_webhook_base_url")
   }
 
   // deployment
@@ -470,8 +474,8 @@ export class Client {
     return this.post("/api/permissions/modify_create_build", body);
   }
 
-  async get<R = any>(url: string): Promise<R> {
-    return await axios({
+  get<R = any>(url: string): Promise<R> {
+    return axios({
       method: "get",
       url: this.baseURL + url,
       headers: {
@@ -480,8 +484,8 @@ export class Client {
     }).then(({ data }) => data);
   }
 
-  async post<B = any, R = any>(url: string, body?: B): Promise<R> {
-    return await axios({
+  post<B = any, R = any>(url: string, body?: B): Promise<R> {
+    return axios({
       method: "post",
       url: this.baseURL + url,
       headers: {
@@ -491,8 +495,8 @@ export class Client {
     }).then(({ data }) => data);
   }
 
-  async patch<B = any, R = any>(url: string, body: B): Promise<R> {
-    return await axios({
+  patch<B = any, R = any>(url: string, body: B): Promise<R> {
+    return axios({
       method: "patch",
       url: this.baseURL + url,
       headers: {
@@ -502,8 +506,8 @@ export class Client {
     }).then(({ data }) => data);
   }
 
-  async delete<R = any>(url: string): Promise<R> {
-    return await axios({
+  delete<R = any>(url: string): Promise<R> {
+    return axios({
       method: "delete",
       url: this.baseURL + url,
       headers: {

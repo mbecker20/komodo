@@ -15,19 +15,19 @@ import { AppStateProvider } from "./state/StateProvider";
 export const TOPBAR_HEIGHT = 50;
 export const MAX_PAGE_WIDTH = 1200;
 
-export const URL =
+export const MONITOR_BASE_URL =
   import.meta.env.MODE === "production"
     ? location.origin
     : (import.meta.env.VITE_MONITOR_HOST as string) || "http://localhost:9000";
 
-export const UPDATE_WS_URL = URL.replace("http", "ws") + "/ws/update";
+export const UPDATE_WS_URL = MONITOR_BASE_URL.replace("http", "ws") + "/ws/update";
 
 const token =
   (import.meta.env.VITE_ACCESS_TOKEN as string) ||
   localStorage.getItem("access_token") ||
   null;
 
-export const client = new Client(URL, token);
+export const client = new Client(MONITOR_BASE_URL, token);
 
 export const { Notifications, pushNotification } = makeNotifications();
 

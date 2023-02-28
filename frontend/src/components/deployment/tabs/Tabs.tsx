@@ -123,7 +123,7 @@ const DeploymentTabs: Component<{}> = () => {
                 },
               ],
               user().admin && {
-                title: "collaborators",
+                title: "permissions",
                 element: () => <Permissions />,
               },
             ]

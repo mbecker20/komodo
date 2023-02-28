@@ -119,19 +119,31 @@ impl MonitorClient {
             json!({ "username": username.into(), "password": password.into() }),
         )
         .await
+        .context("failed at call to create_user")
     }
 
     pub async fn get_user(&self) -> anyhow::Result<User> {
-        self.get("/api/user", Option::<()>::None).await
+        self.get("/api/user", Option::<()>::None)
+            .await
+            .context("failed at call to get_user")
     }
 
     pub async fn get_username(&self, user_id: &str) -> anyhow::Result<String> {
         self.get_string(&format!("/api/username/{user_id}"), Option::<()>::None)
             .await
+            .context("failed at call to get_username")
     }
 
     pub async fn list_users(&self) -> anyhow::Result<Vec<User>> {
-        self.get("/api/users", Option::<()>::None).await
+        self.get("/api/users", Option::<()>::None)
+            .await
+            .context("failed at call to list_users")
+    }
+
+    pub async fn get_github_webhook_base_url(&self) -> anyhow::Result<String> {
+        self.get("/api/github_webhook_base_url", Option::<()>::None)
+            .await
+            .context("failed at call to get_github_webhook_base_url")
     }
 
     async fn get<R: DeserializeOwned>(

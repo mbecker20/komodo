@@ -45,6 +45,17 @@ pub fn router() -> Router {
                             .map_err(handle_anyhow_error)
                     }),
                 )
+                .route(
+                    "/github_webhook_base_url",
+                    get(|state: StateExtension| async move {
+                        state
+                            .config
+                            .github_webhook_base_url
+                            .as_ref()
+                            .unwrap_or(&state.config.host)
+                            .to_string()
+                    }),
+                )
                 .route("/users", get(get_users))
                 .nest("/build", build::router())
                 .nest("/deployment", deployment::router())

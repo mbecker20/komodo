@@ -31,6 +31,9 @@ pub struct CoreConfig {
     // used to verify validity from github webhooks
     pub github_webhook_secret: String,
 
+    // used to form the frontend listener url, if None will use 'host'.
+    pub github_webhook_base_url: Option<String>,
+
     // sent in auth header with req to periphery
     pub passkey: String,
 

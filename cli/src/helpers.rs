@@ -82,6 +82,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         },
         jwt_secret: generate_secret(40),
         github_webhook_secret: generate_secret(30),
+        github_webhook_base_url: None,
         passkey: generate_secret(30),
     };
 

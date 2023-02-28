@@ -6,7 +6,7 @@ import SimpleTabs from "../../shared/tabs/SimpleTabs";
 import { Tab } from "../../shared/tabs/Tabs";
 import BuilderConfig from "./builder/BuilderConfig";
 import BuildConfig from "./config/BuildConfig";
-import Owners from "./Permissions";
+import Permissions from "./Permissions";
 import { ConfigProvider } from "./Provider";
 
 const BuildTabs: Component<{}> = (p) => {
@@ -30,8 +30,8 @@ const BuildTabs: Component<{}> = (p) => {
                 element: () => <BuilderConfig />
               },
               user().admin && {
-                title: "collaborators",
-                element: () => <Owners />,
+                title: "permissions",
+                element: () => <Permissions />,
               },
             ].filter((e) => e) as Tab[]
           }
