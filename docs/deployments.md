@@ -7,7 +7,7 @@ Monitor can deploy any docker images that it can access with the configured dock
 There are two options to configure the deployed image. 
 
 ### attaching a monitor build
-If the software you want to deploy if built by monitor, you can attach the build directly to the deployment.
+If the software you want to deploy is built by monitor, you can attach the build directly to the deployment.
 
 By default, monitor will deploy the latest available version of the build, or you can specify a specific version using the version dropdown.
 
