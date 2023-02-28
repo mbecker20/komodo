@@ -42,9 +42,7 @@ const Config: Component<{}> = () => {
                 element: () => (
                   <Grid class="config-items scroller" placeItems="start center">
                     <Image />
-                    <Show when={deployment.docker_run_args.image}>
-                      <DockerAccount />
-                    </Show>
+                    <DockerAccount />
                     <Network />
                     <Restart />
                     <Env />

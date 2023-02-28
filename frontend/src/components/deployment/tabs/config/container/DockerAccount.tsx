@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, Show } from "solid-js";
+import { Component, createEffect, createSignal } from "solid-js";
 import { client } from "../../../../..";
 import { ServerStatus } from "../../../../../types";
 import { combineClasses } from "../../../../../util/helpers";
@@ -16,6 +16,16 @@ const DockerAccount: Component<{}> = (p) => {
         .then(setDockerAccounts);
     }
   });
+  const when_none_selected = () => {
+    if (deployment.build_id) {
+      return "same as build"
+    } else {
+      return "none"
+    }
+  }
+  const accounts = () => {
+    return [when_none_selected(), ...(dockerAccounts() || [])];
+  }
   return (
     <Flex
       class={combineClasses("config-item shadow")}
@@ -26,11 +36,11 @@ const DockerAccount: Component<{}> = (p) => {
       <h1>docker account</h1>
       <Selector
         targetClass="blue"
-        items={["none", ...dockerAccounts()!]}
-        selected={deployment.docker_run_args.docker_account || "none"}
+        items={accounts()}
+        selected={deployment.docker_run_args.docker_account || when_none_selected()}
         onSelect={(account) =>
           setDeployment("docker_run_args", {
-            docker_account: account === "none" ? undefined : account,
+            docker_account: account === when_none_selected() ? undefined : account,
           })
         }
         position="bottom right"
