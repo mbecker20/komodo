@@ -476,19 +476,19 @@ impl State {
         let start_connect_ts = monitor_timestamp();
         let mut res = Ok(String::new());
         for _ in 0..BUILDER_POLL_MAX_TRIES {
-            let status = self.periphery.health_check(&instance.server).await;
-            if let Ok(_) = status {
+            let version = self.periphery.get_version(&instance.server).await;
+            if let Ok(version) = version {
                 let connect_log = Log {
                     stage: "build instance connected".to_string(),
                     success: true,
-                    stdout: "established contact with periphery on builder".to_string(),
+                    stdout: format!("established contact with periphery on builder\nperiphery version: v{version}"),
                     start_ts: start_connect_ts,
                     end_ts: monitor_timestamp(),
                     ..Default::default()
                 };
                 return Ok((instance, Some(aws_client), vec![start_log, connect_log]));
             }
-            res = status;
+            res = version;
             tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS)).await;
         }
         let _ = terminate_ec2_instance(&aws_client, &instance.instance_id).await;
