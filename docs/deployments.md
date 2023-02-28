@@ -39,7 +39,42 @@ ENV_VAR_1=some_value
 ENV_VAR_2=some_other_value
 ```
 
-##
+## configuring volumes
+
+A docker container's filesystem is segregated from that of the host. However, it is still possible for a container to access system files and directories, this is accomplished by using [bind mounts](https://docs.docker.com/storage/bind-mounts/).
+
+Say your container needs to read a config file located on the system at ```/home/ubuntu/config.toml```. You can specify the bind mount to be:
+
+```
+/home/ubuntu/config.toml : /config/config.toml
+```
+
+The first path is the one on the system, the second is the path in the container. Your application would then read the file at ```/config/config.toml``` in order to load its contents.
+
+These can be configured easily with the GUI in the 'volumes' card. You can configure as many bind mounts as you need.
+
+## extra args
+
+Not all features of docker are mapped directly by monitor, only the most common. You can still specify any custom flags to monitor by utilizing 'extra args'. For example, you can enable log rotation using these two extra args:
+
+```
+--log-opt max-size=10M
+```
+```
+--log-opt max-file=3
+```
+
+## post image
+
+Sometimes you need to specify some flags to be passed directly to the application. What is put here is inserted into the docker run command after the image. For example, to pass the ```--quiet``` flag to MongoDB, the docker run command would be:
+
+```
+docker run -d --name mongo-db mongo:6.0.3 --quiet
+```
+
+In order to achieve this with monitor, just pass ```--quiet``` to 'post image'.
+
+## container lifetime management
 
 [next: permissions](https://github.com/mbecker20/monitor/blob/main/docs/permissions.md)
 
