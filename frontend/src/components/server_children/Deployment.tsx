@@ -30,13 +30,16 @@ const Deployment: Component<{ id: string }> = (p) => {
       } else {
         return deployment().deployment.docker_run_args.image || "unknown";
       }
+    } else if (deployment().container?.image) {
+      let [account, image] = deployment().container!.image.split("/");
+      return image ? image : account;
     } else {
-      return deployment().container?.image || "unknown"
+      return "unknown";
     }
   };
   return (
     <Show when={deployment()}>
-      <A href={`/deployment/${p.id}`} class={combineClasses(s.DropdownItem)}>
+      <A href={`/deployment/${p.id}`} class="card hoverable" style={{ width: "100%", "justify-content": "space-between", padding: "0.5rem" }}>
         <Grid gap="0">
           <h2>{deployment().deployment.name}</h2>
           <div style={{ opacity: 0.7 }}>{image()}</div>

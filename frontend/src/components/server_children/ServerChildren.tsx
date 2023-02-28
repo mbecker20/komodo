@@ -33,7 +33,6 @@ const ServerChildren: Component<{ id: string }> = (p) => {
     <div class="card shadow">
       <Grid
         gap=".5rem"
-        class={combineClasses(s.Deployments)}
         gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
       >
         <For each={deploymentIDs()}>{(id) => <Deployment id={id} />}</For>

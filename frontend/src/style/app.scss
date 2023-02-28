@@ -37,6 +37,7 @@
 .card {
 	background-color: c.$grey;
 	padding: 1rem;
+	transition: all 250ms ease-in-out;
 }
 
 .card.light {
@@ -45,6 +46,10 @@
 
 .card.dark {
 	background-color: c.$darkgrey;
+}
+
+.card.hoverable:hover {
+	background-color: rgba(c.$lightblue, 0.5);
 }
 
 .content {

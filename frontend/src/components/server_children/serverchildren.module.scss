@@ -1,16 +1,16 @@
 @use "../../style/colors.scss" as c;
 
-.Deployments {
-	background-color: c.$lightgrey;
-	transform-origin: top;
-	padding: 0.5rem;
-}
+// .Deployments {
+// 	// background-color: c.$lightgrey;
+// 	// transform-origin: top;
+// 	// padding: 0.5rem;
+// }
 
 .DropdownItem {
-	padding: 0.5rem 1rem;
+	// padding: 0.5rem 1rem;
 	width: 100%;
 	justify-content: space-between;
-	transition: background-color 500ms ease;
+	// transition: background-color 500ms ease;
 }
 
 .DropdownItem:hover {

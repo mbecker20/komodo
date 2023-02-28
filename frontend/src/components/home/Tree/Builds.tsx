@@ -21,6 +21,7 @@ import Selector from "../../shared/menu/Selector";
 import { TreeSortType, TREE_SORTS, useTreeState } from "./Provider";
 
 const Builds: Component<{}> = (p) => {
+  const { isSemiMobile } = useAppDimensions();
   const { user } = useUser();
   const { builds } = useAppState();
   const { sort, setSort, build_sorter } = useTreeState();
@@ -69,13 +70,15 @@ const Builds: Component<{}> = (p) => {
           <NewBuild />
         </Show>
       </Grid>
-      <For each={buildIDs()}>
-        {(id) => (
-          <ActionStateProvider build_id={id}>
-            <Build id={id} />
-          </ActionStateProvider>
-        )}
-      </For>
+      <Grid gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}>
+        <For each={buildIDs()}>
+          {(id) => (
+            <ActionStateProvider build_id={id}>
+              <Build id={id} />
+            </ActionStateProvider>
+          )}
+        </For>
+      </Grid>
     </Grid>
   );
 };
@@ -83,10 +86,10 @@ const Builds: Component<{}> = (p) => {
 const Build: Component<{ id: string }> = (p) => {
   const { isMobile } = useAppDimensions();
   const { user } = useUser();
-  const { builds, servers } = useAppState();
+  const { builds } = useAppState();
   const build = () => builds.get(p.id)!;
-  const server = () =>
-    build().server_id ? servers.get(build().server_id!) : undefined;
+  // const server = () =>
+  //   build().server_id ? servers.get(build().server_id!) : undefined;
   const version = () => {
     return `v${build().version.major}.${build().version.minor}.${
       build().version.patch
@@ -108,11 +111,11 @@ const Build: Component<{ id: string }> = (p) => {
     user().admin ||
     build().permissions![getId(user())] === PermissionLevel.Execute ||
     build().permissions![getId(user())] === PermissionLevel.Update;
-  const isAwsBuild = () => build().aws_config ? true : false;
+  // const isAwsBuild = () => build().aws_config ? true : false;
   return (
     <A
       href={`/build/${p.id}`}
-      class="card light shadow"
+      class="card light shadow hoverable"
       style={{
         width: "100%",
         height: "fit-content",
@@ -123,7 +126,7 @@ const Build: Component<{ id: string }> = (p) => {
     >
       <h1 style={{ "font-size": "1.25rem" }}>{build().name}</h1>
       <Flex alignItems="center">
-        <Show when={server()}>
+        {/* <Show when={server()}>
           <A
             href={`/server/${build().server_id!}`}
             style={{ padding: 0, opacity: 0.7 }}
@@ -133,7 +136,7 @@ const Build: Component<{ id: string }> = (p) => {
         </Show>
         <Show when={isAwsBuild()}>
           <div style={{ opacity: 0.7 }}>aws build</div>
-        </Show>
+        </Show> */}
         <h2>{version()}</h2>
         <Show when={!isMobile()}>
           <div style={{ opacity: 0.7 }}>{lastBuiltAt()}</div>
