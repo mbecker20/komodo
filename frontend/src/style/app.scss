@@ -1,5 +1,14 @@
 @use "colors" as c;
 
+.app-bounder {
+	display: grid;
+	grid-template-columns: 1fr;
+	width: 100vw;
+	max-width: calc(1200px + 2rem);
+	box-sizing: border-box;
+	place-items: center;
+}
+
 .app {
 	display: grid;
 	grid-template-columns: 1fr;

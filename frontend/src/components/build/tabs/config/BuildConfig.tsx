@@ -10,7 +10,7 @@ import Loading from "../../../shared/loading/Loading";
 import BuildArgs from "./BuildArgs";
 import Version from "./Version";
 import Repo from "./Repo";
-import ListenerUrl from "./ListenerUrl";
+import WebhookUrl from "./WebhookUrl";
 
 const BuildConfig: Component<{}> = (p) => {
   const { build, reset, save, userCanUpdate } = useConfig();
@@ -23,7 +23,9 @@ const BuildConfig: Component<{}> = (p) => {
           <Docker />
           <CliBuild />
           <BuildArgs />
-          <ListenerUrl />
+          <Show when={userCanUpdate()}>
+            <WebhookUrl />
+          </Show>
         </Grid>
         <Show when={userCanUpdate() && build.updated}>
           <Show

@@ -25,7 +25,7 @@ const WebhookUrl: Component<{}> = (p) => {
         style={{ "flex-wrap": "wrap" }}
       >
         <Show when={listenerUrl()} fallback={<Loading type="three-dot" />}>
-          <div class="ellipsis" style={{ width: "250px" }}>
+          <div class="ellipsis" style={{ "max-width": "250px" }}>
             {listenerUrl()}
           </div>
         </Show>

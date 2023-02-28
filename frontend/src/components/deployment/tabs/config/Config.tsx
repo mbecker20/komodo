@@ -22,6 +22,7 @@ import { combineClasses, copyToClipboard, getId } from "../../../../util/helpers
 import { useAppDimensions } from "../../../../state/DimensionProvider";
 import SimpleTabs from "../../../shared/tabs/SimpleTabs";
 import ExtraArgs from "./container/ExtraArgs";
+import WebhookUrl from "./container/WebhookUrl";
 
 const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
@@ -63,31 +64,7 @@ const Config: Component<{}> = () => {
                   <Grid class="config-items scroller" placeItems="start center">
                     <Git />
                     <Show when={userCanUpdate()}>
-                      <Grid class={combineClasses("config-item shadow")}>
-                        <h1>webhook url</h1>
-                        <Flex
-                          justifyContent="space-between"
-                          alignItems="center"
-                          style={{ "flex-wrap": "wrap" }}
-                        >
-                          <div class="ellipsis" style={{ width: "250px" }}>
-                            {listenerUrl()}
-                          </div>
-                          <ConfirmButton
-                            class="blue"
-                            onFirstClick={() => {
-                              copyToClipboard(listenerUrl());
-                              pushNotification(
-                                "good",
-                                "copied url to clipboard"
-                              );
-                            }}
-                            confirm={<Icon type="check" />}
-                          >
-                            <Icon type="clipboard" />
-                          </ConfirmButton>
-                        </Flex>
-                      </Grid>
+                      <WebhookUrl />
                     </Show>
                     <RepoMount />
                     <OnClone />

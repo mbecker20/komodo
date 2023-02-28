@@ -14,7 +14,7 @@ const Account = lazy(() => import("./components/Account"));
 const App: Component = () => {
   const { user } = useUser();
   return (
-    <>
+    <div class="app">
       <Topbar />
       <Routes>
         <Route path="/" component={Home} />
@@ -27,7 +27,7 @@ const App: Component = () => {
           <Route path="/users" component={Users} />
         </Show>
       </Routes>
-    </>
+    </div>
   );
 };
 

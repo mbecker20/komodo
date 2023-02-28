@@ -34,6 +34,7 @@ export const { Notifications, pushNotification } = makeNotifications();
 client.initialize().then(() => {
   render(
     () => [
+      <Notifications />,
       <DimensionProvider>
         <UserProvider>
           <LoginGuard>
@@ -45,7 +46,6 @@ client.initialize().then(() => {
           </LoginGuard>
         </UserProvider>
       </DimensionProvider>,
-      <Notifications />,
     ],
     document.getElementById("root") as HTMLElement
   );
