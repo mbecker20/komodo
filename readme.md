@@ -9,3 +9,4 @@ a tool to build and deploy software across many servers
  3. [building](https://github.com/mbecker20/monitor/blob/main/docs/builds.md)
  4. [deploying](https://github.com/mbecker20/monitor/blob/main/docs/deployments.md)
  5. [permissioning](https://github.com/mbecker20/monitor/blob/main/docs/permissions.md)
+ 6. [core setup](https://github.com/mbecker20/monitor/blob/main/docs/setup.md)
