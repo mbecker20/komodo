@@ -24,6 +24,16 @@ One feature of docker is that it allows for the creation of [virtual networks be
 
 The default selection is ```host```, which bypasses the docker virtual network layer.
 
+If you do select select a network other than host, you can specify port bindings with the GUI. For example, if you are running mongo (which defaults to port 27017), you could use the mapping:
+
+```
+27018 : 27017
+```
+
+In this case, you would access mongo from outside of the container on port ```27018```.
+
+Note that this is not the only affect of using a network other than ```host```. For example, containers running on different networks can not communicate, and ones on the same network can not reach other containers on ```localhost``` when they are running on the same system. This behavior can be a bit confusing if you are not familiar with it, and it can be bypassed entirely by just using ```host``` network.
+
 ## configuring restart behavior
 
 Docker, like systemd, has a couple options for handling when a container exits. See [docker restart policies](https://docs.docker.com/config/containers/start-containers-automatically/). Monitor allows you to select the appropriate restart behavior from these options.
@@ -55,7 +65,7 @@ These can be configured easily with the GUI in the 'volumes' card. You can confi
 
 ## extra args
 
-Not all features of docker are mapped directly by monitor, only the most common. You can still specify any custom flags to monitor by utilizing 'extra args'. For example, you can enable log rotation using these two extra args:
+Not all features of docker are mapped directly by monitor, only the most common. You can still specify any custom flags for monitor to include in the ```docker run``` command by utilizing 'extra args'. For example, you can enable log rotation using these two extra args:
 
 ```
 --log-opt max-size=10M
