@@ -71,6 +71,7 @@ const EditBuildArgs: Component<{}> = (p) => {
       content={() => (
         <TextArea
           class="scroller"
+          placeholder="VARIABLE=value"
           value={buildArgs()}
           onEdit={setBuildArgs}
           style={{

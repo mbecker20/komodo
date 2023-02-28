@@ -71,6 +71,7 @@ const EditDotEnv: Component<{}> = (p) => {
       content={() => (
         <TextArea
           class="scroller"
+          placeholder="VARIABLE=value"
           value={dotenv()}
           onEdit={setDotEnv}
           style={{
