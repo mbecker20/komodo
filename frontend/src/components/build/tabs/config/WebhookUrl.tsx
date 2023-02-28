@@ -1,8 +1,7 @@
 import { Component, createResource, Show } from "solid-js";
-import { pushNotification, MONITOR_BASE_URL, client } from "../../../..";
-import { copyToClipboard, getId } from "../../../../util/helpers";
-import ConfirmButton from "../../../shared/ConfirmButton";
-import Icon from "../../../shared/Icon";
+import { client } from "../../../..";
+import { getId } from "../../../../util/helpers";
+import CopyClipboard from "../../../shared/CopyClipboard";
 import Flex from "../../../shared/layout/Flex";
 import Grid from "../../../shared/layout/Grid";
 import Loading from "../../../shared/loading/Loading";
@@ -31,16 +30,7 @@ const ListenerUrl: Component<{}> = (p) => {
             {listenerUrl()}
           </div>
         </Show>
-        <ConfirmButton
-          class="blue"
-          onFirstClick={() => {
-            copyToClipboard(listenerUrl() || "");
-            pushNotification("good", "copied url to clipboard");
-          }}
-          confirm={<Icon type="check" />}
-        >
-          <Icon type="clipboard" />
-        </ConfirmButton>
+        <CopyClipboard copyText={listenerUrl() || ""} copying="url" />
       </Flex>
     </Grid>
   );

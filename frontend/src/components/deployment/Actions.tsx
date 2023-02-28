@@ -196,7 +196,7 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
               onConfirm={() => {
                 client.deploy_container(params.id);
               }}
-              title={`redeploy container | ${name()}`}
+              title="redeploy container"
               match={name()!}
             >
               <Icon type={"reset"} />
@@ -232,7 +232,7 @@ const RemoveContainer = () => {
             onConfirm={() => {
               client.remove_container(params.id);
             }}
-            title={`destroy container | ${name()}`}
+            title="destroy container"
             match={name()!}
           >
             <Icon type="trash" />
@@ -298,7 +298,7 @@ const Stop = () => {
             onConfirm={() => {
               client.stop_container(params.id);
             }}
-            title={`stop container | ${name()}`}
+            title="stop container"
             match={name()!}
           >
             <Icon type="pause" />

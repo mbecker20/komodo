@@ -75,7 +75,7 @@ const Header: Component<{}> = (p) => {
                       client.delete_server(params.id);
                     }}
                     class="red"
-                    title={`delete server | ${server().server.name}`}
+                    title="delete server"
                     match={server().server.name}
                     info={
                       <div style={{ opacity: 0.7 }}>

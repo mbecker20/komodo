@@ -88,9 +88,7 @@ const Header: Component<{}> = (p) => {
                       client.delete_deployment(params.id);
                     }}
                     class="red"
-                    title={`delete deployment | ${
-                      deployment().deployment.name
-                    }`}
+                    title="delete deployment"
                     match={deployment().deployment.name}
                     info={
                       <Show when={deployment().container}>

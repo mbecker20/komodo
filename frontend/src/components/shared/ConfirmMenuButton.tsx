@@ -2,7 +2,9 @@ import { Component, createSignal, JSX } from "solid-js";
 import { pushNotification } from "../..";
 import { useToggle } from "../../util/hooks";
 import ConfirmButton from "./ConfirmButton";
+import CopyClipboard from "./CopyClipboard";
 import Input from "./Input";
+import Flex from "./layout/Flex";
 import Grid from "./layout/Grid";
 import CenterMenu from "./menu/CenterMenu";
 
@@ -22,6 +24,12 @@ const ConfirmMenuButton: Component<{
       show={show}
       toggleShow={toggleShow}
       title={p.title}
+      leftOfX={() => (
+        <Flex alignItems="center" justifyContent="space-between" style={{ width: "100%" }}>
+          <h1>{p.match}</h1>
+          <CopyClipboard copyText={p.match} copying="name" />
+        </Flex>
+      )}
       targetClass={p.class}
       target={p.children}
       content={() => (

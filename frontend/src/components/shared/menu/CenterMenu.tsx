@@ -68,7 +68,7 @@ const Child: Component<{
   return (
     <Grid
       class={combineClasses(s.CenterMenuContainer)}
-      onClick={(e) => {
+      onPointerDown={(e) => {
         e.stopPropagation();
         p.toggleShow();
       }}
@@ -78,6 +78,7 @@ const Child: Component<{
         class={combineClasses(s.Menu, "shadow")}
         style={{ padding: (p.padding as any) || "1rem", ...p.style }}
         onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
       >
         <Flex
           class={s.CenterMenuHeader}
@@ -85,7 +86,7 @@ const Child: Component<{
           justifyContent="space-between"
           alignItems="center"
         >
-          <div class={s.CenterMenuTitle}>{p.title}</div>
+          <h1>{p.title}</h1>
           <Flex alignItems="center">
             {p.leftOfX && p.leftOfX()}
             <button class="red" onClick={p.toggleShow}>

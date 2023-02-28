@@ -55,7 +55,7 @@ const Header: Component<{}> = (p) => {
                       client.delete_build(params.id);
                     }}
                     class="red"
-                    title={`delete build | ${build().name}`}
+                    title="delete build"
                     match={build().name}
                   >
                     <Icon type="trash" />
