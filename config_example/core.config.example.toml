@@ -1,5 +1,5 @@
 # this should be the url used to access monitor in browser, potentially behind DNS, eg https://monitor.mogh.tech or http://12.34.56.78:9000
-host = "http://localhost:9000"
+host = "https://monitor.mogh.tech"
 
 # the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
 port = 9000
@@ -19,8 +19,11 @@ jwt_valid_for = "1-wk"
 # webhook url given by slack app
 slack_url = "your_slack_app_webhook_url"
 
-# token that has to be given to github during webhook config as the Secret
+# token that has to be given to github during webhook config as the secret
 github_webhook_secret = "your_random_webhook_secret"
+
+# optional. an alternate base url that is used to recieve github webhook requests. if not provided, will use 'host' address as base
+github_webhook_base_url = "https://monitor-github-webhook.mogh.tech"
 
 # token used to authenticate core requests to periphery
 passkey = "your_random_passkey"
