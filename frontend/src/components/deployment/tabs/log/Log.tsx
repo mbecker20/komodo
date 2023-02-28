@@ -2,12 +2,11 @@ import { useParams } from "@solidjs/router";
 import {
   Component,
   createEffect,
-  createMemo,
   createSignal,
   onCleanup,
   Show,
 } from "solid-js";
-import { client, pushNotification } from "../../../..";
+import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { DockerContainerState, Log as LogType } from "../../../../types";
 import { combineClasses } from "../../../../util/helpers";
@@ -100,7 +99,7 @@ const Log: Component<{
             position="bottom right"
             itemStyle={{ width: "4rem" }}
           />
-          <Show when={userCanUpdate()}>
+          {/* <Show when={userCanUpdate()}>
             <button
               class="blue"
               onClick={() =>
@@ -114,7 +113,7 @@ const Log: Component<{
             >
               download full log
             </button>
-          </Show>
+          </Show> */}
           <button
             class="blue"
             onClick={async () => {
