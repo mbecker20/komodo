@@ -87,7 +87,7 @@ const Docker: Component<{}> = (p) => {
           disabled={!userCanUpdate()}
         />
       </Flex>
-      <Show when={(dockerOrgs() || []).length > 0}>
+      <Show when={build.docker_organization || (dockerOrgs() || []).length > 0}>
         <Flex
           justifyContent={userCanUpdate() ? "space-between" : undefined}
           alignItems="center"
