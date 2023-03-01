@@ -15,6 +15,7 @@ use crate::{
     cloud::aws::{
         self, create_ec2_client, create_instance_with_ami, terminate_ec2_instance, Ec2Instance,
     },
+    helpers::empty_or_only_spaces,
     state::State,
 };
 
@@ -186,6 +187,17 @@ impl State {
         new_build.last_built_at = current_build.last_built_at.clone();
         new_build.created_at = current_build.created_at.clone();
         new_build.updated_at = start_ts.clone();
+
+        // filter out any build args that contain empty strings
+        // these could only happen by accident
+        new_build.docker_build_args = new_build.docker_build_args.map(|mut args| {
+            args.build_args = args
+                .build_args
+                .into_iter()
+                .filter(|a| !empty_or_only_spaces(&a.variable) && !empty_or_only_spaces(&a.value))
+                .collect();
+            args
+        });
 
         self.db
             .builds

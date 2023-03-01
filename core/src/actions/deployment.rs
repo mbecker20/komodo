@@ -9,7 +9,7 @@ use types::{
 
 use crate::{
     auth::RequestUser,
-    helpers::{any_option_diff_is_some, get_image_name, option_diff_is_some},
+    helpers::{any_option_diff_is_some, empty_or_only_spaces, get_image_name, option_diff_is_some},
     state::State,
 };
 
@@ -196,6 +196,33 @@ impl State {
         new_deployment.server_id = current_deployment.server_id.clone();
         new_deployment.created_at = current_deployment.created_at.clone();
         new_deployment.updated_at = start_ts.clone();
+
+        // filter out any volumes, ports, env vars, extra args which are or contain empty strings
+        // these could only happen by accident
+        new_deployment.docker_run_args.volumes = new_deployment
+            .docker_run_args
+            .volumes
+            .into_iter()
+            .filter(|v| !empty_or_only_spaces(&v.local) && !empty_or_only_spaces(&v.container))
+            .collect();
+        new_deployment.docker_run_args.ports = new_deployment
+            .docker_run_args
+            .ports
+            .into_iter()
+            .filter(|p| !empty_or_only_spaces(&p.local) && !empty_or_only_spaces(&p.container))
+            .collect();
+        new_deployment.docker_run_args.environment = new_deployment
+            .docker_run_args
+            .environment
+            .into_iter()
+            .filter(|e| !empty_or_only_spaces(&e.variable) && !empty_or_only_spaces(&e.value))
+            .collect();
+        new_deployment.docker_run_args.extra_args = new_deployment
+            .docker_run_args
+            .extra_args
+            .into_iter()
+            .filter(|a| a.len() != 0)
+            .collect();
 
         self.db
             .deployments

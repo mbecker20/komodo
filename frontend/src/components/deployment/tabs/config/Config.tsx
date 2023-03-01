@@ -17,8 +17,6 @@ import { Tab } from "../../../shared/tabs/Tabs";
 import RepoMount from "./mount-repo/RepoMount";
 import { OnClone, OnPull } from "./mount-repo/OnGit";
 import Loading from "../../../shared/loading/Loading";
-import { pushNotification, MONITOR_BASE_URL } from "../../../..";
-import { combineClasses, copyToClipboard, getId } from "../../../../util/helpers";
 import { useAppDimensions } from "../../../../state/DimensionProvider";
 import SimpleTabs from "../../../shared/tabs/SimpleTabs";
 import ExtraArgs from "./container/ExtraArgs";
@@ -27,7 +25,6 @@ import WebhookUrl from "./container/WebhookUrl";
 const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
   const { isMobile } = useAppDimensions();
-  const listenerUrl = () => `${MONITOR_BASE_URL}/api/listener/deployment/${getId(deployment)}`;
   return (
     <Show when={deployment.loaded}>
       <Grid class="config">

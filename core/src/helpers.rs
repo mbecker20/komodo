@@ -54,3 +54,15 @@ pub fn get_image_name(build: &Build) -> String {
         },
     }
 }
+
+pub fn empty_or_only_spaces(word: &str) -> bool {
+    if word.len() == 0 {
+        return true;
+    }
+    for char in word.chars() {
+        if char != ' ' {
+            return false;
+        }
+    }
+    return true;
+}
