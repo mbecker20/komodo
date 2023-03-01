@@ -1,9 +1,7 @@
-use std::str::FromStr;
-
 use anyhow::{anyhow, Context};
 use axum::{extract::Query, routing::get, Extension, Json, Router};
 use helpers::handle_anyhow_error;
-use mungos::{doc, to_bson, ObjectId};
+use mungos::{doc, to_bson};
 use serde_json::Value;
 use types::{PermissionLevel, Update, UpdateTarget};
 
@@ -159,7 +157,7 @@ impl State {
                         .await
                         .context("failed at query to get users builds")?
                         .into_iter()
-                        .map(|e| ObjectId::from_str(&e.id).unwrap())
+                        .map(|e| e.id)
                         .collect::<Vec<_>>();
                     let deployment_ids = self
                         .db
@@ -168,7 +166,7 @@ impl State {
                         .await
                         .context("failed at query to get users deployments")?
                         .into_iter()
-                        .map(|e| ObjectId::from_str(&e.id).unwrap())
+                        .map(|e| e.id)
                         .collect::<Vec<_>>();
                     let server_ids = self
                         .db
@@ -177,7 +175,7 @@ impl State {
                         .await
                         .context("failed at query to get users servers")?
                         .into_iter()
-                        .map(|e| ObjectId::from_str(&e.id).unwrap())
+                        .map(|e| e.id)
                         .collect::<Vec<_>>();
                     let procedure_ids = self
                         .db
@@ -186,7 +184,7 @@ impl State {
                         .await
                         .context("failed at query to get users procedures")?
                         .into_iter()
-                        .map(|e| ObjectId::from_str(&e.id).unwrap())
+                        .map(|e| e.id)
                         .collect::<Vec<_>>();
                     let filter = doc! {
                         "$or": [
