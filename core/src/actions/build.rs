@@ -255,7 +255,7 @@ impl State {
 
     async fn build_inner(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
         let mut build = self
-            .get_build_check_permissions(build_id, user, PermissionLevel::Update)
+            .get_build_check_permissions(build_id, user, PermissionLevel::Execute)
             .await?;
         build.version.increment();
         let mut update = Update {

@@ -76,6 +76,7 @@ const DescriptionMenu: Component<{
   const [desc, setDesc] = createSignal(p.description);
   const [loading, setLoading] = createSignal(false);
   const update_description = () => {
+    if (!p.userCanUpdate) return;
     setLoading(true);
     client
       .update_description({ target: p.target, description: desc() || "" })
@@ -113,10 +114,12 @@ const DescriptionMenu: Component<{
         style={{ width: "700px", "max-width": "90vw", padding: "1rem" }}
         disabled={!p.userCanUpdate}
       />
-      <Show when={!loading()} fallback={<Loading />}>
-        <button class="green" onClick={update_description}>
-          update
-        </button>
+      <Show when={p.userCanUpdate}>
+        <Show when={!loading()} fallback={<Loading />}>
+          <button class="green" onClick={update_description}>
+            update
+          </button>
+        </Show>
       </Show>
     </Grid>
   );
