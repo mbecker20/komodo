@@ -1,13 +1,16 @@
 import { useParams } from "@solidjs/router";
 import { Component, createResource, For, Show } from "solid-js";
 import { client } from "../../..";
+import { useAppDimensions } from "../../../state/DimensionProvider";
 import { useAppState } from "../../../state/StateProvider";
 import { readableStorageAmount } from "../../../util/helpers";
 import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
 import Loading from "../../shared/loading/Loading";
+import HoverMenu from "../../shared/menu/HoverMenu";
 
 const Info: Component<{}> = (p) => {
+  const { isMobile } = useAppDimensions();
   const { serverInfo } = useAppState();
   const params = useParams();
   const [stats] = createResource(() => client.get_server_stats(params.id, { disks: true }));
@@ -74,8 +77,17 @@ const Info: Component<{}> = (p) => {
                     justifyContent="space-between"
                   >
                     <Flex alignItems="center">
-                      <div>mount point:</div>
-                      <h2>{disk.mount}</h2>
+                      <div style={{ "white-space": "nowrap" }}>
+                        mount point:
+                      </div>
+                      <h2
+                        class="ellipsis"
+                        style={{
+                          "max-width": isMobile() ? "50px" : "200px",
+                        }}
+                      >
+                        {disk.mount}
+                      </h2>
                     </Flex>
                     <Flex alignItems="center">
                       <div>{readableStorageAmount(disk.used_gb)} used</div>

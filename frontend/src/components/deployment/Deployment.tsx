@@ -1,9 +1,10 @@
 import { useParams } from "@solidjs/router";
-import { Component, onCleanup, Show } from "solid-js";
-import { client } from "../..";
+import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
-import { ServerStatus } from "../../types";
+import { useUser } from "../../state/UserProvider";
+import { PermissionLevel } from "../../types";
+import Description from "../Description";
 import NotFound from "../NotFound";
 import Grid from "../shared/layout/Grid";
 import Actions from "./Actions";
@@ -16,12 +17,16 @@ const POLLING_RATE = 10000;
 // let interval = -1;
 
 const Deployment: Component<{}> = (p) => {
+  const { user, user_id } = useUser();
   const { servers, deployments } = useAppState();
   const { isSemiMobile } = useAppDimensions();
   const params = useParams();
   const deployment = () => deployments.get(params.id);
   const server = () =>
     deployment() && servers.get(deployment()!.deployment.server_id);
+  const userCanUpdate = () =>
+    user().admin ||
+    deployment()?.deployment.permissions![user_id()] === PermissionLevel.Update;
   // clearInterval(interval);
   // interval = setInterval(async () => {
   //   if (server()?.status === ServerStatus.Ok) {
@@ -33,7 +38,7 @@ const Deployment: Component<{}> = (p) => {
   return (
     <Show
       when={deployment() && server()}
-      fallback={<NotFound type="deployment" />}
+      fallback={<NotFound type="deployment" loaded={deployments.loaded()} />}
     >
       <ActionStateProvider>
         <Grid
@@ -46,8 +51,14 @@ const Deployment: Component<{}> = (p) => {
             style={{ width: "100%" }}
             gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
           >
-            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto 1fr" }}>
+            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto auto 1fr" }}>
               <Header />
+              <Description
+                target={{ type: "Deployment", id: params.id }}
+                name={deployment()?.deployment.name!}
+                description={deployment()?.deployment.description}
+                userCanUpdate={userCanUpdate()}
+              />
               <Actions />
             </Grid>
             <Show when={!isSemiMobile()}>

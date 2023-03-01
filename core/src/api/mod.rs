@@ -170,7 +170,7 @@ impl State {
                 self.get_deployment_check_permissions(id, user, PermissionLevel::Update)
                     .await?;
                 self.db
-                    .builds
+                    .deployments
                     .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
                     .await?;
             }
@@ -178,7 +178,7 @@ impl State {
                 self.get_server_check_permissions(id, user, PermissionLevel::Update)
                     .await?;
                 self.db
-                    .builds
+                    .servers
                     .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
                     .await?;
             }
@@ -186,7 +186,7 @@ impl State {
                 self.get_group_check_permissions(id, user, PermissionLevel::Update)
                     .await?;
                 self.db
-                    .builds
+                    .groups
                     .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
                     .await?;
             }
@@ -194,7 +194,7 @@ impl State {
                 self.get_procedure_check_permissions(id, user, PermissionLevel::Update)
                     .await?;
                 self.db
-                    .builds
+                    .procedures
                     .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
                     .await?;
             }

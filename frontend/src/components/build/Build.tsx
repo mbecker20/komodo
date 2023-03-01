@@ -2,7 +2,9 @@ import { useNavigate, useParams } from "@solidjs/router";
 import { Component, createEffect, onCleanup, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
-import { Operation } from "../../types";
+import { useUser } from "../../state/UserProvider";
+import { Operation, PermissionLevel } from "../../types";
+import Description from "../Description";
 import NotFound from "../NotFound";
 import Grid from "../shared/layout/Grid";
 import Actions from "./Actions";
@@ -12,6 +14,7 @@ import BuildTabs from "./tabs/Tabs";
 import Updates from "./Updates";
 
 const Build: Component<{}> = (p) => {
+  const { user, user_id } = useUser();
   const { builds, ws } = useAppState();
   const navigate = useNavigate();
   const params = useParams();
@@ -31,8 +34,11 @@ const Build: Component<{}> = (p) => {
     });
   });
   onCleanup(() => unsub);
+  const userCanUpdate = () =>
+    user().admin ||
+    build()?.permissions![user_id()] === PermissionLevel.Update;
   return (
-    <Show when={build()} fallback={<NotFound type="build" />}>
+    <Show when={build()} fallback={<NotFound type="build" loaded={builds.loaded()} />}>
       <ActionStateProvider build_id={params.id}>
         <Grid
           style={{
@@ -44,8 +50,14 @@ const Build: Component<{}> = (p) => {
             style={{ width: "100%" }}
             gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
           >
-            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto 1fr" }}>
+            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto auto 1fr" }}>
               <Header />
+              <Description
+                target={{ type: "Build", id: params.id }}
+                name={build()?.name!}
+                description={build()?.description}
+                userCanUpdate={userCanUpdate()}
+              />
               <Actions />
             </Grid>
             <Show when={!isSemiMobile()}>

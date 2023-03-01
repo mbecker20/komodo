@@ -17,6 +17,7 @@ const TextArea: Component<
         onBlur={(e) => p.onConfirm && p.onConfirm(e.currentTarget.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && p.onEnter) {
+            e.preventDefault();
             p.onEnter(e.currentTarget.value);
           }
         }}

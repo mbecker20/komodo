@@ -38,7 +38,7 @@ h1 {
 h2 {
   font-size: 1.1rem;
   font-weight: 450;
-  user-select: none;
+  // user-select: none;
   margin: 0;
 }
 
@@ -294,7 +294,6 @@ svg {
 }
 
 .ellipsis {
-  width: 100%;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
