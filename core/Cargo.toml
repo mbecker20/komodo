@@ -1,6 +1,6 @@
 [package]
 name = "core"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -15,9 +15,9 @@ tokio = { version = "1.25", features = ["full"] }
 tokio-tungstenite = { version = "0.18", features=["native-tls"] }
 tokio-util = "0.7"
 axum = { version = "0.6", features = ["ws", "json"] }
-axum-extra = { version = "0.5", features = ["spa"] }
+axum-extra = { version = "0.5.0", features = ["spa"] }
 tower = { version = "0.4", features = ["full"] }
-tower-http = { version = "0.3", features = ["cors"] }
+tower-http = { version = "0.4.0", features = ["cors"] }
 slack = { package = "slack_client_rs", version = "0.0.8" }
 mungos = "0.3.3"
 serde = "1.0"
@@ -35,3 +35,5 @@ futures-util = "0.3"
 diff-struct = "0.5"
 typeshare = "1.0.0"
 hex = "0.4"
+aws-config = "0.54"
+aws-sdk-ec2 = "0.24"

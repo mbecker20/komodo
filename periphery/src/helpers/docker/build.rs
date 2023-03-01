@@ -1,9 +1,10 @@
 use std::path::PathBuf;
 
 use anyhow::{anyhow, Context};
+use helpers::to_monitor_name;
 use types::{Build, DockerBuildArgs, EnvironmentVar, Log, Version};
 
-use crate::{run_monitor_command, to_monitor_name};
+use crate::helpers::run_monitor_command;
 
 use super::docker_login;
 
@@ -18,6 +19,7 @@ pub async fn build(
         version,
         docker_build_args,
         docker_account,
+        docker_organization,
         ..
     }: &Build,
     mut repo_dir: PathBuf,
@@ -36,32 +38,13 @@ pub async fn build(
         .await
         .context("failed to login to docker")?;
     repo_dir.push(&name);
-    // let pull_logs = git::pull(repo_dir.clone(), branch, &None).await;
-    // if !all_logs_success(&pull_logs) {
-    //     logs.extend(pull_logs);
-    //     return Ok(logs);
-    // }
-    // logs.extend(pull_logs);
-    // if let Some(command) = pre_build {
-    //     let dir = repo_dir.join(&command.path);
-    //     let pre_build_log = run_monitor_command(
-    //         "pre build",
-    //         format!("cd {} && {}", dir.display(), command.command),
-    //     )
-    //     .await;
-    //     if !pre_build_log.success {
-    //         logs.push(pre_build_log);
-    //         return Ok(logs);
-    //     }
-    //     logs.push(pre_build_log);
-    // }
     let build_dir = repo_dir.join(build_path);
     let dockerfile_path = match dockerfile_path {
         Some(dockerfile_path) => dockerfile_path.to_owned(),
         None => "Dockerfile".to_owned(),
     };
     let build_args = parse_build_args(build_args);
-    let image_name = get_image_name(docker_account, &name);
+    let image_name = get_image_name(&name, docker_account, docker_organization);
     let image_tags = image_tags(&image_name, &version);
     let docker_push = if using_account {
         format!(" && docker image push --all-tags {image_name}")
@@ -77,10 +60,17 @@ pub async fn build(
     Ok(logs)
 }
 
-fn get_image_name(docker_account: &Option<String>, name: &str) -> String {
-    match docker_account {
-        Some(docker_account) => format!("{docker_account}/{name}"),
-        None => name.to_string(),
+fn get_image_name(
+    name: &str,
+    docker_account: &Option<String>,
+    docker_organization: &Option<String>,
+) -> String {
+    match docker_organization {
+        Some(docker_org) => format!("{docker_org}/{name}"),
+        None => match docker_account {
+            Some(docker_account) => format!("{docker_account}/{name}"),
+            None => name.to_string(),
+        },
     }
 }
 

@@ -4,14 +4,17 @@ use axum::{
     routing::{get, post},
     Extension, Json, Router,
 };
-use helpers::{
-    docker::{self, DockerExtension},
-    handle_anyhow_error, to_monitor_name,
-};
+use helpers::{handle_anyhow_error, to_monitor_name};
 use serde::Deserialize;
 use types::{Deployment, Log};
 
-use crate::{helpers::get_docker_token, response, PeripheryConfigExtension};
+use crate::{
+    helpers::{
+        docker::{self, DockerExtension},
+        get_docker_token,
+    },
+    response, PeripheryConfigExtension,
+};
 
 #[derive(Deserialize)]
 struct Container {

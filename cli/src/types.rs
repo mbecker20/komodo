@@ -43,6 +43,10 @@ pub struct CoreConfig {
     // enable login with local auth
     pub local_auth: bool,
 
+    // allowed docker orgs used with monitor. first in this list will be default for build
+    #[serde(default)]
+    pub docker_organizations: Vec<String>,
+
     pub mongo: MongoConfig,
 
     #[serde(default)]

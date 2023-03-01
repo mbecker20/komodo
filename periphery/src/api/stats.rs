@@ -4,45 +4,33 @@ use std::{
 };
 
 use async_timing_util::wait_until_timelength;
-use axum::{
-    extract::{ws::Message, Query, WebSocketUpgrade},
-    response::IntoResponse,
-    routing::get,
-    Extension, Json, Router,
-};
-use futures_util::{SinkExt, StreamExt};
+use axum::{extract::Query, routing::get, Extension, Json, Router};
 use sysinfo::{ComponentExt, CpuExt, DiskExt, NetworkExt, PidExt, ProcessExt, SystemExt};
-use tokio::{
-    select,
-    sync::broadcast::{self, Receiver},
-};
-use tokio_util::sync::CancellationToken;
 use types::{
     DiskUsage, SingleCpuUsage, SingleDiskUsage, SystemComponent, SystemInformation, SystemNetwork,
     SystemProcess, SystemStats, SystemStatsQuery, Timelength,
 };
 
 pub fn router() -> Router {
-    Router::new()
-        .route(
-            "/",
-            get(
-                |sys: StatsExtension, Query(query): Query<SystemStatsQuery>| async move {
-                    let stats = sys.read().unwrap().get_cached_stats(query);
-                    Json(stats)
-                },
-            ),
-        )
-        .route(
-            "/ws",
-            get(
-                |sys: StatsExtension,
-                 Query(query): Query<SystemStatsQuery>,
-                 ws: WebSocketUpgrade| async move {
-                    sys.read().unwrap().ws_subscribe(ws, Arc::new(query))
-                },
-            ),
-        )
+    Router::new().route(
+        "/",
+        get(
+            |sys: StatsExtension, Query(query): Query<SystemStatsQuery>| async move {
+                let stats = sys.read().unwrap().get_cached_stats(query);
+                Json(stats)
+            },
+        ),
+    )
+    // .route(
+    //     "/ws",
+    //     get(
+    //         |sys: StatsExtension,
+    //          Query(query): Query<SystemStatsQuery>,
+    //          ws: WebSocketUpgrade| async move {
+    //             sys.read().unwrap().ws_subscribe(ws, Arc::new(query))
+    //         },
+    //     ),
+    // )
 }
 
 pub type StatsExtension = Extension<Arc<RwLock<StatsClient>>>;
@@ -54,7 +42,7 @@ pub struct StatsClient {
     polling_rate: Timelength,
     refresh_ts: u128,
     refresh_list_ts: u128,
-    receiver: Receiver<SystemStats>,
+    // receiver: Receiver<SystemStats>,
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
@@ -63,7 +51,7 @@ const BYTES_PER_KB: f64 = 1024.0;
 
 impl StatsClient {
     pub fn extension(polling_rate: Timelength) -> StatsExtension {
-        let (sender, receiver) = broadcast::channel::<SystemStats>(10);
+        // let (sender, receiver) = broadcast::channel::<SystemStats>(10);
         let sys = sysinfo::System::new_all();
         let client = StatsClient {
             info: get_system_information(&sys),
@@ -72,7 +60,7 @@ impl StatsClient {
             polling_rate,
             refresh_ts: 0,
             refresh_list_ts: 0,
-            receiver,
+            // receiver,
         };
         let client = Arc::new(RwLock::new(client));
         let clone = client.clone();
@@ -86,9 +74,9 @@ impl StatsClient {
                     client.refresh_ts = ts;
                     client.cache = client.get_stats();
                 }
-                sender
-                    .send(clone.read().unwrap().cache.clone())
-                    .expect("failed to broadcast new stats to reciever");
+                // sender
+                //     .send(clone.read().unwrap().cache.clone())
+                //     .expect("failed to broadcast new stats to reciever");
             }
         });
         let clone = client.clone();
@@ -103,66 +91,66 @@ impl StatsClient {
         Extension(client)
     }
 
-    fn ws_subscribe(
-        &self,
-        ws: WebSocketUpgrade,
-        query: Arc<SystemStatsQuery>,
-    ) -> impl IntoResponse {
-        // println!("client subscribe");
-        let mut reciever = self.get_receiver();
-        ws.on_upgrade(|socket| async move {
-            let (mut ws_sender, mut ws_reciever) = socket.split();
-            let cancel = CancellationToken::new();
-            let cancel_clone = cancel.clone();
-            tokio::spawn(async move {
-                loop {
-                    let mut stats = select! {
-                        _ = cancel_clone.cancelled() => break,
-                        stats = reciever.recv() => { stats.expect("failed to recv stats msg") }
-                    };
-                    if query.cpus {
-                        stats.cpus = vec![]
-                    }
-                    if !query.disks {
-                        stats.disk.disks = vec![]
-                    }
-                    if !query.components {
-                        stats.components = vec![]
-                    }
-                    if !query.networks {
-                        stats.networks = vec![]
-                    }
-                    if !query.processes {
-                        stats.processes = vec![]
-                    }
-                    let _ = ws_sender
-                        .send(Message::Text(serde_json::to_string(&stats).unwrap()))
-                        .await;
-                }
-            });
-            while let Some(msg) = ws_reciever.next().await {
-                match msg {
-                    Ok(msg) => match msg {
-                        Message::Close(_) => {
-                            // println!("client CLOSE");
-                            cancel.cancel();
-                            return;
-                        }
-                        _ => {}
-                    },
-                    Err(_) => {
-                        // println!("client CLOSE");
-                        cancel.cancel();
-                        return;
-                    }
-                }
-            }
-        })
-    }
+    // fn ws_subscribe(
+    //     &self,
+    //     ws: WebSocketUpgrade,
+    //     query: Arc<SystemStatsQuery>,
+    // ) -> impl IntoResponse {
+    //     // println!("client subscribe");
+    //     let mut reciever = self.get_receiver();
+    //     ws.on_upgrade(|socket| async move {
+    //         let (mut ws_sender, mut ws_reciever) = socket.split();
+    //         let cancel = CancellationToken::new();
+    //         let cancel_clone = cancel.clone();
+    //         tokio::spawn(async move {
+    //             loop {
+    //                 let mut stats = select! {
+    //                     _ = cancel_clone.cancelled() => break,
+    //                     stats = reciever.recv() => { stats.expect("failed to recv stats msg") }
+    //                 };
+    //                 if query.cpus {
+    //                     stats.cpus = vec![]
+    //                 }
+    //                 if !query.disks {
+    //                     stats.disk.disks = vec![]
+    //                 }
+    //                 if !query.components {
+    //                     stats.components = vec![]
+    //                 }
+    //                 if !query.networks {
+    //                     stats.networks = vec![]
+    //                 }
+    //                 if !query.processes {
+    //                     stats.processes = vec![]
+    //                 }
+    //                 let _ = ws_sender
+    //                     .send(Message::Text(serde_json::to_string(&stats).unwrap()))
+    //                     .await;
+    //             }
+    //         });
+    //         while let Some(msg) = ws_reciever.next().await {
+    //             match msg {
+    //                 Ok(msg) => match msg {
+    //                     Message::Close(_) => {
+    //                         // println!("client CLOSE");
+    //                         cancel.cancel();
+    //                         return;
+    //                     }
+    //                     _ => {}
+    //                 },
+    //                 Err(_) => {
+    //                     // println!("client CLOSE");
+    //                     cancel.cancel();
+    //                     return;
+    //                 }
+    //             }
+    //         }
+    //     })
+    // }
 
-    fn get_receiver(&self) -> Receiver<SystemStats> {
-        self.receiver.resubscribe()
-    }
+    // fn get_receiver(&self) -> Receiver<SystemStats> {
+    //     self.receiver.resubscribe()
+    // }
 
     fn refresh(&mut self) {
         self.sys.refresh_cpu();

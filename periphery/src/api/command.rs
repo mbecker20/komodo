@@ -1,9 +1,9 @@
 use anyhow::Context;
 use axum::{routing::post, Json, Router};
-use helpers::{handle_anyhow_error, run_monitor_command};
+use helpers::handle_anyhow_error;
 use types::Command;
 
-use crate::HomeDirExtension;
+use crate::{helpers::run_monitor_command, HomeDirExtension};
 
 pub fn router() -> Router {
     Router::new().route(

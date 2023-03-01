@@ -9,6 +9,7 @@ use tower_http::cors::{Any, CorsLayer};
 mod actions;
 mod api;
 mod auth;
+mod cloud;
 mod config;
 mod helpers;
 mod monitoring;

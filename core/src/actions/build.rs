@@ -2,11 +2,7 @@ use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use diff::Diff;
-use helpers::{
-    all_logs_success,
-    aws::{self, create_ec2_client, create_instance_with_ami, terminate_ec2_instance, Ec2Instance},
-    to_monitor_name,
-};
+use helpers::{all_logs_success, to_monitor_name};
 use mungos::{doc, to_bson};
 use types::{
     monitor_timestamp,
@@ -14,7 +10,13 @@ use types::{
     Build, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget, Version,
 };
 
-use crate::{auth::RequestUser, state::State};
+use crate::{
+    auth::RequestUser,
+    cloud::aws::{
+        self, create_ec2_client, create_instance_with_ami, terminate_ec2_instance, Ec2Instance,
+    },
+    state::State,
+};
 
 const BUILDER_POLL_RATE_SECS: u64 = 2;
 const BUILDER_POLL_MAX_TRIES: usize = 30;
@@ -51,6 +53,11 @@ impl State {
         let start_ts = monitor_timestamp();
         let build = Build {
             name: to_monitor_name(name),
+            docker_organization: self
+                .config
+                .docker_organizations
+                .get(0)
+                .map(|d| d.to_string()),
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),

@@ -69,6 +69,10 @@ pub struct Build {
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub docker_account: Option<String>,
 
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
+    pub docker_organization: Option<String>,
+
     #[serde(default, skip_serializing_if = "String::is_empty")]
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]

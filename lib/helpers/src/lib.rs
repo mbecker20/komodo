@@ -3,14 +3,9 @@ use std::{borrow::Borrow, fs::File, io::Read, net::SocketAddr, str::FromStr};
 use anyhow::{anyhow, Context};
 use axum::http::StatusCode;
 use rand::{distributions::Alphanumeric, Rng};
-use run_command::{async_run_command, CommandOutput};
 use serde::de::DeserializeOwned;
 use serde_json::{Map, Value};
-use types::{monitor_timestamp, Log};
-
-pub mod aws;
-pub mod docker;
-pub mod git;
+use types::Log;
 
 pub fn parse_config_files<'a, T: DeserializeOwned>(
     paths: impl IntoIterator<Item = impl Borrow<String>>,
@@ -129,36 +124,12 @@ pub fn parse_comma_seperated_list<T: FromStr>(
         .collect()
 }
 
-pub fn output_into_log(
-    stage: &str,
-    command: String,
-    start_ts: String,
-    output: CommandOutput,
-) -> Log {
-    let success = output.success();
-    Log {
-        stage: stage.to_string(),
-        stdout: output.stdout,
-        stderr: output.stderr,
-        command,
-        success,
-        start_ts,
-        end_ts: monitor_timestamp(),
-    }
-}
-
 pub fn get_socket_addr(port: u16) -> SocketAddr {
     SocketAddr::from_str(&format!("0.0.0.0:{}", port)).expect("failed to parse socket addr")
 }
 
 pub fn to_monitor_name(name: &str) -> String {
     name.to_lowercase().replace(" ", "_")
-}
-
-pub async fn run_monitor_command(stage: &str, command: String) -> Log {
-    let start_ts = monitor_timestamp();
-    let output = async_run_command(&command).await;
-    output_into_log(stage, command, start_ts, output)
 }
 
 pub fn handle_anyhow_error(err: anyhow::Error) -> (StatusCode, String) {

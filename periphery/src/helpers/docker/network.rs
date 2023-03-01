@@ -1,6 +1,6 @@
 use types::Log;
 
-use crate::run_monitor_command;
+use crate::helpers::run_monitor_command;
 
 pub async fn create_network(name: &str, driver: Option<String>) -> Log {
     let driver = match driver {

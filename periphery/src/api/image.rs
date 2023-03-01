@@ -2,12 +2,12 @@ use axum::{
     routing::{get, post},
     Extension, Json, Router,
 };
-use helpers::{
-    docker::{self, DockerExtension},
-    handle_anyhow_error,
-};
+use helpers::handle_anyhow_error;
 
-use crate::response;
+use crate::{
+    helpers::docker::{self, DockerExtension},
+    response,
+};
 
 pub fn router() -> Router {
     Router::new()

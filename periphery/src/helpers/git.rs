@@ -2,9 +2,10 @@ use std::path::PathBuf;
 
 use ::run_command::async_run_command;
 use anyhow::anyhow;
+use helpers::to_monitor_name;
 use types::{monitor_timestamp, CloneArgs, Command, GithubToken, Log};
 
-use crate::{run_monitor_command, to_monitor_name};
+use super::run_monitor_command;
 
 pub async fn pull(
     mut path: PathBuf,

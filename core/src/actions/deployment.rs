@@ -9,7 +9,7 @@ use types::{
 
 use crate::{
     auth::RequestUser,
-    helpers::{any_option_diff_is_some, option_diff_is_some},
+    helpers::{any_option_diff_is_some, get_image_name, option_diff_is_some},
     state::State,
 };
 
@@ -343,14 +343,12 @@ impl State {
             .await?;
         let version = if let Some(build_id) = &deployment.build_id {
             let build = self.db.get_build(build_id).await?;
-            let image = if let Some(docker_account) = &build.docker_account {
-                if deployment.docker_run_args.docker_account.is_none() {
+            let image = get_image_name(&build);
+            if deployment.docker_run_args.docker_account.is_none() {
+                if let Some(docker_account) = &build.docker_account {
                     deployment.docker_run_args.docker_account = Some(docker_account.to_string())
-                }
-                format!("{docker_account}/{}", to_monitor_name(&build.name))
-            } else {
-                to_monitor_name(&build.name)
-            };
+                };
+            }
             let version = if let Some(version) = &deployment.build_version {
                 version.clone()
             } else {

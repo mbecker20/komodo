@@ -1,9 +1,12 @@
 use axum::{routing::post, Extension, Json, Router};
-use helpers::{git, handle_anyhow_error, to_monitor_name};
+use helpers::{handle_anyhow_error, to_monitor_name};
 use serde::Deserialize;
 use types::{CloneArgs, Command, Log};
 
-use crate::{helpers::get_github_token, PeripheryConfigExtension};
+use crate::{
+    helpers::{get_github_token, git},
+    PeripheryConfigExtension,
+};
 
 #[derive(Deserialize)]
 pub struct DeleteRepoBody {

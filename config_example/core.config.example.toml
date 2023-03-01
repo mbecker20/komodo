@@ -34,6 +34,9 @@ monitoring_interval = "1-min"
 # allow or deny user login with username / password
 local_auth = true
 
+# these will be given in the GUI to attach to builds. New build docker orgs will default to first org (or none if empty).
+docker_organizations = ["your_docker_org1", "your_docker_org_2"]
+
 [aws]
 access_key_id = "your_aws_key_id"
 secret_access_key = "your_aws_secret_key"

@@ -365,6 +365,10 @@ export class Client {
     return this.get("/api/build/aws_builder_defaults");
   }
 
+  get_docker_organizations(): Promise<string[]> {
+    return this.get("/api/build/docker_organizations");
+  }
+
   // procedure
 
   list_procedures(query?: QueryObject): Promise<Procedure[]> {

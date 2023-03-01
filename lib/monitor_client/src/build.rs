@@ -97,6 +97,12 @@ impl MonitorClient {
             .context("failed at getting aws builder defaults")
     }
 
+    pub async fn get_docker_organizations(&self) -> anyhow::Result<Vec<String>> {
+        self.get("/api/build/docker_organizations", Option::<()>::None)
+            .await
+            .context("failed at getting docker organizations")
+    }
+
     // pub async fn reclone_build(&self, id: &str) -> anyhow::Result<Update> {
     //     self.post::<(), _>(&format!("/api/build/{id}/reclone"), None)
     //         .await

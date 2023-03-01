@@ -218,6 +218,12 @@ pub fn router() -> Router {
                 })
             }),
         )
+        .route(
+            "/docker_organizations",
+            get(|Extension(state): StateExtension| async move {
+                Json(state.config.docker_organizations.clone())
+            }),
+        )
 }
 
 impl State {

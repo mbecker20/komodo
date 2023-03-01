@@ -2,13 +2,13 @@ use axum::{
     routing::{get, post},
     Extension, Json, Router,
 };
-use helpers::{
-    docker::{self, DockerExtension},
-    handle_anyhow_error,
-};
+use helpers::handle_anyhow_error;
 use serde::Deserialize;
 
-use crate::response;
+use crate::{
+    helpers::docker::{self, DockerExtension},
+    response,
+};
 
 #[derive(Deserialize, Clone)]
 pub struct NetworkReqBody {

@@ -1,9 +1,12 @@
 use anyhow::Context;
 use axum::{routing::post, Extension, Json, Router};
-use helpers::{docker, handle_anyhow_error};
+use helpers::handle_anyhow_error;
 use types::{Build, Log};
 
-use crate::{helpers::get_docker_token, PeripheryConfigExtension};
+use crate::{
+    helpers::{docker, get_docker_token},
+    PeripheryConfigExtension,
+};
 
 pub fn router() -> Router {
     Router::new().route(

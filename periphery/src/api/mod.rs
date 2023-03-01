@@ -9,11 +9,10 @@ use axum::{
     routing::get,
     Json, RequestExt, Router,
 };
-use helpers::docker::DockerClient;
 use serde_json::Value;
 use types::{monitor_timestamp, PeripheryConfig};
 
-use crate::{HomeDirExtension, PeripheryConfigExtension};
+use crate::{helpers::docker::DockerClient, HomeDirExtension, PeripheryConfigExtension};
 
 use self::stats::{StatsClient, StatsExtension};
 

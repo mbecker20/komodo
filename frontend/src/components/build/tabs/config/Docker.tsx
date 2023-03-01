@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, Show } from "solid-js";
+import { Component, createEffect, createResource, createSignal, Show } from "solid-js";
 import { client } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { ServerStatus } from "../../../../types";
@@ -12,6 +12,7 @@ import { useConfig } from "../Provider";
 const Docker: Component<{}> = (p) => {
   const { aws_builder_config } = useAppState();
   const { build, setBuild, server, userCanUpdate } = useConfig();
+  const [dockerOrgs] = createResource(() => client.get_docker_organizations());
   const [peripheryDockerAccounts, setPeripheryDockerAccounts] =
     createSignal<string[]>();
   createEffect(() => {
@@ -86,6 +87,28 @@ const Docker: Component<{}> = (p) => {
           disabled={!userCanUpdate()}
         />
       </Flex>
+      <Show when={(dockerOrgs() || []).length > 0}>
+        <Flex
+          justifyContent={userCanUpdate() ? "space-between" : undefined}
+          alignItems="center"
+          style={{ "flex-wrap": "wrap" }}
+        >
+          <h2>dockerhub organization: </h2>
+          <Selector
+            targetClass="blue"
+            selected={build.docker_organization || "none"}
+            items={dockerOrgs() || []}
+            onSelect={(account) => {
+              setBuild(
+                "docker_organization",
+                account === "none" ? undefined : account
+              );
+            }}
+            position="bottom right"
+            disabled={!userCanUpdate()}
+          />
+        </Flex>
+      </Show>
     </Grid>
   );
 };
