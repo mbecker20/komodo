@@ -78,7 +78,6 @@ impl State {
             }
             let futures = servers.unwrap().into_iter().map(|server| async move {
                 let _ = self.periphery.image_prune(&server).await;
-                let _ = self.periphery.container_prune(&server).await;
             });
             join_all(futures).await;
         }

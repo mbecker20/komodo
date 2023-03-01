@@ -24,6 +24,11 @@ pub struct Deployment {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub name: String, // must be formatted to be compat with docker
 
+    #[serde(default)]
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub description: String,
+
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub server_id: String,
 

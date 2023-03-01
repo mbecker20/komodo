@@ -9,6 +9,7 @@ export type PermissionsMap = Record<string, PermissionLevel>;
 export interface Action {
 	_id?: string;
 	name: string;
+	description?: string;
 	path: string;
 	command: string;
 	server_ids?: string[];
@@ -22,6 +23,7 @@ export interface Action {
 export interface Build {
 	_id?: string;
 	name: string;
+	description?: string;
 	permissions?: PermissionsMap;
 	server_id?: string;
 	aws_config?: AwsBuilderBuildConfig;
@@ -94,6 +96,7 @@ export interface AmiAccounts {
 export interface Deployment {
 	_id?: string;
 	name: string;
+	description?: string;
 	server_id: string;
 	permissions?: PermissionsMap;
 	docker_run_args: DockerRunArgs;
@@ -164,6 +167,7 @@ export interface DockerContainerStats {
 export interface Group {
 	_id?: string;
 	name: string;
+	description?: string;
 	permissions?: PermissionsMap;
 	builds: string[];
 	deployments: string[];
@@ -192,6 +196,7 @@ export interface UserCredentials {
 export interface Procedure {
 	_id?: string;
 	name: string;
+	description?: string;
 	stages?: ProcedureStage[];
 	webhook_branches?: string[];
 	permissions?: PermissionsMap;
@@ -207,6 +212,7 @@ export interface ProcedureStage {
 export interface Server {
 	_id?: string;
 	name: string;
+	description?: string;
 	address: string;
 	permissions?: PermissionsMap;
 	enabled: boolean;

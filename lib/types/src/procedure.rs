@@ -25,6 +25,11 @@ pub struct Procedure {
 
     #[serde(default)]
     #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub description: String,
+
+    #[serde(default)]
+    #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub stages: Vec<ProcedureStage>,
 

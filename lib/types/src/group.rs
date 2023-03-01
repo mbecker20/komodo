@@ -24,6 +24,11 @@ pub struct Group {
     pub name: String,
 
     #[serde(default)]
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub description: String,
+
+    #[serde(default)]
     #[diff(attr(#[serde(skip_serializing)]))]
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,

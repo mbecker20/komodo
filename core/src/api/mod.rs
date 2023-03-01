@@ -1,20 +1,21 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use axum::{
     body::Body,
     extract::Path,
     http::{Request, StatusCode},
     middleware,
-    routing::get,
+    routing::{get, post},
     Extension, Json, Router,
 };
 use futures_util::Future;
 use helpers::handle_anyhow_error;
-use mungos::Deserialize;
-use types::User;
+use mungos::{doc, Deserialize};
+use types::{PermissionLevel, UpdateTarget, User};
+use typeshare::typeshare;
 
 use crate::{
-    auth::{auth_request, JwtExtension, RequestUserExtension},
-    state::StateExtension,
+    auth::{auth_request, JwtExtension, RequestUser, RequestUserExtension},
+    state::{State, StateExtension},
 };
 
 pub mod build;
@@ -26,6 +27,13 @@ pub mod procedure;
 pub mod secret;
 pub mod server;
 pub mod update;
+
+#[typeshare]
+#[derive(Deserialize)]
+struct UpdateDescriptionBody {
+    target: UpdateTarget,
+    description: String,
+}
 
 pub fn router() -> Router {
     Router::new()
@@ -55,6 +63,19 @@ pub fn router() -> Router {
                             .unwrap_or(&state.config.host)
                             .to_string()
                     }),
+                )
+                .route(
+                    "/update_description",
+                    post(
+                        |state: StateExtension,
+                         user: RequestUserExtension,
+                         body: Json<UpdateDescriptionBody>| async move {
+                            state
+                                .update_description(&body.target, &body.description, &user)
+                                .await
+                                .map_err(handle_anyhow_error)
+                        },
+                    ),
                 )
                 .route("/users", get(get_users))
                 .nest("/build", build::router())
@@ -127,4 +148,58 @@ where
         .context("failure at action thread spawn")
         .map_err(handle_anyhow_error)?;
     Ok(res)
+}
+
+impl State {
+    pub async fn update_description(
+        &self,
+        target: &UpdateTarget,
+        description: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<()> {
+        match target {
+            UpdateTarget::Build(id) => {
+                self.get_build_check_permissions(id, user, PermissionLevel::Update)
+                    .await?;
+                self.db
+                    .builds
+                    .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
+                    .await?;
+            }
+            UpdateTarget::Deployment(id) => {
+                self.get_deployment_check_permissions(id, user, PermissionLevel::Update)
+                    .await?;
+                self.db
+                    .builds
+                    .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
+                    .await?;
+            }
+            UpdateTarget::Server(id) => {
+                self.get_server_check_permissions(id, user, PermissionLevel::Update)
+                    .await?;
+                self.db
+                    .builds
+                    .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
+                    .await?;
+            }
+            UpdateTarget::Group(id) => {
+                self.get_group_check_permissions(id, user, PermissionLevel::Update)
+                    .await?;
+                self.db
+                    .builds
+                    .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
+                    .await?;
+            }
+            UpdateTarget::Procedure(id) => {
+                self.get_procedure_check_permissions(id, user, PermissionLevel::Update)
+                    .await?;
+                self.db
+                    .builds
+                    .update_one::<()>(id, mungos::Update::Set(doc! { "description": description }))
+                    .await?;
+            }
+            _ => return Err(anyhow!("invalid target: {target:?}")),
+        }
+        Ok(())
+    }
 }

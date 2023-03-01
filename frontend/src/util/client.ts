@@ -43,6 +43,7 @@ import {
   ModifyUserCreateServerBody,
   ModifyUserEnabledBody,
   PermissionsUpdateBody,
+  UpdateDescriptionBody,
 } from "./client_types";
 import { generateQuery, QueryObject } from "./helpers";
 
@@ -111,7 +112,7 @@ export class Client {
     }
   }
 
- get_username(user_id: string): Promise<string> {
+  get_username(user_id: string): Promise<string> {
     return this.get(`/api/username/${user_id}`);
   }
 
@@ -124,7 +125,11 @@ export class Client {
   }
 
   get_github_webhook_base_url(): Promise<string> {
-    return this.get("/api/github_webhook_base_url")
+    return this.get("/api/github_webhook_base_url");
+  }
+
+  update_description(body: UpdateDescriptionBody): Promise<undefined> {
+    return this.post("/api/update_description", body);
   }
 
   // deployment

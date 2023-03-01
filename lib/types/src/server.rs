@@ -26,6 +26,11 @@ pub struct Server {
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub name: String,
 
+    #[serde(default)]
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub description: String,
+
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub address: String,
 
@@ -94,7 +99,7 @@ impl Default for Server {
             address: Default::default(),
             permissions: Default::default(),
             enabled: true,
-            auto_prune: false,
+            auto_prune: true,
             to_notify: Default::default(),
             cpu_alert: default_cpu_alert(),
             mem_alert: default_mem_alert(),
@@ -102,6 +107,7 @@ impl Default for Server {
             stats_interval: Default::default(),
             region: Default::default(),
             instance_id: Default::default(),
+            description: Default::default(),
             created_at: Default::default(),
             updated_at: Default::default(),
         }

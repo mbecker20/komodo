@@ -10,6 +10,7 @@ pub use futures_util;
 pub use tokio_tungstenite;
 
 pub use monitor_types as types;
+use types::UpdateTarget;
 
 mod build;
 mod deployment;
@@ -144,6 +145,19 @@ impl MonitorClient {
         self.get("/api/github_webhook_base_url", Option::<()>::None)
             .await
             .context("failed at call to get_github_webhook_base_url")
+    }
+
+    pub async fn update_description(
+        &self,
+        target: UpdateTarget,
+        description: &str,
+    ) -> anyhow::Result<()> {
+        self.post(
+            "/api/update_description",
+            json!({ "target": target, "description": description }),
+        )
+        .await
+        .context("failed at call to update_description")
     }
 
     async fn get<R: DeserializeOwned>(
