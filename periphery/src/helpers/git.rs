@@ -96,17 +96,19 @@ async fn clone(
     let command = format!("git clone {repo_url} {destination}{branch}");
     let start_ts = monitor_timestamp();
     let output = async_run_command(&command).await;
-    let command = if access_token_at.len() > 0 {
-        command.replace(&access_token.unwrap(), "<TOKEN>")
+    let success = output.success();
+    let (command, stderr) = if access_token_at.len() > 0 {
+        let access_token = access_token.unwrap();
+        (command.replace(&access_token, "<TOKEN>"), output.stderr.replace(&access_token, "<TOKEN>"))
     } else {
-        command
+        (command, output.stderr)
     };
     Log {
         stage: "clone repo".to_string(),
         command,
-        success: output.success(),
+        success,
         stdout: output.stdout,
-        stderr: output.stderr,
+        stderr,
         start_ts,
         end_ts: monitor_timestamp(),
     }
