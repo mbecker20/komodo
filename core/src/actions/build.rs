@@ -7,7 +7,7 @@ use mungos::{doc, to_bson};
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
-    Build, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget, Version,
+    Build, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget, Version, AwsBuilderBuildConfig,
 };
 
 use crate::{
@@ -59,6 +59,7 @@ impl State {
                 .docker_organizations
                 .get(0)
                 .map(|d| d.to_string()),
+            aws_config: Some(AwsBuilderBuildConfig::default()),
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
