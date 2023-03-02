@@ -339,7 +339,7 @@ impl State {
         let clone_success = match self.periphery.clone_repo(&server.server, &build).await {
             Ok(clone_logs) => {
                 update.logs.extend(clone_logs);
-                true
+                all_logs_success(&update.logs)
             }
             Err(e) => {
                 update
