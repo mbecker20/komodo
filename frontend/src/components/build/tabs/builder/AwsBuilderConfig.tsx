@@ -22,11 +22,12 @@ const AwsBuilderConfig: Component<{}> = (p) => {
 const Ami: Component = () => {
   const { aws_builder_config } = useAppState();
   const { build, setBuild, userCanUpdate } = useConfig();
+  const default_ami_id = () => aws_builder_config()?.default_ami_id;
   const get_ami_id = () => {
     if (build.aws_config?.ami_id) {
       return build.aws_config.ami_id;
     } else {
-      return aws_builder_config()?.default_ami_id || "unknown";
+      return default_ami_id() || "unknown";
     }
   };
   const get_ami_name = (ami_id: string) => {
@@ -51,7 +52,13 @@ const Ami: Component = () => {
         targetClass="blue"
         selected={get_ami_id()}
         items={ami_ids()}
-        onSelect={(ami_id) => setBuild("aws_config", "ami_id", ami_id)}
+        onSelect={(ami_id) => {
+          if (ami_id === default_ami_id()) {
+            setBuild("aws_config", "ami_id", undefined);
+          } else {
+            setBuild("aws_config", "ami_id", ami_id);
+          }
+        }}
         itemMap={get_ami_name}
         position="bottom right"
         disabled={!userCanUpdate()}
