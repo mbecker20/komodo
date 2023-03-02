@@ -97,7 +97,7 @@ const Docker: Component<{}> = (p) => {
           <Selector
             targetClass="blue"
             selected={build.docker_organization || "none"}
-            items={dockerOrgs() || []}
+            items={["none", ...(dockerOrgs() || [])]}
             onSelect={(account) => {
               setBuild(
                 "docker_organization",
