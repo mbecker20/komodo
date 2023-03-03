@@ -115,7 +115,7 @@ pub struct AwsBuilderConfig {
     #[serde(skip_serializing)]
     pub secret_access_key: String,
 
-    pub default_ami_id: String,
+    pub default_ami_name: String,
     pub default_subnet_id: String,
     pub default_key_pair_name: String,
 
@@ -151,12 +151,12 @@ fn default_instance_type() -> String {
 }
 
 #[typeshare]
-pub type AvailableAmiAccounts = HashMap<String, AmiAccounts>; // (ami_id, AmiAccounts)
+pub type AvailableAmiAccounts = HashMap<String, AmiAccounts>; // (ami_name, AmiAccounts)
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct AmiAccounts {
-    pub name: String,
+    pub ami_id: String,
     #[serde(default)]
     pub github: Vec<String>,
     #[serde(default)]

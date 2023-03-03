@@ -7,14 +7,12 @@ use std::{
     str::FromStr,
 };
 
-use async_timing_util::Timelength;
 use clap::ArgMatches;
 use colored::Colorize;
+use monitor_types::{CoreConfig, MongoConfig, PeripheryConfig, RestartMode, Timelength};
 use rand::{distributions::Alphanumeric, Rng};
 use run_command::run_command_pipe_to_terminal;
 use serde::Serialize;
-
-use crate::types::{CoreConfig, MongoConfig, PeripheryConfig, RestartMode};
 
 const CORE_IMAGE_NAME: &str = "mbecker2020/monitor_core";
 const PERIPHERY_IMAGE_NAME: &str = "mbecker2020/monitor_periphery";
@@ -321,7 +319,9 @@ pub fn gen_periphery_config(sub_matches: &ArgMatches) {
         .map(|p| p.as_str())
         .unwrap_or("~/.monitor/repos")
         .to_string()
-        .replace("~", env::var("HOME").unwrap().as_str());
+        .replace("~", env::var("HOME").unwrap().as_str())
+        .parse()
+        .expect("failed to parse --repo_dir as path");
 
     let config = PeripheryConfig {
         port,

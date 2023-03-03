@@ -26,10 +26,10 @@ const Docker: Component<{}> = (p) => {
     if (build.server_id) {
       return peripheryDockerAccounts() || [];
     } else if (build.aws_config) {
-      const ami_id =
-        build.aws_config?.ami_id || aws_builder_config()?.default_ami_id;
-      return ami_id
-        ? aws_builder_config()?.available_ami_accounts![ami_id].docker || []
+      const ami_name =
+        build.aws_config?.ami_name || aws_builder_config()?.default_ami_name;
+      return ami_name
+        ? aws_builder_config()?.available_ami_accounts![ami_name].docker || []
         : [];
     } else return [];
   };

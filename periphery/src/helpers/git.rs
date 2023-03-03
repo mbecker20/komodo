@@ -99,7 +99,10 @@ async fn clone(
     let success = output.success();
     let (command, stderr) = if access_token_at.len() > 0 {
         let access_token = access_token.unwrap();
-        (command.replace(&access_token, "<TOKEN>"), output.stderr.replace(&access_token, "<TOKEN>"))
+        (
+            command.replace(&access_token, "<TOKEN>"),
+            output.stderr.replace(&access_token, "<TOKEN>"),
+        )
     } else {
         (command, output.stderr)
     };

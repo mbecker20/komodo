@@ -65,7 +65,7 @@ export interface BuildVersionsReponse {
 export interface AwsBuilderBuildConfig {
 	region?: string;
 	instance_type?: string;
-	ami_id?: string;
+	ami_name?: string;
 	volume_gb?: number;
 	subnet_id?: string;
 	security_group_ids?: string[];
@@ -76,7 +76,7 @@ export interface AwsBuilderBuildConfig {
 export interface AwsBuilderConfig {
 	access_key_id: string;
 	secret_access_key: string;
-	default_ami_id: string;
+	default_ami_name: string;
 	default_subnet_id: string;
 	default_key_pair_name: string;
 	available_ami_accounts?: AvailableAmiAccounts;
@@ -88,7 +88,7 @@ export interface AwsBuilderConfig {
 }
 
 export interface AmiAccounts {
-	name: string;
+	ami_id: string;
 	github?: string[];
 	docker?: string[];
 }

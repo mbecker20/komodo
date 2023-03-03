@@ -22,22 +22,9 @@ const AwsBuilderConfig: Component<{}> = (p) => {
 const Ami: Component = () => {
   const { aws_builder_config } = useAppState();
   const { build, setBuild, userCanUpdate } = useConfig();
-  const default_ami_id = () => aws_builder_config()?.default_ami_id;
-  const get_ami_id = () => {
-    if (build.aws_config?.ami_id) {
-      return build.aws_config.ami_id;
-    } else {
-      return default_ami_id() || "unknown";
-    }
-  };
-  const get_ami_name = (ami_id: string) => {
-    if (aws_builder_config() === undefined || ami_id === "unknown")
-      return "unknown";
-    return (
-      aws_builder_config()!.available_ami_accounts![ami_id]?.name || "unknown"
-    );
-  };
-  const ami_ids = () => {
+  const default_ami_name = () => aws_builder_config()?.default_ami_name;
+  const get_ami_name = () => build.aws_config?.ami_name || aws_builder_config()?.default_ami_name || "unknown";
+  const ami_names = () => {
     if (aws_builder_config() === undefined) return [];
     return Object.keys(aws_builder_config()!.available_ami_accounts!);
   };
@@ -50,16 +37,16 @@ const Ami: Component = () => {
       <h1>ami</h1>
       <Selector
         targetClass="blue"
-        selected={get_ami_id()}
-        items={ami_ids()}
-        onSelect={(ami_id) => {
-          if (ami_id === default_ami_id()) {
-            setBuild("aws_config", "ami_id", undefined);
+        selected={get_ami_name()}
+        items={ami_names()}
+        onSelect={(ami_name) => {
+          if (ami_name === default_ami_name()) {
+            setBuild("aws_config", "ami_name", undefined);
           } else {
-            setBuild("aws_config", "ami_id", ami_id);
+            setBuild("aws_config", "ami_name", ami_name);
           }
         }}
-        itemMap={get_ami_name}
+        itemMap={(i) => i.replaceAll("_", " ")}
         position="bottom right"
         disabled={!userCanUpdate()}
         useSearch

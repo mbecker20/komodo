@@ -3,7 +3,6 @@
 use clap::{arg, Arg, Command};
 
 mod helpers;
-mod types;
 
 use helpers::*;
 

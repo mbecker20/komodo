@@ -7,7 +7,8 @@ use mungos::{doc, to_bson};
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
-    Build, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget, Version, AwsBuilderBuildConfig,
+    AwsBuilderBuildConfig, Build, Log, Operation, PermissionLevel, Update, UpdateStatus,
+    UpdateTarget, Version,
 };
 
 use crate::{
@@ -442,10 +443,17 @@ impl State {
             self.config.aws.secret_access_key.clone(),
         )
         .await;
-        let ami_id = aws_config
-            .ami_id
+        let ami_name = aws_config
+            .ami_name
             .as_ref()
-            .unwrap_or(&self.config.aws.default_ami_id);
+            .unwrap_or(&self.config.aws.default_ami_name);
+        let ami_id = &self
+            .config
+            .aws
+            .available_ami_accounts
+            .get(ami_name)
+            .ok_or(anyhow!("no ami id associated with ami name {ami_name}"))?
+            .ami_id;
         let instance_type = aws_config
             .instance_type
             .as_ref()

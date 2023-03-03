@@ -173,7 +173,7 @@ pub struct AwsBuilderBuildConfig {
 
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
-    pub ami_id: Option<String>,
+    pub ami_name: Option<String>,
 
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
