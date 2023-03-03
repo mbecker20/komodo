@@ -2,6 +2,8 @@
 
 Monitor can deploy any docker images that it can access with the configured docker accounts. It works by parsing the deployment configuration into a ```docker run``` command. The configuration is stored on MongoDB, and records of all actions (update config, deploy, stop, etc.) are stored as well.
 
+Deployment configuration involves passing file / directory paths, for more details about passing file paths, see the [file paths doc](https://github.com/mbecker20/monitor/blob/main/docs/paths.md).
+
 ## configuring the image
 
 There are two options to configure the deployed image. 

@@ -2,6 +2,8 @@
 
 Monitor builds docker images by cloning the source repository from Github, running ```docker build```, and pushing the resulting image to docker hub. Any repo containing a 'Dockerfile' is buildable using this method.
 
+Build configuration involves passing file / directory paths, for more details about passing file paths, see the [file paths doc](https://github.com/mbecker20/monitor/blob/main/docs/paths.md).
+
 ## repo configuration
 To specify the github repo to build, just give it the name of the repo and the branch under *repo config*. The name is given like ```mbecker20/monitor```, it includes the username / organization that owns the repo.
 
