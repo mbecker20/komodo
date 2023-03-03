@@ -20,7 +20,7 @@ There are 3 kinds of paths to pass:
 
  1. to specify the root of the repo, use ```.``` as the path
  2. to specify a folder in the repo, pass it with **no** preceding ```/```. For example, ```example_folder``` or ```folder1/folder2```
- 3. to specify an absolute path on the servers filesystem, use a preceding slash, eg. ```/home/ubuntu/example/Dockerfile```. This way should only be used if absolutely necessary.
+ 3. to specify an absolute path on the servers filesystem, use a preceding slash, eg. ```/home/ubuntu/example```. This way should only be used if absolutely necessary.
 
 ### Implementation
 
