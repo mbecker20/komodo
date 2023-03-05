@@ -17,7 +17,11 @@ import {
   PermissionsTarget,
   User as UserType,
 } from "../../types";
-import { getId } from "../../util/helpers";
+import {
+  getId,
+  readableMonitorTimestamp,
+  readableUserType,
+} from "../../util/helpers";
 import { useToggle } from "../../util/hooks";
 import CheckBox from "../shared/CheckBox";
 import Icon from "../shared/Icon";
@@ -107,13 +111,29 @@ const User: Component = () => {
             <UserPermissionButtons user={user()!} />
           </Flex>
         </Flex>
-        <Input
-          placeholder="search resources"
-          class="lightgrey"
-          style={{ padding: "0.5rem" }}
-          value={search()}
-          onEdit={setSearch}
-        />
+        <Flex justifyContent="space-between" alignItems="center">
+          <Input
+            placeholder="search resources"
+            class="lightgrey"
+            style={{ padding: "0.5rem" }}
+            value={search()}
+            onEdit={setSearch}
+          />
+          <Flex>
+            <Flex gap="0.5rem">
+              <div class="dimmed">type:</div>
+              <div>{user() ? readableUserType(user()!) : "unknown"}</div>
+            </Flex>
+            <Flex gap="0.5rem">
+              <div class="dimmed">created:</div>
+              <div>
+                {user()?.created_at
+                  ? readableMonitorTimestamp(user()?.created_at!)
+                  : "unknown"}
+              </div>
+            </Flex>
+          </Flex>
+        </Flex>
         <Grid class="card light shadow">
           <Flex alignItems="center">
             <h1>servers</h1>
@@ -129,7 +149,12 @@ const User: Component = () => {
                   alignItems="center"
                   justifyContent="space-between"
                 >
-                  <h2>{item.server.name}</h2>
+                  <Grid gap="0.25rem">
+                    <h2>{item.server.name}</h2>
+                    <div class="dimmed">
+                      {item.server.region || "unknown region"}
+                    </div>
+                  </Grid>
                   <Selector
                     targetClass={
                       (item.server.permissions?.[params.id] || "none") !==
@@ -168,7 +193,9 @@ const User: Component = () => {
                   alignItems="center"
                   justifyContent="space-between"
                 >
-                  <h2>{item.deployment.name}</h2>
+                  <Grid gap="0.25rem">
+                    <h2>{item.deployment.name}</h2>
+                  </Grid>
                   <Selector
                     targetClass={
                       (item.deployment.permissions?.[params.id] || "none") !==

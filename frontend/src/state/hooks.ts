@@ -232,13 +232,18 @@ export function useArrayWithId<T, O>(
   idPath: string[],
   options?: O
 ) {
+  let is_loaded = false;
   const [collection, set] = createSignal<T[]>();
-  const load = (options?: O) => {
-    query(options).then(set);
+  const load = (_options?: O) => {
+    if (!is_loaded || _options !== options) {
+      query(_options).then((r) => {
+        is_loaded = true;
+        options = _options;
+        set(r);
+      });
+    }
   };
-  createEffect(() => {
-    load(options);
-  });
+  load(options);
   const addOrUpdate = (item: T) => {
     set((items: T[] | undefined) => {
       if (items) {

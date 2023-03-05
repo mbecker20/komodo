@@ -1,79 +1,81 @@
-import { Component, For, Match, Show, Switch } from "solid-js";
+import { Component, For, Show } from "solid-js";
 import { createStore } from "solid-js/store";
-import { client, pushNotification } from "..";
-import { useUser } from "../state/UserProvider";
-import { copyToClipboard, readableMonitorTimestamp } from "../util/helpers";
-import { useToggle } from "../util/hooks";
-import ConfirmButton from "./shared/ConfirmButton";
-import Icon from "./shared/Icon";
-import Input from "./shared/Input";
-import Flex from "./shared/layout/Flex";
-import Grid from "./shared/layout/Grid";
-import Loading from "./shared/loading/Loading";
-import CenterMenu from "./shared/menu/CenterMenu";
-import Selector from "./shared/menu/Selector";
+import { client, pushNotification } from "../..";
+import { useUser } from "../../state/UserProvider";
+import { copyToClipboard, readableMonitorTimestamp } from "../../util/helpers";
+import { useToggle } from "../../util/hooks";
+import ConfirmButton from "../shared/ConfirmButton";
+import Icon from "../shared/Icon";
+import Input from "../shared/Input";
+import Flex from "../shared/layout/Flex";
+import Grid from "../shared/layout/Grid";
+import Loading from "../shared/loading/Loading";
+import CenterMenu from "../shared/menu/CenterMenu";
+import Selector from "../shared/menu/Selector";
 
-const Account: Component<{}> = (p) => {
-  const { user, reloadUser } = useUser();
+const Secrets: Component<{}> = (p) => {
+	const { user, reloadUser } = useUser();
   const [showCreate, toggleShowCreate] = useToggle();
-  return (
-    <>
-      <Grid
-        class="card shadow"
-        style={{ width: "100%", "box-sizing": "border-box" }}
-      >
-        <Flex justifyContent="space-between">
-          <h1>api secrets</h1>
-          <CenterMenu
-            show={showCreate}
-            toggleShow={toggleShowCreate}
-            targetClass="green"
-            title="create secret"
-            target={<Icon type="plus" />}
-            content={() => <CreateNewMenu />}
-            position="center"
-          />
-        </Flex>
-        <For each={user().secrets}>
-          {(secret) => (
-            <Flex
-              class="card light shadow wrap"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <h2>{secret.name}</h2>
-              <Flex alignItems="center">
-                <Flex gap="0.25rem">
-                  <div style={{ opacity: 0.7 }}>created:</div>
-                  <div>{readableMonitorTimestamp(secret.created_at)}</div>
-                </Flex>
-                <Flex gap="0.25rem">
-                  <div style={{ opacity: 0.7 }}>expires:</div>
-                  <div>{secret.expires ? readableMonitorTimestamp(secret.expires) : "never"}</div>
-                </Flex>
-                <ConfirmButton
-                  class="red"
-                  onConfirm={() =>
-                    client.delete_api_secret(secret.name).then(reloadUser)
-                  }
-                >
-                  <Icon type="trash" />
-                </ConfirmButton>
+	return (
+    <Grid
+      class="card shadow"
+      style={{ width: "100%", "box-sizing": "border-box" }}
+    >
+      <Flex justifyContent="space-between">
+        <h1>api secrets</h1>
+        <CenterMenu
+          show={showCreate}
+          toggleShow={toggleShowCreate}
+          targetClass="green"
+          title="create secret"
+          target={<Icon type="plus" />}
+          content={() => <CreateNewSecretMenu />}
+          position="center"
+        />
+      </Flex>
+      <For each={user().secrets}>
+        {(secret) => (
+          <Flex
+            class="card light shadow wrap"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <h2>{secret.name}</h2>
+            <Flex alignItems="center">
+              <Flex gap="0.25rem">
+                <div style={{ opacity: 0.7 }}>created:</div>
+                <div>{readableMonitorTimestamp(secret.created_at)}</div>
               </Flex>
+              <Flex gap="0.25rem">
+                <div style={{ opacity: 0.7 }}>expires:</div>
+                <div>
+                  {secret.expires
+                    ? readableMonitorTimestamp(secret.expires)
+                    : "never"}
+                </div>
+              </Flex>
+              <ConfirmButton
+                class="red"
+                onConfirm={() =>
+                  client.delete_api_secret(secret.name).then(reloadUser)
+                }
+              >
+                <Icon type="trash" />
+              </ConfirmButton>
             </Flex>
-          )}
-        </For>
-      </Grid>
-    </>
+          </Flex>
+        )}
+      </For>
+    </Grid>
   );
-};
+}
 
-export default Account;
+export default Secrets;
 
 const EXPIRE_LENGTHS = ["30 days", "90 days", "1 year", "never"] as const;
 type ExpireLength = typeof EXPIRE_LENGTHS[number];
 
-const CreateNewMenu = () => {
+const CreateNewSecretMenu = () => {
   const { reloadUser } = useUser();
   const [info, setInfo] = createStore<{
     name: string;

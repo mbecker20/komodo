@@ -10,7 +10,7 @@ const Build = lazy(() => import("./components/build/Build"));
 const Users = lazy(() => import("./components/users/Users"));
 const User = lazy(() => import("./components/users/User"));
 const Stats = lazy(() => import("./components/stats/Stats"));
-const Account = lazy(() => import("./components/Account"));
+const Account = lazy(() => import("./components/account/Account"));
 
 const App: Component = () => {
   const { user } = useUser();

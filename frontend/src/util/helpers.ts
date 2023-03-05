@@ -3,6 +3,7 @@ import {
   EnvironmentVar,
   ServerStatus,
   Timelength,
+  User,
   Version,
 } from "../types";
 
@@ -233,4 +234,14 @@ export function readableStorageAmount(gb: number) {
 
 export function readableVersion(version: Version) {
   return `v${version.major}.${version.minor}.${version.patch}`;
+}
+
+export function readableUserType(user: User) {
+  if (user.github_id) {
+    return "github"
+  } else if (user.google_id) {
+    return "google"
+  } else {
+    return "local"
+  }
 }
