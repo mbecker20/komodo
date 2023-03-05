@@ -412,8 +412,12 @@ impl State {
                 );
                 continue;
             }
+            let servers = servers.unwrap();
+            if servers.is_empty() {
+                continue;
+            }
             let mut blocks = vec![Block::header("INFO | daily update"), Block::divider()];
-            for (server, stats) in servers.unwrap() {
+            for (server, stats) in servers {
                 let region = if let Some(region) = &server.region {
                     format!(" | {region}")
                 } else {
