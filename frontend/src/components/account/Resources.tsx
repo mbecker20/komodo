@@ -1,8 +1,10 @@
+import { A } from "@solidjs/router";
 import { Component, createMemo, createSignal, For } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { PermissionLevel } from "../../types";
+import { getId } from "../../util/helpers";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
 
@@ -42,10 +44,21 @@ const Resources: Component<{}> = (p) => {
         <Grid gridTemplateColumns={isMobile() ? undefined : "1fr 1fr"}>
           <For each={_servers()}>
             {(item) => (
-              <Flex class="card light shadow" justifyContent="space-between">
-                <h2>{item.server.name}</h2>
+              <A
+                class="card light shadow"
+                href={`/server/${getId(item.server)}`}
+                style={{
+                  "justify-content": "space-between",
+                  width: "100%",
+                  "box-sizing": "border-box",
+                }}
+              >
+                <Grid gap="0.25rem">
+                  <h2>{item.server.name}</h2>
+                  <div class="dimmed">{item.server.region || "unknown region"}</div>
+                </Grid>
                 <div>{item.server.permissions?.[user_id()] || "none"}</div>
-              </Flex>
+              </A>
             )}
           </For>
         </Grid>
@@ -58,10 +71,24 @@ const Resources: Component<{}> = (p) => {
         <Grid gridTemplateColumns={isMobile() ? undefined : "1fr 1fr"}>
           <For each={_deployments()}>
             {(item) => (
-              <Flex class="card light shadow" justifyContent="space-between">
-                <h2>{item.deployment.name}</h2>
+              <A
+                href={`/deployment/${getId(item.deployment)}`}
+                class="card light shadow"
+                style={{
+                  "justify-content": "space-between",
+                  width: "100%",
+                  "box-sizing": "border-box",
+                }}
+              >
+                <Grid gap="0.25rem">
+                  <h2>{item.deployment.name}</h2>
+                  <div class="dimmed">
+                    {servers.get(item.deployment.server_id)?.server.name ||
+                      "unknown"}
+                  </div>
+                </Grid>
                 <div>{item.deployment.permissions?.[user_id()] || "none"}</div>
-              </Flex>
+              </A>
             )}
           </For>
         </Grid>
@@ -74,10 +101,18 @@ const Resources: Component<{}> = (p) => {
         <Grid gridTemplateColumns={isMobile() ? undefined : "1fr 1fr"}>
           <For each={_builds()}>
             {(item) => (
-              <Flex class="card light shadow" justifyContent="space-between">
+              <A
+                href={`/build/${getId(item)}`}
+                class="card light shadow"
+                style={{
+                  "justify-content": "space-between",
+                  width: "100%",
+                  "box-sizing": "border-box",
+                }}
+              >
                 <h2>{item.name}</h2>
                 <div>{item.permissions?.[user_id()] || "none"}</div>
-              </Flex>
+              </A>
             )}
           </For>
         </Grid>
