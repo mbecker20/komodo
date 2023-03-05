@@ -37,7 +37,7 @@ const Account: Component<{}> = (p) => {
         <For each={user().secrets}>
           {(secret) => (
             <Flex
-              class="card dark shadow wrap"
+              class="card light shadow wrap"
               justifyContent="space-between"
               alignItems="center"
             >

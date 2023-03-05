@@ -2,7 +2,7 @@
 
 use ::helpers::get_socket_addr;
 use auth::JwtClient;
-use axum::Router;
+use axum::{http::StatusCode, Router};
 use state::State;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -15,6 +15,8 @@ mod helpers;
 mod monitoring;
 mod state;
 mod ws;
+
+type ResponseResult<T> = Result<T, (StatusCode, String)>;
 
 #[tokio::main]
 async fn main() {

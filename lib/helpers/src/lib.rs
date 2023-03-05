@@ -133,10 +133,7 @@ pub fn to_monitor_name(name: &str) -> String {
 }
 
 pub fn handle_anyhow_error(err: anyhow::Error) -> (StatusCode, String) {
-    (
-        StatusCode::INTERNAL_SERVER_ERROR,
-        format!("Internal Error: {err:#?}"),
-    )
+    (StatusCode::INTERNAL_SERVER_ERROR, format!("{err:#?}"))
 }
 
 pub fn generate_secret(length: usize) -> String {

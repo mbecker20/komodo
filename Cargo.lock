@@ -1945,9 +1945,9 @@ dependencies = [
 
 [[package]]
 name = "mungos"
-version = "0.3.7"
+version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fc5132f76fafd19d773c68520ab427659a7b17484f2b4705f323b60f84e9d6c"
+checksum = "588d78564faa32532f258d8e9080035b36b10f65289d3bbb6bdbbcccf5cbd3cd"
 dependencies = [
  "anyhow",
  "futures",

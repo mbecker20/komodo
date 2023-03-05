@@ -435,6 +435,18 @@
   resolved "https://registry.yarnpkg.com/@solidjs/router/-/router-0.6.0.tgz#27583cd0aa81a99482e0e7eddae5e214bd8bf6b6"
   integrity sha512-7ug2fzXXhvvDBL4CQyMvMM9o3dgBE6PoRh38T8UTmMnYz4rcCfROqSZc9yq+YEC96qWt5OvJgZ1Uj/4EAQXlfA==
 
+"@tanstack/query-core@4.26.0":
+  version "4.26.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-4.26.0.tgz#fc65c8c117e72baead3a82a1f272a4ec210c7650"
+  integrity sha512-9CRqXmCH82KZDKmezoGU4FOn1Oqbzlp2/zf71n+9nC58e7NSqCIjfSCMpqQWcu9YqUcUykxZEUunOyKHVc6BJA==
+
+"@tanstack/solid-query@^4.26.0":
+  version "4.26.0"
+  resolved "https://registry.yarnpkg.com/@tanstack/solid-query/-/solid-query-4.26.0.tgz#77aa1b60e47719075802891a1f29a0a25385bd48"
+  integrity sha512-2+dXfIHy8pU0GlrkxjXi8i7z9Ff1C7dbspAo3t6X6jJK57kesGhpE8AjmgIOUrTH1XsoHkTnBKxmoq/I7ewMCQ==
+  dependencies:
+    "@tanstack/query-core" "4.26.0"
+
 ansi-styles@^3.2.1:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/ansi-styles/-/ansi-styles-3.2.1.tgz#41fbb20243e50b12be0f04b8dedbf07520ce841d"

@@ -15,7 +15,9 @@ use typeshare::typeshare;
 
 use crate::{
     auth::{auth_request, JwtExtension, RequestUser, RequestUserExtension},
+    response,
     state::{State, StateExtension},
+    ResponseResult,
 };
 
 pub mod build;
@@ -35,22 +37,29 @@ struct UpdateDescriptionBody {
     description: String,
 }
 
+#[derive(Deserialize)]
+struct UserId {
+    id: String,
+}
+
 pub fn router() -> Router {
     Router::new()
-        .route(
-            "/user",
-            get(|jwt, req| async { get_user(jwt, req).await.map_err(handle_anyhow_error) }),
-        )
+        .route("/user", get(get_request_user))
         .nest("/listener", github_listener::router())
         .nest(
             "/",
             Router::new()
+                .route("/user/:id", get(get_user_at_id))
                 .route(
                     "/username/:id",
-                    get(|state, user_id| async {
-                        get_username(state, user_id)
+                    get(|state: StateExtension, Path(UserId { id })| async move {
+                        let user = state
+                            .db
+                            .get_user(&id)
                             .await
-                            .map_err(handle_anyhow_error)
+                            .context("failed to find user at id")
+                            .map_err(handle_anyhow_error)?;
+                        response!(Json(user.username))
                     }),
                 )
                 .route(
@@ -90,8 +99,11 @@ pub fn router() -> Router {
         )
 }
 
-async fn get_user(Extension(jwt): JwtExtension, req: Request<Body>) -> anyhow::Result<Json<User>> {
-    let mut user = jwt.authenticate(&req).await?;
+async fn get_request_user(
+    Extension(jwt): JwtExtension,
+    req: Request<Body>,
+) -> ResponseResult<Json<User>> {
+    let mut user = jwt.authenticate(&req).await.map_err(handle_anyhow_error)?;
     user.password = None;
     for secret in &mut user.secrets {
         secret.hash = String::new();
@@ -99,23 +111,10 @@ async fn get_user(Extension(jwt): JwtExtension, req: Request<Body>) -> anyhow::R
     Ok(Json(user))
 }
 
-#[derive(Deserialize)]
-struct UserId {
-    id: String,
-}
-
-async fn get_username(
-    state: StateExtension,
-    Path(UserId { id }): Path<UserId>,
-) -> anyhow::Result<String> {
-    let user = state.db.get_user(&id).await?;
-    Ok(user.username)
-}
-
 async fn get_users(
     state: StateExtension,
     user: RequestUserExtension,
-) -> Result<Json<Vec<User>>, (StatusCode, String)> {
+) -> ResponseResult<Json<Vec<User>>> {
     if user.is_admin {
         let users = state
             .db
@@ -137,8 +136,33 @@ async fn get_users(
     }
 }
 
+async fn get_user_at_id(
+    state: StateExtension,
+    Path(UserId { id }): Path<UserId>,
+    user: RequestUserExtension,
+) -> ResponseResult<Json<User>> {
+    if user.is_admin {
+        let mut user = state
+            .db
+            .users
+            .find_one_by_id(&id)
+            .await
+            .context("failed at query to get user from mongo")
+            .map_err(handle_anyhow_error)?
+            .ok_or(anyhow!(""))
+            .map_err(handle_anyhow_error)?;
+        user.password = None;
+        for secret in &mut user.secrets {
+            secret.hash = String::new();
+        }
+        Ok(Json(user))
+    } else {
+        Err((StatusCode::UNAUTHORIZED, "user is not admin".to_string()))
+    }
+}
+
 // need to run requested actions in here to prevent them being dropped mid action when user disconnects prematurely
-pub async fn spawn_request_action<A>(action: A) -> Result<A::Output, (StatusCode, String)>
+pub async fn spawn_request_action<A>(action: A) -> ResponseResult<A::Output>
 where
     A: Future + Send + 'static,
     A::Output: Send + 'static,

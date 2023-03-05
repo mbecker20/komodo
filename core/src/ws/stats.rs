@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use axum::{
     extract::{ws::Message as AxumMessage, Path, Query, WebSocketUpgrade},
-    http::StatusCode,
     response::IntoResponse,
 };
 use futures_util::{SinkExt, StreamExt};
@@ -13,7 +12,7 @@ use tokio_tungstenite::tungstenite::Message;
 use tokio_util::sync::CancellationToken;
 use types::{traits::Permissioned, PermissionLevel, SystemStatsQuery};
 
-use crate::{auth::JwtExtension, state::StateExtension};
+use crate::{auth::JwtExtension, state::StateExtension, ResponseResult};
 
 #[derive(Deserialize)]
 pub struct ServerId {
@@ -26,7 +25,7 @@ pub async fn ws_handler(
     path: Path<ServerId>,
     query: Query<SystemStatsQuery>,
     ws: WebSocketUpgrade,
-) -> Result<impl IntoResponse, (StatusCode, String)> {
+) -> ResponseResult<impl IntoResponse> {
     let server = state
         .db
         .get_server(&path.id)

@@ -16,8 +16,8 @@ import Circle from "../../shared/Circle";
 import { ControlledTabs } from "../../shared/tabs/Tabs";
 import { useAppDimensions } from "../../../state/DimensionProvider";
 import Grid from "../../shared/layout/Grid";
-import { A, useNavigate } from "@solidjs/router";
-import { Build, ServerStatus } from "../../../types";
+import { A } from "@solidjs/router";
+import { ServerStatus } from "../../../types";
 
 const mobileStyle: JSX.CSSProperties = {
   // position: "fixed",

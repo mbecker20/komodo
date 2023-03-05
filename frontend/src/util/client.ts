@@ -116,8 +116,14 @@ export class Client {
     return this.get(`/api/username/${user_id}`);
   }
 
+  // admin only
   list_users(): Promise<User[]> {
     return this.get("/api/users");
+  }
+
+  // admin only
+  get_user_by_id(user_id: string): Promise<User> {
+    return this.get(`/api/user/${user_id}`);
   }
 
   exchange_for_jwt(exchange_token: string): Promise<string> {

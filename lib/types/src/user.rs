@@ -71,6 +71,7 @@ pub struct User {
 #[diff(attr(#[derive(Debug, Serialize)]))]
 pub struct ApiSecret {
     pub name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub hash: String,
     pub created_at: String,
     pub expires: Option<String>,

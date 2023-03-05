@@ -382,7 +382,7 @@ export interface User {
 
 export interface ApiSecret {
 	name: string;
-	hash: string;
+	hash?: string;
 	created_at: string;
 	expires?: string;
 }
