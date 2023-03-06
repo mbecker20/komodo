@@ -195,6 +195,10 @@ const User: Component = () => {
                 >
                   <Grid gap="0.25rem">
                     <h2>{item.deployment.name}</h2>
+                    <div class="dimmed">
+                      {servers.get(item.deployment.server_id)?.server.name ||
+                        "unknown"}
+                    </div>
                   </Grid>
                   <Selector
                     targetClass={
