@@ -284,7 +284,7 @@ async fn modify_user_create_server_permissions(
             "user does not have permissions for this action (not admin)"
         ));
     }
-    let user = state
+    let target_user = state
         .db
         .users
         .find_one_by_id(&user_id)
@@ -312,7 +312,7 @@ async fn modify_user_create_server_permissions(
             "modify user create server permissions",
             format!(
                 "{update_type} create server permissions for {} (id: {})",
-                user.username, user.id
+                target_user.username, target_user.id
             ),
         )],
         start_ts: ts.clone(),
@@ -339,7 +339,7 @@ async fn modify_user_create_build_permissions(
             "user does not have permissions for this action (not admin)"
         ));
     }
-    let user = state
+    let target_user = state
         .db
         .users
         .find_one_by_id(&user_id)
@@ -367,7 +367,7 @@ async fn modify_user_create_build_permissions(
             "modify user create build permissions",
             format!(
                 "{update_type} create build permissions for {} (id: {})",
-                user.username, user.id
+                target_user.username, target_user.id
             ),
         )],
         start_ts: ts.clone(),
