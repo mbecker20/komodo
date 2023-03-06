@@ -49,11 +49,18 @@ import { generateQuery, QueryObject } from "./helpers";
 
 export class Client {
   loginOptions: LoginOptions | undefined;
+  monitorTitle: string | undefined;
 
   constructor(private baseURL: string, public token: string | null) {}
 
   async initialize() {
-    this.loginOptions = await this.get_login_options();
+    const [loginOptions, monitorTitle] = await Promise.all([
+      this.get_login_options(),
+      this.get_monitor_title(),
+    ]);
+    this.loginOptions = loginOptions;
+    this.monitorTitle = monitorTitle;
+    document.title = monitorTitle;
     const params = new URLSearchParams(location.search);
     const exchange_token = params.get("token");
     if (exchange_token) {
@@ -136,6 +143,10 @@ export class Client {
 
   update_description(body: UpdateDescriptionBody): Promise<undefined> {
     return this.post("/api/update_description", body);
+  }
+
+  get_monitor_title(): Promise<string> {
+    return this.get("/api/title");
   }
 
   // deployment

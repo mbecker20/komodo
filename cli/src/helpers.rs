@@ -62,6 +62,7 @@ pub fn gen_core_config(sub_matches: &ArgMatches) {
         .map(|p| p.to_owned());
 
     let config = CoreConfig {
+        title: String::from("monitor"),
         host,
         port,
         jwt_valid_for,

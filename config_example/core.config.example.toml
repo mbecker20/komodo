@@ -1,3 +1,6 @@
+# optional. this will be the document title on the web page (shows up as text in the browser tab). default is 'monitor'
+title = "monitor"
+
 # this should be the url used to access monitor in browser, potentially behind DNS, eg https://monitor.mogh.tech or http://12.34.56.78:9000
 host = "https://monitor.mogh.tech"
 

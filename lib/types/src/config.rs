@@ -17,6 +17,9 @@ pub type SecretsMap = HashMap<String, String>; // these are used for injection i
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CoreConfig {
+    #[serde(default = "default_title")]
+    pub title: String,
+
     // the host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'
     pub host: String,
 
@@ -69,6 +72,10 @@ pub struct CoreConfig {
 
     #[serde(default)]
     pub aws: AwsBuilderConfig,
+}
+
+fn default_title() -> String {
+    String::from("monitor")
 }
 
 fn default_core_port() -> u16 {

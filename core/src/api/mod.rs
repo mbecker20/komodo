@@ -44,6 +44,10 @@ struct UserId {
 
 pub fn router() -> Router {
     Router::new()
+        .route(
+            "/title",
+            get(|state: StateExtension| async move { state.config.title.clone() }),
+        )
         .route("/user", get(get_request_user))
         .nest("/listener", github_listener::router())
         .nest(
