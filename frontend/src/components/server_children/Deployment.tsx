@@ -36,10 +36,10 @@ const Deployment: Component<{ id: string }> = (p) => {
   };
   const image = () => {
     if (deployment().state === DockerContainerState.NotDeployed) {
-      derived_image();
+      return derived_image();
     } else if (deployment().container?.image) {
       if (deployment().container!.image.includes("sha256:")) {
-        derived_image();
+        return derived_image();
       }
       let [account, image] = deployment().container!.image.split("/");
       return image ? image : account;
