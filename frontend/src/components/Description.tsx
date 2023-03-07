@@ -3,8 +3,6 @@ import { client, pushNotification } from "..";
 import { useAppState } from "../state/StateProvider";
 import { UpdateTarget } from "../types";
 import { useToggle } from "../util/hooks";
-import ConfirmButton from "./shared/ConfirmButton";
-import Flex from "./shared/layout/Flex";
 import Grid from "./shared/layout/Grid";
 import Loading from "./shared/loading/Loading";
 import CenterMenu from "./shared/menu/CenterMenu";
@@ -19,7 +17,8 @@ const Description: Component<{
   const [show, toggleShow] = useToggle();
   const description = () => {
     if (p.description) {
-      return p.description;
+      let [description] = p.description.split("\n");
+      return description;
     } else {
       return "add a description";
     }
@@ -110,8 +109,7 @@ const DescriptionMenu: Component<{
         placeholder="add a description"
         value={desc()}
         onEdit={setDesc}
-        onEnter={update_description}
-        style={{ width: "700px", "max-width": "90vw", padding: "1rem" }}
+        style={{ width: "900px", "max-width": "90vw", height: "70vh", padding: "1rem" }}
         disabled={!p.userCanUpdate}
       />
       <Show when={p.userCanUpdate}>

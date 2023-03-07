@@ -5,6 +5,7 @@ const TextArea: Component<
     onEdit?: (value: string) => void;
     onConfirm?: (value: string) => void;
     onEnter?: (value: string) => void;
+    shiftDisablesOnEnter?: boolean;
     disabled?: boolean;
   } & JSX.InputHTMLAttributes<HTMLTextAreaElement> &
     JSX.HTMLAttributes<HTMLDivElement>
@@ -16,7 +17,11 @@ const TextArea: Component<
         onInput={(e) => p.onEdit && p.onEdit(e.currentTarget.value)}
         onBlur={(e) => p.onConfirm && p.onConfirm(e.currentTarget.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && p.onEnter) {
+          if (
+            e.key === "Enter" &&
+            p.onEnter &&
+            (!p.shiftDisablesOnEnter || !e.shiftKey)
+          ) {
             e.preventDefault();
             p.onEnter(e.currentTarget.value);
           }
