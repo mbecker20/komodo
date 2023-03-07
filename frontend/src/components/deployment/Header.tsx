@@ -41,22 +41,34 @@ const Header: Component<{}> = (p) => {
   const [deployed_version] = createResource(() =>
     client.get_deployment_deployed_version(params.id)
   );
-  const image = () => {
+  const derived_image = () => {
     if (deployment().deployment.build_id) {
-      const build = builds.get(deployment().deployment.build_id!)!;
-      if (deployment().state === DockerContainerState.NotDeployed) {
-        const version = deployment().deployment.build_version
-          ? readableVersion(deployment().deployment.build_version!).replaceAll(
-              "v",
-              ""
-            )
-          : "latest";
-        return `${build.name}:${version}`;
-      } else {
-        return deployed_version() && `${build.name}:${deployed_version()}`;
-      }
+      const build = builds.get(deployment().deployment.build_id!);
+      if (build === undefined) return "unknown";
+      const version =
+        deployment().state === DockerContainerState.NotDeployed
+          ? deployment().deployment.build_version
+            ? readableVersion(
+                deployment().deployment.build_version!
+              ).replaceAll("v", "")
+            : "latest"
+          : deployed_version() || "unknown";
+      return `${build.name}:${version}`;
     } else {
       return deployment().deployment.docker_run_args.image || "unknown";
+    }
+  };
+  const image = () => {
+    if (deployment().state === DockerContainerState.NotDeployed) {
+      return derived_image();
+    } else if (deployment().container?.image) {
+      if (deployment().container!.image.includes("sha256:")) {
+        return derived_image();
+      }
+      let [account, image] = deployment().container!.image.split("/");
+      return image ? image : account;
+    } else {
+      return "unknown";
     }
   };
   return (
