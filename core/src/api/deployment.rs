@@ -489,10 +489,10 @@ impl State {
                 if let Some(version) = update.version {
                     Ok(version.to_string())
                 } else {
-                    Ok("latest".to_string())
+                    Ok("unknown".to_string())
                 }
             } else {
-                Ok("latest".to_string())
+                Ok("unknown".to_string())
             }
         } else {
             let split = deployment
@@ -503,7 +503,7 @@ impl State {
             if let Some(version) = split.get(1) {
                 Ok(version.to_string())
             } else {
-                Ok("latest".to_string())
+                Ok("unknown".to_string())
             }
         }
     }
