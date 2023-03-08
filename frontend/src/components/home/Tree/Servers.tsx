@@ -42,7 +42,8 @@ const Servers: Component<{ serverIDs: string[]; showAdd?: boolean }> = (p) => {
           onEdit={setServerFilter}
           style={{ width: "100%", padding: "0.5rem" }}
         />
-        <Selector 
+        <Selector
+          label={<div class="dimmed">sort by:</div>}
           selected={sort()}
           items={TREE_SORTS as any as string[]}
           onSelect={(mode) => setSort(mode as TreeSortType)}

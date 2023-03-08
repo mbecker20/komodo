@@ -58,6 +58,7 @@ const Builds: Component<{}> = (p) => {
           style={{ width: "100%", padding: "0.5rem" }}
         />
         <Selector
+          label={<div class="dimmed">sort by:</div>}
           selected={sort()}
           items={TREE_SORTS as any as string[]}
           onSelect={(mode) => setSort(mode as TreeSortType)}

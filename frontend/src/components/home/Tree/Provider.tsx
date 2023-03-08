@@ -2,14 +2,14 @@ import { ParentComponent, createContext, useContext } from "solid-js";
 import { useAppState } from "../../../state/StateProvider";
 import { useLocalStorage } from "../../../util/hooks";
 
-export const TREE_SORTS = ["name", "created"] as const;
+export const TREE_SORTS = ["name", "created at"] as const;
 export type TreeSortType = typeof TREE_SORTS[number];
 
 const value = () => {
 	const { servers, groups, builds } = useAppState();
 	const [sort, setSort] = useLocalStorage<TreeSortType>(
     TREE_SORTS[0],
-    "home-sort-v1"
+    "home-sort-v2"
   );
 	const server_sorter = () => {
     if (!servers.loaded()) return () => 0;
