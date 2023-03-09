@@ -115,11 +115,11 @@ impl Default for Server {
 }
 
 fn default_cpu_alert() -> f32 {
-    50.0
+    95.0
 }
 
 fn default_mem_alert() -> f64 {
-    75.0
+    80.0
 }
 
 fn default_disk_alert() -> f64 {
