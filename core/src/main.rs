@@ -19,7 +19,7 @@ mod ws;
 type ResponseResult<T> = Result<T, (StatusCode, String)>;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let (config, spa_router) = config::load();
 
     println!("starting monitor core on port {}...", config.port);
@@ -42,6 +42,7 @@ async fn main() {
 
     axum::Server::bind(&get_socket_addr(config.port))
         .serve(app.into_make_service())
-        .await
-        .expect("monitor core axum server crashed");
+        .await?;
+
+    Ok(())
 }
