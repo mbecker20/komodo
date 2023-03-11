@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use anyhow::{anyhow, Context};
 use helpers::to_monitor_name;
@@ -78,6 +78,7 @@ pub async fn deploy(
     deployment: &Deployment,
     docker_token: &Option<String>,
     repo_dir: PathBuf,
+    secrets: &HashMap<String, String>,
 ) -> Log {
     if let Err(e) = docker_login(&deployment.docker_run_args.docker_account, docker_token).await {
         return Log::error("docker login", format!("{e:#?}"));
@@ -85,7 +86,22 @@ pub async fn deploy(
     let _ = pull_image(&deployment.docker_run_args.image).await;
     let _ = stop_and_remove_container(&to_monitor_name(&deployment.name)).await;
     let command = docker_run_command(deployment, repo_dir);
-    run_monitor_command("docker run", command).await
+    if deployment.skip_secret_interp {
+        run_monitor_command("docker run", command).await
+    } else {
+        let command =
+            svi::interpolate_variables(&command, secrets, svi::Interpolator::DoubleBrackets)
+                .context("failed to interpolate secrets into docker run command");
+        if let Err(e) = command {
+            return Log::error("docker run", format!("{e:?}"));
+        }
+        let (command, replacers) = command.unwrap();
+        let mut log = run_monitor_command("docker run", command).await;
+        log.command = svi::replace_in_string(&log.command, &replacers);
+        log.stdout = svi::replace_in_string(&log.stdout, &replacers);
+        log.stderr = svi::replace_in_string(&log.stderr, &replacers);
+        log
+    }
 }
 
 pub fn docker_run_command(

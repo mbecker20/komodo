@@ -14,7 +14,7 @@ mod helpers;
 type PeripheryConfigExtension = Extension<Arc<PeripheryConfig>>;
 type HomeDirExtension = Extension<Arc<String>>;
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let (args, port, config, home_dir) = config::load();
 
     if args.daemon {
@@ -29,7 +29,9 @@ fn main() {
         }
     }
 
-    run_periphery_server(port, config, home_dir)
+    run_periphery_server(port, config, home_dir)?;
+
+    Ok(())
 }
 
 #[tokio::main]
@@ -37,11 +39,12 @@ async fn run_periphery_server(
     port: u16,
     config: PeripheryConfigExtension,
     home_dir: HomeDirExtension,
-) {
+) -> anyhow::Result<()> {
     let app = api::router(config, home_dir);
 
     axum::Server::bind(&get_socket_addr(port))
         .serve(app.into_make_service_with_connect_info::<SocketAddr>())
-        .await
-        .expect("monitor periphery axum server crashed");
+        .await?;
+
+    Ok(())
 }

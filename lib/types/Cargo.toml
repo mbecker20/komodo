@@ -1,6 +1,6 @@
 [package]
 name = "monitor_types"
-version = "0.2.7"
+version = "0.2.8"
 edition = "2021"
 authors = ["MoghTech"]
 description = "types for the mogh tech monitor"

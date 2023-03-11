@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use anyhow::{anyhow, Context};
 use helpers::to_monitor_name;
@@ -20,10 +20,12 @@ pub async fn build(
         docker_build_args,
         docker_account,
         docker_organization,
+        skip_secret_interp,
         ..
     }: &Build,
     mut repo_dir: PathBuf,
     docker_token: Option<String>,
+    secrets: &HashMap<String, String>,
 ) -> anyhow::Result<Vec<Log>> {
     let mut logs = Vec::new();
     let DockerBuildArgs {
@@ -55,8 +57,19 @@ pub async fn build(
         "cd {} && docker build {build_args}{image_tags} -f {dockerfile_path} .{docker_push}",
         build_dir.display()
     );
-    let build_log = run_monitor_command("docker build", command).await;
-    logs.push(build_log);
+    if *skip_secret_interp {
+        let build_log = run_monitor_command("docker build", command).await;
+        logs.push(build_log);
+    } else {
+        let (command, replacers) =
+            svi::interpolate_variables(&command, secrets, svi::Interpolator::DoubleBrackets)
+                .context("failed to interpolate secrets into docker build command")?;
+        let mut build_log = run_monitor_command("docker build", command).await;
+        build_log.command = svi::replace_in_string(&build_log.command, &replacers);
+        build_log.stdout = svi::replace_in_string(&build_log.stdout, &replacers);
+        build_log.stderr = svi::replace_in_string(&build_log.stderr, &replacers);
+        logs.push(build_log);
+    }
     Ok(logs)
 }
 

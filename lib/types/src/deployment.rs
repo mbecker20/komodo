@@ -37,6 +37,11 @@ pub struct Deployment {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
+    #[serde(default)]
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub skip_secret_interp: bool,
+
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "docker_run_args_diff_no_change")]))]
     pub docker_run_args: DockerRunArgs,

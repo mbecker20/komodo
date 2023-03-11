@@ -109,7 +109,13 @@ async fn deploy(
 ) -> anyhow::Result<Json<Log>> {
     let log = match get_docker_token(&deployment.docker_run_args.docker_account, &config) {
         Ok(docker_token) => tokio::spawn(async move {
-            docker::deploy(&deployment, &docker_token, config.repo_dir.clone()).await
+            docker::deploy(
+                &deployment,
+                &docker_token,
+                config.repo_dir.clone(),
+                &config.secrets,
+            )
+            .await
         })
         .await
         .context("failed at spawn thread for deploy")?,

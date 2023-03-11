@@ -37,6 +37,11 @@ pub struct Build {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
+    #[serde(default)]
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub skip_secret_interp: bool,
+
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub server_id: Option<String>, // server which this image should be built on

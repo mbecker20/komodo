@@ -26,7 +26,14 @@ async fn build_image(
     tokio::spawn(async move {
         let logs = match get_docker_token(&build.docker_account, &config) {
             Ok(docker_token) => {
-                match docker::build(&build, config.repo_dir.clone(), docker_token).await {
+                match docker::build(
+                    &build,
+                    config.repo_dir.clone(),
+                    docker_token,
+                    &config.secrets,
+                )
+                .await
+                {
                     Ok(logs) => logs,
                     Err(e) => vec![Log::error("build", format!("{e:#?}"))],
                 }

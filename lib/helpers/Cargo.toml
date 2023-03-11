@@ -1,6 +1,6 @@
 [package]
 name = "monitor_helpers"
-version = "0.2.7"
+version = "0.2.8"
 edition = "2021"
 authors = ["MoghTech"]
 description = "helpers used as dependency for mogh tech monitor"
