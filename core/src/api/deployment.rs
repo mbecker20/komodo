@@ -44,6 +44,12 @@ pub struct CopyDeploymentBody {
 }
 
 #[typeshare]
+#[derive(Serialize, Deserialize)]
+pub struct RenameDeploymentBody {
+    new_name: String,
+}
+
+#[typeshare]
 #[derive(Deserialize)]
 pub struct GetContainerLogQuery {
     tail: Option<u32>,
@@ -159,6 +165,24 @@ pub fn router() -> Router {
                     })
                     .await??;
                     response!(Json(deployment))
+                },
+            ),
+        )
+        .route(
+            "/:id/rename",
+            patch(
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 deployment: Path<DeploymentId>,
+                 body: Json<RenameDeploymentBody>| async move {
+                    let update = spawn_request_action(async move {
+                        state
+                            .rename_deployment(&deployment.id, &body.new_name, &user)
+                            .await
+                            .map_err(handle_anyhow_error)
+                    })
+                    .await??;
+                    response!(Json(update))
                 },
             ),
         )
@@ -324,7 +348,7 @@ pub fn router() -> Router {
 }
 
 impl State {
-    async fn get_deployment_with_container_state(
+    pub async fn get_deployment_with_container_state(
         &self,
         user: &RequestUser,
         id: &str,

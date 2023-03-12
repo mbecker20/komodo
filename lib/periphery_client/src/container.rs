@@ -70,6 +70,21 @@ impl PeripheryClient {
         .context("failed to remove container on periphery")
     }
 
+    pub async fn container_rename(
+        &self,
+        server: &Server,
+        curr_name: &str,
+        new_name: &str,
+    ) -> anyhow::Result<Log> {
+        self.post_json(
+            server,
+            "/container/rename",
+            &json!({ "curr_name": curr_name, "new_name": new_name }),
+        )
+        .await
+        .context("failed to rename container on periphery")
+    }
+
     pub async fn deploy(&self, server: &Server, deployment: &Deployment) -> anyhow::Result<Log> {
         self.post_json(server, "/container/deploy", deployment)
             .await

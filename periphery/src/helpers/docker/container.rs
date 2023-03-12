@@ -69,6 +69,13 @@ pub async fn stop_and_remove_container(container_name: &str) -> Log {
     run_monitor_command("docker stop and remove", command).await
 }
 
+pub async fn rename_container(curr_name: &str, new_name: &str) -> Log {
+    let curr = to_monitor_name(curr_name);
+    let new = to_monitor_name(new_name);
+    let command = format!("docker rename {curr} {new}");
+    run_monitor_command("docker rename", command).await
+}
+
 pub async fn pull_image(image: &str) -> Log {
     let command = format!("docker pull {image}");
     run_monitor_command("docker pull", command).await

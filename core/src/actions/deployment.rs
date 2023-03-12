@@ -1,10 +1,12 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::{all_logs_success, to_monitor_name};
+use mungos::doc;
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
-    Deployment, Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget,
+    Deployment, DeploymentWithContainerState, DockerContainerState, Log, Operation,
+    PermissionLevel, ServerStatus, ServerWithStatus, Update, UpdateStatus, UpdateTarget,
 };
 
 use crate::{
@@ -272,6 +274,157 @@ impl State {
         self.update_update(update).await?;
 
         Ok(new_deployment)
+    }
+
+    pub async fn rename_deployment(
+        &self,
+        deployment_id: &str,
+        new_name: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.deployment_busy(&deployment_id).await {
+            return Err(anyhow!("deployment busy"));
+        }
+        {
+            let mut lock = self.deployment_action_states.lock().await;
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.renaming = true;
+        }
+        let res = self
+            .rename_deployment_inner(deployment_id, new_name, user)
+            .await;
+        {
+            let mut lock = self.deployment_action_states.lock().await;
+            let entry = lock.entry(deployment_id.to_string()).or_default();
+            entry.renaming = false;
+        }
+        res
+    }
+
+    async fn rename_deployment_inner(
+        &self,
+        deployment_id: &str,
+        new_name: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Update> {
+        let start_ts = monitor_timestamp();
+        let deployment = self
+            .get_deployment_check_permissions(deployment_id, user, PermissionLevel::Update)
+            .await?;
+        let mut update = Update {
+            target: UpdateTarget::Deployment(deployment_id.to_string()),
+            operation: Operation::RenameDeployment,
+            start_ts,
+            status: UpdateStatus::InProgress,
+            operator: user.id.to_string(),
+            success: true,
+            ..Default::default()
+        };
+        update.id = self.add_update(update.clone()).await?;
+        let server_with_status = self.get_server(&deployment.server_id, user).await;
+        if server_with_status.is_err() {
+            update.logs.push(Log::error(
+                "get server",
+                format!(
+                    "failed to get server info: {:?}",
+                    server_with_status.as_ref().err().unwrap()
+                ),
+            ));
+            update.status = UpdateStatus::Complete;
+            update.end_ts = monitor_timestamp().into();
+            update.success = false;
+            self.update_update(update).await?;
+            return Err(server_with_status.err().unwrap());
+        }
+        let ServerWithStatus { server, status } = server_with_status.unwrap();
+        if status != ServerStatus::Ok {
+            update.logs.push(Log::error(
+                "check server status",
+                String::from("cannot rename deployment when periphery is disabled or unreachable"),
+            ));
+            update.status = UpdateStatus::Complete;
+            update.end_ts = monitor_timestamp().into();
+            update.success = false;
+            self.update_update(update).await?;
+            return Err(anyhow!(
+                "cannot rename deployment when periphery is disabled or unreachable"
+            ));
+        }
+        let deployment_state = self
+            .get_deployment_with_container_state(user, deployment_id)
+            .await;
+        if deployment_state.is_err() {
+            update.logs.push(Log::error(
+                "check deployment status",
+                format!(
+                    "could not get current state of deployment: {:?}",
+                    deployment_state.as_ref().err().unwrap()
+                ),
+            ));
+            update.status = UpdateStatus::Complete;
+            update.end_ts = monitor_timestamp().into();
+            update.success = false;
+            self.update_update(update).await?;
+            return Err(deployment_state.err().unwrap());
+        }
+        let DeploymentWithContainerState { state, .. } = deployment_state.unwrap();
+        if state != DockerContainerState::NotDeployed {
+            let log = self
+                .periphery
+                .container_rename(&server, &deployment.name, new_name)
+                .await;
+            if log.is_err() {
+                update.logs.push(Log::error(
+                    "rename container",
+                    format!("{:?}", log.as_ref().err().unwrap()),
+                ));
+                update.status = UpdateStatus::Complete;
+                update.end_ts = monitor_timestamp().into();
+                update.success = false;
+                self.update_update(update).await?;
+                return Err(log.err().unwrap());
+            }
+            let log = log.unwrap();
+            if !log.success {
+                update.logs.push(log);
+                update.status = UpdateStatus::Complete;
+                update.end_ts = monitor_timestamp().into();
+                update.success = false;
+                self.update_update(update).await?;
+                return Err(anyhow!("rename container on periphery not successful"));
+            }
+            update.logs.push(log);
+        }
+        let res = self
+            .db
+            .deployments
+            .update_one(
+                deployment_id,
+                mungos::Update::<()>::Set(
+                    doc! { "name": to_monitor_name(new_name), "updated_at": monitor_timestamp() },
+                ),
+            )
+            .await
+            .context("failed to update deployment name on mongo");
+
+        if let Err(e) = res {
+            update
+                .logs
+                .push(Log::error("mongo update", format!("{e:?}")));
+        } else {
+            update.logs.push(Log::simple(
+                "mongo update",
+                String::from("updated name on mongo"),
+            ))
+        }
+
+        update.end_ts = monitor_timestamp().into();
+        update.status = UpdateStatus::Complete;
+        update.success = all_logs_success(&update.logs);
+
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
     }
 
     pub async fn reclone_deployment(

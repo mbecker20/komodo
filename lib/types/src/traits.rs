@@ -60,6 +60,7 @@ impl Busy for DeploymentActionState {
             || self.starting
             || self.stopping
             || self.updating
+            || self.renaming
     }
 }
 

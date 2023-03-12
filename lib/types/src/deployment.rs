@@ -107,6 +107,7 @@ pub struct DeploymentActionState {
     pub pulling: bool,
     pub recloning: bool,
     pub updating: bool,
+    pub renaming: bool,
 }
 
 #[typeshare]

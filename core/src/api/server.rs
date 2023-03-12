@@ -370,7 +370,11 @@ pub fn router() -> Router {
 }
 
 impl State {
-    async fn get_server(&self, id: &str, user: &RequestUser) -> anyhow::Result<ServerWithStatus> {
+    pub async fn get_server(
+        &self,
+        id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<ServerWithStatus> {
         let server = self
             .get_server_check_permissions(id, user, PermissionLevel::Read)
             .await?;

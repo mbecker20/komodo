@@ -124,6 +124,15 @@ impl MonitorClient {
             .context("failed at updating deployment")
     }
 
+    pub async fn rename_deployment(&self, id: &str, new_name: &str) -> anyhow::Result<Update> {
+        self.patch(
+            &format!("/api/deployment/{id}/rename"),
+            json!({ "new_name": new_name }),
+        )
+        .await
+        .context("failed at renaming deployment")
+    }
+
     pub async fn reclone_deployment(&self, id: &str) -> anyhow::Result<Update> {
         self.post::<(), _>(&format!("/api/deployment/{id}/reclone"), None)
             .await

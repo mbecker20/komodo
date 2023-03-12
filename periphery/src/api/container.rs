@@ -4,7 +4,7 @@ use axum::{
     routing::{get, post},
     Extension, Json, Router,
 };
-use helpers::{handle_anyhow_error, to_monitor_name};
+use helpers::handle_anyhow_error;
 use serde::Deserialize;
 use types::{Deployment, Log};
 
@@ -19,6 +19,12 @@ use crate::{
 #[derive(Deserialize)]
 struct Container {
     name: String,
+}
+
+#[derive(Deserialize)]
+struct RenameContainerBody {
+    curr_name: String,
+    new_name: String,
 }
 
 #[derive(Deserialize)]
@@ -67,20 +73,26 @@ pub fn router() -> Router {
         )
         .route(
             "/start",
-            post(|Json(container): Json<Container>| async move {
-                Json(docker::start_container(&to_monitor_name(&container.name)).await)
+            post(|container: Json<Container>| async move {
+                Json(docker::start_container(&container.name).await)
             }),
         )
         .route(
             "/stop",
-            post(|Json(container): Json<Container>| async move {
-                Json(docker::stop_container(&to_monitor_name(&container.name)).await)
+            post(|container: Json<Container>| async move {
+                Json(docker::stop_container(&container.name).await)
             }),
         )
         .route(
             "/remove",
-            post(|Json(container): Json<Container>| async move {
-                Json(docker::stop_and_remove_container(&to_monitor_name(&container.name)).await)
+            post(|container: Json<Container>| async move {
+                Json(docker::stop_and_remove_container(&container.name).await)
+            }),
+        )
+        .route(
+            "/rename",
+            post(|body: Json<RenameContainerBody>| async move {
+                Json(docker::rename_container(&body.curr_name, &body.new_name).await)
             }),
         )
         .route(

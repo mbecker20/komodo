@@ -100,6 +100,7 @@ pub enum Operation {
     PruneImagesServer,
     PruneContainersServer,
     PruneNetworksServer,
+    RenameServer,
 
     // build
     CreateBuild,
@@ -117,6 +118,7 @@ pub enum Operation {
     RemoveContainer,
     PullDeployment,
     RecloneDeployment,
+    RenameDeployment,
 
     // procedure
     CreateProcedure,
