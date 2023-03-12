@@ -29,7 +29,10 @@ pub struct DbClient {
 impl DbClient {
     pub async fn new(config: MongoConfig) -> DbClient {
         let db_name = &config.db_name;
-        let mungos = Mungos::new(&config.uri, &config.app_name, Duration::from_secs(3), None)
+        let mungos = Mungos::builder()
+            .uri(&config.uri)
+            .app_name(&config.app_name)
+            .build()
             .await
             .expect("failed to initialize mungos");
         DbClient {
