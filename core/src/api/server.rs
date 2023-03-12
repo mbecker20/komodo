@@ -340,6 +340,20 @@ pub fn router() -> Router {
             ),
         )
         .route(
+            "/:id/secrets",
+            get(
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(ServerId { id })| async move {
+                    let vars = state
+                        .get_available_secrets(&id, &user)
+                        .await
+                        .map_err(handle_anyhow_error)?;
+                    response!(Json(vars))
+                },
+            ),
+        )
+        .route(
             "/:id/action_state",
             get(
                 |state: StateExtension,
@@ -626,6 +640,18 @@ impl State {
             .await?;
         let docker_accounts = self.periphery.get_docker_accounts(&server).await?;
         Ok(docker_accounts)
+    }
+
+    async fn get_available_secrets(
+        &self,
+        id: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<Vec<String>> {
+        let server = self
+            .get_server_check_permissions(id, user, PermissionLevel::Read)
+            .await?;
+        let vars = self.periphery.get_available_secrets(&server).await?;
+        Ok(vars)
     }
 
     async fn get_server_action_states(

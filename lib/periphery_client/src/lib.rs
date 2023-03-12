@@ -51,6 +51,12 @@ impl PeripheryClient {
             .context("failed to get docker accounts from periphery")
     }
 
+    pub async fn get_available_secrets(&self, server: &Server) -> anyhow::Result<Vec<String>> {
+        self.get_json(server, "/secrets")
+            .await
+            .context("failed to get secret variable names from periphery")
+    }
+
     pub async fn get_system_information(
         &self,
         server: &Server,

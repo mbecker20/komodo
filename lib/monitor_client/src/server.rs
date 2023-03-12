@@ -58,6 +58,17 @@ impl MonitorClient {
         .await
     }
 
+    pub async fn get_server_available_secrets(
+        &self,
+        server_id: &str,
+    ) -> anyhow::Result<Vec<String>> {
+        self.get(
+            &format!("/api/server/{server_id}/secrets"),
+            Option::<()>::None,
+        )
+        .await
+    }
+
     pub async fn create_server(&self, name: &str, address: &str) -> anyhow::Result<Server> {
         self.post(
             "/api/server/create",
