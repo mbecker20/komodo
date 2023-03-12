@@ -1,26 +1,24 @@
-import { Component, createResource, Show } from "solid-js";
+import { Component, Show } from "solid-js";
 import Grid from "../../../shared/layout/Grid";
 import { useConfig } from "../Provider";
 import Flex from "../../../shared/layout/Flex";
 import Input from "../../../shared/Input";
 import { combineClasses } from "../../../../util/helpers";
 import { useAppState } from "../../../../state/StateProvider";
-import { client } from "../../../..";
 import { ServerStatus } from "../../../../types";
 import Selector from "../../../shared/menu/Selector";
 
 const Repo: Component<{}> = (p) => {
-  const { aws_builder_config } = useAppState();
+  const { aws_builder_config, serverGithubAccounts } = useAppState();
   const { build, setBuild, server, userCanUpdate } = useConfig();
-  const [peripheryGithubAccounts] = createResource(() => {
-    if (server()?.status === ServerStatus.Ok) {
-      return client
-        .get_server_github_accounts(build.server_id!);
-    } else return [];
-  });
   const githubAccounts = () => {
     if (build.server_id) {
-      return peripheryGithubAccounts() || [];
+      return (
+        serverGithubAccounts.get(
+          build.server_id,
+          server()?.status || ServerStatus.NotOk
+        ) || []
+      );
     } else if (build.aws_config) {
       const ami_name =
         build.aws_config?.ami_name || aws_builder_config()?.default_ami_name;

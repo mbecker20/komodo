@@ -45,7 +45,10 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     set(...args);
     set("updated", true);
   };
-  const server = () => build.server_id ? servers.get(build.server_id) : undefined;
+  const server = () =>
+    builds.get(params.id)?.server_id
+      ? servers.get(builds.get(params.id)!.server_id!)
+      : undefined;
 
   const load = () => {
     // console.log("load build");

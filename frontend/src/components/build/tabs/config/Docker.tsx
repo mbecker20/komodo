@@ -14,17 +14,11 @@ import Selector from "../../../shared/menu/Selector";
 import { useConfig } from "../Provider";
 
 const Docker: Component<{}> = (p) => {
-  const { aws_builder_config } = useAppState();
+  const { aws_builder_config, serverDockerAccounts, docker_organizations } = useAppState();
   const { build, setBuild, server, userCanUpdate } = useConfig();
-  const [dockerOrgs] = createResource(() => client.get_docker_organizations());
-  const [peripheryDockerAccounts] = createResource(() => {
-    if (server()?.status === ServerStatus.Ok) {
-      return client.get_server_docker_accounts(build.server_id!);
-    } else return [];
-  });
   const dockerAccounts = () => {
     if (build.server_id) {
-      return peripheryDockerAccounts() || [];
+      return serverDockerAccounts.get(build.server_id, server()?.status || ServerStatus.NotOk) || [];
     } else if (build.aws_config) {
       const ami_name =
         build.aws_config?.ami_name || aws_builder_config()?.default_ami_name;
@@ -87,7 +81,7 @@ const Docker: Component<{}> = (p) => {
           disabled={!userCanUpdate()}
         />
       </Flex>
-      <Show when={build.docker_organization || (dockerOrgs() || []).length > 0}>
+      <Show when={build.docker_organization || (docker_organizations() || []).length > 0}>
         <Flex
           justifyContent={userCanUpdate() ? "space-between" : undefined}
           alignItems="center"
@@ -97,7 +91,7 @@ const Docker: Component<{}> = (p) => {
           <Selector
             targetClass="blue"
             selected={build.docker_organization || "none"}
-            items={["none", ...(dockerOrgs() || [])]}
+            items={["none", ...(docker_organizations() || [])]}
             onSelect={(account) => {
               setBuild(
                 "docker_organization",

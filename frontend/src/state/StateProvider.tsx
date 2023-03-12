@@ -6,8 +6,11 @@ import {
   useDeployments,
   useGroups,
   useProcedures,
+  useServerDockerAccounts,
+  useServerGithubAccounts,
   useServerInfo,
   useServers,
+  useServerSecrets,
   useServerStats,
   useUpdates,
   useUsernames,
@@ -23,6 +26,9 @@ export type State = {
   getPermissionOnServer: (id: string) => PermissionLevel;
   serverStats: ReturnType<typeof useServerStats>;
   serverInfo: ReturnType<typeof useServerInfo>;
+  serverDockerAccounts: ReturnType<typeof useServerDockerAccounts>;
+  serverGithubAccounts: ReturnType<typeof useServerGithubAccounts>;
+  serverSecrets: ReturnType<typeof useServerSecrets>;
   ungroupedServerIds: () => string[] | undefined;
   builds: ReturnType<typeof useBuilds>;
   getPermissionOnBuild: (id: string) => PermissionLevel;
@@ -34,6 +40,8 @@ export type State = {
   getPermissionOnProcedure: (id: string) => PermissionLevel;
   updates: ReturnType<typeof useUpdates>;
   aws_builder_config: Resource<AwsBuilderConfig>;
+  docker_organizations: Resource<string[]>;
+  github_webhook_base_url: Resource<string>;
 };
 
 const context = createContext<
@@ -54,6 +62,8 @@ export const AppStateProvider: ParentComponent = (p) => {
   const deployments = useDeployments();
   const usernames = useUsernames();
   const [aws_builder_config] = createResource(() => client.get_aws_builder_defaults());
+  const [docker_organizations] = createResource(() => client.get_docker_organizations());
+  const [github_webhook_base_url] = createResource(() => client.get_github_webhook_base_url());
   const state: State = {
     usernames,
     servers,
@@ -107,6 +117,9 @@ export const AppStateProvider: ParentComponent = (p) => {
     },
     serverStats: useServerStats(servers),
     serverInfo: useServerInfo(servers),
+    serverDockerAccounts: useServerDockerAccounts(servers),
+    serverGithubAccounts: useServerGithubAccounts(servers),
+    serverSecrets: useServerSecrets(servers),
     groups,
     getPermissionOnGroup: (id: string) => {
       const group = groups.get(id)!;
@@ -133,6 +146,8 @@ export const AppStateProvider: ParentComponent = (p) => {
     },
     updates: useUpdates(),
     aws_builder_config,
+    docker_organizations,
+    github_webhook_base_url,
   };
 
   // createEffect(() => {

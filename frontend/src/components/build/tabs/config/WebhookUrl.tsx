@@ -1,5 +1,6 @@
 import { Component, createResource, Show } from "solid-js";
 import { client } from "../../../..";
+import { useAppState } from "../../../../state/StateProvider";
 import { getId } from "../../../../util/helpers";
 import CopyClipboard from "../../../shared/CopyClipboard";
 import Flex from "../../../shared/layout/Flex";
@@ -8,13 +9,11 @@ import Loading from "../../../shared/loading/Loading";
 import { useConfig } from "../Provider";
 
 const ListenerUrl: Component<{}> = (p) => {
+  const { github_webhook_base_url } = useAppState();
   const { build } = useConfig();
-  const [github_base_url] = createResource(() =>
-    client.get_github_webhook_base_url()
-  );
   const listenerUrl = () => {
-    if (github_base_url()) {
-      return `${github_base_url()}/api/listener/build/${getId(build)}`;
+    if (github_webhook_base_url()) {
+      return `${github_webhook_base_url()}/api/listener/build/${getId(build)}`;
     }
   };
   return (

@@ -1,6 +1,5 @@
 import { Component, createSignal, Show } from "solid-js";
 import { version_to_string } from "../../../../util/helpers";
-import Input from "../../../shared/Input";
 import Flex from "../../../shared/layout/Flex";
 import { useConfig } from "../Provider";
 

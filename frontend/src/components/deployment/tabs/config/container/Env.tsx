@@ -1,5 +1,13 @@
-import { Component, createEffect, createResource, createSignal, For, Show } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createResource,
+  createSignal,
+  For,
+  Show,
+} from "solid-js";
 import { client } from "../../../../..";
+import { useAppState } from "../../../../../state/StateProvider";
 import { ServerStatus } from "../../../../../types";
 import {
   combineClasses,
@@ -38,6 +46,7 @@ const Env: Component<{}> = (p) => {
 };
 
 const EditDotEnv: Component<{}> = (p) => {
+  const { serverSecrets } = useAppState();
   const [show, toggle] = useToggle();
   const [dotenv, setDotEnv] = createSignal("");
   const { deployment, setDeployment, server } = useConfig();
@@ -58,12 +67,11 @@ const EditDotEnv: Component<{}> = (p) => {
     }
     toggle();
   };
-  const [secrets] = createResource(() => {
-    if (server()?.status === ServerStatus.Ok) {
-      return client
-        .get_server_available_secrets(deployment.server_id);
-    } else return []
-  })
+  const secrets = () =>
+    serverSecrets.get(
+      deployment.server_id,
+      server()?.status || ServerStatus.NotOk
+    ) || [];
   let ref: HTMLTextAreaElement;
   return (
     <CenterMenu

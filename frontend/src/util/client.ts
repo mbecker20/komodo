@@ -50,6 +50,10 @@ import { generateQuery, QueryObject } from "./helpers";
 export class Client {
   loginOptions: LoginOptions | undefined;
   monitorTitle: string | undefined;
+  secrets_cache: Record<string, string[]> = {};
+  github_accounts_cache: Record<string, string[]> = {};
+  docker_accounts_cache: Record<string, string[]> = {};
+  server_version_cache: Record<string, string> = {};
 
   constructor(private baseURL: string, public token: string | null) {}
 
@@ -254,18 +258,51 @@ export class Client {
   }
 
   get_server_github_accounts(id: string): Promise<string[]> {
+    // if (this.github_accounts_cache[id]) {
+    //   return this.github_accounts_cache[id];
+    // } else {
+    //   this.github_accounts_cache[id] = [];
+    // }
+    // this.github_accounts_cache[id] = await this.get(
+    //   `/api/server/${id}/github_accounts`
+    // );
+    // return this.github_accounts_cache[id];
     return this.get(`/api/server/${id}/github_accounts`);
   }
 
   get_server_docker_accounts(id: string): Promise<string[]> {
+    // if (this.docker_accounts_cache[id]) {
+    //   return this.docker_accounts_cache[id];
+    // } else {
+    //   this.docker_accounts_cache[id] = [];
+    // };
+    // this.docker_accounts_cache[id] = await this.get(
+    //   `/api/server/${id}/docker_accounts`
+    // );
+    // return this.docker_accounts_cache[id];
     return this.get(`/api/server/${id}/docker_accounts`);
   }
 
   get_server_available_secrets(id: string): Promise<string[]> {
+    // if (this.secrets_cache[id]) {
+    //   return this.secrets_cache[id];
+    // } else {
+    //   this.secrets_cache[id] = [];
+    // };
+    // console.log("loading");
+    // this.secrets_cache[id] = await this.get(`/api/server/${id}/secrets`);
+    // return this.secrets_cache[id];
     return this.get(`/api/server/${id}/secrets`);
   }
 
   get_server_version(id: string): Promise<string> {
+    // if (this.server_version_cache[id]) {
+    //   return this.server_version_cache[id];
+    // } else {
+    //   this.server_version_cache[id] = "loading...";
+    // };
+    // this.server_version_cache[id] = await this.get(`/api/server/${id}/version`);
+    // return this.server_version_cache[id];
     return this.get(`/api/server/${id}/version`);
   }
 

@@ -1,4 +1,12 @@
-import { Component, createEffect, createResource, createSignal, For, Show } from "solid-js";
+import { useParams } from "@solidjs/router";
+import {
+  Component,
+  createEffect,
+  createResource,
+  createSignal,
+  For,
+  Show,
+} from "solid-js";
 import { client } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { ServerStatus } from "../../../../types";
@@ -40,9 +48,10 @@ const BuildArgs: Component<{}> = (p) => {
 };
 
 const EditBuildArgs: Component<{}> = (p) => {
-  const { aws_builder_config } = useAppState();
+  const { aws_builder_config, builds, serverSecrets } = useAppState();
   const [show, toggle] = useToggle();
   const [buildArgs, setBuildArgs] = createSignal("");
+  const params = useParams();
   const { build, setBuild, server } = useConfig();
   createEffect(() => {
     setBuildArgs(
@@ -61,16 +70,14 @@ const EditBuildArgs: Component<{}> = (p) => {
     }
     toggle();
   };
-  
-  const [peripherySecrets] = createResource(() => {
-      if (server()?.status === ServerStatus.Ok) {
-        return client
-          .get_server_available_secrets(build.server_id!);
-      } else return []
-  });
   const secrets = () => {
-    if (build.server_id) {
-      return peripherySecrets() || [];
+    if (builds.get(params.id)?.server_id) {
+      return (
+        serverSecrets.get(
+          builds.get(params.id)!.server_id!,
+          server()?.status || ServerStatus.NotOk
+        ) || []
+      );
     } else if (build.aws_config) {
       const ami_name =
         build.aws_config?.ami_name || aws_builder_config()?.default_ami_name;

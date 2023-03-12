@@ -1,5 +1,5 @@
 import { Component, createResource } from "solid-js";
-import { client } from "../../../../..";
+import { useAppState } from "../../../../../state/StateProvider";
 import { ServerStatus } from "../../../../../types";
 import { combineClasses } from "../../../../../util/helpers";
 import Input from "../../../../shared/Input";
@@ -9,13 +9,13 @@ import Selector from "../../../../shared/menu/Selector";
 import { useConfig } from "../Provider";
 
 const Git: Component<{}> = (p) => {
+  const { serverGithubAccounts } = useAppState();
   const { deployment, server, setDeployment, userCanUpdate } = useConfig();
-  const [githubAccounts] = createResource(() => {
-    if (server()?.status === ServerStatus.Ok) {
-      return client
-        .get_server_github_accounts(deployment.server_id);
-    } else return []
-  });
+  const githubAccounts = () =>
+    serverGithubAccounts.get(
+      deployment.server_id,
+      server()?.status || ServerStatus.NotOk
+    ) || [];
   return (
     <Grid class={combineClasses("config-item shadow")}>
       <h1>github config</h1>
@@ -54,7 +54,7 @@ const Git: Component<{}> = (p) => {
         <Selector
           targetClass="blue"
           selected={deployment.github_account || "none"}
-          items={["none", ...githubAccounts()!]}
+          items={["none", ...githubAccounts()]}
           onSelect={(account) => {
             setDeployment(
               "github_account",

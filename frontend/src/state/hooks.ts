@@ -112,6 +112,106 @@ export function useServerInfo(servers: ReturnType<typeof useServers>) {
   };
 }
 
+export function useServerGithubAccounts(servers: ReturnType<typeof useServers>) {
+  const [accounts, set] = createSignal<
+    Record<string, string[] | undefined>
+  >({});
+  const load = async (serverID: string) => {
+    if (servers.get(serverID)?.status === ServerStatus.Ok) {
+      try {
+        const info = await client.get_server_github_accounts(serverID);
+        set((s) => ({ ...s, [serverID]: info }));
+      } catch (error) {
+        console.log("error getting server github accounts", error);
+      }
+    }
+  };
+  const loading: Record<string, boolean> = {};
+  return {
+    get: (serverID: string, serverStatus?: ServerStatus) => {
+      const accts = accounts()[serverID];
+      if (
+        accts === undefined &&
+        !loading[serverID] &&
+        (serverStatus ? serverStatus === ServerStatus.Ok : true)
+      ) {
+        loading[serverID] = true;
+        load(serverID);
+      }
+      return accts;
+    },
+    load,
+  };
+}
+
+export function useServerDockerAccounts(
+  servers: ReturnType<typeof useServers>
+) {
+  const [accounts, set] = createSignal<Record<string, string[] | undefined>>(
+    {}
+  );
+  const load = async (serverID: string) => {
+    if (servers.get(serverID)?.status === ServerStatus.Ok) {
+      try {
+        const info = await client.get_server_docker_accounts(serverID);
+        set((s) => ({ ...s, [serverID]: info }));
+      } catch (error) {
+        console.log("error getting server docker accounts", error);
+      }
+    }
+  };
+  const loading: Record<string, boolean> = {};
+  return {
+    get: (serverID: string, serverStatus?: ServerStatus) => {
+      const accts = accounts()[serverID];
+      if (
+        accts === undefined &&
+        !loading[serverID] &&
+        (serverStatus ? serverStatus === ServerStatus.Ok : true)
+      ) {
+        loading[serverID] = true;
+        load(serverID);
+      }
+      return accts;
+    },
+    load,
+  };
+}
+
+export function useServerSecrets(
+  servers: ReturnType<typeof useServers>
+) {
+  const [accounts, set] = createSignal<Record<string, string[] | undefined>>(
+    {}
+  );
+  const load = async (serverID: string) => {
+    if (servers.get(serverID)?.status === ServerStatus.Ok) {
+      try {
+        const info = await client.get_server_available_secrets(serverID);
+        set((s) => ({ ...s, [serverID]: info }));
+      } catch (error) {
+        console.log("error getting server github_accounts", error);
+      }
+    }
+  };
+  const loading: Record<string, boolean> = {};
+  return {
+    get: (serverID: string, serverStatus?: ServerStatus) => {
+      const accts = accounts()[serverID];
+      if (
+        accts === undefined &&
+        !loading[serverID] &&
+        (serverStatus ? serverStatus === ServerStatus.Ok : true)
+      ) {
+        loading[serverID] = true;
+        load(serverID);
+      }
+      return accts;
+    },
+    load,
+  };
+}
+
 export function useUsernames() {
   const [usernames, set] = createSignal<Record<string, string | undefined>>({});
   const load = async (userID: string) => {
