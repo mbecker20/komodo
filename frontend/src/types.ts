@@ -25,6 +25,7 @@ export interface Build {
 	name: string;
 	description?: string;
 	permissions?: PermissionsMap;
+	skip_secret_interp?: boolean;
 	server_id?: string;
 	aws_config?: AwsBuilderBuildConfig;
 	version: Version;
@@ -91,6 +92,7 @@ export interface AmiAccounts {
 	ami_id: string;
 	github?: string[];
 	docker?: string[];
+	secrets?: string[];
 }
 
 export interface Deployment {
@@ -99,6 +101,7 @@ export interface Deployment {
 	description?: string;
 	server_id: string;
 	permissions?: PermissionsMap;
+	skip_secret_interp?: boolean;
 	docker_run_args: DockerRunArgs;
 	build_id?: string;
 	build_version?: Version;

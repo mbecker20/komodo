@@ -261,6 +261,10 @@ export class Client {
     return this.get(`/api/server/${id}/docker_accounts`);
   }
 
+  get_server_available_secrets(id: string): Promise<string[]> {
+    return this.get(`/api/server/${id}/secrets`);
+  }
+
   get_server_version(id: string): Promise<string> {
     return this.get(`/api/server/${id}/version`);
   }

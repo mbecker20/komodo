@@ -42,7 +42,6 @@ pub fn router(config: PeripheryConfigExtension, home_dir: HomeDirExtension) -> R
 }
 
 async fn get_available_secrets(config: PeripheryConfigExtension) -> Json<Vec<String>> {
-    let mut vars: Vec<String> = config.secrets.keys().map(|k| k.clone()).collect();
-    vars.sort();
+    let vars: Vec<String> = config.secrets.keys().map(|k| k.clone()).collect();
     Json(vars)
 }

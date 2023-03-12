@@ -1,4 +1,6 @@
-import { Component, createEffect, createSignal, Show } from "solid-js";
+import { Component, createEffect, createSignal, For, Show } from "solid-js";
+import { client } from "../../../../..";
+import { ServerStatus } from "../../../../../types";
 import {
   combineClasses,
   parseDotEnvToEnvVars,
@@ -38,7 +40,7 @@ const Env: Component<{}> = (p) => {
 const EditDotEnv: Component<{}> = (p) => {
   const [show, toggle] = useToggle();
   const [dotenv, setDotEnv] = createSignal("");
-  const { deployment, setDeployment } = useConfig();
+  const { deployment, setDeployment, server } = useConfig();
   createEffect(() => {
     setDotEnv(
       parseEnvVarseToDotEnv(
@@ -56,6 +58,15 @@ const EditDotEnv: Component<{}> = (p) => {
     }
     toggle();
   };
+  const [secrets, setSecrets] = createSignal<string[]>();
+  createEffect(() => {
+    if (server()?.status === ServerStatus.Ok) {
+      client
+        .get_server_available_secrets(deployment.server_id)
+        .then(setSecrets);
+    }
+  });
+  let ref: HTMLTextAreaElement;
   return (
     <CenterMenu
       show={show}
@@ -69,19 +80,44 @@ const EditDotEnv: Component<{}> = (p) => {
         </button>
       )}
       content={() => (
-        <TextArea
-          class="scroller"
-          placeholder="VARIABLE=value   #example"
-          value={dotenv()}
-          onEdit={setDotEnv}
-          style={{
-            width: "1000px",
-            "max-width": "90vw",
-            height: "80vh",
-            padding: "1rem",
-          }}
-          spellcheck={false}
-        />
+        <Grid>
+          <Show when={secrets()?.length || 0 > 0}>
+            <Flex class="wrap" justifyContent="flex-end" alignItems="center">
+              <h2 class="dimmed">secrets:</h2>
+              <For each={secrets()}>
+                {(secret) => (
+                  <button
+                    class="blue"
+                    onClick={() =>
+                      setDotEnv(
+                        (env) =>
+                          env.slice(0, ref.selectionStart) +
+                          `[[${secret}]]` +
+                          env.slice(ref.selectionStart, undefined)
+                      )
+                    }
+                  >
+                    {secret}
+                  </button>
+                )}
+              </For>
+            </Flex>
+          </Show>
+          <TextArea
+            ref={ref! as any}
+            class="scroller"
+            placeholder="VARIABLE=value   #example"
+            value={dotenv()}
+            onEdit={setDotEnv}
+            style={{
+              width: "1000px",
+              "max-width": "90vw",
+              height: "80vh",
+              padding: "1rem",
+            }}
+            spellcheck={false}
+          />
+        </Grid>
       )}
     />
   );

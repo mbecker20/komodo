@@ -168,6 +168,8 @@ pub struct AmiAccounts {
     pub github: Vec<String>,
     #[serde(default)]
     pub docker: Vec<String>,
+    #[serde(default)]
+    pub secrets: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
