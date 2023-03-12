@@ -1,8 +1,11 @@
-import { Component, createEffect, createSignal, Show } from "solid-js";
+import { Component, createResource, Show } from "solid-js";
 import { client } from "../../../../..";
 import { useAppState } from "../../../../../state/StateProvider";
-import { BuildVersionsReponse } from "../../../../../types";
-import { combineClasses, string_to_version, version_to_string } from "../../../../../util/helpers";
+import {
+  combineClasses,
+  string_to_version,
+  version_to_string,
+} from "../../../../../util/helpers";
 import Input from "../../../../shared/Input";
 import Flex from "../../../../shared/layout/Flex";
 import Selector from "../../../../shared/menu/Selector";
@@ -11,10 +14,9 @@ import { useConfig } from "../Provider";
 const Image: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
   const { builds } = useAppState();
-  const [versions, setVersions] = createSignal<BuildVersionsReponse[]>([]);
-  createEffect(() => {
+  const [versions] = createResource(() => {
     if (deployment.build_id) {
-      client.get_build_versions(deployment.build_id).then(setVersions);
+      return client.get_build_versions(deployment.build_id);
     }
   });
   return (
@@ -72,7 +74,9 @@ const Image: Component<{}> = (p) => {
               }
               items={[
                 "latest",
-                ...versions().map((v) => `v${version_to_string(v.version)}`),
+                ...(versions()?.map(
+                  (v) => `v${version_to_string(v.version)}`
+                ) || []),
               ]}
               onSelect={(version) => {
                 if (version === "latest") {

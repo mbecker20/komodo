@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal } from "solid-js";
+import { Component, createResource } from "solid-js";
 import { client } from "../../../../..";
 import { ServerStatus } from "../../../../../types";
 import { combineClasses } from "../../../../../util/helpers";
@@ -10,13 +10,11 @@ import { useConfig } from "../Provider";
 
 const Git: Component<{}> = (p) => {
   const { deployment, server, setDeployment, userCanUpdate } = useConfig();
-  const [githubAccounts, setGithubAccounts] = createSignal<string[]>();
-  createEffect(() => {
+  const [githubAccounts] = createResource(() => {
     if (server()?.status === ServerStatus.Ok) {
-      client
-        .get_server_github_accounts(deployment.server_id)
-        .then(setGithubAccounts);
-    }
+      return client
+        .get_server_github_accounts(deployment.server_id);
+    } else return []
   });
   return (
     <Grid class={combineClasses("config-item shadow")}>

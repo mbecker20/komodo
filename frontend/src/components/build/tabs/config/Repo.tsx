@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, Show } from "solid-js";
+import { Component, createResource, Show } from "solid-js";
 import Grid from "../../../shared/layout/Grid";
 import { useConfig } from "../Provider";
 import Flex from "../../../shared/layout/Flex";
@@ -12,14 +12,11 @@ import Selector from "../../../shared/menu/Selector";
 const Repo: Component<{}> = (p) => {
   const { aws_builder_config } = useAppState();
   const { build, setBuild, server, userCanUpdate } = useConfig();
-  const [peripheryGithubAccounts, setPeripheryGithubAccounts] =
-    createSignal<string[]>();
-  createEffect(() => {
+  const [peripheryGithubAccounts] = createResource(() => {
     if (server()?.status === ServerStatus.Ok) {
-      client
-        .get_server_github_accounts(build.server_id!)
-        .then(setPeripheryGithubAccounts);
-    }
+      return client
+        .get_server_github_accounts(build.server_id!);
+    } else return [];
   });
   const githubAccounts = () => {
     if (build.server_id) {

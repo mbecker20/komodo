@@ -1,4 +1,8 @@
-import { Component, createEffect, createResource, createSignal, Show } from "solid-js";
+import {
+  Component,
+  createResource,
+  Show,
+} from "solid-js";
 import { client } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { ServerStatus } from "../../../../types";
@@ -13,14 +17,10 @@ const Docker: Component<{}> = (p) => {
   const { aws_builder_config } = useAppState();
   const { build, setBuild, server, userCanUpdate } = useConfig();
   const [dockerOrgs] = createResource(() => client.get_docker_organizations());
-  const [peripheryDockerAccounts, setPeripheryDockerAccounts] =
-    createSignal<string[]>();
-  createEffect(() => {
+  const [peripheryDockerAccounts] = createResource(() => {
     if (server()?.status === ServerStatus.Ok) {
-      client
-        .get_server_docker_accounts(build.server_id!)
-        .then(setPeripheryDockerAccounts);
-    }
+      return client.get_server_docker_accounts(build.server_id!);
+    } else return [];
   });
   const dockerAccounts = () => {
     if (build.server_id) {

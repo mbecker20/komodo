@@ -355,7 +355,7 @@ export class Client {
   get_build_versions(
     id: string,
     query?: BuildVersionsQuery
-  ): Promise<BuildVersionsReponse> {
+  ): Promise<BuildVersionsReponse[]> {
     return this.get(`/api/build/${id}/versions${generateQuery(query as any)}`);
   }
 

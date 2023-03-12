@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, For, Show } from "solid-js";
+import { Component, createEffect, createResource, createSignal, For, Show } from "solid-js";
 import { client } from "../../../../..";
 import { ServerStatus } from "../../../../../types";
 import {
@@ -58,14 +58,12 @@ const EditDotEnv: Component<{}> = (p) => {
     }
     toggle();
   };
-  const [secrets, setSecrets] = createSignal<string[]>();
-  createEffect(() => {
+  const [secrets] = createResource(() => {
     if (server()?.status === ServerStatus.Ok) {
-      client
-        .get_server_available_secrets(deployment.server_id)
-        .then(setSecrets);
-    }
-  });
+      return client
+        .get_server_available_secrets(deployment.server_id);
+    } else return []
+  })
   let ref: HTMLTextAreaElement;
   return (
     <CenterMenu

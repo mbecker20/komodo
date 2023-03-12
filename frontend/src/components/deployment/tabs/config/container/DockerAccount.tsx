@@ -1,4 +1,7 @@
-import { Component, createEffect, createSignal } from "solid-js";
+import {
+  Component,
+  createResource,
+} from "solid-js";
 import { client } from "../../../../..";
 import { ServerStatus } from "../../../../../types";
 import { combineClasses } from "../../../../../util/helpers";
@@ -8,24 +11,21 @@ import { useConfig } from "../Provider";
 
 const DockerAccount: Component<{}> = (p) => {
   const { deployment, setDeployment, server, userCanUpdate } = useConfig();
-  const [dockerAccounts, setDockerAccounts] = createSignal<string[]>();
-  createEffect(() => {
+  const [dockerAccounts] = createResource(() => {
     if (server()?.status === ServerStatus.Ok) {
-      client
-        .get_server_docker_accounts(deployment.server_id)
-        .then(setDockerAccounts);
-    }
+      return client.get_server_docker_accounts(deployment.server_id);
+    } else return [];
   });
   const when_none_selected = () => {
     if (deployment.build_id) {
-      return "same as build"
+      return "same as build";
     } else {
-      return "none"
+      return "none";
     }
-  }
+  };
   const accounts = () => {
     return [when_none_selected(), ...(dockerAccounts() || [])];
-  }
+  };
   return (
     <Flex
       class={combineClasses("config-item shadow")}
@@ -37,10 +37,13 @@ const DockerAccount: Component<{}> = (p) => {
       <Selector
         targetClass="blue"
         items={accounts()}
-        selected={deployment.docker_run_args.docker_account || when_none_selected()}
+        selected={
+          deployment.docker_run_args.docker_account || when_none_selected()
+        }
         onSelect={(account) =>
           setDeployment("docker_run_args", {
-            docker_account: account === when_none_selected() ? undefined : account,
+            docker_account:
+              account === when_none_selected() ? undefined : account,
           })
         }
         position="bottom right"

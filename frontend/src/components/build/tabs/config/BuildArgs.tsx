@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, For, Show } from "solid-js";
+import { Component, createEffect, createResource, createSignal, For, Show } from "solid-js";
 import { client } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { ServerStatus } from "../../../../types";
@@ -61,14 +61,12 @@ const EditBuildArgs: Component<{}> = (p) => {
     }
     toggle();
   };
-  const [peripherySecrets, setPeripherySecrets] =
-    createSignal<string[]>();
-  createEffect(() => {
-    if (server()?.status === ServerStatus.Ok) {
-      client
-        .get_server_available_secrets(build.server_id!)
-        .then(setPeripherySecrets);
-    }
+  
+  const [peripherySecrets] = createResource(() => {
+      if (server()?.status === ServerStatus.Ok) {
+        return client
+          .get_server_available_secrets(build.server_id!);
+      } else return []
   });
   const secrets = () => {
     if (build.server_id) {
