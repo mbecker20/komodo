@@ -29,6 +29,10 @@ export interface CopyDeploymentBody {
 	server_id: string;
 }
 
+export interface RenameDeploymentBody {
+	new_name: string;
+}
+
 export interface GetContainerLogQuery {
 	tail?: number;
 }

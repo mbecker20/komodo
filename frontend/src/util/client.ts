@@ -43,6 +43,7 @@ import {
   ModifyUserCreateServerBody,
   ModifyUserEnabledBody,
   PermissionsUpdateBody,
+  RenameDeploymentBody,
   UpdateDescriptionBody,
 } from "./client_types";
 import { generateQuery, QueryObject } from "./helpers";
@@ -202,6 +203,10 @@ export class Client {
 
   update_deployment(deployment: Deployment): Promise<Deployment> {
     return this.patch("/api/deployment/update", deployment);
+  }
+
+  rename_deployment(deployment_id: string, new_name: string) {
+    return this.patch(`/api/deployment/${deployment_id}/rename`, { new_name });
   }
 
   reclone_deployment(deployment_id: string): Promise<Update> {

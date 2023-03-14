@@ -129,6 +129,7 @@ export interface DeploymentActionState {
 	pulling: boolean;
 	recloning: boolean;
 	updating: boolean;
+	renaming: boolean;
 }
 
 export interface DockerRunArgs {
@@ -422,6 +423,7 @@ export enum Operation {
 	PruneImagesServer = "prune_images_server",
 	PruneContainersServer = "prune_containers_server",
 	PruneNetworksServer = "prune_networks_server",
+	RenameServer = "rename_server",
 	CreateBuild = "create_build",
 	UpdateBuild = "update_build",
 	DeleteBuild = "delete_build",
@@ -435,6 +437,7 @@ export enum Operation {
 	RemoveContainer = "remove_container",
 	PullDeployment = "pull_deployment",
 	RecloneDeployment = "reclone_deployment",
+	RenameDeployment = "rename_deployment",
 	CreateProcedure = "create_procedure",
 	UpdateProcedure = "update_procedure",
 	DeleteProcedure = "delete_procedure",
