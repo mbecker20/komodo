@@ -1,7 +1,6 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
 use futures_util::future::join_all;
-use helpers::to_monitor_name;
 use mungos::doc;
 use types::{
     monitor_timestamp,
@@ -49,7 +48,7 @@ impl State {
         }
         let start_ts = monitor_timestamp();
         let server = Server {
-            name: to_monitor_name(name),
+            name: name.to_string(),
             address,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
