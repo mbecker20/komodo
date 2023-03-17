@@ -5,6 +5,7 @@ const Input: Component<
     onEdit?: (value: string) => void;
     onConfirm?: (value: string) => void;
     onEnter?: (value: string) => void;
+    onEsc?: (value: string) => void;
     disabled?: boolean;
   } & JSX.InputHTMLAttributes<HTMLInputElement> &
     JSX.HTMLAttributes<HTMLDivElement>
@@ -14,14 +15,16 @@ const Input: Component<
       <input
         {...p}
         onInput={(e) => p.onEdit && p.onEdit(e.currentTarget.value)}
-        onBlur={(e) => p.onConfirm && p.onConfirm(e.currentTarget.value)}
+        onBlur={
+          p.onBlur || ((e) => p.onConfirm && p.onConfirm(e.currentTarget.value))
+        }
         onKeyDown={
           p.onKeyDown ||
           ((e) => {
             if (e.key === "Enter") {
-              p.onEnter
-                ? p.onEnter(e.currentTarget.value)
-                : e.currentTarget.blur();
+              p.onEnter && p.onEnter(e.currentTarget.value);
+            } else if (e.key === "Escape") {
+              p.onEsc ? p.onEsc(e.currentTarget.value) : e.currentTarget.blur();
             }
           })
         }
@@ -37,6 +40,7 @@ export const AutofocusInput: Component<
     onEdit?: (value: string) => void;
     onConfirm?: (value: string) => void;
     onEnter?: (value: string) => void;
+    onEsc?: (value: string) => void;
     disabled?: boolean;
   } & JSX.InputHTMLAttributes<HTMLInputElement> &
     JSX.HTMLAttributes<HTMLDivElement>

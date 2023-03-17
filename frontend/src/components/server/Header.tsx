@@ -79,6 +79,8 @@ const Header: Component<{}> = (p) => {
                   setEditingName(false);
                   setUpdatingName(false);
                 }}
+                onBlur={() => setEditingName(false)}
+                
               />
             </Show>
           </Show>
