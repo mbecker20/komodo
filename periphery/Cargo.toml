@@ -3,7 +3,7 @@ name = "monitor_periphery"
 version = "0.2.9"
 edition = "2021"
 authors = ["MoghTech"]
-description = "monitor periphery binary | run monitor periphery as system daemon"
+description = "monitor periphery binary"
 license = "GPL-3.0-or-later"
 
 [[bin]]

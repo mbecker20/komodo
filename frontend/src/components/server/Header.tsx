@@ -1,8 +1,7 @@
-import { Component, createResource, Show } from "solid-js";
+import { Component, createResource, createSignal, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { combineClasses, getId, serverStatusClass } from "../../util/helpers";
-import ConfirmButton from "../shared/ConfirmButton";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
@@ -15,6 +14,7 @@ import { client } from "../..";
 import Loading from "../shared/loading/Loading";
 import HoverMenu from "../shared/menu/HoverMenu";
 import ConfirmMenuButton from "../shared/ConfirmMenuButton";
+import Input, { AutofocusInput } from "../shared/Input";
 
 const Header: Component<{}> = (p) => {
   const { servers } = useAppState();
@@ -25,6 +25,8 @@ const Header: Component<{}> = (p) => {
   const { isMobile, isSemiMobile } = useAppDimensions();
   const [showUpdates, toggleShowUpdates] =
     useLocalStorageToggle("show-updates");
+  const [editingName, setEditingName] = createSignal(false);
+  const [updatingName, setUpdatingName] = createSignal(false);
   const userCanUpdate = () =>
     user().admin ||
     server().server.permissions![getId(user())] === PermissionLevel.Update;
@@ -50,7 +52,36 @@ const Header: Component<{}> = (p) => {
         }}
       >
         <Flex alignItems="center" justifyContent="space-between">
-          <h1>{server().server.name}</h1>
+          <Show
+            when={editingName()}
+            fallback={
+              <button
+                onClick={() => setEditingName(true)}
+                style={{ padding: 0 }}
+              >
+                <h1>{server().server.name}</h1>
+              </button>
+            }
+          >
+            <Show
+              when={!updatingName()}
+              fallback={<Loading type="three-dot" />}
+            >
+              <AutofocusInput
+                value={server().server.name}
+                placeholder={server().server.name}
+                onEnter={async (new_name) => {
+                  setUpdatingName(true);
+                  await client.update_server({
+                    ...server().server,
+                    name: new_name,
+                  });
+                  setEditingName(false);
+                  setUpdatingName(false);
+                }}
+              />
+            </Show>
+          </Show>
           <Show when={userCanUpdate()}>
             <Flex alignItems="center">
               <div class={serverStatusClass(server().status)}>{status()}</div>
