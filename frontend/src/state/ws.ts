@@ -110,6 +110,11 @@ async function handleMessage(
       const deployment = await client.get_deployment(update.target.id!);
       deployments.update(deployment);
     }
+  } else if (update.operation === Operation.RenameDeployment) {
+    if (update.status === UpdateStatus.Complete) {
+      const deployment = await client.get_deployment(update.target.id!);
+      deployments.update(deployment);
+    }
   } else if (
     [
       Operation.DeployContainer,

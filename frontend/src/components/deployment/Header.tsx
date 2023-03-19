@@ -1,4 +1,4 @@
-import { Component, createResource, Show } from "solid-js";
+import { Component, createResource, createSignal, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import {
@@ -19,6 +19,8 @@ import { A, useParams } from "@solidjs/router";
 import { client } from "../..";
 import CopyMenu from "../CopyMenu";
 import ConfirmMenuButton from "../shared/ConfirmMenuButton";
+import Loading from "../shared/loading/Loading";
+import { AutofocusInput } from "../shared/Input";
 
 const Header: Component<{}> = (p) => {
   const { deployments, servers, builds } = useAppState();
@@ -71,6 +73,8 @@ const Header: Component<{}> = (p) => {
       return "unknown";
     }
   };
+  const [editingName, setEditingName] = createSignal(false);
+  const [updatingName, setUpdatingName] = createSignal(false);
   return (
     <>
       <Grid
@@ -87,7 +91,34 @@ const Header: Component<{}> = (p) => {
       >
         <Flex alignItems="center" justifyContent="space-between">
           <Flex alignItems="center">
-            <h1>{deployment()!.deployment.name}</h1>
+            <Show
+              when={editingName()}
+              fallback={
+                <button
+                  onClick={() => setEditingName(true)}
+                  style={{ padding: 0 }}
+                >
+                  <h1>{deployment()!.deployment.name}</h1>
+                </button>
+              }
+            >
+              <Show
+                when={!updatingName()}
+                fallback={<Loading type="three-dot" />}
+              >
+                <AutofocusInput
+                  value={deployment().deployment.name}
+                  placeholder={deployment().deployment.name}
+                  onEnter={async (new_name) => {
+                    setUpdatingName(true);
+                    await client.rename_deployment(params.id, new_name);
+                    setEditingName(false);
+                    setUpdatingName(false);
+                  }}
+                  onBlur={() => setEditingName(false)}
+                />
+              </Show>
+            </Show>
             <div style={{ opacity: 0.7 }}>{image()}</div>
           </Flex>
           <Show when={userCanUpdate()}>

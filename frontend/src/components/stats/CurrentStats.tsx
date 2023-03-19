@@ -10,7 +10,7 @@ import {
   Show,
   Switch,
 } from "solid-js";
-import { client, MAX_PAGE_WIDTH } from "../..";
+import { client } from "../..";
 import { SystemProcess, SystemStats } from "../../types";
 import { convert_timelength_to_ms } from "../../util/helpers";
 import { useLocalStorage } from "../../util/hooks";
