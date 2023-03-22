@@ -17,13 +17,14 @@ const Home: Component<{}> = (p) => {
   const { servers } = useAppState();
   return (
     <>
-      <Grid
+      {/* <Grid
         style={{ width: "100%" }}
         gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
       >
         <Summary />
         <Updates />
-      </Grid>
+      </Grid> */}
+      <Summary />
       <TreeProvider>
         <SimpleTabs
           containerStyle={{ width: "100%" }}

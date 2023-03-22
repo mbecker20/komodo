@@ -1,5 +1,5 @@
-import { LineData, SingleValueData } from "lightweight-charts";
 import { Accessor, Component, For, ParentComponent, Show } from "solid-js";
+import { COLORS } from "../../style/colors";
 import { SystemStats, SystemStatsRecord } from "../../types";
 import {
   convertTsMsToLocalUnixTsInSecs,
@@ -8,14 +8,6 @@ import {
 import Grid from "../shared/layout/Grid";
 import LightweightChart, { LightweightValue } from "../shared/LightweightChart";
 import s from "./stats.module.scss";
-
-export const COLORS = {
-  blue: "#184e9f",
-  orange: "#ac5c36",
-  purple: "#5A0B4D",
-  green: "#41764c",
-  red: "#952E23",
-};
 
 const CHART_HEIGHT = "250px";
 const SMALL_CHART_HEIGHT = "150px";

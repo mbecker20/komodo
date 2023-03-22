@@ -1,28 +1,15 @@
-import { Accessor, Component, createMemo, For, Show } from "solid-js";
+import { Component, createMemo, For, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { DockerContainerState, ServerStatus } from "../../types";
 import Grid from "../shared/layout/Grid";
 import Flex from "../shared/layout/Flex";
-import PieChart, { PieChartSection } from "../shared/PieChart";
-import { COLORS } from "../../style/colors";
-
-const PIE_CHART_HEIGHT = 250;
 
 const Summary: Component<{}> = (p) => {
-  const deployentCount = useDeploymentCount();
-  const serverCount = useServerCount();
   return (
-    <Grid
-      class="card shadow"
-      gridTemplateColumns="1fr 1fr 1fr"
-      style={{ width: "100%", "box-sizing": "border-box" }}
-    >
-      <div style={{ width: "100%", height: `${PIE_CHART_HEIGHT}px` }}>
-        <PieChart title="deployments" sections={deployentCount()} />
-      </div>
-      <div style={{ width: "100%", height: `${PIE_CHART_HEIGHT}px` }}>
-        <PieChart title="servers" sections={serverCount()} />
-      </div>
+    <Grid class="card shadow" gridTemplateRows="auto 1fr 1fr 1fr">
+      <h1>summary</h1>
+      <DeploymentsSummary />
+      <ServersSummary />
       <BuildsSummary />
     </Grid>
   );
@@ -69,17 +56,71 @@ const BuildsSummary = () => {
   );
 };
 
-function useDeploymentCount(): Accessor<PieChartSection[]> {
+const DeploymentsSummary = () => {
+  const deployentCount = useDeploymentCount();
+  return (
+    <SummaryItem
+      title="deployments"
+      metrics={[
+        {
+          title: "total",
+          class: "text-green",
+          count: deployentCount().total,
+        },
+        {
+          title: "running",
+          class: "text-green",
+          count: deployentCount().running,
+        },
+        {
+          title: "stopped",
+          class: "text-red",
+          count: deployentCount().stopped,
+        },
+        {
+          title: "not deployed",
+          class: "text-blue",
+          count: deployentCount().notDeployed,
+        },
+        {
+          title: "unknown",
+          class: "text-blue",
+          count: deployentCount().unknown,
+        },
+      ]}
+    />
+  );
+};
+
+const ServersSummary = () => {
+  const serverCount = useServerCount();
+  return (
+    <SummaryItem
+      title="servers"
+      metrics={[
+        { title: "total", class: "text-green", count: serverCount().total },
+        { title: "healthy", class: "text-green", count: serverCount().healthy },
+        {
+          title: "unhealthy",
+          class: "text-red",
+          count: serverCount().unhealthy,
+        },
+        {
+          title: "disabled",
+          class: "text-blue",
+          count: serverCount().disabled,
+        },
+      ]}
+    />
+  );
+};
+
+function useDeploymentCount() {
   const { deployments } = useAppState();
   const count = createMemo(() => {
     const ids = deployments.ids();
     if (!ids)
-      return [
-        { title: "running", amount: 0, color: COLORS.textgreen },
-        { title: "stopped", amount: 0, color: COLORS.textred },
-        { title: "not deployed", amount: 0, color: COLORS.textblue },
-        { title: "unknown", amount: 0, color: COLORS.textorange },
-      ];
+      return { total: 0, running: 0, stopped: 0, notDeployed: 0, unknown: 0 };
     let running = 0;
     let stopped = 0;
     let notDeployed = 0;
@@ -96,25 +137,16 @@ function useDeploymentCount(): Accessor<PieChartSection[]> {
         unknown++;
       }
     }
-    return [
-      { title: "running", amount: running, color: COLORS.textgreen },
-      { title: "stopped", amount: stopped, color: COLORS.textred },
-      { title: "not deployed", amount: notDeployed, color: COLORS.textblue },
-      { title: "unknown", amount: unknown, color: COLORS.textorange },
-    ];
+    return { total: ids.length, running, stopped, notDeployed, unknown };
   });
   return count;
 }
 
-function useServerCount(): Accessor<PieChartSection[]> {
+function useServerCount() {
   const { servers } = useAppState();
   const count = createMemo(() => {
     const ids = servers.ids();
-    if (!ids) return [
-      { title: "healthy", amount: 0, color: COLORS.textgreen },
-      { title: "unhealthy", amount: 0, color: COLORS.textred },
-      { title: "disabled", amount: 0, color: COLORS.textblue },
-    ];
+    if (!ids) return { total: 0, healthy: 0, unhealthy: 0, disabled: 0 };
     let healthy = 0;
     let unhealthy = 0;
     let disabled = 0;
@@ -128,11 +160,7 @@ function useServerCount(): Accessor<PieChartSection[]> {
         unhealthy++;
       }
     }
-    return [
-      { title: "healthy", amount: healthy, color: COLORS.textgreen },
-      { title: "unhealthy", amount: unhealthy, color: COLORS.textred },
-      { title: "disabled", amount: disabled, color: COLORS.textblue },
-    ];
+    return { total: ids.length, healthy, unhealthy, disabled };
   });
   return count;
 }

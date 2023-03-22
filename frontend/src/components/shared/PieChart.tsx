@@ -7,6 +7,7 @@ import {
   onCleanup,
   onMount,
 } from "solid-js";
+import Grid from "./layout/Grid";
 
 export type PieChartSection = {
   title: string;
@@ -14,7 +15,7 @@ export type PieChartSection = {
   color: string;
 };
 
-const Piechart: Component<{
+const PieChart: Component<{
   title: string;
   sections: (PieChartSection | undefined)[];
   donutProportion?: number;
@@ -27,7 +28,7 @@ const Piechart: Component<{
   const sections = createMemo(
     () =>
       p.sections
-        .filter((s) => s)
+        .filter((s) => s && s.amount > 0)
         .sort((a, b) => {
           if (a!.amount > b!.amount) {
             return -1;
@@ -58,26 +59,24 @@ const Piechart: Component<{
     chart()?.draw();
   });
   return (
-    <div
+    <Grid
       ref={ref!}
       style={{
         width: "100%",
         height: "100%",
         "box-sizing": "border-box",
-        display: "grid",
         position: "relative",
       }}
     >
-      <div
+      <Grid
+        placeItems="center"
         style={{
           position: "absolute",
           width: "100%",
           height: "100%",
-          display: "grid",
-          "place-items": "center",
         }}
       >
-        <div style={{ display: "grid", gap: "0.2rem", "z-index": -1 }}>
+        <div style={{ display: "grid", gap: "0.2rem" }}>
           <h2>{p.title}</h2>
           <For each={sections()}>
             {(section, index) => (
@@ -92,19 +91,19 @@ const Piechart: Component<{
                       : 0.5,
                 }}
               >
-                {section.title}:
+                {section.title}:{" "}
                 <div style={{ color: section.color }}>{section.amount}</div>
               </div>
             )}
           </For>
         </div>
-      </div>
-      <canvas ref={canvas!} style={{ "z-index": 1 }} />
-    </div>
+      </Grid>
+      <canvas ref={canvas!} />
+    </Grid>
   );
 };
 
-export default Piechart;
+export default PieChart;
 
 type InnerPieChartSection = PieChartSection & {
   startAngle: number;
@@ -122,7 +121,7 @@ class PieChartCanvas {
     private canvas: HTMLCanvasElement,
     sections: PieChartSection[],
     private onSelectedUpdate: (selected: number | undefined) => void,
-    private donutProportion = 0.3,
+    private donutProportion = 0.75,
     private seperation = 0.02 // private initAngle = -Math.PI / 8
   ) {
     this.sections = [];
@@ -221,13 +220,10 @@ class PieChartCanvas {
         break;
       }
     }
-    // console.log("x", x);
-    // console.log("y", y);
-    // console.log(atan);
-    console.log(this.selected);
   }
 
   updateCanvasDim(width: number, height: number) {
+    if (width <= 0 || height <= 0) return;
     this.canvas.width = width;
     this.canvas.height = height;
     this.cx = this.canvas.width / 2;
