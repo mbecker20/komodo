@@ -1,6 +1,6 @@
 [package]
 name = "db_client"
-version = "0.2.9"
+version = "0.2.10"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

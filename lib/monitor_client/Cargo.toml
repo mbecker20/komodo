@@ -1,6 +1,6 @@
 [package]
 name = "monitor_client"
-version = "0.2.9"
+version = "0.2.10"
 edition = "2021"
 authors = ["MoghTech"]
 description = "a client to interact with the monitor system"
@@ -9,7 +9,7 @@ license = "GPL-3.0-or-later"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-monitor_types = "0.2.9"
+monitor_types = "0.2.10"
 # monitor_types = { path = "../types" }
 reqwest = { version = "0.11", features = ["json"] }
 tokio-tungstenite = { version = "0.18", features=["native-tls"] }
