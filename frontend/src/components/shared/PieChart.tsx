@@ -6,6 +6,7 @@ import {
   For,
   onCleanup,
   onMount,
+  Show,
 } from "solid-js";
 import Grid from "./layout/Grid";
 
@@ -89,10 +90,7 @@ const PieChart: Component<{
               >
                 <div
                   style={{
-                    opacity:
-                      selected() === index()
-                        ? 1
-                        : 0.7,
+                    opacity: selected() === index() ? 1 : 0.7,
                   }}
                 >
                   {section.title}:
@@ -101,6 +99,9 @@ const PieChart: Component<{
               </div>
             )}
           </For>
+          <Show when={sections().length === 0}>
+            <div style={{ opacity: 0.7 }}>none</div>
+          </Show>
         </div>
       </Grid>
       <canvas ref={canvas!} style={{ "z-index": 1 }} />

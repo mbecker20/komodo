@@ -1,8 +1,7 @@
-import { Accessor, Component, createMemo, For, Show } from "solid-js";
+import { Accessor, Component, createMemo } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { DockerContainerState, ServerStatus } from "../../types";
 import Grid from "../shared/layout/Grid";
-import Flex from "../shared/layout/Flex";
 import PieChart, { PieChartSection } from "../shared/PieChart";
 import { COLORS } from "../../style/colors";
 import { useAppDimensions } from "../../state/DimensionProvider";
@@ -40,45 +39,6 @@ const Summary: Component<{}> = (p) => {
 };
 
 export default Summary;
-
-const SummaryItem: Component<{
-  title: string;
-  metrics: Array<{ title: string; class: string; count?: number }>;
-}> = (p) => {
-  return (
-    <Flex
-      class="card light shadow wrap"
-      justifyContent="space-between"
-      alignItems="center"
-    >
-      <h2>{p.title}</h2>
-      <Flex class="wrap">
-        <For each={p.metrics}>
-          {(metric) => (
-            <Show when={metric?.count && metric.count > 0}>
-              <Flex gap="0.4rem" alignItems="center">
-                <div>{metric.title}</div>
-                <h2 class={metric.class}>{metric.count}</h2>
-              </Flex>
-            </Show>
-          )}
-        </For>
-      </Flex>
-    </Flex>
-  );
-};
-
-const BuildsSummary = () => {
-  const { builds } = useAppState();
-  return (
-    <SummaryItem
-      title="builds"
-      metrics={[
-        { title: "total", class: "text-green", count: builds.ids()?.length },
-      ]}
-    />
-  );
-};
 
 function useDeploymentCount(): Accessor<PieChartSection[]> {
   const { deployments } = useAppState();
@@ -148,3 +108,42 @@ function useServerCount(): Accessor<PieChartSection[]> {
   });
   return count;
 }
+
+// const SummaryItem: Component<{
+//   title: string;
+//   metrics: Array<{ title: string; class: string; count?: number }>;
+// }> = (p) => {
+//   return (
+//     <Flex
+//       class="card light shadow wrap"
+//       justifyContent="space-between"
+//       alignItems="center"
+//     >
+//       <h2>{p.title}</h2>
+//       <Flex class="wrap">
+//         <For each={p.metrics}>
+//           {(metric) => (
+//             <Show when={metric?.count && metric.count > 0}>
+//               <Flex gap="0.4rem" alignItems="center">
+//                 <div>{metric.title}</div>
+//                 <h2 class={metric.class}>{metric.count}</h2>
+//               </Flex>
+//             </Show>
+//           )}
+//         </For>
+//       </Flex>
+//     </Flex>
+//   );
+// };
+
+// const BuildsSummary = () => {
+//   const { builds } = useAppState();
+//   return (
+//     <SummaryItem
+//       title="builds"
+//       metrics={[
+//         { title: "total", class: "text-green", count: builds.ids()?.length },
+//       ]}
+//     />
+//   );
+// };
