@@ -1,5 +1,4 @@
 import { Component, JSX } from "solid-js";
-import Flex from "./layout/Flex";
 
 const CheckBox: Component<{
   label: JSX.Element;
