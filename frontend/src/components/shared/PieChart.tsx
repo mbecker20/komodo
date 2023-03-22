@@ -77,7 +77,7 @@ const PieChart: Component<{
         }}
       >
         <div style={{ display: "grid", gap: "0.2rem" }}>
-          <h2>{p.title}</h2>
+          <h2 style={{ "margin-bottom": "0.5rem" }}>{p.title}</h2>
           <For each={sections()}>
             {(section, index) => (
               <div
@@ -85,20 +85,25 @@ const PieChart: Component<{
                   display: "flex",
                   gap: "0.5rem",
                   "justify-content": "space-between",
-                  opacity:
-                    selected() === undefined || selected() === index()
-                      ? 1
-                      : 0.5,
                 }}
               >
-                {section.title}:{" "}
+                <div
+                  style={{
+                    opacity:
+                      selected() === index()
+                        ? 1
+                        : 0.7,
+                  }}
+                >
+                  {section.title}:
+                </div>
                 <div style={{ color: section.color }}>{section.amount}</div>
               </div>
             )}
           </For>
         </div>
       </Grid>
-      <canvas ref={canvas!} />
+      <canvas ref={canvas!} style={{ "z-index": 1 }} />
     </Grid>
   );
 };
@@ -121,7 +126,7 @@ class PieChartCanvas {
     private canvas: HTMLCanvasElement,
     sections: PieChartSection[],
     private onSelectedUpdate: (selected: number | undefined) => void,
-    private donutProportion = 0.75,
+    private donutProportion = 0.8,
     private seperation = 0.02 // private initAngle = -Math.PI / 8
   ) {
     this.sections = [];
@@ -153,9 +158,7 @@ class PieChartCanvas {
         seg.endAngle - this.seperation / this.donutProportion;
 
       ctx.fillStyle =
-        this.selected === undefined || Number(segIndex) === this.selected
-          ? seg.color
-          : `${seg.color}80`;
+        Number(segIndex) === this.selected ? seg.color : `${seg.color}B3`;
 
       ctx.beginPath();
       ctx.moveTo(
@@ -230,8 +233,8 @@ class PieChartCanvas {
     this.cy = this.canvas.height / 2;
     this.r =
       this.canvas.width < this.canvas.height
-        ? this.canvas.width / 2 - 8
-        : this.canvas.height / 2 - 8;
+        ? this.canvas.width / 2 - 2
+        : this.canvas.height / 2 - 2;
     this.draw();
   }
 }

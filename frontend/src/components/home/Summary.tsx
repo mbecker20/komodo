@@ -5,17 +5,21 @@ import Grid from "../shared/layout/Grid";
 import Flex from "../shared/layout/Flex";
 import PieChart, { PieChartSection } from "../shared/PieChart";
 import { COLORS } from "../../style/colors";
+import { useAppDimensions } from "../../state/DimensionProvider";
 
 const PIE_CHART_HEIGHT = 250;
 
 const Summary: Component<{}> = (p) => {
+  const { isMobile } = useAppDimensions();
   const deployentCount = useDeploymentCount();
   const serverCount = useServerCount();
   return (
     <Grid
       class="card shadow"
-      gridTemplateColumns="1fr 1fr 1fr"
-      style={{ width: "100%", "box-sizing": "border-box" }}
+      gridTemplateColumns={isMobile() ? "1fr" : "1fr 1fr"}
+      style={{ width: "100%", height: "100%", "box-sizing": "border-box", padding: "0.5rem" }}
+      placeItems="center"
+      gap="0"
     >
       <div style={{ width: "100%", height: `${PIE_CHART_HEIGHT}px` }}>
         <PieChart title="deployments" sections={deployentCount()} />
@@ -23,7 +27,6 @@ const Summary: Component<{}> = (p) => {
       <div style={{ width: "100%", height: `${PIE_CHART_HEIGHT}px` }}>
         <PieChart title="servers" sections={serverCount()} />
       </div>
-      <BuildsSummary />
     </Grid>
   );
 };
