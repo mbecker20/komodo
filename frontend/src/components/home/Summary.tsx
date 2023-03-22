@@ -7,7 +7,7 @@ import PieChart, { PieChartSection } from "../shared/PieChart";
 import { COLORS } from "../../style/colors";
 import { useAppDimensions } from "../../state/DimensionProvider";
 
-const PIE_CHART_HEIGHT = 250;
+const PIE_CHART_SIZE = 250;
 
 const Summary: Component<{}> = (p) => {
   const { isMobile } = useAppDimensions();
@@ -17,14 +17,22 @@ const Summary: Component<{}> = (p) => {
     <Grid
       class="card shadow"
       gridTemplateColumns={isMobile() ? "1fr" : "1fr 1fr"}
-      style={{ width: "100%", height: "100%", "box-sizing": "border-box", padding: "0.5rem" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        "box-sizing": "border-box",
+      }}
       placeItems="center"
       gap="0"
     >
-      <div style={{ width: "100%", height: `${PIE_CHART_HEIGHT}px` }}>
+      <div
+        style={{ width: `${PIE_CHART_SIZE}px`, height: `${PIE_CHART_SIZE}px` }}
+      >
         <PieChart title="deployments" sections={deployentCount()} />
       </div>
-      <div style={{ width: "100%", height: `${PIE_CHART_HEIGHT}px` }}>
+      <div
+        style={{ width: `${PIE_CHART_SIZE}px`, height: `${PIE_CHART_SIZE}px` }}
+      >
         <PieChart title="servers" sections={serverCount()} />
       </div>
     </Grid>
@@ -113,11 +121,12 @@ function useServerCount(): Accessor<PieChartSection[]> {
   const { servers } = useAppState();
   const count = createMemo(() => {
     const ids = servers.ids();
-    if (!ids) return [
-      { title: "healthy", amount: 0, color: COLORS.textgreen },
-      { title: "unhealthy", amount: 0, color: COLORS.textred },
-      { title: "disabled", amount: 0, color: COLORS.textblue },
-    ];
+    if (!ids)
+      return [
+        { title: "healthy", amount: 0, color: COLORS.textgreen },
+        { title: "unhealthy", amount: 0, color: COLORS.textred },
+        { title: "disabled", amount: 0, color: COLORS.textblue },
+      ];
     let healthy = 0;
     let unhealthy = 0;
     let disabled = 0;
