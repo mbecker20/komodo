@@ -14,26 +14,29 @@ const Summary: Component<{}> = (p) => {
   const serverCount = useServerCount();
   return (
     <Grid
-      class="card shadow"
+      class="full-size"
       gridTemplateColumns={isMobile() ? "1fr" : "1fr 1fr"}
-      style={{
-        width: "100%",
-        height: "100%",
-        "box-sizing": "border-box",
-      }}
-      placeItems="center"
-      gap="0"
     >
-      <div
-        style={{ width: `${PIE_CHART_SIZE}px`, height: `${PIE_CHART_SIZE}px` }}
-      >
-        <PieChart title="deployments" sections={deployentCount()} />
-      </div>
-      <div
-        style={{ width: `${PIE_CHART_SIZE}px`, height: `${PIE_CHART_SIZE}px` }}
-      >
-        <PieChart title="servers" sections={serverCount()} />
-      </div>
+      <Grid class="card shadow full-size" placeItems="center">
+        <div
+          style={{
+            width: `${PIE_CHART_SIZE}px`,
+            height: `${PIE_CHART_SIZE}px`,
+          }}
+        >
+          <PieChart title="deployments" sections={deployentCount()} />
+        </div>
+      </Grid>
+      <Grid class="card shadow full-size" placeItems="center">
+        <div
+          style={{
+            width: `${PIE_CHART_SIZE}px`,
+            height: `${PIE_CHART_SIZE}px`,
+          }}
+        >
+          <PieChart title="servers" sections={serverCount()} />
+        </div>
+      </Grid>
     </Grid>
   );
 };
