@@ -87,6 +87,8 @@ const CopyMenu: Component<{
                     targetClass="blue"
                     targetStyle={{ display: "flex", gap: "0.5rem" }}
                     searchStyle={{ width: "100%" }}
+                    menuClass="scroller"
+                    menuStyle={{ "max-height": "40vh" }}
                     position="bottom right"
                     useSearch
                   />
