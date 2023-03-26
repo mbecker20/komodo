@@ -4,9 +4,15 @@ import { client } from "../..";
 import { SystemInformation, Timelength } from "../../types";
 import { useLocalStorage } from "../../util/hooks";
 
+export enum StatsView {
+	Current = "current",
+	Historical = "historical",
+	Info = "info"
+}
+
 const value = () => {
 	const params = useParams();
-  const [view, setView] = useLocalStorage("current", "stats-view-v1");
+  const [view, setView] = useLocalStorage(StatsView.Current, "stats-view-v2");
   const [timelength, setTimelength] = useLocalStorage(
     Timelength.OneMinute,
     "stats-timelength-v3"

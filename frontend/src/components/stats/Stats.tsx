@@ -1,6 +1,5 @@
 import { A, useParams } from "@solidjs/router";
-import { Component, Match, Show, Switch } from "solid-js";
-import { MAX_PAGE_WIDTH } from "../..";
+import { Component, For, Match, Show, Switch } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { ServerStatus, Timelength } from "../../types";
 import Icon from "../shared/Icon";
@@ -9,7 +8,7 @@ import Grid from "../shared/layout/Grid";
 import Selector from "../shared/menu/Selector";
 import CurrentStats from "./CurrentStats";
 import HistoricalStats from "./HistoricalStats";
-import { StatsProvider, useStatsState } from "./Provider";
+import { StatsProvider, useStatsState, StatsView } from "./Provider";
 
 const TIMELENGTHS = [
   Timelength.FifteenSeconds,
@@ -33,27 +32,22 @@ const Stats = () => {
 const StatsComp: Component<{}> = () => {
   const { view } = useStatsState();
   return (
-    <Grid
-      style={{
-        width: "100%",
-        "box-sizing": "border-box",
-      }}
-    >
-      <Flex justifyContent="space-between" style={{ width: "100%" }}>
-        <Header />
-        <SysInfo />
-      </Flex>
-      <Show when={view() === "historical"}>
+    <Grid class="full-width">
+      <Header />
+      <Show when={view() === StatsView.Historical}>
         <Flex alignItems="center" style={{ "place-self": "center" }}>
           <PageManager />
         </Flex>
       </Show>
       <Switch>
-        <Match when={view() === "current"}>
+        <Match when={view() === StatsView.Current}>
           <CurrentStats />
         </Match>
-        <Match when={view() === "historical"}>
+        <Match when={view() === StatsView.Historical}>
           <HistoricalStats />
+        </Match>
+        <Match when={view() === StatsView.Info}>
+          <SysInfo />
         </Match>
       </Switch>
     </Grid>
@@ -95,28 +89,19 @@ export const Header: Component<{}> = (p) => {
       >
         {server()?.status.replaceAll("_", " ").toUpperCase()}
       </A>
-      <Grid gap="0" gridTemplateColumns="repeat(2, 1fr)">
-        <button
-          class={view() === "current" ? "selected" : "grey"}
-          style={{ width: "100%" }}
-          onClick={() => setView("current")}
-        >
-          current
-        </button>
-        <button
-          class={view() === "historical" ? "selected" : "grey"}
-          style={{ width: "100%" }}
-          onClick={() => setView("historical")}
-        >
-          historical
-        </button>
-      </Grid>
+      <Selector
+        targetClass="blue"
+        selected={view()}
+        items={Object.values(StatsView)}
+        onSelect={(v) => setView(v as StatsView)}
+        position="bottom right"
+      />
       <Show when={view() === "historical"}>
         <Selector
           targetClass="grey"
           selected={timelength()}
           items={TIMELENGTHS}
-          itemMap={t => t.replaceAll("-", " ")}
+          itemMap={(t) => t.replaceAll("-", " ")}
           itemClass="full-width"
           onSelect={(selected) => {
             setPage(0);
@@ -126,17 +111,16 @@ export const Header: Component<{}> = (p) => {
         />
       </Show>
       <Show when={view() === "current"}>
-        <Flex gap="0.5rem" alignItems="center">
-          <div>poll:</div>
-          <Selector
-            targetClass="grey"
-            selected={pollRate()}
-            items={[Timelength.OneSecond, Timelength.FiveSeconds]}
-            onSelect={(selected) => {
-              setPollRate(selected as Timelength);
-            }}
-          />
-        </Flex>
+        <Selector
+          targetClass="grey"
+          label="poll: "
+          selected={pollRate()}
+          items={[Timelength.OneSecond, Timelength.FiveSeconds]}
+          onSelect={(selected) => {
+            setPollRate(selected as Timelength);
+          }}
+          position="bottom right"
+        />
       </Show>
     </Flex>
   );
@@ -144,16 +128,35 @@ export const Header: Component<{}> = (p) => {
 
 const SysInfo = () => {
   const { sysInfo } = useStatsState();
+  const cards = () => {
+    return [
+      {
+        label: "os",
+        info: sysInfo()?.os,
+      },
+      {
+        label: "cpu",
+        info: sysInfo()?.cpu_brand,
+      },
+      {
+        label: "core count",
+        info: `${sysInfo()?.core_count} cores`,
+      },
+    ];
+  };
   return (
-    <Flex
-      alignItems="center"
-      style={{ "place-self": "center end", width: "fit-content" }}
-    >
-      <div>{sysInfo()?.os}</div>
-      {/* <div>{sysInfo()?.kernel}</div> */}
-      <div>{sysInfo()?.cpu_brand}</div>
-      <div>{sysInfo()?.core_count} cores</div>
-    </Flex>
+    <Grid class="full-width" placeItems="center">
+      <Grid class="card full-width" style={{ "max-width": "700px" }}>
+        <For each={cards()}>
+          {(c) => (
+            <Flex class="full-width" justifyContent="space-between">
+              <div>{c.label}</div>
+              <div>{c.info}</div>
+            </Flex>
+          )}
+        </For>
+      </Grid>
+    </Grid>
   );
 };
 
