@@ -37,10 +37,10 @@ const Selector: Component<{
 }> = (p) => {
   const [show, toggle] = useToggle();
   const [search, setSearch] = createSignal("");
-  let ref: HTMLInputElement | undefined;
+  let search_ref: HTMLInputElement | undefined;
   const current = () => (p.itemMap ? p.itemMap(p.selected) : p.selected);
   createEffect(() => {
-    if (show()) setTimeout(() => ref?.focus(), 200);
+    if (show()) setTimeout(() => search_ref?.focus(), 200);
   });
   return (
     <Show
@@ -70,7 +70,7 @@ const Selector: Component<{
           <>
             <Show when={p.useSearch}>
               <Input
-                ref={ref}
+                ref={search_ref}
                 placeholder="search"
                 value={search()}
                 onEdit={setSearch}

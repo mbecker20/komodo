@@ -29,20 +29,23 @@ const HistoricalStats: Component<{
   const params = useParams();
   const { timelength, page } = useStatsState();
   const [stats, setStats] = createSignal<SystemStatsRecord[]>();
-  createEffect(() => {
-    client
+  const [loading, setLoading] = createSignal(false);
+  createEffect(async () => {
+    setLoading(true);
+    const stats = await client
       .get_server_stats_history(params.id, {
         interval: timelength(),
         page: page(),
         limit: 500,
         networks: true,
         components: true,
-      })
-      .then(setStats);
+      });
+    setStats(stats);
+    setLoading(false);
   });
   return (
     <Grid class={s.Content} placeItems="start center">
-      <Show when={stats()} fallback={<Loading type="three-dot" />}>
+      <Show when={stats() && !loading()} fallback={<Loading type="three-dot" />}>
         <SimpleTabs
           localStorageKey="historical-stats-view-v3"
           defaultSelected="basic"

@@ -1,10 +1,5 @@
 import { A, useParams } from "@solidjs/router";
-import {
-  Component,
-  Match,
-  Show,
-  Switch,
-} from "solid-js";
+import { Component, Match, Show, Switch } from "solid-js";
 import { MAX_PAGE_WIDTH } from "../..";
 import { useAppState } from "../../state/StateProvider";
 import { ServerStatus, Timelength } from "../../types";
@@ -69,7 +64,15 @@ export const Header: Component<{}> = (p) => {
   const { servers } = useAppState();
   const params = useParams();
   const server = () => servers.get(params.id);
-  const { view, setView, timelength, setTimelength, setPage, pollRate, setPollRate } = useStatsState();
+  const {
+    view,
+    setView,
+    timelength,
+    setTimelength,
+    setPage,
+    pollRate,
+    setPollRate,
+  } = useStatsState();
   return (
     <Flex alignItems="center" style={{ height: "fit-content" }}>
       <h1>{server()?.server.name}</h1>
@@ -113,10 +116,13 @@ export const Header: Component<{}> = (p) => {
           targetClass="grey"
           selected={timelength()}
           items={TIMELENGTHS}
+          itemMap={t => t.replaceAll("-", " ")}
+          itemClass="full-width"
           onSelect={(selected) => {
             setPage(0);
             setTimelength(selected as Timelength);
           }}
+          position="bottom right"
         />
       </Show>
       <Show when={view() === "current"}>

@@ -1,10 +1,19 @@
-import { Accessor, Component, For, ParentComponent, Show } from "solid-js";
+import {
+  Accessor,
+  Component,
+  For,
+  JSXElement,
+  ParentComponent,
+  Show,
+} from "solid-js";
 import { COLORS } from "../../style/colors";
 import { SystemStats, SystemStatsRecord } from "../../types";
 import {
   convertTsMsToLocalUnixTsInSecs,
   get_to_one_sec_divisor,
 } from "../../util/helpers";
+import { useLocalStorage, useLocalStorageToggle } from "../../util/hooks";
+import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
 import LightweightChart, { LightweightValue } from "../shared/LightweightChart";
 import s from "./stats.module.scss";
@@ -15,13 +24,18 @@ const SMALL_CHART_HEIGHT = "150px";
 const SingleStatChart: Component<{
   line?: LightweightValue[];
   header: string;
+  headerRight?: JSXElement;
   label: string;
   color: string;
   small?: boolean;
   disableScroll?: boolean;
 }> = (p) => {
   return (
-    <StatChartContainer header={p.header} small={p.small}>
+    <StatChartContainer
+      header={p.header}
+      headerRight={p.headerRight}
+      small={p.small}
+    >
       <Show when={p.line}>
         <LightweightChart
           class={s.LightweightChart}
@@ -44,23 +58,25 @@ const SingleStatChart: Component<{
 
 const StatChartContainer: ParentComponent<{
   header: string;
+  headerRight?: JSXElement;
   small?: boolean;
 }> = (p) => {
   return (
     <Grid
       gap="0.5rem"
-      class="card shadow"
+      class="card shadow full-width"
       style={{
         height: "fit-content",
-        width: "100%",
-        "box-sizing": "border-box",
         "padding-top": "0.5rem",
         "padding-bottom": "0.2rem",
       }}
     >
-      <Show when={!p.small} fallback={<div>{p.header}</div>}>
-        <h2>{p.header}</h2>
-      </Show>
+      <Flex justifyContent="space-between">
+        <Show when={!p.small} fallback={<div>{p.header}</div>}>
+          <h2>{p.header}</h2>
+        </Show>
+        {p.headerRight}
+      </Flex>
       {p.children}
     </Grid>
   );
@@ -152,20 +168,42 @@ export const MemChart: Component<{
   small?: boolean;
   disableScroll?: boolean;
 }> = (p) => {
+  const [absolute, toggleAbsolute] = useLocalStorageToggle("stats-mem-mode-v2");
+  const symbol = () => (absolute() ? "GiB" : "%");
   const line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(
-          (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
-        ),
-        value: (100 * s.mem_used_gb) / s.mem_total_gb,
-      };
-    });
+    if (absolute()) {
+      return p.stats()?.map((s) => {
+        return {
+          time: convertTsMsToLocalUnixTsInSecs(
+            (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
+          ),
+          value: s.mem_used_gb,
+        };
+      });
+    } else {
+      return p.stats()?.map((s) => {
+        return {
+          time: convertTsMsToLocalUnixTsInSecs(
+            (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
+          ),
+          value: (100 * s.mem_used_gb) / s.mem_total_gb,
+        };
+      });
+    }
   };
   return (
     <SingleStatChart
       header="memory"
-      label="mem %"
+      headerRight={
+        <button
+          class="green"
+          style={{ padding: "0.2rem" }}
+          onClick={toggleAbsolute}
+        >
+          {symbol()}
+        </button>
+      }
+      label={`mem ${symbol()}`}
       color={COLORS.green}
       line={line()}
       small={p.small}
@@ -179,20 +217,43 @@ export const DiskChart: Component<{
   small?: boolean;
   disableScroll?: boolean;
 }> = (p) => {
+  const [absolute, toggleAbsolute] =
+    useLocalStorageToggle("stats-disk-mode-v2");
+  const symbol = () => (absolute() ? "GiB" : "%");
   const line = () => {
-    return p.stats()?.map((s) => {
-      return {
-        time: convertTsMsToLocalUnixTsInSecs(
-          (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
-        ),
-        value: (100 * s.disk.used_gb) / s.disk.total_gb,
-      };
-    });
+    if (absolute()) {
+      return p.stats()?.map((s) => {
+        return {
+          time: convertTsMsToLocalUnixTsInSecs(
+            (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
+          ),
+          value: s.disk.used_gb,
+        };
+      });
+    } else {
+      return p.stats()?.map((s) => {
+        return {
+          time: convertTsMsToLocalUnixTsInSecs(
+            (s as SystemStatsRecord).ts || (s as SystemStats).refresh_ts
+          ),
+          value: (100 * s.disk.used_gb) / s.disk.total_gb,
+        };
+      });
+    }
   };
   return (
     <SingleStatChart
       header="disk"
-      label="disk %"
+      headerRight={
+        <button
+          class="orange"
+          style={{ padding: "0.2rem" }}
+          onClick={toggleAbsolute}
+        >
+          {symbol()}
+        </button>
+      }
+      label={`disk ${symbol()}`}
       color={COLORS.orange}
       line={line()}
       small={p.small}
