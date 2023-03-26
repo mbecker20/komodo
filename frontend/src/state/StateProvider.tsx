@@ -17,7 +17,7 @@ import {
 } from "./hooks";
 import connectToWs from "./ws";
 import { useUser } from "./UserProvider";
-import { AwsBuilderConfig, PermissionLevel } from "../types";
+import { AwsBuilderConfig, PermissionLevel, UpdateTarget } from "../types";
 import { client } from "..";
 
 export type State = {
@@ -42,6 +42,7 @@ export type State = {
   aws_builder_config: Resource<AwsBuilderConfig>;
   docker_organizations: Resource<string[]>;
   github_webhook_base_url: Resource<string>;
+  name_from_update_target: (target: UpdateTarget) => string;
 };
 
 const context = createContext<
@@ -148,6 +149,17 @@ export const AppStateProvider: ParentComponent = (p) => {
     aws_builder_config,
     docker_organizations,
     github_webhook_base_url,
+    name_from_update_target: (target) => {
+      if (target.type === "Deployment" && deployments) {
+        return deployments.get(target.id!)?.deployment.name || "deleted";
+      } else if (target.type === "Server" && servers) {
+        return servers.get(target.id)?.server.name || "deleted";
+      } else if (target.type === "Build" && builds) {
+        return builds.get(target.id)?.name || "deleted";
+      } else {
+        return "admin";
+      }
+    }
   };
 
   // createEffect(() => {

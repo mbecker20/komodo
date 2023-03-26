@@ -1,4 +1,6 @@
+import { A } from "@solidjs/router";
 import { Component, createEffect, createSignal, For, Show } from "solid-js";
+import { OPERATIONS } from "../../..";
 import { useAppState } from "../../../state/StateProvider";
 import { Operation } from "../../../types";
 import Flex from "../../shared/layout/Flex";
@@ -6,10 +8,6 @@ import Grid from "../../shared/layout/Grid";
 import Loading from "../../shared/loading/Loading";
 import Selector from "../../shared/menu/Selector";
 import Update from "./Update";
-
-const OPERATIONS = Object.values(Operation)
-  .filter((e) => e !== "none" && !e.includes("user"))
-  .map((e) => e.replaceAll("_", " "));
 
 const Updates: Component<{}> = () => {
   const { updates } = useAppState();
@@ -24,8 +22,11 @@ const Updates: Component<{}> = () => {
   return (
     <Grid class="card shadow" style={{ "flex-grow": 1 }}>
       <Flex alignItems="center" justifyContent="space-between">
-        <h1>updates</h1>
+        <A href="/updates" style={{ padding: 0 }}>
+          <h1>updates</h1>
+        </A>
         <Selector
+          label="operation: "
           selected={operation() ? operation()! : "all"}
           items={["all", ...OPERATIONS]}
           onSelect={(o) =>
@@ -50,7 +51,7 @@ const Updates: Component<{}> = () => {
         }
       >
         <Grid class="updates-container-small scroller">
-          <For each={updates.collection()!}>
+          <For each={updates.collection()}>
             {(update) => <Update update={update} />}
           </For>
           <Show when={!updates.noMore()}>

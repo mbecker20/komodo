@@ -11,6 +11,7 @@ const Users = lazy(() => import("./components/users/Users"));
 const User = lazy(() => import("./components/users/User"));
 const Stats = lazy(() => import("./components/stats/Stats"));
 const Account = lazy(() => import("./components/account/Account"));
+const Updates = lazy(() => import("./components/Updates"));
 
 const App: Component = () => {
   const { user } = useUser();
@@ -19,6 +20,7 @@ const App: Component = () => {
       <Topbar />
       <Routes>
         <Route path="/" component={Home} />
+        <Route path="/updates" component={Updates} />
         <Route path="/build/:id" component={Build} />
         <Route path="/deployment/:id" component={Deployment} />
         <Route path="/server/:id" component={Server} />

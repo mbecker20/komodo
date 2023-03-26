@@ -1,8 +1,14 @@
 import {
+  Build,
+  Deployment,
+  DeploymentWithContainerState,
   DockerContainerState,
   EnvironmentVar,
+  Server,
   ServerStatus,
+  ServerWithStatus,
   Timelength,
+  UpdateTarget,
   User,
   Version,
 } from "../types";
@@ -238,10 +244,10 @@ export function readableVersion(version: Version) {
 
 export function readableUserType(user: User) {
   if (user.github_id) {
-    return "github"
+    return "github";
   } else if (user.google_id) {
-    return "google"
+    return "google";
   } else {
-    return "local"
+    return "local";
   }
 }

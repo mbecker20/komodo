@@ -11,6 +11,7 @@ import { UserProvider } from "./state/UserProvider";
 import { Client } from "./util/client";
 import { Router } from "@solidjs/router";
 import { AppStateProvider } from "./state/StateProvider";
+import { Operation } from "./types";
 
 export const TOPBAR_HEIGHT = 50;
 export const MAX_PAGE_WIDTH = 1200;
@@ -28,6 +29,10 @@ const token =
   null;
 
 export const client = new Client(MONITOR_BASE_URL, token);
+
+export const OPERATIONS = Object.values(Operation)
+  .filter((e) => e !== "none" && !e.includes("user"))
+  .map((e) => e.replaceAll("_", " "));
 
 export const { Notifications, pushNotification } = makeNotifications();
 

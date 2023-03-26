@@ -58,7 +58,8 @@ export const Search: Component<{}> = (p) => {
         >
           <Input
             ref={inputRef}
-            class={s.SearchInput}
+            class="lightgrey"
+            style={{ width: "30rem" }}
             placeholder="search"
             value={search.value()}
             onEdit={input.onEdit}

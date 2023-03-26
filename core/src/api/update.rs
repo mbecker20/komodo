@@ -12,7 +12,7 @@ use crate::{
     state::{State, StateExtension},
 };
 
-const NUM_UPDATES_PER_PAGE: usize = 10;
+const NUM_UPDATES_PER_PAGE: usize = 20;
 
 pub fn router() -> Router {
     Router::new().route(

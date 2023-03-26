@@ -288,7 +288,7 @@ export function useUpdates(target?: UpdateTarget, show_builds?: boolean) {
         operations
       );
       updates.addManyToEnd(newUpdates);
-      if (newUpdates.length !== 10) {
+      if (newUpdates.length !== 20) {
         setNoMore(true);
       }
     }

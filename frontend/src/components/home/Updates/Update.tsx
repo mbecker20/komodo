@@ -14,18 +14,9 @@ import UpdateMenu from "../../update/UpdateMenu";
 import s from "./update.module.scss";
 
 const Update: Component<{ update: UpdateType }> = (p) => {
-  const { deployments, servers, builds, usernames } = useAppState();
-  const name = () => {
-    if (p.update.target.type === "Deployment" && deployments.loaded()) {
-      return deployments.get(p.update.target.id!)?.deployment.name || "deleted";
-    } else if (p.update.target.type === "Server" && servers.loaded()) {
-      return servers.get(p.update.target.id)?.server.name || "deleted";
-    } else if (p.update.target.type === "Build" && builds.loaded()) {
-      return builds.get(p.update.target.id)?.name || "deleted";
-    } else {
-      return "monitor";
-    }
-  };
+  const { usernames, name_from_update_target } =
+    useAppState();
+  const name = () => name_from_update_target(p.update.target);
   const operation = () => {
     if (p.update.operation === Operation.BuildBuild) {
       return `build ${readableVersion(p.update.version!)}`;
