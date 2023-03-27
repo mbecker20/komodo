@@ -119,7 +119,18 @@ const Header: Component<{}> = (p) => {
                 />
               </Show>
             </Show>
-            <div style={{ opacity: 0.7 }}>{image()}</div>
+            <Show
+              when={deployment().deployment.build_id}
+              fallback={<div style={{ opacity: 0.7 }}>{image()}</div>}
+            >
+              <A
+                href={`/build/${deployment().deployment.build_id}`}
+                class="text-hover"
+                style={{ opacity: 0.7, padding: 0 }}
+              >
+                {image()}
+              </A>
+            </Show>
           </Flex>
           <Show when={userCanUpdate()}>
             <Flex alignItems="center">
