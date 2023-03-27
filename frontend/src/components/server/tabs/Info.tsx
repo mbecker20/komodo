@@ -7,7 +7,6 @@ import { readableStorageAmount } from "../../../util/helpers";
 import Flex from "../../shared/layout/Flex";
 import Grid from "../../shared/layout/Grid";
 import Loading from "../../shared/loading/Loading";
-import HoverMenu from "../../shared/menu/HoverMenu";
 
 const Info: Component<{}> = (p) => {
   const { isMobile } = useAppDimensions();

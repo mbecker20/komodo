@@ -1,6 +1,7 @@
 import { useParams } from "@solidjs/router";
 import { ParentComponent, createContext, useContext, createSignal, createResource } from "solid-js";
 import { client } from "../..";
+import { useAppState } from "../../state/StateProvider";
 import { SystemInformation, Timelength } from "../../types";
 import { useLocalStorage } from "../../util/hooks";
 
@@ -22,12 +23,7 @@ const value = () => {
     `${params.id}-stats-poll-v3`
   );
   const [page, setPage] = createSignal(0);
-  // const [wsOpen, setWsOpen] = createSignal(false);
-  const [sysInfo] = createResource<SystemInformation>(() =>
-    client.get_server_system_info(params.id)
-  );
 	return {
-		sysInfo,
 		view,
 		setView,
 		timelength,
