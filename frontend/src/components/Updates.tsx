@@ -77,8 +77,7 @@ const Updates: Component<{}> = (p) => {
         </For>
         <Show when={!updates.noMore()}>
           <button
-            class="grey"
-            style={{ width: "100%" }}
+            class="grey full-width"
             onClick={() =>
               operation()
                 ? updates.loadMore([operation()!])
