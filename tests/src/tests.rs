@@ -108,8 +108,7 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
     });
     build.docker_build_args = Some(DockerBuildArgs {
         build_path: "periphery".to_string(),
-        dockerfile_path: None,
-        build_args: Vec::new(),
+        ..Default::default()
     });
     let build = monitor.update_build(build).await?;
     println!("updated build.");
