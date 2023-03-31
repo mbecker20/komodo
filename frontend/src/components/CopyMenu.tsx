@@ -72,7 +72,7 @@ const CopyMenu: Component<{
               <Flex alignItems="center">
                 <Input
                   placeholder="copy name"
-                  class="card dark"
+                  class="card dark full-width"
                   style={{ padding: "0.5rem" }}
                   value={newName()}
                   onEdit={setNewName}
