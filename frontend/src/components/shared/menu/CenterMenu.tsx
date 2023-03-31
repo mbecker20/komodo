@@ -76,7 +76,7 @@ const Child: Component<{
     >
       <Grid
         class={combineClasses(s.Menu, "shadow")}
-        style={{ padding: (p.padding as any) || "1rem", ...p.style }}
+        style={{ padding: (p.padding as any) || "2rem", ...p.style }}
         onClick={(e) => e.stopPropagation()}
         onPointerDown={(e) => e.stopPropagation()}
       >

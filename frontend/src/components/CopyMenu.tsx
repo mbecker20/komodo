@@ -69,7 +69,7 @@ const CopyMenu: Component<{
           targetClass="blue"
           content={() => (
             <Grid placeItems="center">
-              <Flex alignItems="center">
+              <Flex class="full-width" alignItems="center">
                 <Input
                   placeholder="copy name"
                   class="card dark full-width"
