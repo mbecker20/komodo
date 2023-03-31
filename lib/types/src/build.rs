@@ -155,6 +155,12 @@ pub struct DockerBuildArgs {
     #[serde(default)]
     #[builder(default)]
     pub build_args: Vec<EnvironmentVar>,
+    #[serde(default)]
+    #[builder(default)]
+    pub extra_args: Vec<String>,
+    #[serde(default)]
+    #[builder(default)]
+    pub use_buildx: bool,
 }
 
 #[typeshare]

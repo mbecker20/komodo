@@ -38,3 +38,12 @@ pub async fn docker_login(
         Ok(false)
     }
 }
+
+fn parse_extra_args(extra_args: &Vec<String>) -> String {
+    let args = extra_args.join(" ");
+    if args.len() > 0 {
+        format!(" {args}")
+    } else {
+        args
+    }
+}

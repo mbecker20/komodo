@@ -7,7 +7,7 @@ use types::{
     Conversion, Deployment, DockerContainerStats, DockerRunArgs, EnvironmentVar, Log, RestartMode,
 };
 
-use crate::helpers::run_monitor_command;
+use crate::helpers::{run_monitor_command, docker::parse_extra_args};
 
 use super::docker_login;
 
@@ -195,14 +195,5 @@ fn parse_post_image(post_image: &Option<String>) -> String {
         format!(" {post_image}")
     } else {
         String::new()
-    }
-}
-
-fn parse_extra_args(extra_args: &Vec<String>) -> String {
-    let args = extra_args.join(" ");
-    if args.len() > 0 {
-        format!(" {args}")
-    } else {
-        args
     }
 }

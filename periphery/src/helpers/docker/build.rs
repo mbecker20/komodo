@@ -6,7 +6,7 @@ use types::{Build, DockerBuildArgs, EnvironmentVar, Log, Version};
 
 use crate::helpers::run_monitor_command;
 
-use super::docker_login;
+use super::{docker_login, parse_extra_args};
 
 pub async fn prune_images() -> Log {
     let command = format!("docker image prune -a -f");
@@ -32,6 +32,8 @@ pub async fn build(
         build_path,
         dockerfile_path,
         build_args,
+        extra_args,
+        use_buildx,
     } = docker_build_args
         .as_ref()
         .ok_or(anyhow!("build missing docker build args"))?;
@@ -46,6 +48,12 @@ pub async fn build(
         None => "Dockerfile".to_owned(),
     };
     let build_args = parse_build_args(build_args);
+    let extra_args = parse_extra_args(extra_args);
+    let buildx = if *use_buildx {
+        " buildx"
+    } else {
+        ""
+    };
     let image_name = get_image_name(&name, docker_account, docker_organization);
     let image_tags = image_tags(&image_name, &version);
     let docker_push = if using_account {
@@ -54,7 +62,7 @@ pub async fn build(
         String::new()
     };
     let command = format!(
-        "cd {} && docker build {build_args}{image_tags} -f {dockerfile_path} .{docker_push}",
+        "cd {} && docker{buildx} build {build_args}{extra_args}{image_tags} -f {dockerfile_path} .{docker_push}",
         build_dir.display()
     );
     if *skip_secret_interp {
