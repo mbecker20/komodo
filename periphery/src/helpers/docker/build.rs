@@ -62,7 +62,7 @@ pub async fn build(
         String::new()
     };
     let command = format!(
-        "cd {} && docker{buildx} build {build_args}{extra_args}{image_tags} -f {dockerfile_path} .{docker_push}",
+        "cd {} && docker{buildx} build{build_args}{extra_args}{image_tags} -f {dockerfile_path} .{docker_push}",
         build_dir.display()
     );
     if *skip_secret_interp {
@@ -105,7 +105,7 @@ fn get_latest_image_name(image_name: &str) -> String {
 
 fn image_tags(image_name: &str, version: &Version) -> String {
     format!(
-        "-t {} -t {}",
+        " -t {} -t {}",
         get_version_image_name(image_name, version),
         get_latest_image_name(image_name)
     )
