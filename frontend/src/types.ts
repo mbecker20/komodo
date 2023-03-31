@@ -56,6 +56,8 @@ export interface DockerBuildArgs {
 	build_path: string;
 	dockerfile_path?: string;
 	build_args?: EnvironmentVar[];
+	extra_args?: string[];
+	use_buildx?: boolean;
 }
 
 export interface BuildVersionsReponse {

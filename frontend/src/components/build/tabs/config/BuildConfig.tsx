@@ -11,6 +11,8 @@ import BuildArgs from "./BuildArgs";
 import Version from "./Version";
 import Repo from "./Repo";
 import WebhookUrl from "./WebhookUrl";
+import ExtraArgs from "./ExtraArgs";
+import UseBuildx from "./UseBuildx";
 
 const BuildConfig: Component<{}> = (p) => {
   const { build, reset, save, userCanUpdate } = useConfig();
@@ -23,6 +25,8 @@ const BuildConfig: Component<{}> = (p) => {
           <Docker />
           <CliBuild />
           <BuildArgs />
+          <ExtraArgs />
+          <UseBuildx />
           <Show when={userCanUpdate()}>
             <WebhookUrl />
           </Show>
