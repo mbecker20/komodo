@@ -49,11 +49,7 @@ pub async fn build(
     };
     let build_args = parse_build_args(build_args);
     let extra_args = parse_extra_args(extra_args);
-    let buildx = if *use_buildx {
-        " buildx"
-    } else {
-        ""
-    };
+    let buildx = if *use_buildx { " buildx" } else { "" };
     let image_name = get_image_name(&name, docker_account, docker_organization);
     let image_tags = image_tags(&image_name, &version);
     let docker_push = if using_account {

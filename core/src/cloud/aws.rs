@@ -1,14 +1,14 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use aws_sdk_ec2::model::{
-    BlockDeviceMapping, EbsBlockDevice, InstanceNetworkInterfaceSpecification, InstanceStateChange,
-    InstanceStateName, InstanceStatus, ResourceType, Tag, TagSpecification,
-};
-pub use aws_sdk_ec2::{
-    model::InstanceType,
-    output::{DescribeInstanceStatusOutput, TerminateInstancesOutput},
-    Client, Region,
+use aws_sdk_ec2::{
+    config::Region,
+    types::{
+        BlockDeviceMapping, EbsBlockDevice, InstanceNetworkInterfaceSpecification,
+        InstanceStateChange, InstanceStateName, InstanceStatus, InstanceType, ResourceType, Tag,
+        TagSpecification,
+    },
+    Client,
 };
 use types::Server;
 

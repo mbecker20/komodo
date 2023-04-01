@@ -1,6 +1,6 @@
 use axum_extra::routing::SpaRouter;
 use dotenv::dotenv;
-use helpers::parse_config_file;
+use merge_config_files::parse_config_file;
 use mungos::Deserialize;
 use types::CoreConfig;
 
@@ -15,7 +15,7 @@ struct Env {
 pub fn load() -> (CoreConfig, SpaRouter) {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse environment variables");
-    let config = parse_config_file(&env.config_path).expect("failed to parse config");
+    let config = parse_config_file(env.config_path).expect("failed to parse config");
     let spa_router = SpaRouter::new("/assets", env.frontend_path);
     (config, spa_router)
 }

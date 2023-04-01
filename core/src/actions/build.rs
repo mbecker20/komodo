@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
+use aws_sdk_ec2::Client;
 use diff::Diff;
 use helpers::{all_logs_success, to_monitor_name};
 use mungos::{doc, to_bson};
@@ -14,7 +15,7 @@ use types::{
 use crate::{
     auth::RequestUser,
     cloud::aws::{
-        self, create_ec2_client, create_instance_with_ami, terminate_ec2_instance, Ec2Instance,
+        create_ec2_client, create_instance_with_ami, terminate_ec2_instance, Ec2Instance,
     },
     helpers::empty_or_only_spaces,
     state::State,
@@ -426,7 +427,7 @@ impl State {
     async fn create_ec2_instance_for_build(
         &self,
         build: &Build,
-    ) -> anyhow::Result<(Ec2Instance, Option<aws::Client>, Vec<Log>)> {
+    ) -> anyhow::Result<(Ec2Instance, Option<Client>, Vec<Log>)> {
         if build.aws_config.is_none() {
             return Err(anyhow!("build has no aws_config attached"));
         }
@@ -527,7 +528,7 @@ impl State {
 
     async fn terminate_ec2_instance(
         &self,
-        aws_client: aws::Client,
+        aws_client: Client,
         server: &Ec2Instance,
         update: &mut Update,
     ) {

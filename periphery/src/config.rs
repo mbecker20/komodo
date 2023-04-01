@@ -3,7 +3,8 @@ use std::sync::Arc;
 use axum::Extension;
 use clap::Parser;
 use dotenv::dotenv;
-use helpers::{parse_comma_seperated_list, parse_config_files};
+use helpers::parse_comma_seperated_list;
+use merge_config_files::parse_config_files;
 use serde::Deserialize;
 use types::PeripheryConfig;
 
@@ -63,9 +64,9 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
         )
         .into_iter()
         .map(|p| p.replace("~", &home_dir))
-        .collect();
+        .collect::<Vec<_>>();
     let config = parse_config_files::<PeripheryConfig>(
-        &config_paths,
+        config_paths.clone(),
         args.merge_nested_config,
         args.merge_nested_config,
     )
