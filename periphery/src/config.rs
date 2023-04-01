@@ -4,7 +4,7 @@ use axum::Extension;
 use clap::Parser;
 use dotenv::dotenv;
 use helpers::parse_comma_seperated_list;
-use merge_config_files::parse_config_files;
+use merge_config_files::parse_config_paths;
 use serde::Deserialize;
 use types::PeripheryConfig;
 
@@ -26,14 +26,18 @@ pub struct Args {
     #[arg(long, default_value = "~/.monitor/periphery.log.err")]
     pub stderr: String,
 
-    /// Sets the path of a config file to use. can use multiple times
+    /// Sets the path of a config file or directory to use. can use multiple times
     #[arg(short, long)]
     pub config_path: Option<Vec<String>>,
+
+    /// Sets the keywords to match directory periphery config file names on. can use multiple times. default "periphery" and "config"
+    #[arg(long)]
+    pub config_keyword: Option<Vec<String>>,
 
     #[arg(short, long)]
     pub merge_nested_config: bool,
 
-    #[arg(short, long)]
+    #[arg(long)]
     pub home_dir: Option<String>,
 
     #[arg(short, long)]
@@ -44,6 +48,8 @@ pub struct Args {
 struct Env {
     #[serde(default = "default_config_path")]
     config_paths: String,
+    #[serde(default)]
+    config_keywords: String,
 }
 
 pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
@@ -65,8 +71,18 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
         .into_iter()
         .map(|p| p.replace("~", &home_dir))
         .collect::<Vec<_>>();
-    let config = parse_config_files::<PeripheryConfig>(
+    println!("{config_paths:?}");
+    let env_match_keywords = parse_comma_seperated_list(env.config_keywords)
+        .expect("failed to parse environemt CONFIG_KEYWORDS into comma seperated list");
+    let match_keywords = args
+        .config_keyword
+        .as_ref()
+        .unwrap_or(&env_match_keywords)
+        .into_iter()
+        .map(|kw| kw.as_str());
+    let config = parse_config_paths::<PeripheryConfig>(
         config_paths.clone(),
+        match_keywords,
         args.merge_nested_config,
         args.merge_nested_config,
     )
@@ -118,7 +134,7 @@ fn default_config_path() -> String {
 fn get_home_dir(home_dir_arg: &Option<String>) -> String {
     match home_dir_arg {
         Some(home_dir) => home_dir.to_string(),
-        None => std::env::var("$HOME")
+        None => std::env::var("HOME")
             .expect("did not find $HOME env var, should pass home dir with arg --home-dir"),
     }
 }
