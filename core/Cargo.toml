@@ -1,6 +1,6 @@
 [package]
 name = "core"
-version = "0.2.13"
+version = "0.2.14"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -37,4 +37,4 @@ typeshare = "1.0.0"
 hex = "0.4"
 aws-config = "0.55"
 aws-sdk-ec2 = "0.25"
-merge_config_files = "0.1.1"
+merge_config_files = "0.1.3"

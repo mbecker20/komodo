@@ -71,7 +71,6 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
         .into_iter()
         .map(|p| p.replace("~", &home_dir))
         .collect::<Vec<_>>();
-    println!("{config_paths:?}");
     let env_match_keywords = parse_comma_seperated_list(env.config_keywords)
         .expect("failed to parse environemt CONFIG_KEYWORDS into comma seperated list");
     let match_keywords = args
