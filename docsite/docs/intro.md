@@ -2,7 +2,7 @@
 slug: /intro
 ---
 
-# What is monitor?
+# what is monitor?
 
 If you have many servers running many applications, it can be a challenge to keep things organized and easily accessible. Without structure, things can become messy quickly, which means operational issues are more likely to arise and they can take longer to resolve. Ultimately these issues hinder productivity and waste valuable time. Monitor is a web app to provide this structure for how applications are built, deployed, and managed across many servers.
 

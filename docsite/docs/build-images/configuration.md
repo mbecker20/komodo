@@ -25,3 +25,5 @@ The Dockerfile may make use of [build args](https://docs.docker.com/engine/refer
 BUILD_ARG1=some_value
 BUILD_ARG2=some_other_value
 ```
+
+Note that these values are visible in the final image using ```docker history```, so shouldn't be used to pass build time secrets. Use [secret mounts](https://docs.docker.com/engine/reference/builder/#run---mounttypesecret) for this instead.
