@@ -1,4 +1,8 @@
-# introduction
+---
+sidebar_position: 1
+---
+
+# What is monitor?
 
 If you have many servers running many applications, it can be a challenge to keep things organized and easily accessible. Without structure, things can become messy quickly, which means operational issues are more likely to arise and they can take longer to resolve. Ultimately these issues hinder productivity and waste valuable time. Monitor is a web app to provide this structure for how applications are built, deployed, and managed across many servers.
 
@@ -38,7 +42,3 @@ Monitor exposes powerful functionality over the core's REST API, enabling infras
 Monitor is a system designed to be used by many users, whether they are developers, operations personnel, or administrators. The ability to affect an applications state is very powerful, so monitor has a granular permissioning system to only provide this functionality to the intended users. The permissioning system is explained in detail in the [permissioning](https://github.com/mbecker20/monitor/blob/main/docs/permissions.md) section. 
 
 User sign-on is possible using username / password, or with Oauth (Github and Google). Allowed login methods can be configured from the [core config](https://github.com/mbecker20/monitor/blob/main/config_example/core.config.example.toml).
-
-[next: connecting servers](https://github.com/mbecker20/monitor/blob/main/docs/servers.md)
-
-[back to table of contents](https://github.com/mbecker20/monitor/blob/main/readme.md)

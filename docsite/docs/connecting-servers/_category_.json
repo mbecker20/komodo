@@ -1,0 +1,9 @@
+{
+  "type": "category",
+  "label": "connecting servers",
+  "position": 2,
+  "link": {
+    "type": "doc",
+    "id": "/connecting-servers/index"
+  }
+}
