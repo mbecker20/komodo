@@ -31,8 +31,8 @@ export default function Home(): JSX.Element {
   const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
-      title={`monitor docs`}
-      description="Description will go into a meta tag in <head />"
+      title="monitor docs"
+      description={siteConfig.tagline}
     >
       <HomepageHeader />
       <main>
