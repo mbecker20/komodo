@@ -22,6 +22,7 @@ const config = {
   organizationName: "mbecker20", // Usually your GitHub org/user name.
   projectName: "monitor", // Usually your repo name.
   trailingSlash: false,
+  deploymentBranch: "gh-pages-docs",
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
