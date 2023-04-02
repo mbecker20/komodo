@@ -1,10 +1,6 @@
-# deploying applications
+# configuration
 
-Monitor can deploy any docker images that it can access with the configured docker accounts. It works by parsing the deployment configuration into a ```docker run``` command. The configuration is stored on MongoDB, and records of all actions (update config, deploy, stop, etc.) are stored as well.
-
-Deployment configuration involves passing file / directory paths, for more details about passing file paths, see the [file paths doc](https://github.com/mbecker20/monitor/blob/main/docs/paths.md).
-
-## configuring the image
+## choose the docker image
 
 There are two options to configure the docker image to deploy. 
 
@@ -85,19 +81,3 @@ docker run -d --name mongo-db mongo:6.0.3 --quiet
 ```
 
 In order to achieve this with monitor, just pass ```--quiet``` to 'post image'.
-
-## container lifetime management
-
-The lifetime of a docker container is more like a virtual machine. They can be created, started, stopped, and destroyed. The lifetime management actions monitor presents to the user is relative to the containers state. For example, when the container is ```running```, you can either stop it, destroy it, or redeploy it.
-
-### stopping a container
-
-Sometimes you want to stop a running application but preserve its logs and configuration, either to be restarted later or to view the logs at a later time. It is more like *pausing* the application with its current config, as no configuration (like environment variable, volume mounts, etc.) will be changed when the container is started again. In order to restart an application with updated configuration, it must be *redeployed*.
-
-### container redeploy
-
-redeploying is the action of destroying a container and recreating it. If you update deployment config, these changes will not take effect until the container is redeployed. Just note this will destroy the previous containers logs along with the container itself.
-
-[next: permissions](https://github.com/mbecker20/monitor/blob/main/docs/permissions.md)
-
-[back to table of contents](https://github.com/mbecker20/monitor/blob/main/readme.md)

@@ -1,7 +1,3 @@
----
-sidebar_position: 2
----
-
 # setup monitor periphery
 
 The easiest way to do this is to follow the [monitor guide](https://github.com/mbecker20/monitor-guide). This is a repo containing directions and scripts enabling command line installation via ssh or remotely.
@@ -18,7 +14,7 @@ The easiest way to do this is to follow the [monitor guide](https://github.com/m
 
  5. Start the periphery binary with your preferred process manager, like systemd. The config read from the file is printed on startup, ensure that it is as expected.
 
-## example periphery start command
+### example periphery start command
 
 ```
 periphery \
@@ -30,7 +26,7 @@ periphery \
 	--home_dir /home/username
 ```
 
-## passing config files
+### passing config files
 
 Either file paths or directory paths can be passed to ```--config-path```.
 
