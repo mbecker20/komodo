@@ -1,4 +1,4 @@
-# selecting a builder
+# select a builder
 
 A builder is a machine running monitor periphery and docker. Any server connected to monitor can be chosen as the builder for a build.
 

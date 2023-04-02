@@ -28,7 +28,7 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: 'Powered by Rust and SolidJS',
+    title: 'powered by Rust 🦀 and SolidJS',
     Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
