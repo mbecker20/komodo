@@ -116,13 +116,9 @@ const Build: Component<{ id: string }> = (p) => {
   return (
     <A
       href={`/build/${p.id}`}
-      class="card light shadow"
+      class="card light shadow full-width"
       style={{
-        width: "100%",
-        height: "fit-content",
-        "box-sizing": "border-box",
         "justify-content": "space-between",
-        padding: "0.5rem",
       }}
     >
       <h1 style={{ "font-size": "1.25rem" }}>{build().name}</h1>
