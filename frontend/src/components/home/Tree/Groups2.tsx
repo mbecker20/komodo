@@ -200,7 +200,7 @@ const Group: Component<{
     }
   });
   useWindowKeyDown((e) => {
-    if (e.key === "ArrowLeft") {
+    if (e.key === "ArrowLeft" || e.key === "Escape") {
       p.exit();
     }
   });
