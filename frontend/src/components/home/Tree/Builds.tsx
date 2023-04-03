@@ -116,7 +116,7 @@ const Build: Component<{ id: string }> = (p) => {
   return (
     <A
       href={`/build/${p.id}`}
-      class="card light shadow hoverable"
+      class="card light shadow"
       style={{
         width: "100%",
         height: "fit-content",

@@ -4,7 +4,7 @@ import { useUser } from "../../../state/UserProvider";
 import Input from "../../shared/Input";
 import Grid from "../../shared/layout/Grid";
 import Selector from "../../shared/menu/Selector";
-import AddServer from "./AddServer";
+import AddServer from "../../topbar/AddServer";
 import { TreeSortType, TREE_SORTS, useTreeState } from "./Provider";
 import Server from "./Server";
 

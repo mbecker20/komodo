@@ -35,17 +35,37 @@
 }
 
 .card {
-	background-color: c.$grey;
+	background-color: rgba(c.$grey, 0.7);
 	padding: 1rem;
 	transition: all 250ms ease-in-out;
 }
 
+.card.hover:hover {
+	background-color: c.$grey;
+}
+
+.card.clear {
+	background-color:  rgba(c.$lightgrey, 0);
+}
+
+.card.clear.hover:hover {
+	background-color:  rgba(c.$lightgrey, 0.7);
+}
+
 .card.light {
-	background-color: c.$lightgrey;
+	background-color: rgba(c.$lightgrey, 0.7);
+}
+
+.card.light.hover:hover {
+  background-color: c.$lightgrey;
 }
 
 .card.dark {
-	background-color: c.$darkgrey;
+	background-color: rgba(c.$darkgrey, 0.7);
+}
+
+.card.dark.hover:hover {
+  background-color: c.$darkgrey;
 }
 
 .card.hoverable:hover {

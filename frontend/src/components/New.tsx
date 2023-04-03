@@ -14,7 +14,7 @@ export const NewGroup: Component<{}> = (p) => {
     <Show
       when={showNew()}
       fallback={
-        <button class="green" onClick={toggleShowNew} style={{ width: "100%" }}>
+        <button class="green" onClick={toggleShowNew} style={{ height: "100%" }}>
           <Icon type="plus" />
         </button>
       }
@@ -100,12 +100,6 @@ const New: Component<{
         <button class="green" onClick={create}>
           create
         </button>
-        {/* <ConfirmButton
-          class="green"
-          onConfirm={create}
-        >
-          create
-        </ConfirmButton> */}
         <button class="red" onClick={p.close}>
           <Icon type="cross" />
         </button>

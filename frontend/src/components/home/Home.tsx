@@ -7,7 +7,7 @@ import Grid from "../shared/layout/Grid";
 import SimpleTabs from "../shared/tabs/SimpleTabs";
 import Summary from "./Summary";
 import Builds from "./Tree/Builds";
-import Groups from "./Tree/Groups";
+import Groups from "./Tree/Groups2";
 import { TreeProvider } from "./Tree/Provider";
 import Servers from "./Tree/Servers";
 import Updates from "./Updates/Updates";
@@ -30,13 +30,13 @@ const Home: Component<{}> = (p) => {
           localStorageKey="home-groups-servers-tab-v1"
           tabs={[
             {
-              title: "groups",
+              title: "servers",
               element: () => <Groups />,
             },
-            {
-              title: "servers",
-              element: () => <Servers serverIDs={servers.ids()!} showAdd />,
-            },
+            // {
+            //   title: "servers",
+            //   element: () => <Servers serverIDs={servers.ids()!} showAdd />,
+            // },
             {
               title: "builds",
               element: () => <Builds />

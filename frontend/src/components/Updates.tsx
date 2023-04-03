@@ -113,7 +113,7 @@ const Update: Component<{ update: UpdateType }> = (p) => {
   };
   return (
     <Flex
-      class="card light shadow wrap"
+      class="card light hover shadow wrap"
       justifyContent="space-between"
       alignItems="center"
     >

@@ -1,12 +1,12 @@
 import { Component, JSX, onMount } from "solid-js";
 import { createStore } from "solid-js/store";
-import { client, pushNotification } from "../../..";
-import { CreateServerBody } from "../../../util/client_types";
-import { useToggle } from "../../../util/hooks";
-import Icon from "../../shared/Icon";
-import Input from "../../shared/Input";
-import Grid from "../../shared/layout/Grid";
-import CenterMenu from "../../shared/menu/CenterMenu";
+import { client, pushNotification } from "../..";
+import { CreateServerBody } from "../../util/client_types";
+import { useToggle } from "../../util/hooks";
+import Icon from "../shared/Icon";
+import Input from "../shared/Input";
+import Grid from "../shared/layout/Grid";
+import CenterMenu from "../shared/menu/CenterMenu";
 
 const AddServer: Component<{}> = () => {
   const [show, toggleShow] = useToggle();
@@ -14,10 +14,11 @@ const AddServer: Component<{}> = () => {
     <CenterMenu
       show={show}
       toggleShow={toggleShow}
-      target={<Icon type="plus" />}
+      target="add server"
       title="add server"
       targetClass="green shadow"
       content={() => <Content close={toggleShow} />}
+      style={{ "box-sizing": "border-box", "max-width": "90vw" }}
       position="center"
     />
   );
@@ -26,7 +27,7 @@ const AddServer: Component<{}> = () => {
 const INPUT_STYLE: JSX.CSSProperties = {
   "font-size": "1.25rem",
   width: "500px",
-  "max-width": "90vw",
+  "max-width": "80vw",
 };
 
 const Content: Component<{ close: () => void }> = (p) => {
@@ -45,7 +46,12 @@ const Content: Component<{ close: () => void }> = (p) => {
     }
   };
   return (
-    <Grid placeItems="center" style={{ padding: "2rem 1rem 1rem 1rem" }}>
+    <Grid
+      placeItems="center"
+      style={{
+        
+      }}
+    >
       <Input
         class="darkgrey"
         ref={nameInput}

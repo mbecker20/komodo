@@ -32,7 +32,7 @@ const Update: Component<{ update: UpdateType }> = (p) => {
   };
   return (
     <Flex
-      class={combineClasses(s.Update, "shadow")}
+      class={combineClasses(s.Update, "card light hover shadow")}
       justifyContent="space-between"
       alignItems="center"
     >

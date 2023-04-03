@@ -1,5 +1,5 @@
-import { A, useNavigate } from "@solidjs/router";
-import { Component, createSignal, JSX, Show } from "solid-js";
+import { A } from "@solidjs/router";
+import { Component, createSignal, Show } from "solid-js";
 import { TOPBAR_HEIGHT } from "../..";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
@@ -15,14 +15,7 @@ import Account from "./Account";
 import { SearchProvider } from "./Search/Provider";
 import { Search } from "./Search/Search";
 import s from "./topbar.module.scss";
-import Updates from "./Updates/Updates";
-
-const mobileStyle: JSX.CSSProperties = {
-  position: "fixed",
-  top: inPx(44),
-  left: "1rem",
-  width: "calc(100vw - 2rem)",
-};
+import AddServer from "./AddServer";
 
 const Topbar: Component = () => {
   return (
@@ -102,6 +95,7 @@ const RightSide: Component = () => {
         content={<Updates />}
         position="bottom right"
       /> */}
+      <AddServer />
       <Menu
         show={menu() === "account"}
         close={close}

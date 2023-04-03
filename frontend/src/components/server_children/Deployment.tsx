@@ -51,7 +51,7 @@ const Deployment: Component<{ id: string }> = (p) => {
     <Show when={deployment()}>
       <A
         href={`/deployment/${p.id}`}
-        class="card hoverable"
+        class="card clear hover"
         style={{
           width: "100%",
           "justify-content": "space-between",

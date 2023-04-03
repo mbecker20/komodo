@@ -18,9 +18,10 @@ const Server: Component<{ id: string }> = (p) => {
   const server = () => servers.get(p.id);
   return (
     <Show when={server()}>
-      <div class={combineClasses(s.Server, "shadow")}>
+      <Grid class="shadow pointer full-width" style={{ height: "fit-content" }} gap="0">
         <button
-          class={combineClasses(s.ServerButton, "shadow")}
+          class="card light hover shadow full-width"
+          style={{ "justify-content": "space-between" }}
           onClick={toggleOpen}
         >
           <Flex>
@@ -54,7 +55,7 @@ const Server: Component<{ id: string }> = (p) => {
         <Show when={open()}>
           <ServerChildren id={p.id} />
         </Show>
-      </div>
+      </Grid>
     </Show>
   );
 };

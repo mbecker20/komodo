@@ -156,8 +156,10 @@ export const AppStateProvider: ParentComponent = (p) => {
         return servers.get(target.id)?.server.name || "deleted";
       } else if (target.type === "Build" && builds) {
         return builds.get(target.id)?.name || "deleted";
+      } else if (target.type === "Group" && groups) {
+        return groups.get(target.id)?.name || "deleted";
       } else {
-        return "admin";
+        return "unknown"
       }
     }
   };
