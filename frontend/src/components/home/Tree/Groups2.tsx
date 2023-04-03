@@ -154,7 +154,10 @@ const GroupButton: Component<{
           <div class="dimmed">{`server${serverCount() > 1 ? "s" : ""}`}</div>
         </Flex>
         <Show when={!isAll()}>
-          <ConfirmButton class="red">
+          <ConfirmButton
+            class="red"
+            onConfirm={() => client.delete_group(p.id)}
+          >
             <Icon type="trash" />
           </ConfirmButton>
         </Show>
