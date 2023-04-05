@@ -514,7 +514,7 @@ impl State {
                     "ts": { "$in": ts_vec }
                 },
                 FindOptions::builder()
-                    .sort(doc! { "ts": -1 })
+                    .sort(doc! { "ts": 1 })
                     .projection(projection)
                     .build(),
             )
