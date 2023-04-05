@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context};
-use async_timing_util::get_timelength_in_ms;
+use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms};
 use axum::{
     extract::{ws::Message as AxumMessage, Path, Query, WebSocketUpgrade},
     response::IntoResponse,
@@ -8,7 +8,7 @@ use axum::{
 };
 use futures_util::{future::join_all, SinkExt, StreamExt};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize, Document};
+use mungos::{doc, Deserialize, Document, FindOptions};
 use tokio::select;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_util::sync::CancellationToken;
@@ -19,7 +19,7 @@ use types::{
 };
 use typeshare::typeshare;
 
-const MAX_HISTORICAL_STATS_LIMIT: i64 = 1000;
+const MAX_HISTORICAL_STATS_LIMIT: i64 = 500;
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -483,14 +483,9 @@ impl State {
         user: &RequestUser,
         query: &HistoricalStatsQuery,
     ) -> anyhow::Result<Vec<SystemStatsRecord>> {
-        let limit = if query.limit as i64 > MAX_HISTORICAL_STATS_LIMIT {
-            MAX_HISTORICAL_STATS_LIMIT
-        } else {
-            query.limit as i64
-        };
         self.get_server_check_permissions(server_id, user, PermissionLevel::Read)
             .await?;
-        let ts_mod = get_timelength_in_ms(query.interval.to_string().parse().unwrap()) as i64;
+
         let mut projection = doc! { "processes": 0, "disk.disks": 0 };
         if !query.networks {
             projection.insert("networks", 0);
@@ -498,14 +493,30 @@ impl State {
         if !query.components {
             projection.insert("components", 0);
         }
+        let limit = if query.limit as i64 > MAX_HISTORICAL_STATS_LIMIT {
+            MAX_HISTORICAL_STATS_LIMIT
+        } else {
+            query.limit as i64
+        };
+        let interval = get_timelength_in_ms(query.interval.to_string().parse().unwrap()) as i64;
+        let mut ts_vec = Vec::<i64>::new();
+        let curr_ts = unix_timestamp_ms() as i64;
+        let mut curr_ts = curr_ts - curr_ts % interval - interval * limit * query.page as i64;
+        for _ in 0..limit {
+            ts_vec.push(curr_ts);
+            curr_ts -= interval;
+        }
         self.db
             .stats
-            .get_most_recent(
-                "ts",
-                limit,
-                query.page as u64 * limit as u64,
-                doc! { "server_id": server_id, "ts": { "$mod": [ts_mod, 0] } },
-                projection,
+            .get_some(
+                doc! {
+                    "server_id": server_id, 
+                    "ts": { "$in": ts_vec }
+                },
+                FindOptions::builder()
+                    .sort(doc! { "ts": -1 })
+                    .projection(projection)
+                    .build(),
             )
             .await
             .context("failed at mongo query to get stats")
