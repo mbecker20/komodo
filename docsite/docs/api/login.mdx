@@ -1,0 +1,113 @@
+import Divider from '@site/src/components/Divider';
+
+# login | /auth
+
+*routes for user login*
+
+monitor supports local login (username and password), Oauth2 login (github and google), 
+and secret login (username and API secret key). 
+each method must be explicitly enabled in your monitor core config, 
+otherwise the api won't be available.
+
+:::note
+in order to login to an Oauth2 user's account programmatically, 
+you must generate an API secret and login using [/auth/secret/login](/api/login#login-using-api-secret)
+:::
+
+```mdx-code-block
+<Divider />
+```
+
+## get login options
+`GET /auth/options`
+
+this method is used to obtain the login options for monitor core
+
+### query params
+none
+
+### request body
+none
+
+### response body
+```json
+{
+	local: boolean,
+	github: boolean,
+	google: boolean,
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## create local user account
+`POST /auth/local/create_user`
+
+this method will create a new local auth account with the provided **username** and **password**, 
+and return a `JWT` for the user to authenticate with.
+
+### query params
+none
+
+### request body
+```json
+{
+	username: string,
+	password: string,
+}
+```
+
+### response body
+`<JWT token as string>`
+
+:::caution
+a user created with this method is, by default, `disabled`. a monitor admin must enable their account before they can access the API.
+:::
+
+```mdx-code-block
+<Divider />
+```
+
+## login local user account
+`POST /auth/local/login`
+
+this method will authenticate a local users credentials and return a JWT if login is successful.
+
+### query params
+none
+
+### request body
+```json
+{
+	username: string,
+	password: string,
+}
+```
+
+### response body
+`<JWT token as string>`
+
+```mdx-code-block
+<Divider />
+```
+
+## login using API secret
+`POST /auth/secret/login`
+
+this method will authenticate a users account of any kind using an API secret generated using [/api/secret/create](/)
+
+### query params
+none
+
+### request body
+```json
+{
+	username: string,
+	secret: string,
+}
+```
+
+### response body
+`<JWT token as string>`

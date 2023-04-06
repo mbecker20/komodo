@@ -44,14 +44,14 @@ impl MonitorClient {
         .context("failed at getting build versions")
     }
 
-    pub async fn create_build(&self, name: &str, server_id: &str) -> anyhow::Result<Build> {
+    pub async fn create_build(&self, name: &str) -> anyhow::Result<Build> {
         self.post(
             "/api/build/create",
-            json!({ "name": name, "server_id": server_id }),
+            json!({ "name": name }),
         )
         .await
         .context(format!(
-            "failed at creating build with name {name} on server id {server_id}"
+            "failed at creating build with name {name}"
         ))
     }
 

@@ -297,34 +297,34 @@ impl MonitorClient {
         }
     }
 
-    async fn _patch_string<B: Serialize>(
-        &self,
-        endpoint: &str,
-        body: impl Into<Option<B>>,
-    ) -> anyhow::Result<String> {
-        let req = self
-            .http_client
-            .patch(format!("{}{endpoint}", self.url))
-            .header("Authorization", format!("Bearer {}", self.token));
-        let req = if let Some(body) = body.into() {
-            req.header("Content-Type", "application/json").json(&body)
-        } else {
-            req
-        };
-        let res = req.send().await.context("failed to reach monitor api")?;
-        let status = res.status();
-        if status == StatusCode::OK {
-            match res.text().await {
-                Ok(res) => Ok(res),
-                Err(e) => Err(anyhow!("{status}: {e:#?}")),
-            }
-        } else {
-            match res.text().await {
-                Ok(res) => Err(anyhow!("{status}: {res}")),
-                Err(e) => Err(anyhow!("{status}: {e:#?}")),
-            }
-        }
-    }
+    // async fn _patch_string<B: Serialize>(
+    //     &self,
+    //     endpoint: &str,
+    //     body: impl Into<Option<B>>,
+    // ) -> anyhow::Result<String> {
+    //     let req = self
+    //         .http_client
+    //         .patch(format!("{}{endpoint}", self.url))
+    //         .header("Authorization", format!("Bearer {}", self.token));
+    //     let req = if let Some(body) = body.into() {
+    //         req.header("Content-Type", "application/json").json(&body)
+    //     } else {
+    //         req
+    //     };
+    //     let res = req.send().await.context("failed to reach monitor api")?;
+    //     let status = res.status();
+    //     if status == StatusCode::OK {
+    //         match res.text().await {
+    //             Ok(res) => Ok(res),
+    //             Err(e) => Err(anyhow!("{status}: {e:#?}")),
+    //         }
+    //     } else {
+    //         match res.text().await {
+    //             Ok(res) => Err(anyhow!("{status}: {res}")),
+    //             Err(e) => Err(anyhow!("{status}: {e:#?}")),
+    //         }
+    //     }
+    // }
 
     async fn delete<B: Serialize, R: DeserializeOwned>(
         &self,
@@ -355,34 +355,34 @@ impl MonitorClient {
         }
     }
 
-    async fn _delete_string<B: Serialize>(
-        &self,
-        endpoint: &str,
-        body: impl Into<Option<B>>,
-    ) -> anyhow::Result<String> {
-        let req = self
-            .http_client
-            .delete(format!("{}{endpoint}", self.url))
-            .header("Authorization", format!("Bearer {}", self.token));
-        let req = if let Some(body) = body.into() {
-            req.header("Content-Type", "application/json").json(&body)
-        } else {
-            req
-        };
-        let res = req.send().await.context("failed to reach monitor api")?;
-        let status = res.status();
-        if status == StatusCode::OK {
-            match res.text().await {
-                Ok(res) => Ok(res),
-                Err(e) => Err(anyhow!("{status}: {e:#?}")),
-            }
-        } else {
-            match res.text().await {
-                Ok(res) => Err(anyhow!("{status}: {res}")),
-                Err(e) => Err(anyhow!("{status}: {e:#?}")),
-            }
-        }
-    }
+    // async fn _delete_string<B: Serialize>(
+    //     &self,
+    //     endpoint: &str,
+    //     body: impl Into<Option<B>>,
+    // ) -> anyhow::Result<String> {
+    //     let req = self
+    //         .http_client
+    //         .delete(format!("{}{endpoint}", self.url))
+    //         .header("Authorization", format!("Bearer {}", self.token));
+    //     let req = if let Some(body) = body.into() {
+    //         req.header("Content-Type", "application/json").json(&body)
+    //     } else {
+    //         req
+    //     };
+    //     let res = req.send().await.context("failed to reach monitor api")?;
+    //     let status = res.status();
+    //     if status == StatusCode::OK {
+    //         match res.text().await {
+    //             Ok(res) => Ok(res),
+    //             Err(e) => Err(anyhow!("{status}: {e:#?}")),
+    //         }
+    //     } else {
+    //         match res.text().await {
+    //             Ok(res) => Err(anyhow!("{status}: {res}")),
+    //             Err(e) => Err(anyhow!("{status}: {e:#?}")),
+    //         }
+    //     }
+    // }
 }
 
 fn parse_url(url: &str) -> String {

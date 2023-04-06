@@ -61,6 +61,15 @@ const sidebars = {
     },
     "permissioning",
     "file-paths",
+    {
+      type: "category",
+      label: "API",
+      link: {
+        type: "doc",
+        id: "api/index",
+      },
+      items: ["api/authenticating-requests", "api/login", "api/build", "api/websocket"],
+    },
   ],
 };
 

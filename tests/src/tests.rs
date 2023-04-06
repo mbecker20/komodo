@@ -35,7 +35,7 @@ pub async fn create_test_setup(
     let mut builds = monitor.list_builds(None).await?;
     let build = if builds.is_empty() {
         monitor
-            .create_build(&format!("{group_name}_build"), &server.id)
+            .create_build(&format!("{group_name}_build"))
             .await
             .context("failed at create build")?
     } else {
@@ -98,7 +98,7 @@ pub async fn test_build(monitor: &MonitorClient) -> anyhow::Result<Update> {
         .await
         .context("failed at list servers")?;
     let server = &servers.get(0).ok_or(anyhow!("no servers"))?.server;
-    let mut build = monitor.create_build("old_periphery", &server.id).await?;
+    let mut build = monitor.create_build("old_periphery").await?;
     println!("created build. updating...");
     build.repo = Some("mbecker20/monitor".to_string());
     // build.branch = Some("");

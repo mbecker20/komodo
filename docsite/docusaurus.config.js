@@ -59,6 +59,11 @@ const config = {
     ({
       // Replace with your project's social card
       image: "img/monitor-lizard.png",
+      docs: {
+        sidebar: {
+          autoCollapseCategories: true,
+        }
+      },
       navbar: {
         title: "monitor",
         logo: {
@@ -71,6 +76,7 @@ const config = {
             sidebarId: "docs",
             position: "left",
             label: "docs",
+            
           },
           {
             href: "https://github.com/mbecker20/monitor",
