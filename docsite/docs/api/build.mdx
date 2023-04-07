@@ -4,16 +4,20 @@ import Divider from '@site/src/components/Divider';
 
 these routes relate to interacting with monitor `builds`
 
-| name | method | Description |
-| ---- | ------ | ----------- |
-| [list builds](/api/build#list-builds) | `GET /api/build/list` |             |
-| [get build](/api/build#get-build) | `GET /api/build/<build_id>` |             |
-| get build   | Text        |             |
-| get build   | Text        |             |
-| get build   | Text        |             |
-| get build   | Text        |             |
-| get build   | Text        |             |
-| get build   | Text        |             |
+| name | route |
+| ---- | ------ |
+| [list builds](/api/build#list-builds) | `GET /api/build/list` |
+| [get build](/api/build#get-build) | `GET /api/build/<build_id>` |
+| [get build action state](/api/build#get-build-action-state) | `GET /api/build/<build_id>/action_state` |
+| [get build versions](/api/build#get-build-versions) | `GET /api/build/<build_id>/versions` |
+| [create build](/api/build#create-build) | `POST /api/build/create` |
+| [create full build](/api/build#create-full-build) | `POST /api/build/create_full` |
+| [copy build](/api/build#copy-build) | `POST /api/build/<build_id>/copy` |
+| [delete build](/api/build#delete-build) | `DELETE /api/build/<build_id>/delete` |
+| [update build](/api/build#update-build) | `PATCH /api/build/update` |
+| [build](/api/build#build) | `POST /api/build/<build_id>/build` |
+| [get aws builder defaults](/api/build#get-aws-builder-defaults) | `GET /api/build/aws_builder_defaults` |
+| [get allowed docker organizations](/api/build#get-allowed-docker-organizations) | `GET /api/build/docker_organizations` |
 
 ```mdx-code-block
 <Divider />

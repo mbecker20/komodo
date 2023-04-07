@@ -68,7 +68,14 @@ const sidebars = {
         type: "doc",
         id: "api/index",
       },
-      items: ["api/authenticating-requests", "api/login", "api/build", "api/websocket"],
+      items: [
+        "api/authenticating-requests", 
+        "api/login", 
+        "api/build",
+        "api/deployment",
+        "api/server",
+        "api/websocket",
+      ],
     },
   ],
 };
