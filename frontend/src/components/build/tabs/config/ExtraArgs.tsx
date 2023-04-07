@@ -9,7 +9,7 @@ const ExtraArgs: Component<{}> = (p) => {
   const { build, setBuild, userCanUpdate } = useConfig();
   const onAdd = () => {
     setBuild("docker_build_args", "extra_args", (extra_args: any) => [
-      ...extra_args,
+      ...(extra_args || []),
       "",
     ]);
   };

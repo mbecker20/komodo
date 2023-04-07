@@ -24,9 +24,11 @@ const BuildConfig: Component<{}> = (p) => {
           <Repo />
           <Docker />
           <CliBuild />
-          <BuildArgs />
-          <ExtraArgs />
-          <UseBuildx />
+          <Show when={build.docker_build_args?.build_path}>
+            <BuildArgs />
+            <ExtraArgs />
+            <UseBuildx />
+          </Show>
           <Show when={userCanUpdate()}>
             <WebhookUrl />
           </Show>
