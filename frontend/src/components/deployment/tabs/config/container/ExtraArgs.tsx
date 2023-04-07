@@ -28,7 +28,7 @@ const ExtraArgs: Component<{}> = (p) => {
           </button>
         </Show>
       </Flex>
-      <For each={[...deployment.docker_run_args.extra_args!.keys()]}>
+      <For each={[...(deployment.docker_run_args.extra_args?.keys() || [])]}>
         {(_, index) => (
           <Flex
             justifyContent={userCanUpdate() ? "space-between" : undefined}
@@ -37,7 +37,7 @@ const ExtraArgs: Component<{}> = (p) => {
           >
             <Input
               placeholder="--extra-arg=value"
-              value={deployment.docker_run_args.extra_args![index()]}
+              value={deployment.docker_run_args.extra_args?.[index()] || ""}
               style={{ width: "80%" }}
               onEdit={(value) =>
                 setDeployment("docker_run_args", "extra_args", index(), value)
