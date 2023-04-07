@@ -28,7 +28,7 @@ const ExtraArgs: Component<{}> = (p) => {
           </button>
         </Show>
       </Flex>
-      <For each={[...build.docker_build_args!.extra_args!.keys()]}>
+      <For each={[...(build.docker_build_args?.extra_args?.keys() || [])]}>
         {(_, index) => (
           <Flex
             justifyContent={userCanUpdate() ? "space-between" : undefined}
@@ -37,7 +37,7 @@ const ExtraArgs: Component<{}> = (p) => {
           >
             <Input
               placeholder="--extra-arg=value"
-              value={build.docker_build_args!.extra_args![index()]}
+              value={build.docker_build_args?.extra_args?.[index()] || ""}
               style={{ width: "80%" }}
               onEdit={(value) =>
                 setBuild("docker_build_args", "extra_args", index(), value)
