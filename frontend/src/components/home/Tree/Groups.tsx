@@ -19,6 +19,7 @@ import { PermissionLevel } from "../../../types";
 
 const Groups: Component<{}> = (p) => {
   const { isSemiMobile } = useAppDimensions();
+  const { user, user_id } = useUser();
   const { groups } = useAppState();
   const [selected, setSelected] = useLocalStorage<string | null>(
     null,
@@ -49,6 +50,9 @@ const Groups: Component<{}> = (p) => {
       return undefined;
     }
   });
+  const canEdit = (group_id: string) =>
+    user().admin ||
+    groups.get(group_id)?.permissions?.[user_id()] === PermissionLevel.Update;
   return (
     <Grid class="full-width">
       <Grid gridTemplateColumns={selected() ? "auto 1fr auto" : "1fr auto"}>
@@ -80,7 +84,7 @@ const Groups: Component<{}> = (p) => {
             containerStyle={{ height: "100%" }}
           />
           <Show when={selected()} fallback={<NewGroup />}>
-            <Show when={selected() !== "all"}>
+            <Show when={selected() !== "all" && canEdit(selected()!)}>
               <button
                 class="blue"
                 onClick={toggleEditing}
@@ -125,6 +129,7 @@ const GroupButton: Component<{
   setSelected: (s: string) => void;
 }> = (p) => {
   const { isSemiMobile } = useAppDimensions();
+  const { user, user_id } = useUser();
   const { groups, servers } = useAppState();
   const isAll = () => p.id === "all";
   const name = () => {
@@ -142,6 +147,9 @@ const GroupButton: Component<{
         .length || 0
     );
   };
+  const canEdit = () =>
+    user().admin ||
+    groups.get(p.id)?.permissions?.[user_id()] === PermissionLevel.Update;
   return (
     <Flex
       class="card light hover shadow"
@@ -158,7 +166,7 @@ const GroupButton: Component<{
           <div>{serverCount()}</div>
           <div class="dimmed">{`server${serverCount() > 1 ? "s" : ""}`}</div>
         </Flex>
-        <Show when={!isAll()}>
+        <Show when={canEdit() && !isAll()}>
           <ConfirmButton
             class="red"
             onConfirm={() => client.delete_group(p.id)}
@@ -177,9 +185,13 @@ const Group: Component<{
   editing: boolean;
   exit: () => void;
 }> = (p) => {
+  const { user, user_id } = useUser();
   const { groups, servers } = useAppState();
   const { server_sorter } = useTreeState();
   const group = () => groups.get(p.id);
+  const canEdit = () =>
+    user().admin ||
+    group()?.permissions?.[user_id()] === PermissionLevel.Update;
   const serverIDs = createMemo(() => {
     if (servers.loaded()) {
       const filters = p.searchFilter
@@ -218,7 +230,7 @@ const Group: Component<{
       {(id) => (
         <Flex alignItems="center">
           <Server id={id} />
-          <Show when={p.editing}>
+          <Show when={canEdit() && p.editing}>
             <ConfirmButton
               class="red"
               onConfirm={() => {
