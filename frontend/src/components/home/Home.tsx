@@ -2,19 +2,16 @@ import {
   Component,
 } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
-import { useAppState } from "../../state/StateProvider";
 import Grid from "../shared/layout/Grid";
 import SimpleTabs from "../shared/tabs/SimpleTabs";
 import Summary from "./Summary";
 import Builds from "./Tree/Builds";
-import Groups from "./Tree/Groups2";
+import Groups from "./Tree/Groups";
 import { TreeProvider } from "./Tree/Provider";
-import Servers from "./Tree/Servers";
 import Updates from "./Updates/Updates";
 
 const Home: Component<{}> = (p) => {
   const { isSemiMobile } = useAppDimensions();
-  const { servers } = useAppState();
   return (
     <>
       <Grid
@@ -33,10 +30,6 @@ const Home: Component<{}> = (p) => {
               title: "servers",
               element: () => <Groups />,
             },
-            // {
-            //   title: "servers",
-            //   element: () => <Servers serverIDs={servers.ids()!} showAdd />,
-            // },
             {
               title: "builds",
               element: () => <Builds />
