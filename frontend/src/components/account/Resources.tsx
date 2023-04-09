@@ -5,13 +5,13 @@ import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import { PermissionLevel } from "../../types";
 import { getId } from "../../util/helpers";
-import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
+import Flex from "../shared/layout/Flex";
 
 const Resources: Component<{}> = (p) => {
-  const { user, user_id } = useUser();
+  const { user_id } = useUser();
   const { isMobile } = useAppDimensions();
-  const { builds, deployments, servers } = useAppState();
+  const { builds, deployments, servers, groups } = useAppState();
   const [search, setSearch] = createSignal("");
   const _servers = createMemo(() => {
     return servers.filterArray((s) => {
@@ -29,6 +29,13 @@ const Resources: Component<{}> = (p) => {
   });
   const _builds = createMemo(() => {
     return builds.filterArray((b) => {
+      if (!b.name.includes(search())) return false;
+      const p = b.permissions?.[user_id()];
+      return p ? p !== PermissionLevel.None : false;
+    });
+  });
+  const _groups = createMemo(() => {
+    return groups.filterArray((b) => {
       if (!b.name.includes(search())) return false;
       const p = b.permissions?.[user_id()];
       return p ? p !== PermissionLevel.None : false;
@@ -55,7 +62,9 @@ const Resources: Component<{}> = (p) => {
               >
                 <Grid gap="0.25rem">
                   <h2>{item.server.name}</h2>
-                  <div class="dimmed">{item.server.region || "unknown region"}</div>
+                  <div class="dimmed">
+                    {item.server.region || "unknown region"}
+                  </div>
                 </Grid>
                 <div>{item.server.permissions?.[user_id()] || "none"}</div>
               </A>
@@ -113,6 +122,27 @@ const Resources: Component<{}> = (p) => {
                 <h2>{item.name}</h2>
                 <div>{item.permissions?.[user_id()] || "none"}</div>
               </A>
+            )}
+          </For>
+        </Grid>
+      </Grid>
+      <Grid
+        class="card shadow"
+        style={{ width: "100%", "box-sizing": "border-box" }}
+      >
+        <h1>groups</h1>
+        <Grid gridTemplateColumns={isMobile() ? undefined : "1fr 1fr"}>
+          <For each={_groups()}>
+            {(item) => (
+              <Flex
+                class="card light shadow hover full-width"
+                style={{
+                  "justify-content": "space-between",
+                }}
+              >
+                <h2>{item.name}</h2>
+                <div>{item.permissions?.[user_id()] || "none"}</div>
+              </Flex>
             )}
           </For>
         </Grid>

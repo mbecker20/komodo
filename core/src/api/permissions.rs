@@ -3,8 +3,8 @@ use axum::{routing::post, Extension, Json, Router};
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Document, Serialize};
 use types::{
-    monitor_timestamp, Build, Deployment, Log, Operation, PermissionLevel, PermissionsTarget,
-    Procedure, Server, Update, UpdateStatus, UpdateTarget,
+    monitor_timestamp, Build, Deployment, Group, Log, Operation, PermissionLevel,
+    PermissionsTarget, Procedure, Server, Update, UpdateStatus, UpdateTarget,
 };
 use typeshare::typeshare;
 
@@ -82,10 +82,10 @@ pub fn router() -> Router {
 
 async fn update_permissions(
     Extension(state): StateExtension,
-    Extension(user): RequestUserExtension,
+    Extension(req_user): RequestUserExtension,
     Json(permission_update): Json<PermissionsUpdateBody>,
 ) -> anyhow::Result<Update> {
-    if !user.is_admin {
+    if !req_user.is_admin {
         return Err(anyhow!(
             "user not authorized for this action (is not admin)"
         ));
@@ -107,7 +107,7 @@ async fn update_permissions(
         operation: Operation::ModifyUserPermissions,
         start_ts: monitor_timestamp(),
         success: true,
-        operator: user.id.clone(),
+        operator: req_user.id.clone(),
         status: UpdateStatus::Complete,
         ..Default::default()
     };
@@ -199,9 +199,9 @@ async fn update_permissions(
                 .procedures
                 .find_one_by_id(&permission_update.target_id)
                 .await
-                .context("failed at find build query")?
+                .context("failed at find procedure query")?
                 .ok_or(anyhow!(
-                    "failed to find a build with id {}",
+                    "failed to find a procedure with id {}",
                     permission_update.target_id
                 ))?;
             state
@@ -220,6 +220,33 @@ async fn update_permissions(
                 target_user.username, permission_update.permission, procedure.name
             )
         }
+        PermissionsTarget::Group => {
+            let group = state
+                .db
+                .groups
+                .find_one_by_id(&permission_update.target_id)
+                .await
+                .context("failed at find group query")?
+                .ok_or(anyhow!(
+                    "failed to find a group with id {}",
+                    permission_update.target_id
+                ))?;
+            state
+                .db
+                .groups
+                .update_one::<Group>(
+                    &permission_update.target_id,
+                    mungos::Update::Set(doc! {
+                        format!("permissions.{}", permission_update.user_id): permission_update.permission.to_string()
+                    }),
+                )
+                .await?;
+            update.target = UpdateTarget::Group(group.id);
+            format!(
+                "user {} given {} permissions on group {}",
+                target_user.username, permission_update.permission, group.name
+            )
+        }
     };
     update
         .logs
@@ -231,10 +258,10 @@ async fn update_permissions(
 
 async fn modify_user_enabled(
     Extension(state): StateExtension,
-    Extension(user): RequestUserExtension,
+    Extension(req_user): RequestUserExtension,
     Json(ModifyUserEnabledBody { user_id, enabled }): Json<ModifyUserEnabledBody>,
 ) -> anyhow::Result<Update> {
-    if !user.is_admin {
+    if !req_user.is_admin {
         return Err(anyhow!(
             "user does not have permissions for this action (not admin)"
         ));
@@ -264,7 +291,7 @@ async fn modify_user_enabled(
         end_ts: Some(ts),
         status: UpdateStatus::Complete,
         success: true,
-        operator: user.id.clone(),
+        operator: req_user.id.clone(),
         ..Default::default()
     };
     update.id = state.add_update(update.clone()).await?;
@@ -273,13 +300,13 @@ async fn modify_user_enabled(
 
 async fn modify_user_create_server_permissions(
     Extension(state): StateExtension,
-    Extension(user): RequestUserExtension,
+    Extension(req_user): RequestUserExtension,
     Json(ModifyUserCreateServerBody {
         user_id,
         create_server_permissions,
     }): Json<ModifyUserCreateServerBody>,
 ) -> anyhow::Result<Update> {
-    if !user.is_admin {
+    if !req_user.is_admin {
         return Err(anyhow!(
             "user does not have permissions for this action (not admin)"
         ));
@@ -319,7 +346,7 @@ async fn modify_user_create_server_permissions(
         end_ts: Some(ts),
         status: UpdateStatus::Complete,
         success: true,
-        operator: user.id.clone(),
+        operator: req_user.id.clone(),
         ..Default::default()
     };
     update.id = state.add_update(update.clone()).await?;
@@ -328,13 +355,13 @@ async fn modify_user_create_server_permissions(
 
 async fn modify_user_create_build_permissions(
     Extension(state): StateExtension,
-    Extension(user): RequestUserExtension,
+    Extension(req_user): RequestUserExtension,
     Json(ModifyUserCreateBuildBody {
         user_id,
         create_build_permissions,
     }): Json<ModifyUserCreateBuildBody>,
 ) -> anyhow::Result<Update> {
-    if !user.is_admin {
+    if !req_user.is_admin {
         return Err(anyhow!(
             "user does not have permissions for this action (not admin)"
         ));
@@ -374,7 +401,7 @@ async fn modify_user_create_build_permissions(
         end_ts: Some(ts),
         status: UpdateStatus::Complete,
         success: true,
-        operator: user.id.clone(),
+        operator: req_user.id.clone(),
         ..Default::default()
     };
     update.id = state.add_update(update.clone()).await?;

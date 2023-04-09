@@ -33,7 +33,7 @@ import Selector from "../shared/menu/Selector";
 
 const User: Component = () => {
   const { isMobile } = useAppDimensions();
-  const { builds, deployments, servers, ws } = useAppState();
+  const { builds, deployments, servers, groups, ws } = useAppState();
   const params = useParams<{ id: string }>();
   const [user, { refetch }] = createResource(() =>
     client.get_user_by_id(params.id)
@@ -80,6 +80,17 @@ const User: Component = () => {
       return builds.filterArray((b) => b.name.includes(search()));
     } else {
       return builds.filterArray((b) => {
+        if (!b.name.includes(search())) return false;
+        const p = b.permissions?.[params.id];
+        return p ? p !== PermissionLevel.None : false;
+      });
+    }
+  });
+  const _groups = createMemo(() => {
+    if (showAll()) {
+      return groups.filterArray((b) => b.name.includes(search()));
+    } else {
+      return groups.filterArray((b) => {
         if (!b.name.includes(search())) return false;
         const p = b.permissions?.[params.id];
         return p ? p !== PermissionLevel.None : false;
@@ -138,7 +149,7 @@ const User: Component = () => {
           <Flex alignItems="center">
             <h1>servers</h1>
             <Show when={_servers()?.length === 0}>
-              <div>empty</div>
+              <div>none</div>
             </Show>
           </Flex>
           <Grid gridTemplateColumns={isMobile() ? undefined : "1fr 1fr"}>
@@ -182,7 +193,7 @@ const User: Component = () => {
           <Flex alignItems="center">
             <h1>deployments</h1>
             <Show when={_deployments()?.length === 0}>
-              <div>empty</div>
+              <div>none</div>
             </Show>
           </Flex>
           <Grid gridTemplateColumns={isMobile() ? undefined : "1fr 1fr"}>
@@ -229,7 +240,7 @@ const User: Component = () => {
           <Flex alignItems="center">
             <h1>builds</h1>
             <Show when={_builds()?.length === 0}>
-              <div>empty</div>
+              <div>none</div>
             </Show>
           </Flex>
           <Grid gridTemplateColumns={isMobile() ? undefined : "1fr 1fr"}>
@@ -253,6 +264,44 @@ const User: Component = () => {
                       client.update_user_permissions_on_target({
                         user_id: params.id,
                         target_type: PermissionsTarget.Build,
+                        target_id: getId(item),
+                        permission: permission as PermissionLevel,
+                      });
+                    }}
+                  />
+                </Flex>
+              )}
+            </For>
+          </Grid>
+        </Grid>
+        <Grid class="card light shadow">
+          <Flex alignItems="center">
+            <h1>groups</h1>
+            <Show when={_builds()?.length === 0}>
+              <div>none</div>
+            </Show>
+          </Flex>
+          <Grid gridTemplateColumns={isMobile() ? undefined : "1fr 1fr"}>
+            <For each={_groups()}>
+              {(item) => (
+                <Flex
+                  class="card shadow"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <h2>{item.name}</h2>
+                  <Selector
+                    targetClass={
+                      (item.permissions?.[params.id] || "none") !== "none"
+                        ? "blue"
+                        : "red"
+                    }
+                    selected={item.permissions?.[params.id] || "none"}
+                    items={["none", "read", "execute", "update"]}
+                    onSelect={(permission) => {
+                      client.update_user_permissions_on_target({
+                        user_id: params.id,
+                        target_type: PermissionsTarget.Group,
                         target_id: getId(item),
                         permission: permission as PermissionLevel,
                       });

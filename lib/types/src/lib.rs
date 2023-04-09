@@ -194,6 +194,7 @@ pub enum PermissionsTarget {
     Deployment,
     Build,
     Procedure,
+    Group,
 }
 
 #[typeshare]

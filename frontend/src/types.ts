@@ -466,6 +466,7 @@ export enum PermissionsTarget {
 	Deployment = "deployment",
 	Build = "build",
 	Procedure = "procedure",
+	Group = "group",
 }
 
 export enum Timelength {
