@@ -45,14 +45,9 @@ impl MonitorClient {
     }
 
     pub async fn create_build(&self, name: &str) -> anyhow::Result<Build> {
-        self.post(
-            "/api/build/create",
-            json!({ "name": name }),
-        )
-        .await
-        .context(format!(
-            "failed at creating build with name {name}"
-        ))
+        self.post("/api/build/create", json!({ "name": name }))
+            .await
+            .context(format!("failed at creating build with name {name}"))
     }
 
     pub async fn create_full_build(&self, build: &Build) -> anyhow::Result<Build> {

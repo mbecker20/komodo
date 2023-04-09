@@ -1,1 +1,128 @@
+import Divider from '@site/src/components/Divider';
+
 # deployment | /deployment
+
+```mdx-code-block
+<Divider />
+```
+
+## list deployments
+`GET /api/deployment/list`
+
+this method will return an array of builds the requesting user has a minimum of `Read` permissions on.
+
+### response body
+```
+Array<Deployment>
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get deployment
+`GET /api/deployment/<deployment_id>`
+
+this method will return an array of builds the requesting user has a minimum of `Read` permissions on.
+
+### response body
+```
+Deployment
+```
+
+```mdx-code-block
+<Divider />
+```
+## get deployment action state
+`GET /api/deployment/<build_id>/action_state`
+
+this method returns the action state for the deployment, eg. whether the deployment is currently `deploying`.
+
+
+### response body
+```json
+{
+	deploying: boolean,
+    stopping: boolean,
+    starting: boolean,
+    removing: boolean,
+    pulling: boolean,
+    recloning: boolean,
+    updating: boolean,
+    renaming: boolean,
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get deployment container log
+`GET /api/deployment/<deployment_id>/log`
+
+### query params
+```json
+{
+	tail: number // number of log lines to fetch
+}
+```
+
+### response body
+```json
+{
+	stdout: string,
+	stderr: string,
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get deployment container stats
+`GET /api/deployment/<deployment_id>/stats`
+
+### response body
+```json
+{
+	name: string,
+	cpu_perc: string,
+	mem_perc: string,
+	mem_usage: string,
+	net_io: string,
+	block_io: string,
+	pids: string,
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get deployment deployed version
+`GET /api/deployment/<deployment_id>/deployed_version`
+
+### response body
+```json
+string // the deployed version like v0.2.4
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## create deployment
+`POST /api/deployment/create`
+
+### request body
+```json
+{
+	name: string,
+	server_id: string,
+}
+```
+
+### response body
+```json
+Deployment
+```

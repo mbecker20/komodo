@@ -510,7 +510,7 @@ impl State {
             .stats
             .get_some(
                 doc! {
-                    "server_id": server_id, 
+                    "server_id": server_id,
                     "ts": { "$in": ts_vec }
                 },
                 FindOptions::builder()
