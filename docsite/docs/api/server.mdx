@@ -1,1 +1,491 @@
+import Divider from '@site/src/components/Divider';
+
 # server
+
+these routes relate to interacting with monitor `servers`
+
+| name | route |
+| ---- | ------ |
+| [list servers](/api/server#list-servers) | `GET /api/server/list` |
+| [get server](/api/server#get-server) | `GET /api/server/<server_id>` |
+| [get server action state](/api/server#get-server-action-state) | `GET /api/server/<server_id>/action_state` |
+| [get server github accounts](/api/server#get-server-github-accounts) | `GET /api/server/<server_id>/github_accounts` |
+| [get server docker accounts](/api/server#get-server-docker-accounts) | `GET /api/server/<server_id>/docker_accounts` |
+| [get server available secrets](/api/server#get-server-available-secrets) | `GET /api/server/<server_id>/secrets` |
+| [create server](/api/server#create-server) | `POST /api/server/create` |
+| [create full server](/api/server#create-full-server) | `POST /api/server/create_full` |
+| [delete server](/api/server#delete-server) | `DELETE /api/server/<server_id>/delete` |
+| [update server](/api/server#update-server) | `PATCH /api/server/update` |
+| [get server periphery version](/api/server#get-server-periphery-version) | `GET /api/server/<server_id>/version` |
+| [get server system information](/api/server#get-server-system-information) | `GET /api/server/<server_id>/system_information` |
+| [get server stats](/api/server#get-server-stats) | `GET /api/server/<server_id>/stats` |
+| [get server stats history](/api/server#get-server-stats-history) | `GET /api/server/<server_id>/stats/history` |
+| [get server stats at time](/api/server#get-server-stats-at-time) | `GET /api/server/<server_id>/stats/at_ts` |
+| [get docker networks](/api/server#get-docker-networks) | `GET /api/server/<server_id>/networks` |
+| [prune docker networks](/api/server#prune-docker-networks) | `POST /api/server/<server_id>/networks/prune` |
+| [get docker images](/api/server#get-docker-images) | `GET /api/server/<server_id>/images` |
+| [prune docker images](/api/server#prune-docker-images) | `POST /api/server/<server_id>/images/prune` |
+| [get docker containers](/api/server#get-docker-containers) | `GET /api/server/<server_id>/containers` |
+| [prune docker containers](/api/server#prune-docker-containers) | `POST /api/server/<server_id>/containers/prune` |
+
+
+```mdx-code-block
+<Divider />
+```
+
+## list servers
+`GET /api/server/list`
+
+this method will return an array of servers with their status 
+that the requesting user has a minimum of `Read` permissions on.
+
+### response body
+```json
+[
+	{
+		server: Server,
+		status: ServerStatus
+	},
+	...
+]
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server
+`GET /api/server/<server_id>`
+
+this method will return the server with server status that 
+the requesting user has a minimum of `Read` permissions on.
+it will return `500: Internal Server Error` if the user does not have the required permissions.
+
+### response body
+```json
+{
+	server: Server,
+	status: ServerStatus
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server action state
+`GET /api/server/<server_id>/action_state`
+
+this method returns the action state for the server, eg. whether the server is currently `pruning_images`.
+
+
+### response body
+```json
+{
+	pruning_networks: boolean,
+	pruning_containers: boolean,
+	pruning_images: boolean,
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server github accounts
+`GET /api/server/<server_id>/github_accounts`
+
+this method returns a list of all the github account usernames that are available on the server,
+as defined in the server's periphery config under [github_accounts].
+
+### response body
+```json
+["<github_username_1>", "<github_username_2>", ...]
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server docker accounts
+`GET /api/server/<server_id>/docker_accounts`
+
+this method returns a list of all the docker account usernames that are available on the server,
+as defined in the server's periphery config under [docker_accounts].
+
+### response body
+```json
+["<docker_username_1>", "<docker_username_2>", ...]
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server available secrets
+`GET /api/server/<server_id>/secrets`
+
+this method returns a list of all the secret keys that are available on the server,
+as defined in the server's periphery config under [secrets].
+
+### response body
+```json
+["<secret_key_1>", "<secret_key_2>", ...]
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## create server
+`POST /api/server/create`
+
+### request body
+```json
+{
+	name: string,
+	address: string, // eg. http://12.34.56.78:8000
+} 
+```
+
+### response body
+```json
+Server
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## create full server
+`POST /api/server/create_full`
+
+this method is used to create a new server, already initialized with config.
+it will return the created server.
+
+### request body
+```json
+Server
+```
+
+### response body
+```json
+Server
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## delete server
+`DELETE /api/server/<server_id>/delete`
+
+this method will delete the server, along with all deployments attached to the server.
+
+### response body
+```json
+Server
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## update server
+`PATCH /api/server/update`
+
+this method is used to update a servers configuration.
+
+### request body
+```json
+Server
+```
+
+### response body
+```json
+Server
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server periphery version
+`GET /api/server/<server_id>/version`
+
+this method is used to get the version of the periphery binary running on the server.
+
+### response body
+```json
+string // the periphery version
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server system information
+`GET /api/server/<server_id>/system_information`
+
+this method gets some information about the host system running the periphery binary.
+
+### response body
+```json
+{
+	name?: string,       // the name of the system
+	os?: string,         // the os the system is running
+	kernel?: string,     // the version of the kernel
+	core_count?: number, // number of cores in the cpu
+	host_name?: string,  // host name of the system
+	cpu_brand: string,   // information on the cpu of the system
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server stats
+`GET /api/server/<server_id>/stats`
+
+this method retrieves current system stats of the server.
+
+### query params
+```json
+cpus=boolean // optional. if true, response will include information about each core individually
+disks=boolean // optional. if true, response will include breakdown of disk usage by mount point
+networks=boolean // optional. if true, response will include info on network usage
+components=boolean // optional. if true, response will include component tempurature
+processes=boolean // optional. if true, response will include all system processes running on host and their resource usage
+```
+
+### response body
+```json
+{
+	system_load: number,
+	cpu_perc: number,
+	cpu_freq_mhz: number,
+	mem_used_gb: number,
+	mem_total_gb: number,
+	disk: {},
+	cpus: [],
+	networks: [],
+	components: [],
+	processes: [],
+	polling_rate: Timelength,
+	refresh_ts: number,
+	refresh_list_ts: number,
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server stats history
+`GET /api/server/<server_id>/stats/history`
+
+this method will return historical system stats for the server.
+the response is paginated, to get older data, specify a higher page number.
+
+### query params
+```json
+interval=Timelength // optional, default interval is 1-hr. controls granularity of historical data
+limit=number // optional, default is 100, max is 500. specifies the number of data points to fetch
+page=number // optional, default is 0. specifies the page of data, going backward in time.
+networks=boolean // optional. if true, response will include historical info on network usage
+components=boolean // optional. if true, response will include historical component tempuratures
+```
+
+### response body
+```json
+[
+	{
+		ts: number, // unix timestamp in ms
+		server_id: string // specifies the server
+		system_load: number,
+		cpu_perc: number,
+		cpu_freq_mhz: number,
+		mem_used_gb: number,
+		mem_total_gb: number,
+		disk: {},
+		cpus: [],
+		networks: [],
+		components: [],
+		processes: [],
+		polling_rate: Timelength,
+	},
+	...
+]
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get server stats at time
+`GET /api/server/<server_id>/stats/at_ts`
+
+this method retrieves the historical stats for a server at a specific timestamp
+
+### query params
+```json
+ts=number // required. the timestamp in ms
+```
+
+### response body
+```json
+{
+	ts: number, // unix timestamp in ms
+	server_id: string // specifies the server
+	system_load: number,
+	cpu_perc: number,
+	cpu_freq_mhz: number,
+	mem_used_gb: number,
+	mem_total_gb: number,
+	disk: {},
+	cpus: [],
+	networks: [],
+	components: [],
+	processes: [],
+	polling_rate: Timelength,
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get docker networks
+`GET /api/server/<server_id>/networks`
+
+this method retrieves the docker networks on the server
+
+### response body
+```json
+[
+	{
+		Name?: string,
+		Id?: string,
+		Created?: string,
+		Scope?: string,
+		Driver?: string,
+		EnableIPv6?: boolean,
+		IPAM?: {
+			Driver?: string,
+			Config?: [
+				{
+					Subnet?: string,
+					IPRange?: string,
+					Gateway?: string,
+					AuxiliaryAddresses?: {}
+				},
+				...
+			],
+			Options?: {}
+		},
+		Internal?: boolean,
+		Attachable?: boolean,
+		Ingress?: boolean,
+		Containers?: {},
+		Options?: {},
+		Labels?: {}
+	},
+	...
+]
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## prune docker networks
+`POST /api/server/<server_id>/networks/prune`
+
+this method triggers the `network prune` action on the server, which runs 
+`docker network prune -f` on the target server
+
+### response body
+```json
+Update
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get docker images
+`GET /api/server/<server_id>/images`
+
+this method will return a list of images available locally on the server
+
+### response body
+```json
+[
+	{
+		Id: string,
+		ParentId: string,
+		RepoTags: [string],
+		RepoDigests: [string],
+		Created: number,
+		Size: number,
+		SharedSize: number,
+		VirtualSize: number,
+		Labels: {},
+		Containers: number,
+	}
+]
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## prune docker images
+`POST /api/server/<server_id>/images/prune`
+
+this method triggers the `image prune` action, which runs 
+`docker image prune -a -f` on the target server
+
+### response body
+```json
+Update
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## get docker containers
+`GET /api/server/<server_id>/containers`
+
+this method is used to retrieve information about all the containers on the target server
+
+### response body
+```json
+[
+	{
+		name: string,
+		id: string,
+		image: string,
+		state: DockerContainerState,
+		status?: string,
+	},
+	...
+]
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## prune docker containers
+`POST /api/server/<server_id>/containers/prune`
+
+this method triggers the `container prune` action, which runs 
+`docker container prune -f` on the target server
+
+### response body
+```json
+Update
+```

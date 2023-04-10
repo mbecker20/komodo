@@ -3,7 +3,7 @@ use futures_util::{SinkExt, StreamExt};
 use monitor_types::{
     BasicContainerInfo, HistoricalStatsQuery, ImageSummary, Log, Network, Server,
     ServerActionState, ServerWithStatus, SystemInformation, SystemStats, SystemStatsQuery,
-    SystemStatsRecord,
+    SystemStatsRecord, Update,
 };
 use serde_json::{json, Value};
 use tokio::{
@@ -157,7 +157,7 @@ impl MonitorClient {
         )
         .await
         .context(format!(
-            "failed to get historical server stats at id {server_id}"
+            "failed to get historical server stats at id {server_id} at timestamp {ts}"
         ))
     }
 
@@ -225,7 +225,7 @@ impl MonitorClient {
         .context(format!("failed to get networks on server id {server_id}"))
     }
 
-    pub async fn prune_docker_networks(&self, server_id: &str) -> anyhow::Result<Log> {
+    pub async fn prune_docker_networks(&self, server_id: &str) -> anyhow::Result<Update> {
         self.post::<(), _>(&format!("/api/server/{server_id}/networks/prune"), None)
             .await
             .context(format!("failed to prune networks on server id {server_id}"))
@@ -240,7 +240,7 @@ impl MonitorClient {
         .context(format!("failed to get images on server id {server_id}"))
     }
 
-    pub async fn prune_docker_images(&self, server_id: &str) -> anyhow::Result<Log> {
+    pub async fn prune_docker_images(&self, server_id: &str) -> anyhow::Result<Update> {
         self.post::<(), _>(&format!("/api/server/{server_id}/images/prune"), None)
             .await
             .context(format!("failed to prune images on server id {server_id}"))
@@ -258,7 +258,7 @@ impl MonitorClient {
         .context(format!("failed to get containers on server id {server_id}"))
     }
 
-    pub async fn prune_docker_containers(&self, server_id: &str) -> anyhow::Result<Log> {
+    pub async fn prune_docker_containers(&self, server_id: &str) -> anyhow::Result<Update> {
         self.post::<(), _>(&format!("/api/server/{server_id}/containers/prune"), None)
             .await
             .context(format!(

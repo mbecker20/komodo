@@ -82,7 +82,7 @@ it will return `500: Internal Server Error` if the user does not have the requir
 <Divider />
 ```
 ## get deployment action state
-`GET /api/deployment/<build_id>/action_state`
+`GET /api/deployment/<deployment_id>/action_state`
 
 this method returns the action state for the deployment, eg. whether the deployment is currently `deploying`.
 
@@ -236,6 +236,8 @@ Deployment
 
 ## delete deployment
 `DELETE /api/deployment/<deployment_id>/delete`
+
+this method will delete the deployment. if a container is associated with the deployment, it will be destroyed.
 
 ### response body
 ```json
