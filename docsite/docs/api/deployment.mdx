@@ -1,6 +1,29 @@
 import Divider from '@site/src/components/Divider';
 
-# deployment | /deployment
+# deployment
+
+these routes relate to interacting with monitor `deployments`
+
+| name | route |
+| ---- | ------ |
+| [list deployments](/api/deployment#list-deployments) | `GET /api/deployment/list` |
+| [get deployment](/api/deployment#get-deployment) | `GET /api/deployment/<deployment_id>` |
+| [get deployment action state](/api/deployment#get-deployment-action-state) | `GET /api/deployment/<deployment_id>/action_state` |
+| [get deployment container log](/api/deployment#get-deployment-container-log) | `GET /api/deployment/<deployment_id>/log` |
+| [get deployment container stats](/api/deployment#get-deployment-container-stats) | `GET /api/deployment/<deployment_id>/stats` |
+| [get deployment deployed version](/api/deployment#get-deployment-deployed-version) | `GET /api/deployment/<deployment_id>/deployed_version` |
+| [create deployment](/api/deployment#create-deployment) | `POST /api/deployment/create` |
+| [create full deployment](/api/deployment#create-full-deployment) | `POST /api/deployment/create_full` |
+| [copy deployment](/api/deployment#copy-deployment) | `POST /api/deployment/<deployment_id>/copy` |
+| [delete deployment](/api/deployment#delete-deployment) | `DELETE /api/deployment/<deployment_id>/delete` |
+| [update deployment](/api/deployment#update-deployment) | `PATCH /api/deployment/update` |
+| [rename deployment](/api/deployment#rename-deployment) | `PATCH /api/deployment/<deployment_id>/rename` |
+| [reclone deployment](/api/deployment#reclone-deployment) | `POST /api/deployment/<deployment_id>/reclone` |
+| [pull deployment](/api/deployment#pull-deployment) | `POST /api/deployment/<deployment_id>/pull` |
+| [deploy container](/api/deployment#deploy-container) | `POST /api/deployment/<deployment_id>/deploy` |
+| [start container](/api/deployment#start-container) | `POST /api/deployment/<deployment_id>/start_container` |
+| [stop container](/api/deployment#stop-container) | `POST /api/deployment/<deployment_id>/stop_container` |
+| [remove container](/api/deployment#remove-container) | `POST /api/deployment/<deployment_id>/remove_container` |
 
 ```mdx-code-block
 <Divider />
@@ -9,11 +32,24 @@ import Divider from '@site/src/components/Divider';
 ## list deployments
 `GET /api/deployment/list`
 
-this method will return an array of builds the requesting user has a minimum of `Read` permissions on.
+this method will return an array of deployments with container state that the requesting user has a minimum of `Read` permissions on.
 
 ### response body
-```
-Array<Deployment>
+```json
+[
+	{
+		deployment: Deployment,
+		state: DockerContainerState,
+		container?: {
+			name: string,
+			id: string,
+			image: string,
+			state: DockerContainerState,
+			status?: string,
+		}
+	},
+	...
+]
 ```
 
 ```mdx-code-block
@@ -23,11 +59,23 @@ Array<Deployment>
 ## get deployment
 `GET /api/deployment/<deployment_id>`
 
-this method will return an array of builds the requesting user has a minimum of `Read` permissions on.
+this method will return the deployment with container state that 
+the requesting user has a minimum of `Read` permissions on.
+it will return `500: Internal Server Error` if the user does not have the required permissions.
 
 ### response body
-```
-Deployment
+```json
+{
+	deployment: Deployment,
+	state: DockerContainerState,
+	container?: {
+		name: string,
+		id: string,
+		image: string,
+		state: DockerContainerState,
+		status?: string,
+	}
+}
 ```
 
 ```mdx-code-block
@@ -60,10 +108,12 @@ this method returns the action state for the deployment, eg. whether the deploym
 ## get deployment container log
 `GET /api/deployment/<deployment_id>/log`
 
+this method is used to get the container's log associated with the deployment.
+
 ### query params
 ```json
 {
-	tail: number // number of log lines to fetch
+	tail: number // number of log lines to fetch. this is passed to the --tail flag of docker logs command
 }
 ```
 
@@ -81,6 +131,9 @@ this method returns the action state for the deployment, eg. whether the deploym
 
 ## get deployment container stats
 `GET /api/deployment/<deployment_id>/stats`
+
+this method returns the results of running `docker stats <container_name>` 
+for the container associated with the deployment.
 
 ### response body
 ```json
@@ -102,9 +155,12 @@ this method returns the action state for the deployment, eg. whether the deploym
 ## get deployment deployed version
 `GET /api/deployment/<deployment_id>/deployed_version`
 
+this method is used to get the image version of the container associated with the deployment, if it exists.
+otherwise, it will return the version specified in the deployment config.
+
 ### response body
 ```json
-string // the deployed version like v0.2.4
+string // the deployed version like '0.2.4'
 ```
 
 ```mdx-code-block
@@ -113,6 +169,9 @@ string // the deployed version like v0.2.4
 
 ## create deployment
 `POST /api/deployment/create`
+
+this method is used to create a new deployment on a particular server.
+it will return the created deployment.
 
 ### request body
 ```json
@@ -125,4 +184,181 @@ string // the deployed version like v0.2.4
 ### response body
 ```json
 Deployment
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## create full deployment
+`POST /api/deployment/create_full`
+
+this method is used to create a new deployment on a particular server, already initialized with config.
+it will return the created deployment
+
+### request body
+```json
+Deployment
+```
+
+### response body
+```json
+Deployment
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## copy deployment
+`POST /api/deployment/<deployment_id>/copy`
+
+this method will create a copy of the deployment with a new _id and name,
+with all the same configuration as the target deployment.
+it can be used to move the deployment to another server.
+
+### request body
+```json
+{
+	name: string,
+	server_id: string,
+}
+```
+
+### response body
+```json
+Deployment
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## delete deployment
+`DELETE /api/deployment/<deployment_id>/delete`
+
+### response body
+```json
+Deployment
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## update deployment
+`PATCH /api/deployment/update`
+
+### request body
+```json
+Deployment
+```
+
+### response body
+```json
+Deployment
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## rename deployment
+`PATCH /api/deployment/<deployment_id>/rename`
+
+### request body
+```json
+{
+	new_name: string,
+}
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## reclone deployment
+`POST /api/deployment/<deployment_id>/reclone`
+
+if the deployment has a repo attached, this will reclone the repo,
+including the on-clone and on-pull actions.
+
+### response body
+```json
+Update
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## pull deployment
+`POST /api/deployment/<deployment_id>/pull`
+
+if the deployment has a repo attached, this will `git pull` in the repo,
+including the on-pull action.
+
+### response body
+```json
+Update
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## deploy container
+`POST /api/deployment/<deployment_id>/deploy`
+
+this will deploy the container corresponding to the deployments configuration.
+if the container already exists, it will destroy it first.
+
+### response body
+```json
+Update
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## start container
+`POST /api/deployment/<deployment_id>/start_container`
+
+this will run `docker start <container_name>` for the container
+corresponding to the deployment
+
+### response body
+```json
+Update
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## stop container
+`POST /api/deployment/<deployment_id>/stop_container`
+
+this will run `docker stop <container_name>` for the container
+corresponding to the deployment
+
+### response body
+```json
+Update
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## remove container
+`POST /api/deployment/<deployment_id>/remove_container`
+
+this will run `docker stop <container_name> && docker container rm <container_name>`
+for the container corresponding to the deployment
+
+### response body
+```json
+Update
 ```

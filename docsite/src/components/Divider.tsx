@@ -8,7 +8,7 @@ export default function Divider() {
         backgroundColor: "rgb(175, 175, 175)",
         height: "3px",
         width: "100%",
-        margin: "100px 0px"
+        margin: "75px 0px"
       }}
     />
   );

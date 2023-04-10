@@ -1,6 +1,6 @@
 import Divider from '@site/src/components/Divider';
 
-# login | /auth
+# login
 
 *routes for user login*
 
@@ -23,12 +23,6 @@ you must generate an API secret and login using [/auth/secret/login](/api/login#
 
 this method is used to obtain the login options for monitor core
 
-### query params
-none
-
-### request body
-none
-
 ### response body
 ```json
 {
@@ -47,9 +41,6 @@ none
 
 this method will create a new local auth account with the provided **username** and **password**, 
 and return a `JWT` for the user to authenticate with.
-
-### query params
-none
 
 ### request body
 ```json
@@ -75,9 +66,6 @@ a user created with this method is, by default, `disabled`. a monitor admin must
 
 this method will authenticate a local users credentials and return a JWT if login is successful.
 
-### query params
-none
-
 ### request body
 ```json
 {
@@ -97,9 +85,6 @@ none
 `POST /auth/secret/login`
 
 this method will authenticate a users account of any kind using an API secret generated using [/api/secret/create](/)
-
-### query params
-none
 
 ### request body
 ```json
