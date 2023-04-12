@@ -4,7 +4,7 @@ when working with monitor, you might have to configure file or directory paths.
 
 ## relative paths
 
-Where possible, it is better to use relative file paths. Using relative file paths removes the connection between the process being run and the particular server it runs one, making it easier to move things between servers.
+Where possible, it is better to use relative file paths. Using relative file paths removes the connection between the process being run and the particular server it runs on, making it easier to move things between servers.
 
 Where you see relative paths:
 
@@ -20,7 +20,7 @@ There are 3 kinds of paths to pass:
 
  1. to specify the root of the repo, use ```.``` as the path
  2. to specify a folder in the repo, pass it with **no** preceding ```/```. For example, ```example_folder``` or ```folder1/folder2```
- 3. to specify an absolute path on the servers filesystem, use a preceding slash, eg. ```/home/ubuntu/example```. This way should only be used if absolutely necessary.
+ 3. to specify an absolute path on the servers filesystem, use a preceding slash, eg. ```/home/ubuntu/example```. This way should only be used if absolutely necessary, like when passing host paths when configuring docker volumes.
 
 ### implementation
 

@@ -6,7 +6,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "monitor 🦎",
+  title: "monitor",
   tagline: "distributed build and deployment system",
   favicon: "img/favicon.ico",
 

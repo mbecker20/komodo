@@ -169,7 +169,7 @@ const Header: Component<{}> = (p) => {
               class="text-hover"
               style={{ opacity: 0.7, padding: 0 }}
             >
-              {server()?.server.name}
+              {server()?.server.name || "unknown"}
             </A>
             <div class={deploymentHeaderStateClass(deployment().state)}>
               {deployment().state}

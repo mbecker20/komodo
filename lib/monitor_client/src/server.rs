@@ -1,9 +1,8 @@
 use anyhow::{anyhow, Context};
 use futures_util::{SinkExt, StreamExt};
 use monitor_types::{
-    BasicContainerInfo, HistoricalStatsQuery, ImageSummary, Log, Network, Server,
-    ServerActionState, ServerWithStatus, SystemInformation, SystemStats, SystemStatsQuery,
-    SystemStatsRecord, Update,
+    BasicContainerInfo, HistoricalStatsQuery, ImageSummary, Network, Server, ServerActionState,
+    ServerWithStatus, SystemInformation, SystemStats, SystemStatsQuery, SystemStatsRecord, Update,
 };
 use serde_json::{json, Value};
 use tokio::{

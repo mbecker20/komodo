@@ -4,14 +4,14 @@ import styles from './styles.module.css';
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
+  // Svg: React.ComponentType<React.ComponentProps<'svg'>>;
   description: JSX.Element;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'automated builds',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: 'automated builds 🛠️',
+    // Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
     description: (
       <>
         build auto versioned docker images from github repos, trigger builds on git push
@@ -19,8 +19,8 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: 'run docker containers',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: 'deploy docker containers 🚀',
+    // Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
     description: (
       <>
         deploy your builds (or any docker image), see uptime and logs across all your servers
@@ -28,22 +28,22 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: 'powered by Rust 🦀 and SolidJS',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: 'powered by Rust 🦀',
+    // Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
     description: (
       <>
-        The core API and periphery client are written in Rust. The frontend uses SolidJS
+        The core API and periphery client are written in Rust
       </>
     ),
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+function Feature({ title, description }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center">
+      {/* <div className="text--center">
         <Svg className={styles.featureSvg} role="img" />
-      </div>
+      </div> */}
       <div className="text--center padding-horiz--md">
         <h3>{title}</h3>
         <p>{description}</p>
