@@ -52,4 +52,19 @@ impl MonitorClient {
         )
         .await
     }
+
+    pub async fn modify_user_create_build_permissions(
+        &self,
+        user_id: &str,
+        create_build_permissions: bool,
+    ) -> anyhow::Result<Update> {
+        self.post(
+            "/api/permissions/modify_create_build",
+            json!({
+                "user_id": user_id,
+                "create_build_permissions": create_build_permissions,
+            }),
+        )
+        .await
+    }
 }

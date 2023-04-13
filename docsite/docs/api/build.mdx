@@ -15,7 +15,7 @@ these routes relate to interacting with monitor `builds`
 | [copy build](/api/build#copy-build) | `POST /api/build/<build_id>/copy` |
 | [delete build](/api/build#delete-build) | `DELETE /api/build/<build_id>/delete` |
 | [update build](/api/build#update-build) | `PATCH /api/build/update` |
-| [build](/api/build#build) | `POST /api/build/<build_id>/build` |
+| [build](/api/build#build-action) | `POST /api/build/<build_id>/build` |
 | [get aws builder defaults](/api/build#get-aws-builder-defaults) | `GET /api/build/aws_builder_defaults` |
 | [get allowed docker organizations](/api/build#get-allowed-docker-organizations) | `GET /api/build/docker_organizations` |
 
@@ -30,9 +30,7 @@ this method will return an array of builds the requesting user has a minimum of 
 
 
 ### response body
-```
-Array<Build>
-```
+Array<[Build](/api/types#build)>
 
 ```mdx-code-block
 <Divider />
@@ -42,9 +40,7 @@ Array<Build>
 `GET /api/build/<build_id>`
 
 ### response body
-```
-Build
-```
+[Build](/api/types#build)
 
 ```mdx-code-block
 <Divider />
@@ -112,9 +108,7 @@ patch=number // optional. filter by patch version number
 ```
 
 ### response body
-```
-Build
-```
+[Build](/api/types#build)
 
 ```mdx-code-block
 <Divider />
@@ -125,14 +119,10 @@ Build
 
 
 ### request body
-```
-Build
-```
+[Build](/api/types#build)
 
 ### response body
-```
-Build
-```
+[Build](/api/types#build)
 
 ```mdx-code-block
 <Divider />
@@ -153,9 +143,7 @@ with all the same configuration as the target build.
 ```
 
 ### response body
-```json
-Build // the copied build
-```
+[Build](/api/types#build)
 
 ```mdx-code-block
 <Divider />
@@ -165,9 +153,7 @@ Build // the copied build
 `DELETE /api/build/<build_id>/delete`
 
 ### response body
-```json
-Build // the deleted build
-```
+[Build](/api/types#build)
 
 ```mdx-code-block
 <Divider />
@@ -177,14 +163,10 @@ Build // the deleted build
 `PATCH /api/build/update`
 
 ### request body
-```
-Build
-```
+[Build](/api/types#build)
 
 ### response body
-```
-Build
-```
+[Build](/api/types#build)
 
 ```mdx-code-block
 <Divider />
@@ -194,9 +176,11 @@ Build
 `POST /api/build/<build_id>/build`
 
 ### response body
-```
-Update
-```
+[Update](/api/types#update)
+
+:::note
+this update will include the `version` field.
+:::
 
 ```mdx-code-block
 <Divider />

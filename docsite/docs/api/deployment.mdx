@@ -86,7 +86,6 @@ it will return `500: Internal Server Error` if the user does not have the requir
 
 this method returns the action state for the deployment, eg. whether the deployment is currently `deploying`.
 
-
 ### response body
 ```json
 {
@@ -173,6 +172,11 @@ string // the deployed version like '0.2.4'
 this method is used to create a new deployment on a particular server.
 it will return the created deployment.
 
+:::note
+users must be **admin** or have `update` permissions on the server specified by the `server_id` 
+in the request body in order for this request to succeed.
+:::
+
 ### request body
 ```json
 {
@@ -182,9 +186,7 @@ it will return the created deployment.
 ```
 
 ### response body
-```json
-Deployment
-```
+[Deployment](/api/types#deployment)
 
 ```mdx-code-block
 <Divider />
@@ -197,14 +199,10 @@ this method is used to create a new deployment on a particular server, already i
 it will return the created deployment
 
 ### request body
-```json
-Deployment
-```
+[Deployment](/api/types#deployment)
 
 ### response body
-```json
-Deployment
-```
+[Deployment](/api/types#deployment)
 
 ```mdx-code-block
 <Divider />
@@ -226,9 +224,7 @@ it can be used to move the deployment to another server.
 ```
 
 ### response body
-```json
-Deployment
-```
+[Deployment](/api/types#deployment)
 
 ```mdx-code-block
 <Divider />
@@ -240,9 +236,7 @@ Deployment
 this method will delete the deployment. if a container is associated with the deployment, it will be destroyed.
 
 ### response body
-```json
-Deployment
-```
+[Deployment](/api/types#deployment)
 
 ```mdx-code-block
 <Divider />
@@ -252,14 +246,10 @@ Deployment
 `PATCH /api/deployment/update`
 
 ### request body
-```json
-Deployment
-```
+[Deployment](/api/types#deployment)
 
 ### response body
-```json
-Deployment
-```
+[Deployment](/api/types#deployment)
 
 ```mdx-code-block
 <Divider />
@@ -286,9 +276,7 @@ if the deployment has a repo attached, this will reclone the repo,
 including the on-clone and on-pull actions.
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)
 
 ```mdx-code-block
 <Divider />
@@ -301,9 +289,7 @@ if the deployment has a repo attached, this will `git pull` in the repo,
 including the on-pull action.
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)
 
 ```mdx-code-block
 <Divider />
@@ -316,9 +302,7 @@ this will deploy the container corresponding to the deployments configuration.
 if the container already exists, it will destroy it first.
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)
 
 ```mdx-code-block
 <Divider />
@@ -331,9 +315,7 @@ this will run `docker start <container_name>` for the container
 corresponding to the deployment
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)
 
 ```mdx-code-block
 <Divider />
@@ -346,9 +328,7 @@ this will run `docker stop <container_name>` for the container
 corresponding to the deployment
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)
 
 ```mdx-code-block
 <Divider />
@@ -361,6 +341,4 @@ this will run `docker stop <container_name> && docker container rm <container_na
 for the container corresponding to the deployment
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)

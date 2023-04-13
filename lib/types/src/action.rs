@@ -39,11 +39,12 @@ pub struct Action {
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub server_ids: Vec<String>,
 
-    // run action on all servers in the group
+    // run action on all servers in these groups
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub group_ids: Vec<String>,
 
+    // run action on all servers
     #[serde(default)]
     #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub run_on_all: bool,

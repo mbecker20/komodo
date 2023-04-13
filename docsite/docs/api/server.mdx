@@ -149,9 +149,7 @@ as defined in the server's periphery config under [secrets].
 ```
 
 ### response body
-```json
-Server
-```
+[Server](/api/types#server)
 
 ```mdx-code-block
 <Divider />
@@ -164,14 +162,10 @@ this method is used to create a new server, already initialized with config.
 it will return the created server.
 
 ### request body
-```json
-Server
-```
+[Server](/api/types#server)
 
 ### response body
-```json
-Server
-```
+[Server](/api/types#server)
 
 ```mdx-code-block
 <Divider />
@@ -183,9 +177,7 @@ Server
 this method will delete the server, along with all deployments attached to the server.
 
 ### response body
-```json
-Server
-```
+[Server](/api/types#server)
 
 ```mdx-code-block
 <Divider />
@@ -197,14 +189,10 @@ Server
 this method is used to update a servers configuration.
 
 ### request body
-```json
-Server
-```
+[Server](/api/types#server)
 
 ### response body
-```json
-Server
-```
+[Server](/api/types#server)
 
 ```mdx-code-block
 <Divider />
@@ -406,9 +394,7 @@ this method triggers the `network prune` action on the server, which runs
 `docker network prune -f` on the target server
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)
 
 ```mdx-code-block
 <Divider />
@@ -448,9 +434,7 @@ this method triggers the `image prune` action, which runs
 `docker image prune -a -f` on the target server
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)
 
 ```mdx-code-block
 <Divider />
@@ -486,6 +470,4 @@ this method triggers the `container prune` action, which runs
 `docker container prune -f` on the target server
 
 ### response body
-```json
-Update
-```
+[Update](/api/types#update)
