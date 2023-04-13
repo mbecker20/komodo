@@ -1,6 +1,7 @@
 import {
   Component,
   createEffect,
+  createSignal,
   For,
   onCleanup,
   Show,
@@ -9,13 +10,16 @@ import { useUpdates } from "../../state/hooks";
 import { useAppState } from "../../state/StateProvider";
 import Update from "../update/Update";
 import Grid from "../shared/layout/Grid";
-import { combineClasses } from "../../util/helpers";
+import { combineClasses, getId } from "../../util/helpers";
 import { useParams } from "@solidjs/router";
+import Flex from "../shared/layout/Flex";
+import UpdateMenu from "../update/UpdateMenu";
 
 const Updates: Component<{}> = (p) => {
   const { ws } = useAppState();
   const params = useParams();
   const updates = useUpdates({ type: "Server", id: params.id });
+  const [openMenu, setOpenMenu] = createSignal<string | undefined>(undefined);
   let unsub = () => {};
   createEffect(() => {
     unsub();
@@ -27,14 +31,22 @@ const Updates: Component<{}> = (p) => {
   });
   onCleanup(() => unsub());
   return (
-    <Grid
-      class={combineClasses("card shadow")}
-      style={{ "flex-grow": 1 }}
-    >
-      <h1>updates</h1>
+    <Grid class={combineClasses("card shadow")} style={{ "flex-grow": 1 }}>
+      <Flex>
+        <h1>updates</h1>
+        <UpdateMenu
+          update={openMenu() ? updates.get(openMenu()!) : undefined}
+          closeMenu={() => setOpenMenu(undefined)}
+        />
+      </Flex>
       <Grid class="updates-container scroller">
         <For each={updates.collection()}>
-          {(update) => <Update update={update} />}
+          {(update) => (
+            <Update
+              update={update}
+              openMenu={() => setOpenMenu(getId(update))}
+            />
+          )}
         </For>
         <Show when={!updates.noMore()}>
           <button

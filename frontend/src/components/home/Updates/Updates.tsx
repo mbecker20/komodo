@@ -8,6 +8,8 @@ import Grid from "../../shared/layout/Grid";
 import Loading from "../../shared/loading/Loading";
 import Selector from "../../shared/menu/Selector";
 import Update from "./Update";
+import UpdateMenu from "../../update/UpdateMenu";
+import { getId } from "../../../util/helpers";
 
 const Updates: Component<{}> = () => {
   const { updates } = useAppState();
@@ -19,12 +21,19 @@ const Updates: Component<{}> = () => {
       updates.load();
     }
   });
+  const [openMenu, setOpenMenu] = createSignal<string | undefined>(undefined);
   return (
     <Grid class="card shadow" style={{ "flex-grow": 1 }}>
       <Flex alignItems="center" justifyContent="space-between">
-        <A href="/updates" style={{ padding: 0 }}>
-          <h1>updates</h1>
-        </A>
+        <Flex>
+          <A href="/updates" style={{ padding: 0 }}>
+            <h1>updates</h1>
+          </A>
+          <UpdateMenu
+            update={openMenu() ? updates.get(openMenu()!) : undefined}
+            closeMenu={() => setOpenMenu(undefined)}
+          />
+        </Flex>
         <Selector
           label="operation: "
           selected={operation() ? operation()! : "all"}
@@ -52,7 +61,12 @@ const Updates: Component<{}> = () => {
       >
         <Grid class="updates-container-small scroller">
           <For each={updates.collection()}>
-            {(update) => <Update update={update} />}
+            {(update) => (
+              <Update
+                update={update}
+                openMenu={() => setOpenMenu(getId(update))}
+              />
+            )}
           </For>
           <Show when={!updates.noMore()}>
             <button

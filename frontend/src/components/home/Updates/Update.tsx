@@ -13,7 +13,7 @@ import Grid from "../../shared/layout/Grid";
 import UpdateMenu from "../../update/UpdateMenu";
 import s from "./update.module.scss";
 
-const Update: Component<{ update: UpdateType }> = (p) => {
+const Update: Component<{ update: UpdateType; openMenu: () => void; }> = (p) => {
   const { usernames, name_from_update_target } =
     useAppState();
   const name = () => name_from_update_target(p.update.target);
@@ -63,7 +63,9 @@ const Update: Component<{ update: UpdateType }> = (p) => {
             <div>{usernames.get(p.update.operator)}</div>
           </Flex>
         </Grid>
-        <UpdateMenu update={p.update} />
+        <button class="blue" style={{ "place-self": "center end" }} onClick={p.openMenu}>
+          <Icon type="console" />
+        </button>
       </Flex>
     </Flex>
   );

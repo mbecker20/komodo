@@ -1,14 +1,17 @@
 import { Component, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { Operation, Update as UpdateType, UpdateStatus } from "../../types";
-import { combineClasses, readableMonitorTimestamp, readableVersion } from "../../util/helpers";
+import {
+  combineClasses,
+  readableMonitorTimestamp,
+  readableVersion,
+} from "../../util/helpers";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
 import s from "./update.module.scss";
-import UpdateMenu from "./UpdateMenu";
 
-const Update: Component<{ update: UpdateType }> = (p) => {
+const Update: Component<{ update: UpdateType; openMenu: () => void }> = (p) => {
   const { usernames } = useAppState();
   const operation = () => {
     if (p.update.operation === Operation.BuildBuild) {
@@ -39,9 +42,9 @@ const Update: Component<{ update: UpdateType }> = (p) => {
         <Icon type="user" />
         <div>{usernames.get(p.update.operator)}</div>
       </Flex>
-      <Flex style={{ "place-self": "center end" }} alignItems="center">
-        <UpdateMenu update={p.update} />
-      </Flex>
+      <button class="blue" style={{ "place-self": "center end" }} onClick={p.openMenu}>
+        <Icon type="console" />
+      </button>
     </Grid>
   );
 };

@@ -16,7 +16,7 @@ const CenterMenu: Component<{
   show: Accessor<boolean>;
   toggleShow: () => void;
   content: () => JSXElement;
-  target: JSXElement;
+  target?: JSXElement;
   targetStyle?: JSX.CSSProperties;
   targetClass?: string;
   title?: string;
@@ -37,16 +37,18 @@ const CenterMenu: Component<{
   // });
   return (
     <>
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          p.toggleShow();
-        }}
-        class={p.targetClass}
-        style={p.targetStyle}
-      >
-        {p.target}
-      </button>
+      <Show when={p.target}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            p.toggleShow();
+          }}
+          class={p.targetClass}
+          style={p.targetStyle}
+        >
+          {p.target}
+        </button>
+      </Show>
       <Show when={p.show()}>
         <Child {...p} show={p.show} toggleShow={p.toggleShow} />
       </Show>

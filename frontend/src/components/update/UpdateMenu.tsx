@@ -7,43 +7,41 @@ import {
   readableMonitorTimestamp,
   readableVersion,
 } from "../../util/helpers";
-import { useToggle } from "../../util/hooks";
 import Icon from "../shared/Icon";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
 import CenterMenu from "../shared/menu/CenterMenu";
 import s from "./update.module.scss";
 
-const UpdateMenu: Component<{ update: UpdateType }> = (p) => {
+const UpdateMenu: Component<{ update?: UpdateType; closeMenu: () => void }> = (p) => {
   const { deployments, servers, builds } = useAppState();
   const name = () => {
-    if (p.update.target.type === "Deployment" && deployments.loaded()) {
+    if (p.update?.target.type === "Deployment" && deployments.loaded()) {
       return deployments.get(p.update.target.id!)?.deployment.name || "deleted";
-    } else if (p.update.target.type === "Server" && servers.loaded()) {
+    } else if (p.update?.target.type === "Server" && servers.loaded()) {
       return servers.get(p.update.target.id)?.server.name || "deleted";
-    } else if (p.update.target.type === "Build" && builds.loaded()) {
+    } else if (p.update?.target.type === "Build" && builds.loaded()) {
       return builds.get(p.update.target.id)?.name || "deleted";
     } else {
       return "monitor";
     }
   };
   const operation = () => {
-    if (p.update.operation === Operation.BuildBuild) {
+    if (p.update?.operation === Operation.BuildBuild) {
       return "build";
     }
-    return p.update.operation.replaceAll("_", " ");
+    return p.update?.operation.replaceAll("_", " ");
   };
-  const [showLog, toggleShowLog] = useToggle();
   return (
     <CenterMenu
       title={`${operation()} | ${name()}`}
-      show={showLog}
-      toggleShow={toggleShowLog}
-      target={<Icon type="console" />}
+      show={() => p.update ? true : false}
+      toggleShow={p.closeMenu}
+      // target={<Icon type="console" />}
       targetStyle={{ "place-self": "center end" }}
       targetClass="blue"
       padding="1rem 2rem"
-      content={() => <UpdateMenuContent update={p.update} />}
+      content={() => <UpdateMenuContent update={p.update!} />}
     />
   );
 };

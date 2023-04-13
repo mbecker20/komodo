@@ -11,7 +11,11 @@ import { OPERATIONS } from "..";
 import { useAppDimensions } from "../state/DimensionProvider";
 import { useAppState } from "../state/StateProvider";
 import { Operation, Update as UpdateType, UpdateStatus } from "../types";
-import { readableMonitorTimestamp, readableVersion } from "../util/helpers";
+import {
+  getId,
+  readableMonitorTimestamp,
+  readableVersion,
+} from "../util/helpers";
 import Icon from "./shared/Icon";
 import Input from "./shared/Input";
 import Flex from "./shared/layout/Flex";
@@ -40,10 +44,17 @@ const Updates: Component<{}> = (p) => {
       if (username?.includes(search())) return true;
     });
   });
+  const [openMenu, setOpenMenu] = createSignal<string | undefined>(undefined);
   return (
     <Grid class="full-width card shadow">
       <Flex alignItems="center" justifyContent="space-between">
-        <h1>updates</h1>
+        <Flex>
+          <h1>updates</h1>
+          <UpdateMenu
+            update={openMenu() ? updates.get(openMenu()!) : undefined}
+            closeMenu={() => setOpenMenu(undefined)}
+          />
+        </Flex>
         <Flex alignItems="center">
           <Input class="lightgrey" placeholder="search" onEdit={setSearch} />
           <Selector
@@ -73,7 +84,12 @@ const Updates: Component<{}> = (p) => {
         }
       >
         <For each={filtered_updates()}>
-          {(update) => <Update update={update} />}
+          {(update) => (
+            <Update
+              update={update}
+              openMenu={() => setOpenMenu(getId(update))}
+            />
+          )}
         </For>
         <Show when={!updates.noMore()}>
           <button
@@ -94,7 +110,7 @@ const Updates: Component<{}> = (p) => {
 
 export default Updates;
 
-const Update: Component<{ update: UpdateType }> = (p) => {
+const Update: Component<{ update: UpdateType; openMenu: () => void }> = (p) => {
   const { isMobile } = useAppDimensions();
   const { usernames, name_from_update_target } = useAppState();
   const name = () => name_from_update_target(p.update.target);
@@ -149,7 +165,9 @@ const Update: Component<{ update: UpdateType }> = (p) => {
           <div style={{ "place-self": "center end" }}>
             {readableMonitorTimestamp(p.update.start_ts)}
           </div>
-          <UpdateMenu update={p.update} />
+          <button class="blue" onClick={p.openMenu}>
+            <Icon type="console" />
+          </button>
         </Flex>
       </Flex>
     </Flex>

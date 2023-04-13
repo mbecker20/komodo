@@ -371,12 +371,14 @@ export function useArrayWithId<T, O>(
     set((curr: T[] | undefined) => (curr ? [...curr, ...items] : items));
   };
   const loaded = () => (collection() ? true : false);
+  const get = (id: string) => collection()?.find((item) => getNestedEntry(item, idPath) === id);
   return {
     load,
     collection,
     addOrUpdate,
     addManyToEnd,
     loaded,
+    get,
   };
 }
 
