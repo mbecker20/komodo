@@ -41,7 +41,7 @@ const Image: Component<{}> = (p) => {
           <Selector
             targetClass="blue"
             selected={
-              (deployment.build_id && builds.get(deployment.build_id)?.name) ||
+              (deployment.build_id && (builds.get(deployment.build_id)?.name || "unknown")) ||
               "custom image"
             }
             items={[
