@@ -25,14 +25,16 @@ pub async fn pull(
     }
     logs.push(pull_log);
     if let Some(on_pull) = on_pull {
-        path.push(&on_pull.path);
-        let path = path.display().to_string();
-        let on_pull_log = run_monitor_command(
-            "on pull command",
-            format!("cd {path} && {}", on_pull.command),
-        )
-        .await;
-        logs.push(on_pull_log);
+        if on_pull.path.len() > 0 && on_pull.command.len() > 0 {
+            path.push(&on_pull.path);
+            let path = path.display().to_string();
+            let on_pull_log = run_monitor_command(
+                "on pull",
+                format!("cd {path} && {}", on_pull.command),
+            )
+            .await;
+            logs.push(on_pull_log);
+        }
     }
     logs
 }
@@ -57,22 +59,26 @@ pub async fn clone_repo(
     let clone_log = clone(repo, &destination, &branch, access_token).await;
     let mut logs = vec![clone_log];
     if let Some(command) = on_clone {
-        let on_clone_path = repo_dir.join(&command.path);
-        let on_clone_log = run_monitor_command(
-            "on clone",
-            format!("cd {} && {}", on_clone_path.display(), command.command),
-        )
-        .await;
-        logs.push(on_clone_log);
+        if command.path.len() > 0 && command.command.len() > 0 {
+            let on_clone_path = repo_dir.join(&command.path);
+            let on_clone_log = run_monitor_command(
+                "on clone",
+                format!("cd {} && {}", on_clone_path.display(), command.command),
+            )
+            .await;
+            logs.push(on_clone_log);
+        }
     }
     if let Some(command) = on_pull {
-        let on_pull_path = repo_dir.join(&command.path);
-        let on_pull_log = run_monitor_command(
-            "on pull",
-            format!("cd {} && {}", on_pull_path.display(), command.command),
-        )
-        .await;
-        logs.push(on_pull_log);
+        if command.path.len() > 0 && command.command.len() > 0 {
+            let on_pull_path = repo_dir.join(&command.path);
+            let on_pull_log = run_monitor_command(
+                "on pull",
+                format!("cd {} && {}", on_pull_path.display(), command.command),
+            )
+            .await;
+            logs.push(on_pull_log);
+        }
     }
     Ok(logs)
 }
