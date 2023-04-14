@@ -40,7 +40,10 @@ interface Build {
   repo?: string;
   branch?: string;
   github_account?: string;
-  pre_build?: Command;
+  pre_build?: {
+    path?: string;
+    command?: string;
+  };
   docker_build_args?: {
     build_path: string;
     dockerfile_path?: string;
@@ -160,7 +163,10 @@ interface Server {
 ```typescript
 interface Update {
   _id?: string;
-  target: UpdateTarget;
+  target: {
+    type: "System" | "Build" | "Deployment" | "Server" | "Procedure" | "Group";
+    id?: string;
+  };
   operation: Operation;
   logs: Array<{
     stage: string;
@@ -173,15 +179,64 @@ interface Update {
   }>;
   start_ts: string;
   end_ts?: string;
-  status: UpdateStatus;
+  status: "queued" | "in_progress" | "complete";
   success: boolean;
   operator: string;
   version?: {
-	major: number;
-	minor: number;
-	patch: number;
+    major: number;
+    minor: number;
+    patch: number;
   };
 }
+```
+
+```mdx-code-block
+<Divider />
+```
+
+## operation
+
+```typescript
+enum Operation {
+  None = "none",
+  CreateServer = "create_server",
+  UpdateServer = "update_server",
+  DeleteServer = "delete_server",
+  PruneImagesServer = "prune_images_server",
+  PruneContainersServer = "prune_containers_server",
+  PruneNetworksServer = "prune_networks_server",
+  RenameServer = "rename_server",
+  CreateBuild = "create_build",
+  UpdateBuild = "update_build",
+  DeleteBuild = "delete_build",
+  BuildBuild = "build_build",
+  CreateDeployment = "create_deployment",
+  UpdateDeployment = "update_deployment",
+  DeleteDeployment = "delete_deployment",
+  DeployContainer = "deploy_container",
+  StopContainer = "stop_container",
+  StartContainer = "start_container",
+  RemoveContainer = "remove_container",
+  PullDeployment = "pull_deployment",
+  RecloneDeployment = "reclone_deployment",
+  RenameDeployment = "rename_deployment",
+  CreateProcedure = "create_procedure",
+  UpdateProcedure = "update_procedure",
+  DeleteProcedure = "delete_procedure",
+  CreateGroup = "create_group",
+  UpdateGroup = "update_group",
+  DeleteGroup = "delete_group",
+  ModifyUserEnabled = "modify_user_enabled",
+  ModifyUserCreateServerPermissions = "modify_user_create_server_permissions",
+  ModifyUserCreateBuildPermissions = "modify_user_create_build_permissions",
+  ModifyUserPermissions = "modify_user_permissions",
+  AutoBuild = "auto_build",
+  AutoPull = "auto_pull",
+}
+```
+
+```mdx-code-block
+<Divider />
 ```
 
 ## permission level
