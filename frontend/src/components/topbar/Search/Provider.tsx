@@ -22,34 +22,37 @@ const value = () => {
   };
   const [highlighted, setHighlighted] = createSignal(0);
 
-  const filteredDeployments = createMemo(() => {
-    const searchTerms = search()
+  const searchTerms = createMemo(() => {
+    return search()
       .split(" ")
       .filter((term) => term.length > 0)
       .map((term) => term.toLowerCase());
-    return deployments.filterArray((deployment) => {
-      return searchTerms.reduce((prev, search) => {
-        return (
-          prev &&
-          (deployment.deployment.name.toLowerCase().includes(search) ||
-            servers
-              .get(deployment.deployment.server_id)!
-              .server.name.toLowerCase()
-              .includes(search))
-        );
-      }, true);
-    })!;
   });
+
+  const filteredDeployments = createMemo(
+    () =>
+      deployments.filterArray((deployment) =>
+        searchTerms().reduce((prev, search) => {
+          return (
+            prev && deployment.deployment.name.toLowerCase().includes(search)
+          );
+        }, true)
+      )!
+  );
   const filteredBuilds = createMemo(
     () =>
       builds.filterArray((build) =>
-        build.name.toLowerCase().includes(search().toLowerCase())
+        searchTerms().reduce((prev, search) => {
+          return prev && build.name.toLowerCase().includes(search);
+        }, true)
       )!
   );
   const filteredServers = createMemo(
     () =>
       servers.filterArray((server) =>
-        server.server.name.toLowerCase().includes(search().toLowerCase())
+        searchTerms().reduce((prev, search) => {
+          return prev && server.server.name.toLowerCase().includes(search);
+        }, true)
       )!
   );
 
