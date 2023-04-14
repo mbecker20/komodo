@@ -24,7 +24,10 @@ const Server: Component<{}> = (p) => {
     user().admin ||
     server()?.server.permissions![user_id()] === PermissionLevel.Update;
   return (
-    <Show when={server()} fallback={<NotFound type="server" loaded={servers.loaded()} />}>
+    <Show
+      when={server()}
+      fallback={<NotFound type="server" loaded={servers.loaded()} />}
+    >
       <ActionStateProvider>
         <Grid
           style={{
@@ -32,12 +35,12 @@ const Server: Component<{}> = (p) => {
             "box-sizing": "border-box",
           }}
         >
+          <Header />
           <Grid
             style={{ width: "100%" }}
             gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
           >
-            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto auto 1fr" }}>
-              <Header />
+            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto 1fr" }}>
               <Description
                 target={{ type: "Server", id: params.id }}
                 name={server().server.name}

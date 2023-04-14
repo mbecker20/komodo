@@ -129,9 +129,10 @@ const Update: Component<{ update: UpdateType; openMenu: () => void }> = (p) => {
   };
   return (
     <Flex
-      class="card light hover shadow wrap"
+      class="card light hover shadow wrap pointer"
       justifyContent="space-between"
       alignItems="center"
+      onClick={p.openMenu}
     >
       <Flex
         alignItems="center"
@@ -165,9 +166,9 @@ const Update: Component<{ update: UpdateType; openMenu: () => void }> = (p) => {
           <div style={{ "place-self": "center end" }}>
             {readableMonitorTimestamp(p.update.start_ts)}
           </div>
-          <button class="blue" onClick={p.openMenu}>
+          {/* <button class="blue" onClick={p.openMenu}>
             <Icon type="console" />
-          </button>
+          </button> */}
         </Flex>
       </Flex>
     </Flex>

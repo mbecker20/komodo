@@ -38,7 +38,10 @@ const Build: Component<{}> = (p) => {
     user().admin ||
     build()?.permissions![user_id()] === PermissionLevel.Update;
   return (
-    <Show when={build()} fallback={<NotFound type="build" loaded={builds.loaded()} />}>
+    <Show
+      when={build()}
+      fallback={<NotFound type="build" loaded={builds.loaded()} />}
+    >
       <ActionStateProvider build_id={params.id}>
         <Grid
           style={{
@@ -46,12 +49,12 @@ const Build: Component<{}> = (p) => {
             "box-sizing": "border-box",
           }}
         >
+          <Header />
           <Grid
             style={{ width: "100%" }}
             gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
           >
-            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto auto 1fr" }}>
-              <Header />
+            <Grid gridTemplateRows="auto 1fr" style={{ "flex-grow": 1 }}>
               <Description
                 target={{ type: "Build", id: params.id }}
                 name={build()?.name!}

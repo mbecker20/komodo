@@ -14,6 +14,7 @@ import { combineClasses, getId } from "../../util/helpers";
 import { useParams } from "@solidjs/router";
 import Flex from "../shared/layout/Flex";
 import UpdateMenu from "../update/UpdateMenu";
+import Loading from "../shared/loading/Loading";
 
 const Updates: Component<{}> = (p) => {
   const { ws } = useAppState();
@@ -42,25 +43,34 @@ const Updates: Component<{}> = (p) => {
           closeMenu={() => setOpenMenu(undefined)}
         />
       </Flex>
-      <Grid class="updates-container scroller">
-        <For each={updates.collection()}>
-          {(update) => (
-            <Update
-              update={update}
-              openMenu={() => setOpenMenu(getId(update))}
-            />
-          )}
-        </For>
-        <Show when={!updates.noMore()}>
-          <button
-            class="grey"
-            style={{ width: "100%" }}
-            onClick={() => updates.loadMore()}
-          >
-            load more
-          </button>
-        </Show>
-      </Grid>
+      <Show
+        when={updates.loaded()}
+        fallback={
+          <Flex class="full-size" alignItems="center" justifyContent="center">
+            <Loading type="three-dot" scale={0.7} />
+          </Flex>
+        }
+      >
+        <Grid class="updates-container scroller">
+          <For each={updates.collection()}>
+            {(update) => (
+              <Update
+                update={update}
+                openMenu={() => setOpenMenu(getId(update))}
+              />
+            )}
+          </For>
+          <Show when={!updates.noMore()}>
+            <button
+              class="grey"
+              style={{ width: "100%" }}
+              onClick={() => updates.loadMore()}
+            >
+              load more
+            </button>
+          </Show>
+        </Grid>
+      </Show>
     </Grid>
   );
 };

@@ -47,12 +47,12 @@ const Deployment: Component<{}> = (p) => {
             "box-sizing": "border-box",
           }}
         >
+          <Header />
           <Grid
             style={{ width: "100%" }}
             gridTemplateColumns={isSemiMobile() ? "1fr" : "1fr 1fr"}
           >
-            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto auto 1fr" }}>
-              <Header />
+            <Grid style={{ "flex-grow": 1, "grid-auto-rows": "auto 1fr" }}>
               <Description
                 target={{ type: "Deployment", id: params.id }}
                 name={deployment()?.deployment.name!}

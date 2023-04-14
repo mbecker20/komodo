@@ -80,7 +80,7 @@ const Header: Component<{}> = (p) => {
                   setUpdatingName(false);
                 }}
                 onBlur={() => setEditingName(false)}
-                
+                style={{ "font-size": "1.4rem" }}
               />
             </Show>
           </Show>

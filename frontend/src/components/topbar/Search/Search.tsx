@@ -79,14 +79,14 @@ const SearchMenu: Component<{ close: () => void }> = (p) => {
   let inputRef: HTMLInputElement | undefined;
   onMount(() => {
     if (isSemiMobile()) {
-      inputRef?.focus();
+      setTimeout(() => inputRef?.focus(), 200);
     }
   });
   return (
     <>
       <Show when={isSemiMobile()}>
         <Input
-          ref={() => inputRef}
+          ref={inputRef}
           class={s.SearchInput}
           placeholder="search"
           value={search.value()}

@@ -55,7 +55,7 @@ const Updates: Component<{}> = () => {
         when={updates.loaded()}
         fallback={
           <Flex justifyContent="center">
-            <Loading type="three-dot" />
+            <Loading type="three-dot" scale={0.7} />
           </Flex>
         }
       >

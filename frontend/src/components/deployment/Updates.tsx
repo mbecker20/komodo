@@ -44,8 +44,8 @@ const Updates: Component<{}> = (p) => {
       <Show
         when={updates.loaded()}
         fallback={
-          <Flex justifyContent="center">
-            <Loading type="three-dot" />
+          <Flex class="full-size" alignItems="center" justifyContent="center">
+            <Loading type="three-dot" scale={0.7} />
           </Flex>
         }
       >

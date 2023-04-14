@@ -32,9 +32,10 @@ const Update: Component<{ update: UpdateType; openMenu: () => void; }> = (p) => 
   };
   return (
     <Flex
-      class={combineClasses(s.Update, "card light hover shadow")}
+      class={combineClasses(s.Update, "card light hover shadow pointer")}
       justifyContent="space-between"
       alignItems="center"
+      onClick={p.openMenu}
     >
       <Grid gap="0.5rem" placeItems="center start">
         <A style={{ padding: 0 }} href={link_to()}>
@@ -63,9 +64,9 @@ const Update: Component<{ update: UpdateType; openMenu: () => void; }> = (p) => 
             <div>{usernames.get(p.update.operator)}</div>
           </Flex>
         </Grid>
-        <button class="blue" style={{ "place-self": "center end" }} onClick={p.openMenu}>
+        {/* <button class="blue" style={{ "place-self": "center end" }} onClick={p.openMenu}>
           <Icon type="console" />
-        </button>
+        </button> */}
       </Flex>
     </Flex>
   );

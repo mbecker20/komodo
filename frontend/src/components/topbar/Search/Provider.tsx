@@ -17,7 +17,7 @@ const value = () => {
   const [open, setOpen] = createSignal(false);
   const close = (inputRef: HTMLInputElement | undefined) => {
     inputRef?.blur();
-    setSearch("");
+    // setSearch("");
     setOpen(false);
   };
   const [highlighted, setHighlighted] = createSignal(0);

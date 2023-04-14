@@ -22,7 +22,12 @@ const Update: Component<{ update: UpdateType; openMenu: () => void }> = (p) => {
     }`;
   };
   return (
-    <Grid gap="0.25rem" class={combineClasses(s.Update, "shadow")}>
+    <Flex
+      class={combineClasses(s.Update, "shadow pointer")}
+      onClick={p.openMenu}
+      justifyContent="space-between"
+      alignItems="center"
+    >
       <Flex gap="0.5rem">
         <div
           style={{
@@ -35,17 +40,14 @@ const Update: Component<{ update: UpdateType; openMenu: () => void }> = (p) => {
           <div style={{ opacity: 0.7 }}>(in progress)</div>
         </Show>
       </Flex>
-      <div style={{ "place-self": "start end" }}>
-        {readableMonitorTimestamp(p.update.start_ts)}
-      </div>
-      <Flex gap="0.5rem" alignItems="center">
-        <Icon type="user" />
-        <div>{usernames.get(p.update.operator)}</div>
-      </Flex>
-      <button class="blue" style={{ "place-self": "center end" }} onClick={p.openMenu}>
-        <Icon type="console" />
-      </button>
-    </Grid>
+      <Grid gap="0.25rem" placeItems="center end">
+        <div>{readableMonitorTimestamp(p.update.start_ts)}</div>
+        <Flex gap="0.5rem" alignItems="center">
+          <Icon type="user" />
+          <div>{usernames.get(p.update.operator)}</div>
+        </Flex>
+      </Grid>
+    </Flex>
   );
 };
 
