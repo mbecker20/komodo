@@ -23,7 +23,7 @@ const Update: Component<{ update: UpdateType; openMenu: () => void }> = (p) => {
   };
   return (
     <Flex
-      class={combineClasses(s.Update, "shadow pointer")}
+      class={combineClasses(s.Update, "card light hover shadow pointer")}
       onClick={p.openMenu}
       justifyContent="space-between"
       alignItems="center"
