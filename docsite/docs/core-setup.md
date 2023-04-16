@@ -20,13 +20,13 @@ the redirect uri is `<base_url>/auth/google/callback` for google and `<base_url>
 
 ## 2. start monitor core
 
-monitor core is distributed via dockerhub under the public repo [mbecker2020/monitor_core](https://hub.docker.com/r/mbecker2020/monitor-core).
+monitor core is distributed via dockerhub under the public repo [mbecker2020/monitor_core](https://hub.docker.com/r/mbecker2020/monitor_core).
 
 ```sh
 docker run -d --name monitor-core \
 	-v $HOME/.monitor/core.config.toml:/config/config.toml \
 	-p 9000:9000 \
-	mbecker2020/monitor-core
+	mbecker2020/monitor_core
 ```
 
 ## first login
@@ -37,4 +37,4 @@ the first user to log in will be auto enabled and made admin. any additional use
 
 ## https
 
-monitor core itself only supports http, so a reverse proxy should be used for https
+monitor core itself only supports http, so a reverse proxy like [caddy](https://caddyserver.com/) should be used for https
