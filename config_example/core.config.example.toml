@@ -10,9 +10,6 @@ port = 9000
 # daily utc offset in hours to send daily update. eg 8:00 eastern time is 13:00 UTC, so offset should be 13. default of 0 runs at UTC midnight.
 daily_offset_hours = 13
 
-# number of days to keep stats around, or 0 to disable pruning. stats older than this number of days are deleted daily
-keep_stats_for_days = 120
-
 # secret used to generate the jwt. should be some randomly generated hash.
 jwt_secret = "your_jwt_secret"
 
@@ -31,29 +28,19 @@ github_webhook_base_url = "https://monitor-github-webhook.mogh.tech"
 # token used to authenticate core requests to periphery
 passkey = "your_random_passkey"
 
-# can be 30-sec, 1-min, 2-min, 5-min
+# controls the granularity of the system stats collection by monitor core
+# can be 15-sec, 30-sec, 1-min, 2-min, 5-min
 monitoring_interval = "1-min"
+
+# number of days to keep stats around, or 0 to disable pruning. stats older than this number of days are deleted daily
+keep_stats_for_days = 14
+
+# these will be used by the GUI to attach to builds. New build docker orgs will default to first org (or none if empty).
+# when attached to build, image will be pushed to repo under the specified organization
+docker_organizations = ["your_docker_org1", "your_docker_org_2"]
 
 # allow or deny user login with username / password
 local_auth = true
-
-# these will be given in the GUI to attach to builds. New build docker orgs will default to first org (or none if empty).
-docker_organizations = ["your_docker_org1", "your_docker_org_2"]
-
-[aws]
-access_key_id = "your_aws_key_id"
-secret_access_key = "your_aws_secret_key"
-default_region = "us-east-1"
-default_ami_id = "your_periphery_ami"
-default_key_pair_name = "your_default_key_pair_name"
-default_instance_type = "m5.2xlarge"
-default_volume_gb = 8
-default_subnet_id = "your_default_subnet_id"
-default_security_group_ids = ["sg_id_1", "sg_id_2"]
-default_assign_public_ip = false
-
-[aws.available_ami_accounts]
-your_periphery_ami = { name = "default ami", github = ["github_username"], docker = ["docker_username"] }
 
 [github_oauth]
 enabled = true
@@ -69,3 +56,18 @@ secret = "your_google_client_secret"
 uri = "your_mongo_uri"
 app_name = "monitor_core"
 db_name = "monitor"
+
+[aws]
+access_key_id = "your_aws_key_id"
+secret_access_key = "your_aws_secret_key"
+default_region = "us-east-1"
+default_ami_name = "your_ami_name" # must be defined below in [aws.available_ami_accounts]
+default_instance_type = "m5.2xlarge"
+default_volume_gb = 8
+default_subnet_id = "your_default_subnet_id"
+default_security_group_ids = ["sg_id_1", "sg_id_2"]
+default_key_pair_name = "your_default_key_pair_name"
+default_assign_public_ip = false
+
+[aws.available_ami_accounts]
+your_ami_name = { ami_id = "ami-1234567890", github = ["github_username"], docker = ["docker_username"] }

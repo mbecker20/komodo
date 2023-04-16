@@ -19,6 +19,7 @@ const sidebars = {
   // But you can create a sidebar manually
   docs: [
     "intro",
+    "core-setup",
     {
       type: "category",
       label: "connecting servers",
