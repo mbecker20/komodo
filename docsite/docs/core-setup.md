@@ -21,3 +21,12 @@ docker run -d --name monitor-core \
 	mbecker2020/monitor-core
 ```
 
+## first login
+
+monitor core should now be accessible on the specified port, so navigating to `http://<address>:<port>` will display the login page. 
+
+the first user to log in will be auto enabled and made admin. any additional users to create accounts will be disabled by default.
+
+## https
+
+monitor core itself only supports http, so a reverse proxy should be used for https
