@@ -47,6 +47,7 @@ async fn create_user_handler(
         enabled: no_users_exist,
         admin: no_users_exist,
         create_server_permissions: no_users_exist,
+        create_build_permissions: no_users_exist,
         created_at: ts.clone(),
         updated_at: ts,
         ..Default::default()

@@ -16,10 +16,10 @@ jwt_secret = "your_jwt_secret"
 # can be 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
 jwt_valid_for = "1-wk"
 
-# webhook url given by slack app
+# webhook url given by slack app that monitor will send alerts and a daily update to
 slack_url = "your_slack_app_webhook_url"
 
-# token that has to be given to github during webhook config as the secret
+# token that has to be given to github during repo webhook config as the secret
 github_webhook_secret = "your_random_webhook_secret"
 
 # optional. an alternate base url that is used to recieve github webhook requests. if not provided, will use 'host' address as base
@@ -55,7 +55,7 @@ secret = "your_google_client_secret"
 [mongo]
 uri = "your_mongo_uri"
 app_name = "monitor_core"
-db_name = "monitor"
+db_name = "monitor" # this is the name of the mongo database that monitor will create its collections in.
 
 [aws]
 access_key_id = "your_aws_key_id"

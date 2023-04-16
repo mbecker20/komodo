@@ -68,10 +68,15 @@ async fn callback(
             .context("failed to generate jwt")?,
         None => {
             let ts = monitor_timestamp();
+            let no_users_exist = state.db.users.find_one(None, None).await?.is_none();
             let user = User {
                 username: github_user.login,
                 avatar: github_user.avatar_url.into(),
                 github_id: github_id.into(),
+                enabled: no_users_exist,
+                admin: no_users_exist,
+                create_server_permissions: no_users_exist,
+                create_build_permissions: no_users_exist,
                 created_at: ts.clone(),
                 updated_at: ts,
                 ..Default::default()
