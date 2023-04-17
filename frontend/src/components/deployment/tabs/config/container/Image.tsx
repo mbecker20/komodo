@@ -3,8 +3,8 @@ import { client } from "../../../../..";
 import { useAppState } from "../../../../../state/StateProvider";
 import {
   combineClasses,
-  string_to_version,
-  version_to_string,
+  readableVersion,
+  readableMonitorTimestamp,
 } from "../../../../../util/helpers";
 import Input from "../../../../shared/Input";
 import Flex from "../../../../shared/layout/Flex";
@@ -14,11 +14,6 @@ import { useConfig } from "../Provider";
 const Image: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
   const { builds } = useAppState();
-  const [versions] = createResource(() => {
-    if (deployment.build_id) {
-      return client.get_build_versions(deployment.build_id);
-    }
-  });
   return (
     <Flex
       class={combineClasses("config-item shadow")}
@@ -41,7 +36,8 @@ const Image: Component<{}> = (p) => {
           <Selector
             targetClass="blue"
             selected={
-              (deployment.build_id && (builds.get(deployment.build_id)?.name || "unknown")) ||
+              (deployment.build_id &&
+                (builds.get(deployment.build_id)?.name || "unknown")) ||
               "custom image"
             }
             items={[
@@ -65,33 +61,7 @@ const Image: Component<{}> = (p) => {
             useSearch
           />
           <Show when={deployment.build_id}>
-            <Selector
-              targetClass="blue"
-              selected={
-                deployment.build_version
-                  ? `v${version_to_string(deployment.build_version)}`
-                  : "latest"
-              }
-              items={[
-                "latest",
-                ...(versions()?.map(
-                  (v) => `v${version_to_string(v.version)}`
-                ) || []),
-              ]}
-              onSelect={(version) => {
-                if (version === "latest") {
-                  setDeployment("build_version", undefined);
-                } else {
-                  setDeployment(
-                    "build_version",
-                    string_to_version(version.replace("v", ""))
-                  );
-                }
-              }}
-              position="bottom right"
-              disabled={!userCanUpdate()}
-              useSearch
-            />
+            <VersionSelector />
           </Show>
         </Show>
       </Flex>
@@ -100,3 +70,54 @@ const Image: Component<{}> = (p) => {
 };
 
 export default Image;
+
+
+const VersionSelector: Component<{}> = (p) => {
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
+  const [versions] = createResource(() => {
+    if (deployment.build_id) {
+      return client.get_build_versions(deployment.build_id);
+    }
+  });
+  const selected = () => ({
+    version: deployment.build_version || {
+      major: 0,
+      minor: 0,
+      patch: 0,
+    },
+    ts: "",
+  });
+  return (
+    <Selector
+      targetClass="blue"
+      selected={selected()}
+      items={[
+        { version: { major: 0, minor: 0, patch: 0 }, ts: "" },
+        ...(versions() || []),
+      ]}
+      itemMap={({ version, ts }) => (
+        <>
+          <div>
+            {version.major === 0 && version.minor === 0 && version.patch === 0
+              ? "latest"
+              : readableVersion(version)}
+          </div>
+          <Show when={ts.length > 0}>
+            <div class="dimmed">{readableMonitorTimestamp(ts)}</div>
+          </Show>
+        </>
+      )}
+      searchItemMap={({ version }) => readableVersion(version)}
+      onSelect={({ version, ts }) => {
+        if (ts.length === 0) {
+          setDeployment("build_version", undefined);
+        } else {
+          setDeployment("build_version", version);
+        }
+      }}
+      position="bottom right"
+      disabled={!userCanUpdate()}
+      useSearch
+    />
+  );
+}

@@ -15,10 +15,10 @@ import { Position } from "./helpers";
 import Menu from "./Menu";
 import s from "./menu.module.scss";
 
-const Selector: Component<{
-  selected: string;
-  items: string[];
-  onSelect?: (item: string, index: number) => void;
+const Selector = <T,>(p: {
+  selected: T;
+  items: T[];
+  onSelect?: (item: T, index: number) => void;
   position?: Position;
   targetClass?: string;
   targetStyle?: JSX.CSSProperties;
@@ -33,12 +33,13 @@ const Selector: Component<{
   itemClass?: string;
   itemStyle?: JSX.CSSProperties;
   label?: JSXElement;
-  itemMap?: (item: string) => string;
-}> = (p) => {
+  itemMap?: (item: T) => JSXElement;
+  searchItemMap?: (item: T) => string;
+}) => {
   const [show, toggle] = useToggle();
   const [search, setSearch] = createSignal("");
   let search_ref: HTMLInputElement | undefined;
-  const current = () => (p.itemMap ? p.itemMap(p.selected) : p.selected);
+  const current = () => (p.itemMap ? p.itemMap(p.selected) : p.selected as JSXElement);
   createEffect(() => {
     if (show()) setTimeout(() => search_ref?.focus(), 200);
   });
@@ -87,9 +88,11 @@ const Selector: Component<{
               each={
                 p.useSearch
                   ? p.items.filter((item) =>
-                      p.itemMap
-                        ? p.itemMap(item).includes(search())
-                        : item.includes(search())
+                      p.searchItemMap
+                        ? p.searchItemMap(item).includes(search())
+                        : p.itemMap && typeof p.itemMap(item) === "string"
+                        ? (p.itemMap(item) as string).includes(search())
+                        : (item as string).includes(search())
                     )
                   : p.items
               }
@@ -107,7 +110,7 @@ const Selector: Component<{
                   }}
                   class={combineClasses(p.itemClass, s.SelectorItem)}
                 >
-                  {p.itemMap ? p.itemMap(item) : item}
+                  {p.itemMap ? p.itemMap(item) : item as string}
                 </button>
               )}
             </For>
