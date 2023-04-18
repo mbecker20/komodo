@@ -8,8 +8,6 @@ a tool to build and deploy software across many servers. [docs](https://mbecker2
 
 ![home-servers](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/home-servers.png)
 
-![home-builds](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/home-builds.png)
-
 ![search-menu](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/search-menu.png)
 
 ![mobile-deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/mobile-deployment.png)
