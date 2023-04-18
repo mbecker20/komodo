@@ -74,7 +74,11 @@ const Groups: Component<{}> = (p) => {
         />
         <Flex alignItems="center" style={{ width: "fit-content" }}>
           <Selector
-            label={<div class="dimmed">sort by:</div>}
+            label={
+              <div class="dimmed" style={{ "white-space": "nowrap" }}>
+                sort by:
+              </div>
+            }
             selected={sort()}
             items={TREE_SORTS as any as string[]}
             onSelect={(mode) => setSort(mode as TreeSortType)}

@@ -7,6 +7,7 @@ import { PermissionLevel } from "../../types";
 import { NewDeployment } from "../New";
 import Deployment from "./Deployment";
 import { useAppState } from "../../state/StateProvider";
+import Flex from "../shared/layout/Flex";
 
 const ServerChildren: Component<{ id: string }> = (p) => {
   const { user } = useUser();
@@ -35,7 +36,9 @@ const ServerChildren: Component<{ id: string }> = (p) => {
               PermissionLevel.Update
           }
         >
-          <NewDeployment serverID={p.id} />
+          <Flex class="full-width" alignItems="center">
+            <NewDeployment serverID={p.id} />
+          </Flex>
         </Show>
       </Grid>
     </div>

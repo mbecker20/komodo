@@ -14,7 +14,11 @@ export const NewGroup: Component<{}> = (p) => {
     <Show
       when={showNew()}
       fallback={
-        <button class="green" onClick={toggleShowNew} style={{ height: "100%" }}>
+        <button
+          class="green"
+          onClick={toggleShowNew}
+          style={{ height: "100%" }}
+        >
           <Icon type="plus" />
         </button>
       }
@@ -33,8 +37,12 @@ export const NewDeployment: Component<{ serverID: string }> = (p) => {
     <Show
       when={showNew()}
       fallback={
-        <button class="green" onClick={toggleShowNew} style={{ width: "100%" }}>
-          <Icon type="plus" />
+        <button
+          class="green"
+          onClick={toggleShowNew}
+          style={{ width: "100%", height: "fit-content" }}
+        >
+          <Icon type="plus" width="1.2rem" />
         </button>
       }
     >
@@ -56,8 +64,12 @@ export const NewBuild: Component<{}> = (p) => {
     <Show
       when={showNew()}
       fallback={
-        <button class="green" onClick={toggleShowNew} style={{ width: "100%" }}>
-          <Icon type="plus" />
+        <button
+          class="green"
+          onClick={toggleShowNew}
+          style={{ width: "100%", height: "fit-content" }}
+        >
+          <Icon type="plus" width="1.2rem" />
         </button>
       }
     >
@@ -87,14 +99,14 @@ const New: Component<{
     }
   };
   return (
-    <Flex justifyContent="space-between">
+    <Flex justifyContent="space-between" style={{ height: "fit-content", width: "100%" }}>
       <Input
         ref={inputRef}
         placeholder={p.placeholder}
         value={name()}
         onEdit={setName}
         onEnter={create}
-        style={{ width: "20rem" }}
+        style={{ width: "100%", "min-width": "20rem" }}
       />
       <Flex gap="0.4rem">
         <button class="green" onClick={create}>
