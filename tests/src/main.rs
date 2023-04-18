@@ -1,8 +1,14 @@
 #![allow(unused)]
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
-use monitor_client::{types::Conversion, MonitorClient};
+use monitor_client::{
+    types::{
+        BuildBuilder, Command, Conversion, Deployment, DeploymentBuilder, DockerBuildArgs,
+        DockerBuildArgsBuilder, DockerRunArgsBuilder, EnvironmentVar,
+    },
+    MonitorClient,
+};
 
 mod config;
 mod tests;
@@ -16,6 +22,64 @@ async fn main() -> anyhow::Result<()> {
     println!("\nstarting tests\n");
 
     let start_ts = unix_timestamp_ms();
+
+    let server = monitor
+        .list_servers(None)
+        .await?
+        .pop()
+        .ok_or(anyhow!("no servers"))?;
+
+    let build = BuildBuilder::default()
+        .name("monitor_core".into())
+        .server_id(server.server.id.clone().into())
+        .repo("mbecker20/monitor".to_string().into())
+        .branch("main".to_string().into())
+        .docker_build_args(
+            DockerBuildArgs {
+                build_path: ".".into(),
+                dockerfile_path: "core/Dockerfile".to_string().into(),
+                ..Default::default()
+            }
+            .into(),
+        )
+        .pre_build(
+            Command {
+                path: "frontend".into(),
+                command: "yarn && yarn build".into(),
+            }
+            .into(),
+        )
+        .build()?;
+
+    let build = monitor.create_full_build(&build).await?;
+
+    println!("{build:#?}");
+
+    let build_update = monitor.build(&build.id).await?;
+
+    println!("{build_update:#?}");
+
+    let deployment = DeploymentBuilder::default()
+        .name("monitor_core_1".into())
+        .server_id(server.server.id.clone())
+        .build_id(build.id.clone().into())
+        .docker_run_args(
+            DockerRunArgsBuilder::default()
+                .volumes(vec![Conversion {
+                    local: "/home/max/.monitor/core.config.toml".into(),
+                    container: "/config/config.toml".into(),
+                }])
+                .build()?,
+        )
+        .build()?;
+
+    let deployment = monitor.create_full_deployment(&deployment).await?;
+
+    println!("{deployment:#?}");
+
+    let deploy_update = monitor.deploy_container(&deployment.id).await?;
+
+    println!("{deploy_update:#?}");
 
     // let (server, deployment, build) = create_test_setup(&monitor, "test").await?;
 

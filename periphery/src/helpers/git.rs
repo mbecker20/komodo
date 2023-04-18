@@ -28,11 +28,8 @@ pub async fn pull(
         if on_pull.path.len() > 0 && on_pull.command.len() > 0 {
             path.push(&on_pull.path);
             let path = path.display().to_string();
-            let on_pull_log = run_monitor_command(
-                "on pull",
-                format!("cd {path} && {}", on_pull.command),
-            )
-            .await;
+            let on_pull_log =
+                run_monitor_command("on pull", format!("cd {path} && {}", on_pull.command)).await;
             logs.push(on_pull_log);
         }
     }
