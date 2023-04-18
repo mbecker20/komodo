@@ -17,22 +17,44 @@ function HomepageHeader() {
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
           <div style={{ position: "relative" }}>
             <MonitorLogo width="600px" />
-            <h1 className="hero__title" style={{ margin: 0, position: "absolute", top: "40%", left: "50%", transform: "translate(-50%, -50%)" }}>
+            <h1
+              className="hero__title"
+              style={{
+                margin: 0,
+                position: "absolute",
+                top: "40%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+              }}
+            >
               monitor
             </h1>
           </div>
         </div>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link className="button button--secondary button--lg" to="/intro">
-            docs
-          </Link>
-          <Link
-            className="button button--secondary button--lg"
-            to="https://github.com/mbecker20/monitor"
-          >
-            github
-          </Link>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div className={styles.buttons}>
+            <Link className="button button--secondary button--lg" to="/intro">
+              docs
+            </Link>
+            <Link
+              className="button button--secondary button--lg"
+              to="https://github.com/mbecker20/monitor"
+            >
+              github
+            </Link>
+            <Link
+              className="button button--secondary button--lg"
+              to="https://github.com/mbecker20/monitor#readme"
+              style={{
+                width: "100%",
+                boxSizing: "border-box",
+                gridColumn: "span 2",
+              }}
+            >
+              screenshots
+            </Link>
+          </div>
         </div>
       </div>
     </header>

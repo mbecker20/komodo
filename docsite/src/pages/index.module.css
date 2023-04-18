@@ -17,8 +17,8 @@
 }
 
 .buttons {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
   gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+  width: fit-content;
 }
