@@ -49,6 +49,29 @@ pub struct BuildVersionsQuery {
     patch: Option<i32>,
 }
 
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+pub struct BuildStatsQuery {
+    #[serde(default)]
+    page: u32,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+pub struct BuildStatsResponse {
+    pub total_time: f64,  // in hours
+    pub total_count: f64, // number of builds
+    pub days: Vec<BuildStatsDay>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize)]
+pub struct BuildStatsDay {
+    pub time: f64,
+    pub count: f64,
+    pub ts: f64,
+}
+
 pub fn router() -> Router {
     Router::new()
         .route(
@@ -268,7 +291,7 @@ impl State {
         Ok(action_state)
     }
 
-    pub async fn get_build_versions(
+    async fn get_build_versions(
         &self,
         id: &str,
         user: &RequestUser,
@@ -316,5 +339,28 @@ impl State {
             })
             .collect();
         Ok(versions)
+    }
+
+    // one page is 60 previous UTC days
+    async fn get_build_stats(&self, page: u32) -> anyhow::Result<BuildStatsResponse> {
+        let build_updates = self.db.updates.get_some(doc! {}, None).await?;
+
+        todo!()
+    }
+}
+
+impl BuildStatsResponse {
+    fn new(days: Vec<BuildStatsDay>) -> BuildStatsResponse {
+        let mut total_time = 0.0;
+        let mut total_count = 0.0;
+        for day in &days {
+            total_time += day.time;
+            total_count += day.count;
+        }
+        BuildStatsResponse {
+            total_time,
+            total_count,
+            days,
+        }
     }
 }
