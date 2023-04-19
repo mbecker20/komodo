@@ -4,7 +4,7 @@
 
 with this crate you can leverage all the functionality of monitor through rust code. for example, you can...
 
- - create and manage complex deployment cycles
+ - create and manage complex deployments
  - execute builds on specific schedules
  - monitor server stats programatically
  - program response actions to monitor updates sent over websocket

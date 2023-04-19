@@ -367,7 +367,9 @@ impl State {
             self.update_update(update).await?;
             return Err(deployment_state.err().unwrap());
         }
-        let DeploymentWithContainerState { state, .. } = deployment_state.unwrap();
+        let DeploymentWithContainerState {
+            deployment, state, ..
+        } = deployment_state.unwrap();
         if state != DockerContainerState::NotDeployed {
             let log = self
                 .periphery
@@ -406,7 +408,6 @@ impl State {
             )
             .await
             .context("failed to update deployment name on mongo");
-
         if let Err(e) = res {
             update
                 .logs
@@ -416,6 +417,20 @@ impl State {
                 "mongo update",
                 String::from("updated name on mongo"),
             ))
+        }
+
+        if deployment.repo.is_some() {
+            let res = self.reclone_deployment(deployment_id, user, false).await;
+            if let Err(e) = res {
+                update
+                    .logs
+                    .push(Log::error("reclone repo", format!("{e:?}")));
+            } else {
+                update.logs.push(Log::simple(
+                    "reclone repo",
+                    "deployment repo cloned with new name".to_string(),
+                ));
+            }
         }
 
         update.end_ts = monitor_timestamp().into();
@@ -431,8 +446,9 @@ impl State {
         &self,
         deployment_id: &str,
         user: &RequestUser,
+        check_deployment_busy: bool,
     ) -> anyhow::Result<Update> {
-        if self.deployment_busy(deployment_id).await {
+        if check_deployment_busy && self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
         }
         {

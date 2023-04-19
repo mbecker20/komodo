@@ -236,14 +236,18 @@ impl State {
                 }
                 RecloneDeployment => {
                     let update = self
-                        .reclone_deployment(&target_id, user)
+                        .reclone_deployment(&target_id, user, true)
                         .await
                         .context(format!("failed at reclone deployment (id: {target_id})"))?;
                     updates.push(update);
                 }
                 PullDeployment => {
                     // implement this one
-                    // let update = self.pull
+                    let update = self
+                        .pull_deployment_repo(&target_id, user)
+                        .await
+                        .context(format!("failed at pull deployment (id: {target_id})"))?;
+                    updates.push(update);
                 }
                 // build
                 BuildBuild => {

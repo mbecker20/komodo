@@ -1995,6 +1995,7 @@ dependencies = [
  "merge_config_files",
  "monitor_helpers",
  "monitor_types 0.3.0",
+ "parse_csl",
  "run_command",
  "serde",
  "serde_derive",
@@ -2250,6 +2251,12 @@ dependencies = [
  "smallvec",
  "windows-sys 0.45.0",
 ]
+
+[[package]]
+name = "parse_csl"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffa94c2e5674923c67d7f3dfce1279507b191e10eb064881b46ed3e1256e5ca6"
 
 [[package]]
 name = "pbkdf2"

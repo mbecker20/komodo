@@ -1,25 +1,8 @@
-use std::{borrow::Borrow, net::SocketAddr, str::FromStr};
+use std::{net::SocketAddr, str::FromStr};
 
-use anyhow::anyhow;
 use axum::http::StatusCode;
 use rand::{distributions::Alphanumeric, Rng};
 use types::Log;
-
-pub fn parse_comma_seperated_list<T: FromStr>(
-    comma_sep_list: impl Borrow<str>,
-) -> anyhow::Result<Vec<T>> {
-    comma_sep_list
-        .borrow()
-        .split(",")
-        .filter(|item| item.len() > 0)
-        .map(|item| {
-            let item = item
-                .parse()
-                .map_err(|_| anyhow!("error parsing string {item} into type T"))?;
-            Ok::<T, anyhow::Error>(item)
-        })
-        .collect()
-}
 
 pub fn get_socket_addr(port: u16) -> SocketAddr {
     SocketAddr::from_str(&format!("0.0.0.0:{}", port)).expect("failed to parse socket addr")

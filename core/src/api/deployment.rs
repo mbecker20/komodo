@@ -194,7 +194,7 @@ pub fn router() -> Router {
                  Path(deployment_id): Path<DeploymentId>| async move {
                     let update = spawn_request_action(async move {
                         state
-                            .reclone_deployment(&deployment_id.id, &user)
+                            .reclone_deployment(&deployment_id.id, &user, true)
                             .await
                             .map_err(handle_anyhow_error)
                     })
