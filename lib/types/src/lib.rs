@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use ::diff::Diff;
-use anyhow::Context;
-use chrono::{DateTime, SecondsFormat, Utc};
+use anyhow::{anyhow, Context};
+use chrono::{DateTime, LocalResult, SecondsFormat, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
@@ -284,4 +284,12 @@ pub fn unix_from_monitor_ts(ts: &str) -> anyhow::Result<i64> {
     Ok(DateTime::parse_from_rfc3339(ts)
         .context("failed to parse rfc3339 timestamp")?
         .timestamp_millis())
+}
+
+pub fn monitor_ts_from_unix(ts: i64) -> anyhow::Result<String> {
+    match Utc.timestamp_millis_opt(ts) {
+        LocalResult::Single(dt) => Ok(dt.to_rfc3339_opts(SecondsFormat::Millis, false)),
+        LocalResult::None => Err(anyhow!("out of bounds timestamp passed")),
+        _ => unreachable!(),
+    }
 }

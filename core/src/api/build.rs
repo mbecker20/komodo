@@ -1,18 +1,23 @@
+use std::collections::HashMap;
+
 use anyhow::Context;
+use async_timing_util::unix_timestamp_ms;
 use axum::{
     extract::{Path, Query},
     routing::{delete, get, patch, post},
     Extension, Json, Router,
 };
+use futures_util::TryStreamExt;
 use helpers::handle_anyhow_error;
 use mungos::{doc, Deserialize, Document, FindOptions, Serialize};
 use types::{
-    traits::Permissioned, AwsBuilderConfig, Build, BuildActionState, BuildVersionsReponse,
-    Operation, PermissionLevel, UpdateStatus,
+    monitor_ts_from_unix, traits::Permissioned, unix_from_monitor_ts, AwsBuilderConfig, Build,
+    BuildActionState, BuildVersionsReponse, Operation, PermissionLevel, UpdateStatus,
 };
 use typeshare::typeshare;
 
 const NUM_VERSIONS_PER_PAGE: u64 = 10;
+const ONE_DAY_MS: i64 = 86400000;
 
 use crate::{
     auth::{RequestUser, RequestUserExtension},
@@ -65,7 +70,7 @@ pub struct BuildStatsResponse {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct BuildStatsDay {
     pub time: f64,
     pub count: f64,
@@ -77,7 +82,7 @@ pub fn router() -> Router {
         .route(
             "/:id",
             get(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(build_id): Path<BuildId>| async move {
                     let build = state
@@ -91,7 +96,7 @@ pub fn router() -> Router {
         .route(
             "/list",
             get(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Query(query): Query<Document>| async move {
                     let builds = state
@@ -105,7 +110,7 @@ pub fn router() -> Router {
         .route(
             "/create",
             post(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Json(build): Json<CreateBuildBody>| async move {
                     let build = state
@@ -119,7 +124,7 @@ pub fn router() -> Router {
         .route(
             "/create_full",
             post(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Json(build): Json<Build>| async move {
                     let build = spawn_request_action(async move {
@@ -136,7 +141,7 @@ pub fn router() -> Router {
         .route(
             "/:id/copy",
             post(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(BuildId { id }): Path<BuildId>,
                  Json(build): Json<CopyBuildBody>| async move {
@@ -154,7 +159,7 @@ pub fn router() -> Router {
         .route(
             "/:id/delete",
             delete(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(build_id): Path<BuildId>| async move {
                     let build = spawn_request_action(async move {
@@ -171,7 +176,7 @@ pub fn router() -> Router {
         .route(
             "/update",
             patch(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Json(build): Json<Build>| async move {
                     let build = spawn_request_action(async move {
@@ -188,7 +193,7 @@ pub fn router() -> Router {
         .route(
             "/:id/build",
             post(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(build_id): Path<BuildId>| async move {
                     let update = spawn_request_action(async move {
@@ -205,7 +210,7 @@ pub fn router() -> Router {
         .route(
             "/:id/action_state",
             get(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(BuildId { id }): Path<BuildId>| async move {
                     let action_state = state
@@ -219,7 +224,7 @@ pub fn router() -> Router {
         .route(
             "/:id/versions",
             get(
-                |Extension(state): StateExtension,
+                |state: StateExtension,
                  Extension(user): RequestUserExtension,
                  Path(BuildId { id }),
                  Query(query): Query<BuildVersionsQuery>| async move {
@@ -233,7 +238,7 @@ pub fn router() -> Router {
         )
         .route(
             "/aws_builder_defaults",
-            get(|Extension(state): StateExtension| async move {
+            get(|state: StateExtension| async move {
                 Json(AwsBuilderConfig {
                     access_key_id: String::new(),
                     secret_access_key: String::new(),
@@ -243,8 +248,15 @@ pub fn router() -> Router {
         )
         .route(
             "/docker_organizations",
-            get(|Extension(state): StateExtension| async move {
+            get(|state: StateExtension| async move {
                 Json(state.config.docker_organizations.clone())
+            }),
+        )
+        .route(
+            "/stats",
+            get(|state: StateExtension, query: Query<BuildStatsQuery>| async move {
+                let stats = state.get_build_stats(query.page).await.map_err(handle_anyhow_error)?;
+                response!(Json(stats))
             }),
         )
 }
@@ -341,11 +353,57 @@ impl State {
         Ok(versions)
     }
 
-    // one page is 60 previous UTC days
     async fn get_build_stats(&self, page: u32) -> anyhow::Result<BuildStatsResponse> {
-        let build_updates = self.db.updates.get_some(doc! {}, None).await?;
+        let curr_ts = unix_timestamp_ms() as i64;
+        let next_day = curr_ts - curr_ts % ONE_DAY_MS + ONE_DAY_MS;
 
-        todo!()
+        let close_ts = next_day - page as i64 * 30 * ONE_DAY_MS;
+        let open_ts = close_ts - 30 * ONE_DAY_MS;
+
+        let mut build_updates = self
+            .db
+            .updates
+            .collection
+            .find(
+                doc! {
+                    "start_ts": {
+                        "$gte": monitor_ts_from_unix(open_ts)
+                            .context("open_ts out of bounds")?,
+                        "$lt": monitor_ts_from_unix(close_ts)
+                            .context("close_ts out of bounds")?
+                    }
+                },
+                None,
+            )
+            .await?;
+
+        let mut days = HashMap::<i64, BuildStatsDay>::with_capacity(32);
+
+        let mut curr = open_ts;
+
+        while curr < close_ts {
+            let stats = BuildStatsDay {
+                time: curr as f64,
+                ..Default::default()
+            };
+            days.insert(curr, stats);
+            curr += ONE_DAY_MS;
+        }
+
+        while let Some(update) = build_updates.try_next().await? {
+            if let Some(end_ts) = update.end_ts {
+                let start_ts = unix_from_monitor_ts(&update.start_ts)
+                    .context("failed to parse update start_ts")?;
+                let end_ts =
+                    unix_from_monitor_ts(&end_ts).context("failed to parse update end_ts")?;
+                let day = start_ts - start_ts % ONE_DAY_MS;
+                let mut entry = days.entry(day).or_default();
+                entry.count += 1.0;
+                entry.time += ms_to_hour(end_ts - start_ts);
+            }
+        }
+
+        Ok(BuildStatsResponse::new(days.into_values().collect()))
     }
 }
 
@@ -363,4 +421,9 @@ impl BuildStatsResponse {
             days,
         }
     }
+}
+
+const MS_TO_HOUR_DIVISOR: f64 = 1000.0 * 60.0 * 60.0;
+fn ms_to_hour(duration: i64) -> f64 {
+    duration as f64 / MS_TO_HOUR_DIVISOR
 }
