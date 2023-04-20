@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, cmp::Ordering};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -383,7 +383,7 @@ impl State {
 
         while curr < close_ts {
             let stats = BuildStatsDay {
-                time: curr as f64,
+                ts: curr as f64,
                 ..Default::default()
             };
             days.insert(curr, stats);
@@ -408,7 +408,14 @@ impl State {
 }
 
 impl BuildStatsResponse {
-    fn new(days: Vec<BuildStatsDay>) -> BuildStatsResponse {
+    fn new(mut days: Vec<BuildStatsDay>) -> BuildStatsResponse {
+        days.sort_by(|a, b| {
+            if a.ts < b.ts {
+                Ordering::Less
+            } else {
+                Ordering::Greater
+            }
+        });
         let mut total_time = 0.0;
         let mut total_count = 0.0;
         for day in &days {
