@@ -19,6 +19,22 @@ export interface BuildVersionsQuery {
 	patch?: number;
 }
 
+export interface BuildStatsQuery {
+	page?: number;
+}
+
+export interface BuildStatsResponse {
+	total_time: number;
+	total_count: number;
+	days: BuildStatsDay[];
+}
+
+export interface BuildStatsDay {
+	time: number;
+	count: number;
+	ts: number;
+}
+
 export interface CreateDeploymentBody {
 	name: string;
 	server_id: string;

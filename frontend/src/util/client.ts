@@ -29,6 +29,8 @@ import {
   UserCredentials,
 } from "../types";
 import {
+  BuildStatsQuery,
+  BuildStatsResponse,
   BuildVersionsQuery,
   CopyBuildBody,
   CopyDeploymentBody,
@@ -399,6 +401,10 @@ export class Client {
     query?: BuildVersionsQuery
   ): Promise<BuildVersionsReponse[]> {
     return this.get(`/api/build/${id}/versions${generateQuery(query as any)}`);
+  }
+
+  get_build_stats(query?: BuildStatsQuery): Promise<BuildStatsResponse> {
+    return this.get(`/api/build/stats${generateQuery(query as any)}`);
   }
 
   create_build(body: CreateBuildBody): Promise<Build> {

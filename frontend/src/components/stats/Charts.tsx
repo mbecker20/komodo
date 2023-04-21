@@ -12,7 +12,7 @@ import {
   convertTsMsToLocalUnixTsInSecs,
   get_to_one_sec_divisor,
 } from "../../util/helpers";
-import { useLocalStorage, useLocalStorageToggle } from "../../util/hooks";
+import { useLocalStorageToggle } from "../../util/hooks";
 import Flex from "../shared/layout/Flex";
 import Grid from "../shared/layout/Grid";
 import LightweightChart, { LightweightValue } from "../shared/LightweightChart";

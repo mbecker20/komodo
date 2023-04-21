@@ -28,19 +28,19 @@ const SimpleTabs: Component<{
   containerClass?: string;
   containerStyle?: JSX.CSSProperties;
 }> = (p) => {
-  const def = p.defaultSelected ? p.defaultSelected : p.tabs[0].title;
+  const defaultSelected = p.defaultSelected ? p.defaultSelected : p.tabs[0].title;
   const [selected, set] = p.localStorageKey
-    ? useLocalStorage(def, p.localStorageKey)
-    : createSignal(def);
+    ? useLocalStorage(defaultSelected, p.localStorageKey)
+    : createSignal(defaultSelected);
   createEffect(() => {
     if (p.tabs.filter((tab) => tab.title === selected())[0] === undefined) {
       set(p.tabs[0].title);
     }
   });
-  return <ControlledTabs selected={selected} set={set} {...p} />;
+  return <ControlledSimpleTabs selected={selected} set={set} {...p} />;
 };
 
-export const ControlledTabs: Component<{
+export const ControlledSimpleTabs: Component<{
   tabs: Tab[];
   selected: Accessor<string>;
   set: LocalStorageSetter<string>;

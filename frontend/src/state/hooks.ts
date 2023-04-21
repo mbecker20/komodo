@@ -13,6 +13,7 @@ import {
   intoCollection,
   keepOnlyInObj,
 } from "../util/helpers";
+import { BuildStatsResponse } from "../util/client_types";
 
 type Collection<T> = Record<string, T>;
 
@@ -243,6 +244,26 @@ export function useBuilds() {
     () => client.list_builds().then((res) => intoCollection(res, buildIdPath)),
     buildIdPath
   );
+}
+
+let build_stats_loading = false;
+export function useBuildStats() {
+  const [stats, set] = createSignal<BuildStatsResponse>();
+  const reload = () => {
+    client.get_build_stats().then(set);
+  };
+  const get = () => {
+    if (stats()) {
+      return stats();
+    } else if (!build_stats_loading) {
+      build_stats_loading = true;
+      reload()
+    }
+  }
+  return {
+    get,
+    reload,
+  };
 }
 
 const deploymentIdPath = ["deployment", "_id", "$oid"];

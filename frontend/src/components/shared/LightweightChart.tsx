@@ -1,7 +1,11 @@
 import {
   AreaSeriesPartialOptions,
+  BarSeriesPartialOptions,
+  ChartOptions,
   ColorType,
   createChart,
+  DeepPartial,
+  HistogramSeriesPartialOptions,
   IChartApi,
   ISeriesApi,
   LineSeriesPartialOptions,
@@ -28,9 +32,14 @@ export type LightweightArea = {
   line: LightweightValue[];
 } & AreaSeriesPartialOptions;
 
+export type LightweightHistogram = {
+  line: LightweightValue[];
+} & HistogramSeriesPartialOptions;
+
 const LightweightChart: Component<{
   lines?: LightweightLine[];
   areas?: LightweightArea[];
+  histograms?: LightweightHistogram[];
   class?: string;
   style?: JSX.CSSProperties;
   width?: string;
@@ -38,11 +47,15 @@ const LightweightChart: Component<{
   disableScroll?: boolean;
   onCreateLineSeries?: (series: ISeriesApi<"Line">) => void;
   onCreateAreaSeries?: (series: ISeriesApi<"Area">) => void;
+  onCreateHistogramSeries?: (series: ISeriesApi<"Histogram">) => void;
+  timeVisible?: boolean;
+  options?: DeepPartial<ChartOptions>;
 }> = (p) => {
   let el: HTMLDivElement;
   const [chart, setChart] = createSignal<IChartApi>();
   let lineSeries: ISeriesApi<"Line">[] = [];
   let areaSeries: ISeriesApi<"Area">[] = [];
+  let histogramSeries: ISeriesApi<"Histogram">[] = [];
   const [loaded, setLoaded] = createSignal(false);
   onMount(() => {
     if (loaded()) return;
@@ -58,9 +71,10 @@ const LightweightChart: Component<{
         horzLines: { color: "#3f454d" },
         vertLines: { color: "#3f454d" },
       },
-      timeScale: { timeVisible: true },
+      timeScale: { timeVisible: p.timeVisible ?? true },
       handleScroll: p.disableScroll ? false : true,
       handleScale: p.disableScroll ? false : true,
+      ...p.options
     });
     chart.timeScale().fitContent();
     setChart(chart);
@@ -94,6 +108,20 @@ const LightweightChart: Component<{
           return series;
         });
         areaSeries = series;
+      }
+      for (const series of histogramSeries) {
+        chart()!.removeSeries(series);
+      }
+      if (p.histograms) {
+        const series = p.histograms.map((line) => {
+          const series = chart()!.addHistogramSeries(line);
+          series.setData(line.line as any);
+          if (p.onCreateHistogramSeries) {
+            p.onCreateHistogramSeries(series);
+          }
+          return series;
+        });
+        histogramSeries = series;
       }
       chart()!.timeScale().fitContent();
     }

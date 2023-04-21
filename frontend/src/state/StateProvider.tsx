@@ -3,6 +3,7 @@ import { createContext, createResource, ParentComponent, Resource, useContext } 
 import { useWindowKeyDown } from "../util/hooks";
 import {
   useBuilds,
+  useBuildStats,
   useDeployments,
   useGroups,
   useProcedures,
@@ -19,6 +20,7 @@ import connectToWs from "./ws";
 import { useUser } from "./UserProvider";
 import { AwsBuilderConfig, PermissionLevel, UpdateTarget } from "../types";
 import { client } from "..";
+import { BuildStatsResponse } from "../util/client_types";
 
 export type State = {
   usernames: ReturnType<typeof useUsernames>;
@@ -43,6 +45,7 @@ export type State = {
   docker_organizations: Resource<string[]>;
   github_webhook_base_url: Resource<string>;
   name_from_update_target: (target: UpdateTarget) => string;
+  build_stats: ReturnType<typeof useBuildStats>;
 };
 
 const context = createContext<
@@ -93,6 +96,7 @@ export const AppStateProvider: ParentComponent = (p) => {
       });
     },
     builds,
+    build_stats: useBuildStats(),
     getPermissionOnBuild: (id: string) => {
       const build = builds.get(id)!;
       const permissions = build.permissions![userId] as
@@ -161,7 +165,7 @@ export const AppStateProvider: ParentComponent = (p) => {
       } else {
         return "unknown"
       }
-    }
+    },
   };
 
   // createEffect(() => {

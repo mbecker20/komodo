@@ -63,7 +63,15 @@ function connectToWs(state: State) {
 }
 
 async function handleMessage(
-  { deployments, builds, servers, groups, procedures, updates }: State,
+  {
+    deployments,
+    builds,
+    servers,
+    groups,
+    procedures,
+    updates,
+    build_stats,
+  }: State,
   update: Update
 ) {
   updates.addOrUpdate(update);
@@ -135,12 +143,15 @@ async function handleMessage(
     if (update.status === UpdateStatus.Complete) {
       builds.delete(update.target.id!);
     }
-  } else if (
-    [Operation.UpdateBuild, Operation.BuildBuild].includes(update.operation)
-  ) {
+  } else if (update.operation === Operation.UpdateBuild) {
     if (update.status === UpdateStatus.Complete) {
       const build = await client.get_build(update.target.id!);
       builds.update(build);
+    }
+  } else if (update.operation === Operation.BuildBuild) {
+    if (update.status === UpdateStatus.Complete) {
+      build_stats.reload();
+      client.get_build(update.target.id!).then((build) => builds.update(build));
     }
   }
 
