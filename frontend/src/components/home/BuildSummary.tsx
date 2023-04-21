@@ -46,9 +46,9 @@ const BuildSummary: Component<{}> = (p) => {
 export default BuildSummary;
 
 const BuildStatsChart: Component<{ build_stats: BuildStatsResponse }> = (p) => {
-  const [mode, setMode] = useLocalStorage<"count" | "time">(
-    "count",
-    "build-stats-chart-mode-v1"
+  const [mode, setMode] = useLocalStorage<"time" | "count">(
+    "time",
+    "build-stats-chart-mode-v2"
   );
   const max = createMemo(() => {
     return p.build_stats.days.reduce((max, day) => {
