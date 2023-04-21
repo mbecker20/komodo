@@ -22,6 +22,7 @@ import {
 export type LightweightValue = {
   time: number | string;
   value: number;
+  color?: string;
 };
 
 export type LightweightLine = {

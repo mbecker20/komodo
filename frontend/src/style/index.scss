@@ -180,6 +180,10 @@ svg {
   background-color: rgba(c.$blue, 0.8);
 }
 
+.blue.opaque {
+  background-color: c.$blue;
+}
+
 .blue:hover {
   background-color: c.$lightblue;
 }
