@@ -1,4 +1,4 @@
-use std::{collections::HashMap, cmp::Ordering};
+use std::{cmp::Ordering, collections::HashMap};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -371,7 +371,8 @@ impl State {
                             .context("open_ts out of bounds")?,
                         "$lt": monitor_ts_from_unix(close_ts)
                             .context("close_ts out of bounds")?
-                    }
+                    },
+                    "operation": Operation::BuildBuild.to_string(),
                 },
                 None,
             )
