@@ -105,7 +105,9 @@ export interface Deployment {
 	permissions?: PermissionsMap;
 	skip_secret_interp?: boolean;
 	docker_run_args: DockerRunArgs;
+	term_signal_labels?: Record<TerminationSignal, string>;
 	build_id?: string;
+	redeploy_on_build?: boolean;
 	build_version?: Version;
 	repo?: string;
 	branch?: string;
@@ -410,6 +412,13 @@ export enum RestartMode {
 	OnFailure = "on-failure",
 	Always = "always",
 	UnlessStopped = "unless-stopped",
+}
+
+export enum TerminationSignal {
+	SigHup = "SIGHUP",
+	SigInt = "SIGINT",
+	SigQuit = "SIGQUIT",
+	SigTerm = "SIGTERM",
 }
 
 export enum AccountType {
