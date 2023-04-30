@@ -170,17 +170,19 @@ impl PeripheryClient {
         }
     }
 
-    async fn post_json<B: Serialize, R: DeserializeOwned>(
+    async fn post_json<B: Serialize, R: DeserializeOwned, Q: Serialize>(
         &self,
         server: &Server,
         endpoint: &str,
         body: &B,
+        query: impl Into<Option<Q>>,
     ) -> anyhow::Result<R> {
         self.health_check(server).await?;
         let res = self
             .http_client
             .post(format!("{}{endpoint}", server.address))
             .header("authorization", &self.passkey)
+            .query(&query.into())
             .json(body)
             .send()
             .await

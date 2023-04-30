@@ -24,19 +24,20 @@ impl PeripheryClient {
                 "name": name,
                 "driver": driver
             }),
+            (),
         )
         .await
         .context("failed to create network on periphery")
     }
 
     pub async fn network_delete(&self, server: &Server, name: &str) -> anyhow::Result<Log> {
-        self.post_json(server, "/network/delete", &json!({ "name": name }))
+        self.post_json(server, "/network/delete", &json!({ "name": name }), ())
             .await
             .context("failed to delete network on periphery")
     }
 
     pub async fn network_prune(&self, server: &Server) -> anyhow::Result<Log> {
-        self.post_json(server, "/network/prune", &json!({}))
+        self.post_json(server, "/network/prune", &json!({}), ())
             .await
             .context("failed to prune networks on periphery")
     }

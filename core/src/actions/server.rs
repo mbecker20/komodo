@@ -121,14 +121,14 @@ impl State {
                 .get_some(doc! { "server_id": server_id }, None)
                 .await?
                 .into_iter()
-                .map(|d| async move { self.delete_deployment(&d.id, user).await });
+                .map(|d| async move { self.delete_deployment(&d.id, user, None, None).await });
             let delete_builds = self
                 .db
                 .builds
                 .get_some(doc! { "server_id": server_id }, None)
                 .await?
                 .into_iter()
-                .map(|d| async move { self.delete_deployment(&d.id, user).await });
+                .map(|d| async move { self.delete_deployment(&d.id, user, None, None).await });
             let update_groups = self
                 .db
                 .groups

@@ -11,7 +11,7 @@ impl PeripheryClient {
         clone_args: impl Into<CloneArgs>,
     ) -> anyhow::Result<Vec<Log>> {
         let clone_args: CloneArgs = clone_args.into();
-        self.post_json(server, "/git/clone", &clone_args)
+        self.post_json(server, "/git/clone", &clone_args, ())
             .await
             .context("failed to clone repo on periphery")
     }
@@ -27,13 +27,14 @@ impl PeripheryClient {
             server,
             "/git/pull",
             &json!({ "name": name, "branch": branch, "on_pull": on_pull }),
+            (),
         )
         .await
         .context("failed to pull repo on periphery")
     }
 
     pub async fn delete_repo(&self, server: &Server, build_name: &str) -> anyhow::Result<Log> {
-        self.post_json(server, "/git/delete", &json!({ "name": build_name }))
+        self.post_json(server, "/git/delete", &json!({ "name": build_name }), ())
             .await
             .context("failed to delete repo on periphery")
     }

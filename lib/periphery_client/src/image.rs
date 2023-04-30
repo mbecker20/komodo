@@ -11,7 +11,7 @@ impl PeripheryClient {
     }
 
     pub async fn image_prune(&self, server: &Server) -> anyhow::Result<Log> {
-        self.post_json(server, &format!("/image/prune"), &())
+        self.post_json(server, &format!("/image/prune"), &(), ())
             .await
             .context("failed to prune images on periphery")
     }

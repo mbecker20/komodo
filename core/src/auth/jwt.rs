@@ -20,6 +20,7 @@ pub type RequestUserExtension = Extension<Arc<RequestUser>>;
 
 type ExchangeTokenMap = Mutex<HashMap<String, (String, u128)>>;
 
+#[derive(Default)]
 pub struct RequestUser {
     pub id: String,
     pub is_admin: bool,

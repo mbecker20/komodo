@@ -6,7 +6,8 @@ use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
     Deployment, DeploymentWithContainerState, DockerContainerState, Log, Operation,
-    PermissionLevel, ServerStatus, ServerWithStatus, Update, UpdateStatus, UpdateTarget,
+    PermissionLevel, ServerStatus, ServerWithStatus, TerminationSignal, Update, UpdateStatus,
+    UpdateTarget,
 };
 
 use crate::{
@@ -112,6 +113,8 @@ impl State {
         &self,
         deployment_id: &str,
         user: &RequestUser,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Deployment> {
         if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
@@ -123,7 +126,7 @@ impl State {
         let server = self.db.get_server(&deployment.server_id).await?;
         let log = match self
             .periphery
-            .container_remove(&server, &deployment.name)
+            .container_remove(&server, &deployment.name, stop_signal, stop_time)
             .await
         {
             Ok(log) => log,
@@ -510,6 +513,8 @@ impl State {
         &self,
         deployment_id: &str,
         user: &RequestUser,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Update> {
         if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
@@ -519,7 +524,9 @@ impl State {
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.deploying = true;
         }
-        let res = self.deploy_container_inner(deployment_id, user).await;
+        let res = self
+            .deploy_container_inner(deployment_id, user, stop_signal, stop_time)
+            .await;
         {
             let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
@@ -532,6 +539,8 @@ impl State {
         &self,
         deployment_id: &str,
         user: &RequestUser,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Update> {
         let start_ts = monitor_timestamp();
         let mut deployment = self
@@ -569,7 +578,11 @@ impl State {
 
         update.id = self.add_update(update.clone()).await?;
 
-        let deploy_log = match self.periphery.deploy(&server, &deployment).await {
+        let deploy_log = match self
+            .periphery
+            .deploy(&server, &deployment, stop_signal, stop_time)
+            .await
+        {
             Ok(log) => log,
             Err(e) => Log::error("deploy container", format!("{e:#?}")),
         };
@@ -658,6 +671,8 @@ impl State {
         &self,
         deployment_id: &str,
         user: &RequestUser,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Update> {
         if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
@@ -667,7 +682,9 @@ impl State {
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.stopping = true;
         }
-        let res = self.stop_container_inner(deployment_id, user).await;
+        let res = self
+            .stop_container_inner(deployment_id, user, stop_signal, stop_time)
+            .await;
         {
             let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
@@ -680,6 +697,8 @@ impl State {
         &self,
         deployment_id: &str,
         user: &RequestUser,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Update> {
         let start_ts = monitor_timestamp();
         let deployment = self
@@ -699,7 +718,7 @@ impl State {
 
         let log = self
             .periphery
-            .container_stop(&server, &deployment.name)
+            .container_stop(&server, &deployment.name, stop_signal, stop_time)
             .await;
 
         update.success = match log {
@@ -728,6 +747,8 @@ impl State {
         &self,
         deployment_id: &str,
         user: &RequestUser,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Update> {
         if self.deployment_busy(deployment_id).await {
             return Err(anyhow!("deployment busy"));
@@ -737,7 +758,9 @@ impl State {
             let entry = lock.entry(deployment_id.to_string()).or_default();
             entry.removing = true;
         }
-        let res = self.remove_container_inner(deployment_id, user).await;
+        let res = self
+            .remove_container_inner(deployment_id, user, stop_signal, stop_time)
+            .await;
         {
             let mut lock = self.deployment_action_states.lock().await;
             let entry = lock.entry(deployment_id.to_string()).or_default();
@@ -750,6 +773,8 @@ impl State {
         &self,
         deployment_id: &str,
         user: &RequestUser,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Update> {
         let start_ts = monitor_timestamp();
         let deployment = self
@@ -769,7 +794,7 @@ impl State {
 
         let log = self
             .periphery
-            .container_remove(&server, &deployment.name)
+            .container_remove(&server, &deployment.name, stop_signal, stop_time)
             .await;
 
         update.success = match log {

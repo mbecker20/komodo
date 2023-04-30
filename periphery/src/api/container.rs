@@ -6,7 +6,7 @@ use axum::{
 };
 use helpers::handle_anyhow_error;
 use serde::Deserialize;
-use types::{Deployment, Log};
+use types::{Deployment, Log, TerminationSignal};
 
 use crate::{
     helpers::{
@@ -30,6 +30,12 @@ struct RenameContainerBody {
 #[derive(Deserialize)]
 struct GetLogQuery {
     tail: Option<u64>, // default is 1000 if not passed
+}
+
+#[derive(Deserialize)]
+struct StopContainerQuery {
+    stop_signal: Option<TerminationSignal>,
+    stop_time: Option<i32>,
 }
 
 pub fn router() -> Router {
@@ -79,15 +85,29 @@ pub fn router() -> Router {
         )
         .route(
             "/stop",
-            post(|container: Json<Container>| async move {
-                Json(docker::stop_container(&container.name).await)
-            }),
+            post(
+                |query: Query<StopContainerQuery>, container: Json<Container>| async move {
+                    Json(
+                        docker::stop_container(&container.name, query.stop_signal, query.stop_time)
+                            .await,
+                    )
+                },
+            ),
         )
         .route(
             "/remove",
-            post(|container: Json<Container>| async move {
-                Json(docker::stop_and_remove_container(&container.name).await)
-            }),
+            post(
+                |query: Query<StopContainerQuery>, container: Json<Container>| async move {
+                    Json(
+                        docker::stop_and_remove_container(
+                            &container.name,
+                            query.stop_signal,
+                            query.stop_time,
+                        )
+                        .await,
+                    )
+                },
+            ),
         )
         .route(
             "/rename",
@@ -97,8 +117,8 @@ pub fn router() -> Router {
         )
         .route(
             "/deploy",
-            post(|config, deployment| async move {
-                deploy(config, deployment)
+            post(|config, query, deployment| async move {
+                deploy(config, deployment, query)
                     .await
                     .map_err(handle_anyhow_error)
             }),
@@ -118,6 +138,7 @@ pub fn router() -> Router {
 async fn deploy(
     Extension(config): PeripheryConfigExtension,
     Json(deployment): Json<Deployment>,
+    Query(query): Query<StopContainerQuery>,
 ) -> anyhow::Result<Json<Log>> {
     let log = match get_docker_token(&deployment.docker_run_args.docker_account, &config) {
         Ok(docker_token) => tokio::spawn(async move {
@@ -126,6 +147,8 @@ async fn deploy(
                 &docker_token,
                 config.repo_dir.clone(),
                 &config.secrets,
+                query.stop_signal,
+                query.stop_time,
             )
             .await
         })

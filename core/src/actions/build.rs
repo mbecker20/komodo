@@ -3,13 +3,14 @@ use std::time::Duration;
 use anyhow::{anyhow, Context};
 use aws_sdk_ec2::Client;
 use diff::Diff;
+use futures_util::future::join_all;
 use helpers::{all_logs_success, to_monitor_name};
 use mungos::{doc, to_bson};
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
-    AwsBuilderBuildConfig, Build, Log, Operation, PermissionLevel, Update, UpdateStatus,
-    UpdateTarget, Version,
+    AwsBuilderBuildConfig, Build, DockerContainerState, Log, Operation, PermissionLevel, Update,
+    UpdateStatus, UpdateTarget, Version,
 };
 
 use crate::{
@@ -415,6 +416,8 @@ impl State {
                 .await;
         }
 
+        self.handle_post_build_redeploy(build_id, &mut update).await;
+
         update.success = all_logs_success(&update.logs);
         update.status = UpdateStatus::Complete;
         update.end_ts = Some(monitor_timestamp());
@@ -422,6 +425,85 @@ impl State {
         self.update_update(update.clone()).await?;
 
         Ok(update)
+    }
+
+    async fn handle_post_build_redeploy(&self, build_id: &str, update: &mut Update) {
+        let redeploy_deployments = self
+            .db
+            .deployments
+            .get_some(
+                doc! { "build_id": build_id, "redeploy_on_build": true },
+                None,
+            )
+            .await;
+
+        if let Ok(deployments) = redeploy_deployments {
+            let futures = deployments.into_iter().map(|d| async move {
+                let request_user = RequestUser {
+                    id: "auto redeploy".to_string(),
+                    is_admin: true,
+                    ..Default::default()
+                };
+                let state = self
+                    .get_deployment_with_container_state(&request_user, &d.id)
+                    .await
+                    .map(|r| r.state)
+                    .unwrap_or_default();
+                if state == DockerContainerState::Running {
+                    Some((
+                        d.id.clone(),
+                        self.deploy_container(
+                            &d.id,
+                            &RequestUser {
+                                id: "auto redeploy".to_string(),
+                                is_admin: true,
+                                ..Default::default()
+                            },
+                            None,
+                            None,
+                        )
+                        .await,
+                    ))
+                } else {
+                    None
+                }
+            });
+
+            let redeploy_results = join_all(futures).await;
+
+            let mut redeploys = Vec::<String>::new();
+            let mut redeploy_failures = Vec::<String>::new();
+
+            for res in redeploy_results {
+                if res.is_none() {
+                    continue;
+                }
+                let (id, res) = res.unwrap();
+                match res {
+                    Ok(_) => redeploys.push(id),
+                    Err(e) => redeploy_failures.push(format!("{id}: {e:#?}")),
+                }
+            }
+
+            if redeploys.len() > 0 {
+                update.logs.push(Log::simple(
+                    "redeploy",
+                    format!("redeployed deployments: {}", redeploys.join(", ")),
+                ))
+            }
+
+            if redeploy_failures.len() > 0 {
+                update.logs.push(Log::simple(
+                    "redeploy failures",
+                    redeploy_failures.join("\n"),
+                ))
+            }
+        } else if let Err(e) = redeploy_deployments {
+            update.logs.push(Log::simple(
+                "redeploys failed",
+                format!("failed to get deployments to redeploy: {e:#?}"),
+            ))
+        }
     }
 
     async fn create_ec2_instance_for_build(

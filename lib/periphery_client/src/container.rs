@@ -1,6 +1,6 @@
 use anyhow::Context;
 use serde_json::json;
-use types::{BasicContainerInfo, Deployment, DockerContainerStats, Log, Server};
+use types::{BasicContainerInfo, Deployment, DockerContainerStats, Log, Server, TerminationSignal};
 
 use crate::PeripheryClient;
 
@@ -37,6 +37,7 @@ impl PeripheryClient {
             server,
             "/container/start",
             &json!({ "name": container_name }),
+            (),
         )
         .await
         .context("failed to start container on periphery")
@@ -46,11 +47,14 @@ impl PeripheryClient {
         &self,
         server: &Server,
         container_name: &str,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Log> {
         self.post_json(
             server,
             "/container/stop",
             &json!({ "name": container_name }),
+            (("stop_signal", stop_signal), ("stop_time", stop_time)),
         )
         .await
         .context("failed to stop container on periphery")
@@ -60,11 +64,14 @@ impl PeripheryClient {
         &self,
         server: &Server,
         container_name: &str,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
     ) -> anyhow::Result<Log> {
         self.post_json(
             server,
             "/container/remove",
             &json!({ "name": container_name }),
+            (("stop_signal", stop_signal), ("stop_time", stop_time)),
         )
         .await
         .context("failed to remove container on periphery")
@@ -80,19 +87,31 @@ impl PeripheryClient {
             server,
             "/container/rename",
             &json!({ "curr_name": curr_name, "new_name": new_name }),
+            (),
         )
         .await
         .context("failed to rename container on periphery")
     }
 
-    pub async fn deploy(&self, server: &Server, deployment: &Deployment) -> anyhow::Result<Log> {
-        self.post_json(server, "/container/deploy", deployment)
-            .await
-            .context("failed to deploy container on periphery")
+    pub async fn deploy(
+        &self,
+        server: &Server,
+        deployment: &Deployment,
+        stop_signal: Option<TerminationSignal>,
+        stop_time: Option<i32>,
+    ) -> anyhow::Result<Log> {
+        self.post_json(
+            server,
+            "/container/deploy",
+            deployment,
+            (("stop_signal", stop_signal), ("stop_time", stop_time)),
+        )
+        .await
+        .context("failed to deploy container on periphery")
     }
 
     pub async fn container_prune(&self, server: &Server) -> anyhow::Result<Log> {
-        self.post_json(server, "/container/prune", &json!({}))
+        self.post_json(server, "/container/prune", &json!({}), ())
             .await
             .context("failed to prune containers on periphery")
     }

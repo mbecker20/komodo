@@ -4,7 +4,7 @@ use anyhow::Context;
 use axum::{
     extract::{Path, Query},
     routing::{delete, get, patch, post},
-    Extension, Json, Router,
+    Json, Router,
 };
 use futures_util::future::join_all;
 use helpers::handle_anyhow_error;
@@ -12,7 +12,7 @@ use mungos::{doc, options::FindOneOptions, Deserialize, Document, Serialize};
 use types::{
     traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainerState,
     DockerContainerState, DockerContainerStats, Log, Operation, PermissionLevel, Server,
-    UpdateStatus,
+    TerminationSignal, UpdateStatus,
 };
 use typeshare::typeshare;
 
@@ -55,16 +55,23 @@ pub struct GetContainerLogQuery {
     tail: Option<u32>,
 }
 
+#[typeshare]
+#[derive(Deserialize)]
+pub struct StopContainerQuery {
+    stop_signal: Option<TerminationSignal>,
+    stop_time: Option<i32>,
+}
+
 pub fn router() -> Router {
     Router::new()
         .route(
             "/:id",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id })| async move {
                     let res = state
-                        .get_deployment_with_container_state(&user, &deployment_id.id)
+                        .get_deployment_with_container_state(&user, &id)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(res))
@@ -74,8 +81,8 @@ pub fn router() -> Router {
         .route(
             "/list",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Query(query): Query<Document>| async move {
                     let deployments = state
                         .list_deployments_with_container_state(&user, query)
@@ -88,8 +95,8 @@ pub fn router() -> Router {
         .route(
             "/create",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Json(deployment): Json<CreateDeploymentBody>| async move {
                     let deployment = state
                         .create_deployment(&deployment.name, deployment.server_id, &user)
@@ -102,8 +109,8 @@ pub fn router() -> Router {
         .route(
             "/create_full",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Json(full_deployment): Json<Deployment>| async move {
                     let deployment = spawn_request_action(async move {
                         state
@@ -119,9 +126,9 @@ pub fn router() -> Router {
         .route(
             "/:id/copy",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(DeploymentId { id }): Path<DeploymentId>,
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id }),
                  Json(deployment): Json<CopyDeploymentBody>| async move {
                     let deployment = spawn_request_action(async move {
                         state
@@ -137,12 +144,13 @@ pub fn router() -> Router {
         .route(
             "/:id/delete",
             delete(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId{ id }),
+                 Query(StopContainerQuery { stop_signal, stop_time })| async move {
                     let deployment = spawn_request_action(async move {
                         state
-                            .delete_deployment(&deployment_id.id, &user)
+                            .delete_deployment(&id, &user, stop_signal, stop_time)
                             .await
                             .map_err(handle_anyhow_error)
                     })
@@ -154,8 +162,8 @@ pub fn router() -> Router {
         .route(
             "/update",
             patch(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Json(deployment): Json<Deployment>| async move {
                     let deployment = spawn_request_action(async move {
                         state
@@ -189,12 +197,12 @@ pub fn router() -> Router {
         .route(
             "/:id/reclone",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id })| async move {
                     let update = spawn_request_action(async move {
                         state
-                            .reclone_deployment(&deployment_id.id, &user, true)
+                            .reclone_deployment(&id, &user, true)
                             .await
                             .map_err(handle_anyhow_error)
                     })
@@ -206,12 +214,13 @@ pub fn router() -> Router {
         .route(
             "/:id/deploy",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id }),
+                 Query(StopContainerQuery { stop_signal, stop_time })| async move {
                     let update = spawn_request_action(async move {
                         state
-                            .deploy_container(&deployment_id.id, &user)
+                            .deploy_container(&id, &user, stop_signal, stop_time)
                             .await
                             .map_err(handle_anyhow_error)
                     })
@@ -223,12 +232,12 @@ pub fn router() -> Router {
         .route(
             "/:id/start_container",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id })| async move {
                     let update = spawn_request_action(async move {
                         state
-                            .start_container(&deployment_id.id, &user)
+                            .start_container(&id, &user)
                             .await
                             .map_err(handle_anyhow_error)
                     })
@@ -240,12 +249,13 @@ pub fn router() -> Router {
         .route(
             "/:id/stop_container",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id }),
+                 Query(StopContainerQuery { stop_signal, stop_time })| async move {
                     let update = spawn_request_action(async move {
                         state
-                            .stop_container(&deployment_id.id, &user)
+                            .stop_container(&id, &user, stop_signal, stop_time)
                             .await
                             .map_err(handle_anyhow_error)
                     })
@@ -257,12 +267,13 @@ pub fn router() -> Router {
         .route(
             "/:id/remove_container",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id }),
+                 Query(StopContainerQuery { stop_signal, stop_time })| async move {
                     let update = spawn_request_action(async move {
                         state
-                            .remove_container(&deployment_id.id, &user)
+                            .remove_container(&id, &user, stop_signal, stop_time)
                             .await
                             .map_err(handle_anyhow_error)
                     })
@@ -274,12 +285,12 @@ pub fn router() -> Router {
         .route(
             "/:id/pull",
             post(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>| async move {
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id })| async move {
                     let update = spawn_request_action(async move {
                         state
-                            .pull_deployment_repo(&deployment_id.id, &user)
+                            .pull_deployment_repo(&id, &user)
                             .await
                             .map_err(handle_anyhow_error)
                     })
@@ -291,8 +302,8 @@ pub fn router() -> Router {
         .route(
             "/:id/action_state",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Path(DeploymentId { id }): Path<DeploymentId>| async move {
                     let action_state = state
                         .get_deployment_action_states(id, &user)
@@ -305,12 +316,12 @@ pub fn router() -> Router {
         .route(
             "/:id/log",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
-                 Path(deployment_id): Path<DeploymentId>,
+                |state: StateExtension,
+                 user: RequestUserExtension,
+                 Path(DeploymentId { id }),
                  Query(query): Query<GetContainerLogQuery>| async move {
                     let log = state
-                        .get_deployment_container_log(&deployment_id.id, &user, query.tail)
+                        .get_deployment_container_log(&id, &user, query.tail)
                         .await
                         .map_err(handle_anyhow_error)?;
                     response!(Json(log))
@@ -320,8 +331,8 @@ pub fn router() -> Router {
         .route(
             "/:id/stats",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Path(DeploymentId { id })| async move {
                     let stats = state
                         .get_deployment_container_stats(&id, &user)
@@ -334,8 +345,8 @@ pub fn router() -> Router {
         .route(
             "/:id/deployed_version",
             get(
-                |Extension(state): StateExtension,
-                 Extension(user): RequestUserExtension,
+                |state: StateExtension,
+                 user: RequestUserExtension,
                  Path(DeploymentId { id })| async move {
                     let version = state
                         .get_deployment_deployed_version(&id, &user)

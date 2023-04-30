@@ -1,4 +1,6 @@
-use diff::{Diff, OptionDiff, VecDiff};
+use std::hash::Hash;
+
+use diff::{Diff, HashMapDiff, OptionDiff, VecDiff};
 
 use crate::{
     deployment::{DockerRunArgsDiff, RestartModeDiff},
@@ -24,9 +26,9 @@ pub fn vec_diff_no_change<T: Diff>(vec_diff: &VecDiff<T>) -> bool {
     vec_diff.0.is_empty()
 }
 
-// pub fn hashmap_diff_no_change<T: Diff>(hashmap_diff: &HashMapDiff<String, T>) -> bool {
-//     hashmap_diff.altered.is_empty() && hashmap_diff.removed.is_empty()
-// }
+pub fn hashmap_diff_no_change<K: Hash + Eq, T: Diff>(hashmap_diff: &HashMapDiff<K, T>) -> bool {
+    hashmap_diff.altered.is_empty() && hashmap_diff.removed.is_empty()
+}
 
 pub fn docker_run_args_diff_no_change(dra: &DockerRunArgsDiff) -> bool {
     dra.image.is_none()

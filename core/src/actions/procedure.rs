@@ -209,7 +209,7 @@ impl State {
                 }
                 StopContainer => {
                     let update = self
-                        .stop_container(&target_id, user)
+                        .stop_container(&target_id, user, Option::None, Option::None)
                         .await
                         .context(format!(
                             "failed at stop container for deployment (id: {target_id})"
@@ -218,7 +218,7 @@ impl State {
                 }
                 RemoveContainer => {
                     let update = self
-                        .remove_container(&target_id, user)
+                        .remove_container(&target_id, user, Option::None, Option::None)
                         .await
                         .context(format!(
                             "failed at remove container for deployment (id: {target_id})"
@@ -227,7 +227,7 @@ impl State {
                 }
                 DeployContainer => {
                     let update = self
-                        .deploy_container(&target_id, user)
+                        .deploy_container(&target_id, user, Option::None, Option::None)
                         .await
                         .context(format!(
                             "failed at deploy container for deployment (id: {target_id})"

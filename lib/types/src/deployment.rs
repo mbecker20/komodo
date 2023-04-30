@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
 use diff::Diff;
@@ -46,9 +48,19 @@ pub struct Deployment {
     #[diff(attr(#[serde(skip_serializing_if = "docker_run_args_diff_no_change")]))]
     pub docker_run_args: DockerRunArgs,
 
+    #[serde(default)]
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
+    pub term_signal_labels: HashMap<TerminationSignal, String>,
+
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
     pub build_id: Option<String>,
+
+    #[serde(default)]
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub redeploy_on_build: bool,
 
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
@@ -243,10 +255,22 @@ impl Default for DockerContainerState {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
+    Serialize,
+    Deserialize,
+    Debug,
+    Display,
+    EnumString,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Diff,
+    Default,
 )]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum RestartMode {
+    #[default]
     #[serde(rename = "no")]
     #[strum(serialize = "no")]
     NoRestart,
@@ -261,8 +285,32 @@ pub enum RestartMode {
     UnlessStopped,
 }
 
-impl Default for RestartMode {
-    fn default() -> RestartMode {
-        RestartMode::NoRestart
-    }
+#[typeshare]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Display,
+    EnumString,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Diff,
+    Default,
+)]
+#[serde(rename_all = "UPPERCASE")]
+#[strum(serialize_all = "UPPERCASE")]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+pub enum TerminationSignal {
+    #[serde(alias = "1")]
+    SigHup,
+    #[serde(alias = "2")]
+    SigInt,
+    #[serde(alias = "3")]
+    SigQuit,
+    #[default]
+    #[serde(alias = "15")]
+    SigTerm,
 }

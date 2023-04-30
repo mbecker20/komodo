@@ -199,7 +199,18 @@ pub enum PermissionsTarget {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Diff,
+    Serialize,
+    Deserialize,
+    Debug,
+    Display,
+    EnumString,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Diff,
+    Default,
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -220,6 +231,7 @@ pub enum Timelength {
     #[serde(rename = "30-sec")]
     #[strum(serialize = "30-sec")]
     ThirtySeconds,
+    #[default]
     #[serde(rename = "1-min")]
     #[strum(serialize = "1-min")]
     OneMinute,
@@ -268,12 +280,6 @@ pub enum Timelength {
     #[serde(rename = "30-day")]
     #[strum(serialize = "30-day")]
     ThirtyDays,
-}
-
-impl Default for Timelength {
-    fn default() -> Timelength {
-        Timelength::OneMinute
-    }
 }
 
 pub fn monitor_timestamp() -> String {

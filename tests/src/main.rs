@@ -5,7 +5,7 @@ use async_timing_util::unix_timestamp_ms;
 use monitor_client::{
     types::{
         BuildBuilder, Command, Conversion, Deployment, DeploymentBuilder, DockerBuildArgs,
-        DockerBuildArgsBuilder, DockerRunArgsBuilder, EnvironmentVar,
+        DockerBuildArgsBuilder, DockerRunArgsBuilder, EnvironmentVar, TerminationSignal,
     },
     MonitorClient,
 };
@@ -80,24 +80,6 @@ async fn main() -> anyhow::Result<()> {
     let deploy_update = monitor.deploy_container(&deployment.id).await?;
 
     println!("{deploy_update:#?}");
-
-    // let (server, deployment, build) = create_test_setup(&monitor, "test").await?;
-
-    // let server_stats = get_server_stats(&monitor).await?;
-    // println!("server stats:\n{server_stats:#?}\n");
-
-    // subscribe_to_server_stats(&monitor).await?;
-
-    // let (update, container) = deploy_mongo(&monitor).await?;
-    // println!(
-    //     "mongo deploy update:\n{update:#?}\n\ncontainer: {:#?}\n",
-    //     container.container
-    // );
-
-    // let update = test_build(&monitor).await?;
-    // println!("build update:\n{update:#?}");
-
-    // test_updates(&monitor).await.unwrap();
 
     let update = test_aws_build(&monitor).await?;
 

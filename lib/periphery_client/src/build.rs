@@ -6,7 +6,7 @@ use crate::PeripheryClient;
 impl PeripheryClient {
     pub async fn build(&self, server: &Server, build: &Build) -> anyhow::Result<Option<Vec<Log>>> {
         let res = self
-            .post_json::<_, Vec<Log>>(server, "/build", build)
+            .post_json(server, "/build", build, ())
             .await
             .context("failed to build image on periphery");
         match res {

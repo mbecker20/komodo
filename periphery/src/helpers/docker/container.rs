@@ -5,6 +5,7 @@ use helpers::to_monitor_name;
 use run_command::async_run_command;
 use types::{
     Conversion, Deployment, DockerContainerStats, DockerRunArgs, EnvironmentVar, Log, RestartMode,
+    TerminationSignal,
 };
 
 use crate::helpers::{docker::parse_extra_args, run_monitor_command};
@@ -57,16 +58,38 @@ pub async fn start_container(container_name: &str) -> Log {
     run_monitor_command("docker start", command).await
 }
 
-pub async fn stop_container(container_name: &str) -> Log {
-    let container_name = to_monitor_name(container_name);
-    let command = format!("docker stop {container_name}");
+pub async fn stop_container(
+    container_name: &str,
+    signal: Option<TerminationSignal>,
+    time: Option<i32>,
+) -> Log {
+    let command = stop_container_command(container_name, signal, time);
     run_monitor_command("docker stop", command).await
 }
 
-pub async fn stop_and_remove_container(container_name: &str) -> Log {
-    let container_name = to_monitor_name(container_name);
-    let command = format!("docker stop {container_name} && docker container rm {container_name}");
+pub async fn stop_and_remove_container(
+    container_name: &str,
+    signal: Option<TerminationSignal>,
+    time: Option<i32>,
+) -> Log {
+    let stop_command = stop_container_command(container_name, signal, time);
+    let command = format!("{stop_command} && docker container rm {container_name}");
     run_monitor_command("docker stop and remove", command).await
+}
+
+fn stop_container_command(
+    container_name: &str,
+    signal: Option<TerminationSignal>,
+    time: Option<i32>,
+) -> String {
+    let container_name = to_monitor_name(container_name);
+    let signal = signal
+        .map(|signal| format!(" --signal {signal}"))
+        .unwrap_or_default();
+    let time = time
+        .map(|time| format!(" --time {time}"))
+        .unwrap_or_default();
+    format!("docker stop{signal}{time} {container_name}")
 }
 
 pub async fn rename_container(curr_name: &str, new_name: &str) -> Log {
@@ -86,12 +109,14 @@ pub async fn deploy(
     docker_token: &Option<String>,
     repo_dir: PathBuf,
     secrets: &HashMap<String, String>,
+    stop_signal: Option<TerminationSignal>,
+    stop_time: Option<i32>,
 ) -> Log {
     if let Err(e) = docker_login(&deployment.docker_run_args.docker_account, docker_token).await {
         return Log::error("docker login", format!("{e:#?}"));
     }
     let _ = pull_image(&deployment.docker_run_args.image).await;
-    let _ = stop_and_remove_container(&to_monitor_name(&deployment.name)).await;
+    let _ = stop_and_remove_container(&deployment.name, stop_signal, stop_time).await;
     let command = docker_run_command(deployment, repo_dir);
     if deployment.skip_secret_interp {
         run_monitor_command("docker run", command).await
