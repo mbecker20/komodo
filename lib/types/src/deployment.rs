@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
 use diff::Diff;
@@ -50,8 +48,8 @@ pub struct Deployment {
 
     #[serde(default)]
     #[builder(default)]
-    #[diff(attr(#[serde(skip_serializing_if = "hashmap_diff_no_change")]))]
-    pub term_signal_labels: HashMap<TerminationSignal, String>,
+    #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
+    pub term_signal_labels: Vec<TerminationSignalLabel>,
 
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
@@ -120,6 +118,18 @@ pub struct DeploymentActionState {
     pub recloning: bool,
     pub updating: bool,
     pub renaming: bool,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, Diff, Builder)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+pub struct TerminationSignalLabel {
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "termination_signal_diff_no_change")]))]
+    pub signal: TerminationSignal,
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    pub label: String,
 }
 
 #[typeshare]

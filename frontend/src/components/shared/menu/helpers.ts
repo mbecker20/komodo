@@ -9,7 +9,7 @@ export type Position =
   | "bottom right"
   | "bottom center";
 
-export function getPositionClass(position: Position = "bottom") {
+export function getPositionClass(position: Position = "bottom right") {
   switch (position) {
     case "left":
       return s.Left;

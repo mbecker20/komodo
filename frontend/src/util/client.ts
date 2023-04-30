@@ -46,6 +46,7 @@ import {
   ModifyUserEnabledBody,
   PermissionsUpdateBody,
   RenameDeploymentBody,
+  StopContainerQuery,
   UpdateDescriptionBody,
 } from "./client_types";
 import { generateQuery, QueryObject } from "./helpers";
@@ -219,20 +220,20 @@ export class Client {
     return this.post(`/api/deployment/${deployment_id}/pull`);
   }
 
-  deploy_container(deployment_id: string): Promise<Update> {
-    return this.post(`/api/deployment/${deployment_id}/deploy`);
+  deploy_container(deployment_id: string, query?: StopContainerQuery): Promise<Update> {
+    return this.post(`/api/deployment/${deployment_id}/deploy${generateQuery(query as any)}`);
   }
 
   start_container(deployment_id: string): Promise<Update> {
     return this.post(`/api/deployment/${deployment_id}/start_container`);
   }
 
-  stop_container(deployment_id: string): Promise<Update> {
-    return this.post(`/api/deployment/${deployment_id}/stop_container`);
+  stop_container(deployment_id: string, query?: StopContainerQuery): Promise<Update> {
+    return this.post(`/api/deployment/${deployment_id}/stop_container${generateQuery(query as any)}`);
   }
 
-  remove_container(deployment_id: string): Promise<Update> {
-    return this.post(`/api/deployment/${deployment_id}/remove_container`);
+  remove_container(deployment_id: string, query?: StopContainerQuery): Promise<Update> {
+    return this.post(`/api/deployment/${deployment_id}/remove_container${generateQuery(query as any)}`);
   }
 
   async download_container_log(

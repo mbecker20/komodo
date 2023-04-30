@@ -1058,7 +1058,7 @@ checksum = "23d8666cb01533c39dde32bcbab8e227b4ed6679b2c925eba05feabea39508fb"
 
 [[package]]
 name = "db_client"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "monitor_types",
@@ -1934,7 +1934,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_cli"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "async_timing_util",
  "clap",
@@ -1968,7 +1968,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_helpers"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "axum",
@@ -1981,7 +1981,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_periphery"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "async_timing_util",
@@ -2009,7 +2009,7 @@ dependencies = [
 
 [[package]]
 name = "monitor_types"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "bollard",
@@ -2256,7 +2256,7 @@ checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
 name = "periphery_client"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "futures-util",

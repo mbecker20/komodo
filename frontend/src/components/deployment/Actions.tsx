@@ -1,4 +1,4 @@
-import { Component, Match, Show, Switch } from "solid-js";
+import { Component, Match, Setter, Show, Switch, createSignal } from "solid-js";
 import { client } from "../..";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
@@ -15,8 +15,11 @@ import {
   DockerContainerState,
   PermissionLevel,
   ServerStatus,
+  TerminationSignal,
+  TerminationSignalLabel,
 } from "../../types";
 import ConfirmMenuButton from "../shared/ConfirmMenuButton";
+import Selector from "../shared/menu/Selector";
 
 const Actions: Component<{}> = (p) => {
   const { deployments, builds, servers, getPermissionOnDeployment } =
@@ -166,7 +169,13 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
   // const deployment = () => deployments.get(params.id)!;
   const actions = useActionStates();
   const { deployments } = useAppState();
-  const name = () => deployments.get(params.id)?.deployment.name;
+  const deployment = () => deployments.get(params.id);
+  const name = () => deployment()?.deployment.name;
+  const [termSignalLabel, setTermSignalLabel] =
+    createSignal<TerminationSignalLabel>({
+      signal: "default" as TerminationSignal,
+      label: "",
+    });
   return (
     <Show
       when={!actions.deploying}
@@ -194,9 +203,19 @@ const Deploy: Component<{ redeploy?: boolean }> = (p) => {
             <ConfirmMenuButton
               class="green"
               onConfirm={() => {
-                client.deploy_container(params.id);
+                client.deploy_container(params.id, {
+                  stop_signal: ((termSignalLabel().signal as any) === "default"
+                    ? undefined
+                    : termSignalLabel().signal) as TerminationSignal,
+                });
               }}
               title="redeploy container"
+              configs={
+                <TermSignalSelector
+                  termSignalLabel={termSignalLabel()}
+                  setTermSignalLabel={setTermSignalLabel}
+                />
+              }
               match={name()!}
             >
               <Icon type={"reset"} />
@@ -216,6 +235,11 @@ const RemoveContainer = () => {
   const actions = useActionStates();
   const { deployments } = useAppState();
   const name = () => deployments.get(params.id)?.deployment.name;
+  const [termSignalLabel, setTermSignalLabel] =
+    createSignal<TerminationSignalLabel>({
+      signal: "default" as TerminationSignal,
+      label: "",
+    });
   return (
     <Show
       when={!actions.removing}
@@ -230,9 +254,19 @@ const RemoveContainer = () => {
           <ConfirmMenuButton
             class="red"
             onConfirm={() => {
-              client.remove_container(params.id);
+              client.remove_container(params.id, {
+                stop_signal: ((termSignalLabel().signal as any) === "default"
+                  ? undefined
+                  : termSignalLabel().signal) as TerminationSignal,
+              });
             }}
             title="destroy container"
+            configs={
+              <TermSignalSelector
+                termSignalLabel={termSignalLabel()}
+                setTermSignalLabel={setTermSignalLabel}
+              />
+            }
             match={name()!}
           >
             <Icon type="trash" />
@@ -282,6 +316,11 @@ const Stop = () => {
   const actions = useActionStates();
   const { deployments } = useAppState();
   const name = () => deployments.get(params.id)?.deployment.name;
+  const [termSignalLabel, setTermSignalLabel] =
+    createSignal<TerminationSignalLabel>({
+      signal: "default" as TerminationSignal,
+      label: "",
+    });
   return (
     <Show
       when={!actions.stopping}
@@ -296,9 +335,19 @@ const Stop = () => {
           <ConfirmMenuButton
             class="orange"
             onConfirm={() => {
-              client.stop_container(params.id);
+              client.stop_container(params.id, {
+                stop_signal: ((termSignalLabel().signal as any) === "default"
+                  ? undefined
+                  : termSignalLabel().signal) as TerminationSignal,
+              });
             }}
             title="stop container"
+            configs={
+              <TermSignalSelector
+                termSignalLabel={termSignalLabel()}
+                setTermSignalLabel={setTermSignalLabel}
+              />
+            }
             match={name()!}
           >
             <Icon type="pause" />
@@ -370,6 +419,51 @@ const Reclone = () => {
         position="bottom center"
         padding="0.5rem"
       />
+    </Show>
+  );
+};
+
+const TermSignalSelector: Component<{
+  termSignalLabel: TerminationSignalLabel;
+  setTermSignalLabel: Setter<TerminationSignalLabel>;
+}> = (p) => {
+  const params = useParams();
+  const { deployments } = useAppState();
+  const deployment = () => deployments.get(params.id);
+  return (
+    <Show
+      when={
+        deployment()?.state === DockerContainerState.Running &&
+        (deployment()?.deployment.term_signal_labels?.length || 0) > 0
+      }
+    >
+      <Flex
+        class="full-width wrap"
+        justifyContent="space-between"
+        alignItems="center"
+      >
+        <div class="dimmed">termination signal: </div>
+        <Selector
+          targetClass="blue"
+          selected={p.termSignalLabel}
+          items={[
+            { signal: "default", label: "" },
+            ...(deployment()?.deployment.term_signal_labels || []),
+          ]}
+          itemMap={({ signal, label }) => (
+            <Flex gap="0.5rem" alignItems="center">
+              <div>{signal}</div>
+              <Show when={label.length > 0}>
+                <div class="dimmed">{label}</div>
+              </Show>
+            </Flex>
+          )}
+          onSelect={(signal) =>
+            p.setTermSignalLabel(signal as TerminationSignalLabel)
+          }
+          position="bottom right"
+        />
+      </Flex>
     </Show>
   );
 };

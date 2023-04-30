@@ -105,7 +105,7 @@ export interface Deployment {
 	permissions?: PermissionsMap;
 	skip_secret_interp?: boolean;
 	docker_run_args: DockerRunArgs;
-	term_signal_labels?: Record<TerminationSignal, string>;
+	term_signal_labels?: TerminationSignalLabel[];
 	build_id?: string;
 	redeploy_on_build?: boolean;
 	build_version?: Version;
@@ -134,6 +134,11 @@ export interface DeploymentActionState {
 	recloning: boolean;
 	updating: boolean;
 	renaming: boolean;
+}
+
+export interface TerminationSignalLabel {
+	signal: TerminationSignal;
+	label: string;
 }
 
 export interface DockerRunArgs {

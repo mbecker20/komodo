@@ -3,7 +3,7 @@ import { Component, Show } from "solid-js";
 import { useAppDimensions } from "../../state/DimensionProvider";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
-import { PermissionLevel } from "../../types";
+import { PermissionLevel, TerminationSignal } from "../../types";
 import Description from "../Description";
 import NotFound from "../NotFound";
 import Grid from "../shared/layout/Grid";
@@ -15,6 +15,13 @@ import Updates from "./Updates";
 
 const POLLING_RATE = 10000;
 // let interval = -1;
+
+export const TERM_SIGNALS = [
+  TerminationSignal.SigTerm,
+  TerminationSignal.SigInt,
+  TerminationSignal.SigQuit,
+  TerminationSignal.SigHup,
+];
 
 const Deployment: Component<{}> = (p) => {
   const { user, user_id } = useUser();

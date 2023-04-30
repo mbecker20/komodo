@@ -21,6 +21,8 @@ import { useAppDimensions } from "../../../../state/DimensionProvider";
 import SimpleTabs from "../../../shared/tabs/SimpleTabs";
 import ExtraArgs from "./container/ExtraArgs";
 import WebhookUrl from "./container/WebhookUrl";
+import RedeployOnBuild from "./container/RedeployOnBuild";
+import TerminationSignals from "./container/TerminationSignals";
 
 const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
@@ -40,6 +42,7 @@ const Config: Component<{}> = () => {
                   <Grid class="config-items scroller" placeItems="start center">
                     <Image />
                     <DockerAccount />
+                    <TerminationSignals />
                     <Network />
                     <Restart />
                     <Env />
@@ -47,6 +50,7 @@ const Config: Component<{}> = () => {
                     <Mounts />
                     <ExtraArgs />
                     <PostImage />
+                    <RedeployOnBuild />
                     <Show when={isMobile()}>
                       <div style={{ height: "1rem" }} />
                     </Show>

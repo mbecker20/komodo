@@ -15,6 +15,7 @@ const ConfirmMenuButton: Component<{
   title: string;
   match: string;
   info?: JSX.Element;
+  configs?: JSX.Element;
   children: JSX.Element;
 }> = (p) => {
   const [show, toggleShow] = useToggle();
@@ -38,6 +39,7 @@ const ConfirmMenuButton: Component<{
           title={p.title}
           match={p.match}
           info={p.info}
+          configs={p.configs}
           onConfirm={p.onConfirm}
         />
       )}
@@ -52,6 +54,7 @@ const ConfirmMenuContent: Component<{
   match: string;
   onConfirm?: () => void;
   info?: JSX.Element;
+  configs?: JSX.Element;
 }> = (p) => {
   const [input, setInput] = createSignal("");
   return (
@@ -71,6 +74,7 @@ const ConfirmMenuContent: Component<{
         value={input()}
         autofocus
       />
+      {p.configs}
       <ConfirmButton
         class={p.class}
         style={{ width: "100%" }}

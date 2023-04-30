@@ -1,9 +1,7 @@
-use std::hash::Hash;
-
-use diff::{Diff, HashMapDiff, OptionDiff, VecDiff};
+use diff::{Diff, OptionDiff, VecDiff};
 
 use crate::{
-    deployment::{DockerRunArgsDiff, RestartModeDiff},
+    deployment::{DockerRunArgsDiff, RestartModeDiff, TerminationSignalDiff},
     TimelengthDiff,
 };
 
@@ -26,9 +24,9 @@ pub fn vec_diff_no_change<T: Diff>(vec_diff: &VecDiff<T>) -> bool {
     vec_diff.0.is_empty()
 }
 
-pub fn hashmap_diff_no_change<K: Hash + Eq, T: Diff>(hashmap_diff: &HashMapDiff<K, T>) -> bool {
-    hashmap_diff.altered.is_empty() && hashmap_diff.removed.is_empty()
-}
+// pub fn hashmap_diff_no_change<K: Hash + Eq, T: Diff>(hashmap_diff: &HashMapDiff<K, T>) -> bool {
+//     hashmap_diff.altered.is_empty() && hashmap_diff.removed.is_empty()
+// }
 
 pub fn docker_run_args_diff_no_change(dra: &DockerRunArgsDiff) -> bool {
     dra.image.is_none()
@@ -49,4 +47,8 @@ pub fn restart_mode_diff_no_change(restart_mode: &RestartModeDiff) -> bool {
 
 pub fn timelength_diff_no_change(timelength: &TimelengthDiff) -> bool {
     timelength == &TimelengthDiff::NoChange
+}
+
+pub fn termination_signal_diff_no_change(term_signal: &TerminationSignalDiff) -> bool {
+    term_signal == &TerminationSignalDiff::NoChange
 }
