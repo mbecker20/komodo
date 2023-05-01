@@ -7,6 +7,8 @@ import { TERM_SIGNALS } from "../../../Deployment";
 import { TerminationSignal } from "../../../../../types";
 import Input from "../../../../shared/Input";
 import Menu from "../../../../shared/menu/Menu";
+import Selector from "../../../../shared/menu/Selector";
+import { pushNotification } from "../../../../..";
 
 const TerminationSignals: Component<{}> = (p) => {
   const { deployment, setDeployment, userCanUpdate } = useConfig();
@@ -33,7 +35,7 @@ const TerminationSignals: Component<{}> = (p) => {
     <Grid class="config-item shadow">
       <Flex alignItems="center" justifyContent="space-between">
         <h1>termination signals</h1>
-        <Show when={userCanUpdate()}>
+        <Show when={userCanUpdate() && signals_to_add().length > 0}>
           <Menu
             show={menuOpen()}
             close={() => setMenuOpen(false)}
@@ -90,3 +92,65 @@ const TerminationSignals: Component<{}> = (p) => {
 };
 
 export default TerminationSignals;
+
+export const DefaultTerminationSignal: Component<{}> = () => {
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
+  const term_signal = () =>
+    deployment.termination_signal || TerminationSignal.SigTerm;
+  const selected = () => ({
+    signal: term_signal(),
+    label:
+      deployment.term_signal_labels?.find(
+        ({ signal }) => signal === term_signal()
+      )?.label || "",
+  });
+  return (
+    <Show when={deployment.term_signal_labels?.length || 0 > 0}>
+      <Flex
+        class="config-item shadow"
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <h1>default termination signal</h1>
+        <Selector
+          disabled={!userCanUpdate()}
+          targetClass="blue"
+          selected={selected()}
+          items={deployment.term_signal_labels || []}
+          onSelect={({ signal }) => setDeployment("termination_signal", signal)}
+          itemMap={({ signal }) => signal}
+        />
+      </Flex>
+    </Show>
+  );
+};
+
+export const DefaultTerminationTimeout: Component<{}> = () => {
+  const { deployment, setDeployment, userCanUpdate } = useConfig();
+  return (
+    <Flex
+      class="config-item shadow"
+      alignItems="center"
+      justifyContent="space-between"
+    >
+      <h1>termination timeout</h1>
+      <div style={{ position: "relative" }}>
+        <Input
+          disabled={!userCanUpdate()}
+          style={{ width: "10rem" }}
+          placeholder="10"
+          value={deployment.termination_timeout}
+          onConfirm={(value) => {
+            const val = Number(value);
+            if (val) {
+              setDeployment("termination_timeout", val);
+            } else {
+              pushNotification("bad", "timeout must be number");
+            }
+          }}
+        />
+        <div class="dimmed" style={{ position: "absolute", right: "1rem", top: "50%", transform: "translateY(-50%)" }}>seconds</div>
+      </div>
+    </Flex>
+  );
+};

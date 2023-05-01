@@ -22,7 +22,7 @@ import SimpleTabs from "../../../shared/tabs/SimpleTabs";
 import ExtraArgs from "./container/ExtraArgs";
 import WebhookUrl from "./container/WebhookUrl";
 import RedeployOnBuild from "./container/RedeployOnBuild";
-import TerminationSignals from "./container/TerminationSignals";
+import TerminationSignals, { DefaultTerminationSignal, DefaultTerminationTimeout } from "./termination/TerminationSignals";
 
 const Config: Component<{}> = () => {
   const { deployment, reset, save, userCanUpdate } = useConfig();
@@ -42,7 +42,6 @@ const Config: Component<{}> = () => {
                   <Grid class="config-items scroller" placeItems="start center">
                     <Image />
                     <DockerAccount />
-                    <TerminationSignals />
                     <Network />
                     <Restart />
                     <Env />
@@ -51,6 +50,19 @@ const Config: Component<{}> = () => {
                     <ExtraArgs />
                     <PostImage />
                     <RedeployOnBuild />
+                    <Show when={isMobile()}>
+                      <div style={{ height: "1rem" }} />
+                    </Show>
+                  </Grid>
+                ),
+              },
+              {
+                title: "termination",
+                element: () => (
+                  <Grid class="config-items" placeItems="start center" style={{ "margin-bottom": "" }}>
+                    <TerminationSignals />
+                    <DefaultTerminationSignal />
+                    <DefaultTerminationTimeout />
                     <Show when={isMobile()}>
                       <div style={{ height: "1rem" }} />
                     </Show>

@@ -106,6 +106,8 @@ export interface Deployment {
 	skip_secret_interp?: boolean;
 	docker_run_args: DockerRunArgs;
 	term_signal_labels?: TerminationSignalLabel[];
+	termination_signal?: TerminationSignal;
+	termination_timeout?: number;
 	build_id?: string;
 	redeploy_on_build?: boolean;
 	build_version?: Version;

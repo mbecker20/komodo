@@ -13,6 +13,10 @@ pub fn f32_diff_no_change(f32_diff: &f32) -> bool {
     *f32_diff == 0.0
 }
 
+pub fn i32_diff_no_change(i32_diff: &i32) -> bool {
+    *i32_diff == 0
+}
+
 pub fn option_diff_no_change<T: Diff>(option_diff: &OptionDiff<T>) -> bool
 where
     <T as Diff>::Repr: PartialEq,

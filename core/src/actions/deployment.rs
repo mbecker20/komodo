@@ -578,6 +578,9 @@ impl State {
 
         update.id = self.add_update(update.clone()).await?;
 
+        let stop_signal = stop_signal.unwrap_or(deployment.termination_signal).into();
+        let stop_time = stop_time.unwrap_or(deployment.termination_timeout).into();
+
         let deploy_log = match self
             .periphery
             .deploy(&server, &deployment, stop_signal, stop_time)
@@ -716,6 +719,9 @@ impl State {
         };
         update.id = self.add_update(update.clone()).await?;
 
+        let stop_signal = stop_signal.unwrap_or(deployment.termination_signal).into();
+        let stop_time = stop_time.unwrap_or(deployment.termination_timeout).into();
+
         let log = self
             .periphery
             .container_stop(&server, &deployment.name, stop_signal, stop_time)
@@ -791,6 +797,9 @@ impl State {
             ..Default::default()
         };
         update.id = self.add_update(update.clone()).await?;
+
+        let stop_signal = stop_signal.unwrap_or(deployment.termination_signal).into();
+        let stop_time = stop_time.unwrap_or(deployment.termination_timeout).into();
 
         let log = self
             .periphery

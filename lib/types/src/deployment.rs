@@ -46,10 +46,20 @@ pub struct Deployment {
     #[diff(attr(#[serde(skip_serializing_if = "docker_run_args_diff_no_change")]))]
     pub docker_run_args: DockerRunArgs,
 
-    #[serde(default)]
-    #[builder(default)]
+    #[serde(default = "default_term_signal_labels")]
+    #[builder(default = "vec![TerminationSignalLabel::default()]")]
     #[diff(attr(#[serde(skip_serializing_if = "vec_diff_no_change")]))]
     pub term_signal_labels: Vec<TerminationSignalLabel>,
+
+    #[serde(default)]
+    #[builder(default)]
+    #[diff(attr(#[serde(skip_serializing_if = "termination_signal_diff_no_change")]))]
+    pub termination_signal: TerminationSignal,
+
+    #[serde(default = "default_termination_timeout")]
+    #[builder(default = "10")]
+    #[diff(attr(#[serde(skip_serializing_if = "i32_diff_no_change")]))]
+    pub termination_timeout: i32,
 
     #[builder(default)]
     #[diff(attr(#[serde(skip_serializing_if = "option_diff_no_change")]))]
@@ -97,6 +107,14 @@ pub struct Deployment {
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub updated_at: String,
+}
+
+fn default_termination_timeout() -> i32 {
+    10
+}
+
+fn default_term_signal_labels() -> Vec<TerminationSignalLabel> {
+    vec![TerminationSignalLabel::default()]
 }
 
 #[typeshare]

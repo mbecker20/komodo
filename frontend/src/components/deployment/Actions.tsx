@@ -1,4 +1,12 @@
-import { Component, Match, Setter, Show, Switch, createSignal } from "solid-js";
+import {
+  Component,
+  Match,
+  Setter,
+  Show,
+  Signal,
+  Switch,
+  createSignal,
+} from "solid-js";
 import { client } from "../..";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
@@ -13,10 +21,12 @@ import { combineClasses } from "../../util/helpers";
 import { A, useParams } from "@solidjs/router";
 import {
   DockerContainerState,
+  Operation,
   PermissionLevel,
   ServerStatus,
   TerminationSignal,
   TerminationSignalLabel,
+  UpdateStatus,
 } from "../../types";
 import ConfirmMenuButton from "../shared/ConfirmMenuButton";
 import Selector from "../shared/menu/Selector";
@@ -164,18 +174,12 @@ const Build: Component = () => {
 };
 
 const Deploy: Component<{ redeploy?: boolean }> = (p) => {
-  // const { deployments } = useAppState();
   const params = useParams();
-  // const deployment = () => deployments.get(params.id)!;
   const actions = useActionStates();
   const { deployments } = useAppState();
   const deployment = () => deployments.get(params.id);
   const name = () => deployment()?.deployment.name;
-  const [termSignalLabel, setTermSignalLabel] =
-    createSignal<TerminationSignalLabel>({
-      signal: "default" as TerminationSignal,
-      label: "",
-    });
+  const [termSignalLabel, setTermSignalLabel] = useTermSignalLabel();
   return (
     <Show
       when={!actions.deploying}
@@ -235,11 +239,7 @@ const RemoveContainer = () => {
   const actions = useActionStates();
   const { deployments } = useAppState();
   const name = () => deployments.get(params.id)?.deployment.name;
-  const [termSignalLabel, setTermSignalLabel] =
-    createSignal<TerminationSignalLabel>({
-      signal: "default" as TerminationSignal,
-      label: "",
-    });
+  const [termSignalLabel, setTermSignalLabel] = useTermSignalLabel();
   return (
     <Show
       when={!actions.removing}
@@ -316,11 +316,7 @@ const Stop = () => {
   const actions = useActionStates();
   const { deployments } = useAppState();
   const name = () => deployments.get(params.id)?.deployment.name;
-  const [termSignalLabel, setTermSignalLabel] =
-    createSignal<TerminationSignalLabel>({
-      signal: "default" as TerminationSignal,
-      label: "",
-    });
+  const [termSignalLabel, setTermSignalLabel] = useTermSignalLabel();
   return (
     <Show
       when={!actions.stopping}
@@ -336,9 +332,7 @@ const Stop = () => {
             class="orange"
             onConfirm={() => {
               client.stop_container(params.id, {
-                stop_signal: ((termSignalLabel().signal as any) === "default"
-                  ? undefined
-                  : termSignalLabel().signal) as TerminationSignal,
+                stop_signal: termSignalLabel().signal,
               });
             }}
             title="stop container"
@@ -434,7 +428,7 @@ const TermSignalSelector: Component<{
     <Show
       when={
         deployment()?.state === DockerContainerState.Running &&
-        (deployment()?.deployment.term_signal_labels?.length || 0) > 0
+        (deployment()?.deployment.term_signal_labels?.length || 0) > 1
       }
     >
       <Flex
@@ -446,10 +440,7 @@ const TermSignalSelector: Component<{
         <Selector
           targetClass="blue"
           selected={p.termSignalLabel}
-          items={[
-            { signal: "default", label: "" },
-            ...(deployment()?.deployment.term_signal_labels || []),
-          ]}
+          items={deployment()?.deployment.term_signal_labels || []}
           itemMap={({ signal, label }) => (
             <Flex gap="0.5rem" alignItems="center">
               <div>{signal}</div>
@@ -458,14 +449,36 @@ const TermSignalSelector: Component<{
               </Show>
             </Flex>
           )}
-          onSelect={(signal) =>
-            p.setTermSignalLabel(signal as TerminationSignalLabel)
-          }
+          onSelect={(signal) => p.setTermSignalLabel(signal)}
           position="bottom right"
         />
       </Flex>
     </Show>
   );
 };
+
+function useTermSignalLabel(): Signal<TerminationSignalLabel> {
+  const params = useParams();
+  const { deployments, ws } = useAppState();
+  const deployment = () => deployments.get(params.id)?.deployment;
+  const term_signal = () =>
+    deployment()?.termination_signal || TerminationSignal.SigTerm;
+  const default_term_signal_label = () => ({
+    signal: term_signal(),
+    label:
+      deployment()?.term_signal_labels?.find(
+        ({ signal }) => signal === term_signal()
+      )?.label || "",
+  });
+  const [label, setLabel] = createSignal<TerminationSignalLabel>(
+    default_term_signal_label()
+  );
+  ws.subscribe([Operation.UpdateDeployment], (update) => {
+    if (update.status === UpdateStatus.Complete) {
+      setTimeout(() => setLabel(default_term_signal_label()), 100);
+    }
+  });
+  return [label, setLabel];
+}
 
 export default Actions;
