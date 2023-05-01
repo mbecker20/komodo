@@ -824,7 +824,7 @@ dependencies = [
  "jwt",
  "merge_config_files",
  "monitor_helpers",
- "monitor_types",
+ "monitor_types 0.3.1",
  "mungos",
  "periphery_client",
  "serde",
@@ -1061,7 +1061,7 @@ name = "db_client"
 version = "0.3.1"
 dependencies = [
  "anyhow",
- "monitor_types",
+ "monitor_types 0.3.1",
  "mungos",
 ]
 
@@ -1939,7 +1939,7 @@ dependencies = [
  "async_timing_util",
  "clap",
  "colored",
- "monitor_types",
+ "monitor_types 0.3.1",
  "rand",
  "run_command",
  "serde",
@@ -1956,7 +1956,7 @@ dependencies = [
  "anyhow",
  "envy",
  "futures-util",
- "monitor_types",
+ "monitor_types 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "reqwest",
  "serde",
  "serde_derive",
@@ -1972,7 +1972,7 @@ version = "0.3.1"
 dependencies = [
  "anyhow",
  "axum",
- "monitor_types",
+ "monitor_types 0.3.1",
  "rand",
  "serde",
  "serde_json",
@@ -1994,7 +1994,7 @@ dependencies = [
  "futures",
  "merge_config_files",
  "monitor_helpers",
- "monitor_types",
+ "monitor_types 0.3.1",
  "parse_csl",
  "run_command",
  "serde",
@@ -2010,6 +2010,25 @@ dependencies = [
 [[package]]
 name = "monitor_types"
 version = "0.3.1"
+dependencies = [
+ "anyhow",
+ "bollard",
+ "bson",
+ "chrono",
+ "derive_builder",
+ "diff-struct",
+ "serde",
+ "serde_derive",
+ "strum",
+ "strum_macros",
+ "typeshare",
+]
+
+[[package]]
+name = "monitor_types"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a29a1e5e5ee63971145352c6e1c5a899eb91a2c07479cd67ef0730ba1e6d24d3"
 dependencies = [
  "anyhow",
  "bollard",
@@ -2260,7 +2279,7 @@ version = "0.3.1"
 dependencies = [
  "anyhow",
  "futures-util",
- "monitor_types",
+ "monitor_types 0.3.1",
  "reqwest",
  "serde",
  "serde_json",
