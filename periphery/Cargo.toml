@@ -1,6 +1,6 @@
 [package]
 name = "monitor_periphery"
-version = "0.3.3"
+version = "0.3.4"
 edition = "2021"
 authors = ["MoghTech"]
 description = "monitor periphery binary"
@@ -15,7 +15,7 @@ path = "src/main.rs"
 [dependencies]
 helpers = { package = "monitor_helpers", path = "../lib/helpers" }
 types = { package = "monitor_types", path = "../lib/types" }
-run_command = { version = "0.0.5", features = ["async_tokio"] }
+run_command = { version = "0.0.6", features = ["async_tokio"] }
 async_timing_util = "0.1.14"
 tokio = { version = "1.26", features = ["full"] }
 axum = { version = "0.6", features = ["ws"] }

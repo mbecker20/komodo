@@ -64,7 +64,22 @@ pub async fn stop_container(
     time: Option<i32>,
 ) -> Log {
     let command = stop_container_command(container_name, signal, time);
-    run_monitor_command("docker stop", command).await
+    let log = run_monitor_command("docker stop", command).await;
+    if log.stderr.contains("unknown flag: --signal") {
+        let command = stop_container_command(container_name, None, time);
+        let mut log = run_monitor_command("docker stop", command).await;
+        log.stderr = format!(
+            "old docker version: unable to use --signal flag{}",
+            if log.stderr.len() > 0 {
+                format!("\n\n{}", log.stderr)
+            } else {
+                String::new()
+            }
+        );
+        log
+    } else {
+        log
+    }
 }
 
 pub async fn stop_and_remove_container(
@@ -74,7 +89,23 @@ pub async fn stop_and_remove_container(
 ) -> Log {
     let stop_command = stop_container_command(container_name, signal, time);
     let command = format!("{stop_command} && docker container rm {container_name}");
-    run_monitor_command("docker stop and remove", command).await
+    let log = run_monitor_command("docker stop and remove", command).await;
+    if log.stderr.contains("unknown flag: --signal") {
+        let stop_command = stop_container_command(container_name, None, time);
+        let command = format!("{stop_command} && docker container rm {container_name}");
+        let mut log = run_monitor_command("docker stop", command).await;
+        log.stderr = format!(
+            "old docker version: unable to use --signal flag{}",
+            if log.stderr.len() > 0 {
+                format!("\n\n{}", log.stderr)
+            } else {
+                String::new()
+            }
+        );
+        log
+    } else {
+        log
+    }
 }
 
 fn stop_container_command(
