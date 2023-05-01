@@ -22,6 +22,7 @@ type ResponseResult<T> = Result<T, (StatusCode, String)>;
 async fn main() -> anyhow::Result<()> {
     let (config, spa_router) = config::load();
 
+    println!("version: v{}", env!("CARGO_PKG_VERSION"));
     println!("starting monitor core on port {}...", config.port);
 
     let app = Router::new()
