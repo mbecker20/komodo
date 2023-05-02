@@ -218,6 +218,8 @@ export function useUsernames() {
   const load = async (userID: string) => {
     if (userID === "github") {
       set((s) => ({ ...s, [userID]: "github" }));
+    } else if (userID === "auto redeploy") {
+      set((s) => ({ ...s, [userID]: "auto redeploy" }));
     } else {
       const username = await client.get_username(userID);
       set((s) => ({ ...s, [userID]: username }));
