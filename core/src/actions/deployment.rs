@@ -5,9 +5,9 @@ use mungos::doc;
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
-    Deployment, DeploymentWithContainerState, DockerContainerState, Log, Operation,
-    PermissionLevel, ServerStatus, ServerWithStatus, TerminationSignal, Update, UpdateStatus,
-    UpdateTarget,
+    Deployment, DeploymentBuilder, DeploymentWithContainerState, DockerContainerState, Log,
+    Operation, PermissionLevel, ServerStatus, ServerWithStatus, TerminationSignal, Update,
+    UpdateStatus, UpdateTarget,
 };
 
 use crate::{
@@ -50,16 +50,18 @@ impl State {
         self.get_server_check_permissions(&server_id, user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
-        let deployment = Deployment {
-            name: to_monitor_name(name),
-            server_id,
-            permissions: [(user.id.clone(), PermissionLevel::Update)]
-                .into_iter()
-                .collect(),
-            created_at: start_ts.clone(),
-            updated_at: start_ts.clone(),
-            ..Default::default()
-        };
+
+        let mut deployment = DeploymentBuilder::default()
+            .name(to_monitor_name(name))
+            .server_id(server_id)
+            .build()
+            .context("failed to build deployment")?;
+        deployment.permissions = [(user.id.clone(), PermissionLevel::Update)]
+            .into_iter()
+            .collect();
+        deployment.created_at = start_ts.clone();
+        deployment.updated_at = start_ts.clone();
+        
         let deployment_id = self
             .db
             .deployments
