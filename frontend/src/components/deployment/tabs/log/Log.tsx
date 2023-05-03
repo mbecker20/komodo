@@ -6,6 +6,7 @@ import {
   onCleanup,
   Show,
 } from "solid-js";
+import Convert from "ansi-to-html";
 import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { DockerContainerState, Log as LogType } from "../../../../types";
@@ -21,6 +22,8 @@ import s from "./log.module.scss";
 const POLLING_RATE = 5000;
 
 let interval = -1;
+
+const convert = new Convert();
 
 const Log: Component<{
   log?: LogType;
@@ -60,9 +63,9 @@ const Log: Component<{
     if (deployment()?.state === DockerContainerState.NotDeployed) {
       return "not deployed";
     } else {
-      return (
+      return convert.toHtml(
         (p.error ? p.log?.stderr : p.log?.stdout) ||
-        `no${p.error ? " error" : ""} log`
+          `no${p.error ? " error" : ""} log`
       );
     }
   };
@@ -145,7 +148,7 @@ const Log: Component<{
               }
             }}
           >
-            <pre class={s.Log}>{log()}</pre>
+            <pre class={s.Log} innerHTML={log()} />
           </div>
           <Show when={buffer()}>
             <button
