@@ -2,7 +2,6 @@ import { Component, createResource, createSignal, Show } from "solid-js";
 import { useAppState } from "../../state/StateProvider";
 import { useUser } from "../../state/UserProvider";
 import {
-  combineClasses,
   deploymentHeaderStateClass,
   getId,
   readableVersion,
@@ -79,7 +78,7 @@ const Header: Component<{}> = (p) => {
     <>
       <Grid
         gap="0.5rem"
-        class={combineClasses("card shadow")}
+        class="card shadow"
         style={{
           position: "relative",
           cursor: isSemiMobile() ? "pointer" : undefined,
@@ -173,7 +172,7 @@ const Header: Component<{}> = (p) => {
               {server()?.server.name || "unknown"}
             </A>
             <div class={deploymentHeaderStateClass(deployment().state)}>
-              {deployment().state}
+              {deployment().state.replaceAll("_", " ")}
             </div>
           </Flex>
           <Show when={status()}>
