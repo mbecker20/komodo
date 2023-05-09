@@ -9,10 +9,15 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
-import { client } from "../../../..";
+import { client, pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { useUser } from "../../../../state/UserProvider";
-import { Server, Operation, PermissionLevel, ServerStatus } from "../../../../types";
+import {
+  Server,
+  Operation,
+  PermissionLevel,
+  ServerStatus,
+} from "../../../../types";
 import { getId } from "../../../../util/helpers";
 
 type ConfigServer = Server & { loaded: boolean; updated: boolean };
@@ -49,6 +54,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     client.get_server(params.id).then((server) => {
       set({
         ...server.server,
+        _id: { $oid: params.id } as any,
         loaded: true,
         updated: false,
       });
@@ -66,10 +72,15 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
   createEffect(loadNetworks);
 
   const save = () => {
-    client.update_server(server);
+    client
+      .update_server(server)
+      .catch((e) => {
+        console.error(e);
+        pushNotification("bad", "update server failed");
+      });
   };
 
-  let unsub = () => {}
+  let unsub = () => {};
   createEffect(() => {
     unsub();
     unsub = ws.subscribe([Operation.UpdateServer], (update) => {
@@ -94,7 +105,8 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   const userCanUpdate = () =>
     user().admin ||
-    servers.get(params.id)!.server.permissions![getId(user())] === PermissionLevel.Update;
+    servers.get(params.id)!.server.permissions![getId(user())] ===
+      PermissionLevel.Update;
 
   const state = {
     server,

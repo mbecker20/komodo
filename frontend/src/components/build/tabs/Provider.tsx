@@ -7,7 +7,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, SetStoreFunction } from "solid-js/store";
-import { client } from "../../..";
+import { client, pushNotification } from "../../..";
 import { useAppState } from "../../../state/StateProvider";
 import { useUser } from "../../../state/UserProvider";
 import { Build, Operation, PermissionLevel, ServerWithStatus } from "../../../types";
@@ -55,6 +55,7 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     client.get_build(params.id).then((build) => {
       set({
         ...build,
+        _id: { $oid: params.id } as any,
         repo: build.repo,
         branch: build.branch,
         pre_build: build.pre_build,
@@ -78,7 +79,13 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   const save = () => {
     setBuild("saving", true);
-    client.update_build(build)
+    client
+      .update_build(build)
+      .catch((e) => {
+        console.error(e);
+        pushNotification("bad", "update build failed");
+        setBuild("saving", false);
+      });
   };
 
   let update_unsub = () => {};

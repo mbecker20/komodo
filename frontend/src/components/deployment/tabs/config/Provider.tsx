@@ -62,6 +62,8 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
     // console.log("loading deployment");
     client.get_deployment(params.id).then((deployment) =>
       set({
+        ...deployment,
+        _id: { $oid: params.id } as any,
         name: deployment.deployment.name,
         server_id: deployment.deployment.server_id,
         permissions: deployment.deployment.permissions,
@@ -112,11 +114,13 @@ export const ConfigProvider: ParentComponent<{}> = (p) => {
 
   const save = () => {
     setDeployment("updating", true);
-    client.update_deployment(deployment).catch((e) => {
-      console.error(e);
-      pushNotification("bad", "update deployment failed");
-      setDeployment("updating", false);
-    });
+    client
+      .update_deployment(deployment)
+      .catch((e) => {
+        console.error(e);
+        pushNotification("bad", "update deployment failed");
+        setDeployment("updating", false);
+      });
   };
 
   let update_unsub = () => {};
