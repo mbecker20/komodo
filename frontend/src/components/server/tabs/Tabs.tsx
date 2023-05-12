@@ -9,6 +9,7 @@ import Config from "./config/Config";
 import { ConfigProvider } from "./config/Provider";
 import Info from "./Info";
 import Permissions from "./Permissions";
+import Images from "./Images";
 
 const ServerTabs: Component<{}> = (p) => {
   const { servers } = useAppState();
@@ -30,6 +31,10 @@ const ServerTabs: Component<{}> = (p) => {
               server()?.status === ServerStatus.Ok && {
                 title: "info",
                 element: () => <Info />
+              },
+              server()?.status === ServerStatus.Ok && {
+                title: "images",
+                element: () => <Images />
               },
               user().admin && {
                 title: "permissions",

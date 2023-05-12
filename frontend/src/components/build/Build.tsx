@@ -33,7 +33,7 @@ const Build: Component<{}> = (p) => {
       }
     });
   });
-  onCleanup(() => unsub);
+  onCleanup(() => unsub());
   const userCanUpdate = () =>
     user().admin ||
     build()?.permissions![user_id()] === PermissionLevel.Update;

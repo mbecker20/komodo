@@ -220,20 +220,39 @@ export class Client {
     return this.post(`/api/deployment/${deployment_id}/pull`);
   }
 
-  deploy_container(deployment_id: string, query?: StopContainerQuery): Promise<Update> {
-    return this.post(`/api/deployment/${deployment_id}/deploy${generateQuery(query as any)}`);
+  deploy_container(
+    deployment_id: string,
+    query?: StopContainerQuery
+  ): Promise<Update> {
+    return this.post(
+      `/api/deployment/${deployment_id}/deploy${generateQuery(query as any)}`
+    );
   }
 
   start_container(deployment_id: string): Promise<Update> {
     return this.post(`/api/deployment/${deployment_id}/start_container`);
   }
 
-  stop_container(deployment_id: string, query?: StopContainerQuery): Promise<Update> {
-    return this.post(`/api/deployment/${deployment_id}/stop_container${generateQuery(query as any)}`);
+  stop_container(
+    deployment_id: string,
+    query?: StopContainerQuery
+  ): Promise<Update> {
+    return this.post(
+      `/api/deployment/${deployment_id}/stop_container${generateQuery(
+        query as any
+      )}`
+    );
   }
 
-  remove_container(deployment_id: string, query?: StopContainerQuery): Promise<Update> {
-    return this.post(`/api/deployment/${deployment_id}/remove_container${generateQuery(query as any)}`);
+  remove_container(
+    deployment_id: string,
+    query?: StopContainerQuery
+  ): Promise<Update> {
+    return this.post(
+      `/api/deployment/${deployment_id}/remove_container${generateQuery(
+        query as any
+      )}`
+    );
   }
 
   async download_container_log(
@@ -367,7 +386,15 @@ export class Client {
     return this.post(`/api/server/${server_id}/networks/prune`);
   }
 
-  get_docker_images(server_id: string): Promise<any[]> {
+  get_docker_images(server_id: string): Promise<
+    {
+      RepoTags: string[];
+      RepoDigests: string[];
+      Size: number;
+      Created: number;
+      Id: string;
+    }[]
+  > {
     return this.get(`/api/server/${server_id}/images`);
   }
 

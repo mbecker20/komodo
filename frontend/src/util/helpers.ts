@@ -251,3 +251,33 @@ export function readableUserType(user: User) {
     return "local";
   }
 }
+
+const KB = 1024;
+const MB = 1024 ** 2;
+const GB = 1024 ** 3;
+
+export function readableBytes(bytes: number) {
+  if (bytes > GB) {
+    return `${(bytes / GB).toFixed(1)} GiB`;
+  } else if (bytes > MB) {
+    return `${(bytes / MB).toFixed(1)} MiB`;
+  } else {
+    return `${(bytes / KB).toFixed(1)} KiB`;
+  }
+}
+
+export function readableImageId(id: string) {
+  return id.replaceAll("sha256:", "").slice(0, 12);
+}
+
+export function readableImageNameTag(repoTags?: string[], repoDigests?: string[]): [string, string] {
+  if (repoTags && repoTags.length > 0) {
+    const [name, tag] = repoTags[0].split(":");
+    return [name, tag];
+  } else if (repoDigests && repoDigests.length > 0) {
+    const [name] = repoDigests[0].split("@");
+    return [name, "none"];
+  } else {
+    return ["none", "none"]
+  }
+}
