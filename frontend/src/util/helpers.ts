@@ -1,17 +1,12 @@
 import {
-  Build,
-  Deployment,
-  DeploymentWithContainerState,
   DockerContainerState,
   EnvironmentVar,
-  Server,
   ServerStatus,
-  ServerWithStatus,
   Timelength,
-  UpdateTarget,
   User,
   Version,
 } from "../types";
+import sanitizeHtml from "sanitize-html";
 
 export function combineClasses(...classes: (string | false | undefined)[]) {
   return classes.filter((c) => (c ? true : false)).join(" ");
@@ -22,6 +17,15 @@ export function inPx(num: number) {
 }
 
 export type QueryObject = Record<string, string | number | boolean | undefined>;
+
+export function sanitizeLog(log: string) {
+  return sanitizeHtml(log, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.filter(
+      (tag) => tag !== "script"
+    ),
+    allowedAttributes: sanitizeHtml.defaults.allowedAttributes,
+  });
+}
 
 export function generateQuery(query?: QueryObject) {
   if (query) {

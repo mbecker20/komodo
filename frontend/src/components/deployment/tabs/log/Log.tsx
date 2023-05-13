@@ -10,7 +10,7 @@ import Convert from "ansi-to-html";
 import { pushNotification } from "../../../..";
 import { useAppState } from "../../../../state/StateProvider";
 import { DockerContainerState, Log as LogType } from "../../../../types";
-import { combineClasses } from "../../../../util/helpers";
+import { combineClasses, sanitizeLog } from "../../../../util/helpers";
 import { useBuffer, useLocalStorageToggle } from "../../../../util/hooks";
 import Icon from "../../../shared/Icon";
 import Flex from "../../../shared/layout/Flex";
@@ -64,11 +64,10 @@ const Log: Component<{
       return "not deployed";
     } else {
       const log = p.error ? p.log?.stderr : p.log?.stdout;
-      // const sanitized = log && santize(log);
-      return log ? convert.toHtml(log) : `no${p.error ? " error" : ""} log`;
+      const sanitized = log && sanitizeLog(log);
+      return sanitized ? convert.toHtml(sanitized) : `no${p.error ? " error" : ""} log`;
     }
   };
-  createEffect(() => console.log(log()));
   const buffer = useBuffer(scrolled, 250);
   const [poll, togglePoll] = useLocalStorageToggle(
     "deployment-log-polling",
