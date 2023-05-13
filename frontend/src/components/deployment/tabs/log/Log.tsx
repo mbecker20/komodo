@@ -16,7 +16,6 @@ import Icon from "../../../shared/Icon";
 import Flex from "../../../shared/layout/Flex";
 import Grid from "../../../shared/layout/Grid";
 import Selector from "../../../shared/menu/Selector";
-import { useConfig } from "../config/Provider";
 import s from "./log.module.scss";
 
 const POLLING_RATE = 5000;
@@ -34,7 +33,6 @@ const Log: Component<{
 }> = (p) => {
   const { deployments } = useAppState();
   const params = useParams();
-  const { userCanUpdate } = useConfig();
   const deployment = () => deployments.get(params.id);
   let ref: HTMLDivElement | undefined;
   let ignore = false;
@@ -63,10 +61,9 @@ const Log: Component<{
     if (deployment()?.state === DockerContainerState.NotDeployed) {
       return "not deployed";
     } else {
-      return convert.toHtml(
-        (p.error ? p.log?.stderr : p.log?.stdout) ||
-          `no${p.error ? " error" : ""} log`
-      );
+      const log = p.error ? p.log?.stderr : p.log?.stdout;
+      // const sanitized = log ? 
+      return log ? convert.toHtml(log) : `no${p.error ? " error" : ""} log`;
     }
   };
   const buffer = useBuffer(scrolled, 250);
