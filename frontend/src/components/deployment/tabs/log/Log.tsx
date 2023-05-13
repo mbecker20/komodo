@@ -57,15 +57,18 @@ const Log: Component<{
       }, 1500);
     }
   });
+  /// the return of this closure is used as the innerHTML of the <pre /> element
+  /// need to make sure this can't be used to inject some script into the page
   const log = () => {
     if (deployment()?.state === DockerContainerState.NotDeployed) {
       return "not deployed";
     } else {
       const log = p.error ? p.log?.stderr : p.log?.stdout;
-      // const sanitized = log ? 
+      // const sanitized = log && santize(log);
       return log ? convert.toHtml(log) : `no${p.error ? " error" : ""} log`;
     }
   };
+  createEffect(() => console.log(log()));
   const buffer = useBuffer(scrolled, 250);
   const [poll, togglePoll] = useLocalStorageToggle(
     "deployment-log-polling",
