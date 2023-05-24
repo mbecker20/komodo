@@ -2,8 +2,8 @@
 name = "monitor_periphery"
 version = "0.3.4"
 edition = "2021"
-authors = ["MoghTech"]
-description = "monitor periphery binary"
+authors = ["mbecker20 <becker.maxh@gmail.com>"]
+description = "monitor periphery client"
 license = "GPL-3.0-or-later"
 
 [[bin]]

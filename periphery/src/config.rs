@@ -11,8 +11,7 @@ use types::PeripheryConfig;
 use crate::{HomeDirExtension, PeripheryConfigExtension};
 
 #[derive(Parser)]
-#[command(author = "mbecker20 <becker.maxh@gmail.com>")]
-#[command(about = "monitor periphery client")]
+#[command(author, about)]
 pub struct Args {
     /// Run this program as a system daemon
     #[arg(short, long)]
