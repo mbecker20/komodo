@@ -6,9 +6,9 @@ use axum::{
 };
 use futures_util::{SinkExt, StreamExt};
 use helpers::handle_anyhow_error;
-use mungos::Deserialize;
+use serde::Deserialize;
 use tokio::select;
-use tokio_tungstenite::tungstenite::Message;
+use tokio_tungstenite::tungstenite::Message as TungsteniteMessage;
 use tokio_util::sync::CancellationToken;
 use types::{traits::Permissioned, PermissionLevel, SystemStatsQuery};
 
@@ -67,7 +67,7 @@ pub async fn ws_handler(
                     },
                     stats = stats_recv.next() => stats,
                 };
-                if let Some(Ok(Message::Text(msg))) = stats {
+                if let Some(Ok(TungsteniteMessage::Text(msg))) = stats {
                     let _ = ws_sender.send(AxumMessage::Text(msg)).await;
                 } else {
                     let _ = stats_recv.close(None).await;

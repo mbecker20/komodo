@@ -1,7 +1,8 @@
 use anyhow::{anyhow, Context};
 use axum::{routing::post, Extension, Json, Router};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize, Document, Serialize};
+use mungos::mongodb::bson::{doc, Document};
+use serde::{Deserialize, Serialize};
 use types::{
     monitor_timestamp, Build, Deployment, Group, Log, Operation, PermissionLevel,
     PermissionsTarget, Procedure, Server, Update, UpdateStatus, UpdateTarget,

@@ -75,6 +75,7 @@ pub enum UpdateTarget {
     Server(String),
     Procedure(String),
     Group(String),
+    Command(String),
 }
 
 impl Default for UpdateTarget {

@@ -1,6 +1,9 @@
 use anyhow::Context;
 use mungos::{Collection, Mungos};
-use types::{Action, Build, Deployment, Group, Procedure, Server, SystemStatsRecord, Update, User};
+use types::{
+    Action, Build, Deployment, Group, PeripheryCommand, Procedure, Server, SystemStatsRecord,
+    Update, User,
+};
 
 pub async fn users_collection(mungos: &Mungos, db_name: &str) -> anyhow::Result<Collection<User>> {
     let coll = mungos.collection(db_name, "users");
@@ -131,5 +134,19 @@ pub async fn server_stats_collection(
     coll.create_index("ts")
         .await
         .context("failed at creating ts index")?;
+    Ok(coll)
+}
+
+pub async fn commands_collection(
+    mungos: &Mungos,
+    db_name: &str,
+) -> anyhow::Result<Collection<PeripheryCommand>> {
+    let coll = mungos.collection(db_name, "commands");
+    coll.create_unique_index("name")
+        .await
+        .context("failed at creating name index")?;
+    coll.create_index("server_id")
+        .await
+        .context("failed at creating server_id index")?;
     Ok(coll)
 }

@@ -11,20 +11,8 @@ use types::PeripheryConfig;
 use crate::{HomeDirExtension, PeripheryConfigExtension};
 
 #[derive(Parser)]
-#[command(author, about)]
+#[command(author, about, version)]
 pub struct Args {
-    /// Run this program as a system daemon
-    #[arg(short, long)]
-    pub daemon: bool,
-
-    /// Sets destination file of periphery stdout logs
-    #[arg(long, default_value = "~/.monitor/periphery.log.out")]
-    pub stdout: String,
-
-    /// Sets destination file of periphery stderr logs
-    #[arg(long, default_value = "~/.monitor/periphery.log.err")]
-    pub stderr: String,
-
     /// Sets the path of a config file or directory to use. can use multiple times
     #[arg(short, long)]
     pub config_path: Option<Vec<String>>,
@@ -33,14 +21,18 @@ pub struct Args {
     #[arg(long)]
     pub config_keyword: Option<Vec<String>>,
 
-    #[arg(short, long)]
+    /// Merges nested configs, eg. secrets, docker_accounts, github_accounts
+    #[arg(long)]
     pub merge_nested_config: bool,
 
+    /// Extends config arrays, eg. allowed_ips, passkeys
+    #[arg(long)]
+    pub extend_config_arrays: bool,
+
+    /// Sets the periphery home directory to use instead of $HOME
+    /// ~ will be replaced with this directory
     #[arg(long)]
     pub home_dir: Option<String>,
-
-    #[arg(short, long)]
-    version: bool,
 }
 
 #[derive(Deserialize)]
@@ -51,14 +43,10 @@ struct Env {
     config_keywords: String,
 }
 
-pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
+pub fn load() -> (u16, PeripheryConfigExtension, HomeDirExtension) {
     dotenv().ok();
     let env: Env = envy::from_env().expect("failed to parse env");
     let args = Args::parse();
-    if args.version {
-        println!("v{}", env!("CARGO_PKG_VERSION"));
-        std::process::exit(0)
-    }
     let home_dir = get_home_dir(&args.home_dir);
     let config_paths = args
         .config_path
@@ -82,20 +70,19 @@ pub fn load() -> (Args, u16, PeripheryConfigExtension, HomeDirExtension) {
         config_paths.clone(),
         match_keywords,
         args.merge_nested_config,
-        args.merge_nested_config,
+        args.extend_config_arrays,
     )
     .expect("failed at parsing config");
     let _ = std::fs::create_dir(&config.repo_dir);
-    print_startup_log(config_paths, &args, &config);
+    print_startup_log(config_paths, &config);
     (
-        args,
         config.port,
         Extension(Arc::new(config)),
         Extension(Arc::new(home_dir)),
     )
 }
 
-fn print_startup_log(config_paths: Vec<String>, args: &Args, config: &PeripheryConfig) {
+fn print_startup_log(config_paths: Vec<String>, config: &PeripheryConfig) {
     println!("\nconfig paths: {config_paths:?}");
     let mut config_for_print = config.clone();
     config_for_print.github_accounts = config_for_print
@@ -119,9 +106,6 @@ fn print_startup_log(config_paths: Vec<String>, args: &Args, config: &PeripheryC
         .map(|_| "<SECRET>".to_string())
         .collect();
     println!("{config_for_print:#?}");
-    if args.daemon {
-        println!("daemon mode enabled");
-    }
     println!("starting montior periphery on port {}\n", config.port);
 }
 

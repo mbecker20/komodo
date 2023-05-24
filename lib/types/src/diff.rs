@@ -2,7 +2,7 @@ use diff::{Diff, OptionDiff, VecDiff};
 
 use crate::{
     deployment::{DockerRunArgsDiff, RestartModeDiff, TerminationSignalDiff},
-    TimelengthDiff,
+    CommandDiff, TimelengthDiff,
 };
 
 pub fn f64_diff_no_change(f64_diff: &f64) -> bool {
@@ -55,4 +55,8 @@ pub fn timelength_diff_no_change(timelength: &TimelengthDiff) -> bool {
 
 pub fn termination_signal_diff_no_change(term_signal: &TerminationSignalDiff) -> bool {
     term_signal == &TerminationSignalDiff::NoChange
+}
+
+pub fn command_diff_no_change(command: &CommandDiff) -> bool {
+    command.command.is_none() && command.path.is_none()
 }

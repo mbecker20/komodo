@@ -12,7 +12,4 @@ license = "GPL-3.0-or-later"
 types = { package = "monitor_types", path = "../types" }
 anyhow = "1.0"
 axum = "0.6"
-serde = "1.0"
-serde_json = "1.0"
-toml = "0.7"
 rand = "0.8"

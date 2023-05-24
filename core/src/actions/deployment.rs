@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::{all_logs_success, to_monitor_name};
-use mungos::doc;
+use mungos::mongodb::bson::doc;
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},
@@ -61,7 +61,7 @@ impl State {
             .collect();
         deployment.created_at = start_ts.clone();
         deployment.updated_at = start_ts.clone();
-        
+
         let deployment_id = self
             .db
             .deployments
@@ -490,19 +490,18 @@ impl State {
         };
         update.id = self.add_update(update.clone()).await?;
 
-        update.success = match self.periphery.clone_repo(&server, &deployment).await {
+        match self.periphery.clone_repo(&server, &deployment).await {
             Ok(clone_logs) => {
                 update.logs.extend(clone_logs);
-                true
             }
             Err(e) => {
                 update
                     .logs
                     .push(Log::error("clone repo", format!("{e:#?}")));
-                false
             }
         };
 
+        update.success = all_logs_success(&update.logs);
         update.status = UpdateStatus::Complete;
         update.end_ts = Some(monitor_timestamp());
 

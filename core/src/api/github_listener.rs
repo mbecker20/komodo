@@ -4,7 +4,7 @@ use axum_oauth2::random_duration;
 use helpers::handle_anyhow_error;
 use hex::ToHex;
 use hmac::{Hmac, Mac};
-use mungos::Deserialize;
+use serde::Deserialize;
 use sha2::Sha256;
 use types::GITHUB_WEBHOOK_USER_ID;
 

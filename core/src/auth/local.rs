@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use axum::{extract::Json, routing::post, Extension, Router};
 use helpers::handle_anyhow_error;
-use mungos::doc;
+use mungos::mongodb::bson::doc;
 use types::{monitor_timestamp, User, UserCredentials};
 
 use crate::state::StateExtension;

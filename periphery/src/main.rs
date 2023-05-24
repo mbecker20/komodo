@@ -1,10 +1,9 @@
 // #![allow(unused)]
 
-use std::{fs::File, net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc};
 
 use ::helpers::get_socket_addr;
 use axum::Extension;
-use daemonize::Daemonize;
 use types::PeripheryConfig;
 
 mod api;
@@ -15,19 +14,7 @@ type PeripheryConfigExtension = Extension<Arc<PeripheryConfig>>;
 type HomeDirExtension = Extension<Arc<String>>;
 
 fn main() -> anyhow::Result<()> {
-    let (args, port, config, home_dir) = config::load();
-
-    if args.daemon {
-        let stdout = File::create(args.stdout.replace("~", &home_dir))
-            .expect("failed to create stdout log file");
-        let stderr = File::create(args.stderr.replace("~", &home_dir))
-            .expect("failed to create stderr log file");
-        let daemon = Daemonize::new().stdout(stdout).stderr(stderr);
-        match daemon.start() {
-            Ok(_) => println!("monitor periphery"),
-            Err(e) => eprintln!("Error, {}", e),
-        }
-    }
+    let (port, config, home_dir) = config::load();
 
     run_periphery_server(port, config, home_dir)?;
 

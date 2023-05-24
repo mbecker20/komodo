@@ -26,17 +26,18 @@ async fn main() -> anyhow::Result<()> {
     let term_signal = immediate_term_handle()?;
 
     let app = tokio::spawn(async move {
-        let (config, spa_router) = config::load();
+        let (config, spa_router, index_html_service) = config::load();
 
         println!("starting monitor core on port {}...", config.port);
 
         let app = Router::new()
-            .merge(spa_router)
             .nest("/api", api::router())
             .nest("/auth", auth::router(&config))
             .nest("/ws", ws::router())
             .layer(JwtClient::extension(&config))
             .layer(State::extension(config.clone()).await)
+            .merge(spa_router)
+            .fallback_service(index_html_service)
             .layer(
                 CorsLayer::new()
                     .allow_origin(Any)

@@ -9,7 +9,7 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use types::CoreConfig;
 use typeshare::typeshare;
 

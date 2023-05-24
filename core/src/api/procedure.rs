@@ -5,7 +5,8 @@ use axum::{
     Extension, Json, Router,
 };
 use helpers::handle_anyhow_error;
-use mungos::{Deserialize, Document, Serialize};
+use mungos::mongodb::bson::Document;
+use serde::{Deserialize, Serialize};
 use types::{traits::Permissioned, PermissionLevel, Procedure};
 use typeshare::typeshare;
 

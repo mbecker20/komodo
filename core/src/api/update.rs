@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use axum::{extract::Query, routing::get, Extension, Json, Router};
 use helpers::handle_anyhow_error;
-use mungos::{doc, to_bson};
+use mungos::mongodb::bson::{doc, to_bson};
 use serde_json::Value;
 use types::{PermissionLevel, Update, UpdateTarget};
 
@@ -90,6 +90,10 @@ impl State {
                     .map(|_| ()),
                 UpdateTarget::Group(id) => self
                     .get_group_check_permissions(id, user, PermissionLevel::Read)
+                    .await
+                    .map(|_| ()),
+                UpdateTarget::Command(id) => self
+                    .get_command_check_permissions(id, user, PermissionLevel::Read)
                     .await
                     .map(|_| ()),
             }

@@ -4,6 +4,7 @@ use types::Update;
 use crate::state::State;
 
 mod build;
+mod command;
 mod deployment;
 mod group;
 mod procedure;

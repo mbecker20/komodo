@@ -2,7 +2,11 @@ use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{routing::post, Extension, Json, Router};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize, Document, Update};
+use mungos::{
+    mongodb::bson::{doc, Document},
+    Update,
+};
+use serde::Deserialize;
 use types::unix_from_monitor_ts;
 
 use crate::state::StateExtension;

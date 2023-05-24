@@ -140,6 +140,12 @@ async fn user_can_see_update(
                 .await?;
             (permissions, "group")
         }
+        UpdateTarget::Command(command_id) => {
+            let permissions = db_client
+                .get_user_permission_on_command(user_id, command_id)
+                .await?;
+            (permissions, "command")
+        }
         UpdateTarget::System => {
             return Err(anyhow!("user not admin, can't recieve system updates"))
         }

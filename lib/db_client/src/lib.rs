@@ -1,13 +1,13 @@
 use anyhow::{anyhow, Context};
 use collections::{
-    actions_collection, builds_collection, deployments_collection, groups_collection,
-    procedures_collection, server_stats_collection, servers_collection, updates_collection,
-    users_collection,
+    actions_collection, builds_collection, commands_collection, deployments_collection,
+    groups_collection, procedures_collection, server_stats_collection, servers_collection,
+    updates_collection, users_collection,
 };
 use mungos::{Collection, Mungos};
 use types::{
-    Action, Build, Deployment, Group, MongoConfig, PermissionLevel, Procedure, Server,
-    SystemStatsRecord, Update, User,
+    Action, Build, Deployment, Group, MongoConfig, PeripheryCommand, PermissionLevel, Procedure,
+    Server, SystemStatsRecord, Update, User,
 };
 
 mod collections;
@@ -20,6 +20,7 @@ pub struct DbClient {
     pub procedures: Collection<Procedure>,
     pub actions: Collection<Action>,
     pub groups: Collection<Group>,
+    pub commands: Collection<PeripheryCommand>,
     pub updates: Collection<Update>,
     pub stats: Collection<SystemStatsRecord>,
 }
@@ -61,6 +62,9 @@ impl DbClient {
             stats: server_stats_collection(&mungos, db_name)
                 .await
                 .expect("failed to make stats collection"),
+            commands: commands_collection(&mungos, db_name)
+                .await
+                .expect("failed to make commands collection"),
         }
     }
 
@@ -191,6 +195,30 @@ impl DbClient {
     ) -> anyhow::Result<PermissionLevel> {
         let permissions = *self
             .get_group(group_id)
+            .await?
+            .permissions
+            .get(user_id)
+            .unwrap_or_default();
+        Ok(permissions)
+    }
+
+    pub async fn get_command(&self, command_id: &str) -> anyhow::Result<PeripheryCommand> {
+        let command = self
+            .commands
+            .find_one_by_id(command_id)
+            .await
+            .context(format!("failed at mongo query for command {command_id}"))?
+            .ok_or(anyhow!("command at {command_id} doesn't exist"))?;
+        Ok(command)
+    }
+
+    pub async fn get_user_permission_on_command(
+        &self,
+        user_id: &str,
+        command_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let permissions = *self
+            .get_command(command_id)
             .await?
             .permissions
             .get(user_id)

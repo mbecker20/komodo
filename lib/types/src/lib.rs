@@ -17,6 +17,7 @@ mod config;
 mod deployment;
 mod diff;
 mod group;
+mod periphery_command;
 mod procedure;
 mod server;
 mod update;
@@ -27,6 +28,7 @@ pub use build::*;
 pub use config::*;
 pub use deployment::*;
 pub use group::*;
+pub use periphery_command::*;
 pub use procedure::*;
 pub use server::*;
 pub use update::*;
@@ -49,7 +51,7 @@ pub struct CloneArgs {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Diff)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub struct Command {
     #[serde(default)]
@@ -124,6 +126,12 @@ pub enum Operation {
     CreateProcedure,
     UpdateProcedure,
     DeleteProcedure,
+
+    // command
+    CreateCommand,
+    UpdateCommand,
+    DeleteCommand,
+    RunCommand,
 
     // group
     CreateGroup,

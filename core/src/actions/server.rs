@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use diff::Diff;
 use futures_util::future::join_all;
-use mungos::doc;
+use mungos::mongodb::bson::doc;
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},

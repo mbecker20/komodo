@@ -12,7 +12,7 @@ license = "GPL-3.0-or-later"
 monitor_types = "0.3.4"
 # monitor_types = { path = "../types" }
 reqwest = { version = "0.11", features = ["json"] }
-tokio-tungstenite = { version = "0.18", features=["native-tls"] }
+tokio-tungstenite = { version = "0.19", features=["native-tls"] }
 tokio = { version = "1.25", features = ["full"] }
 tokio-util = "0.7"
 anyhow = "1.0"

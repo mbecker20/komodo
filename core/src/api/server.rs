@@ -8,7 +8,11 @@ use axum::{
 };
 use futures_util::{future::join_all, SinkExt, StreamExt};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize, Document, FindOptions};
+use mungos::mongodb::{
+    bson::{doc, Document},
+    options::FindOptions,
+};
+use serde::Deserialize;
 use tokio::select;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_util::sync::CancellationToken;

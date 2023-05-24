@@ -9,7 +9,8 @@ use axum::{
 };
 use futures_util::Future;
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize};
+use mungos::mongodb::bson::doc;
+use serde::Deserialize;
 use types::{PermissionLevel, UpdateTarget, User};
 use typeshare::typeshare;
 
@@ -20,15 +21,16 @@ use crate::{
     ResponseResult,
 };
 
-pub mod build;
-pub mod deployment;
+mod build;
+mod command;
+mod deployment;
 mod github_listener;
-pub mod group;
-pub mod permissions;
-pub mod procedure;
-pub mod secret;
-pub mod server;
-pub mod update;
+mod group;
+mod permissions;
+mod procedure;
+mod secret;
+mod server;
+mod update;
 
 #[typeshare]
 #[derive(Deserialize)]
@@ -94,6 +96,7 @@ pub fn router() -> Router {
                 .nest("/build", build::router())
                 .nest("/deployment", deployment::router())
                 .nest("/server", server::router())
+                .nest("/command", command::router())
                 .nest("/procedure", procedure::router())
                 .nest("/group", group::router())
                 .nest("/update", update::router())

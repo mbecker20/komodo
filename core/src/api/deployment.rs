@@ -8,7 +8,11 @@ use axum::{
 };
 use futures_util::future::join_all;
 use helpers::handle_anyhow_error;
-use mungos::{doc, options::FindOneOptions, Deserialize, Document, Serialize};
+use mungos::mongodb::{
+    bson::{doc, Document},
+    options::FindOneOptions,
+};
+use serde::{Deserialize, Serialize};
 use types::{
     traits::Permissioned, Deployment, DeploymentActionState, DeploymentWithContainerState,
     DockerContainerState, DockerContainerStats, Log, Operation, PermissionLevel, Server,

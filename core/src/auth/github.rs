@@ -4,7 +4,8 @@ use anyhow::{anyhow, Context};
 use axum::{extract::Query, response::Redirect, routing::get, Extension, Router};
 use axum_oauth2::github::{GithubOauthClient, GithubOauthExtension};
 use helpers::handle_anyhow_error;
-use mungos::{doc, Deserialize};
+use mungos::mongodb::bson::doc;
+use serde::Deserialize;
 use types::{monitor_timestamp, CoreConfig, User};
 
 use crate::{response, state::StateExtension};

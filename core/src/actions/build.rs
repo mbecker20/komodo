@@ -5,7 +5,7 @@ use aws_sdk_ec2::Client;
 use diff::Diff;
 use futures_util::future::join_all;
 use helpers::{all_logs_success, to_monitor_name};
-use mungos::{doc, to_bson};
+use mungos::mongodb::bson::{doc, to_bson};
 use types::{
     monitor_timestamp,
     traits::{Busy, Permissioned},

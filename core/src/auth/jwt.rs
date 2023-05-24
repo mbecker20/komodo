@@ -9,7 +9,7 @@ use axum::{body::Body, http::Request, Extension};
 use axum_oauth2::random_string;
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
-use mungos::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use types::{CoreConfig, User};
 

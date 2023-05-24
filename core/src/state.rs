@@ -4,10 +4,12 @@ use async_timing_util::{unix_timestamp_ms, wait_until_timelength, Timelength, ON
 use axum::Extension;
 use db::DbClient;
 use futures_util::future::join_all;
-use mungos::doc;
+use mungos::mongodb::bson::doc;
 use periphery::PeripheryClient;
 use tokio::sync::Mutex;
-use types::{BuildActionState, CoreConfig, DeploymentActionState, ServerActionState};
+use types::{
+    BuildActionState, CommandActionState, CoreConfig, DeploymentActionState, ServerActionState,
+};
 
 use crate::{monitoring::AlertStatus, ws::update::UpdateWsChannel};
 
@@ -24,6 +26,7 @@ pub struct State {
     pub build_action_states: ActionStateMap<BuildActionState>,
     pub deployment_action_states: ActionStateMap<DeploymentActionState>,
     pub server_action_states: ActionStateMap<ServerActionState>,
+    pub command_action_states: ActionStateMap<CommandActionState>,
     pub server_alert_status: Mutex<HashMap<String, AlertStatus>>, // (server_id, AlertStatus)
 }
 
@@ -38,6 +41,7 @@ impl State {
             build_action_states: Default::default(),
             deployment_action_states: Default::default(),
             server_action_states: Default::default(),
+            command_action_states: Default::default(),
             server_alert_status: Default::default(),
         };
         let state = Arc::new(state);

@@ -1,6 +1,6 @@
 use crate::{
-    Build, BuildActionState, CloneArgs, Deployment, DeploymentActionState, Group, PermissionLevel,
-    PermissionsMap, Procedure, Server, ServerActionState,
+    Build, BuildActionState, CloneArgs, CommandActionState, Deployment, DeploymentActionState,
+    Group, PeripheryCommand, PermissionLevel, PermissionsMap, Procedure, Server, ServerActionState,
 };
 
 pub trait Permissioned {
@@ -41,6 +41,12 @@ impl Permissioned for Group {
     }
 }
 
+impl Permissioned for PeripheryCommand {
+    fn permissions_map(&self) -> &PermissionsMap {
+        &self.permissions
+    }
+}
+
 pub trait Busy {
     fn busy(&self) -> bool;
 }
@@ -67,6 +73,12 @@ impl Busy for DeploymentActionState {
 impl Busy for BuildActionState {
     fn busy(&self) -> bool {
         self.building || self.updating
+    }
+}
+
+impl Busy for CommandActionState {
+    fn busy(&self) -> bool {
+        self.running
     }
 }
 
