@@ -142,7 +142,7 @@ export const DefaultTerminationTimeout: Component<{}> = () => {
           value={deployment.termination_timeout}
           onConfirm={(value) => {
             const val = Number(value);
-            if (val) {
+            if (!isNaN(val)) {
               setDeployment("termination_timeout", val);
             } else {
               pushNotification("bad", "timeout must be number");

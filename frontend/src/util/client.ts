@@ -45,7 +45,6 @@ import {
   ModifyUserCreateServerBody,
   ModifyUserEnabledBody,
   PermissionsUpdateBody,
-  RenameDeploymentBody,
   StopContainerQuery,
   UpdateDescriptionBody,
 } from "./client_types";
