@@ -1,12 +1,21 @@
 use anyhow::Context;
-use axum::{Router, routing::{get, post, delete, patch}, Json, extract::{Path, Query}};
+use axum::{
+    extract::{Path, Query},
+    routing::{delete, get, patch, post},
+    Json, Router,
+};
 use helpers::handle_anyhow_error;
 use mungos::mongodb::bson::Document;
-use serde::{Serialize, Deserialize};
-use types::{PeripheryCommand, PermissionLevel, traits::Permissioned, CommandActionState};
+use serde::{Deserialize, Serialize};
+use types::{traits::Permissioned, CommandActionState, PeripheryCommand, PermissionLevel};
 use typeshare::typeshare;
 
-use crate::{state::{State, StateExtension}, auth::{RequestUser, RequestUserExtension}, response, api::spawn_request_action};
+use crate::{
+    api::spawn_request_action,
+    auth::{RequestUser, RequestUserExtension},
+    response,
+    state::{State, StateExtension},
+};
 
 #[derive(Serialize, Deserialize)]
 pub struct CommandId {
@@ -205,13 +214,7 @@ impl State {
     ) -> anyhow::Result<CommandActionState> {
         self.get_command_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
-        let action_state = self
-            .command_action_states
-            .lock()
-            .await
-            .entry(id)
-            .or_default()
-            .clone();
+        let action_state = self.command_action_states.get_or_default(id).await;
         Ok(action_state)
     }
 }

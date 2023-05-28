@@ -1,9 +1,10 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::anyhow;
 use diff::{Diff, OptionDiff};
 use helpers::to_monitor_name;
-use types::Build;
+use tokio::sync::RwLock;
+use types::{traits::Busy, Build};
 
 #[macro_export]
 macro_rules! response {
@@ -65,4 +66,38 @@ pub fn empty_or_only_spaces(word: &str) -> bool {
         }
     }
     return true;
+}
+
+#[derive(Default)]
+pub struct Cache<T: Clone + Default> {
+    cache: RwLock<HashMap<String, T>>,
+}
+
+impl<T: Clone + Default> Cache<T> {
+    pub async fn get(&self, key: &str) -> Option<T> {
+        self.cache.read().await.get(key).map(|e| e.clone())
+    }
+
+    pub async fn get_or_default(&self, key: String) -> T {
+        let mut cache = self.cache.write().await;
+        cache.entry(key).or_default().clone()
+    }
+
+    pub async fn update_entry(&self, key: String, handler: impl Fn(&mut T) -> ()) {
+        let mut cache = self.cache.write().await;
+        handler(cache.entry(key).or_default());
+    }
+
+    pub async fn clear(&self) {
+        self.cache.write().await.clear();
+    }
+}
+
+impl<T: Clone + Default + Busy> Cache<T> {
+    pub async fn busy(&self, id: &str) -> bool {
+        match self.get(id).await {
+            Some(state) => state.busy(),
+            None => false,
+        }
+    }
 }

@@ -680,13 +680,7 @@ impl State {
     ) -> anyhow::Result<ServerActionState> {
         self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
-        let action_state = self
-            .server_action_states
-            .lock()
-            .await
-            .entry(id)
-            .or_default()
-            .clone();
+        let action_state = self.server_action_states.get_or_default(id).await;
         Ok(action_state)
     }
 }

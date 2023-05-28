@@ -297,13 +297,7 @@ impl State {
     ) -> anyhow::Result<BuildActionState> {
         self.get_build_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
-        let action_state = self
-            .build_action_states
-            .lock()
-            .await
-            .entry(id)
-            .or_default()
-            .clone();
+        let action_state = self.build_action_states.get_or_default(id).await;
         Ok(action_state)
     }
 

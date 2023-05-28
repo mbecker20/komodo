@@ -3,9 +3,8 @@ use diff::Diff;
 use futures_util::future::join_all;
 use mungos::mongodb::bson::doc;
 use types::{
-    monitor_timestamp,
-    traits::{Busy, Permissioned},
-    Log, Operation, PermissionLevel, Server, Update, UpdateStatus, UpdateTarget,
+    monitor_timestamp, traits::Permissioned, Log, Operation, PermissionLevel, Server, Update,
+    UpdateStatus, UpdateTarget,
 };
 
 use crate::{auth::RequestUser, state::State};
@@ -25,13 +24,6 @@ impl State {
             Err(anyhow!(
                 "user does not have required permissions on this server"
             ))
-        }
-    }
-
-    pub async fn server_busy(&self, id: &str) -> bool {
-        match self.server_action_states.lock().await.get(id) {
-            Some(a) => a.busy(),
-            None => false,
         }
     }
 
@@ -96,7 +88,7 @@ impl State {
         server_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
-        if self.server_busy(server_id).await {
+        if self.server_action_states.busy(server_id).await {
             return Err(anyhow!("server busy"));
         }
         let server = self
@@ -164,7 +156,7 @@ impl State {
         mut new_server: Server,
         user: &RequestUser,
     ) -> anyhow::Result<Server> {
-        if self.server_busy(&new_server.id).await {
+        if self.server_action_states.busy(&new_server.id).await {
             return Err(anyhow!("server busy"));
         }
         let current_server = self
@@ -208,20 +200,22 @@ impl State {
         server_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.server_busy(server_id).await {
+        if self.server_action_states.busy(server_id).await {
             return Err(anyhow!("server busy"));
         }
-        {
-            let mut lock = self.server_action_states.lock().await;
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_networks = true;
-        }
+        self.server_action_states
+            .update_entry(server_id.to_string(), |entry| {
+                entry.pruning_networks = true;
+            })
+            .await;
+
         let res = self.prune_networks_inner(server_id, user).await;
-        {
-            let mut lock = self.server_action_states.lock().await;
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_networks = false;
-        }
+
+        self.server_action_states
+            .update_entry(server_id.to_string(), |entry| {
+                entry.pruning_networks = false;
+            })
+            .await;
         res
     }
 
@@ -269,20 +263,22 @@ impl State {
         server_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.server_busy(server_id).await {
+        if self.server_action_states.busy(server_id).await {
             return Err(anyhow!("server busy"));
         }
-        {
-            let mut lock = self.server_action_states.lock().await;
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_images = true;
-        }
+        self.server_action_states
+            .update_entry(server_id.to_string(), |entry| {
+                entry.pruning_images = true;
+            })
+            .await;
+
         let res = self.prune_images_inner(server_id, user).await;
-        {
-            let mut lock = self.server_action_states.lock().await;
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_images = false;
-        }
+
+        self.server_action_states
+            .update_entry(server_id.to_string(), |entry| {
+                entry.pruning_images = false;
+            })
+            .await;
         res
     }
 
@@ -331,20 +327,22 @@ impl State {
         server_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.server_busy(server_id).await {
+        if self.server_action_states.busy(server_id).await {
             return Err(anyhow!("server busy"));
         }
-        {
-            let mut lock = self.server_action_states.lock().await;
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_containers = true;
-        }
+        self.server_action_states
+            .update_entry(server_id.to_string(), |entry| {
+                entry.pruning_containers = true;
+            })
+            .await;
+
         let res = self.prune_containers_inner(server_id, user).await;
-        {
-            let mut lock = self.server_action_states.lock().await;
-            let entry = lock.entry(server_id.to_string()).or_default();
-            entry.pruning_containers = false;
-        }
+
+        self.server_action_states
+            .update_entry(server_id.to_string(), |entry| {
+                entry.pruning_containers = false;
+            })
+            .await;
         res
     }
 

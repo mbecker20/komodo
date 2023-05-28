@@ -7,10 +7,8 @@ use futures_util::future::join_all;
 use helpers::{all_logs_success, to_monitor_name};
 use mungos::mongodb::bson::{doc, to_bson};
 use types::{
-    monitor_timestamp,
-    traits::{Busy, Permissioned},
-    AwsBuilderBuildConfig, Build, DockerContainerState, Log, Operation, PermissionLevel, Update,
-    UpdateStatus, UpdateTarget, Version,
+    monitor_timestamp, traits::Permissioned, AwsBuilderBuildConfig, Build, DockerContainerState,
+    Log, Operation, PermissionLevel, Update, UpdateStatus, UpdateTarget, Version,
 };
 
 use crate::{
@@ -40,13 +38,6 @@ impl State {
             Err(anyhow!(
                 "user does not have required permissions on this build"
             ))
-        }
-    }
-
-    pub async fn build_busy(&self, id: &str) -> bool {
-        match self.build_action_states.lock().await.get(id) {
-            Some(a) => a.busy(),
-            None => false,
         }
     }
 
@@ -117,7 +108,7 @@ impl State {
     }
 
     pub async fn delete_build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Build> {
-        if self.build_busy(build_id).await {
+        if self.build_action_states.busy(build_id).await {
             return Err(anyhow!("build busy"));
         }
         let build = self
@@ -147,21 +138,23 @@ impl State {
         new_build: Build,
         user: &RequestUser,
     ) -> anyhow::Result<Build> {
-        if self.build_busy(&new_build.id).await {
+        if self.build_action_states.busy(&new_build.id).await {
             return Err(anyhow!("build busy"));
         }
         let id = new_build.id.clone();
-        {
-            let mut lock = self.build_action_states.lock().await;
-            let entry = lock.entry(id.clone()).or_default();
-            entry.updating = true;
-        }
+        self.build_action_states
+            .update_entry(id.clone(), |entry| {
+                entry.updating = true;
+            })
+            .await;
+
         let res = self.update_build_inner(new_build, user).await;
-        {
-            let mut lock = self.build_action_states.lock().await;
-            let entry = lock.entry(id).or_default();
-            entry.updating = false;
-        }
+
+        self.build_action_states
+            .update_entry(id.clone(), |entry| {
+                entry.updating = false;
+            })
+            .await;
         res
     }
 
@@ -252,20 +245,20 @@ impl State {
     }
 
     pub async fn build(&self, build_id: &str, user: &RequestUser) -> anyhow::Result<Update> {
-        if self.build_busy(build_id).await {
+        if self.build_action_states.busy(build_id).await {
             return Err(anyhow!("build busy"));
         }
-        {
-            let mut lock = self.build_action_states.lock().await;
-            let entry = lock.entry(build_id.to_string()).or_default();
-            entry.building = true;
-        }
+        self.build_action_states
+            .update_entry(build_id.to_string(), |entry| {
+                entry.building = true;
+            })
+            .await;
         let res = self.build_inner(build_id, user).await;
-        {
-            let mut lock = self.build_action_states.lock().await;
-            let entry = lock.entry(build_id.to_string()).or_default();
-            entry.building = false;
-        }
+        self.build_action_states
+            .update_entry(build_id.to_string(), |entry| {
+                entry.building = false;
+            })
+            .await;
         res
     }
 

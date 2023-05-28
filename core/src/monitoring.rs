@@ -10,7 +10,7 @@ use types::{Server, SystemStats, SystemStatsQuery, SystemStatsRecord};
 
 use crate::state::State;
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct AlertStatus {
     cpu_alert: bool,
     mem_alert: bool,
@@ -100,16 +100,16 @@ impl State {
     }
 
     async fn check_cpu(&self, server: &Server, stats: &SystemStats) {
-        let server_alert_status = self.server_alert_status.lock().await;
         if self.slack.is_none()
-            || server_alert_status
+            || self
+                .server_alert_status
                 .get(&server.id)
+                .await
                 .map(|s| s.cpu_alert)
                 .unwrap_or(false)
         {
             return;
         }
-        drop(server_alert_status);
         if stats.cpu_perc > server.cpu_alert {
             let region = if let Some(region) = &server.region {
                 format!(" ({region})")
@@ -171,24 +171,26 @@ impl State {
                     server.name, stats.cpu_perc
                 )
             } else {
-                let mut lock = self.server_alert_status.lock().await;
-                let entry = lock.entry(server.id.clone()).or_default();
-                entry.cpu_alert = true;
+                self.server_alert_status
+                    .update_entry(server.id.clone(), |entry| {
+                        entry.cpu_alert = true;
+                    })
+                    .await;
             }
         }
     }
 
     async fn check_mem(&self, server: &Server, stats: &SystemStats) {
-        let server_alert_status = self.server_alert_status.lock().await;
         if self.slack.is_none()
-            || server_alert_status
+            || self
+                .server_alert_status
                 .get(&server.id)
+                .await
                 .map(|s| s.mem_alert)
                 .unwrap_or(false)
         {
             return;
         }
-        drop(server_alert_status);
         let usage_perc = (stats.mem_used_gb / stats.mem_total_gb) * 100.0;
         if usage_perc > server.mem_alert {
             let region = if let Some(region) = &server.region {
@@ -254,25 +256,27 @@ impl State {
                     server.name, stats.mem_used_gb, stats.mem_total_gb,
                 )
             } else {
-                let mut lock = self.server_alert_status.lock().await;
-                let entry = lock.entry(server.id.clone()).or_default();
-                entry.mem_alert = true;
+                self.server_alert_status
+                    .update_entry(server.id.clone(), |entry| {
+                        entry.mem_alert = true;
+                    })
+                    .await;
             }
         }
     }
 
     async fn check_disk(&self, server: &Server, stats: &SystemStats) {
         for disk in &stats.disk.disks {
-            let server_alert_status = self.server_alert_status.lock().await;
             if self.slack.is_none()
-                || server_alert_status
+                || self
+                    .server_alert_status
                     .get(&server.id)
+                    .await
                     .map(|s| *s.disk_alert.get(&disk.mount).unwrap_or(&false))
                     .unwrap_or(false)
             {
                 return;
             }
-            drop(server_alert_status);
             let usage_perc = (disk.used_gb / disk.total_gb) * 100.0;
             if usage_perc > server.disk_alert {
                 let region = if let Some(region) = &server.region {
@@ -315,25 +319,27 @@ impl State {
                     server.name, stats.disk.used_gb, stats.disk.total_gb,
                 )
                 } else {
-                    let mut lock = self.server_alert_status.lock().await;
-                    let entry = lock.entry(server.id.clone()).or_default();
-                    entry.disk_alert.insert(disk.mount.clone(), true);
+                    self.server_alert_status
+                        .update_entry(server.id.clone(), |entry| {
+                            entry.disk_alert.insert(disk.mount.clone(), true);
+                        })
+                        .await;
                 }
             }
         }
     }
 
     async fn check_components(&self, server: &Server, stats: &SystemStats) {
-        let lock = self.server_alert_status.lock().await;
         if self.slack.is_none()
-            || lock
+            || self
+                .server_alert_status
                 .get(&server.id)
+                .await
                 .map(|s| s.component_alert)
                 .unwrap_or(false)
         {
             return;
         }
-        drop(lock);
         let info = stats
             .components
             .iter()
@@ -393,9 +399,11 @@ impl State {
                     info.join(" | "),
                 )
             } else {
-                let mut lock = self.server_alert_status.lock().await;
-                let entry = lock.entry(server.id.clone()).or_default();
-                entry.component_alert = true;
+                self.server_alert_status
+                    .update_entry(server.id.clone(), |entry| {
+                        entry.component_alert = true;
+                    })
+                    .await;
             }
         }
     }
@@ -487,7 +495,7 @@ impl State {
                 );
             }
             {
-                self.server_alert_status.lock().await.clear();
+                self.server_alert_status.clear().await;
             }
         }
     }

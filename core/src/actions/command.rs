@@ -2,10 +2,8 @@ use anyhow::{anyhow, Context};
 use diff::Diff;
 use helpers::all_logs_success;
 use types::{
-    monitor_timestamp,
-    traits::{Busy, Permissioned},
-    Log, Operation, PeripheryCommand, PeripheryCommandBuilder, PermissionLevel, Update,
-    UpdateStatus, UpdateTarget,
+    monitor_timestamp, traits::Permissioned, Log, Operation, PeripheryCommand,
+    PeripheryCommandBuilder, PermissionLevel, Update, UpdateStatus, UpdateTarget,
 };
 
 use crate::{auth::RequestUser, state::State};
@@ -25,13 +23,6 @@ impl State {
             Err(anyhow!(
                 "user does not have required permissions on this command"
             ))
-        }
-    }
-
-    pub async fn command_busy(&self, id: &str) -> bool {
-        match self.command_action_states.lock().await.get(id) {
-            Some(a) => a.busy(),
-            None => false,
         }
     }
 
@@ -103,7 +94,7 @@ impl State {
         command_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<PeripheryCommand> {
-        if self.command_busy(command_id).await {
+        if self.command_action_states.busy(command_id).await {
             return Err(anyhow!("command busy"));
         }
         let command = self
@@ -181,20 +172,20 @@ impl State {
         command_id: &str,
         user: &RequestUser,
     ) -> anyhow::Result<Update> {
-        if self.command_busy(command_id).await {
+        if self.command_action_states.busy(command_id).await {
             return Err(anyhow!("command busy"));
         }
-        {
-            let mut lock = self.command_action_states.lock().await;
-            let entry = lock.entry(command_id.to_string()).or_default();
-            entry.running = true;
-        }
+        self.command_action_states
+            .update_entry(command_id.to_string(), |entry| {
+                entry.running = true;
+            })
+            .await;
         let res = self.run_command_inner(command_id, user).await;
-        {
-            let mut lock = self.command_action_states.lock().await;
-            let entry = lock.entry(command_id.to_string()).or_default();
-            entry.running = false;
-        }
+        self.command_action_states
+            .update_entry(command_id.to_string(), |entry| {
+                entry.running = false;
+            })
+            .await;
         res
     }
 
