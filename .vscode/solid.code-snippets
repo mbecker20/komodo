@@ -1,0 +1,64 @@
+{
+	"component": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "comp",
+		"body": [
+			"import { Component } from \"solid-js\";",
+			"",
+			"const ${1:$TM_FILENAME_BASE}: Component<{}> = (p) => {",
+			"\treturn (",
+			"\t\t<div>",
+			"\t\t\t${0}",
+			"\t\t</div>",
+			"\t);",
+			"}",
+			"",
+			"export default ${1:$TM_FILENAME_BASE};"
+		]
+	},
+	"component-with-css": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "css-comp",
+		"body": [
+			"import { Component } from \"solid-js\";",
+			"import s from \"./${1:$TM_FILENAME_BASE}.module.scss\";",
+			"",
+			"const ${2:$TM_FILENAME_BASE}: Component<{}> = (p) => {",
+			"\treturn (",
+			"\t\t<div class={s.${2:$TM_FILENAME_BASE}} >",
+			"\t\t\t${0}",
+			"\t\t</div>",
+			"\t);",
+			"}",
+			"",
+			"export default ${2:$TM_FILENAME_BASE};"
+		]
+	},
+	"context": {
+		"scope": "typescriptreact,javascriptreact",
+		"prefix": "provider",
+		"body": [
+			"import { ParentComponent, createContext, useContext } from \"solid-js\";",
+			"",
+			"const value = () => {",
+			"\treturn {};",
+			"}",
+			"",
+			"export type Value = ReturnType<typeof value>;",
+			"",
+			"const context = createContext<Value>();",
+			"",
+			"export const Provider: ParentComponent<{}> = (p) => {",
+			"\treturn (",
+			"\t\t<context.Provider value={value()}>",
+			"\t\t\t{p.children}",
+			"\t\t</context.Provider>",
+			"\t);",
+			"}",
+			"",
+			"export function useValue() {",
+			"\treturn useContext(context) as Value;",
+			"}"
+		]
+	}
+}

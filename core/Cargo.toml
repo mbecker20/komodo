@@ -1,0 +1,20 @@
+[package]
+name = "monitor_core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# local
+monitor_types.workspace = true
+monitor_helpers.workspace = true
+# external
+tokio.workspace = true
+anyhow.workspace = true
+# mogh
+async_timing_util.workspace = true
+merge_config_files.workspace = true
+parse_csl.workspace = true
+termination_signal.workspace = true

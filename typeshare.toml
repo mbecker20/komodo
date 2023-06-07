@@ -1,0 +1,3 @@
+[typescript.type_mappings]
+"PathBuf" = "string"
+"u128" = "number"
