@@ -37,6 +37,7 @@ pub struct Env {
     config_paths: String,
     #[serde(default)]
     config_keywords: String,
+    port: Option<u16>,
 }
 
 impl Env {
@@ -87,13 +88,16 @@ impl PeripheryConfig {
             .unwrap_or(&env_match_keywords)
             .iter()
             .map(|kw| kw.as_str());
-        let config = parse_config_paths::<PeripheryConfig>(
+        let mut config = parse_config_paths::<PeripheryConfig>(
             config_paths,
             match_keywords,
             args.merge_nested_config,
             args.extend_config_arrays,
         )
         .expect("failed at parsing config from paths");
+        if let Some(port) = env.port {
+            config.port = port;
+        }
         Ok(config)
     }
 }

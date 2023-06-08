@@ -28,3 +28,15 @@ pub struct GetVersionResponse {
 }
 
 impl_has_response!(GetVersion, GetVersionResponse);
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetSystemInformation {}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetSystemInformationResponse {
+    pub version: String,
+}
+
+impl_has_response!(GetSystemInformation, GetSystemInformationResponse);

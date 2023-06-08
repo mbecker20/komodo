@@ -6,3 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+monitor_types.workspace = true
+monitor_client.workspace = true
+periphery_client.workspace = true
+tokio.workspace = true
+anyhow.workspace = true

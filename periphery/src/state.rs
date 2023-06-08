@@ -6,12 +6,12 @@ use simple_logger::SimpleLogger;
 
 use crate::config::{CliArgs, Env, PeripheryConfig};
 
-pub struct AppState {
+pub struct State {
     pub config: PeripheryConfig,
 }
 
-impl AppState {
-    pub async fn load() -> anyhow::Result<Arc<AppState>> {
+impl State {
+    pub async fn load() -> anyhow::Result<Arc<State>> {
         let env = Env::load()?;
         let args = CliArgs::parse();
         SimpleLogger::new()
@@ -23,7 +23,7 @@ impl AppState {
             .context("failed to configure logger")?;
         info!("version: {}", env!("CARGO_PKG_VERSION"));
         let config = PeripheryConfig::load(&env, &args)?;
-        let state = AppState { config };
+        let state = State { config };
         Ok(state.into())
     }
 

@@ -1202,6 +1202,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b2a4787296e9989611394c33f193f676704af1686e70b8f8033ab5ba9a35a94"
 
 [[package]]
+name = "periphery_client"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "log",
+ "monitor_types",
+ "reqwest",
+ "serde_json",
+]
+
+[[package]]
 name = "pin-project"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1653,6 +1664,13 @@ dependencies = [
 [[package]]
 name = "tests"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "monitor_client",
+ "monitor_types",
+ "periphery_client",
+ "tokio",
+]
 
 [[package]]
 name = "thiserror"

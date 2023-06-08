@@ -13,6 +13,7 @@ license = "GPL-3.0-or-later"
 monitor_helpers = { path = "lib/helpers" }
 monitor_types = { path = "lib/types" }
 monitor_client = { path = "lib/rs_client" }
+periphery_client = { path = "lib/periphery_client" }
 # external
 tokio = { version = "1.28", features = ["full"] }
 axum = { version = "0.6", features = ["ws", "json", "headers"] }

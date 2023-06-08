@@ -1,13 +1,14 @@
 use anyhow::{anyhow, Context};
 use monitor_types::periphery_api::{requests::GetVersionResponse, PeripheryRequest};
 
-use crate::state::AppState;
+use crate::state::State;
 
-impl AppState {
+impl State {
     pub async fn handle_request(&self, request: PeripheryRequest) -> anyhow::Result<String> {
         match request {
             PeripheryRequest::GetHealth(_) => Ok(String::from("{}")),
-            PeripheryRequest::GetVersion(_) => AppState::get_version(),
+            PeripheryRequest::GetVersion(_) => State::get_version(),
+            PeripheryRequest::GetSystemInformation {} => todo!(),
             _ => Err(anyhow!("not implemented")),
         }
     }
