@@ -3,6 +3,8 @@ use monitor_types::periphery_api::{requests::GetVersionResponse, PeripheryReques
 
 use crate::state::State;
 
+mod system_info;
+
 impl State {
     pub async fn handle_request(&self, request: PeripheryRequest) -> anyhow::Result<String> {
         match request {

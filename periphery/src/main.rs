@@ -16,6 +16,7 @@ mod api;
 mod config;
 mod guard;
 mod state;
+mod helpers;
 
 async fn app() -> anyhow::Result<()> {
     let state = State::load().await?;

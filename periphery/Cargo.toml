@@ -27,6 +27,7 @@ clap.workspace = true
 log.workspace = true
 simple_logger.workspace = true
 uuid.workspace = true
+sysinfo.workspace = true
 # mogh
 async_timing_util.workspace = true
 merge_config_files.workspace = true
