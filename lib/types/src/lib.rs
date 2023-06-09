@@ -1,11 +1,11 @@
 use diff::Diff;
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 pub mod core_api;
-pub mod periphery_api;
 pub mod entities;
+pub mod periphery_api;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;
@@ -138,6 +138,11 @@ pub trait HasResponse: Serialize + std::fmt::Debug {
     fn req_type() -> &'static str;
 }
 
+#[async_trait::async_trait]
+pub trait Resolve<Req: HasResponse> {
+    async fn resolve(&self, req: Req) -> Req::Response;
+}
+
 #[macro_export]
 macro_rules! impl_has_response {
     ($req:ty, $res:ty) => {
@@ -149,3 +154,4 @@ macro_rules! impl_has_response {
         }
     };
 }
+

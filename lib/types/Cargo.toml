@@ -12,3 +12,4 @@ diff-struct.workspace = true
 typeshare.workspace = true
 strum.workspace = true
 strum_macros.workspace = true
+async-trait.workspace = true

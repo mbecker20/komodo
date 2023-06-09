@@ -1031,6 +1031,7 @@ name = "monitor_periphery"
 version = "1.0.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "async_timing_util",
  "axum",
  "bollard",
@@ -1055,6 +1056,7 @@ dependencies = [
 name = "monitor_types"
 version = "1.0.0"
 dependencies = [
+ "async-trait",
  "diff-struct",
  "serde",
  "strum",

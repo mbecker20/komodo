@@ -36,6 +36,7 @@ typeshare = "1.0.1"
 strum = "0.24"
 strum_macros = "0.24"
 sysinfo = "0.29"
+async-trait = "0.1"
 # mogh
 run_command = { version = "0.0.6", features = ["async_tokio"] }
 slack = { package = "slack_client_rs", version = "0.0.8" }
