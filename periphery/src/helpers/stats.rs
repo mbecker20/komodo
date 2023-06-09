@@ -1,19 +1,22 @@
-use std::{cmp::Ordering, sync::{Arc, RwLock}};
+use std::{cmp::Ordering, sync::Arc};
 
 use async_timing_util::wait_until_timelength;
-use monitor_types::{entities::server::{SystemInformation, SystemProcess, SystemComponent, SingleDiskUsage, DiskUsage, SystemNetwork, SingleCpuUsage, SystemStats}, Timelength};
-use sysinfo::{SystemExt, CpuExt, PidExt, ProcessExt, ComponentExt, DiskExt, NetworkExt};
+use monitor_types::{
+    entities::server::{
+        AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage, SingleCpuUsage,
+        SingleDiskUsage, SystemComponent, SystemInformation, SystemNetwork, SystemProcess,
+    },
+    Timelength,
+};
+use sysinfo::{ComponentExt, CpuExt, DiskExt, NetworkExt, PidExt, ProcessExt, SystemExt};
+use tokio::sync::RwLock;
 
-type StatsClient = Arc<RwLock<InnerStatsClient>>;
+pub type StatsClient = Arc<RwLock<InnerStatsClient>>;
 
 pub struct InnerStatsClient {
-    pub info: SystemInformation,
+    pub info: String, // SystemInformation serialized
     sys: sysinfo::System,
-    cache: SystemStats,
-    polling_rate: Timelength,
-    refresh_ts: u128,
-    refresh_list_ts: u128,
-    // receiver: Receiver<SystemStats>,
+    cache: AllSystemStats,
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
@@ -22,106 +25,39 @@ const BYTES_PER_KB: f64 = 1024.0;
 
 impl InnerStatsClient {
     pub fn new(polling_rate: Timelength) -> StatsClient {
-        // let (sender, receiver) = broadcast::channel::<SystemStats>(10);
         let sys = sysinfo::System::new_all();
-        let client = InnerStatsClient {
-            info: get_system_information(&sys),
-            sys,
-            cache: SystemStats::default(),
+        let cache = AllSystemStats {
             polling_rate,
-            refresh_ts: 0,
-            refresh_list_ts: 0,
-            // receiver,
+            ..Default::default()
+        };
+        let client = InnerStatsClient {
+            info: serde_json::to_string(&get_system_information(&sys)).unwrap(),
+            sys,
+            cache,
         };
         let client = Arc::new(RwLock::new(client));
         let clone = client.clone();
         tokio::spawn(async move {
-            let polling_rate = polling_rate.to_string().parse().unwrap();
             loop {
-                let ts = wait_until_timelength(polling_rate, 0).await;
-                {
-                    let mut client = clone.write().unwrap();
-                    client.refresh();
-                    client.refresh_ts = ts;
-                    client.cache = client.get_stats();
-                }
-                // sender
-                //     .send(clone.read().unwrap().cache.clone())
-                //     .expect("failed to broadcast new stats to reciever");
+                let ts = wait_until_timelength(async_timing_util::Timelength::FiveMinutes, 0).await;
+                let mut client = clone.write().await;
+                client.refresh_lists();
+                client.cache.refresh_list_ts = ts as i64;
             }
         });
         let clone = client.clone();
         tokio::spawn(async move {
+            let polling_rate = polling_rate.to_string().parse().unwrap();
             loop {
-                let ts = wait_until_timelength(async_timing_util::Timelength::FiveMinutes, 0).await;
-                let mut client = clone.write().unwrap();
-                client.refresh_lists();
-                client.refresh_list_ts = ts;
+                let ts = wait_until_timelength(polling_rate, 1).await;
+                let mut client = clone.write().await;
+                client.refresh();
+                client.cache = client.get_all_stats();
+                client.cache.refresh_ts = ts as i64;
             }
         });
         client
     }
-
-    // fn ws_subscribe(
-    //     &self,
-    //     ws: WebSocketUpgrade,
-    //     query: Arc<SystemStatsQuery>,
-    // ) -> impl IntoResponse {
-    //     // println!("client subscribe");
-    //     let mut reciever = self.get_receiver();
-    //     ws.on_upgrade(|socket| async move {
-    //         let (mut ws_sender, mut ws_reciever) = socket.split();
-    //         let cancel = CancellationToken::new();
-    //         let cancel_clone = cancel.clone();
-    //         tokio::spawn(async move {
-    //             loop {
-    //                 let mut stats = select! {
-    //                     _ = cancel_clone.cancelled() => break,
-    //                     stats = reciever.recv() => { stats.expect("failed to recv stats msg") }
-    //                 };
-    //                 if query.cpus {
-    //                     stats.cpus = vec![]
-    //                 }
-    //                 if !query.disks {
-    //                     stats.disk.disks = vec![]
-    //                 }
-    //                 if !query.components {
-    //                     stats.components = vec![]
-    //                 }
-    //                 if !query.networks {
-    //                     stats.networks = vec![]
-    //                 }
-    //                 if !query.processes {
-    //                     stats.processes = vec![]
-    //                 }
-    //                 let _ = ws_sender
-    //                     .send(Message::Text(serde_json::to_string(&stats).unwrap()))
-    //                     .await;
-    //             }
-    //         });
-    //         while let Some(msg) = ws_reciever.next().await {
-    //             match msg {
-    //                 Ok(msg) => match msg {
-    //                     Message::Close(_) => {
-    //                         // println!("client CLOSE");
-    //                         cancel.cancel();
-    //                         return;
-    //                     }
-    //                     _ => {}
-    //                 },
-    //                 Err(_) => {
-    //                     // println!("client CLOSE");
-    //                     cancel.cancel();
-    //                     return;
-    //                 }
-    //             }
-    //         }
-    //     })
-    // }
-
-    // fn get_receiver(&self) -> Receiver<SystemStats> {
-    //     self.receiver.resubscribe()
-    // }
 
     fn refresh(&mut self) {
         self.sys.refresh_cpu();
@@ -138,91 +74,49 @@ impl InnerStatsClient {
         self.sys.refresh_components_list();
     }
 
-    fn get_cached_stats(&self, query: SystemStatsQuery) -> SystemStats {
-        SystemStats {
-            system_load: self.cache.system_load,
-            cpu_perc: self.cache.cpu_perc,
-            cpu_freq_mhz: self.cache.cpu_freq_mhz,
-            mem_used_gb: self.cache.mem_used_gb,
-            mem_total_gb: self.cache.mem_total_gb,
-            disk: DiskUsage {
-                used_gb: self.cache.disk.used_gb,
-                total_gb: self.cache.disk.total_gb,
-                read_kb: self.cache.disk.read_kb,
-                write_kb: self.cache.disk.write_kb,
-                disks: if query.disks {
-                    self.cache.disk.disks.clone()
-                } else {
-                    vec![]
-                },
-            },
-            cpus: if query.cpus {
-                self.cache.cpus.clone()
-            } else {
-                vec![]
-            },
-            networks: if query.networks {
-                self.cache.networks.clone()
-            } else {
-                vec![]
-            },
-            components: if query.components {
-                self.cache.components.clone()
-            } else {
-                vec![]
-            },
-            processes: if query.processes {
-                self.cache.processes.clone()
-            } else {
-                vec![]
-            },
+    fn get_all_stats(&self) -> AllSystemStats {
+        AllSystemStats {
+            basic: self.get_basic_system_stats(),
+            cpu: self.get_cpu_usage(),
+            disk: self.get_disk_usage(),
+            network: self.get_network_usage(),
+            processes: self.get_processes(),
+            componenets: self.get_components(),
             polling_rate: self.cache.polling_rate,
             refresh_ts: self.cache.refresh_ts,
             refresh_list_ts: self.cache.refresh_list_ts,
         }
     }
 
-    fn get_stats(&self) -> SystemStats {
+    fn get_basic_system_stats(&self) -> BasicSystemStats {
         let cpu = self.sys.global_cpu_info();
-        SystemStats {
+        let disk = self.get_disk_usage();
+        BasicSystemStats {
             system_load: self.sys.load_average().one,
-            cpu_perc: self.sys.global_cpu_info().cpu_usage(),
+            cpu_perc: cpu.cpu_usage(),
             cpu_freq_mhz: cpu.frequency() as f64,
             mem_used_gb: self.sys.used_memory() as f64 / BYTES_PER_GB,
             mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
-            disk: self.get_disk_usage(),
-            cpus: self.get_cpus(),
-            networks: self.get_networks(),
-            components: self.get_components(),
-            processes: self.get_processes(),
-            polling_rate: self.polling_rate,
-            refresh_ts: self.refresh_ts,
-            refresh_list_ts: self.refresh_list_ts,
+            disk_used_gb: disk.used_gb,
+            disk_total_gb: disk.total_gb,
         }
     }
 
-    fn get_cpus(&self) -> Vec<SingleCpuUsage> {
-        self.sys
-            .cpus()
-            .iter()
-            .map(|cpu| SingleCpuUsage {
-                name: cpu.name().to_string(),
-                usage: cpu.cpu_usage(),
-            })
-            .collect()
-    }
-
-    fn get_networks(&self) -> Vec<SystemNetwork> {
-        self.sys
-            .networks()
-            .into_iter()
-            .map(|(name, n)| SystemNetwork {
-                name: name.clone(),
-                recieved_kb: n.received() as f64 / BYTES_PER_KB,
-                transmitted_kb: n.transmitted() as f64 / BYTES_PER_KB,
-            })
-            .filter(|n| n.recieved_kb > 0.0 || n.transmitted_kb > 0.0)
-            .collect()
+    fn get_cpu_usage(&self) -> CpuUsage {
+        let cpu = self.sys.global_cpu_info();
+        CpuUsage {
+            cpu_perc: cpu.cpu_usage(),
+            cpu_freq_mhz: cpu.frequency() as f64,
+            cpus: self
+                .sys
+                .cpus()
+                .iter()
+                .map(|cpu| SingleCpuUsage {
+                    name: cpu.name().to_string(),
+                    usage: cpu.cpu_usage(),
+                })
+                .collect(),
+        }
     }
 
     fn get_disk_usage(&self) -> DiskUsage {
@@ -258,6 +152,33 @@ impl InnerStatsClient {
             read_kb: read_bytes as f64 / BYTES_PER_KB,
             write_kb: write_bytes as f64 / BYTES_PER_KB,
             disks,
+        }
+    }
+
+    fn get_network_usage(&self) -> NetworkUsage {
+        let mut recieved_kb = 0.0;
+        let mut transmitted_kb = 0.0;
+        let networks = self
+            .sys
+            .networks()
+            .into_iter()
+            .map(|(name, n)| {
+                let recv = n.received() as f64 / BYTES_PER_KB;
+                let trans = n.transmitted() as f64 / BYTES_PER_KB;
+                recieved_kb += recv;
+                transmitted_kb += trans;
+                SystemNetwork {
+                    name: name.clone(),
+                    recieved_kb: recv,
+                    transmitted_kb: trans,
+                }
+            })
+            .filter(|n| n.recieved_kb > 0.0 || n.transmitted_kb > 0.0)
+            .collect::<Vec<_>>();
+        NetworkUsage {
+            networks,
+            recieved_kb,
+            transmitted_kb,
         }
     }
 

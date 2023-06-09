@@ -3,10 +3,10 @@ use std::path::PathBuf;
 use serde::{Serialize, Deserialize};
 use typeshare::typeshare;
 
-use crate::Timelength;
+use crate::{I64, Timelength};
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SystemInformation {
     pub name: Option<String>,
     pub os: Option<String>,
@@ -17,60 +17,47 @@ pub struct SystemInformation {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
-pub struct SystemStats {
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct AllSystemStats {
+    pub basic: BasicSystemStats,
+    pub cpu: CpuUsage,
+    pub disk: DiskUsage,
+    pub network: NetworkUsage,
     #[serde(default)]
+    pub processes: Vec<SystemProcess>,
+    #[serde(default)]
+    pub componenets: Vec<SystemComponent>,
+    pub polling_rate: Timelength,
+    pub refresh_ts: I64,
+    pub refresh_list_ts: I64,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct BasicSystemStats {
     pub system_load: f64,
     pub cpu_perc: f32,
     pub cpu_freq_mhz: f64,
-    pub mem_used_gb: f64,  // in GB
-    pub mem_total_gb: f64, // in GB
-    pub disk: DiskUsage,
+    pub mem_used_gb: f64,
+    pub mem_total_gb: f64,
+    pub disk_used_gb: f64,
+    pub disk_total_gb: f64,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct CpuUsage {
+    pub cpu_perc: f32,
+    pub cpu_freq_mhz: f64,
     #[serde(default)]
     pub cpus: Vec<SingleCpuUsage>,
-    #[serde(default)]
-    pub networks: Vec<SystemNetwork>,
-    #[serde(default)]
-    pub components: Vec<SystemComponent>,
-    #[serde(default)]
-    pub processes: Vec<SystemProcess>,
-    pub polling_rate: Timelength,
-    pub refresh_ts: u128,
-    pub refresh_list_ts: u128,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SystemProcess {
-    pub pid: u32,
+pub struct SingleCpuUsage {
     pub name: String,
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub exe: String,
-    pub cmd: Vec<String>,
-    #[serde(default)]
-    pub start_time: f64,
-    pub cpu_perc: f32,
-    pub mem_mb: f64,
-    pub disk_read_kb: f64,
-    pub disk_write_kb: f64,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SystemNetwork {
-    pub name: String,
-    pub recieved_kb: f64,    // in kB
-    pub transmitted_kb: f64, // in kB
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SystemComponent {
-    pub label: String,
-    pub temp: f32,
-    pub max: f32,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub critical: Option<f32>,
+    pub usage: f32,
 }
 
 #[typeshare]
@@ -93,8 +80,43 @@ pub struct SingleDiskUsage {
 }
 
 #[typeshare]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct NetworkUsage {
+    pub recieved_kb: f64,
+    pub transmitted_kb: f64,
+    pub networks: Vec<SystemNetwork>,
+}
+
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SingleCpuUsage {
+pub struct SystemNetwork {
     pub name: String,
-    pub usage: f32,
+    pub recieved_kb: f64,    // in kB
+    pub transmitted_kb: f64, // in kB
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SystemProcess {
+    pub pid: u32,
+    pub name: String,
+    #[serde(default)]
+    pub exe: String,
+    pub cmd: Vec<String>,
+    #[serde(default)]
+    pub start_time: f64,
+    pub cpu_perc: f32,
+    pub mem_mb: f64,
+    pub disk_read_kb: f64,
+    pub disk_write_kb: f64,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SystemComponent {
+    pub label: String,
+    pub temp: f32,
+    pub max: f32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub critical: Option<f32>,
 }

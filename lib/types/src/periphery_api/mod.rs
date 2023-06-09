@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::SystemCommand;
 
-use self::requests::{GetHealth, GetVersion};
+use self::requests::{GetHealth, GetVersion, GetSystemInformation, GetBasicSystemStats, GetDiskUsage, GetNetworkUsage, GetSystemProcesses, GetAllSystemStats, GetSystemComponents, GetCpuUsage};
 
 pub mod requests;
 
@@ -12,8 +12,14 @@ pub enum PeripheryRequest {
     // GET
     GetHealth(GetHealth),
     GetVersion(GetVersion),
-    GetSystemInformation {},
-    GetSystemStats {},
+    GetSystemInformation(GetSystemInformation),
+    GetAllSystemStats(GetAllSystemStats),
+    GetBasicSystemStats(GetBasicSystemStats),
+    GetCpuUsage(GetCpuUsage),
+    GetDiskUsage(GetDiskUsage),
+    GetNetworkUsage(GetNetworkUsage),
+    GetSystemProcesses(GetSystemProcesses),
+    GetSystemComponents(GetSystemComponents),
     GetAccounts {},
     GetSecrets {},
     GetContainerList {},

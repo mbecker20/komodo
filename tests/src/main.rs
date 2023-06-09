@@ -8,5 +8,8 @@ async fn main() -> anyhow::Result<()> {
     let version = periphery.request(requests::GetVersion {}).await?;
     println!("{version:?}");
 
+    let system_info = periphery.request(requests::GetSystemInformation {}).await?;
+    println!("{system_info:#?}");
+
     Ok(())
 }

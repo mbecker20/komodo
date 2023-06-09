@@ -4,10 +4,14 @@ use anyhow::Context;
 use clap::Parser;
 use simple_logger::SimpleLogger;
 
-use crate::config::{CliArgs, Env, PeripheryConfig};
+use crate::{
+    config::{CliArgs, Env, PeripheryConfig},
+    helpers::stats::{InnerStatsClient, StatsClient},
+};
 
 pub struct State {
     pub config: PeripheryConfig,
+    pub stats: StatsClient,
 }
 
 impl State {
@@ -23,7 +27,10 @@ impl State {
             .context("failed to configure logger")?;
         info!("version: {}", env!("CARGO_PKG_VERSION"));
         let config = PeripheryConfig::load(&env, &args)?;
-        let state = State { config };
+        let state = State {
+            stats: InnerStatsClient::new(config.stats_polling_rate),
+            config,
+        };
         Ok(state.into())
     }
 

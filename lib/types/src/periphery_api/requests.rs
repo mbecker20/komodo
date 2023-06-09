@@ -1,9 +1,12 @@
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::impl_has_response;
+use crate::{
+    entities::server::{BasicSystemStats, DiskUsage, SystemInformation, SystemProcess, NetworkUsage, AllSystemStats, SystemComponent, CpuUsage},
+    impl_has_response,
+};
 
-// GET HEALTH
+//
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -15,7 +18,7 @@ pub struct GetHealthResponse {}
 
 impl_has_response!(GetHealth, GetHealthResponse);
 
-// GET VERSION
+//
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -29,14 +32,66 @@ pub struct GetVersionResponse {
 
 impl_has_response!(GetVersion, GetVersionResponse);
 
+//
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetSystemInformation {}
 
+impl_has_response!(GetSystemInformation, SystemInformation);
+
+//
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetSystemInformationResponse {
-    pub version: String,
-}
+pub struct GetAllSystemStats {}
 
-impl_has_response!(GetSystemInformation, GetSystemInformationResponse);
+impl_has_response!(GetAllSystemStats, AllSystemStats);
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetBasicSystemStats {}
+
+impl_has_response!(GetBasicSystemStats, BasicSystemStats);
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetCpuUsage {}
+
+impl_has_response!(GetCpuUsage, CpuUsage);
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetDiskUsage {}
+
+impl_has_response!(GetDiskUsage, DiskUsage);
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetNetworkUsage {}
+
+impl_has_response!(GetNetworkUsage, NetworkUsage);
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetSystemProcesses {}
+
+impl_has_response!(GetSystemProcesses, Vec<SystemProcess>);
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetSystemComponents {}
+
+impl_has_response!(GetSystemComponents, Vec<SystemComponent>);

@@ -7,6 +7,9 @@ pub mod core_api;
 pub mod periphery_api;
 pub mod entities;
 
+#[typeshare(serialized_as = "number")]
+pub type I64 = i64;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, Diff)]
 #[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
