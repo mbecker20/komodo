@@ -7,7 +7,7 @@ use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
 };
-use monitor_types::periphery_api::PeripheryRequest;
+use monitor_types::api::periphery::PeripheryRequest;
 use state::State;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
@@ -15,8 +15,8 @@ use uuid::Uuid;
 mod api;
 mod config;
 mod guard;
-mod state;
 mod helpers;
+mod state;
 
 async fn app() -> anyhow::Result<()> {
     let state = State::load().await?;

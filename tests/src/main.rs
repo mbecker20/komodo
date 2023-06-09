@@ -1,4 +1,4 @@
-use monitor_types::periphery_api::requests;
+use monitor_types::api::periphery::requests;
 use periphery_client::PeripheryClient;
 
 #[tokio::main]

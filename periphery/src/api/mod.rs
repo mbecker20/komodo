@@ -1,5 +1,11 @@
 use anyhow::{anyhow, Context};
-use monitor_types::{periphery_api::{requests::{GetVersionResponse, GetHealth, GetHealthResponse, GetVersion}, PeripheryRequest}, Resolve};
+use monitor_types::api::{
+    periphery::{
+        requests::{GetHealth, GetHealthResponse, GetVersion, GetVersionResponse},
+        PeripheryRequest,
+    },
+    Resolve,
+};
 
 use crate::state::State;
 
@@ -23,16 +29,16 @@ fn get_version() -> anyhow::Result<String> {
     .context("failed to convert version to string")
 }
 
-#[async_trait::async_trait]
-impl Resolve<GetHealth> for State {
-    async fn resolve(&self, _: GetHealth) -> GetHealthResponse {
-        GetHealthResponse {}
-    }
-}
+// #[async_trait::async_trait]
+// impl Resolve<GetHealth> for State {
+//     async fn resolve(&self, _: GetHealth) -> GetHealthResponse {
+//         GetHealthResponse {}
+//     }
+// }
 
-#[async_trait::async_trait]
-impl Resolve<GetVersion> for State {
-    async fn resolve(&self, _: GetVersion) -> GetVersionResponse {
-        todo!()
-    }
-}
+// #[async_trait::async_trait]
+// impl Resolve<GetVersion> for State {
+//     async fn resolve(&self, _: GetVersion) -> GetVersionResponse {
+//         todo!()
+//     }
+// }

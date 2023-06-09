@@ -1,8 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use crate::SystemCommand;
+use crate::entities::SystemCommand;
 
-use self::requests::{GetHealth, GetVersion, GetSystemInformation, GetBasicSystemStats, GetDiskUsage, GetNetworkUsage, GetSystemProcesses, GetAllSystemStats, GetSystemComponents, GetCpuUsage};
+use self::requests::{
+    GetAllSystemStats, GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetHealth, GetNetworkUsage,
+    GetSystemComponents, GetSystemInformation, GetSystemProcesses, GetVersion,
+};
 
 pub mod requests;
 

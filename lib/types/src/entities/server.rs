@@ -1,9 +1,11 @@
 use std::path::PathBuf;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{I64, Timelength};
+use crate::I64;
+
+use super::Timelength;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

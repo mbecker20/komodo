@@ -1056,9 +1056,12 @@ dependencies = [
 name = "monitor_types"
 version = "1.0.0"
 dependencies = [
+ "anyhow",
  "async-trait",
+ "axum",
  "diff-struct",
  "serde",
+ "serde_json",
  "strum",
  "strum_macros",
  "typeshare",

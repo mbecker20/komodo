@@ -3,7 +3,7 @@ use std::{collections::HashMap, net::IpAddr, path::PathBuf};
 use anyhow::Context;
 use clap::Parser;
 use merge_config_files::parse_config_paths;
-use monitor_types::Timelength;
+use monitor_types::entities::Timelength;
 use parse_csl::parse_comma_seperated;
 use serde::{Deserialize, Serialize};
 
