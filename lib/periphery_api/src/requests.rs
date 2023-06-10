@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
+use monitor_types::{
     entities::server::{
         AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage, SystemComponent,
         SystemInformation, SystemProcess,
@@ -103,5 +103,3 @@ impl_has_response!(GetAccounts, GetAccountsResponse);
 pub struct GetSecrets {}
 
 impl_has_response!(GetSecrets, Vec<String>);
-
-

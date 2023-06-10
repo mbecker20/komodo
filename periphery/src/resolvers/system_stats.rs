@@ -1,10 +1,8 @@
 use anyhow::Context;
-use monitor_types::api::{
-    periphery::requests::{
-        GetAllSystemStats, GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetNetworkUsage,
-        GetSystemComponents, GetSystemInformation, GetSystemProcesses,
-    },
-    ResolveToString,
+use monitor_types::api::ResolveToString;
+use periphery_api::requests::{
+    GetAllSystemStats, GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetNetworkUsage,
+    GetSystemComponents, GetSystemInformation, GetSystemProcesses,
 };
 
 use crate::state::State;

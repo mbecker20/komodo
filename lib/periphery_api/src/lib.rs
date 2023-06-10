@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::entities::SystemCommand;
+use monitor_types::entities::SystemCommand;
 
 use self::requests::{
     GetAllSystemStats, GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetHealth, GetNetworkUsage,
@@ -44,3 +44,4 @@ pub enum PeripheryRequest {
     RenameContainer {},
     PruneContainers {},
 }
+

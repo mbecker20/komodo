@@ -14,6 +14,7 @@ path = "src/main.rs"
 # local
 monitor_types.workspace = true
 monitor_helpers.workspace = true
+periphery_api.workspace = true
 # external
 tokio.workspace = true
 axum.workspace = true

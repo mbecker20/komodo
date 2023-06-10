@@ -7,15 +7,15 @@ use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
 };
-use monitor_types::api::periphery::PeripheryRequest;
+use periphery_api::PeripheryRequest;
 use state::State;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 
-mod resolvers;
 mod config;
 mod guard;
 mod helpers;
+mod resolvers;
 mod state;
 
 async fn app() -> anyhow::Result<()> {

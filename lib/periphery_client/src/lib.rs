@@ -2,9 +2,11 @@
 extern crate log;
 
 use anyhow::{anyhow, Context};
-use monitor_types::api::{periphery::requests, HasResponse};
+use monitor_types::api::HasResponse;
 use reqwest::StatusCode;
 use serde_json::json;
+
+pub use periphery_api::requests;
 
 pub struct PeripheryClient {
     reqwest: reqwest::Client,

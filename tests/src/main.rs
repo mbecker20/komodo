@@ -1,5 +1,4 @@
-use monitor_types::api::periphery::requests;
-use periphery_client::PeripheryClient;
+use periphery_client::{requests, PeripheryClient};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

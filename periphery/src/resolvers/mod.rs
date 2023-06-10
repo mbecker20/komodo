@@ -1,10 +1,8 @@
 use anyhow::anyhow;
-use monitor_types::api::{
-    periphery::{
-        requests::{GetAccounts, GetHealth, GetSecrets, GetVersion, GetVersionResponse},
-        PeripheryRequest,
-    },
-    Resolve, ResolveToString,
+use monitor_types::api::{Resolve, ResolveToString};
+use periphery_api::{
+    requests::{GetAccounts, GetHealth, GetSecrets, GetVersion, GetVersionResponse},
+    PeripheryRequest,
 };
 
 use crate::state::State;
@@ -28,7 +26,6 @@ impl State {
             PeripheryRequest::GetSystemProcesses(req) => self.resolve_to_string(req).await,
             PeripheryRequest::GetSystemComponents(req) => self.resolve_to_string(req).await,
             //
-            
             _ => Err(anyhow!("not implemented")),
         }
     }

@@ -1,8 +1,9 @@
 use anyhow::Context;
-use serde::{de::DeserializeOwned, Serialize};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
-pub mod core;
-pub mod periphery;
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "type", content = "params")]
+pub enum CoreRequest {}
 
 pub trait HasResponse: Serialize + DeserializeOwned + std::fmt::Debug + Send + 'static {
     type Response: Serialize + DeserializeOwned + std::fmt::Debug;
