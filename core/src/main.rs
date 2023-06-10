@@ -2,6 +2,7 @@ use termination_signal::tokio::immediate_term_handle;
 
 mod config;
 mod state;
+mod resolvers;
 
 async fn app() -> anyhow::Result<()> {
     Ok(())

@@ -11,11 +11,17 @@ async fn main() -> anyhow::Result<()> {
     let system_info = periphery.request(requests::GetSystemInformation {}).await?;
     println!("{system_info:#?}");
 
-    let system_stats = periphery.request(requests::GetAllSystemStats {}).await?;
+    let processes = periphery.request(requests::GetSystemProcesses {}).await?;
     // println!("{system_stats:#?}");
 
-    let periphery_process = system_stats.processes.into_iter().find(|p| p.name.contains("periphery"));
+    let periphery_process = processes.into_iter().find(|p| p.name.contains("periphery"));
     println!("{periphery_process:#?}");
+
+    let accounts = periphery.request(requests::GetAccounts {}).await?;
+    println!("{accounts:#?}");
+
+    let secrets = periphery.request(requests::GetSecrets {}).await?;
+    println!("{secrets:#?}");
 
     Ok(())
 }

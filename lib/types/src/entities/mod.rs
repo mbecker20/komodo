@@ -1,9 +1,12 @@
+use anyhow::{Context, anyhow};
 use diff::Diff;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 pub mod server;
+pub mod update;
+pub mod deployment;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, Diff)]
@@ -13,6 +16,54 @@ pub struct SystemCommand {
     pub path: String,
     #[serde(default)]
     pub command: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+pub struct Version {
+    pub major: i32,
+    pub minor: i32,
+    pub patch: i32,
+}
+
+impl ToString for Version {
+    fn to_string(&self) -> String {
+        format!("{}.{}.{}", self.major, self.minor, self.patch)
+    }
+}
+
+impl TryFrom<&str> for Version {
+    type Error = anyhow::Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        let vals = value
+            .split('.')
+            .map(|v| anyhow::Ok(v.parse().context("failed at parsing value into i32")?))
+            .collect::<anyhow::Result<Vec<i32>>>()?;
+        let version = Version {
+            major: *vals
+                .first()
+                .ok_or(anyhow!("must include at least major version"))?,
+            minor: *vals.get(1).unwrap_or(&0),
+            patch: *vals.get(2).unwrap_or(&0),
+        };
+        Ok(version)
+    }
+}
+
+impl Version {
+    pub fn increment(&mut self) {
+        self.patch += 1;
+    }
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+pub struct EnvironmentVar {
+    pub variable: String,
+    pub value: String,
 }
 
 #[typeshare]
@@ -126,4 +177,81 @@ pub enum PermissionLevel {
     Read,
     Execute,
     Update,
+}
+
+#[typeshare]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Default,
+    Display,
+    EnumString,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Diff,
+)]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
+#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+pub enum Operation {
+    // do nothing
+    #[default]
+    None,
+
+    // server
+    CreateServer,
+    UpdateServer,
+    DeleteServer,
+    PruneImagesServer,
+    PruneContainersServer,
+    PruneNetworksServer,
+    RenameServer,
+
+    // build
+    CreateBuild,
+    UpdateBuild,
+    DeleteBuild,
+    BuildBuild,
+
+    // deployment
+    CreateDeployment,
+    UpdateDeployment,
+    DeleteDeployment,
+    DeployContainer,
+    StopContainer,
+    StartContainer,
+    RemoveContainer,
+    PullDeployment,
+    RecloneDeployment,
+    RenameDeployment,
+
+    // procedure
+    CreateProcedure,
+    UpdateProcedure,
+    DeleteProcedure,
+
+    // command
+    CreateCommand,
+    UpdateCommand,
+    DeleteCommand,
+    RunCommand,
+
+    // group
+    CreateGroup,
+    UpdateGroup,
+    DeleteGroup,
+
+    // user
+    ModifyUserEnabled,
+    ModifyUserCreateServerPermissions,
+    ModifyUserCreateBuildPermissions,
+    ModifyUserPermissions,
+
+    // github webhook automation
+    AutoBuild,
+    AutoPull,
 }

@@ -2,16 +2,23 @@ use std::{net::SocketAddr, str::FromStr, sync::Arc};
 
 use anyhow::Context;
 use clap::Parser;
+use serde_json::json;
 use simple_logger::SimpleLogger;
 
 use crate::{
     config::{CliArgs, Env, PeripheryConfig},
-    helpers::stats::{InnerStatsClient, StatsClient},
+    helpers::{
+        docker::DockerClient,
+        stats::{InnerStatsClient, StatsClient},
+    },
 };
 
 pub struct State {
     pub config: PeripheryConfig,
     pub stats: StatsClient,
+    pub docker: DockerClient,
+    pub accounts_response: String,
+    pub secrets_response: String,
 }
 
 impl State {
@@ -28,7 +35,15 @@ impl State {
         info!("version: {}", env!("CARGO_PKG_VERSION"));
         let config = PeripheryConfig::load(&env, &args)?;
         let state = State {
+            docker: DockerClient::new(),
             stats: InnerStatsClient::new(config.stats_polling_rate),
+            accounts_response: serde_json::to_string(&json!({
+                "docker": config.docker_accounts.keys().collect::<Vec<_>>(),
+                "github": config.github_accounts.keys().collect::<Vec<_>>(),
+            }))
+            .unwrap(),
+            secrets_response: serde_json::to_string(&config.secrets.keys().collect::<Vec<_>>())
+                .unwrap(),
             config,
         };
         Ok(state.into())

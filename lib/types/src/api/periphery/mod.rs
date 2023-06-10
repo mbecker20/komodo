@@ -4,7 +4,7 @@ use crate::entities::SystemCommand;
 
 use self::requests::{
     GetAllSystemStats, GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetHealth, GetNetworkUsage,
-    GetSystemComponents, GetSystemInformation, GetSystemProcesses, GetVersion,
+    GetSystemComponents, GetSystemInformation, GetSystemProcesses, GetVersion, GetAccounts, GetSecrets,
 };
 
 pub mod requests;
@@ -23,8 +23,8 @@ pub enum PeripheryRequest {
     GetNetworkUsage(GetNetworkUsage),
     GetSystemProcesses(GetSystemProcesses),
     GetSystemComponents(GetSystemComponents),
-    GetAccounts {},
-    GetSecrets {},
+    GetAccounts(GetAccounts),
+    GetSecrets(GetSecrets),
     GetContainerList {},
     GetContainerLog {},
     GetContainerStats {},
@@ -43,10 +43,4 @@ pub enum PeripheryRequest {
     RemoveContainer {},
     RenameContainer {},
     PruneContainers {},
-}
-
-impl Default for PeripheryRequest {
-    fn default() -> PeripheryRequest {
-        PeripheryRequest::GetHealth(GetHealth {})
-    }
 }

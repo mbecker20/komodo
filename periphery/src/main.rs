@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate log;
 
-use std::{net::SocketAddr, sync::Arc};
+use std::{net::SocketAddr, sync::Arc, time::Instant};
 
 use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
@@ -12,7 +12,7 @@ use state::State;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 
-mod api;
+mod resolvers;
 mod config;
 mod guard;
 mod helpers;
@@ -28,16 +28,19 @@ async fn app() -> anyhow::Result<()> {
             "/",
             post(
                 |state: Extension<Arc<State>>, Json(request): Json<PeripheryRequest>| async move {
+                    let timer = Instant::now();
                     let req_id = Uuid::new_v4();
-                    info!("request {req_id}: {:?}", request);
+                    info!("request {req_id} | {request:?}");
                     let res = state
-                        .handle_request(request)
+                        .resolve_request(request)
                         .await
                         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
                     if let Err(e) = &res {
                         debug!("request {req_id} ERROR: {e:?}");
                     }
                     let res = res?;
+                    let elapsed = timer.elapsed();
+                    info!("request {req_id} | resolve time: {elapsed:?}");
                     debug!("request {req_id} RESPONSE: {res}");
                     Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
                 },
