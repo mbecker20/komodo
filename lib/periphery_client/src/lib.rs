@@ -2,8 +2,8 @@
 extern crate log;
 
 use anyhow::{anyhow, Context};
-use monitor_types::api::HasResponse;
 use reqwest::StatusCode;
+use resolver_api::HasResponse;
 use serde_json::json;
 
 pub use periphery_api::requests;

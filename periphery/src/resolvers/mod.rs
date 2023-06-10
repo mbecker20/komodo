@@ -1,34 +1,62 @@
-use anyhow::anyhow;
-use monitor_types::api::{Resolve, ResolveToString};
-use periphery_api::{
-    requests::{GetAccounts, GetHealth, GetSecrets, GetVersion, GetVersionResponse},
-    PeripheryRequest,
+use periphery_api::requests::{
+    GetAccounts, GetAllSystemStats, GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetHealth,
+    GetNetworkUsage, GetSecrets, GetSystemComponents, GetSystemInformation, GetSystemProcesses,
+    GetVersion, GetVersionResponse,
 };
+use resolver_api::{derive::Resolver, Resolve, ResolveToString};
+use serde::{Deserialize, Serialize};
 
 use crate::state::State;
 
 mod system_stats;
 
-impl State {
-    pub async fn resolve_request(&self, request: PeripheryRequest) -> anyhow::Result<String> {
-        match request {
-            PeripheryRequest::GetHealth(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetVersion(req) => self.resolve_to_json(req).await,
-            PeripheryRequest::GetAccounts(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetSecrets(req) => self.resolve_to_string(req).await,
-            // system stats
-            PeripheryRequest::GetSystemInformation(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetAllSystemStats(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetBasicSystemStats(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetCpuUsage(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetDiskUsage(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetNetworkUsage(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetSystemProcesses(req) => self.resolve_to_string(req).await,
-            PeripheryRequest::GetSystemComponents(req) => self.resolve_to_string(req).await,
-            //
-            _ => Err(anyhow!("not implemented")),
-        }
-    }
+#[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
+#[serde(tag = "type", content = "params")]
+#[resolver_target(State)]
+#[allow(clippy::enum_variant_names)]
+pub enum PeripheryRequest {
+    // GET
+    #[to_string_resolver]
+    GetHealth(GetHealth),
+    GetVersion(GetVersion),
+    #[to_string_resolver]
+    GetSystemInformation(GetSystemInformation),
+    #[to_string_resolver]
+    GetAllSystemStats(GetAllSystemStats),
+    #[to_string_resolver]
+    GetBasicSystemStats(GetBasicSystemStats),
+    #[to_string_resolver]
+    GetCpuUsage(GetCpuUsage),
+    #[to_string_resolver]
+    GetDiskUsage(GetDiskUsage),
+    #[to_string_resolver]
+    GetNetworkUsage(GetNetworkUsage),
+    #[to_string_resolver]
+    GetSystemProcesses(GetSystemProcesses),
+    #[to_string_resolver]
+    GetSystemComponents(GetSystemComponents),
+    #[to_string_resolver]
+    GetAccounts(GetAccounts),
+    #[to_string_resolver]
+    GetSecrets(GetSecrets),
+    // GetContainerList {},
+    // GetContainerLog {},
+    // GetContainerStats {},
+    // GetContainerStatsList {},
+    // GetNetworkList {},
+
+    // ACTIONS
+    // RunCommand(SystemCommand),
+    // CloneRepo {},
+    // PullRepo {},
+    // DeleteRepo {},
+    // Build {},
+    // Deploy {},
+    // StartContainer {},
+    // StopContainer {},
+    // RemoveContainer {},
+    // RenameContainer {},
+    // PruneContainers {},
 }
 
 #[async_trait::async_trait]

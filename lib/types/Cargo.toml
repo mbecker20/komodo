@@ -2,6 +2,7 @@
 name = "monitor_types"
 version.workspace = true
 edition.workspace = true
+authors.workspace = true
 license.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -17,3 +18,4 @@ async-trait.workspace = true
 anyhow.workspace = true
 bson.workspace = true
 async_timing_util.workspace = true
+resolver_api.workspace = true

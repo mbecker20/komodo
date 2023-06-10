@@ -2,6 +2,7 @@
 name = "periphery_client"
 version.workspace = true
 edition.workspace = true
+authors.workspace = true
 license.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -13,3 +14,4 @@ reqwest.workspace = true
 anyhow.workspace = true
 serde_json.workspace = true
 log.workspace = true
+resolver_api.workspace = true

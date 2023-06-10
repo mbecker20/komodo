@@ -7,10 +7,11 @@ use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
 };
-use periphery_api::PeripheryRequest;
 use state::State;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
+
+use crate::resolvers::PeripheryRequest;
 
 mod config;
 mod guard;

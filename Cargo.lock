@@ -1066,6 +1066,8 @@ dependencies = [
  "monitor_types",
  "parse_csl",
  "periphery_client",
+ "resolver_api",
+ "serde",
  "termination_signal",
  "tokio",
 ]
@@ -1095,6 +1097,7 @@ dependencies = [
  "monitor_types",
  "parse_csl",
  "periphery_api",
+ "resolver_api",
  "run_command",
  "serde",
  "serde_json",
@@ -1115,6 +1118,7 @@ dependencies = [
  "async_timing_util",
  "bson",
  "diff-struct",
+ "resolver_api",
  "serde",
  "serde_json",
  "strum",
@@ -1334,6 +1338,7 @@ name = "periphery_api"
 version = "1.0.0"
 dependencies = [
  "monitor_types",
+ "resolver_api",
  "serde",
 ]
 
@@ -1346,6 +1351,7 @@ dependencies = [
  "monitor_types",
  "periphery_api",
  "reqwest",
+ "resolver_api",
  "serde_json",
 ]
 
@@ -1513,6 +1519,30 @@ dependencies = [
  "wasm-bindgen-futures",
  "web-sys",
  "winreg",
+]
+
+[[package]]
+name = "resolver_api"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dddfc550f8f0ebd5def43ec007727b1df0007ab88371a21aca374652e5ee5f31"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "resolver_api_derive",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "resolver_api_derive"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e7369ccba28667dc8de55a0e907029f0c8cfcbb1c6ebaa0b8b204a26f61438fa"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.18",
 ]
 
 [[package]]

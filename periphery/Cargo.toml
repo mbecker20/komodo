@@ -2,6 +2,7 @@
 name = "monitor_periphery"
 version.workspace = true
 edition.workspace = true
+authors.workspace = true
 license.workspace = true
 
 [[bin]]
@@ -37,3 +38,4 @@ parse_csl.workspace = true
 termination_signal.workspace = true
 run_command.workspace = true
 svi.workspace = true
+resolver_api.workspace = true
