@@ -1058,7 +1058,6 @@ version = "1.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "axum",
  "diff-struct",
  "serde",
  "serde_json",

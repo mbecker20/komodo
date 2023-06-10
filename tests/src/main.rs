@@ -11,5 +11,11 @@ async fn main() -> anyhow::Result<()> {
     let system_info = periphery.request(requests::GetSystemInformation {}).await?;
     println!("{system_info:#?}");
 
+    let system_stats = periphery.request(requests::GetAllSystemStats {}).await?;
+    // println!("{system_stats:#?}");
+
+    let periphery_process = system_stats.processes.into_iter().find(|p| p.name.contains("periphery"));
+    println!("{periphery_process:#?}");
+
     Ok(())
 }

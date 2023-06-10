@@ -14,9 +14,9 @@ use tokio::sync::RwLock;
 pub type StatsClient = Arc<RwLock<InnerStatsClient>>;
 
 pub struct InnerStatsClient {
-    pub info: String, // SystemInformation serialized
+    pub info: SystemInformation,
+    pub stats: AllSystemStats,
     sys: sysinfo::System,
-    cache: AllSystemStats,
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
@@ -26,14 +26,14 @@ const BYTES_PER_KB: f64 = 1024.0;
 impl InnerStatsClient {
     pub fn new(polling_rate: Timelength) -> StatsClient {
         let sys = sysinfo::System::new_all();
-        let cache = AllSystemStats {
+        let stats = AllSystemStats {
             polling_rate,
             ..Default::default()
         };
         let client = InnerStatsClient {
-            info: serde_json::to_string(&get_system_information(&sys)).unwrap(),
+            info: get_system_information(&sys),
             sys,
-            cache,
+            stats,
         };
         let client = Arc::new(RwLock::new(client));
         let clone = client.clone();
@@ -42,7 +42,7 @@ impl InnerStatsClient {
                 let ts = wait_until_timelength(async_timing_util::Timelength::FiveMinutes, 0).await;
                 let mut client = clone.write().await;
                 client.refresh_lists();
-                client.cache.refresh_list_ts = ts as i64;
+                client.stats.refresh_list_ts = ts as i64;
             }
         });
         let clone = client.clone();
@@ -52,8 +52,8 @@ impl InnerStatsClient {
                 let ts = wait_until_timelength(polling_rate, 1).await;
                 let mut client = clone.write().await;
                 client.refresh();
-                client.cache = client.get_all_stats();
-                client.cache.refresh_ts = ts as i64;
+                client.stats = client.get_all_stats();
+                client.stats.refresh_ts = ts as i64;
             }
         });
         client
@@ -82,9 +82,9 @@ impl InnerStatsClient {
             network: self.get_network_usage(),
             processes: self.get_processes(),
             componenets: self.get_components(),
-            polling_rate: self.cache.polling_rate,
-            refresh_ts: self.cache.refresh_ts,
-            refresh_list_ts: self.cache.refresh_list_ts,
+            polling_rate: self.stats.polling_rate,
+            refresh_ts: self.stats.refresh_ts,
+            refresh_list_ts: self.stats.refresh_list_ts,
         }
     }
 

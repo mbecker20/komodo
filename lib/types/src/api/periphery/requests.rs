@@ -2,7 +2,10 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::{
-    entities::server::{BasicSystemStats, DiskUsage, SystemInformation, SystemProcess, NetworkUsage, AllSystemStats, SystemComponent, CpuUsage},
+    entities::server::{
+        AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage, SystemComponent,
+        SystemInformation, SystemProcess,
+    },
     impl_has_response,
 };
 
