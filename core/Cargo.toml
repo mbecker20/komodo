@@ -10,6 +10,7 @@ license.workspace = true
 # local
 monitor_types.workspace = true
 monitor_helpers.workspace = true
+periphery_client.workspace = true
 # external
 tokio.workspace = true
 anyhow.workspace = true

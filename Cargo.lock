@@ -1065,6 +1065,7 @@ dependencies = [
  "monitor_helpers",
  "monitor_types",
  "parse_csl",
+ "periphery_client",
  "termination_signal",
  "tokio",
 ]
