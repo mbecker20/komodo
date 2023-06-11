@@ -1,8 +1,8 @@
 use termination_signal::tokio::immediate_term_handle;
 
 mod config;
-mod state;
 mod resolvers;
+mod state;
 
 async fn app() -> anyhow::Result<()> {
     Ok(())

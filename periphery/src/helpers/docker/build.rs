@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 use anyhow::{anyhow, Context};
 use monitor_helpers::to_monitor_name;
-use monitor_types::entities::{update::Log, Version, EnvironmentVar};
+use monitor_types::entities::{update::Log, EnvironmentVar, Version};
 
 use crate::helpers::run_monitor_command;
 

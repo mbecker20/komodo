@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::anyhow;
 use async_timing_util::unix_timestamp_ms;
 use monitor_helpers::to_monitor_name;
-use monitor_types::entities::{update::Log, SystemCommand, CloneArgs};
+use monitor_types::entities::{update::Log, CloneArgs, SystemCommand};
 use run_command::async_run_command;
 
 use super::run_monitor_command;

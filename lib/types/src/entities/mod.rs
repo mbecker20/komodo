@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
+pub mod build;
 pub mod deployment;
 pub mod server;
 pub mod update;

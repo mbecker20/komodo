@@ -1,5 +1,5 @@
 use resolver_api::derive::Resolver;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::state::State;
 

@@ -11,3 +11,5 @@ monitor_client.workspace = true
 periphery_client.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true

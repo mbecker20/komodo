@@ -1,7 +1,7 @@
-use anyhow::{Context, anyhow};
+use anyhow::{anyhow, Context};
 use monitor_helpers::to_monitor_name;
 use monitor_types::entities::{
-    deployment::{Conversion, RestartMode, TerminationSignal, DockerContainerStats},
+    deployment::{Conversion, DockerContainerStats, RestartMode, TerminationSignal},
     update::Log,
     EnvironmentVar,
 };

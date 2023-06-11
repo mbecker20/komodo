@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::{entities::Timelength, I64};

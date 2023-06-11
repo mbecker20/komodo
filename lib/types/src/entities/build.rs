@@ -6,14 +6,10 @@ use typeshare::typeshare;
 
 use super::PermissionsMap;
 
-pub mod docker_image;
-pub mod docker_network;
-pub mod stats;
-
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
-pub struct Server {
+pub struct Deployment {
     #[serde(
         default,
         rename = "_id",
@@ -47,3 +43,8 @@ pub struct Server {
     #[builder(setter(skip))]
     pub updated_at: String,
 }
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
+pub struct DeploymentConfig {}

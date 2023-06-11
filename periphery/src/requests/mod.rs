@@ -6,7 +6,7 @@ use resolver_api::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{state::State, helpers::run_monitor_command};
+use crate::{helpers::run_monitor_command, state::State};
 
 mod stats;
 pub use stats::*;
