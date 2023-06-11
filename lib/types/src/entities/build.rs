@@ -1,6 +1,7 @@
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
 use diff::Diff;
+use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -9,7 +10,7 @@ use super::PermissionsMap;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
-pub struct Deployment {
+pub struct Build {
     #[serde(
         default,
         rename = "_id",
@@ -45,6 +46,7 @@ pub struct Deployment {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder, Partial)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[diff(attr(#[derive(Debug, Serialize)]))]
-pub struct DeploymentConfig {}
+pub struct BuildConfig {}

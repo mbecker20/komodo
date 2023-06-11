@@ -1,6 +1,7 @@
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
 use diff::Diff;
+use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -46,4 +47,13 @@ pub struct Server {
     #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub updated_at: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder, Partial)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[diff(attr(#[derive(Debug, Serialize)]))]
+pub struct ServerConfig {
+    pub address: String,
+    
 }
