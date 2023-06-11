@@ -1,7 +1,9 @@
 use std::path::PathBuf;
 
+use anyhow::anyhow;
 use async_timing_util::unix_timestamp_ms;
-use monitor_types::entities::{update::Log, SystemCommand};
+use monitor_helpers::to_monitor_name;
+use monitor_types::entities::{update::Log, SystemCommand, CloneArgs};
 use run_command::async_run_command;
 
 use super::run_monitor_command;
@@ -35,49 +37,49 @@ pub async fn pull(
     logs
 }
 
-// pub async fn clone_repo(
-//     clone_args: impl Into<CloneArgs>,
-//     mut repo_dir: PathBuf,
-//     access_token: Option<String>,
-// ) -> anyhow::Result<Vec<Log>> {
-//     let CloneArgs {
-//         name,
-//         repo,
-//         branch,
-//         on_clone,
-//         on_pull,
-//         ..
-//     } = clone_args.into();
-//     let repo = repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
-//     let name = to_monitor_name(&name);
-//     repo_dir.push(name);
-//     let destination = repo_dir.display().to_string();
-//     let clone_log = clone(repo, &destination, &branch, access_token).await;
-//     let mut logs = vec![clone_log];
-//     if let Some(command) = on_clone {
-//         if !command.path.is_empty() && !command.command.is_empty() {
-//             let on_clone_path = repo_dir.join(&command.path);
-//             let on_clone_log = run_monitor_command(
-//                 "on clone",
-//                 format!("cd {} && {}", on_clone_path.display(), command.command),
-//             )
-//             .await;
-//             logs.push(on_clone_log);
-//         }
-//     }
-//     if let Some(command) = on_pull {
-//         if !command.path.is_empty() && !command.command.is_empty() {
-//             let on_pull_path = repo_dir.join(&command.path);
-//             let on_pull_log = run_monitor_command(
-//                 "on pull",
-//                 format!("cd {} && {}", on_pull_path.display(), command.command),
-//             )
-//             .await;
-//             logs.push(on_pull_log);
-//         }
-//     }
-//     Ok(logs)
-// }
+pub async fn clone_repo(
+    clone_args: impl Into<CloneArgs>,
+    mut repo_dir: PathBuf,
+    access_token: Option<String>,
+) -> anyhow::Result<Vec<Log>> {
+    let CloneArgs {
+        name,
+        repo,
+        branch,
+        on_clone,
+        on_pull,
+        ..
+    } = clone_args.into();
+    let repo = repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
+    let name = to_monitor_name(&name);
+    repo_dir.push(name);
+    let destination = repo_dir.display().to_string();
+    let clone_log = clone(repo, &destination, &branch, access_token).await;
+    let mut logs = vec![clone_log];
+    if let Some(command) = on_clone {
+        if !command.path.is_empty() && !command.command.is_empty() {
+            let on_clone_path = repo_dir.join(&command.path);
+            let on_clone_log = run_monitor_command(
+                "on clone",
+                format!("cd {} && {}", on_clone_path.display(), command.command),
+            )
+            .await;
+            logs.push(on_clone_log);
+        }
+    }
+    if let Some(command) = on_pull {
+        if !command.path.is_empty() && !command.command.is_empty() {
+            let on_pull_path = repo_dir.join(&command.path);
+            let on_pull_log = run_monitor_command(
+                "on pull",
+                format!("cd {} && {}", on_pull_path.display(), command.command),
+            )
+            .await;
+            logs.push(on_pull_log);
+        }
+    }
+    Ok(logs)
+}
 
 async fn clone(
     repo: &str,

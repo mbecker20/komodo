@@ -32,7 +32,6 @@ impl State {
             .with_utc_timestamps()
             .init()
             .context("failed to configure logger")?;
-        info!("version: {}", env!("CARGO_PKG_VERSION"));
         let config = PeripheryConfig::load(&env, &args)?;
         let state = State {
             docker: DockerClient::new(),

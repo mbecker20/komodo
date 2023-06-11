@@ -1,46 +1,45 @@
+use anyhow::{Context, anyhow};
 use monitor_helpers::to_monitor_name;
 use monitor_types::entities::{
-    deployment::{Conversion, RestartMode, TerminationSignal},
+    deployment::{Conversion, RestartMode, TerminationSignal, DockerContainerStats},
     update::Log,
     EnvironmentVar,
 };
+use run_command::async_run_command;
 
 use crate::helpers::run_monitor_command;
 
-pub async fn container_log(container_name: &str, tail: Option<u64>) -> Log {
-    let command = format!(
-        "docker logs {container_name} --tail {}",
-        tail.unwrap_or(1000)
-    );
+pub async fn container_log(container_name: &str, tail: u64) -> Log {
+    let command = format!("docker logs {container_name} --tail {tail}");
     run_monitor_command("get container log", command).await
 }
 
-// pub async fn container_stats(
-//     container_name: Option<String>,
-// ) -> anyhow::Result<Vec<DockerContainerStats>> {
-//     let format = "--format \"{{ json . }}\"";
-//     let container_name = match container_name {
-//         Some(name) => format!(" {name}"),
-//         None => "".to_string(),
-//     };
-//     let command = format!("docker stats{container_name} --no-stream {format}");
-//     let output = async_run_command(&command).await;
-//     if output.success() {
-//         let res = output
-//             .stdout
-//             .split('\n')
-//             .filter(|e| !e.is_empty())
-//             .map(|e| {
-//                 let parsed =
-//                     serde_json::from_str(e).context(format!("failed at parsing entry {e}"))?;
-//                 Ok(parsed)
-//             })
-//             .collect::<anyhow::Result<Vec<DockerContainerStats>>>()?;
-//         Ok(res)
-//     } else {
-//         Err(anyhow!("{}", output.stderr.replace('\n', "")))
-//     }
-// }
+pub async fn container_stats(
+    container_name: Option<String>,
+) -> anyhow::Result<Vec<DockerContainerStats>> {
+    let format = "--format \"{{ json . }}\"";
+    let container_name = match container_name {
+        Some(name) => format!(" {name}"),
+        None => "".to_string(),
+    };
+    let command = format!("docker stats{container_name} --no-stream {format}");
+    let output = async_run_command(&command).await;
+    if output.success() {
+        let res = output
+            .stdout
+            .split('\n')
+            .filter(|e| !e.is_empty())
+            .map(|e| {
+                let parsed =
+                    serde_json::from_str(e).context(format!("failed at parsing entry {e}"))?;
+                Ok(parsed)
+            })
+            .collect::<anyhow::Result<Vec<DockerContainerStats>>>()?;
+        Ok(res)
+    } else {
+        Err(anyhow!("{}", output.stderr.replace('\n', "")))
+    }
+}
 
 pub async fn prune_containers() -> Log {
     let command = String::from("docker container prune -f");

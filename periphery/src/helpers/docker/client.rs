@@ -1,6 +1,9 @@
 use anyhow::anyhow;
 use bollard::{container::ListContainersOptions, Docker};
-use monitor_types::entities::deployment::BasicContainerInfo;
+use monitor_types::entities::{
+    deployment::BasicContainerInfo,
+    server::{docker_image::ImageSummary, docker_network::DockerNetwork},
+};
 
 pub struct DockerClient {
     docker: Docker,
@@ -42,13 +45,25 @@ impl DockerClient {
         Ok(res)
     }
 
-    // pub async fn list_networks(&self) -> anyhow::Result<Vec<Network>> {
-    //     let networks = self.docker.list_networks::<String>(None).await?;
-    //     Ok(networks)
-    // }
+    pub async fn list_networks(&self) -> anyhow::Result<Vec<DockerNetwork>> {
+        let networks = self
+            .docker
+            .list_networks::<String>(None)
+            .await?
+            .into_iter()
+            .map(|network| network.into())
+            .collect();
+        Ok(networks)
+    }
 
-    // pub async fn list_images(&self) -> anyhow::Result<Vec<ImageSummary>> {
-    //     let images = self.docker.list_images::<String>(None).await?;
-    //     Ok(images)
-    // }
+    pub async fn list_images(&self) -> anyhow::Result<Vec<ImageSummary>> {
+        let images = self
+            .docker
+            .list_images::<String>(None)
+            .await?
+            .into_iter()
+            .map(|i| i.into())
+            .collect();
+        Ok(images)
+    }
 }

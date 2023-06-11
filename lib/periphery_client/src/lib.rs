@@ -6,7 +6,7 @@ use reqwest::StatusCode;
 use resolver_api::HasResponse;
 use serde_json::json;
 
-pub use periphery_api::requests;
+pub use monitor_periphery::requests;
 
 pub struct PeripheryClient {
     reqwest: reqwest::Client,

@@ -1,12 +1,17 @@
-use anyhow::{Context, anyhow};
+use std::collections::HashMap;
+
+use anyhow::{anyhow, Context};
 use diff::Diff;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
+pub mod deployment;
 pub mod server;
 pub mod update;
-pub mod deployment;
+
+#[typeshare]
+pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, Diff)]
@@ -64,6 +69,17 @@ impl Version {
 pub struct EnvironmentVar {
     pub variable: String,
     pub value: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Diff)]
+pub struct CloneArgs {
+    pub name: String,
+    pub repo: Option<String>,
+    pub branch: Option<String>,
+    pub on_clone: Option<SystemCommand>,
+    pub on_pull: Option<SystemCommand>,
+    pub github_account: Option<String>,
 }
 
 #[typeshare]

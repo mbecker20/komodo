@@ -7,20 +7,23 @@ use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
 };
-use state::State;
+
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
-
-use crate::resolvers::PeripheryRequest;
 
 mod config;
 mod guard;
 mod helpers;
-mod resolvers;
+mod requests;
 mod state;
+
+use requests::PeripheryRequest;
+use state::State;
 
 async fn app() -> anyhow::Result<()> {
     let state = State::load().await?;
+
+    info!("version: v{}", env!("CARGO_PKG_VERSION"));
 
     let socket_addr = state.socket_addr()?;
 

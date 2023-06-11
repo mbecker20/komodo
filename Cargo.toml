@@ -14,7 +14,7 @@ monitor_helpers = { path = "lib/helpers" }
 monitor_types = { path = "lib/types" }
 monitor_client = { path = "lib/rs_client" }
 periphery_client = { path = "lib/periphery_client" }
-periphery_api = { path = "lib/periphery_api" }
+monitor_periphery = { path = "periphery" }
 # external
 tokio = { version = "1.28", features = ["full"] }
 axum = { version = "0.6", features = ["ws", "json", "headers"] }
@@ -33,6 +33,7 @@ simple_logger = "4.1"
 bson = "2.6.1"
 bollard = "0.14.0"
 diff-struct = "0.5"
+derive_builder = "0.12"
 typeshare = "1.0.1"
 strum = "0.24"
 strum_macros = "0.24"
@@ -44,7 +45,7 @@ slack = { package = "slack_client_rs", version = "0.0.8" }
 merge_config_files = "0.1.3"
 termination_signal = "0.1.2"
 async_timing_util = "0.1.14"
-resolver_api = "0.1.1"
+resolver_api = "0.1.3"
 parse_csl = "0.1.0"
 mungos = "0.3.20"
 svi = "0.1.4"

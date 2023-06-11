@@ -9,7 +9,7 @@ license.workspace = true
 
 [dependencies]
 monitor_types.workspace = true
-periphery_api.workspace = true
+monitor_periphery.workspace = true
 reqwest.workspace = true
 anyhow.workspace = true
 serde_json.workspace = true

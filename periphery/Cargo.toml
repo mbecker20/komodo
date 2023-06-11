@@ -5,6 +5,10 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[lib]
+name = "monitor_periphery"
+path = "src/lib.rs"
+
 [[bin]]
 name = "periphery"
 path = "src/main.rs"
@@ -15,7 +19,6 @@ path = "src/main.rs"
 # local
 monitor_types.workspace = true
 monitor_helpers.workspace = true
-periphery_api.workspace = true
 # external
 tokio.workspace = true
 axum.workspace = true
