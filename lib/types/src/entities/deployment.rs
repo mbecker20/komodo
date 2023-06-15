@@ -1,16 +1,15 @@
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
-use diff::Diff;
+use mungos::MungosIndexed;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use super::PermissionsMap;
+use super::{EnvironmentVar, PermissionsMap};
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
-#[diff(attr(#[derive(Debug, Serialize)]))]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed)]
 pub struct Deployment {
     #[serde(
         default,
@@ -18,43 +17,129 @@ pub struct Deployment {
         skip_serializing_if = "String::is_empty",
         with = "hex_string_as_object_id"
     )]
-    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     #[builder(setter(skip))]
     pub id: String,
 
-    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    #[unique_index]
     pub name: String,
 
     #[serde(default)]
     #[builder(default)]
-    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub description: String,
 
     #[serde(default)]
-    #[diff(attr(#[serde(skip_serializing)]))]
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
     #[serde(default, skip_serializing_if = "String::is_empty")]
-    #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub created_at: String,
 
     #[serde(default)]
-    #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub updated_at: String,
+
+    #[serde(default)]
+    pub tags: Vec<String>,
+
+    pub config: DeploymentConfig,
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder, Partial)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[diff(attr(#[derive(Debug, Serialize)]))]
-pub struct DeploymentConfig {}
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone)]
+#[skip_serializing_none]
+pub struct DeploymentConfig {
+    #[serde(default)]
+    #[builder(default)]
+    #[index]
+    pub server_id: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    #[index]
+    pub build_id: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub image: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub skip_secret_interp: bool,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub redeploy_on_build: bool,
+
+    #[serde(default = "default_term_signal_labels")]
+    #[builder(default = "vec![TerminationSignalLabel::default()]")]
+    pub term_signal_labels: Vec<TerminationSignalLabel>,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub termination_signal: TerminationSignal,
+
+    #[serde(default = "default_termination_timeout")]
+    #[builder(default = "10")]
+    pub termination_timeout: i32,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub ports: Vec<Conversion>,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub volumes: Vec<Conversion>,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub environment: Vec<EnvironmentVar>,
+
+    #[serde(default = "default_network")]
+    #[builder(default = "default_network()")]
+    pub network: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub restart: RestartMode,
+
+    #[builder(default)]
+    pub post_image: String, // empty is no post image
+
+    #[builder(default)]
+    pub container_user: String, // empty is no container user
+
+    #[serde(default)]
+    #[builder(default)]
+    pub extra_args: Vec<String>,
+
+    #[builder(default)]
+    pub docker_account: String, // the username of the dockerhub account. empty if no account.
+}
+
+fn default_term_signal_labels() -> Vec<TerminationSignalLabel> {
+    vec![TerminationSignalLabel::default()]
+}
+
+fn default_termination_timeout() -> i32 {
+    10
+}
+
+fn default_network() -> String {
+    String::from("host")
+}
+
+// #[typeshare]
+// #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, MungosIndexed)]
+// #[serde(tag = "type", content = "params")]
+// pub enum DeploymentImage {
+//     Image { image: String },
+//     Build { id: String, version: String }, // empty version string means latest
+// }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 pub struct Conversion {
     pub local: String,
     pub container: String,
@@ -91,7 +176,18 @@ pub struct DockerContainerStats {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Default,
+    Serialize,
+    Deserialize,
+    Debug,
+    Display,
+    EnumString,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+    MungosIndexed,
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -120,10 +216,9 @@ pub enum DockerContainerState {
     Eq,
     Clone,
     Copy,
-    Diff,
     Default,
+    MungosIndexed,
 )]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum RestartMode {
     #[default]
     #[serde(rename = "no")]
@@ -152,12 +247,11 @@ pub enum RestartMode {
     Eq,
     Clone,
     Copy,
-    Diff,
     Default,
+    MungosIndexed,
 )]
 #[serde(rename_all = "UPPERCASE")]
 #[strum(serialize_all = "UPPERCASE")]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum TerminationSignal {
     #[serde(alias = "1")]
     SigHup,
@@ -168,4 +262,13 @@ pub enum TerminationSignal {
     #[default]
     #[serde(alias = "15")]
     SigTerm,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, Builder)]
+pub struct TerminationSignalLabel {
+    #[builder(default)]
+    pub signal: TerminationSignal,
+    #[builder(default)]
+    pub label: String,
 }

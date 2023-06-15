@@ -1,6 +1,7 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
+use monitor_helpers::optional_string;
 use monitor_types::entities::{
-    deployment::{BasicContainerInfo, DockerContainerStats, TerminationSignal},
+    deployment::{BasicContainerInfo, Deployment, DockerContainerStats, TerminationSignal},
     server::{docker_image::ImageSummary, docker_network::DockerNetwork},
     update::Log,
 };
@@ -182,11 +183,31 @@ impl Resolve<PruneContainers> for State {
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
-pub struct Deploy {}
+pub struct Deploy {
+    pub deployment: Deployment,
+    pub stop_signal: Option<TerminationSignal>,
+    pub stop_time: Option<i32>,
+}
 
 #[async_trait::async_trait]
 impl Resolve<Deploy> for State {
-    async fn resolve(&self, _: Deploy) -> anyhow::Result<Log> {
-        todo!()
+    async fn resolve(
+        &self,
+        Deploy {
+            deployment,
+            stop_signal,
+            stop_time,
+        }: Deploy,
+    ) -> anyhow::Result<Log> {
+        let secrets = self.secrets.clone();
+        let log = match self.get_docker_token(&optional_string(&deployment.config.docker_account)) {
+            Ok(docker_token) => tokio::spawn(async move {
+                docker::deploy(&deployment, &docker_token, &secrets, stop_signal, stop_time).await
+            })
+            .await
+            .context("failed at spawn thread for deploy")?,
+            Err(e) => Log::error("docker login", format!("{e:#?}")),
+        };
+        Ok(log)
     }
 }

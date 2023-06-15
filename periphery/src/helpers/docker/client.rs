@@ -9,14 +9,16 @@ pub struct DockerClient {
     docker: Docker,
 }
 
-impl DockerClient {
-    pub fn new() -> DockerClient {
+impl Default for DockerClient {
+    fn default() -> DockerClient {
         DockerClient {
             docker: Docker::connect_with_local_defaults()
                 .expect("failed to connect to docker daemon"),
         }
     }
+}
 
+impl DockerClient {
     pub async fn list_containers(&self) -> anyhow::Result<Vec<BasicContainerInfo>> {
         let res = self
             .docker

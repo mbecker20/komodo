@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, str::FromStr, sync::Arc};
+use std::{collections::HashMap, net::SocketAddr, str::FromStr, sync::Arc};
 
 use anyhow::Context;
 use clap::Parser;
@@ -15,6 +15,7 @@ use crate::{
 
 pub struct State {
     pub config: PeripheryConfig,
+    pub secrets: Arc<HashMap<String, String>>,
     pub stats: StatsClient,
     pub docker: DockerClient,
     pub accounts_response: String,
@@ -34,7 +35,8 @@ impl State {
             .context("failed to configure logger")?;
         let config = PeripheryConfig::load(&env, &args)?;
         let state = State {
-            docker: DockerClient::new(),
+            secrets: config.secrets.clone().into(),
+            docker: DockerClient::default(),
             stats: InnerStatsClient::new(config.stats_polling_rate),
             accounts_response: serde_json::to_string(&json!({
                 "docker": config.docker_accounts.keys().collect::<Vec<_>>(),

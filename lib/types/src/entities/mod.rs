@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use diff::Diff;
+use mungos::MungosIndexed;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 pub mod build;
 pub mod deployment;
+pub mod repo;
 pub mod server;
 pub mod update;
 
@@ -15,8 +16,7 @@ pub mod update;
 pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, Diff)]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, MungosIndexed)]
 pub struct SystemCommand {
     #[serde(default)]
     pub path: String,
@@ -24,9 +24,18 @@ pub struct SystemCommand {
     pub command: String,
 }
 
+impl SystemCommand {
+    pub fn command(&self) -> Option<String> {
+        if self.path.is_empty() || self.command.is_empty() {
+            None
+        } else {
+            Some(format!("cd {} && {}", self.path, self.command))
+        }
+    }
+}
+
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, MungosIndexed)]
 pub struct Version {
     pub major: i32,
     pub minor: i32,
@@ -65,15 +74,14 @@ impl Version {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Diff)]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 pub struct EnvironmentVar {
     pub variable: String,
     pub value: String,
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Diff)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct CloneArgs {
     pub name: String,
     pub repo: Option<String>,
@@ -85,22 +93,10 @@ pub struct CloneArgs {
 
 #[typeshare]
 #[derive(
-    Serialize,
-    Deserialize,
-    Debug,
-    Display,
-    EnumString,
-    PartialEq,
-    Hash,
-    Eq,
-    Clone,
-    Copy,
-    Diff,
-    Default,
+    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Default,
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum Timelength {
     #[serde(rename = "1-sec")]
     #[strum(serialize = "1-sec")]
@@ -178,7 +174,6 @@ pub enum Timelength {
     Hash,
     Clone,
     Copy,
-    Diff,
     PartialEq,
     Eq,
     PartialOrd,
@@ -187,7 +182,6 @@ pub enum Timelength {
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum PermissionLevel {
     #[default]
     None,
@@ -198,22 +192,10 @@ pub enum PermissionLevel {
 
 #[typeshare]
 #[derive(
-    Serialize,
-    Deserialize,
-    Debug,
-    Default,
-    Display,
-    EnumString,
-    PartialEq,
-    Hash,
-    Eq,
-    Clone,
-    Copy,
-    Diff,
+    Serialize, Deserialize, Debug, Default, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy,
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-#[diff(attr(#[derive(Debug, PartialEq, Serialize)]))]
 pub enum Operation {
     // do nothing
     #[default]

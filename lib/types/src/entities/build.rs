@@ -1,15 +1,14 @@
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
-use diff::Diff;
+use mungos::MungosIndexed;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use super::PermissionsMap;
+use super::{EnvironmentVar, PermissionsMap, SystemCommand, Version};
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder)]
-#[diff(attr(#[derive(Debug, Serialize)]))]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed)]
 pub struct Build {
     #[serde(
         default,
@@ -17,36 +16,94 @@ pub struct Build {
         skip_serializing_if = "String::is_empty",
         with = "hex_string_as_object_id"
     )]
-    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     #[builder(setter(skip))]
     pub id: String,
 
-    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
+    #[unique_index]
     pub name: String,
 
     #[serde(default)]
     #[builder(default)]
-    #[diff(attr(#[serde(skip_serializing_if = "Option::is_none")]))]
     pub description: String,
 
     #[serde(default)]
-    #[diff(attr(#[serde(skip_serializing)]))]
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
     #[serde(default, skip_serializing_if = "String::is_empty")]
-    #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub created_at: String,
 
     #[serde(default)]
-    #[diff(attr(#[serde(skip)]))]
     #[builder(setter(skip))]
     pub updated_at: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
+
+    pub config: BuildConfig,
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Diff, Builder, Partial)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[diff(attr(#[derive(Debug, Serialize)]))]
-pub struct BuildConfig {}
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone)]
+#[skip_serializing_none]
+pub struct BuildConfig {
+    #[index]
+    #[serde(default)]
+    #[builder(default)]
+    pub server_id: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub skip_secret_interp: bool,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub version: Version,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub repo: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub branch: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub github_account: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub docker_account: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub docker_organization: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub pre_build: SystemCommand,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub build_path: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub dockerfile_path: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub build_args: Vec<EnvironmentVar>,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub extra_args: Vec<String>,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub use_buildx: bool,
+}

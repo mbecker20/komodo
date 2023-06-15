@@ -3,7 +3,7 @@ use async_timing_util::unix_timestamp_ms;
 use monitor_types::entities::update::Log;
 use run_command::{async_run_command, CommandOutput};
 
-use crate::{config::PeripheryConfig, state::State};
+use crate::state::State;
 
 pub mod docker;
 pub mod git;

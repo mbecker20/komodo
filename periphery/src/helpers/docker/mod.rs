@@ -39,7 +39,7 @@ pub async fn docker_login(
     }
 }
 
-fn parse_extra_args(extra_args: &[String]) -> String {
+pub fn parse_extra_args(extra_args: &[String]) -> String {
     let args = extra_args.join(" ");
     if !args.is_empty() {
         format!(" {args}")

@@ -17,10 +17,16 @@ pub use container::*;
 mod git;
 pub use git::*;
 
+mod build;
+pub use build::*;
+
+mod network;
+pub use network::*;
+
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[serde(tag = "type", content = "params")]
 #[resolver_target(State)]
-#[allow(clippy::enum_variant_names)]
+#[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
 pub enum PeripheryRequest {
     // GET
     GetVersion(GetVersion),
@@ -56,13 +62,17 @@ pub enum PeripheryRequest {
     CloneRepo(CloneRepo),
     PullRepo(PullRepo),
     DeleteRepo(DeleteRepo),
-    // Build {},
+    Build(Build),
+    PruneImages(PruneImages),
     Deploy(Deploy),
     StartContainer(StartContainer),
     StopContainer(StopContainer),
     RemoveContainer(RemoveContainer),
     RenameContainer(RenameContainer),
     PruneContainers(PruneContainers),
+    CreateNetwork(CreateNetwork),
+    DeleteNetwork(DeleteNetwork),
+    PruneNetworks(PruneNetworks),
 }
 
 //
