@@ -14,8 +14,16 @@ monitor_helpers.workspace = true
 periphery_client.workspace = true
 # external
 tokio.workspace = true
-anyhow.workspace = true
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
 serde.workspace = true
+uuid.workspace = true
+anyhow.workspace = true
+log.workspace = true
+simple_logger.workspace = true
+dotenv.workspace = true
+envy.workspace = true
 # mogh
 async_timing_util.workspace = true
 merge_config_files.workspace = true
