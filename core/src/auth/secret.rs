@@ -15,6 +15,7 @@ impl Resolve<LoginWithSecret> for State {
     async fn resolve(
         &self,
         LoginWithSecret { username, secret }: LoginWithSecret,
+        _: (),
     ) -> anyhow::Result<LoginWithSecretResponse> {
         let user = self
             .db

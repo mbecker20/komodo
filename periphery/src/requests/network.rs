@@ -16,7 +16,11 @@ pub struct CreateNetwork {
 
 #[async_trait]
 impl Resolve<CreateNetwork> for State {
-    async fn resolve(&self, CreateNetwork { name, driver }: CreateNetwork) -> anyhow::Result<Log> {
+    async fn resolve(
+        &self,
+        CreateNetwork { name, driver }: CreateNetwork,
+        _: (),
+    ) -> anyhow::Result<Log> {
         Ok(docker::create_network(&name, driver).await)
     }
 }
@@ -31,7 +35,7 @@ pub struct DeleteNetwork {
 
 #[async_trait]
 impl Resolve<DeleteNetwork> for State {
-    async fn resolve(&self, DeleteNetwork { name }: DeleteNetwork) -> anyhow::Result<Log> {
+    async fn resolve(&self, DeleteNetwork { name }: DeleteNetwork, _: ()) -> anyhow::Result<Log> {
         Ok(docker::delete_network(&name).await)
     }
 }
@@ -44,7 +48,7 @@ pub struct PruneNetworks {}
 
 #[async_trait]
 impl Resolve<PruneNetworks> for State {
-    async fn resolve(&self, _: PruneNetworks) -> anyhow::Result<Log> {
+    async fn resolve(&self, _: PruneNetworks, _: ()) -> anyhow::Result<Log> {
         Ok(docker::prune_networks().await)
     }
 }

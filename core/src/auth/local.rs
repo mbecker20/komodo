@@ -19,6 +19,7 @@ impl Resolve<CreateLocalUser> for State {
     async fn resolve(
         &self,
         CreateLocalUser { username, password }: CreateLocalUser,
+        _: (),
     ) -> anyhow::Result<CreateLocalUserResponse> {
         if !self.config.local_auth {
             return Err(anyhow!("local auth is not enabled"));
@@ -63,6 +64,7 @@ impl Resolve<LoginLocalUser> for State {
     async fn resolve(
         &self,
         LoginLocalUser { username, password }: LoginLocalUser,
+        _: (),
     ) -> anyhow::Result<LoginLocalUserResponse> {
         if !self.config.local_auth {
             return Err(anyhow!("local auth is not enabled"));

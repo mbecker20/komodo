@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use monitor_types::requests::auth::{
-    ExchangeForJwt, ExchangeForJwtResponse, GetLoginOptions, LoginWithSecret, CreateLocalUser, LoginLocalUser,
+    CreateLocalUser, ExchangeForJwt, ExchangeForJwtResponse, GetLoginOptions, LoginLocalUser,
+    LoginWithSecret,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -22,7 +23,7 @@ pub enum AuthRequest {
 
 #[async_trait]
 impl ResolveToString<GetLoginOptions> for State {
-    async fn resolve_to_string(&self, _: GetLoginOptions) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetLoginOptions, _: ()) -> anyhow::Result<String> {
         Ok(self.login_options_response.clone())
     }
 }
@@ -32,6 +33,7 @@ impl Resolve<ExchangeForJwt> for State {
     async fn resolve(
         &self,
         ExchangeForJwt { token }: ExchangeForJwt,
+        _: (),
     ) -> anyhow::Result<ExchangeForJwtResponse> {
         let jwt = self.jwt.redeem_exchange_token(&token).await?;
         let res = ExchangeForJwtResponse { jwt };

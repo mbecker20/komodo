@@ -3,6 +3,8 @@ use std::collections::HashMap;
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
 use typeshare::typeshare;
 
+use crate::I64;
+
 #[typeshare]
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct ImageSummary {
@@ -26,19 +28,19 @@ pub struct ImageSummary {
 
     /// Date and time at which the image was created as a Unix timestamp (number of seconds sinds EPOCH).
     #[serde(rename = "Created")]
-    pub created: i64,
+    pub created: I64,
 
     /// Total size of the image including all layers it is composed of.
     #[serde(rename = "Size")]
-    pub size: i64,
+    pub size: I64,
 
     /// Total size of image layers that are shared between this image and other images.  This size is not calculated by default. `-1` indicates that the value has not been set / calculated.
     #[serde(rename = "SharedSize")]
-    pub shared_size: i64,
+    pub shared_size: I64,
 
     /// Total size of the image including all layers it is composed of.  In versions of Docker before v1.10, this field was calculated from the image itself and all of its parent images. Docker v1.10 and up store images self-contained, and no longer use a parent-chain, making this field an equivalent of the Size field.  This field is kept for backward compatibility, but may be removed in a future version of the API.
     #[serde(rename = "VirtualSize")]
-    pub virtual_size: i64,
+    pub virtual_size: I64,
 
     /// User-defined key/value metadata.
     #[serde(rename = "Labels")]
@@ -47,7 +49,7 @@ pub struct ImageSummary {
 
     /// Number of containers using this image. Includes both stopped and running containers.  This size is not calculated by default, and depends on which API endpoint is used. `-1` indicates that the value has not been set / calculated.
     #[serde(rename = "Containers")]
-    pub containers: i64,
+    pub containers: I64,
 }
 
 fn deserialize_nonoptional_vec<'de, D: Deserializer<'de>, T: DeserializeOwned>(

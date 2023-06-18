@@ -1,7 +1,9 @@
 use bson::serde_helpers::hex_string_as_object_id;
 use mungos::MungosIndexed;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
+
+use crate::I64;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
@@ -14,11 +16,11 @@ pub struct User {
     )]
     pub id: String,
 
-	#[unique_index]
+    #[unique_index]
     pub username: String,
 
     #[serde(default)]
-	#[index]
+    #[index]
     pub enabled: bool,
 
     #[serde(default)]
@@ -42,10 +44,10 @@ pub struct User {
     pub google_id: Option<String>,
 
     #[serde(default, skip_serializing_if = "i64_is_zero")]
-    pub created_at: i64,
+    pub created_at: I64,
 
     #[serde(default)]
-    pub updated_at: i64,
+    pub updated_at: I64,
 }
 
 #[typeshare]
@@ -54,10 +56,10 @@ pub struct ApiSecret {
     pub name: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub hash: String,
-    pub created_at: String,
-    pub expires: Option<i64>,
+    pub created_at: I64,
+    pub expires: Option<I64>,
 }
 
-fn i64_is_zero(n: &i64) -> bool {
+fn i64_is_zero(n: &I64) -> bool {
     *n == 0
 }

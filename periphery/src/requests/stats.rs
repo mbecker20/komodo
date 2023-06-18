@@ -14,7 +14,7 @@ pub struct GetSystemInformation {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemInformation> for State {
-    async fn resolve_to_string(&self, _: GetSystemInformation) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetSystemInformation, _: ()) -> anyhow::Result<String> {
         let info = &self.stats.read().await.info;
         serde_json::to_string(info).context("failed to serialize response to string")
     }
@@ -28,7 +28,7 @@ pub struct GetAllSystemStats {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetAllSystemStats> for State {
-    async fn resolve_to_string(&self, _: GetAllSystemStats) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetAllSystemStats, _: ()) -> anyhow::Result<String> {
         let stats = &self.stats.read().await.stats;
         serde_json::to_string(stats).context("failed to serialize response to string")
     }
@@ -42,7 +42,7 @@ pub struct GetBasicSystemStats {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetBasicSystemStats> for State {
-    async fn resolve_to_string(&self, _: GetBasicSystemStats) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetBasicSystemStats, _: ()) -> anyhow::Result<String> {
         let stats = &self.stats.read().await.stats.basic;
         serde_json::to_string(stats).context("failed to serialize response to string")
     }
@@ -56,7 +56,7 @@ pub struct GetCpuUsage {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetCpuUsage> for State {
-    async fn resolve_to_string(&self, _: GetCpuUsage) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetCpuUsage, _: ()) -> anyhow::Result<String> {
         let stats = &self.stats.read().await.stats.cpu;
         serde_json::to_string(stats).context("failed to serialize response to string")
     }
@@ -70,7 +70,7 @@ pub struct GetDiskUsage {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetDiskUsage> for State {
-    async fn resolve_to_string(&self, _: GetDiskUsage) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetDiskUsage, _: ()) -> anyhow::Result<String> {
         let stats = &self.stats.read().await.stats.disk;
         serde_json::to_string(stats).context("failed to serialize response to string")
     }
@@ -84,7 +84,7 @@ pub struct GetNetworkUsage {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetNetworkUsage> for State {
-    async fn resolve_to_string(&self, _: GetNetworkUsage) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetNetworkUsage, _: ()) -> anyhow::Result<String> {
         let stats = &self.stats.read().await.stats.network;
         serde_json::to_string(&stats).context("failed to serialize response to string")
     }
@@ -98,7 +98,7 @@ pub struct GetSystemProcesses {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemProcesses> for State {
-    async fn resolve_to_string(&self, _: GetSystemProcesses) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetSystemProcesses, _: ()) -> anyhow::Result<String> {
         let stats = &self.stats.read().await.stats.processes;
         serde_json::to_string(&stats).context("failed to serialize response to string")
     }
@@ -112,7 +112,7 @@ pub struct GetSystemComponents {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemComponents> for State {
-    async fn resolve_to_string(&self, _: GetSystemComponents) -> anyhow::Result<String> {
+    async fn resolve_to_string(&self, _: GetSystemComponents, _: ()) -> anyhow::Result<String> {
         let stats = &self.stats.read().await.stats.componenets;
         serde_json::to_string(&stats).context("failed to serialize response to string")
     }

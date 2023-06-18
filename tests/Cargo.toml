@@ -16,3 +16,4 @@ serde_json.workspace = true
 partial_derive2.workspace = true
 make_option.workspace = true
 mungos.workspace = true
+dotenv.workspace = true

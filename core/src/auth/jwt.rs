@@ -2,7 +2,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use anyhow::{anyhow, Context};
 use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms, Timelength};
-use axum::{body::Body, http::Request};
+use axum::{body::Body, http::Request, Extension};
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use serde::{Deserialize, Serialize};
@@ -15,8 +15,11 @@ use super::random_string;
 
 type ExchangeTokenMap = Mutex<HashMap<String, (String, u128)>>;
 
+pub type RequestUser = Arc<InnerRequestUser>;
+pub type RequestUserExtension = Extension<RequestUser>;
+
 #[derive(Default)]
-pub struct RequestUser {
+pub struct InnerRequestUser {
     pub id: String,
     pub is_admin: bool,
     pub create_server_permissions: bool,
@@ -92,7 +95,7 @@ impl State {
     pub async fn authenticate_check_enabled(
         &self,
         req: &Request<Body>,
-    ) -> anyhow::Result<Arc<RequestUser>> {
+    ) -> anyhow::Result<RequestUser> {
         let jwt = req
             .headers()
             .get("authorization")
@@ -106,7 +109,7 @@ impl State {
             .auth_jwt_check_enabled(&jwt)
             .await
             .context("failed to authenticate jwt")?;
-        Ok(Arc::new(user))
+        Ok(user.into())
     }
 
     pub async fn auth_jwt_check_enabled(&self, jwt: &str) -> anyhow::Result<RequestUser> {
@@ -121,13 +124,13 @@ impl State {
                 .await?
                 .ok_or(anyhow!("did not find user with id {}", claims.id))?;
             if user.enabled {
-                let user = RequestUser {
+                let user = InnerRequestUser {
                     id: claims.id,
                     is_admin: user.admin,
                     create_server_permissions: user.create_server_permissions,
                     create_build_permissions: user.create_build_permissions,
                 };
-                Ok(user)
+                Ok(user.into())
             } else {
                 Err(anyhow!("user not enabled"))
             }

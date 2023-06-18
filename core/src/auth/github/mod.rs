@@ -1,11 +1,11 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
-use axum::{extract::Query, response::Redirect, routing::get, Router, http::StatusCode};
+use axum::{extract::Query, http::StatusCode, response::Redirect, routing::get, Router};
 use monitor_types::entities::user::User;
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
 
-use crate::{state::StateExtension};
+use crate::state::StateExtension;
 
 pub mod client;
 

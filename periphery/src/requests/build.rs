@@ -14,7 +14,7 @@ pub struct Build {
 
 #[async_trait]
 impl Resolve<Build> for State {
-    async fn resolve(&self, Build { build }: Build) -> anyhow::Result<Vec<Log>> {
+    async fn resolve(&self, Build { build }: Build, _: ()) -> anyhow::Result<Vec<Log>> {
         let secrets = self.secrets.clone();
         let repo_dir = self.config.repo_dir.clone();
         let log = match self.get_docker_token(&optional_string(&build.config.docker_account)) {
@@ -38,7 +38,7 @@ pub struct PruneImages {}
 
 #[async_trait]
 impl Resolve<PruneImages> for State {
-    async fn resolve(&self, _: PruneImages) -> anyhow::Result<Log> {
+    async fn resolve(&self, _: PruneImages, _: ()) -> anyhow::Result<Log> {
         Ok(docker::prune_images().await)
     }
 }

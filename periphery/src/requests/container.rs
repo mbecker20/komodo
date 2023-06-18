@@ -18,7 +18,7 @@ pub struct GetContainerList {}
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerList> for State {
-    async fn resolve(&self, _: GetContainerList) -> anyhow::Result<Vec<BasicContainerInfo>> {
+    async fn resolve(&self, _: GetContainerList, _: ()) -> anyhow::Result<Vec<BasicContainerInfo>> {
         self.docker.list_containers().await
     }
 }
@@ -39,7 +39,7 @@ fn default_tail() -> u64 {
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerLog> for State {
-    async fn resolve(&self, req: GetContainerLog) -> anyhow::Result<Log> {
+    async fn resolve(&self, req: GetContainerLog, _: ()) -> anyhow::Result<Log> {
         Ok(docker::container_log(&req.name, req.tail).await)
     }
 }
@@ -54,7 +54,7 @@ pub struct GetContainerStats {
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerStats> for State {
-    async fn resolve(&self, req: GetContainerStats) -> anyhow::Result<DockerContainerStats> {
+    async fn resolve(&self, req: GetContainerStats, _: ()) -> anyhow::Result<DockerContainerStats> {
         let error = anyhow!("no stats matching {}", req.name);
         let mut stats = docker::container_stats(Some(req.name)).await?;
         let stats = stats.pop().ok_or(error)?;
@@ -70,7 +70,11 @@ pub struct GetContainerStatsList {}
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerStatsList> for State {
-    async fn resolve(&self, _: GetContainerStatsList) -> anyhow::Result<Vec<DockerContainerStats>> {
+    async fn resolve(
+        &self,
+        _: GetContainerStatsList,
+        _: (),
+    ) -> anyhow::Result<Vec<DockerContainerStats>> {
         docker::container_stats(None).await
     }
 }
@@ -83,7 +87,7 @@ pub struct GetNetworkList {}
 
 #[async_trait::async_trait]
 impl Resolve<GetNetworkList> for State {
-    async fn resolve(&self, _: GetNetworkList) -> anyhow::Result<Vec<DockerNetwork>> {
+    async fn resolve(&self, _: GetNetworkList, _: ()) -> anyhow::Result<Vec<DockerNetwork>> {
         self.docker.list_networks().await
     }
 }
@@ -96,7 +100,7 @@ pub struct GetImageList {}
 
 #[async_trait::async_trait]
 impl Resolve<GetImageList> for State {
-    async fn resolve(&self, _: GetImageList) -> anyhow::Result<Vec<ImageSummary>> {
+    async fn resolve(&self, _: GetImageList, _: ()) -> anyhow::Result<Vec<ImageSummary>> {
         self.docker.list_images().await
     }
 }
@@ -111,7 +115,7 @@ pub struct StartContainer {
 
 #[async_trait::async_trait]
 impl Resolve<StartContainer> for State {
-    async fn resolve(&self, req: StartContainer) -> anyhow::Result<Log> {
+    async fn resolve(&self, req: StartContainer, _: ()) -> anyhow::Result<Log> {
         Ok(docker::start_container(&req.name).await)
     }
 }
@@ -128,7 +132,7 @@ pub struct StopContainer {
 
 #[async_trait::async_trait]
 impl Resolve<StopContainer> for State {
-    async fn resolve(&self, req: StopContainer) -> anyhow::Result<Log> {
+    async fn resolve(&self, req: StopContainer, _: ()) -> anyhow::Result<Log> {
         Ok(docker::stop_container(&req.name, req.signal, req.time).await)
     }
 }
@@ -145,7 +149,7 @@ pub struct RemoveContainer {
 
 #[async_trait::async_trait]
 impl Resolve<RemoveContainer> for State {
-    async fn resolve(&self, req: RemoveContainer) -> anyhow::Result<Log> {
+    async fn resolve(&self, req: RemoveContainer, _: ()) -> anyhow::Result<Log> {
         Ok(docker::stop_and_remove_container(&req.name, req.signal, req.time).await)
     }
 }
@@ -161,7 +165,7 @@ pub struct RenameContainer {
 
 #[async_trait::async_trait]
 impl Resolve<RenameContainer> for State {
-    async fn resolve(&self, req: RenameContainer) -> anyhow::Result<Log> {
+    async fn resolve(&self, req: RenameContainer, _: ()) -> anyhow::Result<Log> {
         Ok(docker::rename_container(&req.curr_name, &req.new_name).await)
     }
 }
@@ -174,7 +178,7 @@ pub struct PruneContainers {}
 
 #[async_trait::async_trait]
 impl Resolve<PruneContainers> for State {
-    async fn resolve(&self, _: PruneContainers) -> anyhow::Result<Log> {
+    async fn resolve(&self, _: PruneContainers, _: ()) -> anyhow::Result<Log> {
         Ok(docker::prune_containers().await)
     }
 }
@@ -198,6 +202,7 @@ impl Resolve<Deploy> for State {
             stop_signal,
             stop_time,
         }: Deploy,
+        _: (),
     ) -> anyhow::Result<Log> {
         let secrets = self.secrets.clone();
         let log = match self.get_docker_token(&optional_string(&deployment.config.docker_account)) {

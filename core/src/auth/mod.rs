@@ -20,7 +20,7 @@ use crate::{
     state::{State, StateExtension},
 };
 
-pub use self::jwt::JwtClient;
+pub use self::jwt::{JwtClient, RequestUser, RequestUserExtension};
 pub use github::client::GithubOauthClient;
 pub use google::client::GoogleOauthClient;
 
@@ -49,7 +49,7 @@ pub fn router(state: &State) -> Router {
                 let req_id = Uuid::new_v4();
                 info!("/auth request {req_id} | {request:?}");
                 let res = state
-                    .resolve_request(request)
+                    .resolve_request(request, ())
                     .await
                     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
                 if let Err(e) = &res {
@@ -75,7 +75,7 @@ pub fn router(state: &State) -> Router {
     router
 }
 
-fn random_string(length: usize) -> String {
+pub fn random_string(length: usize) -> String {
     thread_rng()
         .sample_iter(&Alphanumeric)
         .take(length)

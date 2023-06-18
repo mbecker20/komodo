@@ -3,7 +3,7 @@ extern crate log;
 
 use std::time::Instant;
 
-use auth::auth_request;
+use auth::{auth_request, RequestUserExtension};
 use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
@@ -18,6 +18,7 @@ use crate::requests::api::ApiRequest;
 mod auth;
 mod config;
 mod db;
+mod helpers;
 mod requests;
 mod state;
 
@@ -47,12 +48,14 @@ fn api() -> Router {
         .route(
             "/",
             post(
-                |state: StateExtension, Json(request): Json<ApiRequest>| async move {
+                |state: StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Json(request): Json<ApiRequest>| async move {
                     let timer = Instant::now();
                     let req_id = Uuid::new_v4();
                     info!("/auth request {req_id} | {request:?}");
                     let res = state
-                        .resolve_request(request)
+                        .resolve_request(request, user)
                         .await
                         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
                     if let Err(e) = &res {

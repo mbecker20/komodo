@@ -18,11 +18,12 @@ pub struct GoogleOauthClient {
 }
 
 impl GoogleOauthClient {
-    pub fn new(CoreConfig { google_oauth, host, .. }: &CoreConfig) -> Option<GoogleOauthClient> {
-        if google_oauth.enabled
-            && !google_oauth.id.is_empty()
-            && !google_oauth.secret.is_empty()
-        {
+    pub fn new(
+        CoreConfig {
+            google_oauth, host, ..
+        }: &CoreConfig,
+    ) -> Option<GoogleOauthClient> {
+        if google_oauth.enabled && !google_oauth.id.is_empty() && !google_oauth.secret.is_empty() {
             GoogleOauthClient {
                 http: Default::default(),
                 client_id: google_oauth.id.clone(),
