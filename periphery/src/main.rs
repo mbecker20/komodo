@@ -8,6 +8,7 @@ use axum::{
     TypedHeader,
 };
 
+use resolver_api::Resolver;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 

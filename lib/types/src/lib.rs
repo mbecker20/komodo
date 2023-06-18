@@ -1,6 +1,6 @@
 use typeshare::typeshare;
 
-pub mod api;
+pub mod requests;
 pub mod entities;
 
 #[typeshare(serialized_as = "number")]

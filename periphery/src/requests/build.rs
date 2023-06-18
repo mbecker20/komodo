@@ -38,7 +38,7 @@ pub struct PruneImages {}
 
 #[async_trait]
 impl Resolve<PruneImages> for State {
-	async fn resolve(&self, _: PruneImages) -> anyhow::Result<Log> {
-		Ok(docker::prune_images().await)
-	}
+    async fn resolve(&self, _: PruneImages) -> anyhow::Result<Log> {
+        Ok(docker::prune_images().await)
+    }
 }

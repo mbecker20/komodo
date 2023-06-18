@@ -1,14 +1,17 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+pub struct MonitorClient {
+    reqwest: reqwest::Client,
+    address: String,
+    token: String,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+impl MonitorClient {
+    pub fn new_with_token(address: impl Into<String>, token: impl Into<String>) -> MonitorClient {
+        MonitorClient {
+            reqwest: Default::default(),
+            address: address.into(),
+            token: token.into(),
+        }
     }
+
+    pub fn new_with_credentials() {}
 }

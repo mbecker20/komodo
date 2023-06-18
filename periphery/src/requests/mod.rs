@@ -1,4 +1,5 @@
 use anyhow::Context;
+use async_trait::async_trait;
 use monitor_types::entities::{update::Log, SystemCommand};
 use resolver_api::{
     derive::{Request, Resolver},
@@ -84,7 +85,7 @@ pub struct GetHealth {}
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetHealthResponse {}
 
-#[async_trait::async_trait]
+#[async_trait]
 impl ResolveToString<GetHealth> for State {
     async fn resolve_to_string(&self, _: GetHealth) -> anyhow::Result<String> {
         Ok(String::from("{}"))
@@ -102,7 +103,7 @@ pub struct GetVersionResponse {
     pub version: String,
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl Resolve<GetVersion> for State {
     async fn resolve(&self, _: GetVersion) -> anyhow::Result<GetVersionResponse> {
         Ok(GetVersionResponse {
@@ -123,7 +124,7 @@ pub struct GetAccountsResponse {
     pub github: Vec<String>,
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl ResolveToString<GetAccounts> for State {
     async fn resolve_to_string(&self, _: GetAccounts) -> anyhow::Result<String> {
         Ok(self.accounts_response.clone())
@@ -136,7 +137,7 @@ impl ResolveToString<GetAccounts> for State {
 #[response(Vec<String>)]
 pub struct GetSecrets {}
 
-#[async_trait::async_trait]
+#[async_trait]
 impl ResolveToString<GetSecrets> for State {
     async fn resolve_to_string(&self, _: GetSecrets) -> anyhow::Result<String> {
         Ok(self.secrets_response.clone())
@@ -149,7 +150,7 @@ pub struct RunCommand {
     pub command: SystemCommand,
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl Resolve<RunCommand> for State {
     async fn resolve(
         &self,

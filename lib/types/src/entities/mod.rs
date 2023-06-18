@@ -11,6 +11,7 @@ pub mod deployment;
 pub mod repo;
 pub mod server;
 pub mod update;
+pub mod user;
 
 #[typeshare]
 pub type PermissionsMap = HashMap<String, PermissionLevel>;

@@ -70,7 +70,7 @@ pub struct CoreConfig {
     // enable login with local auth
     pub local_auth: bool,
 
-	#[serde(default = "default_log_level")]
+    #[serde(default = "default_log_level")]
     pub log_level: LogLevel,
 
     // allowed docker orgs used with monitor. first in this list will be default for build
@@ -102,7 +102,7 @@ fn default_jwt_valid_for() -> Timelength {
 }
 
 fn default_log_level() -> LogLevel {
-	LogLevel::Info
+    LogLevel::Info
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

@@ -1,7 +1,7 @@
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
 use partial_derive2::Partial;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use super::{PermissionsMap, SystemCommand};
@@ -9,7 +9,7 @@ use super::{PermissionsMap, SystemCommand};
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder)]
 pub struct Repo {
-	#[serde(
+    #[serde(
         default,
         rename = "_id",
         skip_serializing_if = "String::is_empty",
@@ -36,10 +36,10 @@ pub struct Repo {
     #[builder(setter(skip))]
     pub updated_at: String,
 
-	#[serde(default)]
+    #[serde(default)]
     pub tags: Vec<String>,
 
-	pub config: RepoConfig,
+    pub config: RepoConfig,
 }
 
 #[typeshare]

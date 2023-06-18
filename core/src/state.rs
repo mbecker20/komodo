@@ -1,13 +1,26 @@
-use std::{sync::Arc, net::SocketAddr, str::FromStr};
+use std::{net::SocketAddr, str::FromStr, sync::Arc};
 
 use anyhow::Context;
+use axum::Extension;
+use monitor_types::requests::auth::GetLoginOptionsResponse;
 use simple_logger::SimpleLogger;
 
-use crate::config::{CoreConfig, Env};
+use crate::{
+    auth::{GithubOauthClient, GoogleOauthClient, JwtClient},
+    config::{CoreConfig, Env},
+    db::DbClient,
+};
+
+pub type StateExtension = Extension<Arc<State>>;
 
 pub struct State {
     pub env: Env,
     pub config: CoreConfig,
+    pub db: DbClient,
+    pub jwt: JwtClient,
+    pub github_auth: Option<GithubOauthClient>,
+    pub google_auth: Option<GoogleOauthClient>,
+    pub login_options_response: String,
 }
 
 impl State {
@@ -23,7 +36,15 @@ impl State {
             .init()
             .context("failed to configure logger")?;
 
-        let state = State { env, config };
+        let state = State {
+            env,
+            db: DbClient::new(&config).await?,
+            jwt: JwtClient::new(&config),
+            github_auth: GithubOauthClient::new(&config),
+            google_auth: GoogleOauthClient::new(&config),
+            login_options_response: login_options_response(&config)?,
+            config,
+        };
 
         Ok(state.into())
     }
@@ -32,4 +53,17 @@ impl State {
         SocketAddr::from_str(&format!("0.0.0.0:{}", self.config.port))
             .context("failed to parse socket addr")
     }
+}
+
+pub fn login_options_response(config: &CoreConfig) -> anyhow::Result<String> {
+    let options = GetLoginOptionsResponse {
+        local: config.local_auth,
+        github: config.github_oauth.enabled
+            && !config.github_oauth.id.is_empty()
+            && !config.github_oauth.secret.is_empty(),
+        google: config.google_oauth.enabled
+            && !config.google_oauth.id.is_empty()
+            && !config.google_oauth.secret.is_empty(),
+    };
+    serde_json::to_string(&options).context("failed to serialize login options")
 }
