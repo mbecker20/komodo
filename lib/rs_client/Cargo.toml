@@ -10,3 +10,8 @@ license.workspace = true
 [dependencies]
 monitor_types.workspace = true
 reqwest.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+resolver_api.workspace = true
+envy.workspace = true

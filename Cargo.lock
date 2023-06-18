@@ -1439,8 +1439,13 @@ dependencies = [
 name = "monitor_client"
 version = "1.0.0"
 dependencies = [
+ "anyhow",
+ "envy",
  "monitor_types",
  "reqwest",
+ "resolver_api",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
