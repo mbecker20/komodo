@@ -191,6 +191,12 @@ pub enum PermissionLevel {
     Update,
 }
 
+impl Default for &PermissionLevel {
+    fn default() -> Self {
+        &PermissionLevel::None
+    }
+}
+
 #[typeshare]
 #[derive(
     Serialize, Deserialize, Debug, Default, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy,

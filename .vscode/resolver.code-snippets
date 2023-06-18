@@ -1,0 +1,14 @@
+{
+	"resolve": {
+		"scope": "rust",
+		"prefix": "resolve",
+		"body": [
+			"#[async_trait]",
+			"impl Resolve<${1}, ${2}> for State {",
+			"\tasync fn resolve(&self, req: ${1}, args: ${2}) -> anyhow::Result<${3}> {",
+			"\t\ttodo!()",
+			"\t}",
+			"}"
+		]
+	}
+}

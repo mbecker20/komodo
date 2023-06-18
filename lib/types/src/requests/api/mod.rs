@@ -4,6 +4,9 @@ use typeshare::typeshare;
 
 use crate::I64;
 
+mod server;
+pub use server::*;
+
 //
 
 #[typeshare]
@@ -30,3 +33,12 @@ pub struct DeleteLoginSecret {
 }
 
 //
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetVersionResponse)]
+pub struct GetVersion {}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetVersionResponse {
+    pub version: String,
+}
