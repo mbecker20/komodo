@@ -109,7 +109,7 @@ impl State {
             .auth_jwt_check_enabled(&jwt)
             .await
             .context("failed to authenticate jwt")?;
-        Ok(user.into())
+        Ok(user)
     }
 
     pub async fn auth_jwt_check_enabled(&self, jwt: &str) -> anyhow::Result<RequestUser> {
