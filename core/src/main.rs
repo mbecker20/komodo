@@ -3,8 +3,10 @@ extern crate log;
 
 use std::time::Instant;
 
+use auth::auth_request;
 use axum::{
-    headers::ContentType, http::StatusCode, routing::post, Extension, Json, Router, TypedHeader,
+    headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
+    TypedHeader,
 };
 use resolver_api::Resolver;
 use state::StateExtension;
@@ -27,7 +29,7 @@ async fn app() -> anyhow::Result<()> {
     let socket_addr = state.socket_addr()?;
 
     let app = Router::new()
-        .nest("/auth", auth::router())
+        .nest("/auth", auth::router(&state))
         .nest("/api", api())
         .layer(Extension(state));
 
@@ -41,28 +43,30 @@ async fn app() -> anyhow::Result<()> {
 }
 
 fn api() -> Router {
-    Router::new().route(
-        "/",
-        post(
-            |state: StateExtension, Json(request): Json<ApiRequest>| async move {
-                let timer = Instant::now();
-                let req_id = Uuid::new_v4();
-                info!("request {req_id} | {request:?}");
-                let res = state
-                    .resolve_request(request)
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
-                if let Err(e) = &res {
-                    debug!("request {req_id} ERROR: {e:?}");
-                }
-                let res = res?;
-                let elapsed = timer.elapsed();
-                info!("request {req_id} | resolve time: {elapsed:?}");
-                debug!("request {req_id} RESPONSE: {res}");
-                Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
-            },
-        ),
-    )
+    Router::new()
+        .route(
+            "/",
+            post(
+                |state: StateExtension, Json(request): Json<ApiRequest>| async move {
+                    let timer = Instant::now();
+                    let req_id = Uuid::new_v4();
+                    info!("/auth request {req_id} | {request:?}");
+                    let res = state
+                        .resolve_request(request)
+                        .await
+                        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
+                    if let Err(e) = &res {
+                        info!("/auth request {req_id} ERROR: {e:?}");
+                    }
+                    let res = res?;
+                    let elapsed = timer.elapsed();
+                    info!("/auth request {req_id} | resolve time: {elapsed:?}");
+                    debug!("/auth request {req_id} RESPONSE: {res}");
+                    Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
+                },
+            ),
+        )
+        .layer(middleware::from_fn(auth_request))
 }
 
 #[tokio::main]

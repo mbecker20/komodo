@@ -41,11 +41,11 @@ pub struct User {
 
     pub google_id: Option<String>,
 
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub created_at: String,
+    #[serde(default, skip_serializing_if = "i64_is_zero")]
+    pub created_at: i64,
 
     #[serde(default)]
-    pub updated_at: String,
+    pub updated_at: i64,
 }
 
 #[typeshare]
@@ -56,4 +56,8 @@ pub struct ApiSecret {
     pub hash: String,
     pub created_at: String,
     pub expires: Option<i64>,
+}
+
+fn i64_is_zero(n: &i64) -> bool {
+    *n == 0
 }

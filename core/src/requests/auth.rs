@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use monitor_types::requests::auth::{
-    ExchangeForJwt, ExchangeForJwtResponse, GetLoginOptions, LoginWithSecret,
+    ExchangeForJwt, ExchangeForJwtResponse, GetLoginOptions, LoginWithSecret, CreateLocalUser, LoginLocalUser,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -14,8 +14,10 @@ use crate::state::State;
 pub enum AuthRequest {
     #[to_string_resolver]
     GetLoginOptions(GetLoginOptions),
-    ExchangeForJwt(ExchangeForJwt),
+    CreateLocalUser(CreateLocalUser),
+    LoginLocalUser(LoginLocalUser),
     LoginWithSecret(LoginWithSecret),
+    ExchangeForJwt(ExchangeForJwt),
 }
 
 #[async_trait]

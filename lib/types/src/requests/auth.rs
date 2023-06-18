@@ -21,6 +21,38 @@ pub struct GetLoginOptionsResponse {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(CreateLocalUserResponse)]
+pub struct CreateLocalUser {
+    pub username: String,
+    pub password: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CreateLocalUserResponse {
+    pub jwt: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(LoginLocalUserResponse)]
+pub struct LoginLocalUser {
+    pub username: String,
+    pub password: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct LoginLocalUserResponse {
+    pub jwt: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(ExchangeForJwtResponse)]
 pub struct ExchangeForJwt {
     pub token: String,
