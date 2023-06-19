@@ -113,7 +113,7 @@ pub struct GetSystemComponents {}
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemComponents> for State {
     async fn resolve_to_string(&self, _: GetSystemComponents, _: ()) -> anyhow::Result<String> {
-        let stats = &self.stats.read().await.stats.componenets;
+        let stats = &self.stats.read().await.stats.components;
         serde_json::to_string(&stats).context("failed to serialize response to string")
     }
 }

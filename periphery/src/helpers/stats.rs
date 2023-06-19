@@ -81,7 +81,7 @@ impl InnerStatsClient {
             disk: self.get_disk_usage(),
             network: self.get_network_usage(),
             processes: self.get_processes(),
-            componenets: self.get_components(),
+            components: self.get_components(),
             polling_rate: self.stats.polling_rate,
             refresh_ts: self.stats.refresh_ts,
             refresh_list_ts: self.stats.refresh_list_ts,

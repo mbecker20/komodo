@@ -36,7 +36,7 @@ pub struct CreateServer {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(())]
+#[response(Server)]
 pub struct DeleteServer {
 	pub id: String,
 }

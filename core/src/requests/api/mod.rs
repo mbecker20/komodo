@@ -4,7 +4,7 @@ use monitor_types::requests::api::{
     GetServer, GetSystemComponents, GetSystemInformation, GetSystemProcesses, ListServers,
     RenameServer, UpdateServer,
 };
-use resolver_api::{derive::Resolver, Resolve};
+use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
 
 use crate::{auth::RequestUser, state::State};
@@ -35,11 +35,22 @@ pub enum ApiRequest {
     UpdateServer(UpdateServer),
     RenameServer(RenameServer),
     // Stats
+    #[to_string_resolver]
     GetAllSystemStats(GetAllSystemStats),
+    #[to_string_resolver]
     GetBasicSystemStats(GetBasicSystemStats),
+    #[to_string_resolver]
     GetCpuUsage(GetCpuUsage),
+    #[to_string_resolver]
     GetDiskUsage(GetDiskUsage),
+    #[to_string_resolver]
     GetNetworkUsage(GetNetworkUsage),
+    #[to_string_resolver]
     GetSystemProcesses(GetSystemProcesses),
+    #[to_string_resolver]
     GetSystemComponents(GetSystemComponents),
+
+    //
+    // ==== DEPLOYMENT ====
+    //
 }

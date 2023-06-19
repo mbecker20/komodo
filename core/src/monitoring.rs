@@ -5,7 +5,7 @@ use monitor_types::entities::{
     server::{stats::AllSystemStats, Server, ServerStatus},
 };
 use mungos::mongodb::bson::doc;
-use periphery_client::{requests, PeripheryClient};
+use periphery_client::requests;
 
 use crate::state::State;
 
@@ -62,7 +62,7 @@ impl State {
             .await;
             return;
         }
-        let periphery = PeripheryClient::new(&server.config.address, &self.config.passkey);
+        let periphery = self.periphery_client(server);
         let version = periphery.request(requests::GetVersion {}).await;
         if version.is_err() {
             self.insert_deployments_status_unknown(deployments).await;

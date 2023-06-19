@@ -3,14 +3,8 @@ use async_timing_util::unix_timestamp_ms;
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        server::{
-            stats::{
-                AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage,
-                SystemComponent, SystemInformation, SystemProcess,
-            },
-            Server, ServerBuilder,
-        },
-        update::{Update, UpdateTarget},
+        server::{stats::SystemInformation, Server},
+        update::{Log, Update, UpdateStatus, UpdateTarget},
         Operation, PermissionLevel,
     },
     permissioned::Permissioned,
@@ -21,7 +15,9 @@ use monitor_types::{
         UpdateServer,
     },
 };
-use resolver_api::Resolve;
+use mungos::mongodb::bson::doc;
+use periphery_client::requests;
+use resolver_api::{Resolve, ResolveToString};
 
 use crate::{auth::RequestUser, state::State};
 
@@ -121,8 +117,51 @@ impl Resolve<CreateServer, RequestUser> for State {
 
 #[async_trait]
 impl Resolve<DeleteServer, RequestUser> for State {
-    async fn resolve(&self, req: DeleteServer, user: RequestUser) -> anyhow::Result<()> {
-        todo!()
+    async fn resolve(&self, req: DeleteServer, user: RequestUser) -> anyhow::Result<Server> {
+        if self.action_states.server.busy(&req.id).await {
+            return Err(anyhow!("server busy"));
+        }
+
+        let server = self
+            .get_server_check_permissions(&req.id, &user, PermissionLevel::Update)
+            .await?;
+
+        let start_ts = unix_timestamp_ms() as i64;
+
+        let mut update = Update {
+            target: UpdateTarget::Server(req.id.clone()),
+            operation: Operation::DeleteServer,
+            start_ts,
+            operator: user.id.clone(),
+            success: true,
+            status: UpdateStatus::InProgress,
+            ..Default::default()
+        };
+
+        update.id = self.add_update(update.clone()).await?;
+
+        let res = self
+            .db
+            .servers
+            .delete_one(&req.id)
+            .await
+            .context("failed to delete server from mongo");
+
+        let log = match res {
+            Ok(_) => Log::simple("delete server", format!("deleted server {}", server.name)),
+            Err(e) => Log::error("delete server", format!("failed to delete server\n{e:#?}")),
+        };
+
+        update.end_ts = Some(unix_timestamp_ms() as i64);
+        update.status = UpdateStatus::Complete;
+        update.success = log.success;
+        update.logs.push(log);
+
+        self.update_update(update).await?;
+
+        self.server_status_cache.remove(&req.id).await;
+
+        Ok(server)
     }
 }
 
@@ -135,7 +174,22 @@ impl Resolve<UpdateServer, RequestUser> for State {
 
 #[async_trait]
 impl Resolve<RenameServer, RequestUser> for State {
-    async fn resolve(&self, req: RenameServer, args: RequestUser) -> anyhow::Result<Server> {
+    async fn resolve(
+        &self,
+        RenameServer { id, name }: RenameServer,
+        user: RequestUser,
+    ) -> anyhow::Result<Server> {
+        self.get_server_check_permissions(&id, &user, PermissionLevel::Update)
+            .await?;
+        self.db
+            .updates
+            .update_one(
+                &id,
+                mungos::Update::<Server>::Set(
+                    doc! { "name": name, "updated_at": unix_timestamp_ms() as i64 },
+                ),
+            )
+            .await?;
         todo!()
     }
 }
@@ -144,78 +198,175 @@ impl Resolve<RenameServer, RequestUser> for State {
 impl Resolve<GetSystemInformation, RequestUser> for State {
     async fn resolve(
         &self,
-        req: GetSystemInformation,
-        args: RequestUser,
+        GetSystemInformation { server_id }: GetSystemInformation,
+        user: RequestUser,
     ) -> anyhow::Result<SystemInformation> {
-        todo!()
+        let server = self
+            .get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        self.periphery_client(&server)
+            .request(requests::GetSystemInformation {})
+            .await
     }
 }
 
 #[async_trait]
-impl Resolve<GetAllSystemStats, RequestUser> for State {
-    async fn resolve(
+impl ResolveToString<GetAllSystemStats, RequestUser> for State {
+    async fn resolve_to_string(
         &self,
-        req: GetAllSystemStats,
-        args: RequestUser,
-    ) -> anyhow::Result<AllSystemStats> {
-        todo!()
+        GetAllSystemStats { server_id }: GetAllSystemStats,
+        user: RequestUser,
+    ) -> anyhow::Result<String> {
+        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .server_status_cache
+            .get(&server_id)
+            .await
+            .ok_or(anyhow!("did not find status for server at {server_id}"))?;
+        let stats = status
+            .stats
+            .as_ref()
+            .ok_or(anyhow!("server not reachable"))?;
+        let stats = serde_json::to_string(&stats)?;
+        Ok(stats)
     }
 }
 
 #[async_trait]
-impl Resolve<GetBasicSystemStats, RequestUser> for State {
-    async fn resolve(
+impl ResolveToString<GetBasicSystemStats, RequestUser> for State {
+    async fn resolve_to_string(
         &self,
-        req: GetBasicSystemStats,
-        args: RequestUser,
-    ) -> anyhow::Result<BasicSystemStats> {
-        todo!()
+        GetBasicSystemStats { server_id }: GetBasicSystemStats,
+        user: RequestUser,
+    ) -> anyhow::Result<String> {
+        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .server_status_cache
+            .get(&server_id)
+            .await
+            .ok_or(anyhow!("did not find status for server at {server_id}"))?;
+        let stats = status
+            .stats
+            .as_ref()
+            .ok_or(anyhow!("server not reachable"))?;
+        let stats = serde_json::to_string(&stats.basic)?;
+        Ok(stats)
     }
 }
 
 #[async_trait]
-impl Resolve<GetCpuUsage, RequestUser> for State {
-    async fn resolve(&self, req: GetCpuUsage, args: RequestUser) -> anyhow::Result<CpuUsage> {
-        todo!()
-    }
-}
-
-#[async_trait]
-impl Resolve<GetDiskUsage, RequestUser> for State {
-    async fn resolve(&self, req: GetDiskUsage, args: RequestUser) -> anyhow::Result<DiskUsage> {
-        todo!()
-    }
-}
-
-#[async_trait]
-impl Resolve<GetNetworkUsage, RequestUser> for State {
-    async fn resolve(
+impl ResolveToString<GetCpuUsage, RequestUser> for State {
+    async fn resolve_to_string(
         &self,
-        req: GetNetworkUsage,
-        args: RequestUser,
-    ) -> anyhow::Result<NetworkUsage> {
-        todo!()
+        GetCpuUsage { server_id }: GetCpuUsage,
+        user: RequestUser,
+    ) -> anyhow::Result<String> {
+        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .server_status_cache
+            .get(&server_id)
+            .await
+            .ok_or(anyhow!("did not find status for server at {server_id}"))?;
+        let stats = status
+            .stats
+            .as_ref()
+            .ok_or(anyhow!("server not reachable"))?;
+        let stats = serde_json::to_string(&stats.cpu)?;
+        Ok(stats)
     }
 }
 
 #[async_trait]
-impl Resolve<GetSystemProcesses, RequestUser> for State {
-    async fn resolve(
+impl ResolveToString<GetDiskUsage, RequestUser> for State {
+    async fn resolve_to_string(
         &self,
-        req: GetSystemProcesses,
-        args: RequestUser,
-    ) -> anyhow::Result<Vec<SystemProcess>> {
-        todo!()
+        GetDiskUsage { server_id }: GetDiskUsage,
+        user: RequestUser,
+    ) -> anyhow::Result<String> {
+        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .server_status_cache
+            .get(&server_id)
+            .await
+            .ok_or(anyhow!("did not find status for server at {server_id}"))?;
+        let stats = status
+            .stats
+            .as_ref()
+            .ok_or(anyhow!("server not reachable"))?;
+        let stats = serde_json::to_string(&stats.disk)?;
+        Ok(stats)
     }
 }
 
 #[async_trait]
-impl Resolve<GetSystemComponents, RequestUser> for State {
-    async fn resolve(
+impl ResolveToString<GetNetworkUsage, RequestUser> for State {
+    async fn resolve_to_string(
         &self,
-        req: GetSystemComponents,
-        args: RequestUser,
-    ) -> anyhow::Result<Vec<SystemComponent>> {
-        todo!()
+        GetNetworkUsage { server_id }: GetNetworkUsage,
+        user: RequestUser,
+    ) -> anyhow::Result<String> {
+        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .server_status_cache
+            .get(&server_id)
+            .await
+            .ok_or(anyhow!("did not find status for server at {server_id}"))?;
+        let stats = status
+            .stats
+            .as_ref()
+            .ok_or(anyhow!("server not reachable"))?;
+        let stats = serde_json::to_string(&stats.network)?;
+        Ok(stats)
+    }
+}
+
+#[async_trait]
+impl ResolveToString<GetSystemProcesses, RequestUser> for State {
+    async fn resolve_to_string(
+        &self,
+        GetSystemProcesses { server_id }: GetSystemProcesses,
+        user: RequestUser,
+    ) -> anyhow::Result<String> {
+        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .server_status_cache
+            .get(&server_id)
+            .await
+            .ok_or(anyhow!("did not find status for server at {server_id}"))?;
+        let stats = status
+            .stats
+            .as_ref()
+            .ok_or(anyhow!("server not reachable"))?;
+        let stats = serde_json::to_string(&stats.processes)?;
+        Ok(stats)
+    }
+}
+
+#[async_trait]
+impl ResolveToString<GetSystemComponents, RequestUser> for State {
+    async fn resolve_to_string(
+        &self,
+        GetSystemComponents { server_id }: GetSystemComponents,
+        user: RequestUser,
+    ) -> anyhow::Result<String> {
+        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .server_status_cache
+            .get(&server_id)
+            .await
+            .ok_or(anyhow!("did not find status for server at {server_id}"))?;
+        let stats = status
+            .stats
+            .as_ref()
+            .ok_or(anyhow!("server not reachable"))?;
+        let stats = serde_json::to_string(&stats.components)?;
+        Ok(stats)
     }
 }

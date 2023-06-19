@@ -26,7 +26,7 @@ pub struct AllSystemStats {
     #[serde(default)]
     pub processes: Vec<SystemProcess>,
     #[serde(default)]
-    pub componenets: Vec<SystemComponent>,
+    pub components: Vec<SystemComponent>,
     pub polling_rate: Timelength,
     pub refresh_ts: I64,
     pub refresh_list_ts: I64,

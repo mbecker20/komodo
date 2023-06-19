@@ -4,15 +4,12 @@ use anyhow::{anyhow, Context};
 use monitor_types::{
     busy::Busy,
     entities::{
-        build::Build,
-        deployment::Deployment,
-        server::{self, Server},
-        update::Update,
-        user::User,
+        build::Build, deployment::Deployment, server::Server, update::Update, user::User,
         PermissionLevel,
     },
     permissioned::Permissioned,
 };
+use periphery_client::PeripheryClient;
 use tokio::sync::RwLock;
 
 use crate::{auth::RequestUser, state::State};
@@ -175,6 +172,10 @@ impl State {
         std::mem::swap(&mut update.id, &mut update_id);
         let _ = self.send_update(update).await;
         Ok(())
+    }
+
+    pub fn periphery_client(&self, server: &Server) -> PeripheryClient {
+        PeripheryClient::new(&server.config.address, &self.config.passkey)
     }
 }
 
