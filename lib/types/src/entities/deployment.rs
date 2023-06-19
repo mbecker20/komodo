@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
+use crate::{i64_is_zero, I64};
+
 use super::{EnvironmentVar, PermissionsMap};
 
 #[typeshare]
@@ -31,13 +33,13 @@ pub struct Deployment {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
-    #[serde(default, skip_serializing_if = "String::is_empty")]
+    #[serde(default, skip_serializing_if = "i64_is_zero")]
     #[builder(setter(skip))]
-    pub created_at: String,
+    pub created_at: I64,
 
     #[serde(default)]
     #[builder(setter(skip))]
-    pub updated_at: String,
+    pub updated_at: I64,
 
     #[serde(default)]
     pub tags: Vec<String>,
@@ -73,7 +75,7 @@ pub struct DeploymentConfig {
     pub redeploy_on_build: bool,
 
     #[serde(default = "default_term_signal_labels")]
-    #[builder(default = "vec![TerminationSignalLabel::default()]")]
+    #[builder(default = "default_term_signal_labels()")]
     pub term_signal_labels: Vec<TerminationSignalLabel>,
 
     #[serde(default)]
@@ -130,14 +132,6 @@ fn default_network() -> String {
     String::from("host")
 }
 
-// #[typeshare]
-// #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, MungosIndexed)]
-// #[serde(tag = "type", content = "params")]
-// pub enum DeploymentImage {
-//     Image { image: String },
-//     Build { id: String, version: String }, // empty version string means latest
-// }
-
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 pub struct Conversion {
@@ -179,18 +173,16 @@ pub struct DockerContainerStats {
     Serialize,
     Deserialize,
     Debug,
-    Display,
-    EnumString,
     PartialEq,
     Hash,
     Eq,
     Clone,
     Copy,
     Default,
+    Display,
+    EnumString,
     MungosIndexed,
 )]
-#[serde(rename_all = "snake_case")]
-#[strum(serialize_all = "snake_case")]
 pub enum DockerContainerState {
     #[default]
     Unknown,
@@ -209,14 +201,14 @@ pub enum DockerContainerState {
     Serialize,
     Deserialize,
     Debug,
-    Display,
-    EnumString,
     PartialEq,
     Hash,
     Eq,
     Clone,
     Copy,
     Default,
+    Display,
+    EnumString,
     MungosIndexed,
 )]
 pub enum RestartMode {
@@ -240,14 +232,14 @@ pub enum RestartMode {
     Serialize,
     Deserialize,
     Debug,
-    Display,
-    EnumString,
     PartialEq,
     Hash,
     Eq,
     Clone,
     Copy,
     Default,
+    Display,
+    EnumString,
     MungosIndexed,
 )]
 #[serde(rename_all = "UPPERCASE")]
@@ -271,4 +263,17 @@ pub struct TerminationSignalLabel {
     pub signal: TerminationSignal,
     #[builder(default)]
     pub label: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct DeploymentActionState {
+    pub deploying: bool,
+    pub stopping: bool,
+    pub starting: bool,
+    pub removing: bool,
+    pub pulling: bool,
+    pub recloning: bool,
+    pub updating: bool,
+    pub renaming: bool,
 }

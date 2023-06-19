@@ -1,7 +1,7 @@
 use async_timing_util::unix_timestamp_ms;
 use bson::serde_helpers::hex_string_as_object_id;
+use mungos::MungosIndexed;
 use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::{entities::Operation, I64};
@@ -9,7 +9,7 @@ use crate::{entities::Operation, I64};
 use super::Version;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
 pub struct Update {
     #[serde(
         default,
@@ -26,7 +26,7 @@ pub struct Update {
     pub status: UpdateStatus,
     pub success: bool,
     pub operator: String,
-    pub version: Option<Version>,
+    pub version: Version,
 }
 
 #[typeshare]
@@ -68,7 +68,7 @@ impl Log {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
 #[serde(tag = "type", content = "id")]
 pub enum UpdateTarget {
     #[default]
@@ -76,9 +76,9 @@ pub enum UpdateTarget {
     Build(String),
     Deployment(String),
     Server(String),
-    Procedure(String),
-    Group(String),
-    Command(String),
+    // Procedure(String),
+    // Group(String),
+    // Command(String),
 }
 
 // impl From<&Build> for UpdateTarget {
@@ -143,10 +143,8 @@ pub enum UpdateTarget {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Default,
+    Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default, MungosIndexed,
 )]
-#[serde(rename_all = "snake_case")]
-#[strum(serialize_all = "snake_case")]
 pub enum UpdateStatus {
     Queued,
     InProgress,

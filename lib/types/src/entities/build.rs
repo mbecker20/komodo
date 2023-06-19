@@ -5,6 +5,8 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+use crate::{I64, i64_is_zero};
+
 use super::{EnvironmentVar, PermissionsMap, SystemCommand, Version};
 
 #[typeshare]
@@ -30,13 +32,13 @@ pub struct Build {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
-    #[serde(default, skip_serializing_if = "String::is_empty")]
+    #[serde(default, skip_serializing_if = "i64_is_zero")]
     #[builder(setter(skip))]
-    pub created_at: String,
+    pub created_at: I64,
 
     #[serde(default)]
     #[builder(setter(skip))]
-    pub updated_at: String,
+    pub updated_at: I64,
 
     #[serde(default)]
     #[builder(default)]
@@ -106,4 +108,11 @@ pub struct BuildConfig {
     #[serde(default)]
     #[builder(default)]
     pub use_buildx: bool,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct BuildActionState {
+    pub building: bool,
+    pub updating: bool,
 }

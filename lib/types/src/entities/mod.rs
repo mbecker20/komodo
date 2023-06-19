@@ -199,10 +199,17 @@ impl Default for &PermissionLevel {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Default, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy,
+    Serialize,
+    Deserialize,
+    Debug,
+    Default,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    MungosIndexed,
 )]
-#[serde(rename_all = "snake_case")]
-#[strum(serialize_all = "snake_case")]
 pub enum Operation {
     // do nothing
     #[default]

@@ -1,14 +1,16 @@
-use monitor_types::entities::{build::Build, deployment::Deployment, server::Server, user::User};
+use monitor_types::entities::{
+    build::Build, deployment::Deployment, server::Server, update::Update, user::User,
+};
 use mungos::{Collection, Indexed, Mungos};
 
 use crate::config::CoreConfig;
 
 pub struct DbClient {
-    // mungos: Mungos,
     pub users: Collection<User>,
     pub servers: Collection<Server>,
     pub deployments: Collection<Deployment>,
     pub builds: Collection<Build>,
+    pub updates: Collection<Update>,
 }
 
 impl DbClient {
@@ -23,6 +25,7 @@ impl DbClient {
             servers: Server::collection(&mungos, &config.mongo.db_name, true).await?,
             deployments: Deployment::collection(&mungos, &config.mongo.db_name, true).await?,
             builds: Build::collection(&mungos, &config.mongo.db_name, true).await?,
+            updates: Update::collection(&mungos, &config.mongo.db_name, true).await?,
             // mungos,
         };
         Ok(client)

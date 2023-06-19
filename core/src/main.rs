@@ -19,8 +19,10 @@ mod auth;
 mod config;
 mod db;
 mod helpers;
+mod monitoring;
 mod requests;
 mod state;
+mod ws;
 
 async fn app() -> anyhow::Result<()> {
     let state = state::State::load().await?;
@@ -32,6 +34,7 @@ async fn app() -> anyhow::Result<()> {
     let app = Router::new()
         .nest("/auth", auth::router(&state))
         .nest("/api", api())
+        .nest("/ws", ws::router())
         .layer(Extension(state));
 
     info!("starting server on {}", socket_addr);

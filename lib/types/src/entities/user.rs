@@ -3,7 +3,7 @@ use mungos::MungosIndexed;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::I64;
+use crate::{I64, i64_is_zero};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
@@ -58,8 +58,4 @@ pub struct ApiSecret {
     pub hash: String,
     pub created_at: I64,
     pub expires: Option<I64>,
-}
-
-fn i64_is_zero(n: &I64) -> bool {
-    *n == 0
 }

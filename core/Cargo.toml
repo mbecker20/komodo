@@ -14,6 +14,7 @@ monitor_helpers.workspace = true
 periphery_client.workspace = true
 # external
 tokio.workspace = true
+tokio-util.workspace = true
 axum.workspace = true
 tower.workspace = true
 tower-http.workspace = true
@@ -33,6 +34,7 @@ hmac.workspace = true
 sha2.workspace = true
 bcrypt.workspace = true
 async-trait.workspace = true
+futures.workspace = true
 # mogh
 async_timing_util.workspace = true
 merge_config_files.workspace = true
