@@ -41,9 +41,6 @@ pub struct Deployment {
     #[builder(setter(skip))]
     pub updated_at: I64,
 
-    #[serde(default)]
-    pub tags: Vec<String>,
-
     pub config: DeploymentConfig,
 }
 
@@ -83,7 +80,7 @@ pub struct DeploymentConfig {
     pub termination_signal: TerminationSignal,
 
     #[serde(default = "default_termination_timeout")]
-    #[builder(default = "10")]
+    #[builder(default = "default_termination_timeout()")]
     pub termination_timeout: i32,
 
     #[serde(default)]
@@ -106,9 +103,11 @@ pub struct DeploymentConfig {
     #[builder(default)]
     pub restart: RestartMode,
 
+    #[serde(default)]
     #[builder(default)]
     pub post_image: String, // empty is no post image
 
+    #[serde(default)]
     #[builder(default)]
     pub container_user: String, // empty is no container user
 
@@ -116,8 +115,13 @@ pub struct DeploymentConfig {
     #[builder(default)]
     pub extra_args: Vec<String>,
 
+    #[serde(default)]
     #[builder(default)]
     pub docker_account: String, // the username of the dockerhub account. empty if no account.
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
 }
 
 fn default_term_signal_labels() -> Vec<TerminationSignalLabel> {
@@ -130,6 +134,35 @@ fn default_termination_timeout() -> i32 {
 
 fn default_network() -> String {
     String::from("host")
+}
+
+impl From<PartialDeploymentConfig> for DeploymentConfig {
+    fn from(value: PartialDeploymentConfig) -> DeploymentConfig {
+        DeploymentConfig {
+            server_id: value.server_id.unwrap_or_default(),
+            build_id: value.build_id.unwrap_or_default(),
+            image: value.image.unwrap_or_default(),
+            skip_secret_interp: value.skip_secret_interp.unwrap_or_default(),
+            redeploy_on_build: value.redeploy_on_build.unwrap_or_default(),
+            term_signal_labels: value
+                .term_signal_labels
+                .unwrap_or(default_term_signal_labels()),
+            termination_signal: value.termination_signal.unwrap_or_default(),
+            termination_timeout: value
+                .termination_timeout
+                .unwrap_or(default_termination_timeout()),
+            ports: value.ports.unwrap_or_default(),
+            volumes: value.volumes.unwrap_or_default(),
+            environment: value.environment.unwrap_or_default(),
+            network: value.network.unwrap_or(default_network()),
+            restart: value.restart.unwrap_or_default(),
+            post_image: value.post_image.unwrap_or_default(),
+            container_user: value.container_user.unwrap_or_default(),
+            extra_args: value.extra_args.unwrap_or_default(),
+            docker_account: value.docker_account.unwrap_or_default(),
+            tags: value.tags.unwrap_or_default(),
+        }
+    }
 }
 
 #[typeshare]

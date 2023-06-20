@@ -62,9 +62,17 @@ pub enum ApiRequest {
     PruneContainers(PruneDockerContainers),
     PruneImages(PruneDockerImages),
     PruneNetworks(PruneDockerNetworks),
+
     //
     // ==== DEPLOYMENT ====
     //
+    GetDeployment(GetDeployment),
+    ListDeployments(ListDeployments), 
+    // CRUD
+    CreateDeployment(CreateDeployment),
+    DeleteDeployment(DeleteDeployment),
+    UpdateDeployment(UpdateDeployment),
+    RenameDeployment(RenameDeployment),
 }
 
 pub fn router() -> Router {

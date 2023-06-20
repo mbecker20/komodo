@@ -7,6 +7,9 @@ use crate::I64;
 mod server;
 pub use server::*;
 
+mod deployment;
+pub use deployment::*;
+
 //
 
 #[typeshare]

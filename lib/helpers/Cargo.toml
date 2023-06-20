@@ -8,5 +8,6 @@ license.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+monitor_types.workspace = true
 serde.workspace = true
 async_timing_util.workspace = true

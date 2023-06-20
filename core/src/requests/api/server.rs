@@ -16,8 +16,8 @@ use monitor_types::{
         CreateServer, DeleteServer, GetAllSystemStats, GetBasicSystemStats, GetCpuUsage,
         GetDiskUsage, GetDockerContainers, GetDockerImages, GetDockerNetworks, GetNetworkUsage,
         GetPeripheryVersion, GetPeripheryVersionResponse, GetServer, GetSystemComponents,
-        GetSystemInformation, GetSystemProcesses, ListServers, PruneDockerImages,
-        PruneDockerNetworks, RenameServer, UpdateServer, PruneDockerContainers,
+        GetSystemInformation, GetSystemProcesses, ListServers, PruneDockerContainers,
+        PruneDockerImages, PruneDockerNetworks, RenameServer, UpdateServer,
     },
 };
 use mungos::mongodb::bson::{doc, to_bson};
@@ -55,11 +55,15 @@ impl Resolve<GetServer, RequestUser> for State {
 
 #[async_trait]
 impl Resolve<ListServers, RequestUser> for State {
-    async fn resolve(&self, _: ListServers, user: RequestUser) -> anyhow::Result<Vec<Server>> {
+    async fn resolve(
+        &self,
+        ListServers { query }: ListServers,
+        user: RequestUser,
+    ) -> anyhow::Result<Vec<Server>> {
         let servers = self
             .db
             .servers
-            .get_some(None, None)
+            .get_some(query, None)
             .await
             .context("failed to pull servers from mongo")?;
 
@@ -92,7 +96,6 @@ impl Resolve<CreateServer, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description: Default::default(),
-            tags: Default::default(),
             config: req.config.into(),
         };
         let server_id = self

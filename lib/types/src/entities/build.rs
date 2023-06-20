@@ -40,10 +40,6 @@ pub struct Build {
     #[builder(setter(skip))]
     pub updated_at: I64,
 
-    #[serde(default)]
-    #[builder(default)]
-    pub tags: Vec<String>,
-
     pub config: BuildConfig,
 }
 
@@ -108,6 +104,10 @@ pub struct BuildConfig {
     #[serde(default)]
     #[builder(default)]
     pub use_buildx: bool,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
 }
 
 #[typeshare]

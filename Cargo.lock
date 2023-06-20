@@ -1490,6 +1490,7 @@ name = "monitor_helpers"
 version = "1.0.0"
 dependencies = [
  "async_timing_util",
+ "monitor_types",
  "serde",
 ]
 

@@ -44,9 +44,6 @@ pub struct Server {
     #[builder(setter(skip))]
     pub updated_at: I64,
 
-    #[serde(default)]
-    pub tags: Vec<String>,
-
     pub config: ServerConfig,
 }
 
@@ -98,6 +95,10 @@ pub struct ServerConfig {
     #[serde(default)]
     #[builder(default)]
     pub to_notify: Vec<String>, // slack users to notify
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
 }
 
 fn default_enabled() -> bool {
@@ -145,7 +146,8 @@ impl From<PartialServerConfig> for ServerConfig {
             cpu_critical: value.cpu_critical.unwrap_or(default_cpu_critical()),
             mem_critical: value.mem_critical.unwrap_or(default_mem_critical()),
             disk_critical: value.disk_critical.unwrap_or(default_disk_critical()),
-            to_notify: value.to_notify.unwrap_or_default()
+            to_notify: value.to_notify.unwrap_or_default(),
+            tags: value.tags.unwrap_or_default(),
         }
     }
 }
