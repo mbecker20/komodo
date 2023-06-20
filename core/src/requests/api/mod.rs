@@ -1,19 +1,20 @@
 use std::time::Instant;
 
-use axum::{Router, routing::post, Extension, Json, http::StatusCode, TypedHeader, headers::ContentType, middleware};
-use monitor_types::requests::api::{
-    CreateLoginSecret, CreateServer, DeleteLoginSecret, DeleteServer, GetAllSystemStats,
-    GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetDockerContainers, GetDockerImages,
-    GetDockerNetworks, GetNetworkUsage, GetPeripheryVersion, GetServer, GetSystemComponents,
-    GetSystemInformation, GetSystemProcesses, ListServers, PruneDockerContainers,
-    PruneDockerImages, PruneDockerNetworks, RenameServer, UpdateServer,
+use axum::{
+    headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
+    TypedHeader,
 };
+use monitor_types::requests::api::*;
 use resolver_api::{derive::Resolver, Resolve, ResolveToString, Resolver};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{auth::{RequestUser, RequestUserExtension, auth_request}, state::{State, StateExtension}};
+use crate::{
+    auth::{auth_request, RequestUser, RequestUserExtension},
+    state::{State, StateExtension},
+};
 
+mod deployment;
 mod secret;
 mod server;
 
