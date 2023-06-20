@@ -4,7 +4,6 @@ extern crate log;
 use axum::{Extension, Router};
 use termination_signal::tokio::immediate_term_handle;
 
-mod api;
 mod auth;
 mod config;
 mod db;
@@ -23,7 +22,7 @@ async fn app() -> anyhow::Result<()> {
 
     let app = Router::new()
         .nest("/auth", auth::router(&state))
-        .nest("/api", api::router())
+        .nest("/api", requests::api::router())
         .nest("/ws", ws::router())
         .layer(Extension(state));
 

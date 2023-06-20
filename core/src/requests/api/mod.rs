@@ -1,3 +1,6 @@
+use std::time::Instant;
+
+use axum::{Router, routing::post, Extension, Json, http::StatusCode, TypedHeader, headers::ContentType, middleware};
 use monitor_types::requests::api::{
     CreateLoginSecret, CreateServer, DeleteLoginSecret, DeleteServer, GetAllSystemStats,
     GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetDockerContainers, GetDockerImages,
@@ -5,10 +8,11 @@ use monitor_types::requests::api::{
     GetSystemInformation, GetSystemProcesses, ListServers, PruneDockerContainers,
     PruneDockerImages, PruneDockerNetworks, RenameServer, UpdateServer,
 };
-use resolver_api::{derive::Resolver, Resolve, ResolveToString};
+use resolver_api::{derive::Resolver, Resolve, ResolveToString, Resolver};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::{RequestUser, RequestUserExtension, auth_request}, state::{State, StateExtension}};
 
 mod secret;
 mod server;
@@ -60,4 +64,33 @@ pub enum ApiRequest {
     //
     // ==== DEPLOYMENT ====
     //
+}
+
+pub fn router() -> Router {
+    Router::new()
+        .route(
+            "/",
+            post(
+                |state: StateExtension,
+                 Extension(user): RequestUserExtension,
+                 Json(request): Json<ApiRequest>| async move {
+                    let timer = Instant::now();
+                    let req_id = Uuid::new_v4();
+                    info!("/auth request {req_id} | {request:?}");
+                    let res = state
+                        .resolve_request(request, user)
+                        .await
+                        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
+                    if let Err(e) = &res {
+                        info!("/auth request {req_id} ERROR: {e:?}");
+                    }
+                    let res = res?;
+                    let elapsed = timer.elapsed();
+                    info!("/auth request {req_id} | resolve time: {elapsed:?}");
+                    debug!("/auth request {req_id} RESPONSE: {res}");
+                    Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
+                },
+            ),
+        )
+        .layer(middleware::from_fn(auth_request))
 }
