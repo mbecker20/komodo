@@ -9,3 +9,4 @@ license.workspace = true
 
 [dependencies]
 serde.workspace = true
+async_timing_util.workspace = true

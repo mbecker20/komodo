@@ -2,7 +2,7 @@ use resolver_api::derive::Request;
 use serde::{Serialize, Deserialize};
 use typeshare::typeshare;
 
-use crate::{entities::server::{Server, PartialServerConfig, stats::{AllSystemStats, SystemInformation, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage, SystemProcess, SystemComponent}}, MongoDocument};
+use crate::{entities::{server::{Server, PartialServerConfig, stats::{AllSystemStats, SystemInformation, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage, SystemProcess, SystemComponent}, docker_network::DockerNetwork, docker_image::ImageSummary}, update::Update, deployment::BasicContainerInfo}, MongoDocument};
 
 //
 
@@ -47,6 +47,7 @@ pub struct DeleteServer {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Server)]
 pub struct UpdateServer {
+	pub id: String,
 	pub config: PartialServerConfig,
 }
 
@@ -54,7 +55,7 @@ pub struct UpdateServer {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Server)]
+#[response(Update)]
 pub struct RenameServer {
 	pub id: String,
 	pub name: String,
@@ -142,3 +143,48 @@ pub struct GetSystemComponents {
 
 //
 
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<DockerNetwork>)]
+pub struct GetDockerNetworks {
+	pub server_id: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Update)]
+pub struct PruneDockerNetworks {
+	pub server_id: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<ImageSummary>)]
+pub struct GetDockerImages {
+	pub server_id: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Update)]
+pub struct PruneDockerImages {
+	pub server_id: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<BasicContainerInfo>)]
+pub struct GetDockerContainers {
+	pub server_id: String,
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Update)]
+pub struct PruneDockerContainers {
+	pub server_id: String,
+}

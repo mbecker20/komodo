@@ -4,8 +4,8 @@
 		"prefix": "resolve",
 		"body": [
 			"#[async_trait]",
-			"impl Resolve<${1}, ${2}> for State {",
-			"\tasync fn resolve(&self, req: ${1}, args: ${2}) -> anyhow::Result<${3}> {",
+			"impl Resolve<${1}, RequestUser> for State {",
+			"\tasync fn resolve(&self, ${1} { ${0} }: ${1}, user: RequestUser) -> anyhow::Result<${2}> {",
 			"\t\ttodo!()",
 			"\t}",
 			"}"

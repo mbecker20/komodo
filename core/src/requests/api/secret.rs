@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
-use async_timing_util::unix_timestamp_ms;
 use async_trait::async_trait;
+use monitor_helpers::monitor_timestamp;
 use monitor_types::{
     entities::user::ApiSecret,
     requests::api::{CreateLoginSecret, CreateLoginSecretResponse, DeleteLoginSecret},
@@ -35,7 +35,7 @@ impl Resolve<CreateLoginSecret, RequestUser> for State {
         let secret_str = random_string(SECRET_LENGTH);
         let api_secret = ApiSecret {
             name: secret.name,
-            created_at: unix_timestamp_ms() as i64,
+            created_at: monitor_timestamp(),
             expires: secret.expires,
             hash: bcrypt::hash(&secret_str, BCRYPT_COST)
                 .context("failed at hashing secret string")?,

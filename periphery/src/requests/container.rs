@@ -2,7 +2,6 @@ use anyhow::{anyhow, Context};
 use monitor_helpers::optional_string;
 use monitor_types::entities::{
     deployment::{BasicContainerInfo, Deployment, DockerContainerStats, TerminationSignal},
-    server::{docker_image::ImageSummary, docker_network::DockerNetwork},
     update::Log,
 };
 use resolver_api::{derive::Request, Resolve};
@@ -76,32 +75,6 @@ impl Resolve<GetContainerStatsList> for State {
         _: (),
     ) -> anyhow::Result<Vec<DockerContainerStats>> {
         docker::container_stats(None).await
-    }
-}
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<DockerNetwork>)]
-pub struct GetNetworkList {}
-
-#[async_trait::async_trait]
-impl Resolve<GetNetworkList> for State {
-    async fn resolve(&self, _: GetNetworkList, _: ()) -> anyhow::Result<Vec<DockerNetwork>> {
-        self.docker.list_networks().await
-    }
-}
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<ImageSummary>)]
-pub struct GetImageList {}
-
-#[async_trait::async_trait]
-impl Resolve<GetImageList> for State {
-    async fn resolve(&self, _: GetImageList, _: ()) -> anyhow::Result<Vec<ImageSummary>> {
-        self.docker.list_images().await
     }
 }
 

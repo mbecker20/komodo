@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
-use async_timing_util::unix_timestamp_ms;
 use axum::{extract::Query, http::StatusCode, response::Redirect, routing::get, Router};
+use monitor_helpers::monitor_timestamp;
 use monitor_types::entities::user::User;
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
@@ -63,7 +63,7 @@ async fn callback(
             .generate(user.id)
             .context("failed to generate jwt")?,
         None => {
-            let ts = unix_timestamp_ms() as i64;
+            let ts = monitor_timestamp();
             let no_users_exist = state.db.users.find_one(None, None).await?.is_none();
             let user = User {
                 username: github_user.login,

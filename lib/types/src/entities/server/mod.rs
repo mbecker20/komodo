@@ -71,17 +71,29 @@ pub struct ServerConfig {
     #[builder(default)]
     pub region: String,
 
-    #[serde(default = "default_cpu_alert")]
-    #[builder(default = "default_cpu_alert()")]
-    pub cpu_alert: f32,
+    #[serde(default = "default_cpu_warning")]
+    #[builder(default = "default_cpu_warning()")]
+    pub cpu_warning: f32,
 
-    #[serde(default = "default_mem_alert")]
-    #[builder(default = "default_mem_alert()")]
-    pub mem_alert: f64,
+    #[serde(default = "default_cpu_critical")]
+    #[builder(default = "default_cpu_critical()")]
+    pub cpu_critical: f32,
 
-    #[serde(default = "default_disk_alert")]
-    #[builder(default = "default_disk_alert()")]
-    pub disk_alert: f64,
+    #[serde(default = "default_mem_warning")]
+    #[builder(default = "default_mem_warning()")]
+    pub mem_warning: f64,
+
+    #[serde(default = "default_mem_critical")]
+    #[builder(default = "default_mem_critical()")]
+    pub mem_critical: f64,
+
+    #[serde(default = "default_disk_warning")]
+    #[builder(default = "default_disk_warning()")]
+    pub disk_warning: f64,
+
+    #[serde(default = "default_disk_critical")]
+    #[builder(default = "default_disk_critical()")]
+    pub disk_critical: f64,
 
     #[serde(default)]
     #[builder(default)]
@@ -96,16 +108,28 @@ fn default_auto_prune() -> bool {
     true
 }
 
-fn default_cpu_alert() -> f32 {
+fn default_cpu_warning() -> f32 {
+    90.0
+}
+
+fn default_cpu_critical() -> f32 {
+    99.0
+}
+
+fn default_mem_warning() -> f64 {
+    75.0
+}
+
+fn default_mem_critical() -> f64 {
     95.0
 }
 
-fn default_mem_alert() -> f64 {
-    80.0
+fn default_disk_warning() -> f64 {
+    75.0
 }
 
-fn default_disk_alert() -> f64 {
-    75.0
+fn default_disk_critical() -> f64 {
+    95.0
 }
 
 impl From<PartialServerConfig> for ServerConfig {
@@ -115,9 +139,12 @@ impl From<PartialServerConfig> for ServerConfig {
             enabled: value.enabled.unwrap_or(default_enabled()),
             auto_prune: value.auto_prune.unwrap_or(default_auto_prune()),
             region: value.region.unwrap_or_default(),
-            cpu_alert: value.cpu_alert.unwrap_or(default_cpu_alert()),
-            mem_alert: value.mem_alert.unwrap_or(default_mem_alert()),
-            disk_alert: value.disk_alert.unwrap_or(default_disk_alert()),
+            cpu_warning: value.cpu_warning.unwrap_or(default_cpu_warning()),
+            mem_warning: value.mem_warning.unwrap_or(default_mem_warning()),
+            disk_warning: value.disk_warning.unwrap_or(default_disk_warning()),
+            cpu_critical: value.cpu_critical.unwrap_or(default_cpu_critical()),
+            mem_critical: value.mem_critical.unwrap_or(default_mem_critical()),
+            disk_critical: value.disk_critical.unwrap_or(default_disk_critical()),
             to_notify: value.to_notify.unwrap_or_default()
         }
     }

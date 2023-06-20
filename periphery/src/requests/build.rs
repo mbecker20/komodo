@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use monitor_helpers::optional_string;
-use monitor_types::entities::update::Log;
+use monitor_types::entities::{server::docker_image::ImageSummary, update::Log};
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
 
@@ -27,6 +27,19 @@ impl Resolve<Build> for State {
             Err(e) => vec![Log::error("build", format!("{e:#?}"))],
         };
         Ok(log)
+    }
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<ImageSummary>)]
+pub struct GetImageList {}
+
+#[async_trait::async_trait]
+impl Resolve<GetImageList> for State {
+    async fn resolve(&self, _: GetImageList, _: ()) -> anyhow::Result<Vec<ImageSummary>> {
+        self.docker.list_images().await
     }
 }
 

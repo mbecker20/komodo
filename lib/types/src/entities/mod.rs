@@ -219,10 +219,10 @@ pub enum Operation {
     CreateServer,
     UpdateServer,
     DeleteServer,
+    RenameServer,
     PruneImagesServer,
     PruneContainersServer,
     PruneNetworksServer,
-    RenameServer,
 
     // build
     CreateBuild,

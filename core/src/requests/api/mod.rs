@@ -1,8 +1,9 @@
 use monitor_types::requests::api::{
     CreateLoginSecret, CreateServer, DeleteLoginSecret, DeleteServer, GetAllSystemStats,
-    GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetNetworkUsage, GetPeripheryVersion,
-    GetServer, GetSystemComponents, GetSystemInformation, GetSystemProcesses, ListServers,
-    RenameServer, UpdateServer,
+    GetBasicSystemStats, GetCpuUsage, GetDiskUsage, GetDockerContainers, GetDockerImages,
+    GetDockerNetworks, GetNetworkUsage, GetPeripheryVersion, GetServer, GetSystemComponents,
+    GetSystemInformation, GetSystemProcesses, ListServers, PruneDockerContainers,
+    PruneDockerImages, PruneDockerNetworks, RenameServer, UpdateServer,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
@@ -27,6 +28,9 @@ pub enum ApiRequest {
     //
     GetPeripheryVersion(GetPeripheryVersion),
     GetSystemInformation(GetSystemInformation),
+    GetDockerContainers(GetDockerContainers),
+    GetDockerImages(GetDockerImages),
+    GetDockerNetworks(GetDockerNetworks),
     GetServer(GetServer),
     ListServers(ListServers),
     // CRUD
@@ -34,7 +38,7 @@ pub enum ApiRequest {
     DeleteServer(DeleteServer),
     UpdateServer(UpdateServer),
     RenameServer(RenameServer),
-    // Stats
+    // STATS
     #[to_string_resolver]
     GetAllSystemStats(GetAllSystemStats),
     #[to_string_resolver]
@@ -49,7 +53,10 @@ pub enum ApiRequest {
     GetSystemProcesses(GetSystemProcesses),
     #[to_string_resolver]
     GetSystemComponents(GetSystemComponents),
-
+    // ACTIONS
+    PruneContainers(PruneDockerContainers),
+    PruneImages(PruneDockerImages),
+    PruneNetworks(PruneDockerNetworks),
     //
     // ==== DEPLOYMENT ====
     //

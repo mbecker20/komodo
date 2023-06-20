@@ -194,7 +194,7 @@ impl<T: Clone + Default> Cache<T> {
         cache.entry(key).or_default().clone()
     }
 
-    pub async fn _get_list(&self, filter: Option<impl Fn(&String, &T) -> bool>) -> Vec<T> {
+    pub async fn get_list(&self, filter: Option<impl Fn(&String, &T) -> bool>) -> Vec<T> {
         let cache = self.cache.read().await;
         match filter {
             Some(filter) => cache

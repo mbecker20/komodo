@@ -35,12 +35,12 @@ impl State {
             let servers = servers.unwrap();
             let futures = servers
                 .into_iter()
-                .map(|server| async move { self.update_cache(&server).await });
+                .map(|server| async move { self.update_cache_for_server(&server).await });
             join_all(futures).await;
         }
     }
 
-    pub async fn update_cache(&self, server: &Server) {
+    pub async fn update_cache_for_server(&self, server: &Server) {
         let deployments = self
             .db
             .deployments

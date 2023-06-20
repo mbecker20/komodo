@@ -1,9 +1,22 @@
 use async_trait::async_trait;
-use monitor_types::entities::update::Log;
+use monitor_types::entities::{server::docker_network::DockerNetwork, update::Log};
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
 
 use crate::{helpers::docker, state::State};
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<DockerNetwork>)]
+pub struct GetNetworkList {}
+
+#[async_trait]
+impl Resolve<GetNetworkList> for State {
+    async fn resolve(&self, _: GetNetworkList, _: ()) -> anyhow::Result<Vec<DockerNetwork>> {
+        self.docker.list_networks().await
+    }
+}
 
 //
 
