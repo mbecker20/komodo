@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{collections::HashMap, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -119,4 +119,22 @@ pub struct SystemComponent {
     pub max: f32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub critical: Option<f32>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub enum StatsState {
+    #[default]
+    Ok,
+    Warning,
+    Critical,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct ServerHealth {
+    pub cpu: StatsState,
+    pub mem: StatsState,
+    pub disk: StatsState,
+    pub disks: HashMap<PathBuf, StatsState>,
 }
