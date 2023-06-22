@@ -10,6 +10,9 @@ pub use server::*;
 mod deployment;
 pub use deployment::*;
 
+mod build;
+pub use build::*;
+
 //
 
 #[typeshare]

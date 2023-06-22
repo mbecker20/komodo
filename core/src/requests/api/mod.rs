@@ -17,6 +17,7 @@ use crate::{
 mod deployment;
 mod secret;
 mod server;
+mod build;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[resolver_target(State)]

@@ -1,9 +1,9 @@
 use typeshare::typeshare;
 
-pub mod entities;
-pub mod requests;
-pub mod permissioned;
 pub mod busy;
+pub mod entities;
+pub mod permissioned;
+pub mod requests;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;

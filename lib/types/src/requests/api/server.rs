@@ -1,55 +1,28 @@
+use monitor_macros::derive_crud_requests;
 use resolver_api::derive::Request;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{entities::{server::{Server, PartialServerConfig, stats::{AllSystemStats, SystemInformation, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage, SystemProcess, SystemComponent}, docker_network::DockerNetwork, docker_image::ImageSummary}, update::Update, deployment::BasicContainerInfo}, MongoDocument};
+use crate::{
+    entities::{
+        deployment::BasicContainerInfo,
+        server::{
+            docker_image::ImageSummary,
+            docker_network::DockerNetwork,
+            stats::{
+                AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage,
+                SystemComponent, SystemInformation, SystemProcess,
+            },
+            PartialServerConfig, Server,
+        },
+        update::Update,
+    },
+    MongoDocument,
+};
 
 //
 
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Server)]
-pub struct GetServer {
-	pub id: String,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Server>)]
-pub struct ListServers {
-	pub query: Option<MongoDocument>,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Server)]
-pub struct CreateServer {
-	pub name: String,
-	pub config: PartialServerConfig,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Server)]
-pub struct DeleteServer {
-	pub id: String,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Server)]
-pub struct UpdateServer {
-	pub id: String,
-	pub config: PartialServerConfig,
-}
+derive_crud_requests!(Server);
 
 //
 
@@ -57,8 +30,8 @@ pub struct UpdateServer {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Update)]
 pub struct RenameServer {
-	pub id: String,
-	pub name: String,
+    pub id: String,
+    pub name: String,
 }
 
 //
@@ -67,13 +40,13 @@ pub struct RenameServer {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(GetPeripheryVersionResponse)]
 pub struct GetPeripheryVersion {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetPeripheryVersionResponse {
-	pub version: String,
+    pub version: String,
 }
 
 //
@@ -81,7 +54,7 @@ pub struct GetPeripheryVersionResponse {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(SystemInformation)]
 pub struct GetSystemInformation {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -90,7 +63,7 @@ pub struct GetSystemInformation {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(AllSystemStats)]
 pub struct GetAllSystemStats {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -98,7 +71,7 @@ pub struct GetAllSystemStats {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(BasicSystemStats)]
 pub struct GetBasicSystemStats {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -106,7 +79,7 @@ pub struct GetBasicSystemStats {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(CpuUsage)]
 pub struct GetCpuUsage {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -114,7 +87,7 @@ pub struct GetCpuUsage {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(DiskUsage)]
 pub struct GetDiskUsage {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -122,7 +95,7 @@ pub struct GetDiskUsage {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(NetworkUsage)]
 pub struct GetNetworkUsage {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -130,7 +103,7 @@ pub struct GetNetworkUsage {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<SystemProcess>)]
 pub struct GetSystemProcesses {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -138,7 +111,7 @@ pub struct GetSystemProcesses {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<SystemComponent>)]
 pub struct GetSystemComponents {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -146,7 +119,7 @@ pub struct GetSystemComponents {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<DockerNetwork>)]
 pub struct GetDockerNetworks {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -154,7 +127,7 @@ pub struct GetDockerNetworks {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Update)]
 pub struct PruneDockerNetworks {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -162,7 +135,7 @@ pub struct PruneDockerNetworks {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<ImageSummary>)]
 pub struct GetDockerImages {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -170,7 +143,7 @@ pub struct GetDockerImages {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Update)]
 pub struct PruneDockerImages {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -178,7 +151,7 @@ pub struct PruneDockerImages {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<BasicContainerInfo>)]
 pub struct GetDockerContainers {
-	pub server_id: String,
+    pub server_id: String,
 }
 
 //
@@ -186,5 +159,5 @@ pub struct GetDockerContainers {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Update)]
 pub struct PruneDockerContainers {
-	pub server_id: String,
+    pub server_id: String,
 }

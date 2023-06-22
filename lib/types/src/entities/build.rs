@@ -5,7 +5,7 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{I64, i64_is_zero};
+use crate::{i64_is_zero, I64};
 
 use super::{EnvironmentVar, PermissionsMap, SystemCommand, Version};
 
@@ -65,8 +65,8 @@ pub struct BuildConfig {
     #[builder(default)]
     pub repo: String,
 
-    #[serde(default)]
-    #[builder(default)]
+    #[serde(default = "default_branch")]
+    #[builder(default = "default_branch()")]
     pub branch: String,
 
     #[serde(default)]
@@ -85,12 +85,12 @@ pub struct BuildConfig {
     #[builder(default)]
     pub pre_build: SystemCommand,
 
-    #[serde(default)]
-    #[builder(default)]
+    #[serde(default = "default_build_path")]
+    #[builder(default = "default_build_path()")]
     pub build_path: String,
 
-    #[serde(default)]
-    #[builder(default)]
+    #[serde(default = "default_dockerfile_path")]
+    #[builder(default = "default_dockerfile_path()")]
     pub dockerfile_path: String,
 
     #[serde(default)]
@@ -108,6 +108,40 @@ pub struct BuildConfig {
     #[serde(default)]
     #[builder(default)]
     pub tags: Vec<String>,
+}
+
+fn default_branch() -> String {
+    String::from("main")
+}
+
+fn default_build_path() -> String {
+    String::from(".")
+}
+
+fn default_dockerfile_path() -> String {
+    String::from("Dockerfile")
+}
+
+impl From<PartialBuildConfig> for BuildConfig {
+    fn from(value: PartialBuildConfig) -> BuildConfig {
+        BuildConfig {
+            server_id: value.server_id.unwrap_or_default(),
+            skip_secret_interp: value.skip_secret_interp.unwrap_or_default(),
+            version: value.version.unwrap_or_default(),
+            repo: value.repo.unwrap_or_default(),
+            branch: value.branch.unwrap_or(default_branch()),
+            github_account: value.github_account.unwrap_or_default(),
+            docker_account: value.docker_account.unwrap_or_default(),
+            docker_organization: value.docker_organization.unwrap_or_default(),
+            pre_build: value.pre_build.unwrap_or_default(),
+            build_path: value.build_path.unwrap_or(default_build_path()),
+            dockerfile_path: value.dockerfile_path.unwrap_or(default_dockerfile_path()),
+            build_args: value.build_args.unwrap_or_default(),
+            extra_args: value.extra_args.unwrap_or_default(),
+            use_buildx: value.use_buildx.unwrap_or_default(),
+            tags: value.tags.unwrap_or_default(),
+        }
+    }
 }
 
 #[typeshare]

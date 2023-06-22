@@ -1495,6 +1495,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "monitor_macros"
+version = "1.0.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.18",
+]
+
+[[package]]
 name = "monitor_periphery"
 version = "1.0.0"
 dependencies = [
@@ -1534,6 +1543,7 @@ dependencies = [
  "bson",
  "derive_builder",
  "make_option",
+ "monitor_macros",
  "mungos",
  "partial_derive2",
  "resolver_api",

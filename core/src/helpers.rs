@@ -4,12 +4,16 @@ use anyhow::{anyhow, Context};
 use monitor_types::{
     busy::Busy,
     entities::{
-        build::Build, deployment::Deployment, server::Server, update::Update, user::User,
+        build::Build,
+        deployment::{Deployment, DockerContainerState},
+        server::{Server, ServerStatus},
+        update::Update,
+        user::User,
         PermissionLevel,
     },
     permissioned::Permissioned,
 };
-use periphery_client::PeripheryClient;
+use periphery_client::{requests, PeripheryClient};
 use tokio::sync::RwLock;
 
 use crate::{auth::RequestUser, state::State};
@@ -29,6 +33,25 @@ impl State {
             .find_one_by_id(server_id)
             .await?
             .context(format!("did not find any server with id {server_id}"))
+    }
+
+    pub async fn get_server_with_status(
+        &self,
+        server_id: &str,
+    ) -> anyhow::Result<(Server, ServerStatus)> {
+        let server = self.get_server(server_id).await?;
+        if !server.config.enabled {
+            return Ok((server, ServerStatus::Disabled));
+        }
+        let status = match self
+            .periphery_client(&server)
+            .request(requests::GetHealth {})
+            .await
+        {
+            Ok(_) => ServerStatus::Ok,
+            Err(_) => ServerStatus::NotOk,
+        };
+        Ok((server, status))
     }
 
     pub async fn get_server_check_permissions(
@@ -71,6 +94,40 @@ impl State {
                 "did not find any deployment with id {deployment_id}"
             ))
     }
+
+    pub async fn get_deployment_state(&self, deployment: &Deployment) -> anyhow::Result<DockerContainerState> {
+        if deployment.config.server_id.is_empty() {
+            return Ok(DockerContainerState::NotDeployed);
+        }
+        let (server, status) = self
+            .get_server_with_status(&deployment.config.server_id)
+            .await?;
+        if status != ServerStatus::Ok {
+            return Ok(DockerContainerState::Unknown);
+        }
+        let container = self
+            .periphery_client(&server)
+            .request(requests::GetContainerList {})
+            .await?
+            .into_iter()
+            .find(|container| container.name == deployment.name);
+
+        let state = match container {
+            Some(container) => container.state,
+            None => DockerContainerState::NotDeployed
+        };
+
+        Ok(state)
+    }
+
+    // pub async fn get_deployment_with_state(
+    //     &self,
+    //     deployment_id: &str,
+    // ) -> anyhow::Result<(Deployment, DockerContainerState)> {
+    //     let deployment = self.get_deployment(deployment_id).await?;
+    //     let state = self.get_deployment_state(&deployment).await?;
+    //     Ok((deployment, state))
+    // }
 
     pub async fn get_deployment_check_permissions(
         &self,
@@ -231,4 +288,16 @@ impl<T: Clone + Default + Busy> Cache<T> {
             None => false,
         }
     }
+}
+
+pub fn empty_or_only_spaces(word: &str) -> bool {
+    if word.is_empty() {
+        return true;
+    }
+    for char in word.chars() {
+        if char != ' ' {
+            return false;
+        }
+    }
+    true
 }

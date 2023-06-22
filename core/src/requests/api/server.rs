@@ -639,14 +639,14 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
             return Err(anyhow!("server busy"));
         }
 
-        let inner = || async {
-            let server = self
-                .get_server_check_permissions(&server_id, &user, PermissionLevel::Execute)
-                .await?;
+        let server = self
+            .get_server_check_permissions(&server_id, &user, PermissionLevel::Execute)
+            .await?;
 
+        let inner = || async {
             let start_ts = monitor_timestamp();
             let mut update = Update {
-                target: UpdateTarget::Server(server_id.to_owned()),
+                target: UpdateTarget::Server(server_id),
                 operation: Operation::PruneContainersServer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -680,7 +680,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
 
         self.action_states
             .server
-            .update_entry(server_id.to_string(), |entry| {
+            .update_entry(server.id.to_string(), |entry| {
                 entry.pruning_containers = true;
             })
             .await;
@@ -689,7 +689,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
 
         self.action_states
             .server
-            .update_entry(server_id.to_string(), |entry| {
+            .update_entry(server.id, |entry| {
                 entry.pruning_containers = false;
             })
             .await;
