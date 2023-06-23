@@ -9,7 +9,7 @@ use monitor_types::{
         server::{Server, ServerStatus},
         update::Update,
         user::User,
-        PermissionLevel,
+        PermissionLevel, builder::Builder,
     },
     permissioned::Permissioned,
 };
@@ -199,6 +199,45 @@ impl State {
     ) -> anyhow::Result<PermissionLevel> {
         let build = self.get_build(build_id).await?;
         Ok(build.get_user_permissions(user_id))
+    }
+
+    pub async fn get_builder(&self, builder_id: &str) -> anyhow::Result<Builder> {
+        self.db
+            .builders
+            .find_one_by_id(builder_id)
+            .await?
+            .context(format!("did not find any builder with id {builder_id}"))
+    }
+
+    pub async fn get_builder_check_permissions(
+        &self,
+        builder_id: &str,
+        user: &RequestUser,
+        permission_level: PermissionLevel,
+    ) -> anyhow::Result<Builder> {
+        let builder = self
+            .db
+            .builders
+            .find_one_by_id(builder_id)
+            .await?
+            .context(format!("did not find any builder with id {builder_id}"))?;
+        let permissions = builder.get_user_permissions(&user.id);
+        if user.is_admin || permissions >= permission_level {
+            Ok(builder)
+        } else {
+            Err(anyhow!(
+                "user does not have required permissions on this builder"
+            ))
+        }
+    }
+
+    pub async fn get_user_permission_on_builder(
+        &self,
+        user_id: &str,
+        builder_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let builder = self.get_builder(builder_id).await?;
+        Ok(builder.get_user_permissions(user_id))
     }
 
     pub async fn send_update(&self, update: Update) -> anyhow::Result<()> {

@@ -182,6 +182,12 @@ impl State {
                 let permissions = self.get_user_permission_on_build(user_id, build_id).await?;
                 (permissions, "build")
             }
+            UpdateTarget::Builder(builder_id) => {
+                let permissions = self
+                    .get_user_permission_on_builder(user_id, builder_id)
+                    .await?;
+                (permissions, "builder")
+            }
             // UpdateTarget::Procedure(procedure_id) => {
             //     let permissions = db_client
             //         .get_user_permission_on_procedure(user_id, procedure_id)

@@ -7,6 +7,7 @@ use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 pub mod build;
+pub mod builder;
 pub mod deployment;
 pub mod repo;
 pub mod server;
@@ -199,16 +200,7 @@ impl Default for &PermissionLevel {
 
 #[typeshare]
 #[derive(
-    Serialize,
-    Deserialize,
-    Debug,
-    Default,
-    PartialEq,
-    Hash,
-    Eq,
-    Clone,
-    Copy,
-    MungosIndexed,
+    Serialize, Deserialize, Debug, Default, PartialEq, Hash, Eq, Clone, Copy, MungosIndexed,
 )]
 pub enum Operation {
     // do nothing
@@ -228,7 +220,7 @@ pub enum Operation {
     CreateBuild,
     UpdateBuild,
     DeleteBuild,
-    BuildBuild,
+    RunBuild,
 
     // deployment
     CreateDeployment,

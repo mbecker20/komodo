@@ -1,5 +1,6 @@
 use monitor_types::entities::{
-    build::Build, deployment::Deployment, server::Server, update::Update, user::User,
+    build::Build, builder::Builder, deployment::Deployment, server::Server, update::Update,
+    user::User,
 };
 use mungos::{Collection, Indexed, Mungos};
 
@@ -10,6 +11,7 @@ pub struct DbClient {
     pub servers: Collection<Server>,
     pub deployments: Collection<Deployment>,
     pub builds: Collection<Build>,
+    pub builders: Collection<Builder>,
     pub updates: Collection<Update>,
 }
 
@@ -25,8 +27,8 @@ impl DbClient {
             servers: Server::collection(&mungos, &config.mongo.db_name, true).await?,
             deployments: Deployment::collection(&mungos, &config.mongo.db_name, true).await?,
             builds: Build::collection(&mungos, &config.mongo.db_name, true).await?,
+            builders: Builder::collection(&mungos, &config.mongo.db_name, true).await?,
             updates: Update::collection(&mungos, &config.mongo.db_name, true).await?,
-            // mungos,
         };
         Ok(client)
     }

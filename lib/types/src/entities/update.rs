@@ -29,6 +29,23 @@ pub struct Update {
     pub version: Version,
 }
 
+impl Update {
+    pub fn finalize(&mut self) {
+        self.success = all_logs_success(&self.logs);
+        self.end_ts = Some(unix_timestamp_ms() as i64);
+        self.status = UpdateStatus::Complete;
+    }
+}
+
+fn all_logs_success(logs: &Vec<Log>) -> bool {
+    for log in logs {
+        if !log.success {
+            return false;
+        }
+    }
+    true
+}
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Log {
@@ -74,6 +91,7 @@ pub enum UpdateTarget {
     #[default]
     System,
     Build(String),
+    Builder(String),
     Deployment(String),
     Server(String),
     // Procedure(String),

@@ -1,4 +1,4 @@
-use bson::serde_helpers::hex_string_as_object_id;
+use bson::{doc, serde_helpers::hex_string_as_object_id};
 use derive_builder::Builder;
 use mungos::MungosIndexed;
 use partial_derive2::Partial;
@@ -47,11 +47,11 @@ pub struct Build {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
+#[doc_index(doc! { "builder.type": 1 })]
+#[sparse_doc_index(doc! { "builder.params.server_id": 1 })]
+#[sparse_doc_index(doc! { "builder.params.builder_id": 1 })]
 pub struct BuildConfig {
-    #[index]
-    #[serde(default)]
-    #[builder(default)]
-    pub server_id: String,
+    pub builder: BuildBuilderConfig,
 
     #[serde(default)]
     #[builder(default)]
@@ -125,7 +125,7 @@ fn default_dockerfile_path() -> String {
 impl From<PartialBuildConfig> for BuildConfig {
     fn from(value: PartialBuildConfig) -> BuildConfig {
         BuildConfig {
-            server_id: value.server_id.unwrap_or_default(),
+            builder: value.builder.unwrap_or_default(),
             skip_secret_interp: value.skip_secret_interp.unwrap_or_default(),
             version: value.version.unwrap_or_default(),
             repo: value.repo.unwrap_or_default(),
@@ -149,4 +149,18 @@ impl From<PartialBuildConfig> for BuildConfig {
 pub struct BuildActionState {
     pub building: bool,
     pub updating: bool,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed)]
+#[serde(tag = "type", content = "params")]
+pub enum BuildBuilderConfig {
+    Server { server_id: String },
+    Builder { builder_id: String },
+}
+
+impl Default for BuildBuilderConfig {
+    fn default() -> Self {
+        Self::Server { server_id: Default::default() }
+    }
 }

@@ -1,19 +1,29 @@
+use std::pin::Pin;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
+use futures::Future;
 use monitor_helpers::{all_logs_success, monitor_timestamp};
 use monitor_types::{
     entities::{
-        build::Build,
+        build::{Build, BuildBuilderConfig},
+        builder::{AwsBuilder, BuilderConfig},
         update::{Log, Update, UpdateStatus, UpdateTarget},
         Operation, PermissionLevel,
     },
     permissioned::Permissioned,
-    requests::api::{CreateBuild, DeleteBuild, GetBuild, ListBuilds, UpdateBuild},
+    requests::api::{CreateBuild, DeleteBuild, GetBuild, ListBuilds, RunBuild, UpdateBuild},
 };
 use mungos::mongodb::bson::{doc, to_bson};
+use periphery_client::PeripheryClient;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::empty_or_only_spaces, state::State};
+use crate::{
+    auth::RequestUser,
+    cloud::{aws::Ec2Instance, InstanceCleanupData},
+    helpers::empty_or_only_spaces,
+    state::State,
+};
 
 #[async_trait]
 impl Resolve<GetBuild, RequestUser> for State {
@@ -57,7 +67,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
         CreateBuild { name, config }: CreateBuild,
         user: RequestUser,
     ) -> anyhow::Result<Build> {
-        if let Some(server_id) = &config.server_id {
+        if let Some(BuildBuilderConfig::Server { server_id }) = &config.builder {
             self.get_server_check_permissions(server_id, &user, PermissionLevel::Update)
                 .await
                 .context("cannot create build on this server")?;
@@ -231,5 +241,164 @@ impl Resolve<UpdateBuild, RequestUser> for State {
             .await;
 
         res
+    }
+}
+
+#[async_trait]
+impl Resolve<RunBuild, RequestUser> for State {
+    async fn resolve(
+        &self,
+        RunBuild { build_id }: RunBuild,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.action_states.build.busy(&build_id).await {
+            return Err(anyhow!("build busy"));
+        }
+
+        let mut build = self
+            .get_build_check_permissions(&build_id, &user, PermissionLevel::Execute)
+            .await?;
+
+        let inner = || async move {
+            build.config.version.increment();
+            let mut update = Update {
+                target: UpdateTarget::Build(build.id.clone()),
+                operation: Operation::RunBuild,
+                start_ts: monitor_timestamp(),
+                status: UpdateStatus::InProgress,
+                success: true,
+                operator: user.id.clone(),
+                version: build.config.version.clone(),
+                ..Default::default()
+            };
+            update.id = self.add_update(update.clone()).await?;
+
+            let builder = self.get_build_builder(&build, &mut update).await;
+
+            if let Err(e) = &builder {
+                update
+                    .logs
+                    .push(Log::error("get builder", format!("{e:#?}")));
+                update.finalize();
+                self.update_update(update.clone()).await?;
+                return Ok(update);
+            }
+
+            let (periphery, cleanup_data) = builder.unwrap();
+
+            // ...
+
+            self.cleanup_builder_instance(cleanup_data, &mut update)
+                .await;
+
+            update.finalize();
+
+            self.update_update(update.clone()).await?;
+
+            Ok(update)
+        };
+
+        self.action_states
+            .build
+            .update_entry(build_id.clone(), |entry| {
+                entry.building = true;
+            })
+            .await;
+
+        let res = inner().await;
+
+        self.action_states
+            .build
+            .update_entry(build_id, |entry| {
+                entry.building = false;
+            })
+            .await;
+
+        res
+    }
+}
+
+impl State {
+    async fn get_build_builder(
+        &self,
+        build: &Build,
+        update: &mut Update,
+    ) -> anyhow::Result<(PeripheryClient, Option<InstanceCleanupData>)> {
+        match &build.config.builder {
+            BuildBuilderConfig::Server { server_id } => {
+                let server = self.get_server(server_id).await?;
+                let periphery = self.periphery_client(&server);
+                Ok((periphery, None))
+            }
+            BuildBuilderConfig::Builder { builder_id } => {
+                let builder = self.get_builder(builder_id).await?;
+                match builder.config {
+                    BuilderConfig::AwsBuilder(config) => {
+                        self.get_aws_builder(build, config, update).await
+                    }
+                }
+            }
+        }
+    }
+
+    async fn get_aws_builder(
+        &self,
+        build: &Build,
+        builder: AwsBuilder,
+        update: &mut Update,
+    ) -> anyhow::Result<(PeripheryClient, Option<InstanceCleanupData>)> {
+        let instance_name = format!(
+            "BUILDER-{}-v{}",
+            build.name,
+            build.config.version.to_string()
+        );
+        let Ec2Instance { instance_id, ip } =
+            self.create_ec2_instance(&instance_name, &builder).await?;
+
+        update
+            .logs
+            .push(Log::simple("started builder instance", format!("")));
+
+        self.update_update(update.clone()).await?;
+
+        let periphery = PeripheryClient::new(format!("http://{ip}:8000"), &self.config.passkey);
+
+        Ok((
+            periphery,
+            InstanceCleanupData::Aws {
+                instance_id,
+                region: builder.region,
+            }
+            .into(),
+        ))
+    }
+
+    async fn cleanup_builder_instance(
+        &self,
+        cleanup_data: Option<InstanceCleanupData>,
+        update: &mut Update,
+    ) {
+        if cleanup_data.is_none() {
+            return;
+        }
+        match cleanup_data.unwrap() {
+            InstanceCleanupData::Aws {
+                instance_id,
+                region,
+            } => {
+                let res = self
+                    .terminate_ec2_instance(region, &instance_id)
+                    .await
+                    .context("failed to terminate ec2 instance");
+                let log = match res {
+                    Ok(_) => Log::simple(
+                        "terminate instance",
+                        format!("terminate instance id {}", instance_id),
+                    ),
+                    Err(e) => Log::error("terminate instance", format!("{e:#?}")),
+                };
+                update.logs.push(log);
+            }
+        }
     }
 }
