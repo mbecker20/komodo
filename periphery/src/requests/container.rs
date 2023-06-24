@@ -1,9 +1,8 @@
 use anyhow::{anyhow, Context};
-use monitor_helpers::optional_string;
-use monitor_types::entities::{
+use monitor_types::{entities::{
     deployment::{BasicContainerInfo, Deployment, DockerContainerStats, TerminationSignal},
     update::Log,
-};
+}, optional_string};
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
 

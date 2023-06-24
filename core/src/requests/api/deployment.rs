@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use monitor_helpers::{all_logs_success, monitor_timestamp, to_monitor_name};
+use monitor_helpers::{monitor_timestamp, to_monitor_name};
 use monitor_types::{
     entities::{
         deployment::{Deployment, DockerContainerState},
@@ -11,7 +11,7 @@ use monitor_types::{
     requests::api::{
         CreateDeployment, DeleteDeployment, GetDeployment, ListDeployments, RenameDeployment,
         UpdateDeployment,
-    },
+    }, all_logs_success,
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;

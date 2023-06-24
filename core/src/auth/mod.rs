@@ -20,7 +20,7 @@ use crate::{
     state::{State, StateExtension},
 };
 
-pub use self::jwt::{JwtClient, RequestUser, RequestUserExtension};
+pub use self::jwt::{InnerRequestUser, JwtClient, RequestUser, RequestUserExtension};
 pub use github::client::GithubOauthClient;
 pub use google::client::GoogleOauthClient;
 

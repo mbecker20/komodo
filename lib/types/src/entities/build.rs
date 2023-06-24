@@ -40,6 +40,10 @@ pub struct Build {
     #[builder(setter(skip))]
     pub updated_at: I64,
 
+    #[serde(default)]
+    #[builder(setter(skip))]
+    pub last_built_at: I64,
+
     pub config: BuildConfig,
 }
 
@@ -161,6 +165,8 @@ pub enum BuildBuilderConfig {
 
 impl Default for BuildBuilderConfig {
     fn default() -> Self {
-        Self::Server { server_id: Default::default() }
+        Self::Server {
+            server_id: Default::default(),
+        }
     }
 }

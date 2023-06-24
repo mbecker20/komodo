@@ -1,13 +1,15 @@
-use std::pin::Pin;
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use futures::Future;
-use monitor_helpers::{all_logs_success, monitor_timestamp};
+use futures::future::join_all;
+use monitor_helpers::monitor_timestamp;
 use monitor_types::{
+    all_logs_success,
     entities::{
         build::{Build, BuildBuilderConfig},
         builder::{AwsBuilder, BuilderConfig},
+        deployment::DockerContainerState,
         update::{Log, Update, UpdateStatus, UpdateTarget},
         Operation, PermissionLevel,
     },
@@ -15,12 +17,15 @@ use monitor_types::{
     requests::api::{CreateBuild, DeleteBuild, GetBuild, ListBuilds, RunBuild, UpdateBuild},
 };
 use mungos::mongodb::bson::{doc, to_bson};
-use periphery_client::PeripheryClient;
+use periphery_client::{
+    requests::{self, GetVersionResponse},
+    PeripheryClient,
+};
 use resolver_api::Resolve;
 
 use crate::{
-    auth::RequestUser,
-    cloud::{aws::Ec2Instance, InstanceCleanupData},
+    auth::{InnerRequestUser, RequestUser},
+    cloud::{aws::Ec2Instance, BuildCleanupData},
     helpers::empty_or_only_spaces,
     state::State,
 };
@@ -78,6 +83,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
             name,
             created_at: start_ts,
             updated_at: start_ts,
+            last_built_at: 0,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
@@ -273,6 +279,8 @@ impl Resolve<RunBuild, RequestUser> for State {
             };
             update.id = self.add_update(update.clone()).await?;
 
+            // GET BUILDER PERIPHERY
+
             let builder = self.get_build_builder(&build, &mut update).await;
 
             if let Err(e) = &builder {
@@ -286,9 +294,61 @@ impl Resolve<RunBuild, RequestUser> for State {
 
             let (periphery, cleanup_data) = builder.unwrap();
 
-            // ...
+            // CLONE REPO
+
+            let clone_success = match periphery
+                .request(requests::CloneRepo {
+                    args: (&build).into(),
+                })
+                .await
+            {
+                Ok(clone_logs) => {
+                    let success = all_logs_success(&clone_logs);
+                    update.logs.extend(clone_logs);
+                    success
+                }
+                Err(e) => {
+                    update
+                        .logs
+                        .push(Log::error("clone repo", format!("{e:#?}")));
+                    false
+                }
+            };
+
+            if clone_success {
+                match periphery
+                    .request(requests::Build {
+                        build: build.clone(),
+                    })
+                    .await
+                    .context("failed at call to periphery to build")
+                {
+                    Ok(logs) => update.logs.extend(logs),
+                    Err(e) => update.logs.push(Log::error("build", format!("{e:#?}"))),
+                };
+            }
+
+            if all_logs_success(&update.logs) {
+                let _ = self
+                    .db
+                    .builds
+                    .update_one::<Build>(
+                        &build.id,
+                        mungos::Update::Set(doc! {
+                            "version": to_bson(&build.config.version)
+                                .context("failed at converting version to bson")?,
+                            "last_built_at": monitor_timestamp(),
+                        }),
+                    )
+                    .await;
+            }
+
+            // CLEANUP AND FINALIZE UPDATE
 
             self.cleanup_builder_instance(cleanup_data, &mut update)
+                .await;
+
+            self.handle_post_build_redeploy(&build.id, &mut update)
                 .await;
 
             update.finalize();
@@ -318,19 +378,33 @@ impl Resolve<RunBuild, RequestUser> for State {
     }
 }
 
+const BUILDER_POLL_RATE_SECS: u64 = 2;
+const BUILDER_POLL_MAX_TRIES: usize = 30;
+
 impl State {
     async fn get_build_builder(
         &self,
         build: &Build,
         update: &mut Update,
-    ) -> anyhow::Result<(PeripheryClient, Option<InstanceCleanupData>)> {
+    ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
         match &build.config.builder {
             BuildBuilderConfig::Server { server_id } => {
+                if server_id.is_empty() {
+                    return Err(anyhow!("build has not configured a builder"));
+                }
                 let server = self.get_server(server_id).await?;
                 let periphery = self.periphery_client(&server);
-                Ok((periphery, None))
+                Ok((
+                    periphery,
+                    BuildCleanupData::Server {
+                        repo_name: build.name.clone(),
+                    },
+                ))
             }
             BuildBuilderConfig::Builder { builder_id } => {
+                if builder_id.is_empty() {
+                    return Err(anyhow!("build has not configured a builder"));
+                }
                 let builder = self.get_builder(builder_id).await?;
                 match builder.config {
                     BuilderConfig::AwsBuilder(config) => {
@@ -346,7 +420,9 @@ impl State {
         build: &Build,
         builder: AwsBuilder,
         update: &mut Update,
-    ) -> anyhow::Result<(PeripheryClient, Option<InstanceCleanupData>)> {
+    ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
+        let start_create_ts = monitor_timestamp();
+
         let instance_name = format!(
             "BUILDER-{}-v{}",
             build.name,
@@ -355,34 +431,71 @@ impl State {
         let Ec2Instance { instance_id, ip } =
             self.create_ec2_instance(&instance_name, &builder).await?;
 
-        update
-            .logs
-            .push(Log::simple("started builder instance", format!("")));
+        let readable_sec_group_ids = builder.security_group_ids.join(", ");
+        let AwsBuilder {
+            ami_id,
+            instance_type,
+            volume_gb,
+            subnet_id,
+            ..
+        } = builder;
+
+        let log = Log {
+            stage: "start build instance".to_string(),
+            success: true,
+            stdout: format!("instance id: {instance_id}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}"),
+            start_ts: start_create_ts,
+            end_ts: monitor_timestamp(),
+            ..Default::default()
+        };
+
+        update.logs.push(log);
 
         self.update_update(update.clone()).await?;
 
         let periphery = PeripheryClient::new(format!("http://{ip}:8000"), &self.config.passkey);
 
-        Ok((
-            periphery,
-            InstanceCleanupData::Aws {
-                instance_id,
-                region: builder.region,
+        let start_connect_ts = monitor_timestamp();
+        let mut res = Ok(GetVersionResponse {
+            version: String::new(),
+        });
+        for _ in 0..BUILDER_POLL_MAX_TRIES {
+            let version = periphery
+                .request(requests::GetVersion {})
+                .await
+                .context("failed to reach periphery client on builder");
+            if let Ok(GetVersionResponse { version }) = &version {
+                let connect_log = Log {
+                    stage: "build instance connected".to_string(),
+                    success: true,
+                    stdout: format!(
+                        "established contact with periphery on builder\nperiphery version: v{}",
+                        version
+                    ),
+                    start_ts: start_connect_ts,
+                    end_ts: monitor_timestamp(),
+                    ..Default::default()
+                };
+                update.logs.push(connect_log);
+                self.update_update(update.clone()).await?;
+                return Ok((
+                    periphery,
+                    BuildCleanupData::Aws {
+                        instance_id,
+                        region: builder.region,
+                    },
+                ));
             }
-            .into(),
-        ))
+            res = version;
+            tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS)).await;
+        }
+        Err(anyhow!("{:#?}", res.err().unwrap()))
     }
 
-    async fn cleanup_builder_instance(
-        &self,
-        cleanup_data: Option<InstanceCleanupData>,
-        update: &mut Update,
-    ) {
-        if cleanup_data.is_none() {
-            return;
-        }
-        match cleanup_data.unwrap() {
-            InstanceCleanupData::Aws {
+    async fn cleanup_builder_instance(&self, cleanup_data: BuildCleanupData, update: &mut Update) {
+        match cleanup_data {
+            BuildCleanupData::Server { repo_name } => {}
+            BuildCleanupData::Aws {
                 instance_id,
                 region,
             } => {
@@ -399,6 +512,83 @@ impl State {
                 };
                 update.logs.push(log);
             }
+        }
+    }
+
+    async fn handle_post_build_redeploy(&self, build_id: &str, update: &mut Update) {
+        let redeploy_deployments = self
+            .db
+            .deployments
+            .get_some(
+                doc! { "build_id": build_id, "redeploy_on_build": true },
+                None,
+            )
+            .await;
+
+        if let Ok(deployments) = redeploy_deployments {
+            let futures = deployments.into_iter().map(|d| async move {
+                let request_user: RequestUser = InnerRequestUser {
+                    id: "auto redeploy".to_string(),
+                    is_admin: true,
+                    ..Default::default()
+                }
+                .into();
+                let state = self.get_deployment_state(&d).await.unwrap_or_default();
+                if state == DockerContainerState::Running {
+                    // Some((
+                    //     d.id.clone(),
+                    //     self.deploy_container(
+                    //         &d.id,
+                    //         &RequestUser {
+                    //             id: "auto redeploy".to_string(),
+                    //             is_admin: true,
+                    //             ..Default::default()
+                    //         },
+                    //         None,
+                    //         None,
+                    //     )
+                    //     .await,
+                    // ))
+                    Some(())
+                } else {
+                    None
+                }
+            });
+
+            let redeploy_results = join_all(futures).await;
+
+            let mut redeploys = Vec::<String>::new();
+            let mut redeploy_failures = Vec::<String>::new();
+
+            // for res in redeploy_results {
+            //     if res.is_none() {
+            //         continue;
+            //     }
+            //     let (id, res) = res.unwrap();
+            //     match res {
+            //         Ok(_) => redeploys.push(id),
+            //         Err(e) => redeploy_failures.push(format!("{id}: {e:#?}")),
+            //     }
+            // }
+
+            if !redeploys.is_empty() {
+                update.logs.push(Log::simple(
+                    "redeploy",
+                    format!("redeployed deployments: {}", redeploys.join(", ")),
+                ))
+            }
+
+            if !redeploy_failures.is_empty() {
+                update.logs.push(Log::simple(
+                    "redeploy failures",
+                    redeploy_failures.join("\n"),
+                ))
+            }
+        } else if let Err(e) = redeploy_deployments {
+            update.logs.push(Log::simple(
+                "redeploys failed",
+                format!("failed to get deployments to redeploy: {e:#?}"),
+            ))
         }
     }
 }

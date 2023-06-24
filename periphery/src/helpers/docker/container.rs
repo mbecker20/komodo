@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use monitor_helpers::{optional_string, to_monitor_name};
-use monitor_types::entities::{
+use monitor_helpers::to_monitor_name;
+use monitor_types::{entities::{
     deployment::{
         Conversion, Deployment, DeploymentConfig, DockerContainerStats, RestartMode,
         TerminationSignal,
     },
     update::Log,
     EnvironmentVar,
-};
+}, optional_string};
 use run_command::async_run_command;
 
 use crate::helpers::{docker::parse_extra_args, run_monitor_command};

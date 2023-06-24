@@ -1,6 +1,5 @@
 use async_trait::async_trait;
-use monitor_helpers::optional_string;
-use monitor_types::entities::{server::docker_image::ImageSummary, update::Log};
+use monitor_types::{entities::{server::docker_image::ImageSummary, update::Log}, optional_string};
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
 

@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
+use crate::optional_string;
+
 pub mod build;
 pub mod builder;
 pub mod deployment;
@@ -91,6 +93,19 @@ pub struct CloneArgs {
     pub on_clone: Option<SystemCommand>,
     pub on_pull: Option<SystemCommand>,
     pub github_account: Option<String>,
+}
+
+impl From<&self::build::Build> for CloneArgs {
+    fn from(build: &self::build::Build) -> CloneArgs {
+        CloneArgs {
+            name: build.name.clone(),
+            repo: optional_string(&build.config.repo),
+            branch: optional_string(&build.config.branch),
+            on_clone: build.config.pre_build.clone().into(),
+            on_pull: None,
+            github_account: optional_string(&build.config.github_account),
+        }
+    }
 }
 
 #[typeshare]

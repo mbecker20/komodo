@@ -1,5 +1,6 @@
 pub mod aws;
 
-pub enum InstanceCleanupData {
-	Aws { instance_id: String, region: String, }
+pub enum BuildCleanupData {
+    Server { repo_name: String },
+    Aws { instance_id: String, region: String },
 }
