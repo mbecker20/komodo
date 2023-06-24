@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use monitor_helpers::monitor_timestamp;
 use monitor_types::{
+    monitor_timestamp,
     entities::user::ApiSecret,
     requests::api::{CreateLoginSecret, CreateLoginSecretResponse, DeleteLoginSecret},
 };

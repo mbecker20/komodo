@@ -54,6 +54,25 @@ impl State {
         Ok((server, status))
     }
 
+    pub async fn get_server_status(
+        &self,
+        server_id: &str,
+    ) -> anyhow::Result<ServerStatus> {
+        let server = self.get_server(server_id).await?;
+        if !server.config.enabled {
+            return Ok(ServerStatus::Disabled);
+        }
+        let status = match self
+            .periphery_client(&server)
+            .request(requests::GetHealth {})
+            .await
+        {
+            Ok(_) => ServerStatus::Ok,
+            Err(_) => ServerStatus::NotOk,
+        };
+        Ok(status)
+    }
+
     pub async fn get_server_check_permissions(
         &self,
         server_id: &str,
@@ -285,22 +304,22 @@ impl<T: Clone + Default> Cache<T> {
         self.cache.read().await.get(key).cloned()
     }
 
-    pub async fn get_or_default(&self, key: String) -> T {
-        let mut cache = self.cache.write().await;
-        cache.entry(key).or_default().clone()
-    }
+    // pub async fn get_or_default(&self, key: String) -> T {
+    //     let mut cache = self.cache.write().await;
+    //     cache.entry(key).or_default().clone()
+    // }
 
-    pub async fn get_list(&self, filter: Option<impl Fn(&String, &T) -> bool>) -> Vec<T> {
-        let cache = self.cache.read().await;
-        match filter {
-            Some(filter) => cache
-                .iter()
-                .filter(|(k, v)| filter(k, v))
-                .map(|(_, e)| e.clone())
-                .collect(),
-            None => cache.iter().map(|(_, e)| e.clone()).collect(),
-        }
-    }
+    // pub async fn get_list(&self, filter: Option<impl Fn(&String, &T) -> bool>) -> Vec<T> {
+    //     let cache = self.cache.read().await;
+    //     match filter {
+    //         Some(filter) => cache
+    //             .iter()
+    //             .filter(|(k, v)| filter(k, v))
+    //             .map(|(_, e)| e.clone())
+    //             .collect(),
+    //         None => cache.iter().map(|(_, e)| e.clone()).collect(),
+    //     }
+    // }
 
     pub async fn insert(&self, key: String, val: T) {
         self.cache.write().await.insert(key, val);
@@ -311,9 +330,9 @@ impl<T: Clone + Default> Cache<T> {
         handler(cache.entry(key).or_default());
     }
 
-    pub async fn clear(&self) {
-        self.cache.write().await.clear();
-    }
+    // pub async fn clear(&self) {
+    //     self.cache.write().await.clear();
+    // }
 
     pub async fn remove(&self, key: &str) {
         self.cache.write().await.remove(key);

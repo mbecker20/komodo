@@ -1830,7 +1830,6 @@ dependencies = [
  "jwt",
  "log",
  "merge_config_files",
- "monitor_helpers",
  "monitor_types",
  "mungos",
  "parse_csl",
@@ -1849,15 +1848,6 @@ dependencies = [
  "tower-http",
  "urlencoding",
  "uuid",
-]
-
-[[package]]
-name = "monitor_helpers"
-version = "1.0.0"
-dependencies = [
- "async_timing_util",
- "monitor_types",
- "serde",
 ]
 
 [[package]]
@@ -1883,7 +1873,6 @@ dependencies = [
  "envy",
  "log",
  "merge_config_files",
- "monitor_helpers",
  "monitor_types",
  "parse_csl",
  "resolver_api",

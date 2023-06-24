@@ -1,12 +1,14 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use anyhow::Context;
-use monitor_helpers::to_monitor_name;
-use monitor_types::{entities::{
-    build::{Build, BuildConfig},
-    update::Log,
-    EnvironmentVar, Version,
-}, optional_string};
+use monitor_types::{
+    entities::{
+        build::{Build, BuildConfig},
+        update::Log,
+        EnvironmentVar, Version,
+    },
+    optional_string, to_monitor_name,
+};
 
 use crate::helpers::run_monitor_command;
 

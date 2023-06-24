@@ -75,6 +75,10 @@ impl Version {
     pub fn increment(&mut self) {
         self.patch += 1;
     }
+
+    pub fn is_none(&self) -> bool {
+        self.major == 0 && self.minor == 0 && self.patch == 0
+    }
 }
 
 #[typeshare]

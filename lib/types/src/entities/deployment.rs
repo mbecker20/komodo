@@ -1,4 +1,4 @@
-use bson::serde_helpers::hex_string_as_object_id;
+use bson::{doc, serde_helpers::hex_string_as_object_id};
 use derive_builder::Builder;
 use mungos::MungosIndexed;
 use partial_derive2::Partial;
@@ -8,7 +8,7 @@ use typeshare::typeshare;
 
 use crate::{i64_is_zero, I64};
 
-use super::{EnvironmentVar, PermissionsMap};
+use super::{EnvironmentVar, PermissionsMap, Version};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed)]
@@ -48,6 +48,8 @@ pub struct Deployment {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
+#[doc_index(doc! { "image.type": 1 })]
+#[sparse_doc_index(doc! { "image.params.build_id": 1 })]
 pub struct DeploymentConfig {
     #[serde(default)]
     #[builder(default)]
@@ -56,12 +58,7 @@ pub struct DeploymentConfig {
 
     #[serde(default)]
     #[builder(default)]
-    #[index]
-    pub build_id: String,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub image: String,
+    pub image: DeploymentImage,
 
     #[serde(default)]
     #[builder(default)]
@@ -140,7 +137,6 @@ impl From<PartialDeploymentConfig> for DeploymentConfig {
     fn from(value: PartialDeploymentConfig) -> DeploymentConfig {
         DeploymentConfig {
             server_id: value.server_id.unwrap_or_default(),
-            build_id: value.build_id.unwrap_or_default(),
             image: value.image.unwrap_or_default(),
             skip_secret_interp: value.skip_secret_interp.unwrap_or_default(),
             redeploy_on_build: value.redeploy_on_build.unwrap_or_default(),
@@ -161,6 +157,22 @@ impl From<PartialDeploymentConfig> for DeploymentConfig {
             extra_args: value.extra_args.unwrap_or_default(),
             docker_account: value.docker_account.unwrap_or_default(),
             tags: value.tags.unwrap_or_default(),
+        }
+    }
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed)]
+#[serde(tag = "type", content = "params")]
+pub enum DeploymentImage {
+    Image { image: String },
+    Build { build_id: String, version: Version },
+}
+
+impl Default for DeploymentImage {
+    fn default() -> Self {
+        Self::Image {
+            image: Default::default(),
         }
     }
 }

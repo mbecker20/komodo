@@ -1,6 +1,5 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use monitor_helpers::monitor_timestamp;
 use monitor_types::{
     entities::{
         deployment::BasicContainerInfo,
@@ -11,6 +10,7 @@ use monitor_types::{
         update::{Log, Update, UpdateStatus, UpdateTarget},
         Operation, PermissionLevel,
     },
+    monitor_timestamp,
     permissioned::Permissioned,
     requests::api::{
         CreateServer, DeleteServer, GetAllSystemStats, GetBasicSystemStats, GetCpuUsage,

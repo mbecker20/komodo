@@ -11,7 +11,6 @@ license = "GPL-3.0-or-later"
 [workspace.dependencies]
 # local
 monitor_macros = { path = "lib/macros" }
-monitor_helpers = { path = "lib/helpers" }
 monitor_types = { path = "lib/types" }
 monitor_client = { path = "lib/rs_client" }
 periphery_client = { path = "lib/periphery_client" }

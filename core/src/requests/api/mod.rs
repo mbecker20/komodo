@@ -74,6 +74,18 @@ pub enum ApiRequest {
     DeleteDeployment(DeleteDeployment),
     UpdateDeployment(UpdateDeployment),
     RenameDeployment(RenameDeployment),
+
+    //
+    // ==== BUILD ====
+    //
+    GetBuild(GetBuild),
+    ListBuilds(ListBuilds), 
+    // CRUD
+    CreateBuild(CreateBuild),
+    DeleteBuild(DeleteBuild),
+    UpdateBuild(UpdateBuild),
+    // ACTIONS
+    RunBuild(RunBuild),
 }
 
 pub fn router() -> Router {

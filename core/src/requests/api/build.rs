@@ -3,7 +3,6 @@ use std::time::Duration;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::future::join_all;
-use monitor_helpers::monitor_timestamp;
 use monitor_types::{
     all_logs_success,
     entities::{
@@ -13,8 +12,11 @@ use monitor_types::{
         update::{Log, Update, UpdateStatus, UpdateTarget},
         Operation, PermissionLevel,
     },
+    monitor_timestamp,
     permissioned::Permissioned,
-    requests::api::{CreateBuild, DeleteBuild, GetBuild, ListBuilds, RunBuild, UpdateBuild},
+    requests::api::{
+        CreateBuild, DeleteBuild, Deploy, GetBuild, ListBuilds, RunBuild, UpdateBuild,
+    },
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::{
@@ -72,10 +74,27 @@ impl Resolve<CreateBuild, RequestUser> for State {
         CreateBuild { name, config }: CreateBuild,
         user: RequestUser,
     ) -> anyhow::Result<Build> {
-        if let Some(BuildBuilderConfig::Server { server_id }) = &config.builder {
-            self.get_server_check_permissions(server_id, &user, PermissionLevel::Update)
-                .await
-                .context("cannot create build on this server")?;
+        if let Some(builder) = &config.builder {
+            match builder {
+                BuildBuilderConfig::Server { server_id } => {
+                    self.get_server_check_permissions(
+                            server_id,
+                            &user,
+                            PermissionLevel::Update,
+                        )
+                        .await
+                        .context("cannot create build on this server. user must have update permissions on the server.")?;
+                }
+                BuildBuilderConfig::Builder { builder_id } => {
+                    self.get_builder_check_permissions(
+                            builder_id,
+                            &user,
+                            PermissionLevel::Read,
+                        )
+                        .await
+                        .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+                }
+            }
         }
         let start_ts = monitor_timestamp();
         let build = Build {
@@ -189,6 +208,29 @@ impl Resolve<UpdateBuild, RequestUser> for State {
 
         let inner = || async move {
             let start_ts = monitor_timestamp();
+
+            if let Some(builder) = &config.builder {
+                match builder {
+                    BuildBuilderConfig::Server { server_id } => {
+                        self.get_server_check_permissions(
+                            server_id,
+                            &user,
+                            PermissionLevel::Update,
+                        )
+                        .await
+                        .context("cannot create build on this server. user must have update permissions on the server.")?;
+                    }
+                    BuildBuilderConfig::Builder { builder_id } => {
+                        self.get_builder_check_permissions(
+                            builder_id,
+                            &user,
+                            PermissionLevel::Read,
+                        )
+                        .await
+                        .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+                    }
+                }
+            }
 
             if let Some(build_args) = &mut config.build_args {
                 build_args.retain(|v| {
@@ -345,7 +387,7 @@ impl Resolve<RunBuild, RequestUser> for State {
 
             // CLEANUP AND FINALIZE UPDATE
 
-            self.cleanup_builder_instance(cleanup_data, &mut update)
+            self.cleanup_builder_instance(periphery, cleanup_data, &mut update)
                 .await;
 
             self.handle_post_build_redeploy(&build.id, &mut update)
@@ -492,9 +534,18 @@ impl State {
         Err(anyhow!("{:#?}", res.err().unwrap()))
     }
 
-    async fn cleanup_builder_instance(&self, cleanup_data: BuildCleanupData, update: &mut Update) {
+    async fn cleanup_builder_instance(
+        &self,
+        periphery: PeripheryClient,
+        cleanup_data: BuildCleanupData,
+        update: &mut Update,
+    ) {
         match cleanup_data {
-            BuildCleanupData::Server { repo_name } => {}
+            BuildCleanupData::Server { repo_name } => {
+                let _ = periphery
+                    .request(requests::DeleteRepo { name: repo_name })
+                    .await;
+            }
             BuildCleanupData::Aws {
                 instance_id,
                 region,
@@ -526,30 +577,29 @@ impl State {
             .await;
 
         if let Ok(deployments) = redeploy_deployments {
-            let futures = deployments.into_iter().map(|d| async move {
+            let futures = deployments.into_iter().map(|deployment| async move {
                 let request_user: RequestUser = InnerRequestUser {
                     id: "auto redeploy".to_string(),
                     is_admin: true,
                     ..Default::default()
                 }
                 .into();
-                let state = self.get_deployment_state(&d).await.unwrap_or_default();
+                let state = self
+                    .get_deployment_state(&deployment)
+                    .await
+                    .unwrap_or_default();
                 if state == DockerContainerState::Running {
-                    // Some((
-                    //     d.id.clone(),
-                    //     self.deploy_container(
-                    //         &d.id,
-                    //         &RequestUser {
-                    //             id: "auto redeploy".to_string(),
-                    //             is_admin: true,
-                    //             ..Default::default()
-                    //         },
-                    //         None,
-                    //         None,
-                    //     )
-                    //     .await,
-                    // ))
-                    Some(())
+                    let res = self
+                        .resolve(
+                            Deploy {
+                                deployment_id: deployment.id.clone(),
+                                stop_signal: None,
+                                stop_time: None,
+                            },
+                            request_user,
+                        )
+                        .await;
+                    Some((deployment.id.clone(), res))
                 } else {
                     None
                 }
@@ -560,16 +610,16 @@ impl State {
             let mut redeploys = Vec::<String>::new();
             let mut redeploy_failures = Vec::<String>::new();
 
-            // for res in redeploy_results {
-            //     if res.is_none() {
-            //         continue;
-            //     }
-            //     let (id, res) = res.unwrap();
-            //     match res {
-            //         Ok(_) => redeploys.push(id),
-            //         Err(e) => redeploy_failures.push(format!("{id}: {e:#?}")),
-            //     }
-            // }
+            for res in redeploy_results {
+                if res.is_none() {
+                    continue;
+                }
+                let (id, res) = res.unwrap();
+                match res {
+                    Ok(_) => redeploys.push(id),
+                    Err(e) => redeploy_failures.push(format!("{id}: {e:#?}")),
+                }
+            }
 
             if !redeploys.is_empty() {
                 update.logs.push(Log::simple(

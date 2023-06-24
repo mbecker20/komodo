@@ -1,17 +1,20 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use monitor_helpers::{monitor_timestamp, to_monitor_name};
 use monitor_types::{
+    all_logs_success,
     entities::{
-        deployment::{Deployment, DockerContainerState},
+        deployment::{Deployment, DeploymentImage, DockerContainerState},
+        server::ServerStatus,
         update::{Log, Update, UpdateStatus, UpdateTarget},
-        Operation, PermissionLevel,
+        Operation, PermissionLevel, Version,
     },
+    get_image_name, monitor_timestamp,
     permissioned::Permissioned,
     requests::api::{
-        CreateDeployment, DeleteDeployment, GetDeployment, ListDeployments, RenameDeployment,
-        UpdateDeployment,
-    }, all_logs_success,
+        CreateDeployment, DeleteDeployment, Deploy, GetDeployment, ListDeployments,
+        RemoveContainer, RenameDeployment, StartContainer, StopContainer, UpdateDeployment,
+    },
+    to_monitor_name,
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
@@ -70,12 +73,12 @@ impl Resolve<CreateDeployment, RequestUser> for State {
         if let Some(server_id) = &config.server_id {
             self.get_server_check_permissions(server_id, &user, PermissionLevel::Update)
                 .await
-                .context("cannot create deployment on this server")?;
+                .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
         }
-        if let Some(build_id) = &config.build_id {
+        if let Some(DeploymentImage::Build { build_id, .. }) = &config.image {
             self.get_build_check_permissions(build_id, &user, PermissionLevel::Read)
                 .await
-                .context("cannot create deployment with this build attached")?;
+                .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
         }
         let start_ts = monitor_timestamp();
         let deployment = Deployment {
@@ -236,6 +239,17 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
 
         let inner = || async move {
             let start_ts = monitor_timestamp();
+
+            if let Some(server_id) = &config.server_id {
+                self.get_server_check_permissions(server_id, &user, PermissionLevel::Update)
+                .await
+                .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+            }
+            if let Some(DeploymentImage::Build { build_id, .. }) = &config.image {
+                self.get_build_check_permissions(build_id, &user, PermissionLevel::Read)
+                .await
+                .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+            }
 
             if let Some(volumes) = &mut config.volumes {
                 volumes.retain(|v| {
@@ -398,6 +412,381 @@ impl Resolve<RenameDeployment, RequestUser> for State {
             .deployment
             .update_entry(id, |entry| {
                 entry.renaming = false;
+            })
+            .await;
+
+        res
+    }
+}
+
+#[async_trait]
+impl Resolve<Deploy, RequestUser> for State {
+    async fn resolve(
+        &self,
+        Deploy {
+            deployment_id,
+            stop_signal,
+            stop_time,
+        }: Deploy,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.action_states.deployment.busy(&deployment_id).await {
+            return Err(anyhow!("deployment busy"));
+        }
+
+        let mut deployment = self
+            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+            .await?;
+
+        if deployment.config.server_id.is_empty() {
+            return Err(anyhow!("deployment has no server configured"));
+        }
+
+        let (server, status) = self
+            .get_server_with_status(&deployment.config.server_id)
+            .await?;
+        if status != ServerStatus::Ok {
+            return Err(anyhow!(
+                "cannot send action when server is unreachable or disabled"
+            ));
+        }
+
+        let periphery = self.periphery_client(&server);
+
+        let inner = || async move {
+            let start_ts = monitor_timestamp();
+
+            let version = match deployment.config.image {
+                DeploymentImage::Build { build_id, version } => {
+                    let build = self.get_build(&build_id).await?;
+                    let image_name = get_image_name(&build);
+                    let version = if version.is_none() {
+                        build.config.version
+                    } else {
+                        version
+                    };
+                    deployment.config.image = DeploymentImage::Image {
+                        image: format!("{image_name}:{}", version.to_string()),
+                    };
+                    if deployment.config.docker_account.is_empty() {
+                        deployment.config.docker_account = build.config.docker_account;
+                    }
+                    version
+                }
+                DeploymentImage::Image { .. } => Version::default(),
+            };
+
+            let mut update = Update {
+                target: UpdateTarget::Deployment(deployment.id.clone()),
+                operation: Operation::DeployContainer,
+                start_ts,
+                status: UpdateStatus::InProgress,
+                success: true,
+                operator: user.id.clone(),
+                version,
+                ..Default::default()
+            };
+
+            update.id = self.add_update(update.clone()).await?;
+
+            let log = match periphery
+                .request(requests::Deploy {
+                    deployment,
+                    stop_signal,
+                    stop_time,
+                })
+                .await
+            {
+                Ok(log) => log,
+                Err(e) => Log::error("deploy container", format!("{e:#?}")),
+            };
+
+            update.logs.push(log);
+            update.finalize();
+            self.update_cache_for_server(&server).await;
+            self.update_update(update.clone()).await?;
+
+            Ok(update)
+        };
+
+        self.action_states
+            .deployment
+            .update_entry(deployment_id.to_string(), |entry| {
+                entry.deploying = true;
+            })
+            .await;
+
+        let res = inner().await;
+
+        self.action_states
+            .deployment
+            .update_entry(deployment_id, |entry| {
+                entry.deploying = false;
+            })
+            .await;
+
+        res
+    }
+}
+
+#[async_trait]
+impl Resolve<StartContainer, RequestUser> for State {
+    async fn resolve(
+        &self,
+        StartContainer { deployment_id }: StartContainer,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.action_states.deployment.busy(&deployment_id).await {
+            return Err(anyhow!("deployment busy"));
+        }
+
+        let deployment = self
+            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+            .await?;
+
+        if deployment.config.server_id.is_empty() {
+            return Err(anyhow!("deployment has no server configured"));
+        }
+
+        let (server, status) = self
+            .get_server_with_status(&deployment.config.server_id)
+            .await?;
+        if status != ServerStatus::Ok {
+            return Err(anyhow!(
+                "cannot send action when server is unreachable or disabled"
+            ));
+        }
+
+        let periphery = self.periphery_client(&server);
+
+        let inner = || async move {
+            let start_ts = monitor_timestamp();
+
+            let mut update = Update {
+                target: UpdateTarget::Deployment(deployment.id.clone()),
+                operation: Operation::StartContainer,
+                start_ts,
+                status: UpdateStatus::InProgress,
+                success: true,
+                operator: user.id.clone(),
+                ..Default::default()
+            };
+
+            update.id = self.add_update(update.clone()).await?;
+
+            let log = match periphery
+                .request(requests::StartContainer {
+                    name: deployment.name.clone(),
+                })
+                .await
+            {
+                Ok(log) => log,
+                Err(e) => Log::error("start container", format!("{e:#?}")),
+            };
+
+            update.logs.push(log);
+            update.finalize();
+            self.update_cache_for_server(&server).await;
+            self.update_update(update.clone()).await?;
+
+            Ok(update)
+        };
+
+        self.action_states
+            .deployment
+            .update_entry(deployment_id.to_string(), |entry| {
+                entry.starting = true;
+            })
+            .await;
+
+        let res = inner().await;
+
+        self.action_states
+            .deployment
+            .update_entry(deployment_id, |entry| {
+                entry.starting = false;
+            })
+            .await;
+
+        res
+    }
+}
+
+#[async_trait]
+impl Resolve<StopContainer, RequestUser> for State {
+    async fn resolve(
+        &self,
+        StopContainer {
+            deployment_id,
+            signal,
+            time,
+        }: StopContainer,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.action_states.deployment.busy(&deployment_id).await {
+            return Err(anyhow!("deployment busy"));
+        }
+
+        let deployment = self
+            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+            .await?;
+
+        if deployment.config.server_id.is_empty() {
+            return Err(anyhow!("deployment has no server configured"));
+        }
+
+        let (server, status) = self
+            .get_server_with_status(&deployment.config.server_id)
+            .await?;
+        if status != ServerStatus::Ok {
+            return Err(anyhow!(
+                "cannot send action when server is unreachable or disabled"
+            ));
+        }
+
+        let periphery = self.periphery_client(&server);
+
+        let inner = || async move {
+            let start_ts = monitor_timestamp();
+
+            let mut update = Update {
+                target: UpdateTarget::Deployment(deployment.id.clone()),
+                operation: Operation::StopContainer,
+                start_ts,
+                status: UpdateStatus::InProgress,
+                success: true,
+                operator: user.id.clone(),
+                ..Default::default()
+            };
+
+            update.id = self.add_update(update.clone()).await?;
+
+            let log = match periphery
+                .request(requests::StopContainer {
+                    name: deployment.name.clone(),
+                    signal: signal
+                        .unwrap_or(deployment.config.termination_signal)
+                        .into(),
+                    time: time.unwrap_or(deployment.config.termination_timeout).into(),
+                })
+                .await
+            {
+                Ok(log) => log,
+                Err(e) => Log::error("stop container", format!("{e:#?}")),
+            };
+
+            update.logs.push(log);
+            update.finalize();
+            self.update_cache_for_server(&server).await;
+            self.update_update(update.clone()).await?;
+
+            Ok(update)
+        };
+
+        self.action_states
+            .deployment
+            .update_entry(deployment_id.to_string(), |entry| {
+                entry.stopping = true;
+            })
+            .await;
+
+        let res = inner().await;
+
+        self.action_states
+            .deployment
+            .update_entry(deployment_id, |entry| {
+                entry.stopping = false;
+            })
+            .await;
+
+        res
+    }
+}
+
+#[async_trait]
+impl Resolve<RemoveContainer, RequestUser> for State {
+    async fn resolve(
+        &self,
+        RemoveContainer {
+            deployment_id,
+            signal,
+            time,
+        }: RemoveContainer,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        if self.action_states.deployment.busy(&deployment_id).await {
+            return Err(anyhow!("deployment busy"));
+        }
+
+        let deployment = self
+            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+            .await?;
+
+        if deployment.config.server_id.is_empty() {
+            return Err(anyhow!("deployment has no server configured"));
+        }
+
+        let (server, status) = self
+            .get_server_with_status(&deployment.config.server_id)
+            .await?;
+        if status != ServerStatus::Ok {
+            return Err(anyhow!(
+                "cannot send action when server is unreachable or disabled"
+            ));
+        }
+
+        let periphery = self.periphery_client(&server);
+
+        let inner = || async move {
+            let start_ts = monitor_timestamp();
+
+            let mut update = Update {
+                target: UpdateTarget::Deployment(deployment.id.clone()),
+                operation: Operation::RemoveContainer,
+                start_ts,
+                status: UpdateStatus::InProgress,
+                success: true,
+                operator: user.id.clone(),
+                ..Default::default()
+            };
+
+            update.id = self.add_update(update.clone()).await?;
+
+            let log = match periphery
+                .request(requests::RemoveContainer {
+                    name: deployment.name.clone(),
+                    signal: signal
+                        .unwrap_or(deployment.config.termination_signal)
+                        .into(),
+                    time: time.unwrap_or(deployment.config.termination_timeout).into(),
+                })
+                .await
+            {
+                Ok(log) => log,
+                Err(e) => Log::error("stop container", format!("{e:#?}")),
+            };
+
+            update.logs.push(log);
+            update.finalize();
+            self.update_cache_for_server(&server).await;
+            self.update_update(update.clone()).await?;
+
+            Ok(update)
+        };
+
+        self.action_states
+            .deployment
+            .update_entry(deployment_id.to_string(), |entry| {
+                entry.removing = true;
+            })
+            .await;
+
+        let res = inner().await;
+
+        self.action_states
+            .deployment
+            .update_entry(deployment_id, |entry| {
+                entry.removing = false;
             })
             .await;
 

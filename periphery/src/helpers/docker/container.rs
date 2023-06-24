@@ -1,15 +1,17 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use monitor_helpers::to_monitor_name;
-use monitor_types::{entities::{
-    deployment::{
-        Conversion, Deployment, DeploymentConfig, DockerContainerStats, RestartMode,
-        TerminationSignal,
+use monitor_types::{
+    entities::{
+        deployment::{
+            Conversion, Deployment, DeploymentConfig, DeploymentImage, DockerContainerStats,
+            RestartMode, TerminationSignal,
+        },
+        update::Log,
+        EnvironmentVar,
     },
-    update::Log,
-    EnvironmentVar,
-}, optional_string};
+    optional_string, to_monitor_name,
+};
 use run_command::async_run_command;
 
 use crate::helpers::{docker::parse_extra_args, run_monitor_command};
@@ -151,9 +153,23 @@ pub async fn deploy(
     {
         return Log::error("docker login", format!("{e:#?}"));
     }
-    let _ = pull_image(&deployment.config.image).await;
+    let image = if let DeploymentImage::Image { image } = &deployment.config.image {
+        if image.is_empty() {
+            return Log::error(
+                "get image",
+                String::from("deployment does not have image attached"),
+            );
+        }
+        image
+    } else {
+        return Log::error(
+            "get image",
+            String::from("deployment does not have image attached"),
+        );
+    };
+    let _ = pull_image(image).await;
     let _ = stop_and_remove_container(&deployment.name, stop_signal, stop_time).await;
-    let command = docker_run_command(deployment);
+    let command = docker_run_command(deployment, image);
     if deployment.config.skip_secret_interp {
         run_monitor_command("docker run", command).await
     } else {
@@ -177,7 +193,6 @@ pub fn docker_run_command(
         name,
         config:
             DeploymentConfig {
-                image,
                 volumes,
                 ports,
                 network,
@@ -190,6 +205,7 @@ pub fn docker_run_command(
             },
         ..
     }: &Deployment,
+    image: &str,
 ) -> String {
     let name = to_monitor_name(name);
     let container_user = parse_container_user(container_user);

@@ -1,8 +1,11 @@
 use anyhow::{anyhow, Context};
-use monitor_types::{entities::{
-    deployment::{BasicContainerInfo, Deployment, DockerContainerStats, TerminationSignal},
-    update::Log,
-}, optional_string};
+use monitor_types::{
+    entities::{
+        deployment::{BasicContainerInfo, Deployment, DockerContainerStats, TerminationSignal},
+        update::Log,
+    },
+    optional_string,
+};
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
 
@@ -179,7 +182,18 @@ impl Resolve<Deploy> for State {
         let secrets = self.secrets.clone();
         let log = match self.get_docker_token(&optional_string(&deployment.config.docker_account)) {
             Ok(docker_token) => tokio::spawn(async move {
-                docker::deploy(&deployment, &docker_token, &secrets, stop_signal, stop_time).await
+                docker::deploy(
+                    &deployment,
+                    &docker_token,
+                    &secrets,
+                    stop_signal
+                        .unwrap_or(deployment.config.termination_signal)
+                        .into(),
+                    stop_time
+                        .unwrap_or(deployment.config.termination_timeout)
+                        .into(),
+                )
+                .await
             })
             .await
             .context("failed at spawn thread for deploy")?,

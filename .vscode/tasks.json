@@ -85,7 +85,7 @@
 		},
 		{
 			"type": "shell",
-			"command": "typeshare ./lib/types --lang=typescript --output-file=./lib/src/types.ts && typeshare ./lib/core_api --lang=typescript --output-file=./frontend/src/core_api.ts",
+			"command": "typeshare ./lib/types --lang=typescript --output-file=./lib/ts_client/src/types.ts",
 			"label": "generate typescript types",
 			"problemMatcher": []
 		}
