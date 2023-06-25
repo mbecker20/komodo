@@ -13,6 +13,9 @@ pub use deployment::*;
 mod build;
 pub use build::*;
 
+mod builder;
+pub use builder::*;
+
 //
 
 #[typeshare]

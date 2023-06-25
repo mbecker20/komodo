@@ -4,7 +4,10 @@ use futures::future::join_all;
 use monitor_types::entities::{
     deployment::{BasicContainerInfo, Deployment, DockerContainerState},
     server::{
-        stats::{AllSystemStats, BasicSystemStats, CpuUsage, ServerHealth, StatsState},
+        stats::{
+            AllSystemStats, BasicSystemStats, CpuUsage, ServerHealth, SingleDiskUsage, StatsState,
+            SystemComponent,
+        },
         Server, ServerConfig, ServerStatus,
     },
 };
@@ -272,17 +275,43 @@ fn get_server_health(server: &Server, stats: &AllSystemStats) -> ServerHealth {
         health.disk = StatsState::Warning
     }
 
-    for disk in &stats.disk.disks {
-        let perc = 100.0 * disk.used_gb / disk.total_gb;
-        if perc >= *disk_critical {
-            health
-                .disks
-                .insert(disk.mount.clone(), StatsState::Critical);
+    for SingleDiskUsage {
+        mount,
+        used_gb,
+        total_gb,
+    } in &stats.disk.disks
+    {
+        let perc = 100.0 * used_gb / total_gb;
+        let stats_state = if perc >= *disk_critical {
+            StatsState::Critical
         } else if perc >= *disk_warning {
-            health.disks.insert(disk.mount.clone(), StatsState::Warning);
+            StatsState::Warning
         } else {
-            health.disks.insert(disk.mount.clone(), StatsState::Ok);
-        }
+            StatsState::Ok
+        };
+        health.disks.insert(mount.clone(), stats_state);
+    }
+
+    for SystemComponent {
+        label,
+        temp,
+        critical,
+        ..
+    } in &stats.components
+    {
+        let stats_state = if let Some(critical) = critical {
+            let perc = temp / critical;
+            if perc >= 0.95 {
+                StatsState::Critical
+            } else if perc >= 0.85 {
+                StatsState::Warning
+            } else {
+                StatsState::Ok
+            }
+        } else {
+            StatsState::Ok
+        };
+        health.temps.insert(label.clone(), stats_state);
     }
 
     health

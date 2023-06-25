@@ -54,24 +54,24 @@ impl State {
         Ok((server, status))
     }
 
-    pub async fn get_server_status(
-        &self,
-        server_id: &str,
-    ) -> anyhow::Result<ServerStatus> {
-        let server = self.get_server(server_id).await?;
-        if !server.config.enabled {
-            return Ok(ServerStatus::Disabled);
-        }
-        let status = match self
-            .periphery_client(&server)
-            .request(requests::GetHealth {})
-            .await
-        {
-            Ok(_) => ServerStatus::Ok,
-            Err(_) => ServerStatus::NotOk,
-        };
-        Ok(status)
-    }
+    // pub async fn get_server_status(
+    //     &self,
+    //     server_id: &str,
+    // ) -> anyhow::Result<ServerStatus> {
+    //     let server = self.get_server(server_id).await?;
+    //     if !server.config.enabled {
+    //         return Ok(ServerStatus::Disabled);
+    //     }
+    //     let status = match self
+    //         .periphery_client(&server)
+    //         .request(requests::GetHealth {})
+    //         .await
+    //     {
+    //         Ok(_) => ServerStatus::Ok,
+    //         Err(_) => ServerStatus::NotOk,
+    //     };
+    //     Ok(status)
+    // }
 
     pub async fn get_server_check_permissions(
         &self,

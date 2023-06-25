@@ -98,7 +98,7 @@ fn default_core_port() -> u16 {
 }
 
 fn default_jwt_valid_for() -> Timelength {
-    Timelength::OneWeek
+    Timelength::OneDay
 }
 
 fn default_log_level() -> LogLevel {
