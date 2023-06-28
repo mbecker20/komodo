@@ -74,6 +74,11 @@ pub enum ApiRequest {
     DeleteDeployment(DeleteDeployment),
     UpdateDeployment(UpdateDeployment),
     RenameDeployment(RenameDeployment),
+    // ACTIONS
+    Deploy(Deploy),
+    StartContainer(StartContainer),
+    StopContainer(StopContainer),
+    RemoveContainer(RemoveContainer),
 
     //
     // ==== BUILD ====
