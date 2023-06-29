@@ -97,6 +97,15 @@ export interface AwsBuilder {
 	assign_public_ip: boolean;
 }
 
+export type DeploymentImage = 
+	| { type: "Image", params: {
+	image: string;
+}}
+	| { type: "Build", params: {
+	build_id: string;
+	version: Version;
+}};
+
 export enum TerminationSignal {
 	SigHup = "SIGHUP",
 	SigInt = "SIGINT",
@@ -123,8 +132,7 @@ export enum RestartMode {
 
 export interface DeploymentConfig {
 	server_id?: string;
-	build_id?: string;
-	image?: string;
+	image?: DeploymentImage;
 	skip_secret_interp?: boolean;
 	redeploy_on_build?: boolean;
 	term_signal_labels: TerminationSignalLabel[];
@@ -437,6 +445,7 @@ export interface ServerHealth {
 	mem: StatsState;
 	disk: StatsState;
 	disks: Record<string, StatsState>;
+	temps: Record<string, StatsState>;
 }
 
 export type UpdateTarget = 
@@ -539,8 +548,52 @@ export interface User {
 	updated_at?: I64;
 }
 
+export interface GetBuild {
+	id: string;
+}
+
+export interface ListBuilds {
+	query?: MongoDocument;
+}
+
+export interface CreateBuild {
+	name: string;
+	config: Partial<BuildConfig>;
+}
+
+export interface DeleteBuild {
+	id: string;
+}
+
+export interface UpdateBuild {
+	id: string;
+	config: Partial<BuildConfig>;
+}
+
 export interface RunBuild {
 	build_id: string;
+}
+
+export interface GetDeployment {
+	id: string;
+}
+
+export interface ListDeployments {
+	query?: MongoDocument;
+}
+
+export interface CreateDeployment {
+	name: string;
+	config: Partial<DeploymentConfig>;
+}
+
+export interface DeleteDeployment {
+	id: string;
+}
+
+export interface UpdateDeployment {
+	id: string;
+	config: Partial<DeploymentConfig>;
 }
 
 export interface RenameDeployment {
@@ -550,6 +603,8 @@ export interface RenameDeployment {
 
 export interface Deploy {
 	deployment_id: string;
+	stop_signal?: TerminationSignal;
+	stop_time?: number;
 }
 
 export interface StartContainer {
@@ -581,6 +636,28 @@ export interface DeleteLoginSecret {
 	name: string;
 }
 
+export interface GetServer {
+	id: string;
+}
+
+export interface ListServers {
+	query?: MongoDocument;
+}
+
+export interface CreateServer {
+	name: string;
+	config: Partial<ServerConfig>;
+}
+
+export interface DeleteServer {
+	id: string;
+}
+
+export interface UpdateServer {
+	id: string;
+	config: Partial<ServerConfig>;
+}
+
 export interface RenameServer {
 	id: string;
 	name: string;
@@ -594,7 +671,59 @@ export interface GetPeripheryVersionResponse {
 	version: string;
 }
 
+export interface GetSystemInformation {
+	server_id: string;
+}
+
 export interface GetAllSystemStats {
+	server_id: string;
+}
+
+export interface GetBasicSystemStats {
+	server_id: string;
+}
+
+export interface GetCpuUsage {
+	server_id: string;
+}
+
+export interface GetDiskUsage {
+	server_id: string;
+}
+
+export interface GetNetworkUsage {
+	server_id: string;
+}
+
+export interface GetSystemProcesses {
+	server_id: string;
+}
+
+export interface GetSystemComponents {
+	server_id: string;
+}
+
+export interface GetDockerNetworks {
+	server_id: string;
+}
+
+export interface PruneDockerNetworks {
+	server_id: string;
+}
+
+export interface GetDockerImages {
+	server_id: string;
+}
+
+export interface PruneDockerImages {
+	server_id: string;
+}
+
+export interface GetDockerContainers {
+	server_id: string;
+}
+
+export interface PruneDockerContainers {
 	server_id: string;
 }
 
@@ -641,6 +770,54 @@ export interface LoginWithSecret {
 export interface LoginWithSecretResponse {
 	jwt: string;
 }
+
+export type ApiRequest = 
+	| { type: "CreateLoginSecret", params: CreateLoginSecret }
+	| { type: "DeleteLoginSecret", params: DeleteLoginSecret }
+	| { type: "GetPeripheryVersion", params: GetPeripheryVersion }
+	| { type: "GetSystemInformation", params: GetSystemInformation }
+	| { type: "GetDockerContainers", params: GetDockerContainers }
+	| { type: "GetDockerImages", params: GetDockerImages }
+	| { type: "GetDockerNetworks", params: GetDockerNetworks }
+	| { type: "GetServer", params: GetServer }
+	| { type: "ListServers", params: ListServers }
+	| { type: "CreateServer", params: CreateServer }
+	| { type: "DeleteServer", params: DeleteServer }
+	| { type: "UpdateServer", params: UpdateServer }
+	| { type: "RenameServer", params: RenameServer }
+	| { type: "GetAllSystemStats", params: GetAllSystemStats }
+	| { type: "GetBasicSystemStats", params: GetBasicSystemStats }
+	| { type: "GetCpuUsage", params: GetCpuUsage }
+	| { type: "GetDiskUsage", params: GetDiskUsage }
+	| { type: "GetNetworkUsage", params: GetNetworkUsage }
+	| { type: "GetSystemProcesses", params: GetSystemProcesses }
+	| { type: "GetSystemComponents", params: GetSystemComponents }
+	| { type: "PruneContainers", params: PruneDockerContainers }
+	| { type: "PruneImages", params: PruneDockerImages }
+	| { type: "PruneNetworks", params: PruneDockerNetworks }
+	| { type: "GetDeployment", params: GetDeployment }
+	| { type: "ListDeployments", params: ListDeployments }
+	| { type: "CreateDeployment", params: CreateDeployment }
+	| { type: "DeleteDeployment", params: DeleteDeployment }
+	| { type: "UpdateDeployment", params: UpdateDeployment }
+	| { type: "RenameDeployment", params: RenameDeployment }
+	| { type: "Deploy", params: Deploy }
+	| { type: "StartContainer", params: StartContainer }
+	| { type: "StopContainer", params: StopContainer }
+	| { type: "RemoveContainer", params: RemoveContainer }
+	| { type: "GetBuild", params: GetBuild }
+	| { type: "ListBuilds", params: ListBuilds }
+	| { type: "CreateBuild", params: CreateBuild }
+	| { type: "DeleteBuild", params: DeleteBuild }
+	| { type: "UpdateBuild", params: UpdateBuild }
+	| { type: "RunBuild", params: RunBuild };
+
+export type AuthRequest = 
+	| { type: "GetLoginOptions", params: GetLoginOptions }
+	| { type: "CreateLocalUser", params: CreateLocalUser }
+	| { type: "LoginLocalUser", params: LoginLocalUser }
+	| { type: "LoginWithSecret", params: LoginWithSecret }
+	| { type: "ExchangeForJwt", params: ExchangeForJwt };
 
 export enum ServerStatus {
 	NotOk = "NotOk",

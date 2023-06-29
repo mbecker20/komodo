@@ -5,9 +5,11 @@ use monitor_types::requests::auth::{
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 use crate::state::State;
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[resolver_target(State)]
 #[serde(tag = "type", content = "params")]

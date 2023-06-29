@@ -7,6 +7,7 @@ use axum::{
 use monitor_types::requests::api::*;
 use resolver_api::{derive::Resolver, Resolve, ResolveToString, Resolver};
 use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 use uuid::Uuid;
 
 use crate::{
@@ -19,6 +20,7 @@ mod secret;
 mod server;
 mod build;
 
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[resolver_target(State)]
 #[resolver_args(RequestUser)]
