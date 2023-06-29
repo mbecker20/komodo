@@ -2,51 +2,59 @@ import axios from "axios";
 import { ApiResponses, AuthResponses } from "./responses";
 import { ApiRequest, AuthRequest } from "./types";
 
-export type ClientOptions = {
+export type LoginOptions = {
   jwt?: string;
   username?: string;
   password?: string;
   secret?: string;
 };
 
-export async function MonitorClient(base_url: string, options?: ClientOptions) {
-  let jwt = options?.jwt;
+export async function MonitorClient(base_url: string) {
+  let jwt = "";
 
-  const auth = async <R extends AuthRequest>(type: R["type"], params?: R["params"]): Promise<AuthResponses[R["type"]]> => {
+  const auth = async <R extends AuthRequest>(
+    request: R
+  ): Promise<AuthResponses[R["type"]]> => {
     return await axios({
       method: "post",
       url: base_url + "/auth",
-      data: {
-        type,
-        params: params || {}
-      },
+      data: request,
     }).then(({ data }) => data);
-  }
+  };
 
-  if (!jwt) {
-    if (options?.username) {
-      if (options?.password) {
-        const res = await auth("LoginLocalUser", {  });
-      } else if (options?.secret) {
+  const login = async (options: LoginOptions) => {
+    if (options.username) {
+      if (options.password) {
+        const res = await auth({
+          type: "LoginLocalUser",
+          params: { username: options.username, password: options.password },
+        });
+        jwt = res.jwt;
+      } else if (options.secret) {
+        const res = await auth({
+          type: "LoginWithSecret",
+          params: { username: options.username, secret: options.secret },
+        });
+        jwt = res.jwt;
       }
     }
   }
 
-  // const api = async <R extends ApiRequest>(
-  //   request: R
-  // ): Promise<ApiResponses[R["type"]]> => {
-  //   return await axios({
-  //     method: "post",
-  //     url: base_url + "/api",
-  //     headers: {
-  //       Authorization: `Bearer ${jwt}`
-  //     },
-  //     data: request,
-  //   }).then(({ data }) => data);
-  // };
+  const api = async <R extends ApiRequest>(
+    request: R
+  ): Promise<ApiResponses[R["type"]]> => {
+    return await axios({
+      method: "post",
+      url: base_url + "/api",
+      headers: {
+        Authorization: `Bearer ${jwt}`
+      },
+      data: request,
+    }).then(({ data }) => data);
+  };
 
   return {
     auth,
-
+    login,
   };
 }
