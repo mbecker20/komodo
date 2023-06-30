@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use monitor_types::{
     all_logs_success,
     entities::{
-        deployment::{Deployment, DeploymentImage, DockerContainerState},
+        deployment::{Deployment, DeploymentImage, DockerContainerState, DockerContainerStats},
         server::ServerStatus,
         update::{Log, Update, UpdateStatus, UpdateTarget},
         Operation, PermissionLevel, Version,
@@ -57,6 +57,39 @@ impl Resolve<ListDeployments, RequestUser> for State {
         };
 
         Ok(deployments)
+    }
+}
+
+#[async_trait]
+impl Resolve<GetLog, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetLog { deployment_id }: GetLog,
+        user: RequestUser,
+    ) -> anyhow::Result<Log> {
+        todo!()
+    }
+}
+
+#[async_trait]
+impl Resolve<GetDeployedVersion, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetDeployedVersion { deployment_id }: GetDeployedVersion,
+        user: RequestUser,
+    ) -> anyhow::Result<GetDeployedVersionResponse> {
+        todo!()
+    }
+}
+
+#[async_trait]
+impl Resolve<GetDeploymentStats, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetDeploymentStats { id }: GetDeploymentStats,
+        user: RequestUser,
+    ) -> anyhow::Result<DockerContainerStats> {
+        todo!()
     }
 }
 

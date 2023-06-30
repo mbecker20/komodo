@@ -6,8 +6,8 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        deployment::{Deployment, PartialDeploymentConfig, TerminationSignal},
-        update::Update,
+        deployment::{Deployment, PartialDeploymentConfig, TerminationSignal, DockerContainerStats},
+        update::{Update, Log},
     },
     MongoDocument,
 };
@@ -26,6 +26,39 @@ pub struct GetDeployment {
 #[response(Vec<Deployment>)]
 pub struct ListDeployments {
     pub query: Option<MongoDocument>,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Log)]
+pub struct GetLog {
+    pub deployment_id: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetDeployedVersionResponse)]
+pub struct GetDeployedVersion {
+    pub deployment_id: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetDeployedVersionResponse {
+    pub version: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(DockerContainerStats)]
+pub struct GetDeploymentStats {
+    pub id: String,
 }
 
 //
@@ -76,6 +109,8 @@ pub struct RenameDeployment {
     pub id: String,
     pub name: String,
 }
+
+//
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
