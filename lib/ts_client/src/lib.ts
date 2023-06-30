@@ -56,5 +56,6 @@ export async function MonitorClient(base_url: string) {
   return {
     auth,
     login,
+    api,
   };
 }
