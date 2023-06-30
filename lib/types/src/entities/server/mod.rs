@@ -5,7 +5,7 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{I64, i64_is_zero};
+use crate::{i64_is_zero, I64};
 
 use super::PermissionsMap;
 

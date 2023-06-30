@@ -10,10 +10,7 @@ use monitor_types::{
     },
     get_image_name, monitor_timestamp,
     permissioned::Permissioned,
-    requests::api::{
-        CreateDeployment, DeleteDeployment, Deploy, GetDeployment, ListDeployments,
-        RemoveContainer, RenameDeployment, StartContainer, StopContainer, UpdateDeployment,
-    },
+    requests::api::*,
     to_monitor_name,
 };
 use mungos::mongodb::bson::{doc, to_bson};
@@ -71,14 +68,18 @@ impl Resolve<CreateDeployment, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Deployment> {
         if let Some(server_id) = &config.server_id {
-            self.get_server_check_permissions(server_id, &user, PermissionLevel::Update)
-                .await
-                .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+            if !server_id.is_empty() {
+                self.get_server_check_permissions(server_id, &user, PermissionLevel::Update)
+                    .await
+                    .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+            }
         }
         if let Some(DeploymentImage::Build { build_id, .. }) = &config.image {
-            self.get_build_check_permissions(build_id, &user, PermissionLevel::Read)
-                .await
-                .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+            if !build_id.is_empty() {
+                self.get_build_check_permissions(build_id, &user, PermissionLevel::Read)
+                    .await
+                    .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+            }
         }
         let start_ts = monitor_timestamp();
         let deployment = Deployment {
@@ -91,6 +92,77 @@ impl Resolve<CreateDeployment, RequestUser> for State {
                 .collect(),
             description: Default::default(),
             config: config.into(),
+        };
+        let deployment_id = self
+            .db
+            .deployments
+            .create_one(&deployment)
+            .await
+            .context("failed to add deployment to db")?;
+        let deployment = self.get_deployment(&deployment_id).await?;
+        let update = Update {
+            target: UpdateTarget::Deployment(deployment_id),
+            operation: Operation::CreateDeployment,
+            start_ts,
+            end_ts: Some(monitor_timestamp()),
+            operator: user.id.clone(),
+            success: true,
+            logs: vec![
+                Log::simple(
+                    "create deployment",
+                    format!(
+                        "created deployment\nid: {}\nname: {}",
+                        deployment.id, deployment.name
+                    ),
+                ),
+                Log::simple("config", format!("{:#?}", deployment.config)),
+            ],
+            ..Default::default()
+        };
+
+        self.add_update(update).await?;
+
+        Ok(deployment)
+    }
+}
+
+#[async_trait]
+impl Resolve<CopyDeployment, RequestUser> for State {
+    async fn resolve(
+        &self,
+        CopyDeployment { name, id }: CopyDeployment,
+        user: RequestUser,
+    ) -> anyhow::Result<Deployment> {
+        let Deployment {
+            config,
+            description,
+            ..
+        } = self
+            .get_deployment_check_permissions(&id, &user, PermissionLevel::Update)
+            .await?;
+        if !config.server_id.is_empty() {
+            self.get_server_check_permissions(&config.server_id, &user, PermissionLevel::Update)
+                    .await
+                    .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+        }
+        if let DeploymentImage::Build { build_id, .. } = &config.image {
+            if !build_id.is_empty() {
+                self.get_build_check_permissions(build_id, &user, PermissionLevel::Read)
+                    .await
+                    .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+            }
+        }
+        let start_ts = monitor_timestamp();
+        let deployment = Deployment {
+            id: Default::default(),
+            name,
+            created_at: start_ts,
+            updated_at: start_ts,
+            permissions: [(user.id.clone(), PermissionLevel::Update)]
+                .into_iter()
+                .collect(),
+            description,
+            config,
         };
         let deployment_id = self
             .db

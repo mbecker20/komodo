@@ -12,13 +12,7 @@ use monitor_types::{
     },
     monitor_timestamp,
     permissioned::Permissioned,
-    requests::api::{
-        CreateServer, DeleteServer, GetAllSystemStats, GetBasicSystemStats, GetCpuUsage,
-        GetDiskUsage, GetDockerContainers, GetDockerImages, GetDockerNetworks, GetNetworkUsage,
-        GetPeripheryVersion, GetPeripheryVersionResponse, GetServer, GetSystemComponents,
-        GetSystemInformation, GetSystemProcesses, ListServers, PruneDockerContainers,
-        PruneDockerImages, PruneDockerNetworks, RenameServer, UpdateServer,
-    },
+    requests::api::*,
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;

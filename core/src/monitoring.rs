@@ -5,7 +5,7 @@ use monitor_types::entities::{
     deployment::{BasicContainerInfo, Deployment, DockerContainerState},
     server::{
         stats::{
-            AllSystemStats, BasicSystemStats, CpuUsage, ServerHealth, SingleDiskUsage, StatsState,
+            AllSystemStats, BasicSystemStats, ServerHealth, SingleDiskUsage, StatsState,
             SystemComponent,
         },
         Server, ServerConfig, ServerStatus,

@@ -14,9 +14,7 @@ use monitor_types::{
     },
     monitor_timestamp,
     permissioned::Permissioned,
-    requests::api::{
-        CreateBuild, DeleteBuild, Deploy, GetBuild, ListBuilds, RunBuild, UpdateBuild,
-    },
+    requests::api::*,
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::{
@@ -112,7 +110,84 @@ impl Resolve<CreateBuild, RequestUser> for State {
         let build_id = self
             .db
             .builds
-            .create_one(&build)
+            .create_one(build)
+            .await
+            .context("failed to add build to db")?;
+        let build = self.get_build(&build_id).await?;
+        let update = Update {
+            target: UpdateTarget::Build(build_id),
+            operation: Operation::CreateBuild,
+            start_ts,
+            end_ts: Some(monitor_timestamp()),
+            operator: user.id.clone(),
+            success: true,
+            logs: vec![
+                Log::simple(
+                    "create build",
+                    format!("created build\nid: {}\nname: {}", build.id, build.name),
+                ),
+                Log::simple("config", format!("{:#?}", build.config)),
+            ],
+            ..Default::default()
+        };
+
+        self.add_update(update).await?;
+
+        Ok(build)
+    }
+}
+
+#[async_trait]
+impl Resolve<CopyBuild, RequestUser> for State {
+    async fn resolve(
+        &self,
+        CopyBuild { name, id }: CopyBuild,
+        user: RequestUser,
+    ) -> anyhow::Result<Build> {
+        let Build {
+            config,
+            description,
+            ..
+        } = self
+            .get_build_check_permissions(&id, &user, PermissionLevel::Update)
+            .await?;
+        match &config.builder {
+            BuildBuilderConfig::Server { server_id } => {
+                self.get_server_check_permissions(
+                    server_id,
+                    &user,
+                    PermissionLevel::Update,
+                )
+                .await
+                .context("cannot create build on this server. user must have update permissions on the server.")?;
+            }
+            BuildBuilderConfig::Builder { builder_id } => {
+                self.get_builder_check_permissions(
+                    builder_id,
+                    &user,
+                    PermissionLevel::Read,
+                )
+                .await
+                .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+            }
+        }
+        let start_ts = monitor_timestamp();
+        let build = Build {
+            id: Default::default(),
+            name,
+            created_at: start_ts,
+            updated_at: start_ts,
+            last_built_at: 0,
+            permissions: [(user.id.clone(), PermissionLevel::Update)]
+                .into_iter()
+                .collect(),
+            description,
+            config,
+        };
+        let build_id = self
+            .db
+            .builds
+            .create_one(build)
             .await
             .context("failed to add build to db")?;
         let build = self.get_build(&build_id).await?;

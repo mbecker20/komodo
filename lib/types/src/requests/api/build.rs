@@ -41,6 +41,16 @@ pub struct CreateBuild {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Build)]
+pub struct CopyBuild {
+    pub name: String,
+    pub id: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Build)]
 pub struct DeleteBuild {
     pub id: String,
 }

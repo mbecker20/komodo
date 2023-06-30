@@ -36,10 +36,18 @@ async fn app() -> anyhow::Result<()> {
                     let timer = Instant::now();
                     let req_id = Uuid::new_v4();
                     info!("request {req_id} | {request:?}");
-                    let res = state
-                        .resolve_request(request, ())
-                        .await
-                        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
+                    let res = tokio::spawn(async move {
+                        state
+                            .resolve_request(request, ())
+                            .await
+                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")))
+                    })
+                    .await
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
+                    if let Err(e) = &res {
+                        debug!("request {req_id} SPAWN ERROR: {e:?}");
+                    }
+                    let res = res?;
                     if let Err(e) = &res {
                         debug!("request {req_id} ERROR: {e:?}");
                     }

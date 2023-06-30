@@ -15,10 +15,10 @@ use crate::{
     state::{State, StateExtension},
 };
 
+mod build;
 mod deployment;
 mod secret;
 mod server;
-mod build;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -70,7 +70,7 @@ pub enum ApiRequest {
     // ==== DEPLOYMENT ====
     //
     GetDeployment(GetDeployment),
-    ListDeployments(ListDeployments), 
+    ListDeployments(ListDeployments),
     // CRUD
     CreateDeployment(CreateDeployment),
     DeleteDeployment(DeleteDeployment),
@@ -86,7 +86,7 @@ pub enum ApiRequest {
     // ==== BUILD ====
     //
     GetBuild(GetBuild),
-    ListBuilds(ListBuilds), 
+    ListBuilds(ListBuilds),
     // CRUD
     CreateBuild(CreateBuild),
     DeleteBuild(DeleteBuild),
@@ -105,18 +105,26 @@ pub fn router() -> Router {
                  Json(request): Json<ApiRequest>| async move {
                     let timer = Instant::now();
                     let req_id = Uuid::new_v4();
-                    info!("/auth request {req_id} | {request:?}");
-                    let res = state
-                        .resolve_request(request, user)
-                        .await
-                        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
+                    info!("/api request {req_id} | {request:?}");
+                    let res = tokio::spawn(async move {
+                        state
+                            .resolve_request(request, user)
+                            .await
+                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")))
+                    })
+                    .await
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
                     if let Err(e) = &res {
-                        info!("/auth request {req_id} ERROR: {e:?}");
+                        info!("/api request {req_id} SPAWN ERROR: {e:?}");
+                    }
+                    let res = res?;
+                    if let Err(e) = &res {
+                        info!("/api request {req_id} ERROR: {e:?}");
                     }
                     let res = res?;
                     let elapsed = timer.elapsed();
-                    info!("/auth request {req_id} | resolve time: {elapsed:?}");
-                    debug!("/auth request {req_id} RESPONSE: {res}");
+                    info!("/api request {req_id} | resolve time: {elapsed:?}");
+                    debug!("/api request {req_id} RESPONSE: {res}");
                     Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
                 },
             ),

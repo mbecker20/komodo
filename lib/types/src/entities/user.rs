@@ -3,7 +3,7 @@ use mungos::MungosIndexed;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{I64, i64_is_zero};
+use crate::{i64_is_zero, I64};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]

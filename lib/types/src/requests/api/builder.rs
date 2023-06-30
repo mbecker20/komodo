@@ -8,6 +8,4 @@
 //     MongoDocument,
 // };
 
-
-
 // derive_crud_requests!(Builder);

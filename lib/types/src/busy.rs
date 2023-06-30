@@ -1,4 +1,6 @@
-use crate::entities::{server::ServerActionState, deployment::DeploymentActionState, build::BuildActionState};
+use crate::entities::{
+    build::BuildActionState, deployment::DeploymentActionState, server::ServerActionState,
+};
 
 pub trait Busy {
     fn busy(&self) -> bool;

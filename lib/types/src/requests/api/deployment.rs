@@ -43,6 +43,16 @@ pub struct CreateDeployment {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Deployment)]
+pub struct CopyDeployment {
+    pub name: String,
+    pub id: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Deployment)]
 pub struct DeleteDeployment {
     pub id: String,
 }

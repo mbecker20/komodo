@@ -1,8 +1,8 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
-    monitor_timestamp,
     entities::user::ApiSecret,
+    monitor_timestamp,
     requests::api::{CreateLoginSecret, CreateLoginSecretResponse, DeleteLoginSecret},
 };
 use mungos::{

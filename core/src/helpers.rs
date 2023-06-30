@@ -5,11 +5,12 @@ use monitor_types::{
     busy::Busy,
     entities::{
         build::Build,
+        builder::Builder,
         deployment::{Deployment, DockerContainerState},
         server::{Server, ServerStatus},
         update::Update,
         user::User,
-        PermissionLevel, builder::Builder,
+        PermissionLevel,
     },
     permissioned::Permissioned,
 };
@@ -114,7 +115,10 @@ impl State {
             ))
     }
 
-    pub async fn get_deployment_state(&self, deployment: &Deployment) -> anyhow::Result<DockerContainerState> {
+    pub async fn get_deployment_state(
+        &self,
+        deployment: &Deployment,
+    ) -> anyhow::Result<DockerContainerState> {
         if deployment.config.server_id.is_empty() {
             return Ok(DockerContainerState::NotDeployed);
         }
@@ -133,7 +137,7 @@ impl State {
 
         let state = match container {
             Some(container) => container.state,
-            None => DockerContainerState::NotDeployed
+            None => DockerContainerState::NotDeployed,
         };
 
         Ok(state)
