@@ -219,7 +219,18 @@ impl Default for &PermissionLevel {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Default, PartialEq, Hash, Eq, Clone, Copy, MungosIndexed,
+    Serialize,
+    Deserialize,
+    Debug,
+    Default,
+    Display,
+    EnumString,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    MungosIndexed,
 )]
 pub enum Operation {
     // do nothing

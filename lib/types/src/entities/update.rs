@@ -2,6 +2,7 @@ use async_timing_util::unix_timestamp_ms;
 use bson::serde_helpers::hex_string_as_object_id;
 use mungos::MungosIndexed;
 use serde::{Deserialize, Serialize};
+use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::{entities::Operation, I64};
@@ -161,7 +162,18 @@ pub enum UpdateTarget {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default, MungosIndexed,
+    Serialize,
+    Deserialize,
+    Debug,
+    Display,
+    EnumString,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+    MungosIndexed,
 )]
 pub enum UpdateStatus {
     Queued,

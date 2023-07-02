@@ -35,6 +35,12 @@ pub struct ListDeployments {
 #[response(Log)]
 pub struct GetLog {
     pub deployment_id: String,
+    #[serde(default = "default_tail")]
+    pub tail: u64,
+}
+
+fn default_tail() -> u64 {
+    50
 }
 
 //
