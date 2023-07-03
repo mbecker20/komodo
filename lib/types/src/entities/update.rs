@@ -19,7 +19,7 @@ pub struct Update {
         with = "hex_string_as_object_id"
     )]
     pub id: String,
-    pub target: UpdateTarget,
+    pub target: ResourceTarget,
     pub operation: Operation,
     pub logs: Vec<Log>,
     pub start_ts: I64,
@@ -88,7 +88,7 @@ impl Log {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
 #[serde(tag = "type", content = "id")]
-pub enum UpdateTarget {
+pub enum ResourceTarget {
     #[default]
     System,
     Build(String),

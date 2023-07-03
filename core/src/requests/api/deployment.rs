@@ -10,7 +10,7 @@ use monitor_types::{
             DockerContainerStats,
         },
         server::ServerStatus,
-        update::{Log, Update, UpdateStatus, UpdateTarget},
+        update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel, Version,
     },
     get_image_name, monitor_timestamp,
@@ -222,7 +222,7 @@ impl Resolve<CreateDeployment, RequestUser> for State {
             .context("failed to add deployment to db")?;
         let deployment = self.get_deployment(&deployment_id).await?;
         let update = Update {
-            target: UpdateTarget::Deployment(deployment_id),
+            target: ResourceTarget::Deployment(deployment_id),
             operation: Operation::CreateDeployment,
             start_ts,
             end_ts: Some(monitor_timestamp()),
@@ -293,7 +293,7 @@ impl Resolve<CopyDeployment, RequestUser> for State {
             .context("failed to add deployment to db")?;
         let deployment = self.get_deployment(&deployment_id).await?;
         let update = Update {
-            target: UpdateTarget::Deployment(deployment_id),
+            target: ResourceTarget::Deployment(deployment_id),
             operation: Operation::CreateDeployment,
             start_ts,
             end_ts: Some(monitor_timestamp()),
@@ -341,7 +341,7 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
             .context("failed to get container state")?;
 
         let mut update = Update {
-            target: UpdateTarget::Deployment(id.clone()),
+            target: ResourceTarget::Deployment(id.clone()),
             operation: Operation::DeleteDeployment,
             start_ts,
             operator: user.id.clone(),
@@ -474,7 +474,7 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
 
             let update = Update {
                 operation: Operation::UpdateDeployment,
-                target: UpdateTarget::Deployment(id.clone()),
+                target: ResourceTarget::Deployment(id.clone()),
                 start_ts,
                 end_ts: Some(monitor_timestamp()),
                 status: UpdateStatus::Complete,
@@ -576,7 +576,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
             ));
 
             let update = Update {
-                target: UpdateTarget::Deployment(deployment.id),
+                target: ResourceTarget::Deployment(deployment.id),
                 operation: Operation::RenameDeployment,
                 start_ts,
                 end_ts: monitor_timestamp().into(),
@@ -670,7 +670,7 @@ impl Resolve<Deploy, RequestUser> for State {
             };
 
             let mut update = Update {
-                target: UpdateTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(deployment.id.clone()),
                 operation: Operation::DeployContainer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -756,7 +756,7 @@ impl Resolve<StartContainer, RequestUser> for State {
             let start_ts = monitor_timestamp();
 
             let mut update = Update {
-                target: UpdateTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(deployment.id.clone()),
                 operation: Operation::StartContainer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -843,7 +843,7 @@ impl Resolve<StopContainer, RequestUser> for State {
             let start_ts = monitor_timestamp();
 
             let mut update = Update {
-                target: UpdateTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(deployment.id.clone()),
                 operation: Operation::StopContainer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -934,7 +934,7 @@ impl Resolve<RemoveContainer, RequestUser> for State {
             let start_ts = monitor_timestamp();
 
             let mut update = Update {
-                target: UpdateTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(deployment.id.clone()),
                 operation: Operation::RemoveContainer,
                 start_ts,
                 status: UpdateStatus::InProgress,

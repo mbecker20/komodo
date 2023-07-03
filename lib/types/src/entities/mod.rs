@@ -281,10 +281,8 @@ pub enum Operation {
     DeleteGroup,
 
     // user
-    ModifyUserEnabled,
-    ModifyUserCreateServerPermissions,
-    ModifyUserCreateBuildPermissions,
-    ModifyUserPermissions,
+    UpdateUserPermissions,
+    UpdateUserPermissionsOnTarget,
 
     // github webhook automation
     AutoBuild,

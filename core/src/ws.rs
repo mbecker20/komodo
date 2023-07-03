@@ -10,7 +10,7 @@ use axum::{
 };
 use futures::{SinkExt, StreamExt};
 use monitor_types::entities::{
-    update::{Update, UpdateTarget},
+    update::{ResourceTarget, Update},
     user::User,
     PermissionLevel,
 };
@@ -160,29 +160,29 @@ impl State {
         &self,
         user: &User,
         user_id: &str,
-        update_target: &UpdateTarget,
+        update_target: &ResourceTarget,
     ) -> anyhow::Result<()> {
         if user.admin {
             return Ok(());
         }
         let (permissions, target) = match update_target {
-            UpdateTarget::Server(server_id) => {
+            ResourceTarget::Server(server_id) => {
                 let permissions = self
                     .get_user_permission_on_server(user_id, server_id)
                     .await?;
                 (permissions, "server")
             }
-            UpdateTarget::Deployment(deployment_id) => {
+            ResourceTarget::Deployment(deployment_id) => {
                 let permissions = self
                     .get_user_permission_on_deployment(user_id, deployment_id)
                     .await?;
                 (permissions, "deployment")
             }
-            UpdateTarget::Build(build_id) => {
+            ResourceTarget::Build(build_id) => {
                 let permissions = self.get_user_permission_on_build(user_id, build_id).await?;
                 (permissions, "build")
             }
-            UpdateTarget::Builder(builder_id) => {
+            ResourceTarget::Builder(builder_id) => {
                 let permissions = self
                     .get_user_permission_on_builder(user_id, builder_id)
                     .await?;
@@ -206,7 +206,7 @@ impl State {
             //         .await?;
             //     (permissions, "command")
             // }
-            UpdateTarget::System => {
+            ResourceTarget::System => {
                 return Err(anyhow!("user not admin, can't recieve system updates"))
             }
         };

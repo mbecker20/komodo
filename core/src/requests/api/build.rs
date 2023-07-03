@@ -9,7 +9,7 @@ use monitor_types::{
         build::{Build, BuildBuilderConfig},
         builder::{AwsBuilder, BuilderConfig},
         deployment::DockerContainerState,
-        update::{Log, Update, UpdateStatus, UpdateTarget},
+        update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
     },
     monitor_timestamp,
@@ -115,7 +115,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
             .context("failed to add build to db")?;
         let build = self.get_build(&build_id).await?;
         let update = Update {
-            target: UpdateTarget::Build(build_id),
+            target: ResourceTarget::Build(build_id),
             operation: Operation::CreateBuild,
             start_ts,
             end_ts: Some(monitor_timestamp()),
@@ -192,7 +192,7 @@ impl Resolve<CopyBuild, RequestUser> for State {
             .context("failed to add build to db")?;
         let build = self.get_build(&build_id).await?;
         let update = Update {
-            target: UpdateTarget::Build(build_id),
+            target: ResourceTarget::Build(build_id),
             operation: Operation::CreateBuild,
             start_ts,
             end_ts: Some(monitor_timestamp()),
@@ -232,7 +232,7 @@ impl Resolve<DeleteBuild, RequestUser> for State {
         let start_ts = monitor_timestamp();
 
         let mut update = Update {
-            target: UpdateTarget::Build(id.clone()),
+            target: ResourceTarget::Build(id.clone()),
             operation: Operation::DeleteBuild,
             start_ts,
             operator: user.id.clone(),
@@ -327,7 +327,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
 
             let update = Update {
                 operation: Operation::UpdateBuild,
-                target: UpdateTarget::Build(id.clone()),
+                target: ResourceTarget::Build(id.clone()),
                 start_ts,
                 end_ts: Some(monitor_timestamp()),
                 status: UpdateStatus::Complete,
@@ -385,7 +385,7 @@ impl Resolve<RunBuild, RequestUser> for State {
         let inner = || async move {
             build.config.version.increment();
             let mut update = Update {
-                target: UpdateTarget::Build(build.id.clone()),
+                target: ResourceTarget::Build(build.id.clone()),
                 operation: Operation::RunBuild,
                 start_ts: monitor_timestamp(),
                 status: UpdateStatus::InProgress,

@@ -7,7 +7,7 @@ use monitor_types::{
             docker_image::ImageSummary, docker_network::DockerNetwork, stats::SystemInformation,
             Server,
         },
-        update::{Log, Update, UpdateStatus, UpdateTarget},
+        update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
     },
     monitor_timestamp,
@@ -100,7 +100,7 @@ impl Resolve<CreateServer, RequestUser> for State {
             .context("failed to add server to db")?;
         let server = self.get_server(&server_id).await?;
         let update = Update {
-            target: UpdateTarget::Server(server_id),
+            target: ResourceTarget::Server(server_id),
             operation: Operation::CreateServer,
             start_ts,
             end_ts: Some(monitor_timestamp()),
@@ -138,7 +138,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
         let start_ts = monitor_timestamp();
 
         let mut update = Update {
-            target: UpdateTarget::Server(req.id.clone()),
+            target: ResourceTarget::Server(req.id.clone()),
             operation: Operation::DeleteServer,
             start_ts,
             operator: user.id.clone(),
@@ -197,7 +197,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
             .context("failed to update server on mongo")?;
         let update = Update {
             operation: Operation::UpdateServer,
-            target: UpdateTarget::Server(id.clone()),
+            target: ResourceTarget::Server(id.clone()),
             start_ts,
             end_ts: Some(monitor_timestamp()),
             status: UpdateStatus::Complete,
@@ -241,7 +241,7 @@ impl Resolve<RenameServer, RequestUser> for State {
             )
             .await?;
         let mut update = Update {
-            target: UpdateTarget::Deployment(id.clone()),
+            target: ResourceTarget::Deployment(id.clone()),
             operation: Operation::RenameServer,
             start_ts,
             end_ts: Some(monitor_timestamp()),
@@ -470,7 +470,7 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
 
             let start_ts = monitor_timestamp();
             let mut update = Update {
-                target: UpdateTarget::Server(server_id.to_owned()),
+                target: ResourceTarget::Server(server_id.to_owned()),
                 operation: Operation::PruneImagesServer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -554,7 +554,7 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
 
             let start_ts = monitor_timestamp();
             let mut update = Update {
-                target: UpdateTarget::Server(server_id.to_owned()),
+                target: ResourceTarget::Server(server_id.to_owned()),
                 operation: Operation::PruneNetworksServer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -640,7 +640,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
         let inner = || async {
             let start_ts = monitor_timestamp();
             let mut update = Update {
-                target: UpdateTarget::Server(server_id),
+                target: ResourceTarget::Server(server_id),
                 operation: Operation::PruneContainersServer,
                 start_ts,
                 status: UpdateStatus::InProgress,

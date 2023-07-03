@@ -16,6 +16,9 @@ pub use build::*;
 mod builder;
 pub use builder::*;
 
+mod permissions;
+pub use permissions::*;
+
 //
 
 #[typeshare]
