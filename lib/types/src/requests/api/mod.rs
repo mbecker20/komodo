@@ -19,6 +19,9 @@ pub use builder::*;
 mod permissions;
 pub use permissions::*;
 
+mod repo;
+pub use repo::*;
+
 //
 
 #[typeshare]

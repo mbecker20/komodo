@@ -36,9 +36,6 @@ pub struct Repo {
     #[builder(setter(skip))]
     pub updated_at: String,
 
-    #[serde(default)]
-    pub tags: Vec<String>,
-
     pub config: RepoConfig,
 }
 
@@ -47,21 +44,45 @@ pub struct Repo {
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
 pub struct RepoConfig {
+    pub server_id: String,
+
     pub repo: String,
 
+    #[serde(default = "default_branch")]
     #[builder(default = "default_branch()")]
     pub branch: String,
 
+    #[serde(default)]
     #[builder(default)]
     pub github_account: String,
 
+    #[serde(default)]
     #[builder(default)]
     pub on_clone: SystemCommand,
 
+    #[serde(default)]
     #[builder(default)]
     pub on_pull: SystemCommand,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
 }
 
 fn default_branch() -> String {
     String::from("main")
+}
+
+impl From<PartialRepoConfig> for RepoConfig {
+    fn from(value: PartialRepoConfig) -> RepoConfig {
+        RepoConfig {
+            server_id: value.server_id.unwrap_or_default(),
+            repo: value.repo.unwrap_or_default(),
+            branch: value.branch.unwrap_or(default_branch()),
+            github_account: value.github_account.unwrap_or_default(),
+            on_clone: value.on_clone.unwrap_or_default(),
+            on_pull: value.on_pull.unwrap_or_default(),
+            tags: value.tags.unwrap_or_default()
+        }
+    }
 }
