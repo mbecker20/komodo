@@ -39,7 +39,7 @@ pub async fn guard_request_by_passkey(
                 format!("failed to get passkey from authorization header as str: {e:?}"),
             )
         })?
-        .to_string();
+        .replace("Bearer ", "");
     if state.config.passkeys.contains(&req_passkey) {
         Ok(next.run(req).await)
     } else {

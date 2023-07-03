@@ -43,7 +43,7 @@ async fn app() -> anyhow::Result<()> {
                             .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")))
                     })
                     .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")));
                     if let Err(e) = &res {
                         debug!("request {req_id} SPAWN ERROR: {e:?}");
                     }

@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use bollard::{container::ListContainersOptions, Docker};
 use monitor_types::entities::{
     deployment::BasicContainerInfo,
@@ -38,7 +38,11 @@ impl DockerClient {
                         .ok_or(anyhow!("no names on container (empty vec)"))?
                         .replace('/', ""),
                     image: s.image.unwrap_or(String::from("unknown")),
-                    state: s.state.unwrap().parse().unwrap(),
+                    state: s
+                        .state
+                        .context("no container state")?
+                        .parse()
+                        .context("failed to parse container state")?,
                     status: s.status,
                 };
                 Ok::<_, anyhow::Error>(info)

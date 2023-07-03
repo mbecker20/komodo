@@ -228,6 +228,8 @@ pub struct DockerContainerStats {
     EnumString,
     MungosIndexed,
 )]
+#[serde(rename_all = "snake_case")]
+#[strum(serialize_all = "snake_case")]
 pub enum DockerContainerState {
     #[default]
     Unknown,
