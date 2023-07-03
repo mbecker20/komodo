@@ -4,7 +4,8 @@ use anyhow::Context;
 use axum::Extension;
 use monitor_types::{
     entities::{
-        build::BuildActionState, deployment::DeploymentActionState, server::ServerActionState,
+        build::BuildActionState, deployment::DeploymentActionState, repo::RepoActionState,
+        server::ServerActionState,
     },
     requests::auth::GetLoginOptionsResponse,
 };
@@ -99,5 +100,6 @@ pub struct ActionStates {
     pub build: Cache<BuildActionState>,
     pub deployment: Cache<DeploymentActionState>,
     pub server: Cache<ServerActionState>,
+    pub repo: Cache<RepoActionState>,
     // pub command: Cache<CommandActionState>,
 }

@@ -95,6 +95,7 @@ pub enum ResourceTarget {
     Builder(String),
     Deployment(String),
     Server(String),
+    Repo(String),
     // Procedure(String),
     // Group(String),
     // Command(String),

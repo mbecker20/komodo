@@ -252,6 +252,11 @@ pub enum Operation {
     DeleteBuild,
     RunBuild,
 
+    // builder
+    CreateBuilder,
+    UpdateBuilder,
+    DeleteBuilder,
+
     // deployment
     CreateDeployment,
     UpdateDeployment,
@@ -264,21 +269,28 @@ pub enum Operation {
     RecloneDeployment,
     RenameDeployment,
 
-    // procedure
-    CreateProcedure,
-    UpdateProcedure,
-    DeleteProcedure,
+    // repo
+    CreateRepo,
+    UpdateRepo,
+    DeleteRepo,
+    CloneRepo,
+    PullRepo,
 
-    // command
-    CreateCommand,
-    UpdateCommand,
-    DeleteCommand,
-    RunCommand,
+    // // procedure
+    // CreateProcedure,
+    // UpdateProcedure,
+    // DeleteProcedure,
 
-    // group
-    CreateGroup,
-    UpdateGroup,
-    DeleteGroup,
+    // // command
+    // CreateCommand,
+    // UpdateCommand,
+    // DeleteCommand,
+    // RunCommand,
+
+    // // group
+    // CreateGroup,
+    // UpdateGroup,
+    // DeleteGroup,
 
     // user
     UpdateUserPermissions,

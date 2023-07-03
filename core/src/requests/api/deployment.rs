@@ -329,89 +329,109 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
             return Err(anyhow!("deployment busy"));
         }
 
-        let start_ts = monitor_timestamp();
-
         let deployment = self
             .get_deployment_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
-        let state = self
-            .get_deployment_state(&deployment)
-            .await
-            .context("failed to get container state")?;
+        let inner = || async move {
+            let start_ts = monitor_timestamp();
 
-        let mut update = Update {
-            target: ResourceTarget::Deployment(id.clone()),
-            operation: Operation::DeleteDeployment,
-            start_ts,
-            operator: user.id.clone(),
-            success: true,
-            status: UpdateStatus::InProgress,
-            ..Default::default()
-        };
+            let state = self
+                .get_deployment_state(&deployment)
+                .await
+                .context("failed to get container state")?;
 
-        update.id = self.add_update(update.clone()).await?;
+            let mut update = Update {
+                target: ResourceTarget::Deployment(deployment.id.clone()),
+                operation: Operation::DeleteDeployment,
+                start_ts,
+                operator: user.id.clone(),
+                success: true,
+                status: UpdateStatus::InProgress,
+                ..Default::default()
+            };
 
-        if !matches!(
-            state,
-            DockerContainerState::NotDeployed | DockerContainerState::Unknown
-        ) {
-            // container needs to be destroyed
-            let server = self.get_server(&deployment.config.server_id).await;
-            if let Err(e) = server {
-                update.logs.push(Log::error(
-                    "remove container",
-                    format!(
-                        "failed to retrieve server at {} from mongo | {e:#?}",
-                        deployment.config.server_id
-                    ),
-                ));
-            } else {
-                let server = server.unwrap();
-                match self
-                    .periphery_client(&server)
-                    .request(requests::RemoveContainer {
-                        name: deployment.name.clone(),
-                        signal: deployment.config.termination_signal.into(),
-                        time: deployment.config.termination_timeout.into(),
-                    })
-                    .await
-                {
-                    Ok(log) => update.logs.push(log),
-                    Err(e) => update.logs.push(Log::error(
+            update.id = self.add_update(update.clone()).await?;
+
+            if !matches!(
+                state,
+                DockerContainerState::NotDeployed | DockerContainerState::Unknown
+            ) {
+                // container needs to be destroyed
+                let server = self.get_server(&deployment.config.server_id).await;
+                if let Err(e) = server {
+                    update.logs.push(Log::error(
                         "remove container",
-                        format!("failed to remove container on periphery | {e:#?}"),
-                    )),
+                        format!(
+                            "failed to retrieve server at {} from mongo | {e:#?}",
+                            deployment.config.server_id
+                        ),
+                    ));
+                } else {
+                    let server = server.unwrap();
+                    match self
+                        .periphery_client(&server)
+                        .request(requests::RemoveContainer {
+                            name: deployment.name.clone(),
+                            signal: deployment.config.termination_signal.into(),
+                            time: deployment.config.termination_timeout.into(),
+                        })
+                        .await
+                    {
+                        Ok(log) => update.logs.push(log),
+                        Err(e) => update.logs.push(Log::error(
+                            "remove container",
+                            format!("failed to remove container on periphery | {e:#?}"),
+                        )),
+                    }
                 }
             }
-        }
 
-        let res = self
-            .db
-            .deployments
-            .delete_one(&id)
-            .await
-            .context("failed to delete deployment from mongo");
+            let res = self
+                .db
+                .deployments
+                .delete_one(&deployment.id)
+                .await
+                .context("failed to delete deployment from mongo");
 
-        let log = match res {
-            Ok(_) => Log::simple(
-                "delete deployment",
-                format!("deleted deployment {}", deployment.name),
-            ),
-            Err(e) => Log::error(
-                "delete deployment",
-                format!("failed to delete deployment\n{e:#?}"),
-            ),
+            let log = match res {
+                Ok(_) => Log::simple(
+                    "delete deployment",
+                    format!("deleted deployment {}", deployment.name),
+                ),
+                Err(e) => Log::error(
+                    "delete deployment",
+                    format!("failed to delete deployment\n{e:#?}"),
+                ),
+            };
+
+            update.logs.push(log);
+            update.end_ts = Some(monitor_timestamp());
+            update.status = UpdateStatus::Complete;
+            update.success = all_logs_success(&update.logs);
+
+            self.update_update(update).await?;
+
+            Ok(deployment)
         };
 
-        update.logs.push(log);
-        update.end_ts = Some(monitor_timestamp());
-        update.status = UpdateStatus::Complete;
-        update.success = all_logs_success(&update.logs);
+        self.action_states
+            .deployment
+            .update_entry(id.clone(), |entry| {
+                entry.deleting = true;
+            })
+            .await;
 
-        self.update_update(update).await?;
+        let res = inner().await;
 
-        Ok(deployment)
+        self.action_states
+            .deployment
+            .update_entry(id, |entry| {
+                entry.deleting = false;
+            })
+            .await;
+
+        res
     }
 }
 

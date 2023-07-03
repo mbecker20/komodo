@@ -1,6 +1,6 @@
 use crate::entities::{
-    build::Build, builder::Builder, deployment::Deployment, server::Server, PermissionLevel,
-    PermissionsMap,
+    build::Build, builder::Builder, deployment::Deployment, repo::Repo, server::Server,
+    PermissionLevel, PermissionsMap,
 };
 
 pub trait Permissioned {
@@ -30,6 +30,12 @@ impl Permissioned for Server {
 }
 
 impl Permissioned for Builder {
+    fn permissions_map(&self) -> &PermissionsMap {
+        &self.permissions
+    }
+}
+
+impl Permissioned for Repo {
     fn permissions_map(&self) -> &PermissionsMap {
         &self.permissions
     }

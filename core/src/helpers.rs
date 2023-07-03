@@ -7,6 +7,7 @@ use monitor_types::{
         build::Build,
         builder::Builder,
         deployment::{Deployment, DockerContainerState},
+        repo::Repo,
         server::{Server, ServerStatus},
         update::Update,
         user::User,
@@ -262,6 +263,45 @@ impl State {
     ) -> anyhow::Result<PermissionLevel> {
         let builder = self.get_builder(builder_id).await?;
         Ok(builder.get_user_permissions(user_id))
+    }
+
+    pub async fn get_repo(&self, repo_id: &str) -> anyhow::Result<Repo> {
+        self.db
+            .repos
+            .find_one_by_id(repo_id)
+            .await?
+            .context(format!("did not find any repo with id {repo_id}"))
+    }
+
+    pub async fn get_repo_check_permissions(
+        &self,
+        repo_id: &str,
+        user: &RequestUser,
+        permission_level: PermissionLevel,
+    ) -> anyhow::Result<Repo> {
+        let repo = self
+            .db
+            .repos
+            .find_one_by_id(repo_id)
+            .await?
+            .context(format!("did not find any repo with id {repo_id}"))?;
+        let permissions = repo.get_user_permissions(&user.id);
+        if user.is_admin || permissions >= permission_level {
+            Ok(repo)
+        } else {
+            Err(anyhow!(
+                "user does not have required permissions on this repo"
+            ))
+        }
+    }
+
+    pub async fn get_user_permission_on_repo(
+        &self,
+        user_id: &str,
+        repo_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let repo = self.get_repo(repo_id).await?;
+        Ok(repo.get_user_permissions(user_id))
     }
 
     pub async fn send_update(&self, update: Update) -> anyhow::Result<()> {

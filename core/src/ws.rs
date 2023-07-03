@@ -188,6 +188,10 @@ impl State {
                     .await?;
                 (permissions, "builder")
             }
+            ResourceTarget::Repo(repo_id) => {
+                let permissions = self.get_user_permission_on_repo(user_id, repo_id).await?;
+                (permissions, "repo")
+            }
             // UpdateTarget::Procedure(procedure_id) => {
             //     let permissions = db_client
             //         .get_user_permission_on_procedure(user_id, procedure_id)

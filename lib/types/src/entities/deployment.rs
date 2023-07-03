@@ -319,8 +319,7 @@ pub struct DeploymentActionState {
     pub stopping: bool,
     pub starting: bool,
     pub removing: bool,
-    pub pulling: bool,
-    pub recloning: bool,
     pub updating: bool,
     pub renaming: bool,
+    pub deleting: bool,
 }

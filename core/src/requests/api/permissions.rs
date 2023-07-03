@@ -5,6 +5,7 @@ use monitor_types::{
         build::Build,
         builder::Builder,
         deployment::Deployment,
+        repo::Repo,
         server::Server,
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation,
@@ -202,6 +203,28 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                 format!(
                     "user {} given {} permissions on server {}",
                     user.username, permission, server.name
+                )
+            }
+            ResourceTarget::Repo(id) => {
+                let repo = self
+                    .db
+                    .repos
+                    .find_one_by_id(id)
+                    .await
+                    .context("failed at find repo query")?
+                    .ok_or(anyhow!("failed to find a repo with id {id}"))?;
+                self.db
+                    .repos
+                    .update_one::<Repo>(
+                        id,
+                        mungos::Update::Set(doc! {
+                            format!("permissions.{}", user_id): permission.to_string()
+                        }),
+                    )
+                    .await?;
+                format!(
+                    "user {} given {} permissions on repo {}",
+                    user.username, permission, repo.name
                 )
             }
         };

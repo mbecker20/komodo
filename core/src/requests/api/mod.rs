@@ -18,6 +18,7 @@ use crate::{
 mod build;
 mod deployment;
 mod permissions;
+mod repo;
 mod secret;
 mod server;
 

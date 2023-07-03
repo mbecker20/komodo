@@ -1,13 +1,16 @@
 use bson::serde_helpers::hex_string_as_object_id;
 use derive_builder::Builder;
+use mungos::MungosIndexed;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+use crate::{i64_is_zero, I64};
+
 use super::{PermissionsMap, SystemCommand};
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed)]
 pub struct Repo {
     #[serde(
         default,
@@ -18,6 +21,7 @@ pub struct Repo {
     #[builder(setter(skip))]
     pub id: String,
 
+    #[unique_index]
     pub name: String,
 
     #[serde(default)]
@@ -28,22 +32,23 @@ pub struct Repo {
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
 
-    #[serde(default, skip_serializing_if = "String::is_empty")]
+    #[serde(default, skip_serializing_if = "i64_is_zero")]
     #[builder(setter(skip))]
-    pub created_at: String,
+    pub created_at: I64,
 
     #[serde(default)]
     #[builder(setter(skip))]
-    pub updated_at: String,
+    pub updated_at: I64,
 
     pub config: RepoConfig,
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
 pub struct RepoConfig {
+    #[index]
     pub server_id: String,
 
     pub repo: String,
@@ -82,7 +87,16 @@ impl From<PartialRepoConfig> for RepoConfig {
             github_account: value.github_account.unwrap_or_default(),
             on_clone: value.on_clone.unwrap_or_default(),
             on_pull: value.on_pull.unwrap_or_default(),
-            tags: value.tags.unwrap_or_default()
+            tags: value.tags.unwrap_or_default(),
         }
     }
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct RepoActionState {
+    pub cloning: bool,
+    pub pulling: bool,
+    pub updating: bool,
+    pub deleting: bool,
 }
