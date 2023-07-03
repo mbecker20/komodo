@@ -88,9 +88,7 @@ pub enum ApiRequest {
     UpdateBuild(UpdateBuild),
     // ACTIONS
     RunBuild(RunBuild),
-
     // ==== PERMISSIONS ====
-    
 }
 
 pub fn router() -> Router {

@@ -6,8 +6,10 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        deployment::{Deployment, PartialDeploymentConfig, TerminationSignal, DockerContainerStats},
-        update::{Update, Log},
+        deployment::{
+            Deployment, DockerContainerStats, PartialDeploymentConfig, TerminationSignal,
+        },
+        update::{Log, Update},
     },
     MongoDocument,
 };
