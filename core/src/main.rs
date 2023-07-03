@@ -8,6 +8,7 @@ mod auth;
 mod cloud;
 mod config;
 mod db;
+mod github_listener;
 mod helpers;
 mod monitoring;
 mod requests;
@@ -24,6 +25,7 @@ async fn app() -> anyhow::Result<()> {
     let app = Router::new()
         .nest("/auth", auth::router(&state))
         .nest("/api", requests::api::router())
+        .nest("/listener", github_listener::router())
         .nest("/ws", ws::router())
         .layer(Extension(state));
 

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use anyhow::{anyhow, Context};
 use monitor_types::{
@@ -15,6 +15,7 @@ use monitor_types::{
     permissioned::Permissioned,
 };
 use periphery_client::{requests, PeripheryClient};
+use rand::{thread_rng, Rng};
 use tokio::sync::RwLock;
 
 use crate::{auth::RequestUser, state::State};
@@ -362,4 +363,8 @@ pub fn empty_or_only_spaces(word: &str) -> bool {
         }
     }
     true
+}
+
+pub fn random_duration(min_ms: u64, max_ms: u64) -> Duration {
+    Duration::from_millis(thread_rng().gen_range(min_ms..max_ms))
 }

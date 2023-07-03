@@ -1826,6 +1826,7 @@ dependencies = [
  "dotenv",
  "envy",
  "futures",
+ "hex",
  "hmac",
  "jwt",
  "log",
