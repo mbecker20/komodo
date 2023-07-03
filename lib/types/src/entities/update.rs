@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{entities::Operation, I64};
+use crate::{entities::Operation, I64, monitor_timestamp};
 
 use super::Version;
 
@@ -33,7 +33,7 @@ pub struct Update {
 impl Update {
     pub fn finalize(&mut self) {
         self.success = all_logs_success(&self.logs);
-        self.end_ts = Some(unix_timestamp_ms() as i64);
+        self.end_ts = Some(monitor_timestamp());
         self.status = UpdateStatus::Complete;
     }
 }

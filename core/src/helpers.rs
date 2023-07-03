@@ -366,13 +366,13 @@ impl<T: Clone + Default> Cache<T> {
     //     }
     // }
 
-    pub async fn insert(&self, key: String, val: T) {
-        self.cache.write().await.insert(key, val);
+    pub async fn insert(&self, key: impl Into<String>, val: T) {
+        self.cache.write().await.insert(key.into(), val);
     }
 
-    pub async fn update_entry(&self, key: String, handler: impl Fn(&mut T)) {
+    pub async fn update_entry(&self, key: impl Into<String>, handler: impl Fn(&mut T)) {
         let mut cache = self.cache.write().await;
-        handler(cache.entry(key).or_default());
+        handler(cache.entry(key.into()).or_default());
     }
 
     // pub async fn clear(&self) {

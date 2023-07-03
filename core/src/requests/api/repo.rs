@@ -3,15 +3,17 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::{
         repo::Repo,
-        update::{Log, ResourceTarget, Update},
+        update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
     },
-    monitor_timestamp,
+    monitor_timestamp, optional_string,
     permissioned::Permissioned,
     requests::api::{
         CloneRepo, CopyRepo, CreateRepo, DeleteRepo, GetRepo, ListRepos, PullRepo, UpdateRepo,
     },
 };
+use mungos::mongodb::bson::{doc, to_bson};
+use periphery_client::requests;
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -201,9 +203,48 @@ impl Resolve<DeleteRepo, RequestUser> for State {
             .await?;
 
         let inner = || async move {
-            let start_ts = monitor_timestamp();
+            let mut update = Update {
+                operation: Operation::DeleteRepo,
+                target: ResourceTarget::Repo(repo.id.clone()),
+                start_ts: monitor_timestamp(),
+                status: UpdateStatus::InProgress,
+                operator: user.id.clone(),
+                success: true,
+                ..Default::default()
+            };
+            update.id = self.add_update(update.clone()).await?;
 
-            todo!()
+            let res = self.db.repos.delete_one(&repo.id).await.context("failed to delete repo from database");
+
+            let log = match res {
+                Ok(_) => Log::simple("delete repo", format!("deleted repo {}", repo.name)),
+                Err(e) => Log::error("delete repo", format!("failed to delete repo\n{e:#?}")),
+            };
+
+            update.logs.push(log);
+
+            if !repo.config.server_id.is_empty() {
+                let server = self.get_server(&repo.config.server_id).await;
+                if let Ok(server) = server {
+                    match self
+                        .periphery_client(&server)
+                        .request(requests::DeleteRepo {
+                            name: repo.name.clone(),
+                        })
+                        .await
+                    {
+                        Ok(log) => update.logs.push(log),
+                        Err(e) => update
+                            .logs
+                            .push(Log::error("delete repo on periphery", format!("{e:#?}"))),
+                    }
+                }
+            }
+
+            update.finalize();
+            self.update_update(update).await?;
+
+            Ok(repo)
         };
 
         if self.action_states.repo.busy(&id).await {
@@ -212,7 +253,7 @@ impl Resolve<DeleteRepo, RequestUser> for State {
 
         self.action_states
             .repo
-            .update_entry(repo.id.clone(), |entry| {
+            .update_entry(id.clone(), |entry| {
                 entry.deleting = true;
             })
             .await;
@@ -221,7 +262,7 @@ impl Resolve<DeleteRepo, RequestUser> for State {
 
         self.action_states
             .repo
-            .update_entry(repo.id, |entry| {
+            .update_entry(id, |entry| {
                 entry.deleting = false;
             })
             .await;
@@ -244,7 +285,77 @@ impl Resolve<UpdateRepo, RequestUser> for State {
         let inner = || async move {
             let start_ts = monitor_timestamp();
 
-            todo!()
+            if let Some(server_id) = &config.server_id {
+                if !server_id.is_empty() {
+                    self.get_server_check_permissions(
+                            server_id,
+                            &user,
+                            PermissionLevel::Update,
+                        )
+                        .await
+                        .context("cannot move repo to this server. user must have update permissions on the server.")?;
+                }
+            }
+
+            self.db
+                .repos
+                .update_one(
+                    &repo.id,
+                    mungos::Update::<()>::Set(doc! { "config": to_bson(&config)? }),
+                )
+                .await
+                .context("failed to update repo on database")?;
+
+            let update = Update {
+                operation: Operation::UpdateRepo,
+                target: ResourceTarget::Repo(repo.id.clone()),
+                start_ts,
+                end_ts: Some(monitor_timestamp()),
+                status: UpdateStatus::Complete,
+                logs: vec![Log::simple(
+                    "repo update",
+                    serde_json::to_string_pretty(&config).unwrap(),
+                )],
+                operator: user.id.clone(),
+                success: true,
+                ..Default::default()
+            };
+
+            self.add_update(update).await?;
+
+            if let Some(new_server_id) = config.server_id {
+                if new_server_id != repo.config.server_id {
+                    if !repo.config.server_id.is_empty() {
+                        // clean up old server
+                        let old_server = self.get_server(&repo.config.server_id).await?;
+                        let res = self
+                            .periphery_client(&old_server)
+                            .request(requests::DeleteRepo { name: repo.name })
+                            .await;
+                        if let Err(e) = res {
+                            warn!(
+                                "failed to delete repo ({}) off old server ({}) | {e:#?}",
+                                repo.id, old_server.id
+                            );
+                        }
+                    }
+                    if !new_server_id.is_empty() {
+                        // clone on new server
+                        let _ = self
+                            .resolve(
+                                CloneRepo {
+                                    id: repo.id.clone(),
+                                },
+                                user,
+                            )
+                            .await;
+                    }
+                }
+            }
+
+            let repo = self.get_repo(&repo.id).await?;
+
+            anyhow::Ok(repo)
         };
 
         if self.action_states.repo.busy(&id).await {
@@ -253,7 +364,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
 
         self.action_states
             .repo
-            .update_entry(repo.id.clone(), |entry| {
+            .update_entry(id.clone(), |entry| {
                 entry.updating = true;
             })
             .await;
@@ -262,7 +373,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
 
         self.action_states
             .repo
-            .update_entry(repo.id, |entry| {
+            .update_entry(id, |entry| {
                 entry.updating = false;
             })
             .await;
@@ -279,13 +390,46 @@ impl Resolve<CloneRepo, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Update> {
         let repo = self
-            .get_repo_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_repo_check_permissions(&id, &user, PermissionLevel::Execute)
             .await?;
 
         let inner = || async move {
             let start_ts = monitor_timestamp();
 
-            todo!()
+            if repo.config.server_id.is_empty() {
+                return Err(anyhow!("repo has no server attached"));
+            }
+
+            let server = self.get_server(&repo.config.server_id).await?;
+
+            let mut update = Update {
+                operation: Operation::CloneRepo,
+                target: ResourceTarget::Repo(repo.id.clone()),
+                start_ts,
+                status: UpdateStatus::InProgress,
+                operator: user.id.clone(),
+                success: true,
+                ..Default::default()
+            };
+
+            update.id = self.add_update(update.clone()).await?;
+
+            match self
+                .periphery_client(&server)
+                .request(requests::CloneRepo {
+                    args: (&repo).into(),
+                })
+                .await
+            {
+                Ok(logs) => update.logs.extend(logs),
+                Err(e) => update
+                    .logs
+                    .push(Log::error("clone repo", format!("{e:#?}"))),
+            };
+
+            update.finalize();
+            self.update_update(update.clone()).await?;
+            Ok(update)
         };
 
         if self.action_states.repo.busy(&id).await {
@@ -294,7 +438,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
 
         self.action_states
             .repo
-            .update_entry(repo.id.clone(), |entry| {
+            .update_entry(&id, |entry| {
                 entry.cloning = true;
             })
             .await;
@@ -303,7 +447,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
 
         self.action_states
             .repo
-            .update_entry(repo.id, |entry| {
+            .update_entry(id, |entry| {
                 entry.cloning = false;
             })
             .await;
@@ -326,7 +470,40 @@ impl Resolve<PullRepo, RequestUser> for State {
         let inner = || async move {
             let start_ts = monitor_timestamp();
 
-            todo!()
+            if repo.config.server_id.is_empty() {
+                return Err(anyhow!("repo has no server attached"));
+            }
+
+            let server = self.get_server(&repo.config.server_id).await?;
+
+            let mut update = Update {
+                operation: Operation::PullRepo,
+                target: ResourceTarget::Repo(repo.id.clone()),
+                start_ts,
+                status: UpdateStatus::InProgress,
+                operator: user.id.clone(),
+                success: true,
+                ..Default::default()
+            };
+
+            update.id = self.add_update(update.clone()).await?;
+
+            match self
+                .periphery_client(&server)
+                .request(requests::PullRepo {
+                    name: repo.name,
+                    branch: optional_string(&repo.config.branch),
+                    on_pull: repo.config.on_pull.into_option(),
+                })
+                .await
+            {
+                Ok(logs) => update.logs.extend(logs),
+                Err(e) => update.logs.push(Log::error("pull repo", format!("{e:#?}"))),
+            };
+
+            update.finalize();
+            self.update_update(update.clone()).await?;
+            Ok(update)
         };
 
         if self.action_states.repo.busy(&id).await {
@@ -335,7 +512,7 @@ impl Resolve<PullRepo, RequestUser> for State {
 
         self.action_states
             .repo
-            .update_entry(repo.id.clone(), |entry| {
+            .update_entry(id.clone(), |entry| {
                 entry.pulling = true;
             })
             .await;
@@ -344,7 +521,7 @@ impl Resolve<PullRepo, RequestUser> for State {
 
         self.action_states
             .repo
-            .update_entry(repo.id, |entry| {
+            .update_entry(id, |entry| {
                 entry.pulling = false;
             })
             .await;

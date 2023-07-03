@@ -30,11 +30,23 @@ pub struct SystemCommand {
 
 impl SystemCommand {
     pub fn command(&self) -> Option<String> {
-        if self.path.is_empty() || self.command.is_empty() {
+        if self.is_none() {
             None
         } else {
             Some(format!("cd {} && {}", self.path, self.command))
         }
+    }
+
+    pub fn into_option(self) -> Option<SystemCommand> {
+        if self.is_none() {
+            None
+        } else {
+            Some(self)
+        }
+    }
+
+    pub fn is_none(&self) -> bool {
+        self.path.is_empty() || self.command.is_empty()
     }
 }
 
@@ -105,9 +117,22 @@ impl From<&self::build::Build> for CloneArgs {
             name: build.name.clone(),
             repo: optional_string(&build.config.repo),
             branch: optional_string(&build.config.branch),
-            on_clone: build.config.pre_build.clone().into(),
+            on_clone: build.config.pre_build.clone().into_option(),
             on_pull: None,
             github_account: optional_string(&build.config.github_account),
+        }
+    }
+}
+
+impl From<&self::repo::Repo> for CloneArgs {
+    fn from(repo: &self::repo::Repo) -> CloneArgs {
+        CloneArgs {
+            name: repo.name.clone(),
+            repo: optional_string(&repo.config.repo),
+            branch: optional_string(&repo.config.branch),
+            on_clone: repo.config.on_clone.clone().into_option(),
+            on_pull: repo.config.on_pull.clone().into_option(),
+            github_account: optional_string(&repo.config.github_account),
         }
     }
 }
@@ -265,8 +290,6 @@ pub enum Operation {
     StopContainer,
     StartContainer,
     RemoveContainer,
-    PullDeployment,
-    RecloneDeployment,
     RenameDeployment,
 
     // repo

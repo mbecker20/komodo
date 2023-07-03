@@ -248,7 +248,7 @@ impl Resolve<DeleteBuild, RequestUser> for State {
             .builds
             .delete_one(&id)
             .await
-            .context("failed to delete build from mongo");
+            .context("failed to delete build from database");
 
         let log = match res {
             Ok(_) => Log::simple("delete build", format!("deleted build {}", build.name)),
@@ -256,10 +256,7 @@ impl Resolve<DeleteBuild, RequestUser> for State {
         };
 
         update.logs.push(log);
-        update.end_ts = Some(monitor_timestamp());
-        update.status = UpdateStatus::Complete;
-        update.success = all_logs_success(&update.logs);
-
+        update.finalize();
         self.update_update(update).await?;
 
         Ok(build)
@@ -323,7 +320,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
                     mungos::Update::<()>::Set(doc! { "config": to_bson(&config)? }),
                 )
                 .await
-                .context("failed to update server on mongo")?;
+                .context("failed to update build on database")?;
 
             let update = Update {
                 operation: Operation::UpdateBuild,
@@ -337,6 +334,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
                 )],
                 operator: user.id.clone(),
                 success: true,
+                version: config.version.unwrap_or_default(),
                 ..Default::default()
             };
 
