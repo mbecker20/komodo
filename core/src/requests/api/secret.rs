@@ -6,7 +6,7 @@ use monitor_types::{
     requests::api::{CreateLoginSecret, CreateLoginSecretResponse, DeleteLoginSecret},
 };
 use mungos::{
-    mongodb::bson::{doc, to_bson, Document},
+    mongodb::bson::{doc, to_bson},
     Update,
 };
 use resolver_api::Resolve;
@@ -42,7 +42,7 @@ impl Resolve<CreateLoginSecret, RequestUser> for State {
         };
         self.db
             .users
-            .update_one::<Document>(
+            .update_one(
                 &user.id,
                 Update::Custom(doc! {
                     "$push": {
@@ -65,7 +65,7 @@ impl Resolve<DeleteLoginSecret, RequestUser> for State {
     ) -> anyhow::Result<()> {
         self.db
             .users
-            .update_one::<Document>(
+            .update_one(
                 &user.id,
                 Update::Custom(doc! {
                     "$pull": {

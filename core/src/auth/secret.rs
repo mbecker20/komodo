@@ -2,10 +2,7 @@ use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::async_trait;
 use monitor_types::requests::auth::{LoginWithSecret, LoginWithSecretResponse};
-use mungos::{
-    mongodb::bson::{doc, Document},
-    Update,
-};
+use mungos::{mongodb::bson::doc, Update};
 use resolver_api::Resolve;
 
 use crate::state::State;
@@ -30,7 +27,7 @@ impl Resolve<LoginWithSecret> for State {
                 if expires < ts {
                     self.db
                         .users
-                        .update_one::<Document>(
+                        .update_one(
                             &user.id,
                             Update::Custom(doc! { "$pull": { "secrets": { "name": s.name } } }),
                         )

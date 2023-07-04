@@ -126,49 +126,70 @@ impl Resolve<CreateServer, RequestUser> for State {
 
 #[async_trait]
 impl Resolve<DeleteServer, RequestUser> for State {
-    async fn resolve(&self, req: DeleteServer, user: RequestUser) -> anyhow::Result<Server> {
-        if self.action_states.server.busy(&req.id).await {
+    async fn resolve(
+        &self,
+        DeleteServer { id }: DeleteServer,
+        user: RequestUser,
+    ) -> anyhow::Result<Server> {
+        if self.action_states.server.busy(&id).await {
             return Err(anyhow!("server busy"));
         }
 
         let server = self
-            .get_server_check_permissions(&req.id, &user, PermissionLevel::Update)
+            .get_server_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let start_ts = monitor_timestamp();
 
+        self.db
+            .builds
+            .update_many(
+                doc! { "config.builder.params.server_id": &id },
+                doc! { "$set": { "config.builder.params.server_id": "" } },
+            )
+            .await
+            .context("failed to detach server from builds")?;
+
+        self.db
+            .deployments
+            .update_many(
+                doc! { "config.server_id": &id },
+                doc! { "$set": { "config.server_id": "" } },
+            )
+            .await
+            .context("failed to detach server from deployments")?;
+
+        self.db
+            .repos
+            .update_many(
+                doc! { "config.server_id": &id },
+                doc! { "$set": { "config.server_id": "" } },
+            )
+            .await
+            .context("failed to detach server from repos")?;
+
+        self.db
+            .servers
+            .delete_one(&id)
+            .await
+            .context("failed to delete server from mongo")?;
+
         let mut update = Update {
-            target: ResourceTarget::Server(req.id.clone()),
+            target: ResourceTarget::Server(id.clone()),
             operation: Operation::DeleteServer,
             start_ts,
             operator: user.id.clone(),
-            success: true,
-            status: UpdateStatus::InProgress,
+            logs: vec![Log::simple(
+                "delete server",
+                format!("deleted server {}", server.name),
+            )],
             ..Default::default()
         };
 
-        update.id = self.add_update(update.clone()).await?;
+        update.finalize();
+        self.add_update(update).await?;
 
-        let res = self
-            .db
-            .servers
-            .delete_one(&req.id)
-            .await
-            .context("failed to delete server from mongo");
-
-        let log = match res {
-            Ok(_) => Log::simple("delete server", format!("deleted server {}", server.name)),
-            Err(e) => Log::error("delete server", format!("failed to delete server\n{e:#?}")),
-        };
-
-        update.end_ts = Some(monitor_timestamp());
-        update.status = UpdateStatus::Complete;
-        update.success = log.success;
-        update.logs.push(log);
-
-        self.update_update(update).await?;
-
-        self.server_status_cache.remove(&req.id).await;
+        self.server_status_cache.remove(&id).await;
 
         Ok(server)
     }
@@ -191,7 +212,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
             .servers
             .update_one(
                 &id,
-                mungos::Update::<()>::Set(doc! { "config": to_bson(&config)? }),
+                mungos::Update::Set(doc! { "config": to_bson(&config)? }),
             )
             .await
             .context("failed to update server on mongo")?;
@@ -235,9 +256,7 @@ impl Resolve<RenameServer, RequestUser> for State {
             .updates
             .update_one(
                 &id,
-                mungos::Update::<Server>::Set(
-                    doc! { "name": &name, "updated_at": monitor_timestamp() },
-                ),
+                mungos::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }),
             )
             .await?;
         let mut update = Update {

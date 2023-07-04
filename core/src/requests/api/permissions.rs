@@ -2,11 +2,6 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        build::Build,
-        builder::Builder,
-        deployment::Deployment,
-        repo::Repo,
-        server::Server,
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation,
     },
@@ -58,7 +53,7 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
         }
         self.db
             .users
-            .update_one::<Document>(&user_id, mungos::Update::Set(update_doc))
+            .update_one(&user_id, mungos::Update::Set(update_doc))
             .await?;
         let end_ts = monitor_timestamp();
         let mut update = Update {
@@ -127,7 +122,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .ok_or(anyhow!("failed to find a build with id {id}"))?;
                 self.db
                     .builds
-                    .update_one::<Build>(
+                    .update_one(
                         id,
                         mungos::Update::Set(doc! {
                             format!("permissions.{}", user_id): permission.to_string()
@@ -149,7 +144,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .ok_or(anyhow!("failed to find a builder with id {id}"))?;
                 self.db
                     .builders
-                    .update_one::<Builder>(
+                    .update_one(
                         id,
                         mungos::Update::Set(doc! {
                             format!("permissions.{}", user_id): permission.to_string()
@@ -171,7 +166,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .ok_or(anyhow!("failed to find a deployment with id {id}"))?;
                 self.db
                     .deployments
-                    .update_one::<Deployment>(
+                    .update_one(
                         id,
                         mungos::Update::Set(doc! {
                             format!("permissions.{}", user_id): permission.to_string()
@@ -193,7 +188,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .ok_or(anyhow!("failed to find a server with id {id}"))?;
                 self.db
                     .servers
-                    .update_one::<Server>(
+                    .update_one(
                         id,
                         mungos::Update::Set(doc! {
                             format!("permissions.{}", user_id): permission.to_string()
@@ -215,7 +210,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .ok_or(anyhow!("failed to find a repo with id {id}"))?;
                 self.db
                     .repos
-                    .update_one::<Repo>(
+                    .update_one(
                         id,
                         mungos::Update::Set(doc! {
                             format!("permissions.{}", user_id): permission.to_string()

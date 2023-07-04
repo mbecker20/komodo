@@ -317,7 +317,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
                 .builds
                 .update_one(
                     &id,
-                    mungos::Update::<()>::Set(doc! { "config": to_bson(&config)? }),
+                    mungos::Update::Set(doc! { "config": to_bson(&config)? }),
                 )
                 .await
                 .context("failed to update build on database")?;
@@ -447,7 +447,7 @@ impl Resolve<RunBuild, RequestUser> for State {
                 let _ = self
                     .db
                     .builds
-                    .update_one::<Build>(
+                    .update_one(
                         &build.id,
                         mungos::Update::Set(doc! {
                             "version": to_bson(&build.config.version)

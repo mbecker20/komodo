@@ -487,7 +487,7 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
                 .deployments
                 .update_one(
                     &id,
-                    mungos::Update::<()>::Set(doc! { "config": to_bson(&config)? }),
+                    mungos::Update::Set(doc! { "config": to_bson(&config)? }),
                 )
                 .await
                 .context("failed to update server on mongo")?;
@@ -583,7 +583,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
                 .deployments
                 .update_one(
                     &deployment.id,
-                    mungos::Update::<()>::Set(
+                    mungos::Update::Set(
                         doc! { "name": &name, "updated_at": monitor_timestamp() },
                     ),
                 )

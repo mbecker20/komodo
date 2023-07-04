@@ -16,6 +16,7 @@ use crate::{
 };
 
 mod build;
+mod builder;
 mod deployment;
 mod permissions;
 mod repo;
@@ -32,6 +33,10 @@ pub enum ApiRequest {
     // ==== SECRET ====
     CreateLoginSecret(CreateLoginSecret),
     DeleteLoginSecret(DeleteLoginSecret),
+
+    // ==== PERMISSIONS ====
+    UpdateUserPerimissions(UpdateUserPermissions),
+    UpdateUserPermissionsOnTarget(UpdateUserPermissionsOnTarget),
 
     // ==== SERVER ====
     GetPeripheryVersion(GetPeripheryVersion),
@@ -89,7 +94,17 @@ pub enum ApiRequest {
     UpdateBuild(UpdateBuild),
     // ACTIONS
     RunBuild(RunBuild),
-    // ==== PERMISSIONS ====
+
+    // ==== REPO ====
+    GetRepo(GetRepo),
+    ListRepos(ListRepos),
+    // CRUD
+    CreateRepo(CreateRepo),
+    UpdateRepo(UpdateRepo),
+    DeleteRepo(DeleteRepo),
+    // ACTIONS
+    CloneRepo(CloneRepo),
+    PullRepo(PullRepo),
 }
 
 pub fn router() -> Router {
