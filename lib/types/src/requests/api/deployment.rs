@@ -7,7 +7,7 @@ use typeshare::typeshare;
 use crate::{
     entities::{
         deployment::{
-            Deployment, DockerContainerStats, PartialDeploymentConfig, TerminationSignal,
+            Deployment, DockerContainerStats, PartialDeploymentConfig, TerminationSignal, DeploymentActionState,
         },
         update::{Log, Update},
     },
@@ -66,6 +66,15 @@ pub struct GetDeployedVersionResponse {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(DockerContainerStats)]
 pub struct GetDeploymentStats {
+    pub id: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(DeploymentActionState)]
+pub struct GetDeploymentActionState {
     pub id: String,
 }
 

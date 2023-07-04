@@ -1,6 +1,5 @@
 [workspace]
-members = ["core", "periphery", "tests", "lib/*"]
-exclude = ["lib/ts_client"]
+members = ["core", "periphery", "tests", "client/rs", "lib/*"]
 
 [workspace.package]
 version = "1.0.0"
@@ -12,7 +11,7 @@ license = "GPL-3.0-or-later"
 # local
 monitor_macros = { path = "lib/macros" }
 monitor_types = { path = "lib/types" }
-monitor_client = { path = "lib/rs_client" }
+monitor_client = { path = "client/rs" }
 periphery_client = { path = "lib/periphery_client" }
 monitor_periphery = { path = "periphery" }
 # external

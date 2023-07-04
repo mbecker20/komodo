@@ -95,6 +95,14 @@ pub enum ApiRequest {
     // ACTIONS
     RunBuild(RunBuild),
 
+    // ==== BUILDER ====
+    GetBuilder(GetBuilder),
+    ListBuilders(ListBuilders),
+    // CRUD
+    CreateBuilder(CreateBuilder),
+    DeleteBuilder(DeleteBuilder),
+    UpdateBuilder(UpdateBuilder),
+
     // ==== REPO ====
     GetRepo(GetRepo),
     ListRepos(ListRepos),

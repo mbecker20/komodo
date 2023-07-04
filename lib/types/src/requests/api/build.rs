@@ -4,7 +4,7 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        build::{Build, PartialBuildConfig},
+        build::{Build, PartialBuildConfig, BuildActionState},
         update::Update,
     },
     MongoDocument,
@@ -24,6 +24,15 @@ pub struct GetBuild {
 #[response(Vec<Build>)]
 pub struct ListBuilds {
     pub query: Option<MongoDocument>,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(BuildActionState)]
+pub struct GetBuildActionState {
+    pub id: String,
 }
 
 //

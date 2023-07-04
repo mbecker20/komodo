@@ -4,7 +4,7 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        repo::{PartialRepoConfig, Repo},
+        repo::{PartialRepoConfig, Repo, RepoActionState},
         update::Update,
     },
     MongoDocument,
@@ -26,6 +26,15 @@ pub struct GetRepo {
 #[response(Vec<Repo>)]
 pub struct ListRepos {
     pub query: Option<MongoDocument>,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(RepoActionState)]
+pub struct GetRepoActionState {
+    pub id: String,
 }
 
 //
