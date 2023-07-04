@@ -4,24 +4,6 @@ use typeshare::typeshare;
 
 use crate::I64;
 
-mod server;
-pub use server::*;
-
-mod deployment;
-pub use deployment::*;
-
-mod build;
-pub use build::*;
-
-mod builder;
-pub use builder::*;
-
-mod permissions;
-pub use permissions::*;
-
-mod repo;
-pub use repo::*;
-
 //
 
 #[typeshare]
@@ -45,15 +27,4 @@ pub struct CreateLoginSecretResponse {
 #[response(())]
 pub struct DeleteLoginSecret {
     pub name: String,
-}
-
-//
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetVersionResponse)]
-pub struct GetVersion {}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetVersionResponse {
-    pub version: String,
 }

@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context};
 use axum::{extract::Path, http::HeaderMap, routing::post, Router};
 use hex::ToHex;
 use hmac::{Hmac, Mac};
-use monitor_types::requests::api;
+use monitor_types::requests::execute;
 use resolver_api::Resolve;
 use serde::Deserialize;
 use sha2::Sha256;
@@ -77,7 +77,7 @@ impl State {
             return Err(anyhow!("request branch does not match expected"));
         }
         self.resolve(
-            api::RunBuild { build_id },
+            execute::RunBuild { build_id },
             InnerRequestUser {
                 id: String::from("github"),
                 is_admin: true,
@@ -103,7 +103,7 @@ impl State {
             return Err(anyhow!("request branch does not match expected"));
         }
         self.resolve(
-            api::CloneRepo { id: repo_id },
+            execute::CloneRepo { id: repo_id },
             InnerRequestUser {
                 id: String::from("github"),
                 is_admin: true,
@@ -129,7 +129,7 @@ impl State {
             return Err(anyhow!("request branch does not match expected"));
         }
         self.resolve(
-            api::PullRepo { id: repo_id },
+            execute::PullRepo { id: repo_id },
             InnerRequestUser {
                 id: String::from("github"),
                 is_admin: true,

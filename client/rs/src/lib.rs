@@ -120,10 +120,10 @@ impl MonitorClient {
         }
     }
 
-    pub async fn api<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+    pub async fn auth<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
         let req_type = T::req_type();
         self.post(
-            "/api",
+            "/auth",
             json!({
                 "type": req_type,
                 "params": request
@@ -132,10 +132,34 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn auth<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+    pub async fn read<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
         let req_type = T::req_type();
         self.post(
-            "/auth",
+            "/read",
+            json!({
+                "type": req_type,
+                "params": request
+            }),
+        )
+        .await
+    }
+
+    pub async fn write<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+        let req_type = T::req_type();
+        self.post(
+            "/write",
+            json!({
+                "type": req_type,
+                "params": request
+            }),
+        )
+        .await
+    }
+
+    pub async fn execute<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+        let req_type = T::req_type();
+        self.post(
+            "/execute",
             json!({
                 "type": req_type,
                 "params": request

@@ -1,5 +1,5 @@
 use monitor_client::MonitorClient;
-use monitor_types::requests::api;
+use monitor_types::requests::write;
 
 #[allow(unused)]
 pub async fn tests() -> anyhow::Result<()> {
@@ -7,7 +7,7 @@ pub async fn tests() -> anyhow::Result<()> {
     let monitor = MonitorClient::new_from_env().await?;
 
     let secret = monitor
-        .api(api::CreateLoginSecret {
+        .write(write::CreateLoginSecret {
             name: String::from("tests"),
             expires: None,
         })

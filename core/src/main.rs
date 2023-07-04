@@ -26,7 +26,9 @@ async fn app() -> anyhow::Result<()> {
 
     let app = Router::new()
         .nest("/auth", auth::router(&state))
-        .nest("/api", requests::api::router())
+        .nest("/read", requests::read::router())
+        .nest("/write", requests::write::router())
+        .nest("/execute", requests::execute::router())
         .nest("/listener", listener::router())
         .nest("/ws", ws::router())
         .layer(Extension(state));

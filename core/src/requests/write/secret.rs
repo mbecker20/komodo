@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::user::ApiSecret,
     monitor_timestamp,
-    requests::api::{CreateLoginSecret, CreateLoginSecretResponse, DeleteLoginSecret},
+    requests::write::*,
 };
 use mungos::{
     mongodb::bson::{doc, to_bson},

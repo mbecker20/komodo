@@ -12,9 +12,8 @@ use crate::{
                 AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage,
                 SystemComponent, SystemInformation, SystemProcess,
             },
-            PartialServerConfig, Server, ServerActionState,
+            Server, ServerActionState,
         },
-        update::Update,
     },
     MongoDocument,
 };
@@ -27,6 +26,8 @@ use crate::{
 pub struct GetServer {
     pub id: String,
 }
+
+//
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
@@ -42,45 +43,6 @@ pub struct ListServers {
 #[response(ServerActionState)]
 pub struct GetServerActionState {
     pub id: String,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Server)]
-pub struct CreateServer {
-    pub name: String,
-    pub config: PartialServerConfig,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Server)]
-pub struct DeleteServer {
-    pub id: String,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Server)]
-pub struct UpdateServer {
-    pub id: String,
-    pub config: PartialServerConfig,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Update)]
-pub struct RenameServer {
-    pub id: String,
-    pub name: String,
 }
 
 //
@@ -183,15 +145,6 @@ pub struct GetDockerNetworks {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Update)]
-pub struct PruneDockerNetworks {
-    pub server_id: String,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<ImageSummary>)]
 pub struct GetDockerImages {
     pub server_id: String,
@@ -201,25 +154,7 @@ pub struct GetDockerImages {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Update)]
-pub struct PruneDockerImages {
-    pub server_id: String,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<BasicContainerInfo>)]
 pub struct GetDockerContainers {
-    pub server_id: String,
-}
-
-//
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Update)]
-pub struct PruneDockerContainers {
     pub server_id: String,
 }

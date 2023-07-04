@@ -2,68 +2,18 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        repo::{Repo, RepoActionState},
+        repo::Repo,
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
     },
-    monitor_timestamp, optional_string,
-    permissioned::Permissioned,
-    requests::api::*,
+    monitor_timestamp,
+    requests::{execute, write::*},
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
-
-#[async_trait]
-impl Resolve<GetRepo, RequestUser> for State {
-    async fn resolve(&self, GetRepo { id }: GetRepo, user: RequestUser) -> anyhow::Result<Repo> {
-        self.get_repo_check_permissions(&id, &user, PermissionLevel::Read)
-            .await
-    }
-}
-
-#[async_trait]
-impl Resolve<ListRepos, RequestUser> for State {
-    async fn resolve(
-        &self,
-        ListRepos { query }: ListRepos,
-        user: RequestUser,
-    ) -> anyhow::Result<Vec<Repo>> {
-        let repos = self
-            .db
-            .repos
-            .get_some(query, None)
-            .await
-            .context("failed to pull repos from mongo")?;
-
-        let repos = if user.is_admin {
-            repos
-        } else {
-            repos
-                .into_iter()
-                .filter(|repo| repo.get_user_permissions(&user.id) > PermissionLevel::None)
-                .collect()
-        };
-
-        Ok(repos)
-    }
-}
-
-#[async_trait]
-impl Resolve<GetRepoActionState, RequestUser> for State {
-    async fn resolve(
-        &self,
-        GetRepoActionState { id }: GetRepoActionState,
-        user: RequestUser,
-    ) -> anyhow::Result<RepoActionState> {
-        self.get_repo_check_permissions(&id, &user, PermissionLevel::Read)
-            .await?;
-        let action_state = self.action_states.repo.get(&id).await.unwrap_or_default();
-        Ok(action_state)
-    }
-}
 
 #[async_trait]
 impl Resolve<CreateRepo, RequestUser> for State {
@@ -126,7 +76,7 @@ impl Resolve<CreateRepo, RequestUser> for State {
         if !repo.config.repo.is_empty() && !repo.config.server_id.is_empty() {
             let _ = self
                 .resolve(
-                    CloneRepo {
+                    execute::CloneRepo {
                         id: repo.id.clone(),
                     },
                     user,
@@ -360,7 +310,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
                         // clone on new server
                         let _ = self
                             .resolve(
-                                CloneRepo {
+                                execute::CloneRepo {
                                     id: repo.id.clone(),
                                 },
                                 user,
@@ -392,154 +342,6 @@ impl Resolve<UpdateRepo, RequestUser> for State {
             .repo
             .update_entry(id, |entry| {
                 entry.updating = false;
-            })
-            .await;
-
-        res
-    }
-}
-
-#[async_trait]
-impl Resolve<CloneRepo, RequestUser> for State {
-    async fn resolve(
-        &self,
-        CloneRepo { id }: CloneRepo,
-        user: RequestUser,
-    ) -> anyhow::Result<Update> {
-        let repo = self
-            .get_repo_check_permissions(&id, &user, PermissionLevel::Execute)
-            .await?;
-
-        let inner = || async move {
-            let start_ts = monitor_timestamp();
-
-            if repo.config.server_id.is_empty() {
-                return Err(anyhow!("repo has no server attached"));
-            }
-
-            let server = self.get_server(&repo.config.server_id).await?;
-
-            let mut update = Update {
-                operation: Operation::CloneRepo,
-                target: ResourceTarget::Repo(repo.id.clone()),
-                start_ts,
-                status: UpdateStatus::InProgress,
-                operator: user.id.clone(),
-                success: true,
-                ..Default::default()
-            };
-
-            update.id = self.add_update(update.clone()).await?;
-
-            match self
-                .periphery_client(&server)
-                .request(requests::CloneRepo {
-                    args: (&repo).into(),
-                })
-                .await
-            {
-                Ok(logs) => update.logs.extend(logs),
-                Err(e) => update
-                    .logs
-                    .push(Log::error("clone repo", format!("{e:#?}"))),
-            };
-
-            update.finalize();
-            self.update_update(update.clone()).await?;
-            Ok(update)
-        };
-
-        if self.action_states.repo.busy(&id).await {
-            return Err(anyhow!("repo busy"));
-        }
-
-        self.action_states
-            .repo
-            .update_entry(&id, |entry| {
-                entry.cloning = true;
-            })
-            .await;
-
-        let res = inner().await;
-
-        self.action_states
-            .repo
-            .update_entry(id, |entry| {
-                entry.cloning = false;
-            })
-            .await;
-
-        res
-    }
-}
-
-#[async_trait]
-impl Resolve<PullRepo, RequestUser> for State {
-    async fn resolve(
-        &self,
-        PullRepo { id }: PullRepo,
-        user: RequestUser,
-    ) -> anyhow::Result<Update> {
-        let repo = self
-            .get_repo_check_permissions(&id, &user, PermissionLevel::Update)
-            .await?;
-
-        let inner = || async move {
-            let start_ts = monitor_timestamp();
-
-            if repo.config.server_id.is_empty() {
-                return Err(anyhow!("repo has no server attached"));
-            }
-
-            let server = self.get_server(&repo.config.server_id).await?;
-
-            let mut update = Update {
-                operation: Operation::PullRepo,
-                target: ResourceTarget::Repo(repo.id.clone()),
-                start_ts,
-                status: UpdateStatus::InProgress,
-                operator: user.id.clone(),
-                success: true,
-                ..Default::default()
-            };
-
-            update.id = self.add_update(update.clone()).await?;
-
-            match self
-                .periphery_client(&server)
-                .request(requests::PullRepo {
-                    name: repo.name,
-                    branch: optional_string(&repo.config.branch),
-                    on_pull: repo.config.on_pull.into_option(),
-                })
-                .await
-            {
-                Ok(logs) => update.logs.extend(logs),
-                Err(e) => update.logs.push(Log::error("pull repo", format!("{e:#?}"))),
-            };
-
-            update.finalize();
-            self.update_update(update.clone()).await?;
-            Ok(update)
-        };
-
-        if self.action_states.repo.busy(&id).await {
-            return Err(anyhow!("repo busy"));
-        }
-
-        self.action_states
-            .repo
-            .update_entry(id.clone(), |entry| {
-                entry.pulling = true;
-            })
-            .await;
-
-        let res = inner().await;
-
-        self.action_states
-            .repo
-            .update_entry(id, |entry| {
-                entry.pulling = false;
             })
             .await;
 

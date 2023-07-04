@@ -6,7 +6,7 @@ use monitor_types::{
         Operation,
     },
     monitor_timestamp,
-    requests::api::{UpdateUserPermissions, UpdateUserPermissionsOnTarget},
+    requests::write::{UpdateUserPermissions, UpdateUserPermissionsOnTarget},
 };
 use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
