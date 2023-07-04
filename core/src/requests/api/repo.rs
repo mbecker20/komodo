@@ -2,15 +2,13 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        repo::Repo,
+        repo::{Repo, RepoActionState},
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
     },
     monitor_timestamp, optional_string,
     permissioned::Permissioned,
-    requests::api::{
-        CloneRepo, CopyRepo, CreateRepo, DeleteRepo, GetRepo, ListRepos, PullRepo, UpdateRepo,
-    },
+    requests::api::*,
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
@@ -50,6 +48,20 @@ impl Resolve<ListRepos, RequestUser> for State {
         };
 
         Ok(repos)
+    }
+}
+
+#[async_trait]
+impl Resolve<GetRepoActionState, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetRepoActionState { id }: GetRepoActionState,
+        user: RequestUser,
+    ) -> anyhow::Result<RepoActionState> {
+        self.get_repo_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let action_state = self.action_states.repo.get(&id).await.unwrap_or_default();
+        Ok(action_state)
     }
 }
 

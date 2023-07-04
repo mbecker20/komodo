@@ -6,8 +6,8 @@ use monitor_types::{
     all_logs_success,
     entities::{
         deployment::{
-            Deployment, DeploymentConfig, DeploymentImage, DockerContainerState,
-            DockerContainerStats,
+            Deployment, DeploymentActionState, DeploymentConfig, DeploymentImage,
+            DockerContainerState, DockerContainerStats,
         },
         server::ServerStatus,
         update::{Log, ResourceTarget, Update, UpdateStatus},
@@ -178,6 +178,25 @@ impl Resolve<GetDeploymentStats, RequestUser> for State {
             .request(requests::GetContainerStats { name })
             .await
             .context("failed to get stats from periphery")
+    }
+}
+
+#[async_trait]
+impl Resolve<GetDeploymentActionState, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetDeploymentActionState { id }: GetDeploymentActionState,
+        user: RequestUser,
+    ) -> anyhow::Result<DeploymentActionState> {
+        self.get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let action_state = self
+            .action_states
+            .deployment
+            .get(&id)
+            .await
+            .unwrap_or_default();
+        Ok(action_state)
     }
 }
 

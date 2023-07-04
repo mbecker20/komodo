@@ -6,7 +6,7 @@ use futures::future::join_all;
 use monitor_types::{
     all_logs_success,
     entities::{
-        build::{Build, BuildBuilderConfig},
+        build::{Build, BuildActionState, BuildBuilderConfig},
         builder::{AwsBuilder, BuilderConfig},
         deployment::DockerContainerState,
         update::{Log, ResourceTarget, Update, UpdateStatus},
@@ -62,6 +62,20 @@ impl Resolve<ListBuilds, RequestUser> for State {
         };
 
         Ok(builds)
+    }
+}
+
+#[async_trait]
+impl Resolve<GetBuildActionState, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetBuildActionState { id }: GetBuildActionState,
+        user: RequestUser,
+    ) -> anyhow::Result<BuildActionState> {
+        self.get_build_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let action_state = self.action_states.build.get(&id).await.unwrap_or_default();
+        Ok(action_state)
     }
 }
 

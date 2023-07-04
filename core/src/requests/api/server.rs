@@ -5,7 +5,7 @@ use monitor_types::{
         deployment::BasicContainerInfo,
         server::{
             docker_image::ImageSummary, docker_network::DockerNetwork, stats::SystemInformation,
-            Server,
+            Server, ServerActionState,
         },
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
@@ -71,6 +71,20 @@ impl Resolve<ListServers, RequestUser> for State {
         };
 
         Ok(servers)
+    }
+}
+
+#[async_trait]
+impl Resolve<GetServerActionState, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetServerActionState { id }: GetServerActionState,
+        user: RequestUser,
+    ) -> anyhow::Result<ServerActionState> {
+        self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let action_state = self.action_states.server.get(&id).await.unwrap_or_default();
+        Ok(action_state)
     }
 }
 
