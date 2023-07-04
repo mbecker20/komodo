@@ -4,7 +4,7 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        build::{Build, PartialBuildConfig, BuildActionState},
+        build::{Build, BuildActionState, PartialBuildConfig},
         update::Update,
     },
     MongoDocument,

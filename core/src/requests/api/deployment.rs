@@ -583,9 +583,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
                 .deployments
                 .update_one(
                     &deployment.id,
-                    mungos::Update::Set(
-                        doc! { "name": &name, "updated_at": monitor_timestamp() },
-                    ),
+                    mungos::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }),
                 )
                 .await
                 .context("failed to update deployment name on mongo")?;

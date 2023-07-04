@@ -76,13 +76,16 @@ impl BuilderConfig {
                         volume_gb: partial.volume_gb.unwrap_or(config.volume_gb),
                         ami_id: partial.ami_id.unwrap_or(config.ami_id),
                         subnet_id: partial.subnet_id.unwrap_or(config.subnet_id),
-                        security_group_ids: partial.security_group_ids.unwrap_or(config.security_group_ids),
+                        security_group_ids: partial
+                            .security_group_ids
+                            .unwrap_or(config.security_group_ids),
                         key_pair_name: partial.key_pair_name.unwrap_or(config.key_pair_name),
-                        assign_public_ip: partial.assign_public_ip.unwrap_or(config.assign_public_ip),
+                        assign_public_ip: partial
+                            .assign_public_ip
+                            .unwrap_or(config.assign_public_ip),
                     };
                     BuilderConfig::AwsBuilder(config)
-                }
-                // _ => BuilderConfig::AwsBuilder(partial.into()),
+                } // _ => BuilderConfig::AwsBuilder(partial.into()),
             },
         }
     }

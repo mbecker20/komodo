@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{entities::Operation, I64, monitor_timestamp};
+use crate::{entities::Operation, monitor_timestamp, I64};
 
 use super::Version;
 

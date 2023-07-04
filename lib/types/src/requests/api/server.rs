@@ -12,7 +12,7 @@ use crate::{
                 AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage,
                 SystemComponent, SystemInformation, SystemProcess,
             },
-            PartialServerConfig, Server,
+            PartialServerConfig, Server, ServerActionState,
         },
         update::Update,
     },
@@ -33,6 +33,15 @@ pub struct GetServer {
 #[response(Vec<Server>)]
 pub struct ListServers {
     pub query: Option<MongoDocument>,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(ServerActionState)]
+pub struct GetServerActionState {
+    pub id: String,
 }
 
 //

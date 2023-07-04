@@ -8,14 +8,16 @@ mod auth;
 mod cloud;
 mod config;
 mod db;
-mod github_listener;
 mod helpers;
+mod listener;
 mod monitoring;
 mod requests;
 mod state;
 mod ws;
 
 async fn app() -> anyhow::Result<()> {
+    debug!("loading state");
+
     let state = state::State::load().await?;
 
     info!("version: v{}", env!("CARGO_PKG_VERSION"));
@@ -25,7 +27,7 @@ async fn app() -> anyhow::Result<()> {
     let app = Router::new()
         .nest("/auth", auth::router(&state))
         .nest("/api", requests::api::router())
-        .nest("/listener", github_listener::router())
+        .nest("/listener", listener::router())
         .nest("/ws", ws::router())
         .layer(Extension(state));
 

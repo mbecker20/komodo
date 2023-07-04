@@ -7,7 +7,8 @@ use typeshare::typeshare;
 use crate::{
     entities::{
         deployment::{
-            Deployment, DockerContainerStats, PartialDeploymentConfig, TerminationSignal, DeploymentActionState,
+            Deployment, DeploymentActionState, DockerContainerStats, PartialDeploymentConfig,
+            TerminationSignal,
         },
         update::{Log, Update},
     },

@@ -214,7 +214,12 @@ impl Resolve<DeleteRepo, RequestUser> for State {
             };
             update.id = self.add_update(update.clone()).await?;
 
-            let res = self.db.repos.delete_one(&repo.id).await.context("failed to delete repo from database");
+            let res = self
+                .db
+                .repos
+                .delete_one(&repo.id)
+                .await
+                .context("failed to delete repo from database");
 
             let log = match res {
                 Ok(_) => Log::simple("delete repo", format!("deleted repo {}", repo.name)),
