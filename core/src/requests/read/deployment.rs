@@ -61,6 +61,28 @@ impl Resolve<ListDeployments, RequestUser> for State {
     }
 }
 
+#[async_trait]
+impl Resolve<GetDeploymentStatus, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetDeploymentStatus { id }: GetDeploymentStatus,
+        user: RequestUser,
+    ) -> anyhow::Result<GetDeploymentStatusResponse> {
+        self.get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .deployment_status_cache
+            .get(&id)
+            .await
+            .unwrap_or_default();
+        let response = GetDeploymentStatusResponse {
+            status: status.container.as_ref().and_then(|c| c.status.clone()),
+            state: status.state,
+        };
+        Ok(response)
+    }
+}
+
 const MAX_LOG_LENGTH: u64 = 5000;
 
 #[async_trait]

@@ -72,6 +72,27 @@ impl Resolve<ListServers, RequestUser> for State {
 }
 
 #[async_trait]
+impl Resolve<GetServerStatus, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetServerStatus { id }: GetServerStatus,
+        user: RequestUser,
+    ) -> anyhow::Result<GetServerStatusResponse> {
+        self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        let status = self
+            .server_status_cache
+            .get(&id)
+            .await
+            .ok_or(anyhow!("did not find cached status for server"))?;
+        let response = GetServerStatusResponse {
+            status: status.status,
+        };
+        Ok(response)
+    }
+}
+
+#[async_trait]
 impl Resolve<GetServerActionState, RequestUser> for State {
     async fn resolve(
         &self,
