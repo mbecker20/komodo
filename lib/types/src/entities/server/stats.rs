@@ -1,6 +1,7 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
+use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::{entities::Timelength, I64};
@@ -122,7 +123,7 @@ pub struct SystemComponent {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Display, EnumString)]
 pub enum StatsState {
     #[default]
     Ok,

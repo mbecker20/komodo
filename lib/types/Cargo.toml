@@ -21,6 +21,7 @@ async_timing_util.workspace = true
 resolver_api.workspace = true
 derive_builder.workspace = true
 bollard.workspace = true
+derive_variants.workspace = true
 partial_derive2.workspace = true
 make_option.workspace = true
 mungos.workspace = true

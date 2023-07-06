@@ -1,5 +1,6 @@
 use async_timing_util::unix_timestamp_ms;
 use bson::serde_helpers::hex_string_as_object_id;
+use derive_variants::EnumVariants;
 use mungos::MungosIndexed;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
@@ -7,7 +8,7 @@ use typeshare::typeshare;
 
 use crate::{entities::Operation, monitor_timestamp, I64, MongoId};
 
-use super::Version;
+use super::{Version, build::Build, deployment::Deployment, server::Server, repo::Repo, builder::Builder};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
@@ -86,7 +87,8 @@ impl Log {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, EnumVariants)]
+#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {
     #[default]
@@ -96,70 +98,37 @@ pub enum ResourceTarget {
     Deployment(String),
     Server(String),
     Repo(String),
-    // Procedure(String),
-    // Group(String),
-    // Command(String),
 }
 
-// impl From<&Build> for UpdateTarget {
-//     fn from(build: &Build) -> Self {
-//         Self::Build(build.id.clone())
-//     }
-// }
+impl From<&Build> for ResourceTarget {
+    fn from(build: &Build) -> Self {
+        Self::Build(build.id.clone())
+    }
+}
 
-// impl From<&Build> for Option<UpdateTarget> {
-//     fn from(build: &Build) -> Self {
-//         Some(UpdateTarget::Build(build.id.clone()))
-//     }
-// }
+impl From<&Deployment> for ResourceTarget {
+    fn from(deployment: &Deployment) -> Self {
+        Self::Deployment(deployment.id.clone())
+    }
+}
 
-// impl From<&Deployment> for UpdateTarget {
-//     fn from(deployment: &Deployment) -> Self {
-//         Self::Deployment(deployment.id.clone())
-//     }
-// }
+impl From<&Server> for ResourceTarget {
+    fn from(server: &Server) -> Self {
+        Self::Server(server.id.clone())
+    }
+}
 
-// impl From<&Deployment> for Option<UpdateTarget> {
-//     fn from(deployment: &Deployment) -> Self {
-//         Some(UpdateTarget::Deployment(deployment.id.clone()))
-//     }
-// }
+impl From<&Repo> for ResourceTarget {
+    fn from(repo: &Repo) -> Self {
+        Self::Repo(repo.id.clone())
+    }
+}
 
-// impl From<&Server> for UpdateTarget {
-//     fn from(server: &Server) -> Self {
-//         Self::Server(server.id.clone())
-//     }
-// }
-
-// impl From<&Server> for Option<UpdateTarget> {
-//     fn from(server: &Server) -> Self {
-//         Some(UpdateTarget::Server(server.id.clone()))
-//     }
-// }
-
-// impl From<&Procedure> for UpdateTarget {
-//     fn from(procedure: &Procedure) -> Self {
-//         Self::Procedure(procedure.id.clone())
-//     }
-// }
-
-// impl From<&Procedure> for Option<UpdateTarget> {
-//     fn from(procedure: &Procedure) -> Self {
-//         Some(UpdateTarget::Procedure(procedure.id.clone()))
-//     }
-// }
-
-// impl From<&Group> for UpdateTarget {
-//     fn from(group: &Group) -> Self {
-//         Self::Group(group.id.clone())
-//     }
-// }
-
-// impl From<&Group> for Option<UpdateTarget> {
-//     fn from(group: &Group) -> Self {
-//         Some(UpdateTarget::Group(group.id.clone()))
-//     }
-// }
+impl From<&Builder> for ResourceTarget {
+    fn from(builder: &Builder) -> Self {
+        Self::Builder(builder.id.clone())
+    }
+}
 
 #[typeshare]
 #[derive(

@@ -1,12 +1,13 @@
 use bson::{doc, serde_helpers::hex_string_as_object_id};
 use derive_builder::Builder;
+use derive_variants::EnumVariants;
 use mungos::MungosIndexed;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, I64, MongoId};
+use crate::{i64_is_zero, MongoId, I64};
 
 use super::{EnvironmentVar, PermissionsMap, Version};
 
@@ -161,7 +162,8 @@ impl From<PartialDeploymentConfig> for DeploymentConfig {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed)]
+#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
+#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum DeploymentImage {
     Image { image: String },

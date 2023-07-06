@@ -536,9 +536,9 @@ dependencies = [
 
 [[package]]
 name = "bcrypt"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9df288bec72232f78c1ec5fe4e8f1d108aa0265476e93097593c803c8c02062a"
+checksum = "28d1c9c15093eb224f0baa400f38fcd713fc1391a6f1c389d886beef146d60a3"
 dependencies = [
  "base64 0.21.2",
  "blowfish",
@@ -993,6 +993,17 @@ dependencies = [
  "quote",
  "rustc_version 0.4.0",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "derive_variants"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dab95799d3c74d5c2f627e783e6b630b89f79d82a7b080c76086493a4cf651ef"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.18",
 ]
 
 [[package]]
@@ -1899,6 +1910,7 @@ dependencies = [
  "bollard",
  "bson",
  "derive_builder",
+ "derive_variants",
  "make_option",
  "monitor_macros",
  "mungos",
