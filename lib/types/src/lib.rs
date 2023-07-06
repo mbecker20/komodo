@@ -12,6 +12,8 @@ pub mod requests;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;
+#[typeshare(serialized_as = "{ $oid: string }")]
+pub type MongoId = String;
 #[typeshare(serialized_as = "any")]
 pub type MongoDocument = mungos::mongodb::bson::Document;
 

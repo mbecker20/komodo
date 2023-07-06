@@ -48,6 +48,7 @@ impl Resolve<CreateDeployment, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description: Default::default(),
+            tags: Default::default(),
             config: config.into(),
         };
         let deployment_id = self
@@ -93,6 +94,7 @@ impl Resolve<CopyDeployment, RequestUser> for State {
         let Deployment {
             config,
             description,
+            tags,
             ..
         } = self
             .get_deployment_check_permissions(&id, &user, PermissionLevel::Update)
@@ -119,6 +121,7 @@ impl Resolve<CopyDeployment, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description,
+            tags,
             config,
         };
         let deployment_id = self

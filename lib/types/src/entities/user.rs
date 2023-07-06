@@ -3,7 +3,7 @@ use mungos::MungosIndexed;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, I64};
+use crate::{i64_is_zero, I64, MongoId};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
@@ -14,7 +14,7 @@ pub struct User {
         skip_serializing_if = "String::is_empty",
         with = "hex_string_as_object_id"
     )]
-    pub id: String,
+    pub id: MongoId,
 
     #[unique_index]
     pub username: String,
@@ -42,6 +42,9 @@ pub struct User {
     pub github_id: Option<String>,
 
     pub google_id: Option<String>,
+
+    #[serde(default)]
+    pub last_update_view: I64,
 
     #[serde(default, skip_serializing_if = "i64_is_zero")]
     pub created_at: I64,

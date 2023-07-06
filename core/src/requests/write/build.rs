@@ -54,6 +54,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description: Default::default(),
+            tags: Default::default(),
             config: config.into(),
         };
         let build_id = self
@@ -96,6 +97,7 @@ impl Resolve<CopyBuild, RequestUser> for State {
         let Build {
             config,
             description,
+            tags,
             ..
         } = self
             .get_build_check_permissions(&id, &user, PermissionLevel::Update)
@@ -131,6 +133,7 @@ impl Resolve<CopyBuild, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description,
+            tags,
             config,
         };
         let build_id = self

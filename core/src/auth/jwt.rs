@@ -21,6 +21,7 @@ pub type RequestUserExtension = Extension<RequestUser>;
 #[derive(Default)]
 pub struct InnerRequestUser {
     pub id: String,
+    pub username: String,
     pub is_admin: bool,
     pub create_server_permissions: bool,
     pub create_build_permissions: bool,
@@ -126,6 +127,7 @@ impl State {
             if user.enabled {
                 let user = InnerRequestUser {
                     id: claims.id,
+                    username: user.username,
                     is_admin: user.admin,
                     create_server_permissions: user.create_server_permissions,
                     create_build_permissions: user.create_build_permissions,

@@ -3,8 +3,11 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::{
-    entities::build::{Build, BuildActionState},
-    MongoDocument,
+    entities::{
+        build::{Build, BuildActionState},
+        Version,
+    },
+    MongoDocument, I64,
 };
 
 //
@@ -20,9 +23,19 @@ pub struct GetBuild {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Build>)]
+#[response(Vec<BuildListItem>)]
 pub struct ListBuilds {
     pub query: Option<MongoDocument>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BuildListItem {
+    pub id: String,
+    pub name: String,
+    pub last_built_at: I64,
+    pub version: Version,
+    pub tags: Vec<String>,
 }
 
 //

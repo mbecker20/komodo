@@ -83,19 +83,14 @@ pub fn router() -> Router {
                  Json(request): Json<ReadRequest>| async move {
                     let timer = Instant::now();
                     let req_id = Uuid::new_v4();
-                    info!("/read request {req_id} | {request:?}");
-                    let res = tokio::spawn(async move {
-                        state
-                            .resolve_request(request, user)
-                            .await
-                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")))
-                    })
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
-                    if let Err(e) = &res {
-                        info!("/read request {req_id} SPAWN ERROR: {e:?}");
-                    }
-                    let res = res?;
+                    info!(
+                        "/read request {req_id} | user: {} ({}) | {request:?}",
+                        user.username, user.id
+                    );
+                    let res = state
+                        .resolve_request(request, user)
+                        .await
+                        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
                     if let Err(e) = &res {
                         info!("/read request {req_id} ERROR: {e:?}");
                     }

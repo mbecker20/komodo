@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, I64};
+use crate::{i64_is_zero, I64, MongoId};
 
 use super::{EnvironmentVar, PermissionsMap, Version};
 
@@ -20,7 +20,7 @@ pub struct Deployment {
         with = "hex_string_as_object_id"
     )]
     #[builder(setter(skip))]
-    pub id: String,
+    pub id: MongoId,
 
     #[unique_index]
     pub name: String,
@@ -40,6 +40,10 @@ pub struct Deployment {
     #[serde(default)]
     #[builder(setter(skip))]
     pub updated_at: I64,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
 
     pub config: DeploymentConfig,
 }
@@ -115,10 +119,6 @@ pub struct DeploymentConfig {
     #[serde(default)]
     #[builder(default)]
     pub docker_account: String, // the username of the dockerhub account. empty if no account.
-
-    #[serde(default)]
-    #[builder(default)]
-    pub tags: Vec<String>,
 }
 
 fn default_term_signal_labels() -> Vec<TerminationSignalLabel> {
@@ -156,7 +156,6 @@ impl From<PartialDeploymentConfig> for DeploymentConfig {
             container_user: value.container_user.unwrap_or_default(),
             extra_args: value.extra_args.unwrap_or_default(),
             docker_account: value.docker_account.unwrap_or_default(),
-            tags: value.tags.unwrap_or_default(),
         }
     }
 }

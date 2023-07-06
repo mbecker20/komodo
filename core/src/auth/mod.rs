@@ -47,18 +47,18 @@ pub fn router(state: &State) -> Router {
             |state: StateExtension, Json(request): Json<AuthRequest>| async move {
                 let timer = Instant::now();
                 let req_id = Uuid::new_v4();
-                info!("/auth request {req_id} | {request:?}");
+                info!("/auth request {req_id} | METHOD: {}", request.req_type());
                 let res = state
                     .resolve_request(request, ())
                     .await
                     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
                 if let Err(e) = &res {
-                    info!("/auth request {req_id} ERROR: {e:?}");
+                    info!("/auth request {req_id} | ERROR: {e:?}");
                 }
                 let res = res?;
                 let elapsed = timer.elapsed();
                 info!("/auth request {req_id} | resolve time: {elapsed:?}");
-                debug!("/auth request {req_id} RESPONSE: {res}");
+                debug!("/auth request {req_id} | RESPONSE: {res}");
                 Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
             },
         ),

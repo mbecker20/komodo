@@ -26,7 +26,7 @@ impl Resolve<ListRepos, RequestUser> for State {
         &self,
         ListRepos { query }: ListRepos,
         user: RequestUser,
-    ) -> anyhow::Result<Vec<Repo>> {
+    ) -> anyhow::Result<Vec<RepoListItem>> {
         let repos = self
             .db
             .repos
@@ -42,6 +42,16 @@ impl Resolve<ListRepos, RequestUser> for State {
                 .filter(|repo| repo.get_user_permissions(&user.id) > PermissionLevel::None)
                 .collect()
         };
+
+        let repos = repos
+            .into_iter()
+            .map(|repo| RepoListItem {
+                id: repo.id,
+                name: repo.name,
+                last_pulled_at: repo.last_pulled_at,
+                tags: repo.tags,
+            })
+            .collect();
 
         Ok(repos)
     }

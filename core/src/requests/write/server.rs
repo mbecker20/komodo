@@ -30,6 +30,7 @@ impl Resolve<CreateServer, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description: Default::default(),
+            tags: Default::default(),
             config: req.config.into(),
         };
         let server_id = self

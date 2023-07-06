@@ -31,9 +31,17 @@ pub struct GetServer {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Server>)]
+#[response(Vec<ServerListItem>)]
 pub struct ListServers {
     pub query: Option<MongoDocument>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ServerListItem {
+    pub id: String,
+    pub name: String,
+    pub status: ServerStatus,
 }
 
 //

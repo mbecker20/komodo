@@ -2328,9 +2328,9 @@ dependencies = [
 
 [[package]]
 name = "resolver_api"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a4c612fa902830ac9b906bacbe800e0cb34968ff913a1aef29b16b65a8c6781"
+checksum = "d5e2d7561b561784a2dd7b18f98dbf7e5617f540f97cea6db3e118d57d7237d7"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2341,9 +2341,9 @@ dependencies = [
 
 [[package]]
 name = "resolver_api_derive"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9be9792e0b0154c7764feb2ee95dd2427d4db012715bb8320a5f0e53368c558"
+checksum = "6e1f7c7d2230fd8ab03239e20f32f99d85c8a1273bb159e1368cbda9fc2ff2ac"
 dependencies = [
  "proc-macro2",
  "quote",

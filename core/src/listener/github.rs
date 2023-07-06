@@ -80,6 +80,7 @@ impl State {
             execute::RunBuild { build_id },
             InnerRequestUser {
                 id: String::from("github"),
+                username: String::from("github"),
                 is_admin: true,
                 create_server_permissions: false,
                 create_build_permissions: false,
@@ -106,6 +107,7 @@ impl State {
             execute::CloneRepo { id: repo_id },
             InnerRequestUser {
                 id: String::from("github"),
+                username: String::from("github"),
                 is_admin: true,
                 create_server_permissions: false,
                 create_build_permissions: false,
@@ -132,6 +134,7 @@ impl State {
             execute::PullRepo { id: repo_id },
             InnerRequestUser {
                 id: String::from("github"),
+                username: String::from("github"),
                 is_admin: true,
                 create_server_permissions: false,
                 create_build_permissions: false,

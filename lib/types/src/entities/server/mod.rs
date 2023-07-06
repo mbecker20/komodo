@@ -5,7 +5,7 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, I64};
+use crate::{i64_is_zero, I64, MongoId};
 
 use super::PermissionsMap;
 
@@ -23,7 +23,7 @@ pub struct Server {
         with = "hex_string_as_object_id"
     )]
     #[builder(setter(skip))]
-    pub id: String,
+    pub id: MongoId,
 
     #[unique_index]
     pub name: String,
@@ -43,6 +43,10 @@ pub struct Server {
     #[serde(default)]
     #[builder(setter(skip))]
     pub updated_at: I64,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
 
     pub config: ServerConfig,
 }
@@ -95,10 +99,6 @@ pub struct ServerConfig {
     #[serde(default)]
     #[builder(default)]
     pub to_notify: Vec<String>, // slack users to notify
-
-    #[serde(default)]
-    #[builder(default)]
-    pub tags: Vec<String>,
 }
 
 fn default_enabled() -> bool {
@@ -147,7 +147,6 @@ impl From<PartialServerConfig> for ServerConfig {
             mem_critical: value.mem_critical.unwrap_or(default_mem_critical()),
             disk_critical: value.disk_critical.unwrap_or(default_disk_critical()),
             to_notify: value.to_notify.unwrap_or_default(),
-            tags: value.tags.unwrap_or_default(),
         }
     }
 }

@@ -1,17 +1,18 @@
 use resolver_api::derive::Request;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
 
 mod build;
-pub use build::*;
 mod builder;
-pub use builder::*;
 mod deployment;
-pub use deployment::*;
 mod repo;
-pub use repo::*;
 mod server;
+
+pub use build::*;
+pub use builder::*;
+pub use deployment::*;
+pub use repo::*;
 pub use server::*;
-use typeshare::typeshare;
 
 //
 

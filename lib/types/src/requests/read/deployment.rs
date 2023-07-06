@@ -23,9 +23,21 @@ pub struct GetDeployment {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Deployment>)]
+#[response(Vec<DeploymentListItem>)]
 pub struct ListDeployments {
     pub query: Option<MongoDocument>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DeploymentListItem {
+    pub id: String,
+    pub name: String,
+    pub tags: Vec<String>,
+    pub state: DockerContainerState,
+    pub status: Option<String>,
+    pub image: String,
+    pub version: String,
 }
 
 //

@@ -5,7 +5,7 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, I64};
+use crate::{i64_is_zero, I64, MongoId};
 
 use super::{EnvironmentVar, PermissionsMap, SystemCommand, Version};
 
@@ -19,7 +19,7 @@ pub struct Build {
         with = "hex_string_as_object_id"
     )]
     #[builder(setter(skip))]
-    pub id: String,
+    pub id: MongoId,
 
     #[unique_index]
     pub name: String,
@@ -43,6 +43,10 @@ pub struct Build {
     #[serde(default)]
     #[builder(setter(skip))]
     pub last_built_at: I64,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
 
     pub config: BuildConfig,
 }
@@ -108,10 +112,6 @@ pub struct BuildConfig {
     #[serde(default)]
     #[builder(default)]
     pub use_buildx: bool,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub tags: Vec<String>,
 }
 
 fn default_branch() -> String {
@@ -143,7 +143,6 @@ impl From<PartialBuildConfig> for BuildConfig {
             build_args: value.build_args.unwrap_or_default(),
             extra_args: value.extra_args.unwrap_or_default(),
             use_buildx: value.use_buildx.unwrap_or_default(),
-            tags: value.tags.unwrap_or_default(),
         }
     }
 }

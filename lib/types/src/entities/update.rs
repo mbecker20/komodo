@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{entities::Operation, monitor_timestamp, I64};
+use crate::{entities::Operation, monitor_timestamp, I64, MongoId};
 
 use super::Version;
 
@@ -18,7 +18,7 @@ pub struct Update {
         skip_serializing_if = "String::is_empty",
         with = "hex_string_as_object_id"
     )]
-    pub id: String,
+    pub id: MongoId,
     pub target: ResourceTarget,
     pub operation: Operation,
     pub logs: Vec<Log>,

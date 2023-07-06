@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
+use futures::future::join_all;
 use monitor_types::{
     entities::{
         deployment::BasicContainerInfo,
@@ -50,7 +51,7 @@ impl Resolve<ListServers, RequestUser> for State {
         &self,
         ListServers { query }: ListServers,
         user: RequestUser,
-    ) -> anyhow::Result<Vec<Server>> {
+    ) -> anyhow::Result<Vec<ServerListItem>> {
         let servers = self
             .db
             .servers
@@ -66,6 +67,17 @@ impl Resolve<ListServers, RequestUser> for State {
                 .filter(|server| server.get_user_permissions(&user.id) > PermissionLevel::None)
                 .collect()
         };
+
+        let servers = servers.into_iter().map(|server| async {
+            let status = self.server_status_cache.get(&server.id).await;
+            ServerListItem {
+                id: server.id,
+                name: server.name,
+                status: status.map(|s| s.status).unwrap_or_default(),
+            }
+        });
+
+        let servers = join_all(servers).await;
 
         Ok(servers)
     }

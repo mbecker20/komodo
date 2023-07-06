@@ -8,6 +8,7 @@ use monitor_types::{
     monitor_timestamp, optional_string,
     requests::execute::*,
 };
+use mungos::mongodb::bson::doc;
 use periphery_client::requests;
 use resolver_api::Resolve;
 
@@ -45,20 +46,37 @@ impl Resolve<CloneRepo, RequestUser> for State {
 
             update.id = self.add_update(update.clone()).await?;
 
-            match self
+            let logs = match self
                 .periphery_client(&server)
                 .request(requests::CloneRepo {
                     args: (&repo).into(),
                 })
                 .await
             {
-                Ok(logs) => update.logs.extend(logs),
-                Err(e) => update
-                    .logs
-                    .push(Log::error("clone repo", format!("{e:#?}"))),
+                Ok(logs) => logs,
+                Err(e) => vec![Log::error("clone repo", format!("{e:#?}"))],
             };
 
+            update.logs.extend(logs);
             update.finalize();
+
+            if update.success {
+                let res = self
+                    .db
+                    .repos
+                    .update_one(
+                        &repo.id,
+                        mungos::Update::Set(doc! { "last_pulled_at": monitor_timestamp() }),
+                    )
+                    .await;
+                if let Err(e) = res {
+                    warn!(
+                        "failed to update repo last_pulled_at | repo id: {} | {e:#?}",
+                        repo.id
+                    );
+                }
+            }
+
             self.update_update(update.clone()).await?;
             Ok(update)
         };
@@ -119,7 +137,7 @@ impl Resolve<PullRepo, RequestUser> for State {
 
             update.id = self.add_update(update.clone()).await?;
 
-            match self
+            let logs = match self
                 .periphery_client(&server)
                 .request(requests::PullRepo {
                     name: repo.name,
@@ -128,11 +146,31 @@ impl Resolve<PullRepo, RequestUser> for State {
                 })
                 .await
             {
-                Ok(logs) => update.logs.extend(logs),
-                Err(e) => update.logs.push(Log::error("pull repo", format!("{e:#?}"))),
+                Ok(logs) => logs,
+                Err(e) => vec![Log::error("pull repo", format!("{e:#?}"))],
             };
 
+            update.logs.extend(logs);
+
             update.finalize();
+
+            if update.success {
+                let res = self
+                    .db
+                    .repos
+                    .update_one(
+                        &repo.id,
+                        mungos::Update::Set(doc! { "last_pulled_at": monitor_timestamp() }),
+                    )
+                    .await;
+                if let Err(e) = res {
+                    warn!(
+                        "failed to update repo last_pulled_at | repo id: {} | {e:#?}",
+                        repo.id
+                    );
+                }
+            }
+
             self.update_update(update.clone()).await?;
             Ok(update)
         };

@@ -5,7 +5,7 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, I64};
+use crate::{i64_is_zero, I64, MongoId};
 
 use super::{PermissionsMap, SystemCommand};
 
@@ -19,7 +19,7 @@ pub struct Repo {
         with = "hex_string_as_object_id"
     )]
     #[builder(setter(skip))]
-    pub id: String,
+    pub id: MongoId,
 
     #[unique_index]
     pub name: String,
@@ -39,6 +39,14 @@ pub struct Repo {
     #[serde(default)]
     #[builder(setter(skip))]
     pub updated_at: I64,
+
+    #[serde(default)]
+    #[builder(setter(skip))]
+    pub last_pulled_at: I64,
+
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
 
     pub config: RepoConfig,
 }
@@ -68,10 +76,6 @@ pub struct RepoConfig {
     #[serde(default)]
     #[builder(default)]
     pub on_pull: SystemCommand,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub tags: Vec<String>,
 }
 
 fn default_branch() -> String {
@@ -87,7 +91,6 @@ impl From<PartialRepoConfig> for RepoConfig {
             github_account: value.github_account.unwrap_or_default(),
             on_clone: value.on_clone.unwrap_or_default(),
             on_pull: value.on_pull.unwrap_or_default(),
-            tags: value.tags.unwrap_or_default(),
         }
     }
 }

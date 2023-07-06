@@ -5,7 +5,8 @@ use monitor_types::{
         build::{Build, BuildActionState},
         PermissionLevel,
     },
-    requests::read::*, permissioned::Permissioned,
+    permissioned::Permissioned,
+    requests::read::*,
 };
 use resolver_api::Resolve;
 
@@ -25,7 +26,7 @@ impl Resolve<ListBuilds, RequestUser> for State {
         &self,
         ListBuilds { query }: ListBuilds,
         user: RequestUser,
-    ) -> anyhow::Result<Vec<Build>> {
+    ) -> anyhow::Result<Vec<BuildListItem>> {
         let builds = self
             .db
             .builds
@@ -41,6 +42,17 @@ impl Resolve<ListBuilds, RequestUser> for State {
                 .filter(|build| build.get_user_permissions(&user.id) > PermissionLevel::None)
                 .collect()
         };
+
+        let builds = builds
+            .into_iter()
+            .map(|build| BuildListItem {
+                id: build.id,
+                name: build.name,
+                last_built_at: build.last_built_at,
+                version: build.config.version,
+                tags: build.tags,
+            })
+            .collect();
 
         Ok(builds)
     }

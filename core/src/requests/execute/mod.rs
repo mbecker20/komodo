@@ -56,7 +56,7 @@ pub fn router() -> Router {
                  Json(request): Json<ExecuteRequest>| async move {
                     let timer = Instant::now();
                     let req_id = Uuid::new_v4();
-                    info!("/execute request {req_id} | {request:?}");
+                    info!("/execute request {req_id} | user: {} ({}) | {request:?}", user.username, user.id);
                     let res = tokio::spawn(async move {
                         state
                             .resolve_request(request, user)

@@ -42,7 +42,9 @@ impl Resolve<CreateRepo, RequestUser> for State {
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
+            last_pulled_at: 0,
             description: Default::default(),
+            tags: Default::default(),
             config: config.into(),
         };
         let repo_id = self
@@ -98,6 +100,7 @@ impl Resolve<CopyRepo, RequestUser> for State {
         let Repo {
             config,
             description,
+            tags,
             ..
         } = self
             .get_repo_check_permissions(&id, &user, PermissionLevel::Update)
@@ -120,7 +123,9 @@ impl Resolve<CopyRepo, RequestUser> for State {
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
+            last_pulled_at: 0,
             description,
+            tags,
             config,
         };
         let repo_id = self
