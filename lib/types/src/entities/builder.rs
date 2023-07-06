@@ -11,6 +11,9 @@ use crate::{i64_is_zero, MongoId, I64};
 
 use super::PermissionsMap;
 
+#[typeshare(serialized_as = "Partial<BuilderConfig>")]
+pub type _PartialBuilderConfig = PartialBuilderConfig;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed)]
 pub struct Builder {
@@ -53,12 +56,15 @@ pub enum BuilderConfig {
     AwsBuilder(AwsBuilder),
 }
 
+#[typeshare(serialized_as = "Partial<AwsBuilder>")]
+pub type _PartialAwsBuilder = PartialAwsBuilder;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum PartialBuilderConfig {
-    AwsBuilder(PartialAwsBuilder),
+    AwsBuilder(_PartialAwsBuilder),
 }
 
 impl From<PartialBuilderConfig> for BuilderConfig {

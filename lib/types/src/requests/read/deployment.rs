@@ -7,7 +7,7 @@ use crate::{
         deployment::{Deployment, DeploymentActionState, DockerContainerStats, DockerContainerState},
         update::Log,
     },
-    MongoDocument,
+    MongoDocument, U64,
 };
 
 //
@@ -64,7 +64,7 @@ pub struct GetDeploymentStatusResponse {
 pub struct GetLog {
     pub deployment_id: String,
     #[serde(default = "default_tail")]
-    pub tail: u64,
+    pub tail: U64,
 }
 
 fn default_tail() -> u64 {

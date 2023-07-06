@@ -7,6 +7,9 @@ use crate::entities::{
     update::Update,
 };
 
+#[typeshare(serialized_as = "Partial<ServerConfig>")]
+type _PartialServerConfig = PartialServerConfig;
+
 //
 
 #[typeshare]
@@ -14,7 +17,7 @@ use crate::entities::{
 #[response(Server)]
 pub struct CreateServer {
     pub name: String,
-    pub config: PartialServerConfig,
+    pub config: _PartialServerConfig,
 }
 
 //
@@ -33,7 +36,7 @@ pub struct DeleteServer {
 #[response(Server)]
 pub struct UpdateServer {
     pub id: String,
-    pub config: PartialServerConfig,
+    pub config: _PartialServerConfig,
 }
 
 //

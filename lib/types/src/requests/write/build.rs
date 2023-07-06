@@ -4,12 +4,17 @@ use typeshare::typeshare;
 
 use crate::entities::build::{Build, PartialBuildConfig};
 
+#[typeshare(serialized_as = "Partial<BuildConfig>")]
+type _PartialBuildConfig = PartialBuildConfig;
+
+//
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Build)]
 pub struct CreateBuild {
     pub name: String,
-    pub config: PartialBuildConfig,
+    pub config: _PartialBuildConfig,
 }
 
 //
@@ -38,5 +43,5 @@ pub struct DeleteBuild {
 #[response(Build)]
 pub struct UpdateBuild {
     pub id: String,
-    pub config: PartialBuildConfig,
+    pub config: _PartialBuildConfig,
 }

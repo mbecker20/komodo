@@ -7,12 +7,14 @@ mod builder;
 mod deployment;
 mod repo;
 mod server;
+mod update;
 
 pub use build::*;
 pub use builder::*;
 pub use deployment::*;
 pub use repo::*;
 pub use server::*;
+pub use update::*;
 
 //
 

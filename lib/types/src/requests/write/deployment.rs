@@ -7,6 +7,9 @@ use crate::entities::{
     update::Update,
 };
 
+#[typeshare(serialized_as = "Partial<DeploymentConfig>")]
+type _PartialDeploymentConfig = PartialDeploymentConfig;
+
 //
 
 #[typeshare]
@@ -14,7 +17,7 @@ use crate::entities::{
 #[response(Deployment)]
 pub struct CreateDeployment {
     pub name: String,
-    pub config: PartialDeploymentConfig,
+    pub config: _PartialDeploymentConfig,
 }
 
 //
@@ -43,7 +46,7 @@ pub struct DeleteDeployment {
 #[response(Deployment)]
 pub struct UpdateDeployment {
     pub id: String,
-    pub config: PartialDeploymentConfig,
+    pub config: _PartialDeploymentConfig,
 }
 
 //

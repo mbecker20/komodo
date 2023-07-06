@@ -3,6 +3,7 @@ use entities::{
     build::{Build, BuildConfig},
     update::Log,
 };
+use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 pub mod busy;
@@ -12,10 +13,19 @@ pub mod requests;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;
-#[typeshare(serialized_as = "{ $oid: string }")]
-pub type MongoId = String;
+#[typeshare(serialized_as = "number")]
+pub type U64 = u64;
 #[typeshare(serialized_as = "any")]
 pub type MongoDocument = mungos::mongodb::bson::Document;
+#[typeshare(serialized_as = "MongoIdObj")]
+pub type MongoId = String;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct MongoIdObj {
+    #[serde(rename = "$oid")]
+    pub oid: String,
+}
 
 fn i64_is_zero(n: &I64) -> bool {
     *n == 0

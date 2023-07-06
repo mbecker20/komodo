@@ -1,94 +1,71 @@
-import {
-  AllSystemStats,
-  BasicContainerInfo,
-  BasicSystemStats,
-  Build,
-  CpuUsage,
-  CreateLocalUserResponse,
-  CreateLoginSecretResponse,
-  Deployment,
-  DiskUsage,
-  DockerNetwork,
-  ExchangeForJwtResponse,
-  GetLoginOptionsResponse,
-  GetPeripheryVersionResponse,
-  ImageSummary,
-  LoginLocalUserResponse,
-  LoginWithSecretResponse,
-  NetworkUsage,
-  Server,
-  SystemComponent,
-  SystemInformation,
-  SystemProcess,
-  Update,
-} from "./types";
+import * as Res from "./types";
 
 export type AuthResponses = {
-  GetLoginOptions: GetLoginOptionsResponse;
-  CreateLocalUser: CreateLocalUserResponse;
-  LoginLocalUser: LoginLocalUserResponse;
-  ExchangeForJwt: ExchangeForJwtResponse;
-  LoginWithSecret: LoginWithSecretResponse;
+  GetLoginOptions: Res.GetLoginOptionsResponse;
+  CreateLocalUser: Res.CreateLocalUserResponse;
+  LoginLocalUser: Res.LoginLocalUserResponse;
+  ExchangeForJwt: Res.ExchangeForJwtResponse;
+  LoginWithSecret: Res.LoginWithSecretResponse;
 };
 
 export type ApiResponses = {
   // ==== SECRET ====
-  CreateLoginSecret: CreateLoginSecretResponse;
+  CreateLoginSecret: Res.CreateLoginSecretResponse;
   DeleteLoginSecret: undefined;
 
   //
   // ==== SERVER ====
   //
-  GetPeripheryVersion: GetPeripheryVersionResponse;
-  GetSystemInformation: SystemInformation;
-  GetDockerContainers: BasicContainerInfo[];
-  GetDockerImages: ImageSummary[];
-  GetDockerNetworks: DockerNetwork[];
-  GetServer: Server;
-  ListServers: Server[];
+  GetPeripheryVersion: Res.GetPeripheryVersionResponse;
+  GetSystemInformation: Res.SystemInformation;
+  GetDockerContainers: Res.BasicContainerInfo[];
+  GetDockerImages: Res.ImageSummary[];
+  GetDockerNetworks: Res.DockerNetwork[];
+  GetServer: Res.Server;
+  ListServers: Res.Server[];
   // CRUD
-  CreateServer: Server;
-  DeleteServer: Server;
-  UpdateServer: Server;
-  RenameServer: Update;
+  CreateServer: Res.Server;
+  DeleteServer: Res.Server;
+  UpdateServer: Res.Server;
+  RenameServer: Res.Update;
   // STATS
-  GetAllSystemStats: AllSystemStats;
-  GetBasicSystemStats: BasicSystemStats;
-  GetCpuUsage: CpuUsage;
-  GetDiskUsage: DiskUsage;
-  GetNetworkUsage: NetworkUsage;
-  GetSystemProcesses: SystemProcess[];
-  GetSystemComponents: SystemComponent[];
+  GetAllSystemStats: Res.AllSystemStats;
+  GetBasicSystemStats: Res.BasicSystemStats;
+  GetCpuUsage: Res.CpuUsage;
+  GetDiskUsage: Res.DiskUsage;
+  GetNetworkUsage: Res.NetworkUsage;
+  GetSystemProcesses: Res.SystemProcess[];
+  GetSystemComponents: Res.SystemComponent[];
   // ACTIONS
-  PruneContainers: Update;
-  PruneImages: Update;
-  PruneNetworks: Update;
+  PruneContainers: Res.Update;
+  PruneImages: Res.Update;
+  PruneNetworks: Res.Update;
 
   //
   // ==== DEPLOYMENT ====
   //
-  GetDeployment: Deployment;
-  ListDeployments: Deployment[];
+  GetDeployment: Res.Deployment;
+  ListDeployments: Res.Deployment[];
   // CRUD
-  CreateDeployment: Deployment;
-  DeleteDeployment: Deployment;
-  UpdateDeployment: Deployment;
-  RenameDeployment: Update;
+  CreateDeployment: Res.Deployment;
+  DeleteDeployment: Res.Deployment;
+  UpdateDeployment: Res.Deployment;
+  RenameDeployment: Res.Update;
   // ACTIONS
-  Deploy: Update;
-  StartContainer: Update;
-  StopContainer: Update;
-  RemoveContainer: Update;
+  Deploy: Res.Update;
+  StartContainer: Res.Update;
+  StopContainer: Res.Update;
+  RemoveContainer: Res.Update;
 
   //
   // ==== BUILD ====
   //
-  GetBuild: Build;
-  ListBuilds: Build[];
+  GetBuild: Res.Build;
+  ListBuilds: Res.Build[];
   // CRUD
-  CreateBuild: Build;
-  DeleteBuild: Build;
-  UpdateBuild: Build;
+  CreateBuild: Res.Build;
+  DeleteBuild: Res.Build;
+  UpdateBuild: Res.Build;
   // ACTIONS
-  RunBuild: Update;
+  RunBuild: Res.Update;
 };

@@ -4,6 +4,9 @@ use typeshare::typeshare;
 
 use crate::entities::repo::{PartialRepoConfig, Repo};
 
+#[typeshare(serialized_as = "Partial<RepoConfig>")]
+type _PartialRepoConfig = PartialRepoConfig;
+
 //
 
 #[typeshare]
@@ -11,7 +14,7 @@ use crate::entities::repo::{PartialRepoConfig, Repo};
 #[response(Repo)]
 pub struct CreateRepo {
     pub name: String,
-    pub config: PartialRepoConfig,
+    pub config: _PartialRepoConfig,
 }
 
 //
@@ -40,5 +43,5 @@ pub struct DeleteRepo {
 #[response(Repo)]
 pub struct UpdateRepo {
     pub id: String,
-    pub config: PartialRepoConfig,
+    pub config: _PartialRepoConfig,
 }
