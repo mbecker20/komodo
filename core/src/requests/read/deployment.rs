@@ -7,7 +7,7 @@ use monitor_types::{
     entities::{
         deployment::{
             Deployment, DeploymentActionState, DeploymentConfig, DeploymentImage,
-            DockerContainerState, DockerContainerStats,
+            DockerContainerStats,
         },
         update::{Log, UpdateStatus},
         Operation, PermissionLevel,
@@ -64,10 +64,7 @@ impl Resolve<ListDeployments, RequestUser> for State {
                 id: deployment.id,
                 name: deployment.name,
                 tags: deployment.tags,
-                state: status
-                    .as_ref()
-                    .map(|s| s.state)
-                    .unwrap_or(DockerContainerState::Unknown),
+                state: status.as_ref().map(|s| s.state).unwrap_or_default(),
                 status: status
                     .as_ref()
                     .and_then(|s| s.container.as_ref().and_then(|c| c.status.to_owned())),

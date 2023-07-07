@@ -16,7 +16,6 @@ strum.workspace = true
 strum_macros.workspace = true
 async-trait.workspace = true
 anyhow.workspace = true
-bson.workspace = true
 async_timing_util.workspace = true
 resolver_api.workspace = true
 derive_builder.workspace = true

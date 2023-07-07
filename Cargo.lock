@@ -1908,7 +1908,6 @@ dependencies = [
  "async-trait",
  "async_timing_util",
  "bollard",
- "bson",
  "derive_builder",
  "derive_variants",
  "make_option",

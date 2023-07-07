@@ -1,5 +1,4 @@
-use bson::serde_helpers::hex_string_as_object_id;
-use mungos::MungosIndexed;
+use mungos::{MungosIndexed, mongodb::bson::serde_helpers::hex_string_as_object_id};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 

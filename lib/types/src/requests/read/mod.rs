@@ -6,6 +6,7 @@ mod build;
 mod builder;
 mod deployment;
 mod repo;
+mod search;
 mod server;
 mod update;
 
@@ -13,6 +14,7 @@ pub use build::*;
 pub use builder::*;
 pub use deployment::*;
 pub use repo::*;
+pub use search::*;
 pub use server::*;
 pub use update::*;
 

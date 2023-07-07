@@ -1,7 +1,6 @@
 use async_timing_util::unix_timestamp_ms;
-use bson::serde_helpers::hex_string_as_object_id;
 use derive_variants::EnumVariants;
-use mungos::MungosIndexed;
+use mungos::{MungosIndexed, mongodb::bson::serde_helpers::hex_string_as_object_id};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
@@ -88,7 +87,7 @@ impl Log {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
+#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString, PartialEq, Eq)]
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {
     #[default]

@@ -20,6 +20,7 @@ mod builder;
 mod deployment;
 mod repo;
 mod server;
+mod search;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -28,6 +29,9 @@ mod server;
 #[serde(tag = "type", content = "params")]
 #[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
 pub enum ReadRequest {
+    // ==== SEARCH ====
+    FindResources(FindResources),
+
     // ==== SERVER ====
     GetPeripheryVersion(GetPeripheryVersion),
     GetSystemInformation(GetSystemInformation),

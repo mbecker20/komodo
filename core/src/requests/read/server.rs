@@ -73,6 +73,7 @@ impl Resolve<ListServers, RequestUser> for State {
             ServerListItem {
                 id: server.id,
                 name: server.name,
+                tags: server.tags,
                 status: status.map(|s| s.status).unwrap_or_default(),
             }
         });

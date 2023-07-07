@@ -42,6 +42,7 @@ pub struct ServerListItem {
     pub id: String,
     pub name: String,
     pub status: ServerStatus,
+    pub tags: Vec<String>,
 }
 
 //
