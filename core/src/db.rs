@@ -1,10 +1,10 @@
 use monitor_types::entities::{
     build::Build, builder::Builder, deployment::Deployment, repo::Repo, server::Server,
-    update::Update, user::User, tag::CustomTag,
+    tag::CustomTag, update::Update, user::User,
 };
 use mungos::{Collection, Indexed, Mungos};
 
-use crate::config::CoreConfig;
+use crate::config::{CoreConfig, MongoConfig};
 
 pub struct DbClient {
     pub users: Collection<User>,
@@ -18,21 +18,52 @@ pub struct DbClient {
 }
 
 impl DbClient {
-    pub async fn new(config: &CoreConfig) -> anyhow::Result<DbClient> {
-        let mungos = Mungos::builder()
-            .uri(&config.mongo.uri)
-            .app_name(&config.mongo.app_name)
-            .build()
-            .await?;
+    pub async fn new(
+        CoreConfig {
+            mongo:
+                MongoConfig {
+                    uri,
+                    address,
+                    username,
+                    password,
+                    app_name,
+                    db_name,
+                },
+            ..
+        }: &CoreConfig,
+    ) -> anyhow::Result<DbClient> {
+        let mut mungos = Mungos::builder().app_name(app_name);
+
+        match (uri, address, username, password) {
+            (Some(uri), _, _, _) => {
+                mungos = mungos.uri(uri);
+            }
+            (_, Some(address), Some(username), Some(password)) => {
+                mungos = mungos
+                    .address(address)
+                    .username(username)
+                    .password(password);
+            }
+            (_, Some(address), _, _) => {
+                mungos = mungos.address(address);
+            }
+            _ => {
+                error!("config.mongo not configured correctly. must pass either config.mongo.uri, or config.mongo.address + config.mongo.username? + config.mongo.password?");
+                std::process::exit(1)
+            }
+        }
+
+        let mungos = mungos.build().await?;
+
         let client = DbClient {
-            users: User::collection(&mungos, &config.mongo.db_name, true).await?,
-            servers: Server::collection(&mungos, &config.mongo.db_name, true).await?,
-            deployments: Deployment::collection(&mungos, &config.mongo.db_name, true).await?,
-            builds: Build::collection(&mungos, &config.mongo.db_name, true).await?,
-            builders: Builder::collection(&mungos, &config.mongo.db_name, true).await?,
-            repos: Repo::collection(&mungos, &config.mongo.db_name, true).await?,
-            tags: CustomTag::collection(&mungos, &config.mongo.db_name, true).await?,
-            updates: Update::collection(&mungos, &config.mongo.db_name, true).await?,
+            users: User::collection(&mungos, db_name, true).await?,
+            servers: Server::collection(&mungos, db_name, true).await?,
+            deployments: Deployment::collection(&mungos, db_name, true).await?,
+            builds: Build::collection(&mungos, db_name, true).await?,
+            builders: Builder::collection(&mungos, db_name, true).await?,
+            repos: Repo::collection(&mungos, db_name, true).await?,
+            tags: CustomTag::collection(&mungos, db_name, true).await?,
+            updates: Update::collection(&mungos, db_name, true).await?,
         };
         Ok(client)
     }

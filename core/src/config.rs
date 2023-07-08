@@ -112,14 +112,10 @@ pub struct OauthCredentials {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct MongoConfig {
-    #[serde(default)]
-    pub uri: String,
-    #[serde(default)]
-    pub address: String,
-    #[serde(default)]
-    pub username: String,
-    #[serde(default)]
-    pub password: String,
+    pub uri: Option<String>,
+    pub address: Option<String>,
+    pub username: Option<String>,
+    pub password: Option<String>,
     #[serde(default = "default_core_mongo_app_name")]
     pub app_name: String,
     #[serde(default = "default_core_mongo_db_name")]
