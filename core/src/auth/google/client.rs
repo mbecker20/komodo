@@ -5,7 +5,10 @@ use serde::{de::DeserializeOwned, Deserialize};
 use serde_json::Value;
 use tokio::sync::Mutex;
 
-use crate::{auth::random_string, config::CoreConfig};
+use crate::{
+    auth::random_string,
+    config::{CoreConfig, OauthCredentials},
+};
 
 pub struct GoogleOauthClient {
     http: reqwest::Client,
@@ -20,23 +23,41 @@ pub struct GoogleOauthClient {
 impl GoogleOauthClient {
     pub fn new(
         CoreConfig {
-            google_oauth, host, ..
+            google_oauth:
+                OauthCredentials {
+                    enabled,
+                    id,
+                    secret,
+                },
+            host,
+            ..
         }: &CoreConfig,
     ) -> Option<GoogleOauthClient> {
-        if google_oauth.enabled && !google_oauth.id.is_empty() && !google_oauth.secret.is_empty() {
-            GoogleOauthClient {
-                http: Default::default(),
-                client_id: google_oauth.id.clone(),
-                client_secret: google_oauth.secret.clone(),
-                redirect_uri: format!("{host}/auth/google/callback"),
-                user_agent: String::from("monitor"),
-                scopes: Default::default(),
-                states: Default::default(),
-            }
-            .into()
-        } else {
-            None
+        if !enabled {
+            return None;
         }
+        if host.is_empty() {
+            warn!("google oauth is enabled, but 'config.host' is not configured");
+            return None;
+        }
+        if id.is_empty() {
+            warn!("google oauth is enabled, but 'config.google_oauth.id' is not configured");
+            return None;
+        }
+        if secret.is_empty() {
+            warn!("google oauth is enabled, but 'config.google_oauth.secret' is not configured");
+            return None;
+        }
+        GoogleOauthClient {
+            http: Default::default(),
+            client_id: id.clone(),
+            client_secret: secret.clone(),
+            redirect_uri: format!("{host}/auth/google/callback"),
+            user_agent: String::from("monitor"),
+            scopes: Default::default(),
+            states: Default::default(),
+        }
+        .into()
     }
 
     pub async fn get_login_redirect_url(&self) -> String {

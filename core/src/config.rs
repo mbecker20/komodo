@@ -1,7 +1,7 @@
 use anyhow::Context;
 use merge_config_files::parse_config_file;
 use monitor_types::entities::Timelength;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct Env {
@@ -33,57 +33,52 @@ pub struct CoreConfig {
     pub title: String,
 
     // the host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'
+    #[serde(default)]
     pub host: String,
 
     // port the core web server runs on
     #[serde(default = "default_core_port")]
     pub port: u16,
 
-    pub jwt_secret: String,
+    // sent in auth header with req to periphery
+    pub passkey: String,
+
+    #[serde(default)]
+    pub log_level: LogLevel,
 
     #[serde(default = "default_jwt_valid_for")]
     pub jwt_valid_for: Timelength,
 
-    // interval at which to collect server stats and alert for out of bounds
+    // interval at which to collect server stats and send any alerts
+    #[serde(default = "default_monitoring_interval")]
     pub monitoring_interval: Timelength,
-
-    // daily utc offset in hours to run daily update. eg 8:00 eastern time is 13:00 UTC, so offset should be 13. default of 0 runs at UTC midnight.
-    #[serde(default)]
-    pub daily_offset_hours: u8,
 
     // number of days to keep stats, or 0 to disable pruning. stats older than this number of days are deleted on a daily cycle
     #[serde(default)]
     pub keep_stats_for_days: u64,
 
     // used to verify validity from github webhooks
+    #[serde(default)]
     pub github_webhook_secret: String,
 
     // used to form the frontend listener url, if None will use 'host'.
     pub github_webhook_base_url: Option<String>,
 
-    // sent in auth header with req to periphery
-    pub passkey: String,
-
-    // integration with slack app
-    pub slack_url: Option<String>,
-
-    // enable login with local auth
-    pub local_auth: bool,
-
-    #[serde(default = "default_log_level")]
-    pub log_level: LogLevel,
-
     // allowed docker orgs used with monitor. first in this list will be default for build
     #[serde(default)]
     pub docker_organizations: Vec<String>,
 
-    pub mongo: MongoConfig,
+     // enable login with local auth
+    #[serde(default)]
+    pub local_auth: bool,
 
     #[serde(default)]
     pub github_oauth: OauthCredentials,
 
     #[serde(default)]
     pub google_oauth: OauthCredentials,
+
+    pub mongo: MongoConfig,
 
     #[serde(default)]
     pub aws: AwsCredentials,
@@ -101,11 +96,11 @@ fn default_jwt_valid_for() -> Timelength {
     Timelength::OneDay
 }
 
-fn default_log_level() -> LogLevel {
-    LogLevel::Info
+fn default_monitoring_interval() -> Timelength {
+    Timelength::FifteenSeconds
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct OauthCredentials {
     #[serde(default)]
     pub enabled: bool,
@@ -115,9 +110,16 @@ pub struct OauthCredentials {
     pub secret: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct MongoConfig {
+    #[serde(default)]
     pub uri: String,
+    #[serde(default)]
+    pub address: String,
+    #[serde(default)]
+    pub username: String,
+    #[serde(default)]
+    pub password: String,
     #[serde(default = "default_core_mongo_app_name")]
     pub app_name: String,
     #[serde(default = "default_core_mongo_db_name")]
@@ -132,11 +134,9 @@ fn default_core_mongo_db_name() -> String {
     "monitor".to_string()
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Deserialize, Debug, Clone, Default)]
 pub struct AwsCredentials {
-    #[serde(skip_serializing)]
     pub access_key_id: String,
-    #[serde(skip_serializing)]
     pub secret_access_key: String,
 }
 
@@ -147,12 +147,13 @@ impl CoreConfig {
     }
 }
 
-#[derive(Deserialize, Debug, Clone, Copy)]
+#[derive(Deserialize, Debug, Clone, Copy, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
     Off,
     Error,
     Warn,
+    #[default]
     Info,
     Debug,
     Trace,

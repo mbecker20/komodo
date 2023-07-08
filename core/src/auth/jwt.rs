@@ -42,7 +42,7 @@ pub struct JwtClient {
 
 impl JwtClient {
     pub fn new(config: &CoreConfig) -> JwtClient {
-        let key = Hmac::new_from_slice(config.jwt_secret.as_bytes())
+        let key = Hmac::new_from_slice(random_string(40).as_bytes())
             .expect("failed at taking HmacSha256 of jwt secret");
         JwtClient {
             key,

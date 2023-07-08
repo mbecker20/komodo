@@ -3,7 +3,10 @@ use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::sync::Mutex;
 
-use crate::{auth::random_string, config::CoreConfig};
+use crate::{
+    auth::random_string,
+    config::{CoreConfig, OauthCredentials},
+};
 
 pub struct GithubOauthClient {
     http: reqwest::Client,
@@ -18,23 +21,41 @@ pub struct GithubOauthClient {
 impl GithubOauthClient {
     pub fn new(
         CoreConfig {
-            github_oauth, host, ..
+            github_oauth:
+                OauthCredentials {
+                    enabled,
+                    id,
+                    secret,
+                },
+            host,
+            ..
         }: &CoreConfig,
     ) -> Option<GithubOauthClient> {
-        if github_oauth.enabled && !github_oauth.id.is_empty() && !github_oauth.secret.is_empty() {
-            GithubOauthClient {
-                http: reqwest::Client::new(),
-                client_id: github_oauth.id.clone(),
-                client_secret: github_oauth.secret.clone(),
-                redirect_uri: format!("{host}/auth/github/callback"),
-                user_agent: Default::default(),
-                scopes: Default::default(),
-                states: Default::default(),
-            }
-            .into()
-        } else {
-            None
+        if !enabled {
+            return None;
         }
+        if host.is_empty() {
+            warn!("github oauth is enabled, but 'config.host' is not configured");
+            return None;
+        }
+        if id.is_empty() {
+            warn!("github oauth is enabled, but 'config.github_oauth.id' is not configured");
+            return None;
+        }
+        if secret.is_empty() {
+            warn!("github oauth is enabled, but 'config.github_oauth.secret' is not configured");
+            return None;
+        }
+        GithubOauthClient {
+            http: reqwest::Client::new(),
+            client_id: id.clone(),
+            client_secret: secret.clone(),
+            redirect_uri: format!("{host}/auth/github/callback"),
+            user_agent: Default::default(),
+            scopes: Default::default(),
+            states: Default::default(),
+        }
+        .into()
     }
 
     pub async fn get_login_redirect_url(&self) -> String {
