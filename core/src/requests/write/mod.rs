@@ -15,6 +15,7 @@ use crate::{
     state::{State, StateExtension},
 };
 
+mod alerter;
 mod build;
 mod builder;
 mod deployment;
@@ -22,7 +23,6 @@ mod permissions;
 mod repo;
 mod secret;
 mod server;
-mod alerter;
 mod tag;
 
 #[typeshare]
@@ -93,7 +93,10 @@ pub fn router() -> Router {
                  Json(request): Json<WriteRequest>| async move {
                     let timer = Instant::now();
                     let req_id = Uuid::new_v4();
-                    info!("/write request {req_id} | user: {} ({}) | {request:?}", user.username, user.id);
+                    info!(
+                        "/write request {req_id} | user: {} ({}) | {request:?}",
+                        user.username, user.id
+                    );
                     let res = tokio::spawn(async move {
                         state
                             .resolve_request(request, user)

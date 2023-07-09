@@ -8,6 +8,7 @@ use typeshare::typeshare;
 
 use crate::optional_string;
 
+pub mod alerter;
 pub mod build;
 pub mod builder;
 pub mod deployment;
@@ -16,7 +17,6 @@ pub mod server;
 pub mod tag;
 pub mod update;
 pub mod user;
-pub mod alerter;
 
 #[typeshare]
 pub type PermissionsMap = HashMap<String, PermissionLevel>;

@@ -68,7 +68,7 @@ pub struct CoreConfig {
     #[serde(default)]
     pub docker_organizations: Vec<String>,
 
-     // enable login with local auth
+    // enable login with local auth
     #[serde(default)]
     pub local_auth: bool,
 

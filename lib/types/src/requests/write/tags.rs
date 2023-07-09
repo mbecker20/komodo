@@ -1,8 +1,11 @@
 use resolver_api::derive::Request;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{update::ResourceTarget, tag::{CustomTag, TagColor, PartialCustomTag}};
+use crate::entities::{
+    tag::{CustomTag, PartialCustomTag, TagColor},
+    update::ResourceTarget,
+};
 
 #[typeshare(serialized_as = "Partial<CustomTag>")]
 type _PartialCustomTag = PartialCustomTag;
@@ -13,13 +16,13 @@ type _PartialCustomTag = PartialCustomTag;
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(CustomTag)]
 pub struct CreateTag {
-	pub name: String,
+    pub name: String,
 
-	#[serde(default)]
-	pub category: String,
+    #[serde(default)]
+    pub category: String,
 
-	#[serde(default)]
-	pub color: TagColor
+    #[serde(default)]
+    pub color: TagColor,
 }
 
 //
@@ -28,7 +31,7 @@ pub struct CreateTag {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(CustomTag)]
 pub struct DeleteTag {
-	pub id: String,
+    pub id: String,
 }
 
 //
@@ -37,8 +40,8 @@ pub struct DeleteTag {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(CustomTag)]
 pub struct UpdateTag {
-	pub id: String,
-	pub config: _PartialCustomTag
+    pub id: String,
+    pub config: _PartialCustomTag,
 }
 
 //
@@ -47,8 +50,8 @@ pub struct UpdateTag {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(())]
 pub struct AddTags {
-	pub target: ResourceTarget,
-	pub tags: Vec<String>, // custom tag ids
+    pub target: ResourceTarget,
+    pub tags: Vec<String>, // custom tag ids
 }
 
 //
@@ -57,6 +60,6 @@ pub struct AddTags {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(())]
 pub struct RemoveTags {
-	pub target: ResourceTarget,
-	pub tags: Vec<String>, // custom tag ids
+    pub target: ResourceTarget,
+    pub tags: Vec<String>, // custom tag ids
 }

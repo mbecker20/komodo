@@ -1,10 +1,6 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use monitor_types::{
-    entities::user::ApiSecret,
-    monitor_timestamp,
-    requests::write::*,
-};
+use monitor_types::{entities::user::ApiSecret, monitor_timestamp, requests::write::*};
 use mungos::{
     mongodb::bson::{doc, to_bson},
     Update,

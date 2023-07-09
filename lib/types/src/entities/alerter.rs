@@ -57,8 +57,8 @@ pub struct Alerter {
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum AlerterConfig {
-	Custom(CustomAlerterConfig),
-	Slack(SlackAlerterConfig),
+    Custom(CustomAlerterConfig),
+    Slack(SlackAlerterConfig),
 }
 
 #[typeshare(serialized_as = "Partial<CustomAlerterConfig>")]
@@ -72,8 +72,8 @@ pub type _PartialSlackAlerterConfig = PartialSlackAlerterConfig;
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum PartialAlerterConfig {
-	Custom(_PartialCustomAlerterConfig),
-	Slack(_PartialSlackAlerterConfig),
+    Custom(_PartialCustomAlerterConfig),
+    Slack(_PartialSlackAlerterConfig),
 }
 
 #[typeshare]

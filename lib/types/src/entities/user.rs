@@ -1,8 +1,8 @@
-use mungos::{MungosIndexed, mongodb::bson::serde_helpers::hex_string_as_object_id};
+use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, MungosIndexed};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, I64, MongoId};
+use crate::{i64_is_zero, MongoId, I64};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]

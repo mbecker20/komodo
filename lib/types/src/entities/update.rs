@@ -1,13 +1,15 @@
 use async_timing_util::unix_timestamp_ms;
 use derive_variants::EnumVariants;
-use mungos::{MungosIndexed, mongodb::bson::serde_helpers::hex_string_as_object_id};
+use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, MungosIndexed};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{entities::Operation, monitor_timestamp, I64, MongoId};
+use crate::{entities::Operation, monitor_timestamp, MongoId, I64};
 
-use super::{Version, build::Build, deployment::Deployment, server::Server, repo::Repo, builder::Builder};
+use super::{
+    build::Build, builder::Builder, deployment::Deployment, repo::Repo, server::Server, Version,
+};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
@@ -87,7 +89,17 @@ impl Log {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString, PartialEq, Eq)]
+#[variant_derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Display,
+    EnumString,
+    PartialEq,
+    Eq
+)]
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {
     #[default]

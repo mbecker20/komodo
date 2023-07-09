@@ -1,5 +1,5 @@
 use resolver_api::derive::Request;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::{entities::update::Update, MongoDocument};

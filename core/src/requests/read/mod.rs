@@ -19,8 +19,8 @@ mod build;
 mod builder;
 mod deployment;
 mod repo;
-mod server;
 mod search;
+mod server;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]

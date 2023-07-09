@@ -326,7 +326,7 @@ impl State {
         std::mem::swap(&mut update.id, &mut update_id);
         self.db
             .updates
-            .update_one(&update_id, mungos::Update::Regular(update.clone()))
+            .update_one(&update_id, mungos::Update::Regular(&update))
             .await
             .context("failed to update the update on db. the update build process was deleted")?;
         std::mem::swap(&mut update.id, &mut update_id);

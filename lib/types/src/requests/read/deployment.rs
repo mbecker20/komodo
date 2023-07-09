@@ -4,7 +4,9 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        deployment::{Deployment, DeploymentActionState, DockerContainerStats, DockerContainerState},
+        deployment::{
+            Deployment, DeploymentActionState, DockerContainerState, DockerContainerStats,
+        },
         update::Log,
     },
     MongoDocument, U64,
@@ -53,7 +55,7 @@ pub struct GetDeploymentStatus {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetDeploymentStatusResponse {
     pub status: Option<String>,
-    pub state: DockerContainerState
+    pub state: DockerContainerState,
 }
 
 //
