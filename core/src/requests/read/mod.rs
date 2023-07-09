@@ -28,7 +28,7 @@ mod search;
 #[resolver_args(RequestUser)]
 #[serde(tag = "type", content = "params")]
 #[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
-pub enum ReadRequest {
+enum ReadRequest {
     // ==== SEARCH ====
     FindResources(FindResources),
 

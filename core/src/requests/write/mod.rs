@@ -22,6 +22,8 @@ mod permissions;
 mod repo;
 mod secret;
 mod server;
+mod alerter;
+mod tag;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -29,7 +31,7 @@ mod server;
 #[resolver_args(RequestUser)]
 #[serde(tag = "type", content = "params")]
 #[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
-pub enum WriteRequest {
+enum WriteRequest {
     // ==== SECRET ====
     CreateLoginSecret(CreateLoginSecret),
     DeleteLoginSecret(DeleteLoginSecret),
@@ -46,24 +48,39 @@ pub enum WriteRequest {
 
     // ==== DEPLOYMENT ====
     CreateDeployment(CreateDeployment),
+    CopyDeployment(CopyDeployment),
     DeleteDeployment(DeleteDeployment),
     UpdateDeployment(UpdateDeployment),
     RenameDeployment(RenameDeployment),
 
     // ==== BUILD ====
     CreateBuild(CreateBuild),
+    CopyBuild(CopyBuild),
     DeleteBuild(DeleteBuild),
     UpdateBuild(UpdateBuild),
 
     // ==== BUIDLER ====
     CreateBuilder(CreateBuilder),
+    CopyBuilder(CopyBuilder),
     DeleteBuilder(DeleteBuilder),
     UpdateBuilder(UpdateBuilder),
 
     // ==== REPO ====
     CreateRepo(CreateRepo),
-    UpdateRepo(UpdateRepo),
+    CopyRepo(CopyRepo),
     DeleteRepo(DeleteRepo),
+    UpdateRepo(UpdateRepo),
+
+    // ==== ALERTER ====
+    CreateAlerter(CreateAlerter),
+    CopyAlerter(CopyAlerter),
+    DeleteAlerter(DeleteAlerter),
+    UpdateAlerter(UpdateAlerter),
+
+    // ==== TAG ====
+    CreateTag(CreateTag),
+    DeleteTag(DeleteTag),
+    UpdateTag(UpdateTag),
 }
 
 pub fn router() -> Router {

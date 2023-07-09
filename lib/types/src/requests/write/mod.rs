@@ -1,3 +1,4 @@
+mod alerter;
 mod build;
 mod builder;
 mod deployment;
@@ -8,6 +9,7 @@ mod server;
 mod tags;
 mod user;
 
+pub use alerter::*;
 pub use build::*;
 pub use builder::*;
 pub use deployment::*;
