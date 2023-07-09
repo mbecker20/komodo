@@ -10,7 +10,7 @@ use aws_sdk_ec2::{
     },
     Client,
 };
-use monitor_types::entities::builder::AwsBuilder;
+use monitor_types::entities::builder::AwsBuilderConfig;
 
 use crate::state::State;
 
@@ -35,7 +35,7 @@ impl State {
     pub async fn create_ec2_instance(
         &self,
         instance_name: &str,
-        AwsBuilder {
+        AwsBuilderConfig {
             region,
             instance_type,
             volume_gb,
@@ -44,7 +44,7 @@ impl State {
             security_group_ids,
             key_pair_name,
             assign_public_ip,
-        }: &AwsBuilder,
+        }: &AwsBuilderConfig,
     ) -> anyhow::Result<Ec2Instance> {
         let instance_type = InstanceType::from(instance_type.as_str());
         if let InstanceType::Unknown(t) = instance_type {

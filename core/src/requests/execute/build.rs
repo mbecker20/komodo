@@ -3,12 +3,30 @@ use std::time::Duration;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::future::join_all;
-use monitor_types::{requests::execute::{RunBuild, Deploy}, entities::{update::{Update, ResourceTarget, UpdateStatus, Log}, PermissionLevel, Operation, build::{Build, BuildBuilderConfig}, builder::{BuilderConfig, AwsBuilder}, deployment::DockerContainerState}, monitor_timestamp, all_logs_success};
+use monitor_types::{
+    all_logs_success,
+    entities::{
+        build::{Build, BuildBuilderConfig},
+        builder::{AwsBuilderConfig, BuilderConfig},
+        deployment::DockerContainerState,
+        update::{Log, ResourceTarget, Update, UpdateStatus},
+        Operation, PermissionLevel,
+    },
+    monitor_timestamp,
+    requests::execute::{Deploy, RunBuild},
+};
 use mungos::mongodb::bson::{doc, to_bson};
-use periphery_client::{requests::{self, GetVersionResponse}, PeripheryClient};
+use periphery_client::{
+    requests::{self, GetVersionResponse},
+    PeripheryClient,
+};
 use resolver_api::Resolve;
 
-use crate::{auth::{RequestUser, InnerRequestUser}, state::State, cloud::{BuildCleanupData, aws::Ec2Instance}};
+use crate::{
+    auth::{InnerRequestUser, RequestUser},
+    cloud::{aws::Ec2Instance, BuildCleanupData},
+    state::State,
+};
 
 #[async_trait]
 impl Resolve<RunBuild, RequestUser> for State {
@@ -167,9 +185,7 @@ impl State {
                 }
                 let builder = self.get_builder(builder_id).await?;
                 match builder.config {
-                    BuilderConfig::AwsBuilder(config) => {
-                        self.get_aws_builder(build, config, update).await
-                    }
+                    BuilderConfig::Aws(config) => self.get_aws_builder(build, config, update).await,
                 }
             }
         }
@@ -178,7 +194,7 @@ impl State {
     async fn get_aws_builder(
         &self,
         build: &Build,
-        builder: AwsBuilder,
+        config: AwsBuilderConfig,
         update: &mut Update,
     ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
         let start_create_ts = monitor_timestamp();
@@ -189,16 +205,16 @@ impl State {
             build.config.version.to_string()
         );
         let Ec2Instance { instance_id, ip } =
-            self.create_ec2_instance(&instance_name, &builder).await?;
+            self.create_ec2_instance(&instance_name, &config).await?;
 
-        let readable_sec_group_ids = builder.security_group_ids.join(", ");
-        let AwsBuilder {
+        let readable_sec_group_ids = config.security_group_ids.join(", ");
+        let AwsBuilderConfig {
             ami_id,
             instance_type,
             volume_gb,
             subnet_id,
             ..
-        } = builder;
+        } = config;
 
         let log = Log {
             stage: "start build instance".to_string(),
@@ -242,7 +258,7 @@ impl State {
                     periphery,
                     BuildCleanupData::Aws {
                         instance_id,
-                        region: builder.region,
+                        region: config.region,
                     },
                 ));
             }

@@ -1,6 +1,6 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use mungos::{MungosIndexed, mongodb::bson::serde_helpers::hex_string_as_object_id};
+use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, MungosIndexed};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
@@ -44,6 +44,10 @@ pub struct Builder {
     #[builder(setter(skip))]
     pub updated_at: I64,
 
+    #[serde(default)]
+    #[builder(default)]
+    pub tags: Vec<String>,
+
     pub config: BuilderConfig,
 }
 
@@ -52,24 +56,24 @@ pub struct Builder {
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum BuilderConfig {
-    AwsBuilder(AwsBuilder),
+    Aws(AwsBuilderConfig),
 }
 
-#[typeshare(serialized_as = "Partial<AwsBuilder>")]
-pub type _PartialAwsBuilder = PartialAwsBuilder;
+#[typeshare(serialized_as = "Partial<AwsBuilderConfig>")]
+pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum PartialBuilderConfig {
-    AwsBuilder(_PartialAwsBuilder),
+    Aws(_PartialAwsBuilderConfig),
 }
 
 impl From<PartialBuilderConfig> for BuilderConfig {
     fn from(value: PartialBuilderConfig) -> BuilderConfig {
         match value {
-            PartialBuilderConfig::AwsBuilder(builder) => BuilderConfig::AwsBuilder(builder.into()),
+            PartialBuilderConfig::Aws(builder) => BuilderConfig::Aws(builder.into()),
         }
     }
 }
@@ -77,9 +81,9 @@ impl From<PartialBuilderConfig> for BuilderConfig {
 impl BuilderConfig {
     pub fn merge_partial(self, partial: PartialBuilderConfig) -> BuilderConfig {
         match partial {
-            PartialBuilderConfig::AwsBuilder(partial) => match self {
-                BuilderConfig::AwsBuilder(config) => {
-                    let config = AwsBuilder {
+            PartialBuilderConfig::Aws(partial) => match self {
+                BuilderConfig::Aws(config) => {
+                    let config = AwsBuilderConfig {
                         region: partial.region.unwrap_or(config.region),
                         instance_type: partial.instance_type.unwrap_or(config.instance_type),
                         volume_gb: partial.volume_gb.unwrap_or(config.volume_gb),
@@ -93,7 +97,7 @@ impl BuilderConfig {
                             .assign_public_ip
                             .unwrap_or(config.assign_public_ip),
                     };
-                    BuilderConfig::AwsBuilder(config)
+                    BuilderConfig::Aws(config)
                 } // _ => BuilderConfig::AwsBuilder(partial.into()),
             },
         }
@@ -104,7 +108,7 @@ impl BuilderConfig {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
-pub struct AwsBuilder {
+pub struct AwsBuilderConfig {
     #[serde(default = "aws_default_region")]
     #[builder(default = "aws_default_region()")]
     pub region: String,
@@ -136,9 +140,9 @@ fn aws_default_volume_gb() -> i32 {
     20
 }
 
-impl From<PartialAwsBuilder> for AwsBuilder {
-    fn from(value: PartialAwsBuilder) -> AwsBuilder {
-        AwsBuilder {
+impl From<PartialAwsBuilderConfig> for AwsBuilderConfig {
+    fn from(value: PartialAwsBuilderConfig) -> AwsBuilderConfig {
+        AwsBuilderConfig {
             region: value.region.unwrap_or(aws_default_region()),
             instance_type: value.instance_type.unwrap_or(aws_default_instance_type()),
             volume_gb: value.volume_gb.unwrap_or(aws_default_volume_gb()),

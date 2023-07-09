@@ -1,6 +1,6 @@
 use monitor_types::entities::{
-    build::Build, builder::Builder, deployment::Deployment, repo::Repo, server::Server,
-    tag::CustomTag, update::Update, user::User,
+    alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
+    server::Server, tag::CustomTag, update::Update, user::User,
 };
 use mungos::{Collection, Indexed, Mungos};
 
@@ -14,6 +14,7 @@ pub struct DbClient {
     pub builders: Collection<Builder>,
     pub repos: Collection<Repo>,
     pub tags: Collection<CustomTag>,
+    pub alerters: Collection<Alerter>,
     pub updates: Collection<Update>,
 }
 
@@ -63,6 +64,7 @@ impl DbClient {
             builders: Builder::collection(&mungos, db_name, true).await?,
             repos: Repo::collection(&mungos, db_name, true).await?,
             tags: CustomTag::collection(&mungos, db_name, true).await?,
+            alerters: Alerter::collection(&mungos, db_name, true).await?,
             updates: Update::collection(&mungos, db_name, true).await?,
         };
         Ok(client)

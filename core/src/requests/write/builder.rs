@@ -31,6 +31,7 @@ impl Resolve<CreateBuilder, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description: Default::default(),
+            tags: Default::default(),
             config: config.into(),
         };
         let builder_id = self
@@ -90,6 +91,7 @@ impl Resolve<CopyBuilder, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description,
+            tags: Default::default(),
             config,
         };
         let builder_id = self
