@@ -1762,9 +1762,9 @@ dependencies = [
 
 [[package]]
 name = "mongodb"
-version = "2.5.0"
+version = "2.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ebe15399de63ad4294c80069967736cbb87ebe467a8cd0629df9cab88a6fbde6"
+checksum = "ebcd85ec209a5b84fd9f54b9e381f6fa17462bc74160d018fc94fd8b9f61faa8"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
@@ -1924,9 +1924,9 @@ dependencies = [
 
 [[package]]
 name = "mungos"
-version = "0.4.5"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "606e6fe66f9507be4814a6ee50508650c4563ecd21904713cf5eda650cf4dd42"
+checksum = "2541180b2a9d5e3ee315b9e3e3b5470b0d86655d62f71f117a41fdca4a048132"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1936,13 +1936,14 @@ dependencies = [
  "mungos_derive",
  "serde",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]
 name = "mungos_derive"
-version = "0.4.4"
+version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11f93e42a586114214dd192d81518125f8d7fe6deda892c19f98f4d22c1cf905"
+checksum = "0639b117727cb6875b31551c5458f02acd39bd1bc6c6fc473d1e225f90c6d5ec"
 dependencies = [
  "proc-macro2",
  "quote",
