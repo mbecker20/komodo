@@ -39,7 +39,7 @@ impl Resolve<CreateBuilder, RequestUser> for State {
             .builders
             .create_one(builder)
             .await
-            .context("failed to add build to db")?;
+            .context("failed to add builder to db")?;
         let builder = self.get_builder(&builder_id).await?;
         let update = Update {
             target: ResourceTarget::Builder(builder_id),

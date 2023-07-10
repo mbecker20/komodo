@@ -222,6 +222,28 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     user.username, permission, repo.name
                 )
             }
+            ResourceTarget::Alerter(id) => {
+                let alerter = self
+                    .db
+                    .alerters
+                    .find_one_by_id(id)
+                    .await
+                    .context("failed at find alerter query")?
+                    .ok_or(anyhow!("failed to find a alerter with id {id}"))?;
+                self.db
+                    .alerters
+                    .update_one(
+                        id,
+                        mungos::Update::Set(doc! {
+                            format!("permissions.{}", user_id): permission.to_string()
+                        }),
+                    )
+                    .await?;
+                format!(
+                    "user {} given {} permissions on alerter {}",
+                    user.username, permission, alerter.name
+                )
+            }
         };
         let mut update = Update {
             operation: Operation::UpdateUserPermissionsOnTarget,

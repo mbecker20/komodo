@@ -10,7 +10,7 @@ use axum::{
 };
 use futures::{SinkExt, StreamExt};
 use monitor_types::entities::{
-    update::{ResourceTarget, Update},
+    update::{ResourceTarget, Update, ResourceTargetVariant},
     user::User,
     PermissionLevel,
 };
@@ -170,46 +170,32 @@ impl State {
                 let permissions = self
                     .get_user_permission_on_server(user_id, server_id)
                     .await?;
-                (permissions, "server")
+                (permissions, ResourceTargetVariant::Server)
             }
             ResourceTarget::Deployment(deployment_id) => {
                 let permissions = self
                     .get_user_permission_on_deployment(user_id, deployment_id)
                     .await?;
-                (permissions, "deployment")
+                (permissions, ResourceTargetVariant::Deployment)
             }
             ResourceTarget::Build(build_id) => {
                 let permissions = self.get_user_permission_on_build(user_id, build_id).await?;
-                (permissions, "build")
+                (permissions, ResourceTargetVariant::Build)
             }
             ResourceTarget::Builder(builder_id) => {
                 let permissions = self
                     .get_user_permission_on_builder(user_id, builder_id)
                     .await?;
-                (permissions, "builder")
+                (permissions, ResourceTargetVariant::Builder)
             }
             ResourceTarget::Repo(repo_id) => {
                 let permissions = self.get_user_permission_on_repo(user_id, repo_id).await?;
-                (permissions, "repo")
+                (permissions, ResourceTargetVariant::Repo)
             }
-            // UpdateTarget::Procedure(procedure_id) => {
-            //     let permissions = db_client
-            //         .get_user_permission_on_procedure(user_id, procedure_id)
-            //         .await?;
-            //     (permissions, "procedure")
-            // }
-            // UpdateTarget::Group(group_id) => {
-            //     let permissions = db_client
-            //         .get_user_permission_on_group(user_id, group_id)
-            //         .await?;
-            //     (permissions, "group")
-            // }
-            // UpdateTarget::Command(command_id) => {
-            //     let permissions = db_client
-            //         .get_user_permission_on_command(user_id, command_id)
-            //         .await?;
-            //     (permissions, "command")
-            // }
+            ResourceTarget::Alerter(alerter_id) => {
+                let permissions = self.get_user_permission_on_alerter(user_id, alerter_id).await?;
+                (permissions, ResourceTargetVariant::Alerter)
+            }
             ResourceTarget::System => {
                 return Err(anyhow!("user not admin, can't recieve system updates"))
             }

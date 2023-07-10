@@ -55,8 +55,6 @@ pub struct Deployment {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
-#[doc_index(doc! { "image.type": 1 })]
-#[sparse_doc_index(doc! { "image.params.build_id": 1 })]
 pub struct DeploymentConfig {
     #[serde(default)]
     #[builder(default)]
@@ -166,6 +164,8 @@ impl From<PartialDeploymentConfig> for DeploymentConfig {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
+#[doc_index(doc! { "type": 1 })]
+#[sparse_doc_index(doc! { "params.build_id": 1 })]
 #[serde(tag = "type", content = "params")]
 pub enum DeploymentImage {
     Image { image: String },

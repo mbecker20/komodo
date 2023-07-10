@@ -59,9 +59,6 @@ pub struct Build {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
-#[doc_index(doc! { "builder.type": 1 })]
-#[sparse_doc_index(doc! { "builder.params.server_id": 1 })]
-#[sparse_doc_index(doc! { "builder.params.builder_id": 1 })]
 pub struct BuildConfig {
     pub builder: BuildBuilderConfig,
 
@@ -162,6 +159,9 @@ pub struct BuildActionState {
 #[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
+#[doc_index(doc! { "type": 1 })]
+#[sparse_doc_index(doc! { "params.server_id": 1 })]
+#[sparse_doc_index(doc! { "params.builder_id": 1 })]
 pub enum BuildBuilderConfig {
     Server { server_id: String },
     Builder { builder_id: String },

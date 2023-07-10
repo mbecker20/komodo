@@ -8,7 +8,8 @@ use typeshare::typeshare;
 use crate::{entities::Operation, monitor_timestamp, MongoId, I64};
 
 use super::{
-    build::Build, builder::Builder, deployment::Deployment, repo::Repo, server::Server, Version,
+    alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
+    server::Server, Version,
 };
 
 #[typeshare]
@@ -109,6 +110,7 @@ pub enum ResourceTarget {
     Deployment(String),
     Server(String),
     Repo(String),
+    Alerter(String),
 }
 
 impl From<&Build> for ResourceTarget {
@@ -138,6 +140,12 @@ impl From<&Repo> for ResourceTarget {
 impl From<&Builder> for ResourceTarget {
     fn from(builder: &Builder) -> Self {
         Self::Builder(builder.id.clone())
+    }
+}
+
+impl From<&Alerter> for ResourceTarget {
+    fn from(alerter: &Alerter) -> Self {
+        Self::Alerter(alerter.id.clone())
     }
 }
 

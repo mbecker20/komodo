@@ -301,21 +301,10 @@ pub enum Operation {
     CloneRepo,
     PullRepo,
 
-    // // procedure
-    // CreateProcedure,
-    // UpdateProcedure,
-    // DeleteProcedure,
-
-    // // command
-    // CreateCommand,
-    // UpdateCommand,
-    // DeleteCommand,
-    // RunCommand,
-
-    // // group
-    // CreateGroup,
-    // UpdateGroup,
-    // DeleteGroup,
+    // alerter
+    CreateAlerter,
+    UpdateAlerter,
+    DeleteAlerter,
 
     // user
     UpdateUserPermissions,

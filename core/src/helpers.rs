@@ -4,6 +4,7 @@ use anyhow::{anyhow, Context};
 use monitor_types::{
     busy::Busy,
     entities::{
+        alerter::Alerter,
         build::Build,
         builder::Builder,
         deployment::{Deployment, DockerContainerState},
@@ -302,6 +303,45 @@ impl State {
     ) -> anyhow::Result<PermissionLevel> {
         let repo = self.get_repo(repo_id).await?;
         Ok(repo.get_user_permissions(user_id))
+    }
+
+    pub async fn get_alerter(&self, alerter_id: &str) -> anyhow::Result<Alerter> {
+        self.db
+            .alerters
+            .find_one_by_id(alerter_id)
+            .await?
+            .context(format!("did not find any alerter with id {alerter_id}"))
+    }
+
+    pub async fn get_alerter_check_permissions(
+        &self,
+        alerter_id: &str,
+        user: &RequestUser,
+        permission_level: PermissionLevel,
+    ) -> anyhow::Result<Alerter> {
+        let alerter = self
+            .db
+            .alerters
+            .find_one_by_id(alerter_id)
+            .await?
+            .context(format!("did not find any alerter with id {alerter_id}"))?;
+        let permissions = alerter.get_user_permissions(&user.id);
+        if user.is_admin || permissions >= permission_level {
+            Ok(alerter)
+        } else {
+            Err(anyhow!(
+                "user does not have required permissions on this alerter"
+            ))
+        }
+    }
+
+    pub async fn get_user_permission_on_alerter(
+        &self,
+        user_id: &str,
+        alerter_id: &str,
+    ) -> anyhow::Result<PermissionLevel> {
+        let alerter = self.get_alerter(alerter_id).await?;
+        Ok(alerter.get_user_permissions(user_id))
     }
 
     pub async fn send_update(&self, update: Update) -> anyhow::Result<()> {
