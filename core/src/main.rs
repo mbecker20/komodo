@@ -16,8 +16,6 @@ mod state;
 mod ws;
 
 async fn app() -> anyhow::Result<()> {
-    debug!("loading state");
-
     let state = state::State::load().await?;
 
     info!("version: v{}", env!("CARGO_PKG_VERSION"));

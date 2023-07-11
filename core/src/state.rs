@@ -55,6 +55,8 @@ impl State {
             .init()
             .context("failed to configure logger")?;
 
+        debug!("loading state");
+
         let state: Arc<State> = State {
             env,
             db: DbClient::new(&config).await?,
