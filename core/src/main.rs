@@ -18,7 +18,7 @@ mod ws;
 async fn app() -> anyhow::Result<()> {
     let state = state::State::load().await?;
 
-    info!("version: v{}", env!("CARGO_PKG_VERSION"));
+    info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
 
     let socket_addr = state.socket_addr()?;
 
@@ -31,7 +31,7 @@ async fn app() -> anyhow::Result<()> {
         .nest("/ws", ws::router())
         .layer(Extension(state));
 
-    info!("starting server on {}", socket_addr);
+    info!("starting monitor core on {}", socket_addr);
 
     axum::Server::bind(&socket_addr)
         .serve(app.into_make_service())
