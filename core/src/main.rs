@@ -31,7 +31,7 @@ async fn app() -> anyhow::Result<()> {
         .nest("/ws", ws::router())
         .layer(Extension(state));
 
-    info!("starting monitor core on {}", socket_addr);
+    info!("starting monitor core on {socket_addr}");
 
     axum::Server::bind(&socket_addr)
         .serve(app.into_make_service())
