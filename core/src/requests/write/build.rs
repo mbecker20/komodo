@@ -12,7 +12,11 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::empty_or_only_spaces, state::State};
+use crate::{
+    auth::RequestUser,
+    helpers::{empty_or_only_spaces, make_update},
+    state::State,
+};
 
 #[async_trait]
 impl Resolve<CreateBuild, RequestUser> for State {
@@ -64,22 +68,15 @@ impl Resolve<CreateBuild, RequestUser> for State {
             .await
             .context("failed to add build to db")?;
         let build = self.get_build(&build_id).await?;
-        let update = Update {
-            target: ResourceTarget::Build(build_id),
-            operation: Operation::CreateBuild,
-            start_ts,
-            end_ts: Some(monitor_timestamp()),
-            operator: user.id.clone(),
-            success: true,
-            logs: vec![
-                Log::simple(
-                    "create build",
-                    format!("created build\nid: {}\nname: {}", build.id, build.name),
-                ),
-                Log::simple("config", format!("{:#?}", build.config)),
-            ],
-            ..Default::default()
-        };
+
+        let mut update = make_update(&build, Operation::CreateBuild, &user);
+
+        update.push_simple_log(
+            "create build",
+            format!("created build\nid: {}\nname: {}", build.id, build.name),
+        );
+
+        update.push_simple_log("config", format!("{:#?}", build.config));
 
         self.add_update(update).await?;
 
@@ -143,6 +140,13 @@ impl Resolve<CopyBuild, RequestUser> for State {
             .await
             .context("failed to add build to db")?;
         let build = self.get_build(&build_id).await?;
+
+        let mut update = make_update(&build, Operation::CreateBuild, &user);
+
+        update.push_simple_log(
+            "create build",
+            format!("created build\nid: {}\nname: {}", build.id, build.name),
+        );
         let update = Update {
             target: ResourceTarget::Build(build_id),
             operation: Operation::CreateBuild,

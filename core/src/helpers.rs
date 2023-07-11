@@ -10,10 +10,11 @@ use monitor_types::{
         deployment::{Deployment, DockerContainerState},
         repo::Repo,
         server::{Server, ServerStatus},
-        update::Update,
+        update::{ResourceTarget, Update},
         user::User,
-        PermissionLevel,
+        Operation, PermissionLevel,
     },
+    monitor_timestamp,
     permissioned::Permissioned,
 };
 use periphery_client::{requests, PeripheryClient};
@@ -447,4 +448,18 @@ pub fn empty_or_only_spaces(word: &str) -> bool {
 
 pub fn random_duration(min_ms: u64, max_ms: u64) -> Duration {
     Duration::from_millis(thread_rng().gen_range(min_ms..max_ms))
+}
+
+pub fn make_update(
+    target: impl Into<ResourceTarget>,
+    operation: Operation,
+    user: &RequestUser,
+) -> Update {
+    Update {
+        start_ts: monitor_timestamp(),
+        target: target.into(),
+        operation,
+        operator: user.id.clone(),
+        ..Default::default()
+    }
 }

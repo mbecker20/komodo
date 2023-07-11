@@ -10,7 +10,7 @@ use axum::{
 };
 use futures::{SinkExt, StreamExt};
 use monitor_types::entities::{
-    update::{ResourceTarget, Update, ResourceTargetVariant},
+    update::{ResourceTarget, ResourceTargetVariant, Update},
     user::User,
     PermissionLevel,
 };
@@ -193,7 +193,9 @@ impl State {
                 (permissions, ResourceTargetVariant::Repo)
             }
             ResourceTarget::Alerter(alerter_id) => {
-                let permissions = self.get_user_permission_on_alerter(user_id, alerter_id).await?;
+                let permissions = self
+                    .get_user_permission_on_alerter(user_id, alerter_id)
+                    .await?;
                 (permissions, ResourceTargetVariant::Alerter)
             }
             ResourceTarget::System => {

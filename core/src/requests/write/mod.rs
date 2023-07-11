@@ -59,7 +59,7 @@ enum WriteRequest {
     DeleteBuild(DeleteBuild),
     UpdateBuild(UpdateBuild),
 
-    // ==== BUIDLER ====
+    // ==== BUILDER ====
     CreateBuilder(CreateBuilder),
     CopyBuilder(CopyBuilder),
     DeleteBuilder(DeleteBuilder),

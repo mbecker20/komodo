@@ -34,6 +34,14 @@ pub struct Update {
 }
 
 impl Update {
+    pub fn push_simple_log(&mut self, stage: &str, msg: String) {
+        self.logs.push(Log::simple(stage, msg));
+    }
+
+    pub fn push_error_log(&mut self, stage: &str, msg: String) {
+        self.logs.push(Log::error(stage, msg));
+    }
+
     pub fn finalize(&mut self) {
         self.success = all_logs_success(&self.logs);
         self.end_ts = Some(monitor_timestamp());

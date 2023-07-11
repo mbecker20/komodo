@@ -149,10 +149,10 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
             .await?;
 
         self.db
-            .builds
+            .builders
             .delete_one(&id)
             .await
-            .context("failed to delete build from database")?;
+            .context("failed to delete builder from database")?;
 
         let mut update = Update {
             target: ResourceTarget::Builder(id.clone()),
