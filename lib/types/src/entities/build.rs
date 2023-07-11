@@ -59,6 +59,7 @@ pub struct Build {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
+#[partial_from]
 pub struct BuildConfig {
     pub builder: BuildBuilderConfig,
 
@@ -76,6 +77,7 @@ pub struct BuildConfig {
 
     #[serde(default = "default_branch")]
     #[builder(default = "default_branch()")]
+    #[partial_default(default_branch())]
     pub branch: String,
 
     #[serde(default)]
@@ -96,10 +98,12 @@ pub struct BuildConfig {
 
     #[serde(default = "default_build_path")]
     #[builder(default = "default_build_path()")]
+    #[partial_default(default_build_path())]
     pub build_path: String,
 
     #[serde(default = "default_dockerfile_path")]
     #[builder(default = "default_dockerfile_path()")]
+    #[partial_default(default_dockerfile_path())]
     pub dockerfile_path: String,
 
     #[serde(default)]
@@ -125,27 +129,6 @@ fn default_build_path() -> String {
 
 fn default_dockerfile_path() -> String {
     String::from("Dockerfile")
-}
-
-impl From<PartialBuildConfig> for BuildConfig {
-    fn from(value: PartialBuildConfig) -> BuildConfig {
-        BuildConfig {
-            builder: value.builder.unwrap_or_default(),
-            skip_secret_interp: value.skip_secret_interp.unwrap_or_default(),
-            version: value.version.unwrap_or_default(),
-            repo: value.repo.unwrap_or_default(),
-            branch: value.branch.unwrap_or(default_branch()),
-            github_account: value.github_account.unwrap_or_default(),
-            docker_account: value.docker_account.unwrap_or_default(),
-            docker_organization: value.docker_organization.unwrap_or_default(),
-            pre_build: value.pre_build.unwrap_or_default(),
-            build_path: value.build_path.unwrap_or(default_build_path()),
-            dockerfile_path: value.dockerfile_path.unwrap_or(default_dockerfile_path()),
-            build_args: value.build_args.unwrap_or_default(),
-            extra_args: value.extra_args.unwrap_or_default(),
-            use_buildx: value.use_buildx.unwrap_or_default(),
-        }
-    }
 }
 
 #[typeshare]

@@ -54,16 +54,19 @@ pub struct Server {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
+#[partial_from]
 pub struct ServerConfig {
     pub address: String,
 
     #[serde(default = "default_enabled")]
     #[builder(default = "default_enabled()")]
+    #[partial_default(default_enabled())]
     #[index]
     pub enabled: bool,
 
     #[serde(default = "default_auto_prune")]
     #[builder(default = "default_auto_prune()")]
+    #[partial_default(default_auto_prune())]
     #[index]
     pub auto_prune: bool,
 
@@ -73,26 +76,32 @@ pub struct ServerConfig {
 
     #[serde(default = "default_cpu_warning")]
     #[builder(default = "default_cpu_warning()")]
+    #[partial_default(default_cpu_warning())]
     pub cpu_warning: f32,
 
     #[serde(default = "default_cpu_critical")]
     #[builder(default = "default_cpu_critical()")]
+    #[partial_default(default_cpu_critical())]
     pub cpu_critical: f32,
 
     #[serde(default = "default_mem_warning")]
     #[builder(default = "default_mem_warning()")]
+    #[partial_default(default_mem_warning())]
     pub mem_warning: f64,
 
     #[serde(default = "default_mem_critical")]
     #[builder(default = "default_mem_critical()")]
+    #[partial_default(default_mem_critical())]
     pub mem_critical: f64,
 
     #[serde(default = "default_disk_warning")]
     #[builder(default = "default_disk_warning()")]
+    #[partial_default(default_disk_warning())]
     pub disk_warning: f64,
 
     #[serde(default = "default_disk_critical")]
     #[builder(default = "default_disk_critical()")]
+    #[partial_default(default_disk_critical())]
     pub disk_critical: f64,
 
     #[serde(default)]
@@ -130,24 +139,6 @@ fn default_disk_warning() -> f64 {
 
 fn default_disk_critical() -> f64 {
     95.0
-}
-
-impl From<PartialServerConfig> for ServerConfig {
-    fn from(value: PartialServerConfig) -> ServerConfig {
-        ServerConfig {
-            address: value.address.unwrap_or_default(),
-            enabled: value.enabled.unwrap_or(default_enabled()),
-            auto_prune: value.auto_prune.unwrap_or(default_auto_prune()),
-            region: value.region.unwrap_or_default(),
-            cpu_warning: value.cpu_warning.unwrap_or(default_cpu_warning()),
-            mem_warning: value.mem_warning.unwrap_or(default_mem_warning()),
-            disk_warning: value.disk_warning.unwrap_or(default_disk_warning()),
-            cpu_critical: value.cpu_critical.unwrap_or(default_cpu_critical()),
-            mem_critical: value.mem_critical.unwrap_or(default_mem_critical()),
-            disk_critical: value.disk_critical.unwrap_or(default_disk_critical()),
-            to_notify: value.to_notify.unwrap_or_default(),
-        }
-    }
 }
 
 #[typeshare]

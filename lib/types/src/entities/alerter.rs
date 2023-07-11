@@ -114,32 +114,20 @@ impl AlerterConfig {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
+#[partial_from]
 pub struct CustomAlerterConfig {
+    #[partial_default(String::from("http://localhost:7000"))]
     pub url: String,
-}
-
-impl From<PartialCustomAlerterConfig> for CustomAlerterConfig {
-    fn from(value: PartialCustomAlerterConfig) -> CustomAlerterConfig {
-        CustomAlerterConfig {
-            url: value.url.unwrap_or(String::from("http://localhost:7000")),
-        }
-    }
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
+#[partial_from]
 pub struct SlackAlerterConfig {
+    #[partial_default(String::from(
+        "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
+    ))]
     pub url: String,
-}
-
-impl From<PartialSlackAlerterConfig> for SlackAlerterConfig {
-    fn from(value: PartialSlackAlerterConfig) -> SlackAlerterConfig {
-        SlackAlerterConfig {
-            url: value.url.unwrap_or(String::from(
-                "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
-            )),
-        }
-    }
 }
