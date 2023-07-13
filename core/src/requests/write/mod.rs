@@ -101,21 +101,20 @@ pub fn router() -> Router {
                         state
                             .resolve_request(request, user)
                             .await
-                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")))
+                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")))
                     })
                     .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
+                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")));
                     if let Err(e) = &res {
-                        info!("/write request {req_id} SPAWN ERROR: {e:?}");
+                        info!("/write request {req_id} SPAWN ERROR: {e:#?}");
                     }
                     let res = res?;
                     if let Err(e) = &res {
-                        info!("/write request {req_id} ERROR: {e:?}");
+                        info!("/write request {req_id} ERROR: {e:#?}");
                     }
                     let res = res?;
                     let elapsed = timer.elapsed();
                     info!("/write request {req_id} | resolve time: {elapsed:?}");
-                    debug!("/write request {req_id} RESPONSE: {res}");
                     Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
                 },
             ),
