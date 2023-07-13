@@ -5,7 +5,7 @@ use axum::Extension;
 use monitor_types::{
     entities::{
         build::BuildActionState, deployment::DeploymentActionState, repo::RepoActionState,
-        server::ServerActionState,
+        server::ServerActionState, update::Update,
     },
     requests::auth::GetLoginOptionsResponse,
 };
@@ -13,11 +13,11 @@ use simple_logger::SimpleLogger;
 
 use crate::{
     auth::{GithubOauthClient, GoogleOauthClient, JwtClient},
+    cache::Cache,
+    channel::BroadcastChannel,
     config::{CoreConfig, Env},
     db::DbClient,
-    helpers::Cache,
     monitoring::{CachedDeploymentStatus, CachedServerStatus},
-    ws::UpdateWsChannel,
 };
 
 pub type StateExtension = Extension<Arc<State>>;
@@ -26,7 +26,6 @@ pub struct State {
     pub env: Env,
     pub config: CoreConfig,
     pub db: DbClient,
-    pub update: UpdateWsChannel,
 
     // auth
     pub jwt: JwtClient,
@@ -40,6 +39,10 @@ pub struct State {
 
     // cached responses
     pub login_options_response: String,
+
+    // channels
+    pub build_cancel: BroadcastChannel<String>, // build id to cancel
+    pub update: BroadcastChannel<Update>,
 }
 
 impl State {
@@ -67,7 +70,8 @@ impl State {
             action_states: Default::default(),
             deployment_status_cache: Default::default(),
             server_status_cache: Default::default(),
-            update: UpdateWsChannel::new(),
+            update: BroadcastChannel::new(100),
+            build_cancel: BroadcastChannel::new(10),
             config,
         }
         .into();

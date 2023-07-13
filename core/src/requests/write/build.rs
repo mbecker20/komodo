@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::{
         build::{Build, BuildBuilderConfig},
-        update::{Log, ResourceTarget, Update, UpdateStatus},
+        update::{Log, UpdateStatus},
         Operation, PermissionLevel,
     },
     monitor_timestamp,
@@ -147,22 +147,9 @@ impl Resolve<CopyBuild, RequestUser> for State {
             "create build",
             format!("created build\nid: {}\nname: {}", build.id, build.name),
         );
-        let update = Update {
-            target: ResourceTarget::Build(build_id),
-            operation: Operation::CreateBuild,
-            start_ts,
-            end_ts: Some(monitor_timestamp()),
-            operator: user.id.clone(),
-            success: true,
-            logs: vec![
-                Log::simple(
-                    "create build",
-                    format!("created build\nid: {}\nname: {}", build.id, build.name),
-                ),
-                Log::simple("config", format!("{:#?}", build.config)),
-            ],
-            ..Default::default()
-        };
+        update.push_simple_log("config", serde_json::to_string_pretty(&build)?);
+
+        update.finalize();
 
         self.add_update(update).await?;
 
@@ -185,18 +172,8 @@ impl Resolve<DeleteBuild, RequestUser> for State {
             .get_build_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
-        let start_ts = monitor_timestamp();
-
-        let mut update = Update {
-            target: ResourceTarget::Build(id.clone()),
-            operation: Operation::DeleteBuild,
-            start_ts,
-            operator: user.id.clone(),
-            success: true,
-            status: UpdateStatus::InProgress,
-            ..Default::default()
-        };
-
+        let mut update = make_update(&build, Operation::DeleteBuild, &user);
+        update.status = UpdateStatus::InProgress;
         update.id = self.add_update(update.clone()).await?;
 
         let res = self
@@ -235,8 +212,6 @@ impl Resolve<UpdateBuild, RequestUser> for State {
             .await?;
 
         let inner = || async move {
-            let start_ts = monitor_timestamp();
-
             if let Some(builder) = &config.builder {
                 match builder {
                     BuildBuilderConfig::Server { server_id } => {
@@ -272,38 +247,28 @@ impl Resolve<UpdateBuild, RequestUser> for State {
             self.db
                 .builds
                 .update_one(
-                    &id,
+                    &build.id,
                     mungos::Update::Set(doc! { "config": to_bson(&config)? }),
                 )
                 .await
                 .context("failed to update build on database")?;
 
-            let update = Update {
-                operation: Operation::UpdateBuild,
-                target: ResourceTarget::Build(id.clone()),
-                start_ts,
-                end_ts: Some(monitor_timestamp()),
-                status: UpdateStatus::Complete,
-                logs: vec![Log::simple(
-                    "build update",
-                    serde_json::to_string_pretty(&config).unwrap(),
-                )],
-                operator: user.id.clone(),
-                success: true,
-                version: config.version.unwrap_or_default(),
-                ..Default::default()
-            };
+            let mut update = make_update(&build, Operation::UpdateBuild, &user);
+
+            update.push_simple_log("build update", serde_json::to_string_pretty(&config)?);
+
+            update.finalize();
 
             self.add_update(update).await?;
 
-            let build = self.get_build(&id).await?;
+            let build = self.get_build(&build.id).await?;
 
             anyhow::Ok(build)
         };
 
         self.action_states
             .build
-            .update_entry(build.id.clone(), |entry| {
+            .update_entry(id.clone(), |entry| {
                 entry.updating = true;
             })
             .await;
@@ -312,7 +277,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
 
         self.action_states
             .build
-            .update_entry(build.id, |entry| {
+            .update_entry(id, |entry| {
                 entry.updating = false;
             })
             .await;

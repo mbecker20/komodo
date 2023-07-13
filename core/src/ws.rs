@@ -10,18 +10,12 @@ use axum::{
 };
 use futures::{SinkExt, StreamExt};
 use monitor_types::entities::{
-    update::{ResourceTarget, ResourceTargetVariant, Update},
+    update::{ResourceTarget, ResourceTargetVariant},
     user::User,
     PermissionLevel,
 };
 use serde_json::json;
-use tokio::{
-    select,
-    sync::{
-        broadcast::{self, Receiver, Sender},
-        Mutex,
-    },
-};
+use tokio::select;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
@@ -29,30 +23,12 @@ use crate::{
     state::{State, StateExtension},
 };
 
-pub type UpdateWsSender = Mutex<Sender<Update>>;
-pub type UpdateWsReciever = Receiver<Update>;
-
 pub fn router() -> Router {
     Router::new().route("/update", get(ws_handler))
 }
 
-pub struct UpdateWsChannel {
-    pub sender: UpdateWsSender,
-    pub reciever: UpdateWsReciever,
-}
-
-impl UpdateWsChannel {
-    pub fn new() -> UpdateWsChannel {
-        let (sender, reciever) = broadcast::channel(16);
-        UpdateWsChannel {
-            sender: Mutex::new(sender),
-            reciever,
-        }
-    }
-}
-
 async fn ws_handler(state: StateExtension, ws: WebSocketUpgrade) -> impl IntoResponse {
-    let mut reciever = state.update.reciever.resubscribe();
+    let mut receiver = state.update.receiver.resubscribe();
     ws.on_upgrade(|socket| async move {
         let login_res = state.ws_login(socket).await;
         if login_res.is_none() {
@@ -66,7 +42,7 @@ async fn ws_handler(state: StateExtension, ws: WebSocketUpgrade) -> impl IntoRes
             loop {
                 let update = select! {
                     _ = cancel_clone.cancelled() => break,
-                    update = reciever.recv() => {update.expect("failed to recv update msg")}
+                    update = receiver.recv() => {update.expect("failed to recv update msg")}
                 };
                 let user = state.db.users.find_one_by_id(&user.id).await;
                 if user.is_err()

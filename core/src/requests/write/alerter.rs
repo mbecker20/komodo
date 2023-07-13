@@ -5,6 +5,7 @@ use monitor_types::{
     monitor_timestamp,
     requests::write::{CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter},
 };
+use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, helpers::make_update, state::State};
@@ -157,6 +158,29 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
         UpdateAlerter { id, config }: UpdateAlerter,
         user: RequestUser,
     ) -> anyhow::Result<Alerter> {
-        todo!()
+        let alerter = self
+            .get_alerter_check_permissions(&id, &user, PermissionLevel::Update)
+            .await?;
+
+        let mut update = make_update(&alerter, Operation::UpdateAlerter, &user);
+
+        update.push_simple_log("alerter update", serde_json::to_string_pretty(&config)?);
+
+        let config = alerter.config.merge_partial(config);
+
+        self.db
+            .alerters
+            .update_one(
+                &id,
+                mungos::Update::Set(doc! { "config": to_bson(&config)? }),
+            )
+            .await?;
+
+        let alerter = self.get_alerter(&id).await?;
+
+        update.finalize();
+        self.add_update(update).await?;
+
+        Ok(alerter)
     }
 }

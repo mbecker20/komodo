@@ -5,6 +5,8 @@ use axum::{Extension, Router};
 use termination_signal::tokio::immediate_term_handle;
 
 mod auth;
+mod cache;
+mod channel;
 mod cloud;
 mod config;
 mod db;

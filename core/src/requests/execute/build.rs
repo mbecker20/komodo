@@ -9,11 +9,11 @@ use monitor_types::{
         build::{Build, BuildBuilderConfig},
         builder::{AwsBuilderConfig, BuilderConfig},
         deployment::DockerContainerState,
-        update::{Log, ResourceTarget, Update, UpdateStatus},
+        update::{Log, Update},
         Operation, PermissionLevel,
     },
     monitor_timestamp,
-    requests::execute::{Deploy, RunBuild},
+    requests::execute::{CancelBuild, CancelBuildResponse, Deploy, RunBuild},
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::{
@@ -21,10 +21,12 @@ use periphery_client::{
     PeripheryClient,
 };
 use resolver_api::Resolve;
+use tokio_util::sync::CancellationToken;
 
 use crate::{
     auth::{InnerRequestUser, RequestUser},
     cloud::{aws::Ec2Instance, BuildCleanupData},
+    helpers::make_update,
     state::State,
 };
 
@@ -43,18 +45,39 @@ impl Resolve<RunBuild, RequestUser> for State {
             .get_build_check_permissions(&build_id, &user, PermissionLevel::Execute)
             .await?;
 
-        let inner = || async move {
-            build.config.version.increment();
-            let mut update = Update {
-                target: ResourceTarget::Build(build.id.clone()),
-                operation: Operation::RunBuild,
-                start_ts: monitor_timestamp(),
-                status: UpdateStatus::InProgress,
-                success: true,
-                operator: user.id.clone(),
-                version: build.config.version.clone(),
-                ..Default::default()
+        build.config.version.increment();
+
+        let mut update = make_update(&build, Operation::RunBuild, &user);
+        update.in_progress();
+        update.version = build.config.version.clone();
+
+        let cancel = CancellationToken::new();
+        let cancel_clone = cancel.clone();
+        let mut cancel_recv = self.build_cancel.receiver.resubscribe();
+        let id_clone = build_id.clone();
+
+        tokio::spawn(async move {
+            let poll = async {
+                loop {
+                    let build_id = tokio::select! {
+                        _ = cancel_clone.cancelled() => return Ok(()),
+                        id = cancel_recv.recv() => id?
+                    };
+                    if build_id == id_clone {
+                        cancel_clone.cancel();
+                        return Ok(());
+                    }
+                }
+                #[allow(unreachable_code)]
+                anyhow::Ok(())
             };
+            tokio::select! {
+                _ = cancel_clone.cancelled() => {}
+                _ = poll => {}
+            }
+        });
+
+        let inner = || async move {
             update.id = self.add_update(update.clone()).await?;
 
             // GET BUILDER PERIPHERY
@@ -74,12 +97,22 @@ impl Resolve<RunBuild, RequestUser> for State {
 
             // CLONE REPO
 
-            let clone_success = match periphery
-                .request(requests::CloneRepo {
-                    args: (&build).into(),
-                })
-                .await
-            {
+            let res = tokio::select! {
+                _ = cancel.cancelled() => {
+                    update.push_error_log("build cancelled", String::from("user cancelled build during repo clone"));
+                    self.cleanup_builder_instance(periphery, cleanup_data, &mut update)
+                        .await;
+                    update.finalize();
+                    self.update_update(update.clone()).await?;
+                    return Ok(update)
+                },
+                res = periphery
+                    .request(requests::CloneRepo {
+                        args: (&build).into(),
+                    }) => res,
+            };
+
+            let clone_success = match res {
                 Ok(clone_logs) => {
                     let success = all_logs_success(&clone_logs);
                     update.logs.extend(clone_logs);
@@ -94,19 +127,30 @@ impl Resolve<RunBuild, RequestUser> for State {
             };
 
             if clone_success {
-                match periphery
-                    .request(requests::Build {
-                        build: build.clone(),
-                    })
-                    .await
-                    .context("failed at call to periphery to build")
-                {
+                let res = tokio::select! {
+                    _ = cancel.cancelled() => {
+                        update.push_error_log("build cancelled", String::from("user cancelled build during docker build"));
+                        self.cleanup_builder_instance(periphery, cleanup_data, &mut update)
+                            .await;
+                        update.finalize();
+                        self.update_update(update.clone()).await?;
+                        return Ok(update)
+                    },
+                    res = periphery
+                        .request(requests::Build {
+                            build: build.clone(),
+                        }) => res.context("failed at call to periphery to build"),
+                };
+
+                match res {
                     Ok(logs) => update.logs.extend(logs),
                     Err(e) => update.logs.push(Log::error("build", format!("{e:#?}"))),
                 };
             }
 
-            if all_logs_success(&update.logs) {
+            update.finalize();
+
+            if update.success {
                 let _ = self
                     .db
                     .builds
@@ -121,17 +165,16 @@ impl Resolve<RunBuild, RequestUser> for State {
                     .await;
             }
 
-            // CLEANUP AND FINALIZE UPDATE
+            cancel.cancel();
 
             self.cleanup_builder_instance(periphery, cleanup_data, &mut update)
                 .await;
 
-            self.handle_post_build_redeploy(&build.id, &mut update)
-                .await;
-
-            update.finalize();
-
             self.update_update(update.clone()).await?;
+
+            if update.success {
+                self.handle_post_build_redeploy(&build.id).await;
+            }
 
             Ok(update)
         };
@@ -153,6 +196,20 @@ impl Resolve<RunBuild, RequestUser> for State {
             .await;
 
         res
+    }
+}
+
+#[async_trait]
+impl Resolve<CancelBuild, RequestUser> for State {
+    async fn resolve(
+        &self,
+        CancelBuild { build_id }: CancelBuild,
+        user: RequestUser,
+    ) -> anyhow::Result<CancelBuildResponse> {
+        self.get_build_check_permissions(&build_id, &user, PermissionLevel::Execute)
+            .await?;
+        self.build_cancel.sender.lock().await.send(build_id)?;
+        Ok(CancelBuildResponse {})
     }
 }
 
@@ -300,7 +357,7 @@ impl State {
         }
     }
 
-    async fn handle_post_build_redeploy(&self, build_id: &str, update: &mut Update) {
+    async fn handle_post_build_redeploy(&self, build_id: &str) {
         let redeploy_deployments = self
             .db
             .deployments
@@ -354,25 +411,6 @@ impl State {
                     Err(e) => redeploy_failures.push(format!("{id}: {e:#?}")),
                 }
             }
-
-            if !redeploys.is_empty() {
-                update.logs.push(Log::simple(
-                    "redeploy",
-                    format!("redeployed deployments: {}", redeploys.join(", ")),
-                ))
-            }
-
-            if !redeploy_failures.is_empty() {
-                update.logs.push(Log::simple(
-                    "redeploy failures",
-                    redeploy_failures.join("\n"),
-                ))
-            }
-        } else if let Err(e) = redeploy_deployments {
-            update.logs.push(Log::simple(
-                "redeploys failed",
-                format!("failed to get deployments to redeploy: {e:#?}"),
-            ))
         }
     }
 }

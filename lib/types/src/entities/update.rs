@@ -42,6 +42,10 @@ impl Update {
         self.logs.push(Log::error(stage, msg));
     }
 
+    pub fn in_progress(&mut self) {
+        self.status = UpdateStatus::InProgress;
+    }
+
     pub fn finalize(&mut self) {
         self.success = all_logs_success(&self.logs);
         self.end_ts = Some(monitor_timestamp());
