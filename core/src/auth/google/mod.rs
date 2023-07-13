@@ -97,7 +97,6 @@ async fn callback(
                 admin: no_users_exist,
                 create_server_permissions: no_users_exist,
                 create_build_permissions: no_users_exist,
-                created_at: ts,
                 updated_at: ts,
                 ..Default::default()
             };

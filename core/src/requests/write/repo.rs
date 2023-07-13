@@ -37,7 +37,6 @@ impl Resolve<CreateRepo, RequestUser> for State {
         let repo = Repo {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
@@ -118,7 +117,6 @@ impl Resolve<CopyRepo, RequestUser> for State {
         let repo = Repo {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()

@@ -25,7 +25,6 @@ impl Resolve<CreateBuilder, RequestUser> for State {
         let builder = Builder {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
@@ -85,7 +84,6 @@ impl Resolve<CopyBuilder, RequestUser> for State {
         let builder = Builder {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()

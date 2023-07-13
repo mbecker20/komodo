@@ -1,17 +1,17 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, MungosIndexed};
+use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, derive::{MungosIndexed, StringObjectId}};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, MongoId, I64};
+use crate::{MongoId, I64};
 
 use super::PermissionsMap;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId)]
 pub struct Alerter {
     #[serde(
         default,
@@ -32,10 +32,6 @@ pub struct Alerter {
     #[serde(default)]
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
-
-    #[serde(default, skip_serializing_if = "i64_is_zero")]
-    #[builder(setter(skip))]
-    pub created_at: I64,
 
     #[serde(default)]
     #[builder(setter(skip))]

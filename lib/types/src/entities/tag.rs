@@ -1,8 +1,8 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
 use mungos::{
+    derive::{MungosIndexed, StringObjectId},
     mongodb::bson::{doc, serde_helpers::hex_string_as_object_id},
-    MungosIndexed,
 };
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
@@ -24,7 +24,7 @@ pub enum Tag {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, Partial)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[unique_doc_index(doc! { "name": 1, "category": 1 })]
 pub struct CustomTag {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use mungos::MungosIndexed;
+use mungos::derive::MungosIndexed;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;

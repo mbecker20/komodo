@@ -27,10 +27,6 @@ pub struct MongoIdObj {
     pub oid: String,
 }
 
-fn i64_is_zero(n: &I64) -> bool {
-    *n == 0
-}
-
 pub fn all_logs_success(logs: &Vec<Log>) -> bool {
     for log in logs {
         if !log.success {

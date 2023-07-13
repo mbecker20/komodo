@@ -24,7 +24,6 @@ impl Resolve<CreateServer, RequestUser> for State {
         let server = Server {
             id: Default::default(),
             name: req.name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()

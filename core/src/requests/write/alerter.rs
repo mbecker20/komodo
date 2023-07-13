@@ -22,7 +22,6 @@ impl Resolve<CreateAlerter, RequestUser> for State {
         let alerter = Alerter {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
@@ -77,7 +76,6 @@ impl Resolve<CopyAlerter, RequestUser> for State {
         let alerter = Alerter {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()

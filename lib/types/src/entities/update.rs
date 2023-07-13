@@ -1,6 +1,9 @@
 use async_timing_util::unix_timestamp_ms;
 use derive_variants::EnumVariants;
-use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, MungosIndexed};
+use mungos::{
+    derive::{MungosIndexed, StringObjectId},
+    mongodb::bson::serde_helpers::hex_string_as_object_id,
+};
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
@@ -13,7 +16,7 @@ use super::{
 };
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, StringObjectId)]
 pub struct Update {
     #[serde(
         default,

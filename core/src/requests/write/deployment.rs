@@ -42,7 +42,6 @@ impl Resolve<CreateDeployment, RequestUser> for State {
         let deployment = Deployment {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
@@ -115,7 +114,6 @@ impl Resolve<CopyDeployment, RequestUser> for State {
         let deployment = Deployment {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()

@@ -1,11 +1,14 @@
-use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, MungosIndexed};
+use mungos::{
+    derive::{MungosIndexed, StringObjectId},
+    mongodb::bson::serde_helpers::hex_string_as_object_id,
+};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, MongoId, I64};
+use crate::{MongoId, I64};
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, StringObjectId)]
 pub struct User {
     #[serde(
         default,
@@ -44,9 +47,6 @@ pub struct User {
 
     #[serde(default)]
     pub last_update_view: I64,
-
-    #[serde(default, skip_serializing_if = "i64_is_zero")]
-    pub created_at: I64,
 
     #[serde(default)]
     pub updated_at: I64,

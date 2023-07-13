@@ -1,10 +1,13 @@
 use derive_builder::Builder;
-use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, MungosIndexed};
+use mungos::{
+    derive::{MungosIndexed, StringObjectId},
+    mongodb::bson::serde_helpers::hex_string_as_object_id,
+};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{i64_is_zero, MongoId, I64};
+use crate::{MongoId, I64};
 
 use super::PermissionsMap;
 
@@ -13,7 +16,7 @@ pub mod docker_network;
 pub mod stats;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId)]
 pub struct Server {
     #[serde(
         default,
@@ -34,10 +37,6 @@ pub struct Server {
     #[serde(default)]
     #[builder(setter(skip))]
     pub permissions: PermissionsMap,
-
-    #[serde(default, skip_serializing_if = "i64_is_zero")]
-    #[builder(setter(skip))]
-    pub created_at: I64,
 
     #[serde(default)]
     #[builder(setter(skip))]

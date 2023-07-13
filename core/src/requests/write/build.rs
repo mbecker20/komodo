@@ -51,7 +51,6 @@ impl Resolve<CreateBuild, RequestUser> for State {
         let build = Build {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             last_built_at: 0,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
@@ -123,7 +122,6 @@ impl Resolve<CopyBuild, RequestUser> for State {
         let build = Build {
             id: Default::default(),
             name,
-            created_at: start_ts,
             updated_at: start_ts,
             last_built_at: 0,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
