@@ -51,6 +51,7 @@ pub struct Deployment {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
+#[partial_from]
 pub struct DeploymentConfig {
     #[serde(default)]
     #[builder(default)]
@@ -71,6 +72,7 @@ pub struct DeploymentConfig {
 
     #[serde(default = "default_term_signal_labels")]
     #[builder(default = "default_term_signal_labels()")]
+    #[partial_default(default_term_signal_labels())]
     pub term_signal_labels: Vec<TerminationSignalLabel>,
 
     #[serde(default)]
@@ -79,6 +81,7 @@ pub struct DeploymentConfig {
 
     #[serde(default = "default_termination_timeout")]
     #[builder(default = "default_termination_timeout()")]
+    #[partial_default(default_termination_timeout())]
     pub termination_timeout: i32,
 
     #[serde(default)]
@@ -95,6 +98,7 @@ pub struct DeploymentConfig {
 
     #[serde(default = "default_network")]
     #[builder(default = "default_network()")]
+    #[partial_default(default_network())]
     pub network: String,
 
     #[serde(default)]
@@ -128,33 +132,6 @@ fn default_termination_timeout() -> i32 {
 
 fn default_network() -> String {
     String::from("host")
-}
-
-impl From<PartialDeploymentConfig> for DeploymentConfig {
-    fn from(value: PartialDeploymentConfig) -> DeploymentConfig {
-        DeploymentConfig {
-            server_id: value.server_id.unwrap_or_default(),
-            image: value.image.unwrap_or_default(),
-            skip_secret_interp: value.skip_secret_interp.unwrap_or_default(),
-            redeploy_on_build: value.redeploy_on_build.unwrap_or_default(),
-            term_signal_labels: value
-                .term_signal_labels
-                .unwrap_or(default_term_signal_labels()),
-            termination_signal: value.termination_signal.unwrap_or_default(),
-            termination_timeout: value
-                .termination_timeout
-                .unwrap_or(default_termination_timeout()),
-            ports: value.ports.unwrap_or_default(),
-            volumes: value.volumes.unwrap_or_default(),
-            environment: value.environment.unwrap_or_default(),
-            network: value.network.unwrap_or(default_network()),
-            restart: value.restart.unwrap_or_default(),
-            post_image: value.post_image.unwrap_or_default(),
-            container_user: value.container_user.unwrap_or_default(),
-            extra_args: value.extra_args.unwrap_or_default(),
-            docker_account: value.docker_account.unwrap_or_default(),
-        }
-    }
 }
 
 #[typeshare]

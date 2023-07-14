@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use async_trait::async_trait;
 use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
@@ -21,6 +22,7 @@ mod deployment;
 mod repo;
 mod search;
 mod server;
+mod user;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -29,6 +31,9 @@ mod server;
 #[serde(tag = "type", content = "params")]
 #[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
 enum ReadRequest {
+    GetVersion(GetVersion),
+    GetUser(GetUser),
+
     // ==== SEARCH ====
     FindResources(FindResources),
 
@@ -106,4 +111,17 @@ pub fn router() -> Router {
             ),
         )
         .layer(middleware::from_fn(auth_request))
+}
+
+#[async_trait]
+impl Resolve<GetVersion, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetVersion {}: GetVersion,
+        _: RequestUser,
+    ) -> anyhow::Result<GetVersionResponse> {
+        Ok(GetVersionResponse {
+            version: env!("CARGO_PKG_VERSION").to_string(),
+        })
+    }
 }

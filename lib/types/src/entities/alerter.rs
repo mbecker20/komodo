@@ -108,7 +108,7 @@ impl AlerterConfig {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 #[partial_from]
 pub struct CustomAlerterConfig {
@@ -118,7 +118,7 @@ pub struct CustomAlerterConfig {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 #[partial_from]
 pub struct SlackAlerterConfig {

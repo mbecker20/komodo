@@ -51,8 +51,9 @@ pub struct Repo {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
+#[partial_from]
 pub struct RepoConfig {
     #[index]
     pub server_id: String,
@@ -61,6 +62,7 @@ pub struct RepoConfig {
 
     #[serde(default = "default_branch")]
     #[builder(default = "default_branch()")]
+    #[partial_default(default_branch())]
     pub branch: String,
 
     #[serde(default)]
@@ -78,19 +80,6 @@ pub struct RepoConfig {
 
 fn default_branch() -> String {
     String::from("main")
-}
-
-impl From<PartialRepoConfig> for RepoConfig {
-    fn from(value: PartialRepoConfig) -> RepoConfig {
-        RepoConfig {
-            server_id: value.server_id.unwrap_or_default(),
-            repo: value.repo.unwrap_or_default(),
-            branch: value.branch.unwrap_or(default_branch()),
-            github_account: value.github_account.unwrap_or_default(),
-            on_clone: value.on_clone.unwrap_or_default(),
-            on_pull: value.on_pull.unwrap_or_default(),
-        }
-    }
 }
 
 #[typeshare]

@@ -51,7 +51,7 @@ pub struct Server {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 #[partial_from]
 pub struct ServerConfig {

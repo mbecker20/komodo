@@ -18,6 +18,8 @@ pub use search::*;
 pub use server::*;
 pub use update::*;
 
+use crate::entities::user::User;
+
 //
 
 #[typeshare]
@@ -30,3 +32,10 @@ pub struct GetVersion {}
 pub struct GetVersionResponse {
     pub version: String,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(User)]
+pub struct GetUser {}

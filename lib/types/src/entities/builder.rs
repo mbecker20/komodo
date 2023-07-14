@@ -105,7 +105,7 @@ impl BuilderConfig {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
-#[partial_derive(Serialize, Deserialize, Debug, Clone)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 pub struct AwsBuilderConfig {
     #[serde(default = "aws_default_region")]

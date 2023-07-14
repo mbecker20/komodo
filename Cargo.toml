@@ -1,5 +1,5 @@
 [workspace]
-members = ["core", "periphery", "tests", "client/rs", "lib/*"]
+members = ["bin/*", "lib/*", "client/rs"]
 
 [workspace.package]
 version = "1.0.0"
@@ -12,7 +12,7 @@ license = "GPL-3.0-or-later"
 monitor_macros = { path = "lib/macros" }
 monitor_types = { path = "lib/types" }
 monitor_client = { path = "client/rs" }
-monitor_periphery = { path = "periphery" }
+monitor_periphery = { path = "bin/periphery" }
 periphery_client = { path = "lib/periphery_client" }
 logger = { path = "lib/logger" }
 # mogh
