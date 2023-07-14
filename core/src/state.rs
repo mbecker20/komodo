@@ -9,7 +9,6 @@ use monitor_types::{
     },
     requests::auth::GetLoginOptionsResponse,
 };
-use simple_logger::SimpleLogger;
 
 use crate::{
     auth::{GithubOauthClient, GoogleOauthClient, JwtClient},
@@ -50,13 +49,7 @@ impl State {
         let env = Env::load()?;
         let config = CoreConfig::load(&env.config_path);
 
-        SimpleLogger::new()
-            .with_level(config.log_level.into())
-            .env()
-            .with_colors(true)
-            .with_utc_timestamps()
-            .init()
-            .context("failed to configure logger")?;
+        logger::init(config.log_level.into())?;
 
         debug!("loading state");
 

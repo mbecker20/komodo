@@ -18,6 +18,7 @@ path = "src/main.rs"
 [dependencies]
 # local
 monitor_types.workspace = true
+logger.workspace = true
 # external
 tokio.workspace = true
 axum.workspace = true

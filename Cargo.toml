@@ -12,8 +12,9 @@ license = "GPL-3.0-or-later"
 monitor_macros = { path = "lib/macros" }
 monitor_types = { path = "lib/types" }
 monitor_client = { path = "client/rs" }
-periphery_client = { path = "lib/periphery_client" }
 monitor_periphery = { path = "periphery" }
+periphery_client = { path = "lib/periphery_client" }
+logger = { path = "lib/logger" }
 # external
 tokio = { version = "1.28", features = ["full"] }
 axum = { version = "0.6", features = ["ws", "json", "headers"] }

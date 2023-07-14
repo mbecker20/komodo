@@ -3,7 +3,6 @@ use std::{collections::HashMap, net::SocketAddr, str::FromStr, sync::Arc};
 use anyhow::Context;
 use clap::Parser;
 use serde_json::json;
-use simple_logger::SimpleLogger;
 
 use crate::{
     config::{CliArgs, Env, PeripheryConfig},
@@ -26,13 +25,7 @@ impl State {
     pub async fn load() -> anyhow::Result<Arc<State>> {
         let env = Env::load()?;
         let args = CliArgs::parse();
-        SimpleLogger::new()
-            .with_level(args.log_level)
-            .env()
-            .with_colors(true)
-            .with_utc_timestamps()
-            .init()
-            .context("failed to configure logger")?;
+        logger::init(args.log_level)?;
         let config = PeripheryConfig::load(&env, &args)?;
         let state = State {
             secrets: config.secrets.clone().into(),
