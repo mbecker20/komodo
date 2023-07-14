@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use monitor_types::{
     entities::{update::Log, CloneArgs, SystemCommand},
-    to_monitor_name,
+    to_monitor_name, monitor_timestamp,
 };
 use run_command::async_run_command;
 
@@ -39,7 +39,7 @@ pub async fn pull(
     logs
 }
 
-pub async fn clone_repo(
+pub async fn clone(
     clone_args: impl Into<CloneArgs>,
     mut repo_dir: PathBuf,
     access_token: Option<String>,
@@ -56,8 +56,12 @@ pub async fn clone_repo(
     let name = to_monitor_name(&name);
     repo_dir.push(name);
     let destination = repo_dir.display().to_string();
-    let clone_log = clone(repo, &destination, &branch, access_token).await;
-    let mut logs = vec![clone_log];
+    let clone_log = clone_inner(repo, &destination, &branch, access_token).await;
+    if !clone_log.success {
+        return Ok(vec![clone_log])
+    }
+    let commit_hash_log = get_commit_hash_log(&destination).await?;
+    let mut logs = vec![clone_log, commit_hash_log];
     if let Some(command) = on_clone {
         if !command.path.is_empty() && !command.command.is_empty() {
             let on_clone_path = repo_dir.join(&command.path);
@@ -83,7 +87,7 @@ pub async fn clone_repo(
     Ok(logs)
 }
 
-async fn clone(
+async fn clone_inner(
     repo: &str,
     destination: &str,
     branch: &Option<String>,
@@ -121,4 +125,25 @@ async fn clone(
         start_ts,
         end_ts: unix_timestamp_ms() as i64,
     }
+}
+
+async fn get_commit_hash_log(repo_dir: &str) -> anyhow::Result<Log> {
+    let start_ts = monitor_timestamp();
+    let command = format!("cd {repo_dir} && git rev-parse --short HEAD && git rev-parse HEAD");
+    let output = async_run_command(&command).await;
+    let mut split = output.stdout.split('\n');
+    let (short, long) = (
+        split.next().context("failed to get short commit hash")?,
+        split.next().context("failed to get long commit hash")?,
+    );
+    let log = Log {
+        stage: "commit hash".into(),
+        command,
+        stdout: format!("short: {short}\nfull: {long}"),
+        stderr: String::new(),
+        success: true,
+        start_ts,
+        end_ts: monitor_timestamp(),
+    };
+    Ok(log)
 }

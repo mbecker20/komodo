@@ -17,7 +17,7 @@ pub struct CloneRepo {
 impl Resolve<CloneRepo> for State {
     async fn resolve(&self, CloneRepo { args }: CloneRepo, _: ()) -> anyhow::Result<Vec<Log>> {
         let access_token = self.get_github_token(&args.github_account)?;
-        git::clone_repo(args, self.config.repo_dir.clone(), access_token).await
+        git::clone(args, self.config.repo_dir.clone(), access_token).await
     }
 }
 
