@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{entities::Operation, monitor_timestamp, MongoId, I64};
+use crate::{entities::Operation, monitor_timestamp, MongoId, I64, all_logs_success};
 
 use super::{
     alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
@@ -54,15 +54,6 @@ impl Update {
         self.end_ts = Some(monitor_timestamp());
         self.status = UpdateStatus::Complete;
     }
-}
-
-fn all_logs_success(logs: &Vec<Log>) -> bool {
-    for log in logs {
-        if !log.success {
-            return false;
-        }
-    }
-    true
 }
 
 #[typeshare]

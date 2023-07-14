@@ -27,7 +27,7 @@ pub struct MongoIdObj {
     pub oid: String,
 }
 
-pub fn all_logs_success(logs: &Vec<Log>) -> bool {
+pub fn all_logs_success(logs: &[Log]) -> bool {
     for log in logs {
         if !log.success {
             return false;

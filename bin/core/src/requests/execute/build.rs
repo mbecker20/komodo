@@ -112,21 +112,14 @@ impl Resolve<RunBuild, RequestUser> for State {
                     }) => res,
             };
 
-            let clone_success = match res {
-                Ok(clone_logs) => {
-                    let success = all_logs_success(&clone_logs);
-                    update.logs.extend(clone_logs);
-                    success
-                }
-                Err(e) => {
-                    update
-                        .logs
-                        .push(Log::error("clone repo", format!("{e:#?}")));
-                    false
-                }
-            };
+            match res {
+                Ok(clone_logs) => update.logs.extend(clone_logs),
+                Err(e) => update.push_error_log("clone repo", format!("{e:#?}")),
+            }
 
-            if clone_success {
+            self.update_update(update.clone()).await?;
+
+            if all_logs_success(&update.logs) {
                 let res = tokio::select! {
                     _ = cancel.cancelled() => {
                         update.push_error_log("build cancelled", String::from("user cancelled build during docker build"));
@@ -144,7 +137,7 @@ impl Resolve<RunBuild, RequestUser> for State {
 
                 match res {
                     Ok(logs) => update.logs.extend(logs),
-                    Err(e) => update.logs.push(Log::error("build", format!("{e:#?}"))),
+                    Err(e) => update.push_error_log("build", format!("{e:#?}")),
                 };
             }
 
