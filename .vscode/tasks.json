@@ -44,7 +44,7 @@
 			"command": "run",
 			"label": "run core",
 			"options": {
-				"cwd": "${workspaceFolder}/core"
+				"cwd": "${workspaceFolder}/bin/core"
 			},
 			"presentation": {
 				"group": "start"
@@ -55,7 +55,7 @@
 			"command": "run",
 			"label": "run periphery",
 			"options": {
-				"cwd": "${workspaceFolder}/periphery"
+				"cwd": "${workspaceFolder}/bin/periphery"
 			}
 		},
 		{
@@ -63,7 +63,7 @@
 			"command": "run",
 			"label": "run tests",
 			"options": {
-				"cwd": "${workspaceFolder}/tests"
+				"cwd": "${workspaceFolder}/bin/tests"
 			}
 		},
 		{

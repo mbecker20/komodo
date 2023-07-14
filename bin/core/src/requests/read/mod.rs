@@ -92,7 +92,7 @@ pub fn router() -> Router {
                  Json(request): Json<ReadRequest>| async move {
                     let timer = Instant::now();
                     let req_id = Uuid::new_v4();
-                    info!(
+                    debug!(
                         "/read request {req_id} | user: {} ({}) | {request:?}",
                         user.username, user.id
                     );
@@ -101,11 +101,11 @@ pub fn router() -> Router {
                         .await
                         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")));
                     if let Err(e) = &res {
-                        info!("/read request {req_id} ERROR: {e:#?}");
+                        warn!("/read request {req_id} ERROR: {e:#?}");
                     }
                     let res = res?;
                     let elapsed = timer.elapsed();
-                    info!("/read request {req_id} | resolve time: {elapsed:?}");
+                    debug!("/read request {req_id} | resolve time: {elapsed:?}");
                     Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
                 },
             ),
