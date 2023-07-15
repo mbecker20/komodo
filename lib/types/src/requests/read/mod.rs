@@ -8,6 +8,7 @@ mod deployment;
 mod repo;
 mod search;
 mod server;
+mod tag;
 mod update;
 
 pub use build::*;
@@ -16,6 +17,7 @@ pub use deployment::*;
 pub use repo::*;
 pub use search::*;
 pub use server::*;
+pub use tag::*;
 pub use update::*;
 
 use crate::entities::user::User;

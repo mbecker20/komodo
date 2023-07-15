@@ -13,12 +13,15 @@ use crate::MongoId;
 
 use super::update::ResourceTargetVariant;
 
+#[typeshare(serialized_as = "ResourceTarget["type"]")]
+type _ResourceTargetVariant = ResourceTargetVariant;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum Tag {
-    ResourceType { resource: ResourceTargetVariant }, // filter by resource type
+    ResourceType { resource: _ResourceTargetVariant }, // filter by resource type
     Server { server_id: String }, // filter by server, eg deployments, builds, repos
     Custom { tag_id: String },    // filter by presence of custom tag on resource
 }

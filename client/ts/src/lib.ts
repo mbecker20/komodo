@@ -1,6 +1,6 @@
 import axios from "axios";
-import { ApiResponses, AuthResponses } from "./responses";
-import { ApiRequest, AuthRequest } from "./types";
+import { ReadResponses, AuthResponses } from "./responses";
+import { ReadRequest, WriteRequest, ExecuteRequest, AuthRequest } from "./types";
 
 export type LoginOptions = {
   jwt?: string;
@@ -40,22 +40,22 @@ export async function MonitorClient(base_url: string) {
     }
   }
 
-  const api = async <R extends ApiRequest>(
-    request: R
-  ): Promise<ApiResponses[R["type"]]> => {
-    return await axios({
-      method: "post",
-      url: base_url + "/api",
-      headers: {
-        Authorization: `Bearer ${jwt}`
-      },
-      data: request,
-    }).then(({ data }) => data);
-  };
+  // const read = async <R extends ReadRequest>(
+  //   request: R
+  // ): Promise<ReadResponses[R["type"]]> => {
+  //   return await axios({
+  //     method: "post",
+  //     url: base_url + "/read",
+  //     headers: {
+  //       Authorization: `Bearer ${jwt}`
+  //     },
+  //     data: request,
+  //   }).then(({ data }) => data);
+  // };
 
   return {
     auth,
     login,
-    api,
+    // read,
   };
 }

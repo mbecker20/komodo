@@ -22,6 +22,7 @@ mod deployment;
 mod repo;
 mod search;
 mod server;
+mod tag;
 mod user;
 
 #[typeshare]
@@ -46,21 +47,6 @@ enum ReadRequest {
     GetServer(GetServer),
     ListServers(ListServers),
     GetServerActionState(GetServerActionState),
-    // STATS
-    #[to_string_resolver]
-    GetAllSystemStats(GetAllSystemStats),
-    #[to_string_resolver]
-    GetBasicSystemStats(GetBasicSystemStats),
-    #[to_string_resolver]
-    GetCpuUsage(GetCpuUsage),
-    #[to_string_resolver]
-    GetDiskUsage(GetDiskUsage),
-    #[to_string_resolver]
-    GetNetworkUsage(GetNetworkUsage),
-    #[to_string_resolver]
-    GetSystemProcesses(GetSystemProcesses),
-    #[to_string_resolver]
-    GetSystemComponents(GetSystemComponents),
 
     // ==== DEPLOYMENT ====
     GetDeployment(GetDeployment),
@@ -80,6 +66,26 @@ enum ReadRequest {
     GetRepo(GetRepo),
     ListRepos(ListRepos),
     GetRepoActionState(GetRepoActionState),
+
+    // ==== TAG ====
+    GetTag(GetTag),
+    ListTags(ListTags),
+
+    // ==== SERVER STATS ====
+    #[to_string_resolver]
+    GetAllSystemStats(GetAllSystemStats),
+    #[to_string_resolver]
+    GetBasicSystemStats(GetBasicSystemStats),
+    #[to_string_resolver]
+    GetCpuUsage(GetCpuUsage),
+    #[to_string_resolver]
+    GetDiskUsage(GetDiskUsage),
+    #[to_string_resolver]
+    GetNetworkUsage(GetNetworkUsage),
+    #[to_string_resolver]
+    GetSystemProcesses(GetSystemProcesses),
+    #[to_string_resolver]
+    GetSystemComponents(GetSystemComponents),
 }
 
 pub fn router() -> Router {

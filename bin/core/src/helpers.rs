@@ -54,6 +54,7 @@ pub fn make_update(
 }
 
 impl State {
+    
     // USER
 
     pub async fn get_user(&self, user_id: &str) -> anyhow::Result<User> {

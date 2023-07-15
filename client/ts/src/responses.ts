@@ -8,7 +8,7 @@ export type AuthResponses = {
   LoginWithSecret: Res.LoginWithSecretResponse;
 };
 
-export type ApiResponses = {
+export type ReadResponses = {
   // ==== SECRET ====
   CreateLoginSecret: Res.CreateLoginSecretResponse;
   DeleteLoginSecret: undefined;
