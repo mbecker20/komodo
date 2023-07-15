@@ -1,6 +1,16 @@
 import axios from "axios";
-import { ReadResponses, AuthResponses } from "./responses";
-import { ReadRequest, WriteRequest, ExecuteRequest, AuthRequest } from "./types";
+import {
+  ReadResponses,
+  WriteResponses,
+  ExecuteResponses,
+  AuthResponses,
+} from "./responses";
+import {
+  ReadRequest,
+  WriteRequest,
+  ExecuteRequest,
+  AuthRequest,
+} from "./types";
 
 export type LoginOptions = {
   jwt?: string;
@@ -38,24 +48,52 @@ export async function MonitorClient(base_url: string) {
         jwt = res.jwt;
       }
     }
-  }
+  };
 
-  // const read = async <R extends ReadRequest>(
-  //   request: R
-  // ): Promise<ReadResponses[R["type"]]> => {
-  //   return await axios({
-  //     method: "post",
-  //     url: base_url + "/read",
-  //     headers: {
-  //       Authorization: `Bearer ${jwt}`
-  //     },
-  //     data: request,
-  //   }).then(({ data }) => data);
-  // };
+  const read = async <R extends ReadRequest>(
+    request: R
+  ): Promise<ReadResponses[R["type"]]> => {
+    return await axios({
+      method: "post",
+      url: base_url + "/read",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+      data: request,
+    }).then(({ data }) => data);
+  };
+
+  const write = async <R extends WriteRequest>(
+    request: R
+  ): Promise<WriteResponses[R["type"]]> => {
+    return await axios({
+      method: "post",
+      url: base_url + "/write",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+      data: request,
+    }).then(({ data }) => data);
+  };
+
+  const execute = async <R extends ExecuteRequest>(
+    request: R
+  ): Promise<ExecuteResponses[R["type"]]> => {
+    return await axios({
+      method: "post",
+      url: base_url + "/execute",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+      data: request,
+    }).then(({ data }) => data);
+  };
 
   return {
     auth,
     login,
-    // read,
+    read,
+    write,
+    execute,
   };
 }
