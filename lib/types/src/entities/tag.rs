@@ -43,6 +43,11 @@ pub struct CustomTag {
     #[serde(default)]
     #[builder(default)]
     #[index]
+    pub owner: String,
+
+    #[serde(default)]
+    #[builder(default)]
+    #[index]
     pub category: String,
 
     #[serde(default)]
