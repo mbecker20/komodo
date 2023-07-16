@@ -8,6 +8,7 @@ use typeshare::typeshare;
 
 use crate::optional_string;
 
+pub mod alert;
 pub mod alerter;
 pub mod build;
 pub mod builder;

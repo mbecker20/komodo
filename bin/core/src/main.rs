@@ -4,6 +4,7 @@ extern crate log;
 use axum::{Extension, Router};
 use termination_signal::tokio::immediate_term_handle;
 
+mod alert;
 mod auth;
 mod cache;
 mod channel;
@@ -12,7 +13,7 @@ mod config;
 mod db;
 mod helpers;
 mod listener;
-mod monitoring;
+mod monitor;
 mod requests;
 mod state;
 mod ws;

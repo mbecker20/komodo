@@ -16,7 +16,7 @@ use crate::{
     channel::BroadcastChannel,
     config::{CoreConfig, Env},
     db::DbClient,
-    monitoring::{CachedDeploymentStatus, CachedServerStatus},
+    monitor::{CachedDeploymentStatus, CachedServerStatus},
 };
 
 pub type StateExtension = Extension<Arc<State>>;
