@@ -22,6 +22,11 @@ use rand::{thread_rng, Rng};
 
 use crate::{auth::RequestUser, state::State};
 
+pub mod cache;
+pub mod channel;
+pub mod alert;
+pub mod db;
+
 pub fn empty_or_only_spaces(word: &str) -> bool {
     if word.is_empty() {
         return true;
