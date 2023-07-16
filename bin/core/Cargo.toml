@@ -16,6 +16,14 @@ path = "src/main.rs"
 monitor_types.workspace = true
 periphery_client.workspace = true
 logger.workspace = true
+# mogh
+async_timing_util.workspace = true
+merge_config_files.workspace = true
+parse_csl.workspace = true
+termination_signal.workspace = true
+resolver_api.workspace = true
+mungos.workspace = true
+slack.workspace = true
 # external
 tokio.workspace = true
 tokio-util.workspace = true
@@ -43,10 +51,3 @@ futures.workspace = true
 aws-config.workspace = true
 aws-sdk-ec2.workspace = true
 typeshare.workspace = true
-# mogh
-async_timing_util.workspace = true
-merge_config_files.workspace = true
-parse_csl.workspace = true
-termination_signal.workspace = true
-resolver_api.workspace = true
-mungos.workspace = true

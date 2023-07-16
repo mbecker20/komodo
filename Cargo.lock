@@ -1863,6 +1863,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "simple_logger",
+ "slack_client_rs",
  "termination_signal",
  "tokio",
  "tokio-util",
@@ -2765,6 +2766,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6528351c9bc8ab22353f9d776db39a20288e8d6c37ef8cfe3317cf875eecfc2d"
 dependencies = [
  "autocfg",
+]
+
+[[package]]
+name = "slack_client_rs"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c78a07312af77255ee84e41fe32546f97ffc06c4166e753f005888dd12d967f"
+dependencies = [
+ "anyhow",
+ "reqwest",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "strum 0.25.0",
+ "strum_macros 0.25.0",
 ]
 
 [[package]]

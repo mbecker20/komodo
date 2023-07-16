@@ -11,8 +11,8 @@ pub async fn send_alert(alerter: &Alerter, alert: &Alert) -> anyhow::Result<()> 
 
 pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
     #[allow(unused)]
-    let message = match alert {
-        Alert::ServerUnreachable { id, name, region } => String::new(),
+    let (header, info) = match alert {
+        Alert::ServerUnreachable { id, name, region } => (String::new(), String::new()),
         Alert::ServerCpu {
             id,
             name,
@@ -20,7 +20,7 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             state,
             percentage,
             top_procs,
-        } => String::new(),
+        } => (String::new(), String::new()),
         Alert::ServerMem {
             id,
             name,
@@ -29,7 +29,7 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             used,
             total,
             top_procs,
-        } => String::new(),
+        } => (String::new(), String::new()),
         Alert::ServerDisk {
             id,
             name,
@@ -38,28 +38,17 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             path,
             used,
             total,
-        } => String::new(),
+        } => (String::new(), String::new()),
         Alert::ContainerStateChange {
             id,
             name,
             server,
             from,
             to,
-        } => String::new(),
+        } => (String::new(), String::new()),
     };
-    let res = reqwest::Client::new()
-        .post(url)
-        .send()
-        .await
-        .context("failed to make request to slack")?;
-    let status = res.status();
-    if status != StatusCode::OK {
-        let text = res
-            .text()
-            .await
-            .context("failed to get slack alert response as test")?;
-        return Err(anyhow!("{status} | {text}"));
-    }
+    let slack = slack::Client::new(url);
+    slack.send_message_with_header(header, info).await?;
     Ok(())
 }
 

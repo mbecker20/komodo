@@ -17,7 +17,7 @@ periphery_client = { path = "lib/periphery_client" }
 logger = { path = "lib/logger" }
 # mogh
 run_command = { version = "0.0.6", features = ["async_tokio"] }
-slack = { package = "slack_client_rs", version = "0.0.8" }
+slack = { package = "slack_client_rs", version = "0.1.0" }
 merge_config_files = "0.1.3"
 termination_signal = "0.1.2"
 async_timing_util = "0.1.14"
