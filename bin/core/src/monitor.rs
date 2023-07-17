@@ -157,8 +157,6 @@ impl State {
 
     async fn handle_server_stats(&self, server: &Server, stats: AllSystemStats) {
         let inner = || async {
-            
-
             let health = get_server_health(server, &stats);
 
             anyhow::Ok(())
