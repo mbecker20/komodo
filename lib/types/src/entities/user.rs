@@ -41,8 +41,10 @@ pub struct User {
 
     pub password: Option<String>,
 
+    #[sparse_index]
     pub github_id: Option<String>,
 
+    #[sparse_index]
     pub google_id: Option<String>,
 
     #[serde(default)]

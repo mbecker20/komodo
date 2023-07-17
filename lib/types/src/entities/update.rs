@@ -2,13 +2,13 @@ use async_timing_util::unix_timestamp_ms;
 use derive_variants::EnumVariants;
 use mungos::{
     derive::{MungosIndexed, StringObjectId},
-    mongodb::bson::serde_helpers::hex_string_as_object_id,
+    mongodb::bson::{doc, serde_helpers::hex_string_as_object_id},
 };
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{entities::Operation, monitor_timestamp, MongoId, I64, all_logs_success};
+use crate::{all_logs_success, entities::Operation, monitor_timestamp, MongoId, I64};
 
 use super::{
     alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
@@ -17,6 +17,8 @@ use super::{
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, StringObjectId)]
+#[doc_index(doc! { "target.type": 1 })]
+#[sparse_doc_index(doc! { "target.id": 1 })]
 pub struct Update {
     #[serde(
         default,
@@ -25,14 +27,23 @@ pub struct Update {
         with = "hex_string_as_object_id"
     )]
     pub id: MongoId,
-    pub target: ResourceTarget,
+
+    #[index]
     pub operation: Operation,
-    pub logs: Vec<Log>,
+
+    #[index]
     pub start_ts: I64,
+
+    #[index]
+    pub success: bool,
+
+    #[index]
+    pub operator: String,
+
+    pub target: ResourceTarget,
+    pub logs: Vec<Log>,
     pub end_ts: Option<I64>,
     pub status: UpdateStatus,
-    pub success: bool,
-    pub operator: String,
     pub version: Version,
 }
 

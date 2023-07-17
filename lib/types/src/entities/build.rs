@@ -15,6 +15,9 @@ use super::{EnvironmentVar, PermissionsMap, SystemCommand, Version};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId)]
+#[doc_index(doc! { "config.builder.type": 1 })]
+#[sparse_doc_index(doc! { "config.builder.params.server_id": 1 })]
+#[sparse_doc_index(doc! { "config.builder.params.builder_id": 1 })]
 pub struct Build {
     #[serde(
         default,
@@ -138,9 +141,6 @@ pub struct BuildActionState {
 #[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
-#[doc_index(doc! { "type": 1 })]
-#[sparse_doc_index(doc! { "params.server_id": 1 })]
-#[sparse_doc_index(doc! { "params.builder_id": 1 })]
 pub enum BuildBuilderConfig {
     Server { server_id: String },
     Builder { builder_id: String },

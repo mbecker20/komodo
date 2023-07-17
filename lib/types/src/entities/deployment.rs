@@ -15,6 +15,8 @@ use super::{EnvironmentVar, PermissionsMap, Version};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId)]
+#[doc_index(doc! { "config.image.type": 1 })]
+#[sparse_doc_index(doc! { "config.image.params.build_id": 1 })]
 pub struct Deployment {
     #[serde(
         default,
@@ -137,8 +139,6 @@ fn default_network() -> String {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
-#[doc_index(doc! { "type": 1 })]
-#[sparse_doc_index(doc! { "params.build_id": 1 })]
 #[serde(tag = "type", content = "params")]
 pub enum DeploymentImage {
     Image { image: String },
