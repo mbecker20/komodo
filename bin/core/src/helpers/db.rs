@@ -1,6 +1,6 @@
 use monitor_types::entities::{
     alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
-    server::Server, tag::CustomTag, update::Update, user::User,
+    server::{Server, stats::SystemStatsRecord}, tag::CustomTag, update::Update, user::User,
 };
 use mungos::{Collection, Indexed, Mungos};
 
@@ -9,6 +9,7 @@ use crate::config::{CoreConfig, MongoConfig};
 pub struct DbClient {
     pub users: Collection<User>,
     pub servers: Collection<Server>,
+    pub stats: Collection<SystemStatsRecord>,
     pub deployments: Collection<Deployment>,
     pub builds: Collection<Build>,
     pub builders: Collection<Builder>,
@@ -59,6 +60,7 @@ impl DbClient {
         let client = DbClient {
             users: User::collection(&mungos, db_name, true).await?,
             servers: Server::collection(&mungos, db_name, true).await?,
+            stats: SystemStatsRecord::collection(&mungos, db_name, true).await?,
             deployments: Deployment::collection(&mungos, db_name, true).await?,
             builds: Build::collection(&mungos, db_name, true).await?,
             builders: Builder::collection(&mungos, db_name, true).await?,

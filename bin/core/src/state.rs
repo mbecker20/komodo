@@ -67,8 +67,8 @@ impl State {
         }
         .into();
 
-        let state_clone = state.clone();
-        tokio::spawn(async move { state_clone.monitor().await });
+        // let state_clone = state.clone();
+        // tokio::spawn(async move { state_clone.monitor().await });
 
         Ok(state)
     }

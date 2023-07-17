@@ -99,7 +99,7 @@ impl Resolve<Deploy, RequestUser> for State {
 
             update.logs.push(log);
             update.finalize();
-            self.update_cache_for_server(&server).await;
+            self.update_cache_for_server(&server, 0).await;
             self.update_update(update.clone()).await?;
 
             Ok(update)
@@ -182,7 +182,7 @@ impl Resolve<StartContainer, RequestUser> for State {
 
             update.logs.push(log);
             update.finalize();
-            self.update_cache_for_server(&server).await;
+            self.update_cache_for_server(&server, 0).await;
             self.update_update(update.clone()).await?;
 
             Ok(update)
@@ -273,7 +273,7 @@ impl Resolve<StopContainer, RequestUser> for State {
 
             update.logs.push(log);
             update.finalize();
-            self.update_cache_for_server(&server).await;
+            self.update_cache_for_server(&server, 0).await;
             self.update_update(update.clone()).await?;
 
             Ok(update)
@@ -364,7 +364,7 @@ impl Resolve<RemoveContainer, RequestUser> for State {
 
             update.logs.push(log);
             update.finalize();
-            self.update_cache_for_server(&server).await;
+            self.update_cache_for_server(&server, 0).await;
             self.update_update(update.clone()).await?;
 
             Ok(update)

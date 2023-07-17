@@ -35,7 +35,7 @@ pub struct CachedDeploymentStatus {
 impl State {
     pub async fn monitor(&self) {
         loop {
-            wait_until_timelength(Timelength::FiveSeconds, 500).await;
+            let ts = (wait_until_timelength(Timelength::FiveSeconds, 500).await - 500) as i64;
             let servers = self.db.servers.get_some(None, None).await;
             if let Err(e) = &servers {
                 error!("failed to get server list (manage status cache) | {e:#?}")
@@ -43,12 +43,12 @@ impl State {
             let servers = servers.unwrap();
             let futures = servers
                 .into_iter()
-                .map(|server| async move { self.update_cache_for_server(&server).await });
+                .map(|server| async move { self.update_cache_for_server(&server, ts).await });
             join_all(futures).await;
         }
     }
 
-    pub async fn update_cache_for_server(&self, server: &Server) {
+    pub async fn update_cache_for_server(&self, server: &Server, ts: i64) {
         let deployments = self
             .db
             .deployments
@@ -88,14 +88,15 @@ impl State {
             return;
         }
         let stats = stats.unwrap();
-        self.handle_server_stats(server, &stats).await;
-        self.insert_server_status(
-            server,
-            ServerStatus::Ok,
-            version.unwrap().version,
-            stats.into(),
-        )
-        .await;
+        tokio::join!(
+            self.handle_server_stats(server, stats.clone()),
+            self.insert_server_status(
+                server,
+                ServerStatus::Ok,
+                version.unwrap().version,
+                stats.into(),
+            )
+        );
         let containers = periphery.request(requests::GetContainerList {}).await;
         if containers.is_err() {
             self.insert_deployments_status_unknown(deployments).await;
@@ -154,9 +155,11 @@ impl State {
         }
     }
 
-    async fn handle_server_stats(&self, server: &Server, stats: &AllSystemStats) {
+    async fn handle_server_stats(&self, server: &Server, stats: AllSystemStats) {
         let inner = || async {
-            let health = get_server_health(server, stats);
+            
+
+            let health = get_server_health(server, &stats);
 
             anyhow::Ok(())
         };

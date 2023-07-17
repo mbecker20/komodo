@@ -1,10 +1,28 @@
 use std::{collections::HashMap, path::PathBuf};
 
+use mungos::derive::MungosIndexed;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::{entities::Timelength, I64};
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
+pub struct SystemStatsRecord {
+    #[index]
+    pub ts: I64,
+    #[index]
+    pub server_id: String,
+    pub basic: BasicSystemStats,
+    pub cpu: CpuUsage,
+    pub disk: DiskUsage,
+    pub network: NetworkUsage,
+    #[serde(default)]
+    pub processes: Vec<SystemProcess>,
+    #[serde(default)]
+    pub components: Vec<SystemComponent>,
+}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -34,7 +52,7 @@ pub struct AllSystemStats {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, MungosIndexed)]
 pub struct BasicSystemStats {
     pub system_load: f64,
     pub cpu_perc: f32,
@@ -46,7 +64,7 @@ pub struct BasicSystemStats {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, MungosIndexed)]
 pub struct CpuUsage {
     pub cpu_perc: f32,
     pub cpu_freq_mhz: f64,
@@ -62,7 +80,7 @@ pub struct SingleCpuUsage {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, MungosIndexed)]
 pub struct DiskUsage {
     pub used_gb: f64,  // in GB
     pub total_gb: f64, // in GB
@@ -81,10 +99,11 @@ pub struct SingleDiskUsage {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, MungosIndexed)]
 pub struct NetworkUsage {
     pub recieved_kb: f64,
     pub transmitted_kb: f64,
+    #[serde(default)]
     pub networks: Vec<SystemNetwork>,
 }
 
@@ -124,6 +143,8 @@ pub struct SystemComponent {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, Display, EnumString)]
+#[serde(rename_all = "UPPERCASE")]
+#[strum(serialize_all = "UPPERCASE")]
 pub enum StatsState {
     #[default]
     Ok,
@@ -140,3 +161,4 @@ pub struct ServerHealth {
     pub disks: HashMap<PathBuf, StatsState>,
     pub temps: HashMap<String, StatsState>,
 }
+
