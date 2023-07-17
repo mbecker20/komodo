@@ -129,17 +129,18 @@ async fn clone_inner(
 
 async fn get_commit_hash_log(repo_dir: &str) -> anyhow::Result<Log> {
     let start_ts = monitor_timestamp();
-    let command = format!("cd {repo_dir} && git rev-parse --short HEAD && git rev-parse HEAD");
+    let command = format!("cd {repo_dir} && git rev-parse --short HEAD && git rev-parse HEAD && git log -1 --pretty=%B");
     let output = async_run_command(&command).await;
     let mut split = output.stdout.split('\n');
-    let (short, long) = (
+    let (short, long, msg) = (
         split.next().context("failed to get short commit hash")?,
         split.next().context("failed to get long commit hash")?,
+        split.next().context("failed to get commit message")?,
     );
     let log = Log {
-        stage: "commit hash".into(),
+        stage: "commit".into(),
         command,
-        stdout: format!("short: {short}\nfull: {long}"),
+        stdout: format!("{short}: {msg}\n\nfull hash: {long}"),
         stderr: String::new(),
         success: true,
         start_ts,
