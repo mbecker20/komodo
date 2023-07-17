@@ -45,7 +45,11 @@ pub struct State {
 impl State {
     pub async fn load() -> anyhow::Result<Arc<State>> {
         let env = Env::load()?;
-        let config = CoreConfig::load(&env.config_path);
+        let mut config = CoreConfig::load(&env.config_path);
+
+        if let Some(port) = env.port {
+            config.port = port;
+        }
 
         logger::init(config.log_level.into())?;
 
