@@ -7,17 +7,26 @@ use monitor_types::{
     },
     requests::{execute, read, write},
 };
+use serde::Deserialize;
 
 #[allow(unused)]
 pub async fn tests() -> anyhow::Result<()> {
     dotenv::dotenv().ok();
 
+    // create_secret().await?;
+
     let monitor = MonitorClient::new_from_env().await?;
 
-    let mut builds = monitor.read(read::ListBuilds { query: None }).await?;
-    let build_id = builds.pop().unwrap().id;
+    // create_server(&monitor).await?;
 
-    run_build(&monitor, build_id).await?;
+    let mut servers = monitor.read(read::ListServers { query: None }).await?;
+    // let server_id = servers.pop().unwrap().id;
+    // let server = monitor.read(read::GetServer { id: server_id }).await?;
+    println!("{servers:#?}");
+
+    // let mut builds = monitor.read(read::ListBuilds { query: None }).await?;
+    // let build_id = builds.pop().unwrap().id;
+    // run_build(&monitor, build_id).await?;
 
     Ok(())
 }
@@ -85,7 +94,7 @@ async fn create_repo(monitor: &MonitorClient) -> anyhow::Result<()> {
 async fn create_server(monitor: &MonitorClient) -> anyhow::Result<()> {
     let res = monitor
         .write(write::CreateServer {
-            name: String::from("max-apt"),
+            name: String::from("mogh-server"),
             config: PartialServerConfig {
                 address: "http://localhost:8001".to_string().into(),
                 ..Default::default()
@@ -98,11 +107,23 @@ async fn create_server(monitor: &MonitorClient) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[derive(Deserialize)]
+struct CreateSecretEnv {
+    monitor_address: String,
+    monitor_username: String,
+    monitor_password: String,
+}
+
 #[allow(unused)]
 async fn create_secret() -> anyhow::Result<()> {
-    let monitor =
-        MonitorClient::new_with_new_account("http://localhost:9001", "defi moses", "jah guide")
-            .await?;
+    let env: CreateSecretEnv = envy::from_env()?;
+
+    let monitor = MonitorClient::new_with_new_account(
+        env.monitor_address,
+        env.monitor_username,
+        env.monitor_password,
+    )
+    .await?;
 
     let secret = monitor
         .write(write::CreateLoginSecret {

@@ -2978,6 +2978,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "dotenv",
+ "envy",
  "make_option",
  "monitor_client",
  "monitor_types",
