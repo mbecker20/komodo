@@ -23,6 +23,11 @@ pub async fn container_log(container_name: &str, tail: u64) -> Log {
     run_monitor_command("get container log", command).await
 }
 
+pub async fn container_log_search(container_name: &str, search: &str) -> Log {
+    let command = format!("docker logs {container_name} | grep {search}");
+    run_monitor_command("get container log grep", command).await
+}
+
 pub async fn container_stats(
     container_name: Option<String>,
 ) -> anyhow::Result<Vec<DockerContainerStats>> {

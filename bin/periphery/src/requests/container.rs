@@ -48,6 +48,22 @@ impl Resolve<GetContainerLog> for State {
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Log)]
+pub struct GetContainerLogSearch {
+    pub name: String,
+    pub search: String,
+}
+
+#[async_trait::async_trait]
+impl Resolve<GetContainerLogSearch> for State {
+    async fn resolve(&self, req: GetContainerLogSearch, _: ()) -> anyhow::Result<Log> {
+        Ok(docker::container_log_search(&req.name, &req.search).await)
+    }
+}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(DockerContainerStats)]
 pub struct GetContainerStats {
     pub name: String,
