@@ -2,11 +2,12 @@
 	"compilerOptions": {
 		"strict": true,
 		"target": "ESNext",
-		"module": "CommonJS",
+		"module": "ESNext",
 		"moduleResolution": "node",
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
 		"isolatedModules": true,
-		"outDir": "build"
+		"outDir": "dist",
+		"declaration": true
 	}
 }

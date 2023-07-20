@@ -1,8 +1,11 @@
 {
-  "name": "monitor_client",
+  "name": "@monitor/client",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/lib.js",
   "license": "MIT",
+  "scripts": {
+    "build": "tsc"
+  },
   "dependencies": {
     "@tanstack/react-query": "^4.29.19",
     "axios": "^1.4.0"
