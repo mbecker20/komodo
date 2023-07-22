@@ -16,8 +16,8 @@ export type ReadResponses = {
   FindResources: Types.FindResourcesResponse;
 
   // ==== SERVER ====
-  GetServer: Types.GetServer;
-  ListServers: Types.ListServers;
+  GetServer: Types.Server;
+  ListServers: Types.ServerListItem[];
   GetServerStatus: Types.GetServerStatusResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
   GetSystemInformation: Types.SystemInformation;
@@ -37,7 +37,7 @@ export type ReadResponses = {
 
   // ==== BUILD ====
   GetBuild: Types.Build;
-  ListBuilds: Types.BuildListItem;
+  ListBuilds: Types.BuildListItem[];
   GetBuildActionState: Types.BuildActionState;
 
   // ==== BUILDER ====
