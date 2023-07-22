@@ -357,7 +357,6 @@ export interface ServerConfig {
 	mem_critical: number;
 	disk_warning: number;
 	disk_critical: number;
-	to_notify?: string[];
 }
 
 export interface Server {

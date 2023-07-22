@@ -1,8 +1,8 @@
-import { ReadRequest } from "@monitor/client/dist/types";
+import { Types } from "@monitor/client";
 import { client } from "./main";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-export const useRead = <T extends ReadRequest>(req: T) =>
+export const useRead = <T extends Types.ReadRequest>(req: T) =>
   useQuery([req], () => client.read(req));
 
 export const useUser = () => useRead({ type: "GetUser", params: {} });

@@ -1,12 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  DockerContainerState,
-  EnvironmentVar,
-  ServerStatus,
-  Timelength,
-  User,
-  Version,
-} from "@types";
+import { Types } from "@monitor/client";
 import sanitizeHtml from "sanitize-html";
 
 import { clsx, type ClassValue } from "clsx";
@@ -130,21 +123,21 @@ export function getId(entity: any): string {
   return entity._id.$oid;
 }
 
-export function deploymentStateClass(state: DockerContainerState) {
+export function deploymentStateClass(state: Types.DockerContainerState) {
   switch (state) {
-    case DockerContainerState.Running:
+    case Types.DockerContainerState.Running:
       return "green";
-    case DockerContainerState.Exited:
+    case Types.DockerContainerState.Exited:
       return "red";
     default:
       return "blue";
   }
 }
 
-export function serverStatusClass(status: ServerStatus) {
-  if (status === ServerStatus.Ok) {
+export function serverStatusClass(status: Types.ServerStatus) {
+  if (status === Types.ServerStatus.Ok) {
     return "running";
-  } else if (status === ServerStatus.NotOk) {
+  } else if (status === Types.ServerStatus.NotOk) {
     return "exited";
   }
 }
@@ -153,7 +146,7 @@ export function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
 }
 
-export function parseEnvVarseToDotEnv(envVars: EnvironmentVar[] | undefined) {
+export function parseEnvVarseToDotEnv(envVars: Types.EnvironmentVar[] | undefined) {
   return envVars?.reduce(
     (prev, { variable, value }) =>
       prev + (prev ? "\n" : "") + `${variable}=${value}`,
@@ -181,7 +174,7 @@ function shouldKeepLine(line: string) {
   return true;
 }
 
-export function parseDotEnvToEnvVars(env: string): EnvironmentVar[] {
+export function parseDotEnvToEnvVars(env: string): Types.EnvironmentVar[] {
   return env
     .split("\n")
     .filter((line) => shouldKeepLine(line))
@@ -192,21 +185,21 @@ export function parseDotEnvToEnvVars(env: string): EnvironmentVar[] {
     .map(([variable, value]) => ({ variable, value }));
 }
 
-export function deploymentHeaderStateClass(state: DockerContainerState) {
+export function deploymentHeaderStateClass(state: Types.DockerContainerState) {
   switch (state) {
-    case DockerContainerState.Running:
+    case Types.DockerContainerState.Running:
       return "running";
-    case DockerContainerState.Exited:
+    case Types.DockerContainerState.Exited:
       return "exited";
   }
 }
 
-export function version_to_string(version: Version | undefined) {
+export function version_to_string(version: Types.Version | undefined) {
   if (!version) return;
   return `v${version.major}.${version.minor}.${version.patch}`;
 }
 
-export function string_to_version(version: string): Version {
+export function string_to_version(version: string): Types.Version {
   const [major, minor, patch] = version.split(".");
   return {
     major: Number(major),
@@ -215,28 +208,28 @@ export function string_to_version(version: string): Version {
   };
 }
 
-export function get_to_one_sec_divisor(timelength: Timelength) {
+export function get_to_one_sec_divisor(timelength: Types.Timelength) {
   // returns what the timelength needs to be divided to convert to per second values
-  if (timelength === Timelength.OneSecond) {
+  if (timelength === Types.Timelength.OneSecond) {
     return 1;
-  } else if (timelength === Timelength.FiveSeconds) {
+  } else if (timelength === Types.Timelength.FiveSeconds) {
     return 5;
-  } else if (timelength === Timelength.ThirtySeconds) {
+  } else if (timelength === Types.Timelength.ThirtySeconds) {
     return 30;
-  } else if (timelength === Timelength.OneMinute) {
+  } else if (timelength === Types.Timelength.OneMinute) {
     return 60;
   }
 }
 
-export function convert_timelength_to_ms(timelength: Timelength) {
+export function convert_timelength_to_ms(timelength: Types.Timelength) {
   // returns what the timelength needs to be divided to convert to per second values
-  if (timelength === Timelength.OneSecond) {
+  if (timelength === Types.Timelength.OneSecond) {
     return 1000;
-  } else if (timelength === Timelength.FiveSeconds) {
+  } else if (timelength === Types.Timelength.FiveSeconds) {
     return 5000;
-  } else if (timelength === Timelength.ThirtySeconds) {
+  } else if (timelength === Types.Timelength.ThirtySeconds) {
     return 30000;
-  } else if (timelength === Timelength.OneMinute) {
+  } else if (timelength === Types.Timelength.OneMinute) {
     return 60000;
   }
 }
@@ -251,13 +244,13 @@ export function readableStorageAmount(gb: number) {
   }
 }
 
-export function readableVersion(version: Version) {
+export function readableVersion(version: Types.Version) {
   if (version.major === 0 && version.minor === 0 && version.patch === 0)
     return "latest";
   return `v${version.major}.${version.minor}.${version.patch}`;
 }
 
-export function readableUserType(user: User) {
+export function readableUserType(user: Types.User) {
   if (user.github_id) {
     return "github";
   } else if (user.google_id) {

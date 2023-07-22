@@ -1,4 +1,4 @@
-import { Update } from "@types";
+import { Types } from "@monitor/client";
 import { toast } from "@ui/toast/use-toast";
 import { useState } from "react";
 import rws from "reconnecting-websocket";
@@ -15,7 +15,7 @@ export const WebsocketProvider = () => {
 
   ws.addEventListener("message", ({ data }) => {
     if (data == "LOGGED_IN") return console.log("logged in to ws");
-    const update = JSON.parse(data) as Update;
+    const update = JSON.parse(data) as Types.Update;
     toast({
       title: `${update.target} ${update.operation}`,
       description: update.operator,
