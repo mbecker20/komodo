@@ -1,16 +1,18 @@
 import axios from "axios";
 import {
+  AuthResponses,
+  ExecuteResponses,
   ReadResponses,
   WriteResponses,
-  ExecuteResponses,
-  AuthResponses,
 } from "./responses";
 import {
+  AuthRequest,
+  ExecuteRequest,
   ReadRequest,
   WriteRequest,
-  ExecuteRequest,
-  AuthRequest,
 } from "./types";
+
+export * as Types from "./types";
 
 export type LoginOptions = {
   jwt?: string;
