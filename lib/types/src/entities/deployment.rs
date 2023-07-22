@@ -162,7 +162,7 @@ pub struct Conversion {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct BasicContainerInfo {
+pub struct ContainerSummary {
     pub name: String,
     pub id: String,
     pub image: String,

@@ -39,19 +39,25 @@ enum ReadRequest {
     FindResources(FindResources),
 
     // ==== SERVER ====
+    GetServer(GetServer),
+    ListServers(ListServers),
+    GetServerStatus(GetServerStatus),
     GetPeripheryVersion(GetPeripheryVersion),
     GetSystemInformation(GetSystemInformation),
     GetDockerContainers(GetDockerContainers),
     GetDockerImages(GetDockerImages),
     GetDockerNetworks(GetDockerNetworks),
-    GetServer(GetServer),
-    ListServers(ListServers),
     GetServerActionState(GetServerActionState),
 
     // ==== DEPLOYMENT ====
     GetDeployment(GetDeployment),
     ListDeployments(ListDeployments),
+    GetDeploymentStatus(GetDeploymentStatus),
     GetDeploymentActionState(GetDeploymentActionState),
+    GetDeployedVersion(GetDeployedVersion),
+    GetDeploymentStats(GetDeploymentStats),
+    GetLog(GetLog),
+
 
     // ==== BUILD ====
     GetBuild(GetBuild),

@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_types::{
     entities::{
-        deployment::BasicContainerInfo,
+        deployment::ContainerSummary,
         server::{
             docker_image::ImageSummary, docker_network::DockerNetwork, stats::SystemInformation,
             Server, ServerActionState,
@@ -334,7 +334,7 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
         &self,
         GetDockerContainers { server_id }: GetDockerContainers,
         user: RequestUser,
-    ) -> anyhow::Result<Vec<BasicContainerInfo>> {
+    ) -> anyhow::Result<Vec<ContainerSummary>> {
         let server = self
             .get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;

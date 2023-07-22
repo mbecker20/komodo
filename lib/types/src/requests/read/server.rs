@@ -4,7 +4,7 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        deployment::BasicContainerInfo,
+        deployment::ContainerSummary,
         server::{
             docker_image::ImageSummary,
             docker_network::DockerNetwork,
@@ -178,7 +178,7 @@ pub struct GetDockerImages {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<BasicContainerInfo>)]
+#[response(Vec<ContainerSummary>)]
 pub struct GetDockerContainers {
     pub server_id: String,
 }

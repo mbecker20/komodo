@@ -54,8 +54,8 @@ pub struct GetDeploymentStatus {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetDeploymentStatusResponse {
-    pub status: Option<String>,
     pub state: DockerContainerState,
+    pub status: Option<String>,
 }
 
 //

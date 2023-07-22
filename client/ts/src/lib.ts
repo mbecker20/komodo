@@ -20,7 +20,7 @@ export type LoginOptions = {
 };
 
 export function MonitorClient(base_url: string, token?: string) {
-  let jwt = token ?? "";
+  const state = { jwt: token ?? "" };
 
   const auth = async <R extends AuthRequest>(
     request: R
@@ -39,56 +39,49 @@ export function MonitorClient(base_url: string, token?: string) {
           type: "LoginLocalUser",
           params: { username: options.username, password: options.password },
         });
-        jwt = res.jwt;
+        state.jwt = res.jwt;
         return res.jwt;
       } else if (options.secret) {
-        const res = await auth({
+        const { jwt } = await auth({
           type: "LoginWithSecret",
           params: { username: options.username, secret: options.secret },
         });
-        jwt = res.jwt;
-        return res.jwt;
+        state.jwt = jwt;
+        return jwt;
       }
     }
   };
 
-  const read = async <R extends ReadRequest>(
-    request: R
-  ): Promise<ReadResponses[R["type"]]> => {
+  const request = async <Req, Res>(
+    path: string,
+    request: Req
+  ): Promise<Res> => {
     return await axios({
       method: "post",
-      url: base_url + "/read",
+      url: base_url + path,
       headers: {
-        Authorization: `Bearer ${jwt}`,
+        Authorization: `Bearer ${state.jwt}`,
       },
       data: request,
     }).then(({ data }) => data);
+  };
+
+  const read = async <R extends ReadRequest>(
+    req: R
+  ): Promise<ReadResponses[R["type"]]> => {
+    return await request("/read", req);
   };
 
   const write = async <R extends WriteRequest>(
-    request: R
+    req: R
   ): Promise<WriteResponses[R["type"]]> => {
-    return await axios({
-      method: "post",
-      url: base_url + "/write",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
-      data: request,
-    }).then(({ data }) => data);
+    return await request("/write", req);
   };
 
   const execute = async <R extends ExecuteRequest>(
-    request: R
+    req: R
   ): Promise<ExecuteResponses[R["type"]]> => {
-    return await axios({
-      method: "post",
-      url: base_url + "/execute",
-      headers: {
-        Authorization: `Bearer ${jwt}`,
-      },
-      data: request,
-    }).then(({ data }) => data);
+    return await request("/execute", req);
   };
 
   return {

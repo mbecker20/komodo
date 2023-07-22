@@ -58,7 +58,7 @@ impl Resolve<DeleteLoginSecret, RequestUser> for State {
         &self,
         DeleteLoginSecret { name }: DeleteLoginSecret,
         user: RequestUser,
-    ) -> anyhow::Result<()> {
+    ) -> anyhow::Result<DeleteLoginSecretResponse> {
         self.db
             .users
             .update_one(
@@ -73,6 +73,6 @@ impl Resolve<DeleteLoginSecret, RequestUser> for State {
             )
             .await
             .context("failed at mongo update query")?;
-        Ok(())
+        Ok(DeleteLoginSecretResponse {})
     }
 }

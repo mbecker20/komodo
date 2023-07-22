@@ -19,8 +19,6 @@ export enum PermissionLevel {
 
 export type PermissionsMap = Record<string, PermissionLevel>;
 
-export type _ResourceTargetVariant = ResourceTarget["type"];
-
 export type I64 = number;
 
 export type U64 = number;
@@ -221,7 +219,7 @@ export enum DockerContainerState {
 	Dead = "dead",
 }
 
-export interface BasicContainerInfo {
+export interface ContainerSummary {
 	name: string;
 	id: string;
 	image: string;
@@ -378,15 +376,6 @@ export interface ServerActionState {
 	pruning_images: boolean;
 }
 
-export interface SystemInformation {
-	name?: string;
-	os?: string;
-	kernel?: string;
-	core_count?: number;
-	host_name?: string;
-	cpu_brand: string;
-}
-
 export interface BasicSystemStats {
 	system_load: number;
 	cpu_perc: number;
@@ -431,7 +420,7 @@ export interface SystemNetwork {
 export interface NetworkUsage {
 	recieved_kb: number;
 	transmitted_kb: number;
-	networks: SystemNetwork[];
+	networks?: SystemNetwork[];
 }
 
 export interface SystemProcess {
@@ -451,6 +440,26 @@ export interface SystemComponent {
 	temp: number;
 	max: number;
 	critical?: number;
+}
+
+export interface SystemStatsRecord {
+	ts: I64;
+	server_id: string;
+	basic: BasicSystemStats;
+	cpu: CpuUsage;
+	disk: DiskUsage;
+	network: NetworkUsage;
+	processes?: SystemProcess[];
+	components?: SystemComponent[];
+}
+
+export interface SystemInformation {
+	name?: string;
+	os?: string;
+	kernel?: string;
+	core_count?: number;
+	host_name?: string;
+	cpu_brand: string;
 }
 
 export enum Timelength {
@@ -490,9 +499,9 @@ export interface AllSystemStats {
 }
 
 export enum StatsState {
-	Ok = "Ok",
-	Warning = "Warning",
-	Critical = "Critical",
+	Ok = "OK",
+	Warning = "WARNING",
+	Critical = "CRITICAL",
 }
 
 export interface ServerHealth {
@@ -520,15 +529,6 @@ export interface CustomTag {
 	category?: string;
 	color?: TagColor;
 }
-
-export type ResourceTarget = 
-	| { type: "System", id?: undefined }
-	| { type: "Build", id: string }
-	| { type: "Builder", id: string }
-	| { type: "Deployment", id: string }
-	| { type: "Server", id: string }
-	| { type: "Repo", id: string }
-	| { type: "Alerter", id: string };
 
 export enum Operation {
 	None = "None",
@@ -568,6 +568,15 @@ export enum Operation {
 	AutoPull = "AutoPull",
 }
 
+export type ResourceTarget = 
+	| { type: "System", id?: undefined }
+	| { type: "Build", id: string }
+	| { type: "Builder", id: string }
+	| { type: "Deployment", id: string }
+	| { type: "Server", id: string }
+	| { type: "Repo", id: string }
+	| { type: "Alerter", id: string };
+
 export interface Log {
 	stage: string;
 	command: string;
@@ -586,14 +595,14 @@ export enum UpdateStatus {
 
 export interface Update {
 	_id?: MongoId;
-	target: ResourceTarget;
 	operation: Operation;
-	logs: Log[];
 	start_ts: I64;
-	end_ts?: I64;
-	status: UpdateStatus;
 	success: boolean;
 	operator: string;
+	target: ResourceTarget;
+	logs: Log[];
+	end_ts?: I64;
+	status: UpdateStatus;
 	version: Version;
 }
 
@@ -768,8 +777,8 @@ export interface GetDeploymentStatus {
 }
 
 export interface GetDeploymentStatusResponse {
-	status?: string;
 	state: DockerContainerState;
+	status?: string;
 }
 
 export interface GetLog {
@@ -824,7 +833,7 @@ export interface GetRepoActionState {
 
 export type Tag = 
 	| { type: "ResourceType", params: {
-	resource: _ResourceTargetVariant;
+	resource: ResourceTarget["type"];
 }}
 	| { type: "Server", params: {
 	server_id: string;
@@ -1074,6 +1083,9 @@ export interface DeleteLoginSecret {
 	name: string;
 }
 
+export interface DeleteLoginSecretResponse {
+}
+
 export interface CreateServer {
 	name: string;
 	config: _PartialServerConfig;
@@ -1141,17 +1153,22 @@ export type ReadRequest =
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetUser", params: GetUser }
 	| { type: "FindResources", params: FindResources }
+	| { type: "GetServer", params: GetServer }
+	| { type: "ListServers", params: ListServers }
+	| { type: "GetServerStatus", params: GetServerStatus }
 	| { type: "GetPeripheryVersion", params: GetPeripheryVersion }
 	| { type: "GetSystemInformation", params: GetSystemInformation }
 	| { type: "GetDockerContainers", params: GetDockerContainers }
 	| { type: "GetDockerImages", params: GetDockerImages }
 	| { type: "GetDockerNetworks", params: GetDockerNetworks }
-	| { type: "GetServer", params: GetServer }
-	| { type: "ListServers", params: ListServers }
 	| { type: "GetServerActionState", params: GetServerActionState }
 	| { type: "GetDeployment", params: GetDeployment }
 	| { type: "ListDeployments", params: ListDeployments }
+	| { type: "GetDeploymentStatus", params: GetDeploymentStatus }
 	| { type: "GetDeploymentActionState", params: GetDeploymentActionState }
+	| { type: "GetDeployedVersion", params: GetDeployedVersion }
+	| { type: "GetDeploymentStats", params: GetDeploymentStats }
+	| { type: "GetLog", params: GetLog }
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "ListBuilds", params: ListBuilds }
 	| { type: "GetBuildActionState", params: GetBuildActionState }
@@ -1203,4 +1220,52 @@ export type WriteRequest =
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "UpdateTag", params: UpdateTag };
+
+export type Alert = 
+	| { type: "ServerUnreachable", data: {
+	id: string;
+	name: string;
+	region?: string;
+}}
+	| { type: "ServerCpu", data: {
+	id: string;
+	name: string;
+	region?: string;
+	state: StatsState;
+	percentage: number;
+	top_procs: SystemProcess[];
+}}
+	| { type: "ServerMem", data: {
+	id: string;
+	name: string;
+	region?: string;
+	state: StatsState;
+	used_gb: number;
+	total_gb: number;
+	top_procs: SystemProcess[];
+}}
+	| { type: "ServerDisk", data: {
+	id: string;
+	name: string;
+	region?: string;
+	state: StatsState;
+	path: string;
+	used_gb: number;
+	total_gb: number;
+}}
+	| { type: "ServerTemp", data: {
+	id: string;
+	name: string;
+	region?: string;
+	state: StatsState;
+	temp: number;
+	max: number;
+}}
+	| { type: "ContainerStateChange", data: {
+	id: string;
+	name: string;
+	server: string;
+	from: DockerContainerState;
+	to: DockerContainerState;
+}};
 

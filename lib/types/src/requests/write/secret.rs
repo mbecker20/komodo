@@ -24,7 +24,11 @@ pub struct CreateLoginSecretResponse {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(())]
+#[response(DeleteLoginSecretResponse)]
 pub struct DeleteLoginSecret {
     pub name: String,
 }
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DeleteLoginSecretResponse {}

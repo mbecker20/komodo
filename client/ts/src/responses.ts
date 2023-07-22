@@ -1,131 +1,136 @@
-import * as Res from "./types";
+import * as Types from "./types";
 
 export type AuthResponses = {
-  GetLoginOptions: Res.GetLoginOptionsResponse;
-  CreateLocalUser: Res.CreateLocalUserResponse;
-  LoginLocalUser: Res.LoginLocalUserResponse;
-  ExchangeForJwt: Res.ExchangeForJwtResponse;
-  LoginWithSecret: Res.LoginWithSecretResponse;
+  GetLoginOptions: Types.GetLoginOptionsResponse;
+  CreateLocalUser: Types.CreateLocalUserResponse;
+  LoginLocalUser: Types.LoginLocalUserResponse;
+  ExchangeForJwt: Types.ExchangeForJwtResponse;
+  LoginWithSecret: Types.LoginWithSecretResponse;
 };
 
 export type ReadResponses = {
-  GetVersion: Res.GetVersion;
-  GetUser: Res.GetUser;
+  GetVersion: Types.GetVersionResponse;
+  GetUser: Types.User;
 
   // ==== SEARCH ====
-  FindResources: Res.FindResources;
+  FindResources: Types.FindResourcesResponse;
 
   // ==== SERVER ====
-  GetPeripheryVersion: Res.GetPeripheryVersion;
-  GetSystemInformation: Res.GetSystemInformation;
-  GetDockerContainers: Res.GetDockerContainers;
-  GetDockerImages: Res.GetDockerImages;
-  GetDockerNetworks: Res.GetDockerNetworks;
-  GetServer: Res.GetServer;
-  ListServers: Res.ListServers;
-  GetServerActionState: Res.GetServerActionState;
+  GetServer: Types.GetServer;
+  ListServers: Types.ListServers;
+  GetServerStatus: Types.GetServerStatusResponse;
+  GetPeripheryVersion: Types.GetPeripheryVersionResponse;
+  GetSystemInformation: Types.SystemInformation;
+  GetDockerContainers: Types.ContainerSummary[];
+  GetDockerImages: Types.ImageSummary[];
+  GetDockerNetworks: Types.DockerNetwork[];
+  GetServerActionState: Types.ServerActionState;
 
   // ==== DEPLOYMENT ====
-  GetDeployment: Res.GetDeployment;
-  ListDeployments: Res.ListDeployments;
-  GetDeploymentActionState: Res.GetDeploymentActionState;
+  GetDeployment: Types.Deployment;
+  ListDeployments: Types.DeploymentListItem[];
+  GetDeploymentStatus: Types.GetDeploymentStatusResponse;
+  GetDeploymentActionState: Types.DeploymentActionState;
+  GetDeployedVersion: Types.GetDeployedVersionResponse;
+  GetDeploymentStats: Types.GetDeploymentStatusResponse;
+  GetLog: Types.Log;
 
   // ==== BUILD ====
-  GetBuild: Res.GetBuild;
-  ListBuilds: Res.ListBuilds;
-  GetBuildActionState: Res.GetBuildActionState;
+  GetBuild: Types.Build;
+  ListBuilds: Types.BuildListItem;
+  GetBuildActionState: Types.BuildActionState;
 
   // ==== BUILDER ====
-  GetBuilder: Res.GetBuilder;
-  ListBuilders: Res.ListBuilders;
+  GetBuilder: Types.Builder;
+  ListBuilders: Types.Builder[];
 
   // ==== REPO ====
-  GetRepo: Res.GetRepo;
-  ListRepos: Res.ListRepos;
-  GetRepoActionState: Res.GetRepoActionState;
+  GetRepo: Types.Repo;
+  ListRepos: Types.RepoListItem[];
+  GetRepoActionState: Types.RepoActionState;
 
   // ==== TAG ====
-  GetTag: Res.GetTag;
-  ListTags: Res.ListTags;
+  GetTag: Types.CustomTag;
+  ListTags: Types.CustomTag[];
 
   // ==== SERVER STATS ====
-  GetAllSystemStats: Res.GetAllSystemStats;
-  GetBasicSystemStats: Res.GetBasicSystemStats;
-  GetCpuUsage: Res.GetCpuUsage;
-  GetDiskUsage: Res.GetDiskUsage;
-  GetNetworkUsage: Res.GetNetworkUsage;
-  GetSystemProcesses: Res.GetSystemProcesses;
-  GetSystemComponents: Res.GetSystemComponents;
+  GetAllSystemStats: Types.AllSystemStats;
+  GetBasicSystemStats: Types.BasicSystemStats;
+  GetCpuUsage: Types.CpuUsage;
+  GetDiskUsage: Types.DiskUsage;
+  GetNetworkUsage: Types.NetworkUsage;
+  GetSystemProcesses: Types.SystemProcess[];
+  GetSystemComponents: Types.SystemComponent[];
 };
 
 export type WriteResponses = {
   // ==== SECRET ====
-  CreateLoginSecret: Res.CreateLoginSecret;
-  DeleteLoginSecret: Res.DeleteLoginSecret;
+  CreateLoginSecret: Types.CreateLoginSecretResponse;
+  DeleteLoginSecret: Types.DeleteLoginSecretResponse;
 
   // ==== PERMISSIONS ====
-  UpdateUserPerimissions: Res.UpdateUserPermissions;
-  UpdateUserPermissionsOnTarget: Res.UpdateUserPermissionsOnTarget;
+  UpdateUserPerimissions: Types.Update;
+  UpdateUserPermissionsOnTarget: Types.Update;
 
   // ==== SERVER ====
-  CreateServer: Res.CreateServer;
-  DeleteServer: Res.DeleteServer;
-  UpdateServer: Res.UpdateServer;
-  RenameServer: Res.RenameServer;
+  CreateServer: Types.Server;
+  DeleteServer: Types.Server;
+  UpdateServer: Types.Server;
+  RenameServer: Types.Update;
 
   // ==== DEPLOYMENT ====
-  CreateDeployment: Res.CreateDeployment;
-  CopyDeployment: Res.CopyDeployment;
-  DeleteDeployment: Res.DeleteDeployment;
-  UpdateDeployment: Res.UpdateDeployment;
-  RenameDeployment: Res.RenameDeployment;
+  CreateDeployment: Types.Deployment;
+  CopyDeployment: Types.Deployment;
+  DeleteDeployment: Types.Deployment;
+  UpdateDeployment: Types.Deployment;
+  RenameDeployment: Types.Update;
 
   // ==== BUILD ====
-  CreateBuild: Res.CreateBuild;
-  CopyBuild: Res.CopyBuild;
-  DeleteBuild: Res.DeleteBuild;
-  UpdateBuild: Res.UpdateBuild;
+  CreateBuild: Types.Build;
+  CopyBuild: Types.Build;
+  DeleteBuild: Types.Build;
+  UpdateBuild: Types.Build;
 
   // ==== BUILDER ====
-  CreateBuilder: Res.CreateBuilder;
-  CopyBuilder: Res.CopyBuilder;
-  DeleteBuilder: Res.DeleteBuilder;
-  UpdateBuilder: Res.UpdateBuilder;
+  CreateBuilder: Types.Builder;
+  CopyBuilder: Types.Builder;
+  DeleteBuilder: Types.Builder;
+  UpdateBuilder: Types.Builder;
 
   // ==== REPO ====
-  CreateRepo: Res.CreateRepo;
-  CopyRepo: Res.CopyRepo;
-  DeleteRepo: Res.DeleteRepo;
-  UpdateRepo: Res.UpdateRepo;
+  CreateRepo: Types.Repo;
+  CopyRepo: Types.Repo;
+  DeleteRepo: Types.Repo;
+  UpdateRepo: Types.Repo;
 
   // ==== ALERTER ====
-  CreateAlerter: Res.CreateAlerter;
-  CopyAlerter: Res.CopyAlerter;
-  DeleteAlerter: Res.DeleteAlerter;
-  UpdateAlerter: Res.UpdateAlerter;
+  CreateAlerter: Types.Alerter;
+  CopyAlerter: Types.Alerter;
+  DeleteAlerter: Types.Alerter;
+  UpdateAlerter: Types.Alerter;
 
   // ==== TAG ====
-  CreateTag: Res.CreateTag;
-  DeleteTag: Res.DeleteTag;
-  UpdateTag: Res.UpdateTag;
+  CreateTag: Types.CustomTag;
+  DeleteTag: Types.CustomTag;
+  UpdateTag: Types.CustomTag;
 };
 
 export type ExecuteResponses = {
   // ==== SERVER ====
-  PruneContainers: Res.PruneDockerContainers;
-  PruneImages: Res.PruneDockerImages;
-  PruneNetworks: Res.PruneDockerNetworks;
+  PruneContainers: Types.Update;
+  PruneImages: Types.Update;
+  PruneNetworks: Types.Update;
 
   // ==== DEPLOYMENT ====
-  Deploy: Res.Deploy;
-  StartContainer: Res.StartContainer;
-  StopContainer: Res.StopContainer;
-  RemoveContainer: Res.RemoveContainer;
+  Deploy: Types.Update;
+  StartContainer: Types.Update;
+  StopContainer: Types.Update;
+  RemoveContainer: Types.Update;
 
   // ==== BUILD ====
-  RunBuild: Res.RunBuild;
+  RunBuild: Types.Update;
 
   // ==== REPO ====
-  CloneRepo: Res.CloneRepo;
-  PullRepo: Res.PullRepo;
+  CloneRepo: Types.Update;
+  PullRepo: Types.Update;
 };

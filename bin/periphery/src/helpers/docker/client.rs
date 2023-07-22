@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use bollard::{container::ListContainersOptions, Docker};
 use monitor_types::entities::{
-    deployment::BasicContainerInfo,
+    deployment::ContainerSummary,
     server::{docker_image::ImageSummary, docker_network::DockerNetwork},
 };
 
@@ -19,7 +19,7 @@ impl Default for DockerClient {
 }
 
 impl DockerClient {
-    pub async fn list_containers(&self) -> anyhow::Result<Vec<BasicContainerInfo>> {
+    pub async fn list_containers(&self) -> anyhow::Result<Vec<ContainerSummary>> {
         let res = self
             .docker
             .list_containers(Some(ListContainersOptions::<String> {
@@ -29,7 +29,7 @@ impl DockerClient {
             .await?
             .into_iter()
             .map(|s| {
-                let info = BasicContainerInfo {
+                let info = ContainerSummary {
                     id: s.id.unwrap_or_default(),
                     name: s
                         .names
@@ -47,7 +47,7 @@ impl DockerClient {
                 };
                 Ok::<_, anyhow::Error>(info)
             })
-            .collect::<anyhow::Result<Vec<BasicContainerInfo>>>()?;
+            .collect::<anyhow::Result<Vec<ContainerSummary>>>()?;
         Ok(res)
     }
 

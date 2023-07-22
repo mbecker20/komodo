@@ -2,7 +2,7 @@ use anyhow::Context;
 use async_timing_util::{wait_until_timelength, Timelength};
 use futures::future::join_all;
 use monitor_types::entities::{
-    deployment::{BasicContainerInfo, Deployment, DockerContainerState},
+    deployment::{ContainerSummary, Deployment, DockerContainerState},
     server::{
         stats::{
             AllSystemStats, BasicSystemStats, ServerHealth, SingleDiskUsage, StatsState,
@@ -29,7 +29,7 @@ pub struct CachedServerStatus {
 pub struct CachedDeploymentStatus {
     pub id: String,
     pub state: DockerContainerState,
-    pub container: Option<BasicContainerInfo>,
+    pub container: Option<ContainerSummary>,
 }
 
 impl State {

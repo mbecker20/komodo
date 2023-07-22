@@ -85,7 +85,7 @@
 		},
 		{
 			"type": "shell",
-			"command": "RUST_BACKTRACE=1 typeshare . --lang=typescript --output-file=./client/ts/src/types.ts",
+			"command": "node ./client/ts/generate_types.mjs",
 			"label": "generate typescript types",
 			"problemMatcher": []
 		}

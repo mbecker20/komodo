@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Context};
 use monitor_types::{
     entities::{
-        deployment::{BasicContainerInfo, Deployment, DockerContainerStats, TerminationSignal},
+        deployment::{ContainerSummary, Deployment, DockerContainerStats, TerminationSignal},
         update::Log,
     },
     optional_string,
@@ -14,12 +14,12 @@ use crate::{helpers::docker, state::State};
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<BasicContainerInfo>)]
+#[response(Vec<ContainerSummary>)]
 pub struct GetContainerList {}
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerList> for State {
-    async fn resolve(&self, _: GetContainerList, _: ()) -> anyhow::Result<Vec<BasicContainerInfo>> {
+    async fn resolve(&self, _: GetContainerList, _: ()) -> anyhow::Result<Vec<ContainerSummary>> {
         self.docker.list_containers().await
     }
 }
