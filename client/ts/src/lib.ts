@@ -19,8 +19,8 @@ export type LoginOptions = {
   secret?: string;
 };
 
-export async function MonitorClient(base_url: string) {
-  let jwt = "";
+export function MonitorClient(base_url: string, token?: string) {
+  let jwt = token ?? "";
 
   const auth = async <R extends AuthRequest>(
     request: R
@@ -40,12 +40,14 @@ export async function MonitorClient(base_url: string) {
           params: { username: options.username, password: options.password },
         });
         jwt = res.jwt;
+        return res.jwt;
       } else if (options.secret) {
         const res = await auth({
           type: "LoginWithSecret",
           params: { username: options.username, secret: options.secret },
         });
         jwt = res.jwt;
+        return res.jwt;
       }
     }
   };
