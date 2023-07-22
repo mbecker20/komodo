@@ -102,10 +102,6 @@ pub struct ServerConfig {
     #[builder(default = "default_disk_critical()")]
     #[partial_default(default_disk_critical())]
     pub disk_critical: f64,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub to_notify: Vec<String>, // slack users to notify
 }
 
 fn default_enabled() -> bool {
