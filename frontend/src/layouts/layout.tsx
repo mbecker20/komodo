@@ -8,7 +8,7 @@ export const Layout = () => {
   const { data, isError } = useUser();
   const navigate = useNavigate();
   const path = useLocation().pathname;
-  // if (isError && !path.includes("login")) navigate("/login");
+  // if (isError && (!path.includes("login") || !path.includes("signup"))) navigate("/login");
 
   console.log(data);
 
