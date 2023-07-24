@@ -62,7 +62,7 @@ export function readableMonitorTimestamp(rfc3339_ts: string) {
   } ${pm ? "PM" : "AM"}`;
 }
 
-export function readableDuration(start_ts: string, end_ts: string) {
+export function readableDuration(start_ts: number, end_ts: number) {
   const start = new Date(start_ts);
   const end = new Date(end_ts);
   const durr = end.getTime() - start.getTime();
@@ -146,7 +146,9 @@ export function copyToClipboard(text: string) {
   navigator.clipboard.writeText(text);
 }
 
-export function parseEnvVarseToDotEnv(envVars: Types.EnvironmentVar[] | undefined) {
+export function parseEnvVarseToDotEnv(
+  envVars: Types.EnvironmentVar[] | undefined
+) {
   return envVars?.reduce(
     (prev, { variable, value }) =>
       prev + (prev ? "\n" : "") + `${variable}=${value}`,

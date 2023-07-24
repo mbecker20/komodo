@@ -8,6 +8,7 @@ import { Login } from "@pages/auth/login";
 import { Signup } from "@pages/auth/signup";
 import { Dashboard } from "@pages/dashboard";
 import { Server } from "@pages/server";
+import { Deployment } from "@pages/deployment";
 
 const router = createBrowserRouter([
   {
@@ -18,13 +19,13 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "signup", element: <Signup /> },
 
-      // {
-      //   path: "deployments",
-      //   children: [
-      //     { path: "", element: <Deployments /> },
-      //     { path: ":deploymentId", element: <Deployment /> },
-      //   ],
-      // },
+      {
+        path: "deployments",
+        children: [
+          { path: "", element: "deploymenys" },
+          { path: ":deploymentId", element: <Deployment /> },
+        ],
+      },
       // {
       //   path: "builds",
       //   children: [

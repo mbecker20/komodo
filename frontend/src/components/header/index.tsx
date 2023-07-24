@@ -2,13 +2,14 @@ import { ThemeToggle } from "@components/util";
 
 import { Button } from "@ui/button";
 import { ChevronRight, Circle, LogOut } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import { useUser } from "@hooks";
+import { ServerName } from "@pages/server";
 
 export const Paths = () => {
-  const location = useLocation();
-  const path = location.pathname.split("/")[1];
+  const path = useLocation().pathname.split("/")[1];
+  const { serverId } = useParams();
 
   return (
     <div className="hidden md:flex items-center gap-2">
@@ -22,6 +23,14 @@ export const Paths = () => {
             >
               {path}
             </div>
+          </Link>
+        </>
+      )}
+      {serverId && (
+        <>
+          <ChevronRight className="w-4 h-4" />
+          <Link to={`/servers/${serverId}`}>
+            <ServerName serverId={serverId} />
           </Link>
         </>
       )}

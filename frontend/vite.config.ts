@@ -5,9 +5,9 @@ import tsconfigPaths from "vite-tsconfig-paths";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
-  resolve: {
-    alias: {
-      "@monitor/client": "../client/ts"
-    }
-  }
+  // resolve: {
+  //   alias: {
+  //     "@monitor/client": "../client/ts"
+  //   }
+  // }
 });

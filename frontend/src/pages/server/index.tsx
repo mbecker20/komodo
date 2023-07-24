@@ -1,4 +1,4 @@
-import { useRead } from "@hooks";
+import { useRead, useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { ServerStatus } from "@monitor/client/dist/types";
 import { CardDescription } from "@ui/card";
@@ -83,7 +83,12 @@ export const ServerStatusIcon = ({
 
 export const Server = () => {
   const { serverId } = useParams();
-  //   const { data } = useRead({ type: "GetServer", params: { id: serverId! } });
+  const push = useSetRecentlyViewed();
+
+  // if (!serverId) return null;
+  // push("Server", serverId!);
+  if (!serverId) return null;
+  push("Server", serverId);
 
   return (
     <Resource
