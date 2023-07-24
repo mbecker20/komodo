@@ -21,7 +21,6 @@ export const DeploymentStatus = ({
 }) => {
   const deployments = useRead({ type: "ListDeployments", params: {} }).data;
   const deployment = deployments?.find((d) => d.id === deploymentId);
-  console.log(deployment);
   return <>{deployments ? deployment?.status ?? "not deployed" : "..."}</>;
 };
 
@@ -50,26 +49,16 @@ export const DeploymentInfo = ({ deploymentId }: { deploymentId: string }) => {
 
   return (
     <div className="flex flex-col gap-2 md:flex-row md:gap-4">
-      <Link
-        // to={`/builds/${deployment?.build_id}`}
-        to="."
-      >
-        <CardDescription className="flex items-center">
-          <HardDrive className="w-4 h-4 mr-2" />
-          {/* {data ? deployment?.container?.image ?? "no image" : "..."} */}
-          build.name @ build.version
-        </CardDescription>
-      </Link>
-      <Link
-        // to={`/servers/${deployment?.deployment.server_id}`}
-        to="."
-      >
-        <CardDescription className="flex items-center gap-2">
-          <Server className="w-4 h-4" />
-          server name
-          {/* <ServerName serverId={deployment?.deployment.server_id} /> */}
-        </CardDescription>
-      </Link>
+      <CardDescription className="flex items-center">
+        <HardDrive className="w-4 h-4 mr-2" />
+        {/* {data ? deployment?.container?.image ?? "no image" : "..."} */}
+        build.name @ build.version
+      </CardDescription>
+      <CardDescription className="flex items-center gap-2">
+        <Server className="w-4 h-4" />
+        server name
+        {/* <ServerName serverId={deployment?.deployment.server_id} /> */}
+      </CardDescription>
     </div>
   );
 };

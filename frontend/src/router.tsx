@@ -3,12 +3,10 @@ import { Layout } from "@layouts/layout";
 import { Login } from "@pages/auth/login";
 import { Signup } from "@pages/auth/signup";
 import { Dashboard } from "@pages/dashboard";
-import { Servers } from "@pages/servers";
-import { Deployments } from "@pages/deployments";
-import { Builds } from "@pages/builds";
 import { Deployment } from "@resources/deployment/page";
 import { Server } from "@resources/server/page";
 import { Build } from "@resources/build/page";
+import { Deployments, Builds, Servers } from "@resources/pages";
 
 const router = createBrowserRouter([
   {

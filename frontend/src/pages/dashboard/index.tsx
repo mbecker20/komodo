@@ -7,28 +7,6 @@ import { Link } from "react-router-dom";
 import { RecentlyViewed } from "./components/recently-viewed";
 import { ServerStatusIcon } from "@resources/server/util";
 
-export const BuildCard = ({ id }: { id: string }) => {
-  const builds = useRead({ type: "ListBuilds", params: {} }).data;
-  const build = builds?.find((server) => server.id === id);
-  if (!build) return null;
-
-  return (
-    <Link to={`/builds/${build.id}`} key={build.id}>
-      <Card hoverable>
-        <CardHeader className="flex flex-row justify-between">
-          <div>
-            <CardTitle>{build.name}</CardTitle>
-            <CardDescription>
-              {version_to_string(build.version)}
-            </CardDescription>
-          </div>
-          <ServerStatusIcon serverId={build.id} />
-        </CardHeader>
-      </Card>
-    </Link>
-  );
-};
-
 export const Dashboard = () => {
   const user = useUser().data;
 

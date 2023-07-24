@@ -1,5 +1,5 @@
 import { useRead } from "@hooks";
-import { BuildCard } from "@pages/dashboard";
+import { BuildCard } from "@resources/build/card";
 
 export const Builds = () => {
   const builds = useRead({ type: "ListBuilds", params: {} }).data;

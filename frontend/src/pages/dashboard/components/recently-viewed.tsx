@@ -1,5 +1,5 @@
 import { useGetRecentlyViewed } from "@hooks";
-import { BuildCard } from "..";
+import { BuildCard } from "@resources/build/card";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -14,7 +14,7 @@ import { Button } from "@ui/button";
 import { ChevronDown, PlusCircle } from "lucide-react";
 import { DeploymentCard } from "@resources/deployment/card";
 import { NewDeployment } from "@resources/deployment/new";
-import { ServerCard } from "@resources/server/util";
+import { ServerCard } from "@resources/server/card";
 import { NewBuild } from "@resources/build/new";
 
 const NewButton = () => {

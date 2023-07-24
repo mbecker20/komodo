@@ -85,26 +85,3 @@ export const ServerStatusIcon = ({
     />
   );
 };
-
-export const ServerCard = ({ id }: { id: string }) => {
-  const servers = useRead({ type: "ListServers", params: {} }).data;
-  const server = servers?.find((server) => server.id === id);
-  if (!server) return null;
-
-  return (
-    <Link to={`/servers/${server.id}`} key={server.id}>
-      <Card hoverable>
-        <CardHeader className="flex flex-row justify-between">
-          <div>
-            <CardTitle>{server.name}</CardTitle>
-            <CardDescription>{server.status}</CardDescription>
-          </div>
-          <ServerStatusIcon serverId={server.id} />
-        </CardHeader>
-        <CardContent>
-          <ServerStats serverId={server.id} />
-        </CardContent>
-      </Card>
-    </Link>
-  );
-};

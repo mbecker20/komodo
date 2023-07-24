@@ -10,7 +10,7 @@ const Card = React.forwardRef<
     className={cn(
       "rounded-lg border bg-card text-card-foreground shadow-sm",
       hoverable &&
-        "cursor-pointer hover:shadow-md transition-all dark:hover:bg-accent/50",
+        "cursor-pointer hover:shadow-md transition-all dark:hover:bg-accent/50 hover:-translate-y-1",
       className
     )}
     {...props}

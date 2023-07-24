@@ -1,5 +1,5 @@
 import { useRead } from "@hooks";
-import { ServerCard } from "@resources/server/util";
+import { ServerCard } from "@resources/server/card";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { PlusCircle } from "lucide-react";
