@@ -1,8 +1,9 @@
 import { Types } from "@monitor/client";
 import { client } from "./main";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
+import { useNavigate } from "react-router-dom";
 
 export const useRead = <T extends Types.ReadRequest>(req: T) =>
   useQuery([req], () => client.read(req));
@@ -15,10 +16,18 @@ export const useExecute = <T extends Types.ExecuteRequest>() =>
 
 export const useUser = () => useRead({ type: "GetUser", params: {} });
 
-export const useLogin = () =>
-  useMutation(client.login, {
-    onSuccess: (jwt) => localStorage.setItem("monitor-auth-token", jwt ?? ""),
+export const useLogin = () => {
+  const { refetch } = useUser();
+  const nav = useNavigate();
+
+  return useMutation(client.login, {
+    onSuccess: async (jwt) => {
+      await refetch();
+      localStorage.setItem("monitor-auth-token", jwt ?? "");
+      nav("/");
+    },
   });
+};
 
 // const recents_atom = atomWithStorage<
 //   { type: "Deployment" | "Build" | "Server"; id: string }[]

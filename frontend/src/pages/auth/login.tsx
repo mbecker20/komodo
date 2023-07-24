@@ -4,13 +4,10 @@ import { Input } from "@ui/input";
 import { Label } from "@ui/label";
 import { useLogin } from "@hooks";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export const Login = () => {
-  const { mutateAsync } = useLogin();
-  const nav = useNavigate();
+  const { mutate, isLoading } = useLogin();
   const [creds, set] = useState({ username: "", password: "" });
-  const login = async () => !!(await mutateAsync(creds)) && nav("/");
 
   return (
     <Card className="w-full max-w-[500px] place-self-center">
@@ -40,7 +37,11 @@ export const Login = () => {
           />
         </div>
         <div className="flex w-full justify-end">
-          <Button variant="outline" onClick={login}>
+          <Button
+            variant="outline"
+            onClick={() => mutate(creds)}
+            disabled={isLoading}
+          >
             Login
           </Button>
         </div>

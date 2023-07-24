@@ -50,6 +50,11 @@ export const Paths = () => {
 export const Header = () => {
   const user = useUser().data;
 
+  const logout = () => {
+    localStorage.removeItem("monitor-auth-token");
+    window.location.reload();
+  };
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="container flex h-16 items-center space-x-4 justify-between sm:space-x-0">
@@ -69,7 +74,7 @@ export const Header = () => {
           )}
           <ThemeToggle />
           {user && (
-            <Button variant="ghost">
+            <Button variant="ghost" onClick={logout}>
               <LogOut className="w-4 h-4" />
             </Button>
           )}

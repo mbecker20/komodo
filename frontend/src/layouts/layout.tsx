@@ -1,5 +1,6 @@
 import { Header } from "@components/header";
 import { useUser } from "@hooks";
+import { Login } from "@pages/auth/login";
 import { Toaster } from "@ui/toast";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
@@ -8,11 +9,6 @@ export const Layout = () => {
   const path = useLocation().pathname;
   const nav = useNavigate();
   if (isError && !path.includes("login")) nav("/login");
-  // const navigate = useNavigate();
-  // const path = useLocation().pathname;
-  // if (isError) return navigate("/login");
-  // if ((isError && !path.includes("login")) || !path.includes("signup"))
-  //   navigate("/login");
 
   return (
     <>
