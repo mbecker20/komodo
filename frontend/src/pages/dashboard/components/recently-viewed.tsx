@@ -1,5 +1,5 @@
 import { useGetRecentlyViewed } from "@hooks";
-import { BuildCard, ServerCard } from "..";
+import { BuildCard } from "..";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -14,6 +14,8 @@ import { Button } from "@ui/button";
 import { ChevronDown, PlusCircle } from "lucide-react";
 import { DeploymentCard } from "@resources/deployment/card";
 import { NewDeployment } from "@resources/deployment/new";
+import { ServerCard } from "@resources/server/util";
+import { NewBuild } from "@resources/build/new";
 
 const NewButton = () => {
   const [open, set] = useState<"deployment" | "build" | "server" | boolean>(
@@ -59,7 +61,7 @@ const NewButton = () => {
         </DropdownMenuContent>
       </DropdownMenu>
       <NewDeployment open={open === "deployment"} set={set} />
-      {/* <NewBuild open={open === "build"} set={set} /> */}
+      <NewBuild open={open === "build"} set={set} />
     </>
   );
 };

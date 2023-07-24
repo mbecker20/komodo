@@ -4,7 +4,10 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useNavigate } from "react-router-dom";
-import { WriteResponses } from "@monitor/client/dist/responses";
+import {
+  ExecuteResponses,
+  WriteResponses,
+} from "@monitor/client/dist/responses";
 
 export const useRead = <T extends Types.ReadRequest>(req: T) =>
   useQuery([req], () => client.read(req));
@@ -21,8 +24,17 @@ export const useWrite = <
       (await client.write({ type, params } as any)) as WriteResponses[T]
   );
 
-export const useExecute = <T extends Types.ExecuteRequest>() =>
-  useMutation((req: T) => client.execute(req));
+export const useExecute = <
+  T extends Types.ExecuteRequest["type"],
+  P = Extract<Types.ExecuteRequest, { type: T }>["params"]
+>(
+  type: T
+) =>
+  useMutation(
+    [type],
+    async (params: P) =>
+      (await client.execute({ type, params } as any)) as ExecuteResponses[T]
+  );
 
 export const useUser = () => useRead({ type: "GetUser", params: {} });
 

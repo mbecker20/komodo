@@ -1,9 +1,16 @@
 import { useRead } from "@hooks";
 import { ServerStatus } from "@monitor/client/dist/types";
-import { CardDescription } from "@ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { cn } from "@util/helpers";
 import { Circle, Cpu, Database, MemoryStick } from "lucide-react";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export const ServerName = ({ serverId }: { serverId: string | undefined }) => {
   const servers = useRead({ type: "ListServers", params: {} }).data;
@@ -76,5 +83,28 @@ export const ServerStatusIcon = ({
         sm && "w-3 h-3"
       )}
     />
+  );
+};
+
+export const ServerCard = ({ id }: { id: string }) => {
+  const servers = useRead({ type: "ListServers", params: {} }).data;
+  const server = servers?.find((server) => server.id === id);
+  if (!server) return null;
+
+  return (
+    <Link to={`/servers/${server.id}`} key={server.id}>
+      <Card hoverable>
+        <CardHeader className="flex flex-row justify-between">
+          <div>
+            <CardTitle>{server.name}</CardTitle>
+            <CardDescription>{server.status}</CardDescription>
+          </div>
+          <ServerStatusIcon serverId={server.id} />
+        </CardHeader>
+        <CardContent>
+          <ServerStats serverId={server.id} />
+        </CardContent>
+      </Card>
+    </Link>
   );
 };

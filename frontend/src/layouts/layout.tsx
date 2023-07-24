@@ -1,6 +1,5 @@
 import { Header } from "@components/header";
 import { useUser } from "@hooks";
-import { Login } from "@pages/auth/login";
 import { Toaster } from "@ui/toast";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 

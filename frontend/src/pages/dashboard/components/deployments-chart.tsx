@@ -1,4 +1,3 @@
-import { Button } from "@ui/button";
 import {
   Card,
   CardHeader,
@@ -7,7 +6,6 @@ import {
   CardContent,
 } from "@ui/card";
 import { WithLoading } from "@components/util";
-import { ChevronRight } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
 import { useRead } from "@hooks";
