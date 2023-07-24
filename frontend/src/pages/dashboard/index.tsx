@@ -35,7 +35,7 @@ export const Dashboard = () => {
   return (
     <div className="flex gap-24">
       <div className="flex flex-col gap-6 w-full">
-        <h1 className="text-3xl"> Hello, {user?.username}.</h1>
+        <h1 className="text-4xl"> Hello, {user?.username}.</h1>
         <div className="flex flex-col gap-4">
           <div className="flex gap-4 w-full h-fit">
             <DeploymentsChart />

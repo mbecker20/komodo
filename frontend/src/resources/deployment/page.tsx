@@ -4,6 +4,7 @@ import { Resource } from "@layouts/resource";
 import { CardDescription } from "@ui/card";
 import { DeploymentName, DeploymentStatus, DeploymentStatusIcon } from "./util";
 import {
+  DeleteDeployment,
   RedeployContainer,
   RemoveContainer,
   StartOrStopContainer,
@@ -30,14 +31,14 @@ export const Deployment = () => {
             <DeploymentStatus deploymentId={deploymentId} />
           </CardDescription>
           <CardDescription className="hidden md:block">|</CardDescription>
-          {/* <DeleteDeployment deploymentId={deploymentId} /> */}
+          <DeleteDeployment id={deploymentId} />
         </div>
       }
       actions={
         <>
-          <RedeployContainer deploymentId={deploymentId} />
-          <StartOrStopContainer deploymentId={deploymentId} />
-          <RemoveContainer deploymentId={deploymentId} />
+          <RedeployContainer deployment_id={deploymentId} />
+          <StartOrStopContainer deployment_id={deploymentId} />
+          <RemoveContainer deployment_id={deploymentId} />
         </>
       }
       tabs={[

@@ -17,13 +17,8 @@ export const Paths = () => {
       {path && (
         <>
           <ChevronRight className="w-4 h-4" />
-          <Link to={`/${path}`}>
-            <div
-              className="capitalize"
-              onClick={() => (location.pathname = path)}
-            >
-              {path}
-            </div>
+          <Link to={`/${path}`} className="capitalize">
+            {path}
           </Link>
         </>
       )}

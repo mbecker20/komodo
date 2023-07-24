@@ -1,7 +1,18 @@
 import { ActionButton } from "@components/util";
 import { RefreshCw, Play, Trash, Pause } from "lucide-react";
-import { useExecute, useRead } from "@hooks";
+import { useExecute, useRead, useWrite } from "@hooks";
 import { DockerContainerState } from "@monitor/client/dist/types";
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@ui/dialog";
+import { Input } from "@ui/input";
+import { Button } from "@ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface DeploymentId {
   deployment_id: string;
@@ -65,5 +76,51 @@ export const RemoveContainer = ({ deployment_id }: DeploymentId) => {
       onClick={() => mutate({ deployment_id })}
       disabled={isLoading}
     />
+  );
+};
+
+export const DeleteDeployment = ({ id }: { id: string }) => {
+  const nav = useNavigate();
+  const { data } = useRead({ type: "GetDeployment", params: { id } });
+  const { mutate, isLoading } = useWrite("DeleteDeployment", {
+    onSuccess: () => nav("/deployments"),
+  });
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+
+  return (
+    <>
+      <ActionButton
+        title="Delete"
+        intent="warning"
+        icon={<Trash className="h-4 w-4" />}
+        onClick={() => setOpen(true)}
+        disabled={isLoading}
+      />
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Deployment</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-2">
+            <p>
+              Are you sure you wish to delete this deployment? If so, please
+              type in <b>{data?.name}</b> below
+            </p>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              intent="danger"
+              disabled={name !== data?.name || isLoading}
+              onClick={() => mutate({ id })}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };

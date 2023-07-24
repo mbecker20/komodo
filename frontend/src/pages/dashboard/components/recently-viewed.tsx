@@ -69,7 +69,7 @@ const NewButton = () => {
 export const RecentlyViewed = () => {
   const recents = useGetRecentlyViewed();
   return (
-    <div className="w-full flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6 max-w-[400px]">
       <div className="flex justify-between">
         <h2 className="text-xl">Recently Viewed</h2>
         <NewButton />
