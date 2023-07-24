@@ -1,8 +1,4 @@
-// import { Build } from "@pages/resource/build";
-// import { Server } from "@pages/resource/server";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-// import { Deployment } from "@pages/resource/deployment";
-// import { Builds, Dashboard, Deployments, Servers } from "@pages/resources";
 import { Layout } from "@layouts/layout";
 import { Login } from "@pages/auth/login";
 import { Signup } from "@pages/auth/signup";
@@ -11,6 +7,8 @@ import { Server } from "@pages/server";
 import { Deployment } from "@pages/deployment";
 import { Servers } from "@pages/servers";
 import { Deployments } from "@pages/deployments";
+import { Builds } from "@pages/builds";
+import { Build } from "@pages/build";
 
 const router = createBrowserRouter([
   {
@@ -28,13 +26,13 @@ const router = createBrowserRouter([
           { path: ":deploymentId", element: <Deployment /> },
         ],
       },
-      // {
-      //   path: "builds",
-      //   children: [
-      //     { path: "", element: <Builds /> },
-      //     { path: ":buildId", element: <Build /> },
-      //   ],
-      // },
+      {
+        path: "builds",
+        children: [
+          { path: "", element: <Builds /> },
+          { path: ":buildId", element: <Build /> },
+        ],
+      },
       {
         path: "servers",
         children: [

@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
-import { version_to_string } from "@util/helpers";
+import { readableVersion, version_to_string } from "@util/helpers";
 import { ServersChart } from "./components/servers-chart";
 import { DeploymentsChart } from "./components/deployments-chart";
 import { Input } from "@ui/input";
@@ -30,7 +30,7 @@ import {
   DialogTitle,
 } from "@ui/dialog";
 import { useState } from "react";
-import { RecentlyViewed } from "./components/recents";
+import { RecentlyViewed } from "./components/recently-viewed";
 import { ServerStats, ServerStatusIcon } from "@pages/server";
 
 const NewDeployment = ({
@@ -78,8 +78,55 @@ const NewDeployment = ({
   );
 };
 
+const NewBuild = ({
+  open,
+  set,
+}: {
+  open: boolean;
+  set: (b: boolean) => void;
+}) => {
+  const { mutate } = useWrite();
+  const [name, setName] = useState("");
+
+  return (
+    <Dialog open={open} onOpenChange={set}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>New Build</DialogTitle>
+        </DialogHeader>
+        <div className="flex items-center justify-between">
+          <div>Build Name</div>
+          <Input
+            className="max-w-[50%]"
+            placeholder="Build Name"
+            name={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            intent="success"
+            onClick={() => {
+              mutate({
+                type: "CreateBuild",
+                params: { name, config: {} },
+              });
+              set(false);
+            }}
+          >
+            Create
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 const NewButton = () => {
-  const [open, set] = useState<"deployment" | "server" | boolean>(false);
+  const [open, set] = useState<"deployment" | "build" | "server" | boolean>(
+    false
+  );
   return (
     <>
       <DropdownMenu>
@@ -104,12 +151,15 @@ const NewButton = () => {
             <DropdownMenuItem onClick={() => set("deployment")}>
               Deployment
             </DropdownMenuItem>
-            <DropdownMenuItem> Build </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => set("build")}>
+              Build
+            </DropdownMenuItem>
             <DropdownMenuItem> Server </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
       <NewDeployment open={open === "deployment"} set={set} />
+      <NewBuild open={open === "build"} set={set} />
     </>
   );
 };
@@ -181,6 +231,28 @@ const ServersList = () => {
   );
 };
 
+export const BuildCard = ({ id }: { id: string }) => {
+  const builds = useRead({ type: "ListBuilds", params: {} }).data;
+  const build = builds?.find((server) => server.id === id);
+  if (!build) return null;
+
+  return (
+    <Link to={`/builds/${build.id}`} key={build.id}>
+      <Card className="hover:bg-accent">
+        <CardHeader className="flex flex-row justify-between">
+          <div>
+            <CardTitle>{build.name}</CardTitle>
+            <CardDescription>
+              {version_to_string(build.version)}
+            </CardDescription>
+          </div>
+          <ServerStatusIcon serverId={build.id} />
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+};
+
 const BuildsList = () => {
   const builds = useRead({ type: "ListBuilds", params: {} }).data;
 
@@ -188,14 +260,7 @@ const BuildsList = () => {
     <div className="flex flex-col gap-2 w-full">
       <h2 className="text-lg">Builds</h2>
       {builds?.map((build) => (
-        <Card>
-          <CardHeader key={build.id}>
-            <CardTitle>{build.name}</CardTitle>
-            <CardDescription>
-              {version_to_string(build.version)}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <BuildCard id={build.id} key={build.id} />
       ))}
     </div>
   );
