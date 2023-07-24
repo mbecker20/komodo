@@ -183,9 +183,18 @@ export const Dashboard = () => {
     <div className="flex gap-24">
       <div className="flex flex-col gap-6 w-full">
         <h1 className="text-3xl"> Hello, {user?.username}.</h1>
-        <div className="flex  gap-4 w-full h-fit">
-          <DeploymentsChart />
-          <ServersChart />
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-4 w-full h-fit">
+            <DeploymentsChart />
+            <ServersChart />
+          </div>
+          <Link to="/builds">
+            <Card hoverable>
+              <CardHeader>
+                <CardTitle>Builds</CardTitle>
+              </CardHeader>
+            </Card>
+          </Link>
         </div>
       </div>
       <RecentlyViewed />
