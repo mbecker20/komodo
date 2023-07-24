@@ -4,11 +4,11 @@ import { Login } from "@pages/auth/login";
 import { Signup } from "@pages/auth/signup";
 import { Dashboard } from "@pages/dashboard";
 import { Server } from "@pages/server";
-import { Deployment } from "@pages/deployment";
 import { Servers } from "@pages/servers";
 import { Deployments } from "@pages/deployments";
 import { Builds } from "@pages/builds";
 import { Build } from "@pages/build";
+import { Deployment } from "@resources/deployment/page";
 
 const router = createBrowserRouter([
   {

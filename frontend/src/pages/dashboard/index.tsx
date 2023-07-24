@@ -119,7 +119,7 @@ export const DeploymentCard = ({ id }: { id: string }) => {
   if (!deployment) return null;
   return (
     <Link to={`/deployments/${deployment.id}`}>
-      <Card className="hover:bg-accent">
+      <Card hoverable>
         <CardHeader>
           <CardTitle>{deployment.name}</CardTitle>
           <CardDescription>
@@ -138,7 +138,7 @@ export const ServerCard = ({ id }: { id: string }) => {
 
   return (
     <Link to={`/servers/${server.id}`} key={server.id}>
-      <Card className="hover:bg-accent">
+      <Card hoverable>
         <CardHeader className="flex flex-row justify-between">
           <div>
             <CardTitle>{server.name}</CardTitle>
@@ -161,7 +161,7 @@ export const BuildCard = ({ id }: { id: string }) => {
 
   return (
     <Link to={`/builds/${build.id}`} key={build.id}>
-      <Card className="hover:bg-accent">
+      <Card hoverable>
         <CardHeader className="flex flex-row justify-between">
           <div>
             <CardTitle>{build.name}</CardTitle>
