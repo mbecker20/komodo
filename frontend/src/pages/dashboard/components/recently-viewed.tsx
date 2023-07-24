@@ -20,7 +20,7 @@ const NewButton = () => {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger asChild>
           <Button
             className="w-[200px] flex items-center justify-between"
             variant="outline"

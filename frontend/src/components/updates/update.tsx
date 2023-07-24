@@ -22,7 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
-import { useRead } from "@hooks";
 
 export const UpdateUser = ({ userId }: { userId: string }) => {
   //   const { data } = useUpdateUser(userId);

@@ -6,7 +6,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 
 import { useUser } from "@hooks";
 import { ServerName } from "@pages/server";
-import { DeploymentName } from "@pages/deployment";
+import { DeploymentName } from "@resources/deployment/util";
 
 export const Paths = () => {
   const path = useLocation().pathname.split("/")[1];

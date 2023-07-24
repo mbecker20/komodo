@@ -2,11 +2,7 @@ import { useParams } from "react-router-dom";
 import { useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { CardDescription } from "@ui/card";
-import {
-  DeploymentName,
-  DeploymentStatus,
-  DeploymentStatusIcon,
-} from "./components/util";
+import { DeploymentName, DeploymentStatus, DeploymentStatusIcon } from "./util";
 import {
   RedeployContainer,
   RemoveContainer,

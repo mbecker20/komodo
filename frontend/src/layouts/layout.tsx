@@ -1,16 +1,18 @@
 import { Header } from "@components/header";
 import { useUser } from "@hooks";
 import { Toaster } from "@ui/toast";
-import { useLocation } from "react-router-dom";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 
 export const Layout = () => {
-  const { data, isError } = useUser();
-  const navigate = useNavigate();
+  const { isError } = useUser();
   const path = useLocation().pathname;
-  // if (isError && (!path.includes("login") || !path.includes("signup"))) navigate("/login");
-
-  console.log(data);
+  const nav = useNavigate();
+  if (isError && !path.includes("login")) nav("/login");
+  // const navigate = useNavigate();
+  // const path = useLocation().pathname;
+  // if (isError) return navigate("/login");
+  // if ((isError && !path.includes("login")) || !path.includes("signup"))
+  //   navigate("/login");
 
   return (
     <>
