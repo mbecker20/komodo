@@ -5,7 +5,7 @@ import { ChevronRight, Circle, LogOut } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { useUser } from "@hooks";
-import { ServerName } from "@pages/server";
+import { ServerName } from "@resources/server/util";
 import { DeploymentName } from "@resources/deployment/util";
 
 export const Paths = () => {

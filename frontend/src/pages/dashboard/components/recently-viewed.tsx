@@ -1,5 +1,5 @@
 import { useGetRecentlyViewed } from "@hooks";
-import { BuildCard, DeploymentCard, NewDeployment, ServerCard } from "..";
+import { BuildCard, ServerCard } from "..";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -12,6 +12,8 @@ import {
 } from "@ui/dropdown";
 import { Button } from "@ui/button";
 import { ChevronDown, PlusCircle } from "lucide-react";
+import { DeploymentCard } from "@resources/deployment/card";
+import { NewDeployment } from "@resources/deployment/new";
 
 const NewButton = () => {
   const [open, set] = useState<"deployment" | "build" | "server" | boolean>(
@@ -38,13 +40,21 @@ const NewButton = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => set("deployment")}>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => set("deployment")}
+            >
               Deployment
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => set("build")}>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              onClick={() => set("build")}
+            >
               Build
             </DropdownMenuItem>
-            <DropdownMenuItem> Server </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">
+              Server
+            </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>

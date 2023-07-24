@@ -21,52 +21,7 @@ import {
 } from "@ui/dialog";
 import { useState } from "react";
 import { RecentlyViewed } from "./components/recently-viewed";
-import { ServerStats, ServerStatusIcon } from "@pages/server";
-
-export const NewDeployment = ({
-  open,
-  set,
-}: {
-  open: boolean;
-  set: (b: boolean) => void;
-}) => {
-  const { mutate } = useWrite();
-  const [name, setName] = useState("");
-
-  return (
-    <Dialog open={open} onOpenChange={set}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New Deployment</DialogTitle>
-        </DialogHeader>
-        <div className="flex items-center justify-between">
-          <div>Deployment Name</div>
-          <Input
-            className="max-w-[50%]"
-            placeholder="Deployment Name"
-            name={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            intent="success"
-            onClick={() => {
-              mutate({
-                type: "CreateDeployment",
-                params: { name, config: {} },
-              });
-              set(false);
-            }}
-          >
-            Create
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
+import { ServerStats, ServerStatusIcon } from "@resources/server/util";
 
 const NewBuild = ({
   open,
@@ -110,24 +65,6 @@ const NewBuild = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
-
-export const DeploymentCard = ({ id }: { id: string }) => {
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
-  const deployment = deployments?.find((d) => d.id === id);
-  if (!deployment) return null;
-  return (
-    <Link to={`/deployments/${deployment.id}`}>
-      <Card hoverable>
-        <CardHeader>
-          <CardTitle>{deployment.name}</CardTitle>
-          <CardDescription>
-            {deployment.status ?? "not deployed"}
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    </Link>
   );
 };
 

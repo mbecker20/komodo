@@ -1,15 +1,25 @@
 import { Types } from "@monitor/client";
 import { client } from "./main";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { useNavigate } from "react-router-dom";
+import { WriteResponses } from "@monitor/client/dist/responses";
 
 export const useRead = <T extends Types.ReadRequest>(req: T) =>
   useQuery([req], () => client.read(req));
 
-export const useWrite = <T extends Types.WriteRequest>() =>
-  useMutation((req: T) => client.write(req));
+export const useWrite = <
+  T extends Types.WriteRequest["type"],
+  P = Extract<Types.WriteRequest, { type: T }>["params"]
+>(
+  type: T
+) =>
+  useMutation(
+    [type],
+    async (params: P) =>
+      (await client.write({ type, params } as any)) as WriteResponses[T]
+  );
 
 export const useExecute = <T extends Types.ExecuteRequest>() =>
   useMutation((req: T) => client.execute(req));

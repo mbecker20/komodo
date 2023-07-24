@@ -1,24 +1,43 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
-import { ReactNode } from "react";
+import { useRead } from "@hooks";
+import { DeploymentCard } from "@resources/deployment/card";
+import { Button } from "@ui/button";
+import { Input } from "@ui/input";
+import { PlusCircle } from "lucide-react";
+import { useState } from "react";
 
-export const Resources = ({
-  title,
-  newButton,
-  children,
-}: {
-  title: string;
-  newButton: ReactNode;
-  children: ReactNode;
-}) => {
+export const Deployments = () => {
+  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const [search, set] = useState("");
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row justify-between">
-        <CardTitle className="text-3xl">{title}</CardTitle>
-        {newButton}
-      </CardHeader>
-      <CardContent className="h-fit min-h-[50vh] max-h-[70vh] overflow-auto">
-        <div className="grid gap-4 md:grid-cols-2">{children}</div>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-12">
+      <div className="flex justify-between">
+        <h1 className="text-3xl">Deployments</h1>
+        <div className="flex gap-4">
+          <Input
+            className="w-[300px]"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => set(e.target.value)}
+          />
+          <Button
+            className="w-[200px] flex items-center gap-2"
+            variant="outline"
+            intent="success"
+          >
+            <PlusCircle className="w-4 h-4 text-green-500" />
+            New Deployment
+          </Button>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-8">
+        {deployments?.map(
+          ({ id, name }) =>
+            (search.includes(name) || name.includes(search)) && (
+              <DeploymentCard key={id} id={id} />
+            )
+        )}
+      </div>
+    </div>
   );
 };

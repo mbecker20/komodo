@@ -1,11 +1,9 @@
-import { useRead, useSetRecentlyViewed } from "@hooks";
-import { Resource } from "@layouts/resource";
+import { useRead } from "@hooks";
 import { ServerStatus } from "@monitor/client/dist/types";
 import { CardDescription } from "@ui/card";
 import { cn } from "@util/helpers";
 import { Circle, Cpu, Database, MemoryStick } from "lucide-react";
 import { useEffect } from "react";
-import { useParams } from "react-router-dom";
 
 export const ServerName = ({ serverId }: { serverId: string | undefined }) => {
   const servers = useRead({ type: "ListServers", params: {} }).data;
@@ -77,42 +75,6 @@ export const ServerStatusIcon = ({
         server?.status === ServerStatus.Disabled && "fill-blue-500",
         sm && "w-3 h-3"
       )}
-    />
-  );
-};
-
-export const Server = () => {
-  const { serverId } = useParams();
-  const push = useSetRecentlyViewed();
-
-  // if (!serverId) return null;
-  // push("Server", serverId!);
-  if (!serverId) return null;
-  push("Server", serverId);
-
-  return (
-    <Resource
-      title={<ServerName serverId={serverId} />}
-      info={<ServerInfo serverId={serverId} />}
-      actions=""
-      tabs={[
-        {
-          title: "Config",
-          component: <>config</>,
-        },
-        {
-          title: "Deployments",
-          component: <>server deployments</>,
-        },
-        {
-          title: "Stats",
-          component: "server stats",
-        },
-        {
-          title: "Updates",
-          component: <>updates</>,
-        },
-      ]}
     />
   );
 };
