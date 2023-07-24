@@ -6,10 +6,11 @@ import { Link, useLocation, useParams } from "react-router-dom";
 
 import { useUser } from "@hooks";
 import { ServerName } from "@pages/server";
+import { DeploymentName } from "@pages/deployment";
 
 export const Paths = () => {
   const path = useLocation().pathname.split("/")[1];
-  const { serverId } = useParams();
+  const { serverId, deploymentId } = useParams();
 
   return (
     <div className="hidden md:flex items-center gap-2">
@@ -31,6 +32,14 @@ export const Paths = () => {
           <ChevronRight className="w-4 h-4" />
           <Link to={`/servers/${serverId}`}>
             <ServerName serverId={serverId} />
+          </Link>
+        </>
+      )}
+      {deploymentId && (
+        <>
+          <ChevronRight className="w-4 h-4" />
+          <Link to={`/servers/${deploymentId}`}>
+            <DeploymentName deploymentId={deploymentId} />
           </Link>
         </>
       )}

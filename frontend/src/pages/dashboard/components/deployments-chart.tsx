@@ -11,6 +11,7 @@ import { ChevronRight } from "lucide-react";
 import { PieChart } from "react-minimal-pie-chart";
 import { Link } from "react-router-dom";
 import { useRead } from "@hooks";
+import { DockerContainerState } from "@monitor/client/dist/types";
 
 export const DeploymentsChart = () => {
   const { data, isLoading, isError } = useRead({
@@ -18,9 +19,15 @@ export const DeploymentsChart = () => {
     params: {},
   });
 
-  const running = data?.filter((d) => d.state === "running").length;
-  const stopped = data?.filter((d) => d.state === "exited").length;
-  const not_deployed = data?.filter((d) => d.state === "not_deployed").length;
+  const running = data?.filter(
+    (d) => d.state === DockerContainerState.Running
+  ).length;
+  const stopped = data?.filter(
+    (d) => d.state === DockerContainerState.Exited
+  ).length;
+  const not_deployed = data?.filter(
+    (d) => d.state === DockerContainerState.Unknown
+  ).length;
 
   return (
     <Card className="pb-4 w-full">
