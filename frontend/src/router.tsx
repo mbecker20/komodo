@@ -9,6 +9,7 @@ import { Signup } from "@pages/auth/signup";
 import { Dashboard } from "@pages/dashboard";
 import { Server } from "@pages/server";
 import { Deployment } from "@pages/deployment";
+import { Servers } from "@pages/servers";
 
 const router = createBrowserRouter([
   {
@@ -36,7 +37,7 @@ const router = createBrowserRouter([
       {
         path: "servers",
         children: [
-          { path: "", element: "servers" },
+          { path: "", element: <Servers /> },
           { path: ":serverId", element: <Server /> },
         ],
       },

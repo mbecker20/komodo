@@ -1,5 +1,11 @@
 import { useRead, useUser, useWrite } from "@hooks";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { version_to_string } from "@util/helpers";
 import { ServersChart } from "./components/servers-chart";
 import { DeploymentsChart } from "./components/deployments-chart";
@@ -25,6 +31,7 @@ import {
 } from "@ui/dialog";
 import { useState } from "react";
 import { RecentlyViewed } from "./components/recents";
+import { ServerStats } from "@pages/server";
 
 const NewDeployment = ({
   open,
@@ -150,6 +157,9 @@ export const ServerCard = ({ id }: { id: string }) => {
           <CardTitle>{server.name}</CardTitle>
           <CardDescription>{server.status}</CardDescription>
         </CardHeader>
+        <CardContent>
+          <ServerStats serverId={server.id} />
+        </CardContent>
       </Card>
     </Link>
   );
