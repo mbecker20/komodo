@@ -8,6 +8,7 @@ import {
 } from "@ui/card";
 import { Link } from "react-router-dom";
 import { DeploymentInfo, DeploymentStatusIcon } from "./util";
+import { Rocket } from "lucide-react";
 
 export const DeploymentCard = ({ id }: { id: string }) => {
   const deployments = useRead({ type: "ListDeployments", params: {} }).data;
@@ -25,7 +26,9 @@ export const DeploymentCard = ({ id }: { id: string }) => {
           </div>
           <DeploymentStatusIcon deploymentId={id} />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex items-center gap-4">
+          <Rocket className="w-4 h-4" />
+          <div className="border h-6" />
           <DeploymentInfo deploymentId={id} />
         </CardContent>
       </Card>

@@ -7,10 +7,14 @@ import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 export const Resources = ({
-  title,
+  type,
+  info,
+  icon,
   components,
 }: {
-  title: string;
+  type: string;
+  info: string;
+  icon: ReactNode;
   components: (search: string) => ReactNode;
 }) => {
   const [search, setSearch] = useState("");
@@ -18,11 +22,17 @@ export const Resources = ({
   return (
     <div className="flex flex-col gap-12">
       <div className="flex justify-between">
-        <h1 className="text-3xl">{title}</h1>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-4">
+            {icon}
+            <h1 className="text-3xl">{type}s</h1>
+          </div>
+          <div className="text-muted-foreground">{info}</div>
+        </div>
         <div className="flex gap-4">
           <Input
             className="w-[300px]"
-            placeholder={`Search ${title}`}
+            placeholder={`Search ${type}`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -33,7 +43,7 @@ export const Resources = ({
             onClick={() => setOpen(true)}
           >
             <PlusCircle className="w-4 h-4 text-green-500" />
-            New {title}
+            New {type}
           </Button>
           <NewDeployment open={open} set={setOpen} />
         </div>

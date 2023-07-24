@@ -8,6 +8,7 @@ import {
 } from "@ui/card";
 import { Link } from "react-router-dom";
 import { ServerStatusIcon, ServerStats } from "./util";
+import { Server } from "lucide-react";
 
 export const ServerCard = ({ id }: { id: string }) => {
   const servers = useRead({ type: "ListServers", params: {} }).data;
@@ -24,7 +25,9 @@ export const ServerCard = ({ id }: { id: string }) => {
           </div>
           <ServerStatusIcon serverId={server.id} />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex items-center gap-4">
+          <Server className="w-4 h-4" />
+          <div className="border h-6" />
           <ServerStats serverId={server.id} />
         </CardContent>
       </Card>

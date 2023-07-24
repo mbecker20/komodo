@@ -48,18 +48,18 @@ export const ServerStats = ({ serverId }: { serverId: string }) => {
 
   return (
     <div className="flex gap-4">
-      <div className="flex gap-2 items-center">
+      <CardDescription className="flex gap-2 items-center">
         <Cpu className="w-4 h-4" />
-        <CardDescription>{data?.cpu_perc.toFixed(2)}%</CardDescription>
-      </div>
-      <div className="flex gap-2 items-center">
+        {data?.cpu_perc.toFixed(2)}%
+      </CardDescription>
+      <CardDescription className="flex gap-2 items-center">
         <MemoryStick className="w-4 h-4" />
-        <CardDescription>{data?.mem_total_gb.toFixed(2)} GB</CardDescription>
-      </div>
-      <div className="flex gap-2 items-center">
+        {data?.mem_total_gb.toFixed(2)} GB
+      </CardDescription>
+      <CardDescription className="flex gap-2 items-center">
         <Database className="w-4 h-4" />
-        <CardDescription>{data?.disk_total_gb.toFixed(2)} GB</CardDescription>
-      </div>
+        {data?.disk_total_gb.toFixed(2)} GB
+      </CardDescription>
     </div>
   );
 };

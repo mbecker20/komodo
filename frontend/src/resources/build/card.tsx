@@ -10,6 +10,7 @@ import {
 import { version_to_string } from "@util/helpers";
 import { Link } from "react-router-dom";
 import { BuildInfo } from "./util";
+import { Hammer } from "lucide-react";
 
 export const BuildCard = ({ id }: { id: string }) => {
   const builds = useRead({ type: "ListBuilds", params: {} }).data;
@@ -28,7 +29,9 @@ export const BuildCard = ({ id }: { id: string }) => {
           </div>
           <ServerStatusIcon serverId={build.id} />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex items-center  gap-4">
+          <Hammer className="w-4 h-4" />
+          <div className="border h-6" />
           <BuildInfo id={id} />
         </CardContent>
       </Card>

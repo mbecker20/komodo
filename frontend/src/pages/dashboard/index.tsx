@@ -4,20 +4,25 @@ import { ServersChart } from "./components/servers-chart";
 import { DeploymentsChart } from "./components/deployments-chart";
 import { Link } from "react-router-dom";
 import { RecentlyViewed } from "./components/recently-viewed";
+import { Box } from "lucide-react";
 
 export const Dashboard = () => {
   const user = useUser().data;
 
   return (
-    <div className="flex gap-24">
+    <div className="flex flex-col gap-12">
+      <RecentlyViewed />
       <div className="flex flex-col gap-6 w-full">
-        <h1 className="text-4xl"> Hello, {user?.username}.</h1>
-        <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-2">
+          <Box className="w-6 h-6" />
+          <h1 className="text-4xl"> Resources </h1>
+        </div>
+        <div className="flex gap-4">
           <div className="flex gap-4 w-full h-fit">
             <DeploymentsChart />
             <ServersChart />
           </div>
-          <Link to="/builds">
+          <Link to="/builds" className="w-full max-w-[50%] h-full">
             <Card hoverable>
               <CardHeader>
                 <CardTitle>Builds</CardTitle>
@@ -26,7 +31,6 @@ export const Dashboard = () => {
           </Link>
         </div>
       </div>
-      <RecentlyViewed />
     </div>
   );
 };
