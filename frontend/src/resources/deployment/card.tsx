@@ -1,6 +1,13 @@
 import { useRead } from "@hooks";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { Link } from "react-router-dom";
+import { DeploymentInfo, DeploymentStatusIcon } from "./util";
 
 export const DeploymentCard = ({ id }: { id: string }) => {
   const deployments = useRead({ type: "ListDeployments", params: {} }).data;
@@ -9,12 +16,18 @@ export const DeploymentCard = ({ id }: { id: string }) => {
   return (
     <Link to={`/deployments/${deployment.id}`}>
       <Card hoverable>
-        <CardHeader>
-          <CardTitle>{deployment.name}</CardTitle>
-          <CardDescription>
-            {deployment.status ?? "not deployed"}
-          </CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div>
+            <CardTitle>{deployment.name}</CardTitle>
+            <CardDescription>
+              {deployment.status ?? "not deployed"}
+            </CardDescription>
+          </div>
+          <DeploymentStatusIcon deploymentId={id} />
         </CardHeader>
+        <CardContent>
+          <DeploymentInfo deploymentId={id} />
+        </CardContent>
       </Card>
     </Link>
   );

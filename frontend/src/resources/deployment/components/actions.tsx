@@ -20,9 +20,11 @@ interface DeploymentId {
 
 export const RedeployContainer = ({ deployment_id }: DeploymentId) => {
   const { mutate, isLoading } = useExecute("Deploy");
+  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const deployment = deployments?.find((d) => d.id === deployment_id);
   return (
     <ActionButton
-      title="Redeploy"
+      title={deployment?.status ? "Redeploy" : "Deploy"}
       intent="success"
       icon={<RefreshCw className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id })}
@@ -92,7 +94,7 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
     <>
       <ActionButton
         title="Delete"
-        intent="warning"
+        intent="danger"
         icon={<Trash className="h-4 w-4" />}
         onClick={() => setOpen(true)}
         disabled={isLoading}

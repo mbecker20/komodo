@@ -5,6 +5,8 @@ import { Input } from "@ui/input";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 
+const Resources = () => {};
+
 export const Servers = () => {
   const servers = useRead({ type: "ListServers", params: {} }).data;
   const [search, set] = useState("");

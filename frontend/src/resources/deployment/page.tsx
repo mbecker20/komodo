@@ -2,7 +2,12 @@ import { useParams } from "react-router-dom";
 import { useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { CardDescription } from "@ui/card";
-import { DeploymentName, DeploymentStatus, DeploymentStatusIcon } from "./util";
+import {
+  DeploymentInfo,
+  DeploymentName,
+  DeploymentStatus,
+  DeploymentStatusIcon,
+} from "./util";
 import {
   DeleteDeployment,
   RedeployContainer,
@@ -24,7 +29,7 @@ export const Deployment = () => {
       info={
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
           <div>deployment info</div>
-          {/* <DeploymentInfo deploymentId={deploymentId} /> */}
+          <DeploymentInfo deploymentId={deploymentId} />
           <CardDescription className="hidden md:block">|</CardDescription>
           <CardDescription className="flex items-center gap-2">
             <DeploymentStatusIcon deploymentId={deploymentId} />
