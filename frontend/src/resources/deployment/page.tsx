@@ -28,15 +28,14 @@ export const Deployment = () => {
       title={<DeploymentName deploymentId={deploymentId} />}
       info={
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-          <div>deployment info</div>
-          <DeploymentInfo deploymentId={deploymentId} />
-          <CardDescription className="hidden md:block">|</CardDescription>
           <CardDescription className="flex items-center gap-2">
-            <DeploymentStatusIcon deploymentId={deploymentId} />
             <DeploymentStatus deploymentId={deploymentId} />
+            <DeploymentStatusIcon deploymentId={deploymentId} />
           </CardDescription>
           <CardDescription className="hidden md:block">|</CardDescription>
-          <DeleteDeployment id={deploymentId} />
+          <DeploymentInfo deploymentId={deploymentId} />
+          <CardDescription className="hidden md:block">|</CardDescription>
+          {/* <DeleteDeployment id={deploymentId} /> */}
         </div>
       }
       actions={
