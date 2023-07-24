@@ -31,7 +31,7 @@ import {
 } from "@ui/dialog";
 import { useState } from "react";
 import { RecentlyViewed } from "./components/recents";
-import { ServerStats } from "@pages/server";
+import { ServerStats, ServerStatusIcon } from "@pages/server";
 
 const NewDeployment = ({
   open,
@@ -153,9 +153,12 @@ export const ServerCard = ({ id }: { id: string }) => {
   return (
     <Link to={`/servers/${server.id}`} key={server.id}>
       <Card className="hover:bg-accent">
-        <CardHeader>
-          <CardTitle>{server.name}</CardTitle>
-          <CardDescription>{server.status}</CardDescription>
+        <CardHeader className="flex flex-row justify-between">
+          <div>
+            <CardTitle>{server.name}</CardTitle>
+            <CardDescription>{server.status}</CardDescription>
+          </div>
+          <ServerStatusIcon serverId={server.id} />
         </CardHeader>
         <CardContent>
           <ServerStats serverId={server.id} />
@@ -210,7 +213,7 @@ export const Dashboard = () => {
           <NewButton />
         </div>
       </div>
-      <div className="flex gap-24">
+      <div className="flex gap-8">
         <div className="flex  gap-4 w-full h-fit">
           <DeploymentsChart />
           <ServersChart />

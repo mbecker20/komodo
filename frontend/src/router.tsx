@@ -10,6 +10,7 @@ import { Dashboard } from "@pages/dashboard";
 import { Server } from "@pages/server";
 import { Deployment } from "@pages/deployment";
 import { Servers } from "@pages/servers";
+import { Deployments } from "@pages/deployments";
 
 const router = createBrowserRouter([
   {
@@ -23,7 +24,7 @@ const router = createBrowserRouter([
       {
         path: "deployments",
         children: [
-          { path: "", element: "deploymenys" },
+          { path: "", element: <Deployments /> },
           { path: ":deploymentId", element: <Deployment /> },
         ],
       },
