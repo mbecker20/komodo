@@ -30,7 +30,7 @@ export const Deployments = () => {
           </Button>
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-8">
+      <div className="grid grid-cols-3 gap-8">
         {deployments?.map(
           ({ id, name }) =>
             (search.includes(name) || name.includes(search)) && (

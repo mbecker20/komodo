@@ -6,21 +6,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
-import { readableVersion, version_to_string } from "@util/helpers";
+import { version_to_string } from "@util/helpers";
 import { ServersChart } from "./components/servers-chart";
 import { DeploymentsChart } from "./components/deployments-chart";
 import { Input } from "@ui/input";
-import { ChevronDown, PlusCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@ui/dropdown";
 import { Button } from "@ui/button";
 import {
   Dialog,
@@ -33,7 +23,7 @@ import { useState } from "react";
 import { RecentlyViewed } from "./components/recently-viewed";
 import { ServerStats, ServerStatusIcon } from "@pages/server";
 
-const NewDeployment = ({
+export const NewDeployment = ({
   open,
   set,
 }: {
@@ -123,47 +113,6 @@ const NewBuild = ({
   );
 };
 
-const NewButton = () => {
-  const [open, set] = useState<"deployment" | "build" | "server" | boolean>(
-    false
-  );
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button
-            className="w-[200px] flex items-center justify-between"
-            variant="outline"
-          >
-            <div className="flex items-center gap-2">
-              <PlusCircle className="w-4 h-4 text-green-500" />
-              Add New
-            </div>
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-[200px]">
-          <DropdownMenuLabel className="text-xs">
-            Resource Type
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => set("deployment")}>
-              Deployment
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => set("build")}>
-              Build
-            </DropdownMenuItem>
-            <DropdownMenuItem> Server </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <NewDeployment open={open === "deployment"} set={set} />
-      <NewBuild open={open === "build"} set={set} />
-    </>
-  );
-};
-
 export const DeploymentCard = ({ id }: { id: string }) => {
   const deployments = useRead({ type: "ListDeployments", params: {} }).data;
   const deployment = deployments?.find((d) => d.id === id);
@@ -179,19 +128,6 @@ export const DeploymentCard = ({ id }: { id: string }) => {
         </CardHeader>
       </Card>
     </Link>
-  );
-};
-
-const DeploymentsList = () => {
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
-
-  return (
-    <div className="flex flex-col gap-2 w-full border-r pr-4">
-      <h2 className="text-lg">Deployments</h2>
-      {deployments?.map(({ id }) => (
-        <DeploymentCard key={id} id={id} />
-      ))}
-    </div>
   );
 };
 
@@ -218,19 +154,6 @@ export const ServerCard = ({ id }: { id: string }) => {
   );
 };
 
-const ServersList = () => {
-  const servers = useRead({ type: "ListServers", params: {} }).data;
-
-  return (
-    <div className="flex flex-col gap-2 w-full border-r pr-4">
-      <h2 className="text-lg">Deployments</h2>
-      {servers?.map((server) => (
-        <ServerCard key={server.id} id={server.id} />
-      ))}
-    </div>
-  );
-};
-
 export const BuildCard = ({ id }: { id: string }) => {
   const builds = useRead({ type: "ListBuilds", params: {} }).data;
   const build = builds?.find((server) => server.id === id);
@@ -253,43 +176,19 @@ export const BuildCard = ({ id }: { id: string }) => {
   );
 };
 
-const BuildsList = () => {
-  const builds = useRead({ type: "ListBuilds", params: {} }).data;
-
-  return (
-    <div className="flex flex-col gap-2 w-full">
-      <h2 className="text-lg">Builds</h2>
-      {builds?.map((build) => (
-        <BuildCard id={build.id} key={build.id} />
-      ))}
-    </div>
-  );
-};
-
 export const Dashboard = () => {
   const user = useUser().data;
 
   return (
-    <>
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl"> Hello, {user?.username}.</h1>
-        <div className="flex gap-4">
-          <Input className="w-[300px]" placeholder="Search" />
-          <NewButton />
-        </div>
-      </div>
-      <div className="flex gap-8">
+    <div className="flex gap-24">
+      <div className="flex flex-col gap-6 w-full">
+        <h1 className="text-3xl"> Hello, {user?.username}.</h1>
         <div className="flex  gap-4 w-full h-fit">
           <DeploymentsChart />
           <ServersChart />
         </div>
-        <RecentlyViewed />
       </div>
-      {/* <div className="flex gap-4">
-        <DeploymentsList />
-        <ServersList />
-        <BuildsList />
-      </div> */}
-    </>
+      <RecentlyViewed />
+    </div>
   );
 };
