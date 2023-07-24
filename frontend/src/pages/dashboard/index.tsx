@@ -1,11 +1,9 @@
-import { useRead, useUser } from "@hooks";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { version_to_string } from "@util/helpers";
+import { useUser } from "@hooks";
+import { Card, CardHeader, CardTitle } from "@ui/card";
 import { ServersChart } from "./components/servers-chart";
 import { DeploymentsChart } from "./components/deployments-chart";
 import { Link } from "react-router-dom";
 import { RecentlyViewed } from "./components/recently-viewed";
-import { ServerStatusIcon } from "@resources/server/util";
 
 export const Dashboard = () => {
   const user = useUser().data;
