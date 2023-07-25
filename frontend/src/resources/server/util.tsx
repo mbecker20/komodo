@@ -1,5 +1,6 @@
 import { useRead } from "@hooks";
 import { ServerStatus } from "@monitor/client/dist/types";
+import { CardDescription } from "@ui/card";
 import { cn } from "@util/helpers";
 import { Circle, Cpu, Database, MemoryStick } from "lucide-react";
 import { useEffect } from "react";
@@ -15,12 +16,12 @@ export const ServerInfo = ({ serverId }: { serverId: string | undefined }) => {
   const server = servers?.find((s) => s.id === serverId);
   return (
     <div className="flex items-center gap-4 text-muted-foreground">
-      {serverId && <ServerStats server_id={serverId} />}
-      <div>|</div>
-      <div className="flex items-center gap-4">
-        <div> Status: {server?.status}</div>
+      <div className="flex items-center gap-2">
         <ServerStatusIcon serverId={serverId} />
+        <div> {server?.status}</div>
       </div>
+      <CardDescription className="hidden md:block">|</CardDescription>
+      {serverId && <ServerStats server_id={serverId} />}
     </div>
   );
 };

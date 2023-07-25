@@ -14,6 +14,7 @@ import {
   StartOrStopContainer,
 } from "./components/actions";
 import { DeploymentLogs } from "./components/deployment-logs";
+import { Rocket } from "lucide-react";
 
 export const Deployment = () => {
   const { deploymentId } = useParams();
@@ -26,7 +27,9 @@ export const Deployment = () => {
     <Resource
       title={<DeploymentName deploymentId={deploymentId} />}
       info={
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+        <div className="flex items-center gap-4">
+          <Rocket className="w-4 h-4" />
+          <CardDescription className="hidden md:block">|</CardDescription>
           <div className="flex items-center gap-2 text-muted-foreground">
             <DeploymentStatusIcon deploymentId={deploymentId} />
             <DeploymentStatus deploymentId={deploymentId} />
@@ -36,11 +39,11 @@ export const Deployment = () => {
         </div>
       }
       actions={
-        <>
+        <div className="flex gap-4">
           <RedeployContainer deployment_id={deploymentId} />
           <StartOrStopContainer deployment_id={deploymentId} />
           <RemoveContainer deployment_id={deploymentId} />
-        </>
+        </div>
       }
       tabs={[
         {

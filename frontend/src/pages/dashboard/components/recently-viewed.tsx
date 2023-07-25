@@ -78,7 +78,7 @@ export const RecentlyViewed = () => {
           {!!recents.length && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <History className="w-4 h-4" />
-              <h2 className="text-xl ">Recently Viewed</h2>
+              <h2 className="text-xl">Recently Viewed</h2>
             </div>
           )}
         </div>

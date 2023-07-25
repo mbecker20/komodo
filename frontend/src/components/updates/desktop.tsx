@@ -2,6 +2,7 @@ import { useRead } from "@hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ui/dropdown";
@@ -21,9 +22,11 @@ export const DesktopUpdates = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {updates?.map((update) => (
-          <DropdownMenuItem key={update._id?.$oid}>
-            <SingleUpdate update={update} />
-          </DropdownMenuItem>
+          <DropdownMenuGroup>
+            <div className="p-2 hover:bg-muted transition-colors">
+              <SingleUpdate update={update} />
+            </div>
+          </DropdownMenuGroup>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

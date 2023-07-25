@@ -13,7 +13,16 @@ import {
   readableVersion,
   version_to_string,
 } from "@util/helpers";
-import { Calendar, Clock, Milestone, Search, User } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Hammer,
+  Milestone,
+  Rocket,
+  Search,
+  Server,
+  User,
+} from "lucide-react";
 // import { UpdateUser } from ".";
 import {
   Card,
@@ -22,6 +31,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
+import { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+import { ServerName } from "@resources/server/util";
+import { DeploymentName } from "@resources/deployment/util";
+import { BuildName } from "@resources/build/util";
 // import { useRead } from "@hooks";
 
 export const UpdateUser = ({ userId }: { userId: string }) => {
@@ -31,18 +45,17 @@ export const UpdateUser = ({ userId }: { userId: string }) => {
   return <>{userId.slice(0, 5)}...</>;
 };
 
-export const UpdateDetails = ({ update }: { update: Update }) => {
+export const UpdateDetails = ({
+  update,
+  children,
+}: {
+  update: Update;
+  children: ReactNode;
+}) => {
+  const nav = useNavigate();
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2 w-full max-w-fit"
-        >
-          <Search className="w-4 h-4" />
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger>{children}</SheetTrigger>
       <SheetContent position="right" size="lg">
         <SheetHeader className="mb-4">
           <SheetTitle>
@@ -53,6 +66,37 @@ export const UpdateDetails = ({ update }: { update: Update }) => {
             {version_to_string(update.version)}
           </SheetTitle>
           <SheetDescription className="flex flex-col gap-2">
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => {
+                update.target.id
+                  ? nav(
+                      `/${update.target.type.toLowerCase()}s/${
+                        update.target.id
+                      }`
+                    )
+                  : null;
+              }}
+            >
+              {update.target.type === "Server" && (
+                <>
+                  <Server className="w-4 h-4" />
+                  <ServerName serverId={update.target.id} />
+                </>
+              )}
+              {update.target.type === "Deployment" && (
+                <>
+                  <Rocket className="w-4 h-4" />
+                  <DeploymentName deploymentId={update.target.id} />
+                </>
+              )}
+              {update.target.type === "Build" && (
+                <>
+                  <Hammer className="w-4 h-4" />
+                  <BuildName id={update.target.id} />
+                </>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               {new Date(update.start_ts).toLocaleString()}

@@ -35,7 +35,7 @@ export const Servers = () => {
     <Resources
       type="Server"
       info={`${summary?.total} Total, ${summary?.healthy} Healthy, ${summary?.unhealthy} Unhealthy`}
-      icon={<Server className="w-6 h-6" />}
+      icon={<Server className="w-4 h-4" />}
       components={(search) => (
         <>
           {servers
@@ -57,7 +57,7 @@ export const Builds = () => {
     <Resources
       type="Build"
       info={`${summary?.total} Total`}
-      icon={<Hammer className="w-6 h-6" />}
+      icon={<Hammer className="w-4 h-4" />}
       components={(search) => (
         <>
           {builds
@@ -79,7 +79,7 @@ export const Builders = () => {
     <Resources
       type="Builder"
       info={`${summary?.total} Total`}
-      icon={<Factory className="w-6 h-6" />}
+      icon={<Factory className="w-4 h-4" />}
       components={(search) => (
         <>
           {builders
