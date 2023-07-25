@@ -1,6 +1,6 @@
 import { useRead } from "@hooks";
 import { cn } from "@util/helpers";
-import { Circle, HardDrive, Rocket, Server } from "lucide-react";
+import { HardDrive, Rocket, Server } from "lucide-react";
 
 export const DeploymentName = ({
   deploymentId,
