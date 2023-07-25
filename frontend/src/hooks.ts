@@ -33,11 +33,6 @@ export const useRead = <
     config
   );
 
-// export const useRead = <T extends Types.ReadRequest>(
-//   req: T,
-//   options?: UseQueryOptions
-// ) => useQuery([req], () => client.read(req), options);
-
 export const useWrite = <
   T extends Types.WriteRequest["type"],
   P = Extract<Types.WriteRequest, { type: T }>["params"]

@@ -45,7 +45,7 @@ export const Deployment = () => {
       tabs={[
         {
           title: "Logs",
-          component: <DeploymentLogs deploymentId={deploymentId} />,
+          component: <DeploymentLogs deployment_id={deploymentId} />,
         },
         {
           title: "Config",
