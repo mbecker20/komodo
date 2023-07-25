@@ -7,10 +7,12 @@ import { Hammer, Rocket, Server } from "lucide-react";
 
 export const Deployments = () => {
   const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const summary = useRead({ type: "GetDeploymentsSummary", params: {} }).data;
+
   return (
     <Resources
       type="Deployment"
-      info={`${deployments?.length} Total, 1 Running, 3 Stopped`}
+      info={`${summary?.total} Total, ${summary?.running} Running, ${summary?.stopped} Stopped, ${summary?.unknown} Unknown`}
       icon={<Rocket className="w-6 h-6" />}
       components={(search) => (
         <>
@@ -27,10 +29,12 @@ export const Deployments = () => {
 
 export const Builds = () => {
   const builds = useRead({ type: "ListBuilds", params: {} }).data;
+  const summary = useRead({ type: "GetBuildsSummary", params: {} }).data;
+
   return (
     <Resources
       type="Build"
-      info={`${builds?.length} Total`}
+      info={`${summary?.total} Total`}
       icon={<Hammer className="w-6 h-6" />}
       components={(search) => (
         <>
@@ -47,10 +51,11 @@ export const Builds = () => {
 
 export const Servers = () => {
   const servers = useRead({ type: "ListServers", params: {} }).data;
+  const summary = useRead({ type: "GetServersSummary", params: {} }).data;
   return (
     <Resources
       type="Server"
-      info={`${servers?.length} Total, 1 Healthy, 0 Unhealthy`}
+      info={`${summary?.total} Total, ${summary?.healthy} Healthy, ${summary?.unhealthy} Unhealthy`}
       icon={<Server className="w-6 h-6" />}
       components={(search) => (
         <>
