@@ -1,4 +1,3 @@
-import { Button } from "@ui/button";
 import {
   Sheet,
   SheetContent,
@@ -19,7 +18,6 @@ import {
   Hammer,
   Milestone,
   Rocket,
-  Search,
   Server,
   User,
 } from "lucide-react";

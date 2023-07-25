@@ -1,7 +1,6 @@
 import { NewDeployment } from "@resources/deployment/new";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
-import { History } from "lucide-react";
 import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { Page } from "./page";

@@ -1,5 +1,5 @@
 import { version_to_string } from "@util/helpers";
-import { Calendar, User } from "lucide-react";
+import { User } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./update";
 import { Update } from "@monitor/client/dist/types";
 
