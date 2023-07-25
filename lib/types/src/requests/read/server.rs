@@ -191,9 +191,10 @@ pub struct GetDockerContainers {
 pub struct GetServersSummary {}
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetServersSummaryResponse {
     pub total: I64,
     pub healthy: I64,
     pub unhealthy: I64,
+    pub disabled: I64,
 }

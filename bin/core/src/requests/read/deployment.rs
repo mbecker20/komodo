@@ -7,12 +7,11 @@ use monitor_types::{
     entities::{
         deployment::{
             Deployment, DeploymentActionState, DeploymentConfig, DeploymentImage,
-            DockerContainerStats,
+            DockerContainerState, DockerContainerStats,
         },
         update::{Log, UpdateStatus},
         Operation, PermissionLevel,
     },
-    permissioned::Permissioned,
     requests::read::*,
 };
 use mungos::mongodb::{bson::doc, options::FindOneOptions};
@@ -40,23 +39,19 @@ impl Resolve<ListDeployments, RequestUser> for State {
         ListDeployments { query }: ListDeployments,
         user: RequestUser,
     ) -> anyhow::Result<Vec<DeploymentListItem>> {
+        let mut query = query.unwrap_or_default();
+        if !user.is_admin {
+            query.insert(
+                format!("permissions.{}", user.id),
+                doc! { "$in": ["read", "execute", "update"] },
+            );
+        }
         let deployments = self
             .db
             .deployments
             .get_some(query, None)
             .await
             .context("failed to pull deployments from mongo")?;
-
-        let deployments = if user.is_admin {
-            deployments
-        } else {
-            deployments
-                .into_iter()
-                .filter(|deployment| {
-                    deployment.get_user_permissions(&user.id) > PermissionLevel::None
-                })
-                .collect()
-        };
 
         let deployments = deployments.into_iter().map(|deployment| async {
             let status = self.deployment_status_cache.get(&deployment.id).await;
@@ -240,6 +235,43 @@ impl Resolve<GetDeploymentsSummary, RequestUser> for State {
         GetDeploymentsSummary {}: GetDeploymentsSummary,
         user: RequestUser,
     ) -> anyhow::Result<GetDeploymentsSummaryResponse> {
-        todo!()
+        let query = if user.is_admin {
+            None
+        } else {
+            let query = doc! {
+                format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
+            };
+            Some(query)
+        };
+        let deployments = self
+            .db
+            .deployments
+            .get_some(query, None)
+            .await
+            .context("failed to count all deployment documents")?;
+        let mut res = GetDeploymentsSummaryResponse::default();
+        for deployment in deployments {
+            res.total += 1;
+            let status = self
+                .deployment_status_cache
+                .get(&deployment.id)
+                .await
+                .unwrap_or_default();
+            match status.state {
+                DockerContainerState::Running => {
+                    res.running += 1;
+                }
+                DockerContainerState::Unknown => {
+                    res.unknown += 1;
+                }
+                DockerContainerState::NotDeployed => {
+                    res.not_deployed += 1;
+                }
+                _ => {
+                    res.stopped += 1;
+                }
+            }
+        }
+        Ok(res)
     }
 }

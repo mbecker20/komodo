@@ -114,10 +114,11 @@ pub struct GetDeploymentActionState {
 pub struct GetDeploymentsSummary {}
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetDeploymentsSummaryResponse {
     pub total: I64,
     pub running: I64,
     pub stopped: I64,
+    pub not_deployed: I64,
     pub unknown: I64,
 }
