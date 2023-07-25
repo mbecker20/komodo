@@ -27,13 +27,12 @@ export const Deployment = () => {
       title={<DeploymentName deploymentId={deploymentId} />}
       info={
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-          <CardDescription className="flex items-center gap-2">
-            <DeploymentStatus deploymentId={deploymentId} />
+          <div className="flex items-center gap-2 text-muted-foreground">
             <DeploymentStatusIcon deploymentId={deploymentId} />
-          </CardDescription>
+            <DeploymentStatus deploymentId={deploymentId} />
+          </div>
           <CardDescription className="hidden md:block">|</CardDescription>
           <DeploymentInfo deploymentId={deploymentId} />
-          <CardDescription className="hidden md:block">|</CardDescription>
         </div>
       }
       actions={

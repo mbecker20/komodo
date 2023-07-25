@@ -71,7 +71,7 @@ export const RecentlyViewed = () => {
 
   const recents = useGetRecentlyViewed();
   return (
-    <div className="w-full flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-12">
       <div className="flex justify-between">
         <div>
           <h1 className="text-4xl"> Hello, {user?.username}.</h1>

@@ -20,17 +20,17 @@ export const Resources = ({
   return (
     <div className="flex flex-col gap-12">
       <div className="flex justify-between">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-4">
+        <div>
+          <h1 className="text-4xl">{type}s</h1>
+          <div className="flex items-center gap-2 text-muted-foreground">
             {icon}
-            <h1 className="text-3xl">{type}s</h1>
+            <h2 className="text-xl">{info}</h2>
           </div>
-          <div className="text-muted-foreground">{info}</div>
         </div>
         <div className="flex gap-4">
           <Input
             className="w-[300px]"
-            placeholder={`Search ${type}`}
+            placeholder={`Search ${type}s`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />

@@ -14,7 +14,11 @@ export const Build = () => {
   return (
     <Resource
       title={<BuildName id={buildId} />}
-      info={<BuildVersion id={buildId} />}
+      info={
+        <div className="text-muted-foreground">
+          <BuildVersion id={buildId} />
+        </div>
+      }
       actions={<RebuildBuild buildId={buildId} />}
       tabs={[
         {

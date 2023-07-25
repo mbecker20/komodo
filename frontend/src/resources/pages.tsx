@@ -13,7 +13,7 @@ export const Deployments = () => {
     <Resources
       type="Deployment"
       info={`${summary?.total} Total, ${summary?.running} Running, ${summary?.stopped} Stopped, ${summary?.unknown} Unknown`}
-      icon={<Rocket className="w-6 h-6" />}
+      icon={<Rocket className="w-4 h-4" />}
       components={(search) => (
         <>
           {deployments

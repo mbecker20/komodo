@@ -1,5 +1,4 @@
 import { useRead } from "@hooks";
-import { CardDescription } from "@ui/card";
 import { cn } from "@util/helpers";
 import { Circle, HardDrive, Server } from "lucide-react";
 
@@ -47,17 +46,17 @@ export const DeploymentInfo = ({ deploymentId }: { deploymentId: string }) => {
   const deployment = deployments?.find((d) => d.id === deploymentId);
 
   return (
-    <div className="flex flex-col gap-2 md:flex-row md:gap-4">
-      <CardDescription className="flex items-center">
-        <HardDrive className="w-4 h-4 mr-2" />
-        {/* {data ? deployment?.container?.image ?? "no image" : "..."} */}
-        build.name @ build.version {deployment?.image}
-      </CardDescription>
-      <CardDescription className="flex items-center gap-2">
+    <div className="flex flex-col gap-2 md:flex-row md:gap-4 text-muted-foreground">
+      <div className="flex items-center gap-2">
         <Server className="w-4 h-4" />
         server name
         {/* <ServerName serverId={deployment?.deployment.server_id} /> */}
-      </CardDescription>
+      </div>
+      <div className="flex items-center">
+        <HardDrive className="w-4 h-4 mr-2" />
+        {/* {data ? deployment?.container?.image ?? "no image" : "..."} */}
+        build.name @ build.version {deployment?.status}
+      </div>
     </div>
   );
 };

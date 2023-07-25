@@ -15,11 +15,11 @@ export const ServerInfo = ({ serverId }: { serverId: string | undefined }) => {
   const servers = useRead({ type: "ListServers", params: {} }).data;
   const server = servers?.find((s) => s.id === serverId);
   return (
-    <div className="flex items-center gap-4">
+    <div className="flex items-center gap-4 text-muted-foreground">
       {serverId && <ServerStats serverId={serverId} />}
-      <CardDescription>|</CardDescription>
-      <div className="flex items-center gap-2">
-        <CardDescription> Status: {server?.status}</CardDescription>
+      <div>|</div>
+      <div className="flex items-center gap-4">
+        <div> Status: {server?.status}</div>
         <ServerStatusIcon serverId={serverId} />
       </div>
     </div>
@@ -40,19 +40,19 @@ export const ServerStats = ({ serverId }: { serverId: string }) => {
   }, [refetch]);
 
   return (
-    <div className="flex gap-4">
-      <CardDescription className="flex gap-2 items-center">
+    <div className="flex gap-4 text-muted-foreground">
+      <div className="flex gap-2 items-center ">
         <Cpu className="w-4 h-4" />
         {data?.cpu_perc.toFixed(2)}%
-      </CardDescription>
-      <CardDescription className="flex gap-2 items-center">
+      </div>
+      <div className="flex gap-2 items-center">
         <MemoryStick className="w-4 h-4" />
         {data?.mem_total_gb.toFixed(2)} GB
-      </CardDescription>
-      <CardDescription className="flex gap-2 items-center">
+      </div>
+      <div className="flex gap-2 items-center">
         <Database className="w-4 h-4" />
         {data?.disk_total_gb.toFixed(2)} GB
-      </CardDescription>
+      </div>
     </div>
   );
 };

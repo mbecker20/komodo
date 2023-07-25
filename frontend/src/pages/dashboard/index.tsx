@@ -7,13 +7,17 @@ import { Box } from "lucide-react";
 
 export const Dashboard = () => {
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-24">
       <RecentlyViewed />
       <div className="flex flex-col gap-6 w-full">
-        <div className="flex items-center gap-2">
-          <Box className="w-6 h-6" />
-          <h1 className="text-4xl"> Resources </h1>
+        {/* <h1 className="text-4xl"> All Resources </h1> */}
+        <div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Box className="w-4 h-4" />
+            <h2 className="text-xl">My Resources</h2>
+          </div>
         </div>
+
         <div className="flex gap-4">
           <div className="flex gap-4 w-full h-fit">
             <DeploymentsChart />
