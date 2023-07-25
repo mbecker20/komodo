@@ -745,12 +745,24 @@ export interface GetBuildActionState {
 	id: string;
 }
 
+export interface GetBuildsSummary {
+}
+
+export interface GetBuildsSummaryResponse {
+}
+
 export interface GetBuilder {
 	id: string;
 }
 
 export interface ListBuilders {
 	query?: MongoDocument;
+}
+
+export interface GetBuildersSummary {
+}
+
+export interface GetBuildersSummaryResponse {
 }
 
 export interface GetDeployment {
@@ -801,6 +813,12 @@ export interface GetDeploymentActionState {
 	id: string;
 }
 
+export interface GetDeploymentsSummary {
+}
+
+export interface GetDeploymentsSummaryResponse {
+}
+
 export interface GetVersion {
 }
 
@@ -828,6 +846,12 @@ export interface RepoListItem {
 
 export interface GetRepoActionState {
 	id: string;
+}
+
+export interface GetReposSummary {
+}
+
+export interface GetReposSummaryResponse {
 }
 
 export type Tag = 
@@ -935,6 +959,12 @@ export interface GetDockerImages {
 
 export interface GetDockerContainers {
 	server_id: string;
+}
+
+export interface GetServersSummary {
+}
+
+export interface GetServersSummaryResponse {
 }
 
 export interface GetTag {
@@ -1152,6 +1182,7 @@ export type ReadRequest =
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetUser", params: GetUser }
 	| { type: "FindResources", params: FindResources }
+	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }
 	| { type: "GetServerStatus", params: GetServerStatus }
@@ -1161,6 +1192,7 @@ export type ReadRequest =
 	| { type: "GetDockerImages", params: GetDockerImages }
 	| { type: "GetDockerNetworks", params: GetDockerNetworks }
 	| { type: "GetServerActionState", params: GetServerActionState }
+	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
 	| { type: "ListDeployments", params: ListDeployments }
 	| { type: "GetDeploymentStatus", params: GetDeploymentStatus }
@@ -1168,16 +1200,20 @@ export type ReadRequest =
 	| { type: "GetDeployedVersion", params: GetDeployedVersion }
 	| { type: "GetDeploymentStats", params: GetDeploymentStats }
 	| { type: "GetLog", params: GetLog }
+	| { type: "GetBuildsSummary", params: GetBuildsSummary }
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "ListBuilds", params: ListBuilds }
 	| { type: "GetBuildActionState", params: GetBuildActionState }
+	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }
+	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }
 	| { type: "ListRepos", params: ListRepos }
 	| { type: "GetRepoActionState", params: GetRepoActionState }
 	| { type: "GetTag", params: GetTag }
 	| { type: "ListTags", params: ListTags }
+	| { type: "ListUpdates", params: ListUpdates }
 	| { type: "GetAllSystemStats", params: GetAllSystemStats }
 	| { type: "GetBasicSystemStats", params: GetBasicSystemStats }
 	| { type: "GetCpuUsage", params: GetCpuUsage }

@@ -16,6 +16,7 @@ export type ReadResponses = {
   FindResources: Types.FindResourcesResponse;
 
   // ==== SERVER ====
+  GetServersSummary: Types.GetServersSummaryResponse;
   GetServer: Types.Server;
   ListServers: Types.ServerListItem[];
   GetServerStatus: Types.GetServerStatusResponse;
@@ -27,6 +28,7 @@ export type ReadResponses = {
   GetServerActionState: Types.ServerActionState;
 
   // ==== DEPLOYMENT ====
+  GetDeploymentsSummary: Types.GetDeploymentsSummaryResponse;
   GetDeployment: Types.Deployment;
   ListDeployments: Types.DeploymentListItem[];
   GetDeploymentStatus: Types.GetDeploymentStatusResponse;
@@ -36,15 +38,18 @@ export type ReadResponses = {
   GetLog: Types.Log;
 
   // ==== BUILD ====
+  GetBuildsSummary: Types.GetBuildsSummaryResponse;
   GetBuild: Types.Build;
   ListBuilds: Types.BuildListItem[];
   GetBuildActionState: Types.BuildActionState;
 
   // ==== BUILDER ====
+  GetBuildersSummary: Types.GetBuildersSummaryResponse;
   GetBuilder: Types.Builder;
   ListBuilders: Types.Builder[];
 
   // ==== REPO ====
+  GetReposSummary: Types.GetReposSummaryResponse;
   GetRepo: Types.Repo;
   ListRepos: Types.RepoListItem[];
   GetRepoActionState: Types.RepoActionState;
@@ -52,6 +57,9 @@ export type ReadResponses = {
   // ==== TAG ====
   GetTag: Types.CustomTag;
   ListTags: Types.CustomTag[];
+
+  // ==== UPDATE ====
+  ListUpdates: Types.Update[];
 
   // ==== SERVER STATS ====
   GetAllSystemStats: Types.AllSystemStats;
