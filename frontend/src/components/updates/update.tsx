@@ -40,7 +40,7 @@ export const UpdateUser = ({ userId }: { userId: string }) => {
   // const { data } = useRead({ type: "GetUser", params: {} });
   if (userId === "github") return <>GitHub</>;
   if (userId === "auto redeploy") return <>Auto Redeploy</>;
-  return <>{userId.slice(0, 5)}...</>;
+  return <>{userId.slice(0, 10)}...</>;
 };
 
 export const UpdateDetails = ({
@@ -53,7 +53,7 @@ export const UpdateDetails = ({
   const nav = useNavigate();
   return (
     <Sheet>
-      <SheetTrigger>{children}</SheetTrigger>
+      <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent position="right" size="lg">
         <SheetHeader className="mb-4">
           <SheetTitle>

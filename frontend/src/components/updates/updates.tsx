@@ -1,18 +1,25 @@
 import { version_to_string } from "@util/helpers";
-import { User } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./update";
 import { Update } from "@monitor/client/dist/types";
 
+const fmt_date = (d: Date) =>
+  `${d.getDate()}/${d.getMonth()} @ ${d.getHours()}:${d.getMinutes()}`;
+
 export const SingleUpdate = ({ update }: { update: Update }) => (
   <UpdateDetails update={update}>
-    <div className="flex items-center justify-between">
-      <div className="flex gap-2 items-center">
+    <div
+      className="grid gap-4 justify-start items-center cursor-pointer"
+      style={{ gridTemplateColumns: "1fr 1.75fr 1fr" }}
+    >
+      <div className="flex items-center gap-2">
+        <Calendar className="w-4 h-4" />
         <div className="text-xs">
-          {update.end_ts ? new Date(update.end_ts).toLocaleString() : "ongoing"}
+          {update.end_ts ? fmt_date(new Date(update.end_ts)) : "ongoing"}
         </div>
       </div>
 
-      <div>
+      <div className="text-sm w-full">
         {update.operation
           .split("_")
           .map((s) => s[0].toUpperCase() + s.slice(1))
@@ -20,11 +27,9 @@ export const SingleUpdate = ({ update }: { update: Update }) => (
         {version_to_string(update.version)}
       </div>
 
-      <div className="flex gap-2 items-center">
+      <div className="flex items-center gap-2 text-sm">
         <User className="w-4 h-4" />
-        <div>
-          <UpdateUser userId={update.operator} />
-        </div>
+        <UpdateUser userId={update.operator} />
       </div>
     </div>
   </UpdateDetails>

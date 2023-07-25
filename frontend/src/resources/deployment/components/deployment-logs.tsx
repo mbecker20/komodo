@@ -1,8 +1,6 @@
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardContent } from "@ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@ui/tabs";
-// import { useDeploymentLog } from "@hooks/deployments";
-import { TabsContent } from "@radix-ui/react-tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs"; // import { useDeploymentLog } from "@hooks/deployments";
 import { AlertOctagon, ChevronDown } from "lucide-react";
 import { useEffect } from "react";
 import { useRead } from "@hooks";
@@ -32,8 +30,8 @@ export const DeploymentLogs = ({
   return (
     <Tabs defaultValue="stdout">
       <Card>
-        <CardHeader className="flex-row justify-end">
-          <TabsList>
+        <CardHeader>
+          <TabsList className="w-fit place-self-end">
             <TabsTrigger value="stdout" onClick={scroll_to_bottom("stdout")}>
               Out
             </TabsTrigger>
@@ -45,21 +43,23 @@ export const DeploymentLogs = ({
             </TabsTrigger>
           </TabsList>
         </CardHeader>
-        {["stdout", "stderr"].map((t) => (
-          <TabsContent key={t} className="h-full relative" value={t}>
-            <CardContent className="h-[50vh] overflow-y-scroll">
-              <pre id={t}>
-                {data?.[t as keyof typeof data] || `no ${t} logs`}
-              </pre>
-            </CardContent>
-            <Button
-              className="absolute bottom-8 right-12"
-              onClick={scroll_to_bottom(t)}
-            >
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </TabsContent>
-        ))}
+        <CardContent>
+          {["stdout", "stderr"].map((t) => (
+            <TabsContent key={t} className="h-full relative" value={t}>
+              <div className="h-[50vh] overflow-y-scroll">
+                <pre id={t}>
+                  {data?.[t as keyof typeof data] || `no ${t} logs`}
+                </pre>
+              </div>
+              <Button
+                className="absolute bottom-4 right-4"
+                onClick={scroll_to_bottom(t)}
+              >
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </TabsContent>
+          ))}
+        </CardContent>
       </Card>
     </Tabs>
   );

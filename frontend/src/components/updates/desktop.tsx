@@ -19,14 +19,14 @@ export const DesktopUpdates = () => {
           <Bell className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        {updates?.map((update) => (
-          <DropdownMenuGroup>
-            <div className="p-2 hover:bg-muted transition-colors">
+      <DropdownMenuContent className="w-[500px]">
+        <DropdownMenuGroup>
+          {updates?.map((update) => (
+            <div className="p-2 hover:bg-muted transition-colors border-b last:border-none">
               <SingleUpdate update={update} />
             </div>
-          </DropdownMenuGroup>
-        ))}
+          ))}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
