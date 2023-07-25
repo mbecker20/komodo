@@ -1,6 +1,5 @@
 import { useRead } from "@hooks";
 import { ServerStatus } from "@monitor/client/dist/types";
-import { CardDescription } from "@ui/card";
 import { cn } from "@util/helpers";
 import { Circle, Cpu, Database, MemoryStick } from "lucide-react";
 import { useEffect } from "react";
