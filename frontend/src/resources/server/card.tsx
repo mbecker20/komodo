@@ -1,14 +1,8 @@
 import { useRead } from "@hooks";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@ui/card";
 import { Link } from "react-router-dom";
 import { ServerStatusIcon, ServerStats } from "./util";
 import { Server } from "lucide-react";
+import { ResourceCard } from "@layouts/card";
 
 export const ServerCard = ({ id }: { id: string }) => {
   const servers = useRead("ListServers", {}).data;
@@ -17,20 +11,14 @@ export const ServerCard = ({ id }: { id: string }) => {
 
   return (
     <Link to={`/servers/${server.id}`} key={server.id}>
-      <Card hoverable>
-        <CardHeader className="flex flex-row justify-between items-start">
-          <div>
-            <CardTitle>{server.name}</CardTitle>
-            <CardDescription>{server.status}</CardDescription>
-          </div>
-          <ServerStatusIcon serverId={server.id} />
-        </CardHeader>
-        <CardContent className="flex items-center gap-4">
-          <Server className="w-4 h-4" />
-          <div className="border h-6" />
-          <ServerStats server_id={server.id} />
-        </CardContent>
-      </Card>
+      <ResourceCard
+        title={server.name}
+        description={server.status}
+        statusIcon={<ServerStatusIcon serverId={server.id} />}
+        icon={<Server className="w-4 h-4" />}
+      >
+        <ServerStats server_id={server.id} />
+      </ResourceCard>
     </Link>
   );
 };

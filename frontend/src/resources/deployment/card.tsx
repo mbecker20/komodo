@@ -1,14 +1,8 @@
 import { useRead } from "@hooks";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@ui/card";
 import { Link } from "react-router-dom";
 import { DeploymentInfo, DeploymentStatusIcon } from "./util";
 import { Rocket } from "lucide-react";
+import { ResourceCard } from "@layouts/card";
 
 export const DeploymentCard = ({ id }: { id: string }) => {
   const deployments = useRead("ListDeployments", {}).data;
@@ -16,22 +10,14 @@ export const DeploymentCard = ({ id }: { id: string }) => {
   if (!deployment) return null;
   return (
     <Link to={`/deployments/${deployment.id}`}>
-      <Card hoverable>
-        <CardHeader className="flex flex-row justify-between">
-          <div>
-            <CardTitle>{deployment.name}</CardTitle>
-            <CardDescription>
-              {deployment.status ?? "not deployed"}
-            </CardDescription>
-          </div>
-          <DeploymentStatusIcon deploymentId={id} />
-        </CardHeader>
-        <CardContent className="flex items-center gap-4">
-          <Rocket className="w-4 h-4" />
-          <div className="border h-6" />
-          <DeploymentInfo deploymentId={id} />
-        </CardContent>
-      </Card>
+      <ResourceCard
+        title={deployment.name}
+        description={deployment.status ?? "not deployed"}
+        statusIcon={<DeploymentStatusIcon deploymentId={id} />}
+        icon={<Rocket className="w-4 h-4" />}
+      >
+        <DeploymentInfo deploymentId={id} />
+      </ResourceCard>
     </Link>
   );
 };

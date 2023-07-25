@@ -6,14 +6,25 @@ import { BuildCard } from "./build/card";
 import { ServerCard } from "./server/card";
 import { BuilderCard } from "./builder/card";
 
+const DeploymentsSummary = () => {
+  const summary = useRead("GetDeploymentsSummary", {}).data;
+  if (!summary) return <>...</>;
+  else {
+    const { total, running, stopped, unknown } = summary;
+    return (
+      <>
+        {total} Total, {running} Running, {stopped} Stopped, {unknown} Unknown
+      </>
+    );
+  }
+};
+
 export const Deployments = () => {
   const deployments = useRead("ListDeployments", {}).data;
-  const summary = useRead("GetDeploymentsSummary", {}).data;
-
   return (
     <Resources
       type="Deployment"
-      info={`${summary?.total} Total, ${summary?.running} Running, ${summary?.stopped} Stopped, ${summary?.unknown} Unknown`}
+      summary={<DeploymentsSummary />}
       icon={<Rocket className="w-4 h-4" />}
       components={(search) => (
         <>
@@ -28,13 +39,25 @@ export const Deployments = () => {
   );
 };
 
+const ServersSummary = () => {
+  const summary = useRead("GetServersSummary", {}).data;
+  if (!summary) return <>...</>;
+  else {
+    const { total, healthy, unhealthy } = summary;
+    return (
+      <>
+        {total} Total, {healthy} Healthy, {unhealthy} Unhealthy
+      </>
+    );
+  }
+};
+
 export const Servers = () => {
   const servers = useRead("ListServers", {}).data;
-  const summary = useRead("GetServersSummary", {}).data;
   return (
     <Resources
       type="Server"
-      info={`${summary?.total} Total, ${summary?.healthy} Healthy, ${summary?.unhealthy} Unhealthy`}
+      summary={<ServersSummary />}
       icon={<Server className="w-4 h-4" />}
       components={(search) => (
         <>
@@ -56,7 +79,7 @@ export const Builds = () => {
   return (
     <Resources
       type="Build"
-      info={`${summary?.total} Total`}
+      summary={summary ? `${summary?.total} Total` : "..."}
       icon={<Hammer className="w-4 h-4" />}
       components={(search) => (
         <>
@@ -78,7 +101,7 @@ export const Builders = () => {
   return (
     <Resources
       type="Builder"
-      info={`${summary?.total} Total`}
+      summary={summary ? `${summary?.total} Total` : "..."}
       icon={<Factory className="w-4 h-4" />}
       components={(search) => (
         <>

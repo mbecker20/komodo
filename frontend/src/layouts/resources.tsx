@@ -7,12 +7,12 @@ import { Page } from "./page";
 
 export const Resources = ({
   type,
-  info,
+  summary,
   icon,
   components,
 }: {
   type: string;
-  info: string;
+  summary: ReactNode;
   icon: ReactNode;
   components: (search: string) => ReactNode;
 }) => {
@@ -24,7 +24,7 @@ export const Resources = ({
       subtitle={
         <h2 className="text-lg text-muted-foreground flex items-center gap-2">
           {icon}
-          {info}
+          {summary}
         </h2>
       }
       actions={

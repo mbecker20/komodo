@@ -37,7 +37,7 @@ export const ServerStats = ({ server_id }: { server_id: string }) => {
   }, [refetch]);
 
   return (
-    <div className="flex gap-4 text-muted-foreground">
+    <div className="flex gap-4 text-sm text-muted-foreground">
       <div className="flex gap-2 items-center ">
         <Cpu className="w-4 h-4" />
         {data?.cpu_perc.toFixed(2)}%

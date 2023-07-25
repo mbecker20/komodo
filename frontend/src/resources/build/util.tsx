@@ -18,7 +18,7 @@ export const BuildVersion = ({ id }: { id: string }) => {
 export const BuildBuilder = ({ id }: { id: string }) => {
   const builds = useRead("ListBuilds", {}).data;
   const build = builds?.find((b) => b.id === id);
-  return <>{"build.builder " + build?.id ?? "..."}</>;
+  return <>{build?.id.slice(0, 10) + "..." ?? "..."}</>;
 };
 
 export const BuildLastBuilt = ({ id }: { id: string }) => {
@@ -30,15 +30,15 @@ export const BuildLastBuilt = ({ id }: { id: string }) => {
 
 export const BuildInfo = ({ id }: { id: string }) => {
   return (
-    <div className="flex flex-col gap-2 md:flex-row md:gap-4">
-      <CardDescription className="flex items-center">
-        <Factory className="w-4 h-4 mr-2" />
+    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2">
+        <Factory className="w-4 h-4" />
         <BuildBuilder id={id} />
-      </CardDescription>
-      <CardDescription className="flex items-center">
-        <History className="w-4 h-4 mr-2" />
+      </div>
+      <div className="flex items-center gap-2">
+        <History className="w-4 h-4" />
         <BuildLastBuilt id={id} />
-      </CardDescription>
+      </div>
     </div>
   );
 };
