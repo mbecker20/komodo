@@ -1,5 +1,4 @@
 import { useRead } from "@hooks";
-import { CardDescription } from "@ui/card";
 import { version_to_string } from "@util/helpers";
 import { Factory, History } from "lucide-react";
 
@@ -18,7 +17,7 @@ export const BuildVersion = ({ id }: { id: string }) => {
 export const BuildBuilder = ({ id }: { id: string }) => {
   const builds = useRead("ListBuilds", {}).data;
   const build = builds?.find((b) => b.id === id);
-  return <>{build?.id.slice(0, 10) + "..." ?? "..."}</>;
+  return <>{build?.id ?? "..."}</>;
 };
 
 export const BuildLastBuilt = ({ id }: { id: string }) => {
@@ -30,7 +29,7 @@ export const BuildLastBuilt = ({ id }: { id: string }) => {
 
 export const BuildInfo = ({ id }: { id: string }) => {
   return (
-    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+    <div className="flex flex-col text-muted-foreground text-sm">
       <div className="flex items-center gap-2">
         <Factory className="w-4 h-4" />
         <BuildBuilder id={id} />

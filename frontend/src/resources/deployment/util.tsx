@@ -46,7 +46,7 @@ export const DeploymentInfo = ({ deploymentId }: { deploymentId: string }) => {
   const deployment = deployments?.find((d) => d.id === deploymentId);
 
   return (
-    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+    <div className="flex flex-col text-muted-foreground text-sm">
       <div className="flex items-center gap-2">
         <Server className="w-4 h-4" />
         server name

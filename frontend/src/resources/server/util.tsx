@@ -2,7 +2,7 @@ import { useRead } from "@hooks";
 import { ServerStatus } from "@monitor/client/dist/types";
 import { CardDescription } from "@ui/card";
 import { cn } from "@util/helpers";
-import { Circle, Cpu, Database, MemoryStick } from "lucide-react";
+import { Circle, Cpu, Database, MapPin, MemoryStick } from "lucide-react";
 import { useEffect } from "react";
 
 export const ServerName = ({ serverId }: { serverId: string | undefined }) => {
@@ -37,18 +37,24 @@ export const ServerStats = ({ server_id }: { server_id: string }) => {
   }, [refetch]);
 
   return (
-    <div className="flex gap-4 text-sm text-muted-foreground">
-      <div className="flex gap-2 items-center ">
-        <Cpu className="w-4 h-4" />
-        {data?.cpu_perc.toFixed(2)}%
+    <div className="flex flex-col text-sm text-muted-foreground">
+      <div className="flex gap-4">
+        <div className="flex gap-2 items-center">
+          <Cpu className="w-4 h-4" />
+          {data?.cpu_perc.toFixed(2)}%
+        </div>
+        <div className="flex gap-2 items-center">
+          <MemoryStick className="w-4 h-4" />
+          {data?.mem_total_gb.toFixed(2)} GB
+        </div>
+        <div className="flex gap-2 items-center">
+          <Database className="w-4 h-4" />
+          {data?.disk_total_gb.toFixed(2)} GB
+        </div>
       </div>
       <div className="flex gap-2 items-center">
-        <MemoryStick className="w-4 h-4" />
-        {data?.mem_total_gb.toFixed(2)} GB
-      </div>
-      <div className="flex gap-2 items-center">
-        <Database className="w-4 h-4" />
-        {data?.disk_total_gb.toFixed(2)} GB
+        <MapPin className="w-4 h-4" />
+        server.region
       </div>
     </div>
   );

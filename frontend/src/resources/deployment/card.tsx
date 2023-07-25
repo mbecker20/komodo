@@ -19,5 +19,13 @@ export const DeploymentCard = ({ id }: { id: string }) => {
         <DeploymentInfo deploymentId={id} />
       </ResourceCard>
     </Link>
+    // <ResourceCard
+    //   title={deployment.name}
+    //   description={deployment.status ?? "not deployed"}
+    //   statusIcon={<DeploymentStatusIcon deploymentId={id} />}
+    //   icon={<Rocket className="w-4 h-4" />}
+    // >
+    //   <DeploymentInfo deploymentId={id} />
+    // </ResourceCard>
   );
 };

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@monitor/client": "link:../client/ts",
+    "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-dialog": "^1.0.4",
     "@radix-ui/react-dropdown-menu": "^2.0.5",
     "@radix-ui/react-label": "^2.0.2",

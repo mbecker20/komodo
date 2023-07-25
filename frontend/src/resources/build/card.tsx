@@ -1,12 +1,4 @@
 import { useRead } from "@hooks";
-import { ServerStatusIcon } from "@resources/server/util";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@ui/card";
 import { version_to_string } from "@util/helpers";
 import { Link } from "react-router-dom";
 import { BuildInfo } from "./util";
