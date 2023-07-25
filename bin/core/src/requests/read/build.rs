@@ -8,6 +8,7 @@ use monitor_types::{
     permissioned::Permissioned,
     requests::read::*,
 };
+use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -79,6 +80,19 @@ impl Resolve<GetBuildsSummary, RequestUser> for State {
         GetBuildsSummary {}: GetBuildsSummary,
         user: RequestUser,
     ) -> anyhow::Result<GetBuildsSummaryResponse> {
-        todo!()
+        let query = if user.is_admin {
+            None
+        } else {
+            let doc = doc! {
+                
+            };
+            Some(doc)
+        };
+        let total = self.db.builds.collection.count_documents(query, None).await.context("failed to count all build documents")?;
+
+        let res = GetBuildsSummaryResponse {
+            total: total as u32
+        };
+        Ok(res)
     }
 }
