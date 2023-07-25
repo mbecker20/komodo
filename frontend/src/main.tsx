@@ -6,7 +6,7 @@ import { MonitorClient } from "@monitor/client";
 // import { monitor_client } from "@util/client.ts";
 
 export const MONITOR_BASE_URL =
-  import.meta.env.VITE_MONITOR_HOST ?? "monitor.v1.api.mogh.tech";
+  import.meta.env.VITE_MONITOR_HOST ?? "https://monitor.v1.api.mogh.tech";
 
 export const UPDATE_WS_URL =
   MONITOR_BASE_URL.replace("http", "ws") + "/ws/update";
