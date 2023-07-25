@@ -9,7 +9,6 @@ import {
   DeploymentStatusIcon,
 } from "./util";
 import {
-  DeleteDeployment,
   RedeployContainer,
   RemoveContainer,
   StartOrStopContainer,
@@ -35,7 +34,6 @@ export const Deployment = () => {
           <CardDescription className="hidden md:block">|</CardDescription>
           <DeploymentInfo deploymentId={deploymentId} />
           <CardDescription className="hidden md:block">|</CardDescription>
-          {/* <DeleteDeployment id={deploymentId} /> */}
         </div>
       }
       actions={

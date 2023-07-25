@@ -18,7 +18,7 @@ export const BuildVersion = ({ id }: { id: string }) => {
 export const BuildBuilder = ({ id }: { id: string }) => {
   const builds = useRead({ type: "ListBuilds", params: {} }).data;
   const build = builds?.find((b) => b.id === id);
-  return <>{"build.builder" ?? "..."}</>;
+  return <>{"build.builder " + build?.id ?? "..."}</>;
 };
 
 export const BuildLastBuilt = ({ id }: { id: string }) => {

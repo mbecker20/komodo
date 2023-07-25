@@ -5,7 +5,7 @@ import rws from "reconnecting-websocket";
 
 export const WebsocketProvider = () => {
   const ws = new rws("ws-url");
-  const [open, set] = useState(false);
+  const [_, set] = useState(false);
 
   ws.addEventListener("open", () => {
     const token = localStorage.getItem("token");

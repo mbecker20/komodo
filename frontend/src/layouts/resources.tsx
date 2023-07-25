@@ -1,5 +1,3 @@
-import { useRead } from "@hooks";
-import { DeploymentCard } from "@resources/deployment/card";
 import { NewDeployment } from "@resources/deployment/new";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";

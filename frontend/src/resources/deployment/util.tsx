@@ -2,7 +2,6 @@ import { useRead } from "@hooks";
 import { CardDescription } from "@ui/card";
 import { cn } from "@util/helpers";
 import { Circle, HardDrive, Server } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export const DeploymentName = ({
   deploymentId,
@@ -52,7 +51,7 @@ export const DeploymentInfo = ({ deploymentId }: { deploymentId: string }) => {
       <CardDescription className="flex items-center">
         <HardDrive className="w-4 h-4 mr-2" />
         {/* {data ? deployment?.container?.image ?? "no image" : "..."} */}
-        build.name @ build.version
+        build.name @ build.version {deployment?.image}
       </CardDescription>
       <CardDescription className="flex items-center gap-2">
         <Server className="w-4 h-4" />

@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown";
 import { Button } from "@ui/button";
-import { ChevronDown, Hand, History, PlusCircle } from "lucide-react";
+import { ChevronDown, History, PlusCircle } from "lucide-react";
 import { DeploymentCard } from "@resources/deployment/card";
 import { NewDeployment } from "@resources/deployment/new";
 import { ServerCard } from "@resources/server/card";

@@ -1,4 +1,3 @@
-import { useUser } from "@hooks";
 import { Card, CardHeader, CardTitle } from "@ui/card";
 import { ServersChart } from "./components/servers-chart";
 import { DeploymentsChart } from "./components/deployments-chart";
@@ -7,8 +6,6 @@ import { RecentlyViewed } from "./components/recently-viewed";
 import { Box } from "lucide-react";
 
 export const Dashboard = () => {
-  const user = useUser().data;
-
   return (
     <div className="flex flex-col gap-12">
       <RecentlyViewed />
