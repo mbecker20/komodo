@@ -15,7 +15,7 @@ export const BuildCard = ({ id }: { id: string }) => {
       <ResourceCard
         title={build.name}
         description={version_to_string(build.version) ?? "not built"}
-        icon={<Hammer className="w-4 h-4" />}
+        statusIcon={<Hammer className="w-6 h-6 stroke-primary stroke-2" />}
       >
         <BuildInfo id={id} />
       </ResourceCard>

@@ -17,7 +17,7 @@ import { ReactNode } from "react";
 interface CardProps {
   title: string;
   description: string;
-  icon: ReactNode;
+  // icon: ReactNode;
   children: ReactNode;
   statusIcon?: ReactNode;
 }
@@ -25,7 +25,7 @@ interface CardProps {
 export const ResourceCard = ({
   title,
   description,
-  icon,
+  // icon,
   children,
   statusIcon,
 }: CardProps) => (
@@ -35,14 +35,9 @@ export const ResourceCard = ({
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </div>
-      <div className="flex items-center gap-2">
-        {statusIcon && (
-          <>
-            {statusIcon}
-            <div className="border h-6 w-0" />
-          </>
-        )}
-        {icon}
+      <div className="flex gap-2">
+        {statusIcon}
+        {/* {icon} */}
       </div>
     </CardHeader>
     <CardContent className="flex flex-col gap-6">

@@ -13,7 +13,7 @@ export const Layout = () => {
     <>
       <div className="relative flex min-h-screen flex-col">
         <Header />
-        <div className="container px-2 md:px-8 grid gap-6 pb-8 pt-6 md:py-10">
+        <div className="container pt-8">
           <Outlet />
         </div>
       </div>

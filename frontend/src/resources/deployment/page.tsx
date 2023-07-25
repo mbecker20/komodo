@@ -3,8 +3,9 @@ import { useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { CardDescription } from "@ui/card";
 import {
-  DeploymentInfo,
+  DeploymentBuild,
   DeploymentName,
+  DeploymentServer,
   DeploymentStatus,
   DeploymentStatusIcon,
 } from "./util";
@@ -14,7 +15,6 @@ import {
   StartOrStopContainer,
 } from "./components/actions";
 import { DeploymentLogs } from "./components/deployment-logs";
-import { Rocket } from "lucide-react";
 
 export const Deployment = () => {
   const { deploymentId } = useParams();
@@ -27,15 +27,15 @@ export const Deployment = () => {
     <Resource
       title={<DeploymentName deploymentId={deploymentId} />}
       info={
-        <div className="flex items-center gap-4">
-          <Rocket className="w-4 h-4" />
-          <CardDescription className="hidden md:block">|</CardDescription>
-          <div className="flex items-center gap-2 text-muted-foreground">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-4 text-muted-foreground">
+          <div className="flex items-center gap-2 ">
             <DeploymentStatusIcon deploymentId={deploymentId} />
             <DeploymentStatus deploymentId={deploymentId} />
           </div>
-          <CardDescription className="hidden md:block">|</CardDescription>
-          <DeploymentInfo deploymentId={deploymentId} />
+          <CardDescription className="hidden lg:block">|</CardDescription>
+          <DeploymentServer deploymentId={deploymentId} />
+          <CardDescription className="hidden lg:block">|</CardDescription>
+          <DeploymentBuild deploymentId={deploymentId} />
         </div>
       }
       actions={

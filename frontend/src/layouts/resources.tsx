@@ -28,9 +28,9 @@ export const Resources = ({
         </h2>
       }
       actions={
-        <div className="flex gap-4">
+        <div className="flex flex-col-reverse md:flex-row gap-4">
           <Input
-            className="w-[300px]"
+            className="w-full md:w-[300px]"
             placeholder={`Search ${type}s`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -48,7 +48,9 @@ export const Resources = ({
         </div>
       }
       content={
-        <div className="grid grid-cols-3 gap-8">{components(search)}</div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {components(search)}
+        </div>
       }
     />
   );

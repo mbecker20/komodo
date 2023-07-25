@@ -1,8 +1,8 @@
 import { useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { useParams } from "react-router-dom";
-import { ServerInfo, ServerName } from "./util";
-import { Server as ServerIcon } from "lucide-react";
+import { ServerName, ServerStats } from "./util";
+import { ServerStatusIcon } from "./util";
 import { CardDescription } from "@ui/card";
 
 export const Server = () => {
@@ -19,9 +19,9 @@ export const Server = () => {
       title={<ServerName serverId={serverId} />}
       info={
         <div className="flex items-center gap-4">
-          <ServerIcon className="w-4 h-4" />
+          <ServerStatusIcon serverId={serverId} />
           <CardDescription className="hidden md:block">|</CardDescription>
-          <ServerInfo serverId={serverId} />
+          <ServerStats server_id={serverId} />
         </div>
       }
       actions=""

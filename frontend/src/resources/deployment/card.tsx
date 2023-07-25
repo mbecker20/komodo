@@ -1,7 +1,10 @@
 import { useRead } from "@hooks";
 import { Link } from "react-router-dom";
-import { DeploymentInfo, DeploymentStatusIcon } from "./util";
-import { Rocket } from "lucide-react";
+import {
+  DeploymentBuild,
+  DeploymentServer,
+  DeploymentStatusIcon,
+} from "./util";
 import { ResourceCard } from "@layouts/card";
 
 export const DeploymentCard = ({ id }: { id: string }) => {
@@ -14,9 +17,12 @@ export const DeploymentCard = ({ id }: { id: string }) => {
         title={deployment.name}
         description={deployment.status ?? "not deployed"}
         statusIcon={<DeploymentStatusIcon deploymentId={id} />}
-        icon={<Rocket className="w-4 h-4" />}
+        // icon={<Rocket className="w-4 h-4" />}
       >
-        <DeploymentInfo deploymentId={id} />
+        <div className="flex flex-col text-muted-foreground">
+          <DeploymentServer deploymentId={id} />
+          <DeploymentBuild deploymentId={id} />
+        </div>
       </ResourceCard>
     </Link>
     // <ResourceCard

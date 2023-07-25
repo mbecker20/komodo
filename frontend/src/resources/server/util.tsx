@@ -2,7 +2,14 @@ import { useRead } from "@hooks";
 import { ServerStatus } from "@monitor/client/dist/types";
 import { CardDescription } from "@ui/card";
 import { cn } from "@util/helpers";
-import { Circle, Cpu, Database, MapPin, MemoryStick } from "lucide-react";
+import {
+  Circle,
+  Cpu,
+  Database,
+  MapPin,
+  MemoryStick,
+  Server,
+} from "lucide-react";
 import { useEffect } from "react";
 
 export const ServerName = ({ serverId }: { serverId: string | undefined }) => {
@@ -37,25 +44,28 @@ export const ServerStats = ({ server_id }: { server_id: string }) => {
   }, [refetch]);
 
   return (
-    <div className="flex flex-col text-sm text-muted-foreground">
-      <div className="flex gap-4">
-        <div className="flex gap-2 items-center">
-          <Cpu className="w-4 h-4" />
-          {data?.cpu_perc.toFixed(2)}%
-        </div>
-        <div className="flex gap-2 items-center">
-          <MemoryStick className="w-4 h-4" />
-          {data?.mem_total_gb.toFixed(2)} GB
-        </div>
-        <div className="flex gap-2 items-center">
-          <Database className="w-4 h-4" />
-          {data?.disk_total_gb.toFixed(2)} GB
-        </div>
+    <div className="flex gap-4 text-muted-foreground">
+      <div className="flex gap-2 items-center">
+        <Cpu className="w-4 h-4" />
+        {data?.cpu_perc.toFixed(2)}%
       </div>
       <div className="flex gap-2 items-center">
-        <MapPin className="w-4 h-4" />
-        server.region
+        <MemoryStick className="w-4 h-4" />
+        {data?.mem_total_gb.toFixed(2)} GB
       </div>
+      <div className="flex gap-2 items-center">
+        <Database className="w-4 h-4" />
+        {data?.disk_total_gb.toFixed(2)} GB
+      </div>
+    </div>
+  );
+};
+
+export const ServerRegion = () => {
+  return (
+    <div className="flex gap-2 items-center text-muted-foreground">
+      <MapPin className="w-4 h-4" />
+      server.region
     </div>
   );
 };
@@ -70,9 +80,9 @@ export const ServerStatusIcon = ({
   const servers = useRead("ListServers", {}).data;
   const server = servers?.find((s) => s.id === serverId);
   return (
-    <Circle
+    <Server
       className={cn(
-        "w-4 h-4 stroke-none",
+        "w-4 h-4 stroke-primary",
         server?.status === ServerStatus.Ok && "fill-green-500",
         server?.status === ServerStatus.NotOk && "fill-red-500",
         server?.status === ServerStatus.Disabled && "fill-blue-500",

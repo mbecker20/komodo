@@ -1,7 +1,6 @@
 import { useRead } from "@hooks";
 import { Link } from "react-router-dom";
-import { ServerStatusIcon, ServerStats } from "./util";
-import { Server } from "lucide-react";
+import { ServerStatusIcon, ServerStats, ServerRegion } from "./util";
 import { ResourceCard } from "@layouts/card";
 
 export const ServerCard = ({ id }: { id: string }) => {
@@ -15,9 +14,12 @@ export const ServerCard = ({ id }: { id: string }) => {
         title={server.name}
         description={server.status}
         statusIcon={<ServerStatusIcon serverId={server.id} />}
-        icon={<Server className="w-4 h-4" />}
+        // icon={<Server className="w-4 h-4" />}
       >
-        <ServerStats server_id={server.id} />
+        <div className="flex flex-col">
+          <ServerStats server_id={server.id} />
+          <ServerRegion />
+        </div>
       </ResourceCard>
     </Link>
   );
