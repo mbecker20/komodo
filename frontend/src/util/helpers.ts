@@ -196,8 +196,12 @@ export function deploymentHeaderStateClass(state: Types.DockerContainerState) {
   }
 }
 
+export const keys = <T extends object>(o: T): (keyof T)[] =>
+  Object.keys(o) as (keyof T)[];
+
 export function version_to_string(version: Types.Version | undefined) {
   if (!version) return;
+  if (!keys(version).some((k) => !!version[k])) return;
   return `v${version.major}.${version.minor}.${version.patch}`;
 }
 

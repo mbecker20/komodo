@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown";
 import { Bell } from "lucide-react";
-import { SingleUpdate } from "./updates";
+import { SingleUpdate } from "./update";
 import { Button } from "@ui/button";
 
 export const DesktopUpdates = () => {
@@ -22,7 +22,7 @@ export const DesktopUpdates = () => {
       <DropdownMenuContent className="w-[500px]">
         <DropdownMenuGroup>
           {updates?.map((update) => (
-            <div className="p-2 hover:bg-muted transition-colors border-b last:border-none">
+            <div className="px-2 py-4 hover:bg-muted transition-colors border-b last:border-none">
               <SingleUpdate update={update} />
             </div>
           ))}
