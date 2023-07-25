@@ -5,9 +5,9 @@ use monitor_types::{
         build::{Build, BuildActionState},
         PermissionLevel,
     },
-    permissioned::Permissioned,
     requests::read::*,
 };
+use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -27,21 +27,20 @@ impl Resolve<ListBuilds, RequestUser> for State {
         ListBuilds { query }: ListBuilds,
         user: RequestUser,
     ) -> anyhow::Result<Vec<BuildListItem>> {
+        let mut query = query.unwrap_or_default();
+        if !user.is_admin {
+            query.insert(
+                format!("permissions.{}", user.id),
+                doc! { "$in": ["read", "execute", "update"] },
+            );
+        }
+
         let builds = self
             .db
             .builds
             .get_some(query, None)
             .await
             .context("failed to pull builds from mongo")?;
-
-        let builds = if user.is_admin {
-            builds
-        } else {
-            builds
-                .into_iter()
-                .filter(|build| build.get_user_permissions(&user.id) > PermissionLevel::None)
-                .collect()
-        };
 
         let builds = builds
             .into_iter()
@@ -79,6 +78,24 @@ impl Resolve<GetBuildsSummary, RequestUser> for State {
         GetBuildsSummary {}: GetBuildsSummary,
         user: RequestUser,
     ) -> anyhow::Result<GetBuildsSummaryResponse> {
-        todo!()
+        let query = if user.is_admin {
+            None
+        } else {
+            let query = doc! {
+                format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
+            };
+            Some(query)
+        };
+        let total = self
+            .db
+            .builds
+            .collection
+            .count_documents(query, None)
+            .await
+            .context("failed to count all build documents")?;
+        let res = GetBuildsSummaryResponse {
+            total: total as u32,
+        };
+        Ok(res)
     }
 }

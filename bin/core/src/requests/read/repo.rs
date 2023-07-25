@@ -5,9 +5,9 @@ use monitor_types::{
         repo::{Repo, RepoActionState},
         PermissionLevel,
     },
-    permissioned::Permissioned,
     requests::read::*,
 };
+use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -27,21 +27,20 @@ impl Resolve<ListRepos, RequestUser> for State {
         ListRepos { query }: ListRepos,
         user: RequestUser,
     ) -> anyhow::Result<Vec<RepoListItem>> {
+        let mut query = query.unwrap_or_default();
+        if !user.is_admin {
+            query.insert(
+                format!("permissions.{}", user.id),
+                doc! { "$in": ["read", "execute", "update"] },
+            );
+        }
+
         let repos = self
             .db
             .repos
             .get_some(query, None)
             .await
             .context("failed to pull repos from mongo")?;
-
-        let repos = if user.is_admin {
-            repos
-        } else {
-            repos
-                .into_iter()
-                .filter(|repo| repo.get_user_permissions(&user.id) > PermissionLevel::None)
-                .collect()
-        };
 
         let repos = repos
             .into_iter()

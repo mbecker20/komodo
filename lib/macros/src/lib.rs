@@ -58,3 +58,4 @@ pub fn derive_crud_requests(input: proc_macro::TokenStream) -> proc_macro::Token
     }
     .into()
 }
+

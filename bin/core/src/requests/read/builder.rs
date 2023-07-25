@@ -2,9 +2,9 @@ use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
     entities::{builder::Builder, PermissionLevel},
-    permissioned::Permissioned,
     requests::read::*,
 };
+use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -28,21 +28,20 @@ impl Resolve<ListBuilders, RequestUser> for State {
         ListBuilders { query }: ListBuilders,
         user: RequestUser,
     ) -> anyhow::Result<Vec<Builder>> {
+        let mut query = query.unwrap_or_default();
+        if !user.is_admin {
+            query.insert(
+                format!("permissions.{}", user.id),
+                doc! { "$in": ["read", "execute", "update"] },
+            );
+        }
+
         let builders = self
             .db
             .builders
             .get_some(query, None)
             .await
             .context("failed to pull builders from mongo")?;
-
-        let builders = if user.is_admin {
-            builders
-        } else {
-            builders
-                .into_iter()
-                .filter(|builder| builder.get_user_permissions(&user.id) > PermissionLevel::None)
-                .collect()
-        };
 
         Ok(builders)
     }

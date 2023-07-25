@@ -6,13 +6,13 @@ use monitor_types::{
         deployment::ContainerSummary,
         server::{
             docker_image::ImageSummary, docker_network::DockerNetwork, stats::SystemInformation,
-            Server, ServerActionState,
+            Server, ServerActionState, ServerStatus,
         },
         PermissionLevel,
     },
-    permissioned::Permissioned,
     requests::read::*,
 };
+use mungos::mongodb::bson::doc;
 use periphery_client::requests;
 use resolver_api::{Resolve, ResolveToString};
 
@@ -52,21 +52,20 @@ impl Resolve<ListServers, RequestUser> for State {
         ListServers { query }: ListServers,
         user: RequestUser,
     ) -> anyhow::Result<Vec<ServerListItem>> {
+        let mut query = query.unwrap_or_default();
+        if !user.is_admin {
+            query.insert(
+                format!("permissions.{}", user.id),
+                doc! { "$in": ["read", "execute", "update"] },
+            );
+        }
+
         let servers = self
             .db
             .servers
             .get_some(query, None)
             .await
             .context("failed to pull servers from mongo")?;
-
-        let servers = if user.is_admin {
-            servers
-        } else {
-            servers
-                .into_iter()
-                .filter(|server| server.get_user_permissions(&user.id) > PermissionLevel::None)
-                .collect()
-        };
 
         let servers = servers.into_iter().map(|server| async {
             let status = self.server_status_cache.get(&server.id).await;
@@ -351,6 +350,40 @@ impl Resolve<GetServersSummary, RequestUser> for State {
         GetServersSummary {}: GetServersSummary,
         user: RequestUser,
     ) -> anyhow::Result<GetServersSummaryResponse> {
-        todo!()
+        let query = if user.is_admin {
+            None
+        } else {
+            let query = doc! {
+                format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
+            };
+            Some(query)
+        };
+        let servers = self
+            .db
+            .servers
+            .get_some(query, None)
+            .await
+            .context("failed to get servers from db")?;
+        let mut res = GetServersSummaryResponse::default();
+        for server in servers {
+            res.total += 1;
+            let status = self
+                .server_status_cache
+                .get(&server.id)
+                .await
+                .unwrap_or_default();
+            match status.status {
+                ServerStatus::Ok => {
+                    res.healthy += 1;
+                }
+                ServerStatus::NotOk => {
+                    res.unhealthy += 1;
+                }
+                ServerStatus::Disabled => {
+                    res.disabled += 1;
+                }
+            }
+        }
+        Ok(res)
     }
 }

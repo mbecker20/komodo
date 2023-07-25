@@ -17,14 +17,15 @@ use monitor_types::{
     monitor_timestamp,
     permissioned::Permissioned,
 };
+use mungos::{mongodb::bson::doc, AggStage::*};
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
 
 use crate::{auth::RequestUser, state::State};
 
+pub mod alert;
 pub mod cache;
 pub mod channel;
-pub mod alert;
 pub mod db;
 
 pub fn empty_or_only_spaces(word: &str) -> bool {
@@ -59,7 +60,6 @@ pub fn make_update(
 }
 
 impl State {
-    
     // USER
 
     pub async fn get_user(&self, user_id: &str) -> anyhow::Result<User> {
@@ -228,6 +228,34 @@ impl State {
     ) -> anyhow::Result<PermissionLevel> {
         let build = self.get_build(build_id).await?;
         Ok(build.get_user_permissions(user_id))
+    }
+
+    pub async fn get_build_ids_for_non_admin(&self, user_id: &str) -> anyhow::Result<Vec<String>> {
+        self.db
+            .builds
+            .aggregate_collect(
+                [
+                    Match(doc! {
+                        format!("permissions.{}", user_id): { "$in": ["update", "execute", "read"] }
+                    }),
+                    Project(doc! { "_id": 1 }),
+                ],
+                None,
+            )
+            .await
+            .context("failed to get build ids for non admin | aggregation")?
+            .into_iter()
+            .map(|d| {
+                let id = d
+                    .get("_id")
+                    .context("no _id field")?
+                    .as_object_id()
+                    .context("_id not ObjectId")?
+                    .to_string();
+                anyhow::Ok(id)
+            })
+            .collect::<anyhow::Result<Vec<_>>>()
+            .context("failed to get build ids for non admin | extract id from document")
     }
 
     // BUILDER
