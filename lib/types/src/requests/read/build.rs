@@ -56,4 +56,6 @@ pub struct GetBuildsSummary {}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetBuildsSummaryResponse {}
+pub struct GetBuildsSummaryResponse {
+    pub total: I64,
+}

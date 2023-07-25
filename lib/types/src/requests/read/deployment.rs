@@ -9,7 +9,7 @@ use crate::{
         },
         update::Log,
     },
-    MongoDocument, U64,
+    MongoDocument, U64, I64,
 };
 
 //
@@ -115,4 +115,9 @@ pub struct GetDeploymentsSummary {}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetDeploymentsSummaryResponse {}
+pub struct GetDeploymentsSummaryResponse {
+    pub total: I64,
+    pub running: I64,
+    pub stopped: I64,
+    pub unknown: I64,
+}

@@ -15,7 +15,7 @@ use crate::{
             Server, ServerActionState, ServerStatus,
         },
     },
-    MongoDocument,
+    MongoDocument, I64,
 };
 
 //
@@ -192,4 +192,8 @@ pub struct GetServersSummary {}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetServersSummaryResponse {}
+pub struct GetServersSummaryResponse {
+    pub total: I64,
+    pub healthy: I64,
+    pub unhealthy: I64,
+}

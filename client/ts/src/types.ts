@@ -749,6 +749,7 @@ export interface GetBuildsSummary {
 }
 
 export interface GetBuildsSummaryResponse {
+	total: I64;
 }
 
 export interface GetBuilder {
@@ -763,6 +764,7 @@ export interface GetBuildersSummary {
 }
 
 export interface GetBuildersSummaryResponse {
+	total: I64;
 }
 
 export interface GetDeployment {
@@ -817,6 +819,10 @@ export interface GetDeploymentsSummary {
 }
 
 export interface GetDeploymentsSummaryResponse {
+	total: I64;
+	running: I64;
+	stopped: I64;
+	unknown: I64;
 }
 
 export interface GetVersion {
@@ -965,6 +971,9 @@ export interface GetServersSummary {
 }
 
 export interface GetServersSummaryResponse {
+	total: I64;
+	healthy: I64;
+	unhealthy: I64;
 }
 
 export interface GetTag {
