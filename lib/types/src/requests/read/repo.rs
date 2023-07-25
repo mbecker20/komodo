@@ -42,3 +42,14 @@ pub struct RepoListItem {
 pub struct GetRepoActionState {
     pub id: String,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetReposSummaryResponse)]
+pub struct GetReposSummary {}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetReposSummaryResponse {}

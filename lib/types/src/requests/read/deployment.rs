@@ -105,3 +105,14 @@ pub struct GetDeploymentStats {
 pub struct GetDeploymentActionState {
     pub id: String,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetDeploymentsSummaryResponse)]
+pub struct GetDeploymentsSummary {}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetDeploymentsSummaryResponse {}

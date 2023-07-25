@@ -70,3 +70,14 @@ impl Resolve<GetRepoActionState, RequestUser> for State {
         Ok(action_state)
     }
 }
+
+#[async_trait]
+impl Resolve<GetReposSummary, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetReposSummary {}: GetReposSummary,
+        user: RequestUser,
+    ) -> anyhow::Result<GetReposSummaryResponse> {
+        todo!()
+    }
+}

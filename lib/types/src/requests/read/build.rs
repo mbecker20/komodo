@@ -46,3 +46,14 @@ pub struct BuildListItem {
 pub struct GetBuildActionState {
     pub id: String,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetBuildsSummaryResponse)]
+pub struct GetBuildsSummary {}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetBuildsSummaryResponse {}

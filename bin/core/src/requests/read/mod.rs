@@ -23,6 +23,7 @@ mod repo;
 mod search;
 mod server;
 mod tag;
+mod update;
 mod user;
 
 #[typeshare]
@@ -39,6 +40,7 @@ enum ReadRequest {
     FindResources(FindResources),
 
     // ==== SERVER ====
+    GetServersSummary(GetServersSummary),
     GetServer(GetServer),
     ListServers(ListServers),
     GetServerStatus(GetServerStatus),
@@ -50,6 +52,7 @@ enum ReadRequest {
     GetServerActionState(GetServerActionState),
 
     // ==== DEPLOYMENT ====
+    GetDeploymentsSummary(GetDeploymentsSummary),
     GetDeployment(GetDeployment),
     ListDeployments(ListDeployments),
     GetDeploymentStatus(GetDeploymentStatus),
@@ -58,17 +61,19 @@ enum ReadRequest {
     GetDeploymentStats(GetDeploymentStats),
     GetLog(GetLog),
 
-
     // ==== BUILD ====
+    GetBuildsSummary(GetBuildsSummary),
     GetBuild(GetBuild),
     ListBuilds(ListBuilds),
     GetBuildActionState(GetBuildActionState),
 
     // ==== BUILDER ====
+    GetBuildersSummary(GetBuildersSummary),
     GetBuilder(GetBuilder),
     ListBuilders(ListBuilders),
 
     // ==== REPO ====
+    GetReposSummary(GetReposSummary),
     GetRepo(GetRepo),
     ListRepos(ListRepos),
     GetRepoActionState(GetRepoActionState),
@@ -76,6 +81,9 @@ enum ReadRequest {
     // ==== TAG ====
     GetTag(GetTag),
     ListTags(ListTags),
+
+    // ==== UPDATE ====
+    ListUpdates(ListUpdates),
 
     // ==== SERVER STATS ====
     #[to_string_resolver]

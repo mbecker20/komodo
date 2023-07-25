@@ -47,3 +47,14 @@ impl Resolve<ListBuilders, RequestUser> for State {
         Ok(builders)
     }
 }
+
+#[async_trait]
+impl Resolve<GetBuildersSummary, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetBuildersSummary {}: GetBuildersSummary,
+        user: RequestUser,
+    ) -> anyhow::Result<GetBuildersSummaryResponse> {
+        todo!()
+    }
+}

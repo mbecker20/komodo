@@ -21,3 +21,14 @@ pub struct GetBuilder {
 pub struct ListBuilders {
     pub query: Option<MongoDocument>,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetBuildersSummaryResponse)]
+pub struct GetBuildersSummary {}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetBuildersSummaryResponse {}

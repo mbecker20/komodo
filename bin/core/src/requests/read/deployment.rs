@@ -232,3 +232,14 @@ impl Resolve<GetDeploymentActionState, RequestUser> for State {
         Ok(action_state)
     }
 }
+
+#[async_trait]
+impl Resolve<GetDeploymentsSummary, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetDeploymentsSummary {}: GetDeploymentsSummary,
+        user: RequestUser,
+    ) -> anyhow::Result<GetDeploymentsSummaryResponse> {
+        todo!()
+    }
+}

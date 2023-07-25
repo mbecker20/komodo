@@ -343,3 +343,14 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
             .await
     }
 }
+
+#[async_trait]
+impl Resolve<GetServersSummary, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetServersSummary {}: GetServersSummary,
+        user: RequestUser,
+    ) -> anyhow::Result<GetServersSummaryResponse> {
+        todo!()
+    }
+}

@@ -182,3 +182,14 @@ pub struct GetDockerImages {
 pub struct GetDockerContainers {
     pub server_id: String,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetServersSummaryResponse)]
+pub struct GetServersSummary {}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetServersSummaryResponse {}

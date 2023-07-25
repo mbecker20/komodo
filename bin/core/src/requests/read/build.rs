@@ -71,3 +71,14 @@ impl Resolve<GetBuildActionState, RequestUser> for State {
         Ok(action_state)
     }
 }
+
+#[async_trait]
+impl Resolve<GetBuildsSummary, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetBuildsSummary {}: GetBuildsSummary,
+        user: RequestUser,
+    ) -> anyhow::Result<GetBuildsSummaryResponse> {
+        todo!()
+    }
+}
