@@ -12,11 +12,12 @@ const scroll_to_bottom = (id: string) => () =>
     .getElementById(id)
     ?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
 
-export const DeploymentLogs = ({ deploymentId }: { deploymentId: string }) => {
-  const { data, refetch } = useRead({
-    type: "GetLog",
-    params: { deployment_id: deploymentId, tail: 200 },
-  });
+export const DeploymentLogs = ({
+  deployment_id,
+}: {
+  deployment_id: string;
+}) => {
+  const { data, refetch } = useRead("GetLog", { deployment_id, tail: 200 });
 
   useEffect(() => {
     const handle = setInterval(() => refetch(), 30000);

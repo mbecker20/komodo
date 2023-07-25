@@ -1,13 +1,14 @@
+import { Factory, Hammer, Rocket, Server } from "lucide-react";
 import { useRead } from "@hooks";
 import { Resources } from "@layouts/resources";
 import { DeploymentCard } from "./deployment/card";
 import { BuildCard } from "./build/card";
 import { ServerCard } from "./server/card";
-import { Hammer, Rocket, Server } from "lucide-react";
+import { BuilderCard } from "./builder/card";
 
 export const Deployments = () => {
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
-  const summary = useRead({ type: "GetDeploymentsSummary", params: {} }).data;
+  const deployments = useRead("ListDeployments", {}).data;
+  const summary = useRead("GetDeploymentsSummary", {}).data;
 
   return (
     <Resources
@@ -27,9 +28,30 @@ export const Deployments = () => {
   );
 };
 
+export const Servers = () => {
+  const servers = useRead("ListServers", {}).data;
+  const summary = useRead("GetServersSummary", {}).data;
+  return (
+    <Resources
+      type="Server"
+      info={`${summary?.total} Total, ${summary?.healthy} Healthy, ${summary?.unhealthy} Unhealthy`}
+      icon={<Server className="w-6 h-6" />}
+      components={(search) => (
+        <>
+          {servers
+            ?.filter((d) => d.name.includes(search) || search.includes(d.name))
+            .map(({ id }) => (
+              <ServerCard key={id} id={id} />
+            ))}
+        </>
+      )}
+    />
+  );
+};
+
 export const Builds = () => {
-  const builds = useRead({ type: "ListBuilds", params: {} }).data;
-  const summary = useRead({ type: "GetBuildsSummary", params: {} }).data;
+  const builds = useRead("ListBuilds", {}).data;
+  const summary = useRead("GetBuildsSummary", {}).data;
 
   return (
     <Resources
@@ -49,20 +71,21 @@ export const Builds = () => {
   );
 };
 
-export const Servers = () => {
-  const servers = useRead({ type: "ListServers", params: {} }).data;
-  const summary = useRead({ type: "GetServersSummary", params: {} }).data;
+export const Builders = () => {
+  const builders = useRead("ListBuilders", {}).data;
+  const summary = useRead("GetBuildersSummary", {}).data;
+
   return (
     <Resources
-      type="Server"
-      info={`${summary?.total} Total, ${summary?.healthy} Healthy, ${summary?.unhealthy} Unhealthy`}
-      icon={<Server className="w-6 h-6" />}
+      type="Builder"
+      info={`${summary?.total} Total`}
+      icon={<Factory className="w-6 h-6" />}
       components={(search) => (
         <>
-          {servers
+          {builders
             ?.filter((d) => d.name.includes(search) || search.includes(d.name))
-            .map(({ id }) => (
-              <ServerCard key={id} id={id} />
+            .map(({ _id }) => (
+              <BuilderCard key={_id?.$oid} id={_id?.$oid!} />
             ))}
         </>
       )}

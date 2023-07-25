@@ -7,7 +7,7 @@ export const DeploymentName = ({
 }: {
   deploymentId: string | undefined;
 }) => {
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deploymentId);
   return <>{deployment?.name ?? "..."}</>;
 };
@@ -17,7 +17,7 @@ export const DeploymentStatus = ({
 }: {
   deploymentId: string | undefined;
 }) => {
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deploymentId);
   return <>{deployments ? deployment?.status ?? "not deployed" : "..."}</>;
 };
@@ -27,7 +27,7 @@ export const DeploymentStatusIcon = ({
 }: {
   deploymentId: string | undefined;
 }) => {
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deploymentId);
   return (
     <Circle
@@ -42,7 +42,7 @@ export const DeploymentStatusIcon = ({
 };
 
 export const DeploymentInfo = ({ deploymentId }: { deploymentId: string }) => {
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deploymentId);
 
   return (

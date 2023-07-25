@@ -20,7 +20,7 @@ interface DeploymentId {
 
 export const RedeployContainer = ({ deployment_id }: DeploymentId) => {
   const { mutate, isLoading } = useExecute("Deploy");
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deployment_id);
   return (
     <ActionButton
@@ -61,8 +61,8 @@ const StopContainer = ({ deployment_id }: DeploymentId) => {
 };
 
 export const StartOrStopContainer = ({ deployment_id }: DeploymentId) => {
-  const { data } = useRead({ type: "ListDeployments", params: {} });
-  const deployment = data?.find((d) => d.id == deployment_id);
+  const deployments = useRead("ListDeployments", {}).data;
+  const deployment = deployments?.find((d) => d.id === deployment_id);
   if (deployment?.state === DockerContainerState.Running)
     return <StopContainer deployment_id={deployment_id} />;
   return <StartContainer deployment_id={deployment_id} />;
@@ -83,7 +83,8 @@ export const RemoveContainer = ({ deployment_id }: DeploymentId) => {
 
 export const DeleteDeployment = ({ id }: { id: string }) => {
   const nav = useNavigate();
-  const { data } = useRead({ type: "GetDeployment", params: { id } });
+  const deployments = useRead("ListDeployments", {}).data;
+  const deployment = deployments?.find((d) => d.id === id);
   const { mutate, isLoading } = useWrite("DeleteDeployment", {
     onSuccess: () => nav("/deployments"),
   });
@@ -107,7 +108,7 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
           <div className="flex flex-col gap-2">
             <p>
               Are you sure you wish to delete this deployment? If so, please
-              type in <b>{data?.name}</b> below
+              type in <b>{deployment?.name}</b> below
             </p>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </div>
@@ -115,7 +116,7 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
             <Button
               variant="outline"
               intent="danger"
-              disabled={name !== data?.name || isLoading}
+              disabled={name !== deployment?.name || isLoading}
               onClick={() => mutate({ id })}
             >
               Delete

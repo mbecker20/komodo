@@ -11,7 +11,7 @@ import { DeploymentInfo, DeploymentStatusIcon } from "./util";
 import { Rocket } from "lucide-react";
 
 export const DeploymentCard = ({ id }: { id: string }) => {
-  const deployments = useRead({ type: "ListDeployments", params: {} }).data;
+  const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === id);
   if (!deployment) return null;
   return (

@@ -12,10 +12,7 @@ import { useRead } from "@hooks";
 import { DockerContainerState } from "@monitor/client/dist/types";
 
 export const DeploymentsChart = () => {
-  const { data, isLoading, isError } = useRead({
-    type: "ListDeployments",
-    params: {},
-  });
+  const { data, isLoading, isError } = useRead("ListDeployments", {});
 
   const running = data?.filter(
     (d) => d.state === DockerContainerState.Running

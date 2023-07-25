@@ -6,7 +6,7 @@ import { Dashboard } from "@pages/dashboard";
 import { Deployment } from "@resources/deployment/page";
 import { Server } from "@resources/server/page";
 import { Build } from "@resources/build/page";
-import { Deployments, Builds, Servers } from "@resources/pages";
+import { Deployments, Builds, Servers, Builders } from "@resources/pages";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +24,14 @@ const router = createBrowserRouter([
           { path: ":deploymentId", element: <Deployment /> },
         ],
       },
+
+      {
+        path: "servers",
+        children: [
+          { path: "", element: <Servers /> },
+          { path: ":serverId", element: <Server /> },
+        ],
+      },
       {
         path: "builds",
         children: [
@@ -32,10 +40,10 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "servers",
+        path: "builders",
         children: [
-          { path: "", element: <Servers /> },
-          { path: ":serverId", element: <Server /> },
+          { path: "", element: <Builders /> },
+          // { path: ":builderId", element: <Build /> },
         ],
       },
     ],

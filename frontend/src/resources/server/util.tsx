@@ -5,17 +5,17 @@ import { Circle, Cpu, Database, MemoryStick } from "lucide-react";
 import { useEffect } from "react";
 
 export const ServerName = ({ serverId }: { serverId: string | undefined }) => {
-  const servers = useRead({ type: "ListServers", params: {} }).data;
+  const servers = useRead("ListServers", {}).data;
   const server = servers?.find((s) => s.id === serverId);
   return <>{server?.name ?? "..."}</>;
 };
 
 export const ServerInfo = ({ serverId }: { serverId: string | undefined }) => {
-  const servers = useRead({ type: "ListServers", params: {} }).data;
+  const servers = useRead("ListServers", {}).data;
   const server = servers?.find((s) => s.id === serverId);
   return (
     <div className="flex items-center gap-4 text-muted-foreground">
-      {serverId && <ServerStats serverId={serverId} />}
+      {serverId && <ServerStats server_id={serverId} />}
       <div>|</div>
       <div className="flex items-center gap-4">
         <div> Status: {server?.status}</div>
@@ -25,11 +25,8 @@ export const ServerInfo = ({ serverId }: { serverId: string | undefined }) => {
   );
 };
 
-export const ServerStats = ({ serverId }: { serverId: string }) => {
-  const { data, refetch } = useRead({
-    type: "GetBasicSystemStats",
-    params: { server_id: serverId },
-  });
+export const ServerStats = ({ server_id }: { server_id: string }) => {
+  const { data, refetch } = useRead("GetBasicSystemStats", { server_id });
 
   useEffect(() => {
     const handle = setInterval(() => refetch(), 30000);
@@ -63,7 +60,7 @@ export const ServerStatusIcon = ({
   serverId: string | undefined;
   sm?: boolean;
 }) => {
-  const servers = useRead({ type: "ListServers", params: {} }).data;
+  const servers = useRead("ListServers", {}).data;
   const server = servers?.find((s) => s.id === serverId);
   return (
     <Circle

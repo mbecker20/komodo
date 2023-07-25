@@ -11,7 +11,7 @@ import { ServerStatusIcon, ServerStats } from "./util";
 import { Server } from "lucide-react";
 
 export const ServerCard = ({ id }: { id: string }) => {
-  const servers = useRead({ type: "ListServers", params: {} }).data;
+  const servers = useRead("ListServers", {}).data;
   const server = servers?.find((server) => server.id === id);
   if (!server) return null;
 
@@ -28,7 +28,7 @@ export const ServerCard = ({ id }: { id: string }) => {
         <CardContent className="flex items-center gap-4">
           <Server className="w-4 h-4" />
           <div className="border h-6" />
-          <ServerStats serverId={server.id} />
+          <ServerStats server_id={server.id} />
         </CardContent>
       </Card>
     </Link>

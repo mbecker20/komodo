@@ -22,12 +22,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
+// import { useRead } from "@hooks";
 
 export const UpdateUser = ({ userId }: { userId: string }) => {
-  //   const { data } = useUpdateUser(userId);
+  // const { data } = useRead({ type: "GetUser", params: {} });
   if (userId === "github") return <>GitHub</>;
   if (userId === "auto redeploy") return <>Auto Redeploy</>;
-  return <>{userId}</>;
+  return <>{userId.slice(0, 5)}...</>;
 };
 
 export const UpdateDetails = ({ update }: { update: Update }) => {

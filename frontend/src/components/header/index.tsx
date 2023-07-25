@@ -7,6 +7,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { useUser } from "@hooks";
 import { ServerName } from "@resources/server/util";
 import { DeploymentName } from "@resources/deployment/util";
+import { DesktopUpdates } from "@components/updates/desktop";
 
 export const Paths = () => {
   const path = useLocation().pathname.split("/")[1];
@@ -61,12 +62,13 @@ export const Header = () => {
           </Link>
           <Paths />
         </div>
-        <div className="flex">
+        <div className="flex ">
           {user && (
             <Button disabled variant="ghost">
               <Circle className="w-4 h-4 fill-green-500 stroke-none" />
             </Button>
           )}
+          {user && <DesktopUpdates />}
           <ThemeToggle />
           {user && (
             <Button variant="ghost" onClick={logout}>

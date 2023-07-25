@@ -12,10 +12,7 @@ import { useRead } from "@hooks";
 import { ServerStatus } from "@monitor/client/dist/types";
 
 export const ServersChart = () => {
-  const { data, isLoading, isError } = useRead({
-    type: "ListServers",
-    params: {},
-  });
+  const { data, isLoading, isError } = useRead("ListServers", {});
 
   const running = data?.filter((d) => d.status === ServerStatus.Ok).length;
   const stopped = data?.filter((d) => d.status === ServerStatus.NotOk).length;

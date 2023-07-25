@@ -3,6 +3,7 @@ import { client } from "./main";
 import {
   useQuery,
   useMutation,
+  UseQueryOptions,
   UseMutationOptions,
 } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -10,11 +11,32 @@ import { atomWithStorage } from "jotai/utils";
 import { useNavigate } from "react-router-dom";
 import {
   ExecuteResponses,
+  ReadResponses,
   WriteResponses,
 } from "@monitor/client/dist/responses";
 
-export const useRead = <T extends Types.ReadRequest>(req: T) =>
-  useQuery([req], () => client.read(req));
+export const useRead = <
+  T extends Types.ReadRequest["type"],
+  P = Extract<Types.WriteRequest, { type: T }>["params"]
+>(
+  type: T,
+  params: P,
+  config?: Omit<
+    UseQueryOptions<ReadResponses[T], unknown, ReadResponses[T], (T | P)[]>,
+    "initialData" | "queryFn" | "queryKey"
+  >
+) =>
+  useQuery(
+    [type, params],
+    async () =>
+      (await client.read({ type, params } as any)) as ReadResponses[T],
+    config
+  );
+
+// export const useRead = <T extends Types.ReadRequest>(
+//   req: T,
+//   options?: UseQueryOptions
+// ) => useQuery([req], () => client.read(req), options);
 
 export const useWrite = <
   T extends Types.WriteRequest["type"],
@@ -50,7 +72,7 @@ export const useExecute = <
     config
   );
 
-export const useUser = () => useRead({ type: "GetUser", params: {} });
+export const useUser = () => useRead("GetUser", {});
 
 export const useLogin = () => {
   const { refetch } = useUser();

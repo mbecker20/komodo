@@ -13,7 +13,7 @@ import { BuildInfo } from "./util";
 import { Hammer } from "lucide-react";
 
 export const BuildCard = ({ id }: { id: string }) => {
-  const builds = useRead({ type: "ListBuilds", params: {} }).data;
+  const builds = useRead("ListBuilds", {}).data;
   const build = builds?.find((server) => server.id === id);
   if (!build) return null;
 
