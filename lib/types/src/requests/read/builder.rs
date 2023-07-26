@@ -2,7 +2,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{entities::builder::Builder, MongoDocument, I64};
+use crate::{entities::builder::Builder, MongoDocument};
 
 //
 
@@ -32,5 +32,5 @@ pub struct GetBuildersSummary {}
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetBuildersSummaryResponse {
-    pub total: I64
+    pub total: u32,
 }

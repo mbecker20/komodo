@@ -10,6 +10,7 @@ mod search;
 mod server;
 mod tag;
 mod update;
+mod alerter;
 
 pub use build::*;
 pub use builder::*;
@@ -19,6 +20,7 @@ pub use search::*;
 pub use server::*;
 pub use tag::*;
 pub use update::*;
+pub use alerter::*;
 
 use crate::entities::user::User;
 

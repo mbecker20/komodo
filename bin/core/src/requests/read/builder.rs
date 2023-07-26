@@ -54,6 +54,24 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
         GetBuildersSummary {}: GetBuildersSummary,
         user: RequestUser,
     ) -> anyhow::Result<GetBuildersSummaryResponse> {
-        todo!()
+        let query = if user.is_admin {
+            None
+        } else {
+            let query = doc! {
+                format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
+            };
+            Some(query)
+        };
+        let total = self
+            .db
+            .builders
+            .collection
+            .count_documents(query, None)
+            .await
+            .context("failed to count all build documents")?;
+        let res = GetBuildersSummaryResponse {
+            total: total as u32,
+        };
+        Ok(res)
     }
 }

@@ -77,6 +77,24 @@ impl Resolve<GetReposSummary, RequestUser> for State {
         GetReposSummary {}: GetReposSummary,
         user: RequestUser,
     ) -> anyhow::Result<GetReposSummaryResponse> {
-        todo!()
+        let query = if user.is_admin {
+            None
+        } else {
+            let query = doc! {
+                format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
+            };
+            Some(query)
+        };
+        let total = self
+            .db
+            .repos
+            .collection
+            .count_documents(query, None)
+            .await
+            .context("failed to count all build documents")?;
+        let res = GetReposSummaryResponse {
+            total: total as u32,
+        };
+        Ok(res)
     }
 }
