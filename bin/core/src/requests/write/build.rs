@@ -77,6 +77,8 @@ impl Resolve<CreateBuild, RequestUser> for State {
 
         update.push_simple_log("config", format!("{:#?}", build.config));
 
+        update.finalize();
+
         self.add_update(update).await?;
 
         Ok(build)
