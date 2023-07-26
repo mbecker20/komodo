@@ -26,12 +26,7 @@ export const useRead = <
     "initialData" | "queryFn" | "queryKey"
   >
 ) =>
-  useQuery(
-    [type, params],
-    async () =>
-      (await client.read({ type, params } as any)) as ReadResponses[T],
-    config
-  );
+  useQuery([type, params], () => client.read({ type, params } as any), config);
 
 export const useWrite = <
   T extends Types.WriteRequest["type"],
@@ -45,8 +40,7 @@ export const useWrite = <
 ) =>
   useMutation(
     [type],
-    async (params: P) =>
-      (await client.write({ type, params } as any)) as WriteResponses[T],
+    (params: P) => client.write({ type, params } as any),
     config
   );
 
@@ -62,8 +56,7 @@ export const useExecute = <
 ) =>
   useMutation(
     [type],
-    async (params: P) =>
-      (await client.execute({ type, params } as any)) as ExecuteResponses[T],
+    (params: P) => client.execute({ type, params } as any),
     config
   );
 
