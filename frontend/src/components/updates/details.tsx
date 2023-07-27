@@ -30,7 +30,6 @@ import {
   CardTitle,
 } from "@ui/card";
 import { ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
 import { ServerName } from "@resources/server/util";
 import { DeploymentName } from "@resources/deployment/util";
 import { BuildName } from "@resources/build/util";
@@ -50,7 +49,6 @@ export const UpdateDetails = ({
   update: Update;
   children: ReactNode;
 }) => {
-  const nav = useNavigate();
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
