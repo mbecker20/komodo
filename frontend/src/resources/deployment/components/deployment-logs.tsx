@@ -50,10 +50,12 @@ export const DeploymentLogs = () => {
       {["stdout", "stderr"].map((t) => (
         <TabsContent key={t} className="h-full relative" value={t}>
           <div className="h-[60vh] overflow-y-scroll">
-            <pre id={t}>{data?.[t as keyof typeof data] || `no ${t} logs`}</pre>
+            <pre id={t} className="scroll-mb-24">
+              {data?.[t as keyof typeof data] || `no ${t} logs`}
+            </pre>
           </div>
           <Button
-            className="absolute bottom-4 right-4"
+            className="absolute bottom-4 right-4 scroll-mt-24"
             onClick={scroll_to_bottom(t)}
           >
             <ChevronDown className="h-4 w-4" />

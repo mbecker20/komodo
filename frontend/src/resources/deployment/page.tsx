@@ -36,11 +36,11 @@ const DeploymentUpdates = ({ id }: { id: string }) => {
             </CardHeader>
             <CardContent>
               <CardDescription className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                {fmt_update_date(new Date(update.start_ts))}
+                <User className="w-4 h-4" /> {update.operator}
               </CardDescription>
               <CardDescription className="flex items-center gap-2">
-                <User className="w-4 h-4" /> {update.operator}
+                <Calendar className="w-4 h-4" />
+                {fmt_update_date(new Date(update.start_ts))}
               </CardDescription>
             </CardContent>
           </Card>
