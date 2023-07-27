@@ -3,20 +3,18 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs";
 import { AlertOctagon, ChevronDown, TerminalSquare } from "lucide-react";
 import { useEffect } from "react";
 import { useRead } from "@hooks";
-import { useParams } from "react-router-dom";
 
 const scroll_to_bottom = (id: string) => () =>
   document
     .getElementById(id)
     ?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
 
-export const DeploymentLogs = () => {
-  const deployment_id = useParams().deploymentId;
-  const { data, refetch } = useRead(
-    "GetLog",
-    { deployment_id, tail: 200 },
-    { enabled: !!deployment_id }
-  );
+export const DeploymentLogs = ({
+  deployment_id,
+}: {
+  deployment_id: string;
+}) => {
+  const { data, refetch } = useRead("GetLog", { deployment_id, tail: 200 });
 
   useEffect(() => {
     const handle = setInterval(() => refetch(), 30000);

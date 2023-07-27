@@ -69,18 +69,7 @@ export const UpdateDetails = ({
               <UpdateUser userId={update.operator} />
             </div>
             <div className="flex gap-4">
-              <div
-                className="flex items-center gap-2 cursor-pointer"
-                onClick={() => {
-                  update.target.id
-                    ? nav(
-                        `/${update.target.type.toLowerCase()}s/${
-                          update.target.id
-                        }`
-                      )
-                    : null;
-                }}
-              >
+              <div className="flex items-center gap-2">
                 {update.target.type === "Server" && (
                   <>
                     <Server className="w-4 h-4" />
