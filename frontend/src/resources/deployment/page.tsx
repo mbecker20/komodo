@@ -1,22 +1,32 @@
 import { useParams } from "react-router-dom";
-import { useSetRecentlyViewed } from "@hooks";
-import { Resource } from "@layouts/resource";
-import { CardDescription } from "@ui/card";
-import {
-  DeploymentBuild,
-  DeploymentName,
-  DeploymentServer,
-  DeploymentStatus,
-  DeploymentStatusIcon,
-} from "./util";
-import {
-  RedeployContainer,
-  RemoveContainer,
-  StartOrStopContainer,
-} from "./components/actions";
+import { useRead, useSetRecentlyViewed } from "@hooks";
 import { DeploymentLogs } from "./components/deployment-logs";
+import { Card, CardHeader, CardTitle } from "@ui/card";
+import { Bell } from "lucide-react";
 
-export const Deployment = () => {
+const DeploymentUpdates = ({ id }: { id: string }) => {
+  const updates = useRead("ListUpdates", { target: { id } }).data;
+
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Bell className="w-4 h-4" />
+        <h2 className="text-xl">Updates</h2>
+      </div>
+      <div className="grid md:grid-cols-3">
+        {updates?.slice(0, 3).map((u) => (
+          <Card>
+            <CardTitle>
+              <CardHeader>{u.operation}</CardHeader>
+            </CardTitle>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export const DeploymentPage = () => {
   const { deploymentId } = useParams();
   const push = useSetRecentlyViewed();
 
@@ -24,41 +34,9 @@ export const Deployment = () => {
   push("Deployment", deploymentId);
 
   return (
-    <Resource
-      title={<DeploymentName deploymentId={deploymentId} />}
-      info={
-        <div className="flex flex-col lg:flex-row lg:items-center lg:gap-4 text-muted-foreground">
-          <div className="flex items-center gap-2 ">
-            <DeploymentStatusIcon deploymentId={deploymentId} />
-            <DeploymentStatus deploymentId={deploymentId} />
-          </div>
-          <CardDescription className="hidden lg:block">|</CardDescription>
-          <DeploymentServer deploymentId={deploymentId} />
-          <CardDescription className="hidden lg:block">|</CardDescription>
-          <DeploymentBuild deploymentId={deploymentId} />
-        </div>
-      }
-      actions={
-        <div className="flex gap-4">
-          <RedeployContainer deployment_id={deploymentId} />
-          <StartOrStopContainer deployment_id={deploymentId} />
-          <RemoveContainer deployment_id={deploymentId} />
-        </div>
-      }
-      tabs={[
-        {
-          title: "Logs",
-          component: <DeploymentLogs deployment_id={deploymentId} />,
-        },
-        {
-          title: "Config",
-          component: <>Config</>,
-        },
-        {
-          title: "Updates",
-          component: <>Updates</>,
-        },
-      ]}
-    />
+    <div className="flex flex-col gap-12">
+      <DeploymentUpdates id={deploymentId} />
+      <DeploymentLogs />
+    </div>
   );
 };

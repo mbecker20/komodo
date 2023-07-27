@@ -298,3 +298,6 @@ export function readableImageNameTag(
     return ["none", "none"];
   }
 }
+
+export const fmt_update_date = (d: Date) =>
+  `${d.getDate()}/${d.getMonth()} @ ${d.getHours()}:${d.getMinutes()}`;

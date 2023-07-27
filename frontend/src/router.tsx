@@ -3,10 +3,13 @@ import { Layout } from "@layouts/layout";
 import { Login } from "@pages/auth/login";
 import { Signup } from "@pages/auth/signup";
 import { Dashboard } from "@pages/dashboard";
-import { Deployment } from "@resources/deployment/page";
 import { Server } from "@resources/server/page";
 import { Build } from "@resources/build/page";
 import { Deployments, Builds, Servers, Builders } from "@resources/pages";
+import { DeploymentLogs } from "@resources/deployment/components/deployment-logs";
+import { DeploymentUpdates } from "@resources/deployment/updates";
+import { DeploymentLayout } from "@resources/deployment/layout";
+import { DeploymentPage } from "@resources/deployment/page";
 
 const router = createBrowserRouter([
   {
@@ -17,14 +20,24 @@ const router = createBrowserRouter([
       { path: "login", element: <Login /> },
       { path: "signup", element: <Signup /> },
 
+      // Deployments
       {
         path: "deployments",
         children: [
           { path: "", element: <Deployments /> },
-          { path: ":deploymentId", element: <Deployment /> },
+          {
+            path: ":deploymentId",
+            element: <DeploymentLayout />,
+            children: [
+              { path: "", element: <DeploymentPage /> },
+              { path: "updates", element: <DeploymentUpdates /> },
+              { path: "config", element: <>deployment config!</> },
+            ],
+          },
         ],
       },
 
+      // Servers
       {
         path: "servers",
         children: [
@@ -32,6 +45,8 @@ const router = createBrowserRouter([
           { path: ":serverId", element: <Server /> },
         ],
       },
+
+      // Builds
       {
         path: "builds",
         children: [
@@ -39,6 +54,8 @@ const router = createBrowserRouter([
           { path: ":buildId", element: <Build /> },
         ],
       },
+
+      // Builders
       {
         path: "builders",
         children: [
