@@ -25,24 +25,6 @@ export const Server = () => {
         </div>
       }
       actions=""
-      tabs={[
-        {
-          title: "Config",
-          component: <>config</>,
-        },
-        {
-          title: "Deployments",
-          component: <>server deployments</>,
-        },
-        {
-          title: "Stats",
-          component: "server stats",
-        },
-        {
-          title: "Updates",
-          component: <>updates</>,
-        },
-      ]}
     />
   );
 };

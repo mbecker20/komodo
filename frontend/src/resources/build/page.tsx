@@ -20,20 +20,6 @@ export const Build = () => {
         </div>
       }
       actions={<RebuildBuild buildId={buildId} />}
-      tabs={[
-        {
-          title: "Config",
-          component: "config",
-        },
-        {
-          title: "Builder",
-          component: "builder",
-        },
-        {
-          title: "Updates",
-          component: "updates",
-        },
-      ]}
     />
   );
 };

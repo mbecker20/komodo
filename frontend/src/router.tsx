@@ -6,7 +6,6 @@ import { Dashboard } from "@pages/dashboard";
 import { Server } from "@resources/server/page";
 import { Build } from "@resources/build/page";
 import { Deployments, Builds, Servers, Builders } from "@resources/pages";
-import { DeploymentLogs } from "@resources/deployment/components/deployment-logs";
 import { DeploymentUpdates } from "@resources/deployment/updates";
 import { DeploymentLayout } from "@resources/deployment/layout";
 import { DeploymentPage } from "@resources/deployment/page";
