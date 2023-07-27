@@ -3,6 +3,8 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::{
         build::{Build, BuildBuilderConfig},
+        builder::Builder,
+        server::Server,
         update::{Log, UpdateStatus},
         Operation, PermissionLevel,
     },
@@ -15,6 +17,7 @@ use resolver_api::Resolve;
 use crate::{
     auth::RequestUser,
     helpers::{empty_or_only_spaces, make_update},
+    resource::Resource,
     state::State,
 };
 
@@ -28,7 +31,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
         if let Some(builder) = &config.builder {
             match builder {
                 BuildBuilderConfig::Server { server_id } => {
-                    self.get_server_check_permissions(
+                    let _: Server = self.get_resource_check_permissions(
                             server_id,
                             &user,
                             PermissionLevel::Update,
@@ -37,7 +40,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
                         .context("cannot create build on this server. user must have update permissions on the server.")?;
                 }
                 BuildBuilderConfig::Builder { builder_id } => {
-                    self.get_builder_check_permissions(
+                    let _: Builder = self.get_resource_check_permissions(
                             builder_id,
                             &user,
                             PermissionLevel::Read,
@@ -66,7 +69,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
             .create_one(build)
             .await
             .context("failed to add build to db")?;
-        let build = self.get_build(&build_id).await?;
+        let build: Build = self.get_resource(&build_id).await?;
 
         let mut update = make_update(&build, Operation::CreateBuild, &user);
 
@@ -98,11 +101,11 @@ impl Resolve<CopyBuild, RequestUser> for State {
             tags,
             ..
         } = self
-            .get_build_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
         match &config.builder {
             BuildBuilderConfig::Server { server_id } => {
-                self.get_server_check_permissions(
+                let _: Server = self.get_resource_check_permissions(
                     server_id,
                     &user,
                     PermissionLevel::Update,
@@ -111,7 +114,7 @@ impl Resolve<CopyBuild, RequestUser> for State {
                 .context("cannot create build on this server. user must have update permissions on the server.")?;
             }
             BuildBuilderConfig::Builder { builder_id } => {
-                self.get_builder_check_permissions(
+                let _: Builder = self.get_resource_check_permissions(
                     builder_id,
                     &user,
                     PermissionLevel::Read,
@@ -139,7 +142,7 @@ impl Resolve<CopyBuild, RequestUser> for State {
             .create_one(build)
             .await
             .context("failed to add build to db")?;
-        let build = self.get_build(&build_id).await?;
+        let build: Build = self.get_resource(&build_id).await?;
 
         let mut update = make_update(&build, Operation::CreateBuild, &user);
 
@@ -168,8 +171,8 @@ impl Resolve<DeleteBuild, RequestUser> for State {
             return Err(anyhow!("build busy"));
         }
 
-        let build = self
-            .get_build_check_permissions(&id, &user, PermissionLevel::Update)
+        let build: Build = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let mut update = make_update(&build, Operation::DeleteBuild, &user);
@@ -207,15 +210,15 @@ impl Resolve<UpdateBuild, RequestUser> for State {
             return Err(anyhow!("build busy"));
         }
 
-        let build = self
-            .get_build_check_permissions(&id, &user, PermissionLevel::Update)
+        let build: Build = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let inner = || async move {
             if let Some(builder) = &config.builder {
                 match builder {
                     BuildBuilderConfig::Server { server_id } => {
-                        self.get_server_check_permissions(
+                        let _: Server = self.get_resource_check_permissions(
                             server_id,
                             &user,
                             PermissionLevel::Update,
@@ -224,7 +227,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
                         .context("cannot create build on this server. user must have update permissions on the server.")?;
                     }
                     BuildBuilderConfig::Builder { builder_id } => {
-                        self.get_builder_check_permissions(
+                        let _: Builder = self.get_resource_check_permissions(
                             builder_id,
                             &user,
                             PermissionLevel::Read,
@@ -261,7 +264,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
 
             self.add_update(update).await?;
 
-            let build = self.get_build(&build.id).await?;
+            let build: Build = self.get_resource(&build.id).await?;
 
             anyhow::Ok(build)
         };

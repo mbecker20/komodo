@@ -2,6 +2,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+mod alerter;
 mod build;
 mod builder;
 mod deployment;
@@ -10,8 +11,8 @@ mod search;
 mod server;
 mod tag;
 mod update;
-mod alerter;
 
+pub use alerter::*;
 pub use build::*;
 pub use builder::*;
 pub use deployment::*;
@@ -20,7 +21,6 @@ pub use search::*;
 pub use server::*;
 pub use tag::*;
 pub use update::*;
-pub use alerter::*;
 
 use crate::entities::user::User;
 

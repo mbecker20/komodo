@@ -7,8 +7,9 @@ use monitor_types::{
     all_logs_success,
     entities::{
         build::{Build, BuildBuilderConfig},
-        builder::{AwsBuilderConfig, BuilderConfig},
+        builder::{AwsBuilderConfig, Builder, BuilderConfig},
         deployment::DockerContainerState,
+        server::Server,
         update::{Log, Update},
         Operation, PermissionLevel,
     },
@@ -27,6 +28,7 @@ use crate::{
     auth::{InnerRequestUser, RequestUser},
     cloud::{aws::Ec2Instance, BuildCleanupData},
     helpers::make_update,
+    resource::Resource,
     state::State,
 };
 
@@ -41,8 +43,8 @@ impl Resolve<RunBuild, RequestUser> for State {
             return Err(anyhow!("build busy"));
         }
 
-        let mut build = self
-            .get_build_check_permissions(&build_id, &user, PermissionLevel::Execute)
+        let mut build: Build = self
+            .get_resource_check_permissions(&build_id, &user, PermissionLevel::Execute)
             .await?;
 
         build.config.version.increment();
@@ -199,7 +201,8 @@ impl Resolve<CancelBuild, RequestUser> for State {
         CancelBuild { build_id }: CancelBuild,
         user: RequestUser,
     ) -> anyhow::Result<CancelBuildResponse> {
-        self.get_build_check_permissions(&build_id, &user, PermissionLevel::Execute)
+        let _: Build = self
+            .get_resource_check_permissions(&build_id, &user, PermissionLevel::Execute)
             .await?;
         self.build_cancel.sender.lock().await.send(build_id)?;
         Ok(CancelBuildResponse {})
@@ -220,7 +223,7 @@ impl State {
                 if server_id.is_empty() {
                     return Err(anyhow!("build has not configured a builder"));
                 }
-                let server = self.get_server(server_id).await?;
+                let server: Server = self.get_resource(server_id).await?;
                 let periphery = self.periphery_client(&server);
                 Ok((
                     periphery,
@@ -233,7 +236,7 @@ impl State {
                 if builder_id.is_empty() {
                     return Err(anyhow!("build has not configured a builder"));
                 }
-                let builder = self.get_builder(builder_id).await?;
+                let builder: Builder = self.get_resource(builder_id).await?;
                 match builder.config {
                     BuilderConfig::Aws(config) => self.get_aws_builder(build, config, update).await,
                 }

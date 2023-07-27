@@ -43,16 +43,21 @@ export type ReadResponses = {
   ListBuilds: Types.BuildListItem[];
   GetBuildActionState: Types.BuildActionState;
 
-  // ==== BUILDER ====
-  GetBuildersSummary: Types.GetBuildersSummaryResponse;
-  GetBuilder: Types.Builder;
-  ListBuilders: Types.Builder[];
-
   // ==== REPO ====
   GetReposSummary: Types.GetReposSummaryResponse;
   GetRepo: Types.Repo;
   ListRepos: Types.RepoListItem[];
   GetRepoActionState: Types.RepoActionState;
+
+  // ==== BUILDER ====
+  GetBuildersSummary: Types.GetBuildersSummaryResponse;
+  GetBuilder: Types.Builder;
+  ListBuilders: Types.Builder[];
+
+  // ==== ALERTER ====
+  GetAlertersSummary: Types.GetAlertersSummaryResponse;
+  GetAlerter: Types.Alerter;
+  ListAlerters: Types.Alerter[];
 
   // ==== TAG ====
   GetTag: Types.CustomTag;

@@ -16,6 +16,7 @@ use crate::{
     state::{State, StateExtension},
 };
 
+mod alerter;
 mod build;
 mod builder;
 mod deployment;
@@ -67,16 +68,21 @@ enum ReadRequest {
     ListBuilds(ListBuilds),
     GetBuildActionState(GetBuildActionState),
 
-    // ==== BUILDER ====
-    GetBuildersSummary(GetBuildersSummary),
-    GetBuilder(GetBuilder),
-    ListBuilders(ListBuilders),
-
     // ==== REPO ====
     GetReposSummary(GetReposSummary),
     GetRepo(GetRepo),
     ListRepos(ListRepos),
     GetRepoActionState(GetRepoActionState),
+
+    // ==== BUILDER ====
+    GetBuildersSummary(GetBuildersSummary),
+    GetBuilder(GetBuilder),
+    ListBuilders(ListBuilders),
+
+    // ==== ALERTER ====
+    GetAlertersSummary(GetAlertersSummary),
+    GetAlerter(GetAlerter),
+    ListAlerters(ListAlerters),
 
     // ==== TAG ====
     GetTag(GetTag),

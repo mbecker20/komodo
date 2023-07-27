@@ -1,7 +1,7 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
-    entities::{builder::Builder, PermissionLevel},
+    entities::{alerter::Alerter, PermissionLevel},
     requests::read::*,
 };
 use mungos::mongodb::bson::doc;
@@ -10,35 +10,35 @@ use resolver_api::Resolve;
 use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
-impl Resolve<GetBuilder, RequestUser> for State {
+impl Resolve<GetAlerter, RequestUser> for State {
     async fn resolve(
         &self,
-        GetBuilder { id }: GetBuilder,
+        GetAlerter { id }: GetAlerter,
         user: RequestUser,
-    ) -> anyhow::Result<Builder> {
+    ) -> anyhow::Result<Alerter> {
         self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await
     }
 }
 
 #[async_trait]
-impl Resolve<ListBuilders, RequestUser> for State {
+impl Resolve<ListAlerters, RequestUser> for State {
     async fn resolve(
         &self,
-        ListBuilders { query }: ListBuilders,
+        ListAlerters { query }: ListAlerters,
         user: RequestUser,
-    ) -> anyhow::Result<Vec<Builder>> {
+    ) -> anyhow::Result<Vec<Alerter>> {
         self.list_resources_for_user(&user, query).await
     }
 }
 
 #[async_trait]
-impl Resolve<GetBuildersSummary, RequestUser> for State {
+impl Resolve<GetAlertersSummary, RequestUser> for State {
     async fn resolve(
         &self,
-        GetBuildersSummary {}: GetBuildersSummary,
+        GetAlertersSummary {}: GetAlertersSummary,
         user: RequestUser,
-    ) -> anyhow::Result<GetBuildersSummaryResponse> {
+    ) -> anyhow::Result<GetAlertersSummaryResponse> {
         let query = if user.is_admin {
             None
         } else {
@@ -49,12 +49,12 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
         };
         let total = self
             .db
-            .builders
+            .alerters
             .collection
             .count_documents(query, None)
             .await
-            .context("failed to count all builder documents")?;
-        let res = GetBuildersSummaryResponse {
+            .context("failed to count all alerter documents")?;
+        let res = GetAlertersSummaryResponse {
             total: total as u32,
         };
         Ok(res)

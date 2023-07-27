@@ -9,10 +9,19 @@ use axum::{
     Router,
 };
 use futures::{SinkExt, StreamExt};
-use monitor_types::entities::{
-    update::{ResourceTarget, ResourceTargetVariant},
-    user::User,
-    PermissionLevel,
+use monitor_types::{
+    entities::{
+        alerter::Alerter,
+        build::Build,
+        builder::Builder,
+        deployment::Deployment,
+        repo::Repo,
+        server::Server,
+        update::{ResourceTarget, ResourceTargetVariant},
+        user::User,
+        PermissionLevel,
+    },
+    permissioned::Permissioned,
 };
 use serde_json::json;
 use tokio::select;
@@ -20,6 +29,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::{
     auth::RequestUser,
+    resource::Resource,
     state::{State, StateExtension},
 };
 
@@ -143,36 +153,46 @@ impl State {
         }
         let (permissions, target) = match update_target {
             ResourceTarget::Server(server_id) => {
-                let permissions = self
-                    .get_user_permission_on_server(user_id, server_id)
-                    .await?;
-                (permissions, ResourceTargetVariant::Server)
+                let resource: Server = self.get_resource(server_id).await?;
+                (
+                    resource.get_user_permissions(user_id),
+                    ResourceTargetVariant::Server,
+                )
             }
             ResourceTarget::Deployment(deployment_id) => {
-                let permissions = self
-                    .get_user_permission_on_deployment(user_id, deployment_id)
-                    .await?;
-                (permissions, ResourceTargetVariant::Deployment)
+                let resource: Deployment = self.get_resource(deployment_id).await?;
+                (
+                    resource.get_user_permissions(user_id),
+                    ResourceTargetVariant::Deployment,
+                )
             }
             ResourceTarget::Build(build_id) => {
-                let permissions = self.get_user_permission_on_build(user_id, build_id).await?;
-                (permissions, ResourceTargetVariant::Build)
+                let resource: Build = self.get_resource(build_id).await?;
+                (
+                    resource.get_user_permissions(user_id),
+                    ResourceTargetVariant::Build,
+                )
             }
             ResourceTarget::Builder(builder_id) => {
-                let permissions = self
-                    .get_user_permission_on_builder(user_id, builder_id)
-                    .await?;
-                (permissions, ResourceTargetVariant::Builder)
+                let resource: Builder = self.get_resource(builder_id).await?;
+                (
+                    resource.get_user_permissions(user_id),
+                    ResourceTargetVariant::Builder,
+                )
             }
             ResourceTarget::Repo(repo_id) => {
-                let permissions = self.get_user_permission_on_repo(user_id, repo_id).await?;
-                (permissions, ResourceTargetVariant::Repo)
+                let resource: Repo = self.get_resource(repo_id).await?;
+                (
+                    resource.get_user_permissions(user_id),
+                    ResourceTargetVariant::Repo,
+                )
             }
             ResourceTarget::Alerter(alerter_id) => {
-                let permissions = self
-                    .get_user_permission_on_alerter(user_id, alerter_id)
-                    .await?;
-                (permissions, ResourceTargetVariant::Alerter)
+                let resource: Alerter = self.get_resource(alerter_id).await?;
+                (
+                    resource.get_user_permissions(user_id),
+                    ResourceTargetVariant::Alerter,
+                )
             }
             ResourceTarget::System => {
                 return Err(anyhow!("user not admin, can't recieve system updates"))

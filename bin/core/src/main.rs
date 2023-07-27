@@ -12,6 +12,7 @@ mod helpers;
 mod listener;
 mod monitor;
 mod requests;
+mod resource;
 mod state;
 mod ws;
 

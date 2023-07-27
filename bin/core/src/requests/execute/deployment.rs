@@ -2,7 +2,8 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        deployment::DeploymentImage,
+        build::Build,
+        deployment::{Deployment, DeploymentImage},
         server::ServerStatus,
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel, Version,
@@ -13,7 +14,7 @@ use monitor_types::{
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<Deploy, RequestUser> for State {
@@ -30,8 +31,8 @@ impl Resolve<Deploy, RequestUser> for State {
             return Err(anyhow!("deployment busy"));
         }
 
-        let mut deployment = self
-            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+        let mut deployment: Deployment = self
+            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
             .await?;
 
         if deployment.config.server_id.is_empty() {
@@ -54,7 +55,7 @@ impl Resolve<Deploy, RequestUser> for State {
 
             let version = match deployment.config.image {
                 DeploymentImage::Build { build_id, version } => {
-                    let build = self.get_build(&build_id).await?;
+                    let build: Build = self.get_resource(&build_id).await?;
                     let image_name = get_image_name(&build);
                     let version = if version.is_none() {
                         build.config.version
@@ -136,8 +137,8 @@ impl Resolve<StartContainer, RequestUser> for State {
             return Err(anyhow!("deployment busy"));
         }
 
-        let deployment = self
-            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+        let deployment: Deployment = self
+            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
             .await?;
 
         if deployment.config.server_id.is_empty() {
@@ -223,8 +224,8 @@ impl Resolve<StopContainer, RequestUser> for State {
             return Err(anyhow!("deployment busy"));
         }
 
-        let deployment = self
-            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+        let deployment: Deployment = self
+            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
             .await?;
 
         if deployment.config.server_id.is_empty() {
@@ -314,8 +315,8 @@ impl Resolve<RemoveContainer, RequestUser> for State {
             return Err(anyhow!("deployment busy"));
         }
 
-        let deployment = self
-            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+        let deployment: Deployment = self
+            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
             .await?;
 
         if deployment.config.server_id.is_empty() {

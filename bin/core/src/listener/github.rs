@@ -2,7 +2,10 @@ use anyhow::{anyhow, Context};
 use axum::{extract::Path, http::HeaderMap, routing::post, Router};
 use hex::ToHex;
 use hmac::{Hmac, Mac};
-use monitor_types::requests::execute;
+use monitor_types::{
+    entities::{build::Build, repo::Repo},
+    requests::execute,
+};
 use resolver_api::Resolve;
 use serde::Deserialize;
 use sha2::Sha256;
@@ -10,6 +13,7 @@ use sha2::Sha256;
 use crate::{
     auth::InnerRequestUser,
     helpers::random_duration,
+    resource::Resource,
     state::{State, StateExtension},
 };
 
@@ -72,8 +76,8 @@ impl State {
     ) -> anyhow::Result<()> {
         self.verify_gh_signature(headers, &body).await?;
         let request_branch = extract_branch(&body)?;
-        let expected_branch = self.get_build(&build_id).await?.config.branch;
-        if request_branch != expected_branch {
+        let build: Build = self.get_resource(&build_id).await?;
+        if request_branch != build.config.branch {
             return Err(anyhow!("request branch does not match expected"));
         }
         self.resolve(
@@ -99,8 +103,8 @@ impl State {
     ) -> anyhow::Result<()> {
         self.verify_gh_signature(headers, &body).await?;
         let request_branch = extract_branch(&body)?;
-        let expected_branch = self.get_repo(&repo_id).await?.config.branch;
-        if request_branch != expected_branch {
+        let repo: Repo = self.get_resource(&repo_id).await?;
+        if request_branch != repo.config.branch {
             return Err(anyhow!("request branch does not match expected"));
         }
         self.resolve(
@@ -126,8 +130,8 @@ impl State {
     ) -> anyhow::Result<()> {
         self.verify_gh_signature(headers, &body).await?;
         let request_branch = extract_branch(&body)?;
-        let expected_branch = self.get_repo(&repo_id).await?.config.branch;
-        if request_branch != expected_branch {
+        let repo: Repo = self.get_resource(&repo_id).await?;
+        if request_branch != repo.config.branch {
             return Err(anyhow!("request branch does not match expected"));
         }
         self.resolve(

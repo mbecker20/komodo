@@ -53,5 +53,5 @@ pub struct GetReposSummary {}
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetReposSummaryResponse {
-    pub total: u32
+    pub total: u32,
 }

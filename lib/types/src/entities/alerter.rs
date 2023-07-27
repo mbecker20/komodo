@@ -1,6 +1,9 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use mungos::{mongodb::bson::serde_helpers::hex_string_as_object_id, derive::{MungosIndexed, StringObjectId}};
+use mungos::{
+    derive::{MungosIndexed, StringObjectId},
+    mongodb::bson::serde_helpers::hex_string_as_object_id,
+};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};

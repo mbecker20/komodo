@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::{
         repo::Repo,
+        server::Server,
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
     },
@@ -13,7 +14,7 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<CreateRepo, RequestUser> for State {
@@ -24,7 +25,7 @@ impl Resolve<CreateRepo, RequestUser> for State {
     ) -> anyhow::Result<Repo> {
         if let Some(server_id) = &config.server_id {
             if !server_id.is_empty() {
-                self.get_server_check_permissions(
+                let _: Server = self.get_resource_check_permissions(
                         server_id,
                         &user,
                         PermissionLevel::Update,
@@ -53,7 +54,7 @@ impl Resolve<CreateRepo, RequestUser> for State {
             .await
             .context("failed to add repo to db")?;
 
-        let repo = self.get_repo(&repo_id).await?;
+        let repo: Repo = self.get_resource(&repo_id).await?;
 
         let update = Update {
             target: ResourceTarget::Repo(repo_id),
@@ -102,10 +103,10 @@ impl Resolve<CopyRepo, RequestUser> for State {
             tags,
             ..
         } = self
-            .get_repo_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
         if !config.server_id.is_empty() {
-            self.get_server_check_permissions(
+            let _: Server = self.get_resource_check_permissions(
                     &config.server_id,
                     &user,
                     PermissionLevel::Update,
@@ -132,7 +133,7 @@ impl Resolve<CopyRepo, RequestUser> for State {
             .create_one(repo)
             .await
             .context("failed to add repo to db")?;
-        let repo = self.get_repo(&repo_id).await?;
+        let repo: Repo = self.get_resource(&repo_id).await?;
         let update = Update {
             target: ResourceTarget::Repo(repo_id),
             operation: Operation::CreateRepo,
@@ -163,8 +164,8 @@ impl Resolve<DeleteRepo, RequestUser> for State {
         DeleteRepo { id }: DeleteRepo,
         user: RequestUser,
     ) -> anyhow::Result<Repo> {
-        let repo = self
-            .get_repo_check_permissions(&id, &user, PermissionLevel::Update)
+        let repo: Repo = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let inner = || async move {
@@ -194,7 +195,8 @@ impl Resolve<DeleteRepo, RequestUser> for State {
             update.logs.push(log);
 
             if !repo.config.server_id.is_empty() {
-                let server = self.get_server(&repo.config.server_id).await;
+                let server: anyhow::Result<Server> =
+                    self.get_resource(&repo.config.server_id).await;
                 if let Ok(server) = server {
                     match self
                         .periphery_client(&server)
@@ -248,8 +250,8 @@ impl Resolve<UpdateRepo, RequestUser> for State {
         UpdateRepo { id, config }: UpdateRepo,
         user: RequestUser,
     ) -> anyhow::Result<Repo> {
-        let repo = self
-            .get_repo_check_permissions(&id, &user, PermissionLevel::Update)
+        let repo: Repo = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let inner = || async move {
@@ -257,7 +259,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
 
             if let Some(server_id) = &config.server_id {
                 if !server_id.is_empty() {
-                    self.get_server_check_permissions(
+                    let _: Server = self.get_resource_check_permissions(
                             server_id,
                             &user,
                             PermissionLevel::Update,
@@ -297,7 +299,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
                 if new_server_id != repo.config.server_id {
                     if !repo.config.server_id.is_empty() {
                         // clean up old server
-                        let old_server = self.get_server(&repo.config.server_id).await?;
+                        let old_server: Server = self.get_resource(&repo.config.server_id).await?;
                         let res = self
                             .periphery_client(&old_server)
                             .request(requests::DeleteRepo { name: repo.name })
@@ -323,7 +325,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
                 }
             }
 
-            let repo = self.get_repo(&repo.id).await?;
+            let repo: Repo = self.get_resource(&repo.id).await?;
 
             anyhow::Ok(repo)
         };

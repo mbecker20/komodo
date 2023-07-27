@@ -161,4 +161,3 @@ pub struct ServerHealth {
     pub disks: HashMap<PathBuf, StatsState>,
     pub temps: HashMap<String, StatsState>,
 }
-

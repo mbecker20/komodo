@@ -9,7 +9,7 @@ use crate::{
         },
         update::Log,
     },
-    MongoDocument, U64, I64,
+    MongoDocument, I64, U64,
 };
 
 //

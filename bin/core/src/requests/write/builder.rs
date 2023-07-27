@@ -12,7 +12,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<CreateBuilder, RequestUser> for State {
@@ -39,7 +39,7 @@ impl Resolve<CreateBuilder, RequestUser> for State {
             .create_one(builder)
             .await
             .context("failed to add builder to db")?;
-        let builder = self.get_builder(&builder_id).await?;
+        let builder: Builder = self.get_resource(&builder_id).await?;
         let update = Update {
             target: ResourceTarget::Builder(builder_id),
             operation: Operation::CreateBuilder,
@@ -78,7 +78,7 @@ impl Resolve<CopyBuilder, RequestUser> for State {
             description,
             ..
         } = self
-            .get_builder_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
         let builder = Builder {
@@ -98,7 +98,7 @@ impl Resolve<CopyBuilder, RequestUser> for State {
             .create_one(builder)
             .await
             .context("failed to add builder to db")?;
-        let builder = self.get_builder(&builder_id).await?;
+        let builder: Builder = self.get_resource(&builder_id).await?;
         let update = Update {
             target: ResourceTarget::Builder(builder_id),
             operation: Operation::CreateBuilder,
@@ -132,8 +132,8 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
         DeleteBuilder { id }: DeleteBuilder,
         user: RequestUser,
     ) -> anyhow::Result<Builder> {
-        let builder = self
-            .get_builder_check_permissions(&id, &user, PermissionLevel::Update)
+        let builder: Builder = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let start_ts = monitor_timestamp();
@@ -178,8 +178,8 @@ impl Resolve<UpdateBuilder, RequestUser> for State {
         UpdateBuilder { id, config }: UpdateBuilder,
         user: RequestUser,
     ) -> anyhow::Result<Builder> {
-        let builder = self
-            .get_builder_check_permissions(&id, &user, PermissionLevel::Update)
+        let builder: Builder = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let mut update = Update {
@@ -204,7 +204,7 @@ impl Resolve<UpdateBuilder, RequestUser> for State {
             )
             .await?;
 
-        let builder = self.get_builder(&id).await?;
+        let builder: Builder = self.get_resource(&id).await?;
 
         update.finalize();
         self.add_update(update).await?;

@@ -2,6 +2,7 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
+        server::Server,
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
     },
@@ -11,7 +12,7 @@ use monitor_types::{
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<PruneDockerContainers, RequestUser> for State {
@@ -24,8 +25,8 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
             return Err(anyhow!("server busy"));
         }
 
-        let server = self
-            .get_server_check_permissions(&server_id, &user, PermissionLevel::Execute)
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
             .await?;
 
         let inner = || async {
@@ -95,8 +96,8 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
         }
 
         let inner = || async {
-            let server = self
-                .get_server_check_permissions(&server_id, &user, PermissionLevel::Execute)
+            let server: Server = self
+                .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
                 .await?;
 
             let start_ts = monitor_timestamp();
@@ -165,8 +166,8 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
         }
 
         let inner = || async {
-            let server = self
-                .get_server_check_permissions(&server_id, &user, PermissionLevel::Execute)
+            let server: Server = self
+                .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
                 .await?;
 
             let start_ts = monitor_timestamp();

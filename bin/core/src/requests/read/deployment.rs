@@ -9,6 +9,7 @@ use monitor_types::{
             Deployment, DeploymentActionState, DeploymentConfig, DeploymentImage,
             DockerContainerState, DockerContainerStats,
         },
+        server::Server,
         update::{Log, UpdateStatus},
         Operation, PermissionLevel,
     },
@@ -18,7 +19,7 @@ use mungos::mongodb::{bson::doc, options::FindOneOptions};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<GetDeployment, RequestUser> for State {
@@ -27,7 +28,7 @@ impl Resolve<GetDeployment, RequestUser> for State {
         GetDeployment { id }: GetDeployment,
         user: RequestUser,
     ) -> anyhow::Result<Deployment> {
-        self.get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await
     }
 }
@@ -39,19 +40,7 @@ impl Resolve<ListDeployments, RequestUser> for State {
         ListDeployments { query }: ListDeployments,
         user: RequestUser,
     ) -> anyhow::Result<Vec<DeploymentListItem>> {
-        let mut query = query.unwrap_or_default();
-        if !user.is_admin {
-            query.insert(
-                format!("permissions.{}", user.id),
-                doc! { "$in": ["read", "execute", "update"] },
-            );
-        }
-        let deployments = self
-            .db
-            .deployments
-            .get_some(query, None)
-            .await
-            .context("failed to pull deployments from mongo")?;
+        let deployments: Vec<Deployment> = self.list_resources_for_user(&user, query).await?;
 
         let deployments = deployments.into_iter().map(|deployment| async {
             let status = self.deployment_status_cache.get(&deployment.id).await;
@@ -81,7 +70,8 @@ impl Resolve<GetDeploymentStatus, RequestUser> for State {
         GetDeploymentStatus { id }: GetDeploymentStatus,
         user: RequestUser,
     ) -> anyhow::Result<GetDeploymentStatusResponse> {
-        self.get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+        let _: Deployment = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .deployment_status_cache
@@ -113,12 +103,12 @@ impl Resolve<GetLog, RequestUser> for State {
             config: DeploymentConfig { server_id, .. },
             ..
         } = self
-            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Read)
             .await?;
         if server_id.is_empty() {
             return Ok(Log::default());
         }
-        let server = self.get_server(&server_id).await?;
+        let server: Server = self.get_resource(&server_id).await?;
         self.periphery_client(&server)
             .request(requests::GetContainerLog {
                 name,
@@ -140,7 +130,7 @@ impl Resolve<GetDeployedVersion, RequestUser> for State {
             config: DeploymentConfig { image, .. },
             ..
         } = self
-            .get_deployment_check_permissions(&deployment_id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Read)
             .await?;
         let version = match image {
             DeploymentImage::Build { .. } => {
@@ -196,12 +186,12 @@ impl Resolve<GetDeploymentStats, RequestUser> for State {
             config: DeploymentConfig { server_id, .. },
             ..
         } = self
-            .get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         if server_id.is_empty() {
             return Err(anyhow!("deployment has no server attached"));
         }
-        let server = self.get_server(&server_id).await?;
+        let server: Server = self.get_resource(&server_id).await?;
         self.periphery_client(&server)
             .request(requests::GetContainerStats { name })
             .await
@@ -216,7 +206,8 @@ impl Resolve<GetDeploymentActionState, RequestUser> for State {
         GetDeploymentActionState { id }: GetDeploymentActionState,
         user: RequestUser,
     ) -> anyhow::Result<DeploymentActionState> {
-        self.get_deployment_check_permissions(&id, &user, PermissionLevel::Read)
+        let _: Deployment = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let action_state = self
             .action_states

@@ -3,25 +3,19 @@ use std::time::Duration;
 use anyhow::{anyhow, Context};
 use monitor_types::{
     entities::{
-        alerter::Alerter,
-        build::Build,
-        builder::Builder,
         deployment::{Deployment, DockerContainerState},
-        repo::Repo,
         server::{Server, ServerStatus},
         tag::CustomTag,
         update::{ResourceTarget, Update},
         user::User,
-        Operation, PermissionLevel,
+        Operation,
     },
     monitor_timestamp,
-    permissioned::Permissioned,
 };
-use mungos::{mongodb::bson::doc, AggStage::*};
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 pub mod alert;
 pub mod cache;
@@ -60,8 +54,6 @@ pub fn make_update(
 }
 
 impl State {
-    // USER
-
     pub async fn get_user(&self, user_id: &str) -> anyhow::Result<User> {
         self.db
             .users
@@ -70,22 +62,11 @@ impl State {
             .context(format!("no user exists with id {user_id}"))
     }
 
-    // SERVER
-
-    pub async fn get_server(&self, server_id: &str) -> anyhow::Result<Server> {
-        self.db
-            .servers
-            .find_one_by_id(server_id)
-            .await
-            .context("failed to get server from db")?
-            .context(format!("did not find any server with id {server_id}"))
-    }
-
     pub async fn get_server_with_status(
         &self,
         server_id: &str,
     ) -> anyhow::Result<(Server, ServerStatus)> {
-        let server = self.get_server(server_id).await?;
+        let server: Server = self.get_resource(server_id).await?;
         if !server.config.enabled {
             return Ok((server, ServerStatus::Disabled));
         }
@@ -98,45 +79,6 @@ impl State {
             Err(_) => ServerStatus::NotOk,
         };
         Ok((server, status))
-    }
-
-    pub async fn get_server_check_permissions(
-        &self,
-        server_id: &str,
-        user: &RequestUser,
-        permission_level: PermissionLevel,
-    ) -> anyhow::Result<Server> {
-        let server = self.get_server(server_id).await?;
-        let permissions = server.get_user_permissions(&user.id);
-        if user.is_admin || permissions >= permission_level {
-            Ok(server)
-        } else {
-            Err(anyhow!(
-                "user does not have required permissions on this server"
-            ))
-        }
-    }
-
-    pub async fn get_user_permission_on_server(
-        &self,
-        user_id: &str,
-        server_id: &str,
-    ) -> anyhow::Result<PermissionLevel> {
-        let server = self.get_server(server_id).await?;
-        Ok(server.get_user_permissions(user_id))
-    }
-
-    // DEPLOYMENT
-
-    pub async fn get_deployment(&self, deployment_id: &str) -> anyhow::Result<Deployment> {
-        self.db
-            .deployments
-            .find_one_by_id(deployment_id)
-            .await
-            .context("failed to get deployment from db")?
-            .context(format!(
-                "did not find any deployment with id {deployment_id}"
-            ))
     }
 
     pub async fn get_deployment_state(
@@ -165,208 +107,6 @@ impl State {
         };
 
         Ok(state)
-    }
-
-    pub async fn get_deployment_check_permissions(
-        &self,
-        deployment_id: &str,
-        user: &RequestUser,
-        permission_level: PermissionLevel,
-    ) -> anyhow::Result<Deployment> {
-        let deployment = self.get_deployment(deployment_id).await?;
-        let permissions = deployment.get_user_permissions(&user.id);
-        if user.is_admin || permissions >= permission_level {
-            Ok(deployment)
-        } else {
-            Err(anyhow!(
-                "user does not have required permissions on this deployment"
-            ))
-        }
-    }
-
-    pub async fn get_user_permission_on_deployment(
-        &self,
-        user_id: &str,
-        deployment_id: &str,
-    ) -> anyhow::Result<PermissionLevel> {
-        let deployment = self.get_deployment(deployment_id).await?;
-        Ok(deployment.get_user_permissions(user_id))
-    }
-
-    // BUILD
-
-    pub async fn get_build(&self, build_id: &str) -> anyhow::Result<Build> {
-        self.db
-            .builds
-            .find_one_by_id(build_id)
-            .await
-            .context("failed to get build from db")?
-            .context(format!("did not find any build with id {build_id}"))
-    }
-
-    pub async fn get_build_check_permissions(
-        &self,
-        build_id: &str,
-        user: &RequestUser,
-        permission_level: PermissionLevel,
-    ) -> anyhow::Result<Build> {
-        let build = self.get_build(build_id).await?;
-        let permissions = build.get_user_permissions(&user.id);
-        if user.is_admin || permissions >= permission_level {
-            Ok(build)
-        } else {
-            Err(anyhow!(
-                "user does not have required permissions on this build"
-            ))
-        }
-    }
-
-    pub async fn get_user_permission_on_build(
-        &self,
-        user_id: &str,
-        build_id: &str,
-    ) -> anyhow::Result<PermissionLevel> {
-        let build = self.get_build(build_id).await?;
-        Ok(build.get_user_permissions(user_id))
-    }
-
-    pub async fn get_build_ids_for_non_admin(&self, user_id: &str) -> anyhow::Result<Vec<String>> {
-        self.db
-            .builds
-            .aggregate_collect(
-                [
-                    Match(doc! {
-                        format!("permissions.{}", user_id): { "$in": ["update", "execute", "read"] }
-                    }),
-                    Project(doc! { "_id": 1 }),
-                ],
-                None,
-            )
-            .await
-            .context("failed to get build ids for non admin | aggregation")?
-            .into_iter()
-            .map(|d| {
-                let id = d
-                    .get("_id")
-                    .context("no _id field")?
-                    .as_object_id()
-                    .context("_id not ObjectId")?
-                    .to_string();
-                anyhow::Ok(id)
-            })
-            .collect::<anyhow::Result<Vec<_>>>()
-            .context("failed to get build ids for non admin | extract id from document")
-    }
-
-    // BUILDER
-
-    pub async fn get_builder(&self, builder_id: &str) -> anyhow::Result<Builder> {
-        self.db
-            .builders
-            .find_one_by_id(builder_id)
-            .await
-            .context("failed to get builder from db")?
-            .context(format!("did not find any builder with id {builder_id}"))
-    }
-
-    pub async fn get_builder_check_permissions(
-        &self,
-        builder_id: &str,
-        user: &RequestUser,
-        permission_level: PermissionLevel,
-    ) -> anyhow::Result<Builder> {
-        let builder = self.get_builder(builder_id).await?;
-        let permissions = builder.get_user_permissions(&user.id);
-        if user.is_admin || permissions >= permission_level {
-            Ok(builder)
-        } else {
-            Err(anyhow!(
-                "user does not have required permissions on this builder"
-            ))
-        }
-    }
-
-    pub async fn get_user_permission_on_builder(
-        &self,
-        user_id: &str,
-        builder_id: &str,
-    ) -> anyhow::Result<PermissionLevel> {
-        let builder = self.get_builder(builder_id).await?;
-        Ok(builder.get_user_permissions(user_id))
-    }
-
-    // REPO
-
-    pub async fn get_repo(&self, repo_id: &str) -> anyhow::Result<Repo> {
-        self.db
-            .repos
-            .find_one_by_id(repo_id)
-            .await
-            .context("failed to get repo from db")?
-            .context(format!("did not find any repo with id {repo_id}"))
-    }
-
-    pub async fn get_repo_check_permissions(
-        &self,
-        repo_id: &str,
-        user: &RequestUser,
-        permission_level: PermissionLevel,
-    ) -> anyhow::Result<Repo> {
-        let repo = self.get_repo(repo_id).await?;
-        let permissions = repo.get_user_permissions(&user.id);
-        if user.is_admin || permissions >= permission_level {
-            Ok(repo)
-        } else {
-            Err(anyhow!(
-                "user does not have required permissions on this repo"
-            ))
-        }
-    }
-
-    pub async fn get_user_permission_on_repo(
-        &self,
-        user_id: &str,
-        repo_id: &str,
-    ) -> anyhow::Result<PermissionLevel> {
-        let repo = self.get_repo(repo_id).await?;
-        Ok(repo.get_user_permissions(user_id))
-    }
-
-    // ALERTER
-
-    pub async fn get_alerter(&self, alerter_id: &str) -> anyhow::Result<Alerter> {
-        self.db
-            .alerters
-            .find_one_by_id(alerter_id)
-            .await
-            .context("failed to get alerter from mongo")?
-            .context(format!("did not find any alerter with id {alerter_id}"))
-    }
-
-    pub async fn get_alerter_check_permissions(
-        &self,
-        alerter_id: &str,
-        user: &RequestUser,
-        permission_level: PermissionLevel,
-    ) -> anyhow::Result<Alerter> {
-        let alerter = self.get_alerter(alerter_id).await?;
-        let permissions = alerter.get_user_permissions(&user.id);
-        if user.is_admin || permissions >= permission_level {
-            Ok(alerter)
-        } else {
-            Err(anyhow!(
-                "user does not have required permissions on this alerter"
-            ))
-        }
-    }
-
-    pub async fn get_user_permission_on_alerter(
-        &self,
-        user_id: &str,
-        alerter_id: &str,
-    ) -> anyhow::Result<PermissionLevel> {
-        let alerter = self.get_alerter(alerter_id).await?;
-        Ok(alerter.get_user_permissions(user_id))
     }
 
     // TAG
