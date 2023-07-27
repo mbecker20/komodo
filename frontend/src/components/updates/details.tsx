@@ -54,7 +54,7 @@ export const UpdateDetails = ({
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent position="right" size="lg">
+      <SheetContent position="right" size="lg" className="overflow-scroll">
         <SheetHeader className="mb-4">
           <SheetTitle>
             {update.operation

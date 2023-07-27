@@ -22,9 +22,7 @@ export const DesktopUpdates = () => {
       <DropdownMenuContent className="w-[500px]">
         <DropdownMenuGroup>
           {updates?.map((update) => (
-            <div className="px-2 py-4 hover:bg-muted transition-colors border-b last:border-none">
-              <SingleUpdate update={update} />
-            </div>
+            <SingleUpdate update={update} />
           ))}
         </DropdownMenuGroup>
       </DropdownMenuContent>
