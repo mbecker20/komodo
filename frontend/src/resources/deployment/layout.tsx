@@ -15,7 +15,7 @@ import {
   StartOrStopContainer,
 } from "./components/actions";
 import { Button } from "@ui/button";
-import { Bell, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 
 export const DeploymentLayout = () => {
   const { deploymentId } = useParams();
@@ -44,24 +44,15 @@ export const DeploymentLayout = () => {
         </div>
       }
       actions={
-        <div className="flex flex-col gap-4 md:flex-row md:items-center">
-          <div className="flex gap-4">
-            <RedeployContainer deployment_id={deploymentId} />
-            <StartOrStopContainer deployment_id={deploymentId} />
-            <RemoveContainer deployment_id={deploymentId} />
-          </div>
-          <div className="flex gap-4">
-            <Link to={`/deployments/${deploymentId}/updates`}>
-              <Button variant="outline">
-                <Bell className="w-4 h-4" />
-              </Button>
-            </Link>
-            <Link to={`/deployments/${deploymentId}/config`}>
-              <Button variant="outline">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
+        <div className="flex gap-4">
+          <RedeployContainer deployment_id={deploymentId} />
+          <StartOrStopContainer deployment_id={deploymentId} />
+          <RemoveContainer deployment_id={deploymentId} />
+          <Link to={`/deployments/${deploymentId}/config`}>
+            <Button variant="outline">
+              <Settings className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
       }
     />

@@ -1,6 +1,5 @@
 import { Button } from "@ui/button";
-import { Card, CardHeader, CardContent } from "@ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs"; // import { useDeploymentLog } from "@hooks/deployments";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs";
 import { AlertOctagon, ChevronDown, TerminalSquare } from "lucide-react";
 import { useEffect } from "react";
 import { useRead } from "@hooks";
@@ -24,10 +23,10 @@ export const DeploymentLogs = () => {
     return () => clearInterval(handle);
   }, [refetch]);
 
-  useEffect(() => {
-    scroll_to_bottom("stdout")();
-    scroll_to_bottom("stderr")();
-  }, [data]);
+  // useEffect(() => {
+  //   scroll_to_bottom("stdout")();
+  //   scroll_to_bottom("stderr")();
+  // }, [data]);
 
   return (
     <Tabs defaultValue="stdout">

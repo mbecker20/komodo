@@ -8,10 +8,11 @@ import { useUser } from "@hooks";
 import { ServerName } from "@resources/server/util";
 import { DeploymentName } from "@resources/deployment/util";
 import { DesktopUpdates } from "@components/updates/desktop";
+import { BuildName } from "@resources/build/util";
 
 export const Paths = () => {
   const path = useLocation().pathname.split("/")[1];
-  const { serverId, deploymentId } = useParams();
+  const { serverId, deploymentId, buildId } = useParams();
 
   return (
     <div className="hidden md:flex items-center gap-2">
@@ -34,8 +35,16 @@ export const Paths = () => {
       {deploymentId && (
         <>
           <ChevronRight className="w-4 h-4" />
-          <Link to={`/servers/${deploymentId}`}>
+          <Link to={`/deployments/${deploymentId}`}>
             <DeploymentName deploymentId={deploymentId} />
+          </Link>
+        </>
+      )}
+      {buildId && (
+        <>
+          <ChevronRight className="w-4 h-4" />
+          <Link to={`/deployments/${buildId}`}>
+            <BuildName id={buildId} />
           </Link>
         </>
       )}
