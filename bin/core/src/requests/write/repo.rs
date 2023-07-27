@@ -3,8 +3,9 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::{
         repo::Repo,
+        server::Server,
         update::{Log, ResourceTarget, Update, UpdateStatus},
-        Operation, PermissionLevel, server::Server,
+        Operation, PermissionLevel,
     },
     monitor_timestamp,
     requests::{execute, write::*},
@@ -13,7 +14,7 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State, resource::Resource};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<CreateRepo, RequestUser> for State {
@@ -194,7 +195,8 @@ impl Resolve<DeleteRepo, RequestUser> for State {
             update.logs.push(log);
 
             if !repo.config.server_id.is_empty() {
-                let server: anyhow::Result<Server> = self.get_resource(&repo.config.server_id).await;
+                let server: anyhow::Result<Server> =
+                    self.get_resource(&repo.config.server_id).await;
                 if let Ok(server) = server {
                     match self
                         .periphery_client(&server)

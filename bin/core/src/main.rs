@@ -12,9 +12,9 @@ mod helpers;
 mod listener;
 mod monitor;
 mod requests;
+mod resource;
 mod state;
 mod ws;
-mod resource;
 
 async fn app() -> anyhow::Result<()> {
     let state = state::State::load().await?;

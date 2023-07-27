@@ -725,6 +725,21 @@ export interface PruneDockerContainers {
 	server_id: string;
 }
 
+export interface GetAlerter {
+	id: string;
+}
+
+export interface ListAlerters {
+	query?: MongoDocument;
+}
+
+export interface GetAlertersSummary {
+}
+
+export interface GetAlertersSummaryResponse {
+	total: number;
+}
+
 export interface GetBuild {
 	id: string;
 }
@@ -764,7 +779,7 @@ export interface GetBuildersSummary {
 }
 
 export interface GetBuildersSummaryResponse {
-	total: I64;
+	total: number;
 }
 
 export interface GetDeployment {
@@ -859,6 +874,7 @@ export interface GetReposSummary {
 }
 
 export interface GetReposSummaryResponse {
+	total: number;
 }
 
 export type Tag = 
@@ -1215,13 +1231,16 @@ export type ReadRequest =
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "ListBuilds", params: ListBuilds }
 	| { type: "GetBuildActionState", params: GetBuildActionState }
-	| { type: "GetBuildersSummary", params: GetBuildersSummary }
-	| { type: "GetBuilder", params: GetBuilder }
-	| { type: "ListBuilders", params: ListBuilders }
 	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }
 	| { type: "ListRepos", params: ListRepos }
 	| { type: "GetRepoActionState", params: GetRepoActionState }
+	| { type: "GetBuildersSummary", params: GetBuildersSummary }
+	| { type: "GetBuilder", params: GetBuilder }
+	| { type: "ListBuilders", params: ListBuilders }
+	| { type: "GetAlertersSummary", params: GetAlertersSummary }
+	| { type: "GetAlerter", params: GetAlerter }
+	| { type: "ListAlerters", params: ListAlerters }
 	| { type: "GetTag", params: GetTag }
 	| { type: "ListTags", params: ListTags }
 	| { type: "ListUpdates", params: ListUpdates }

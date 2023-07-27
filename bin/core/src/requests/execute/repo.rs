@@ -2,8 +2,10 @@ use anyhow::anyhow;
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
+        repo::Repo,
+        server::Server,
         update::{Log, ResourceTarget, Update, UpdateStatus},
-        Operation, PermissionLevel, repo::Repo, server::Server,
+        Operation, PermissionLevel,
     },
     monitor_timestamp, optional_string,
     requests::execute::*,
@@ -12,7 +14,7 @@ use mungos::mongodb::bson::doc;
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State, resource::Resource};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<CloneRepo, RequestUser> for State {

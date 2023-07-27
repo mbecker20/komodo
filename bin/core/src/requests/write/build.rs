@@ -3,8 +3,10 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::{
         build::{Build, BuildBuilderConfig},
+        builder::Builder,
+        server::Server,
         update::{Log, UpdateStatus},
-        Operation, PermissionLevel, server::Server, builder::Builder,
+        Operation, PermissionLevel,
     },
     monitor_timestamp,
     requests::write::*,
@@ -15,7 +17,8 @@ use resolver_api::Resolve;
 use crate::{
     auth::RequestUser,
     helpers::{empty_or_only_spaces, make_update},
-    state::State, resource::Resource,
+    resource::Resource,
+    state::State,
 };
 
 #[async_trait]

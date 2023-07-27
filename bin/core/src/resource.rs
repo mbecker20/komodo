@@ -107,8 +107,6 @@ pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
     }
 }
 
-
-
 impl Resource<Server> for State {
     fn name() -> &'static str {
         "server"

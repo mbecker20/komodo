@@ -50,7 +50,8 @@ impl Resolve<GetRepoActionState, RequestUser> for State {
         GetRepoActionState { id }: GetRepoActionState,
         user: RequestUser,
     ) -> anyhow::Result<RepoActionState> {
-        let _: Repo = self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+        let _: Repo = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let action_state = self.action_states.repo.get(&id).await.unwrap_or_default();
         Ok(action_state)

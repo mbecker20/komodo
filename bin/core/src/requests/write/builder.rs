@@ -12,7 +12,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State, resource::Resource};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<CreateBuilder, RequestUser> for State {

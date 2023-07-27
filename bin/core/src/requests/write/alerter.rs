@@ -8,7 +8,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::make_update, state::State, resource::Resource};
+use crate::{auth::RequestUser, helpers::make_update, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<CreateAlerter, RequestUser> for State {

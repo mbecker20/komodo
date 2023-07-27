@@ -28,22 +28,7 @@ impl Resolve<ListAlerters, RequestUser> for State {
         ListAlerters { query }: ListAlerters,
         user: RequestUser,
     ) -> anyhow::Result<Vec<Alerter>> {
-        let mut query = query.unwrap_or_default();
-        if !user.is_admin {
-            query.insert(
-                format!("permissions.{}", user.id),
-                doc! { "$in": ["read", "execute", "update"] },
-            );
-        }
-
-        let alerters = self
-            .db
-            .alerters
-            .get_some(query, None)
-            .await
-            .context("failed to pull alerters from mongo")?;
-
-        Ok(alerters)
+        self.list_resources_for_user(&user, query).await
     }
 }
 

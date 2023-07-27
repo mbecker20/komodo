@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use monitor_types::{
     entities::{update::Log, CloneArgs, SystemCommand},
-    to_monitor_name, monitor_timestamp,
+    monitor_timestamp, to_monitor_name,
 };
 use run_command::async_run_command;
 
@@ -58,7 +58,7 @@ pub async fn clone(
     let destination = repo_dir.display().to_string();
     let clone_log = clone_inner(repo, &destination, &branch, access_token).await;
     if !clone_log.success {
-        return Ok(vec![clone_log])
+        return Ok(vec![clone_log]);
     }
     let commit_hash_log = get_commit_hash_log(&destination).await?;
     let mut logs = vec![clone_log, commit_hash_log];

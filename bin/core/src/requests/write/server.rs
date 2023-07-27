@@ -12,7 +12,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State, resource::Resource};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<CreateServer, RequestUser> for State {
@@ -146,7 +146,8 @@ impl Resolve<UpdateServer, RequestUser> for State {
             return Err(anyhow!("server busy"));
         }
         let start_ts = monitor_timestamp();
-        let _: Server = self.get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+        let _: Server = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
         self.db
             .servers

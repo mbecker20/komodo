@@ -16,6 +16,7 @@ use crate::{
     state::{State, StateExtension},
 };
 
+mod alerter;
 mod build;
 mod builder;
 mod deployment;
@@ -25,7 +26,6 @@ mod server;
 mod tag;
 mod update;
 mod user;
-mod alerter;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]

@@ -1,6 +1,13 @@
 use monitor_types::entities::{
-    alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
-    server::{Server, stats::SystemStatsRecord}, tag::CustomTag, update::Update, user::User,
+    alerter::Alerter,
+    build::Build,
+    builder::Builder,
+    deployment::Deployment,
+    repo::Repo,
+    server::{stats::SystemStatsRecord, Server},
+    tag::CustomTag,
+    update::Update,
+    user::User,
 };
 use mungos::{Collection, Indexed, Mungos};
 

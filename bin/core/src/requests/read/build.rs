@@ -51,7 +51,8 @@ impl Resolve<GetBuildActionState, RequestUser> for State {
         GetBuildActionState { id }: GetBuildActionState,
         user: RequestUser,
     ) -> anyhow::Result<BuildActionState> {
-        let _: Build = self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+        let _: Build = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let action_state = self.action_states.build.get(&id).await.unwrap_or_default();
         Ok(action_state)

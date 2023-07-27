@@ -2,7 +2,10 @@ use anyhow::{anyhow, Context};
 use axum::{extract::Path, http::HeaderMap, routing::post, Router};
 use hex::ToHex;
 use hmac::{Hmac, Mac};
-use monitor_types::{requests::execute, entities::{build::Build, repo::Repo}};
+use monitor_types::{
+    entities::{build::Build, repo::Repo},
+    requests::execute,
+};
 use resolver_api::Resolve;
 use serde::Deserialize;
 use sha2::Sha256;
@@ -10,7 +13,8 @@ use sha2::Sha256;
 use crate::{
     auth::InnerRequestUser,
     helpers::random_duration,
-    state::{State, StateExtension}, resource::Resource,
+    resource::Resource,
+    state::{State, StateExtension},
 };
 
 type HmacSha256 = Hmac<Sha256>;
