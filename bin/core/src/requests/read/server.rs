@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_types::{
@@ -12,11 +12,10 @@ use monitor_types::{
     },
     requests::read::*,
 };
-use mungos::mongodb::bson::doc;
 use periphery_client::requests;
 use resolver_api::{Resolve, ResolveToString};
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<GetPeripheryVersion, RequestUser> for State {
@@ -25,7 +24,8 @@ impl Resolve<GetPeripheryVersion, RequestUser> for State {
         req: GetPeripheryVersion,
         user: RequestUser,
     ) -> anyhow::Result<GetPeripheryVersionResponse> {
-        self.get_server_check_permissions(&req.server_id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&req.server_id, &user, PermissionLevel::Read)
             .await?;
         let version = self
             .server_status_cache
@@ -40,7 +40,7 @@ impl Resolve<GetPeripheryVersion, RequestUser> for State {
 #[async_trait]
 impl Resolve<GetServer, RequestUser> for State {
     async fn resolve(&self, req: GetServer, user: RequestUser) -> anyhow::Result<Server> {
-        self.get_server_check_permissions(&req.id, &user, PermissionLevel::Read)
+        self.get_resource_check_permissions(&req.id, &user, PermissionLevel::Read)
             .await
     }
 }
@@ -52,22 +52,9 @@ impl Resolve<ListServers, RequestUser> for State {
         ListServers { query }: ListServers,
         user: RequestUser,
     ) -> anyhow::Result<Vec<ServerListItem>> {
-        let mut query = query.unwrap_or_default();
-        if !user.is_admin {
-            query.insert(
-                format!("permissions.{}", user.id),
-                doc! { "$in": ["read", "execute", "update"] },
-            );
-        }
+        let servers = self.list_resources_for_user(&user, query).await?;
 
-        let servers = self
-            .db
-            .servers
-            .get_some(query, None)
-            .await
-            .context("failed to pull servers from mongo")?;
-
-        let servers = servers.into_iter().map(|server| async {
+        let servers = servers.into_iter().map(|server: Server| async {
             let status = self.server_status_cache.get(&server.id).await;
             ServerListItem {
                 id: server.id,
@@ -90,7 +77,8 @@ impl Resolve<GetServerStatus, RequestUser> for State {
         GetServerStatus { id }: GetServerStatus,
         user: RequestUser,
     ) -> anyhow::Result<GetServerStatusResponse> {
-        self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .server_status_cache
@@ -111,7 +99,8 @@ impl Resolve<GetServerActionState, RequestUser> for State {
         GetServerActionState { id }: GetServerActionState,
         user: RequestUser,
     ) -> anyhow::Result<ServerActionState> {
-        self.get_server_check_permissions(&id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let action_state = self.action_states.server.get(&id).await.unwrap_or_default();
         Ok(action_state)
@@ -125,8 +114,8 @@ impl Resolve<GetSystemInformation, RequestUser> for State {
         GetSystemInformation { server_id }: GetSystemInformation,
         user: RequestUser,
     ) -> anyhow::Result<SystemInformation> {
-        let server = self
-            .get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         self.periphery_client(&server)
             .request(requests::GetSystemInformation {})
@@ -141,7 +130,8 @@ impl ResolveToString<GetAllSystemStats, RequestUser> for State {
         GetAllSystemStats { server_id }: GetAllSystemStats,
         user: RequestUser,
     ) -> anyhow::Result<String> {
-        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .server_status_cache
@@ -164,7 +154,8 @@ impl ResolveToString<GetBasicSystemStats, RequestUser> for State {
         GetBasicSystemStats { server_id }: GetBasicSystemStats,
         user: RequestUser,
     ) -> anyhow::Result<String> {
-        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .server_status_cache
@@ -187,7 +178,8 @@ impl ResolveToString<GetCpuUsage, RequestUser> for State {
         GetCpuUsage { server_id }: GetCpuUsage,
         user: RequestUser,
     ) -> anyhow::Result<String> {
-        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .server_status_cache
@@ -210,7 +202,8 @@ impl ResolveToString<GetDiskUsage, RequestUser> for State {
         GetDiskUsage { server_id }: GetDiskUsage,
         user: RequestUser,
     ) -> anyhow::Result<String> {
-        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .server_status_cache
@@ -233,7 +226,8 @@ impl ResolveToString<GetNetworkUsage, RequestUser> for State {
         GetNetworkUsage { server_id }: GetNetworkUsage,
         user: RequestUser,
     ) -> anyhow::Result<String> {
-        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .server_status_cache
@@ -256,7 +250,8 @@ impl ResolveToString<GetSystemProcesses, RequestUser> for State {
         GetSystemProcesses { server_id }: GetSystemProcesses,
         user: RequestUser,
     ) -> anyhow::Result<String> {
-        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .server_status_cache
@@ -279,7 +274,8 @@ impl ResolveToString<GetSystemComponents, RequestUser> for State {
         GetSystemComponents { server_id }: GetSystemComponents,
         user: RequestUser,
     ) -> anyhow::Result<String> {
-        self.get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let _: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         let status = self
             .server_status_cache
@@ -302,8 +298,8 @@ impl Resolve<GetDockerImages, RequestUser> for State {
         GetDockerImages { server_id }: GetDockerImages,
         user: RequestUser,
     ) -> anyhow::Result<Vec<ImageSummary>> {
-        let server = self
-            .get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         self.periphery_client(&server)
             .request(requests::GetImageList {})
@@ -318,8 +314,8 @@ impl Resolve<GetDockerNetworks, RequestUser> for State {
         GetDockerNetworks { server_id }: GetDockerNetworks,
         user: RequestUser,
     ) -> anyhow::Result<Vec<DockerNetwork>> {
-        let server = self
-            .get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         self.periphery_client(&server)
             .request(requests::GetNetworkList {})
@@ -334,8 +330,8 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
         GetDockerContainers { server_id }: GetDockerContainers,
         user: RequestUser,
     ) -> anyhow::Result<Vec<ContainerSummary>> {
-        let server = self
-            .get_server_check_permissions(&server_id, &user, PermissionLevel::Read)
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         self.periphery_client(&server)
             .request(requests::GetContainerList {})
@@ -350,20 +346,7 @@ impl Resolve<GetServersSummary, RequestUser> for State {
         GetServersSummary {}: GetServersSummary,
         user: RequestUser,
     ) -> anyhow::Result<GetServersSummaryResponse> {
-        let query = if user.is_admin {
-            None
-        } else {
-            let query = doc! {
-                format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
-            };
-            Some(query)
-        };
-        let servers = self
-            .db
-            .servers
-            .get_some(query, None)
-            .await
-            .context("failed to get servers from db")?;
+        let servers: Vec<Server> = self.list_resources_for_user(&user, None).await?;
         let mut res = GetServersSummaryResponse::default();
         for server in servers {
             res.total += 1;

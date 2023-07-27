@@ -14,6 +14,7 @@ mod monitor;
 mod requests;
 mod state;
 mod ws;
+mod resource;
 
 async fn app() -> anyhow::Result<()> {
     let state = state::State::load().await?;

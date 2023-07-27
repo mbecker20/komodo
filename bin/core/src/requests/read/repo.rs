@@ -10,12 +10,12 @@ use monitor_types::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<GetRepo, RequestUser> for State {
     async fn resolve(&self, GetRepo { id }: GetRepo, user: RequestUser) -> anyhow::Result<Repo> {
-        self.get_repo_check_permissions(&id, &user, PermissionLevel::Read)
+        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await
     }
 }
@@ -27,20 +27,7 @@ impl Resolve<ListRepos, RequestUser> for State {
         ListRepos { query }: ListRepos,
         user: RequestUser,
     ) -> anyhow::Result<Vec<RepoListItem>> {
-        let mut query = query.unwrap_or_default();
-        if !user.is_admin {
-            query.insert(
-                format!("permissions.{}", user.id),
-                doc! { "$in": ["read", "execute", "update"] },
-            );
-        }
-
-        let repos = self
-            .db
-            .repos
-            .get_some(query, None)
-            .await
-            .context("failed to pull repos from mongo")?;
+        let repos: Vec<Repo> = self.list_resources_for_user(&user, query).await?;
 
         let repos = repos
             .into_iter()
@@ -63,7 +50,7 @@ impl Resolve<GetRepoActionState, RequestUser> for State {
         GetRepoActionState { id }: GetRepoActionState,
         user: RequestUser,
     ) -> anyhow::Result<RepoActionState> {
-        self.get_repo_check_permissions(&id, &user, PermissionLevel::Read)
+        let _: Repo = self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let action_state = self.action_states.repo.get(&id).await.unwrap_or_default();
         Ok(action_state)

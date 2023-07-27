@@ -7,7 +7,7 @@ use monitor_types::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<GetBuilder, RequestUser> for State {
@@ -16,7 +16,7 @@ impl Resolve<GetBuilder, RequestUser> for State {
         GetBuilder { id }: GetBuilder,
         user: RequestUser,
     ) -> anyhow::Result<Builder> {
-        self.get_builder_check_permissions(&id, &user, PermissionLevel::Read)
+        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await
     }
 }
@@ -28,22 +28,7 @@ impl Resolve<ListBuilders, RequestUser> for State {
         ListBuilders { query }: ListBuilders,
         user: RequestUser,
     ) -> anyhow::Result<Vec<Builder>> {
-        let mut query = query.unwrap_or_default();
-        if !user.is_admin {
-            query.insert(
-                format!("permissions.{}", user.id),
-                doc! { "$in": ["read", "execute", "update"] },
-            );
-        }
-
-        let builders = self
-            .db
-            .builders
-            .get_some(query, None)
-            .await
-            .context("failed to pull builders from mongo")?;
-
-        Ok(builders)
+        self.list_resources_for_user(&user, query).await
     }
 }
 
@@ -68,7 +53,7 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
             .collection
             .count_documents(query, None)
             .await
-            .context("failed to count all build documents")?;
+            .context("failed to count all builder documents")?;
         let res = GetBuildersSummaryResponse {
             total: total as u32,
         };

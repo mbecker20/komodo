@@ -10,12 +10,12 @@ use monitor_types::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<GetBuild, RequestUser> for State {
     async fn resolve(&self, GetBuild { id }: GetBuild, user: RequestUser) -> anyhow::Result<Build> {
-        self.get_build_check_permissions(&id, &user, PermissionLevel::Read)
+        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await
     }
 }
@@ -27,20 +27,7 @@ impl Resolve<ListBuilds, RequestUser> for State {
         ListBuilds { query }: ListBuilds,
         user: RequestUser,
     ) -> anyhow::Result<Vec<BuildListItem>> {
-        let mut query = query.unwrap_or_default();
-        if !user.is_admin {
-            query.insert(
-                format!("permissions.{}", user.id),
-                doc! { "$in": ["read", "execute", "update"] },
-            );
-        }
-
-        let builds = self
-            .db
-            .builds
-            .get_some(query, None)
-            .await
-            .context("failed to pull builds from mongo")?;
+        let builds: Vec<Build> = self.list_resources_for_user(&user, query).await?;
 
         let builds = builds
             .into_iter()
@@ -64,7 +51,7 @@ impl Resolve<GetBuildActionState, RequestUser> for State {
         GetBuildActionState { id }: GetBuildActionState,
         user: RequestUser,
     ) -> anyhow::Result<BuildActionState> {
-        self.get_build_check_permissions(&id, &user, PermissionLevel::Read)
+        let _: Build = self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let action_state = self.action_states.build.get(&id).await.unwrap_or_default();
         Ok(action_state)

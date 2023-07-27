@@ -8,7 +8,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::make_update, state::State};
+use crate::{auth::RequestUser, helpers::make_update, state::State, resource::Resource};
 
 #[async_trait]
 impl Resolve<CreateAlerter, RequestUser> for State {
@@ -37,7 +37,7 @@ impl Resolve<CreateAlerter, RequestUser> for State {
             .create_one(alerter)
             .await
             .context("failed to add alerter to db")?;
-        let alerter = self.get_alerter(&alerter_id).await?;
+        let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
         let mut update = make_update(&alerter, Operation::CreateAlerter, &user);
 
@@ -70,7 +70,7 @@ impl Resolve<CopyAlerter, RequestUser> for State {
             description,
             ..
         } = self
-            .get_alerter_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
         let start_ts = monitor_timestamp();
         let alerter = Alerter {
@@ -91,7 +91,7 @@ impl Resolve<CopyAlerter, RequestUser> for State {
             .create_one(alerter)
             .await
             .context("failed to add alerter to db")?;
-        let alerter = self.get_alerter(&alerter_id).await?;
+        let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
         let mut update = make_update(&alerter, Operation::CreateAlerter, &user);
 
@@ -120,8 +120,8 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
         DeleteAlerter { id }: DeleteAlerter,
         user: RequestUser,
     ) -> anyhow::Result<Alerter> {
-        let alerter = self
-            .get_alerter_check_permissions(&id, &user, PermissionLevel::Update)
+        let alerter: Alerter = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let mut update = make_update(
@@ -156,8 +156,8 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
         UpdateAlerter { id, config }: UpdateAlerter,
         user: RequestUser,
     ) -> anyhow::Result<Alerter> {
-        let alerter = self
-            .get_alerter_check_permissions(&id, &user, PermissionLevel::Update)
+        let alerter: Alerter = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let mut update = make_update(&alerter, Operation::UpdateAlerter, &user);
@@ -174,7 +174,7 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
             )
             .await?;
 
-        let alerter = self.get_alerter(&id).await?;
+        let alerter: Alerter = self.get_resource(&id).await?;
 
         update.finalize();
         self.add_update(update).await?;

@@ -25,6 +25,7 @@ mod server;
 mod tag;
 mod update;
 mod user;
+mod alerter;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -67,16 +68,21 @@ enum ReadRequest {
     ListBuilds(ListBuilds),
     GetBuildActionState(GetBuildActionState),
 
-    // ==== BUILDER ====
-    GetBuildersSummary(GetBuildersSummary),
-    GetBuilder(GetBuilder),
-    ListBuilders(ListBuilders),
-
     // ==== REPO ====
     GetReposSummary(GetReposSummary),
     GetRepo(GetRepo),
     ListRepos(ListRepos),
     GetRepoActionState(GetRepoActionState),
+
+    // ==== BUILDER ====
+    GetBuildersSummary(GetBuildersSummary),
+    GetBuilder(GetBuilder),
+    ListBuilders(ListBuilders),
+
+    // ==== ALERTER ====
+    GetAlertersSummary(GetAlertersSummary),
+    GetAlerter(GetAlerter),
+    ListAlerters(ListAlerters),
 
     // ==== TAG ====
     GetTag(GetTag),

@@ -3,7 +3,9 @@ use async_trait::async_trait;
 use monitor_types::{
     all_logs_success,
     entities::{
+        build::Build,
         deployment::{Deployment, DeploymentImage, DockerContainerState},
+        server::Server,
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
     },
@@ -15,7 +17,7 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::empty_or_only_spaces, state::State};
+use crate::{auth::RequestUser, helpers::empty_or_only_spaces, resource::Resource, state::State};
 
 #[async_trait]
 impl Resolve<CreateDeployment, RequestUser> for State {
@@ -26,14 +28,14 @@ impl Resolve<CreateDeployment, RequestUser> for State {
     ) -> anyhow::Result<Deployment> {
         if let Some(server_id) = &config.server_id {
             if !server_id.is_empty() {
-                self.get_server_check_permissions(server_id, &user, PermissionLevel::Update)
+                let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Update)
                     .await
                     .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
             }
         }
         if let Some(DeploymentImage::Build { build_id, .. }) = &config.image {
             if !build_id.is_empty() {
-                self.get_build_check_permissions(build_id, &user, PermissionLevel::Read)
+                let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
                     .await
                     .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
             }
@@ -56,7 +58,7 @@ impl Resolve<CreateDeployment, RequestUser> for State {
             .create_one(&deployment)
             .await
             .context("failed to add deployment to db")?;
-        let deployment = self.get_deployment(&deployment_id).await?;
+        let deployment: Deployment = self.get_resource(&deployment_id).await?;
         let update = Update {
             target: ResourceTarget::Deployment(deployment_id),
             operation: Operation::CreateDeployment,
@@ -96,16 +98,16 @@ impl Resolve<CopyDeployment, RequestUser> for State {
             tags,
             ..
         } = self
-            .get_deployment_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
         if !config.server_id.is_empty() {
-            self.get_server_check_permissions(&config.server_id, &user, PermissionLevel::Update)
+            let _: Server = self.get_resource_check_permissions(&config.server_id, &user, PermissionLevel::Update)
                     .await
                     .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
         }
         if let DeploymentImage::Build { build_id, .. } = &config.image {
             if !build_id.is_empty() {
-                self.get_build_check_permissions(build_id, &user, PermissionLevel::Read)
+                let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
                     .await
                     .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
             }
@@ -128,7 +130,7 @@ impl Resolve<CopyDeployment, RequestUser> for State {
             .create_one(&deployment)
             .await
             .context("failed to add deployment to db")?;
-        let deployment = self.get_deployment(&deployment_id).await?;
+        let deployment: Deployment = self.get_resource(&deployment_id).await?;
         let update = Update {
             target: ResourceTarget::Deployment(deployment_id),
             operation: Operation::CreateDeployment,
@@ -166,8 +168,8 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
             return Err(anyhow!("deployment busy"));
         }
 
-        let deployment = self
-            .get_deployment_check_permissions(&id, &user, PermissionLevel::Update)
+        let deployment: Deployment = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let inner = || async move {
@@ -195,7 +197,8 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
                 DockerContainerState::NotDeployed | DockerContainerState::Unknown
             ) {
                 // container needs to be destroyed
-                let server = self.get_server(&deployment.config.server_id).await;
+                let server: anyhow::Result<Server> =
+                    self.get_resource(&deployment.config.server_id).await;
                 if let Err(e) = server {
                     update.logs.push(Log::error(
                         "remove container",
@@ -283,20 +286,20 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
             return Err(anyhow!("deployment busy"));
         }
 
-        let deployment = self
-            .get_deployment_check_permissions(&id, &user, PermissionLevel::Update)
+        let deployment: Deployment = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let inner = || async move {
             let start_ts = monitor_timestamp();
 
             if let Some(server_id) = &config.server_id {
-                self.get_server_check_permissions(server_id, &user, PermissionLevel::Update)
+                let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Update)
                 .await
                 .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
             }
             if let Some(DeploymentImage::Build { build_id, .. }) = &config.image {
-                self.get_build_check_permissions(build_id, &user, PermissionLevel::Read)
+                let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
                 .await
                 .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
             }
@@ -346,7 +349,7 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
 
             self.add_update(update).await?;
 
-            let deployment = self.get_deployment(&id).await?;
+            let deployment: Deployment = self.get_resource(&id).await?;
 
             anyhow::Ok(deployment)
         };
@@ -382,8 +385,8 @@ impl Resolve<RenameDeployment, RequestUser> for State {
             return Err(anyhow!("deployment busy"));
         }
 
-        let deployment = self
-            .get_deployment_check_permissions(&id, &user, PermissionLevel::Update)
+        let deployment: Deployment = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let inner = || async {
@@ -401,7 +404,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
             }
 
             if container_state != DockerContainerState::NotDeployed {
-                let server = self.get_server(&deployment.config.server_id).await?;
+                let server: Server = self.get_resource(&deployment.config.server_id).await?;
                 match self
                     .periphery_client(&server)
                     .request(requests::RenameContainer {

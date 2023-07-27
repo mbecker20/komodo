@@ -12,7 +12,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, state::State, resource::Resource};
 
 #[async_trait]
 impl Resolve<CreateServer, RequestUser> for State {
@@ -38,7 +38,7 @@ impl Resolve<CreateServer, RequestUser> for State {
             .create_one(&server)
             .await
             .context("failed to add server to db")?;
-        let server = self.get_server(&server_id).await?;
+        let server: Server = self.get_resource(&server_id).await?;
         let update = Update {
             target: ResourceTarget::Server(server_id),
             operation: Operation::CreateServer,
@@ -75,8 +75,8 @@ impl Resolve<DeleteServer, RequestUser> for State {
             return Err(anyhow!("server busy"));
         }
 
-        let server = self
-            .get_server_check_permissions(&id, &user, PermissionLevel::Update)
+        let server: Server = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let start_ts = monitor_timestamp();
@@ -146,7 +146,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
             return Err(anyhow!("server busy"));
         }
         let start_ts = monitor_timestamp();
-        self.get_server_check_permissions(&id, &user, PermissionLevel::Update)
+        let _: Server = self.get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
         self.db
             .servers
@@ -171,7 +171,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
             ..Default::default()
         };
 
-        let new_server = self.get_server(&id).await?;
+        let new_server: Server = self.get_resource(&id).await?;
 
         self.update_cache_for_server(&new_server, 0).await;
 
@@ -189,8 +189,8 @@ impl Resolve<RenameServer, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Update> {
         let start_ts = monitor_timestamp();
-        let server = self
-            .get_server_check_permissions(&id, &user, PermissionLevel::Update)
+        let server: Server = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
         self.db
             .updates

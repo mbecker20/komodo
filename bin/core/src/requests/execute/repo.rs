@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::{
         update::{Log, ResourceTarget, Update, UpdateStatus},
-        Operation, PermissionLevel,
+        Operation, PermissionLevel, repo::Repo, server::Server,
     },
     monitor_timestamp, optional_string,
     requests::execute::*,
@@ -12,7 +12,7 @@ use mungos::mongodb::bson::doc;
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, state::State, resource::Resource};
 
 #[async_trait]
 impl Resolve<CloneRepo, RequestUser> for State {
@@ -21,8 +21,8 @@ impl Resolve<CloneRepo, RequestUser> for State {
         CloneRepo { id }: CloneRepo,
         user: RequestUser,
     ) -> anyhow::Result<Update> {
-        let repo = self
-            .get_repo_check_permissions(&id, &user, PermissionLevel::Execute)
+        let repo: Repo = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Execute)
             .await?;
 
         let inner = || async move {
@@ -32,7 +32,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
                 return Err(anyhow!("repo has no server attached"));
             }
 
-            let server = self.get_server(&repo.config.server_id).await?;
+            let server: Server = self.get_resource(&repo.config.server_id).await?;
 
             let mut update = Update {
                 operation: Operation::CloneRepo,
@@ -112,8 +112,8 @@ impl Resolve<PullRepo, RequestUser> for State {
         PullRepo { id }: PullRepo,
         user: RequestUser,
     ) -> anyhow::Result<Update> {
-        let repo = self
-            .get_repo_check_permissions(&id, &user, PermissionLevel::Update)
+        let repo: Repo = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let inner = || async move {
@@ -123,7 +123,7 @@ impl Resolve<PullRepo, RequestUser> for State {
                 return Err(anyhow!("repo has no server attached"));
             }
 
-            let server = self.get_server(&repo.config.server_id).await?;
+            let server: Server = self.get_resource(&repo.config.server_id).await?;
 
             let mut update = Update {
                 operation: Operation::PullRepo,
