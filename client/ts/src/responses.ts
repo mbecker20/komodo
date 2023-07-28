@@ -42,6 +42,8 @@ export type ReadResponses = {
   GetBuild: Types.Build;
   ListBuilds: Types.BuildListItem[];
   GetBuildActionState: Types.BuildActionState;
+  GetBuildMonthlyStats: Types.GetBuildMonthlyStatsResponse;
+  GetBuildVersions: Types.BuildVersionResponseItem[];
 
   // ==== REPO ====
   GetReposSummary: Types.GetReposSummaryResponse;

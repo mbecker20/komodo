@@ -67,6 +67,8 @@ enum ReadRequest {
     GetBuild(GetBuild),
     ListBuilds(ListBuilds),
     GetBuildActionState(GetBuildActionState),
+    GetBuildMonthlyStats(GetBuildMonthlyStats),
+    GetBuildVersions(GetBuildVersions),
 
     // ==== REPO ====
     GetReposSummary(GetReposSummary),

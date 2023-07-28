@@ -767,6 +767,35 @@ export interface GetBuildsSummaryResponse {
 	total: number;
 }
 
+export interface GetBuildMonthlyStats {
+	page?: number;
+}
+
+export interface BuildStatsDay {
+	time: number;
+	count: number;
+	ts: number;
+}
+
+export interface GetBuildMonthlyStatsResponse {
+	total_time: number;
+	total_count: number;
+	days: BuildStatsDay[];
+}
+
+export interface GetBuildVersions {
+	id: string;
+	page?: number;
+	major?: number;
+	minor?: number;
+	patch?: number;
+}
+
+export interface BuildVersionResponseItem {
+	version: Version;
+	ts: I64;
+}
+
 export interface GetBuilder {
 	id: string;
 }
@@ -1231,6 +1260,8 @@ export type ReadRequest =
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "ListBuilds", params: ListBuilds }
 	| { type: "GetBuildActionState", params: GetBuildActionState }
+	| { type: "GetBuildMonthlyStats", params: GetBuildMonthlyStats }
+	| { type: "GetBuildVersions", params: GetBuildVersions }
 	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }
 	| { type: "ListRepos", params: ListRepos }
