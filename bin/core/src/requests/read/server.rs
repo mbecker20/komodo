@@ -1,6 +1,5 @@
 use anyhow::anyhow;
 use async_trait::async_trait;
-use futures::future::join_all;
 use monitor_types::{
     entities::{
         deployment::ContainerSummary,
@@ -52,21 +51,7 @@ impl Resolve<ListServers, RequestUser> for State {
         ListServers { query }: ListServers,
         user: RequestUser,
     ) -> anyhow::Result<Vec<ServerListItem>> {
-        let servers = self.list_resources_for_user(&user, query).await?;
-
-        let servers = servers.into_iter().map(|server: Server| async {
-            let status = self.server_status_cache.get(&server.id).await;
-            ServerListItem {
-                id: server.id,
-                name: server.name,
-                tags: server.tags,
-                status: status.map(|s| s.status).unwrap_or_default(),
-            }
-        });
-
-        let servers = join_all(servers).await;
-
-        Ok(servers)
+        <State as Resource<Server>>::list_resources_for_user(self, &user, query).await
     }
 }
 
@@ -346,16 +331,11 @@ impl Resolve<GetServersSummary, RequestUser> for State {
         GetServersSummary {}: GetServersSummary,
         user: RequestUser,
     ) -> anyhow::Result<GetServersSummaryResponse> {
-        let servers: Vec<Server> = self.list_resources_for_user(&user, None).await?;
+        let servers = <State as Resource<Server>>::list_resources_for_user(self, &user, None).await?;
         let mut res = GetServersSummaryResponse::default();
         for server in servers {
             res.total += 1;
-            let status = self
-                .server_status_cache
-                .get(&server.id)
-                .await
-                .unwrap_or_default();
-            match status.status {
+            match server.status {
                 ServerStatus::Ok => {
                     res.healthy += 1;
                 }

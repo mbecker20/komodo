@@ -2,7 +2,6 @@ use std::cmp;
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use futures::future::join_all;
 use monitor_types::{
     entities::{
         deployment::{
@@ -40,26 +39,7 @@ impl Resolve<ListDeployments, RequestUser> for State {
         ListDeployments { query }: ListDeployments,
         user: RequestUser,
     ) -> anyhow::Result<Vec<DeploymentListItem>> {
-        let deployments: Vec<Deployment> = self.list_resources_for_user(&user, query).await?;
-
-        let deployments = deployments.into_iter().map(|deployment| async {
-            let status = self.deployment_status_cache.get(&deployment.id).await;
-            DeploymentListItem {
-                id: deployment.id,
-                name: deployment.name,
-                tags: deployment.tags,
-                state: status.as_ref().map(|s| s.state).unwrap_or_default(),
-                status: status
-                    .as_ref()
-                    .and_then(|s| s.container.as_ref().and_then(|c| c.status.to_owned())),
-                image: String::new(),
-                version: String::new(),
-            }
-        });
-
-        let deployments = join_all(deployments).await;
-
-        Ok(deployments)
+        <State as Resource<Deployment>>::list_resources_for_user(self, &user, query).await
     }
 }
 

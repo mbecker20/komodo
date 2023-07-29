@@ -28,7 +28,7 @@ impl Resolve<ListBuilders, RequestUser> for State {
         ListBuilders { query }: ListBuilders,
         user: RequestUser,
     ) -> anyhow::Result<Vec<Builder>> {
-        self.list_resources_for_user(&user, query).await
+        <State as Resource<Builder>>::list_resources_for_user(self, &user, query).await
     }
 }
 

@@ -31,20 +31,7 @@ impl Resolve<ListBuilds, RequestUser> for State {
         ListBuilds { query }: ListBuilds,
         user: RequestUser,
     ) -> anyhow::Result<Vec<BuildListItem>> {
-        let builds: Vec<Build> = self.list_resources_for_user(&user, query).await?;
-
-        let builds = builds
-            .into_iter()
-            .map(|build| BuildListItem {
-                id: build.id,
-                name: build.name,
-                last_built_at: build.last_built_at,
-                version: build.config.version,
-                tags: build.tags,
-            })
-            .collect();
-
-        Ok(builds)
+        <State as Resource<Build>>::list_resources_for_user(self, &user, query).await
     }
 }
 

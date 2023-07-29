@@ -12,7 +12,7 @@ pub async fn send_alert(alerter: &Alerter, alert: &Alert) -> anyhow::Result<()> 
 
 pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
     let (text, blocks) = match alert {
-        Alert::ServerUnreachable { id, name, region } => {
+        Alert::ServerUnreachable { name, region, .. } => {
             let region = fmt_region(region);
             let text = format!("CRITICAL 🚨 | *{name}*{region} is *unreachable* ❌");
             let blocks = vec![
@@ -22,12 +22,12 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             (text, blocks.into())
         }
         Alert::ServerCpu {
-            id,
             name,
             region,
             state,
             percentage,
             top_procs,
+            ..
         } => {
             let region = fmt_region(region);
             let text =
@@ -42,13 +42,13 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             (text, blocks.into())
         }
         Alert::ServerMem {
-            id,
             name,
             region,
             state,
             used_gb,
             total_gb,
             top_procs,
+            ..
         } => {
             let region = fmt_region(region);
             let percentage = 100.0 * used_gb / total_gb;
@@ -65,13 +65,13 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             (text, blocks.into())
         }
         Alert::ServerDisk {
-            id,
             name,
             region,
             state,
             path,
             used_gb,
             total_gb,
+            ..
         } => {
             let region = fmt_region(region);
             let percentage = 100.0 * used_gb / total_gb;

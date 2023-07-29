@@ -4,22 +4,63 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
+        server,
         tag::Tag,
         update::ResourceTargetVariant::{self, *},
         PermissionLevel,
     },
     permissioned::Permissioned,
     requests::read::{
-        BuildListItem, DeploymentListItem, FindResources, FindResourcesResponse, RepoListItem,
-        ServerListItem,
+        BuildListItem, DeploymentListItem, FindResources, FindResources2, FindResourcesResponse,
+        RepoListItem, ServerListItem,
     },
 };
 use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, resource::Resource, state::State};
 
-const ALL_RESOURCE_TYPES: [ResourceTargetVariant; 4] = [Server, Build, Deployment, Repo];
+const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 4] = [Server, Build, Deployment, Repo];
+
+#[async_trait]
+impl Resolve<FindResources2, RequestUser> for State {
+    async fn resolve(
+        &self,
+        FindResources2 { query, resources }: FindResources2,
+        user: RequestUser,
+    ) -> anyhow::Result<FindResourcesResponse> {
+        let mut res = FindResourcesResponse::default();
+        let resource_types = resources
+            .map(|rs| {
+                rs.into_iter()
+                    .filter(|r| !matches!(r, System | Builder | Alerter))
+                    .collect()
+            })
+            .unwrap_or(FIND_RESOURCE_TYPES.to_vec());
+        for resource_type in resource_types {
+            match resource_type {
+                Server => {
+                    // let servers: Vec<server::Server> =
+                        // self.list_resources_for_user(&user, query.clone()).await?;
+                    // res.servers = servers.into_iter().
+                    todo!()
+                }
+                Deployment => {
+                    todo!()
+                }
+                Build => {
+                    todo!()
+                }
+                Repo => {
+                    todo!()
+                }
+                _ => unreachable!(),
+            }
+        }
+
+        todo!()
+    }
+}
 
 #[async_trait]
 impl Resolve<FindResources, RequestUser> for State {
@@ -202,7 +243,7 @@ fn seperate_tags(tags: Vec<Tag>) -> SeperateTags {
     }
 
     if seperated.resource_types.is_empty() {
-        seperated.resource_types = ALL_RESOURCE_TYPES.to_vec();
+        seperated.resource_types = FIND_RESOURCE_TYPES.to_vec();
     }
 
     seperated
