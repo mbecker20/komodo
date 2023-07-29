@@ -922,6 +922,11 @@ export interface FindResources {
 	tags: Tag[];
 }
 
+export interface FindResourcesWithQuery {
+	query?: MongoDocument;
+	resources?: ResourceTarget["type"][];
+}
+
 export enum ServerStatus {
 	NotOk = "NotOk",
 	Ok = "Ok",
@@ -1245,6 +1250,7 @@ export type ReadRequest =
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetUser", params: GetUser }
 	| { type: "FindResources", params: FindResources }
+	| { type: "FindResourcesWithQuery", params: FindResourcesWithQuery }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }

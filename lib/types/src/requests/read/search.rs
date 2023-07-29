@@ -19,7 +19,7 @@ pub struct FindResources {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(FindResourcesResponse)]
-pub struct FindResources2 {
+pub struct FindResourcesWithQuery {
     pub query: Option<MongoDocument>,
     pub resources: Option<Vec<ResourceTargetVariant>>
 }

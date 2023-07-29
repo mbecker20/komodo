@@ -4,15 +4,15 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        server,
+        build, deployment, repo, server,
         tag::Tag,
         update::ResourceTargetVariant::{self, *},
         PermissionLevel,
     },
     permissioned::Permissioned,
     requests::read::{
-        BuildListItem, DeploymentListItem, FindResources, FindResources2, FindResourcesResponse,
-        RepoListItem, ServerListItem,
+        BuildListItem, DeploymentListItem, FindResources, FindResourcesResponse,
+        FindResourcesWithQuery, RepoListItem, ServerListItem,
     },
 };
 use mungos::mongodb::bson::{doc, oid::ObjectId};
@@ -23,10 +23,10 @@ use crate::{auth::RequestUser, resource::Resource, state::State};
 const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 4] = [Server, Build, Deployment, Repo];
 
 #[async_trait]
-impl Resolve<FindResources2, RequestUser> for State {
+impl Resolve<FindResourcesWithQuery, RequestUser> for State {
     async fn resolve(
         &self,
-        FindResources2 { query, resources }: FindResources2,
+        FindResourcesWithQuery { query, resources }: FindResourcesWithQuery,
         user: RequestUser,
     ) -> anyhow::Result<FindResourcesResponse> {
         let mut res = FindResourcesResponse::default();
@@ -40,19 +40,37 @@ impl Resolve<FindResources2, RequestUser> for State {
         for resource_type in resource_types {
             match resource_type {
                 Server => {
-                    // let servers: Vec<server::Server> =
-                        // self.list_resources_for_user(&user, query.clone()).await?;
-                    // res.servers = servers.into_iter().
-                    todo!()
+                    res.servers = <State as Resource<server::Server>>::list_resources_for_user(
+                        self,
+                        &user,
+                        query.clone(),
+                    )
+                    .await?;
                 }
                 Deployment => {
-                    todo!()
+                    res.deployments =
+                        <State as Resource<deployment::Deployment>>::list_resources_for_user(
+                            self,
+                            &user,
+                            query.clone(),
+                        )
+                        .await?;
                 }
                 Build => {
-                    todo!()
+                    res.builds = <State as Resource<build::Build>>::list_resources_for_user(
+                        self,
+                        &user,
+                        query.clone(),
+                    )
+                    .await?;
                 }
                 Repo => {
-                    todo!()
+                    res.repos = <State as Resource<repo::Repo>>::list_resources_for_user(
+                        self,
+                        &user,
+                        query.clone(),
+                    )
+                    .await?;
                 }
                 _ => unreachable!(),
             }

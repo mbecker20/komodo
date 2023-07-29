@@ -14,6 +14,7 @@ export type ReadResponses = {
 
   // ==== SEARCH ====
   FindResources: Types.FindResourcesResponse;
+  FindResourcesWithQuery: Types.FindResourcesResponse;
 
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;
