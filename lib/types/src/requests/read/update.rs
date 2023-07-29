@@ -6,7 +6,16 @@ use crate::{entities::update::Update, MongoDocument};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Update>)]
+#[response(ListUpdatesResponse)]
 pub struct ListUpdates {
     pub query: Option<MongoDocument>,
+    #[serde(default)]
+    pub page: u32,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ListUpdatesResponse {
+    pub updates: Vec<Update>,
+    pub next_page: Option<u32>
 }

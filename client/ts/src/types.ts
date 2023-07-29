@@ -918,6 +918,7 @@ export type Tag =
 }};
 
 export interface FindResources {
+	search: string;
 	tags: Tag[];
 }
 
@@ -1033,6 +1034,12 @@ export interface ListTags {
 
 export interface ListUpdates {
 	query?: MongoDocument;
+	page?: number;
+}
+
+export interface ListUpdatesResponse {
+	updates: Update[];
+	next_page?: number;
 }
 
 export type PartialAlerterConfig = 

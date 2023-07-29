@@ -12,6 +12,7 @@ use super::{BuildListItem, DeploymentListItem, RepoListItem, ServerListItem};
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(FindResourcesResponse)]
 pub struct FindResources {
+    pub search: String,
     pub tags: Vec<Tag>,
 }
 

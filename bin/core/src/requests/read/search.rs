@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
@@ -14,7 +14,7 @@ use monitor_types::{
         ServerListItem,
     },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId, Document};
+use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -25,7 +25,7 @@ const ALL_RESOURCE_TYPES: [ResourceTargetVariant; 4] = [Server, Build, Deploymen
 impl Resolve<FindResources, RequestUser> for State {
     async fn resolve(
         &self,
-        FindResources { tags }: FindResources,
+        FindResources { search, tags }: FindResources,
         user: RequestUser,
     ) -> anyhow::Result<FindResourcesResponse> {
         let SeperateTags {
@@ -34,7 +34,16 @@ impl Resolve<FindResources, RequestUser> for State {
             custom_tag_ids,
         } = seperate_tags(tags);
 
-        let mut query = Document::new();
+        let mut query = doc! {
+            "name": { "$regex": search }
+        };
+
+        if !user.is_admin {
+            query.insert(
+                format!("permissions.{}", user.id),
+                doc! { "$in": ["read", "execute", "update"] },
+            );
+        }
 
         if !custom_tag_ids.is_empty() {
             query.insert("tags", doc! { "$all": custom_tag_ids });
@@ -55,13 +64,10 @@ impl Resolve<FindResources, RequestUser> for State {
                                     .context("failed to parse server id as ObjectId")
                             })
                             .collect::<anyhow::Result<Vec<_>>>()?;
-                        self.db
-                            .servers
-                            .get_some(doc! { "_id": { "$in": server_ids } }, None)
-                            .await?
-                    }
-                    .into_iter()
-                    .filter(|s| s.get_user_permissions(&user.id) > PermissionLevel::None);
+                        let mut query = query.clone();
+                        query.insert("_id", doc! { "$in": server_ids });
+                        self.db.servers.get_some(query, None).await?
+                    };
                     for server in servers {
                         let status = self
                             .server_status_cache
@@ -163,7 +169,7 @@ impl Resolve<FindResources, RequestUser> for State {
                         response.repos.push(item);
                     }
                 }
-                _ => unreachable!(),
+                _ => return Err(anyhow!("{resource_type} is not compatible with this route")),
             }
         }
 
@@ -186,7 +192,7 @@ fn seperate_tags(tags: Vec<Tag>) -> SeperateTags {
             Tag::Custom { tag_id } => seperated.custom_tag_ids.push(tag_id),
             Tag::Server { server_id } => seperated.server_ids.push(server_id),
             Tag::ResourceType { resource } => {
-                if !matches!(resource, Builder | System,)
+                if !matches!(resource, Builder | Alerter | System,)
                     && !seperated.resource_types.contains(&resource)
                 {
                     seperated.resource_types.push(resource);
