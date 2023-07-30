@@ -9,6 +9,7 @@ use crate::{entities::Timelength, I64};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
+#[collection_name(Stats)]
 pub struct SystemStatsRecord {
     #[index]
     pub ts: I64,
