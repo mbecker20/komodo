@@ -26,6 +26,7 @@ pub enum Tag {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[collection_name(Tag)]
 #[unique_doc_index(doc! { "name": 1, "category": 1 })]
 pub struct CustomTag {
     #[serde(
