@@ -19,7 +19,7 @@ export const DeploymentUpdates = () => {
           <TableHead>Success</TableHead>
         </TableRow>
       </TableHeader>
-      {updates?.map((update) => (
+      {updates?.updates.map((update) => (
         <TableRow>
           <TableCell>{fmt_update_date(new Date(update.start_ts))}</TableCell>
           <TableCell>

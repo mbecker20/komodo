@@ -1,9 +1,11 @@
 import { useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ServerName, ServerStats } from "./util";
 import { ServerStatusIcon } from "./util";
 import { CardDescription } from "@ui/card";
+import { Button } from "@ui/button";
+import { Settings } from "lucide-react";
 
 export const Server = () => {
   const { serverId } = useParams();
@@ -24,7 +26,15 @@ export const Server = () => {
           <ServerStats server_id={serverId} />
         </div>
       }
-      actions=""
+      actions={
+        <div className="flex gap-4">
+          <Link to={`/servers/${serverId}/config`}>
+            <Button variant="outline">
+              <Settings className="w-4 h-4" />
+            </Button>
+          </Link>
+        </div>
+      }
     />
   );
 };

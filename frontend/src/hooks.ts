@@ -17,7 +17,7 @@ import {
 
 export const useRead = <
   T extends Types.ReadRequest["type"],
-  P = Extract<Types.WriteRequest, { type: T }>["params"]
+  P = Extract<Types.ReadRequest, { type: T }>["params"]
 >(
   type: T,
   params: P,

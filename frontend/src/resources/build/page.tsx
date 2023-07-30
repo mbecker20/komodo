@@ -1,8 +1,10 @@
 import { useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { BuildName, BuildVersion } from "./util";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { RebuildBuild } from "./components/actions";
+import { Button } from "@ui/button";
+import { Settings } from "lucide-react";
 
 export const Build = () => {
   const { buildId } = useParams();
@@ -19,7 +21,16 @@ export const Build = () => {
           <BuildVersion id={buildId} />
         </div>
       }
-      actions={<RebuildBuild buildId={buildId} />}
+      actions={
+        <div className="flex gap-4">
+          <RebuildBuild buildId={buildId} />
+          <Link to={`/builds/${buildId}/config`}>
+            <Button variant="outline">
+              <Settings className="w-4 h-4" />
+            </Button>
+          </Link>
+        </div>
+      }
     />
   );
 };

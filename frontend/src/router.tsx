@@ -9,6 +9,9 @@ import { Deployments, Builds, Servers, Builders } from "@resources/pages";
 import { DeploymentUpdates } from "@resources/deployment/updates";
 import { DeploymentLayout } from "@resources/deployment/layout";
 import { DeploymentPage } from "@resources/deployment/page";
+import { DeploymentConfig } from "@resources/deployment/config";
+import { ServerConfig } from "@resources/server/config";
+import { BuildConfig } from "@resources/build/config";
 
 const router = createBrowserRouter([
   {
@@ -30,7 +33,7 @@ const router = createBrowserRouter([
             children: [
               { path: "", element: <DeploymentPage /> },
               { path: "updates", element: <DeploymentUpdates /> },
-              { path: "config", element: <>deployment config!</> },
+              { path: "config", element: <DeploymentConfig /> },
             ],
           },
         ],
@@ -41,7 +44,11 @@ const router = createBrowserRouter([
         path: "servers",
         children: [
           { path: "", element: <Servers /> },
-          { path: ":serverId", element: <Server /> },
+          {
+            path: ":serverId",
+            element: <Server />,
+            children: [{ path: "config", element: <ServerConfig /> }],
+          },
         ],
       },
 
@@ -50,7 +57,11 @@ const router = createBrowserRouter([
         path: "builds",
         children: [
           { path: "", element: <Builds /> },
-          { path: ":buildId", element: <Build /> },
+          {
+            path: ":buildId",
+            element: <Build />,
+            children: [{ path: "config", element: <BuildConfig /> }],
+          },
         ],
       },
 

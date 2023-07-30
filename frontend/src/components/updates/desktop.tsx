@@ -21,7 +21,7 @@ export const DesktopUpdates = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[500px]">
         <DropdownMenuGroup>
-          {updates?.map((update) => (
+          {updates?.updates.map((update) => (
             <SingleUpdate update={update} />
           ))}
         </DropdownMenuGroup>

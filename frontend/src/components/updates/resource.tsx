@@ -29,7 +29,7 @@ export const ResourceUpdates = ({ id }: { id: string }) => {
         </Link>
       </div>
       <div className="grid md:grid-cols-3 mt-2 gap-4">
-        {updates?.slice(0, 3).map((update) => (
+        {updates?.updates.slice(0, 3).map((update) => (
           <UpdateDetails update={update} key={update._id?.$oid}>
             <Card hoverable>
               <CardHeader>
