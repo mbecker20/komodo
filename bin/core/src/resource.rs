@@ -24,7 +24,7 @@ pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
 
     fn name() -> &'static str;
     fn coll(&self) -> &Collection<T>;
-    async fn into_list_item(&self, resource: T) -> Self::ListItem;
+    async fn to_list_item(&self, resource: T) -> Self::ListItem;
 
     async fn get_resource(&self, id: &str) -> anyhow::Result<T> {
         self.coll()
@@ -112,7 +112,7 @@ pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
             .await
             .context(format!("failed to pull {}s from mongo", Self::name()))?
             .into_iter()
-            .map(|resource| self.into_list_item(resource));
+            .map(|resource| self.to_list_item(resource));
 
         let list = join_all(list).await;
 
@@ -132,7 +132,7 @@ impl Resource<Server> for State {
         &self.db.servers
     }
 
-    async fn into_list_item(&self, server: Server) -> ServerListItem {
+    async fn to_list_item(&self, server: Server) -> ServerListItem {
         let status = self.server_status_cache.get(&server.id).await;
         ServerListItem {
             id: server.id,
@@ -155,7 +155,7 @@ impl Resource<Deployment> for State {
         &self.db.deployments
     }
 
-    async fn into_list_item(&self, deployment: Deployment) -> DeploymentListItem {
+    async fn to_list_item(&self, deployment: Deployment) -> DeploymentListItem {
         let status = self.deployment_status_cache.get(&deployment.id).await;
         DeploymentListItem {
             id: deployment.id,
@@ -183,7 +183,7 @@ impl Resource<Build> for State {
         &self.db.builds
     }
 
-    async fn into_list_item(&self, build: Build) -> BuildListItem {
+    async fn to_list_item(&self, build: Build) -> BuildListItem {
         BuildListItem {
             id: build.id,
             name: build.name,
@@ -206,7 +206,7 @@ impl Resource<Repo> for State {
         &self.db.repos
     }
 
-    async fn into_list_item(&self, repo: Repo) -> RepoListItem {
+    async fn to_list_item(&self, repo: Repo) -> RepoListItem {
         RepoListItem {
             id: repo.id,
             name: repo.name,
@@ -228,7 +228,7 @@ impl Resource<Builder> for State {
         &self.db.builders
     }
 
-    async fn into_list_item(&self, builder: Builder) -> Builder {
+    async fn to_list_item(&self, builder: Builder) -> Builder {
         builder
     }
 }
@@ -245,7 +245,7 @@ impl Resource<Alerter> for State {
         &self.db.alerters
     }
 
-    async fn into_list_item(&self, alerter: Alerter) -> Alerter {
+    async fn to_list_item(&self, alerter: Alerter) -> Alerter {
         alerter
     }
 }
