@@ -27,6 +27,7 @@ export type ReadResponses = {
   GetDockerImages: Types.ImageSummary[];
   GetDockerNetworks: Types.DockerNetwork[];
   GetServerActionState: Types.ServerActionState;
+  GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
 
   // ==== DEPLOYMENT ====
   GetDeploymentsSummary: Types.GetDeploymentsSummaryResponse;

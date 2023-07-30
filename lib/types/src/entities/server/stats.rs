@@ -13,15 +13,15 @@ pub struct SystemStatsRecord {
     #[index]
     pub ts: I64,
     #[index]
-    pub server_id: String,
-    pub basic: BasicSystemStats,
-    pub cpu: CpuUsage,
-    pub disk: DiskUsage,
-    pub network: NetworkUsage,
-    #[serde(default)]
-    pub processes: Vec<SystemProcess>,
-    #[serde(default)]
-    pub components: Vec<SystemComponent>,
+    pub sid: String,
+    // basic stats
+    pub system_load: f64,
+    pub cpu_perc: f32,
+    pub cpu_freq_mhz: f64,
+    pub mem_used_gb: f64,
+    pub mem_total_gb: f64,
+    pub disk_used_gb: f64,
+    pub disk_total_gb: f64,
 }
 
 #[typeshare]

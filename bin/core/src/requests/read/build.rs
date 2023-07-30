@@ -7,7 +7,8 @@ use futures::TryStreamExt;
 use monitor_types::{
     entities::{
         build::{Build, BuildActionState},
-        Operation, PermissionLevel, update::UpdateStatus,
+        update::UpdateStatus,
+        Operation, PermissionLevel,
     },
     requests::read::*,
 };
@@ -127,7 +128,7 @@ impl Resolve<GetBuildMonthlyStats, RequestUser> for State {
         while let Some(update) = build_updates.try_next().await? {
             if let Some(end_ts) = update.end_ts {
                 let day = update.start_ts - update.start_ts % ONE_DAY_MS;
-                let mut entry = days.entry(day).or_default();
+                let entry = days.entry(day).or_default();
                 entry.count += 1.0;
                 entry.time += ms_to_hour(end_ts - update.start_ts);
             }
@@ -197,10 +198,7 @@ impl Resolve<GetBuildVersions, RequestUser> for State {
             .into_iter()
             .map(|u| (u.version, u.start_ts))
             .filter(|(v, _)| !v.is_none())
-            .map(|(version, ts)| BuildVersionResponseItem {
-                version,
-                ts,
-            })
+            .map(|(version, ts)| BuildVersionResponseItem { version, ts })
             .collect();
         Ok(versions)
     }

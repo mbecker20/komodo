@@ -1,4 +1,5 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
+use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
@@ -11,10 +12,39 @@ use monitor_types::{
     },
     requests::read::*,
 };
+use mungos::mongodb::{bson::doc, options::FindOptions};
 use periphery_client::requests;
 use resolver_api::{Resolve, ResolveToString};
 
 use crate::{auth::RequestUser, resource::Resource, state::State};
+
+#[async_trait]
+impl Resolve<GetServersSummary, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetServersSummary {}: GetServersSummary,
+        user: RequestUser,
+    ) -> anyhow::Result<GetServersSummaryResponse> {
+        let servers =
+            <State as Resource<Server>>::list_resources_for_user(self, &user, None).await?;
+        let mut res = GetServersSummaryResponse::default();
+        for server in servers {
+            res.total += 1;
+            match server.status {
+                ServerStatus::Ok => {
+                    res.healthy += 1;
+                }
+                ServerStatus::NotOk => {
+                    res.unhealthy += 1;
+                }
+                ServerStatus::Disabled => {
+                    res.disabled += 1;
+                }
+            }
+        }
+        Ok(res)
+    }
+}
 
 #[async_trait]
 impl Resolve<GetPeripheryVersion, RequestUser> for State {
@@ -276,6 +306,56 @@ impl ResolveToString<GetSystemComponents, RequestUser> for State {
     }
 }
 
+const STATS_PER_PAGE: i64 = 500;
+
+#[async_trait]
+impl Resolve<GetHistoricalServerStats, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetHistoricalServerStats {
+            server_id,
+            interval,
+            page,
+        }: GetHistoricalServerStats,
+        user: RequestUser,
+    ) -> anyhow::Result<GetHistoricalServerStatsResponse> {
+        let _: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let interval = get_timelength_in_ms(interval.to_string().parse().unwrap()) as i64;
+        let mut ts_vec = Vec::<i64>::new();
+        let curr_ts = unix_timestamp_ms() as i64;
+        let mut curr_ts = curr_ts - curr_ts % interval - interval * STATS_PER_PAGE * page as i64;
+        for _ in 0..STATS_PER_PAGE {
+            ts_vec.push(curr_ts);
+            curr_ts -= interval;
+        }
+        let stats = self
+            .db
+            .stats
+            .get_some(
+                doc! {
+                    "sid": server_id,
+                    "ts": { "$in": ts_vec },
+                },
+                FindOptions::builder()
+                    .sort(doc! { "ts": -1 })
+                    .skip(page as u64 * STATS_PER_PAGE as u64)
+                    .limit(STATS_PER_PAGE)
+                    .build(),
+            )
+            .await
+            .context("failed to pull stats from db")?;
+        let next_page = if stats.len() == STATS_PER_PAGE as usize {
+            Some(page + 1)
+        } else {
+            None
+        };
+        let res = GetHistoricalServerStatsResponse { stats, next_page };
+        Ok(res)
+    }
+}
+
 #[async_trait]
 impl Resolve<GetDockerImages, RequestUser> for State {
     async fn resolve(
@@ -321,32 +401,5 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
         self.periphery_client(&server)
             .request(requests::GetContainerList {})
             .await
-    }
-}
-
-#[async_trait]
-impl Resolve<GetServersSummary, RequestUser> for State {
-    async fn resolve(
-        &self,
-        GetServersSummary {}: GetServersSummary,
-        user: RequestUser,
-    ) -> anyhow::Result<GetServersSummaryResponse> {
-        let servers = <State as Resource<Server>>::list_resources_for_user(self, &user, None).await?;
-        let mut res = GetServersSummaryResponse::default();
-        for server in servers {
-            res.total += 1;
-            match server.status {
-                ServerStatus::Ok => {
-                    res.healthy += 1;
-                }
-                ServerStatus::NotOk => {
-                    res.unhealthy += 1;
-                }
-                ServerStatus::Disabled => {
-                    res.disabled += 1;
-                }
-            }
-        }
-        Ok(res)
     }
 }

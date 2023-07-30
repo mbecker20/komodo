@@ -375,6 +375,27 @@ export interface ServerActionState {
 	pruning_images: boolean;
 }
 
+export interface SystemStatsRecord {
+	ts: I64;
+	server_id: string;
+	system_load: number;
+	cpu_perc: number;
+	cpu_freq_mhz: number;
+	mem_used_gb: number;
+	mem_total_gb: number;
+	disk_used_gb: number;
+	disk_total_gb: number;
+}
+
+export interface SystemInformation {
+	name?: string;
+	os?: string;
+	kernel?: string;
+	core_count?: number;
+	host_name?: string;
+	cpu_brand: string;
+}
+
 export interface BasicSystemStats {
 	system_load: number;
 	cpu_perc: number;
@@ -439,26 +460,6 @@ export interface SystemComponent {
 	temp: number;
 	max: number;
 	critical?: number;
-}
-
-export interface SystemStatsRecord {
-	ts: I64;
-	server_id: string;
-	basic: BasicSystemStats;
-	cpu: CpuUsage;
-	disk: DiskUsage;
-	network: NetworkUsage;
-	processes?: SystemProcess[];
-	components?: SystemComponent[];
-}
-
-export interface SystemInformation {
-	name?: string;
-	os?: string;
-	kernel?: string;
-	core_count?: number;
-	host_name?: string;
-	cpu_brand: string;
 }
 
 export enum Timelength {
@@ -1011,6 +1012,17 @@ export interface GetDockerNetworks {
 	server_id: string;
 }
 
+export interface GetHistoricalServerStats {
+	server_id: string;
+	interval: Timelength;
+	page?: number;
+}
+
+export interface GetHistoricalServerStatsResponse {
+	stats: SystemStatsRecord[];
+	next_page?: number;
+}
+
 export interface GetDockerImages {
 	server_id: string;
 }
@@ -1261,6 +1273,7 @@ export type ReadRequest =
 	| { type: "GetDockerImages", params: GetDockerImages }
 	| { type: "GetDockerNetworks", params: GetDockerNetworks }
 	| { type: "GetServerActionState", params: GetServerActionState }
+	| { type: "GetHistoricalServerStats", params: GetHistoricalServerStats }
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
 	| { type: "ListDeployments", params: ListDeployments }

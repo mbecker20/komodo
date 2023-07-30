@@ -52,6 +52,7 @@ enum ReadRequest {
     GetDockerImages(GetDockerImages),
     GetDockerNetworks(GetDockerNetworks),
     GetServerActionState(GetServerActionState),
+    GetHistoricalServerStats(GetHistoricalServerStats),
 
     // ==== DEPLOYMENT ====
     GetDeploymentsSummary(GetDeploymentsSummary),

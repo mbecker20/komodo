@@ -10,10 +10,11 @@ use crate::{
             docker_network::DockerNetwork,
             stats::{
                 AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage,
-                SystemComponent, SystemInformation, SystemProcess,
+                SystemComponent, SystemInformation, SystemProcess, SystemStatsRecord,
             },
             Server, ServerActionState, ServerStatus,
         },
+        Timelength,
     },
     MongoDocument, I64,
 };
@@ -163,6 +164,25 @@ pub struct GetSystemComponents {
 #[response(Vec<DockerNetwork>)]
 pub struct GetDockerNetworks {
     pub server_id: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetHistoricalServerStatsResponse)]
+pub struct GetHistoricalServerStats {
+    pub server_id: String,
+    pub interval: Timelength,
+    #[serde(default)]
+    pub page: u32,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetHistoricalServerStatsResponse {
+    pub stats: Vec<SystemStatsRecord>,
+    pub next_page: Option<u32>,
 }
 
 //
