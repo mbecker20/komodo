@@ -11,7 +11,7 @@ pub async fn send_alert(alerter: &Alerter, alert: &Alert) -> anyhow::Result<()> 
 }
 
 pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
-    let (text, blocks) = match alert {
+    let (text, blocks): (_, Option<_>) = match alert {
         Alert::ServerUnreachable { name, region, .. } => {
             let region = fmt_region(region);
             let text = format!("CRITICAL 🚨 | *{name}*{region} is *unreachable* ❌");
@@ -89,28 +89,38 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             (text, blocks.into())
         }
         Alert::ServerTemp {
-            id,
             name,
             region,
             state,
             temp,
             max,
+            ..
         } => {
             let region = fmt_region(region);
-            let header = format!("");
-            let info = format!("");
-            (String::new(), None)
+            let text = format!(
+                "{state} 🚨 | *{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
+            );
+            let blocks = vec![
+                Block::header(format!("{state} 🚨")),
+                Block::section(format!(
+                    "*{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
+                )),
+            ];
+            (text, blocks.into())
         }
         Alert::ContainerStateChange {
-            id,
             name,
             server,
             from,
             to,
+            ..
         } => {
-            let header = format!("");
-            let info = format!("");
-            (String::new(), None)
+            let text = format!("container *{name}*");
+            let blocks = vec![
+                Block::header(format!("container *{name}* state change 📦")),
+                Block::section(format!("server: {server}\nfrom: {from}\nto: {to}")),
+            ];
+            (text, blocks.into())
         }
     };
     let slack = slack::Client::new(url);

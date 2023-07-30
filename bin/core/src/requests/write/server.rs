@@ -58,7 +58,7 @@ impl Resolve<CreateServer, RequestUser> for State {
 
         self.add_update(update).await?;
 
-        self.update_cache_for_server(&server, 0).await;
+        self.update_cache_for_server(&server).await;
 
         Ok(server)
     }
@@ -174,7 +174,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
 
         let new_server: Server = self.get_resource(&id).await?;
 
-        self.update_cache_for_server(&new_server, 0).await;
+        self.update_cache_for_server(&new_server).await;
 
         self.add_update(update).await?;
 

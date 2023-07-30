@@ -18,17 +18,21 @@ impl<T: Clone + Default> Cache<T> {
     //     cache.entry(key).or_default().clone()
     // }
 
-    // pub async fn get_list(&self, filter: Option<impl Fn(&String, &T) -> bool>) -> Vec<T> {
-    //     let cache = self.cache.read().await;
-    //     match filter {
-    //         Some(filter) => cache
-    //             .iter()
-    //             .filter(|(k, v)| filter(k, v))
-    //             .map(|(_, e)| e.clone())
-    //             .collect(),
-    //         None => cache.iter().map(|(_, e)| e.clone()).collect(),
-    //     }
-    // }
+    pub async fn get_list(
+        &self,
+        // filter: Option<impl Fn(&String, &T) -> bool>
+    ) -> Vec<T> {
+        let cache = self.cache.read().await;
+        // match filter {
+        //     Some(filter) => cache
+        //         .iter()
+        //         .filter(|(k, v)| filter(k, v))
+        //         .map(|(_, e)| e.clone())
+        //         .collect(),
+        //     None => cache.iter().map(|(_, e)| e.clone()).collect(),
+        // }
+        cache.iter().map(|(_, e)| e.clone()).collect()
+    }
 
     pub async fn insert(&self, key: impl Into<String>, val: T) {
         self.cache.write().await.insert(key.into(), val);

@@ -2,11 +2,12 @@ use anyhow::Context;
 use async_timing_util::{wait_until_timelength, Timelength};
 use futures::future::join_all;
 use monitor_types::entities::{
+    alerter::Alerter,
     deployment::{ContainerSummary, Deployment, DockerContainerState},
     server::{
         stats::{
             AllSystemStats, BasicSystemStats, ServerHealth, SingleDiskUsage, StatsState,
-            SystemComponent,
+            SystemComponent, SystemStatsRecord,
         },
         Server, ServerConfig, ServerStatus,
     },
@@ -41,14 +42,15 @@ impl State {
                 error!("failed to get server list (manage status cache) | {e:#?}")
             }
             let servers = servers.unwrap();
-            let futures = servers
-                .into_iter()
-                .map(|server| async move { self.update_cache_for_server(&server, ts).await });
+            let futures = servers.into_iter().map(|server| async move {
+                self.update_cache_for_server(&server).await;
+            });
             join_all(futures).await;
+            self.record_server_stats(ts).await;
         }
     }
 
-    pub async fn update_cache_for_server(&self, server: &Server, ts: i64) {
+    pub async fn update_cache_for_server(&self, server: &Server) {
         let deployments = self
             .db
             .deployments
@@ -70,14 +72,19 @@ impl State {
             .await;
             return;
         }
-        let prev_state = self.server_status_cache.get(&server.id).await;
+        let prev_server_status = self.server_status_cache.get(&server.id).await;
         let periphery = self.periphery_client(server);
         let version = periphery.request(requests::GetVersion {}).await;
         if version.is_err() {
             self.insert_deployments_status_unknown(deployments).await;
             self.insert_server_status(server, ServerStatus::NotOk, String::from("unknown"), None)
                 .await;
-            self.handle_server_unreachable(server).await;
+            let alerters = self.db.alerters.get_some(None, None).await;
+            if let Err(e) = &alerters {
+                error!("failed to get alerters from db | {e:#?}");
+            }
+            let alerters = alerters.unwrap();
+            self.handle_server_unreachable(server, &alerters).await;
             return;
         }
         let stats = periphery.request(requests::GetAllSystemStats {}).await;
@@ -117,10 +124,8 @@ impl State {
                 .as_ref()
                 .map(|c| c.state)
                 .unwrap_or(DockerContainerState::NotDeployed);
-
             self.handle_deployment_state_change(&deployment, state, prev_state)
                 .await;
-
             self.deployment_status_cache
                 .insert(
                     deployment.id.clone(),
@@ -135,7 +140,42 @@ impl State {
         }
     }
 
-    async fn handle_server_unreachable(&self, server: &Server) {
+    async fn record_server_stats(&self, ts: i64) {
+        let status = self.server_status_cache.get_list().await;
+        let records = status
+            .into_iter()
+            .filter(|status| status.stats.is_some())
+            .map(|status| {
+                let BasicSystemStats {
+                    system_load,
+                    cpu_perc,
+                    cpu_freq_mhz,
+                    mem_total_gb,
+                    mem_used_gb,
+                    disk_total_gb,
+                    disk_used_gb,
+                    ..
+                } = status.stats.as_ref().unwrap().basic;
+                SystemStatsRecord {
+                    ts,
+                    sid: status.id.clone(),
+                    system_load,
+                    cpu_perc,
+                    cpu_freq_mhz,
+                    mem_total_gb,
+                    mem_used_gb,
+                    disk_total_gb,
+                    disk_used_gb,
+                }
+            })
+            .collect::<Vec<_>>();
+        let res = self.db.stats.create_many(records).await;
+        if let Err(e) = res {
+            error!("failed to record server stats | {e:#?}");
+        }
+    }
+
+    async fn handle_server_unreachable(&self, server: &Server, alerters: &[Alerter]) {
         let inner = || async { anyhow::Ok(()) };
 
         let res = inner().await.context("failed to handle server unreachable");
@@ -145,7 +185,7 @@ impl State {
         }
     }
 
-    async fn handle_server_rereachable(&self, server: &Server) {
+    async fn handle_server_rereachable(&self, server: &Server, alerters: &[Alerter]) {
         let inner = || async { anyhow::Ok(()) };
 
         let res = inner().await.context("failed to handle server rereachable");
