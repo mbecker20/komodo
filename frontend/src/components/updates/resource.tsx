@@ -13,7 +13,9 @@ import { Link } from "react-router-dom";
 import { UpdateDetails } from "./details";
 
 export const ResourceUpdates = ({ id }: { id: string }) => {
-  const updates = useRead("ListUpdates", { target: { id } }).data;
+  const { data: updates, isLoading } = useRead("ListUpdates", {
+    target: { id },
+  });
 
   return (
     <div className="flex flex-col">
@@ -29,6 +31,21 @@ export const ResourceUpdates = ({ id }: { id: string }) => {
         </Link>
       </div>
       <div className="grid md:grid-cols-3 mt-2 gap-4">
+        {isLoading && (
+          <Card>
+            <CardHeader>
+              <CardTitle>...</CardTitle>
+              <CardContent>
+                <CardDescription className="flex items-center gap-2">
+                  <User className="w-4 h-4" /> ...
+                </CardDescription>
+                <CardDescription className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" /> ...
+                </CardDescription>
+              </CardContent>
+            </CardHeader>
+          </Card>
+        )}
         {updates?.updates.slice(0, 3).map((update) => (
           <UpdateDetails update={update} key={update._id?.$oid}>
             <Card hoverable>

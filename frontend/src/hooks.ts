@@ -14,6 +14,7 @@ import {
   ReadResponses,
   WriteResponses,
 } from "@monitor/client/dist/responses";
+import { useEffect, useState } from "react";
 
 export const useRead = <
   T extends Types.ReadRequest["type"],
@@ -86,4 +87,28 @@ export const useSetRecentlyViewed = () => {
   const push = (type: "Deployment" | "Build" | "Server", id: string) =>
     set((res) => [{ type, id }, ...res.filter((r) => r.id !== id)].slice(0, 5));
   return push;
+};
+
+export const useServerStats = (server_id: string) => {
+  const [stats, set] = useState<Types.AllSystemStats>();
+
+  const fetch = () =>
+    client
+      .read({
+        type: "GetAllSystemStats",
+        params: { server_id },
+      })
+      .then(set);
+
+  useEffect(() => {
+    fetch();
+    const handle = setInterval(() => {
+      fetch();
+    }, 1000);
+    return () => {
+      clearInterval(handle);
+    };
+  }, []);
+
+  return stats;
 };
