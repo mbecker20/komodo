@@ -1,7 +1,7 @@
 import { ThemeToggle } from "@components/util";
 
 import { Button } from "@ui/button";
-import { ChevronRight, Circle, LogOut } from "lucide-react";
+import { ChevronRight, LogOut } from "lucide-react";
 import { Link, useLocation, useParams } from "react-router-dom";
 
 import { useUser } from "@hooks";
