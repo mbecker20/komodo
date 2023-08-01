@@ -12,9 +12,16 @@ import { Bell, ExternalLink, User, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { UpdateDetails } from "./details";
 
-export const ResourceUpdates = ({ id }: { id: string }) => {
+export const ResourceUpdates = ({
+  id,
+  type,
+}: {
+  id: string;
+  type: "Deployment" | "Build" | "Server";
+}) => {
   const { data: updates, isLoading } = useRead("ListUpdates", {
-    target: { id },
+    "target.type": type,
+    "target.id": id,
   });
 
   return (

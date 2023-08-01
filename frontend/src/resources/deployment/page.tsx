@@ -13,7 +13,7 @@ export const DeploymentPage = () => {
 
   return (
     <div className="flex flex-col gap-12">
-      <ResourceUpdates id={deploymentId} />
+      <ResourceUpdates type="Deployment" id={deploymentId} />
       <DeploymentLogs deployment_id={deploymentId} />
       <DeploymentConfig />
     </div>

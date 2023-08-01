@@ -3,7 +3,7 @@ import { Layout } from "@layouts/layout";
 import { Login } from "@pages/auth/login";
 import { Signup } from "@pages/auth/signup";
 import { Dashboard } from "@pages/dashboard";
-import { Server } from "@resources/server/page";
+import { Server, ServerContent } from "@resources/server/page";
 import { Build } from "@resources/build/page";
 import { Deployments, Builds, Servers, Builders } from "@resources/pages";
 import { DeploymentUpdates } from "@resources/deployment/updates";
@@ -12,7 +12,6 @@ import { DeploymentPage } from "@resources/deployment/page";
 import { DeploymentConfig } from "@resources/deployment/config";
 import { ServerConfig } from "@resources/server/config";
 import { BuildConfig } from "@resources/build/config";
-import { ServerStatsPage } from "@resources/server/stats";
 
 const router = createBrowserRouter([
   {
@@ -49,7 +48,7 @@ const router = createBrowserRouter([
             path: ":serverId",
             element: <Server />,
             children: [
-              { path: "", element: <ServerStatsPage /> },
+              { path: "", element: <ServerContent /> },
               { path: "config", element: <ServerConfig /> },
             ],
           },

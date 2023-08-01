@@ -9,6 +9,7 @@ import { ServerName } from "@resources/server/util";
 import { DeploymentName } from "@resources/deployment/util";
 import { DesktopUpdates } from "@components/updates/desktop";
 import { BuildName } from "@resources/build/util";
+import { Omnibar } from "./omnibar";
 
 export const Paths = () => {
   const path = useLocation().pathname.split("/")[1];
@@ -71,11 +72,14 @@ export const Header = () => {
         </div>
         <div className="flex">
           {user && (
-            <Button disabled variant="ghost">
-              <Circle className="w-4 h-4 fill-green-500 stroke-none" />
-            </Button>
+            <>
+              <Button disabled variant="ghost">
+                <Circle className="w-4 h-4 fill-green-500 stroke-none" />
+              </Button>
+              <Omnibar />
+              <DesktopUpdates />
+            </>
           )}
-          {user && <DesktopUpdates />}
           <ThemeToggle />
           {user && (
             <Button variant="ghost" onClick={logout}>
