@@ -57,7 +57,7 @@ impl Resolve<ListUpdates, RequestUser> for State {
             .get_some(
                 query,
                 FindOptions::builder()
-                    .sort(doc! { "ts": -1 })
+                    .sort(doc! { "start_ts": -1 })
                     .skip(page as u64 * UPDATES_PER_PAGE as u64)
                     .limit(UPDATES_PER_PAGE)
                     .build(),

@@ -19,14 +19,18 @@ pub async fn tests() -> anyhow::Result<()> {
 
     // create_server(&monitor).await?;
 
-    let mut servers = monitor.read(read::ListServers { query: None }).await?;
+    // let mut servers = monitor.read(read::ListServers { query: None }).await?;
     // let server_id = servers.pop().unwrap().id;
     // let server = monitor.read(read::GetServer { id: server_id }).await?;
-    println!("{servers:#?}");
+    // println!("{servers:#?}");
 
     // let mut builds = monitor.read(read::ListBuilds { query: None }).await?;
     // let build_id = builds.pop().unwrap().id;
     // run_build(&monitor, build_id).await?;
+
+    let updates = monitor.read(read::ListUpdates { query: None, page: 0 }).await?;
+
+    println!("{updates:#?}");
 
     Ok(())
 }
