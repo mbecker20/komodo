@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useSetRecentlyViewed } from "@hooks";
 import { DeploymentLogs } from "./components/deployment-logs";
 import { ResourceUpdates } from "@components/updates/resource";
+import { DeploymentConfig } from "./config";
 
 export const DeploymentPage = () => {
   const { deploymentId } = useParams();
@@ -14,6 +15,7 @@ export const DeploymentPage = () => {
     <div className="flex flex-col gap-12">
       <ResourceUpdates id={deploymentId} />
       <DeploymentLogs deployment_id={deploymentId} />
+      <DeploymentConfig />
     </div>
   );
 };

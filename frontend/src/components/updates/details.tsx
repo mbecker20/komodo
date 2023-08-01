@@ -110,7 +110,7 @@ export const UpdateDetails = ({
         </SheetHeader>
         <div className="grid gap-2">
           {update.logs.map((log, i) => (
-            <Card>
+            <Card key={i}>
               <CardHeader>
                 <CardTitle>{log.stage}</CardTitle>
                 <CardDescription className="flex gap-2">

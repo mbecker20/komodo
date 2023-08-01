@@ -14,7 +14,7 @@ export const DesktopUpdates = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button variant="ghost">
           <Bell className="w-4 h-4" />
         </Button>
@@ -22,7 +22,7 @@ export const DesktopUpdates = () => {
       <DropdownMenuContent className="w-[500px]">
         <DropdownMenuGroup>
           {updates?.updates.map((update) => (
-            <SingleUpdate update={update} />
+            <SingleUpdate update={update} key={update._id?.$oid} />
           ))}
         </DropdownMenuGroup>
       </DropdownMenuContent>
