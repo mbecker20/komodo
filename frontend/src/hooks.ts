@@ -5,6 +5,7 @@ import {
   useMutation,
   UseQueryOptions,
   UseMutationOptions,
+  useQueryClient,
 } from "@tanstack/react-query";
 import { useAtomValue, useSetAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
@@ -15,6 +16,7 @@ import {
   WriteResponses,
 } from "@monitor/client/dist/responses";
 import { useEffect, useState } from "react";
+import { ReadRequest } from "@monitor/client/dist/types";
 
 export const useRead = <
   T extends Types.ReadRequest["type"],
@@ -60,6 +62,17 @@ export const useExecute = <
     (params: P) => client.execute({ type, params } as any),
     config
   );
+
+export const useInvalidate = () => {
+  const qc = useQueryClient();
+
+  return <
+    T extends ReadRequest["type"],
+    P = Extract<Types.ReadRequest, { type: T }>["params"]
+  >(
+    ...keys: Array<[T] | [T, P]>
+  ) => keys.forEach((k) => qc.invalidateQueries([...k]));
+};
 
 export const useUser = () => useRead("GetUser", {});
 
