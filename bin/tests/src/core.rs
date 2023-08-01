@@ -28,9 +28,11 @@ pub async fn tests() -> anyhow::Result<()> {
     // let build_id = builds.pop().unwrap().id;
     // run_build(&monitor, build_id).await?;
 
-    let updates = monitor.read(read::ListUpdates { query: None, page: 0 }).await?;
+    // let updates = monitor.read(read::ListUpdates { query: None, page: 0 }).await?;
+    // println!("{updates:#?}");
 
-    println!("{updates:#?}");
+    let dep_summary = monitor.read(read::GetDeploymentsSummary {}).await?;
+    println!("{dep_summary:#?}");
 
     Ok(())
 }
