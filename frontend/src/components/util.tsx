@@ -2,6 +2,14 @@ import { ReactNode, forwardRef, useEffect, useState } from "react";
 import { Button, ButtonProps } from "../ui/button";
 import { Moon, SunMedium } from "lucide-react";
 import { Input } from "../ui/input";
+import {
+  Dialog,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogContent,
+  DialogFooter,
+} from "@ui/dialog";
 
 export const WithLoading = ({
   children,
@@ -79,3 +87,56 @@ export const ActionButton = forwardRef<
     {title} {icon}
   </Button>
 ));
+
+export const ActionWithDialog = ({
+  name,
+  title,
+  icon,
+  intent,
+  disabled,
+  onClick,
+}: {
+  name: string;
+  title: string;
+  icon: ReactNode;
+  intent?: ButtonProps["intent"];
+  disabled?: boolean;
+  onClick?: () => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <ActionButton
+          title={title}
+          icon={icon}
+          intent={intent}
+          disabled={disabled}
+          onClick={() => setOpen(true)}
+        />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm {title}</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 my-4">
+          <p>
+            Please enter <b>{name}</b> below to confirm this action.
+          </p>
+          <Input value={input} onChange={(e) => setInput(e.target.value)} />
+        </div>
+        <DialogFooter>
+          <ActionButton
+            title={title}
+            icon={icon}
+            intent={intent}
+            disabled={name !== input}
+            onClick={onClick}
+          />
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

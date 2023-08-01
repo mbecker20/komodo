@@ -1,4 +1,4 @@
-import { ActionButton } from "@components/util";
+import { ActionButton, ActionWithDialog } from "@components/util";
 import { RefreshCw, Play, Trash, Pause } from "lucide-react";
 import { useExecute, useRead, useWrite } from "@hooks";
 import { DockerContainerState } from "@monitor/client/dist/types";
@@ -34,9 +34,13 @@ export const RedeployContainer = ({ deployment_id }: DeploymentId) => {
 };
 
 const StartContainer = ({ deployment_id }: DeploymentId) => {
+  const { data: d } = useRead("GetDeployment", { id: deployment_id });
   const { mutate, isLoading } = useExecute("StartContainer");
+  if (!d) return null;
+
   return (
-    <ActionButton
+    <ActionWithDialog
+      name={d.name}
       title="Start"
       intent="success"
       icon={<Play className="h-4 w-4" />}
@@ -47,10 +51,13 @@ const StartContainer = ({ deployment_id }: DeploymentId) => {
 };
 
 const StopContainer = ({ deployment_id }: DeploymentId) => {
+  const { data: d } = useRead("GetDeployment", { id: deployment_id });
   const { mutate, isLoading } = useExecute("StopContainer");
 
+  if (!d) return null;
   return (
-    <ActionButton
+    <ActionWithDialog
+      name={d?.name}
       title="Stop"
       intent="warning"
       icon={<Pause className="h-4 w-4" />}
@@ -69,9 +76,13 @@ export const StartOrStopContainer = ({ deployment_id }: DeploymentId) => {
 };
 
 export const RemoveContainer = ({ deployment_id }: DeploymentId) => {
+  const { data: d } = useRead("GetDeployment", { id: deployment_id });
   const { mutate, isLoading } = useExecute("RemoveContainer");
+
+  if (!d) return null;
   return (
-    <ActionButton
+    <ActionWithDialog
+      name={d.name}
       title="Remove"
       intent="warning"
       icon={<Trash className="h-4 w-4" />}
