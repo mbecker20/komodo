@@ -1,7 +1,6 @@
 import { Button } from "@ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs";
 import { AlertOctagon, ChevronDown, TerminalSquare } from "lucide-react";
-import { useEffect } from "react";
 import { useRead } from "@hooks";
 import { Section } from "@layouts/page";
 
@@ -22,7 +21,7 @@ export const DeploymentLogs = ({
   ).data;
 
   return (
-    <Tabs>
+    <Tabs defaultValue="stdout">
       <Section
         title="Logs"
         icon={<TerminalSquare className="w-4 h-4" />}
@@ -43,12 +42,12 @@ export const DeploymentLogs = ({
         {["stdout", "stderr"].map((t) => (
           <TabsContent key={t} className="h-full relative" value={t}>
             <div className="h-[60vh] overflow-y-scroll">
-              <pre id={t} className="scroll-mb-24">
+              <pre id={t} className="-scroll-mt-24">
                 {logs?.[t as keyof typeof logs] || `no ${t} logs`}
               </pre>
             </div>
             <Button
-              className="absolute bottom-4 right-4 scroll-mt-24"
+              className="absolute bottom-4 right-4"
               onClick={to_bottom(t)}
             >
               <ChevronDown className="h-4 w-4" />
