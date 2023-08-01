@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
-import { Cpu, Database, HardDrive, MemoryStick } from "lucide-react";
+import { Cpu, Database, MemoryStick } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 export const ServerStatsPage = () => {
