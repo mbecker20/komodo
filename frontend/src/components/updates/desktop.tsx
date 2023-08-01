@@ -19,7 +19,7 @@ export const DesktopUpdates = () => {
           <Bell className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[500px]">
+      <DropdownMenuContent className="w-[500px] h-[500px] overflow-auto">
         <DropdownMenuGroup>
           {updates?.updates.map((update) => (
             <SingleUpdate update={update} key={update._id?.$oid} />
