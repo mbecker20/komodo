@@ -191,7 +191,7 @@ export interface DeploymentConfig {
 	environment?: EnvironmentVar[];
 	network: string;
 	restart?: RestartMode;
-	post_image?: string;
+	process_args?: string;
 	container_user?: string;
 	extra_args?: string[];
 	docker_account?: string;
@@ -377,7 +377,7 @@ export interface ServerActionState {
 
 export interface SystemStatsRecord {
 	ts: I64;
-	server_id: string;
+	sid: string;
 	system_load: number;
 	cpu_perc: number;
 	cpu_freq_mhz: number;

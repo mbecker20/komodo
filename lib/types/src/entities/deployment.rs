@@ -109,7 +109,7 @@ pub struct DeploymentConfig {
 
     #[serde(default)]
     #[builder(default)]
-    pub post_image: String, // empty is no post image
+    pub process_args: String, // empty is no post image
 
     #[serde(default)]
     #[builder(default)]

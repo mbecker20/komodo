@@ -202,7 +202,7 @@ pub fn docker_run_command(
                 ports,
                 network,
                 container_user,
-                post_image,
+                process_args,
                 restart,
                 environment,
                 extra_args,
@@ -220,9 +220,9 @@ pub fn docker_run_command(
     let network = parse_network(network);
     let restart = parse_restart(restart);
     let environment = parse_environment(environment);
-    let post_image = parse_post_image(post_image);
+    let process_args = parse_process_args(process_args);
     let extra_args = parse_extra_args(extra_args);
-    format!("docker run -d --name {name}{container_user}{ports}{volumes}{network}{restart}{environment}{extra_args} {image}{post_image}")
+    format!("docker run -d --name {name}{container_user}{ports}{volumes}{network}{restart}{environment}{extra_args} {image}{process_args}")
 }
 
 fn parse_container_user(container_user: &String) -> String {
@@ -261,10 +261,10 @@ fn parse_restart(restart: &RestartMode) -> String {
     format!(" --restart {restart}")
 }
 
-fn parse_post_image(post_image: &String) -> String {
-    if post_image.is_empty() {
+fn parse_process_args(process_args: &String) -> String {
+    if process_args.is_empty() {
         String::new()
     } else {
-        format!(" {post_image}")
+        format!(" {process_args}")
     }
 }
