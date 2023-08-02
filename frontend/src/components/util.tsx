@@ -133,7 +133,10 @@ export const ActionWithDialog = ({
             icon={icon}
             intent={intent}
             disabled={name !== input}
-            onClick={onClick}
+            onClick={() => {
+              onClick && onClick();
+              setOpen(false);
+            }}
           />
         </DialogFooter>
       </DialogContent>

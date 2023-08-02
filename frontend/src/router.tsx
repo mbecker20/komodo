@@ -6,12 +6,11 @@ import { Dashboard } from "@pages/dashboard";
 import { Server, ServerContent } from "@resources/server/page";
 import { Build } from "@resources/build/page";
 import { Deployments, Builds, Servers, Builders } from "@resources/pages";
-import { DeploymentUpdates } from "@resources/deployment/updates";
-import { DeploymentLayout } from "@resources/deployment/layout";
-import { DeploymentPage } from "@resources/deployment/page";
-import { DeploymentConfig } from "@resources/deployment/config";
+
 import { ServerConfig } from "@resources/server/config";
 import { BuildConfig } from "@resources/build/config";
+import { DeploymentPage } from "@resources/dep";
+import { ServerPage } from "@resources/ser";
 
 const router = createBrowserRouter([
   {
@@ -27,15 +26,7 @@ const router = createBrowserRouter([
         path: "deployments",
         children: [
           { path: "", element: <Deployments /> },
-          {
-            path: ":deploymentId",
-            element: <DeploymentLayout />,
-            children: [
-              { path: "", element: <DeploymentPage /> },
-              { path: "updates", element: <DeploymentUpdates /> },
-              { path: "config", element: <DeploymentConfig /> },
-            ],
-          },
+          { path: ":deploymentId", element: <DeploymentPage /> },
         ],
       },
 
@@ -44,14 +35,7 @@ const router = createBrowserRouter([
         path: "servers",
         children: [
           { path: "", element: <Servers /> },
-          {
-            path: ":serverId",
-            element: <Server />,
-            children: [
-              { path: "", element: <ServerContent /> },
-              { path: "config", element: <ServerConfig /> },
-            ],
-          },
+          { path: ":serverId", element: <ServerPage /> },
         ],
       },
 
