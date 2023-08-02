@@ -3,14 +3,11 @@ import { Layout } from "@layouts/layout";
 import { Login } from "@pages/auth/login";
 import { Signup } from "@pages/auth/signup";
 import { Dashboard } from "@pages/dashboard";
-import { Server, ServerContent } from "@resources/server/page";
-import { Build } from "@resources/build/page";
 import { Deployments, Builds, Servers, Builders } from "@resources/pages";
 
-import { ServerConfig } from "@resources/server/config";
-import { BuildConfig } from "@resources/build/config";
-import { DeploymentPage } from "@resources/dep";
-import { ServerPage } from "@resources/ser";
+import { ServerPage } from "@resources/server";
+import { DeploymentPage } from "@resources/deployment";
+import { BuildPage } from "@resources/build";
 
 const router = createBrowserRouter([
   {
@@ -44,11 +41,7 @@ const router = createBrowserRouter([
         path: "builds",
         children: [
           { path: "", element: <Builds /> },
-          {
-            path: ":buildId",
-            element: <Build />,
-            children: [{ path: "config", element: <BuildConfig /> }],
-          },
+          { path: ":buildId", element: <BuildPage /> },
         ],
       },
 

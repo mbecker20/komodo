@@ -5,8 +5,9 @@ import { Link, useParams } from "react-router-dom";
 import { RebuildBuild } from "./components/actions";
 import { Button } from "@ui/button";
 import { Settings } from "lucide-react";
+import { BuildConfig } from "./config";
 
-export const Build = () => {
+export const BuildPage = () => {
   const { buildId } = useParams();
   const push = useSetRecentlyViewed();
 
@@ -31,6 +32,8 @@ export const Build = () => {
           </Link>
         </div>
       }
-    />
+    >
+      <BuildConfig />
+    </Resource>
   );
 };
