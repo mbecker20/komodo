@@ -1,10 +1,18 @@
-import { Factory, Hammer, Rocket, Server } from "lucide-react";
+import {
+  AlarmClock,
+  Factory,
+  GitBranch,
+  Hammer,
+  Rocket,
+  Server,
+} from "lucide-react";
 import { useRead } from "@hooks";
 import { Resources } from "@layouts/resources";
 import { DeploymentCard } from "@resources/deployment";
 import { BuildCard } from "@resources/build";
 import { ServerCard } from "@resources/server";
 import { BuilderCard } from "@resources/builder";
+import { AlerterCard } from "./alerter";
 
 const DeploymentsSummary = () => {
   const summary = useRead("GetDeploymentsSummary", {}).data;
@@ -109,6 +117,48 @@ export const Builders = () => {
             ?.filter((d) => d.name.includes(search) || search.includes(d.name))
             .map(({ _id }) => (
               <BuilderCard key={_id?.$oid} id={_id?.$oid!} />
+            ))}
+        </>
+      )}
+    />
+  );
+};
+
+export const Alerters = () => {
+  const alerters = useRead("ListAlerters", {}).data;
+  const summary = useRead("GetAlertersSummary", {}).data;
+  return (
+    <Resources
+      type="Alerter"
+      summary={summary ? `${summary?.total} Total` : "..."}
+      icon={<AlarmClock className="w-4 h-4" />}
+      components={(search) => (
+        <>
+          {alerters
+            ?.filter((d) => d.name.includes(search) || search.includes(d.name))
+            .map(({ _id }) => (
+              <AlerterCard key={_id?.$oid} id={_id?.$oid!} />
+            ))}
+        </>
+      )}
+    />
+  );
+};
+
+export const Repos = () => {
+  const repos = useRead("ListRepos", {}).data;
+  const summary = useRead("GetReposSummary", {}).data;
+  return (
+    <Resources
+      type="Repo"
+      summary={summary ? `${summary?.total} Total` : "..."}
+      icon={<GitBranch className="w-4 h-4" />}
+      components={(search) => (
+        <>
+          {repos
+            ?.filter((d) => d.name.includes(search) || search.includes(d.name))
+            .map(({ id }) => (
+              <AlerterCard key={id} id={id} />
             ))}
         </>
       )}

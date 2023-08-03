@@ -1,7 +1,8 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useAddRecentlyViewed, useRead, useWrite } from "@hooks";
+import { useAddRecentlyViewed, useRead } from "@hooks";
+import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
-import { useEffect } from "react";
+import { AlarmClock } from "lucide-react";
 import { useParams } from "react-router-dom";
 
 const AlerterName = ({ id }: { id: string }) => {
@@ -18,7 +19,7 @@ const AlerterInfo = ({ id }: { id: string }) => {
   return <>some description</>;
 };
 
-export const Alerter = () => {
+export const AlerterPage = () => {
   const id = useParams().alerterId;
   if (!id) return null;
   useAddRecentlyViewed("Alerter", id);
@@ -31,5 +32,20 @@ export const Alerter = () => {
     >
       <ResourceUpdates type="Alerter" id={id} />
     </Resource>
+  );
+};
+
+export const AlerterCard = ({ id }: { id: string }) => {
+  const alerters = useRead("ListAlerters", {}).data;
+  const alerter = alerters?.find((a) => a._id?.$oid === id);
+  if (!alerter) return null;
+  return (
+    <ResourceCard
+      title={alerter.name}
+      description={alerter.description ?? "some desc"}
+      statusIcon={<AlarmClock className="w-4 h-4" />}
+    >
+      <div></div>
+    </ResourceCard>
   );
 };

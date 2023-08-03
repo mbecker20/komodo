@@ -1,10 +1,9 @@
-import { useAddRecentlyViewed, useWrite } from "@hooks";
+import { useAddRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { BuildName, BuildVersion } from "./util";
 import { Link, useParams } from "react-router-dom";
 import { RebuildBuild } from "./components/actions";
 import { BuildConfig } from "./config";
-import { useEffect } from "react";
 import { useRead } from "@hooks";
 import { version_to_string } from "@util/helpers";
 import { BuildInfo } from "./util";

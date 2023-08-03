@@ -3,12 +3,21 @@ import { Layout } from "@layouts/layout";
 import { Login } from "@pages/auth/login";
 import { Signup } from "@pages/auth/signup";
 import { Dashboard } from "@pages/dashboard";
-import { Deployments, Builds, Servers, Builders } from "@resources/pages";
+import {
+  Deployments,
+  Builds,
+  Servers,
+  Builders,
+  Alerters,
+  Repos,
+} from "@resources/pages";
 
 import { ServerPage } from "@resources/server";
 import { DeploymentPage } from "@resources/deployment";
 import { BuildPage } from "@resources/build";
 import { BuilderPage } from "@resources/builder";
+import { AlerterPage } from "@resources/alerter";
+import { RepoPage } from "@resources/repo";
 
 const router = createBrowserRouter([
   {
@@ -18,8 +27,6 @@ const router = createBrowserRouter([
       { path: "", element: <Dashboard /> },
       { path: "login", element: <Login /> },
       { path: "signup", element: <Signup /> },
-
-      // Deployments
       {
         path: "deployments",
         children: [
@@ -27,8 +34,6 @@ const router = createBrowserRouter([
           { path: ":deploymentId", element: <DeploymentPage /> },
         ],
       },
-
-      // Servers
       {
         path: "servers",
         children: [
@@ -36,8 +41,6 @@ const router = createBrowserRouter([
           { path: ":serverId", element: <ServerPage /> },
         ],
       },
-
-      // Builds
       {
         path: "builds",
         children: [
@@ -45,13 +48,25 @@ const router = createBrowserRouter([
           { path: ":buildId", element: <BuildPage /> },
         ],
       },
-
-      // Builders
       {
         path: "builders",
         children: [
           { path: "", element: <Builders /> },
           { path: ":builderId", element: <BuilderPage /> },
+        ],
+      },
+      {
+        path: "alerters",
+        children: [
+          { path: "", element: <Alerters /> },
+          { path: ":builderId", element: <AlerterPage /> },
+        ],
+      },
+      {
+        path: "repos",
+        children: [
+          { path: "", element: <Repos /> },
+          { path: ":builderId", element: <RepoPage /> },
         ],
       },
     ],

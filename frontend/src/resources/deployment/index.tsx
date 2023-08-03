@@ -1,5 +1,5 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useAddRecentlyViewed, useRead, useWrite } from "@hooks";
+import { useAddRecentlyViewed, useRead } from "@hooks";
 import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
 import {
