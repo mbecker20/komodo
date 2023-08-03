@@ -69,6 +69,7 @@ export type ReadResponses = {
   ListTags: Types.CustomTag[];
 
   // ==== UPDATE ====
+  GetUpdate: Types.Update;
   ListUpdates: Types.ListUpdatesResponse;
 
   // ==== SERVER STATS ====

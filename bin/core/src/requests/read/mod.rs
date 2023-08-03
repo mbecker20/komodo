@@ -94,6 +94,7 @@ enum ReadRequest {
     ListTags(ListTags),
 
     // ==== UPDATE ====
+    GetUpdate(GetUpdate),
     ListUpdates(ListUpdates),
 
     // ==== SERVER STATS ====

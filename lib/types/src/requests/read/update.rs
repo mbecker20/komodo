@@ -4,11 +4,18 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        update::{ResourceTarget, UpdateStatus},
+        update::{ResourceTarget, UpdateStatus, Update},
         Operation, Version,
     },
     MongoDocument, I64,
 };
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Update)]
+pub struct GetUpdate {
+    pub id: String
+}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]

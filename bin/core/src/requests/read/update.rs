@@ -1,13 +1,19 @@
 use std::collections::HashMap;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
+        alerter::Alerter,
+        build::Build,
+        builder::Builder,
+        deployment::Deployment,
+        repo::Repo,
         server::Server,
+        update::{ResourceTarget, Update},
+        PermissionLevel,
     },
-    requests::read::{ListUpdates, ListUpdatesResponse, UpdateListItem},
+    requests::read::{GetUpdate, ListUpdates, ListUpdatesResponse, UpdateListItem},
 };
 use mungos::mongodb::{bson::doc, options::FindOptions};
 use resolver_api::Resolve;
@@ -101,5 +107,61 @@ impl Resolve<ListUpdates, RequestUser> for State {
         };
 
         Ok(ListUpdatesResponse { updates, next_page })
+    }
+}
+
+#[async_trait]
+impl Resolve<GetUpdate, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetUpdate { id }: GetUpdate,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        let update = self
+            .db
+            .updates
+            .find_one_by_id(&id)
+            .await
+            .context("failed to query to db")?
+            .context("no update exists with given id")?;
+        if user.is_admin {
+            return Ok(update);
+        }
+        match &update.target {
+            ResourceTarget::System => {
+                return Err(anyhow!("user must be admin to view system updates"))
+            }
+            ResourceTarget::Server(id) => {
+                let _: Server = self
+                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .await?;
+            }
+            ResourceTarget::Deployment(id) => {
+                let _: Deployment = self
+                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .await?;
+            }
+            ResourceTarget::Build(id) => {
+                let _: Build = self
+                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .await?;
+            }
+            ResourceTarget::Repo(id) => {
+                let _: Repo = self
+                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .await?;
+            }
+            ResourceTarget::Builder(id) => {
+                let _: Builder = self
+                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .await?;
+            }
+            ResourceTarget::Alerter(id) => {
+                let _: Alerter = self
+                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .await?;
+            }
+        }
+        Ok(update)
     }
 }
