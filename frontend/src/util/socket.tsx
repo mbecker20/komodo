@@ -12,6 +12,70 @@ import { UPDATE_WS_URL } from "@main";
 const rws_atom = atom(new rws(UPDATE_WS_URL));
 const useWebsocket = () => useAtom(rws_atom);
 
+const on_message = (
+  { data }: MessageEvent,
+  invalidate: ReturnType<typeof useInvalidate>
+) => {
+  if (data == "LOGGED_IN") return console.log("logged in to ws");
+  const update = JSON.parse(data) as Types.Update;
+
+  toast({
+    title: `${update.target} ${update.operation}`,
+    description: update.operator,
+  });
+
+  invalidate(["ListUpdates"]);
+
+  if (update.target.type === "Deployment") {
+    invalidate(
+      ["ListDeployments"],
+      ["GetDeployment", { id: update.target.id }],
+      ["GetLog", { id: update.target.id }],
+      ["GetDeploymentActionState", { id: update.target.id }],
+      ["GetDeploymentStatus", { id: update.target.id }]
+    );
+  }
+
+  if (update.target.type === "Server") {
+    invalidate(
+      ["ListServers"],
+      ["GetServer", { id: update.target.id }],
+      ["GetServerActionState", { id: update.target.id }],
+      ["GetServerStatus", { id: update.target.id }],
+      ["GetHistoricalServerStats", { id: update.target.id }]
+    );
+  }
+
+  if (update.target.type === "Build") {
+    invalidate(
+      ["ListBuilds"],
+      ["GetBuild", { id: update.target.id }],
+      ["GetBuildActionState", { id: update.target.id }]
+    );
+  }
+};
+
+const on_open = (ws: rws) => {
+  const token = localStorage.getItem("monitor-auth-token");
+  if (token) ws.send(token);
+};
+
+export const WebsocketProvider = ({ children }: { children: ReactNode }) => {
+  const invalidate = useInvalidate();
+  const [ws] = useWebsocket();
+
+  useEffect(() => {
+    ws.addEventListener("open", () => on_open(ws));
+    ws.addEventListener("message", (e) => on_message(e, invalidate));
+    return () => {
+      ws.removeEventListener("open", () => on_open(ws));
+      ws.removeEventListener("message", (e) => on_message(e, invalidate));
+    };
+  });
+
+  return <>{children}</>;
+};
+
 export const WsStatusIndicator = () => {
   const [ws] = useWebsocket();
   const onclick = () =>
@@ -26,58 +90,4 @@ export const WsStatusIndicator = () => {
       />
     </Button>
   );
-};
-
-export const WebsocketProvider = ({ children }: { children: ReactNode }) => {
-  const invalidate = useInvalidate();
-  const [ws] = useWebsocket();
-
-  useEffect(() => {
-    ws.addEventListener("open", () => {
-      const token = localStorage.getItem("monitor-auth-token");
-      if (token) ws.send(token);
-    });
-
-    ws.addEventListener("message", ({ data }) => {
-      if (data == "LOGGED_IN") return console.log("logged in to ws");
-      const update = JSON.parse(data) as Types.Update;
-
-      toast({
-        title: `${update.target} ${update.operation}`,
-        description: update.operator,
-      });
-
-      invalidate(["ListUpdates"]);
-
-      if (update.target.type === "Deployment") {
-        invalidate(
-          ["ListDeployments"],
-          ["GetDeployment", { id: update.target.id }],
-          ["GetLog", { id: update.target.id }],
-          ["GetDeploymentActionState", { id: update.target.id }],
-          ["GetDeploymentStatus", { id: update.target.id }]
-        );
-      }
-
-      if (update.target.type === "Server") {
-        invalidate(
-          ["ListServers"],
-          ["GetServer", { id: update.target.id }],
-          ["GetServerActionState", { id: update.target.id }],
-          ["GetServerStatus", { id: update.target.id }],
-          ["GetHistoricalServerStats", { id: update.target.id }]
-        );
-      }
-
-      if (update.target.type === "Build") {
-        invalidate(
-          ["ListBuilds"],
-          ["GetBuild", { id: update.target.id }],
-          ["GetBuildActionState", { id: update.target.id }]
-        );
-      }
-    });
-  });
-
-  return <>{children}</>;
 };
