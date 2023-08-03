@@ -16,7 +16,7 @@ export const ServerCard = ({ id }: { id: string }) => {
         statusIcon={<ServerStatusIcon serverId={server.id} />}
         // icon={<Server className="w-4 h-4" />}
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col text-sm">
           <ServerSpecs server_id={server.id} />
           <ServerRegion />
         </div>
