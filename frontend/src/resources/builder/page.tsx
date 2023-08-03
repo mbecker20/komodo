@@ -1,3 +1,4 @@
+import { ResourceUpdates } from "@components/updates/resource";
 import { useRead, useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { useParams } from "react-router-dom";
@@ -17,6 +18,7 @@ export const BuilderPage = () => {
 
   return (
     <Resource title={<BuilderName id={id} />} info={<></>} actions={<></>}>
+      <ResourceUpdates type="Builder" id={id} />
       <div>builder page</div>
     </Resource>
   );
