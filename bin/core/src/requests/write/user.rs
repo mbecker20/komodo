@@ -8,6 +8,8 @@ use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
 
+const RECENTLY_VIEWED_MAX: usize = 10;
+
 #[async_trait]
 impl Resolve<PushRecentlyViewed, RequestUser> for State {
     async fn resolve(
@@ -25,6 +27,7 @@ impl Resolve<PushRecentlyViewed, RequestUser> for State {
             .recently_viewed
             .into_iter()
             .filter(|r| !resource.eq(r))
+            .take(RECENTLY_VIEWED_MAX - 1)
             .collect::<VecDeque<_>>();
 
         recently_viewed.push_front(resource);
