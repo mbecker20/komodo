@@ -155,3 +155,29 @@ export const ActionWithDialog = ({
     </Dialog>
   );
 };
+
+export const ConfirmButton = ({
+  title,
+  icon,
+  intent,
+  disabled,
+  onClick,
+}: {
+  title: string;
+  icon: ReactNode;
+  intent?: ButtonProps["intent"];
+  disabled?: boolean;
+  onClick?: () => void;
+}) => {
+  const [confirmed, set] = useState(false);
+
+  return (
+    <ActionButton
+      title={confirmed ? "Confirm" : title}
+      icon={icon}
+      intent={intent}
+      disabled={disabled}
+      onClick={confirmed ? onClick : () => set(true)}
+    />
+  );
+};
