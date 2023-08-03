@@ -1,6 +1,6 @@
 import { ReactNode, forwardRef, useEffect, useState } from "react";
 import { Button, ButtonProps } from "../ui/button";
-import { Moon, SunMedium } from "lucide-react";
+import { AlertOctagon, Check, Moon, SunMedium } from "lucide-react";
 import { Input } from "../ui/input";
 import {
   Dialog,
@@ -12,6 +12,7 @@ import {
 } from "@ui/dialog";
 // import { useNavigate } from "react-router-dom";
 import { toast } from "@ui/toast/use-toast";
+import { cn } from "@util/helpers";
 
 export const WithLoading = ({
   children,
@@ -75,12 +76,13 @@ export const ActionButton = forwardRef<
     icon: ReactNode;
     intent?: ButtonProps["intent"];
     disabled?: boolean;
+    className?: string;
     onClick?: () => void;
   }
->(({ title, icon, intent, disabled, onClick }, ref) => (
+>(({ title, icon, intent, disabled, className, onClick }, ref) => (
   <Button
     variant="outline"
-    className="flex items-center justify-between w-[130px]"
+    className={cn("flex items-center justify-between w-[130px]", className)}
     intent={intent}
     onClick={onClick}
     disabled={disabled}
@@ -172,12 +174,21 @@ export const ConfirmButton = ({
   const [confirmed, set] = useState(false);
 
   return (
-    <ActionButton
-      title={confirmed ? "Confirm" : title}
-      icon={icon}
-      intent={intent}
-      disabled={disabled}
-      onClick={confirmed ? onClick : () => set(true)}
-    />
+    <>
+      <ActionButton
+        title={confirmed ? "Confirm" : title}
+        icon={confirmed ? <Check className="w-4 h-4" /> : icon}
+        intent={intent}
+        disabled={disabled}
+        onClick={confirmed ? onClick : () => set(true)}
+        className={confirmed ? "z-50" : ""}
+      />
+      {confirmed && (
+        <div
+          className="absolute z-40 top-0 left-0 w-[100vw] h-[100vh]"
+          onClick={() => set(false)}
+        />
+      )}
+    </>
   );
 };
