@@ -31,8 +31,8 @@ const UpdatePlaceHolder = () => (
   </Card>
 );
 
-const UpdateCard = ({ update }: { update: Types.Update }) => (
-  <UpdateDetails update={update}>
+const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => (
+  <UpdateDetails id={update.id}>
     <Card hoverable>
       <CardHeader className="flex-row justify-between">
         <CardTitle>{update.operation}</CardTitle>
@@ -76,7 +76,7 @@ export const ResourceUpdates = ({ type, id }: ResourceTarget) => {
       <div className="grid md:grid-cols-3 mt-2 gap-4">
         {isLoading && <UpdatePlaceHolder />}
         {data?.updates.slice(0, 3).map((update) => (
-          <UpdateCard update={update} key={update._id?.$oid} />
+          <UpdateCard update={update} key={update.id} />
         ))}
       </div>
     </Section>

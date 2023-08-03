@@ -7,8 +7,6 @@ import {
   UseMutationOptions,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useAtomValue, useSetAtom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
 import { useNavigate } from "react-router-dom";
 import {
   ExecuteResponses,
@@ -16,7 +14,7 @@ import {
   WriteResponses,
 } from "@monitor/client/dist/responses";
 import { useEffect, useState } from "react";
-import { ReadRequest, ResourceTarget } from "@monitor/client/dist/types";
+import { ReadRequest } from "@monitor/client/dist/types";
 
 export const useRead = <
   T extends Types.ReadRequest["type"],
