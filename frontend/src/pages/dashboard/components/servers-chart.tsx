@@ -1,12 +1,5 @@
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@ui/card";
+import { CardDescription } from "@ui/card";
 import { PieChart } from "react-minimal-pie-chart";
-import { Link } from "react-router-dom";
 import { useRead } from "@hooks";
 import { ServerStatus } from "@monitor/client/dist/types";
 

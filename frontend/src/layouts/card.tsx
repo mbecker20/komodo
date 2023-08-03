@@ -1,6 +1,4 @@
 import { ResourceTarget } from "@monitor/client/dist/types";
-import { DeploymentStatusIcon } from "@resources/deployment/util";
-import { ServerStatusIcon } from "@resources/server/util";
 import {
   Card,
   CardHeader,
