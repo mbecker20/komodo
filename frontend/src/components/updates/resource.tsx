@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { UpdateDetails } from "./details";
 import { Types } from "@monitor/client";
 import { Section } from "@layouts/page";
+import { ResourceTarget } from "@monitor/client/dist/types";
 
 const UpdatePlaceHolder = () => (
   <Card>
@@ -54,13 +55,7 @@ const UpdateCard = ({ update }: { update: Types.Update }) => (
   </UpdateDetails>
 );
 
-export const ResourceUpdates = ({
-  id,
-  type,
-}: {
-  id: string;
-  type: "Deployment" | "Build" | "Server";
-}) => {
+export const ResourceUpdates = ({ type, id }: ResourceTarget) => {
   const { data, isLoading } = useRead("ListUpdates", {
     "target.type": type,
     "target.id": id,
