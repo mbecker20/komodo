@@ -7,6 +7,8 @@ use typeshare::typeshare;
 
 use crate::{MongoId, I64};
 
+use super::update::ResourceTarget;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, StringObjectId)]
 pub struct User {
@@ -49,6 +51,9 @@ pub struct User {
 
     #[serde(default)]
     pub last_update_view: I64,
+
+    #[serde(default)]
+    pub recently_viewed: Vec<ResourceTarget>,
 
     #[serde(default)]
     pub updated_at: I64,

@@ -85,6 +85,9 @@ export type WriteResponses = {
   CreateLoginSecret: Types.CreateLoginSecretResponse;
   DeleteLoginSecret: Types.DeleteLoginSecretResponse;
 
+  // ==== USER ====
+  PushRecentlyViewed: Types.PushRecentlyViewedResponse;
+
   // ==== PERMISSIONS ====
   UpdateUserPerimissions: Types.Update;
   UpdateUserPermissionsOnTarget: Types.Update;

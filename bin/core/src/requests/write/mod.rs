@@ -24,6 +24,7 @@ mod repo;
 mod secret;
 mod server;
 mod tag;
+mod user;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -35,6 +36,9 @@ enum WriteRequest {
     // ==== SECRET ====
     CreateLoginSecret(CreateLoginSecret),
     DeleteLoginSecret(DeleteLoginSecret),
+
+    // ==== USER ====
+    PushRecentlyViewed(PushRecentlyViewed),
 
     // ==== PERMISSIONS ====
     UpdateUserPerimissions(UpdateUserPermissions),

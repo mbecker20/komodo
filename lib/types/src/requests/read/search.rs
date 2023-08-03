@@ -2,7 +2,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{entities::{tag::Tag, update::ResourceTargetVariant}, MongoDocument};
+use crate::{
+    entities::{tag::Tag, update::ResourceTargetVariant},
+    MongoDocument,
+};
 
 use super::{BuildListItem, DeploymentListItem, RepoListItem, ServerListItem};
 
@@ -21,7 +24,7 @@ pub struct FindResources {
 #[response(FindResourcesResponse)]
 pub struct FindResourcesWithQuery {
     pub query: Option<MongoDocument>,
-    pub resources: Option<Vec<ResourceTargetVariant>>
+    pub resources: Option<Vec<ResourceTargetVariant>>,
 }
 
 #[typeshare]

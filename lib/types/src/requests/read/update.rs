@@ -17,5 +17,5 @@ pub struct ListUpdates {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ListUpdatesResponse {
     pub updates: Vec<Update>,
-    pub next_page: Option<u32>
+    pub next_page: Option<u32>,
 }
