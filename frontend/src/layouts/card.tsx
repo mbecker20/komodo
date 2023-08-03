@@ -44,7 +44,7 @@ export const ResourceCard = ({
       {/* {icon}
       <div className="border h-6" /> */}
       {children}
-      <Accordion
+      {/* <Accordion
         type="single"
         collapsible
         onClick={(e) => {
@@ -62,7 +62,7 @@ export const ResourceCard = ({
             </div>
           </AccordionContent>
         </AccordionItem>
-      </Accordion>
+      </Accordion> */}
     </CardContent>
   </Card>
 );
