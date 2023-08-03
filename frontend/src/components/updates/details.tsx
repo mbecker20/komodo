@@ -109,7 +109,7 @@ export const UpdateDetails = ({
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-2">
-          {update.logs.map((log, i) => (
+          {update.logs?.map((log, i) => (
             <Card key={i}>
               <CardHeader>
                 <CardTitle>{log.stage}</CardTitle>

@@ -89,31 +89,6 @@ export const useLogin = () => {
   });
 };
 
-const recently_viewed = atomWithStorage<Types.ResourceTarget[]>(
-  "recently-viewed",
-  []
-);
-
-export const useGetRecentlyViewed = () => useAtomValue(recently_viewed);
-
-export const useSetRecentlyViewed = () => {
-  const set = useSetAtom(recently_viewed);
-
-  const push = <
-    T extends Types.ResourceTarget["type"],
-    P = Extract<Types.ResourceTarget, { type: T }>["id"]
-  >(
-    type: T,
-    id: P
-  ) =>
-    set((d) => [
-      { type, id } as ResourceTarget,
-      ...d.filter((d) => d.id !== id).slice(0, 5),
-    ]);
-
-  return push;
-};
-
 export const useServerStats = (server_id: string) => {
   const [stats, set] = useState<Types.AllSystemStats>();
 

@@ -1,5 +1,5 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useRead, useSetRecentlyViewed } from "@hooks";
+import { useRead, useWrite } from "@hooks";
 import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
 import {
@@ -17,14 +17,17 @@ import {
   DeploymentStatusIcon,
 } from "@resources/deployment/util";
 import { CardDescription } from "@ui/card";
+import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 
 export const DeploymentPage = () => {
   const id = useParams().deploymentId;
-  const push = useSetRecentlyViewed();
+  const push = useWrite("PushRecentlyViewed").mutate;
 
   if (!id) return null;
-  push("Deployment", id);
+  useEffect(() => {
+    push({ resource: { type: "Deployment", id } });
+  }, []);
 
   return (
     <Resource

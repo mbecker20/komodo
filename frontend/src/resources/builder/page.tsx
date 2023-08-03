@@ -1,6 +1,7 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useRead, useSetRecentlyViewed } from "@hooks";
+import { useRead, useWrite } from "@hooks";
 import { Resource } from "@layouts/resource";
+import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 const BuilderName = ({ id }: { id: string }) => {
@@ -11,10 +12,12 @@ const BuilderName = ({ id }: { id: string }) => {
 
 export const BuilderPage = () => {
   const id = useParams().builderId;
-  const push = useSetRecentlyViewed();
+  const push = useWrite("PushRecentlyViewed").mutate;
 
   if (!id) return null;
-  push("Builder", id);
+  useEffect(() => {
+    push({ resource: { type: "Builder", id } });
+  }, []);
 
   return (
     <Resource title={<BuilderName id={id} />} info={<></>} actions={<></>}>

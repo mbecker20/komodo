@@ -1,4 +1,4 @@
-import { useGetRecentlyViewed, useUser } from "@hooks";
+import { useRead, useUser } from "@hooks";
 import { BuildCard } from "@resources/build/card";
 import { useState } from "react";
 import {
@@ -66,14 +66,14 @@ const NewResource = () => {
 
 export const RecentlyViewed = () => {
   const user = useUser().data;
+  const recents = useRead("GetUser", {}).data?.recently_viewed;
 
-  const recents = useGetRecentlyViewed();
   return (
     <div className="w-full flex flex-col gap-12">
       <div className="flex justify-between">
         <div>
           <h1 className="text-4xl"> Hello, {user?.username}.</h1>
-          {!!recents.length && (
+          {!!recents?.length && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <History className="w-4 h-4" />
               <h2 className="text-xl">Recently Viewed</h2>
@@ -83,7 +83,7 @@ export const RecentlyViewed = () => {
         <NewResource />
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {recents.map(({ type, id }) => {
+        {recents?.map(({ type, id }) => {
           if (type === "Deployment") return <DeploymentCard key={id} id={id} />;
           if (type === "Build") return <BuildCard key={id} id={id} />;
           if (type === "Server") return <ServerCard key={id} id={id} />;

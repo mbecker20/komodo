@@ -1,4 +1,4 @@
-import { useSetRecentlyViewed } from "@hooks";
+import { useWrite } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { BuildName, BuildVersion } from "./util";
 import { Link, useParams } from "react-router-dom";
@@ -6,13 +6,16 @@ import { RebuildBuild } from "./components/actions";
 import { Button } from "@ui/button";
 import { Settings } from "lucide-react";
 import { BuildConfig } from "./config";
+import { useEffect } from "react";
 
 export const BuildPage = () => {
   const id = useParams().buildId;
-  const push = useSetRecentlyViewed();
+  const push = useWrite("PushRecentlyViewed").mutate;
 
   if (!id) return null;
-  push("Build", id);
+  useEffect(() => {
+    push({ resource: { type: "Build", id } });
+  }, []);
 
   return (
     <Resource
