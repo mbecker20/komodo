@@ -33,13 +33,14 @@ import { ReactNode } from "react";
 import { ServerName } from "@resources/server/util";
 import { DeploymentName } from "@resources/deployment/util";
 import { BuildName } from "@resources/build/util";
+import { useRead } from "@hooks";
 // import { useRead } from "@hooks";
 
-export const UpdateUser = ({ userId }: { userId: string }) => {
-  // const { data } = useRead({ type: "GetUser", params: {} });
-  if (userId === "github") return <>GitHub</>;
-  if (userId === "auto redeploy") return <>Auto Redeploy</>;
-  return <>{userId.slice(0, 10)}...</>;
+export const UpdateUser = ({ user_id }: { user_id: string }) => {
+  const username = useRead("GetUsername", { user_id }).data;
+  if (user_id === "github") return <>GitHub</>;
+  if (user_id === "auto redeploy") return <>Auto Redeploy</>;
+  return <>{username?.username}</>;
 };
 
 export const UpdateDetails = ({
