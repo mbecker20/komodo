@@ -5,7 +5,7 @@ import { useAddRecentlyViewed, useRead } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { Link, useParams } from "react-router-dom";
 
-const BuilderName = ({ id }: { id: string }) => {
+export const BuilderName = ({ id }: { id: string }) => {
   const builders = useRead("ListBuilders", {}).data;
   const builder = builders?.find((b) => b._id?.$oid === id);
   return <>{builder?.name}</>;

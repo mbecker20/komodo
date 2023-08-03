@@ -5,7 +5,7 @@ import { Resource } from "@layouts/resource";
 import { AlarmClock } from "lucide-react";
 import { useParams } from "react-router-dom";
 
-const AlerterName = ({ id }: { id: string }) => {
+export const AlerterName = ({ id }: { id: string }) => {
   const alerters = useRead("ListAlerters", {}).data;
   const alerter = alerters?.find((a) => a._id?.$oid === id);
   if (!alerter) return null;

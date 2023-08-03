@@ -1,9 +1,12 @@
 import { useRead } from "@hooks";
+import { AlerterName } from "@resources/alerter";
 import { BuildName } from "@resources/build/util";
+import { BuilderName } from "@resources/builder";
 import {
   DeploymentName,
   DeploymentStatusIcon,
 } from "@resources/deployment/util";
+import { RepoName } from "@resources/repo";
 import { ServerName, ServerStatusIcon } from "@resources/server/util";
 import { Button } from "@ui/button";
 import {
@@ -15,7 +18,7 @@ import {
   CommandSeparator,
   CommandItem,
 } from "@ui/command";
-import { Search } from "lucide-react";
+import { AlarmClock, Factory, GitBranch, Hammer, Search } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -38,6 +41,9 @@ export const Omnibar = () => {
   const deployments = useRead("ListDeployments", {}).data;
   const builds = useRead("ListBuilds", {}).data;
   const servers = useRead("ListServers", {}).data;
+  const builders = useRead("ListBuilders", {}).data;
+  const alerters = useRead("ListAlerters", {}).data;
+  const repos = useRead("ListRepos", {}).data;
 
   return (
     <>
@@ -86,7 +92,54 @@ export const Omnibar = () => {
                   className="flex items-center gap-2"
                   onSelect={nav(`/builds/${id}`)}
                 >
+                  <Hammer className="w-4 h-4" />
                   <BuildName id={id} />
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+          <CommandGroup heading="Builders">
+            {builders?.map(({ _id }) => {
+              const id = _id?.$oid;
+              if (!id) return null;
+              return (
+                <CommandItem
+                  key={id}
+                  className="flex items-center gap-2"
+                  onSelect={nav(`/builders/${id}`)}
+                >
+                  <Factory className="w-4 h-4" />
+                  <BuilderName id={id} />
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+          <CommandGroup heading="Alerters">
+            {alerters?.map(({ _id }) => {
+              const id = _id?.$oid;
+              if (!id) return null;
+              return (
+                <CommandItem
+                  key={id}
+                  className="flex items-center gap-2"
+                  onSelect={nav(`/alerters/${id}`)}
+                >
+                  <AlarmClock className="w-4 h-4" />
+                  <AlerterName id={id} />
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+          <CommandGroup heading="Repos">
+            {repos?.map(({ id }) => {
+              return (
+                <CommandItem
+                  key={id}
+                  className="flex items-center gap-2"
+                  onSelect={nav(`/repos/${id}`)}
+                >
+                  <GitBranch className="w-4 h-4" />
+                  <RepoName id={id} />
                 </CommandItem>
               );
             })}
