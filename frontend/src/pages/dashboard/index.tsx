@@ -15,7 +15,7 @@ export const Dashboard = () => {
           <h2 className="text-xl">My Resources</h2>
         </div>
         <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex gap-4 w-full h-fit">
+          <div className="flex flex-col md:flex-row gap-4 w-full h-fit">
             <DeploymentsChart />
             <ServersChart />
           </div>
