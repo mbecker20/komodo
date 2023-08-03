@@ -1,3 +1,4 @@
+import { ResourceUpdates } from "@components/updates/resource";
 import { useRead, useWrite } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { useEffect } from "react";
@@ -30,6 +31,9 @@ export const Alerter = () => {
     <Resource
       title={<AlerterName id={id} />}
       info={<AlerterInfo id={id} />}
-    ></Resource>
+      actions={<></>}
+    >
+      <ResourceUpdates type="Alerter" id={id} />
+    </Resource>
   );
 };

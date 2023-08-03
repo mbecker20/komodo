@@ -1,16 +1,18 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useWrite } from "@hooks";
+import { useWrite, useRead } from "@hooks";
+import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
-import { ServerConfig } from "@resources/server/config";
-import { ServerStats } from "@resources/server/stats";
+import { CardDescription } from "@ui/card";
+import { useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { ServerConfig } from "./config";
+import { ServerStats } from "./stats";
 import {
   ServerName,
   ServerStatusIcon,
   ServerSpecs,
-} from "@resources/server/util";
-import { CardDescription } from "@ui/card";
-import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+  ServerRegion,
+} from "./util";
 
 export const ServerPage = () => {
   const id = useParams().serverId;
@@ -37,5 +39,27 @@ export const ServerPage = () => {
       <ServerStats />
       <ServerConfig />
     </Resource>
+  );
+};
+
+export const ServerCard = ({ id }: { id: string }) => {
+  const servers = useRead("ListServers", {}).data;
+  const server = servers?.find((server) => server.id === id);
+  if (!server) return null;
+
+  return (
+    <Link to={`/servers/${server.id}`} key={server.id}>
+      <ResourceCard
+        title={server.name}
+        description={server.status}
+        statusIcon={<ServerStatusIcon serverId={server.id} />}
+        // icon={<Server className="w-4 h-4" />}
+      >
+        <div className="flex flex-col text-sm">
+          <ServerSpecs server_id={server.id} />
+          <ServerRegion />
+        </div>
+      </ResourceCard>
+    </Link>
   );
 };

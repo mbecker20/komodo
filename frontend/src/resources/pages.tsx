@@ -1,10 +1,10 @@
 import { Factory, Hammer, Rocket, Server } from "lucide-react";
 import { useRead } from "@hooks";
 import { Resources } from "@layouts/resources";
-import { DeploymentCard } from "./deployment/card";
-import { BuildCard } from "./build/card";
-import { ServerCard } from "./server/card";
-import { BuilderCard } from "./builder/card";
+import { DeploymentCard } from "@resources/deployment";
+import { BuildCard } from "@resources/build";
+import { ServerCard } from "@resources/server";
+import { BuilderCard } from "@resources/builder";
 
 const DeploymentsSummary = () => {
   const summary = useRead("GetDeploymentsSummary", {}).data;

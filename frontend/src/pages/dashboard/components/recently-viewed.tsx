@@ -1,5 +1,5 @@
 import { useRead, useUser } from "@hooks";
-import { BuildCard } from "@resources/build/card";
+import { BuildCard } from "@resources/build";
 import { useState } from "react";
 import {
   DropdownMenu,
@@ -12,14 +12,14 @@ import {
 } from "@ui/dropdown";
 import { Button } from "@ui/button";
 import { ChevronDown, History, PlusCircle } from "lucide-react";
-import { DeploymentCard } from "@resources/deployment/card";
+import { DeploymentCard } from "@resources/deployment";
 import { NewDeployment } from "@resources/deployment/new";
-import { ServerCard } from "@resources/server/card";
+import { ServerCard } from "@resources/server";
 import { NewBuild } from "@resources/build/new";
 import { Types } from "@monitor/client";
 import { NewBuilder } from "@resources/builder/new";
 import { ResourceTarget } from "@monitor/client/dist/types";
-import { BuilderCard } from "@resources/builder/card";
+import { BuilderCard } from "@resources/builder";
 
 const NewResource = () => {
   const [open, set] = useState<Types.ResourceTarget["type"] | false>(false);
