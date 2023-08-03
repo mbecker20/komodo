@@ -7,13 +7,13 @@ import { Settings, Save, History } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
-export const ServerConfig = () => {
-  const id = useParams().serverId;
-  const server = useRead("GetServer", { id }).data;
-  const [update, set] = useState<Partial<Types.ServerConfig>>({});
-  const { mutate } = useWrite("UpdateServer");
+export const RepoConfig = () => {
+  const id = useParams().repoId;
+  const repo = useRead("GetRepo", { id }).data;
+  const [update, set] = useState<Partial<Types.RepoConfig>>({});
+  const { mutate } = useWrite("UpdateRepo");
 
-  if (id && server?.config) {
+  if (id && repo?.config) {
     return (
       <Section
         title="Config"
@@ -33,7 +33,7 @@ export const ServerConfig = () => {
           </div>
         }
       >
-        <Config config={server?.config as any} update={update} set={set} />
+        <Config config={repo?.config as any} update={update} set={set} />
       </Section>
     );
   } else {

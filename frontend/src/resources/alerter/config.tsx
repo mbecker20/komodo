@@ -7,13 +7,13 @@ import { Settings, Save, History } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
-export const ServerConfig = () => {
-  const id = useParams().serverId;
-  const server = useRead("GetServer", { id }).data;
-  const [update, set] = useState<Partial<Types.ServerConfig>>({});
-  const { mutate } = useWrite("UpdateServer");
+export const AlerterConfig = () => {
+  const id = useParams().builderId;
+  const alerter = useRead("GetAlerter", { id }).data;
+  const [update, set] = useState<Partial<Types.AlerterConfig>>({});
+  const { mutate } = useWrite("UpdateAlerter");
 
-  if (id && server?.config) {
+  if (id && alerter?.config) {
     return (
       <Section
         title="Config"
@@ -26,14 +26,19 @@ export const ServerConfig = () => {
             <Button
               variant="outline"
               intent="success"
-              onClick={() => mutate({ config: update, id })}
+              onClick={() =>
+                mutate({
+                  config: { type: "Slack", params: { ...update.params } }, // typecheck angry unless do this
+                  id,
+                })
+              }
             >
               <Save className="w-4 h-4" />
             </Button>
           </div>
         }
       >
-        <Config config={server?.config as any} update={update} set={set} />
+        <Config config={alerter?.config as any} update={update} set={set} />
       </Section>
     );
   } else {

@@ -21,7 +21,6 @@ import { Link, useParams } from "react-router-dom";
 
 export const DeploymentPage = () => {
   const id = useParams().deploymentId;
-
   if (!id) return null;
   useAddRecentlyViewed("Deployment", id);
 

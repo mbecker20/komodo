@@ -15,6 +15,7 @@ import { NewBuilder } from "@resources/builder/new";
 import { NewDeployment } from "@resources/deployment/new";
 import { PlusCircle, ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { RESOURCE_TYPES } from "@util/config";
 
 export const CreateResource = () => {
   const [open, set] = useState<Types.ResourceTarget["type"] | false>(false);
@@ -40,7 +41,7 @@ export const CreateResource = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            {["Deployment", "Build", "Server", "Builder"].map((target) => (
+            {RESOURCE_TYPES.map((target) => (
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() => set(target as ResourceTarget["type"])}
