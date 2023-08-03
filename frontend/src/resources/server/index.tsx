@@ -1,9 +1,8 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useWrite, useRead } from "@hooks";
+import { useRead, useAddRecentlyViewed } from "@hooks";
 import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
 import { CardDescription } from "@ui/card";
-import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ServerConfig } from "./config";
 import { ServerStats } from "./stats";
@@ -16,12 +15,9 @@ import {
 
 export const ServerPage = () => {
   const id = useParams().serverId;
-  const push = useWrite("PushRecentlyViewed").mutate;
 
   if (!id) return null;
-  useEffect(() => {
-    push({ resource: { type: "Server", id } });
-  }, []);
+  useAddRecentlyViewed("Server", id);
 
   return (
     <Resource

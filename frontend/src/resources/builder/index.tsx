@@ -1,9 +1,8 @@
 import { ResourceCard } from "@layouts/card";
 import { Bot, Cloud, Factory } from "lucide-react";
 import { ResourceUpdates } from "@components/updates/resource";
-import { useRead, useWrite } from "@hooks";
+import { useAddRecentlyViewed, useRead } from "@hooks";
 import { Resource } from "@layouts/resource";
-import { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 
 const BuilderName = ({ id }: { id: string }) => {
@@ -14,12 +13,9 @@ const BuilderName = ({ id }: { id: string }) => {
 
 export const BuilderPage = () => {
   const id = useParams().builderId;
-  const push = useWrite("PushRecentlyViewed").mutate;
 
   if (!id) return null;
-  useEffect(() => {
-    push({ resource: { type: "Builder", id } });
-  }, []);
+  useAddRecentlyViewed("Builder", id);
 
   return (
     <Resource title={<BuilderName id={id} />} info={<></>} actions={<></>}>

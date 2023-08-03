@@ -1,5 +1,5 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useRead, useWrite } from "@hooks";
+import { useAddRecentlyViewed, useRead, useWrite } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
@@ -20,12 +20,8 @@ const AlerterInfo = ({ id }: { id: string }) => {
 
 export const Alerter = () => {
   const id = useParams().alerterId;
-  const push = useWrite("PushRecentlyViewed").mutate;
-
   if (!id) return null;
-  useEffect(() => {
-    push({ resource: { type: "Deployment", id } });
-  }, []);
+  useAddRecentlyViewed("Alerter", id);
 
   return (
     <Resource

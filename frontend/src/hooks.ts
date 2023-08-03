@@ -110,3 +110,19 @@ export const useServerStats = (server_id: string) => {
 
   return stats;
 };
+
+export const useAddRecentlyViewed = (
+  type: Types.ResourceTarget["type"],
+  id: string
+) => {
+  const invalidate = useInvalidate();
+  const push = useWrite("PushRecentlyViewed", {
+    onSuccess: () => invalidate(["GetUser"]),
+  }).mutate;
+
+  useEffect(() => {
+    push({ resource: { type, id } } as any);
+  }, []);
+
+  return push;
+};

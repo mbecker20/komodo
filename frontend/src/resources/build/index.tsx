@@ -1,4 +1,4 @@
-import { useWrite } from "@hooks";
+import { useAddRecentlyViewed, useWrite } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { BuildName, BuildVersion } from "./util";
 import { Link, useParams } from "react-router-dom";
@@ -13,12 +13,8 @@ import { ResourceCard } from "@layouts/card";
 
 export const BuildPage = () => {
   const id = useParams().buildId;
-  const push = useWrite("PushRecentlyViewed").mutate;
-
   if (!id) return null;
-  useEffect(() => {
-    push({ resource: { type: "Build", id } });
-  }, []);
+  useAddRecentlyViewed("Build", id);
 
   return (
     <Resource
