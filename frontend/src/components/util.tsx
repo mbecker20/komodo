@@ -10,6 +10,8 @@ import {
   DialogContent,
   DialogFooter,
 } from "@ui/dialog";
+// import { useNavigate } from "react-router-dom";
+import { toast } from "@ui/toast/use-toast";
 
 export const WithLoading = ({
   children,
@@ -122,8 +124,18 @@ export const ActionWithDialog = ({
           <DialogTitle>Confirm {title}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4 my-4">
-          <p>
+          <p
+            onClick={() => {
+              navigator.clipboard.writeText(name);
+              toast({ title: `Copied "${name}" to clipboard!` });
+            }}
+            className="cursor-pointer"
+          >
             Please enter <b>{name}</b> below to confirm this action.
+            <br />
+            <span className="text-xs text-muted-foreground">
+              You may click the name in bold to copy it
+            </span>
           </p>
           <Input value={input} onChange={(e) => setInput(e.target.value)} />
         </div>
