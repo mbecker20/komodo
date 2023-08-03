@@ -6,6 +6,7 @@ import { BuildChart } from "./components/builds-chart";
 import { Page, Section } from "@layouts/page";
 import { useUser } from "@hooks";
 import { ResourceOverviewCard } from "@layouts/card";
+import { CreateResource } from "./components/create-resource";
 
 const DashboardTitle = () => {
   const user = useUser().data;
@@ -40,7 +41,7 @@ const MyResources = () => (
 );
 
 export const Dashboard = () => (
-  <Page title={<DashboardTitle />} subtitle="" actions="">
+  <Page title={<DashboardTitle />} subtitle="" actions={<CreateResource />}>
     <RecentlyViewed />
     <MyResources />
   </Page>
