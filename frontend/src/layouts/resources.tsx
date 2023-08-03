@@ -47,11 +47,10 @@ export const Resources = ({
           <NewDeployment open={open} set={setOpen} />
         </div>
       }
-      content={
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {components(search)}
-        </div>
-      }
-    />
+    >
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {components(search)}
+      </div>
+    </Page>
   );
 };

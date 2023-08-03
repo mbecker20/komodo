@@ -73,7 +73,7 @@ export const ResourceUpdates = ({ type, id }: ResourceTarget) => {
         </Link>
       }
     >
-      <div className="grid md:grid-cols-3 mt-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         {isLoading && <UpdatePlaceHolder />}
         {data?.updates.slice(0, 3).map((update) => (
           <UpdateCard update={update} key={update.id} />

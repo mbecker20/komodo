@@ -4,19 +4,19 @@ interface PageProps {
   title: ReactNode;
   subtitle: ReactNode;
   actions: ReactNode;
-  content: ReactNode;
+  children: ReactNode;
 }
 
-export const Page = ({ title, subtitle, actions, content }: PageProps) => (
+export const Page = ({ title, subtitle, actions, children }: PageProps) => (
   <div className="flex flex-col gap-12">
     <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 justify-between">
       <div className="flex flex-col">
-        {title}
+        <h1 className="text-4xl">{title}</h1>
         {subtitle}
       </div>
       {actions}
     </div>
-    {content}
+    {children}
   </div>
 );
 
@@ -28,7 +28,7 @@ interface SectionProps {
 }
 
 export const Section = ({ title, icon, actions, children }: SectionProps) => (
-  <div className="flex flex-col">
+  <div className="flex flex-col gap-2">
     <div className="flex justify-between">
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}

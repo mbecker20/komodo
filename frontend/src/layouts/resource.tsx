@@ -13,6 +13,7 @@ export const Resource = ({ title, info, actions, children }: ResourceProps) => (
     title={<h1 className="text-4xl">{title}</h1>}
     subtitle={<h2 className="text-md">{info}</h2>}
     actions={actions}
-    content={children}
-  />
+  >
+    {children}
+  </Page>
 );

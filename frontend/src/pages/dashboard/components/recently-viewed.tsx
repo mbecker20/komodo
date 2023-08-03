@@ -20,6 +20,7 @@ import { Types } from "@monitor/client";
 import { NewBuilder } from "@resources/builder/new";
 import { ResourceTarget } from "@monitor/client/dist/types";
 import { BuilderCard } from "@resources/builder";
+import { Section } from "@layouts/page";
 
 const NewResource = () => {
   const [open, set] = useState<Types.ResourceTarget["type"] | false>(false);
@@ -69,6 +70,23 @@ export const RecentlyViewed = () => {
   const recents = useRead("GetUser", {}).data?.recently_viewed;
 
   return (
+    <Section
+      title="Recently Viewed"
+      icon={<History className="w-4 h-4" />}
+      actions=""
+    >
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {recents?.map(({ type, id }) => {
+          if (type === "Deployment") return <DeploymentCard key={id} id={id} />;
+          if (type === "Build") return <BuildCard key={id} id={id} />;
+          if (type === "Server") return <ServerCard key={id} id={id} />;
+          if (type === "Builder") return <BuilderCard key={id} id={id} />;
+        })}
+      </div>
+    </Section>
+  );
+
+  return (
     <div className="w-full flex flex-col gap-12">
       <div className="flex justify-between">
         <div>
@@ -81,14 +99,6 @@ export const RecentlyViewed = () => {
           )}
         </div>
         <NewResource />
-      </div>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {recents?.map(({ type, id }) => {
-          if (type === "Deployment") return <DeploymentCard key={id} id={id} />;
-          if (type === "Build") return <BuildCard key={id} id={id} />;
-          if (type === "Server") return <ServerCard key={id} id={id} />;
-          if (type === "Builder") return <BuilderCard key={id} id={id} />;
-        })}
       </div>
     </div>
   );

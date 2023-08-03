@@ -14,11 +14,11 @@ export const DeploymentsChart = () => {
 
   return (
     <Link to="/deployments" className="w-full">
-      <Card className="pb-4" hoverable>
+      <Card hoverable>
         <CardHeader className="flex-row justify-between items-center">
           <CardTitle>Deployments</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-4 items-center w-full">
+        <CardContent className="flex gap-4 items-center w-full h-[200px]">
           <div className="flex flex-col gap-2 text-muted-foreground w-full">
             <CardDescription>
               <span className="text-green-500 font-bold">
@@ -47,7 +47,9 @@ export const DeploymentsChart = () => {
           </div>
           <div className="flex justify-end items-center w-full">
             <PieChart
-              className="w-20 h-20"
+              className="w-32"
+              segmentsShift={0.5}
+              lineWidth={35}
               data={[
                 {
                   color: "#22C55E",
