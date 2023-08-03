@@ -9,7 +9,7 @@ import {
 import { Cpu, Database, LineChart, MemoryStick } from "lucide-react";
 import { useParams } from "react-router-dom";
 
-export const ServerStatsPage = () => {
+export const ServerStats = () => {
   const server_id = useParams().serverId;
   if (!server_id) return null;
 

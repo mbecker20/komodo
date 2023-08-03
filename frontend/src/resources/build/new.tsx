@@ -15,7 +15,7 @@ export const NewBuild = ({
   set,
 }: {
   open: boolean;
-  set: (b: boolean) => void;
+  set: (b: false) => void;
 }) => {
   const { mutate } = useWrite("CreateBuild");
   const [name, setName] = useState("");

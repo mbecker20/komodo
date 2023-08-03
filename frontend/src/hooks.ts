@@ -16,7 +16,7 @@ import {
   WriteResponses,
 } from "@monitor/client/dist/responses";
 import { useEffect, useState } from "react";
-import { ReadRequest } from "@monitor/client/dist/types";
+import { ReadRequest, ResourceTarget } from "@monitor/client/dist/types";
 
 export const useRead = <
   T extends Types.ReadRequest["type"],
@@ -98,8 +98,19 @@ export const useGetRecentlyViewed = () => useAtomValue(recently_viewed);
 
 export const useSetRecentlyViewed = () => {
   const set = useSetAtom(recently_viewed);
-  const push = (type: "Deployment" | "Build" | "Server", id: string) =>
-    set((res) => [{ type, id }, ...res.filter((r) => r.id !== id)].slice(0, 5));
+
+  const push = <
+    T extends Types.ResourceTarget["type"],
+    P = Extract<Types.ResourceTarget, { type: T }>["id"]
+  >(
+    type: T,
+    id: P
+  ) =>
+    set((d) => [
+      { type, id } as ResourceTarget,
+      ...d.filter((d) => d.id !== id).slice(0, 5),
+    ]);
+
   return push;
 };
 

@@ -16,7 +16,7 @@ export const BuilderCard = ({ id }: { id: string }) => {
   if (!builder) return null;
 
   return (
-    <Link to={`/builds/${builder._id?.$oid}`} key={builder._id?.$oid}>
+    <Link to={`/builders/${builder._id?.$oid}`} key={builder._id?.$oid}>
       <Card hoverable>
         <CardHeader className="flex flex-row justify-between">
           <div>

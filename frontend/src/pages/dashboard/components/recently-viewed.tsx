@@ -16,11 +16,13 @@ import { DeploymentCard } from "@resources/deployment/card";
 import { NewDeployment } from "@resources/deployment/new";
 import { ServerCard } from "@resources/server/card";
 import { NewBuild } from "@resources/build/new";
+import { Types } from "@monitor/client";
+import { NewBuilder } from "@resources/builder/new";
+import { ResourceTarget } from "@monitor/client/dist/types";
 
-const NewButton = () => {
-  const [open, set] = useState<"deployment" | "build" | "server" | boolean>(
-    false
-  );
+const NewResource = () => {
+  const [open, set] = useState<Types.ResourceTarget["type"] | false>(false);
+
   return (
     <>
       <DropdownMenu>
@@ -42,26 +44,21 @@ const NewButton = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => set("deployment")}
-            >
-              Deployment
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onClick={() => set("build")}
-            >
-              Build
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Server
-            </DropdownMenuItem>
+            {["Deployment", "Build", "Server", "Builder"].map((target) => (
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => set(target as ResourceTarget["type"])}
+                key={target}
+              >
+                {target}
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <NewDeployment open={open === "deployment"} set={set} />
-      <NewBuild open={open === "build"} set={set} />
+      <NewDeployment open={open === "Deployment"} set={set} />
+      <NewBuild open={open === "Build"} set={set} />
+      <NewBuilder open={open === "Builder"} set={set} />
     </>
   );
 };
@@ -82,7 +79,7 @@ export const RecentlyViewed = () => {
             </div>
           )}
         </div>
-        <NewButton />
+        <NewResource />
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {recents.map(({ type, id }) => {

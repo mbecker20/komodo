@@ -2,11 +2,11 @@ import { ResourceUpdates } from "@components/updates/resource";
 import { useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { ServerConfig } from "@resources/server/config";
-import { ServerStatsPage } from "@resources/server/stats";
+import { ServerStats } from "@resources/server/stats";
 import {
   ServerName,
   ServerStatusIcon,
-  ServerStats,
+  ServerSpecs,
 } from "@resources/server/util";
 import { CardDescription } from "@ui/card";
 import { useParams } from "react-router-dom";
@@ -25,13 +25,13 @@ export const ServerPage = () => {
         <div className="flex items-center gap-4">
           <ServerStatusIcon serverId={id} />
           <CardDescription className="hidden md:block">|</CardDescription>
-          <ServerStats server_id={id} />
+          <ServerSpecs server_id={id} />
         </div>
       }
       actions={null}
     >
       <ResourceUpdates type="Server" id={id} />
-      <ServerStatsPage />
+      <ServerStats />
       <ServerConfig />
     </Resource>
   );

@@ -8,6 +8,7 @@ import { Deployments, Builds, Servers, Builders } from "@resources/pages";
 import { ServerPage } from "@resources/server";
 import { DeploymentPage } from "@resources/deployment";
 import { BuildPage } from "@resources/build";
+import { BuilderPage } from "@resources/builder/page";
 
 const router = createBrowserRouter([
   {
@@ -50,7 +51,7 @@ const router = createBrowserRouter([
         path: "builders",
         children: [
           { path: "", element: <Builders /> },
-          // { path: ":builderId", element: <Build /> },
+          { path: ":builderId", element: <BuilderPage /> },
         ],
       },
     ],

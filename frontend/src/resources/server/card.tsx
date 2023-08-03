@@ -1,6 +1,6 @@
 import { useRead } from "@hooks";
 import { Link } from "react-router-dom";
-import { ServerStatusIcon, ServerStats, ServerRegion } from "./util";
+import { ServerStatusIcon, ServerSpecs, ServerRegion } from "./util";
 import { ResourceCard } from "@layouts/card";
 
 export const ServerCard = ({ id }: { id: string }) => {
@@ -17,7 +17,7 @@ export const ServerCard = ({ id }: { id: string }) => {
         // icon={<Server className="w-4 h-4" />}
       >
         <div className="flex flex-col">
-          <ServerStats server_id={server.id} />
+          <ServerSpecs server_id={server.id} />
           <ServerRegion />
         </div>
       </ResourceCard>

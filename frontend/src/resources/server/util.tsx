@@ -3,7 +3,6 @@ import { ServerStatus } from "@monitor/client/dist/types";
 import { CardDescription } from "@ui/card";
 import { cn } from "@util/helpers";
 import { Cpu, Database, MapPin, MemoryStick, Server } from "lucide-react";
-import { useEffect } from "react";
 
 export const ServerName = ({ serverId }: { serverId: string | undefined }) => {
   const servers = useRead("ListServers", {}).data;
@@ -21,12 +20,12 @@ export const ServerInfo = ({ serverId }: { serverId: string | undefined }) => {
         <div> {server?.status}</div>
       </div>
       <CardDescription className="hidden md:block">|</CardDescription>
-      {serverId && <ServerStats server_id={serverId} />}
+      {serverId && <ServerSpecs server_id={serverId} />}
     </div>
   );
 };
 
-export const ServerStats = ({ server_id }: { server_id: string }) => {
+export const ServerSpecs = ({ server_id }: { server_id: string }) => {
   const stats = useRead("GetBasicSystemStats", { server_id }).data;
   const info = useRead("GetSystemInformation", { server_id }).data;
 

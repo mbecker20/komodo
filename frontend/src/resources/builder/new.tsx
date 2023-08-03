@@ -11,7 +11,7 @@ import { Input } from "@ui/input";
 import { useWrite } from "@hooks";
 import { useNavigate } from "react-router-dom";
 
-export const NewDeployment = ({
+export const NewBuilder = ({
   open,
   set,
 }: {
@@ -19,20 +19,20 @@ export const NewDeployment = ({
   set: (b: false) => void;
 }) => {
   const nav = useNavigate();
-  const { mutateAsync } = useWrite("CreateDeployment");
+  const { mutateAsync } = useWrite("CreateBuilder");
   const [name, setName] = useState("");
 
   return (
     <Dialog open={open} onOpenChange={set}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New Deployment</DialogTitle>
+          <DialogTitle>New Builder</DialogTitle>
         </DialogHeader>
         <div className="flex items-center justify-between">
-          <div>Deployment Name</div>
+          <div>Builder Name</div>
           <Input
             className="max-w-[50%]"
-            placeholder="Deployment Name"
+            placeholder="Builder Name"
             name={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -42,8 +42,11 @@ export const NewDeployment = ({
             variant="outline"
             intent="success"
             onClick={async () => {
-              const { _id } = await mutateAsync({ name, config: {} });
-              nav(`/deployments/${_id?.$oid}`);
+              const { _id } = await mutateAsync({
+                name,
+                config: { type: "Aws", params: {} },
+              });
+              nav(`/builders/${_id?.$oid}`);
               set(false);
             }}
           >
