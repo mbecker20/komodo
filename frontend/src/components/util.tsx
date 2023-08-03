@@ -1,6 +1,6 @@
 import { ReactNode, forwardRef, useEffect, useState } from "react";
 import { Button, ButtonProps } from "../ui/button";
-import { AlertOctagon, Check, Moon, SunMedium } from "lucide-react";
+import { Check, Moon, SunMedium } from "lucide-react";
 import { Input } from "../ui/input";
 import {
   Dialog,
