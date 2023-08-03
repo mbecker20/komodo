@@ -4,7 +4,7 @@ import { Input } from "@ui/input";
 import { NewResource } from "@components/new-resource";
 import { useNavigate } from "react-router-dom";
 
-export const NewBuilder = ({
+export const NewAlerter = ({
   open,
   set,
 }: {
@@ -12,10 +12,10 @@ export const NewBuilder = ({
   set: (b: false) => void;
 }) => {
   const nav = useNavigate();
-  const { mutate, isLoading } = useWrite("CreateBuilder", {
+  const { mutate, isLoading } = useWrite("CreateAlerter", {
     onSuccess: (d) => {
       set(false);
-      nav(`/builders/${d._id?.$oid}`);
+      nav(`/alerters/${d._id?.$oid}`);
     },
   });
 
@@ -23,17 +23,17 @@ export const NewBuilder = ({
 
   return (
     <NewResource
-      type="Builder"
+      type="Alerter"
       open={open}
       loading={isLoading}
       set={set}
-      onSuccess={() => mutate({ name, config: { type: "Aws", params: {} } })}
+      onSuccess={() => mutate({ name, config: { type: "Custom", params: {} } })}
     >
       <div className="flex items-center justify-between">
-        <div>Builder Name</div>
+        <div>Alerter Name</div>
         <Input
           className="max-w-[50%]"
-          placeholder="Builder Name"
+          placeholder="Alerter Name"
           name={name}
           onChange={(e) => setName(e.target.value)}
         />

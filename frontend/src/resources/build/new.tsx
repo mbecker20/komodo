@@ -1,14 +1,8 @@
 import { useState } from "react";
 import { useWrite } from "@hooks";
-import { Button } from "@ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@ui/dialog";
 import { Input } from "@ui/input";
+import { NewResource } from "@components/new-resource";
+import { useNavigate } from "react-router-dom";
 
 export const NewBuild = ({
   open,
@@ -17,37 +11,33 @@ export const NewBuild = ({
   open: boolean;
   set: (b: false) => void;
 }) => {
-  const { mutate } = useWrite("CreateBuild");
+  const nav = useNavigate();
+  const { mutate, isLoading } = useWrite("CreateBuild", {
+    onSuccess: (d) => {
+      set(false);
+      nav(`/builds/${d._id?.$oid}`);
+    },
+  });
+
   const [name, setName] = useState("");
 
   return (
-    <Dialog open={open} onOpenChange={set}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>New Build</DialogTitle>
-        </DialogHeader>
-        <div className="flex items-center justify-between">
-          <div>Build Name</div>
-          <Input
-            className="max-w-[50%]"
-            placeholder="Build Name"
-            name={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            intent="success"
-            onClick={() => {
-              mutate({ name, config: {} });
-              set(false);
-            }}
-          >
-            Create
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <NewResource
+      type="Build"
+      open={open}
+      loading={isLoading}
+      set={set}
+      onSuccess={() => mutate({ name, config: {} })}
+    >
+      <div className="flex items-center justify-between">
+        <div>Build Name</div>
+        <Input
+          className="max-w-[50%]"
+          placeholder="Build Name"
+          name={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+    </NewResource>
   );
 };
