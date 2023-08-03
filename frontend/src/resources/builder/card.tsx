@@ -1,5 +1,4 @@
 import { useRead } from "@hooks";
-import { ServerStatusIcon } from "@resources/server/util";
 import {
   Card,
   CardHeader,
@@ -8,7 +7,7 @@ import {
   CardContent,
 } from "@ui/card";
 import { Link } from "react-router-dom";
-import { Factory } from "lucide-react";
+import { Bot, Cloud, Factory } from "lucide-react";
 
 export const BuilderCard = ({ id }: { id: string }) => {
   const builders = useRead("ListBuilders", {}).data;
@@ -21,14 +20,19 @@ export const BuilderCard = ({ id }: { id: string }) => {
         <CardHeader className="flex flex-row justify-between">
           <div>
             <CardTitle>{builder.name}</CardTitle>
-            <CardDescription> </CardDescription>
+            <CardDescription> some description</CardDescription>
           </div>
-          <ServerStatusIcon serverId={builder._id?.$oid} />
-        </CardHeader>
-        <CardContent className="flex items-center  gap-4">
           <Factory className="w-4 h-4" />
-          <div className="border h-6" />
-          <div>{builder.description}</div>
+        </CardHeader>
+        <CardContent className="flex flex-col text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Cloud className="w-4 h-4" />
+            AWS
+          </div>
+          <div className="flex items-center gap-2">
+            <Bot className="w-4 h-4" />
+            C5x Large
+          </div>
         </CardContent>
       </Card>
     </Link>

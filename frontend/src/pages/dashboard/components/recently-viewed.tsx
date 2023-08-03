@@ -19,6 +19,7 @@ import { NewBuild } from "@resources/build/new";
 import { Types } from "@monitor/client";
 import { NewBuilder } from "@resources/builder/new";
 import { ResourceTarget } from "@monitor/client/dist/types";
+import { BuilderCard } from "@resources/builder/card";
 
 const NewResource = () => {
   const [open, set] = useState<Types.ResourceTarget["type"] | false>(false);
@@ -86,6 +87,7 @@ export const RecentlyViewed = () => {
           if (type === "Deployment") return <DeploymentCard key={id} id={id} />;
           if (type === "Build") return <BuildCard key={id} id={id} />;
           if (type === "Server") return <ServerCard key={id} id={id} />;
+          if (type === "Builder") return <BuilderCard key={id} id={id} />;
         })}
       </div>
     </div>
