@@ -885,6 +885,14 @@ export interface GetVersionResponse {
 
 export interface GetUser {}
 
+export interface GetUsername {
+  user_id: string;
+}
+
+export interface GetUsernameResponse {
+  username: string;
+}
+
 export interface GetRepo {
   id: string;
 }
@@ -1065,8 +1073,20 @@ export interface ListUpdates {
   page?: number;
 }
 
+export interface UpdateListItem {
+  id: string;
+  operation: Operation;
+  start_ts: I64;
+  success: boolean;
+  operator: string;
+  operator_id: string;
+  target: ResourceTarget;
+  status: UpdateStatus;
+  version: Version;
+}
+
 export interface ListUpdatesResponse {
-  updates: Update[];
+  updates: UpdateListItem[];
   next_page?: number;
 }
 
@@ -1279,6 +1299,7 @@ export type ExecuteRequest =
 export type ReadRequest =
   | { type: "GetVersion"; params: GetVersion }
   | { type: "GetUser"; params: GetUser }
+  | { type: "GetUsername"; params: GetUsername }
   | { type: "FindResources"; params: FindResources }
   | { type: "FindResourcesWithQuery"; params: FindResourcesWithQuery }
   | { type: "GetServersSummary"; params: GetServersSummary }

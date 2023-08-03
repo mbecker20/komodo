@@ -36,6 +36,7 @@ mod user;
 enum ReadRequest {
     GetVersion(GetVersion),
     GetUser(GetUser),
+    GetUsername(GetUsername),
 
     // ==== SEARCH ====
     FindResources(FindResources),

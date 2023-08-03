@@ -43,3 +43,18 @@ pub struct GetVersionResponse {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(User)]
 pub struct GetUser {}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetUsernameResponse)]
+pub struct GetUsername {
+    pub user_id: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetUsernameResponse {
+    pub username: String,
+}

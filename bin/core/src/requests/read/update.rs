@@ -1,10 +1,13 @@
+use std::collections::HashMap;
+
+use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
         alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
         server::Server,
     },
-    requests::read::{ListUpdates, ListUpdatesResponse},
+    requests::read::{ListUpdates, ListUpdatesResponse, UpdateListItem},
 };
 use mungos::mongodb::{bson::doc, options::FindOptions};
 use resolver_api::Resolve;
@@ -51,6 +54,17 @@ impl Resolve<ListUpdates, RequestUser> for State {
             });
             query.into()
         };
+
+        let usernames = self
+            .db
+            .users
+            .get_some(None, None)
+            .await
+            .context("failed to pull users from db")?
+            .into_iter()
+            .map(|u| (u.id, u.username))
+            .collect::<HashMap<_, _>>();
+
         let updates = self
             .db
             .updates
@@ -62,12 +76,30 @@ impl Resolve<ListUpdates, RequestUser> for State {
                     .limit(UPDATES_PER_PAGE)
                     .build(),
             )
-            .await?;
+            .await?
+            .into_iter()
+            .map(|u| UpdateListItem {
+                id: u.id,
+                operation: u.operation,
+                start_ts: u.start_ts,
+                success: u.success,
+                operator: usernames
+                    .get(&u.operator)
+                    .cloned()
+                    .unwrap_or("unknown".to_string()),
+                operator_id: u.operator,
+                target: u.target,
+                status: u.status,
+                version: u.version,
+            })
+            .collect::<Vec<_>>();
+
         let next_page = if updates.len() == UPDATES_PER_PAGE as usize {
             Some(page + 1)
         } else {
             None
         };
+
         Ok(ListUpdatesResponse { updates, next_page })
     }
 }
