@@ -4,7 +4,7 @@ import { UpdateDetails, UpdateUser } from "./details";
 import { Update } from "@monitor/client/dist/types";
 
 const fmt_date = (d: Date) =>
-  `${d.getDate()}/${d.getMonth()} @ ${d.getHours()}:${d.getMinutes()}`;
+  `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${d.getMinutes()}`;
 
 export const SingleUpdate = ({ update }: { update: Update }) => (
   <UpdateDetails update={update}>
