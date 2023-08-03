@@ -20,7 +20,7 @@ const on_message = (
   const update = JSON.parse(data) as Types.Update;
 
   toast({
-    title: `${update.target} ${update.operation}`,
+    title: update.operation,
     description: update.operator,
   });
 
