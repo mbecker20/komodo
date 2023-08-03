@@ -27,28 +27,22 @@ export const ServerInfo = ({ serverId }: { serverId: string | undefined }) => {
 };
 
 export const ServerStats = ({ server_id }: { server_id: string }) => {
-  const { data, refetch } = useRead("GetBasicSystemStats", { server_id });
-
-  useEffect(() => {
-    const handle = setInterval(() => refetch(), 30000);
-    return () => {
-      clearInterval(handle);
-    };
-  }, [refetch]);
+  const stats = useRead("GetBasicSystemStats", { server_id }).data;
+  const info = useRead("GetSystemInformation", { server_id }).data;
 
   return (
     <div className="flex gap-4 text-muted-foreground">
       <div className="flex gap-2 items-center">
         <Cpu className="w-4 h-4" />
-        {data?.cpu_perc.toFixed(2)}%
+        {info?.core_count} {`Core${(info?.core_count ?? 1) > 1 ? "s" : ""}`}
       </div>
       <div className="flex gap-2 items-center">
         <MemoryStick className="w-4 h-4" />
-        {data?.mem_total_gb.toFixed(2)} GB
+        {stats?.mem_total_gb.toFixed(2)} GB
       </div>
       <div className="flex gap-2 items-center">
         <Database className="w-4 h-4" />
-        {data?.disk_total_gb.toFixed(2)} GB
+        {stats?.disk_total_gb.toFixed(2)} GB
       </div>
     </div>
   );
