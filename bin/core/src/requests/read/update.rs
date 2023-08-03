@@ -83,11 +83,11 @@ impl Resolve<ListUpdates, RequestUser> for State {
                 operation: u.operation,
                 start_ts: u.start_ts,
                 success: u.success,
-                operator: usernames
+                username: usernames
                     .get(&u.operator)
                     .cloned()
                     .unwrap_or("unknown".to_string()),
-                operator_id: u.operator,
+                operator: u.operator,
                 target: u.target,
                 status: u.status,
                 version: u.version,
