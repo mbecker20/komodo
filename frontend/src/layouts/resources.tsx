@@ -4,6 +4,11 @@ import { Input } from "@ui/input";
 import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { Page } from "./page";
+import { ResourceTarget } from "@monitor/client/dist/types";
+import { NewServer } from "@resources/server/new";
+import { NewBuild } from "@resources/build/new";
+import { NewBuilder } from "@resources/builder/new";
+import { NewAlerter } from "@resources/alerter/new";
 
 export const Resources = ({
   type,
@@ -11,7 +16,7 @@ export const Resources = ({
   icon,
   components,
 }: {
-  type: string;
+  type: ResourceTarget["type"];
   summary: ReactNode;
   icon: ReactNode;
   components: (search: string) => ReactNode;
@@ -44,7 +49,11 @@ export const Resources = ({
             <PlusCircle className="w-4 h-4 text-green-500" />
             New {type}
           </Button>
-          <NewDeployment open={open} set={setOpen} />
+          {type === "Deployment" && <NewDeployment open={open} set={setOpen} />}
+          {type === "Server" && <NewServer open={open} set={setOpen} />}
+          {type === "Build" && <NewBuild open={open} set={setOpen} />}
+          {type === "Builder" && <NewBuilder open={open} set={setOpen} />}
+          {type === "Alerter" && <NewAlerter open={open} set={setOpen} />}
         </div>
       }
     >
