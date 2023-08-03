@@ -6,7 +6,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@ui/sheet";
-import { Update } from "@monitor/client/dist/types";
 import {
   readableDuration,
   readableVersion,
@@ -34,7 +33,6 @@ import { ServerName } from "@resources/server/util";
 import { DeploymentName } from "@resources/deployment/util";
 import { BuildName } from "@resources/build/util";
 import { useRead } from "@hooks";
-// import { useRead } from "@hooks";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data;
@@ -44,12 +42,15 @@ export const UpdateUser = ({ user_id }: { user_id: string }) => {
 };
 
 export const UpdateDetails = ({
-  update,
+  id,
   children,
 }: {
-  update: Update;
+  id: string;
   children: ReactNode;
 }) => {
+  const update = useRead("GetUpdate", { id }).data;
+  if (!update) return null;
+
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
@@ -65,7 +66,7 @@ export const UpdateDetails = ({
           <SheetDescription className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4" />
-              <UpdateUser userId={update.operator} />
+              <UpdateUser user_id={update.operator} />
             </div>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
