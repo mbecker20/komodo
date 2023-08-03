@@ -8,24 +8,24 @@ import { Settings } from "lucide-react";
 import { BuildConfig } from "./config";
 
 export const BuildPage = () => {
-  const { buildId } = useParams();
+  const id = useParams().buildId;
   const push = useSetRecentlyViewed();
 
-  if (!buildId) return null;
-  push("Build", buildId);
+  if (!id) return null;
+  push("Build", id);
 
   return (
     <Resource
-      title={<BuildName id={buildId} />}
+      title={<BuildName id={id} />}
       info={
         <div className="text-muted-foreground">
-          <BuildVersion id={buildId} />
+          <BuildVersion id={id} />
         </div>
       }
       actions={
         <div className="flex gap-4">
-          <RebuildBuild buildId={buildId} />
-          <Link to={`/builds/${buildId}/config`}>
+          <RebuildBuild buildId={id} />
+          <Link to={`/builds/${id}/config`}>
             <Button variant="outline">
               <Settings className="w-4 h-4" />
             </Button>

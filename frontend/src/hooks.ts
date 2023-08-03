@@ -89,9 +89,10 @@ export const useLogin = () => {
   });
 };
 
-const recently_viewed = atomWithStorage<
-  { type: "Deployment" | "Build" | "Server"; id: string }[]
->("recently-viewed", []);
+const recently_viewed = atomWithStorage<Types.ResourceTarget[]>(
+  "recently-viewed",
+  []
+);
 
 export const useGetRecentlyViewed = () => useAtomValue(recently_viewed);
 

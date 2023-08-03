@@ -1,4 +1,5 @@
 import { ResourceUpdates } from "@components/updates/resource";
+import { useSetRecentlyViewed } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { ServerConfig } from "@resources/server/config";
 import { ServerStatsPage } from "@resources/server/stats";
@@ -12,7 +13,10 @@ import { useParams } from "react-router-dom";
 
 export const ServerPage = () => {
   const id = useParams().serverId;
+  const push = useSetRecentlyViewed();
+
   if (!id) return null;
+  push("Server", id);
 
   return (
     <Resource

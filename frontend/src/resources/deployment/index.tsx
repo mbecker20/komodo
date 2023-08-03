@@ -1,5 +1,5 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useRead } from "@hooks";
+import { useRead, useSetRecentlyViewed } from "@hooks";
 import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
 import {
@@ -21,7 +21,10 @@ import { Link, useParams } from "react-router-dom";
 
 export const DeploymentPage = () => {
   const id = useParams().deploymentId;
+  const push = useSetRecentlyViewed();
+
   if (!id) return null;
+  push("Deployment", id);
 
   return (
     <Resource
