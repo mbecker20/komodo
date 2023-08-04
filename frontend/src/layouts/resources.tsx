@@ -9,6 +9,7 @@ import { NewServer } from "@resources/server/new";
 import { NewBuild } from "@resources/build/new";
 import { NewBuilder } from "@resources/builder/new";
 import { NewAlerter } from "@resources/alerter/new";
+import { NewRepo } from "@resources/repo/new";
 
 export const Resources = ({
   type,
@@ -54,6 +55,7 @@ export const Resources = ({
           {type === "Build" && <NewBuild open={open} set={setOpen} />}
           {type === "Builder" && <NewBuilder open={open} set={setOpen} />}
           {type === "Alerter" && <NewAlerter open={open} set={setOpen} />}
+          {type === "Repo" && <NewRepo open={open} set={setOpen} />}
         </div>
       }
     >
