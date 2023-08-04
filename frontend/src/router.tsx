@@ -59,14 +59,14 @@ const router = createBrowserRouter([
         path: "alerters",
         children: [
           { path: "", element: <Alerters /> },
-          { path: ":builderId", element: <AlerterPage /> },
+          { path: ":alerterId", element: <AlerterPage /> },
         ],
       },
       {
         path: "repos",
         children: [
           { path: "", element: <Repos /> },
-          { path: ":builderId", element: <RepoPage /> },
+          { path: ":repoId", element: <RepoPage /> },
         ],
       },
     ],

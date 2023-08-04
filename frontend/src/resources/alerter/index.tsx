@@ -3,7 +3,7 @@ import { useAddRecentlyViewed, useRead } from "@hooks";
 import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
 import { AlarmClock } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 export const AlerterName = ({ id }: { id: string }) => {
   const alerters = useRead("ListAlerters", {}).data;
@@ -40,12 +40,14 @@ export const AlerterCard = ({ id }: { id: string }) => {
   const alerter = alerters?.find((a) => a._id?.$oid === id);
   if (!alerter) return null;
   return (
-    <ResourceCard
-      title={alerter.name}
-      description={alerter.description ?? "some desc"}
-      statusIcon={<AlarmClock className="w-4 h-4" />}
-    >
-      <div></div>
-    </ResourceCard>
+    <Link to={`/alerters/${id}`}>
+      <ResourceCard
+        title={alerter.name}
+        description={alerter.description ?? "some desc"}
+        statusIcon={<AlarmClock className="w-4 h-4" />}
+      >
+        <div></div>
+      </ResourceCard>
+    </Link>
   );
 };
