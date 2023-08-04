@@ -53,6 +53,7 @@ function findDeepDisabled<T extends Record<string, unknown>>(
 
 export function Config<T extends Record<string, unknown>>({
   config,
+  layout,
   update,
   set,
   overrides,
@@ -61,6 +62,7 @@ export function Config<T extends Record<string, unknown>>({
   disabled,
 }: {
   config: T;
+  layout?: { [key: string]: Array<keyof T> };
   update: Partial<T>;
   set: ConfigSetter<T>;
   overrides?: Overides<T>;
@@ -87,100 +89,210 @@ export function Config<T extends Record<string, unknown>>({
         ))}
       </div>
       <div className="w-full h-fit">
-        {Object.entries(config).map(([field, value]) => {
-          if (show !== field) return null;
-          const val = update[field] ?? value;
-          const overide = overrides?.[field];
-          if (overide && typeof overide === "function") {
-            return overide(update[field] ?? (value as T[string]), (updt) =>
-              set((curr) => ({
-                ...curr,
-                [field]: updt(
-                  update[field] ?? (config[field] as Partial<T[string]>)
-                ),
-              }))
-            ) as ReactNode;
-          }
-          if (typeof val === "string") {
-            return (
-              <StringConfig
-                key={field}
-                field={field}
-                val={val}
-                set={(u) =>
+        {layout &&
+          Object.entries(layout).map(([field, config_keys]) => {
+            if (show !== field) return null;
+            config_keys.map((field) => {
+              const value = config[field];
+              const val = update[field] ?? value;
+              const overide = overrides?.[field];
+              if (overide && typeof overide === "function") {
+                return overide(update[field] ?? (value as T[string]), (updt) =>
                   set((curr) => ({
                     ...curr,
-                    [field]: u(val),
+                    [field]: updt(
+                      update[field] ?? (config[field] as Partial<T[string]>)
+                    ),
                   }))
-                }
-                description={descriptions?.[field] as string | undefined}
-                disabled={findDeepDisabled(field, disabled) as boolean}
-              />
-            );
-          }
-          if (typeof val === "boolean") {
-            return (
-              <BooleanConfig
-                key={field}
-                field={field}
-                val={val}
-                set={(u) => set((curr) => ({ ...curr, [field]: u(val) }))}
-                description={descriptions?.[field] as string | undefined}
-                disabled={findDeepDisabled(field, disabled) as boolean}
-              />
-            );
-          }
-          if (typeof val === "number") {
-            return (
-              <NumberConfig
-                key={field}
-                field={field}
-                val={val}
-                set={(u) => set((curr) => ({ ...curr, [field]: u(val) }))}
-                description={descriptions?.[field] as string | undefined}
-                disabled={findDeepDisabled(field, disabled) as boolean}
-              />
-            );
-          }
-          if (Array.isArray(value)) {
-            const val = (update[field] ? update[field] : value) as unknown[];
-            return (
-              <ArrayConfig
-                key={field}
-                field={field}
-                val={val}
-                set={set}
-                defaultNew={arrayDefaults?.[field] ?? ""}
-                disabled={findDeepDisabled(field, disabled) as boolean}
-              />
-            );
-          }
-          return (
-            <Card key={field}>
-              <CardHeader>
-                <CardTitle>{field.replaceAll("_", " ")}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Config
-                  config={config[field] as Record<string, unknown>}
-                  update={update[field] ?? {}}
-                  set={(update) => {
+                ) as ReactNode;
+              }
+              if (typeof val === "string") {
+                return (
+                  <StringConfig
+                    key={field as string}
+                    field={field as string}
+                    val={val}
+                    set={(u) =>
+                      set((curr) => ({
+                        ...curr,
+                        [field]: u(val),
+                      }))
+                    }
+                    description={descriptions?.[field] as string | undefined}
+                    disabled={
+                      findDeepDisabled(field as string, disabled) as boolean
+                    }
+                  />
+                );
+              }
+              if (typeof val === "boolean") {
+                return (
+                  <BooleanConfig
+                    key={field as string}
+                    field={field as string}
+                    val={val}
+                    set={(u) => set((curr) => ({ ...curr, [field]: u(val) }))}
+                    description={descriptions?.[field] as string | undefined}
+                    disabled={
+                      findDeepDisabled(field as string, disabled) as boolean
+                    }
+                  />
+                );
+              }
+              if (typeof val === "number") {
+                return (
+                  <NumberConfig
+                    key={field as string}
+                    field={field as string}
+                    val={val}
+                    set={(u) => set((curr) => ({ ...curr, [field]: u(val) }))}
+                    description={descriptions?.[field] as string | undefined}
+                    disabled={
+                      findDeepDisabled(field as string, disabled) as boolean
+                    }
+                  />
+                );
+              }
+              if (Array.isArray(value)) {
+                const val = (
+                  update[field] ? update[field] : value
+                ) as unknown[];
+                return (
+                  <ArrayConfig
+                    key={field as string}
+                    field={field as string}
+                    val={val}
+                    set={set}
+                    defaultNew={arrayDefaults?.[field] ?? ""}
+                    disabled={
+                      findDeepDisabled(field as string, disabled) as boolean
+                    }
+                  />
+                );
+              }
+              return (
+                <Card key={field as string}>
+                  <CardHeader>
+                    <CardTitle>
+                      {(field as string).replaceAll("_", " ")}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Config
+                      config={config[field] as Record<string, unknown>}
+                      update={update[field] ?? {}}
+                      set={(update) => {
+                        set((curr) => ({
+                          ...curr,
+                          [field]: update(
+                            curr[field] ?? (config[field] as Partial<T[string]>)
+                          ),
+                        }));
+                      }}
+                      overrides={
+                        overrides?.[field] as Overides<Record<string, unknown>>
+                      }
+                      disabled={findDeepDisabled(field as string, disabled)}
+                    />
+                  </CardContent>
+                </Card>
+              );
+            });
+          })}
+        {!layout &&
+          Object.entries(config).map(([field, value]) => {
+            const val = update[field] ?? value;
+            const overide = overrides?.[field];
+            if (overide && typeof overide === "function") {
+              return overide(update[field] ?? (value as T[string]), (updt) =>
+                set((curr) => ({
+                  ...curr,
+                  [field]: updt(
+                    update[field] ?? (config[field] as Partial<T[string]>)
+                  ),
+                }))
+              ) as ReactNode;
+            }
+            if (typeof val === "string") {
+              return (
+                <StringConfig
+                  key={field}
+                  field={field}
+                  val={val}
+                  set={(u) =>
                     set((curr) => ({
                       ...curr,
-                      [field]: update(
-                        curr[field] ?? (config[field] as Partial<T[string]>)
-                      ),
-                    }));
-                  }}
-                  overrides={
-                    overrides?.[field] as Overides<Record<string, unknown>>
+                      [field]: u(val),
+                    }))
                   }
-                  disabled={findDeepDisabled(field, disabled)}
+                  description={descriptions?.[field] as string | undefined}
+                  disabled={findDeepDisabled(field, disabled) as boolean}
                 />
-              </CardContent>
-            </Card>
-          );
-        })}
+              );
+            }
+            if (typeof val === "boolean") {
+              return (
+                <BooleanConfig
+                  key={field}
+                  field={field}
+                  val={val}
+                  set={(u) => set((curr) => ({ ...curr, [field]: u(val) }))}
+                  description={descriptions?.[field] as string | undefined}
+                  disabled={findDeepDisabled(field, disabled) as boolean}
+                />
+              );
+            }
+            if (typeof val === "number") {
+              return (
+                <NumberConfig
+                  key={field}
+                  field={field}
+                  val={val}
+                  set={(u) => set((curr) => ({ ...curr, [field]: u(val) }))}
+                  description={descriptions?.[field] as string | undefined}
+                  disabled={findDeepDisabled(field, disabled) as boolean}
+                />
+              );
+            }
+            if (Array.isArray(value)) {
+              const val = (update[field] ? update[field] : value) as unknown[];
+              return (
+                <ArrayConfig
+                  key={field}
+                  field={field}
+                  val={val}
+                  set={set}
+                  defaultNew={arrayDefaults?.[field] ?? ""}
+                  disabled={findDeepDisabled(field, disabled) as boolean}
+                />
+              );
+            }
+            return (
+              <Card key={field}>
+                <CardHeader>
+                  <CardTitle>{field.replaceAll("_", " ")}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Config
+                    config={config[field] as Record<string, unknown>}
+                    update={update[field] ?? {}}
+                    set={(update) => {
+                      set((curr) => ({
+                        ...curr,
+                        [field]: update(
+                          curr[field] ?? (config[field] as Partial<T[string]>)
+                        ),
+                      }));
+                    }}
+                    overrides={
+                      overrides?.[field] as Overides<Record<string, unknown>>
+                    }
+                    disabled={findDeepDisabled(field, disabled)}
+                  />
+                </CardContent>
+              </Card>
+            );
+          })}
       </div>
     </div>
   );
