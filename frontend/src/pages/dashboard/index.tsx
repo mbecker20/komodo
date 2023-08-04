@@ -31,7 +31,7 @@ const MyResources = () => (
           </ResourceOverviewCard>
         </div>
       </div>
-      <div className="flex gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         <ResourceOverviewCard type="Builder" />
         <ResourceOverviewCard type="Alerter" />
         <ResourceOverviewCard type="Repo" />
