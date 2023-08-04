@@ -75,14 +75,16 @@ export function Config<T extends Record<string, unknown>>({
 
   return (
     <div className="flex gap-4">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 w-[300px]">
         {Object.keys(config).map((config) => (
           <Button
             key={config}
             onClick={() => setShow(config)}
-            variant="outline"
+            variant={config === show ? "secondary" : "outline"}
+            // disabled={config === show}
+            className="capitalize justify-start"
           >
-            {config}
+            {config.split("_").join(" ")}
           </Button>
         ))}
       </div>
