@@ -5,8 +5,6 @@ import { ArrayConfig } from "./components/array";
 import { BooleanConfig } from "./components/boolean";
 import { NumberConfig } from "./components/number";
 import { Button } from "@ui/button";
-import { Tabs, TabsList } from "@ui/tabs";
-import { TabsContent, TabsTrigger } from "@radix-ui/react-tabs";
 
 export type ConfigSetter<T> = (
   update: (curr: Partial<T>) => Partial<T>
