@@ -97,7 +97,7 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
               return (
                 <div
                   key={field}
-                  className="flex justify-between items-center border-b pb-4"
+                  className="flex justify-between items-center border-b pb-4 min-h-[40px]"
                 >
                   <div className="capitalize"> {fmt_field(field)} </div>
                   <Switch
@@ -168,7 +168,7 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
               }
               if (typeof val === "boolean") {
                 return (
-                  <div key={field} className="flex flex-col gap-2">
+                  <div key={field} className="flex flex-col gap-2 min-h-[40px]">
                     <div className="capitalize"> {fmt_field(field)} </div>
                     <Switch
                       checked={val}

@@ -1,4 +1,5 @@
 import { useServerStats } from "@hooks";
+import { Section } from "@layouts/page";
 import {
   Card,
   CardContent,
@@ -14,25 +15,18 @@ export const ServerStats = () => {
   if (!server_id) return null;
 
   return (
-    <div className="flex flex-col">
-      <div className="flex justify-between">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <LineChart className="w-4 h-4" />
-          <h2 className="text-xl">Server Stats</h2>
-        </div>
-        {/* <Link to={`/deployments/${id}/updates`}>
-          <Button variant="secondary">
-            <ExternalLink className="w-4 h-4" />
-          </Button>
-        </Link> */}
-      </div>
-      <div className="flex flex-col lg:flex-row gap-4 mt-2">
+    <Section
+      title="Server Stats"
+      icon={<LineChart className="w-4 h-4" />}
+      actions=""
+    >
+      <div className="flex flex-col lg:flex-row gap-4">
         <CPU server_id={server_id} />
         <RAM server_id={server_id} />
         <DISK server_id={server_id} />
         <LOAD server_id={server_id} />
       </div>
-    </div>
+    </Section>
   );
 };
 
