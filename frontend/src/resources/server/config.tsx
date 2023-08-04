@@ -1,4 +1,4 @@
-import { Config } from "@components/config/Config";
+import { Configuration } from "@components/config";
 import { useRead, useWrite } from "@hooks";
 import { Section } from "@layouts/page";
 import { Types } from "@monitor/client";
@@ -11,7 +11,7 @@ export const ServerConfig = () => {
   const id = useParams().serverId;
   const server = useRead("GetServer", { id }).data;
   const [update, set] = useState<Partial<Types.ServerConfig>>({});
-  const { mutate } = useWrite("UpdateServer");
+  const { mutate, isLoading } = useWrite("UpdateServer");
 
   if (id && server?.config) {
     return (
@@ -33,7 +33,25 @@ export const ServerConfig = () => {
           </div>
         }
       >
-        <Config config={server?.config as any} update={update} set={set} />
+        {/* <Config config={server?.config as any} update={update} set={set} /> */}
+        <Configuration
+          config={server.config}
+          loading={isLoading}
+          update={update}
+          set={(input) => set((update) => ({ ...update, ...input }))}
+          layout={{
+            general: ["address", "region", "enabled", "auto_prune"],
+            warnings: [
+              "cpu_warning",
+              "cpu_critical",
+              "disk_warning",
+              "disk_critical",
+              "mem_warning",
+              "mem_critical",
+            ],
+          }}
+          // overrides={}
+        />
       </Section>
     );
   } else {
