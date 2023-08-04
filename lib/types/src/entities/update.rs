@@ -106,9 +106,7 @@ impl Log {
 }
 
 #[typeshare]
-#[derive(
-    Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, MungosIndexed, EnumVariants,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, MungosIndexed, EnumVariants)]
 #[variant_derive(
     Serialize,
     Deserialize,
@@ -122,14 +120,19 @@ impl Log {
 )]
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {
-    #[default]
-    System,
+    System(String),
     Build(String),
     Builder(String),
     Deployment(String),
     Server(String),
     Repo(String),
     Alerter(String),
+}
+
+impl Default for ResourceTarget {
+    fn default() -> Self {
+        Self::System("System".to_string())
+    }
 }
 
 impl From<&Build> for ResourceTarget {

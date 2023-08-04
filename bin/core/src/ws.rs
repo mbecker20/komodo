@@ -194,7 +194,7 @@ impl State {
                     ResourceTargetVariant::Alerter,
                 )
             }
-            ResourceTarget::System => {
+            ResourceTarget::System(_) => {
                 return Err(anyhow!("user not admin, can't recieve system updates"))
             }
         };

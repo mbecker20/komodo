@@ -57,7 +57,7 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
             .await?;
         let end_ts = monitor_timestamp();
         let mut update = Update {
-            target: ResourceTarget::System,
+            target: ResourceTarget::System("System".to_string()),
             operation: Operation::UpdateUserPermissions,
             logs: vec![Log::simple(
                 "modify user enabled",
@@ -111,7 +111,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
             return Err(anyhow!("user not enabled"));
         }
         let log_text = match &target {
-            ResourceTarget::System => return Err(anyhow!("target can not be system")),
+            ResourceTarget::System(_) => return Err(anyhow!("target can not be system")),
             ResourceTarget::Build(id) => {
                 let build = self
                     .db

@@ -19,6 +19,7 @@ mod alerter;
 mod build;
 mod builder;
 mod deployment;
+mod description;
 mod permissions;
 mod repo;
 mod secret;
@@ -43,6 +44,9 @@ enum WriteRequest {
     // ==== PERMISSIONS ====
     UpdateUserPerimissions(UpdateUserPermissions),
     UpdateUserPermissionsOnTarget(UpdateUserPermissionsOnTarget),
+
+    // ==== DESCRIPTION ====
+    UpdateDescription(UpdateDescription),
 
     // ==== SERVER ====
     CreateServer(CreateServer),

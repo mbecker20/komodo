@@ -118,6 +118,20 @@ pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
 
         Ok(list)
     }
+
+    async fn update_description(
+        &self,
+        id: &str,
+        description: &str,
+        user: &RequestUser,
+    ) -> anyhow::Result<()> {
+        self.get_resource_check_permissions(id, user, PermissionLevel::Update)
+            .await?;
+        self.coll()
+            .update_one(id, mungos::Update::Set(doc! { "description": description }))
+            .await?;
+        Ok(())
+    }
 }
 
 #[async_trait]

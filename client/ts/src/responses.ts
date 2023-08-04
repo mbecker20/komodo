@@ -94,6 +94,9 @@ export type WriteResponses = {
   UpdateUserPerimissions: Types.Update;
   UpdateUserPermissionsOnTarget: Types.Update;
 
+  // ==== DESCRIPTION ====
+  UpdateDescription: Types.UpdateDescriptionResponse;
+
   // ==== SERVER ====
   CreateServer: Types.Server;
   DeleteServer: Types.Server;

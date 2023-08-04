@@ -128,7 +128,7 @@ impl Resolve<GetUpdate, RequestUser> for State {
             return Ok(update);
         }
         match &update.target {
-            ResourceTarget::System => {
+            ResourceTarget::System(_) => {
                 return Err(anyhow!("user must be admin to view system updates"))
             }
             ResourceTarget::Server(id) => {
