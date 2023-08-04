@@ -10,7 +10,7 @@ import {
 import { fmt_update_date } from "@util/helpers";
 import { Bell, ExternalLink, User, Calendar, Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { UpdateDetails } from "./details";
+import { UpdateDetails, UpdateUser } from "./details";
 import { Types } from "@monitor/client";
 import { Section } from "@layouts/page";
 import { ResourceTarget } from "@monitor/client/dist/types";
@@ -44,7 +44,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => (
       </CardHeader>
       <CardContent>
         <CardDescription className="flex items-center gap-2">
-          <User className="w-4 h-4" /> {update.operator}
+          <User className="w-4 h-4" /> <UpdateUser user_id={update.operator} />
         </CardDescription>
         <CardDescription className="flex items-center gap-2">
           <Calendar className="w-4 h-4" />
