@@ -39,7 +39,7 @@ impl Resolve<ListDeployments, RequestUser> for State {
         ListDeployments { query }: ListDeployments,
         user: RequestUser,
     ) -> anyhow::Result<Vec<DeploymentListItem>> {
-        <State as Resource<Deployment>>::list_resources_for_user(self, &user, query).await
+        <State as Resource<Deployment>>::list_resources_for_user(self, query, &user).await
     }
 }
 

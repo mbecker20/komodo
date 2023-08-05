@@ -40,7 +40,6 @@ enum ReadRequest {
 
     // ==== SEARCH ====
     FindResources(FindResources),
-    FindResourcesWithQuery(FindResourcesWithQuery),
 
     // ==== SERVER ====
     GetServersSummary(GetServersSummary),

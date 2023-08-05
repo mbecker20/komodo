@@ -15,7 +15,6 @@ export type ReadResponses = {
 
   // ==== SEARCH ====
   FindResources: Types.FindResourcesResponse;
-  FindResourcesWithQuery: Types.FindResourcesResponse;
 
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;
@@ -57,12 +56,12 @@ export type ReadResponses = {
   // ==== BUILDER ====
   GetBuildersSummary: Types.GetBuildersSummaryResponse;
   GetBuilder: Types.Builder;
-  ListBuilders: Types.Builder[];
+  ListBuilders: Types.BuilderListItem[];
 
   // ==== ALERTER ====
   GetAlertersSummary: Types.GetAlertersSummaryResponse;
   GetAlerter: Types.Alerter;
-  ListAlerters: Types.Alerter[];
+  ListAlerters: Types.AlerterListItem[];
 
   // ==== TAG ====
   GetTag: Types.CustomTag;

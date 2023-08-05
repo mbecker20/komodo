@@ -131,7 +131,7 @@ pub enum ResourceTarget {
 
 impl Default for ResourceTarget {
     fn default() -> Self {
-        Self::System("System".to_string())
+        Self::System("system".to_string())
     }
 }
 

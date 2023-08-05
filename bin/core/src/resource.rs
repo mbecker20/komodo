@@ -3,11 +3,19 @@ use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_types::{
     entities::{
-        alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
-        server::Server, PermissionLevel,
+        alerter::{Alerter, AlerterConfig},
+        build::Build,
+        builder::{Builder, BuilderConfig},
+        deployment::{Deployment, DeploymentImage},
+        repo::Repo,
+        server::Server,
+        PermissionLevel,
     },
     permissioned::Permissioned,
-    requests::read::{BuildListItem, DeploymentListItem, RepoListItem, ServerListItem},
+    requests::read::{
+        AlerterListItem, BuildListItem, BuilderListItem, DeploymentListItem, RepoListItem,
+        ServerListItem,
+    },
 };
 use mungos::{
     mongodb::bson::{doc, Document},
@@ -24,7 +32,7 @@ pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
 
     fn name() -> &'static str;
     fn coll(&self) -> &Collection<T>;
-    async fn to_list_item(&self, resource: T) -> Self::ListItem;
+    async fn to_list_item(&self, resource: T) -> anyhow::Result<Self::ListItem>;
 
     async fn get_resource(&self, id: &str) -> anyhow::Result<T> {
         self.coll()
@@ -96,8 +104,8 @@ pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
 
     async fn list_resources_for_user(
         &self,
-        user: &RequestUser,
         query: Option<Document>,
+        user: &RequestUser,
     ) -> anyhow::Result<Vec<Self::ListItem>> {
         let mut query = query.unwrap_or_default();
         if !user.is_admin {
@@ -114,7 +122,11 @@ pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
             .into_iter()
             .map(|resource| self.to_list_item(resource));
 
-        let list = join_all(list).await;
+        let list = join_all(list)
+            .await
+            .into_iter()
+            .collect::<anyhow::Result<Vec<_>>>()
+            .context("failed to convert deployment list item")?;
 
         Ok(list)
     }
@@ -146,14 +158,15 @@ impl Resource<Server> for State {
         &self.db.servers
     }
 
-    async fn to_list_item(&self, server: Server) -> ServerListItem {
+    async fn to_list_item(&self, server: Server) -> anyhow::Result<ServerListItem> {
         let status = self.server_status_cache.get(&server.id).await;
-        ServerListItem {
+        Ok(ServerListItem {
             id: server.id,
             name: server.name,
             tags: server.tags,
             status: status.map(|s| s.status).unwrap_or_default(),
-        }
+            region: server.config.region,
+        })
     }
 }
 
@@ -169,9 +182,21 @@ impl Resource<Deployment> for State {
         &self.db.deployments
     }
 
-    async fn to_list_item(&self, deployment: Deployment) -> DeploymentListItem {
+    async fn to_list_item(&self, deployment: Deployment) -> anyhow::Result<DeploymentListItem> {
         let status = self.deployment_status_cache.get(&deployment.id).await;
-        DeploymentListItem {
+        let (image, build_id) = match deployment.config.image {
+            DeploymentImage::Build { build_id, version } => {
+                let build: Build = self.get_resource(&build_id).await?;
+                let version = if version.is_none() {
+                    build.config.version.to_string()
+                } else {
+                    version.to_string()
+                };
+                (format!("{}:{version}", build.name), Some(build_id))
+            }
+            DeploymentImage::Image { image } => (image, None),
+        };
+        Ok(DeploymentListItem {
             id: deployment.id,
             name: deployment.name,
             tags: deployment.tags,
@@ -179,9 +204,10 @@ impl Resource<Deployment> for State {
             status: status
                 .as_ref()
                 .and_then(|s| s.container.as_ref().and_then(|c| c.status.to_owned())),
-            image: String::new(),
-            version: String::new(),
-        }
+            image,
+            server_id: deployment.config.server_id,
+            build_id,
+        })
     }
 }
 
@@ -197,14 +223,14 @@ impl Resource<Build> for State {
         &self.db.builds
     }
 
-    async fn to_list_item(&self, build: Build) -> BuildListItem {
-        BuildListItem {
+    async fn to_list_item(&self, build: Build) -> anyhow::Result<BuildListItem> {
+        Ok(BuildListItem {
             id: build.id,
             name: build.name,
             last_built_at: build.last_built_at,
             version: build.config.version,
             tags: build.tags,
-        }
+        })
     }
 }
 
@@ -220,19 +246,19 @@ impl Resource<Repo> for State {
         &self.db.repos
     }
 
-    async fn to_list_item(&self, repo: Repo) -> RepoListItem {
-        RepoListItem {
+    async fn to_list_item(&self, repo: Repo) -> anyhow::Result<RepoListItem> {
+        Ok(RepoListItem {
             id: repo.id,
             name: repo.name,
             last_pulled_at: repo.last_pulled_at,
             tags: repo.tags,
-        }
+        })
     }
 }
 
 #[async_trait]
 impl Resource<Builder> for State {
-    type ListItem = Builder;
+    type ListItem = BuilderListItem;
 
     fn name() -> &'static str {
         "builder"
@@ -242,14 +268,23 @@ impl Resource<Builder> for State {
         &self.db.builders
     }
 
-    async fn to_list_item(&self, builder: Builder) -> Builder {
-        builder
+    async fn to_list_item(&self, builder: Builder) -> anyhow::Result<BuilderListItem> {
+        let (provider, instance_type) = match builder.config {
+            BuilderConfig::Aws(config) => ("aws ec2".to_string(), Some(config.instance_type)),
+        };
+
+        Ok(BuilderListItem {
+            id: builder.id,
+            name: builder.name,
+            provider,
+            instance_type,
+        })
     }
 }
 
 #[async_trait]
 impl Resource<Alerter> for State {
-    type ListItem = Alerter;
+    type ListItem = AlerterListItem;
 
     fn name() -> &'static str {
         "alerter"
@@ -259,7 +294,15 @@ impl Resource<Alerter> for State {
         &self.db.alerters
     }
 
-    async fn to_list_item(&self, alerter: Alerter) -> Alerter {
-        alerter
+    async fn to_list_item(&self, alerter: Alerter) -> anyhow::Result<AlerterListItem> {
+        let alerter_type = match alerter.config {
+            AlerterConfig::Custom(_) => "custom",
+            AlerterConfig::Slack(_) => "slack",
+        };
+        Ok(AlerterListItem {
+            id: alerter.id,
+            name: alerter.name,
+            alerter_type: alerter_type.to_string(),
+        })
     }
 }

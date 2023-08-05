@@ -17,9 +17,18 @@ pub struct GetBuilder {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Builder>)]
+#[response(Vec<BuilderListItem>)]
 pub struct ListBuilders {
     pub query: Option<MongoDocument>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BuilderListItem {
+    pub id: String,
+    pub name: String,
+    pub provider: String,
+    pub instance_type: Option<String>,
 }
 
 //

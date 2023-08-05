@@ -735,6 +735,12 @@ export interface ListAlerters {
 	query?: MongoDocument;
 }
 
+export interface AlerterListItem {
+	id: string;
+	name: string;
+	alerter_type: string;
+}
+
 export interface GetAlertersSummary {
 }
 
@@ -806,6 +812,13 @@ export interface ListBuilders {
 	query?: MongoDocument;
 }
 
+export interface BuilderListItem {
+	id: string;
+	name: string;
+	provider: string;
+	instance_type?: string;
+}
+
 export interface GetBuildersSummary {
 }
 
@@ -828,7 +841,8 @@ export interface DeploymentListItem {
 	state: DockerContainerState;
 	status?: string;
 	image: string;
-	version: string;
+	server_id: string;
+	build_id?: string;
 }
 
 export interface GetDeploymentStatus {
@@ -916,23 +930,7 @@ export interface GetReposSummaryResponse {
 	total: number;
 }
 
-export type Tag = 
-	| { type: "ResourceType", params: {
-	resource: ResourceTarget["type"];
-}}
-	| { type: "Server", params: {
-	server_id: string;
-}}
-	| { type: "Custom", params: {
-	tag_id: string;
-}};
-
 export interface FindResources {
-	search: string;
-	tags: Tag[];
-}
-
-export interface FindResourcesWithQuery {
 	query?: MongoDocument;
 	resources?: ResourceTarget["type"][];
 }
@@ -948,6 +946,7 @@ export interface ServerListItem {
 	name: string;
 	status: ServerStatus;
 	tags: string[];
+	region: string;
 }
 
 export interface FindResourcesResponse {
@@ -1303,7 +1302,6 @@ export type ReadRequest =
 	| { type: "GetUser", params: GetUser }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "FindResources", params: FindResources }
-	| { type: "FindResourcesWithQuery", params: FindResourcesWithQuery }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }
@@ -1433,5 +1431,16 @@ export type Alert =
 	server: string;
 	from: DockerContainerState;
 	to: DockerContainerState;
+}};
+
+export type Tag = 
+	| { type: "ResourceType", params: {
+	resource: ResourceTarget["type"];
+}}
+	| { type: "Server", params: {
+	server_id: string;
+}}
+	| { type: "Custom", params: {
+	tag_id: string;
 }};
 

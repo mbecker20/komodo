@@ -39,7 +39,8 @@ pub struct DeploymentListItem {
     pub state: DockerContainerState,
     pub status: Option<String>,
     pub image: String,
-    pub version: String,
+    pub server_id: String,
+    pub build_id: Option<String>,
 }
 
 //

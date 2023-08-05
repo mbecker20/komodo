@@ -17,9 +17,17 @@ pub struct GetAlerter {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Alerter>)]
+#[response(Vec<AlerterListItem>)]
 pub struct ListAlerters {
     pub query: Option<MongoDocument>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AlerterListItem {
+    pub id: String,
+    pub name: String,
+    pub alerter_type: String,
 }
 
 //

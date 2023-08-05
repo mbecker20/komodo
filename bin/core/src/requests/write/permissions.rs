@@ -57,7 +57,7 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
             .await?;
         let end_ts = monitor_timestamp();
         let mut update = Update {
-            target: ResourceTarget::System("System".to_string()),
+            target: ResourceTarget::System("system".to_string()),
             operation: Operation::UpdateUserPermissions,
             logs: vec![Log::simple(
                 "modify user enabled",
