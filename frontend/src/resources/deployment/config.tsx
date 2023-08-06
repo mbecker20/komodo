@@ -15,6 +15,24 @@ import { Settings, Save, History, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
+const ImageTypeSelector = ({
+  selected,
+  onSelect,
+}: {
+  selected: Types.DeploymentImage["type"] | undefined;
+  onSelect: (serverId: Types.DeploymentImage["type"]) => void;
+}) => (
+  <Select value={selected} onValueChange={onSelect}>
+    <SelectTrigger className="max-w-[400px]">
+      <SelectValue placeholder="Select A Server" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value={"Image"}>Image</SelectItem>
+      <SelectItem value={"Build"}>Build</SelectItem>
+    </SelectContent>
+  </Select>
+);
+
 const ServersSelector = ({
   selected,
   onSelect,
@@ -25,13 +43,37 @@ const ServersSelector = ({
   const servers = useRead("ListServers", {}).data;
   return (
     <Select value={selected} onValueChange={onSelect}>
-      <SelectTrigger className="w-[400px]">
+      <SelectTrigger className="max-w-[400px]">
         <SelectValue placeholder="Select A Server" />
       </SelectTrigger>
       <SelectContent>
         {servers?.map((s) => (
           <SelectItem key={s.id} value={s.id}>
             {s.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+const BuildsSelector = ({
+  selected,
+  onSelect,
+}: {
+  selected: string | undefined;
+  onSelect: (serverId: string) => void;
+}) => {
+  const builds = useRead("ListBuilds", {}).data;
+  return (
+    <Select value={selected} onValueChange={onSelect}>
+      <SelectTrigger className="max-w-[400px]">
+        <SelectValue placeholder="Select A Server" />
+      </SelectTrigger>
+      <SelectContent>
+        {builds?.map((b) => (
+          <SelectItem key={b.id} value={b.id}>
+            {b.name}
           </SelectItem>
         ))}
       </SelectContent>
@@ -133,7 +175,60 @@ export const DeploymentConfig = () => {
               />
             </div>
           ),
-          image: () => <div>Image </div>,
+          image: (image, set) => (
+            <div className="flex justify-between items-center border-b pb-4 min-h-[40px] ">
+              <div>Image</div>
+              <div className="flex gap-4">
+                <ImageTypeSelector
+                  selected={image?.type}
+                  onSelect={(type) =>
+                    set({
+                      image: {
+                        type: type as any,
+                        params:
+                          type === "Image"
+                            ? { image: "" }
+                            : {
+                                build_id: "",
+                                version: { major: 0, minor: 0, patch: 0 },
+                              },
+                      },
+                    })
+                  }
+                />
+                {image?.type === "Build" && (
+                  <div className="flex gap-4">
+                    <BuildsSelector
+                      selected={image.params.build_id}
+                      onSelect={(id) =>
+                        set({
+                          image: {
+                            ...image,
+                            params: { ...image.params, build_id: id },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                )}
+                {image?.type === "Image" && (
+                  <div>
+                    <Input
+                      value={image.params.image}
+                      onChange={(e) =>
+                        set({
+                          image: {
+                            ...image,
+                            params: { image: e.target.value },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          ),
           environment: (vars, set) => <EnvVars vars={vars} set={set} />,
         }}
       />
