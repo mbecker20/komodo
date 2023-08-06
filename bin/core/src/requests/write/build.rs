@@ -251,7 +251,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
                 .builds
                 .update_one(
                     &build.id,
-                    mungos::Update::Set(doc! { "config": to_bson(&config)? }),
+                    mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
                 )
                 .await
                 .context("failed to update build on database")?;

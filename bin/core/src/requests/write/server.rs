@@ -153,7 +153,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
             .servers
             .update_one(
                 &id,
-                mungos::Update::Set(doc! { "config": to_bson(&config)? }),
+                mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
             )
             .await
             .context("failed to update server on mongo")?;

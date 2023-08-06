@@ -327,7 +327,7 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
                 .deployments
                 .update_one(
                     &id,
-                    mungos::Update::Set(doc! { "config": to_bson(&config)? }),
+                    mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
                 )
                 .await
                 .context("failed to update server on mongo")?;

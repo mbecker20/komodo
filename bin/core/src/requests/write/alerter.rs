@@ -170,7 +170,7 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
             .alerters
             .update_one(
                 &id,
-                mungos::Update::Set(doc! { "config": to_bson(&config)? }),
+                mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
             )
             .await?;
 

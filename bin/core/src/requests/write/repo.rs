@@ -273,7 +273,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
                 .repos
                 .update_one(
                     &repo.id,
-                    mungos::Update::Set(doc! { "config": to_bson(&config)? }),
+                    mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
                 )
                 .await
                 .context("failed to update repo on database")?;
