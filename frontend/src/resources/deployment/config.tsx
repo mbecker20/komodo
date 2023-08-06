@@ -157,7 +157,7 @@ const EnvVars = ({
   </div>
 );
 
-const Ports = ({
+const PortsConfig = ({
   ports,
   set,
 }: {
@@ -313,6 +313,7 @@ export const DeploymentConfig = () => {
           general: ["server_id", "image", "restart"],
           networking: ["network", "ports"],
           environment: ["environment", "skip_secret_interp"],
+          volumes: ["volumes"],
         }}
         overrides={{
           server_id: (value, set) => (
@@ -324,7 +325,8 @@ export const DeploymentConfig = () => {
               />
             </div>
           ),
-          ports: (ports, set) => <Ports ports={ports} set={set} />,
+          ports: (ports, set) => <PortsConfig ports={ports} set={set} />,
+          volumes: (volumes, set) => <PortsConfig ports={volumes} set={set} />,
           image: (image, set) => <ImageConfig image={image} set={set} />,
           environment: (vars, set) => <EnvVars vars={vars} set={set} />,
         }}
