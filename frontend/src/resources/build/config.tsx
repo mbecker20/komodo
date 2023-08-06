@@ -125,75 +125,44 @@ const BuilderConfig = ({
   set,
 }: {
   builder: Types.BuildBuilderConfig | undefined;
-  set: (input: Partial<Types.DeploymentConfig>) => void;
+  set: (input: Partial<Types.BuildConfig>) => void;
 }) => (
   <div className="flex justify-between items-center border-b pb-4 min-h-[40px]">
-    <div>Image</div>
+    <div>Builder</div>
     <div className="flex gap-4 w-full justify-end">
       <BuilderTypeSelector
         selected={builder?.type}
         onSelect={(type) =>
           set({
-            image: {
-              type: type,
+            builder: {
+              type: type as any,
               params:
-                type === "Image"
-                  ? { image: "" }
-                  : ({
-                      build_id: "",
-                      version: { major: 0, minor: 0, patch: 0 },
-                    } as any),
+                type === "Server"
+                  ? ({ server_id: "" } as any)
+                  : { builder_id: "" },
             },
           })
         }
       />
-      {image?.type === "Build" && (
-        <div className="flex gap-4">
-          <BuildsSelector
-            selected={image.params.build_id}
-            onSelect={(id) =>
-              set({
-                image: {
-                  ...image,
-                  params: { ...image.params, build_id: id },
-                },
-              })
-            }
-          />
-          <BuildVersionSelector
-            buildId={image.params.build_id}
-            selected={JSON.stringify(image.params.version)}
-            onSelect={(version) =>
-              set({
-                image: {
-                  ...image,
-                  params: {
-                    ...image.params,
-                    version: JSON.parse(version),
-                  },
-                },
-              })
-            }
-          />
-        </div>
-      )}
-      {image?.type === "Image" && (
-        <div>
-          <Input
-            value={image.params.image}
-            onChange={(e) =>
-              set({
-                image: {
-                  ...image,
-                  params: { image: e.target.value },
-                },
-              })
-            }
-            className="w-full lg:w-[300px]"
-            placeholder="image name"
-          />
-        </div>
-      )}
+      <Input
+        value={
+          builder?.type === "Server"
+            ? builder.params.server_id
+            : builder?.params.builder_id
+        }
+        onChange={(e) =>
+          set({
+            builder: {
+              ...builder,
+              params: {
+                ...(builder?.type === "Server"
+                  ? { server_id: e.target.value }
+                  : { builder_id: e.target.value }),
+              } as any,
+            } as any,
+          })
+        }
+      />
     </div>
   </div>
 );
@@ -247,7 +216,9 @@ export const BuildConfig = () => {
         overrides={{
           build_args: (args, set) => <EnvVars vars={args} set={set} />,
           extra_args: (args, set) => <ExtraArgs args={args} set={set} />,
-          builder: (builder, set) => <div>{builder.type === "Builder"}</div>,
+          builder: (builder, set) => (
+            <BuilderConfig builder={builder} set={set} />
+          ),
         }}
       />
     </Section>
