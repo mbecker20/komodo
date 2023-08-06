@@ -53,7 +53,7 @@ export const ServerCard = ({ id }: { id: string }) => {
       >
         <div className="flex flex-col text-sm">
           <ServerSpecs server_id={server.id} />
-          <ServerRegion />
+          <ServerRegion serverId={server.id} />
         </div>
       </ResourceCard>
     </Link>

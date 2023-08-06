@@ -47,11 +47,17 @@ export const ServerSpecs = ({ server_id }: { server_id: string }) => {
   );
 };
 
-export const ServerRegion = () => {
+export const ServerRegion = ({
+  serverId,
+}: {
+  serverId: string | undefined;
+}) => {
+  const servers = useRead("ListServers", {}).data;
+  const server = servers?.find((s) => s.id === serverId);
   return (
     <div className="flex gap-2 items-center text-muted-foreground">
       <MapPin className="w-4 h-4" />
-      server.region
+      {server?.region || "region unknown"}
     </div>
   );
 };
