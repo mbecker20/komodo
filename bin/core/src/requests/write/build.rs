@@ -9,7 +9,7 @@ use monitor_types::{
         Operation, PermissionLevel,
     },
     monitor_timestamp,
-    requests::write::*,
+    requests::write::*, to_monitor_name,
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
@@ -28,6 +28,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
         CreateBuild { name, config }: CreateBuild,
         user: RequestUser,
     ) -> anyhow::Result<Build> {
+        let name = to_monitor_name(&name);
         if let Some(builder) = &config.builder {
             match builder {
                 BuildBuilderConfig::Server { server_id } => {

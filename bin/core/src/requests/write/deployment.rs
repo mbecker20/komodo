@@ -26,6 +26,7 @@ impl Resolve<CreateDeployment, RequestUser> for State {
         CreateDeployment { name, config }: CreateDeployment,
         user: RequestUser,
     ) -> anyhow::Result<Deployment> {
+        let name = to_monitor_name(&name);
         if let Some(server_id) = &config.server_id {
             if !server_id.is_empty() {
                 let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Update)
@@ -383,6 +384,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
         RenameDeployment { id, name }: RenameDeployment,
         user: RequestUser,
     ) -> anyhow::Result<Update> {
+        let name = to_monitor_name(&name);
         if self.action_states.deployment.busy(&id).await {
             return Err(anyhow!("deployment busy"));
         }
