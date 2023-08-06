@@ -157,6 +157,51 @@ const EnvVars = ({
   </div>
 );
 
+const Ports = ({
+  ports,
+  set,
+}: {
+  ports: Types.Conversion[] | undefined;
+  set: (input: Partial<Types.DeploymentConfig>) => void;
+}) => (
+  <div className="flex flex-col gap-4 border-b pb-4">
+    {ports?.map((port, i) => (
+      <div className="flex justify-between gap-4" key={i}>
+        <Input
+          value={port.container}
+          placeholder="Container"
+          onChange={(e) => {
+            ports[i].container = e.target.value;
+            set({ ports: [...ports] });
+          }}
+        />
+        =
+        <Input
+          value={port.local}
+          placeholder="Host"
+          onChange={(e) => {
+            ports[i].local = e.target.value;
+            set({ ports: [...ports] });
+          }}
+        />
+      </div>
+    ))}
+    <Button
+      variant="outline"
+      intent="success"
+      className="flex items-center gap-2"
+      onClick={() =>
+        set({
+          ports: [...(ports ?? []), { container: "", local: "" }],
+        })
+      }
+    >
+      <PlusCircle className="w-4 h-4" />
+      Add
+    </Button>
+  </div>
+);
+
 const ImageConfig = ({
   image,
   set,
@@ -279,6 +324,7 @@ export const DeploymentConfig = () => {
               />
             </div>
           ),
+          ports: (ports, set) => <Ports ports={ports} set={set} />,
           image: (image, set) => <ImageConfig image={image} set={set} />,
           environment: (vars, set) => <EnvVars vars={vars} set={set} />,
         }}
