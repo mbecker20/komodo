@@ -1,4 +1,5 @@
 import { Configuration } from "@components/config";
+import { ConfirmUpdate } from "@components/config/confirm-update";
 import { useRead, useWrite } from "@hooks";
 import { Section } from "@layouts/page";
 import { Types } from "@monitor/client";
@@ -23,9 +24,9 @@ const ImageTypeSelector = ({
   selected: Types.DeploymentImage["type"] | undefined;
   onSelect: (type: Types.DeploymentImage["type"]) => void;
 }) => (
-  <Select value={selected} onValueChange={onSelect}>
+  <Select value={selected || undefined} onValueChange={onSelect}>
     <SelectTrigger className="max-w-[150px]">
-      <SelectValue placeholder="Select A Server" />
+      <SelectValue placeholder="Select Type" />
     </SelectTrigger>
     <SelectContent>
       <SelectItem value={"Image"}>Image</SelectItem>
@@ -43,7 +44,7 @@ const ServersSelector = ({
 }) => {
   const servers = useRead("ListServers", {}).data;
   return (
-    <Select value={selected} onValueChange={onSelect}>
+    <Select value={selected || undefined} onValueChange={onSelect}>
       <SelectTrigger className="w-full lg:w-[300px]">
         <SelectValue placeholder="Select A Server" />
       </SelectTrigger>
@@ -67,9 +68,9 @@ const BuildsSelector = ({
 }) => {
   const builds = useRead("ListBuilds", {}).data;
   return (
-    <Select value={selected ?? undefined} onValueChange={onSelect}>
+    <Select value={selected || undefined} onValueChange={onSelect}>
       <SelectTrigger className="w-full lg:w-[300px]">
-        <SelectValue placeholder="Select A Build" />
+        <SelectValue placeholder="Select Build" />
       </SelectTrigger>
       <SelectContent>
         {builds?.map((b) => (
@@ -93,12 +94,14 @@ const BuildVersionSelector = ({
 }) => {
   const versions = useRead("GetBuildVersions", { id: buildId }).data;
   return (
-    <Select value={selected ?? undefined} onValueChange={onSelect}>
-      <SelectTrigger className="w-full lg:w-[300px]">
-        <SelectValue placeholder="Select A Build" />
+    <Select value={selected || undefined} onValueChange={onSelect}>
+      <SelectTrigger className="w-full lg:w-[150px]">
+        <SelectValue placeholder="Select Version" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={"latest"}>latest</SelectItem>
+        <SelectItem value={JSON.stringify({ major: 0, minor: 0, patch: 0 })}>
+          latest
+        </SelectItem>
         {versions?.map((v) => (
           <SelectItem key={JSON.stringify(v)} value={JSON.stringify(v)}>
             {readableVersion(v.version)}
@@ -118,7 +121,7 @@ const EnvVars = ({
 }) => (
   <div className="flex flex-col gap-4 border-b pb-4">
     {vars?.map((variable, i) => (
-      <div className="flex justify-between gap-4">
+      <div className="flex justify-between gap-4" key={i}>
         <Input
           value={variable.variable}
           placeholder="Variable Name"
@@ -154,6 +157,84 @@ const EnvVars = ({
   </div>
 );
 
+const ImageConfig = ({
+  image,
+  set,
+}: {
+  image: Types.DeploymentImage | undefined;
+  set: (input: Partial<Types.DeploymentConfig>) => void;
+}) => (
+  <div className="flex justify-between items-center border-b pb-4 min-h-[40px]">
+    <div>Image</div>
+    <div className="flex gap-4 w-full justify-end">
+      <ImageTypeSelector
+        selected={image?.type}
+        onSelect={(type) =>
+          set({
+            image: {
+              type: type as any,
+              params:
+                type === "Image"
+                  ? { image: "" }
+                  : ({
+                      build_id: "",
+                      version: { major: 0, minor: 0, patch: 0 },
+                    } as any),
+            },
+          })
+        }
+      />
+      {image?.type === "Build" && (
+        <div className="flex gap-4">
+          <BuildsSelector
+            selected={image.params.build_id}
+            onSelect={(id) =>
+              set({
+                image: {
+                  ...image,
+                  params: { ...image.params, build_id: id },
+                },
+              })
+            }
+          />
+          <BuildVersionSelector
+            buildId={image.params.build_id}
+            selected={JSON.stringify(image.params.version)}
+            onSelect={(version) =>
+              set({
+                image: {
+                  ...image,
+                  params: {
+                    ...image.params,
+                    version: JSON.parse(version),
+                  },
+                },
+              })
+            }
+          />
+        </div>
+      )}
+      {image?.type === "Image" && (
+        <div>
+          <Input
+            value={image.params.image}
+            onChange={(e) =>
+              set({
+                image: {
+                  ...image,
+                  params: { image: e.target.value },
+                },
+              })
+            }
+            className="w-full lg:w-[300px]"
+            placeholder="image name"
+          />
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 export const DeploymentConfig = () => {
   const id = useParams().deploymentId;
   const deployment = useRead("GetDeployment", { id }).data;
@@ -171,13 +252,10 @@ export const DeploymentConfig = () => {
           <Button variant="outline" intent="warning" onClick={() => set({})}>
             <History className="w-4 h-4" />
           </Button>
-          <Button
-            variant="outline"
-            intent="success"
-            onClick={() => mutate({ config: update, id })}
-          >
-            <Save className="w-4 h-4" />
-          </Button>
+          <ConfirmUpdate
+            content={JSON.stringify(update, null, 2)}
+            onConfirm={() => mutate({ config: update, id })}
+          />
         </div>
       }
     >
@@ -201,77 +279,7 @@ export const DeploymentConfig = () => {
               />
             </div>
           ),
-          image: (image, set) => (
-            <div className="flex justify-between items-center border-b pb-4 min-h-[40px] ">
-              <div>Image</div>
-              <div className="flex gap-4 w-full justify-end">
-                <ImageTypeSelector
-                  selected={image?.type}
-                  onSelect={(type) =>
-                    set({
-                      image: {
-                        type: type as any,
-                        params:
-                          type === "Image"
-                            ? { image: "" }
-                            : ({
-                                build_id: "",
-                                version: { major: 0, minor: 0, patch: 0 },
-                              } as any),
-                      },
-                    })
-                  }
-                />
-                {image?.type === "Build" && (
-                  <div className="flex gap-4">
-                    <BuildsSelector
-                      selected={image.params.build_id}
-                      onSelect={(id) =>
-                        set({
-                          image: {
-                            ...image,
-                            params: { ...image.params, build_id: id },
-                          },
-                        })
-                      }
-                    />
-                    <BuildVersionSelector
-                      buildId={image.params.build_id}
-                      selected={image.params.build_id}
-                      onSelect={(version) =>
-                        set({
-                          image: {
-                            ...image,
-                            params: {
-                              ...image.params,
-                              version: JSON.parse(version),
-                            },
-                          },
-                        })
-                      }
-                    />
-                  </div>
-                )}
-                {image?.type === "Image" && (
-                  <div>
-                    <Input
-                      value={image.params.image}
-                      onChange={(e) =>
-                        set({
-                          image: {
-                            ...image,
-                            params: { image: e.target.value },
-                          },
-                        })
-                      }
-                      className="w-full lg:w-[300px]"
-                      placeholder="image name"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          ),
+          image: (image, set) => <ImageConfig image={image} set={set} />,
           environment: (vars, set) => <EnvVars vars={vars} set={set} />,
         }}
       />
