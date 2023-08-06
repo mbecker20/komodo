@@ -30,7 +30,7 @@ export const ResourceCard = ({
   children,
   statusIcon,
 }: CardProps) => (
-  <Card hoverable>
+  <Card hoverable className="h-full">
     <CardHeader className="flex flex-row justify-between">
       <div>
         <CardTitle>{title}</CardTitle>
