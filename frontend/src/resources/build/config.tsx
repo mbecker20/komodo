@@ -1,4 +1,4 @@
-import { Config } from "@components/config/Config";
+import { Configuration } from "@components/config";
 import { useRead, useWrite } from "@hooks";
 import { Section } from "@layouts/page";
 import { Types } from "@monitor/client";
@@ -11,7 +11,7 @@ export const BuildConfig = () => {
   const id = useParams().buildId;
   const build = useRead("GetBuild", { id }).data;
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
-  const { mutate } = useWrite("UpdateBuild");
+  const { mutate, isLoading } = useWrite("UpdateBuild");
 
   if (id && build?.config) {
     return (
@@ -33,7 +33,30 @@ export const BuildConfig = () => {
           </div>
         }
       >
-        <Config config={build?.config as any} update={update} set={set} />
+        <Configuration
+          config={build.config}
+          loading={isLoading}
+          update={update}
+          set={(input) => set((update) => ({ ...update, ...input }))}
+          layout={{
+            // general: ["version"],
+            repo: ["repo", "branch", "github_account"],
+            docker: [
+              "build_path",
+              "dockerfile_path",
+              "docker_account",
+              "docker_organization",
+              "use_buildx",
+            ],
+            pre_build: ["pre_build"],
+            build_args: ["build_args"],
+            extra_args: ["extra_args"],
+          }}
+          // overrides={{
+          //   pre_build: (val, set) => {},
+          // }}
+        />
+        {/* <Config config={build?.config as any} update={update} set={set} /> */}
       </Section>
     );
   } else {
