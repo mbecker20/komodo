@@ -99,9 +99,7 @@ export const Omnibar = () => {
             })}
           </CommandGroup>
           <CommandGroup heading="Builders">
-            {builders?.map(({ _id }) => {
-              const id = _id?.$oid;
-              if (!id) return null;
+            {builders?.map(({ id }) => {
               return (
                 <CommandItem
                   key={id}
@@ -115,9 +113,7 @@ export const Omnibar = () => {
             })}
           </CommandGroup>
           <CommandGroup heading="Alerters">
-            {alerters?.map(({ _id }) => {
-              const id = _id?.$oid;
-              if (!id) return null;
+            {alerters?.map(({ id }) => {
               return (
                 <CommandItem
                   key={id}
