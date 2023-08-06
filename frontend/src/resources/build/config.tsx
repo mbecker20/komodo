@@ -141,11 +141,6 @@ export const BuildConfig = () => {
           extra_args: ["extra_args"],
         }}
         overrides={{
-          // pre_build: (steps, set) => (
-          //   <div>
-          //     <Input />
-          //   </div>
-          // ),
           build_args: (args, set) => <EnvVars vars={args} set={set} />,
           extra_args: (args, set) => <ExtraArgs args={args} set={set} />,
         }}
