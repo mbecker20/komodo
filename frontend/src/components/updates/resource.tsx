@@ -57,8 +57,10 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => (
 
 export const ResourceUpdates = ({ type, id }: ResourceTarget) => {
   const { data, isLoading } = useRead("ListUpdates", {
-    "target.type": type,
-    "target.id": id,
+    query: {
+      "target.type": type,
+      "target.id": id,
+    },
   });
 
   return (
