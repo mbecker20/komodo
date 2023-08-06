@@ -3,6 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs";
 import { AlertOctagon, ChevronDown, TerminalSquare } from "lucide-react";
 import { useRead } from "@hooks";
 import { Section } from "@layouts/page";
+import { DockerContainerState } from "@monitor/client/dist/types";
 
 const to_bottom = (id: string) => () =>
   document
@@ -19,6 +20,10 @@ export const DeploymentLogs = ({
     { deployment_id, tail: 200 },
     { refetchInterval: 30000 }
   ).data;
+  const deployments = useRead("ListDeployments", {}).data;
+  const deployment = deployments?.find((d) => d.id === deployment_id);
+
+  if (deployment?.state === DockerContainerState.NotDeployed) return null;
 
   return (
     <Tabs defaultValue="stdout">
