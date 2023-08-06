@@ -4,6 +4,13 @@ import { Section } from "@layouts/page";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
 import { Settings, Save, History, Trash, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
@@ -95,6 +102,102 @@ const EnvVars = ({
   </div>
 );
 
+const BuilderTypeSelector = ({
+  selected,
+  onSelect,
+}: {
+  selected: Types.BuildBuilderConfig["type"] | undefined;
+  onSelect: (type: Types.BuildBuilderConfig["type"]) => void;
+}) => (
+  <Select value={selected || undefined} onValueChange={onSelect}>
+    <SelectTrigger className="max-w-[150px]">
+      <SelectValue placeholder="Select Type" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value={"Builder"}>Image</SelectItem>
+      <SelectItem value={"Server"}>Build</SelectItem>
+    </SelectContent>
+  </Select>
+);
+
+const BuilderConfig = ({
+  builder,
+  set,
+}: {
+  builder: Types.BuildBuilderConfig | undefined;
+  set: (input: Partial<Types.DeploymentConfig>) => void;
+}) => (
+  <div className="flex justify-between items-center border-b pb-4 min-h-[40px]">
+    <div>Image</div>
+    <div className="flex gap-4 w-full justify-end">
+      <BuilderTypeSelector
+        selected={builder?.type}
+        onSelect={(type) =>
+          set({
+            image: {
+              type: type,
+              params:
+                type === "Image"
+                  ? { image: "" }
+                  : ({
+                      build_id: "",
+                      version: { major: 0, minor: 0, patch: 0 },
+                    } as any),
+            },
+          })
+        }
+      />
+      {image?.type === "Build" && (
+        <div className="flex gap-4">
+          <BuildsSelector
+            selected={image.params.build_id}
+            onSelect={(id) =>
+              set({
+                image: {
+                  ...image,
+                  params: { ...image.params, build_id: id },
+                },
+              })
+            }
+          />
+          <BuildVersionSelector
+            buildId={image.params.build_id}
+            selected={JSON.stringify(image.params.version)}
+            onSelect={(version) =>
+              set({
+                image: {
+                  ...image,
+                  params: {
+                    ...image.params,
+                    version: JSON.parse(version),
+                  },
+                },
+              })
+            }
+          />
+        </div>
+      )}
+      {image?.type === "Image" && (
+        <div>
+          <Input
+            value={image.params.image}
+            onChange={(e) =>
+              set({
+                image: {
+                  ...image,
+                  params: { image: e.target.value },
+                },
+              })
+            }
+            className="w-full lg:w-[300px]"
+            placeholder="image name"
+          />
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 export const BuildConfig = () => {
   const id = useParams().buildId;
   const build = useRead("GetBuild", { id }).data;
@@ -128,6 +231,7 @@ export const BuildConfig = () => {
         update={update}
         set={(input) => set((update) => ({ ...update, ...input }))}
         layout={{
+          general: ["builder"],
           repo: ["repo", "branch", "github_account"],
           docker: [
             "build_path",
@@ -143,6 +247,7 @@ export const BuildConfig = () => {
         overrides={{
           build_args: (args, set) => <EnvVars vars={args} set={set} />,
           extra_args: (args, set) => <ExtraArgs args={args} set={set} />,
+          builder: (builder, set) => <div>{builder.type === "Builder"}</div>,
         }}
       />
     </Section>
