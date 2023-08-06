@@ -39,6 +39,51 @@ const ServersSelector = ({
   );
 };
 
+const EnvVars = ({
+  vars,
+  set,
+}: {
+  vars: Types.EnvironmentVar[] | undefined;
+  set: (input: Partial<Types.DeploymentConfig>) => void;
+}) => (
+  <div className="flex flex-col gap-4 border-b pb-4">
+    {vars?.map((variable, i) => (
+      <div className="flex justify-between gap-4">
+        <Input
+          value={variable.variable}
+          placeholder="Variable Name"
+          onChange={(e) => {
+            vars[i].variable = e.target.value;
+            set({ environment: [...vars] });
+          }}
+        />
+        =
+        <Input
+          value={variable.value}
+          placeholder="Variable Value"
+          onChange={(e) => {
+            vars[i].value = e.target.value;
+            set({ environment: [...vars] });
+          }}
+        />
+      </div>
+    ))}
+    <Button
+      variant="outline"
+      intent="success"
+      className="flex items-center gap-2"
+      onClick={() =>
+        set({
+          environment: [...(vars ?? []), { variable: "", value: "" }],
+        })
+      }
+    >
+      <PlusCircle className="w-4 h-4" />
+      Add
+    </Button>
+  </div>
+);
+
 export const DeploymentConfig = () => {
   const id = useParams().deploymentId;
   const deployment = useRead("GetDeployment", { id }).data;
@@ -89,44 +134,7 @@ export const DeploymentConfig = () => {
             </div>
           ),
           image: () => <div>Image </div>,
-          environment: (vars, set) => (
-            <div className="flex flex-col gap-4 border-b pb-4">
-              {vars?.map((variable, i) => (
-                <div className="flex justify-between gap-4">
-                  <Input
-                    value={variable.variable}
-                    placeholder="Variable Name"
-                    onChange={(e) => {
-                      vars[i].variable = e.target.value;
-                      set({ environment: [...vars] });
-                    }}
-                  />
-                  =
-                  <Input
-                    value={variable.value}
-                    placeholder="Variable Value"
-                    onChange={(e) => {
-                      vars[i].value = e.target.value;
-                      set({ environment: [...vars] });
-                    }}
-                  />
-                </div>
-              ))}
-              <Button
-                variant="outline"
-                intent="success"
-                className="flex items-center gap-2"
-                onClick={() =>
-                  set({
-                    environment: [...(vars ?? []), { variable: "", value: "" }],
-                  })
-                }
-              >
-                <PlusCircle className="w-4 h-4" />
-                Add
-              </Button>
-            </div>
-          ),
+          environment: (vars, set) => <EnvVars vars={vars} set={set} />,
         }}
       />
     </Section>

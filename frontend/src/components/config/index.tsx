@@ -111,7 +111,7 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
             return (
               <Configuration
                 config={config[field] as T}
-                update={update[field] as Partial<T>}
+                update={update[field] ?? {}}
                 loading={loading}
                 set={set}
               />

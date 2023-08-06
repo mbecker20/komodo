@@ -8,6 +8,93 @@ import { Settings, Save, History, Trash, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
+const ExtraArgs = ({
+  args,
+  set,
+}: {
+  args: string[] | undefined;
+  set: (input: Partial<Types.BuildConfig>) => void;
+}) => (
+  <div className="flex flex-col gap-4">
+    {args?.map((arg, i) => (
+      <div className="flex gap-4" key={i}>
+        <Input
+          value={arg}
+          onChange={(e) => {
+            if (!args) return;
+            args[i] = e.target.value;
+            set({ extra_args: [...args] });
+          }}
+        />
+        <Button
+          variant="outline"
+          intent="danger"
+          onClick={() => {
+            if (!args) return;
+            args = args?.filter((_, ix) => ix !== i);
+            set({ extra_args: [...args] });
+          }}
+        >
+          <Trash className="w-4 h-4" />
+        </Button>
+      </div>
+    ))}
+    <Button
+      variant="outline"
+      intent="success"
+      onClick={() => set({ extra_args: [...(args ?? []), ""] })}
+      className="flex items-center gap-2"
+    >
+      Add Arg <PlusCircle className="w-4 h-4" />
+    </Button>
+  </div>
+);
+
+const EnvVars = ({
+  vars,
+  set,
+}: {
+  vars: Types.EnvironmentVar[] | undefined;
+  set: (input: Partial<Types.BuildConfig>) => void;
+}) => (
+  <div className="flex flex-col gap-4 border-b pb-4">
+    {vars?.map((variable, i) => (
+      <div className="flex justify-between gap-4">
+        <Input
+          value={variable.variable}
+          placeholder="Variable Name"
+          onChange={(e) => {
+            vars[i].variable = e.target.value;
+            set({ build_args: [...vars] });
+          }}
+        />
+        =
+        <Input
+          value={variable.value}
+          placeholder="Variable Value"
+          onChange={(e) => {
+            vars[i].value = e.target.value;
+            set({ build_args: [...vars] });
+          }}
+        />
+      </div>
+    ))}
+    <Button
+      variant="outline"
+      intent="success"
+      className="flex items-center gap-2"
+      onClick={() =>
+        set({
+          build_args: [...(vars ?? []), { variable: "", value: "" }],
+        })
+      }
+    >
+      <PlusCircle className="w-4 h-4" />
+      Add
+    </Button>
+  </div>
+);
+
 export const BuildConfig = () => {
   const id = useParams().buildId;
   const build = useRead("GetBuild", { id }).data;
@@ -54,46 +141,13 @@ export const BuildConfig = () => {
           extra_args: ["extra_args"],
         }}
         overrides={{
-          extra_args: (args, set) => (
-            <div className="flex flex-col gap-4">
-              {args?.map((arg, i) => {
-                if (!args) return null;
-                return (
-                  <div className="flex gap-4">
-                    <Input
-                      value={arg}
-                      onChange={(e) => {
-                        if (args) {
-                          args[i] = e.target.value;
-                          set({ extra_args: [...args] });
-                        }
-                      }}
-                    />
-                    <Button
-                      variant="outline"
-                      intent="danger"
-                      onClick={() => {
-                        if (args) {
-                          args = args?.filter((_, ix) => ix !== i);
-                          set({ extra_args: [...args] });
-                        }
-                      }}
-                    >
-                      <Trash className="w-4 h-4" />
-                    </Button>
-                  </div>
-                );
-              })}
-              <Button
-                variant="outline"
-                intent="success"
-                onClick={() => set({ extra_args: [...(args ?? []), ""] })}
-                className="flex items-center gap-2"
-              >
-                Add Arg <PlusCircle className="w-4 h-4" />
-              </Button>
-            </div>
-          ),
+          // pre_build: (steps, set) => (
+          //   <div>
+          //     <Input />
+          //   </div>
+          // ),
+          build_args: (args, set) => <EnvVars vars={args} set={set} />,
+          extra_args: (args, set) => <ExtraArgs args={args} set={set} />,
         }}
       />
     </Section>
