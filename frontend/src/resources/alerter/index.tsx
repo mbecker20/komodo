@@ -7,14 +7,14 @@ import { Link, useParams } from "react-router-dom";
 
 export const AlerterName = ({ id }: { id: string }) => {
   const alerters = useRead("ListAlerters", {}).data;
-  const alerter = alerters?.find((a) => a._id?.$oid === id);
+  const alerter = alerters?.find((a) => a.id === id);
   if (!alerter) return null;
   return <>{alerter.name}</>;
 };
 
 const AlerterInfo = ({ id }: { id: string }) => {
   const alerters = useRead("ListAlerters", {}).data;
-  const alerter = alerters?.find((a) => a._id?.$oid === id);
+  const alerter = alerters?.find((a) => a.id === id);
   if (!alerter) return null;
   return <>some description</>;
 };
@@ -37,13 +37,13 @@ export const AlerterPage = () => {
 
 export const AlerterCard = ({ id }: { id: string }) => {
   const alerters = useRead("ListAlerters", {}).data;
-  const alerter = alerters?.find((a) => a._id?.$oid === id);
+  const alerter = alerters?.find((a) => a.id === id);
   if (!alerter) return null;
   return (
     <Link to={`/alerters/${id}`}>
       <ResourceCard
         title={alerter.name}
-        description={alerter.description ?? "some desc"}
+        description={`${alerter.alerter_type} alerter`}
         statusIcon={<AlarmClock className="w-4 h-4" />}
       >
         <div></div>
