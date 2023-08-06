@@ -1,4 +1,5 @@
 import { useRead } from "@hooks";
+import { DockerContainerState } from "@monitor/client/dist/types";
 import { BuildName } from "@resources/build/util";
 import { ServerName } from "@resources/server/util";
 import { cn } from "@util/helpers";
@@ -31,16 +32,16 @@ export const DeploymentStatusIcon = ({
 }) => {
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deploymentId);
-  return (
-    <Rocket
-      className={cn(
-        "w-4 h-4 stroke-primary",
-        deployment?.status === "running" && "fill-green-500",
-        deployment?.status === "exited" && "fill-red-500",
-        deployment?.status === null && "fill-blue-500"
-      )}
-    />
-  );
+  const s = deployment?.state;
+
+  const color = () => {
+    if (s === DockerContainerState.Running) return "fill-green-500";
+    if (s === DockerContainerState.Paused) return "fill-orange-500";
+    if (s === DockerContainerState.NotDeployed) return "fill-blue-500";
+    return "fill-red-500";
+  };
+
+  return <Rocket className={cn("w-4 h-4 stroke-primary", color())} />;
 };
 
 export const DeploymentServer = ({
