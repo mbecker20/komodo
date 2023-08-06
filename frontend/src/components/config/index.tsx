@@ -2,7 +2,7 @@ import { Switch } from "@ui/switch";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { Input } from "@ui/input";
-import { ReactNode, useState } from "react";
+import { Fragment, ReactNode, useState } from "react";
 
 const fmt_field = (s: string) => s.split("_").join(" ");
 
@@ -55,7 +55,8 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
             if (typeof field !== "string") return null;
             const val = update[field] ?? config[field];
             const override = overrides?.[field];
-            if (!!override) return override(val, set);
+            if (!!override)
+              return <Fragment key={field}>{override(val, set)}</Fragment>;
             if (typeof val === "string") {
               return (
                 <div
@@ -110,6 +111,7 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
             }
             return (
               <Configuration
+                key={field}
                 config={config[field] as T}
                 update={update[field] ?? {}}
                 loading={loading}
@@ -129,10 +131,7 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
                     key={field}
                     className="flex justify-between items-center border-b pb-4"
                   >
-                    <div className="capitalize text-md">
-                      {" "}
-                      {fmt_field(field)}{" "}
-                    </div>
+                    <div className="capitalize text-md">{fmt_field(field)}</div>
                     <Input
                       className="max-w-[400px]"
                       value={val}
@@ -150,10 +149,7 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
                     key={field}
                     className="flex justify-between items-center border-b pb-4"
                   >
-                    <div className="capitalize text-md">
-                      {" "}
-                      {fmt_field(field)}{" "}
-                    </div>
+                    <div className="capitalize text-md">{fmt_field(field)}</div>
                     <Input
                       className="max-w-[400px]"
                       type="number"
@@ -180,6 +176,7 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
               }
               return (
                 <Configuration
+                  key={field}
                   config={config[field as keyof T] as T}
                   update={update[field as keyof T] as Partial<T>}
                   loading={loading}
