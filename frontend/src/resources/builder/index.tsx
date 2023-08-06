@@ -1,5 +1,12 @@
 import { ResourceCard } from "@layouts/card";
-import { Bot, Cloud, Factory, History, Settings } from "lucide-react";
+import {
+  Bot,
+  Cloud,
+  Factory,
+  History,
+  PlusCircle,
+  Settings,
+} from "lucide-react";
 import { ResourceUpdates } from "@components/updates/resource";
 import { useAddRecentlyViewed, useRead, useWrite } from "@hooks";
 import { Resource } from "@layouts/resource";
@@ -17,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
+import { Input } from "@ui/input";
 
 export const BuilderName = ({ id }: { id: string }) => {
   const builders = useRead("ListBuilders", {}).data;
@@ -70,7 +78,7 @@ const BuilderTypeSelector = ({
 
 const BuilderConfig = ({ id }: { id: string }) => {
   const builder = useRead("GetBuilder", { id }).data;
-  const [update, set] = useState<Partial<Types.BuilderConfig>>({});
+  const [update, setUpdate] = useState<Partial<Types.BuilderConfig>>({});
   const { mutate, isLoading } = useWrite("UpdateBuilder");
 
   if (!builder?.config) return null;
@@ -81,7 +89,11 @@ const BuilderConfig = ({ id }: { id: string }) => {
       icon={<Settings className="w-4 h-4" />}
       actions={
         <div className="flex gap-4">
-          <Button variant="outline" intent="warning" onClick={() => set({})}>
+          <Button
+            variant="outline"
+            intent="warning"
+            onClick={() => setUpdate({})}
+          >
             <History className="w-4 h-4" />
           </Button>
           <ConfirmUpdate
@@ -95,7 +107,7 @@ const BuilderConfig = ({ id }: { id: string }) => {
         config={builder.config}
         loading={isLoading}
         update={update}
-        set={(input) => set((update) => ({ ...update, ...input }))}
+        set={(input) => setUpdate((update) => ({ ...update, ...input }))}
         layout={{
           general: ["type", "params"],
         }}
@@ -106,9 +118,36 @@ const BuilderConfig = ({ id }: { id: string }) => {
               onSelect={(type) => set({ ...builder, type })}
             />
           ),
-          // params: (params, set) => <div>
-          //   {params.}
-          // </div>
+          params: (_, set) => (
+            <Configuration
+              config={builder.config.params}
+              loading={isLoading}
+              update={update?.params ?? {}}
+              set={(newparams) =>
+                set({ params: { ...update.params, ...newparams } } as any)
+              }
+              overrides={{
+                security_group_ids: (ids, setIds) => (
+                  <div className="flex flex-col gap-4 border-b pb-4">
+                    <div>Security group ids</div>
+                    {ids.map((id, i) => (
+                      <Input
+                        value={id}
+                        onChange={(e) => {
+                          ids[i] = e.target.value;
+                          setIds({ security_group_ids: [...ids] });
+                        }}
+                      />
+                    ))}
+                    <Button variant="outline" intent="success">
+                      <PlusCircle className="w-4 h-4" />
+                      Add Id
+                    </Button>
+                  </div>
+                ),
+              }}
+            />
+          ),
         }}
       />
     </Section>

@@ -110,13 +110,16 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
               );
             }
             return (
-              <Configuration
-                key={field}
-                config={config[field] as T}
-                update={update[field] ?? {}}
-                loading={loading}
-                set={set}
-              />
+              <>
+                {field}
+                <Configuration
+                  key={field}
+                  config={config[field] as T}
+                  update={update[field] ?? {}}
+                  loading={loading}
+                  set={set}
+                />
+              </>
             );
           })}
           {!layout &&
@@ -175,13 +178,16 @@ export const Configuration = <T extends Partial<Record<keyof T, unknown>>>({
                 );
               }
               return (
-                <Configuration
-                  key={field}
-                  config={config[field as keyof T] as T}
-                  update={update[field as keyof T] as Partial<T>}
-                  loading={loading}
-                  set={set}
-                />
+                <>
+                  {field}
+                  <Configuration
+                    key={field}
+                    config={config[field as keyof T] as T}
+                    update={update[field as keyof T] as Partial<T>}
+                    loading={loading}
+                    set={set}
+                  />
+                </>
               );
             })}
         </CardContent>
