@@ -153,7 +153,7 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
             .context("failed to delete builder from database")?;
 
         let mut update = Update {
-            target: ResourceTarget::Builder(id.clone()),
+            target: (&builder).into(),
             operation: Operation::DeleteBuilder,
             start_ts,
             operator: user.id.clone(),
@@ -166,6 +166,8 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
 
         update.finalize();
         self.add_update(update).await?;
+
+        self.remove_from_recently_viewed(&builder).await?;
 
         Ok(builder)
     }

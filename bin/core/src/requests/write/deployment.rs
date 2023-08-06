@@ -252,6 +252,8 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
 
             self.update_update(update).await?;
 
+            self.remove_from_recently_viewed(&deployment).await?;
+
             Ok(deployment)
         };
 

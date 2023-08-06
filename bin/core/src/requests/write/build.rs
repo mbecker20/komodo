@@ -195,6 +195,8 @@ impl Resolve<DeleteBuild, RequestUser> for State {
         update.finalize();
         self.update_update(update).await?;
 
+        self.remove_from_recently_viewed(&build).await?;
+
         Ok(build)
     }
 }

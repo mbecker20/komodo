@@ -216,6 +216,8 @@ impl Resolve<DeleteRepo, RequestUser> for State {
             update.finalize();
             self.update_update(update).await?;
 
+            self.remove_from_recently_viewed(&repo).await?;
+
             Ok(repo)
         };
 

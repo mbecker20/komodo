@@ -12,6 +12,7 @@ use monitor_types::{
     },
     monitor_timestamp,
 };
+use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
 
@@ -161,6 +162,27 @@ impl State {
             .context("failed to update the update on db. the update build process was deleted")?;
         std::mem::swap(&mut update.id, &mut update_id);
         let _ = self.send_update(update).await;
+        Ok(())
+    }
+
+    pub async fn remove_from_recently_viewed(
+        &self,
+        resource: impl Into<ResourceTarget>,
+    ) -> anyhow::Result<()> {
+        let resource: ResourceTarget = resource.into();
+        self.db
+            .users
+            .update_many(
+                doc! {},
+                doc! {
+                    "$pull": {
+                        "recently_viewed":
+                            to_bson(&resource).context("failed to convert resource to bson")?
+                    }
+                },
+            )
+            .await
+            .context("failed to remove resource from users recently viewed")?;
         Ok(())
     }
 
