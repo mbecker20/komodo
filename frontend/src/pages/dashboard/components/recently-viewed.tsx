@@ -1,10 +1,12 @@
 import { useRead } from "@hooks";
-import { BuildCard } from "@resources/build";
 import { History } from "lucide-react";
+import { Section } from "@layouts/page";
+import { BuildCard } from "@resources/build";
 import { DeploymentCard } from "@resources/deployment";
 import { ServerCard } from "@resources/server";
 import { BuilderCard } from "@resources/builder";
-import { Section } from "@layouts/page";
+import { AlerterCard } from "@resources/alerter";
+import { RepoCard } from "@resources/repo";
 
 export const RecentlyViewed = () => {
   const recents = useRead("GetUser", {}).data?.recently_viewed;
@@ -20,6 +22,8 @@ export const RecentlyViewed = () => {
           if (type === "Build") return <BuildCard key={id} id={id} />;
           if (type === "Server") return <ServerCard key={id} id={id} />;
           if (type === "Builder") return <BuilderCard key={id} id={id} />;
+          if (type === "Alerter") return <AlerterCard key={id} id={id} />;
+          if (type === "Repo") return <RepoCard key={id} id={id} />;
         })}
       </div>
     </Section>
