@@ -152,7 +152,7 @@ const EnvVars = ({
       }
     >
       <PlusCircle className="w-4 h-4" />
-      Add
+      Add Environment Variable
     </Button>
   </div>
 );
@@ -197,7 +197,7 @@ const Ports = ({
       }
     >
       <PlusCircle className="w-4 h-4" />
-      Add
+      Add Port
     </Button>
   </div>
 );
