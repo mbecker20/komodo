@@ -113,10 +113,13 @@ const BuilderConfig = ({ id }: { id: string }) => {
         }}
         overrides={{
           type: (type, set) => (
-            <BuilderTypeSelector
-              selected={type}
-              onSelect={(type) => set({ ...builder, type })}
-            />
+            <div className="flex justify-between items-center border-b pb-4 min-h-[40px]">
+              <div>Builder Type </div>
+              <BuilderTypeSelector
+                selected={type}
+                onSelect={(type) => set({ ...builder, type })}
+              />
+            </div>
           ),
           params: (_, set) => (
             <Configuration
