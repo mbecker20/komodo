@@ -9,6 +9,7 @@ import { version_to_string } from "@util/helpers";
 import { BuildInfo } from "./util";
 import { Hammer } from "lucide-react";
 import { ResourceCard } from "@layouts/card";
+import { ResourceUpdates } from "@components/updates/resource";
 
 export const BuildPage = () => {
   const id = useParams().buildId;
@@ -25,6 +26,7 @@ export const BuildPage = () => {
       }
       actions={<RebuildBuild buildId={id} />}
     >
+      <ResourceUpdates type="Build" id={id} />
       <BuildConfig />
     </Resource>
   );
