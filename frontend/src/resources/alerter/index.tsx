@@ -44,7 +44,7 @@ export const AlerterCard = ({ id }: { id: string }) => {
 export const AlerterConfig = ({ id }: { id: string }) => {
   const alerter = useRead("GetAlerter", { id }).data;
   const [update, set] = useState<Partial<Types.AlerterConfig>>({});
-  const { mutate, isLoading } = useWrite("UpdateAlerter");
+  const { mutate } = useWrite("UpdateAlerter");
 
   if (!id || !alerter?.config) return null;
   return (

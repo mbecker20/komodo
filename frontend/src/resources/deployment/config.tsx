@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { readableVersion } from "@util/helpers";
-import { Settings, Save, History, PlusCircle } from "lucide-react";
+import { Settings, History, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 
