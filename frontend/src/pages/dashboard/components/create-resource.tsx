@@ -10,15 +10,10 @@ import {
   DropdownMenuItem,
 } from "@ui/dropdown";
 import { Button } from "@ui/button";
-import { NewBuild } from "@resources/build/new";
-import { NewBuilder } from "@resources/builder/new";
-import { NewDeployment } from "@resources/deployment/new";
 import { PlusCircle, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { RESOURCE_TYPES } from "@util/config";
-import { NewServer } from "@resources/server/new";
-import { NewAlerter } from "@resources/alerter/new";
-import { NewRepo } from "@resources/repo/new";
+import { NewResourceDialog } from "@layouts/resources";
 
 export const CreateResource = () => {
   const [open, set] = useState<Types.ResourceTarget["type"] | false>(false);
@@ -56,12 +51,9 @@ export const CreateResource = () => {
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-      <NewDeployment open={open === "Deployment"} set={set} />
-      <NewServer open={open === "Server"} set={set} />
-      <NewBuild open={open === "Build"} set={set} />
-      <NewBuilder open={open === "Builder"} set={set} />
-      <NewAlerter open={open === "Alerter"} set={set} />
-      <NewRepo open={open === "Repo"} set={set} />
+      {open && (
+        <NewResourceDialog type={open} open={open === "Deployment"} set={set} />
+      )}
     </>
   );
 };

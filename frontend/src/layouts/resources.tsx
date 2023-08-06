@@ -10,6 +10,7 @@ import { NewBuild } from "@resources/build/new";
 import { NewBuilder } from "@resources/builder/new";
 import { NewAlerter } from "@resources/alerter/new";
 import { NewRepo } from "@resources/repo/new";
+import { Types } from "@monitor/client";
 
 export const Resources = ({
   type,
@@ -50,12 +51,7 @@ export const Resources = ({
             <PlusCircle className="w-4 h-4 text-green-500" />
             New {type}
           </Button>
-          {type === "Deployment" && <NewDeployment open={open} set={setOpen} />}
-          {type === "Server" && <NewServer open={open} set={setOpen} />}
-          {type === "Build" && <NewBuild open={open} set={setOpen} />}
-          {type === "Builder" && <NewBuilder open={open} set={setOpen} />}
-          {type === "Alerter" && <NewAlerter open={open} set={setOpen} />}
-          {type === "Repo" && <NewRepo open={open} set={setOpen} />}
+          <NewResourceDialog type={type} open={open} set={setOpen} />
         </div>
       }
     >
@@ -64,4 +60,22 @@ export const Resources = ({
       </div>
     </Page>
   );
+};
+
+export const NewResourceDialog = ({
+  type,
+  open,
+  set,
+}: {
+  type: Types.ResourceTarget["type"];
+  open: boolean;
+  set: (b: false) => void;
+}) => {
+  if (type === "Deployment") return <NewDeployment open={open} set={set} />;
+  if (type === "Build") return <NewBuild open={open} set={set} />;
+  if (type === "Server") return <NewServer open={open} set={set} />;
+  if (type === "Builder") return <NewBuilder open={open} set={set} />;
+  if (type === "Alerter") return <NewAlerter open={open} set={set} />;
+  if (type === "Repo") return <NewRepo open={open} set={set} />;
+  return null;
 };
