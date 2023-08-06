@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
+import { readableVersion } from "@util/helpers";
 import { Settings, Save, History, PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
@@ -20,10 +21,10 @@ const ImageTypeSelector = ({
   onSelect,
 }: {
   selected: Types.DeploymentImage["type"] | undefined;
-  onSelect: (serverId: Types.DeploymentImage["type"]) => void;
+  onSelect: (type: Types.DeploymentImage["type"]) => void;
 }) => (
   <Select value={selected} onValueChange={onSelect}>
-    <SelectTrigger className="max-w-[400px]">
+    <SelectTrigger className="max-w-[150px]">
       <SelectValue placeholder="Select A Server" />
     </SelectTrigger>
     <SelectContent>
@@ -43,7 +44,7 @@ const ServersSelector = ({
   const servers = useRead("ListServers", {}).data;
   return (
     <Select value={selected} onValueChange={onSelect}>
-      <SelectTrigger className="max-w-[400px]">
+      <SelectTrigger className="w-full lg:w-[300px]">
         <SelectValue placeholder="Select A Server" />
       </SelectTrigger>
       <SelectContent>
@@ -62,18 +63,45 @@ const BuildsSelector = ({
   onSelect,
 }: {
   selected: string | undefined;
-  onSelect: (serverId: string) => void;
+  onSelect: (buildId: string) => void;
 }) => {
   const builds = useRead("ListBuilds", {}).data;
   return (
-    <Select value={selected} onValueChange={onSelect}>
-      <SelectTrigger className="max-w-[400px]">
-        <SelectValue placeholder="Select A Server" />
+    <Select value={selected ?? undefined} onValueChange={onSelect}>
+      <SelectTrigger className="w-full lg:w-[300px]">
+        <SelectValue placeholder="Select A Build" />
       </SelectTrigger>
       <SelectContent>
         {builds?.map((b) => (
           <SelectItem key={b.id} value={b.id}>
             {b.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
+
+const BuildVersionSelector = ({
+  buildId,
+  selected,
+  onSelect,
+}: {
+  buildId: string | undefined;
+  selected: string | undefined;
+  onSelect: (version: string) => void;
+}) => {
+  const versions = useRead("GetBuildVersions", { id: buildId }).data;
+  return (
+    <Select value={selected ?? undefined} onValueChange={onSelect}>
+      <SelectTrigger className="w-full lg:w-[300px]">
+        <SelectValue placeholder="Select A Build" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value={"latest"}>latest</SelectItem>
+        {versions?.map((v) => (
+          <SelectItem key={JSON.stringify(v)} value={JSON.stringify(v)}>
+            {readableVersion(v.version)}
           </SelectItem>
         ))}
       </SelectContent>
@@ -132,8 +160,6 @@ export const DeploymentConfig = () => {
   const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
   const { mutate, isLoading } = useWrite("UpdateDeployment");
 
-  console.log(deployment?.config);
-
   if (!id || !deployment?.config) return null;
 
   return (
@@ -178,7 +204,7 @@ export const DeploymentConfig = () => {
           image: (image, set) => (
             <div className="flex justify-between items-center border-b pb-4 min-h-[40px] ">
               <div>Image</div>
-              <div className="flex gap-4">
+              <div className="flex gap-4 w-full justify-end">
                 <ImageTypeSelector
                   selected={image?.type}
                   onSelect={(type) =>
@@ -188,10 +214,10 @@ export const DeploymentConfig = () => {
                         params:
                           type === "Image"
                             ? { image: "" }
-                            : {
+                            : ({
                                 build_id: "",
                                 version: { major: 0, minor: 0, patch: 0 },
-                              },
+                              } as any),
                       },
                     })
                   }
@@ -205,6 +231,21 @@ export const DeploymentConfig = () => {
                           image: {
                             ...image,
                             params: { ...image.params, build_id: id },
+                          },
+                        })
+                      }
+                    />
+                    <BuildVersionSelector
+                      buildId={image.params.build_id}
+                      selected={image.params.build_id}
+                      onSelect={(version) =>
+                        set({
+                          image: {
+                            ...image,
+                            params: {
+                              ...image.params,
+                              version: JSON.parse(version),
+                            },
                           },
                         })
                       }
@@ -223,6 +264,8 @@ export const DeploymentConfig = () => {
                           },
                         })
                       }
+                      className="w-full lg:w-[300px]"
+                      placeholder="image name"
                     />
                   </div>
                 )}
