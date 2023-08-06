@@ -2,6 +2,7 @@ import { Configuration } from "@components/config";
 import { useRead, useWrite } from "@hooks";
 import { Section } from "@layouts/page";
 import { Types } from "@monitor/client";
+import { ServersSelector } from "@resources/deployment/config";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import {
@@ -114,11 +115,35 @@ const BuilderTypeSelector = ({
       <SelectValue placeholder="Select Type" />
     </SelectTrigger>
     <SelectContent>
-      <SelectItem value={"Builder"}>Image</SelectItem>
-      <SelectItem value={"Server"}>Build</SelectItem>
+      <SelectItem value={"Builder"}>Builder</SelectItem>
+      <SelectItem value={"Server"}>Server</SelectItem>
     </SelectContent>
   </Select>
 );
+
+const BuilderSelector = ({
+  selected,
+  onSelect,
+}: {
+  selected: string | undefined;
+  onSelect: (serverId: string) => void;
+}) => {
+  const builders = useRead("ListBuilders", {}).data;
+  return (
+    <Select value={selected || undefined} onValueChange={onSelect}>
+      <SelectTrigger className="w-full lg:w-[300px]">
+        <SelectValue placeholder="Select A Server" />
+      </SelectTrigger>
+      <SelectContent>
+        {builders?.map((b) => (
+          <SelectItem key={b.id} value={b.id}>
+            {b.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+};
 
 const BuilderConfig = ({
   builder,
@@ -144,25 +169,22 @@ const BuilderConfig = ({
           })
         }
       />
-      <Input
-        value={
-          builder?.type === "Server"
-            ? builder.params.server_id
-            : builder?.params.builder_id
-        }
-        onChange={(e) =>
-          set({
-            builder: {
-              ...builder,
-              params: {
-                ...(builder?.type === "Server"
-                  ? { server_id: e.target.value }
-                  : { builder_id: e.target.value }),
-              } as any,
-            } as any,
-          })
-        }
-      />
+      {builder?.type === "Server" && (
+        <ServersSelector
+          selected={builder.params.server_id}
+          onSelect={(server_id) =>
+            set({ builder: { ...builder, params: { server_id } } })
+          }
+        />
+      )}
+      {builder?.type === "Builder" && (
+        <BuilderSelector
+          selected={builder.params.builder_id}
+          onSelect={(builder_id) =>
+            set({ builder: { ...builder, params: { builder_id } } })
+          }
+        />
+      )}
     </div>
   </div>
 );

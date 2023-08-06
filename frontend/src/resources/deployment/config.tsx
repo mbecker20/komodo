@@ -35,7 +35,7 @@ const ImageTypeSelector = ({
   </Select>
 );
 
-const ServersSelector = ({
+export const ServersSelector = ({
   selected,
   onSelect,
 }: {
