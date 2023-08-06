@@ -1,5 +1,5 @@
 import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { RefreshCw, Play, Trash, Pause } from "lucide-react";
+import { Play, Trash, Pause, Rocket } from "lucide-react";
 import { useExecute, useRead } from "@hooks";
 import { DockerContainerState } from "@monitor/client/dist/types";
 import { useNavigate } from "react-router-dom";
@@ -16,7 +16,7 @@ export const RedeployContainer = ({ deployment_id }: DeploymentId) => {
     <ConfirmButton
       title={deployment?.status ? "Redeploy" : "Deploy"}
       intent="success"
-      icon={<RefreshCw className="h-4 w-4" />}
+      icon={<Rocket className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id })}
       disabled={isLoading}
     />
@@ -60,6 +60,9 @@ const StopContainer = ({ deployment_id }: DeploymentId) => {
 export const StartOrStopContainer = ({ deployment_id }: DeploymentId) => {
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deployment_id);
+
+  if (deployment?.state === DockerContainerState.NotDeployed) return null;
+
   if (deployment?.state === DockerContainerState.Running)
     return <StopContainer deployment_id={deployment_id} />;
   return <StartContainer deployment_id={deployment_id} />;
@@ -68,6 +71,10 @@ export const StartOrStopContainer = ({ deployment_id }: DeploymentId) => {
 export const RemoveContainer = ({ deployment_id }: DeploymentId) => {
   const { data: d } = useRead("GetDeployment", { id: deployment_id });
   const { mutate, isLoading } = useExecute("RemoveContainer");
+
+  const deployments = useRead("ListDeployments", {}).data;
+  const deployment = deployments?.find((d) => d.id === deployment_id);
+  if (deployment?.state === DockerContainerState.NotDeployed) return null;
 
   if (!d) return null;
   return (
