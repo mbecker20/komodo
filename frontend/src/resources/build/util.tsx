@@ -2,7 +2,7 @@ import { useRead } from "@hooks";
 import { version_to_string } from "@util/helpers";
 import { Factory, History } from "lucide-react";
 
-export const BuildName = ({ id }: { id: string }) => {
+export const BuildName = ({ id }: { id: string | undefined }) => {
   const builds = useRead("ListBuilds", {}).data;
   const build = builds?.find((b) => b.id === id);
   return <>{build?.name ?? "..."}</>;

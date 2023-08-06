@@ -1,4 +1,6 @@
 import { useRead } from "@hooks";
+import { BuildName } from "@resources/build/util";
+import { ServerName } from "@resources/server/util";
 import { cn } from "@util/helpers";
 import { HardDrive, Rocket, Server } from "lucide-react";
 
@@ -51,8 +53,11 @@ export const DeploymentServer = ({
   return (
     <div className="flex items-center gap-2">
       <Server className="w-4 h-4" />
-      server name {deployment?.state}
-      {/* <ServerName serverId={deployment?.deployment.server_id} /> */}
+      {deployment?.server_id ? (
+        <ServerName serverId={deployment?.server_id} />
+      ) : (
+        "n/a"
+      )}
     </div>
   );
 };
@@ -63,8 +68,7 @@ export const DeploymentBuild = ({ deploymentId }: { deploymentId: string }) => {
   return (
     <div className="flex items-center">
       <HardDrive className="w-4 h-4 mr-2" />
-      {/* {data ? deployment?.container?.image ?? "no image" : "..."} */}
-      build.name @ build.version {deployment?.status}
+      {deployment?.build_id ? <BuildName id={deployment?.build_id} /> : "n/a"}
     </div>
   );
 };
