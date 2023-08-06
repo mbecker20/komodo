@@ -115,8 +115,8 @@ export const Builders = () => {
         <>
           {builders
             ?.filter((d) => d.name.includes(search) || search.includes(d.name))
-            .map(({ _id }) => (
-              <BuilderCard key={_id?.$oid} id={_id?.$oid!} />
+            .map(({ id }) => (
+              <BuilderCard key={id} id={id} />
             ))}
         </>
       )}
@@ -136,8 +136,8 @@ export const Alerters = () => {
         <>
           {alerters
             ?.filter((d) => d.name.includes(search) || search.includes(d.name))
-            .map(({ _id }) => (
-              <AlerterCard key={_id?.$oid} id={_id?.$oid!} />
+            .map(({ id }) => (
+              <AlerterCard key={id} id={id} />
             ))}
         </>
       )}
