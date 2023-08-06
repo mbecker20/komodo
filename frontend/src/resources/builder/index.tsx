@@ -7,7 +7,7 @@ import { Link, useParams } from "react-router-dom";
 
 export const BuilderName = ({ id }: { id: string }) => {
   const builders = useRead("ListBuilders", {}).data;
-  const builder = builders?.find((b) => b._id?.$oid === id);
+  const builder = builders?.find((b) => b.id === id);
   return <>{builder?.name}</>;
 };
 
@@ -27,10 +27,10 @@ export const BuilderPage = () => {
 
 export const BuilderCard = ({ id }: { id: string }) => {
   const builders = useRead("ListBuilders", {}).data;
-  const builder = builders?.find((b) => b._id?.$oid === id);
+  const builder = builders?.find((b) => b.id === id);
   if (!builder) return null;
   return (
-    <Link to={`/builders/${builder._id?.$oid}`}>
+    <Link to={`/builders/${builder.id}`}>
       <ResourceCard
         title={builder.name}
         description={"some description"}
@@ -39,11 +39,11 @@ export const BuilderCard = ({ id }: { id: string }) => {
         <div className="flex flex-col text-muted-foreground text-sm">
           <div className="flex items-center gap-2">
             <Cloud className="w-4 h-4" />
-            AWS
+            {builder.provider}
           </div>
           <div className="flex items-center gap-2">
             <Bot className="w-4 h-4" />
-            C5x Large
+            {builder.instance_type ?? "n/a"}
           </div>
         </div>
       </ResourceCard>
