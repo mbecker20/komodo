@@ -9,6 +9,7 @@ use monitor_types::{
     },
     monitor_timestamp,
     requests::{execute, write::*},
+    to_monitor_name,
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
@@ -23,6 +24,7 @@ impl Resolve<CreateRepo, RequestUser> for State {
         CreateRepo { name, config }: CreateRepo,
         user: RequestUser,
     ) -> anyhow::Result<Repo> {
+        let name = to_monitor_name(&name);
         if let Some(server_id) = &config.server_id {
             if !server_id.is_empty() {
                 let _: Server = self.get_resource_check_permissions(
@@ -215,6 +217,8 @@ impl Resolve<DeleteRepo, RequestUser> for State {
 
             update.finalize();
             self.update_update(update).await?;
+
+            self.remove_from_recently_viewed(&repo).await?;
 
             Ok(repo)
         };

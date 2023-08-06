@@ -131,6 +131,8 @@ impl Resolve<DeleteServer, RequestUser> for State {
 
         self.server_status_cache.remove(&id).await;
 
+        self.remove_from_recently_viewed(&server).await?;
+
         Ok(server)
     }
 }

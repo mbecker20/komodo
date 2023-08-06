@@ -1,7 +1,7 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
-    entities::{alerter::Alerter, update::ResourceTarget, Operation, PermissionLevel},
+    entities::{alerter::Alerter, Operation, PermissionLevel},
     monitor_timestamp,
     requests::write::{CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter},
 };
@@ -124,11 +124,7 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
             .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
-        let mut update = make_update(
-            ResourceTarget::Alerter(id.clone()),
-            Operation::DeleteAlerter,
-            &user,
-        );
+        let mut update = make_update(&alerter, Operation::DeleteAlerter, &user);
 
         self.db
             .alerters
@@ -144,6 +140,8 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
         update.finalize();
 
         self.add_update(update).await?;
+
+        self.remove_from_recently_viewed(&alerter).await?;
 
         Ok(alerter)
     }
