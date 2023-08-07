@@ -11,7 +11,7 @@ pub mod docker_network;
 pub mod stats;
 
 #[typeshare]
-pub type Server = Resource<ServerConfig>;
+pub type Server = Resource<ServerConfig, ()>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]

@@ -9,7 +9,7 @@ use typeshare::typeshare;
 use super::resource::Resource;
 
 #[typeshare]
-pub type Builder = Resource<BuilderConfig>;
+pub type Builder = Resource<BuilderConfig, ()>;
 
 #[typeshare(serialized_as = "Partial<BuilderConfig>")]
 pub type _PartialBuilderConfig = PartialBuilderConfig;

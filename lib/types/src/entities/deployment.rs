@@ -9,7 +9,7 @@ use typeshare::typeshare;
 use super::{resource::Resource, EnvironmentVar, Version};
 
 #[typeshare]
-pub type Deployment = Resource<DeploymentConfig>;
+pub type Deployment = Resource<DeploymentConfig, ()>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
