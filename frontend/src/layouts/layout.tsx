@@ -1,14 +1,14 @@
-import { Header } from "@components/header";
 import { useUser } from "@hooks";
+import { Login } from "@pages/auth/login";
 import { Toaster } from "@ui/toast";
+import { Header } from "@components/header";
 import { WebsocketProvider } from "@util/socket";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 
 export const Layout = () => {
-  const { isError } = useUser();
-  const path = useLocation().pathname;
-  const nav = useNavigate();
-  if (isError && !path.includes("login")) nav("/login");
+  const { isLoading, isError } = useUser();
+  if (isLoading) return null;
+  if (isError) return <Login />;
 
   return (
     <WebsocketProvider>
