@@ -2,7 +2,7 @@ import { Configuration } from "@components/config";
 import { useRead, useWrite } from "@hooks";
 import { Section } from "@layouts/page";
 import { Types } from "@monitor/client";
-import { ServersSelector } from "@resources/deployment/config";
+// import { ServersSelector } from "@resources/deployment/config";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import {
@@ -103,23 +103,23 @@ const EnvVars = ({
   </div>
 );
 
-const BuilderTypeSelector = ({
-  selected,
-  onSelect,
-}: {
-  selected: Types.BuildBuilderConfig["type"] | undefined;
-  onSelect: (type: Types.BuildBuilderConfig["type"]) => void;
-}) => (
-  <Select value={selected || undefined} onValueChange={onSelect}>
-    <SelectTrigger className="max-w-[150px]">
-      <SelectValue placeholder="Select Type" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value={"Builder"}>Builder</SelectItem>
-      <SelectItem value={"Server"}>Server</SelectItem>
-    </SelectContent>
-  </Select>
-);
+// const BuilderTypeSelector = ({
+//   selected,
+//   onSelect,
+// }: {
+//   selected: string | undefined;
+//   onSelect: (id: string) => void;
+// }) => (
+//   <Select value={selected || undefined} onValueChange={onSelect}>
+//     <SelectTrigger className="max-w-[150px]">
+//       <SelectValue placeholder="Select Type" />
+//     </SelectTrigger>
+//     <SelectContent>
+//       <SelectItem value={"Builder"}>Builder</SelectItem>
+//       <SelectItem value={"Server"}>Server</SelectItem>
+//     </SelectContent>
+//   </Select>
+// );
 
 const BuilderSelector = ({
   selected,
@@ -145,49 +145,49 @@ const BuilderSelector = ({
   );
 };
 
-const BuilderConfig = ({
-  builder,
-  set,
-}: {
-  builder: Types.BuildBuilderConfig | undefined;
-  set: (input: Partial<Types.BuildConfig>) => void;
-}) => (
-  <div className="flex justify-between items-center border-b pb-4 min-h-[40px]">
-    <div>Builder</div>
-    <div className="flex gap-4 w-full justify-end">
-      <BuilderTypeSelector
-        selected={builder?.type}
-        onSelect={(type) =>
-          set({
-            builder: {
-              type: type as any,
-              params:
-                type === "Server"
-                  ? ({ server_id: "" } as any)
-                  : { builder_id: "" },
-            },
-          })
-        }
-      />
-      {builder?.type === "Server" && (
-        <ServersSelector
-          selected={builder.params.server_id}
-          onSelect={(server_id) =>
-            set({ builder: { ...builder, params: { server_id } } })
-          }
-        />
-      )}
-      {builder?.type === "Builder" && (
-        <BuilderSelector
-          selected={builder.params.builder_id}
-          onSelect={(builder_id) =>
-            set({ builder: { ...builder, params: { builder_id } } })
-          }
-        />
-      )}
-    </div>
-  </div>
-);
+// const BuilderConfig = ({
+//   builder,
+//   set,
+// }: {
+//   builder: Types.BuildBuilderConfig | undefined;
+//   set: (input: Partial<Types.BuildConfig>) => void;
+// }) => (
+//   <div className="flex justify-between items-center border-b pb-4 min-h-[40px]">
+//     <div>Builder</div>
+//     <div className="flex gap-4 w-full justify-end">
+//       <BuilderTypeSelector
+//         selected={builder?.type}
+//         onSelect={(type) =>
+//           set({
+//             builder: {
+//               type: type as any,
+//               params:
+//                 type === "Server"
+//                   ? ({ server_id: "" } as any)
+//                   : { builder_id: "" },
+//             },
+//           })
+//         }
+//       />
+//       {builder?.type === "Server" && (
+//         <ServersSelector
+//           selected={builder.params.server_id}
+//           onSelect={(server_id) =>
+//             set({ builder: { ...builder, params: { server_id } } })
+//           }
+//         />
+//       )}
+//       {builder?.type === "Builder" && (
+//         <BuilderSelector
+//           selected={builder.params.builder_id}
+//           onSelect={(builder_id) =>
+//             set({ builder: { ...builder, params: { builder_id } } })
+//           }
+//         />
+//       )}
+//     </div>
+//   </div>
+// );
 
 export const BuildConfig = () => {
   const id = useParams().buildId;
@@ -222,7 +222,7 @@ export const BuildConfig = () => {
         update={update}
         set={(input) => set((update) => ({ ...update, ...input }))}
         layout={{
-          general: ["builder"],
+          general: ["builder_id"],
           repo: ["repo", "branch", "github_account"],
           docker: [
             "build_path",
@@ -238,8 +238,11 @@ export const BuildConfig = () => {
         overrides={{
           build_args: (args, set) => <EnvVars vars={args} set={set} />,
           extra_args: (args, set) => <ExtraArgs args={args} set={set} />,
-          builder: (builder, set) => (
-            <BuilderConfig builder={builder} set={set} />
+          builder_id: (id, set) => (
+            <BuilderSelector
+              selected={id}
+              onSelect={(builder_id) => set({ builder_id })}
+            />
           ),
         }}
       />
