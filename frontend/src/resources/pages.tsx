@@ -13,7 +13,6 @@ import { BuildCard } from "@resources/build";
 import { ServerCard } from "@resources/server";
 import { BuilderCard } from "@resources/builder";
 import { AlerterCard } from "./alerter";
-import { Types } from "@monitor/client";
 
 const DeploymentsSummary = () => {
   const summary = useRead("GetDeploymentsSummary", {}).data;
