@@ -12,7 +12,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::Resource, state::State};
+use crate::{auth::RequestUser, resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<CreateServer, RequestUser> for State {
@@ -31,6 +31,7 @@ impl Resolve<CreateServer, RequestUser> for State {
             description: Default::default(),
             tags: Default::default(),
             config: req.config.into(),
+            info: (),
         };
         let server_id = self
             .db

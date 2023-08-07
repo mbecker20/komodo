@@ -1,61 +1,26 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use mungos::{
-    derive::{MungosIndexed, StringObjectId},
-    mongodb::bson::{doc, serde_helpers::hex_string_as_object_id},
-};
+use mungos::mongodb::bson::doc;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{MongoId, I64};
+use crate::I64;
 
-use super::{EnvironmentVar, PermissionsMap, SystemCommand, Version};
+use super::{resource::Resource, EnvironmentVar, SystemCommand, Version};
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId)]
-#[doc_index(doc! { "config.builder.type": 1 })]
-#[sparse_doc_index(doc! { "config.builder.params.server_id": 1 })]
-#[sparse_doc_index(doc! { "config.builder.params.builder_id": 1 })]
-pub struct Build {
-    #[serde(
-        default,
-        rename = "_id",
-        skip_serializing_if = "String::is_empty",
-        with = "hex_string_as_object_id"
-    )]
-    #[builder(setter(skip))]
-    pub id: MongoId,
+pub type Build = Resource<BuildConfig, BuildInfo>;
 
-    #[unique_index]
-    pub name: String,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub description: String,
-
-    #[serde(default)]
-    #[builder(setter(skip))]
-    pub permissions: PermissionsMap,
-
-    #[serde(default)]
-    #[builder(setter(skip))]
-    pub updated_at: I64,
-
-    #[serde(default)]
-    #[builder(setter(skip))]
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct BuildInfo {
     pub last_built_at: I64,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub tags: Vec<String>,
-
-    pub config: BuildConfig,
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 #[partial_from]
@@ -138,7 +103,7 @@ pub struct BuildActionState {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
+#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum BuildBuilderConfig {

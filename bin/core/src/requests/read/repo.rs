@@ -10,7 +10,7 @@ use monitor_types::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::Resource, state::State};
+use crate::{auth::RequestUser, resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<GetRepo, RequestUser> for State {
@@ -27,7 +27,7 @@ impl Resolve<ListRepos, RequestUser> for State {
         ListRepos { query }: ListRepos,
         user: RequestUser,
     ) -> anyhow::Result<Vec<RepoListItem>> {
-        <State as Resource<Repo>>::list_resources_for_user(self, query, &user).await
+        <State as StateResource<Repo>>::list_resources_for_user(self, query, &user).await
     }
 }
 

@@ -29,7 +29,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::{
     auth::RequestUser,
-    resource::Resource,
+    resource::StateResource,
     state::{State, StateExtension},
 };
 

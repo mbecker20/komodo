@@ -1,14 +1,17 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
-    entities::{alerter::Alerter, Operation, PermissionLevel},
+    entities::{
+        alerter::{Alerter, AlerterInfo},
+        Operation, PermissionLevel,
+    },
     monitor_timestamp,
     requests::write::{CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter},
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::make_update, resource::Resource, state::State};
+use crate::{auth::RequestUser, helpers::make_update, resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<CreateAlerter, RequestUser> for State {
@@ -28,8 +31,8 @@ impl Resolve<CreateAlerter, RequestUser> for State {
                 .collect(),
             description: Default::default(),
             tags: Default::default(),
-            is_default,
             config: config.into(),
+            info: AlerterInfo { is_default },
         };
         let alerter_id = self
             .db
@@ -81,9 +84,9 @@ impl Resolve<CopyAlerter, RequestUser> for State {
                 .into_iter()
                 .collect(),
             description,
-            is_default: false,
-            tags: Default::default(),
             config,
+            tags: Default::default(),
+            info: Default::default(),
         };
         let alerter_id = self
             .db

@@ -28,7 +28,7 @@ use crate::{
     auth::{InnerRequestUser, RequestUser},
     cloud::{aws::Ec2Instance, BuildCleanupData},
     helpers::make_update,
-    resource::Resource,
+    resource::StateResource,
     state::State,
 };
 
@@ -154,7 +154,7 @@ impl Resolve<RunBuild, RequestUser> for State {
                         mungos::Update::Set(doc! {
                             "version": to_bson(&build.config.version)
                                 .context("failed at converting version to bson")?,
-                            "last_built_at": monitor_timestamp(),
+                            "info.last_built_at": monitor_timestamp(),
                         }),
                     )
                     .await;

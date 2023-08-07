@@ -9,7 +9,8 @@ use monitor_types::{
         Operation, PermissionLevel,
     },
     monitor_timestamp,
-    requests::write::*, to_monitor_name,
+    requests::write::*,
+    to_monitor_name,
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
@@ -17,7 +18,7 @@ use resolver_api::Resolve;
 use crate::{
     auth::RequestUser,
     helpers::{empty_or_only_spaces, make_update},
-    resource::Resource,
+    resource::StateResource,
     state::State,
 };
 
@@ -56,13 +57,13 @@ impl Resolve<CreateBuild, RequestUser> for State {
             id: Default::default(),
             name,
             updated_at: start_ts,
-            last_built_at: 0,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
             description: Default::default(),
             tags: Default::default(),
             config: config.into(),
+            info: Default::default(),
         };
         let build_id = self
             .db
@@ -129,13 +130,13 @@ impl Resolve<CopyBuild, RequestUser> for State {
             id: Default::default(),
             name,
             updated_at: start_ts,
-            last_built_at: 0,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
             description,
             tags,
             config,
+            info: Default::default(),
         };
         let build_id = self
             .db

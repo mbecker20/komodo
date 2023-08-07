@@ -7,7 +7,7 @@ use monitor_types::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::Resource, state::State};
+use crate::{auth::RequestUser, resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<GetAlerter, RequestUser> for State {
@@ -28,7 +28,7 @@ impl Resolve<ListAlerters, RequestUser> for State {
         ListAlerters { query }: ListAlerters,
         user: RequestUser,
     ) -> anyhow::Result<Vec<AlerterListItem>> {
-        <State as Resource<Alerter>>::list_resources_for_user(self, query, &user).await
+        <State as StateResource<Alerter>>::list_resources_for_user(self, query, &user).await
     }
 }
 
