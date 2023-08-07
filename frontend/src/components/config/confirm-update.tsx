@@ -33,7 +33,14 @@ export const ConfirmUpdate = ({ content, onConfirm }: ConfirmUpdateProps) => {
           <pre className="h-[300px] overflow-auto">{content}</pre>
         </div>
         <DialogFooter>
-          <Button variant="outline" intent="success" onClick={onConfirm}>
+          <Button
+            variant="outline"
+            intent="success"
+            onClick={() => {
+              onConfirm();
+              set(false);
+            }}
+          >
             Confirm
           </Button>
         </DialogFooter>
