@@ -1,27 +1,55 @@
 import { Button } from "@ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
-import { useLogin } from "@hooks";
+import { useInvalidate } from "@hooks";
 import { useEffect, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { client } from "@main";
 
-export const Login = () => {
-  const { mutate, isLoading } = useLogin();
-  const [creds, set] = useState({ username: "", password: "" });
+type LoginCredentials = { username: string; password: string };
+
+const useLogin = (creds: LoginCredentials) => {
+  const invalidate = useInvalidate();
+
+  const mutation = useMutation(
+    (creds: LoginCredentials) => client.login(creds),
+    {
+      onSuccess: (jwt) => {
+        localStorage.setItem("monitor-auth-token", jwt ?? "");
+        invalidate(["GetUser"]);
+      },
+    }
+  );
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => e.key === "Enter" && mutate(creds);
+    const handler = (e: KeyboardEvent) =>
+      e.key === "Enter" && !mutation.isLoading && mutation.mutate(creds);
     addEventListener("keydown", handler);
     return () => {
       removeEventListener("keydown", handler);
     };
   });
 
+  return mutation;
+};
+
+export const Login = () => {
+  const [creds, set] = useState({ username: "", password: "" });
+  const { mutate, isLoading } = useLogin(creds);
+
   return (
-    <div className="w-full flex justify-center">
+    <div className="w-full flex justify-center min-h-screen items-center">
       <Card className="w-full max-w-[500px] place-self-center">
         <CardHeader>
-          <CardTitle>Log In</CardTitle>
+          <CardTitle>Monitor</CardTitle>
+          <CardDescription>Log In</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div>
