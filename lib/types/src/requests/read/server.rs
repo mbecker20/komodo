@@ -219,3 +219,34 @@ pub struct GetServersSummaryResponse {
     pub unhealthy: I64,
     pub disabled: I64,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetAvailableAccountsResponse)]
+pub struct GetAvailableAccounts {
+    pub server_id: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetAvailableAccountsResponse {
+    pub github: Vec<String>,
+    pub docker: Vec<String>,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetAvailableNetworksResponse)]
+pub struct GetAvailableNetworks {
+    pub server_id: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetAvailableNetworksResponse {
+    pub networks: Vec<DockerNetwork>,
+}

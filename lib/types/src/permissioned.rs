@@ -1,7 +1,4 @@
-use crate::entities::{
-    alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
-    server::Server, PermissionLevel, PermissionsMap,
-};
+use crate::entities::{resource::Resource, PermissionLevel, PermissionsMap};
 
 pub trait Permissioned {
     fn permissions_map(&self) -> &PermissionsMap;
@@ -11,37 +8,7 @@ pub trait Permissioned {
     }
 }
 
-impl Permissioned for Deployment {
-    fn permissions_map(&self) -> &PermissionsMap {
-        &self.permissions
-    }
-}
-
-impl Permissioned for Build {
-    fn permissions_map(&self) -> &PermissionsMap {
-        &self.permissions
-    }
-}
-
-impl Permissioned for Server {
-    fn permissions_map(&self) -> &PermissionsMap {
-        &self.permissions
-    }
-}
-
-impl Permissioned for Builder {
-    fn permissions_map(&self) -> &PermissionsMap {
-        &self.permissions
-    }
-}
-
-impl Permissioned for Repo {
-    fn permissions_map(&self) -> &PermissionsMap {
-        &self.permissions
-    }
-}
-
-impl Permissioned for Alerter {
+impl<C, I: Default> Permissioned for Resource<C, I> {
     fn permissions_map(&self) -> &PermissionsMap {
         &self.permissions
     }

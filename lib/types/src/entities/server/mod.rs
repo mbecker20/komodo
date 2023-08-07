@@ -1,53 +1,17 @@
 use derive_builder::Builder;
-use mungos::{
-    derive::{MungosIndexed, StringObjectId},
-    mongodb::bson::serde_helpers::hex_string_as_object_id,
-};
+use mungos::derive::MungosIndexed;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{MongoId, I64};
-
-use super::PermissionsMap;
+use super::resource::Resource;
 
 pub mod docker_image;
 pub mod docker_network;
 pub mod stats;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId)]
-pub struct Server {
-    #[serde(
-        default,
-        rename = "_id",
-        skip_serializing_if = "String::is_empty",
-        with = "hex_string_as_object_id"
-    )]
-    #[builder(setter(skip))]
-    pub id: MongoId,
-
-    #[unique_index]
-    pub name: String,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub description: String,
-
-    #[serde(default)]
-    #[builder(setter(skip))]
-    pub permissions: PermissionsMap,
-
-    #[serde(default)]
-    #[builder(setter(skip))]
-    pub updated_at: I64,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub tags: Vec<String>,
-
-    pub config: ServerConfig,
-}
+pub type Server = Resource<ServerConfig, ()>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]

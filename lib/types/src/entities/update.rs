@@ -68,6 +68,20 @@ impl Update {
 }
 
 #[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateListItem {
+    pub id: String,
+    pub operation: Operation,
+    pub start_ts: I64,
+    pub success: bool,
+    pub username: String,
+    pub operator: String,
+    pub target: ResourceTarget,
+    pub status: UpdateStatus,
+    pub version: Version,
+}
+
+#[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Log {
     pub stage: String,

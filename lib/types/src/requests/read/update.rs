@@ -3,18 +3,15 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::{
-    entities::{
-        update::{ResourceTarget, UpdateStatus, Update},
-        Operation, Version,
-    },
-    MongoDocument, I64,
+    entities::update::{Update, UpdateListItem},
+    MongoDocument,
 };
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Update)]
 pub struct GetUpdate {
-    pub id: String
+    pub id: String,
 }
 
 #[typeshare]
@@ -31,18 +28,4 @@ pub struct ListUpdates {
 pub struct ListUpdatesResponse {
     pub updates: Vec<UpdateListItem>,
     pub next_page: Option<u32>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct UpdateListItem {
-    pub id: String,
-    pub operation: Operation,
-    pub start_ts: I64,
-    pub success: bool,
-    pub username: String,
-    pub operator: String,
-    pub target: ResourceTarget,
-    pub status: UpdateStatus,
-    pub version: Version,
 }

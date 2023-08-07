@@ -20,14 +20,14 @@ use monitor_types::{
 use mungos::{
     mongodb::bson::{doc, Document},
     AggStage::*,
-    Collection, Indexed,
+    Collection,
 };
-use serde::Serialize;
+use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{auth::RequestUser, state::State};
 
 #[async_trait]
-pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
+pub trait StateResource<T: Send + Sync + Unpin + Serialize + DeserializeOwned + Permissioned> {
     type ListItem: Serialize + Send;
 
     fn name() -> &'static str;
@@ -147,7 +147,7 @@ pub trait Resource<T: Indexed + Send + Unpin + Permissioned> {
 }
 
 #[async_trait]
-impl Resource<Server> for State {
+impl StateResource<Server> for State {
     type ListItem = ServerListItem;
 
     fn name() -> &'static str {
@@ -171,7 +171,7 @@ impl Resource<Server> for State {
 }
 
 #[async_trait]
-impl Resource<Deployment> for State {
+impl StateResource<Deployment> for State {
     type ListItem = DeploymentListItem;
 
     fn name() -> &'static str {
@@ -212,7 +212,7 @@ impl Resource<Deployment> for State {
 }
 
 #[async_trait]
-impl Resource<Build> for State {
+impl StateResource<Build> for State {
     type ListItem = BuildListItem;
 
     fn name() -> &'static str {
@@ -227,15 +227,15 @@ impl Resource<Build> for State {
         Ok(BuildListItem {
             id: build.id,
             name: build.name,
-            last_built_at: build.last_built_at,
-            version: build.config.version,
             tags: build.tags,
+            last_built_at: build.info.last_built_at,
+            version: build.config.version,
         })
     }
 }
 
 #[async_trait]
-impl Resource<Repo> for State {
+impl StateResource<Repo> for State {
     type ListItem = RepoListItem;
 
     fn name() -> &'static str {
@@ -250,14 +250,14 @@ impl Resource<Repo> for State {
         Ok(RepoListItem {
             id: repo.id,
             name: repo.name,
-            last_pulled_at: repo.last_pulled_at,
+            last_pulled_at: repo.info.last_pulled_at,
             tags: repo.tags,
         })
     }
 }
 
 #[async_trait]
-impl Resource<Builder> for State {
+impl StateResource<Builder> for State {
     type ListItem = BuilderListItem;
 
     fn name() -> &'static str {
@@ -283,7 +283,7 @@ impl Resource<Builder> for State {
 }
 
 #[async_trait]
-impl Resource<Alerter> for State {
+impl StateResource<Alerter> for State {
     type ListItem = AlerterListItem;
 
     fn name() -> &'static str {

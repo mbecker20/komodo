@@ -48,3 +48,23 @@ pub struct RenameServer {
     pub id: String,
     pub name: String,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Update)]
+pub struct CreateNetwork {
+    pub id: String,
+    pub name: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Update)]
+pub struct DeleteNetwork {
+    pub id: String,
+    pub name: String,
+}

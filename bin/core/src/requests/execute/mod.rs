@@ -25,7 +25,6 @@ mod server;
 #[resolver_target(State)]
 #[resolver_args(RequestUser)]
 #[serde(tag = "type", content = "params")]
-#[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
 enum ExecuteRequest {
     // ==== SERVER ====
     PruneContainers(PruneDockerContainers),

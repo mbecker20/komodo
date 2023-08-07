@@ -17,7 +17,9 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::empty_or_only_spaces, resource::Resource, state::State};
+use crate::{
+    auth::RequestUser, helpers::empty_or_only_spaces, resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<CreateDeployment, RequestUser> for State {
@@ -52,6 +54,7 @@ impl Resolve<CreateDeployment, RequestUser> for State {
             description: Default::default(),
             tags: Default::default(),
             config: config.into(),
+            info: (),
         };
         let deployment_id = self
             .db
@@ -124,6 +127,7 @@ impl Resolve<CopyDeployment, RequestUser> for State {
             description,
             tags,
             config,
+            info: (),
         };
         let deployment_id = self
             .db
