@@ -111,7 +111,7 @@ const BuilderConfig = ({ id }: { id: string }) => {
         </div>
       }
     >
-      <Configuration
+      {/* <Configuration
         config={builder.config}
         loading={isLoading}
         update={update}
@@ -167,7 +167,7 @@ const BuilderConfig = ({ id }: { id: string }) => {
             />
           ),
         }}
-      />
+      /> */}
     </Section>
   );
 };
