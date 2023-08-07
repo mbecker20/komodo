@@ -13,7 +13,7 @@ use monitor_types::{
     requests::read::*,
 };
 use mungos::mongodb::{bson::doc, options::FindOptions};
-use periphery_client::requests;
+use periphery_client::requests::{self, GetAccountsResponse};
 use resolver_api::{Resolve, ResolveToString};
 
 use crate::{auth::RequestUser, resource::StateResource, state::State};
@@ -401,5 +401,47 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
         self.periphery_client(&server)
             .request(requests::GetContainerList {})
             .await
+    }
+}
+
+#[async_trait]
+impl Resolve<GetAvailableAccounts, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetAvailableAccounts { server_id }: GetAvailableAccounts,
+        user: RequestUser,
+    ) -> anyhow::Result<GetAvailableAccountsResponse> {
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let GetAccountsResponse { github, docker } = self
+            .periphery_client(&server)
+            .request(requests::GetAccounts {})
+            .await
+            .context("failed to get accounts from periphery")?;
+        let res = GetAvailableAccountsResponse { github, docker };
+        Ok(res)
+    }
+}
+
+#[async_trait]
+impl Resolve<GetAvailableNetworks, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetAvailableNetworks { server_id }: GetAvailableNetworks,
+        user: RequestUser,
+    ) -> anyhow::Result<GetAvailableNetworksResponse> {
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .await?;
+        let networks = self
+            .periphery_client(&server)
+            .request(requests::GetNetworkList {})
+            .await
+            .context("failed to get accounts from periphery")?;
+        let res = GetAvailableNetworksResponse {
+            networks
+        };
+        Ok(res)
     }
 }

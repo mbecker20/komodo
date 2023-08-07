@@ -7,7 +7,7 @@ use monitor_types::{
         build::BuildActionState, deployment::DeploymentActionState, repo::RepoActionState,
         server::ServerActionState, update::UpdateListItem,
     },
-    requests::{auth::GetLoginOptionsResponse},
+    requests::auth::GetLoginOptionsResponse,
 };
 
 use crate::{
