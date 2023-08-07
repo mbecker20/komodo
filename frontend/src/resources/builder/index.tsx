@@ -98,7 +98,15 @@ const BuilderConfig = ({ id }: { id: string }) => {
           </Button>
           <ConfirmUpdate
             content={JSON.stringify(update, null, 2)}
-            onConfirm={() => mutate({ config: update as any, id })}
+            onConfirm={() => {
+              mutate({
+                id,
+                config: {
+                  type: builder.config.type,
+                  ...update,
+                } as any,
+              });
+            }}
           />
         </div>
       }
