@@ -10,10 +10,10 @@ use monitor_types::{
         deployment::Deployment,
         repo::Repo,
         server::Server,
-        update::{ResourceTarget, Update},
+        update::{ResourceTarget, Update, UpdateListItem},
         PermissionLevel,
     },
-    requests::read::{GetUpdate, ListUpdates, ListUpdatesResponse, UpdateListItem},
+    requests::read::{GetUpdate, ListUpdates, ListUpdatesResponse},
 };
 use mungos::mongodb::{bson::doc, options::FindOptions};
 use resolver_api::Resolve;

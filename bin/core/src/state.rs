@@ -5,9 +5,9 @@ use axum::Extension;
 use monitor_types::{
     entities::{
         build::BuildActionState, deployment::DeploymentActionState, repo::RepoActionState,
-        server::ServerActionState, update::Update,
+        server::ServerActionState, update::UpdateListItem,
     },
-    requests::auth::GetLoginOptionsResponse,
+    requests::{auth::GetLoginOptionsResponse},
 };
 
 use crate::{
@@ -39,7 +39,7 @@ pub struct State {
 
     // channels
     pub build_cancel: BroadcastChannel<String>, // build id to cancel
-    pub update: BroadcastChannel<Update>,
+    pub update: BroadcastChannel<UpdateListItem>,
 }
 
 impl State {

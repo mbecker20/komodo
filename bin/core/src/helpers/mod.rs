@@ -6,7 +6,7 @@ use monitor_types::{
         deployment::{Deployment, DockerContainerState},
         server::{Server, ServerStatus},
         tag::CustomTag,
-        update::{ResourceTarget, Update},
+        update::{ResourceTarget, Update, UpdateListItem},
         user::User,
         Operation,
     },
@@ -135,7 +135,30 @@ impl State {
 
     // UPDATE
 
-    pub async fn send_update(&self, update: Update) -> anyhow::Result<()> {
+    async fn update_list_item(&self, update: Update) -> anyhow::Result<UpdateListItem> {
+        let username = self
+            .db
+            .users
+            .find_one_by_id(&update.operator)
+            .await
+            .context("failed at get user query")?
+            .context("failed to find user at operator user id")?
+            .username;
+        let update = UpdateListItem {
+            id: update.id,
+            operation: update.operation,
+            start_ts: update.start_ts,
+            success: update.success,
+            operator: update.operator,
+            target: update.target,
+            status: update.status,
+            version: update.version,
+            username,
+        };
+        Ok(update)
+    }
+
+    async fn send_update(&self, update: UpdateListItem) -> anyhow::Result<()> {
         self.update.sender.lock().await.send(update)?;
         Ok(())
     }
@@ -148,6 +171,7 @@ impl State {
             .await
             .context("failed to insert update into db")?;
         let id = update.id.clone();
+        let update = self.update_list_item(update).await?;
         let _ = self.send_update(update).await;
         Ok(id)
     }
@@ -161,6 +185,7 @@ impl State {
             .await
             .context("failed to update the update on db. the update build process was deleted")?;
         std::mem::swap(&mut update.id, &mut update_id);
+        let update = self.update_list_item(update).await?;
         let _ = self.send_update(update).await;
         Ok(())
     }
