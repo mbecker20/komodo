@@ -143,6 +143,7 @@ const BuilderConfig = ({ id }: { id: string }) => {
                     <div>Security group ids</div>
                     {ids.map((id, i) => (
                       <Input
+                        key={i}
                         value={id}
                         onChange={(e) => {
                           ids[i] = e.target.value;
@@ -150,7 +151,13 @@ const BuilderConfig = ({ id }: { id: string }) => {
                         }}
                       />
                     ))}
-                    <Button variant="outline" intent="success">
+                    <Button
+                      variant="outline"
+                      intent="success"
+                      onClick={() =>
+                        setIds({ security_group_ids: [...ids, ""] })
+                      }
+                    >
                       <PlusCircle className="w-4 h-4" />
                       Add Id
                     </Button>
