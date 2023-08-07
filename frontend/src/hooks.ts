@@ -7,7 +7,6 @@ import {
   UseMutationOptions,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
 import {
   ExecuteResponses,
   ReadResponses,
@@ -73,19 +72,6 @@ export const useInvalidate = () => {
 };
 
 export const useUser = () => useRead("GetUser", {});
-
-export const useLogin = () => {
-  const { refetch } = useUser();
-  const nav = useNavigate();
-
-  return useMutation(client.login, {
-    onSuccess: async (jwt) => {
-      await refetch();
-      localStorage.setItem("monitor-auth-token", jwt ?? "");
-      nav("/");
-    },
-  });
-};
 
 export const useServerStats = (server_id: string) => {
   const [stats, set] = useState<Types.AllSystemStats>();
