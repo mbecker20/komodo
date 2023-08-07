@@ -44,6 +44,7 @@ impl State {
             security_group_ids,
             key_pair_name,
             assign_public_ip,
+            ..
         }: &AwsBuilderConfig,
     ) -> anyhow::Result<Ec2Instance> {
         let instance_type = InstanceType::from(instance_type.as_str());

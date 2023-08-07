@@ -1,10 +1,6 @@
 use monitor_client::MonitorClient;
 use monitor_types::{
-    entities::{
-        build::{BuildBuilderConfig, PartialBuildConfig},
-        repo::PartialRepoConfig,
-        server::PartialServerConfig,
-    },
+    entities::{build::PartialBuildConfig, repo::PartialRepoConfig, server::PartialServerConfig},
     requests::{execute, read, write},
 };
 use serde::Deserialize;
@@ -59,10 +55,7 @@ async fn create_build(monitor: &MonitorClient) -> anyhow::Result<()> {
             config: PartialBuildConfig {
                 repo: "mbecker20/monitor".to_string().into(),
                 branch: "next".to_string().into(),
-                builder: BuildBuilderConfig::Server {
-                    server_id: server_id.clone(),
-                }
-                .into(),
+                builder_id: Default::default(),
                 dockerfile_path: "bin/core/Dockerfile".to_string().into(),
                 ..Default::default()
             },

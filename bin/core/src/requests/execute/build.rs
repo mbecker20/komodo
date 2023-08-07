@@ -6,7 +6,7 @@ use futures::future::join_all;
 use monitor_types::{
     all_logs_success,
     entities::{
-        build::{Build, BuildBuilderConfig},
+        build::Build,
         builder::{AwsBuilderConfig, Builder, BuilderConfig},
         deployment::DockerContainerState,
         server::Server,
@@ -218,12 +218,16 @@ impl State {
         build: &Build,
         update: &mut Update,
     ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
-        match &build.config.builder {
-            BuildBuilderConfig::Server { server_id } => {
-                if server_id.is_empty() {
+        if build.config.builder_id.is_empty() {
+            return Err(anyhow!(""));
+        }
+        let builder: Builder = self.get_resource(&build.config.builder_id).await?;
+        match builder.config {
+            BuilderConfig::Server(config) => {
+                if config.id.is_empty() {
                     return Err(anyhow!("build has not configured a builder"));
                 }
-                let server: Server = self.get_resource(server_id).await?;
+                let server: Server = self.get_resource(&config.id).await?;
                 let periphery = self.periphery_client(&server);
                 Ok((
                     periphery,
@@ -232,15 +236,7 @@ impl State {
                     },
                 ))
             }
-            BuildBuilderConfig::Builder { builder_id } => {
-                if builder_id.is_empty() {
-                    return Err(anyhow!("build has not configured a builder"));
-                }
-                let builder: Builder = self.get_resource(builder_id).await?;
-                match builder.config {
-                    BuilderConfig::Aws(config) => self.get_aws_builder(build, config, update).await,
-                }
-            }
+            BuilderConfig::Aws(config) => self.get_aws_builder(build, config, update).await,
         }
     }
 

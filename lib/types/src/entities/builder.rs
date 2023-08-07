@@ -19,8 +19,12 @@ pub type _PartialBuilderConfig = PartialBuilderConfig;
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum BuilderConfig {
+    Server(ServerBuilderConfig),
     Aws(AwsBuilderConfig),
 }
+
+#[typeshare(serialized_as = "Partial<ServerBuilderConfig>")]
+pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
 
 #[typeshare(serialized_as = "Partial<AwsBuilderConfig>")]
 pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
@@ -30,12 +34,14 @@ pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
 #[serde(tag = "type", content = "params")]
 pub enum PartialBuilderConfig {
+    Server(_PartialServerBuilderConfig),
     Aws(_PartialAwsBuilderConfig),
 }
 
 impl From<PartialBuilderConfig> for BuilderConfig {
     fn from(value: PartialBuilderConfig) -> BuilderConfig {
         match value {
+            PartialBuilderConfig::Server(server) => BuilderConfig::Server(server.into()),
             PartialBuilderConfig::Aws(builder) => BuilderConfig::Aws(builder.into()),
         }
     }
@@ -44,6 +50,15 @@ impl From<PartialBuilderConfig> for BuilderConfig {
 impl BuilderConfig {
     pub fn merge_partial(self, partial: PartialBuilderConfig) -> BuilderConfig {
         match partial {
+            PartialBuilderConfig::Server(partial) => match self {
+                BuilderConfig::Server(config) => {
+                    let config = ServerBuilderConfig {
+                        id: partial.id.unwrap_or(config.id),
+                    };
+                    BuilderConfig::Server(config)
+                }
+                _ => BuilderConfig::Server(partial.into()),
+            },
             PartialBuilderConfig::Aws(partial) => match self {
                 BuilderConfig::Aws(config) => {
                     let config = AwsBuilderConfig {
@@ -59,9 +74,12 @@ impl BuilderConfig {
                         assign_public_ip: partial
                             .assign_public_ip
                             .unwrap_or(config.assign_public_ip),
+                        github_accounts: partial.github_accounts.unwrap_or(config.github_accounts),
+                        docker_accounts: partial.docker_accounts.unwrap_or(config.docker_accounts),
                     };
                     BuilderConfig::Aws(config)
-                } // _ => BuilderConfig::AwsBuilder(partial.into()),
+                }
+                _ => BuilderConfig::Aws(partial.into()),
             },
         }
     }
@@ -71,17 +89,30 @@ impl BuilderConfig {
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
+#[partial_from]
+pub struct ServerBuilderConfig {
+    pub id: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
+#[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[skip_serializing_none]
+#[partial_from]
 pub struct AwsBuilderConfig {
     #[serde(default = "aws_default_region")]
     #[builder(default = "aws_default_region()")]
+    #[partial_default(aws_default_region())]
     pub region: String,
 
     #[serde(default = "aws_default_instance_type")]
     #[builder(default = "aws_default_instance_type()")]
+    #[partial_default(aws_default_instance_type())]
     pub instance_type: String,
 
     #[serde(default = "aws_default_volume_gb")]
     #[builder(default = "aws_default_volume_gb()")]
+    #[partial_default(aws_default_volume_gb())]
     pub volume_gb: i32,
 
     pub ami_id: String,
@@ -89,6 +120,11 @@ pub struct AwsBuilderConfig {
     pub security_group_ids: Vec<String>,
     pub key_pair_name: String,
     pub assign_public_ip: bool,
+
+    #[serde(default)]
+    pub github_accounts: Vec<String>,
+    #[serde(default)]
+    pub docker_accounts: Vec<String>,
 }
 
 fn aws_default_region() -> String {
@@ -101,19 +137,4 @@ fn aws_default_instance_type() -> String {
 
 fn aws_default_volume_gb() -> i32 {
     20
-}
-
-impl From<PartialAwsBuilderConfig> for AwsBuilderConfig {
-    fn from(value: PartialAwsBuilderConfig) -> AwsBuilderConfig {
-        AwsBuilderConfig {
-            region: value.region.unwrap_or(aws_default_region()),
-            instance_type: value.instance_type.unwrap_or(aws_default_instance_type()),
-            volume_gb: value.volume_gb.unwrap_or(aws_default_volume_gb()),
-            ami_id: value.ami_id.unwrap_or_default(),
-            subnet_id: value.subnet_id.unwrap_or_default(),
-            security_group_ids: value.security_group_ids.unwrap_or_default(),
-            key_pair_name: value.key_pair_name.unwrap_or_default(),
-            assign_public_ip: value.assign_public_ip.unwrap_or_default(),
-        }
-    }
 }

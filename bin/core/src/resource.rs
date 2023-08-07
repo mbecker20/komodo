@@ -270,6 +270,7 @@ impl StateResource<Builder> for State {
 
     async fn to_list_item(&self, builder: Builder) -> anyhow::Result<BuilderListItem> {
         let (provider, instance_type) = match builder.config {
+            BuilderConfig::Server(config) => ("server".to_string(), Some(config.id)),
             BuilderConfig::Aws(config) => ("aws ec2".to_string(), Some(config.instance_type)),
         };
 

@@ -2,9 +2,8 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        build::{Build, BuildBuilderConfig},
+        build::Build,
         builder::Builder,
-        server::Server,
         update::{Log, UpdateStatus},
         Operation, PermissionLevel,
     },
@@ -30,27 +29,8 @@ impl Resolve<CreateBuild, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Build> {
         let name = to_monitor_name(&name);
-        if let Some(builder) = &config.builder {
-            match builder {
-                BuildBuilderConfig::Server { server_id } => {
-                    let _: Server = self.get_resource_check_permissions(
-                            server_id,
-                            &user,
-                            PermissionLevel::Update,
-                        )
-                        .await
-                        .context("cannot create build on this server. user must have update permissions on the server.")?;
-                }
-                BuildBuilderConfig::Builder { builder_id } => {
-                    let _: Builder = self.get_resource_check_permissions(
-                            builder_id,
-                            &user,
-                            PermissionLevel::Read,
-                        )
-                        .await
-                        .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
-                }
-            }
+        if let Some(builder_id) = &config.builder_id {
+            let _: Builder = self.get_resource_check_permissions(builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
         }
         let start_ts = monitor_timestamp();
         let build = Build {
@@ -105,26 +85,7 @@ impl Resolve<CopyBuild, RequestUser> for State {
         } = self
             .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
-        match &config.builder {
-            BuildBuilderConfig::Server { server_id } => {
-                let _: Server = self.get_resource_check_permissions(
-                    server_id,
-                    &user,
-                    PermissionLevel::Update,
-                )
-                .await
-                .context("cannot create build on this server. user must have update permissions on the server.")?;
-            }
-            BuildBuilderConfig::Builder { builder_id } => {
-                let _: Builder = self.get_resource_check_permissions(
-                    builder_id,
-                    &user,
-                    PermissionLevel::Read,
-                )
-                .await
-                .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
-            }
-        }
+        let _: Builder = self.get_resource_check_permissions(&config.builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
         let start_ts = monitor_timestamp();
         let build = Build {
             id: Default::default(),
@@ -219,27 +180,8 @@ impl Resolve<UpdateBuild, RequestUser> for State {
             .await?;
 
         let inner = || async move {
-            if let Some(builder) = &config.builder {
-                match builder {
-                    BuildBuilderConfig::Server { server_id } => {
-                        let _: Server = self.get_resource_check_permissions(
-                            server_id,
-                            &user,
-                            PermissionLevel::Update,
-                        )
-                        .await
-                        .context("cannot create build on this server. user must have update permissions on the server.")?;
-                    }
-                    BuildBuilderConfig::Builder { builder_id } => {
-                        let _: Builder = self.get_resource_check_permissions(
-                            builder_id,
-                            &user,
-                            PermissionLevel::Read,
-                        )
-                        .await
-                        .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
-                    }
-                }
+            if let Some(builder_id) = &config.builder_id {
+                let _: Builder = self.get_resource_check_permissions(builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
             }
 
             if let Some(build_args) = &mut config.build_args {

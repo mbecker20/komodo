@@ -439,9 +439,7 @@ impl Resolve<GetAvailableNetworks, RequestUser> for State {
             .request(requests::GetNetworkList {})
             .await
             .context("failed to get accounts from periphery")?;
-        let res = GetAvailableNetworksResponse {
-            networks
-        };
+        let res = GetAvailableNetworksResponse { networks };
         Ok(res)
     }
 }

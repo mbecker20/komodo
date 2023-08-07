@@ -1,9 +1,7 @@
 use derive_builder::Builder;
-use derive_variants::EnumVariants;
 use mungos::mongodb::bson::doc;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::I64;
@@ -25,7 +23,9 @@ pub struct BuildInfo {
 #[skip_serializing_none]
 #[partial_from]
 pub struct BuildConfig {
-    pub builder: BuildBuilderConfig,
+    #[serde(default)]
+    #[builder(default)]
+    pub builder_id: String,
 
     #[serde(default)]
     #[builder(default)]
@@ -100,21 +100,4 @@ fn default_dockerfile_path() -> String {
 pub struct BuildActionState {
     pub building: bool,
     pub updating: bool,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
-#[serde(tag = "type", content = "params")]
-pub enum BuildBuilderConfig {
-    Server { server_id: String },
-    Builder { builder_id: String },
-}
-
-impl Default for BuildBuilderConfig {
-    fn default() -> Self {
-        Self::Server {
-            server_id: Default::default(),
-        }
-    }
 }
