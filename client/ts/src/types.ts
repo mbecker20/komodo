@@ -44,14 +44,6 @@ export type _PartialCustomAlerterConfig = Partial<CustomAlerterConfig>;
 
 export type _PartialSlackAlerterConfig = Partial<SlackAlerterConfig>;
 
-export type BuildBuilderConfig = 
-	| { type: "Server", params: {
-	server_id: string;
-}}
-	| { type: "Builder", params: {
-	builder_id: string;
-}};
-
 export interface Version {
 	major: number;
 	minor: number;
@@ -69,7 +61,7 @@ export interface EnvironmentVar {
 }
 
 export interface BuildConfig {
-	builder: BuildBuilderConfig;
+	builder_id?: string;
 	skip_secret_interp?: boolean;
 	version?: Version;
 	repo?: string;
@@ -92,11 +84,14 @@ export interface BuildInfo {
 export type Build = Resource<BuildConfig, BuildInfo>;
 
 export type BuilderConfig = 
+	| { type: "Server", params: ServerBuilderConfig }
 	| { type: "Aws", params: AwsBuilderConfig };
 
 export type Builder = Resource<BuilderConfig, undefined>;
 
 export type _PartialBuilderConfig = Partial<BuilderConfig>;
+
+export type _PartialServerBuilderConfig = Partial<ServerBuilderConfig>;
 
 export type _PartialAwsBuilderConfig = Partial<AwsBuilderConfig>;
 
@@ -211,6 +206,10 @@ export interface BuildActionState {
 	updating: boolean;
 }
 
+export interface ServerBuilderConfig {
+	id: string;
+}
+
 export interface AwsBuilderConfig {
 	region: string;
 	instance_type: string;
@@ -220,6 +219,8 @@ export interface AwsBuilderConfig {
 	security_group_ids: string[];
 	key_pair_name: string;
 	assign_public_ip: boolean;
+	github_accounts?: string[];
+	docker_accounts?: string[];
 }
 
 export enum DockerContainerState {
@@ -1115,6 +1116,7 @@ export interface UpdateBuild {
 }
 
 export type PartialBuilderConfig = 
+	| { type: "Server", params: _PartialServerBuilderConfig }
 	| { type: "Aws", params: _PartialAwsBuilderConfig };
 
 export interface CreateBuilder {
