@@ -14,6 +14,7 @@ pub mod build;
 pub mod builder;
 pub mod deployment;
 pub mod repo;
+pub mod resource;
 pub mod server;
 pub mod tag;
 pub mod update;

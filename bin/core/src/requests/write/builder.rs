@@ -12,7 +12,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::Resource, state::State};
+use crate::{auth::RequestUser, resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<CreateBuilder, RequestUser> for State {
@@ -32,6 +32,7 @@ impl Resolve<CreateBuilder, RequestUser> for State {
             description: Default::default(),
             tags: Default::default(),
             config: config.into(),
+            info: Default::default(),
         };
         let builder_id = self
             .db
@@ -91,6 +92,7 @@ impl Resolve<CopyBuilder, RequestUser> for State {
             description,
             tags: Default::default(),
             config,
+            info: (),
         };
         let builder_id = self
             .db

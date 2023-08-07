@@ -15,7 +15,7 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::Resource, state::State};
+use crate::{auth::RequestUser, resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<CreateRepo, RequestUser> for State {
@@ -44,10 +44,10 @@ impl Resolve<CreateRepo, RequestUser> for State {
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
-            last_pulled_at: 0,
             description: Default::default(),
             tags: Default::default(),
             config: config.into(),
+            info: Default::default(),
         };
         let repo_id = self
             .db
@@ -124,10 +124,10 @@ impl Resolve<CopyRepo, RequestUser> for State {
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
-            last_pulled_at: 0,
             description,
             tags,
             config,
+            info: Default::default(),
         };
         let repo_id = self
             .db

@@ -1,53 +1,15 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use mungos::{
-    derive::{MungosIndexed, StringObjectId},
-    mongodb::bson::{doc, serde_helpers::hex_string_as_object_id},
-};
+use mungos::{derive::MungosIndexed, mongodb::bson::doc};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{MongoId, I64};
-
-use super::{EnvironmentVar, PermissionsMap, Version};
+use super::{resource::Resource, EnvironmentVar, Version};
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId)]
-#[doc_index(doc! { "config.image.type": 1 })]
-#[sparse_doc_index(doc! { "config.image.params.build_id": 1 })]
-pub struct Deployment {
-    #[serde(
-        default,
-        rename = "_id",
-        skip_serializing_if = "String::is_empty",
-        with = "hex_string_as_object_id"
-    )]
-    #[builder(setter(skip))]
-    pub id: MongoId,
-
-    #[unique_index]
-    pub name: String,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub description: String,
-
-    #[serde(default)]
-    #[builder(setter(skip))]
-    pub permissions: PermissionsMap,
-
-    #[serde(default)]
-    #[builder(setter(skip))]
-    pub updated_at: I64,
-
-    #[serde(default)]
-    #[builder(default)]
-    pub tags: Vec<String>,
-
-    pub config: DeploymentConfig,
-}
+pub type Deployment = Resource<DeploymentConfig>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]

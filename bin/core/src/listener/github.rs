@@ -13,7 +13,7 @@ use sha2::Sha256;
 use crate::{
     auth::InnerRequestUser,
     helpers::random_duration,
-    resource::Resource,
+    resource::StateResource,
     state::{State, StateExtension},
 };
 

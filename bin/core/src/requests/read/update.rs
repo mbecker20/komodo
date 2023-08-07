@@ -18,7 +18,7 @@ use monitor_types::{
 use mungos::mongodb::{bson::doc, options::FindOptions};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::Resource, state::State};
+use crate::{auth::RequestUser, resource::StateResource, state::State};
 
 const UPDATES_PER_PAGE: i64 = 20;
 
@@ -33,19 +33,24 @@ impl Resolve<ListUpdates, RequestUser> for State {
             query
         } else {
             let server_ids =
-                <State as Resource<Server>>::get_resource_ids_for_non_admin(self, &user.id).await?;
-            let deployment_ids =
-                <State as Resource<Deployment>>::get_resource_ids_for_non_admin(self, &user.id)
+                <State as StateResource<Server>>::get_resource_ids_for_non_admin(self, &user.id)
                     .await?;
+            let deployment_ids =
+                <State as StateResource<Deployment>>::get_resource_ids_for_non_admin(
+                    self, &user.id,
+                )
+                .await?;
             let build_ids =
-                <State as Resource<Build>>::get_resource_ids_for_non_admin(self, &user.id).await?;
+                <State as StateResource<Build>>::get_resource_ids_for_non_admin(self, &user.id)
+                    .await?;
             let repo_ids =
-                <State as Resource<Repo>>::get_resource_ids_for_non_admin(self, &user.id).await?;
+                <State as StateResource<Repo>>::get_resource_ids_for_non_admin(self, &user.id)
+                    .await?;
             let builder_ids =
-                <State as Resource<Builder>>::get_resource_ids_for_non_admin(self, &user.id)
+                <State as StateResource<Builder>>::get_resource_ids_for_non_admin(self, &user.id)
                     .await?;
             let alerter_ids =
-                <State as Resource<Alerter>>::get_resource_ids_for_non_admin(self, &user.id)
+                <State as StateResource<Alerter>>::get_resource_ids_for_non_admin(self, &user.id)
                     .await?;
             let mut query = query.unwrap_or_default();
             query.extend(doc! {

@@ -14,7 +14,7 @@ use mungos::mongodb::bson::doc;
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::Resource, state::State};
+use crate::{auth::RequestUser, resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<CloneRepo, RequestUser> for State {
@@ -68,7 +68,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
                     .repos
                     .update_one(
                         &repo.id,
-                        mungos::Update::Set(doc! { "last_pulled_at": monitor_timestamp() }),
+                        mungos::Update::Set(doc! { "info.last_pulled_at": monitor_timestamp() }),
                     )
                     .await;
                 if let Err(e) = res {

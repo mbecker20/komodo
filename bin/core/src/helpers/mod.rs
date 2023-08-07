@@ -16,7 +16,7 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
 
-use crate::{auth::RequestUser, resource::Resource, state::State};
+use crate::{auth::RequestUser, resource::StateResource, state::State};
 
 pub mod alert;
 pub mod cache;

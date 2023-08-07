@@ -1966,9 +1966,9 @@ dependencies = [
 
 [[package]]
 name = "mungos"
-version = "0.4.17"
+version = "0.4.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7085594072f51f1505fe7846cbc3ea3279b2a05060475539c94b6402d36f1c03"
+checksum = "e5bab215e70538484f1a21ef673a8c5b49d39f4ba91886852fe60173a5fd2951"
 dependencies = [
  "anyhow",
  "async-trait",

@@ -1,3 +1,4 @@
+use anyhow::Context;
 use monitor_types::entities::{
     alerter::Alerter,
     build::Build,
@@ -66,16 +67,34 @@ impl DbClient {
 
         let client = DbClient {
             users: User::collection(&mungos, db_name, true).await?,
-            servers: Server::collection(&mungos, db_name, true).await?,
-            stats: SystemStatsRecord::collection(&mungos, db_name, true).await?,
-            deployments: Deployment::collection(&mungos, db_name, true).await?,
-            builds: Build::collection(&mungos, db_name, true).await?,
-            builders: Builder::collection(&mungos, db_name, true).await?,
-            repos: Repo::collection(&mungos, db_name, true).await?,
             tags: CustomTag::collection(&mungos, db_name, true).await?,
-            alerters: Alerter::collection(&mungos, db_name, true).await?,
             updates: Update::collection(&mungos, db_name, true).await?,
+            stats: SystemStatsRecord::collection(&mungos, db_name, true).await?,
+            servers: resource_collection(&mungos, db_name, "Server").await?,
+            deployments: resource_collection(&mungos, db_name, "Deployment").await?,
+            builds: resource_collection(&mungos, db_name, "Build").await?,
+            builders: resource_collection(&mungos, db_name, "Builder").await?,
+            repos: resource_collection(&mungos, db_name, "Repo").await?,
+            alerters: resource_collection(&mungos, db_name, "Alerter").await?,
         };
         Ok(client)
     }
+}
+
+async fn resource_collection<T>(
+    mungos: &Mungos,
+    db_name: &str,
+    collection_name: &str,
+) -> anyhow::Result<Collection<T>> {
+    let coll = mungos.collection::<T>(db_name, collection_name);
+
+    coll.create_unique_index("name")
+        .await
+        .context("failed to create name index")?;
+
+    coll.create_index("tags")
+        .await
+        .context("failed to create tags index")?;
+
+    Ok(coll)
 }
