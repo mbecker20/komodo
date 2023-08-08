@@ -4,6 +4,8 @@ use typeshare::typeshare;
 
 use crate::entities::update::ResourceTarget;
 
+//
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(PushRecentlyViewedResponse)]
@@ -14,3 +16,14 @@ pub struct PushRecentlyViewed {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PushRecentlyViewedResponse {}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(SetLastSeenUpdateResponse)]
+pub struct SetLastSeenUpdate {}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SetLastSeenUpdateResponse {}
