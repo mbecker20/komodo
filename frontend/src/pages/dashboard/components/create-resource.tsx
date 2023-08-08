@@ -10,10 +10,28 @@ import {
   DropdownMenuItem,
 } from "@ui/dropdown";
 import { Button } from "@ui/button";
-import { PlusCircle, ChevronDown } from "lucide-react";
+import {
+  PlusCircle,
+  ChevronDown,
+  Rocket,
+  Server,
+  Hammer,
+  Factory,
+  AlarmClock,
+  GitBranch,
+} from "lucide-react";
 import { useState } from "react";
 import { RESOURCE_TYPES } from "@util/config";
 import { NewResourceDialog } from "@layouts/resources";
+
+const Icons: { [key in (typeof RESOURCE_TYPES)[number]]: JSX.Element } = {
+  Deployment: <Rocket className="w-4 h-4" />,
+  Server: <Server className="w-4 h-4" />,
+  Build: <Hammer className="w-4 h-4" />,
+  Builder: <Factory className="w-4 h-4" />,
+  Alerter: <AlarmClock className="w-4 h-4" />,
+  Repo: <GitBranch className="w-4 h-4" />,
+};
 
 export const CreateResource = () => {
   const [open, set] = useState<Types.ResourceTarget["type"] | false>(false);
@@ -41,10 +59,11 @@ export const CreateResource = () => {
           <DropdownMenuGroup>
             {RESOURCE_TYPES.map((target) => (
               <DropdownMenuItem
-                className="cursor-pointer"
+                className="cursor-pointer flex items-center gap-2"
                 onClick={() => set(target as ResourceTarget["type"])}
                 key={target}
               >
+                {Icons[target]}
                 {target}
               </DropdownMenuItem>
             ))}
