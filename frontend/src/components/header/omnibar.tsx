@@ -45,6 +45,19 @@ export const Omnibar = () => {
   const alerters = useRead("ListAlerters", {}).data;
   const repos = useRead("ListRepos", {}).data;
 
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      console.log(e.key, e.shiftKey);
+      if (e.shiftKey && e.key === "S") {
+        e.preventDefault();
+        set(true);
+      }
+    };
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  });
+
   return (
     <>
       <Button
@@ -53,7 +66,7 @@ export const Omnibar = () => {
         className="flex items-center gap-4 w-[300px] justify-start"
       >
         <Search className="w-4 h-4" />{" "}
-        <span className="text-muted-foreground">Search</span>
+        <span className="text-muted-foreground">Search {"(shift+s)"}</span>
       </Button>
       <CommandDialog open={open} onOpenChange={set}>
         <CommandInput placeholder="Type a command or search..." />
