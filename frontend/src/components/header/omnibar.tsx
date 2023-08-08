@@ -47,8 +47,13 @@ export const Omnibar = () => {
 
   return (
     <>
-      <Button variant="ghost" onClick={() => set(true)}>
-        <Search className="w-4 h-4" />
+      <Button
+        variant="outline"
+        onClick={() => set(true)}
+        className="flex items-center gap-4 w-[300px] justify-start"
+      >
+        <Search className="w-4 h-4" />{" "}
+        <span className="text-muted-foreground">Search</span>
       </Button>
       <CommandDialog open={open} onOpenChange={set}>
         <CommandInput placeholder="Type a command or search..." />

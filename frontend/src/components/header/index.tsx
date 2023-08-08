@@ -74,8 +74,8 @@ export const Header = () => {
         <div className="flex">
           {user && (
             <>
-              <WsStatusIndicator />
               <Omnibar />
+              <WsStatusIndicator />
               <DesktopUpdates />
             </>
           )}
