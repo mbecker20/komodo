@@ -1,12 +1,5 @@
 import { ResourceCard } from "@layouts/card";
-import {
-  Bot,
-  Cloud,
-  Factory,
-  History,
-  PlusCircle,
-  Settings,
-} from "lucide-react";
+import { Bot, Cloud, Factory, History, Settings } from "lucide-react";
 import { ResourceUpdates } from "@components/updates/resource";
 import { useAddRecentlyViewed, useRead, useWrite } from "@hooks";
 import { Resource } from "@layouts/resource";
@@ -16,15 +9,14 @@ import { useState } from "react";
 import { Section } from "@layouts/page";
 import { Button } from "@ui/button";
 import { ConfirmUpdate } from "@components/config/confirm-update";
-import { Configuration } from "@components/config";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ui/select";
-import { Input } from "@ui/input";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@ui/select";
+// import { Configuration } from "@components/config";
 
 export const BuilderName = ({ id }: { id: string }) => {
   const builders = useRead("ListBuilders", {}).data;
@@ -58,28 +50,28 @@ export const BuilderCard = ({ id }: { id: string }) => {
   );
 };
 
-const BuilderTypeSelector = ({
-  selected,
-  onSelect,
-}: {
-  selected: Types.BuilderConfig["type"] | undefined;
-  onSelect: (type: Types.BuilderConfig["type"]) => void;
-}) => (
-  <Select value={selected || undefined} onValueChange={onSelect}>
-    <SelectTrigger className="max-w-[150px]">
-      <SelectValue placeholder="Select Type" />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectItem value={"Aws"}>Aws</SelectItem>
-      {/* <SelectItem value={"Server"}>Server</SelectItem> */}
-    </SelectContent>
-  </Select>
-);
+// const BuilderTypeSelector = ({
+//   selected,
+//   onSelect,
+// }: {
+//   selected: Types.BuilderConfig["type"] | undefined;
+//   onSelect: (type: Types.BuilderConfig["type"]) => void;
+// }) => (
+//   <Select value={selected || undefined} onValueChange={onSelect}>
+//     <SelectTrigger className="max-w-[150px]">
+//       <SelectValue placeholder="Select Type" />
+//     </SelectTrigger>
+//     <SelectContent>
+//       <SelectItem value={"Aws"}>Aws</SelectItem>
+//       {/* <SelectItem value={"Server"}>Server</SelectItem> */}
+//     </SelectContent>
+//   </Select>
+// );
 
 const BuilderConfig = ({ id }: { id: string }) => {
   const builder = useRead("GetBuilder", { id }).data;
   const [update, setUpdate] = useState<Partial<Types.BuilderConfig>>({});
-  const { mutate, isLoading } = useWrite("UpdateBuilder");
+  const { mutate } = useWrite("UpdateBuilder");
 
   if (!builder?.config) return null;
 
@@ -115,7 +107,9 @@ const BuilderConfig = ({ id }: { id: string }) => {
         config={builder.config}
         loading={isLoading}
         update={update}
-        set={(input) => setUpdate((update) => ({ ...update, ...input }))}
+        set={(input: Extract<Types.BuilderConfig, { type: "Aws" }>) =>
+          setUpdate((update) => ({ ...update, ...input }))
+        }
         layout={{
           general: ["type", "params"],
         }}
