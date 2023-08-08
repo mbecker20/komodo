@@ -39,6 +39,7 @@ enum WriteRequest {
 
     // ==== USER ====
     PushRecentlyViewed(PushRecentlyViewed),
+    SetLastSeenUpdate(SetLastSeenUpdate),
 
     // ==== PERMISSIONS ====
     UpdateUserPerimissions(UpdateUserPermissions),

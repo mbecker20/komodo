@@ -90,6 +90,7 @@ export type WriteResponses = {
 
   // ==== USER ====
   PushRecentlyViewed: Types.PushRecentlyViewedResponse;
+  SetLastSeenUpdate: Types.SetLastSeenUpdateResponse;
 
   // ==== PERMISSIONS ====
   UpdateUserPerimissions: Types.Update;

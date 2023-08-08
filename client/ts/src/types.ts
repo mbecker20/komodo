@@ -1279,6 +1279,12 @@ export interface PushRecentlyViewed {
 export interface PushRecentlyViewedResponse {
 }
 
+export interface SetLastSeenUpdate {
+}
+
+export interface SetLastSeenUpdateResponse {
+}
+
 export type AuthRequest = 
 	| { type: "GetLoginOptions", params: GetLoginOptions }
 	| { type: "CreateLocalUser", params: CreateLocalUser }
@@ -1356,6 +1362,7 @@ export type WriteRequest =
 	| { type: "CreateLoginSecret", params: CreateLoginSecret }
 	| { type: "DeleteLoginSecret", params: DeleteLoginSecret }
 	| { type: "PushRecentlyViewed", params: PushRecentlyViewed }
+	| { type: "SetLastSeenUpdate", params: SetLastSeenUpdate }
 	| { type: "UpdateUserPerimissions", params: UpdateUserPermissions }
 	| { type: "UpdateUserPermissionsOnTarget", params: UpdateUserPermissionsOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }
