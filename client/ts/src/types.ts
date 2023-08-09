@@ -512,6 +512,8 @@ export enum Operation {
 	PruneImagesServer = "PruneImagesServer",
 	PruneContainersServer = "PruneContainersServer",
 	PruneNetworksServer = "PruneNetworksServer",
+	CreateNetwork = "CreateNetwork",
+	DeleteNetwork = "DeleteNetwork",
 	CreateBuild = "CreateBuild",
 	UpdateBuild = "UpdateBuild",
 	DeleteBuild = "DeleteBuild",
@@ -1238,12 +1240,12 @@ export interface RenameServer {
 }
 
 export interface CreateNetwork {
-	id: string;
+	server_id: string;
 	name: string;
 }
 
 export interface DeleteNetwork {
-	id: string;
+	server_id: string;
 	name: string;
 }
 
@@ -1370,6 +1372,8 @@ export type WriteRequest =
 	| { type: "DeleteServer", params: DeleteServer }
 	| { type: "UpdateServer", params: UpdateServer }
 	| { type: "RenameServer", params: RenameServer }
+	| { type: "CreateNetwork", params: CreateNetwork }
+	| { type: "DeleteNetwork", params: DeleteNetwork }
 	| { type: "CreateDeployment", params: CreateDeployment }
 	| { type: "CopyDeployment", params: CopyDeployment }
 	| { type: "DeleteDeployment", params: DeleteDeployment }

@@ -53,6 +53,8 @@ enum WriteRequest {
     DeleteServer(DeleteServer),
     UpdateServer(UpdateServer),
     RenameServer(RenameServer),
+    CreateNetwork(CreateNetwork),
+    DeleteNetwork(DeleteNetwork),
 
     // ==== DEPLOYMENT ====
     CreateDeployment(CreateDeployment),

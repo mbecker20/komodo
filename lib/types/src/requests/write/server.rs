@@ -55,7 +55,7 @@ pub struct RenameServer {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Update)]
 pub struct CreateNetwork {
-    pub id: String,
+    pub server_id: String,
     pub name: String,
 }
 
@@ -65,6 +65,6 @@ pub struct CreateNetwork {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Update)]
 pub struct DeleteNetwork {
-    pub id: String,
+    pub server_id: String,
     pub name: String,
 }

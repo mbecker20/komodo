@@ -104,6 +104,8 @@ export type WriteResponses = {
   DeleteServer: Types.Server;
   UpdateServer: Types.Server;
   RenameServer: Types.Update;
+  CreateNetwork: Types.Update;
+  DeleteNetwork: Types.Update;
 
   // ==== DEPLOYMENT ====
   CreateDeployment: Types.Deployment;

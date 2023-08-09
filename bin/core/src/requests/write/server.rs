@@ -10,9 +10,10 @@ use monitor_types::{
     requests::write::*,
 };
 use mungos::mongodb::bson::{doc, to_bson};
+use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::StateResource, state::State};
+use crate::{auth::RequestUser, helpers::make_update, resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<CreateServer, RequestUser> for State {
@@ -218,6 +219,68 @@ impl Resolve<RenameServer, RequestUser> for State {
             ..Default::default()
         };
         update.id = self.add_update(update.clone()).await?;
+        Ok(update)
+    }
+}
+
+#[async_trait]
+impl Resolve<CreateNetwork, RequestUser> for State {
+    async fn resolve(
+        &self,
+        CreateNetwork { server_id, name }: CreateNetwork,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Update)
+            .await?;
+
+        let mut update = make_update(&server, Operation::CreateNetwork, &user);
+        update.status = UpdateStatus::InProgress;
+        update.id = self.add_update(update.clone()).await?;
+
+        match self
+            .periphery_client(&server)
+            .request(requests::CreateNetwork { name, driver: None })
+            .await
+        {
+            Ok(log) => update.logs.push(log),
+            Err(e) => update.push_error_log("create network", format!("{e:#?}")),
+        };
+
+        update.finalize();
+        self.update_update(update.clone()).await?;
+
+        Ok(update)
+    }
+}
+
+#[async_trait]
+impl Resolve<DeleteNetwork, RequestUser> for State {
+    async fn resolve(
+        &self,
+        DeleteNetwork { server_id, name }: DeleteNetwork,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Update)
+            .await?;
+
+        let mut update = make_update(&server, Operation::DeleteNetwork, &user);
+        update.status = UpdateStatus::InProgress;
+        update.id = self.add_update(update.clone()).await?;
+
+        match self
+            .periphery_client(&server)
+            .request(requests::DeleteNetwork { name })
+            .await
+        {
+            Ok(log) => update.logs.push(log),
+            Err(e) => update.push_error_log("delete network", format!("{e:#?}")),
+        };
+
+        update.finalize();
+        self.update_update(update.clone()).await?;
+
         Ok(update)
     }
 }
