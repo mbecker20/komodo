@@ -9,6 +9,10 @@ import { useState } from "react";
 import { Section } from "@layouts/page";
 import { Button } from "@ui/button";
 import { ConfirmUpdate } from "@components/config/confirm-update";
+import { ConfigAgain } from "@components/config/again";
+import { AwsBuilderConfig } from "@monitor/client/dist/types";
+import { Input } from "@ui/input";
+import { ServersSelector } from "@resources/deployment/config";
 // import {
 //   Select,
 //   SelectContent,
@@ -70,10 +74,19 @@ export const BuilderCard = ({ id }: { id: string }) => {
 
 const BuilderConfig = ({ id }: { id: string }) => {
   const builder = useRead("GetBuilder", { id }).data;
-  const [update, setUpdate] = useState<Partial<Types.BuilderConfig>>({});
-  const { mutate } = useWrite("UpdateBuilder");
-
   if (!builder?.config) return null;
+
+  // const [type, setT] = useState(builder.config.type);
+
+  const [update, set] = useState<
+    Partial<
+      Extract<
+        Types.BuilderConfig,
+        { type: typeof builder.config.type }
+      >["params"]
+    >
+  >({});
+  const { mutate } = useWrite("UpdateBuilder");
 
   return (
     <Section
@@ -81,11 +94,7 @@ const BuilderConfig = ({ id }: { id: string }) => {
       icon={<Settings className="w-4 h-4" />}
       actions={
         <div className="flex gap-4">
-          <Button
-            variant="outline"
-            intent="warning"
-            onClick={() => setUpdate({})}
-          >
+          <Button variant="outline" intent="warning" onClick={() => set({})}>
             <History className="w-4 h-4" />
           </Button>
           <ConfirmUpdate
@@ -103,6 +112,35 @@ const BuilderConfig = ({ id }: { id: string }) => {
         </div>
       }
     >
+      {builder.config.type === "Server" && (
+        <ConfigAgain
+          config={builder.config.params}
+          update={update ?? {}}
+          components={{
+            id: (selected) => <div></div>,
+          }}
+        />
+      )}
+      {builder.config.type === "Aws" && (
+        <ConfigAgain
+          config={builder.config.params}
+          update={update ?? {}}
+          components={{
+            region: (id) => (
+              <Input
+                value={id}
+                onChange={(e) => set((u) => ({ ...u, region: e.target.value }))}
+              />
+            ),
+            ami_id: (id) => (
+              <Input
+                value={id}
+                onChange={(e) => set((u) => ({ ...u, ami_id: e.target.value }))}
+              />
+            ),
+          }}
+        />
+      )}
       {/* <Configuration
         config={builder.config}
         loading={isLoading}
