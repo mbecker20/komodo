@@ -6,10 +6,26 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use super::{resource::Resource, EnvironmentVar, Version};
+use super::{
+    resource::{Resource, ResourceListItem},
+    EnvironmentVar, Version,
+};
 
 #[typeshare]
 pub type Deployment = Resource<DeploymentConfig, ()>;
+
+#[typeshare]
+pub type DeploymentListItem = ResourceListItem<DeploymentListItemInfo>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DeploymentListItemInfo {
+    pub state: DockerContainerState,
+    pub status: Option<String>,
+    pub image: String,
+    pub server_id: String,
+    pub build_id: Option<String>,
+}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]

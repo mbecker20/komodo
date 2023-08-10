@@ -6,7 +6,7 @@ use monitor_types::{
         deployment::ContainerSummary,
         server::{
             docker_image::ImageSummary, docker_network::DockerNetwork, stats::SystemInformation,
-            Server, ServerActionState, ServerStatus,
+            Server, ServerActionState, ServerListItem, ServerStatus,
         },
         PermissionLevel,
     },
@@ -30,7 +30,7 @@ impl Resolve<GetServersSummary, RequestUser> for State {
         let mut res = GetServersSummaryResponse::default();
         for server in servers {
             res.total += 1;
-            match server.status {
+            match server.info.status {
                 ServerStatus::Ok => {
                     res.healthy += 1;
                 }

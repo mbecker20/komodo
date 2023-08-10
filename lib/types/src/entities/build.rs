@@ -6,10 +6,20 @@ use typeshare::typeshare;
 
 use crate::I64;
 
-use super::{resource::Resource, EnvironmentVar, SystemCommand, Version};
+use super::{resource::{Resource, ResourceListItem}, EnvironmentVar, SystemCommand, Version};
 
 #[typeshare]
 pub type Build = Resource<BuildConfig, BuildInfo>;
+
+#[typeshare]
+pub type BuildListItem = ResourceListItem<BuildListItemInfo>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BuildListItemInfo {
+    pub last_built_at: I64,
+    pub version: Version,
+}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

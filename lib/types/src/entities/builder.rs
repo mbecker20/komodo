@@ -6,13 +6,23 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use super::resource::Resource;
+use super::resource::{Resource, ResourceListItem};
 
 #[typeshare]
 pub type Builder = Resource<BuilderConfig, ()>;
 
+#[typeshare]
+pub type BuilderListItem = ResourceListItem<BuilderListItemInfo>;
+
 #[typeshare(serialized_as = "Partial<BuilderConfig>")]
 pub type _PartialBuilderConfig = PartialBuilderConfig;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct BuilderListItemInfo {
+    pub provider: String,
+    pub instance_type: Option<String>,
+}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]

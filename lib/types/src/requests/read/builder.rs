@@ -2,7 +2,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{entities::builder::Builder, MongoDocument};
+use crate::{entities::builder::{Builder, BuilderListItem}, MongoDocument};
 
 //
 
@@ -20,15 +20,6 @@ pub struct GetBuilder {
 #[response(Vec<BuilderListItem>)]
 pub struct ListBuilders {
     pub query: Option<MongoDocument>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct BuilderListItem {
-    pub id: String,
-    pub name: String,
-    pub provider: String,
-    pub instance_type: Option<String>,
 }
 
 //

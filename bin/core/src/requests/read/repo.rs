@@ -2,7 +2,7 @@ use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
     entities::{
-        repo::{Repo, RepoActionState},
+        repo::{Repo, RepoActionState, RepoListItem},
         PermissionLevel,
     },
     requests::read::*,

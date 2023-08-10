@@ -2,9 +2,13 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{entities::update::ResourceTargetVariant, MongoDocument};
-
-use super::{BuildListItem, DeploymentListItem, RepoListItem, ServerListItem};
+use crate::{
+    entities::{
+        build::BuildListItem, deployment::DeploymentListItem, repo::RepoListItem,
+        server::ServerListItem, update::ResourceTargetVariant,
+    },
+    MongoDocument,
+};
 
 //
 

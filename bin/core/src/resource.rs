@@ -3,19 +3,16 @@ use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_types::{
     entities::{
-        alerter::{Alerter, AlerterConfig},
-        build::Build,
-        builder::{Builder, BuilderConfig},
-        deployment::{Deployment, DeploymentImage},
-        repo::Repo,
-        server::Server,
+        alerter::{Alerter, AlerterConfig, AlerterListItem, AlerterListItemInfo},
+        build::{Build, BuildListItem, BuildListItemInfo},
+        builder::{Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo},
+        deployment::{Deployment, DeploymentImage, DeploymentListItem, DeploymentListItemInfo},
+        repo::{Repo, RepoInfo, RepoListItem},
+        server::{Server, ServerListItem, ServerListItemInfo},
+        update::ResourceTargetVariant,
         PermissionLevel,
     },
     permissioned::Permissioned,
-    requests::read::{
-        AlerterListItem, BuildListItem, BuilderListItem, DeploymentListItem, RepoListItem,
-        ServerListItem,
-    },
 };
 use mungos::{
     mongodb::bson::{doc, Document},
@@ -164,8 +161,11 @@ impl StateResource<Server> for State {
             id: server.id,
             name: server.name,
             tags: server.tags,
-            status: status.map(|s| s.status).unwrap_or_default(),
-            region: server.config.region,
+            resource_type: ResourceTargetVariant::Server,
+            info: ServerListItemInfo {
+                status: status.map(|s| s.status).unwrap_or_default(),
+                region: server.config.region,
+            },
         })
     }
 }
@@ -200,13 +200,16 @@ impl StateResource<Deployment> for State {
             id: deployment.id,
             name: deployment.name,
             tags: deployment.tags,
-            state: status.as_ref().map(|s| s.state).unwrap_or_default(),
-            status: status
-                .as_ref()
-                .and_then(|s| s.container.as_ref().and_then(|c| c.status.to_owned())),
-            image,
-            server_id: deployment.config.server_id,
-            build_id,
+            resource_type: ResourceTargetVariant::Deployment,
+            info: DeploymentListItemInfo {
+                state: status.as_ref().map(|s| s.state).unwrap_or_default(),
+                status: status
+                    .as_ref()
+                    .and_then(|s| s.container.as_ref().and_then(|c| c.status.to_owned())),
+                image,
+                server_id: deployment.config.server_id,
+                build_id,
+            },
         })
     }
 }
@@ -228,8 +231,11 @@ impl StateResource<Build> for State {
             id: build.id,
             name: build.name,
             tags: build.tags,
-            last_built_at: build.info.last_built_at,
-            version: build.config.version,
+            resource_type: ResourceTargetVariant::Build,
+            info: BuildListItemInfo {
+                last_built_at: build.info.last_built_at,
+                version: build.config.version,
+            },
         })
     }
 }
@@ -250,8 +256,11 @@ impl StateResource<Repo> for State {
         Ok(RepoListItem {
             id: repo.id,
             name: repo.name,
-            last_pulled_at: repo.info.last_pulled_at,
             tags: repo.tags,
+            resource_type: ResourceTargetVariant::Repo,
+            info: RepoInfo {
+                last_pulled_at: repo.info.last_pulled_at,
+            },
         })
     }
 }
@@ -277,8 +286,12 @@ impl StateResource<Builder> for State {
         Ok(BuilderListItem {
             id: builder.id,
             name: builder.name,
-            provider,
-            instance_type,
+            tags: builder.tags,
+            resource_type: ResourceTargetVariant::Builder,
+            info: BuilderListItemInfo {
+                provider,
+                instance_type,
+            },
         })
     }
 }
@@ -303,7 +316,12 @@ impl StateResource<Alerter> for State {
         Ok(AlerterListItem {
             id: alerter.id,
             name: alerter.name,
-            alerter_type: alerter_type.to_string(),
+            tags: alerter.tags,
+            resource_type: ResourceTargetVariant::Alerter,
+            info: AlerterListItemInfo {
+                alerter_type: alerter_type.to_string(),
+                is_default: alerter.info.is_default,
+            },
         })
     }
 }

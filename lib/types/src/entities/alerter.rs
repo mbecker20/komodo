@@ -6,10 +6,20 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use super::resource::Resource;
+use super::resource::{Resource, ResourceListItem};
 
 #[typeshare]
 pub type Alerter = Resource<AlerterConfig, AlerterInfo>;
+
+#[typeshare]
+pub type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct AlerterListItemInfo {
+    pub is_default: bool,
+    pub alerter_type: String,
+}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

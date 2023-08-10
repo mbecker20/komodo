@@ -6,7 +6,7 @@ use monitor_types::{
     entities::{
         deployment::{
             Deployment, DeploymentActionState, DeploymentConfig, DeploymentImage,
-            DockerContainerState, DockerContainerStats,
+            DockerContainerState, DockerContainerStats, DeploymentListItem,
         },
         server::Server,
         update::{Log, UpdateStatus},

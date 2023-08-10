@@ -3,8 +3,8 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::{
-    entities::repo::{Repo, RepoActionState},
-    MongoDocument, I64,
+    entities::repo::{Repo, RepoActionState, RepoListItem},
+    MongoDocument,
 };
 
 //
@@ -23,15 +23,6 @@ pub struct GetRepo {
 #[response(Vec<RepoListItem>)]
 pub struct ListRepos {
     pub query: Option<MongoDocument>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct RepoListItem {
-    pub id: String,
-    pub name: String,
-    pub last_pulled_at: I64,
-    pub tags: Vec<String>,
 }
 
 //

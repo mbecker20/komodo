@@ -6,10 +6,16 @@ use typeshare::typeshare;
 
 use crate::I64;
 
-use super::{resource::Resource, SystemCommand};
+use super::{
+    resource::{Resource, ResourceListItem},
+    SystemCommand,
+};
 
 #[typeshare]
 pub type Repo = Resource<RepoConfig, RepoInfo>;
+
+#[typeshare]
+pub type RepoListItem = ResourceListItem<RepoInfo>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

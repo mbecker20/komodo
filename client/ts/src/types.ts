@@ -40,6 +40,21 @@ export interface AlerterInfo {
 
 export type Alerter = Resource<AlerterConfig, AlerterInfo>;
 
+export interface ResourceListItem<Info> {
+	id: string;
+	type: ResourceTarget["type"];
+	name: string;
+	tags: string[];
+	info: Info;
+}
+
+export interface AlerterListItemInfo {
+	is_default: boolean;
+	alerter_type: string;
+}
+
+export type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
+
 export type _PartialCustomAlerterConfig = Partial<CustomAlerterConfig>;
 
 export type _PartialSlackAlerterConfig = Partial<SlackAlerterConfig>;
@@ -83,11 +98,25 @@ export interface BuildInfo {
 
 export type Build = Resource<BuildConfig, BuildInfo>;
 
+export interface BuildListItemInfo {
+	last_built_at: I64;
+	version: Version;
+}
+
+export type BuildListItem = ResourceListItem<BuildListItemInfo>;
+
 export type BuilderConfig = 
 	| { type: "Server", params: ServerBuilderConfig }
 	| { type: "Aws", params: AwsBuilderConfig };
 
 export type Builder = Resource<BuilderConfig, undefined>;
+
+export interface BuilderListItemInfo {
+	provider: string;
+	instance_type?: string;
+}
+
+export type BuilderListItem = ResourceListItem<BuilderListItemInfo>;
 
 export type _PartialBuilderConfig = Partial<BuilderConfig>;
 
@@ -149,6 +178,28 @@ export interface DeploymentConfig {
 
 export type Deployment = Resource<DeploymentConfig, undefined>;
 
+export enum DockerContainerState {
+	Unknown = "unknown",
+	NotDeployed = "not_deployed",
+	Created = "created",
+	Restarting = "restarting",
+	Running = "running",
+	Removing = "removing",
+	Paused = "paused",
+	Exited = "exited",
+	Dead = "dead",
+}
+
+export interface DeploymentListItemInfo {
+	state: DockerContainerState;
+	status?: string;
+	image: string;
+	server_id: string;
+	build_id?: string;
+}
+
+export type DeploymentListItem = ResourceListItem<DeploymentListItemInfo>;
+
 export interface RepoConfig {
 	server_id: string;
 	repo: string;
@@ -164,6 +215,8 @@ export interface RepoInfo {
 
 export type Repo = Resource<RepoConfig, RepoInfo>;
 
+export type RepoListItem = ResourceListItem<RepoInfo>;
+
 export interface ServerConfig {
 	address: string;
 	enabled: boolean;
@@ -178,6 +231,19 @@ export interface ServerConfig {
 }
 
 export type Server = Resource<ServerConfig, undefined>;
+
+export enum ServerStatus {
+	NotOk = "NotOk",
+	Ok = "Ok",
+	Disabled = "Disabled",
+}
+
+export interface ServerListItemInfo {
+	status: ServerStatus;
+	region: string;
+}
+
+export type ServerListItem = ResourceListItem<ServerListItemInfo>;
 
 export type U64 = number;
 
@@ -221,18 +287,6 @@ export interface AwsBuilderConfig {
 	assign_public_ip: boolean;
 	github_accounts?: string[];
 	docker_accounts?: string[];
-}
-
-export enum DockerContainerState {
-	Unknown = "unknown",
-	NotDeployed = "not_deployed",
-	Created = "created",
-	Restarting = "restarting",
-	Running = "running",
-	Removing = "removing",
-	Paused = "paused",
-	Exited = "exited",
-	Dead = "dead",
 }
 
 export interface ContainerSummary {
@@ -722,12 +776,6 @@ export interface ListAlerters {
 	query?: MongoDocument;
 }
 
-export interface AlerterListItem {
-	id: string;
-	name: string;
-	alerter_type: string;
-}
-
 export interface GetAlertersSummary {
 }
 
@@ -741,14 +789,6 @@ export interface GetBuild {
 
 export interface ListBuilds {
 	query?: MongoDocument;
-}
-
-export interface BuildListItem {
-	id: string;
-	name: string;
-	last_built_at: I64;
-	version: Version;
-	tags: string[];
 }
 
 export interface GetBuildActionState {
@@ -799,13 +839,6 @@ export interface ListBuilders {
 	query?: MongoDocument;
 }
 
-export interface BuilderListItem {
-	id: string;
-	name: string;
-	provider: string;
-	instance_type?: string;
-}
-
 export interface GetBuildersSummary {
 }
 
@@ -819,17 +852,6 @@ export interface GetDeployment {
 
 export interface ListDeployments {
 	query?: MongoDocument;
-}
-
-export interface DeploymentListItem {
-	id: string;
-	name: string;
-	tags: string[];
-	state: DockerContainerState;
-	status?: string;
-	image: string;
-	server_id: string;
-	build_id?: string;
 }
 
 export interface GetDeploymentStatus {
@@ -899,13 +921,6 @@ export interface ListRepos {
 	query?: MongoDocument;
 }
 
-export interface RepoListItem {
-	id: string;
-	name: string;
-	last_pulled_at: I64;
-	tags: string[];
-}
-
 export interface GetRepoActionState {
 	id: string;
 }
@@ -920,20 +935,6 @@ export interface GetReposSummaryResponse {
 export interface FindResources {
 	query?: MongoDocument;
 	resources?: ResourceTarget["type"][];
-}
-
-export enum ServerStatus {
-	NotOk = "NotOk",
-	Ok = "Ok",
-	Disabled = "Disabled",
-}
-
-export interface ServerListItem {
-	id: string;
-	name: string;
-	status: ServerStatus;
-	tags: string[];
-	region: string;
 }
 
 export interface FindResourcesResponse {

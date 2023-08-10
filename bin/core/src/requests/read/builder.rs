@@ -1,7 +1,7 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
-    entities::{builder::Builder, PermissionLevel},
+    entities::{builder::{Builder, BuilderListItem}, PermissionLevel},
     requests::read::*,
 };
 use mungos::mongodb::bson::doc;

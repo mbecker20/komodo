@@ -6,7 +6,7 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        build::{Build, BuildActionState},
+        build::{Build, BuildActionState, BuildListItem},
         Version,
     },
     MongoDocument, I64,
@@ -28,16 +28,6 @@ pub struct GetBuild {
 #[response(Vec<BuildListItem>)]
 pub struct ListBuilds {
     pub query: Option<MongoDocument>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct BuildListItem {
-    pub id: String,
-    pub name: String,
-    pub last_built_at: I64,
-    pub version: Version,
-    pub tags: Vec<String>,
 }
 
 //

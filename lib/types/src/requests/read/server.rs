@@ -12,7 +12,7 @@ use crate::{
                 AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage,
                 SystemComponent, SystemInformation, SystemProcess, SystemStatsRecord,
             },
-            Server, ServerActionState, ServerStatus,
+            Server, ServerActionState, ServerStatus, ServerListItem,
         },
         Timelength,
     },
@@ -35,16 +35,6 @@ pub struct GetServer {
 #[response(Vec<ServerListItem>)]
 pub struct ListServers {
     pub query: Option<MongoDocument>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ServerListItem {
-    pub id: String,
-    pub name: String,
-    pub status: ServerStatus,
-    pub tags: Vec<String>,
-    pub region: String,
 }
 
 //

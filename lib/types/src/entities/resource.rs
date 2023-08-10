@@ -5,7 +5,7 @@ use typeshare::typeshare;
 
 use crate::{MongoId, I64};
 
-use super::PermissionsMap;
+use super::{update::ResourceTargetVariant, PermissionsMap};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder)]
@@ -42,4 +42,15 @@ pub struct Resource<Config, Info: Default> {
     pub info: Info,
 
     pub config: Config,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ResourceListItem<Info> {
+    pub id: String,
+    #[serde(rename = "type")]
+    pub resource_type: ResourceTargetVariant,
+    pub name: String,
+    pub tags: Vec<String>,
+    pub info: Info,
 }

@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use futures::TryStreamExt;
 use monitor_types::{
     entities::{
-        build::{Build, BuildActionState},
+        build::{Build, BuildActionState, BuildListItem},
         update::UpdateStatus,
         Operation, PermissionLevel,
     },

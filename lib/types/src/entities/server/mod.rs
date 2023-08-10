@@ -4,7 +4,7 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use super::resource::Resource;
+use super::resource::{Resource, ResourceListItem};
 
 pub mod docker_image;
 pub mod docker_network;
@@ -12,6 +12,16 @@ pub mod stats;
 
 #[typeshare]
 pub type Server = Resource<ServerConfig, ()>;
+
+#[typeshare]
+pub type ServerListItem = ResourceListItem<ServerListItemInfo>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ServerListItemInfo {
+    pub status: ServerStatus,
+    pub region: String,
+}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
