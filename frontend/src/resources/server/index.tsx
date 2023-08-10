@@ -4,7 +4,7 @@ import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
 import { CardDescription } from "@ui/card";
 import { useParams, Link } from "react-router-dom";
-import { ServerConfig } from "./config";
+import { SerCon, ServerConfig } from "./config";
 import { ServerStats } from "./stats";
 import {
   ServerName,
@@ -33,7 +33,7 @@ export const ServerPage = () => {
     >
       <ResourceUpdates type="Server" id={id} />
       <ServerStats />
-      <ServerConfig />
+      <SerCon id={id} />
     </Resource>
   );
 };
