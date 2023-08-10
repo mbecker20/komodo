@@ -274,6 +274,8 @@ pub enum Operation {
     PruneImagesServer,
     PruneContainersServer,
     PruneNetworksServer,
+    CreateNetwork,
+    DeleteNetwork,
 
     // build
     CreateBuild,
