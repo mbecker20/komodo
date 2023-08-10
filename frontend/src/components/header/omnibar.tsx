@@ -47,7 +47,6 @@ export const Omnibar = () => {
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      console.log(e.key, e.shiftKey);
       if (e.shiftKey && e.key === "S") {
         e.preventDefault();
         set(true);
