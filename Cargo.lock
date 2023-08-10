@@ -1772,6 +1772,8 @@ dependencies = [
  "chrono",
  "dotenv",
  "envy",
+ "log",
+ "logger",
  "monitor_types",
  "mungos",
  "serde",

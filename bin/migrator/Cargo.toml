@@ -9,6 +9,7 @@ license.workspace = true
 
 [dependencies]
 monitor_types.workspace = true
+logger.workspace = true
 #
 termination_signal.workspace = true
 #
@@ -18,4 +19,5 @@ anyhow.workspace = true
 dotenv.workspace = true
 envy.workspace = true
 serde.workspace = true
+log.workspace = true
 chrono = "0.4"
