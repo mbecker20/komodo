@@ -1,3 +1,4 @@
+import { ConfigInput, ConfigSwitch } from "@components/config/util";
 import { Resource } from "@monitor/client/dist/types";
 import { Fragment, ReactNode } from "react";
 
@@ -8,35 +9,49 @@ export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
   config,
   update,
   components,
+  set,
 }: {
   config: T;
   update: Partial<T>;
   components: Partial<{
-    [K in keyof T]: (value: T[K]) => ReactNode;
+    [K in keyof T extends string ? keyof T : never]:
+      | true
+      | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
   }>;
+  set: (value: Partial<T>) => void;
 }) => {
   return (
     <>
       {keys(components).map((key) => {
+        const component = components[key];
         const value = update[key] ?? config[key];
+        if (component === true) {
+          switch (typeof value) {
+            case "string":
+            case "number":
+              return (
+                <ConfigInput
+                  label={key.toString()}
+                  value={value}
+                  onChange={(value) => set({ [key]: value } as Partial<T>)}
+                />
+              );
+            case "boolean":
+              return (
+                <ConfigSwitch
+                  label={key.toString()}
+                  value={value}
+                  onChange={() => {}}
+                />
+              );
+            default:
+              return <div>{key.toString()}</div>;
+          }
+        }
         return (
-          <Fragment key={key.toString()}>{components[key]?.(value)}</Fragment>
+          <Fragment key={key.toString()}>{component?.(value, set)}</Fragment>
         );
       })}
     </>
   );
-};
-
-export const VariantConfig = <P, T extends { type: string; params: P }>({
-  config,
-  update,
-  components,
-}: {
-  config: T;
-  update: { type: T["type"]; params: Partial<P> };
-  components: {
-    [key in T["type"]]: { [K in keyof P]: (value: P[K]) => ReactNode };
-  };
-}) => {
-  return <>{config}</>;
 };
