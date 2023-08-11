@@ -17,11 +17,11 @@ const on_message = (
   invalidate: ReturnType<typeof useInvalidate>
 ) => {
   if (data == "LOGGED_IN") return console.log("logged in to ws");
-  const update = JSON.parse(data) as Types.Update;
+  const update = JSON.parse(data) as Types.UpdateListItem;
 
   toast({
     title: update.operation,
-    description: update.operator,
+    description: update.username,
   });
 
   invalidate(["ListUpdates"]);
