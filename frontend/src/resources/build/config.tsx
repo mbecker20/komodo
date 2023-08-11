@@ -1,6 +1,4 @@
-import { Configuration } from "@components/config";
-import { useRead, useWrite } from "@hooks";
-import { Section } from "@layouts/page";
+import { useRead } from "@hooks";
 import { Types } from "@monitor/client";
 // import { ServersSelector } from "@resources/deployment/config";
 import { Button } from "@ui/button";
@@ -12,9 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Settings, Save, History, Trash, PlusCircle } from "lucide-react";
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Trash, PlusCircle } from "lucide-react";
 
 const ExtraArgs = ({
   args,
@@ -103,24 +99,6 @@ const EnvVars = ({
   </div>
 );
 
-// const BuilderTypeSelector = ({
-//   selected,
-//   onSelect,
-// }: {
-//   selected: string | undefined;
-//   onSelect: (id: string) => void;
-// }) => (
-//   <Select value={selected || undefined} onValueChange={onSelect}>
-//     <SelectTrigger className="max-w-[150px]">
-//       <SelectValue placeholder="Select Type" />
-//     </SelectTrigger>
-//     <SelectContent>
-//       <SelectItem value={"Builder"}>Builder</SelectItem>
-//       <SelectItem value={"Server"}>Server</SelectItem>
-//     </SelectContent>
-//   </Select>
-// );
-
 export const BuilderSelector = ({
   selected,
   onSelect,
@@ -148,107 +126,63 @@ export const BuilderSelector = ({
   );
 };
 
-// const BuilderConfig = ({
-//   builder,
-//   set,
-// }: {
-//   builder: Types.BuildBuilderConfig | undefined;
-//   set: (input: Partial<Types.BuildConfig>) => void;
-// }) => (
-//   <div className="flex justify-between items-center border-b pb-4 min-h-[40px]">
-//     <div>Builder</div>
-//     <div className="flex gap-4 w-full justify-end">
-//       <BuilderTypeSelector
-//         selected={builder?.type}
-//         onSelect={(type) =>
-//           set({
-//             builder: {
-//               type: type as any,
-//               params:
-//                 type === "Server"
-//                   ? ({ server_id: "" } as any)
-//                   : { builder_id: "" },
-//             },
-//           })
-//         }
+// export const BuildConfig = () => {
+//   const id = useParams().buildId;
+//   const build = useRead("GetBuild", { id }).data;
+//   const [update, set] = useState<Partial<Types.BuildConfig>>({});
+//   const { mutate, isLoading } = useWrite("UpdateBuild");
+
+//   if (!id || !build) return null;
+
+//   return (
+//     <Section
+//       title="Config"
+//       icon={<Settings className="w-4 h-4" />}
+//       actions={
+//         <div className="flex gap-4">
+//           <Button variant="outline" intent="warning" onClick={() => set({})}>
+//             <History className="w-4 h-4" />
+//           </Button>
+//           <Button
+//             variant="outline"
+//             intent="success"
+//             onClick={() => mutate({ config: update, id })}
+//           >
+//             <Save className="w-4 h-4" />
+//           </Button>
+//         </div>
+//       }
+//     >
+//       <Configuration
+//         config={build.config}
+//         loading={isLoading}
+//         update={update}
+//         set={(input) => set((update) => ({ ...update, ...input }))}
+//         layout={{
+//           general: ["builder_id"],
+//           repo: ["repo", "branch", "github_account"],
+//           docker: [
+//             "build_path",
+//             "dockerfile_path",
+//             "docker_account",
+//             "docker_organization",
+//             "use_buildx",
+//           ],
+//           pre_build: ["pre_build"],
+//           build_args: ["build_args"],
+//           extra_args: ["extra_args"],
+//         }}
+//         overrides={{
+//           build_args: (args, set) => <EnvVars vars={args} set={set} />,
+//           extra_args: (args, set) => <ExtraArgs args={args} set={set} />,
+//           builder_id: (id, set) => (
+//             <BuilderSelector
+//               selected={id}
+//               onSelect={(builder_id) => set({ builder_id })}
+//             />
+//           ),
+//         }}
 //       />
-//       {builder?.type === "Server" && (
-//         <ServersSelector
-//           selected={builder.params.server_id}
-//           onSelect={(server_id) =>
-//             set({ builder: { ...builder, params: { server_id } } })
-//           }
-//         />
-//       )}
-//       {builder?.type === "Builder" && (
-//         <BuilderSelector
-//           selected={builder.params.builder_id}
-//           onSelect={(builder_id) =>
-//             set({ builder: { ...builder, params: { builder_id } } })
-//           }
-//         />
-//       )}
-//     </div>
-//   </div>
-// );
-
-export const BuildConfig = () => {
-  const id = useParams().buildId;
-  const build = useRead("GetBuild", { id }).data;
-  const [update, set] = useState<Partial<Types.BuildConfig>>({});
-  const { mutate, isLoading } = useWrite("UpdateBuild");
-
-  if (!id || !build) return null;
-
-  return (
-    <Section
-      title="Config"
-      icon={<Settings className="w-4 h-4" />}
-      actions={
-        <div className="flex gap-4">
-          <Button variant="outline" intent="warning" onClick={() => set({})}>
-            <History className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            intent="success"
-            onClick={() => mutate({ config: update, id })}
-          >
-            <Save className="w-4 h-4" />
-          </Button>
-        </div>
-      }
-    >
-      <Configuration
-        config={build.config}
-        loading={isLoading}
-        update={update}
-        set={(input) => set((update) => ({ ...update, ...input }))}
-        layout={{
-          general: ["builder_id"],
-          repo: ["repo", "branch", "github_account"],
-          docker: [
-            "build_path",
-            "dockerfile_path",
-            "docker_account",
-            "docker_organization",
-            "use_buildx",
-          ],
-          pre_build: ["pre_build"],
-          build_args: ["build_args"],
-          extra_args: ["extra_args"],
-        }}
-        overrides={{
-          build_args: (args, set) => <EnvVars vars={args} set={set} />,
-          extra_args: (args, set) => <ExtraArgs args={args} set={set} />,
-          builder_id: (id, set) => (
-            <BuilderSelector
-              selected={id}
-              onSelect={(builder_id) => set({ builder_id })}
-            />
-          ),
-        }}
-      />
-    </Section>
-  );
-};
+//     </Section>
+//   );
+// };
