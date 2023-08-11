@@ -559,6 +559,7 @@ export interface CustomTag {
 
 export enum Operation {
 	None = "None",
+	LaunchServer = "LaunchServer",
 	CreateServer = "CreateServer",
 	UpdateServer = "UpdateServer",
 	DeleteServer = "DeleteServer",
@@ -1173,6 +1174,33 @@ export interface UpdateDescription {
 export interface UpdateDescriptionResponse {
 }
 
+export type LaunchServerConfig = 
+	| { type: "Aws", params: LaunchAwsServerConfig };
+
+export interface LaunchServer {
+	name: string;
+	config: LaunchServerConfig;
+}
+
+export interface AwsVolume {
+	device_name: string;
+	size_gb: number;
+	volume_type?: string;
+	iops?: number;
+	throughput?: number;
+}
+
+export interface LaunchAwsServerConfig {
+	region: string;
+	instance_type: string;
+	volumes: AwsVolume[];
+	ami_id: string;
+	subnet_id: string;
+	security_group_ids: string[];
+	key_pair_name: string;
+	assign_public_ip: boolean;
+}
+
 export interface UpdateUserPermissionsOnTarget {
 	user_id: string;
 	permission: PermissionLevel;
@@ -1369,6 +1397,7 @@ export type WriteRequest =
 	| { type: "UpdateUserPerimissions", params: UpdateUserPermissions }
 	| { type: "UpdateUserPermissionsOnTarget", params: UpdateUserPermissionsOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }
+	| { type: "LaunchServer", params: LaunchServer }
 	| { type: "CreateServer", params: CreateServer }
 	| { type: "DeleteServer", params: DeleteServer }
 	| { type: "UpdateServer", params: UpdateServer }

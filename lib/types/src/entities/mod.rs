@@ -267,6 +267,7 @@ pub enum Operation {
     None,
 
     // server
+    LaunchServer,
     CreateServer,
     UpdateServer,
     DeleteServer,

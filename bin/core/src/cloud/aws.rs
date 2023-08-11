@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
 use aws_sdk_ec2::{
@@ -6,11 +6,11 @@ use aws_sdk_ec2::{
     types::{
         BlockDeviceMapping, EbsBlockDevice, InstanceNetworkInterfaceSpecification,
         InstanceStateChange, InstanceStateName, InstanceStatus, InstanceType, ResourceType, Tag,
-        TagSpecification,
+        TagSpecification, VolumeType,
     },
     Client,
 };
-use monitor_types::entities::builder::AwsBuilderConfig;
+use monitor_types::requests::write::LaunchAwsServerConfig;
 
 use crate::state::State;
 
@@ -32,45 +32,34 @@ impl State {
         Client::new(&config)
     }
 
-    pub async fn create_ec2_instance(
+    pub async fn launch_ec2_instance(
         &self,
-        instance_name: &str,
-        AwsBuilderConfig {
+        name: &str,
+        config: impl Into<LaunchAwsServerConfig>,
+    ) -> anyhow::Result<Ec2Instance> {
+        let LaunchAwsServerConfig {
             region,
             instance_type,
-            volume_gb,
+            volumes,
             ami_id,
             subnet_id,
             security_group_ids,
             key_pair_name,
             assign_public_ip,
-            ..
-        }: &AwsBuilderConfig,
-    ) -> anyhow::Result<Ec2Instance> {
+        } = config.into();
         let instance_type = InstanceType::from(instance_type.as_str());
         if let InstanceType::Unknown(t) = instance_type {
             return Err(anyhow!("unknown instance type {t:?}"));
         }
         let client = self.create_ec2_client(region.clone()).await;
-        let res = client
+        let mut req = client
             .run_instances()
             .image_id(ami_id)
             .instance_type(instance_type)
-            .block_device_mappings(
-                BlockDeviceMapping::builder()
-                    .set_device_name(String::from("/dev/sda1").into())
-                    .set_ebs(
-                        EbsBlockDevice::builder()
-                            .volume_size(*volume_gb)
-                            .build()
-                            .into(),
-                    )
-                    .build(),
-            )
             .network_interfaces(
                 InstanceNetworkInterfaceSpecification::builder()
                     .subnet_id(subnet_id)
-                    .associate_public_ip_address(*assign_public_ip)
+                    .associate_public_ip_address(assign_public_ip)
                     .set_groups(security_group_ids.to_vec().into())
                     .device_index(0)
                     .build(),
@@ -78,28 +67,50 @@ impl State {
             .key_name(key_pair_name)
             .tag_specifications(
                 TagSpecification::builder()
-                    .tags(Tag::builder().key("Name").value(instance_name).build())
+                    .tags(Tag::builder().key("Name").value(name).build())
                     .resource_type(ResourceType::Instance)
                     .build(),
             )
             .min_count(1)
-            .max_count(1)
+            .max_count(1);
+
+        for volume in volumes {
+            let mut ebs = EbsBlockDevice::builder()
+                .volume_size(volume.size_gb)
+                .set_iops(volume.iops)
+                .set_throughput(volume.throughput);
+            if let Some(volume_type) = &volume.volume_type {
+                ebs = ebs
+                    .volume_type(VolumeType::from_str(volume_type).context("invalid volume type")?);
+            }
+            req = req.block_device_mappings(
+                BlockDeviceMapping::builder()
+                    .set_device_name(volume.device_name.clone().into())
+                    .set_ebs(ebs.build().into())
+                    .build(),
+            )
+        }
+
+        let res = req
             .send()
             .await
             .context("failed to start builder ec2 instance")?;
+
         let instance = res
             .instances()
             .ok_or(anyhow!("got None for created instances"))?
             .get(0)
             .ok_or(anyhow!("instances array is empty"))?;
+
         let instance_id = instance
             .instance_id()
             .ok_or(anyhow!("instance does not have instance_id"))?
             .to_string();
+
         for _ in 0..MAX_POLL_TRIES {
             let state_name = get_ec2_instance_state_name(&client, &instance_id).await?;
             if state_name == Some(InstanceStateName::Running) {
-                let ip = if *assign_public_ip {
+                let ip = if assign_public_ip {
                     get_ec2_instance_public_ip(&client, &instance_id).await?
                 } else {
                     instance

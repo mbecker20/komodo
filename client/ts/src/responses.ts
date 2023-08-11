@@ -100,6 +100,7 @@ export type WriteResponses = {
   UpdateDescription: Types.UpdateDescriptionResponse;
 
   // ==== SERVER ====
+  LaunchServer: Types.Update;
   CreateServer: Types.Server;
   DeleteServer: Types.Server;
   UpdateServer: Types.Server;

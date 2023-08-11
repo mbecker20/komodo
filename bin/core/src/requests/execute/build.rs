@@ -254,7 +254,7 @@ impl State {
             build.config.version.to_string()
         );
         let Ec2Instance { instance_id, ip } =
-            self.create_ec2_instance(&instance_name, &config).await?;
+            self.launch_ec2_instance(&instance_name, &config).await?;
 
         let readable_sec_group_ids = config.security_group_ids.join(", ");
         let AwsBuilderConfig {
