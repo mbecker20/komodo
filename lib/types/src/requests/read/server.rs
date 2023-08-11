@@ -214,14 +214,14 @@ pub struct GetServersSummaryResponse {
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetAvailableAccountsResponse)]
-pub struct GetAvailableAccounts {
-    pub server_id: String,
+#[response(GetServerAvailableAccountsResponse)]
+pub struct GetServerAvailableAccounts {
+    pub id: String,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetAvailableAccountsResponse {
+pub struct GetServerAvailableAccountsResponse {
     pub github: Vec<String>,
     pub docker: Vec<String>,
 }

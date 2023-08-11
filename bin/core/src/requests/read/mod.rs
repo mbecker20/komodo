@@ -52,7 +52,7 @@ enum ReadRequest {
     GetDockerNetworks(GetDockerNetworks),
     GetServerActionState(GetServerActionState),
     GetHistoricalServerStats(GetHistoricalServerStats),
-    GetAvailableAccounts(GetAvailableAccounts),
+    GetServerAvailableAccounts(GetServerAvailableAccounts),
     GetAvailableNetworks(GetAvailableNetworks),
 
     // ==== DEPLOYMENT ====
@@ -83,6 +83,7 @@ enum ReadRequest {
     GetBuildersSummary(GetBuildersSummary),
     GetBuilder(GetBuilder),
     ListBuilders(ListBuilders),
+    GetBuilderAvailableAccounts(GetBuilderAvailableAccounts),
 
     // ==== ALERTER ====
     GetAlertersSummary(GetAlertersSummary),

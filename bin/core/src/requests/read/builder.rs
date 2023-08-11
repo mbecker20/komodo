@@ -1,7 +1,10 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
-    entities::{builder::{Builder, BuilderListItem}, PermissionLevel},
+    entities::{
+        builder::{Builder, BuilderListItem},
+        PermissionLevel,
+    },
     requests::read::*,
 };
 use mungos::mongodb::bson::doc;
@@ -58,5 +61,16 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
             total: total as u32,
         };
         Ok(res)
+    }
+}
+
+#[async_trait]
+impl Resolve<GetBuilderAvailableAccounts, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetBuilderAvailableAccounts { id }: GetBuilderAvailableAccounts,
+        user: RequestUser,
+    ) -> anyhow::Result<GetBuilderAvailableAccountsResponse> {
+        todo!()
     }
 }

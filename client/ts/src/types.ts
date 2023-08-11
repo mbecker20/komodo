@@ -847,6 +847,15 @@ export interface GetBuildersSummaryResponse {
 	total: number;
 }
 
+export interface GetBuilderAvailableAccounts {
+	id: string;
+}
+
+export interface GetBuilderAvailableAccountsResponse {
+	github: string[];
+	docker: string[];
+}
+
 export interface GetDeployment {
 	id: string;
 }
@@ -1038,11 +1047,11 @@ export interface GetServersSummaryResponse {
 	disabled: I64;
 }
 
-export interface GetAvailableAccounts {
-	server_id: string;
+export interface GetServerAvailableAccounts {
+	id: string;
 }
 
-export interface GetAvailableAccountsResponse {
+export interface GetServerAvailableAccountsResponse {
 	github: string[];
 	docker: string[];
 }
@@ -1351,7 +1360,7 @@ export type ReadRequest =
 	| { type: "GetDockerNetworks", params: GetDockerNetworks }
 	| { type: "GetServerActionState", params: GetServerActionState }
 	| { type: "GetHistoricalServerStats", params: GetHistoricalServerStats }
-	| { type: "GetAvailableAccounts", params: GetAvailableAccounts }
+	| { type: "GetServerAvailableAccounts", params: GetServerAvailableAccounts }
 	| { type: "GetAvailableNetworks", params: GetAvailableNetworks }
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
@@ -1374,6 +1383,7 @@ export type ReadRequest =
 	| { type: "GetBuildersSummary", params: GetBuildersSummary }
 	| { type: "GetBuilder", params: GetBuilder }
 	| { type: "ListBuilders", params: ListBuilders }
+	| { type: "GetBuilderAvailableAccounts", params: GetBuilderAvailableAccounts }
 	| { type: "GetAlertersSummary", params: GetAlertersSummary }
 	| { type: "GetAlerter", params: GetAlerter }
 	| { type: "ListAlerters", params: ListAlerters }
