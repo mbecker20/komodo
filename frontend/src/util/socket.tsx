@@ -64,12 +64,15 @@ export const WebsocketProvider = ({ children }: { children: ReactNode }) => {
   const invalidate = useInvalidate();
   const [ws] = useWebsocket();
 
+  const on_open_fn = () => on_open(ws);
+  const on_message_fn = (e: MessageEvent) => on_message(e, invalidate);
+
   useEffect(() => {
-    ws.addEventListener("open", () => on_open(ws));
-    ws.addEventListener("message", (e) => on_message(e, invalidate));
+    ws.addEventListener("open", on_open_fn);
+    ws.addEventListener("message", on_message_fn);
     return () => {
-      ws.removeEventListener("open", () => on_open(ws));
-      ws.removeEventListener("message", (e) => on_message(e, invalidate));
+      ws.removeEventListener("open", on_open_fn);
+      ws.removeEventListener("message", on_message_fn);
     };
   });
 
