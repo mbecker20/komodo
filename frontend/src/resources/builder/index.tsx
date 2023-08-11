@@ -1,15 +1,13 @@
 import { ResourceCard } from "@layouts/card";
-import { Bot, Cloud, Factory, History, Settings } from "lucide-react";
+import { Bot, Cloud, Factory } from "lucide-react";
 import { ResourceUpdates } from "@components/updates/resource";
 import { useAddRecentlyViewed, useRead, useWrite } from "@hooks";
 import { Resource } from "@layouts/resource";
 import { Link, useParams } from "react-router-dom";
 import { Types } from "@monitor/client";
 import { useState } from "react";
-import { Section } from "@layouts/page";
-import { Button } from "@ui/button";
-import { ConfirmUpdate } from "@components/config/confirm-update";
-import { ConfigAgain, VariantConfig } from "@components/config/again";
+import { ConfigLayout } from "@layouts/page";
+import { ConfigAgain } from "@components/config/again";
 import { Input } from "@ui/input";
 import {
   Select,
@@ -18,6 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
+import { ServersSelector } from "@resources/deployment/config";
+import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
+import { Button } from "@ui/button";
+import { ConfigInput } from "@components/config/util";
 
 export const BuilderName = ({ id }: { id: string }) => {
   const builders = useRead("ListBuilders", {}).data;
@@ -64,140 +66,158 @@ const BuilderTypeSelector = ({
     </SelectTrigger>
     <SelectContent>
       <SelectItem value={"Aws"}>Aws</SelectItem>
-      {/* <SelectItem value={"Server"}>Server</SelectItem> */}
+      <SelectItem value={"Server"}>Server</SelectItem>
     </SelectContent>
   </Select>
 );
 
-const ConfigInput = ({
-  label,
-  value,
-  onChange,
+const ServerConfig = ({
+  config,
+  update,
+  set,
 }: {
-  label: string;
-  value: string | number;
-  onChange: (value: string) => void;
+  config: Types.ServerBuilderConfig;
+  update: Partial<Types.ServerBuilderConfig>;
+  set: (update: Partial<Types.ServerBuilderConfig>) => void;
 }) => (
-  <div className="flex justify-between items-center border-b pb-4">
-    <div className="capitalize"> {label} </div>
-    <Input
-      className="max-w-[400px]"
-      type={typeof value === "number" ? "number" : undefined}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      // disabled={loading}
-    />
-  </div>
+  <ConfigAgain
+    config={config}
+    update={update}
+    components={{
+      id: (id) => (
+        <div className="flex justify-between items-center border-b pb-4">
+          Select Server
+          <ServersSelector selected={id} onSelect={(id) => set({ id })} />
+        </div>
+      ),
+    }}
+  />
 );
 
-const BuilderConfig = ({ id }: { id: string }) => {
-  const builder = useRead("GetBuilder", { id }).data;
-  if (!builder?.config) return null;
+const AwsBuilderConfig = ({
+  config,
+  update,
+  set,
+}: {
+  config: Types.AwsBuilderConfig;
+  update: Partial<Types.AwsBuilderConfig>;
+  set: (update: Partial<Types.AwsBuilderConfig>) => void;
+}) => (
+  <ConfigAgain
+    config={config}
+    update={update}
+    components={{
+      region: (region) => (
+        <ConfigInput
+          label="Region"
+          value={region}
+          onChange={(region) => set({ region })}
+        />
+      ),
+      instance_type: (instance_type) => (
+        <ConfigInput
+          label="Instance Type"
+          value={instance_type}
+          onChange={(instance_type) => set({ instance_type })}
+        />
+      ),
 
-  const [type, setT] = useState(builder.config.type);
+      volume_gb: (volume_gb) => (
+        <ConfigInput
+          label="Region"
+          value={volume_gb}
+          onChange={(ami_id) => set({ ami_id })}
+        />
+      ),
+      ami_id: (ami_id) => (
+        <ConfigInput
+          label="AMI Id"
+          value={ami_id}
+          onChange={(ami_id) => set({ ami_id })}
+        />
+      ),
+      subnet_id: (subnet_id) => (
+        <ConfigInput
+          label="Subnet Id"
+          value={subnet_id}
+          onChange={(subnet_id) => set({ subnet_id })}
+        />
+      ),
+      key_pair_name: (key_pair_name) => (
+        <ConfigInput
+          label="Subnet Id"
+          value={key_pair_name}
+          onChange={(n) => set({ key_pair_name })}
+        />
+      ),
+      assign_public_ip: () => <div>assign_public_ip</div>,
+      // security_group_ids: (ids) => <div>sec group ids</div>,
+      // github_accounts: () => <div>github_accounts</div>,
+      // docker_accounts: () => <div>docker_accounts</div>,
+    }}
+  />
+);
 
-  const [update, set] = useState<{
-    type: Types.BuilderConfig["type"];
-    params: Partial<Types.BuilderConfig["params"]>;
-  }>({ type: builder.config.type, params: {} });
-
+const BuilderConfig = ({
+  id,
+  config,
+}: {
+  id: string;
+  config: Types.BuilderConfig;
+}) => {
+  const [update, set] = useState({ type: config.type, params: {} });
   const { mutate } = useWrite("UpdateBuilder");
-
   return (
-    <Section
-      title="Config"
-      icon={<Settings className="w-4 h-4" />}
-      actions={
-        <div className="flex gap-4">
-          <Button
-            variant="outline"
-            intent="warning"
-            onClick={() => set({ type: builder.config.type, params: {} })}
-          >
-            <History className="w-4 h-4" />
-          </Button>
-          <ConfirmUpdate
-            content={JSON.stringify(update, null, 2)}
-            onConfirm={() => {
-              mutate({
-                id,
-                config: update,
-              });
-            }}
-          />
-        </div>
-      }
+    <ConfigLayout
+      content={update}
+      onConfirm={() => mutate({ id, config: update })}
+      onReset={() => set({ type: config.type, params: {} })}
     >
-      <BuilderTypeSelector
-        selected={type ?? builder.config.type}
-        onSelect={(type) => setT(type)}
-      />
-      {type === "Server" && (
-        <ConfigAgain
-          config={builder.config.params}
-          update={update ?? {}}
-          components={{
-            id: (selected) => <div></div>,
-          }}
-        />
-      )}
-      {type === "Aws" && (
-        <VariantConfig
-          config={builder.config.params}
-          update={update ?? {}}
-          components={{
-            region: (region) => (
-              <ConfigInput
-                label="Region"
-                value={region}
-                onChange={(region) => set((u) => ({ ...u, region }))}
+      <div className="flex gap-4">
+        <div className="flex flex-col gap-4 w-[300px]">
+          <Button>General</Button>
+        </div>
+        <Card>
+          <CardHeader className="border-b">
+            <CardTitle>General</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4 mt-6">
+            <div className="flex justify-between items-center border-b pb-4">
+              Builder Type
+              <BuilderTypeSelector
+                selected={update.type}
+                onSelect={(type) => set({ type, params: {} })}
               />
-            ),
-            instance_type: (instance_type) => (
-              <ConfigInput
-                label="Instance Type"
-                value={instance_type}
-                onChange={(t) => set((u) => ({ ...u, instance_type: t }))}
+            </div>
+            {update.type === "Server" && (
+              <ServerConfig
+                config={config.params as Types.ServerBuilderConfig}
+                update={update.params}
+                set={(u) =>
+                  set((p) => ({ ...p, params: { ...p.params, ...u } }))
+                }
               />
-            ),
-
-            volume_gb: (volume_gb) => (
-              <ConfigInput
-                label="Region"
-                value={volume_gb}
-                onChange={(ami_id) => set((u) => ({ ...u, ami_id }))}
+            )}
+            {update.type === "Aws" && (
+              <AwsBuilderConfig
+                config={config.params as Types.AwsBuilderConfig}
+                update={update.params}
+                set={(u) =>
+                  set((p) => ({ ...p, params: { ...p.params, ...u } }))
+                }
               />
-            ),
-            ami_id: (ami_id) => (
-              <ConfigInput
-                label="AMI Id"
-                value={ami_id}
-                onChange={(ami_id) => set((u) => ({ ...u, ami_id }))}
-              />
-            ),
-            subnet_id: (subnet_id) => (
-              <ConfigInput
-                label="Subnet Id"
-                value={subnet_id}
-                onChange={(subnet_id) => set((u) => ({ ...u, subnet_id }))}
-              />
-            ),
-            security_group_ids: (ids) => <div>sec group ids</div>,
-            key_pair_name: (key_pair_name) => (
-              <ConfigInput
-                label="Subnet Id"
-                value={key_pair_name}
-                onChange={(n) => set((u) => ({ ...u, key_pair_name: n }))}
-              />
-            ),
-            assign_public_ip: () => <div>assign_public_ip</div>,
-            // github_accounts: () => <div>github_accounts</div>,
-            // docker_accounts: () => <div>docker_accounts</div>,
-          }}
-        />
-      )}
-    </Section>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </ConfigLayout>
   );
+};
+
+const BCWrapper = ({ id }: { id: string }) => {
+  const config = useRead("GetBuilder", { id }).data?.config;
+  if (!config) return null;
+  return <BuilderConfig id={id} config={config} />;
 };
 
 export const BuilderPage = () => {
@@ -209,7 +229,7 @@ export const BuilderPage = () => {
   return (
     <Resource title={<BuilderName id={id} />} info={<></>} actions={<></>}>
       <ResourceUpdates type="Builder" id={id} />
-      <BuilderConfig id={id} />
+      <BCWrapper id={id} />
     </Resource>
   );
 };

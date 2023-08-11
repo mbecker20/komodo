@@ -300,4 +300,4 @@ export function readableImageNameTag(
 }
 
 export const fmt_update_date = (d: Date) =>
-  `${d.getDate()}/${d.getMonth()} @ ${d.getHours()}:${d.getMinutes()}`;
+  `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${d.getMinutes()}`;

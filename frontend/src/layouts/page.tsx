@@ -1,3 +1,6 @@
+import { ConfirmUpdate } from "@components/config/confirm-update";
+import { Button } from "@ui/button";
+import { Settings, Save, History } from "lucide-react";
 import { ReactNode } from "react";
 
 interface PageProps {
@@ -38,4 +41,34 @@ export const Section = ({ title, icon, actions, children }: SectionProps) => (
     </div>
     {children}
   </div>
+);
+
+export const ConfigLayout = ({
+  content,
+  children,
+  onConfirm,
+  onReset,
+}: {
+  content: any;
+  children: ReactNode;
+  onConfirm: () => void;
+  onReset: () => void;
+}) => (
+  <Section
+    title="Config"
+    icon={<Settings className="w-4 h-4" />}
+    actions={
+      <div className="flex gap-4">
+        <Button variant="outline" intent="warning" onClick={onReset}>
+          <History className="w-4 h-4" />
+        </Button>
+        <ConfirmUpdate
+          content={JSON.stringify(content, null, 2)}
+          onConfirm={onConfirm}
+        />
+      </div>
+    }
+  >
+    {children}
+  </Section>
 );

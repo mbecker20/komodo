@@ -17,7 +17,7 @@ export const ServerInfo = ({ serverId }: { serverId: string | undefined }) => {
     <div className="flex items-center gap-4 text-muted-foreground">
       <div className="flex items-center gap-2">
         <ServerStatusIcon serverId={serverId} />
-        <div> {server?.status}</div>
+        <div> {server?.info.status}</div>
       </div>
       <CardDescription className="hidden md:block">|</CardDescription>
       {serverId && <ServerSpecs server_id={serverId} />}
@@ -57,7 +57,7 @@ export const ServerRegion = ({
   return (
     <div className="flex gap-2 items-center text-muted-foreground">
       <MapPin className="w-4 h-4" />
-      {server?.region || "region unknown"}
+      {server?.info.region || "region unknown"}
     </div>
   );
 };
@@ -75,9 +75,9 @@ export const ServerStatusIcon = ({
     <Server
       className={cn(
         "w-4 h-4 stroke-primary",
-        server?.status === ServerStatus.Ok && "fill-green-500",
-        server?.status === ServerStatus.NotOk && "fill-red-500",
-        server?.status === ServerStatus.Disabled && "fill-blue-500",
+        server?.info.status === ServerStatus.Ok && "fill-green-500",
+        server?.info.status === ServerStatus.NotOk && "fill-red-500",
+        server?.info.status === ServerStatus.Disabled && "fill-blue-500",
         sm && "w-3 h-3"
       )}
     />
