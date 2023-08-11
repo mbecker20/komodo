@@ -59,7 +59,7 @@ const BuildConfigInner = ({
               />
             )}
 
-            {/* Networking Config */}
+            {/* Repo Config */}
             {show === "repo" && (
               <ConfigAgain
                 config={config}
@@ -69,7 +69,7 @@ const BuildConfigInner = ({
               />
             )}
 
-            {/* Environment Config */}
+            {/* Docker Config */}
             {show === "docker" && (
               <ConfigAgain
                 config={config}
@@ -84,20 +84,6 @@ const BuildConfigInner = ({
                 }}
               />
             )}
-
-            {/* Environment Config
-            {show === "volumes" && (
-              <ConfigAgain
-                config={config}
-                update={update}
-                set={(u) => set((p) => ({ ...p, ...u }))}
-                components={{
-                  volumes: (value, set) => (
-                    <PortsConfig ports={value} set={set} />
-                  ),
-                }}
-              />
-            )} */}
           </CardContent>
         </Card>
       </div>

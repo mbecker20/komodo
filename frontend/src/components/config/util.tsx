@@ -108,6 +108,7 @@ export const DoubleInput = <
 };
 
 type UsableResources = Exclude<Types.ResourceTarget["type"], "System">;
+
 export const ResourceSelector = <T extends UsableResources>({
   type,
   selected,
