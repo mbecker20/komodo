@@ -1,9 +1,10 @@
-import { Configuration } from "@components/config";
-import { ConfirmUpdate } from "@components/config/confirm-update";
+import { ConfigAgain } from "@components/config/again";
 import { useRead, useWrite } from "@hooks";
-import { Section } from "@layouts/page";
+import { ResourceCard } from "@layouts/card";
+import { ConfigLayout } from "@layouts/page";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { Input } from "@ui/input";
 import {
   Select,
@@ -13,9 +14,14 @@ import {
   SelectValue,
 } from "@ui/select";
 import { readableVersion } from "@util/helpers";
-import { Settings, History, PlusCircle } from "lucide-react";
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
+import {
+  DeploymentStatusIcon,
+  DeploymentServer,
+  DeploymentBuild,
+} from "./util";
+import { DoubleInput, ResourceSelector } from "@components/config/util";
 
 const ImageTypeSelector = ({
   selected,
@@ -34,54 +40,6 @@ const ImageTypeSelector = ({
     </SelectContent>
   </Select>
 );
-
-export const ServersSelector = ({
-  selected,
-  onSelect,
-}: {
-  selected: string | undefined;
-  onSelect: (serverId: string) => void;
-}) => {
-  const servers = useRead("ListServers", {}).data;
-  return (
-    <Select value={selected || undefined} onValueChange={onSelect}>
-      <SelectTrigger className="w-full lg:w-[300px]">
-        <SelectValue placeholder="Select A Server" />
-      </SelectTrigger>
-      <SelectContent>
-        {servers?.map((s) => (
-          <SelectItem key={s.id} value={s.id}>
-            {s.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-};
-
-const BuildsSelector = ({
-  selected,
-  onSelect,
-}: {
-  selected: string | undefined;
-  onSelect: (buildId: string) => void;
-}) => {
-  const builds = useRead("ListBuilds", {}).data;
-  return (
-    <Select value={selected || undefined} onValueChange={onSelect}>
-      <SelectTrigger className="w-full lg:w-[300px]">
-        <SelectValue placeholder="Select Build" />
-      </SelectTrigger>
-      <SelectContent>
-        {builds?.map((b) => (
-          <SelectItem key={b.id} value={b.id}>
-            {b.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-};
 
 const BuildVersionSelector = ({
   buildId,
@@ -116,90 +74,54 @@ export const EnvVars = ({
   vars,
   set,
 }: {
-  vars: Types.EnvironmentVar[] | undefined;
+  vars: Types.EnvironmentVar[];
   set: (input: Partial<Types.DeploymentConfig>) => void;
 }) => (
-  <div className="flex flex-col gap-4 border-b pb-4">
-    {vars?.map((variable, i) => (
-      <div className="flex justify-between gap-4" key={i}>
-        <Input
-          value={variable.variable}
-          placeholder="Variable Name"
-          onChange={(e) => {
-            vars[i].variable = e.target.value;
-            set({ environment: [...vars] });
-          }}
-        />
-        =
-        <Input
-          value={variable.value}
-          placeholder="Variable Value"
-          onChange={(e) => {
-            vars[i].value = e.target.value;
-            set({ environment: [...vars] });
-          }}
-        />
-      </div>
-    ))}
-    <Button
-      variant="outline"
-      intent="success"
-      className="flex items-center gap-2"
-      onClick={() =>
-        set({
-          environment: [...(vars ?? []), { variable: "", value: "" }],
-        })
-      }
-    >
-      <PlusCircle className="w-4 h-4" />
-      Add Environment Variable
-    </Button>
-  </div>
+  <DoubleInput
+    values={vars}
+    leftval="variable"
+    rightval="value"
+    onLeftChange={(variable, i) => {
+      vars[i].variable = variable;
+      set({ environment: [...vars] });
+    }}
+    onRightChange={(value, i) => {
+      vars[i].value = value;
+      set({ environment: [...vars] });
+    }}
+    onAdd={() =>
+      set({ environment: [...(vars ?? []), { variable: "", value: "" }] })
+    }
+    onRemove={(idx) =>
+      set({ environment: [...vars.filter((_, i) => i !== idx)] })
+    }
+  />
 );
 
 export const PortsConfig = ({
   ports,
   set,
 }: {
-  ports: Types.Conversion[] | undefined;
+  ports: Types.Conversion[];
   set: (input: Partial<Types.DeploymentConfig>) => void;
 }) => (
-  <div className="flex flex-col gap-4 border-b pb-4">
-    {ports?.map((port, i) => (
-      <div className="flex items-center justify-between gap-4" key={i}>
-        <Input
-          value={port.container}
-          placeholder="Container"
-          onChange={(e) => {
-            ports[i].container = e.target.value;
-            set({ ports: [...ports] });
-          }}
-        />
-        =
-        <Input
-          value={port.local}
-          placeholder="Host"
-          onChange={(e) => {
-            ports[i].local = e.target.value;
-            set({ ports: [...ports] });
-          }}
-        />
-      </div>
-    ))}
-    <Button
-      variant="outline"
-      intent="success"
-      className="flex items-center gap-2"
-      onClick={() =>
-        set({
-          ports: [...(ports ?? []), { container: "", local: "" }],
-        })
-      }
-    >
-      <PlusCircle className="w-4 h-4" />
-      Add Port
-    </Button>
-  </div>
+  <DoubleInput
+    values={ports}
+    leftval="container"
+    rightval="local"
+    onLeftChange={(container, i) => {
+      ports[i].container = container;
+      set({ ports: [...ports] });
+    }}
+    onRightChange={(local, i) => {
+      ports[i].local = local;
+      set({ ports: [...ports] });
+    }}
+    onAdd={() =>
+      set({ ports: [...(ports ?? []), { container: "", local: "" }] })
+    }
+    onRemove={(idx) => set({ ports: [...ports.filter((_, i) => i !== idx)] })}
+  />
 );
 
 export const ImageConfig = ({
@@ -231,7 +153,8 @@ export const ImageConfig = ({
       />
       {image?.type === "Build" && (
         <div className="flex gap-4">
-          <BuildsSelector
+          <ResourceSelector
+            type="Build"
             selected={image.params.build_id}
             onSelect={(id) =>
               set({
@@ -280,57 +203,137 @@ export const ImageConfig = ({
   </div>
 );
 
-export const DeploymentConfig = () => {
-  const id = useParams().deploymentId;
-  const deployment = useRead("GetDeployment", { id }).data;
-  const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
-  const { mutate, isLoading } = useWrite("UpdateDeployment");
+export const DeploymentCard = ({ id }: { id: string }) => {
+  const deployments = useRead("ListDeployments", {}).data;
+  const deployment = deployments?.find((d) => d.id === id);
+  if (!deployment) return null;
+  return (
+    <Link to={`/deployments/${deployment.id}`}>
+      <ResourceCard
+        title={deployment.name}
+        description={deployment.info.status ?? "not deployed"}
+        statusIcon={<DeploymentStatusIcon deploymentId={id} />}
+      >
+        <div className="flex flex-col text-muted-foreground text-sm">
+          <DeploymentServer deploymentId={id} />
+          <DeploymentBuild deploymentId={id} />
+        </div>
+      </ResourceCard>
+    </Link>
+  );
+};
 
-  if (!id || !deployment?.config) return null;
+const DeploymentConfigInner = ({
+  id,
+  config,
+}: {
+  id: string;
+  config: Types.DeploymentConfig;
+}) => {
+  const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
+  const [show, setShow] = useState("general");
+  const { mutate } = useWrite("UpdateDeployment");
 
   return (
-    <Section
-      title="Config"
-      icon={<Settings className="w-4 h-4" />}
-      actions={
-        <div className="flex gap-4">
-          <Button variant="outline" intent="warning" onClick={() => set({})}>
-            <History className="w-4 h-4" />
-          </Button>
-          <ConfirmUpdate
-            content={JSON.stringify(update, null, 2)}
-            onConfirm={() => mutate({ config: update, id })}
-          />
-        </div>
-      }
+    <ConfigLayout
+      content={update}
+      onConfirm={() => mutate({ id, config: update })}
+      onReset={() => set({})}
     >
-      <Configuration
-        config={deployment.config}
-        loading={isLoading}
-        update={update}
-        set={(input) => set((update) => ({ ...update, ...input }))}
-        layout={{
-          general: ["server_id", "image", "restart"],
-          networking: ["network", "ports"],
-          environment: ["environment", "skip_secret_interp"],
-          volumes: ["volumes"],
-        }}
-        overrides={{
-          server_id: (value, set) => (
-            <div className="flex items-center justify-between border-b pb-4">
-              Server
-              <ServersSelector
-                selected={value}
-                onSelect={(server_id) => set({ server_id })}
+      <div className="flex gap-4">
+        <div className="flex flex-col gap-4 w-[300px]">
+          {["general", "networking", "environment", "volumes"].map((item) => (
+            <Button
+              variant={show === item ? "secondary" : "outline"}
+              onClick={() => setShow(item)}
+              className="capitalize"
+            >
+              {item}
+            </Button>
+          ))}
+        </div>
+        <Card className="w-full">
+          <CardHeader className="border-b">
+            <CardTitle className="capitalize">{show}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4 mt-4">
+            {/* General Config */}
+            {show === "general" && (
+              <ConfigAgain
+                config={config}
+                update={update}
+                set={(u) => set((p) => ({ ...p, ...u }))}
+                components={{
+                  server_id: (value, set) => (
+                    <div className="flex items-center justify-between border-b pb-4">
+                      Server
+                      <ResourceSelector
+                        type="Server"
+                        selected={value}
+                        onSelect={(server_id) => set({ server_id })}
+                      />
+                    </div>
+                  ),
+                  image: (value, set) => (
+                    <ImageConfig image={value} set={set} />
+                  ),
+                  restart: true,
+                }}
               />
-            </div>
-          ),
-          ports: (ports, set) => <PortsConfig ports={ports} set={set} />,
-          volumes: (volumes, set) => <PortsConfig ports={volumes} set={set} />,
-          image: (image, set) => <ImageConfig image={image} set={set} />,
-          environment: (vars, set) => <EnvVars vars={vars} set={set} />,
-        }}
-      />
-    </Section>
+            )}
+
+            {/* Networking Config */}
+            {show === "networking" && (
+              <ConfigAgain
+                config={config}
+                update={update}
+                set={(u) => set((p) => ({ ...p, ...u }))}
+                components={{
+                  network: true,
+                  ports: (value, set) => (
+                    <PortsConfig ports={value ?? []} set={set} />
+                  ),
+                }}
+              />
+            )}
+
+            {/* Environment Config */}
+            {show === "environment" && (
+              <ConfigAgain
+                config={config}
+                update={update}
+                set={(u) => set((p) => ({ ...p, ...u }))}
+                components={{
+                  skip_secret_interp: true,
+                  environment: (vars, set) => (
+                    <EnvVars vars={vars ?? []} set={set} />
+                  ),
+                }}
+              />
+            )}
+
+            {/* Environment Config */}
+            {/* {show === "volumes" && (
+              <ConfigAgain
+                config={config}
+                update={update}
+                set={(u) => set((p) => ({ ...p, ...u }))}
+                components={{
+                  volumes: (value, set) => (
+                    <PortsConfig ports={value ?? []} set={set} />
+                  ),
+                }}
+              />
+            )} */}
+          </CardContent>
+        </Card>
+      </div>
+    </ConfigLayout>
   );
+};
+
+export const DeploymentConfig = ({ id }: { id: string }) => {
+  const config = useRead("GetDeployment", { id }).data?.config;
+  if (!config) return null;
+  return <DeploymentConfigInner id={id} config={config} />;
 };
