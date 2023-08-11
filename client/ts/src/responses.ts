@@ -28,7 +28,7 @@ export type ReadResponses = {
   GetDockerNetworks: Types.DockerNetwork[];
   GetServerActionState: Types.ServerActionState;
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
-  GetAvailableAccounts: Types.GetAvailableAccountsResponse;
+  GetServerAvailableAccounts: Types.GetServerAvailableAccountsResponse;
   GetAvailableNetworks: Types.GetAvailableNetworksResponse;
 
   // ==== DEPLOYMENT ====
@@ -59,6 +59,7 @@ export type ReadResponses = {
   GetBuildersSummary: Types.GetBuildersSummaryResponse;
   GetBuilder: Types.Builder;
   ListBuilders: Types.BuilderListItem[];
+  GetBuilderAvailableAccounts: Types.GetBuilderAvailableAccountsResponse;
 
   // ==== ALERTER ====
   GetAlertersSummary: Types.GetAlertersSummaryResponse;
@@ -100,6 +101,7 @@ export type WriteResponses = {
   UpdateDescription: Types.UpdateDescriptionResponse;
 
   // ==== SERVER ====
+  LaunchServer: Types.Update;
   CreateServer: Types.Server;
   DeleteServer: Types.Server;
   UpdateServer: Types.Server;

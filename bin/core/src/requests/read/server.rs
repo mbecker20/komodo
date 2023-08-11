@@ -405,21 +405,21 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetAvailableAccounts, RequestUser> for State {
+impl Resolve<GetServerAvailableAccounts, RequestUser> for State {
     async fn resolve(
         &self,
-        GetAvailableAccounts { server_id }: GetAvailableAccounts,
+        GetServerAvailableAccounts { id }: GetServerAvailableAccounts,
         user: RequestUser,
-    ) -> anyhow::Result<GetAvailableAccountsResponse> {
+    ) -> anyhow::Result<GetServerAvailableAccountsResponse> {
         let server: Server = self
-            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let GetAccountsResponse { github, docker } = self
             .periphery_client(&server)
             .request(requests::GetAccounts {})
             .await
             .context("failed to get accounts from periphery")?;
-        let res = GetAvailableAccountsResponse { github, docker };
+        let res = GetServerAvailableAccountsResponse { github, docker };
         Ok(res)
     }
 }

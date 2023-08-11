@@ -20,6 +20,7 @@ mod build;
 mod builder;
 mod deployment;
 mod description;
+mod launch;
 mod permissions;
 mod repo;
 mod secret;
@@ -49,6 +50,7 @@ enum WriteRequest {
     UpdateDescription(UpdateDescription),
 
     // ==== SERVER ====
+    LaunchServer(LaunchServer),
     CreateServer(CreateServer),
     DeleteServer(DeleteServer),
     UpdateServer(UpdateServer),

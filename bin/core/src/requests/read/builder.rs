@@ -1,8 +1,11 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
-    entities::{builder::{Builder, BuilderListItem}, PermissionLevel},
-    requests::read::*,
+    entities::{
+        builder::{Builder, BuilderConfig, BuilderListItem},
+        PermissionLevel,
+    },
+    requests::read::{self, *},
 };
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
@@ -58,5 +61,33 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
             total: total as u32,
         };
         Ok(res)
+    }
+}
+
+#[async_trait]
+impl Resolve<GetBuilderAvailableAccounts, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetBuilderAvailableAccounts { id }: GetBuilderAvailableAccounts,
+        user: RequestUser,
+    ) -> anyhow::Result<GetBuilderAvailableAccountsResponse> {
+        let builder: Builder = self
+            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+            .await?;
+        match builder.config {
+            BuilderConfig::Aws(config) => Ok(GetBuilderAvailableAccountsResponse {
+                github: config.github_accounts,
+                docker: config.docker_accounts,
+            }),
+            BuilderConfig::Server(config) => {
+                let res = self
+                    .resolve(read::GetServerAvailableAccounts { id: config.id }, user)
+                    .await?;
+                Ok(GetBuilderAvailableAccountsResponse {
+                    github: res.github,
+                    docker: res.docker,
+                })
+            }
+        }
     }
 }

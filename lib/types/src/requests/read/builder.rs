@@ -34,3 +34,19 @@ pub struct GetBuildersSummary {}
 pub struct GetBuildersSummaryResponse {
     pub total: u32,
 }
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetBuilderAvailableAccountsResponse)]
+pub struct GetBuilderAvailableAccounts {
+    pub id: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetBuilderAvailableAccountsResponse {
+    pub github: Vec<String>,
+    pub docker: Vec<String>,
+}
