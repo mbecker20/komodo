@@ -5,13 +5,6 @@ import { useRead, useWrite } from "@hooks";
 import { Section } from "@layouts/page";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@ui/card";
 import { Input } from "@ui/input";
 import { Settings, Save, History } from "lucide-react";
 import { useState } from "react";
@@ -21,7 +14,7 @@ type ServerUpdate = Partial<Types.ServerConfig>;
 
 export const SerCon = ({ id }: { id: string }) => {
   const config = useRead("GetServer", { id }).data?.config;
-  const { mutate, isLoading } = useWrite("UpdateServer");
+  const { mutate } = useWrite("UpdateServer");
   const [update, set] = useState<ServerUpdate>({});
   const up = <K extends keyof Types.ServerConfig, V = Types.ServerConfig[K]>(
     k: K,

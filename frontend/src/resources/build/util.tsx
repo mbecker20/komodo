@@ -11,7 +11,7 @@ export const BuildName = ({ id }: { id: string | undefined }) => {
 export const BuildVersion = ({ id }: { id: string }) => {
   const builds = useRead("ListBuilds", {}).data;
   const build = builds?.find((b) => b.id === id);
-  return <>{version_to_string(build?.version) ?? "..."}</>;
+  return <>{version_to_string(build?.info.version) ?? "..."}</>;
 };
 
 export const BuildBuilder = ({ id }: { id: string }) => {
@@ -23,7 +23,7 @@ export const BuildBuilder = ({ id }: { id: string }) => {
 export const BuildLastBuilt = ({ id }: { id: string }) => {
   const builds = useRead("ListBuilds", {}).data;
   const build = builds?.find((b) => b.id === id);
-  const last = build?.last_built_at;
+  const last = build?.info.last_built_at;
   return <>{last ? new Date(last).toLocaleString() : "not yet built"}</>;
 };
 

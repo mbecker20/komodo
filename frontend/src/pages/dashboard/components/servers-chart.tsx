@@ -6,10 +6,12 @@ import { ServerStatus } from "@monitor/client/dist/types";
 export const ServersChart = () => {
   const { data } = useRead("ListServers", {});
 
-  const running = data?.filter((d) => d.status === ServerStatus.Ok).length;
-  const stopped = data?.filter((d) => d.status === ServerStatus.NotOk).length;
+  const running = data?.filter((d) => d.info.status === ServerStatus.Ok).length;
+  const stopped = data?.filter(
+    (d) => d.info.status === ServerStatus.NotOk
+  ).length;
   const not_deployed = data?.filter(
-    (d) => d.status === ServerStatus.Disabled
+    (d) => d.info.status === ServerStatus.Disabled
   ).length;
 
   return (

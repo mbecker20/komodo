@@ -32,7 +32,7 @@ export const AlerterCard = ({ id }: { id: string }) => {
     <Link to={`/alerters/${id}`}>
       <ResourceCard
         title={alerter.name}
-        description={`${alerter.alerter_type} alerter`}
+        description={`${alerter.info.alerter_type} alerter`}
         statusIcon={<AlarmClock className="w-4 h-4" />}
       >
         <div></div>

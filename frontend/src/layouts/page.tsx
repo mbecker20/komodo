@@ -1,6 +1,6 @@
 import { ConfirmUpdate } from "@components/config/confirm-update";
 import { Button } from "@ui/button";
-import { Settings, Save, History } from "lucide-react";
+import { Settings, History } from "lucide-react";
 import { ReactNode } from "react";
 
 interface PageProps {

@@ -41,7 +41,7 @@ export const BuildCard = ({ id }: { id: string }) => {
     <Link to={`/builds/${build.id}`} key={build.id}>
       <ResourceCard
         title={build.name}
-        description={version_to_string(build.version) ?? "not built"}
+        description={version_to_string(build.info.version) ?? "not built"}
         statusIcon={<Hammer className="w-4 h-4" />}
       >
         <BuildInfo id={id} />

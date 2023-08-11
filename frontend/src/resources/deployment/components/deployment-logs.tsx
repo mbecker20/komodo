@@ -23,7 +23,7 @@ export const DeploymentLogs = ({
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deployment_id);
 
-  if (deployment?.state === DockerContainerState.NotDeployed) return null;
+  if (deployment?.info.state === DockerContainerState.NotDeployed) return null;
 
   return (
     <Tabs defaultValue="stdout">
