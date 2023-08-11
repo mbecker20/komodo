@@ -72,6 +72,17 @@ const BuilderTypeSelector = ({
   </div>
 );
 
+const default_aws_config: Types.AwsBuilderConfig = {
+  ami_id: "",
+  assign_public_ip: false,
+  instance_type: "",
+  key_pair_name: "",
+  region: "",
+  subnet_id: "",
+  volume_gb: 0,
+  security_group_ids: [],
+};
+
 const BuilderConfig = ({
   id,
   config,
@@ -91,14 +102,19 @@ const BuilderConfig = ({
         <div className="flex flex-col gap-4 w-[300px]">
           <Button>General</Button>
         </div>
-        <Card>
+        <Card className="w-full">
           <CardHeader className="border-b">
             <CardTitle>General</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 mt-6">
             <BuilderTypeSelector
               selected={update.type}
-              onSelect={(type) => setUpdate({ type, params: {} })}
+              onSelect={(type) =>
+                setUpdate({
+                  type,
+                  params: type === "Aws" ? default_aws_config : { id: "" },
+                })
+              }
             />
 
             {/* Server Builder */}
@@ -138,6 +154,7 @@ const BuilderConfig = ({
                   ami_id: true,
                   subnet_id: true,
                   key_pair_name: true,
+                  assign_public_ip: true,
                 }}
               />
             )}

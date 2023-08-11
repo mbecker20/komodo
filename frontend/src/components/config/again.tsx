@@ -28,6 +28,13 @@ export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
         if (component === true) {
           switch (typeof value) {
             case "string":
+              return (
+                <ConfigInput
+                  label={key.toString()}
+                  value={value}
+                  onChange={(value) => set({ [key]: value } as Partial<T>)}
+                />
+              );
             case "number":
               return (
                 <ConfigInput
@@ -41,7 +48,7 @@ export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
                 <ConfigSwitch
                   label={key.toString()}
                   value={value}
-                  onChange={() => {}}
+                  onChange={(value) => set({ [key]: value } as Partial<T>)}
                 />
               );
             default:
