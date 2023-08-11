@@ -121,7 +121,7 @@ const EnvVars = ({
 //   </Select>
 // );
 
-const BuilderSelector = ({
+export const BuilderSelector = ({
   selected,
   onSelect,
 }: {
@@ -130,18 +130,21 @@ const BuilderSelector = ({
 }) => {
   const builders = useRead("ListBuilders", {}).data;
   return (
-    <Select value={selected || undefined} onValueChange={onSelect}>
-      <SelectTrigger className="w-full lg:w-[300px]">
-        <SelectValue placeholder="Select A Server" />
-      </SelectTrigger>
-      <SelectContent>
-        {builders?.map((b) => (
-          <SelectItem key={b.id} value={b.id}>
-            {b.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="flex justify-between items-center border-b pb-4">
+      Builder
+      <Select value={selected || undefined} onValueChange={onSelect}>
+        <SelectTrigger className="w-full lg:w-[300px]">
+          <SelectValue placeholder="Select A Server" />
+        </SelectTrigger>
+        <SelectContent>
+          {builders?.map((b) => (
+            <SelectItem key={b.id} value={b.id}>
+              {b.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 };
 
