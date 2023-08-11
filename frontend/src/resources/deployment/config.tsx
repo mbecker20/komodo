@@ -112,7 +112,7 @@ const BuildVersionSelector = ({
   );
 };
 
-const EnvVars = ({
+export const EnvVars = ({
   vars,
   set,
 }: {
@@ -157,7 +157,7 @@ const EnvVars = ({
   </div>
 );
 
-const PortsConfig = ({
+export const PortsConfig = ({
   ports,
   set,
 }: {
@@ -166,7 +166,7 @@ const PortsConfig = ({
 }) => (
   <div className="flex flex-col gap-4 border-b pb-4">
     {ports?.map((port, i) => (
-      <div className="flex justify-between gap-4" key={i}>
+      <div className="flex items-center justify-between gap-4" key={i}>
         <Input
           value={port.container}
           placeholder="Container"
@@ -202,7 +202,7 @@ const PortsConfig = ({
   </div>
 );
 
-const ImageConfig = ({
+export const ImageConfig = ({
   image,
   set,
 }: {
