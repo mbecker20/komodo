@@ -82,7 +82,7 @@ export const ActionButton = forwardRef<
 >(({ title, icon, intent, disabled, className, onClick }, ref) => (
   <Button
     variant="outline"
-    className={cn("flex items-center justify-between w-[130px]", className)}
+    className={cn("flex items-center justify-between w-[150px]", className)}
     intent={intent}
     onClick={onClick}
     disabled={disabled}
