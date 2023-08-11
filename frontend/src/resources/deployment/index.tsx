@@ -16,7 +16,7 @@ import {
 } from "@resources/deployment/util";
 import { CardDescription } from "@ui/card";
 import { useParams } from "react-router-dom";
-import { DeploymentConfig } from "./config";
+import { DeploymentConfig } from "./components/config";
 
 export const DeploymentPage = () => {
   const id = useParams().deploymentId;

@@ -20,7 +20,7 @@ import {
   DeploymentStatusIcon,
   DeploymentServer,
   DeploymentBuild,
-} from "./util";
+} from "../util";
 import { DoubleInput, ResourceSelector } from "@components/config/util";
 
 const ImageTypeSelector = ({
