@@ -23,6 +23,7 @@ import { Types } from "@monitor/client";
 import { ConfigLayout } from "@layouts/page";
 import { Button } from "@ui/button";
 import { ConfigAgain } from "@components/config/again";
+import { DeleteServer } from "./actions";
 
 export const ServerCard = ({ id }: { id: string }) => {
   const servers = useRead("ListServers", {}).data;
@@ -145,6 +146,10 @@ export const ServerPage = () => {
       <ResourceUpdates type="Server" id={id} />
       <ServerStats />
       <ServerConfig id={id} />
+      <div className="flex items-center justify-between w-full">
+        danger zone {"B^)"}
+        <DeleteServer id={id} />
+      </div>
     </Resource>
   );
 };
