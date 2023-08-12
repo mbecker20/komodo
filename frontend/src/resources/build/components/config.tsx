@@ -5,7 +5,41 @@ import { ConfigLayout } from "@layouts/page";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
 import { useState } from "react";
+
+export const GithubAccountSelector = ({
+  selected,
+  onSelect,
+}: {
+  selected: string | undefined;
+  onSelect: (id: string) => void;
+}) => {
+  const accpunts = useRead("GetAvailableAccounts", {}).data;
+  return (
+    <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
+      <div>Github Account</div>
+      <Select value={selected || undefined} onValueChange={onSelect}>
+        <SelectTrigger className="w-full lg:w-[300px]">
+          <SelectValue placeholder="Select Account" />
+        </SelectTrigger>
+        <SelectContent>
+          {accpunts?.github?.map((account) => (
+            <SelectItem key={account} value={account}>
+              {account}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
 
 const BuildConfigInner = ({
   id,
@@ -26,7 +60,7 @@ const BuildConfigInner = ({
     >
       <div className="flex gap-4">
         <div className="flex flex-col gap-4 w-[300px]">
-          {["general", "repo", "docker", "volumes"].map((item) => (
+          {["general", "docker", "volumes"].map((item) => (
             <Button
               variant={show === item ? "secondary" : "outline"}
               onClick={() => setShow(item)}
@@ -49,23 +83,24 @@ const BuildConfigInner = ({
                 set={(u) => set((p) => ({ ...p, ...u }))}
                 components={{
                   builder_id: (id, set) => (
-                    <ResourceSelector
-                      type="Builder"
-                      selected={id}
-                      onSelect={(builder_id) => set({ builder_id })}
+                    <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
+                      <div>Builder</div>
+                      <ResourceSelector
+                        type="Builder"
+                        selected={id}
+                        onSelect={(builder_id) => set({ builder_id })}
+                      />
+                    </div>
+                  ),
+                  repo: true,
+                  branch: true,
+                  github_account: (account, set) => (
+                    <GithubAccountSelector
+                      selected={account}
+                      onSelect={(github_account) => set({ github_account })}
                     />
                   ),
                 }}
-              />
-            )}
-
-            {/* Repo Config */}
-            {show === "repo" && (
-              <ConfigAgain
-                config={config}
-                update={update}
-                set={(u) => set((p) => ({ ...p, ...u }))}
-                components={{ repo: true, branch: true, github_account: true }}
               />
             )}
 
