@@ -15,24 +15,26 @@ import {
 import { useState } from "react";
 
 export const AccountSelector = ({
-  type,
+  id,
+  account_type,
   selected,
   onSelect,
 }: {
-  type: keyof Types.GetAvailableAccountsResponse;
+  id: string | undefined;
+  account_type: keyof Types.GetBuilderAvailableAccountsResponse;
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const accounts = useRead("GetAvailableAccounts", {}).data;
+  const accounts = useRead(`GetBuilderAvailableAccounts`, { id }).data;
   return (
     <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
-      <div className="capitalize">{type} Account</div>
+      <div className="capitalize">{account_type} Account</div>
       <Select value={selected || undefined} onValueChange={onSelect}>
-        <SelectTrigger className="w-full lg:w-[300px]">
+        <SelectTrigger className="w-full lg:w-[300px]" disabled={!id}>
           <SelectValue placeholder="Select Account" />
         </SelectTrigger>
         <SelectContent>
-          {accounts?.[type]?.map((account) => (
+          {accounts?.[account_type]?.map((account) => (
             <SelectItem key={account} value={account}>
               {account}
             </SelectItem>
@@ -53,6 +55,10 @@ const BuildConfigInner = ({
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
   const [show, setShow] = useState("general");
   const { mutate } = useWrite("UpdateBuild");
+
+  const builder_type = useRead("GetBuilder", {
+    id: update.builder_id ?? config.builder_id,
+  }).data?.config.type;
 
   return (
     <ConfigLayout
@@ -98,7 +104,8 @@ const BuildConfigInner = ({
                   branch: true,
                   github_account: (account, set) => (
                     <AccountSelector
-                      type="github"
+                      id={update.builder_id ?? config.builder_id ?? undefined}
+                      account_type="github"
                       selected={account}
                       onSelect={(github_account) => set({ github_account })}
                     />
@@ -118,7 +125,8 @@ const BuildConfigInner = ({
                   dockerfile_path: true,
                   docker_account: (account, set) => (
                     <AccountSelector
-                      type="docker"
+                      id={update.builder_id ?? config.builder_id ?? undefined}
+                      account_type="docker"
                       selected={account}
                       onSelect={(docker_account) => set({ docker_account })}
                     />
