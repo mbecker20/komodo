@@ -14,23 +14,25 @@ import {
 } from "@ui/select";
 import { useState } from "react";
 
-export const GithubAccountSelector = ({
+export const AccountSelector = ({
+  type,
   selected,
   onSelect,
 }: {
+  type: keyof Types.GetAvailableAccountsResponse;
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const accpunts = useRead("GetAvailableAccounts", {}).data;
+  const accounts = useRead("GetAvailableAccounts", {}).data;
   return (
     <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
-      <div>Github Account</div>
+      <div className="capitalize">{type} Account</div>
       <Select value={selected || undefined} onValueChange={onSelect}>
         <SelectTrigger className="w-full lg:w-[300px]">
           <SelectValue placeholder="Select Account" />
         </SelectTrigger>
         <SelectContent>
-          {accpunts?.github?.map((account) => (
+          {accounts?.[type]?.map((account) => (
             <SelectItem key={account} value={account}>
               {account}
             </SelectItem>
@@ -95,7 +97,8 @@ const BuildConfigInner = ({
                   repo: true,
                   branch: true,
                   github_account: (account, set) => (
-                    <GithubAccountSelector
+                    <AccountSelector
+                      type="github"
                       selected={account}
                       onSelect={(github_account) => set({ github_account })}
                     />
@@ -113,7 +116,13 @@ const BuildConfigInner = ({
                 components={{
                   build_path: true,
                   dockerfile_path: true,
-                  docker_account: true,
+                  docker_account: (account, set) => (
+                    <AccountSelector
+                      type="docker"
+                      selected={account}
+                      onSelect={(docker_account) => set({ docker_account })}
+                    />
+                  ),
                   // docker_organization,
                   use_buildx: true,
                 }}

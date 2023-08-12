@@ -6,6 +6,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
+  SelectGroup,
 } from "@ui/select";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
@@ -122,14 +123,16 @@ export const ResourceSelector = <T extends UsableResources>({
   return (
     <Select value={selected || undefined} onValueChange={onSelect}>
       <SelectTrigger className="w-full lg:w-[300px]">
-        <SelectValue placeholder="Select Build" />
+        <SelectValue placeholder={`Select ${type}`} />
       </SelectTrigger>
       <SelectContent>
-        {builds?.map((b) => (
-          <SelectItem key={b.id} value={b.id}>
-            {b.name}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          {builds?.map((b) => (
+            <SelectItem key={b.id} value={b.id}>
+              {b.name}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
   );
