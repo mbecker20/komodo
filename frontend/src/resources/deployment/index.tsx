@@ -1,5 +1,5 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useAddRecentlyViewed } from "@hooks";
+import { useAddRecentlyViewed, useRead } from "@hooks";
 import { Resource } from "@layouts/resource";
 import {
   RedeployContainer,
@@ -15,8 +15,29 @@ import {
   DeploymentStatusIcon,
 } from "@resources/deployment/util";
 import { CardDescription } from "@ui/card";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { DeploymentConfig } from "./components/config";
+import { ResourceCard } from "@layouts/card";
+
+export const DeploymentCard = ({ id }: { id: string }) => {
+  const deployments = useRead("ListDeployments", {}).data;
+  const deployment = deployments?.find((d) => d.id === id);
+  if (!deployment) return null;
+  return (
+    <Link to={`/deployments/${deployment.id}`}>
+      <ResourceCard
+        title={deployment.name}
+        description={deployment.info.status ?? "not deployed"}
+        statusIcon={<DeploymentStatusIcon deploymentId={id} />}
+      >
+        <div className="flex flex-col text-muted-foreground text-sm">
+          <DeploymentServer deploymentId={id} />
+          <DeploymentBuild deploymentId={id} />
+        </div>
+      </ResourceCard>
+    </Link>
+  );
+};
 
 export const DeploymentPage = () => {
   const id = useParams().deploymentId;

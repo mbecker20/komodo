@@ -22,6 +22,7 @@ import {
   DeploymentBuild,
 } from "../util";
 import { DoubleInput, ResourceSelector } from "@components/config/util";
+import { RestartMode } from "@monitor/client/dist/types";
 
 const ImageTypeSelector = ({
   selected,
@@ -37,6 +38,25 @@ const ImageTypeSelector = ({
     <SelectContent>
       <SelectItem value={"Image"}>Image</SelectItem>
       <SelectItem value={"Build"}>Build</SelectItem>
+    </SelectContent>
+  </Select>
+);
+
+export const RestartModeSelector = ({
+  selected,
+  onSelect,
+}: {
+  selected: Types.RestartMode | undefined;
+  onSelect: (type: Types.RestartMode) => void;
+}) => (
+  <Select value={selected || undefined} onValueChange={onSelect}>
+    <SelectTrigger className="max-w-[150px]">
+      <SelectValue placeholder="Select Type" />
+    </SelectTrigger>
+    <SelectContent>
+      {Object.keys(RestartMode).map((mode) => (
+        <SelectItem value={"mode"}>mode</SelectItem>
+      ))}
     </SelectContent>
   </Select>
 );
@@ -203,26 +223,6 @@ export const ImageConfig = ({
   </div>
 );
 
-export const DeploymentCard = ({ id }: { id: string }) => {
-  const deployments = useRead("ListDeployments", {}).data;
-  const deployment = deployments?.find((d) => d.id === id);
-  if (!deployment) return null;
-  return (
-    <Link to={`/deployments/${deployment.id}`}>
-      <ResourceCard
-        title={deployment.name}
-        description={deployment.info.status ?? "not deployed"}
-        statusIcon={<DeploymentStatusIcon deploymentId={id} />}
-      >
-        <div className="flex flex-col text-muted-foreground text-sm">
-          <DeploymentServer deploymentId={id} />
-          <DeploymentBuild deploymentId={id} />
-        </div>
-      </ResourceCard>
-    </Link>
-  );
-};
-
 const DeploymentConfigInner = ({
   id,
   config,
@@ -277,7 +277,12 @@ const DeploymentConfigInner = ({
                   image: (value, set) => (
                     <ImageConfig image={value} set={set} />
                   ),
-                  restart: true,
+                  restart: (value, set) => (
+                    <RestartModeSelector
+                      selected={value}
+                      onSelect={(restart) => set({ restart })}
+                    />
+                  ),
                 }}
               />
             )}
