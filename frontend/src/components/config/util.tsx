@@ -137,3 +137,34 @@ export const ResourceSelector = <T extends UsableResources>({
     </Select>
   );
 };
+
+export const AccountSelector = ({
+  id,
+  account_type,
+  selected,
+  onSelect,
+}: {
+  id: string | undefined;
+  account_type: keyof Types.GetBuilderAvailableAccountsResponse;
+  selected: string | undefined;
+  onSelect: (id: string) => void;
+}) => {
+  const accounts = useRead(`GetBuilderAvailableAccounts`, { id }).data;
+  return (
+    <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
+      <div className="capitalize">{account_type} Account</div>
+      <Select value={selected || undefined} onValueChange={onSelect}>
+        <SelectTrigger className="w-full lg:w-[300px]" disabled={!id}>
+          <SelectValue placeholder="Select Account" />
+        </SelectTrigger>
+        <SelectContent>
+          {accounts?.[account_type]?.map((account) => (
+            <SelectItem key={account} value={account}>
+              {account}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};

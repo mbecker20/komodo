@@ -1,49 +1,11 @@
 import { ConfigAgain } from "@components/config/again";
-import { ResourceSelector } from "@components/config/util";
+import { AccountSelector, ResourceSelector } from "@components/config/util";
 import { useWrite, useRead } from "@hooks";
 import { ConfigLayout } from "@layouts/page";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ui/select";
 import { useState } from "react";
-
-export const AccountSelector = ({
-  id,
-  account_type,
-  selected,
-  onSelect,
-}: {
-  id: string | undefined;
-  account_type: keyof Types.GetBuilderAvailableAccountsResponse;
-  selected: string | undefined;
-  onSelect: (id: string) => void;
-}) => {
-  const accounts = useRead(`GetBuilderAvailableAccounts`, { id }).data;
-  return (
-    <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
-      <div className="capitalize">{account_type} Account</div>
-      <Select value={selected || undefined} onValueChange={onSelect}>
-        <SelectTrigger className="w-full lg:w-[300px]" disabled={!id}>
-          <SelectValue placeholder="Select Account" />
-        </SelectTrigger>
-        <SelectContent>
-          {accounts?.[account_type]?.map((account) => (
-            <SelectItem key={account} value={account}>
-              {account}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-};
 
 const BuildConfigInner = ({
   id,
@@ -55,10 +17,6 @@ const BuildConfigInner = ({
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
   const [show, setShow] = useState("general");
   const { mutate } = useWrite("UpdateBuild");
-
-  const builder_type = useRead("GetBuilder", {
-    id: update.builder_id ?? config.builder_id,
-  }).data?.config.type;
 
   return (
     <ConfigLayout
