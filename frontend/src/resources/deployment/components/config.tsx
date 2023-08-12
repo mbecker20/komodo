@@ -1,6 +1,5 @@
 import { ConfigAgain } from "@components/config/again";
 import { useRead, useWrite } from "@hooks";
-import { ResourceCard } from "@layouts/card";
 import { ConfigLayout } from "@layouts/page";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
@@ -15,12 +14,6 @@ import {
 } from "@ui/select";
 import { readableVersion } from "@util/helpers";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  DeploymentStatusIcon,
-  DeploymentServer,
-  DeploymentBuild,
-} from "../util";
 import { DoubleInput, ResourceSelector } from "@components/config/util";
 import { RestartMode } from "@monitor/client/dist/types";
 
@@ -55,7 +48,7 @@ export const RestartModeSelector = ({
     </SelectTrigger>
     <SelectContent>
       {Object.keys(RestartMode).map((mode) => (
-        <SelectItem value={"mode"}>mode</SelectItem>
+        <SelectItem value={mode}>mode</SelectItem>
       ))}
     </SelectContent>
   </Select>
