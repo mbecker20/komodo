@@ -16,8 +16,7 @@ use resolver_api::Resolve;
 
 use crate::{
     auth::RequestUser,
-    helpers::{empty_or_only_spaces, make_update},
-    resource::StateResource,
+    helpers::{empty_or_only_spaces, make_update, resource::StateResource},
     state::State,
 };
 

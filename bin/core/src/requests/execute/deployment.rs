@@ -14,7 +14,7 @@ use monitor_types::{
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::StateResource, state::State};
+use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<Deploy, RequestUser> for State {

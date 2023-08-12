@@ -1,9 +1,9 @@
 use async_trait::async_trait;
 use monitor_types::requests::auth::{
-    CreateLocalUser, ExchangeForJwt, ExchangeForJwtResponse, GetLoginOptions, LoginLocalUser,
-    LoginWithSecret,
+    CreateLocalUser, ExchangeForJwt, ExchangeForJwtResponse, GetLoginOptions,
+    GetLoginOptionsResponse, LoginLocalUser, LoginWithSecret,
 };
-use resolver_api::{derive::Resolver, Resolve, ResolveToString};
+use resolver_api::{derive::Resolver, Resolve};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -15,7 +15,6 @@ use crate::state::State;
 #[serde(tag = "type", content = "params")]
 #[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
 pub enum AuthRequest {
-    #[to_string_resolver]
     GetLoginOptions(GetLoginOptions),
     CreateLocalUser(CreateLocalUser),
     LoginLocalUser(LoginLocalUser),
@@ -24,9 +23,17 @@ pub enum AuthRequest {
 }
 
 #[async_trait]
-impl ResolveToString<GetLoginOptions> for State {
-    async fn resolve_to_string(&self, _: GetLoginOptions, _: ()) -> anyhow::Result<String> {
-        Ok(self.login_options_response.clone())
+impl Resolve<GetLoginOptions> for State {
+    async fn resolve(&self, _: GetLoginOptions, _: ()) -> anyhow::Result<GetLoginOptionsResponse> {
+        Ok(GetLoginOptionsResponse {
+            local: self.config.local_auth,
+            github: self.config.github_oauth.enabled
+                && !self.config.github_oauth.id.is_empty()
+                && !self.config.github_oauth.secret.is_empty(),
+            google: self.config.google_oauth.enabled
+                && !self.config.google_oauth.id.is_empty()
+                && !self.config.google_oauth.secret.is_empty(),
+        })
     }
 }
 

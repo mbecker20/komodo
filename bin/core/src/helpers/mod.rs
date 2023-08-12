@@ -16,12 +16,15 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
 
-use crate::{auth::RequestUser, resource::StateResource, state::State};
+use crate::{auth::RequestUser, state::State};
+
+use self::resource::StateResource;
 
 pub mod alert;
 pub mod cache;
 pub mod channel;
 pub mod db;
+pub mod resource;
 
 pub fn empty_or_only_spaces(word: &str) -> bool {
     if word.is_empty() {

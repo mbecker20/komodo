@@ -27,8 +27,7 @@ use tokio_util::sync::CancellationToken;
 use crate::{
     auth::{InnerRequestUser, RequestUser},
     cloud::{aws::Ec2Instance, BuildCleanupData},
-    helpers::make_update,
-    resource::StateResource,
+    helpers::{make_update, resource::StateResource},
     state::State,
 };
 

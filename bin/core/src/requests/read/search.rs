@@ -8,7 +8,7 @@ use monitor_types::{
 };
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::StateResource, state::State};
+use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
 
 const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 4] = [Server, Build, Deployment, Repo];
 

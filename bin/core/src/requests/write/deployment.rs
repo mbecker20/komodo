@@ -18,7 +18,9 @@ use periphery_client::requests;
 use resolver_api::Resolve;
 
 use crate::{
-    auth::RequestUser, helpers::empty_or_only_spaces, resource::StateResource, state::State,
+    auth::RequestUser,
+    helpers::{empty_or_only_spaces, resource::StateResource},
+    state::State,
 };
 
 #[async_trait]

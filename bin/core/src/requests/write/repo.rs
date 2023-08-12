@@ -15,7 +15,7 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, resource::StateResource, state::State};
+use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<CreateRepo, RequestUser> for State {
