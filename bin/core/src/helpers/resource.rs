@@ -202,10 +202,10 @@ impl StateResource<Deployment> for State {
             tags: deployment.tags,
             resource_type: ResourceTargetVariant::Deployment,
             info: DeploymentListItemInfo {
-                state: status.as_ref().map(|s| s.state).unwrap_or_default(),
+                state: status.as_ref().map(|s| s.curr.state).unwrap_or_default(),
                 status: status
                     .as_ref()
-                    .and_then(|s| s.container.as_ref().and_then(|c| c.status.to_owned())),
+                    .and_then(|s| s.curr.container.as_ref().and_then(|c| c.status.to_owned())),
                 image,
                 server_id: deployment.config.server_id,
                 build_id,

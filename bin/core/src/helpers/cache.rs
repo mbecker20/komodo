@@ -1,15 +1,15 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, hash::Hash};
 
 use monitor_types::busy::Busy;
 use tokio::sync::RwLock;
 
 #[derive(Default)]
-pub struct Cache<T: Clone + Default> {
-    cache: RwLock<HashMap<String, T>>,
+pub struct Cache<K: PartialEq + Eq + Hash, T: Clone + Default> {
+    cache: RwLock<HashMap<K, T>>,
 }
 
-impl<T: Clone + Default> Cache<T> {
-    pub async fn get(&self, key: &str) -> Option<T> {
+impl<K: PartialEq + Eq + Hash, T: Clone + Default> Cache<K, T> {
+    pub async fn get(&self, key: &K) -> Option<T> {
         self.cache.read().await.get(key).cloned()
     }
 
@@ -34,11 +34,11 @@ impl<T: Clone + Default> Cache<T> {
         cache.iter().map(|(_, e)| e.clone()).collect()
     }
 
-    pub async fn insert(&self, key: impl Into<String>, val: T) {
+    pub async fn insert(&self, key: impl Into<K>, val: T) {
         self.cache.write().await.insert(key.into(), val);
     }
 
-    pub async fn update_entry(&self, key: impl Into<String>, handler: impl Fn(&mut T)) {
+    pub async fn update_entry(&self, key: impl Into<K>, handler: impl Fn(&mut T)) {
         let mut cache = self.cache.write().await;
         handler(cache.entry(key.into()).or_default());
     }
@@ -47,13 +47,13 @@ impl<T: Clone + Default> Cache<T> {
     //     self.cache.write().await.clear();
     // }
 
-    pub async fn remove(&self, key: &str) {
+    pub async fn remove(&self, key: &K) {
         self.cache.write().await.remove(key);
     }
 }
 
-impl<T: Clone + Default + Busy> Cache<T> {
-    pub async fn busy(&self, id: &str) -> bool {
+impl<K: PartialEq + Eq + Hash, T: Clone + Default + Busy> Cache<K, T> {
+    pub async fn busy(&self, id: &K) -> bool {
         match self.get(id).await {
             Some(state) => state.busy(),
             None => false,

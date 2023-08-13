@@ -59,8 +59,8 @@ impl Resolve<GetDeploymentStatus, RequestUser> for State {
             .await
             .unwrap_or_default();
         let response = GetDeploymentStatusResponse {
-            status: status.container.as_ref().and_then(|c| c.status.clone()),
-            state: status.state,
+            status: status.curr.container.as_ref().and_then(|c| c.status.clone()),
+            state: status.curr.state,
         };
         Ok(response)
     }
@@ -228,7 +228,7 @@ impl Resolve<GetDeploymentsSummary, RequestUser> for State {
                 .get(&deployment.id)
                 .await
                 .unwrap_or_default();
-            match status.state {
+            match status.curr.state {
                 DockerContainerState::Running => {
                     res.running += 1;
                 }
