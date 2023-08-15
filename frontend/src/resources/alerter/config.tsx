@@ -1,4 +1,3 @@
-import { Config } from "@components/config/Config";
 import { useRead, useWrite } from "@hooks";
 import { Section } from "@layouts/page";
 import { Types } from "@monitor/client";
@@ -38,7 +37,7 @@ export const AlerterConfig = () => {
           </div>
         }
       >
-        <Config config={alerter?.config as any} update={update} set={set} />
+        {/* <Config config={alerter?.config as any} update={update} set={set} /> */}
       </Section>
     );
   } else {
