@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate log;
 
+use std::time::Duration;
+
 use anyhow::{anyhow, Context};
 use reqwest::StatusCode;
 use resolver_api::HasResponse;
@@ -24,18 +26,35 @@ impl PeripheryClient {
     }
 
     pub async fn request<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+        self.health_check().await?;
+        self.request_inner(request, None).await
+    }
+
+    pub async fn health_check(&self) -> anyhow::Result<()> {
+        self.request_inner(requests::GetHealth {}, Some(Duration::from_secs(1)))
+            .await?;
+        Ok(())
+    }
+
+    async fn request_inner<T: HasResponse>(
+        &self,
+        request: T,
+        timeout: Option<Duration>,
+    ) -> anyhow::Result<T::Response> {
         let req_type = T::req_type();
         trace!("sending request | type: {req_type} | body: {request:?}");
-        let res = self
+        let mut req = self
             .reqwest
             .post(&self.address)
             .json(&json!({
                 "type": req_type,
                 "params": request
             }))
-            .header("authorization", &self.passkey)
-            .send()
-            .await?;
+            .header("authorization", &self.passkey);
+        if let Some(timeout) = timeout {
+            req = req.timeout(timeout);
+        }
+        let res = req.send().await?;
         let status = res.status();
         debug!("got response | type: {req_type} | {status} | body: {res:?}",);
         if status == StatusCode::OK {
@@ -49,10 +68,5 @@ impl PeripheryClient {
                 .context("failed to convert response to text")?;
             Err(anyhow!("request failed | {status} | {text}"))
         }
-    }
-
-    pub async fn health_check(&self) -> anyhow::Result<()> {
-        self.request(requests::GetHealth {}).await?;
-        Ok(())
     }
 }

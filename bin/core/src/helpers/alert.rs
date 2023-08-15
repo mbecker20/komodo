@@ -1,5 +1,7 @@
 use anyhow::{anyhow, Context};
-use monitor_types::entities::{alert::Alert, alerter::*, server::stats::SystemProcess};
+use monitor_types::entities::{
+    alert::Alert, alerter::*, deployment::DockerContainerState, server::stats::SystemProcess,
+};
 use reqwest::StatusCode;
 use slack::types::Block;
 
@@ -115,16 +117,20 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             to,
             ..
         } => {
-            let text = format!("container *{name}*");
+            let to = fmt_docker_container_state(to);
+            let text = format!("📦 container *{name}* is now {to}");
             let blocks = vec![
-                Block::header(format!("container *{name}* state change 📦")),
-                Block::section(format!("server: {server}\nfrom: {from}\nto: {to}")),
+                Block::header(format!("📦 container *{name}* is now {to}")),
+                Block::section(format!("server: {server}\nprevious: {from}")),
             ];
             (text, blocks.into())
         }
+        Alert::None {} => Default::default(),
     };
-    let slack = slack::Client::new(url);
-    slack.send_message(text, blocks).await?;
+    if !text.is_empty() {
+        let slack = slack::Client::new(url);
+        slack.send_message(text, blocks).await?;
+    }
     Ok(())
 }
 
@@ -168,4 +174,14 @@ fn fmt_top_procs(top_procs: &[SystemProcess]) -> String {
         })
         .collect::<Vec<_>>()
         .join("")
+}
+
+fn fmt_docker_container_state(state: &DockerContainerState) -> String {
+    match state {
+        DockerContainerState::Running => String::from("Running ▶️"),
+        DockerContainerState::Exited => String::from("Exited 🛑"),
+        DockerContainerState::Restarting => String::from("Restarting 🔄"),
+        DockerContainerState::NotDeployed => String::from("Not Deployed"),
+        _ => state.to_string(),
+    }
 }

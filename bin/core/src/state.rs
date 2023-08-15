@@ -3,15 +3,19 @@ use std::{net::SocketAddr, str::FromStr, sync::Arc};
 use anyhow::Context;
 use axum::Extension;
 use monitor_types::entities::{
-    build::BuildActionState, deployment::DeploymentActionState, repo::RepoActionState,
-    server::ServerActionState, update::UpdateListItem,
+    alert::{Alert, AlertVariant},
+    build::BuildActionState,
+    deployment::{DeploymentActionState, DockerContainerState},
+    repo::RepoActionState,
+    server::ServerActionState,
+    update::UpdateListItem,
 };
 
 use crate::{
     auth::{GithubOauthClient, GoogleOauthClient, JwtClient},
     config::{CoreConfig, Env},
     helpers::{cache::Cache, channel::BroadcastChannel, db::DbClient},
-    monitor::{CachedDeploymentStatus, CachedServerStatus},
+    monitor::{CachedDeploymentStatus, CachedServerStatus, History},
 };
 
 pub type StateExtension = Extension<Arc<State>>;
@@ -28,8 +32,10 @@ pub struct State {
 
     // cache
     pub action_states: ActionStates,
-    pub deployment_status_cache: Cache<Arc<CachedDeploymentStatus>>,
-    pub server_status_cache: Cache<Arc<CachedServerStatus>>,
+    pub deployment_status_cache:
+        Cache<String, Arc<History<CachedDeploymentStatus, DockerContainerState>>>,
+    pub server_status_cache: Cache<String, Arc<CachedServerStatus>>,
+    pub alerts: Cache<(String, AlertVariant), Arc<Alert>>,
 
     // channels
     pub build_cancel: BroadcastChannel<String>, // build id to cancel
@@ -49,7 +55,7 @@ impl State {
 
         debug!("loading state");
 
-        let state: Arc<State> = State {
+        let state: Arc<_> = State {
             env,
             db: DbClient::new(&config).await?,
             jwt: JwtClient::new(&config),
@@ -58,6 +64,7 @@ impl State {
             action_states: Default::default(),
             deployment_status_cache: Default::default(),
             server_status_cache: Default::default(),
+            alerts: Default::default(),
             update: BroadcastChannel::new(100),
             build_cancel: BroadcastChannel::new(10),
             config,
@@ -78,9 +85,9 @@ impl State {
 
 #[derive(Default)]
 pub struct ActionStates {
-    pub build: Cache<BuildActionState>,
-    pub deployment: Cache<DeploymentActionState>,
-    pub server: Cache<ServerActionState>,
-    pub repo: Cache<RepoActionState>,
+    pub build: Cache<String, BuildActionState>,
+    pub deployment: Cache<String, DeploymentActionState>,
+    pub server: Cache<String, ServerActionState>,
+    pub repo: Cache<String, RepoActionState>,
     // pub command: Cache<CommandActionState>,
 }
