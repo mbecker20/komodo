@@ -8,7 +8,7 @@ interface DeploymentId {
   deployment_id: string;
 }
 
-export const RedeployContainer = ({ deployment_id }: DeploymentId) => {
+const RedeployContainer = ({ deployment_id }: DeploymentId) => {
   const { mutate, isLoading } = useExecute("Deploy");
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deployment_id);
@@ -57,7 +57,7 @@ const StopContainer = ({ deployment_id }: DeploymentId) => {
   );
 };
 
-export const StartOrStopContainer = ({ deployment_id }: DeploymentId) => {
+const StartOrStopContainer = ({ deployment_id }: DeploymentId) => {
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deployment_id);
 
@@ -68,7 +68,7 @@ export const StartOrStopContainer = ({ deployment_id }: DeploymentId) => {
   return <StartContainer deployment_id={deployment_id} />;
 };
 
-export const RemoveContainer = ({ deployment_id }: DeploymentId) => {
+const RemoveContainer = ({ deployment_id }: DeploymentId) => {
   const { data: d } = useRead("GetDeployment", { id: deployment_id });
   const { mutate, isLoading } = useExecute("RemoveContainer");
 
@@ -107,3 +107,11 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
     disabled={isLoading}
   />;
 };
+
+export const DeploymentActions = ({ id }: { id: string }) => (
+  <div className="flex gap-4">
+    <RedeployContainer deployment_id={id} />
+    <StartOrStopContainer deployment_id={id} />
+    <RemoveContainer deployment_id={id} />
+  </div>
+);

@@ -12,6 +12,20 @@ import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
 import { MinusCircle, PlusCircle } from "lucide-react";
+import { ReactNode } from "react";
+
+export const ConfigItem = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) => (
+  <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
+    <div className="capitalize"> {label} </div>
+    {children}
+  </div>
+);
 
 export const ConfigInput = ({
   label,
@@ -22,8 +36,7 @@ export const ConfigInput = ({
   value: string | number | undefined;
   onChange: (value: string) => void;
 }) => (
-  <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
-    <div className="capitalize "> {label} </div>
+  <ConfigItem label={label}>
     <Input
       className="max-w-[400px]"
       type={typeof value === "number" ? "number" : undefined}
@@ -31,7 +44,7 @@ export const ConfigInput = ({
       onChange={(e) => onChange(e.target.value)}
       // disabled={loading}
     />
-  </div>
+  </ConfigItem>
 );
 
 export const ConfigSwitch = ({
@@ -43,10 +56,9 @@ export const ConfigSwitch = ({
   value: boolean | undefined;
   onChange: (value: boolean) => void;
 }) => (
-  <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
-    <div className="capitalize "> {label} </div>
+  <ConfigItem label={label}>
     <Switch checked={value} onCheckedChange={onChange} />
-  </div>
+  </ConfigItem>
 );
 
 export const DoubleInput = <
@@ -151,8 +163,7 @@ export const AccountSelector = ({
 }) => {
   const accounts = useRead(`GetBuilderAvailableAccounts`, { id }).data;
   return (
-    <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
-      <div className="capitalize">{account_type} Account</div>
+    <ConfigItem label={`${account_type} Account`}>
       <Select value={selected || undefined} onValueChange={onSelect}>
         <SelectTrigger className="w-full lg:w-[300px]" disabled={!id}>
           <SelectValue placeholder="Select Account" />
@@ -165,6 +176,6 @@ export const AccountSelector = ({
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </ConfigItem>
   );
 };

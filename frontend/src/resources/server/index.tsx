@@ -2,13 +2,7 @@ import { ResourceUpdates } from "@components/updates/resource";
 import { useRead, useAddRecentlyViewed, useWrite } from "@hooks";
 import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@ui/card";
+import { CardDescription } from "@ui/card";
 import { useParams, Link } from "react-router-dom";
 import { ServerStats } from "./stats";
 import {
@@ -17,12 +11,9 @@ import {
   ServerSpecs,
   ServerRegion,
 } from "./util";
-// import { ServerConfig } from "@monitor/client/dist/types";
 import { useState } from "react";
 import { Types } from "@monitor/client";
-import { ConfigLayout } from "@layouts/page";
-import { Button } from "@ui/button";
-import { ConfigAgain } from "@components/config/again";
+import { ConfigInner } from "@layouts/page";
 import { DeleteServer } from "./actions";
 
 export const ServerCard = ({ id }: { id: string }) => {
@@ -47,82 +38,36 @@ export const ServerCard = ({ id }: { id: string }) => {
   );
 };
 
-const ServerConfigInner = ({
-  id,
-  config,
-}: {
-  id: string;
-  config: Types.ServerConfig;
-}) => {
-  const [update, set] = useState<Partial<Types.ServerConfig>>({});
-  const [show, setShow] = useState("general");
-  const { mutate } = useWrite("UpdateServer");
-
-  return (
-    <ConfigLayout
-      content={update}
-      onConfirm={() => mutate({ id, config: update })}
-      onReset={() => set({})}
-    >
-      <div className="flex gap-4">
-        <div className="flex flex-col gap-4 w-[300px]">
-          <Button
-            variant={show === "general" ? "secondary" : "outline"}
-            onClick={() => setShow("general")}
-          >
-            General
-          </Button>
-          <Button
-            variant={show === "warnings" ? "secondary" : "outline"}
-            onClick={() => setShow("warnings")}
-          >
-            Warnings
-          </Button>
-        </div>
-        <Card className="w-full">
-          <CardHeader className="border-b">
-            <CardTitle className="capitalize">{show}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4 mt-4">
-            {show === "general" && (
-              <ConfigAgain
-                config={config}
-                update={update}
-                set={(u) => set((p) => ({ ...p, ...u }))}
-                components={{
-                  address: true,
-                  region: true,
-                  enabled: true,
-                  auto_prune: true,
-                }}
-              />
-            )}
-            {show === "warnings" && (
-              <ConfigAgain
-                config={config}
-                update={update}
-                set={(u) => set((p) => ({ ...p, ...u }))}
-                components={{
-                  cpu_warning: true,
-                  cpu_critical: true,
-                  disk_warning: true,
-                  disk_critical: true,
-                  mem_warning: true,
-                  mem_critical: true,
-                }}
-              />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </ConfigLayout>
-  );
-};
-
 const ServerConfig = ({ id }: { id: string }) => {
   const config = useRead("GetServer", { id }).data?.config;
+  const [update, set] = useState<Partial<Types.ServerConfig>>({});
+  const { mutate } = useWrite("UpdateServer");
   if (!config) return null;
-  return <ServerConfigInner id={id} config={config} />;
+
+  return (
+    <ConfigInner
+      config={config}
+      update={update}
+      set={set}
+      onSave={() => mutate({ id, config: update })}
+      components={{
+        general: {
+          address: true,
+          region: true,
+          enabled: true,
+          auto_prune: true,
+        },
+        warnings: {
+          cpu_warning: true,
+          cpu_critical: true,
+          disk_warning: true,
+          disk_critical: true,
+          mem_warning: true,
+          mem_critical: true,
+        },
+      }}
+    />
+  );
 };
 
 export const ServerPage = () => {

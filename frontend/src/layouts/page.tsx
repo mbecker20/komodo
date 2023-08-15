@@ -1,7 +1,10 @@
+import { ConfigAgain } from "@components/config/again";
 import { ConfirmUpdate } from "@components/config/confirm-update";
 import { Button } from "@ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
+import { keys } from "@util/helpers";
 import { Settings, History } from "lucide-react";
-import { ReactNode } from "react";
+import { ReactNode, SetStateAction, useState } from "react";
 
 interface PageProps {
   title: ReactNode;
@@ -72,3 +75,57 @@ export const ConfigLayout = ({
     {children}
   </Section>
 );
+
+export const ConfigInner = <T,>({
+  config,
+  update,
+  set,
+  onSave,
+  components,
+}: {
+  config: T;
+  update: Partial<T>;
+  set: React.Dispatch<SetStateAction<Partial<T>>>;
+  onSave: () => void;
+  components: Record<
+    string,
+    {
+      [K in keyof Partial<T>]:
+        | true
+        | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
+    }
+  >;
+}) => {
+  const [show, setShow] = useState(keys(components)[0]);
+
+  return (
+    <ConfigLayout content={update} onConfirm={onSave} onReset={() => set({})}>
+      <div className="flex gap-4">
+        <div className="flex flex-col gap-4 w-[300px]">
+          {keys(components).map((tab) => (
+            <Button
+              variant={show === tab ? "secondary" : "outline"}
+              onClick={() => setShow(tab)}
+              className="capitalize"
+            >
+              {tab}
+            </Button>
+          ))}
+        </div>
+        <Card className="w-full">
+          <CardHeader className="border-b">
+            <CardTitle className="capitalize">{show}</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4 mt-4">
+            <ConfigAgain
+              config={config}
+              update={update}
+              set={(u) => set((p) => ({ ...p, ...u }))}
+              components={components[show]}
+            />
+          </CardContent>
+        </Card>
+      </div>
+    </ConfigLayout>
+  );
+};

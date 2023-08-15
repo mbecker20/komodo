@@ -1,23 +1,19 @@
 import { ResourceUpdates } from "@components/updates/resource";
-import { useAddRecentlyViewed, useRead } from "@hooks";
+import { useRead, useAddRecentlyViewed } from "@hooks";
+import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
-import {
-  RedeployContainer,
-  StartOrStopContainer,
-  RemoveContainer,
-} from "@resources/deployment/components/actions";
-import { DeploymentLogs } from "@resources/deployment/components/deployment-logs";
-import {
-  DeploymentBuild,
-  DeploymentName,
-  DeploymentServer,
-  DeploymentStatus,
-  DeploymentStatusIcon,
-} from "@resources/deployment/util";
 import { CardDescription } from "@ui/card";
 import { Link, useParams } from "react-router-dom";
-import { DeploymentConfig } from "./components/config";
-import { ResourceCard } from "@layouts/card";
+import { DeploymentActions } from "./actions";
+import { DeploymentConfig } from "./config";
+import { DeploymentLogs } from "./logs";
+import {
+  DeploymentStatusIcon,
+  DeploymentServer,
+  DeploymentBuild,
+  DeploymentName,
+  DeploymentStatus,
+} from "./util";
 
 export const DeploymentCard = ({ id }: { id: string }) => {
   const deployments = useRead("ListDeployments", {}).data;
@@ -59,13 +55,7 @@ export const DeploymentPage = () => {
           <DeploymentBuild deploymentId={id} />
         </div>
       }
-      actions={
-        <div className="flex gap-4">
-          <RedeployContainer deployment_id={id} />
-          <StartOrStopContainer deployment_id={id} />
-          <RemoveContainer deployment_id={id} />
-        </div>
-      }
+      actions={<DeploymentActions id={id} />}
     >
       <ResourceUpdates type="Deployment" id={id} />
       <DeploymentLogs deployment_id={id} />
