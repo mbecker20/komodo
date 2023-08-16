@@ -28,7 +28,11 @@ export const RestartModeSelector = ({
       </SelectTrigger>
       <SelectContent>
         {keys(Types.RestartMode).map((mode) => (
-          <SelectItem value={Types.RestartMode[mode]} className="capitalize">
+          <SelectItem
+            key={mode}
+            value={Types.RestartMode[mode]}
+            className="capitalize"
+          >
             {format_mode(Types.RestartMode[mode])}
           </SelectItem>
         ))}

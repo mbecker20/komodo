@@ -1,4 +1,5 @@
 import { ConfigItem } from "@components/config/util";
+import { useRead } from "@hooks";
 import {
   Select,
   SelectContent,
@@ -14,6 +15,7 @@ export const NetworkModeSelector = ({
   selected: string | undefined;
   onSelect: (type: string) => void;
 }) => {
+  const networks = useRead("GetAvailableNetworks", {}).data;
   // const networks = useRead("GetDockerNetworks", {}).data?.forEach(network => network.)
 
   return (
@@ -24,8 +26,13 @@ export const NetworkModeSelector = ({
         </SelectTrigger>
         <SelectContent>
           {["Host", "Bridge", "None"].map((network) => (
-            <SelectItem key={network} value={network}>
+            <SelectItem key={network} value={network.toLowerCase()}>
               {network}
+            </SelectItem>
+          ))}
+          {networks?.networks.map((network) => (
+            <SelectItem key={network.Id} value={network.Name ?? ""}>
+              {network.Name}
             </SelectItem>
           ))}
         </SelectContent>
