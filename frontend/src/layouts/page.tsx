@@ -62,7 +62,12 @@ export const ConfigLayout = ({
     icon={<Settings className="w-4 h-4" />}
     actions={
       <div className="flex gap-4">
-        <Button variant="outline" intent="warning" onClick={onReset}>
+        <Button
+          variant="outline"
+          intent="warning"
+          onClick={onReset}
+          disabled={content ? !Object.keys(content).length : true}
+        >
           <History className="w-4 h-4" />
         </Button>
         <ConfirmUpdate
@@ -113,7 +118,7 @@ export const ConfigInner = <T,>({
             </Button>
           ))}
         </div>
-        <Card className="w-full">
+        <Card className="w-full min-h-[500px]">
           <CardHeader className="border-b">
             <CardTitle className="capitalize">{show}</CardTitle>
           </CardHeader>

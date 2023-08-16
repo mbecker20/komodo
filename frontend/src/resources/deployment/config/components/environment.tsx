@@ -11,7 +11,10 @@ export const EnvVars = ({
   <DoubleInput
     values={vars}
     leftval="variable"
+    leftpl="Variable"
     rightval="value"
+    rightpl="Value"
+    addName="Environment Varialbe"
     onLeftChange={(variable, i) => {
       vars[i].variable = variable;
       set({ environment: [...vars] });

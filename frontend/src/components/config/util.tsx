@@ -72,6 +72,7 @@ export const DoubleInput = <
   leftpl,
   rightval,
   rightpl,
+  addName,
   onLeftChange,
   onRightChange,
   onAdd,
@@ -82,6 +83,7 @@ export const DoubleInput = <
   leftpl: string;
   rightval: R;
   rightpl: string;
+  addName: string;
   onLeftChange: (value: T[L], i: number) => void;
   onRightChange: (value: T[R], i: number) => void;
   onAdd: () => void;
@@ -96,7 +98,7 @@ export const DoubleInput = <
             placeholder={leftpl}
             onChange={(e) => onLeftChange(e.target.value as T[L], i)}
           />
-          =
+          :
           <Input
             value={value[rightval] as any}
             placeholder={rightpl}
@@ -118,7 +120,7 @@ export const DoubleInput = <
         onClick={onAdd}
       >
         <PlusCircle className="w-4 h-4" />
-        Add Port
+        Add {addName}
       </Button>
     </div>
   );

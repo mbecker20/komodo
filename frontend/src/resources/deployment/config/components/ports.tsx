@@ -14,6 +14,7 @@ export const PortsConfig = ({
     leftpl="Local"
     rightval="container"
     rightpl="Container"
+    addName="Port"
     onLeftChange={(local, i) => {
       ports[i].local = local;
       set({ ports: [...ports] });

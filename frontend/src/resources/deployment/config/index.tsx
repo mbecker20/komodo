@@ -8,6 +8,7 @@ import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
 import { PortsConfig } from "./components/ports";
 import { EnvVars } from "./components/environment";
+import { VolumesConfig } from "./components/volumes";
 
 export const ServerSelector = ({
   selected,
@@ -33,6 +34,12 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
 
   if (!config) return null;
   console.log(config);
+
+  const show_ports = update.network
+    ? update.network !== "host"
+    : config.network
+    ? config.network !== "host"
+    : false;
 
   return (
     <ConfigInner
@@ -66,11 +73,15 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
               onSelect={(network) => set({ network })}
             />
           ),
-          ports: (value, set) => <PortsConfig ports={value ?? []} set={set} />,
+          ports: (value, set) =>
+            show_ports && <PortsConfig ports={value ?? []} set={set} />,
         },
         environment: {
           skip_secret_interp: true,
           environment: (vars, set) => <EnvVars vars={vars ?? []} set={set} />,
+        },
+        volumes: {
+          volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
         },
       }}
     />
