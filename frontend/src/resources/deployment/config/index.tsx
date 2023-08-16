@@ -2,13 +2,18 @@ import { useRead, useWrite } from "@hooks";
 import { ConfigInner } from "@layouts/page";
 import { Types } from "@monitor/client";
 import { useState } from "react";
-import { AccountSelector, ResourceSelector } from "@components/config/util";
+import {
+  AccountSelector,
+  ConfigInput,
+  ResourceSelector,
+} from "@components/config/util";
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
 import { PortsConfig } from "./components/ports";
 import { EnvVars } from "./components/environment";
 import { VolumesConfig } from "./components/volumes";
+import { ExtraArgs } from "./components/extra-args";
 
 export const ServerSelector = ({
   selected,
@@ -64,6 +69,16 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
           ),
           restart: (value, set) => (
             <RestartModeSelector selected={value} set={set} />
+          ),
+          extra_args: (value, set) => (
+            <ExtraArgs args={value ?? []} set={set} />
+          ),
+          process_args: (value, set) => (
+            <ConfigInput
+              label="Process Args"
+              value={value}
+              onChange={(process_args) => set({ process_args })}
+            />
           ),
         },
         network: {
