@@ -104,6 +104,7 @@ export const ConfigInner = <T,>({
         <div className="flex flex-col gap-4 w-[300px]">
           {keys(components).map((tab) => (
             <Button
+              key={tab}
               variant={show === tab ? "secondary" : "outline"}
               onClick={() => setShow(tab)}
               className="capitalize"
