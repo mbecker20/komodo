@@ -1,6 +1,5 @@
 import { ConfigItem } from "@components/config/util";
 import { Types } from "@monitor/client";
-import { RestartMode } from "@monitor/client/dist/types";
 import {
   Select,
   SelectContent,
@@ -9,6 +8,8 @@ import {
   SelectValue,
 } from "@ui/select";
 import { keys } from "@util/helpers";
+
+const format_mode = (m: string) => m.split("-").join(" ");
 
 export const RestartModeSelector = ({
   selected,
@@ -22,12 +23,14 @@ export const RestartModeSelector = ({
       value={selected || undefined}
       onValueChange={(restart: Types.RestartMode) => set({ restart })}
     >
-      <SelectTrigger className="max-w-[150px]">
+      <SelectTrigger className="max-w-[150px] capitalize">
         <SelectValue placeholder="Select Type" />
       </SelectTrigger>
       <SelectContent>
-        {keys(RestartMode).map((mode) => (
-          <SelectItem value={mode}>{mode}</SelectItem>
+        {keys(Types.RestartMode).map((mode) => (
+          <SelectItem value={Types.RestartMode[mode]} className="capitalize">
+            {format_mode(Types.RestartMode[mode])}
+          </SelectItem>
         ))}
       </SelectContent>
     </Select>
