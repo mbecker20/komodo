@@ -2,7 +2,7 @@ import { useRead, useWrite } from "@hooks";
 import { ConfigInner } from "@layouts/page";
 import { Types } from "@monitor/client";
 import { useState } from "react";
-import { ResourceSelector } from "@components/config/util";
+import { AccountSelector, ResourceSelector } from "@components/config/util";
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
@@ -32,6 +32,8 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
   const { mutate } = useWrite("UpdateDeployment");
 
   if (!config) return null;
+  console.log(config);
+
   return (
     <ConfigInner
       config={config}
@@ -44,6 +46,15 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
             <ServerSelector selected={value} set={set} />
           ),
           image: (value, set) => <ImageConfig image={value} set={set} />,
+          docker_account: (value, set) => (
+            <AccountSelector
+              id={update.server_id ?? config.server_id}
+              account_type="docker"
+              type="Server"
+              selected={value}
+              onSelect={(docker_account) => set({ docker_account })}
+            />
+          ),
           restart: (value, set) => (
             <RestartModeSelector selected={value} set={set} />
           ),

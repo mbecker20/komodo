@@ -63,6 +63,7 @@ const BuildConfigInner = ({
                   github_account: (account, set) => (
                     <AccountSelector
                       id={update.builder_id ?? config.builder_id ?? undefined}
+                      type="Builder"
                       account_type="github"
                       selected={account}
                       onSelect={(github_account) => set({ github_account })}
@@ -84,6 +85,7 @@ const BuildConfigInner = ({
                   docker_account: (account, set) => (
                     <AccountSelector
                       id={update.builder_id ?? config.builder_id ?? undefined}
+                      type="Builder"
                       account_type="docker"
                       selected={account}
                       onSelect={(docker_account) => set({ docker_account })}

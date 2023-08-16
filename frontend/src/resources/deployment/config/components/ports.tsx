@@ -10,14 +10,16 @@ export const PortsConfig = ({
 }) => (
   <DoubleInput
     values={ports}
-    leftval="container"
-    rightval="local"
-    onLeftChange={(container, i) => {
-      ports[i].container = container;
+    leftval="local"
+    leftpl="Local"
+    rightval="container"
+    rightpl="Container"
+    onLeftChange={(local, i) => {
+      ports[i].local = local;
       set({ ports: [...ports] });
     }}
-    onRightChange={(local, i) => {
-      ports[i].local = local;
+    onRightChange={(container, i) => {
+      ports[i].container = container;
       set({ ports: [...ports] });
     }}
     onAdd={() =>

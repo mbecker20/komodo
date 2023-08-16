@@ -69,7 +69,9 @@ export const DoubleInput = <
 >({
   values,
   leftval,
+  leftpl,
   rightval,
+  rightpl,
   onLeftChange,
   onRightChange,
   onAdd,
@@ -77,7 +79,9 @@ export const DoubleInput = <
 }: {
   values: T[] | undefined;
   leftval: L;
+  leftpl: string;
   rightval: R;
+  rightpl: string;
   onLeftChange: (value: T[L], i: number) => void;
   onRightChange: (value: T[R], i: number) => void;
   onAdd: () => void;
@@ -89,13 +93,13 @@ export const DoubleInput = <
         <div className="flex items-center justify-between gap-4" key={i}>
           <Input
             value={value[leftval] as any}
-            placeholder="Container"
+            placeholder={leftpl}
             onChange={(e) => onLeftChange(e.target.value as T[L], i)}
           />
           =
           <Input
             value={value[rightval] as any}
-            placeholder="Container"
+            placeholder={rightpl}
             onChange={(e) => onRightChange(e.target.value as T[R], i)}
           />
           <Button
@@ -152,23 +156,31 @@ export const ResourceSelector = <T extends UsableResources>({
 
 export const AccountSelector = ({
   id,
+  type,
   account_type,
   selected,
   onSelect,
 }: {
   id: string | undefined;
+  type: "Server" | "Builder";
   account_type: keyof Types.GetBuilderAvailableAccountsResponse;
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const accounts = useRead(`GetBuilderAvailableAccounts`, { id }).data;
+  const accounts = useRead(`Get${type}AvailableAccounts`, { id }).data;
   return (
     <ConfigItem label={`${account_type} Account`}>
-      <Select value={selected || undefined} onValueChange={onSelect}>
+      <Select
+        value={type === "Builder" ? selected || undefined : selected}
+        onValueChange={onSelect}
+      >
         <SelectTrigger className="w-full lg:w-[300px]" disabled={!id}>
           <SelectValue placeholder="Select Account" />
         </SelectTrigger>
         <SelectContent>
+          {type === "Server" && (
+            <SelectItem value={""}>Same as build</SelectItem>
+          )}
           {accounts?.[account_type]?.map((account) => (
             <SelectItem key={account} value={account}>
               {account}
