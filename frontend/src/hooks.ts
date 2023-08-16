@@ -71,6 +71,21 @@ export const useInvalidate = () => {
   ) => keys.forEach((k) => qc.invalidateQueries([...k]));
 };
 
+export const useInvalidateDeployments = (id: string) => {
+  const invalidate = useInvalidate();
+
+  return () => {
+    invalidate(
+      ["ListDeployments"],
+      ["GetDeployment", { id }],
+      ["GetLog", { id }],
+      ["GetDeploymentActionState", { id }],
+      ["GetDeploymentStatus", { id }],
+      ["Deployment"]
+    );
+  };
+};
+
 export const useUser = () => useRead("GetUser", {});
 
 export const useServerStats = (server_id: string) => {

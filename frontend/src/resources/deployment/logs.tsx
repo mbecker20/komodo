@@ -4,20 +4,54 @@ import { AlertOctagon, ChevronDown, TerminalSquare } from "lucide-react";
 import { useRead } from "@hooks";
 import { Section } from "@layouts/page";
 import { DockerContainerState } from "@monitor/client/dist/types";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
+import { useState } from "react";
 
 const to_bottom = (id: string) => () =>
   document
     .getElementById(id)
     ?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
 
+const TailLengthSelector = ({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect: (value: string) => void;
+}) => (
+  <Select value={selected} onValueChange={onSelect}>
+    <SelectTrigger>
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectGroup>
+        {["50", "100", "500", "1000"].map((length) => (
+          <SelectItem key={length} value={length}>
+            {length} lines
+          </SelectItem>
+        ))}
+      </SelectGroup>
+    </SelectContent>
+  </Select>
+);
+
 export const DeploymentLogs = ({
   deployment_id,
 }: {
   deployment_id: string;
 }) => {
+  const [tail, set] = useState("50");
+
   const logs = useRead(
     "GetLog",
-    { deployment_id, tail: 200 },
+    { deployment_id, tail: Number(tail) },
     { refetchInterval: 30000 }
   ).data;
   const deployments = useRead("ListDeployments", {}).data;
@@ -31,17 +65,20 @@ export const DeploymentLogs = ({
         title="Logs"
         icon={<TerminalSquare className="w-4 h-4" />}
         actions={
-          <TabsList className="w-fit place-self-end">
-            <TabsTrigger value="stdout" onClick={to_bottom("stdout")}>
-              Out
-            </TabsTrigger>
-            <TabsTrigger value="stderr" onClick={to_bottom("stderr")}>
-              Err
-              {logs?.stderr && (
-                <AlertOctagon className="w-4 h-4 ml-2 stroke-red-500" />
-              )}
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex gap-4">
+            <TailLengthSelector selected={tail} onSelect={set} />
+            <TabsList className="w-fit place-self-end">
+              <TabsTrigger value="stdout" onClick={to_bottom("stdout")}>
+                Out
+              </TabsTrigger>
+              <TabsTrigger value="stderr" onClick={to_bottom("stderr")}>
+                Err
+                {logs?.stderr && (
+                  <AlertOctagon className="w-4 h-4 ml-2 stroke-red-500" />
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </div>
         }
       >
         {["stdout", "stderr"].map((t) => (
