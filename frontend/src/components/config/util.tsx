@@ -70,7 +70,7 @@ export const ConfigSwitch = ({
 );
 
 export const DoubleInput = <
-  T extends {},
+  T extends object,
   K extends keyof T,
   L extends T[K] extends string | number | undefined ? K : never,
   R extends T[K] extends string | number | undefined ? K : never
@@ -102,13 +102,13 @@ export const DoubleInput = <
       {values?.map((value, i) => (
         <div className="flex items-center justify-between gap-4" key={i}>
           <Input
-            value={value[leftval] as any}
+            value={value[leftval]}
             placeholder={leftpl}
             onChange={(e) => onLeftChange(e.target.value as T[L], i)}
           />
           :
           <Input
-            value={value[rightval] as any}
+            value={value[rightval]}
             placeholder={rightpl}
             onChange={(e) => onRightChange(e.target.value as T[R], i)}
           />
