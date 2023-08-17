@@ -33,7 +33,7 @@ export const ServerStats = () => {
 const CPU = ({ server_id }: { server_id: string }) => {
   const stats = useServerStats(server_id);
 
-  let perc = stats?.cpu.cpu_perc;
+  const perc = stats?.cpu.cpu_perc;
   return (
     <Card className="w-full">
       <CardHeader className="flex-row justify-between">
@@ -57,10 +57,10 @@ const CPU = ({ server_id }: { server_id: string }) => {
 
 const RAM = ({ server_id }: { server_id: string }) => {
   const stats = useServerStats(server_id);
-  let used = stats?.basic.mem_used_gb;
-  let total = stats?.basic.mem_total_gb;
+  const used = stats?.basic.mem_used_gb;
+  const total = stats?.basic.mem_total_gb;
 
-  let perc = ((used ?? 0) / (total ?? 0)) * 100;
+  const perc = ((used ?? 0) / (total ?? 0)) * 100;
 
   return (
     <Card className="w-full">
@@ -85,10 +85,10 @@ const RAM = ({ server_id }: { server_id: string }) => {
 
 const DISK = ({ server_id }: { server_id: string }) => {
   const stats = useServerStats(server_id);
-  let used = stats?.disk.used_gb;
-  let total = stats?.disk.total_gb;
+  const used = stats?.disk.used_gb;
+  const total = stats?.disk.total_gb;
 
-  let perc = ((used ?? 0) / (total ?? 0)) * 100;
+  const perc = ((used ?? 0) / (total ?? 0)) * 100;
 
   return (
     <Card className="w-full">
@@ -113,7 +113,7 @@ const DISK = ({ server_id }: { server_id: string }) => {
 
 const LOAD = ({ server_id }: { server_id: string }) => {
   const stats = useServerStats(server_id);
-  let perc = stats?.basic.system_load;
+  const perc = stats?.basic.system_load;
 
   return (
     <Card className="w-full">
