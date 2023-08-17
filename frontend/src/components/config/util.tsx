@@ -13,15 +13,23 @@ import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { ReactNode } from "react";
+import { cn } from "@util/helpers";
 
 export const ConfigItem = ({
   label,
   children,
+  className,
 }: {
   label: string;
   children: ReactNode;
+  className?: string;
 }) => (
-  <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
+  <div
+    className={cn(
+      "flex justify-between items-center border-b pb-4 min-h-[60px]",
+      className
+    )}
+  >
     <div className="capitalize"> {label} </div>
     {children}
   </div>
