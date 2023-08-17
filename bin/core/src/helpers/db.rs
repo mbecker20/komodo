@@ -1,5 +1,6 @@
 use anyhow::Context;
 use monitor_types::entities::{
+    alert::Alert,
     alerter::Alerter,
     build::Build,
     builder::Builder,
@@ -25,6 +26,7 @@ pub struct DbClient {
     pub tags: Collection<CustomTag>,
     pub alerters: Collection<Alerter>,
     pub updates: Collection<Update>,
+    pub alerts: Collection<Alert>,
 }
 
 impl DbClient {
@@ -69,6 +71,7 @@ impl DbClient {
             users: User::collection(&mungos, db_name, true).await?,
             tags: CustomTag::collection(&mungos, db_name, true).await?,
             updates: Update::collection(&mungos, db_name, true).await?,
+            alerts: Alert::collection(&mungos, db_name, true).await?,
             stats: SystemStatsRecord::collection(&mungos, db_name, true).await?,
             servers: resource_collection(&mungos, db_name, "Server").await?,
             deployments: resource_collection(&mungos, db_name, "Deployment").await?,

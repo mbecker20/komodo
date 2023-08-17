@@ -10,15 +10,16 @@ use crate::{MongoId, I64};
 
 use super::{
     deployment::DockerContainerState,
-    server::stats::{StatsState, SystemProcess},
+    server::stats::{SeverityLevel, SystemProcess},
     update::ResourceTarget,
 };
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, StringObjectId)]
+#[doc_index(doc! { "data.type": 1 })]
 #[doc_index(doc! { "target.type": 1 })]
-#[sparse_doc_index(doc! { "target.id": 1 })]
-pub struct AlertRecord {
+#[doc_index(doc! { "target.id": 1 })]
+pub struct Alert {
     #[serde(
         default,
         rename = "_id",
@@ -28,16 +29,16 @@ pub struct AlertRecord {
     pub id: MongoId,
 
     #[index]
-    pub start_ts: I64,
+    pub ts: I64,
 
     #[index]
     pub resolved: bool,
 
     #[index]
-    pub alert_type: AlertVariant,
+    pub level: SeverityLevel,
 
     pub target: ResourceTarget,
-    pub alert: Alert,
+    pub data: AlertData,
     pub resolved_ts: Option<I64>,
 }
 
@@ -45,7 +46,7 @@ pub struct AlertRecord {
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants, MungosIndexed)]
 #[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[serde(tag = "type", content = "data")]
-pub enum Alert {
+pub enum AlertData {
     ServerUnreachable {
         id: String,
         name: String,
@@ -55,7 +56,6 @@ pub enum Alert {
         id: String,
         name: String,
         region: Option<String>,
-        state: StatsState,
         percentage: f64,
         top_procs: Vec<SystemProcess>,
     },
@@ -63,7 +63,6 @@ pub enum Alert {
         id: String,
         name: String,
         region: Option<String>,
-        state: StatsState,
         used_gb: f64,
         total_gb: f64,
         top_procs: Vec<SystemProcess>,
@@ -72,7 +71,6 @@ pub enum Alert {
         id: String,
         name: String,
         region: Option<String>,
-        state: StatsState,
         path: String,
         used_gb: f64,
         total_gb: f64,
@@ -81,7 +79,6 @@ pub enum Alert {
         id: String,
         name: String,
         region: Option<String>,
-        state: StatsState,
         temp: f64,
         max: f64,
     },
@@ -95,15 +92,15 @@ pub enum Alert {
     None {},
 }
 
-impl Default for Alert {
+impl Default for AlertData {
     fn default() -> Self {
-        Alert::None {}
+        AlertData::None {}
     }
 }
 
 #[allow(clippy::derivable_impls)]
-impl Default for AlertVariant {
+impl Default for AlertDataVariant {
     fn default() -> Self {
-        AlertVariant::None
+        AlertDataVariant::None
     }
 }

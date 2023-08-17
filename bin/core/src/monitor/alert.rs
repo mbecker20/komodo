@@ -1,16 +1,13 @@
-use std::collections::HashMap;
-
-use monitor_types::entities::{
-    alert::{Alert, AlertVariant},
-    deployment::DockerContainerState,
-    server::ServerStatus,
-};
-use tokio::sync::RwLock;
+use monitor_types::entities::{deployment::DockerContainerState, server::ServerStatus};
 
 use crate::state::State;
 
 impl State {
     // called after cache update
+    pub async fn check_alerts(&self) {
+        tokio::join!(self.alert_servers(), self.alert_deployments());
+    }
+
     pub async fn alert_servers(&self) {
         let server_status = self.server_status_cache.get_list().await;
 

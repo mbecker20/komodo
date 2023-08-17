@@ -3,7 +3,6 @@ use std::{net::SocketAddr, str::FromStr, sync::Arc};
 use anyhow::Context;
 use axum::Extension;
 use monitor_types::entities::{
-    alert::{Alert, AlertVariant},
     build::BuildActionState,
     deployment::{DeploymentActionState, DockerContainerState},
     repo::RepoActionState,
@@ -35,7 +34,6 @@ pub struct State {
     pub deployment_status_cache:
         Cache<String, Arc<History<CachedDeploymentStatus, DockerContainerState>>>,
     pub server_status_cache: Cache<String, Arc<CachedServerStatus>>,
-    pub alerts: Cache<(String, AlertVariant), Arc<Alert>>,
 
     // channels
     pub build_cancel: BroadcastChannel<String>, // build id to cancel
@@ -64,7 +62,6 @@ impl State {
             action_states: Default::default(),
             deployment_status_cache: Default::default(),
             server_status_cache: Default::default(),
-            alerts: Default::default(),
             update: BroadcastChannel::new(100),
             build_cancel: BroadcastChannel::new(10),
             config,

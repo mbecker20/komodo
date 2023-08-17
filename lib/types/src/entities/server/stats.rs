@@ -143,10 +143,10 @@ pub struct SystemComponent {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Display, EnumString)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, Display, EnumString)]
 #[serde(rename_all = "UPPERCASE")]
 #[strum(serialize_all = "UPPERCASE")]
-pub enum StatsState {
+pub enum SeverityLevel {
     #[default]
     Ok,
     Warning,
@@ -156,9 +156,9 @@ pub enum StatsState {
 #[typeshare]
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct ServerHealth {
-    pub cpu: StatsState,
-    pub mem: StatsState,
-    pub disk: StatsState,
-    pub disks: HashMap<PathBuf, StatsState>,
-    pub temps: HashMap<String, StatsState>,
+    pub cpu: SeverityLevel,
+    pub mem: SeverityLevel,
+    pub disk: SeverityLevel,
+    pub disks: HashMap<PathBuf, SeverityLevel>,
+    pub temps: HashMap<String, SeverityLevel>,
 }
