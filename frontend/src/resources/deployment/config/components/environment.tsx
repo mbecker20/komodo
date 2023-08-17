@@ -1,5 +1,8 @@
-import { DoubleInput } from "@components/config/util";
+import { ConfigItem } from "@components/config/util";
 import { Types } from "@monitor/client";
+import { Textarea } from "@ui/textarea";
+import { parseDotEnvToEnvVars, parseEnvVarseToDotEnv } from "@util/helpers";
+import { useEffect, useState } from "react";
 
 export const EnvVars = ({
   vars,
@@ -7,27 +10,22 @@ export const EnvVars = ({
 }: {
   vars: Types.EnvironmentVar[];
   set: (input: Partial<Types.DeploymentConfig>) => void;
-}) => (
-  <DoubleInput
-    values={vars}
-    leftval="variable"
-    leftpl="Variable"
-    rightval="value"
-    rightpl="Value"
-    addName="Environment Varialbe"
-    onLeftChange={(variable, i) => {
-      vars[i].variable = variable;
-      set({ environment: [...vars] });
-    }}
-    onRightChange={(value, i) => {
-      vars[i].value = value;
-      set({ environment: [...vars] });
-    }}
-    onAdd={() =>
-      set({ environment: [...(vars ?? []), { variable: "", value: "" }] })
-    }
-    onRemove={(idx) =>
-      set({ environment: [...vars.filter((_, i) => i !== idx)] })
-    }
-  />
-);
+}) => {
+  const [env, setEnv] = useState(parseEnvVarseToDotEnv(vars));
+  useEffect(() => {
+    !!env && set({ environment: parseDotEnvToEnvVars(env) });
+  }, [env]);
+
+  return (
+    <ConfigItem
+      label="Environment Variables"
+      className="flex-col gap-4 items-start"
+    >
+      <Textarea
+        placeholder="VARIABLE=value"
+        value={env}
+        onChange={(e) => setEnv(e.target.value)}
+      />
+    </ConfigItem>
+  );
+};
