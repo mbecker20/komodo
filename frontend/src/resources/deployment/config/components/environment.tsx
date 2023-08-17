@@ -14,7 +14,7 @@ export const EnvVars = ({
   const [env, setEnv] = useState(parseEnvVarseToDotEnv(vars));
   useEffect(() => {
     !!env && set({ environment: parseDotEnvToEnvVars(env) });
-  }, [env]);
+  }, [env, set]);
 
   return (
     <ConfigItem
