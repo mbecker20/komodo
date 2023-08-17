@@ -79,8 +79,6 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
               onChange={(process_args) => set({ process_args })}
             />
           ),
-        },
-        network: {
           network: (value, set) => (
             <NetworkModeSelector
               selected={value}
@@ -89,13 +87,11 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
           ),
           ports: (value, set) =>
             show_ports && <PortsConfig ports={value ?? []} set={set} />,
+          volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
         },
         environment: {
           skip_secret_interp: true,
           environment: (vars, set) => <EnvVars vars={vars ?? []} set={set} />,
-        },
-        volumes: {
-          volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
         },
       }}
     />

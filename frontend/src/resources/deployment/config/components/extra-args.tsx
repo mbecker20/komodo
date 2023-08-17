@@ -2,7 +2,7 @@ import { ConfigItem } from "@components/config/util";
 import { DeploymentConfig } from "@monitor/client/dist/types";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
-import { MinusCircle } from "lucide-react";
+import { MinusCircle, PlusCircle } from "lucide-react";
 
 export const ExtraArgs = ({
   args,
@@ -39,9 +39,10 @@ export const ExtraArgs = ({
         <Button
           variant="outline"
           intent="success"
+          className="flex items-center gap-2 w-[200px] place-self-end"
           onClick={() => set({ extra_args: [...args, ""] })}
         >
-          Add Extra Arg
+          <PlusCircle className="w-4 h-4" /> Add Extra Arg
         </Button>
       </div>
     </ConfigItem>
