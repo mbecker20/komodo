@@ -12,6 +12,10 @@ const RedeployContainer = ({ deployment_id }: DeploymentId) => {
   const { mutate, isLoading } = useExecute("Deploy");
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deployment_id);
+  const deploying = useRead("GetDeploymentActionState", {
+    id: deployment_id,
+  }).data?.deploying;
+
   return (
     <ConfirmButton
       title={deployment?.info.status ? "Redeploy" : "Deploy"}
@@ -19,6 +23,7 @@ const RedeployContainer = ({ deployment_id }: DeploymentId) => {
       icon={<Rocket className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id })}
       disabled={isLoading}
+      loading={deploying}
     />
   );
 };
@@ -26,8 +31,11 @@ const RedeployContainer = ({ deployment_id }: DeploymentId) => {
 const StartContainer = ({ deployment_id }: DeploymentId) => {
   const { data: d } = useRead("GetDeployment", { id: deployment_id });
   const { mutate, isLoading } = useExecute("StartContainer");
-  if (!d) return null;
+  const starting = useRead("GetDeploymentActionState", {
+    id: deployment_id,
+  }).data?.starting;
 
+  if (!d) return null;
   return (
     <ActionWithDialog
       name={d.name}
@@ -36,6 +44,7 @@ const StartContainer = ({ deployment_id }: DeploymentId) => {
       icon={<Play className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id })}
       disabled={isLoading}
+      loading={starting}
     />
   );
 };
@@ -43,6 +52,9 @@ const StartContainer = ({ deployment_id }: DeploymentId) => {
 const StopContainer = ({ deployment_id }: DeploymentId) => {
   const { data: d } = useRead("GetDeployment", { id: deployment_id });
   const { mutate, isLoading } = useExecute("StopContainer");
+  const stopping = useRead("GetDeploymentActionState", {
+    id: deployment_id,
+  }).data?.stopping;
 
   if (!d) return null;
   return (
@@ -53,6 +65,7 @@ const StopContainer = ({ deployment_id }: DeploymentId) => {
       icon={<Pause className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id })}
       disabled={isLoading}
+      loading={stopping}
     />
   );
 };
@@ -69,22 +82,28 @@ const StartOrStopContainer = ({ deployment_id }: DeploymentId) => {
 };
 
 const RemoveContainer = ({ deployment_id }: DeploymentId) => {
-  const { data: d } = useRead("GetDeployment", { id: deployment_id });
+  const deployment = useRead("GetDeployment", { id: deployment_id }).data;
   const { mutate, isLoading } = useExecute("RemoveContainer");
 
   const deployments = useRead("ListDeployments", {}).data;
-  const deployment = deployments?.find((d) => d.id === deployment_id);
-  if (deployment?.info.state === DockerContainerState.NotDeployed) return null;
+  const state = deployments?.find((d) => d.id === deployment_id)?.info.state;
 
-  if (!d) return null;
+  const removing = useRead("GetDeploymentActionState", {
+    id: deployment_id,
+  }).data?.removing;
+
+  if (!deployment) return null;
+  if (state === DockerContainerState.NotDeployed) return null;
+
   return (
     <ActionWithDialog
-      name={d.name}
+      name={deployment.name}
       title="Remove"
       intent="warning"
       icon={<Trash className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id })}
       disabled={isLoading}
+      loading={removing}
     />
   );
 };
@@ -93,6 +112,8 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
   const nav = useNavigate();
   const { data: d } = useRead("GetDeployment", { id });
   const { mutateAsync, isLoading } = useExecute("RemoveContainer");
+
+  const deleting = useRead("GetDeploymentActionState", { id }).data?.deleting;
 
   if (!d) return null;
   <ActionWithDialog
@@ -105,6 +126,7 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
       nav("/");
     }}
     disabled={isLoading}
+    loading={deleting}
   />;
 };
 
