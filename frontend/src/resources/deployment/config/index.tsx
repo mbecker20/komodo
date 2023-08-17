@@ -38,7 +38,6 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
   const { mutate } = useWrite("UpdateDeployment");
 
   if (!config) return null;
-  console.log(config);
 
   const show_ports = update.network
     ? update.network !== "host"
