@@ -2,7 +2,7 @@
 members = ["bin/*", "lib/*", "client/rs"]
 
 [workspace.package]
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["mbecker20 <becker.maxh@gmail.com>"]
 license = "GPL-3.0-or-later"
@@ -19,11 +19,11 @@ logger = { path = "lib/logger" }
 run_command = { version = "0.0.6", features = ["async_tokio"] }
 slack = { package = "slack_client_rs", version = "0.1.0" }
 merge_config_files = "0.1.3"
-termination_signal = "0.1.2"
+termination_signal = "0.1.3"
 async_timing_util = "0.1.14"
 partial_derive2 = "0.2.1"
 derive_variants = "0.1.1"
-make_option = "0.1.3"
+make_option = "0.1.7"
 resolver_api = "0.1.6"
 parse_csl = "0.1.0"
 mungos = "0.4.18"

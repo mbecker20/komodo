@@ -2,7 +2,7 @@ use monitor_types::entities::{
     deployment::{Deployment, DockerContainerState},
     server::{
         stats::{
-            AllSystemStats, BasicSystemStats, ServerHealth, SingleDiskUsage, StatsState,
+            AllSystemStats, BasicSystemStats, ServerHealth, SeverityLevel, SingleDiskUsage,
             SystemComponent,
         },
         Server, ServerConfig, ServerStatus,
@@ -83,23 +83,23 @@ fn get_server_health(server: &Server, stats: &AllSystemStats) -> ServerHealth {
     let mut health = ServerHealth::default();
 
     if cpu_perc >= cpu_critical {
-        health.cpu = StatsState::Critical
+        health.cpu = SeverityLevel::Critical
     } else if cpu_perc >= cpu_warning {
-        health.cpu = StatsState::Warning
+        health.cpu = SeverityLevel::Warning
     }
 
     let mem_perc = 100.0 * mem_used_gb / mem_total_gb;
     if mem_perc >= *mem_critical {
-        health.mem = StatsState::Critical
+        health.mem = SeverityLevel::Critical
     } else if mem_perc >= *mem_warning {
-        health.mem = StatsState::Warning
+        health.mem = SeverityLevel::Warning
     }
 
     let disk_perc = 100.0 * disk_used_gb / disk_total_gb;
     if disk_perc >= *disk_critical {
-        health.disk = StatsState::Critical
+        health.disk = SeverityLevel::Critical
     } else if disk_perc >= *disk_warning {
-        health.disk = StatsState::Warning
+        health.disk = SeverityLevel::Warning
     }
 
     for SingleDiskUsage {
@@ -110,11 +110,11 @@ fn get_server_health(server: &Server, stats: &AllSystemStats) -> ServerHealth {
     {
         let perc = 100.0 * used_gb / total_gb;
         let stats_state = if perc >= *disk_critical {
-            StatsState::Critical
+            SeverityLevel::Critical
         } else if perc >= *disk_warning {
-            StatsState::Warning
+            SeverityLevel::Warning
         } else {
-            StatsState::Ok
+            SeverityLevel::Ok
         };
         health.disks.insert(mount.clone(), stats_state);
     }
@@ -129,14 +129,14 @@ fn get_server_health(server: &Server, stats: &AllSystemStats) -> ServerHealth {
         let stats_state = if let Some(critical) = critical {
             let perc = temp / critical;
             if perc >= 0.95 {
-                StatsState::Critical
+                SeverityLevel::Critical
             } else if perc >= 0.85 {
-                StatsState::Warning
+                SeverityLevel::Warning
             } else {
-                StatsState::Ok
+                SeverityLevel::Ok
             }
         } else {
-            StatsState::Ok
+            SeverityLevel::Ok
         };
         health.temps.insert(label.clone(), stats_state);
     }

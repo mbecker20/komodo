@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Context};
 use monitor_types::entities::{
-    alert::Alert, alerter::*, deployment::DockerContainerState, server::stats::SystemProcess,
+    alert::{Alert, AlertData},
+    alerter::*,
+    deployment::DockerContainerState,
+    server::stats::SystemProcess,
 };
 use reqwest::StatusCode;
 use slack::types::Block;
@@ -13,8 +16,9 @@ pub async fn send_alert(alerter: &Alerter, alert: &Alert) -> anyhow::Result<()> 
 }
 
 pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
-    let (text, blocks): (_, Option<_>) = match alert {
-        Alert::ServerUnreachable { name, region, .. } => {
+    let level = alert.level;
+    let (text, blocks): (_, Option<_>) = match &alert.data {
+        AlertData::ServerUnreachable { name, region, .. } => {
             let region = fmt_region(region);
             let text = format!("CRITICAL 🚨 | *{name}*{region} is *unreachable* ❌");
             let blocks = vec![
@@ -23,19 +27,18 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             ];
             (text, blocks.into())
         }
-        Alert::ServerCpu {
+        AlertData::ServerCpu {
             name,
             region,
-            state,
             percentage,
             top_procs,
             ..
         } => {
             let region = fmt_region(region);
             let text =
-                format!("{state} 🚨 | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
+                format!("{level} 🚨 | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
             let blocks = vec![
-                Block::header(format!("{state} 🚨")),
+                Block::header(format!("{level} 🚨")),
                 Block::section(format!(
                     "*{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨"
                 )),
@@ -43,10 +46,9 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             ];
             (text, blocks.into())
         }
-        Alert::ServerMem {
+        AlertData::ServerMem {
             name,
             region,
-            state,
             used_gb,
             total_gb,
             top_procs,
@@ -55,9 +57,9 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             let region = fmt_region(region);
             let percentage = 100.0 * used_gb / total_gb;
             let text =
-                format!("{state} 🚨 | *{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨");
+                format!("{level} 🚨 | *{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨");
             let blocks = vec![
-                Block::header(format!("{state} 🚨")),
+                Block::header(format!("{level} 🚨")),
                 Block::section(format!(
                     "*{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨"
                 )),
@@ -66,10 +68,9 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             ];
             (text, blocks.into())
         }
-        Alert::ServerDisk {
+        AlertData::ServerDisk {
             name,
             region,
-            state,
             path,
             used_gb,
             total_gb,
@@ -78,9 +79,9 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             let region = fmt_region(region);
             let percentage = 100.0 * used_gb / total_gb;
             let text =
-                format!("{state} 🚨 | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path}* 💿 🚨");
+                format!("{level} 🚨 | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path}* 💿 🚨");
             let blocks = vec![
-                Block::header(format!("{state} 🚨")),
+                Block::header(format!("{level} 🚨")),
                 Block::section(format!(
                     "*{name}*{region} disk usage at *{percentage:.1}%* 💿 🚨"
                 )),
@@ -90,27 +91,26 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             ];
             (text, blocks.into())
         }
-        Alert::ServerTemp {
+        AlertData::ServerTemp {
             name,
             region,
-            state,
             temp,
             max,
             ..
         } => {
             let region = fmt_region(region);
             let text = format!(
-                "{state} 🚨 | *{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
+                "{level} 🚨 | *{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
             );
             let blocks = vec![
-                Block::header(format!("{state} 🚨")),
+                Block::header(format!("{level} 🚨")),
                 Block::section(format!(
                     "*{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
                 )),
             ];
             (text, blocks.into())
         }
-        Alert::ContainerStateChange {
+        AlertData::ContainerStateChange {
             name,
             server,
             from,
@@ -125,7 +125,7 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             ];
             (text, blocks.into())
         }
-        Alert::None {} => Default::default(),
+        AlertData::None {} => Default::default(),
     };
     if !text.is_empty() {
         let slack = slack::Client::new(url);
