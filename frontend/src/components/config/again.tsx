@@ -39,8 +39,10 @@ export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
               return (
                 <ConfigInput
                   label={key.toString()}
-                  value={value}
-                  onChange={(value) => set({ [key]: value } as Partial<T>)}
+                  value={Number(value)}
+                  onChange={(value) =>
+                    set({ [key]: Number(value) } as Partial<T>)
+                  }
                 />
               );
             case "boolean":
