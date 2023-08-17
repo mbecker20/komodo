@@ -14,6 +14,7 @@ import {
 } from "@monitor/client/dist/responses";
 import { useEffect, useState } from "react";
 import { ReadRequest } from "@monitor/client/dist/types";
+import { toast } from "@ui/toast/use-toast";
 
 export const useRead = <
   T extends Types.ReadRequest["type"],
@@ -26,7 +27,9 @@ export const useRead = <
     "initialData" | "queryFn" | "queryKey"
   >
 ) =>
-  useQuery([type, params], () => client.read({ type, params } as any), config);
+  useQuery([type, params], () => client.read({ type, params } as any), {
+    ...config,
+  });
 
 export const useWrite = <
   T extends Types.WriteRequest["type"],
@@ -38,11 +41,13 @@ export const useWrite = <
     "mutationKey" | "mutationFn"
   >
 ) =>
-  useMutation(
-    [type],
-    (params: P) => client.write({ type, params } as any),
-    config
-  );
+  useMutation([type], (params: P) => client.write({ type, params } as any), {
+    ...config,
+    onError: (e, v, c) => {
+      toast({ title: `Error - ${type} Failed`, intent: "danger" });
+      config?.onError && config.onError(e, v, c);
+    },
+  });
 
 export const useExecute = <
   T extends Types.ExecuteRequest["type"],
@@ -54,11 +59,13 @@ export const useExecute = <
     "mutationKey" | "mutationFn"
   >
 ) =>
-  useMutation(
-    [type],
-    (params: P) => client.execute({ type, params } as any),
-    config
-  );
+  useMutation([type], (params: P) => client.execute({ type, params } as any), {
+    ...config,
+    onError: (e, v, c) => {
+      toast({ title: `Error - ${type} Failed`, intent: "danger" });
+      config?.onError && config.onError(e, v, c);
+    },
+  });
 
 export const useInvalidate = () => {
   const qc = useQueryClient();
@@ -69,21 +76,6 @@ export const useInvalidate = () => {
   >(
     ...keys: Array<[T] | [T, P]>
   ) => keys.forEach((k) => qc.invalidateQueries([...k]));
-};
-
-export const useInvalidateDeployments = (id: string) => {
-  const invalidate = useInvalidate();
-
-  return () => {
-    invalidate(
-      ["ListDeployments"],
-      ["GetDeployment", { id }],
-      ["GetLog", { id }],
-      ["GetDeploymentActionState", { id }],
-      ["GetDeploymentStatus", { id }],
-      ["Deployment"]
-    );
-  };
 };
 
 export const useUser = () => useRead("GetUser", {});
