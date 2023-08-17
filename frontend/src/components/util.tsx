@@ -167,9 +167,9 @@ export const ConfirmButton = ({
 }: {
   title: string;
   icon: ReactNode;
+  onClick: () => void;
   intent?: ButtonProps["intent"];
   disabled?: boolean;
-  onClick?: () => void;
 }) => {
   const [confirmed, set] = useState(false);
 
@@ -180,7 +180,14 @@ export const ConfirmButton = ({
         icon={confirmed ? <Check className="w-4 h-4" /> : icon}
         intent={intent}
         disabled={disabled}
-        onClick={confirmed ? onClick : () => set(true)}
+        onClick={
+          confirmed
+            ? () => {
+                onClick();
+                set(false);
+              }
+            : () => set(true)
+        }
         className={confirmed ? "z-50" : ""}
       />
       {confirmed && (
