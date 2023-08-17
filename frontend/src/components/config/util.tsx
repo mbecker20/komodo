@@ -102,13 +102,13 @@ export const DoubleInput = <
       {values?.map((value, i) => (
         <div className="flex items-center justify-between gap-4" key={i}>
           <Input
-            value={value[leftval]}
+            value={value[leftval] as any}
             placeholder={leftpl}
             onChange={(e) => onLeftChange(e.target.value as T[L], i)}
           />
           :
           <Input
-            value={value[rightval]}
+            value={value[rightval] as any}
             placeholder={rightpl}
             onChange={(e) => onRightChange(e.target.value as T[R], i)}
           />
