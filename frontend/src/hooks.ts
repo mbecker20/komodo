@@ -106,7 +106,7 @@ export const useServerStats = (server_id: string) => {
 
 export const useAddRecentlyViewed = (
   type: Types.ResourceTarget["type"],
-  id: string
+  id: string | undefined
 ) => {
   const invalidate = useInvalidate();
   const push = useWrite("PushRecentlyViewed", {
@@ -114,8 +114,8 @@ export const useAddRecentlyViewed = (
   }).mutate;
 
   useEffect(() => {
-    push({ resource: { type, id } } as any);
-  }, []);
+    id && push({ resource: { type, id } });
+  }, [id]);
 
   return push;
 };
