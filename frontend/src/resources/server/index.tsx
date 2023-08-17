@@ -72,9 +72,8 @@ const ServerConfig = ({ id }: { id: string }) => {
 
 export const ServerPage = () => {
   const id = useParams().serverId;
-
-  if (!id) return null;
   useAddRecentlyViewed("Server", id);
+  if (!id) return null;
 
   return (
     <Resource

@@ -93,8 +93,8 @@ export const AlerterConfig = ({ id }: { id: string }) => {
 
 export const AlerterPage = () => {
   const id = useParams().alerterId;
-  if (!id) return null;
   useAddRecentlyViewed("Alerter", id);
+  if (!id) return null;
 
   return (
     <Resource

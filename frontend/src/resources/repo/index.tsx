@@ -14,8 +14,8 @@ export const RepoName = ({ id }: { id: string }) => {
 
 export const RepoPage = () => {
   const id = useParams().repoId;
-  if (!id) return null;
   useAddRecentlyViewed("Repo", id);
+  if (!id) return null;
 
   return (
     <Page title="Repo" subtitle="" actions="">

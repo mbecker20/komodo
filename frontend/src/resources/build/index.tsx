@@ -31,8 +31,8 @@ export const BuildCard = ({ id }: { id: string }) => {
 
 export const BuildPage = () => {
   const id = useParams().buildId;
-  if (!id) return null;
   useAddRecentlyViewed("Build", id);
+  if (!id) return null;
 
   return (
     <Resource

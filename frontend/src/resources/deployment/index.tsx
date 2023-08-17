@@ -37,8 +37,8 @@ export const DeploymentCard = ({ id }: { id: string }) => {
 
 export const DeploymentPage = () => {
   const id = useParams().deploymentId;
-  if (!id) return null;
   useAddRecentlyViewed("Deployment", id);
+  if (!id) return null;
 
   return (
     <Resource

@@ -40,9 +40,8 @@ export const BuilderCard = ({ id }: { id: string }) => {
 
 export const BuilderPage = () => {
   const id = useParams().builderId;
-
-  if (!id) return null;
   useAddRecentlyViewed("Builder", id);
+  if (!id) return null;
 
   return (
     <Resource title={<BuilderName id={id} />} info={<></>} actions={<></>}>
