@@ -1,5 +1,6 @@
 import { ConfigAgain } from "@components/config/again";
 import { ConfirmUpdate } from "@components/config/confirm-update";
+import { Resource } from "@monitor/client/dist/types";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { keys } from "@util/helpers";
@@ -46,13 +47,13 @@ export const Section = ({ title, icon, actions, children }: SectionProps) => (
   </div>
 );
 
-export const ConfigLayout = ({
+export const ConfigLayout = <T extends Resource<unknown, unknown>["config"]>({
   content,
   children,
   onConfirm,
   onReset,
 }: {
-  content: any;
+  content: Partial<T>;
   children: ReactNode;
   onConfirm: () => void;
   onReset: () => void;
