@@ -1,6 +1,6 @@
 import { ReactNode, forwardRef, useEffect, useState } from "react";
 import { Button, ButtonProps } from "../ui/button";
-import { Check, Moon, SunMedium } from "lucide-react";
+import { Check, Loader2, Moon, SunMedium } from "lucide-react";
 import { Input } from "../ui/input";
 import {
   Dialog,
@@ -78,8 +78,9 @@ export const ActionButton = forwardRef<
     disabled?: boolean;
     className?: string;
     onClick?: () => void;
+    loading?: boolean;
   }
->(({ title, icon, intent, disabled, className, onClick }, ref) => (
+>(({ title, icon, intent, disabled, className, loading, onClick }, ref) => (
   <Button
     variant="outline"
     className={cn("flex items-center justify-between w-[150px]", className)}
@@ -88,7 +89,7 @@ export const ActionButton = forwardRef<
     disabled={disabled}
     ref={ref}
   >
-    {title} {icon}
+    {title} {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
   </Button>
 ));
 
@@ -98,6 +99,7 @@ export const ActionWithDialog = ({
   icon,
   intent,
   disabled,
+  loading,
   onClick,
 }: {
   name: string;
@@ -105,6 +107,7 @@ export const ActionWithDialog = ({
   icon: ReactNode;
   intent?: ButtonProps["intent"];
   disabled?: boolean;
+  loading?: boolean;
   onClick?: () => void;
 }) => {
   const [open, setOpen] = useState(false);
@@ -119,6 +122,7 @@ export const ActionWithDialog = ({
           intent={intent}
           disabled={disabled}
           onClick={() => setOpen(true)}
+          loading={loading}
         />
       </DialogTrigger>
       <DialogContent>
@@ -163,11 +167,13 @@ export const ConfirmButton = ({
   icon,
   intent,
   disabled,
+  loading,
   onClick,
 }: {
   title: string;
   icon: ReactNode;
   onClick: () => void;
+  loading?: boolean;
   intent?: ButtonProps["intent"];
   disabled?: boolean;
 }) => {
@@ -189,6 +195,7 @@ export const ConfirmButton = ({
             : () => set(true)
         }
         className={confirmed ? "z-50" : ""}
+        loading={loading}
       />
       {confirmed && (
         <div
