@@ -26,33 +26,35 @@ const on_message = (
 
   invalidate(["ListUpdates"]);
 
-  if (update.target.type === "Deployment") {
-    invalidate(
-      ["ListDeployments"],
-      ["GetDeployment", { id: update.target.id }],
-      ["GetLog", { id: update.target.id }],
-      ["GetDeploymentActionState", { id: update.target.id }],
-      ["GetDeploymentStatus", { id: update.target.id }]
-    );
-  }
+  setTimeout(() => {
+    if (update.target.type === "Deployment") {
+      invalidate(
+        ["ListDeployments"],
+        ["GetDeployment", { id: update.target.id }],
+        ["GetLog", { id: update.target.id }],
+        ["GetDeploymentActionState", { id: update.target.id }],
+        ["GetDeploymentStatus", { id: update.target.id }]
+      );
+    }
 
-  if (update.target.type === "Server") {
-    invalidate(
-      ["ListServers"],
-      ["GetServer", { id: update.target.id }],
-      ["GetServerActionState", { id: update.target.id }],
-      ["GetServerStatus", { id: update.target.id }],
-      ["GetHistoricalServerStats", { id: update.target.id }]
-    );
-  }
+    if (update.target.type === "Server") {
+      invalidate(
+        ["ListServers"],
+        ["GetServer", { id: update.target.id }],
+        ["GetServerActionState", { id: update.target.id }],
+        ["GetServerStatus", { id: update.target.id }],
+        ["GetHistoricalServerStats", { id: update.target.id }]
+      );
+    }
 
-  if (update.target.type === "Build") {
-    invalidate(
-      ["ListBuilds"],
-      ["GetBuild", { id: update.target.id }],
-      ["GetBuildActionState", { id: update.target.id }]
-    );
-  }
+    if (update.target.type === "Build") {
+      invalidate(
+        ["ListBuilds"],
+        ["GetBuild", { id: update.target.id }],
+        ["GetBuildActionState", { id: update.target.id }]
+      );
+    }
+  }, 100);
 };
 
 const on_open = (ws: rws) => {
