@@ -72,7 +72,7 @@ export const ImageConfig = ({
         onSelect={(type) =>
           set({
             image: {
-              type: type as any,
+              type: type,
               params:
                 type === "Image"
                   ? { image: "" }
