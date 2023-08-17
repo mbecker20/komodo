@@ -30,6 +30,7 @@ export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
             case "string":
               return (
                 <ConfigInput
+                  key={key.toString()}
                   label={key.toString()}
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
@@ -38,6 +39,7 @@ export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
             case "number":
               return (
                 <ConfigInput
+                  key={key.toString()}
                   label={key.toString()}
                   value={Number(value)}
                   onChange={(value) =>
@@ -48,6 +50,7 @@ export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
             case "boolean":
               return (
                 <ConfigSwitch
+                  key={key.toString()}
                   label={key.toString()}
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
