@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
+import { Progress } from "@ui/progress";
 import { Cpu, Database, LineChart, MemoryStick } from "lucide-react";
 import { useParams } from "react-router-dom";
 
@@ -24,7 +25,6 @@ export const ServerStats = () => {
         <CPU server_id={server_id} />
         <RAM server_id={server_id} />
         <DISK server_id={server_id} />
-        <LOAD server_id={server_id} />
       </div>
     </Section>
   );
@@ -44,12 +44,7 @@ const CPU = ({ server_id }: { server_id: string }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="relative w-full rounded-lg bg-muted-foreground h-4">
-          <div
-            className="bg-blue-500 rounded-lg h-4 absolute left-0 top-0"
-            style={{ width: `${perc}%` }}
-          />
-        </div>
+        <Progress value={perc} className="h-4" />
       </CardContent>
     </Card>
   );
@@ -72,12 +67,7 @@ const RAM = ({ server_id }: { server_id: string }) => {
         </div>
       </CardHeader>
       <CardContent>
-        {!isNaN(perc) && (
-          <div
-            className="bg-blue-500 rounded-lg h-4"
-            style={{ width: `${perc}%` }}
-          />
-        )}
+        <Progress value={perc} className="h-4" />
       </CardContent>
     </Card>
   );
@@ -100,31 +90,7 @@ const DISK = ({ server_id }: { server_id: string }) => {
         </div>
       </CardHeader>
       <CardContent>
-        {!isNaN(perc) && (
-          <div
-            className="bg-blue-500 rounded-lg h-4"
-            style={{ width: `${perc}%` }}
-          />
-        )}
-      </CardContent>
-    </Card>
-  );
-};
-
-const LOAD = ({ server_id }: { server_id: string }) => {
-  const stats = useServerStats(server_id);
-  const perc = stats?.basic.system_load;
-
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>System Load</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div
-          className="bg-blue-500 rounded-lg h-4"
-          style={{ width: `${perc}%` }}
-        />
+        <Progress value={perc} className="h-4" />
       </CardContent>
     </Card>
   );
