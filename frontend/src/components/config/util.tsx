@@ -14,7 +14,6 @@ import { Switch } from "@ui/switch";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { ReactNode } from "react";
 import { cn } from "@util/helpers";
-import { Resource } from "@monitor/client/dist/types";
 
 export const ConfigItem = ({
   label,
