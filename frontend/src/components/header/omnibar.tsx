@@ -62,10 +62,12 @@ export const Omnibar = () => {
       <Button
         variant="outline"
         onClick={() => set(true)}
-        className="flex items-center gap-4 w-[300px] justify-start"
+        className="flex items-center gap-4 md:w-[300px] justify-start"
       >
         <Search className="w-4 h-4" />{" "}
-        <span className="text-muted-foreground">Search {"(shift+s)"}</span>
+        <span className="text-muted-foreground hidden md:block">
+          Search {"(shift+s)"}
+        </span>
       </Button>
       <CommandDialog open={open} onOpenChange={set}>
         <CommandInput placeholder="Type a command or search..." />
