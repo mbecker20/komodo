@@ -1,16 +1,21 @@
 import { Button } from "@ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs";
-import { AlertOctagon, ChevronDown, TerminalSquare } from "lucide-react";
+import {
+  AlertOctagon,
+  ChevronDown,
+  RefreshCw,
+  TerminalSquare,
+} from "lucide-react";
 import { useRead } from "@hooks";
 import { Section } from "@layouts/page";
 import { DockerContainerState } from "@monitor/client/dist/types";
 import {
   Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectContent,
+  SelectItem,
+  SelectGroup,
 } from "@ui/select";
 import { useState } from "react";
 
@@ -49,11 +54,11 @@ export const DeploymentLogs = ({
 }) => {
   const [tail, set] = useState("50");
 
-  const logs = useRead(
+  const { data: logs, refetch } = useRead(
     "GetLog",
     { deployment_id, tail: Number(tail) },
     { refetchInterval: 30000 }
-  ).data;
+  );
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === deployment_id);
 
@@ -65,19 +70,22 @@ export const DeploymentLogs = ({
         title="Logs"
         icon={<TerminalSquare className="w-4 h-4" />}
         actions={
-          <div className="flex gap-4">
-            <TailLengthSelector selected={tail} onSelect={set} />
+          <div className="flex gap-2">
             <TabsList className="w-fit place-self-end">
               <TabsTrigger value="stdout" onClick={to_bottom("stdout")}>
-                Out
+                stdout
               </TabsTrigger>
               <TabsTrigger value="stderr" onClick={to_bottom("stderr")}>
-                Err
+                stderr
                 {logs?.stderr && (
                   <AlertOctagon className="w-4 h-4 ml-2 stroke-red-500" />
                 )}
               </TabsTrigger>
             </TabsList>
+            <Button variant="secondary" onClick={() => refetch()}>
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+            <TailLengthSelector selected={tail} onSelect={set} />
           </div>
         }
       >
