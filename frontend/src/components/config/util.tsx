@@ -26,7 +26,7 @@ export const ConfigItem = ({
 }) => (
   <div
     className={cn(
-      "flex justify-between items-center border-b pb-4 mb-4 min-h-[60px] last:border-none last:mb-0",
+      "flex justify-between items-center border-b pb-2 min-h-[60px] last:border-none last:pb-0",
       className
     )}
   >

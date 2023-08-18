@@ -64,7 +64,7 @@ const BuilderConfigInner = ({
     >
       <div className="flex gap-4">
         <div className="flex flex-col gap-4 w-[300px]">
-          <Button>General</Button>
+          <Button variant="secondary">General</Button>
         </div>
         <Card className="w-full">
           <CardHeader className="border-b">
