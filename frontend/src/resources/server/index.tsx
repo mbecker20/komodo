@@ -52,18 +52,26 @@ const ServerConfig = ({ id }: { id: string }) => {
       onSave={() => mutate({ id, config: update })}
       components={{
         general: {
-          address: true,
-          region: true,
-          enabled: true,
-          auto_prune: true,
+          general: {
+            address: true,
+            region: true,
+            enabled: true,
+            auto_prune: true,
+          },
         },
         warnings: {
-          cpu_warning: true,
-          cpu_critical: true,
-          disk_warning: true,
-          disk_critical: true,
-          mem_warning: true,
-          mem_critical: true,
+          cpu: {
+            cpu_warning: true,
+            cpu_critical: true,
+          },
+          memory: {
+            mem_warning: true,
+            mem_critical: true,
+          },
+          disk: {
+            disk_warning: true,
+            disk_critical: true,
+          },
         },
       }}
     />
