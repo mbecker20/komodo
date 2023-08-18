@@ -2,7 +2,10 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{entities::alerter::{Alerter, AlerterListItem}, MongoDocument};
+use crate::{
+    entities::alerter::{Alerter, AlerterListItem},
+    MongoDocument,
+};
 
 //
 

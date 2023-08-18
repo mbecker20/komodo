@@ -1,7 +1,10 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
-    entities::{alerter::{Alerter, AlerterListItem}, PermissionLevel},
+    entities::{
+        alerter::{Alerter, AlerterListItem},
+        PermissionLevel,
+    },
     requests::read::*,
 };
 use mungos::mongodb::bson::doc;

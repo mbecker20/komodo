@@ -120,7 +120,9 @@ impl Log {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, MungosIndexed, EnumVariants)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, MungosIndexed, EnumVariants,
+)]
 #[variant_derive(
     Serialize,
     Deserialize,

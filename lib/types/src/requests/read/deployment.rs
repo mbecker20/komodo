@@ -5,7 +5,8 @@ use typeshare::typeshare;
 use crate::{
     entities::{
         deployment::{
-            Deployment, DeploymentActionState, DockerContainerState, DockerContainerStats, DeploymentListItem,
+            Deployment, DeploymentActionState, DeploymentListItem, DockerContainerState,
+            DockerContainerStats,
         },
         update::Log,
     },

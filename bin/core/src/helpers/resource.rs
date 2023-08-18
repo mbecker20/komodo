@@ -123,7 +123,7 @@ pub trait StateResource<T: Send + Sync + Unpin + Serialize + DeserializeOwned + 
             .await
             .into_iter()
             .collect::<anyhow::Result<Vec<_>>>()
-            .context("failed to convert deployment list item")?;
+            .context(format!("failed to convert {} list item", Self::name()))?;
 
         Ok(list)
     }

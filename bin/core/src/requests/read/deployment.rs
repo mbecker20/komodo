@@ -6,7 +6,7 @@ use monitor_types::{
     entities::{
         deployment::{
             Deployment, DeploymentActionState, DeploymentConfig, DeploymentImage,
-            DockerContainerState, DockerContainerStats, DeploymentListItem,
+            DeploymentListItem, DockerContainerState, DockerContainerStats,
         },
         server::Server,
         update::{Log, UpdateStatus},
@@ -59,7 +59,11 @@ impl Resolve<GetDeploymentStatus, RequestUser> for State {
             .await
             .unwrap_or_default();
         let response = GetDeploymentStatusResponse {
-            status: status.curr.container.as_ref().and_then(|c| c.status.clone()),
+            status: status
+                .curr
+                .container
+                .as_ref()
+                .and_then(|c| c.status.clone()),
             state: status.curr.state,
         };
         Ok(response)

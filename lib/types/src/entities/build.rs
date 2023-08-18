@@ -6,7 +6,10 @@ use typeshare::typeshare;
 
 use crate::I64;
 
-use super::{resource::{Resource, ResourceListItem}, EnvironmentVar, SystemCommand, Version};
+use super::{
+    resource::{Resource, ResourceListItem},
+    EnvironmentVar, SystemCommand, Version,
+};
 
 #[typeshare]
 pub type Build = Resource<BuildConfig, BuildInfo>;

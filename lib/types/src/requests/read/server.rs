@@ -12,7 +12,7 @@ use crate::{
                 AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage,
                 SystemComponent, SystemInformation, SystemProcess, SystemStatsRecord,
             },
-            Server, ServerActionState, ServerStatus, ServerListItem,
+            Server, ServerActionState, ServerListItem, ServerStatus,
         },
         Timelength,
     },

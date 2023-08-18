@@ -103,9 +103,7 @@ pub struct ServerActionState {
     pub pruning_images: bool,
 }
 
-#[derive(
-    Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default,
-)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum ServerStatus {
     Ok,

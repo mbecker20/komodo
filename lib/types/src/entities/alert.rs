@@ -38,13 +38,24 @@ pub struct Alert {
     pub level: SeverityLevel,
 
     pub target: ResourceTarget,
+    pub variant: AlertDataVariant,
     pub data: AlertData,
     pub resolved_ts: Option<I64>,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants, MungosIndexed)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[variant_derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    Hash,
+    MungosIndexed
+)]
 #[serde(tag = "type", content = "data")]
 pub enum AlertData {
     ServerUnreachable {

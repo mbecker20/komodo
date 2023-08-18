@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use chrono::{DateTime, Utc, SecondsFormat, LocalResult, TimeZone};
+use chrono::{DateTime, LocalResult, SecondsFormat, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
 
 pub mod traits;
@@ -205,7 +205,6 @@ pub enum Timelength {
     #[serde(rename = "30-day")]
     ThirtyDays,
 }
-
 
 pub fn unix_from_monitor_ts(ts: &str) -> anyhow::Result<i64> {
     Ok(DateTime::parse_from_rfc3339(ts)
