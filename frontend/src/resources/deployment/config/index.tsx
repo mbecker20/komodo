@@ -5,6 +5,7 @@ import { useState } from "react";
 import {
   AccountSelector,
   ConfigInput,
+  ConfigItem,
   ResourceSelector,
 } from "@components/config/util";
 import { ImageConfig } from "./components/image";
@@ -22,14 +23,13 @@ export const ServerSelector = ({
   selected: string | undefined;
   set: (input: Partial<Types.DeploymentConfig>) => void;
 }) => (
-  <div className="flex items-center justify-between border-b pb-4">
-    Server
+  <ConfigItem label="Server">
     <ResourceSelector
       type="Server"
       selected={selected}
       onSelect={(server_id) => set({ server_id })}
     />
-  </div>
+  </ConfigItem>
 );
 
 export const DeploymentConfig = ({ id }: { id: string }) => {
@@ -53,45 +53,55 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
       onSave={() => mutate({ id, config: update })}
       components={{
         general: {
-          server_id: (value, set) => (
-            <ServerSelector selected={value} set={set} />
-          ),
-          image: (value, set) => <ImageConfig image={value} set={set} />,
-          docker_account: (value, set) => (
-            <AccountSelector
-              id={update.server_id ?? config.server_id}
-              account_type="docker"
-              type="Server"
-              selected={value}
-              onSelect={(docker_account) => set({ docker_account })}
-            />
-          ),
-          restart: (value, set) => (
-            <RestartModeSelector selected={value} set={set} />
-          ),
-          extra_args: (value, set) => (
-            <ExtraArgs args={value ?? []} set={set} />
-          ),
-          process_args: (value, set) => (
-            <ConfigInput
-              label="Process Args"
-              value={value}
-              onChange={(process_args) => set({ process_args })}
-            />
-          ),
-          network: (value, set) => (
-            <NetworkModeSelector
-              selected={value}
-              onSelect={(network) => set({ network })}
-            />
-          ),
-          ports: (value, set) =>
-            show_ports && <PortsConfig ports={value ?? []} set={set} />,
-          volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
+          general: {
+            server_id: (value, set) => (
+              <ServerSelector selected={value} set={set} />
+            ),
+          },
+          container: {
+            image: (value, set) => <ImageConfig image={value} set={set} />,
+            docker_account: (value, set) => (
+              <AccountSelector
+                id={update.server_id ?? config.server_id}
+                account_type="docker"
+                type="Server"
+                selected={value}
+                onSelect={(docker_account) => set({ docker_account })}
+              />
+            ),
+            restart: (value, set) => (
+              <RestartModeSelector selected={value} set={set} />
+            ),
+            extra_args: (value, set) => (
+              <ExtraArgs args={value ?? []} set={set} />
+            ),
+            process_args: (value, set) => (
+              <ConfigInput
+                label="Process Args"
+                value={value}
+                onChange={(process_args) => set({ process_args })}
+              />
+            ),
+          },
+          network: {
+            network: (value, set) => (
+              <NetworkModeSelector
+                selected={value}
+                onSelect={(network) => set({ network })}
+              />
+            ),
+            ports: (value, set) =>
+              show_ports && <PortsConfig ports={value ?? []} set={set} />,
+          },
+          volumes: {
+            volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
+          },
         },
         environment: {
-          skip_secret_interp: true,
-          environment: (vars, set) => <EnvVars vars={vars ?? []} set={set} />,
+          environment: {
+            skip_secret_interp: true,
+            environment: (vars, set) => <EnvVars vars={vars ?? []} set={set} />,
+          },
         },
       }}
     />

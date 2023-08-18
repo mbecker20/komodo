@@ -95,11 +95,14 @@ export const ConfigInner = <T,>({
   onSave: () => void;
   components: Record<
     string,
-    {
-      [K in keyof Partial<T>]:
-        | true
-        | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
-    }
+    Record<
+      string,
+      {
+        [K in keyof Partial<T>]:
+          | true
+          | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
+      }
+    >
   >;
 }) => {
   const [show, setShow] = useState(keys(components)[0]);
@@ -119,19 +122,23 @@ export const ConfigInner = <T,>({
             </Button>
           ))}
         </div>
-        <Card className="w-full min-h-[500px]">
-          <CardHeader className="border-b">
-            <CardTitle className="capitalize">{show}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4 mt-4">
-            <ConfigAgain
-              config={config}
-              update={update}
-              set={(u) => set((p) => ({ ...p, ...u }))}
-              components={components[show]}
-            />
-          </CardContent>
-        </Card>
+        <div className="flex flex-col gap-6 min-h-[500px] w-full">
+          {Object.entries(components[show]).map(([k, v]) => (
+            <Card className="w-full ">
+              <CardHeader className="border-b">
+                <CardTitle className="capitalize">{k}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4 mt-4">
+                <ConfigAgain
+                  config={config}
+                  update={update}
+                  set={(u) => set((p) => ({ ...p, ...u }))}
+                  components={v}
+                />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </ConfigLayout>
   );
