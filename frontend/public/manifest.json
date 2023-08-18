@@ -1,5 +1,6 @@
 {
   "name": "Monitor",
+  "display": "standalone",
   "icons": [
     {
       "src": "icons/windows11/SmallTile.scale-100.png",
