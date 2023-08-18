@@ -3,6 +3,7 @@ extern crate log;
 
 use std::{net::SocketAddr, sync::Arc, time::Instant};
 
+use anyhow::Context;
 use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
@@ -40,9 +41,10 @@ async fn app() -> anyhow::Result<()> {
                         state
                             .resolve_request(request, ())
                             .await
-                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")))
+                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")))
                     })
                     .await
+                    .context("failed in spawned request handler")
                     .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")));
                     if let Err(e) = &res {
                         debug!("request {req_id} SPAWN ERROR: {e:?}");
