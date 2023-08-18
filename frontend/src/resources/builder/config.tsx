@@ -14,6 +14,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { useState } from "react";
 import { ResourceSelector } from "@components/config/util";
 import { SecurityGroupIds } from "./config/security-group-ids";
+import { DockerAccounts } from "./config/docker-accounts";
+import { GithubAccounts } from "./config/github-accounts";
 
 const BuilderTypeSelector = ({
   selected,
@@ -122,6 +124,12 @@ const BuilderConfigInner = ({
                   assign_public_ip: true,
                   security_group_ids: (ids, set) => (
                     <SecurityGroupIds ids={ids} set={set} />
+                  ),
+                  docker_accounts: (accounts, set) => (
+                    <DockerAccounts ids={accounts ?? []} set={set} />
+                  ),
+                  github_accounts: (accounts, set) => (
+                    <GithubAccounts ids={accounts ?? []} set={set} />
                   ),
                 }}
               />
