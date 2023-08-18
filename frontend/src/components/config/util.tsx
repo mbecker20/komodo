@@ -201,3 +201,49 @@ export const AccountSelector = ({
     </ConfigItem>
   );
 };
+
+export const InputList = <T extends { [key: string]: unknown }>({
+  field,
+  values,
+  set,
+}: {
+  field: keyof T;
+  values: string[];
+  set: (update: Partial<T>) => void;
+}) => (
+  <ConfigItem label={field as string} className="items-start">
+    <div className="flex flex-col gap-4 w-full max-w-[400px]">
+      {values.map((arg, i) => (
+        <div className="w-full flex gap-4" key={i}>
+          <Input
+            // placeholder="--extra-arg=value"
+            value={arg}
+            onChange={(e) => {
+              values[i] = e.target.value;
+              set({ [field]: [...values] } as Partial<T>);
+            }}
+          />
+          <Button
+            variant="outline"
+            intent="warning"
+            onClick={() =>
+              set({
+                [field]: [...values.filter((_, idx) => idx !== i)],
+              } as Partial<T>)
+            }
+          >
+            <MinusCircle className="w-4 h-4" />
+          </Button>
+        </div>
+      ))}
+
+      <Button
+        variant="outline"
+        intent="success"
+        onClick={() => set({ [field]: [...values, ""] } as Partial<T>)}
+      >
+        Add Docker Account
+      </Button>
+    </div>
+  </ConfigItem>
+);

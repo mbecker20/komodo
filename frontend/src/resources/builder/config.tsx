@@ -12,10 +12,7 @@ import {
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { useState } from "react";
-import { ResourceSelector } from "@components/config/util";
-import { SecurityGroupIds } from "./config/security-group-ids";
-import { DockerAccounts } from "./config/docker-accounts";
-import { GithubAccounts } from "./config/github-accounts";
+import { InputList, ResourceSelector } from "@components/config/util";
 
 const BuilderTypeSelector = ({
   selected,
@@ -122,14 +119,26 @@ const BuilderConfigInner = ({
                   subnet_id: true,
                   key_pair_name: true,
                   assign_public_ip: true,
-                  security_group_ids: (ids, set) => (
-                    <SecurityGroupIds ids={ids} set={set} />
+                  security_group_ids: (values, set) => (
+                    <InputList
+                      field="security_group_ids"
+                      values={values}
+                      set={set}
+                    />
                   ),
                   docker_accounts: (accounts, set) => (
-                    <DockerAccounts ids={accounts ?? []} set={set} />
+                    <InputList
+                      field="docker_accounts"
+                      values={accounts ?? []}
+                      set={set}
+                    />
                   ),
                   github_accounts: (accounts, set) => (
-                    <GithubAccounts ids={accounts ?? []} set={set} />
+                    <InputList
+                      field="github_accounts"
+                      values={accounts ?? []}
+                      set={set}
+                    />
                   ),
                 }}
               />
