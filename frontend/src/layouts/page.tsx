@@ -62,7 +62,7 @@ export const ConfigLayout = <T extends Resource<unknown, unknown>["config"]>({
     title="Config"
     icon={<Settings className="w-4 h-4" />}
     actions={
-      <div className="flex gap-4">
+      <div className="flex gap-2">
         <Button
           variant="outline"
           intent="warning"
