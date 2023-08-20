@@ -1,9 +1,13 @@
-use monitor_types::entities::{alert::AlertData, deployment::Deployment};
+use monitor_types::entities::{
+    alert::{Alert, AlertData},
+    deployment::Deployment, server::stats::SeverityLevel,
+};
 
 use crate::{helpers::resource::StateResource, state::State};
 
 impl State {
     pub async fn alert_deployments(&self) {
+        let mut alerts = Vec::<Alert>::new();
         for v in self.deployment_status_cache.get_list().await {
             if v.prev.is_none() {
                 continue;
@@ -24,7 +28,14 @@ impl State {
                     from: prev,
                     to: v.curr.state,
                 };
+                let alert = Alert {
+                    level: SeverityLevel::Warning,
+                    data,
+                    ..Default::default()
+                };
+                alerts.push(alert);
             }
         }
+        self.send_alerts(&alerts).await;
     }
 }

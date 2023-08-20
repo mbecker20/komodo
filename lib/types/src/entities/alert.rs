@@ -63,6 +63,11 @@ pub enum AlertData {
         name: String,
         region: Option<String>,
     },
+    ServerReachable {
+        id: String,
+        name: String,
+        region: Option<String>,
+    },
     ServerCpu {
         id: String,
         name: String,

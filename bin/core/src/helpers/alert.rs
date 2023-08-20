@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context};
+use futures::future::join_all;
 use monitor_types::entities::{
     alert::{Alert, AlertData},
     alerter::*,
@@ -8,11 +9,42 @@ use monitor_types::entities::{
 use reqwest::StatusCode;
 use slack::types::Block;
 
-pub async fn send_alert(alerter: &Alerter, alert: &Alert) -> anyhow::Result<()> {
-    match &alerter.config {
-        AlerterConfig::Slack(SlackAlerterConfig { url }) => send_slack_alert(url, alert).await,
-        AlerterConfig::Custom(CustomAlerterConfig { url }) => send_custom_alert(url, alert).await,
+use crate::state::State;
+
+impl State {
+    pub async fn send_alerts(&self, alerts: &[Alert]) {
+        let alerters = self.db.alerters.get_some(None, None).await;
+
+        if let Err(e) = alerters {
+            error!("ERROR sending alerts | failed to get alerters from db | {e:#?}");
+            return;
+        }
+
+        let alerters = alerters.unwrap();
+
+        let handles = alerts.iter().map(|alert| send_alert(&alerters, alert));
+
+        join_all(handles).await;
     }
+}
+
+pub async fn send_alert(alerters: &[Alerter], alert: &Alert) {
+    let handles = alerters.iter().map(|alerter| async {
+        match &alerter.config {
+            AlerterConfig::Slack(SlackAlerterConfig { url }) => send_slack_alert(url, alert)
+                .await
+                .context("failed to send slack alert"),
+            AlerterConfig::Custom(CustomAlerterConfig { url }) => send_custom_alert(url, alert)
+                .await
+                .context(format!("failed to send alert to custom alerter at {url}")),
+        }
+    });
+
+    join_all(handles)
+        .await
+        .into_iter()
+        .filter_map(|res| res.err())
+        .for_each(|e| error!("{e:#?}"));
 }
 
 pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
@@ -24,6 +56,15 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             let blocks = vec![
                 Block::header("CRITICAL 🚨"),
                 Block::section(format!("*{name}*{region} is *unreachable* ❌")),
+            ];
+            (text, blocks.into())
+        }
+        AlertData::ServerReachable { name, region, .. } => {
+            let region = fmt_region(region);
+            let text = format!("OK ✅ | *{name}*{region} is now *reachable*");
+            let blocks = vec![
+                Block::header("OK ✅"),
+                Block::section(format!("*{name}*{region} is now *reachable*")),
             ];
             (text, blocks.into())
         }

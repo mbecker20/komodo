@@ -76,7 +76,77 @@ impl State {
             }
         }
 
-        let res = self.resolve_alerts(&alert_ids_to_close).await;
+        tokio::join!(
+            self.open_alerts(alerts_to_open),
+            self.resolve_alerts(&alert_ids_to_close)
+        );
+    }
+
+    async fn open_alerts(&self, alerts: Vec<Alert>) {
+        let open = || async {
+            // self.db.alerters.create_many(alerts).await?;
+            anyhow::Ok(())
+        };
+
+        let alert = || async { todo!() };
+
+        let (res, _) = tokio::join!(open(), alert());
+
+        if let Err(e) = res {
+            error!("failed to create alerts on db | {e:#?}");
+        }
+    }
+
+    async fn resolve_alerts(&self, alert_ids: &[String]) {
+        let close = || async {
+            let alert_ids = alert_ids
+                .iter()
+                .map(|id| ObjectId::from_str(id).context("failed to convert alert id to ObjectId"))
+                .collect::<anyhow::Result<Vec<_>>>()?;
+            self.db
+                .alerts
+                .update_many(
+                    doc! { "_id": { "$in": alert_ids } },
+                    doc! {
+                        "$set": {
+                            "resolved": "true",
+                            "resolved_ts": monitor_timestamp()
+                        }
+                    },
+                )
+                .await
+                .context("failed to resolve alerts on db")?;
+            anyhow::Ok(())
+        };
+
+        let alert = || async {
+            // alert that alert has be resolved
+            todo!()
+        };
+
+        let (res, _) = tokio::join!(close(), alert());
+
+        if let Err(e) = res {
+            error!("failed to resolve alerts | {e:#?}");
+        }
+    }
+
+    async fn get_open_alerts(&self) -> anyhow::Result<OpenAlertMap> {
+        let alerts = self
+            .db
+            .alerts
+            .get_some(doc! { "resolved": false }, None)
+            .await
+            .context("failed to get open alerts from db")?;
+
+        let mut map = OpenAlertMap::new();
+
+        for alert in alerts {
+            let inner = map.entry(alert.target.clone()).or_default();
+            inner.insert(alert.variant, alert);
+        }
+
+        Ok(map)
     }
 
     async fn get_all_servers_map(&self) -> anyhow::Result<HashMap<String, ServerListItem>> {
@@ -98,44 +168,5 @@ impl State {
             .collect::<HashMap<_, _>>();
 
         Ok(servers)
-    }
-
-    async fn resolve_alerts(&self, alert_ids: &[String]) -> anyhow::Result<()> {
-        let alert_ids = alert_ids
-            .iter()
-            .map(|id| ObjectId::from_str(id).context("failed to convert alert id to ObjectId"))
-            .collect::<anyhow::Result<Vec<_>>>()?;
-        self.db
-            .alerts
-            .update_many(
-                doc! { "_id": { "$in": alert_ids } },
-                doc! {
-                    "$set": {
-                        "resolved": "true",
-                        "resolved_ts": monitor_timestamp()
-                    }
-                },
-            )
-            .await
-            .context("failed to resolve alerts on db")?;
-        Ok(())
-    }
-
-    async fn get_open_alerts(&self) -> anyhow::Result<OpenAlertMap> {
-        let alerts = self
-            .db
-            .alerts
-            .get_some(doc! { "resolved": false }, None)
-            .await
-            .context("failed to get open alerts from db")?;
-
-        let mut map = OpenAlertMap::new();
-
-        for alert in alerts {
-            let inner = map.entry(alert.target.clone()).or_default();
-            inner.insert(alert.variant, alert);
-        }
-
-        Ok(map)
     }
 }
