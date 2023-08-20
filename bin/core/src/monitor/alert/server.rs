@@ -77,20 +77,18 @@ impl State {
         }
 
         tokio::join!(
-            self.open_alerts(alerts_to_open),
+            self.open_alerts(&alerts_to_open),
             self.resolve_alerts(&alert_ids_to_close)
         );
     }
 
-    async fn open_alerts(&self, alerts: Vec<Alert>) {
+    async fn open_alerts(&self, alerts: &[Alert]) {
         let open = || async {
-            // self.db.alerters.create_many(alerts).await?;
+            self.db.alerts.create_many(alerts).await?;
             anyhow::Ok(())
         };
 
-        let alert = || async { todo!() };
-
-        let (res, _) = tokio::join!(open(), alert());
+        let (res, _) = tokio::join!(open(), self.send_alerts(alerts));
 
         if let Err(e) = res {
             error!("failed to create alerts on db | {e:#?}");
@@ -106,7 +104,7 @@ impl State {
             self.db
                 .alerts
                 .update_many(
-                    doc! { "_id": { "$in": alert_ids } },
+                    doc! { "_id": { "$in": &alert_ids } },
                     doc! {
                         "$set": {
                             "resolved": "true",
@@ -116,17 +114,23 @@ impl State {
                 )
                 .await
                 .context("failed to resolve alerts on db")?;
+            let mut closed = self
+                .db
+                .alerts
+                .get_some(doc! { "_id": { "$in": &alert_ids } }, None)
+                .await
+                .context("failed to get closed alerts from db")?;
+
+            for closed in &mut closed {
+                closed.level = SeverityLevel::Ok;
+            }
+
+            self.send_alerts(&closed).await;
+
             anyhow::Ok(())
         };
 
-        let alert = || async {
-            // alert that alert has be resolved
-            todo!()
-        };
-
-        let (res, _) = tokio::join!(close(), alert());
-
-        if let Err(e) = res {
+        if let Err(e) = close().await {
             error!("failed to resolve alerts | {e:#?}");
         }
     }

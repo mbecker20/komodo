@@ -143,7 +143,9 @@ pub struct SystemComponent {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, Display, EnumString)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Copy, Default, Display, EnumString, PartialEq, Eq,
+)]
 #[serde(rename_all = "UPPERCASE")]
 #[strum(serialize_all = "UPPERCASE")]
 pub enum SeverityLevel {

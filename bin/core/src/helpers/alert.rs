@@ -4,7 +4,7 @@ use monitor_types::entities::{
     alert::{Alert, AlertData},
     alerter::*,
     deployment::DockerContainerState,
-    server::stats::SystemProcess,
+    server::stats::{SeverityLevel, SystemProcess},
 };
 use reqwest::StatusCode;
 use slack::types::Block;
@@ -48,25 +48,29 @@ pub async fn send_alert(alerters: &[Alerter], alert: &Alert) {
 }
 
 pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
-    let level = alert.level;
+    let level = fmt_level(alert.level);
     let (text, blocks): (_, Option<_>) = match &alert.data {
         AlertData::ServerUnreachable { name, region, .. } => {
             let region = fmt_region(region);
-            let text = format!("CRITICAL 🚨 | *{name}*{region} is *unreachable* ❌");
-            let blocks = vec![
-                Block::header("CRITICAL 🚨"),
-                Block::section(format!("*{name}*{region} is *unreachable* ❌")),
-            ];
-            (text, blocks.into())
-        }
-        AlertData::ServerReachable { name, region, .. } => {
-            let region = fmt_region(region);
-            let text = format!("OK ✅ | *{name}*{region} is now *reachable*");
-            let blocks = vec![
-                Block::header("OK ✅"),
-                Block::section(format!("*{name}*{region} is now *reachable*")),
-            ];
-            (text, blocks.into())
+            match alert.level {
+                SeverityLevel::Ok => {
+                    let text = format!("{level} | *{name}*{region} is now *reachable*");
+                    let blocks = vec![
+                        Block::header(level),
+                        Block::section(format!("*{name}*{region} is now *reachable*")),
+                    ];
+                    (text, blocks.into())
+                }
+                SeverityLevel::Critical => {
+                    let text = format!("{level} | *{name}*{region} is *unreachable* ❌");
+                    let blocks = vec![
+                        Block::header(level),
+                        Block::section(format!("*{name}*{region} is *unreachable* ❌")),
+                    ];
+                    (text, blocks.into())
+                }
+                _ => unreachable!(),
+            }
         }
         AlertData::ServerCpu {
             name,
@@ -76,15 +80,19 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             ..
         } => {
             let region = fmt_region(region);
-            let text =
-                format!("{level} 🚨 | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
-            let blocks = vec![
+            let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
+            let mut blocks = vec![
                 Block::header(format!("{level} 🚨")),
                 Block::section(format!(
                     "*{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨"
                 )),
-                Block::section(format!("*top cpu processes*{}", fmt_top_procs(top_procs))),
             ];
+            if alert.level != SeverityLevel::Ok {
+                blocks.push(Block::section(format!(
+                    "*top cpu processes*{}",
+                    fmt_top_procs(top_procs)
+                )));
+            }
             (text, blocks.into())
         }
         AlertData::ServerMem {
@@ -98,15 +106,20 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             let region = fmt_region(region);
             let percentage = 100.0 * used_gb / total_gb;
             let text =
-                format!("{level} 🚨 | *{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨");
-            let blocks = vec![
-                Block::header(format!("{level} 🚨")),
+                format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨");
+            let mut blocks = vec![
+                Block::header(level),
                 Block::section(format!(
                     "*{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨"
                 )),
                 Block::section(format!("using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*")),
-                Block::section(format!("*top cpu processes*{}", fmt_top_procs(top_procs))),
             ];
+            if alert.level != SeverityLevel::Ok {
+                blocks.push(Block::section(format!(
+                    "*top mem processes*{}",
+                    fmt_top_procs(top_procs)
+                )));
+            }
             (text, blocks.into())
         }
         AlertData::ServerDisk {
@@ -120,9 +133,9 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             let region = fmt_region(region);
             let percentage = 100.0 * used_gb / total_gb;
             let text =
-                format!("{level} 🚨 | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path}* 💿 🚨");
+                format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path}* 💿 🚨");
             let blocks = vec![
-                Block::header(format!("{level} 🚨")),
+                Block::header(level),
                 Block::section(format!(
                     "*{name}*{region} disk usage at *{percentage:.1}%* 💿 🚨"
                 )),
@@ -140,11 +153,10 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             ..
         } => {
             let region = fmt_region(region);
-            let text = format!(
-                "{level} 🚨 | *{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
-            );
+            let text =
+                format!("{level} | *{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨");
             let blocks = vec![
-                Block::header(format!("{level} 🚨")),
+                Block::header(level),
                 Block::section(format!(
                     "*{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
                 )),
@@ -224,5 +236,13 @@ fn fmt_docker_container_state(state: &DockerContainerState) -> String {
         DockerContainerState::Restarting => String::from("Restarting 🔄"),
         DockerContainerState::NotDeployed => String::from("Not Deployed"),
         _ => state.to_string(),
+    }
+}
+
+fn fmt_level(level: SeverityLevel) -> &'static str {
+    match level {
+        SeverityLevel::Critical => "CRITICAL 🚨",
+        SeverityLevel::Warning => "WARNING 🚨",
+        SeverityLevel::Ok => "OK ✅",
     }
 }
