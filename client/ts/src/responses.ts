@@ -74,6 +74,9 @@ export type ReadResponses = {
   GetUpdate: Types.Update;
   ListUpdates: Types.ListUpdatesResponse;
 
+  // ==== ALERT ====
+  ListAlerts: Types.ListAlertsResponse;
+
   // ==== SERVER STATS ====
   GetAllSystemStats: Types.AllSystemStats;
   GetBasicSystemStats: Types.BasicSystemStats;

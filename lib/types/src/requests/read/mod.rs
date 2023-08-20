@@ -2,6 +2,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+mod alert;
 mod alerter;
 mod build;
 mod builder;
@@ -12,6 +13,7 @@ mod server;
 mod tag;
 mod update;
 
+pub use alert::*;
 pub use alerter::*;
 pub use build::*;
 pub use builder::*;

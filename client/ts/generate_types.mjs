@@ -25,6 +25,7 @@ function fix_types() {
 	const contents = readFileSync(types_path);
 	const fixed = contents
     .toString()
-    .replaceAll("ResourceTargetVariant", 'ResourceTarget["type"]');
+    .replaceAll("ResourceTargetVariant", 'ResourceTarget["type"]')
+	.replaceAll("AlertDataVariant", 'AlertData["type"]');
 	writeFileSync(types_path, fixed);
 }

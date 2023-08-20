@@ -26,6 +26,7 @@ mod server;
 mod tag;
 mod update;
 mod user;
+mod alert;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -97,6 +98,9 @@ enum ReadRequest {
     // ==== UPDATE ====
     GetUpdate(GetUpdate),
     ListUpdates(ListUpdates),
+
+    // ==== ALERT ====
+    ListAlerts(ListAlerts),
 
     // ==== SERVER STATS ====
     #[to_string_resolver]

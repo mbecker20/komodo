@@ -46,6 +46,10 @@ impl State {
             }
             let server = server.unwrap();
             let server_alerts = alerts.get(&ResourceTarget::Server(v.id.clone()));
+
+            // ===================
+            // SERVER HEALTH
+            // ===================
             let health_alert = server_alerts
                 .as_ref()
                 .and_then(|alerts| alerts.get(&AlertDataVariant::ServerUnreachable));
@@ -74,6 +78,56 @@ impl State {
                 }
                 _ => {}
             }
+
+            if v.health.is_none() {
+                continue;
+            }
+
+            let health = v.health.as_ref().unwrap();
+
+            // ===================
+            // SERVER CPU
+            // ===================
+            let cpu_alert = server_alerts
+                .as_ref()
+                .and_then(|alerts| alerts.get(&AlertDataVariant::ServerCpu));
+            match (health.cpu, cpu_alert) {
+                (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
+                    // open alert
+                }
+                (SeverityLevel::Warning | SeverityLevel::Critical, Some(alert)) => {
+                    // modify alert level
+                }
+                (SeverityLevel::Ok, Some(alert)) => {
+                    // resolve alert
+                }
+                _ => {}
+            }
+
+            // ===================
+            // SERVER MEM
+            // ===================
+            let mem_alert = server_alerts
+                .as_ref()
+                .and_then(|alerts| alerts.get(&AlertDataVariant::ServerMem));
+            match (health.mem, mem_alert) {
+                (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
+                    // open alert
+                }
+                (SeverityLevel::Warning | SeverityLevel::Critical, Some(alert)) => {
+                    // modify alert level
+                }
+                (SeverityLevel::Ok, Some(alert)) => {
+                    // resolve alert
+                }
+                _ => {}
+            }
+
+            // ===================
+            // SERVER DISK
+            // ===================
+
+            // alerts possible on multiple disks make this complicated (multiple ServerDisk alerts possible on same server)
         }
 
         tokio::join!(

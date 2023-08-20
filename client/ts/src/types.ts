@@ -259,6 +259,78 @@ export type _PartialServerConfig = Partial<ServerConfig>;
 
 export type _PartialCustomTag = Partial<CustomTag>;
 
+export enum SeverityLevel {
+	Ok = "OK",
+	Warning = "WARNING",
+	Critical = "CRITICAL",
+}
+
+export type ResourceTarget = 
+	| { type: "System", id: string }
+	| { type: "Build", id: string }
+	| { type: "Builder", id: string }
+	| { type: "Deployment", id: string }
+	| { type: "Server", id: string }
+	| { type: "Repo", id: string }
+	| { type: "Alerter", id: string };
+
+export type AlertData = 
+	| { type: "ServerUnreachable", data: {
+	id: string;
+	name: string;
+	region?: string;
+}}
+	| { type: "ServerCpu", data: {
+	id: string;
+	name: string;
+	region?: string;
+	percentage: number;
+	top_procs: SystemProcess[];
+}}
+	| { type: "ServerMem", data: {
+	id: string;
+	name: string;
+	region?: string;
+	used_gb: number;
+	total_gb: number;
+	top_procs: SystemProcess[];
+}}
+	| { type: "ServerDisk", data: {
+	id: string;
+	name: string;
+	region?: string;
+	path: string;
+	used_gb: number;
+	total_gb: number;
+}}
+	| { type: "ServerTemp", data: {
+	id: string;
+	name: string;
+	region?: string;
+	temp: number;
+	max: number;
+}}
+	| { type: "ContainerStateChange", data: {
+	id: string;
+	name: string;
+	server: string;
+	from: DockerContainerState;
+	to: DockerContainerState;
+}}
+	| { type: "None", data: {
+}};
+
+export interface Alert {
+	_id?: MongoId;
+	ts: I64;
+	resolved: boolean;
+	level: SeverityLevel;
+	target: ResourceTarget;
+	variant: AlertData["type"];
+	data: AlertData;
+	resolved_ts?: I64;
+}
+
 export interface CustomAlerterConfig {
 	url: string;
 }
@@ -525,18 +597,12 @@ export interface AllSystemStats {
 	refresh_list_ts: I64;
 }
 
-export enum StatsState {
-	Ok = "OK",
-	Warning = "WARNING",
-	Critical = "CRITICAL",
-}
-
 export interface ServerHealth {
-	cpu: StatsState;
-	mem: StatsState;
-	disk: StatsState;
-	disks: Record<string, StatsState>;
-	temps: Record<string, StatsState>;
+	cpu: SeverityLevel;
+	mem: SeverityLevel;
+	disk: SeverityLevel;
+	disks: Record<string, SeverityLevel>;
+	temps: Record<string, SeverityLevel>;
 }
 
 export enum TagColor {
@@ -597,15 +663,6 @@ export enum Operation {
 	AutoBuild = "AutoBuild",
 	AutoPull = "AutoPull",
 }
-
-export type ResourceTarget = 
-	| { type: "System", id: string }
-	| { type: "Build", id: string }
-	| { type: "Builder", id: string }
-	| { type: "Deployment", id: string }
-	| { type: "Server", id: string }
-	| { type: "Repo", id: string }
-	| { type: "Alerter", id: string };
 
 export interface Log {
 	stage: string;
@@ -767,6 +824,16 @@ export interface PruneDockerImages {
 
 export interface PruneDockerContainers {
 	server_id: string;
+}
+
+export interface ListAlerts {
+	page?: U64;
+	include_resolved?: boolean;
+}
+
+export interface ListAlertsResponse {
+	alerts: Alert[];
+	next_page?: I64;
 }
 
 export interface GetAlerter {
@@ -1391,6 +1458,7 @@ export type ReadRequest =
 	| { type: "ListTags", params: ListTags }
 	| { type: "GetUpdate", params: GetUpdate }
 	| { type: "ListUpdates", params: ListUpdates }
+	| { type: "ListAlerts", params: ListAlerts }
 	| { type: "GetAllSystemStats", params: GetAllSystemStats }
 	| { type: "GetBasicSystemStats", params: GetBasicSystemStats }
 	| { type: "GetCpuUsage", params: GetCpuUsage }
@@ -1438,54 +1506,6 @@ export type WriteRequest =
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "UpdateTag", params: UpdateTag };
-
-export type Alert = 
-	| { type: "ServerUnreachable", data: {
-	id: string;
-	name: string;
-	region?: string;
-}}
-	| { type: "ServerCpu", data: {
-	id: string;
-	name: string;
-	region?: string;
-	state: StatsState;
-	percentage: number;
-	top_procs: SystemProcess[];
-}}
-	| { type: "ServerMem", data: {
-	id: string;
-	name: string;
-	region?: string;
-	state: StatsState;
-	used_gb: number;
-	total_gb: number;
-	top_procs: SystemProcess[];
-}}
-	| { type: "ServerDisk", data: {
-	id: string;
-	name: string;
-	region?: string;
-	state: StatsState;
-	path: string;
-	used_gb: number;
-	total_gb: number;
-}}
-	| { type: "ServerTemp", data: {
-	id: string;
-	name: string;
-	region?: string;
-	state: StatsState;
-	temp: number;
-	max: number;
-}}
-	| { type: "ContainerStateChange", data: {
-	id: string;
-	name: string;
-	server: string;
-	from: DockerContainerState;
-	to: DockerContainerState;
-}};
 
 export type Tag = 
 	| { type: "ResourceType", params: {
