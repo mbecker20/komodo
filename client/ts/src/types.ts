@@ -307,6 +307,7 @@ export type AlertData =
 	id: string;
 	name: string;
 	region?: string;
+	component: string;
 	temp: number;
 	max: number;
 }}
