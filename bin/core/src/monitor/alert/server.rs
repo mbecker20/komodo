@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, collections::HashMap, str::FromStr};
+use std::{cmp::Ordering, collections::HashMap, path::PathBuf, str::FromStr};
 
 use anyhow::Context;
 use monitor_types::{
@@ -16,7 +16,9 @@ use mungos::{
 
 use crate::{auth::InnerRequestUser, helpers::resource::StateResource, state::State};
 
-type OpenAlertMap = HashMap<ResourceTarget, HashMap<AlertDataVariant, Alert>>;
+type OpenAlertMap<T = AlertDataVariant> = HashMap<ResourceTarget, HashMap<T, Alert>>;
+type OpenDiskAlertMap = OpenAlertMap<PathBuf>;
+type OpenTempAlertMap = OpenAlertMap<String>;
 
 impl State {
     pub async fn alert_servers(&self) {
@@ -37,7 +39,7 @@ impl State {
             return;
         }
 
-        let alerts = alerts.unwrap();
+        let (alerts, disk_alerts, temp_alerts) = alerts.unwrap();
 
         let mut alerts_to_open = Vec::<Alert>::new();
         let mut alerts_to_update = Vec::<Alert>::new();
@@ -265,8 +267,119 @@ impl State {
             // SERVER DISK
             // ===================
 
-            // alerts possible on multiple disks make this complicated (multiple ServerDisk alerts possible on same server)
-            // should handle disk alerts seperately
+            let server_disk_alerts =
+                disk_alerts.get(&ResourceTarget::Server(server_status.id.clone()));
+
+            for (path, health) in &health.disks {
+                let disk_alert = server_disk_alerts
+                    .as_ref()
+                    .and_then(|alerts| alerts.get(path))
+                    .cloned();
+                match (*health, disk_alert) {
+                    (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
+                        let disk = server_status
+                            .stats
+                            .as_ref()
+                            .and_then(|s| s.disk.disks.iter().find(|disk| disk.mount == *path));
+                        let alert = Alert {
+                            id: Default::default(),
+                            ts: monitor_timestamp(),
+                            resolved: false,
+                            resolved_ts: None,
+                            level: *health,
+                            target: ResourceTarget::Server(server_status.id.clone()),
+                            variant: AlertDataVariant::ServerDisk,
+                            data: AlertData::ServerDisk {
+                                id: server_status.id.clone(),
+                                name: server.name.clone(),
+                                region: optional_string(&server.info.region),
+                                path: path.to_owned(),
+                                total_gb: disk.map(|d| d.total_gb).unwrap_or_default(),
+                                used_gb: disk.map(|d| d.used_gb).unwrap_or_default(),
+                            },
+                        };
+                        alerts_to_open.push(alert);
+                    }
+                    (SeverityLevel::Warning | SeverityLevel::Critical, Some(mut alert)) => {
+                        if *health != alert.level {
+                            let disk = server_status
+                                .stats
+                                .as_ref()
+                                .and_then(|s| s.disk.disks.iter().find(|disk| disk.mount == *path));
+                            alert.level = *health;
+                            alert.data = AlertData::ServerDisk {
+                                id: server_status.id.clone(),
+                                name: server.name.clone(),
+                                region: optional_string(&server.info.region),
+                                path: path.to_owned(),
+                                total_gb: disk.map(|d| d.total_gb).unwrap_or_default(),
+                                used_gb: disk.map(|d| d.used_gb).unwrap_or_default(),
+                            };
+                            alerts_to_update.push(alert);
+                        }
+                    }
+                    (SeverityLevel::Ok, Some(alert)) => alert_ids_to_close.push(alert.id.clone()),
+                    _ => {}
+                }
+            }
+
+            // ===================
+            // SERVER TEMP
+            // ===================
+
+            let server_temp_alerts =
+                temp_alerts.get(&ResourceTarget::Server(server_status.id.clone()));
+
+            for (component, health) in &health.temps {
+                let temp_alert = server_temp_alerts
+                    .as_ref()
+                    .and_then(|alerts| alerts.get(component))
+                    .cloned();
+                match (*health, temp_alert) {
+                    (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
+                        let comp = server_status.stats.as_ref().and_then(|s| {
+                            s.components.iter().find(|comp| comp.label == *component)
+                        });
+                        let alert = Alert {
+                            id: Default::default(),
+                            ts: monitor_timestamp(),
+                            resolved: false,
+                            resolved_ts: None,
+                            level: *health,
+                            target: ResourceTarget::Server(server_status.id.clone()),
+                            variant: AlertDataVariant::ServerTemp,
+                            data: AlertData::ServerTemp {
+                                id: server_status.id.clone(),
+                                name: server.name.clone(),
+                                region: optional_string(&server.info.region),
+                                component: component.to_owned(),
+                                temp: comp.map(|c| c.temp).unwrap_or_default() as f64,
+                                max: comp.map(|c| c.max).unwrap_or_default() as f64,
+                            },
+                        };
+                        alerts_to_open.push(alert);
+                    }
+                    (SeverityLevel::Warning | SeverityLevel::Critical, Some(mut alert)) => {
+                        if *health != alert.level {
+                            let comp = server_status.stats.as_ref().and_then(|s| {
+                                s.components.iter().find(|comp| comp.label == *component)
+                            });
+                            alert.level = *health;
+                            alert.data = AlertData::ServerTemp {
+                                id: server_status.id.clone(),
+                                name: server.name.clone(),
+                                region: optional_string(&server.info.region),
+                                component: component.to_owned(),
+                                temp: comp.map(|c| c.temp).unwrap_or_default() as f64,
+                                max: comp.map(|c| c.max).unwrap_or_default() as f64,
+                            };
+                            alerts_to_update.push(alert);
+                        }
+                    }
+                    (SeverityLevel::Ok, Some(alert)) => alert_ids_to_close.push(alert.id.clone()),
+                    _ => {}
+                }
+            }
         }
 
         tokio::join!(
@@ -353,7 +466,9 @@ impl State {
         }
     }
 
-    async fn get_open_alerts(&self) -> anyhow::Result<OpenAlertMap> {
+    async fn get_open_alerts(
+        &self,
+    ) -> anyhow::Result<(OpenAlertMap, OpenDiskAlertMap, OpenTempAlertMap)> {
         let alerts = self
             .db
             .alerts
@@ -362,13 +477,27 @@ impl State {
             .context("failed to get open alerts from db")?;
 
         let mut map = OpenAlertMap::new();
+        let mut disk_map = OpenDiskAlertMap::new();
+        let mut temp_map = OpenTempAlertMap::new();
 
         for alert in alerts {
-            let inner = map.entry(alert.target.clone()).or_default();
-            inner.insert(alert.variant, alert);
+            match &alert.data {
+                AlertData::ServerDisk { path, .. } => {
+                    let inner = disk_map.entry(alert.target.clone()).or_default();
+                    inner.insert(path.to_owned(), alert);
+                }
+                AlertData::ServerTemp { component, .. } => {
+                    let inner = temp_map.entry(alert.target.clone()).or_default();
+                    inner.insert(component.to_owned(), alert);
+                }
+                _ => {
+                    let inner = map.entry(alert.target.clone()).or_default();
+                    inner.insert(alert.variant, alert);
+                }
+            }
         }
 
-        Ok(map)
+        Ok((map, disk_map, temp_map))
     }
 
     async fn get_all_servers_map(&self) -> anyhow::Result<HashMap<String, ServerListItem>> {

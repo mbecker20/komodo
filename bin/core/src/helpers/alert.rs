@@ -133,14 +133,14 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             let region = fmt_region(region);
             let percentage = 100.0 * used_gb / total_gb;
             let text =
-                format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path}* 💿 🚨");
+                format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿 🚨");
             let blocks = vec![
                 Block::header(level),
                 Block::section(format!(
                     "*{name}*{region} disk usage at *{percentage:.1}%* 💿 🚨"
                 )),
                 Block::section(format!(
-                    "mount point: {path} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
+                    "mount point: {path:?} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
                 )),
             ];
             (text, blocks.into())
@@ -148,17 +148,18 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
         AlertData::ServerTemp {
             name,
             region,
+            component,
             temp,
             max,
             ..
         } => {
             let region = fmt_region(region);
             let text =
-                format!("{level} | *{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨");
+                format!("{level} | *{name}*{region} | {component} | temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨");
             let blocks = vec![
                 Block::header(level),
                 Block::section(format!(
-                    "*{name}*{region} temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
+                    "*{name}*{region} | {component} | temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
                 )),
             ];
             (text, blocks.into())

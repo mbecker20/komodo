@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use derive_variants::EnumVariants;
 use mungos::{
     derive::{MungosIndexed, StringObjectId},
@@ -82,7 +84,7 @@ pub enum AlertData {
         id: String,
         name: String,
         region: Option<String>,
-        path: String,
+        path: PathBuf,
         used_gb: f64,
         total_gb: f64,
     },
@@ -90,6 +92,7 @@ pub enum AlertData {
         id: String,
         name: String,
         region: Option<String>,
+        component: String,
         temp: f64,
         max: f64,
     },
