@@ -450,7 +450,7 @@ impl State {
                     doc! { "_id": { "$in": &alert_ids } },
                     doc! {
                         "$set": {
-                            "resolved": "true",
+                            "resolved": true,
                             "resolved_ts": monitor_timestamp()
                         }
                     },
