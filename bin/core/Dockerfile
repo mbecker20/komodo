@@ -3,7 +3,7 @@ WORKDIR /builder
 
 COPY . .
 
-RUN cd bin/core && cargo build --release
+RUN cargo build -p monitor_core --release
 
 FROM gcr.io/distroless/cc
 

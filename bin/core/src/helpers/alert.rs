@@ -28,7 +28,7 @@ impl State {
     }
 }
 
-pub async fn send_alert(alerters: &[Alerter], alert: &Alert) {
+async fn send_alert(alerters: &[Alerter], alert: &Alert) {
     let handles = alerters.iter().map(|alerter| async {
         match &alerter.config {
             AlerterConfig::Slack(SlackAlerterConfig { url }) => send_slack_alert(url, alert)
@@ -47,7 +47,25 @@ pub async fn send_alert(alerters: &[Alerter], alert: &Alert) {
         .for_each(|e| error!("{e:#?}"));
 }
 
-pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
+async fn send_custom_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
+    let res = reqwest::Client::new()
+        .post(url)
+        .json(alert)
+        .send()
+        .await
+        .context("failed at post request to alerter")?;
+    let status = res.status();
+    if status != StatusCode::OK {
+        let text = res
+            .text()
+            .await
+            .context("failed to get response text on alerter response")?;
+        return Err(anyhow!("post to alerter failed | {status} | {text}"));
+    }
+    Ok(())
+}
+
+async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
     let level = fmt_level(alert.level);
     let (text, blocks): (_, Option<_>) = match &alert.data {
         AlertData::ServerUnreachable { name, region, .. } => {
@@ -184,24 +202,6 @@ pub async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
     if !text.is_empty() {
         let slack = slack::Client::new(url);
         slack.send_message(text, blocks).await?;
-    }
-    Ok(())
-}
-
-pub async fn send_custom_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
-    let res = reqwest::Client::new()
-        .post(url)
-        .json(alert)
-        .send()
-        .await
-        .context("failed at post request to alerter")?;
-    let status = res.status();
-    if status != StatusCode::OK {
-        let text = res
-            .text()
-            .await
-            .context("failed to get response text on alerter response")?;
-        return Err(anyhow!("post to alerter failed | {status} | {text}"));
     }
     Ok(())
 }
