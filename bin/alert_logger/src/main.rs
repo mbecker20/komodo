@@ -14,7 +14,7 @@ async fn app() -> anyhow::Result<()> {
     let socket_addr = SocketAddr::from_str("0.0.0.0:7777").unwrap();
 
     info!(
-        "alert logger | v {} | {socket_addr}",
+        "v {} | {socket_addr}",
         env!("CARGO_PKG_VERSION")
     );
 
