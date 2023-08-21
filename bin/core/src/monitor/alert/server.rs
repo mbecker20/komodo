@@ -390,6 +390,10 @@ impl State {
     }
 
     async fn open_alerts(&self, alerts: &[Alert]) {
+        if alerts.is_empty() {
+            return;
+        }
+
         let open = || async {
             self.db.alerts.create_many(alerts).await?;
             anyhow::Ok(())
@@ -403,6 +407,10 @@ impl State {
     }
 
     async fn update_alerts(&self, alerts: &[Alert]) {
+        if alerts.is_empty() {
+            return;
+        }
+
         let open = || async {
             let updates = alerts.iter().map(|alert| {
                 let update = BulkUpdate {
@@ -427,6 +435,10 @@ impl State {
     }
 
     async fn resolve_alerts(&self, alert_ids: &[String]) {
+        if alert_ids.is_empty() {
+            return;
+        }
+
         let close = || async {
             let alert_ids = alert_ids
                 .iter()

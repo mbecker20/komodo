@@ -11,6 +11,6 @@ FROM gcr.io/distroless/cc
 
 COPY --from=builder /builder/target/release/alert_logger /
 
-EXPOSE 7777
+EXPOSE 7000
 
 CMD ["./alert_logger"]

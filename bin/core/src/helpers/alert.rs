@@ -13,6 +13,10 @@ use crate::state::State;
 
 impl State {
     pub async fn send_alerts(&self, alerts: &[Alert]) {
+        if alerts.is_empty() {
+            return;
+        }
+
         let alerters = self.db.alerters.get_some(None, None).await;
 
         if let Err(e) = alerters {
@@ -29,6 +33,10 @@ impl State {
 }
 
 async fn send_alert(alerters: &[Alerter], alert: &Alert) {
+    if alerters.is_empty() {
+        return;
+    }
+
     let handles = alerters.iter().map(|alerter| async {
         match &alerter.config {
             AlerterConfig::Slack(SlackAlerterConfig { url }) => send_slack_alert(url, alert)

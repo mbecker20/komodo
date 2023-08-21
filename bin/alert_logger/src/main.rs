@@ -11,7 +11,7 @@ use termination_signal::tokio::immediate_term_handle;
 async fn app() -> anyhow::Result<()> {
     logger::init(log::LevelFilter::Info)?;
 
-    let socket_addr = SocketAddr::from_str("0.0.0.0:7777").unwrap();
+    let socket_addr = SocketAddr::from_str("0.0.0.0:7000").unwrap();
 
     info!(
         "v {} | {socket_addr}",
