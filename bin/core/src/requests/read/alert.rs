@@ -26,7 +26,7 @@ impl Resolve<ListAlerts, RequestUser> for State {
     ) -> anyhow::Result<ListAlertsResponse> {
         let mut query = Document::new();
         if !include_resolved {
-            query.insert("resolved", true);
+            query.insert("resolved", false);
         }
         if !user.is_admin {
             let server_ids =
