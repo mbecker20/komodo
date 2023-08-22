@@ -991,6 +991,14 @@ export interface GetUsernameResponse {
 	username: string;
 }
 
+export interface GetCoreInfo {
+}
+
+export interface GetCoreInfoResponse {
+	title: string;
+	monitoring_interval: Timelength;
+}
+
 export interface GetRepo {
 	id: string;
 }
@@ -1416,6 +1424,7 @@ export type ReadRequest =
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetUser", params: GetUser }
 	| { type: "GetUsername", params: GetUsername }
+	| { type: "GetCoreInfo", params: GetCoreInfo }
 	| { type: "FindResources", params: FindResources }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }

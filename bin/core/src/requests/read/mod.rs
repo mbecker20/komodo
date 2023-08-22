@@ -16,6 +16,7 @@ use crate::{
     state::{State, StateExtension},
 };
 
+mod alert;
 mod alerter;
 mod build;
 mod builder;
@@ -26,7 +27,6 @@ mod server;
 mod tag;
 mod update;
 mod user;
-mod alert;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -37,6 +37,7 @@ enum ReadRequest {
     GetVersion(GetVersion),
     GetUser(GetUser),
     GetUsername(GetUsername),
+    GetCoreInfo(GetCoreInfo),
 
     // ==== SEARCH ====
     FindResources(FindResources),
@@ -159,6 +160,20 @@ impl Resolve<GetVersion, RequestUser> for State {
     ) -> anyhow::Result<GetVersionResponse> {
         Ok(GetVersionResponse {
             version: env!("CARGO_PKG_VERSION").to_string(),
+        })
+    }
+}
+
+#[async_trait]
+impl Resolve<GetCoreInfo, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetCoreInfo {}: GetCoreInfo,
+        _: RequestUser,
+    ) -> anyhow::Result<GetCoreInfoResponse> {
+        Ok(GetCoreInfoResponse {
+            title: self.config.title.clone(),
+            monitoring_interval: self.config.monitoring_interval,
         })
     }
 }

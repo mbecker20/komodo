@@ -24,7 +24,7 @@ pub use server::*;
 pub use tag::*;
 pub use update::*;
 
-use crate::entities::user::User;
+use crate::entities::{user::User, Timelength};
 
 //
 
@@ -59,4 +59,18 @@ pub struct GetUsername {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetUsernameResponse {
     pub username: String,
+}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(GetCoreInfoResponse)]
+pub struct GetCoreInfo {}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetCoreInfoResponse {
+    pub title: String,
+    pub monitoring_interval: Timelength,
 }

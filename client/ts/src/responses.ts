@@ -12,6 +12,7 @@ export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
   GetUser: Types.User;
   GetUsername: Types.GetUsernameResponse;
+  GetCoreInfo: Types.GetCoreInfoResponse;
 
   // ==== SEARCH ====
   FindResources: Types.FindResourcesResponse;
