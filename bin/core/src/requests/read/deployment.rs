@@ -93,7 +93,7 @@ impl Resolve<GetLog, RequestUser> for State {
             return Ok(Log::default());
         }
         let server: Server = self.get_resource(&server_id).await?;
-        self.periphery_client(&server)
+        self.periphery_client(&server)?
             .request(requests::GetContainerLog {
                 name,
                 tail: cmp::min(tail, MAX_LOG_LENGTH),
@@ -176,7 +176,7 @@ impl Resolve<GetDeploymentStats, RequestUser> for State {
             return Err(anyhow!("deployment has no server attached"));
         }
         let server: Server = self.get_resource(&server_id).await?;
-        self.periphery_client(&server)
+        self.periphery_client(&server)?
             .request(requests::GetContainerStats { name })
             .await
             .context("failed to get stats from periphery")

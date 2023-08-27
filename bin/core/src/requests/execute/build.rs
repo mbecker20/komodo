@@ -227,7 +227,7 @@ impl State {
                     return Err(anyhow!("build has not configured a builder"));
                 }
                 let server: Server = self.get_resource(&config.id).await?;
-                let periphery = self.periphery_client(&server);
+                let periphery = self.periphery_client(&server)?;
                 Ok((
                     periphery,
                     BuildCleanupData::Server {

@@ -238,12 +238,13 @@ impl Resolve<CreateNetwork, RequestUser> for State {
             .get_resource_check_permissions(&server_id, &user, PermissionLevel::Update)
             .await?;
 
+        let periphery = self.periphery_client(&server)?;
+
         let mut update = make_update(&server, Operation::CreateNetwork, &user);
         update.status = UpdateStatus::InProgress;
         update.id = self.add_update(update.clone()).await?;
 
-        match self
-            .periphery_client(&server)
+        match periphery
             .request(requests::CreateNetwork { name, driver: None })
             .await
         {
@@ -269,15 +270,13 @@ impl Resolve<DeleteNetwork, RequestUser> for State {
             .get_resource_check_permissions(&server_id, &user, PermissionLevel::Update)
             .await?;
 
+        let periphery = self.periphery_client(&server)?;
+
         let mut update = make_update(&server, Operation::DeleteNetwork, &user);
         update.status = UpdateStatus::InProgress;
         update.id = self.add_update(update.clone()).await?;
 
-        match self
-            .periphery_client(&server)
-            .request(requests::DeleteNetwork { name })
-            .await
-        {
+        match periphery.request(requests::DeleteNetwork { name }).await {
             Ok(log) => update.logs.push(log),
             Err(e) => update.push_error_log("delete network", format!("{e:#?}")),
         };

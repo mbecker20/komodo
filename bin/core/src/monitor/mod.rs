@@ -77,7 +77,8 @@ impl State {
             .await;
             return;
         }
-        let periphery = self.periphery_client(server);
+        // already handle server disabled case above, so using unwrap here
+        let periphery = self.periphery_client(server).unwrap();
         let version = periphery.request(requests::GetVersion {}).await;
         if version.is_err() {
             self.insert_deployments_status_unknown(deployments).await;

@@ -27,14 +27,16 @@ impl Resolve<CloneRepo, RequestUser> for State {
             .get_resource_check_permissions(&id, &user, PermissionLevel::Execute)
             .await?;
 
+        if repo.config.server_id.is_empty() {
+            return Err(anyhow!("repo has no server attached"));
+        }
+
+        let server: Server = self.get_resource(&repo.config.server_id).await?;
+
+        let periphery = self.periphery_client(&server)?;
+
         let inner = || async move {
             let start_ts = monitor_timestamp();
-
-            if repo.config.server_id.is_empty() {
-                return Err(anyhow!("repo has no server attached"));
-            }
-
-            let server: Server = self.get_resource(&repo.config.server_id).await?;
 
             let mut update = Update {
                 operation: Operation::CloneRepo,
@@ -48,8 +50,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
 
             update.id = self.add_update(update.clone()).await?;
 
-            let logs = match self
-                .periphery_client(&server)
+            let logs = match periphery
                 .request(requests::CloneRepo {
                     args: (&repo).into(),
                 })
@@ -118,14 +119,16 @@ impl Resolve<PullRepo, RequestUser> for State {
             .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
+        if repo.config.server_id.is_empty() {
+            return Err(anyhow!("repo has no server attached"));
+        }
+
+        let server: Server = self.get_resource(&repo.config.server_id).await?;
+
+        let periphery = self.periphery_client(&server)?;
+
         let inner = || async move {
             let start_ts = monitor_timestamp();
-
-            if repo.config.server_id.is_empty() {
-                return Err(anyhow!("repo has no server attached"));
-            }
-
-            let server: Server = self.get_resource(&repo.config.server_id).await?;
 
             let mut update = Update {
                 operation: Operation::PullRepo,
@@ -139,8 +142,7 @@ impl Resolve<PullRepo, RequestUser> for State {
 
             update.id = self.add_update(update.clone()).await?;
 
-            let logs = match self
-                .periphery_client(&server)
+            let logs = match periphery
                 .request(requests::PullRepo {
                     name: repo.name,
                     branch: optional_string(&repo.config.branch),

@@ -19,7 +19,7 @@ use resolver_api::Resolve;
 
 use crate::{
     auth::RequestUser,
-    helpers::{empty_or_only_spaces, resource::StateResource},
+    helpers::{empty_or_only_spaces, make_update, resource::StateResource},
     state::State,
 };
 
@@ -210,27 +210,31 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
                     update.logs.push(Log::error(
                         "remove container",
                         format!(
-                            "failed to retrieve server at {} from mongo | {e:#?}",
+                            "failed to retrieve server at {} from db | {e:#?}",
                             deployment.config.server_id
                         ),
                     ));
-                } else {
-                    let server = server.unwrap();
-                    match self
-                        .periphery_client(&server)
-                        .request(requests::RemoveContainer {
-                            name: deployment.name.clone(),
-                            signal: deployment.config.termination_signal.into(),
-                            time: deployment.config.termination_timeout.into(),
-                        })
-                        .await
-                    {
-                        Ok(log) => update.logs.push(log),
-                        Err(e) => update.logs.push(Log::error(
+                } else if let Ok(server) = server {
+                    match self.periphery_client(&server) {
+                        Ok(periphery) => match periphery
+                            .request(requests::RemoveContainer {
+                                name: deployment.name.clone(),
+                                signal: deployment.config.termination_signal.into(),
+                                time: deployment.config.termination_timeout.into(),
+                            })
+                            .await
+                        {
+                            Ok(log) => update.logs.push(log),
+                            Err(e) => update.push_error_log(
+                                "remove container",
+                                format!("failed to remove container on periphery | {e:#?}"),
+                            ),
+                        },
+                        Err(e) => update.push_error_log(
                             "remove container",
                             format!("failed to remove container on periphery | {e:#?}"),
-                        )),
-                    }
+                        ),
+                    };
                 }
             }
 
@@ -400,9 +404,6 @@ impl Resolve<RenameDeployment, RequestUser> for State {
             .await?;
 
         let inner = || async {
-            let start_ts = monitor_timestamp();
-
-            let mut logs = Vec::new();
             let name = to_monitor_name(&name);
 
             let container_state = self.get_deployment_state(&deployment).await?;
@@ -413,21 +414,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
                 ));
             }
 
-            if container_state != DockerContainerState::NotDeployed {
-                let server: Server = self.get_resource(&deployment.config.server_id).await?;
-                match self
-                    .periphery_client(&server)
-                    .request(requests::RenameContainer {
-                        curr_name: deployment.name.clone(),
-                        new_name: name.clone(),
-                    })
-                    .await
-                    .context("failed to rename container on server")
-                {
-                    Ok(log) => logs.push(log),
-                    Err(e) => return Err(e),
-                };
-            }
+            let mut update = make_update(&deployment, Operation::RenameDeployment, &user);
 
             self.db
                 .deployments
@@ -436,24 +423,26 @@ impl Resolve<RenameDeployment, RequestUser> for State {
                     mungos::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }),
                 )
                 .await
-                .context("failed to update deployment name on mongo")?;
+                .context("failed to update deployment name on db")?;
 
-            logs.push(Log::simple(
+            if container_state != DockerContainerState::NotDeployed {
+                let server: Server = self.get_resource(&deployment.config.server_id).await?;
+                let log = self
+                    .periphery_client(&server)?
+                    .request(requests::RenameContainer {
+                        curr_name: deployment.name.clone(),
+                        new_name: name.clone(),
+                    })
+                    .await
+                    .context("failed to rename container on server")?;
+                update.logs.push(log);
+            }
+
+            update.push_simple_log(
                 "rename deployment",
                 format!("renamed deployment from {} to {}", deployment.name, name),
-            ));
-
-            let update = Update {
-                target: ResourceTarget::Deployment(deployment.id),
-                operation: Operation::RenameDeployment,
-                start_ts,
-                end_ts: monitor_timestamp().into(),
-                status: UpdateStatus::InProgress,
-                success: all_logs_success(&logs),
-                operator: user.id.clone(),
-                logs,
-                ..Default::default()
-            };
+            );
+            update.finalize();
 
             self.add_update(update.clone()).await?;
 

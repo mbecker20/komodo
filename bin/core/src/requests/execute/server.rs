@@ -29,6 +29,8 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
             .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
             .await?;
 
+        let periphery = self.periphery_client(&server)?;
+
         let inner = || async {
             let start_ts = monitor_timestamp();
             let mut update = Update {
@@ -42,8 +44,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
             };
             update.id = self.add_update(update.clone()).await?;
 
-            let log = match self
-                .periphery_client(&server)
+            let log = match periphery
                 .request(requests::PruneNetworks {})
                 .await
                 .context(format!(
@@ -95,11 +96,13 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
             return Err(anyhow!("server busy"));
         }
 
-        let inner = || async {
-            let server: Server = self
-                .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
-                .await?;
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
+            .await?;
 
+        let periphery = self.periphery_client(&server)?;
+
+        let inner = || async {
             let start_ts = monitor_timestamp();
             let mut update = Update {
                 target: ResourceTarget::Server(server_id.to_owned()),
@@ -112,8 +115,7 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
             };
             update.id = self.add_update(update.clone()).await?;
 
-            let log = match self
-                .periphery_client(&server)
+            let log = match periphery
                 .request(requests::PruneNetworks {})
                 .await
                 .context(format!(
@@ -165,11 +167,13 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
             return Err(anyhow!("server busy"));
         }
 
-        let inner = || async {
-            let server: Server = self
-                .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
-                .await?;
+        let server: Server = self
+            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
+            .await?;
 
+        let periphery = self.periphery_client(&server)?;
+
+        let inner = || async {
             let start_ts = monitor_timestamp();
             let mut update = Update {
                 target: ResourceTarget::Server(server_id.to_owned()),
@@ -182,8 +186,7 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
             };
             update.id = self.add_update(update.clone()).await?;
 
-            let log = match self
-                .periphery_client(&server)
+            let log = match periphery
                 .request(requests::PruneImages {})
                 .await
                 .context(format!("failed to prune images on server {}", server.name))

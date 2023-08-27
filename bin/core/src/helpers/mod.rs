@@ -75,7 +75,7 @@ impl State {
             return Ok((server, ServerStatus::Disabled));
         }
         let status = match self
-            .periphery_client(&server)
+            .periphery_client(&server)?
             .request(requests::GetHealth {})
             .await
         {
@@ -99,7 +99,7 @@ impl State {
             return Ok(DockerContainerState::Unknown);
         }
         let container = self
-            .periphery_client(&server)
+            .periphery_client(&server)?
             .request(requests::GetContainerList {})
             .await?
             .into_iter()
@@ -216,7 +216,13 @@ impl State {
 
     //
 
-    pub fn periphery_client(&self, server: &Server) -> PeripheryClient {
-        PeripheryClient::new(&server.config.address, &self.config.passkey)
+    pub fn periphery_client(&self, server: &Server) -> anyhow::Result<PeripheryClient> {
+        if !server.config.enabled {
+            return Err(anyhow!("server not enabled"))
+        }
+
+        let client = PeripheryClient::new(&server.config.address, &self.config.passkey);
+        
+        Ok(client)
     }
 }

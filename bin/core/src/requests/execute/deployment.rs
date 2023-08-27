@@ -48,7 +48,7 @@ impl Resolve<Deploy, RequestUser> for State {
             ));
         }
 
-        let periphery = self.periphery_client(&server);
+        let periphery = self.periphery_client(&server)?;
 
         let inner = || async move {
             let start_ts = monitor_timestamp();
@@ -154,7 +154,7 @@ impl Resolve<StartContainer, RequestUser> for State {
             ));
         }
 
-        let periphery = self.periphery_client(&server);
+        let periphery = self.periphery_client(&server)?;
 
         let inner = || async move {
             let start_ts = monitor_timestamp();
@@ -241,7 +241,7 @@ impl Resolve<StopContainer, RequestUser> for State {
             ));
         }
 
-        let periphery = self.periphery_client(&server);
+        let periphery = self.periphery_client(&server)?;
 
         let inner = || async move {
             let start_ts = monitor_timestamp();
@@ -332,7 +332,7 @@ impl Resolve<RemoveContainer, RequestUser> for State {
             ));
         }
 
-        let periphery = self.periphery_client(&server);
+        let periphery = self.periphery_client(&server)?;
 
         let inner = || async move {
             let start_ts = monitor_timestamp();

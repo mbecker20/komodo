@@ -15,7 +15,11 @@ use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser,
+    helpers::{make_update, resource::StateResource},
+    state::State,
+};
 
 #[async_trait]
 impl Resolve<CreateRepo, RequestUser> for State {
@@ -170,6 +174,14 @@ impl Resolve<DeleteRepo, RequestUser> for State {
             .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
+        let periphery = if repo.config.server_id.is_empty() {
+            None
+        } else {
+            let server: Server = self.get_resource(&repo.config.server_id).await?;
+            let periphery = self.periphery_client(&server)?;
+            Some(periphery)
+        };
+
         let inner = || async move {
             let mut update = Update {
                 operation: Operation::DeleteRepo,
@@ -196,22 +208,17 @@ impl Resolve<DeleteRepo, RequestUser> for State {
 
             update.logs.push(log);
 
-            if !repo.config.server_id.is_empty() {
-                let server: anyhow::Result<Server> =
-                    self.get_resource(&repo.config.server_id).await;
-                if let Ok(server) = server {
-                    match self
-                        .periphery_client(&server)
-                        .request(requests::DeleteRepo {
-                            name: repo.name.clone(),
-                        })
-                        .await
-                    {
-                        Ok(log) => update.logs.push(log),
-                        Err(e) => update
-                            .logs
-                            .push(Log::error("delete repo on periphery", format!("{e:#?}"))),
-                    }
+            if let Some(periphery) = periphery {
+                match periphery
+                    .request(requests::DeleteRepo {
+                        name: repo.name.clone(),
+                    })
+                    .await
+                {
+                    Ok(log) => update.logs.push(log),
+                    Err(e) => update
+                        .logs
+                        .push(Log::error("delete repo on periphery", format!("{e:#?}"))),
                 }
             }
 
@@ -254,25 +261,23 @@ impl Resolve<UpdateRepo, RequestUser> for State {
         UpdateRepo { id, config }: UpdateRepo,
         user: RequestUser,
     ) -> anyhow::Result<Repo> {
+        if let Some(server_id) = &config.server_id {
+            if !server_id.is_empty() {
+                let _: Server = self.get_resource_check_permissions(
+                        server_id,
+                        &user,
+                        PermissionLevel::Update,
+                    )
+                    .await
+                    .context("cannot move repo to this server. user must have update permissions on the server.")?;
+            }
+        }
+
         let repo: Repo = self
             .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
 
         let inner = || async move {
-            let start_ts = monitor_timestamp();
-
-            if let Some(server_id) = &config.server_id {
-                if !server_id.is_empty() {
-                    let _: Server = self.get_resource_check_permissions(
-                            server_id,
-                            &user,
-                            PermissionLevel::Update,
-                        )
-                        .await
-                        .context("cannot move repo to this server. user must have update permissions on the server.")?;
-                }
-            }
-
             self.db
                 .repos
                 .update_one(
@@ -282,37 +287,39 @@ impl Resolve<UpdateRepo, RequestUser> for State {
                 .await
                 .context("failed to update repo on database")?;
 
-            let update = Update {
-                operation: Operation::UpdateRepo,
-                target: ResourceTarget::Repo(repo.id.clone()),
-                start_ts,
-                end_ts: Some(monitor_timestamp()),
-                status: UpdateStatus::Complete,
-                logs: vec![Log::simple(
-                    "repo update",
-                    serde_json::to_string_pretty(&config).unwrap(),
-                )],
-                operator: user.id.clone(),
-                success: true,
-                ..Default::default()
-            };
-
-            self.add_update(update).await?;
+            let mut update = make_update(&repo, Operation::UpdateRepo, &user);
+            update.in_progress();
+            update.push_simple_log(
+                "repo update",
+                serde_json::to_string_pretty(&config).unwrap(),
+            );
+            update.id = self.add_update(update.clone()).await?;
 
             if let Some(new_server_id) = config.server_id {
                 if new_server_id != repo.config.server_id {
                     if !repo.config.server_id.is_empty() {
-                        // clean up old server
-                        let old_server: Server = self.get_resource(&repo.config.server_id).await?;
-                        let res = self
-                            .periphery_client(&old_server)
-                            .request(requests::DeleteRepo { name: repo.name })
-                            .await;
-                        if let Err(e) = res {
-                            warn!(
-                                "failed to delete repo ({}) off old server ({}) | {e:#?}",
-                                repo.id, old_server.id
-                            );
+                        let old_server: anyhow::Result<Server> =
+                            self.get_resource(&repo.config.server_id).await;
+                        let periphery =
+                            old_server.and_then(|server| self.periphery_client(&server));
+                        match periphery {
+                            Ok(periphery) => match periphery
+                                .request(requests::DeleteRepo { name: repo.name })
+                                .await
+                            {
+                                Ok(mut log) => {
+                                    log.stage = String::from("cleanup previous server");
+                                    update.logs.push(log);
+                                }
+                                Err(e) => update.push_error_log(
+                                    "cleanup previous server",
+                                    format!("failed to cleanup previous server | {e:#?}"),
+                                ),
+                            },
+                            Err(e) => update.push_error_log(
+                                "cleanup previous server",
+                                format!("failed to cleanup previous server | {e:#?}"),
+                            ),
                         }
                     }
                     if !new_server_id.is_empty() {
@@ -329,9 +336,10 @@ impl Resolve<UpdateRepo, RequestUser> for State {
                 }
             }
 
-            let repo: Repo = self.get_resource(&repo.id).await?;
+            update.finalize();
+            self.update_update(update).await?;
 
-            anyhow::Ok(repo)
+            self.get_resource(&repo.id).await
         };
 
         if self.action_states.repo.busy(&id).await {

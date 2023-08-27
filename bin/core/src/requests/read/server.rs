@@ -132,7 +132,7 @@ impl Resolve<GetSystemInformation, RequestUser> for State {
         let server: Server = self
             .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
-        self.periphery_client(&server)
+        self.periphery_client(&server)?
             .request(requests::GetSystemInformation {})
             .await
     }
@@ -366,7 +366,7 @@ impl Resolve<GetDockerImages, RequestUser> for State {
         let server: Server = self
             .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
-        self.periphery_client(&server)
+        self.periphery_client(&server)?
             .request(requests::GetImageList {})
             .await
     }
@@ -382,7 +382,7 @@ impl Resolve<GetDockerNetworks, RequestUser> for State {
         let server: Server = self
             .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
-        self.periphery_client(&server)
+        self.periphery_client(&server)?
             .request(requests::GetNetworkList {})
             .await
     }
@@ -398,7 +398,7 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
         let server: Server = self
             .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
-        self.periphery_client(&server)
+        self.periphery_client(&server)?
             .request(requests::GetContainerList {})
             .await
     }
@@ -415,7 +415,7 @@ impl Resolve<GetServerAvailableAccounts, RequestUser> for State {
             .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
             .await?;
         let GetAccountsResponse { github, docker } = self
-            .periphery_client(&server)
+            .periphery_client(&server)?
             .request(requests::GetAccounts {})
             .await
             .context("failed to get accounts from periphery")?;
@@ -435,7 +435,7 @@ impl Resolve<GetAvailableNetworks, RequestUser> for State {
             .get_resource_check_permissions(&server_id, &user, PermissionLevel::Read)
             .await?;
         let networks = self
-            .periphery_client(&server)
+            .periphery_client(&server)?
             .request(requests::GetNetworkList {})
             .await
             .context("failed to get accounts from periphery")?;
