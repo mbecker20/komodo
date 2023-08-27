@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use anyhow::Context;
 use axum::{
     headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
@@ -7,6 +8,7 @@ use axum::{
 use monitor_types::requests::write::*;
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
+use serror::serialize_error;
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -109,22 +111,20 @@ pub fn router() -> Router {
                         "/write request {req_id} | user: {} ({}) | {request:?}",
                         user.username, user.id
                     );
-                    let res = tokio::spawn(async move {
-                        state
-                            .resolve_request(request, user)
+                    let res =
+                        tokio::spawn(async move { state.resolve_request(request, user).await })
                             .await
-                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")))
-                    })
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")));
+                            .context("failure in spawned write task");
                     if let Err(e) = &res {
                         info!("/write request {req_id} SPAWN ERROR: {e:#?}");
                     }
-                    let res = res?;
+                    let res =
+                        res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
                     if let Err(e) = &res {
                         info!("/write request {req_id} ERROR: {e:#?}");
                     }
-                    let res = res?;
+                    let res =
+                        res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
                     let elapsed = timer.elapsed();
                     info!("/write request {req_id} | resolve time: {elapsed:?}");
                     Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))

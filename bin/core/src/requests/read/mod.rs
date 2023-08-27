@@ -8,6 +8,7 @@ use axum::{
 use monitor_types::requests::read::*;
 use resolver_api::{derive::Resolver, Resolve, ResolveToString, Resolver};
 use serde::{Deserialize, Serialize};
+use serror::serialize_error;
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -136,12 +137,11 @@ pub fn router() -> Router {
                     );
                     let res = state
                         .resolve_request(request, user)
-                        .await
-                        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")));
+                        .await;
                     if let Err(e) = &res {
                         warn!("/read request {req_id} ERROR: {e:#?}");
                     }
-                    let res = res?;
+                    let res = res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
                     let elapsed = timer.elapsed();
                     debug!("/read request {req_id} | resolve time: {elapsed:?}");
                     Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))

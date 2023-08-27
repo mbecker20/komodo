@@ -24,6 +24,7 @@ termination_signal.workspace = true
 resolver_api.workspace = true
 mungos.workspace = true
 slack.workspace = true
+serror.workspace = true
 # external
 tokio.workspace = true
 tokio-util.workspace = true

@@ -10,6 +10,7 @@ use axum::{
 };
 
 use resolver_api::Resolver;
+use serror::serialize_error;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 
@@ -37,23 +38,19 @@ async fn app() -> anyhow::Result<()> {
                     let timer = Instant::now();
                     let req_id = Uuid::new_v4();
                     info!("request {req_id} | {request:?}");
-                    let res = tokio::spawn(async move {
-                        state
-                            .resolve_request(request, ())
-                            .await
-                            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")))
-                    })
-                    .await
-                    .context("failed in spawned request handler")
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")));
+                    let res = tokio::spawn(async move { state.resolve_request(request, ()).await })
+                        .await
+                        .context("failed in spawned request handler");
                     if let Err(e) = &res {
-                        debug!("request {req_id} SPAWN ERROR: {e:?}");
+                        debug!("request {req_id} SPAWN ERROR: {e:#?}");
                     }
-                    let res = res?;
+                    let res =
+                        res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
                     if let Err(e) = &res {
-                        debug!("request {req_id} ERROR: {e:?}");
+                        debug!("request {req_id} ERROR: {e:#?}");
                     }
-                    let res = res?;
+                    let res =
+                        res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
                     let elapsed = timer.elapsed();
                     info!("request {req_id} | resolve time: {elapsed:?}");
                     debug!("request {req_id} RESPONSE: {res}");

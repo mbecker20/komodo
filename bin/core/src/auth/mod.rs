@@ -7,6 +7,7 @@ use axum::{
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use reqwest::StatusCode;
 use resolver_api::Resolver;
+use serror::serialize_error;
 use uuid::Uuid;
 
 mod github;
@@ -48,14 +49,12 @@ pub fn router(state: &State) -> Router {
                 let timer = Instant::now();
                 let req_id = Uuid::new_v4();
                 info!("/auth request {req_id} | METHOD: {}", request.req_type());
-                let res = state
-                    .resolve_request(request, ())
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:?}")));
+                let res = state.resolve_request(request, ()).await;
                 if let Err(e) = &res {
                     info!("/auth request {req_id} | ERROR: {e:?}");
                 }
-                let res = res?;
+                let res =
+                    res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
                 let elapsed = timer.elapsed();
                 info!("/auth request {req_id} | resolve time: {elapsed:?}");
                 debug!("/auth request {req_id} | RESPONSE: {res}");

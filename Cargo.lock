@@ -1982,6 +1982,7 @@ dependencies = [
  "resolver_api",
  "serde",
  "serde_json",
+ "serror",
  "sha2",
  "simple_logger",
  "slack_client_rs",
@@ -2025,6 +2026,7 @@ dependencies = [
  "run_command",
  "serde",
  "serde_json",
+ "serror",
  "simple_logger",
  "svi",
  "sysinfo",
@@ -2731,6 +2733,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde-error"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e988182713aeed6a619a88bca186f6d6407483485ffe44c869ee264f8eabd13f"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_bytes"
 version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2838,6 +2849,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "serror"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64ace3cd0543abaa9a05a1c4b5219c832aebf2a011ae31da4cf2b0d9808d6aea"
+dependencies = [
+ "anyhow",
+ "serde",
+ "serde-error",
+ "serde_json",
 ]
 
 [[package]]

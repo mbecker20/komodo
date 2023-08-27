@@ -19,6 +19,15 @@ path = "src/main.rs"
 # local
 monitor_types.workspace = true
 logger.workspace = true
+# mogh
+async_timing_util.workspace = true
+merge_config_files.workspace = true
+parse_csl.workspace = true
+termination_signal.workspace = true
+run_command.workspace = true
+svi.workspace = true
+resolver_api.workspace = true
+serror.workspace = true
 # external
 tokio.workspace = true
 axum.workspace = true
@@ -34,11 +43,3 @@ simple_logger.workspace = true
 uuid.workspace = true
 sysinfo.workspace = true
 async-trait.workspace = true
-# mogh
-async_timing_util.workspace = true
-merge_config_files.workspace = true
-parse_csl.workspace = true
-termination_signal.workspace = true
-run_command.workspace = true
-svi.workspace = true
-resolver_api.workspace = true
