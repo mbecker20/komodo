@@ -1,6 +1,11 @@
-use monitor_types::entities::{
-    alert::{Alert, AlertData},
-    deployment::Deployment, server::stats::SeverityLevel,
+use monitor_types::{
+    entities::{
+        alert::{Alert, AlertData, AlertDataVariant},
+        deployment::Deployment,
+        server::stats::SeverityLevel,
+        update::ResourceTarget,
+    },
+    monitor_timestamp,
 };
 
 use crate::{helpers::resource::StateResource, state::State};
@@ -21,6 +26,7 @@ impl State {
                     continue;
                 }
                 let d = d.unwrap();
+                let target: ResourceTarget = (&d).into();
                 let data = AlertData::ContainerStateChange {
                     id: v.curr.id.clone(),
                     name: d.name,
@@ -28,14 +34,24 @@ impl State {
                     from: prev,
                     to: v.curr.state,
                 };
+                let ts = monitor_timestamp();
                 let alert = Alert {
+                    id: Default::default(),
                     level: SeverityLevel::Warning,
+                    variant: AlertDataVariant::ContainerStateChange,
+                    resolved: true,
+                    resolved_ts: ts.into(),
+                    target,
                     data,
-                    ..Default::default()
+                    ts,
                 };
                 alerts.push(alert);
             }
         }
         self.send_alerts(&alerts).await;
+        let res = self.db.alerts.create_many(alerts).await;
+        if let Err(e) = res {
+            error!("failed to record deployment status alerts to db | {e:#?}");
+        }
     }
 }
