@@ -828,8 +828,8 @@ export interface PruneDockerContainers {
 }
 
 export interface ListAlerts {
+	query?: MongoDocument;
 	page?: U64;
-	include_resolved?: boolean;
 }
 
 export interface ListAlertsResponse {

@@ -1,13 +1,10 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_types::{
-    entities::server::Server,
+    entities::{deployment::Deployment, server::Server},
     requests::read::{ListAlerts, ListAlertsResponse},
 };
-use mungos::mongodb::{
-    bson::{doc, Document},
-    options::FindOptions,
-};
+use mungos::mongodb::{bson::doc, options::FindOptions};
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
@@ -18,22 +15,25 @@ const NUM_ALERTS_PER_PAGE: u64 = 10;
 impl Resolve<ListAlerts, RequestUser> for State {
     async fn resolve(
         &self,
-        ListAlerts {
-            page,
-            include_resolved,
-        }: ListAlerts,
+        ListAlerts { query, page }: ListAlerts,
         user: RequestUser,
     ) -> anyhow::Result<ListAlertsResponse> {
-        let mut query = Document::new();
-        if !include_resolved {
-            query.insert("resolved", false);
-        }
+        let mut query = query.unwrap_or_default();
         if !user.is_admin {
             let server_ids =
                 <State as StateResource<Server>>::get_resource_ids_for_non_admin(self, &user.id)
                     .await?;
-            query.insert("target.type", "Server");
-            query.insert("target.id", doc! { "$in": server_ids });
+            let deployment_ids =
+                <State as StateResource<Deployment>>::get_resource_ids_for_non_admin(
+                    self, &user.id,
+                )
+                .await?;
+            query.extend(doc! {
+                "$or": [
+                   { "target.type": "Server", "target.id": { "$in": &server_ids } },
+                   { "target.type": "Deployment", "target.id": { "$in": &deployment_ids } },
+                ]
+            });
         }
         let alerts = self
             .db
