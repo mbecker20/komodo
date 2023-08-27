@@ -2290,6 +2290,7 @@ dependencies = [
  "reqwest",
  "resolver_api",
  "serde_json",
+ "serror",
 ]
 
 [[package]]
@@ -2853,9 +2854,9 @@ dependencies = [
 
 [[package]]
 name = "serror"
-version = "0.1.1"
+version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64ace3cd0543abaa9a05a1c4b5219c832aebf2a011ae31da4cf2b0d9808d6aea"
+checksum = "6bc462876e265831d80297a3898a173e3d5c72a1501dec9234423de2d25ac89c"
 dependencies = [
  "anyhow",
  "serde",

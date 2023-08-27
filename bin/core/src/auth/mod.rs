@@ -7,7 +7,6 @@ use axum::{
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use reqwest::StatusCode;
 use resolver_api::Resolver;
-use serror::serialize_error;
 use uuid::Uuid;
 
 mod github;
@@ -17,8 +16,10 @@ mod local;
 mod secret;
 
 use crate::{
+    helpers::into_response_error,
     requests::auth::AuthRequest,
     state::{State, StateExtension},
+    ResponseResult,
 };
 
 pub use self::jwt::{InnerRequestUser, JwtClient, RequestUser, RequestUserExtension};
@@ -53,12 +54,11 @@ pub fn router(state: &State) -> Router {
                 if let Err(e) = &res {
                     info!("/auth request {req_id} | ERROR: {e:?}");
                 }
-                let res =
-                    res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
+                let res = res.map_err(into_response_error)?;
                 let elapsed = timer.elapsed();
                 info!("/auth request {req_id} | resolve time: {elapsed:?}");
                 debug!("/auth request {req_id} | RESPONSE: {res}");
-                Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
+                ResponseResult::Ok((TypedHeader(ContentType::json()), res))
             },
         ),
     );

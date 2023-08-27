@@ -10,7 +10,6 @@ use axum::{
 };
 
 use resolver_api::Resolver;
-use serror::serialize_error;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 
@@ -22,6 +21,10 @@ mod state;
 
 use requests::PeripheryRequest;
 use state::State;
+
+use crate::helpers::into_response_error;
+
+type ResponseResult<T> = Result<T, (StatusCode, TypedHeader<ContentType>, String)>;
 
 async fn app() -> anyhow::Result<()> {
     let state = State::load().await?;
@@ -44,17 +47,15 @@ async fn app() -> anyhow::Result<()> {
                     if let Err(e) = &res {
                         debug!("request {req_id} SPAWN ERROR: {e:#?}");
                     }
-                    let res =
-                        res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
+                    let res = res.map_err(into_response_error)?;
                     if let Err(e) = &res {
                         debug!("request {req_id} ERROR: {e:#?}");
                     }
-                    let res =
-                        res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
+                    let res = res.map_err(into_response_error)?;
                     let elapsed = timer.elapsed();
                     info!("request {req_id} | resolve time: {elapsed:?}");
                     debug!("request {req_id} RESPONSE: {res}");
-                    Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
+                    ResponseResult::Ok((TypedHeader(ContentType::json()), res))
                 },
             ),
         )

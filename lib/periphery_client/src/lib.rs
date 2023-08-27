@@ -3,12 +3,13 @@ extern crate log;
 
 use std::time::Duration;
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use reqwest::StatusCode;
 use resolver_api::HasResponse;
 use serde_json::json;
 
 pub use monitor_periphery::requests;
+use serror::deserialize_error;
 
 pub struct PeripheryClient {
     reqwest: reqwest::Client,
@@ -54,7 +55,7 @@ impl PeripheryClient {
         if let Some(timeout) = timeout {
             req = req.timeout(timeout);
         }
-        let res = req.send().await?;
+        let res = req.send().await.context("failed at request to periphery")?;
         let status = res.status();
         debug!("got response | type: {req_type} | {status} | body: {res:?}",);
         if status == StatusCode::OK {
@@ -66,7 +67,11 @@ impl PeripheryClient {
                 .text()
                 .await
                 .context("failed to convert response to text")?;
-            Err(anyhow!("request failed | {status} | {text}"))
+
+            let error =
+                deserialize_error(text).context(format!("request to periphery failed | {status}"));
+
+            Err(error)
         }
     }
 }

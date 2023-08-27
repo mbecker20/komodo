@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use crate::config::State;
 
 #[macro_use]

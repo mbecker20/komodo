@@ -2,19 +2,20 @@ use std::time::Instant;
 
 use async_trait::async_trait;
 use axum::{
-    headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
+    headers::ContentType, middleware, routing::post, Extension, Json, Router,
     TypedHeader,
 };
 use monitor_types::requests::read::*;
 use resolver_api::{derive::Resolver, Resolve, ResolveToString, Resolver};
 use serde::{Deserialize, Serialize};
-use serror::serialize_error;
 use typeshare::typeshare;
 use uuid::Uuid;
 
 use crate::{
     auth::{auth_request, RequestUser, RequestUserExtension},
+    helpers::into_response_error,
     state::{State, StateExtension},
+    ResponseResult,
 };
 
 mod alert;
@@ -135,16 +136,14 @@ pub fn router() -> Router {
                         "/read request {req_id} | user: {} ({}) | {request:?}",
                         user.username, user.id
                     );
-                    let res = state
-                        .resolve_request(request, user)
-                        .await;
+                    let res = state.resolve_request(request, user).await;
                     if let Err(e) = &res {
                         warn!("/read request {req_id} ERROR: {e:#?}");
                     }
-                    let res = res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
+                    let res = res.map_err(into_response_error)?;
                     let elapsed = timer.elapsed();
                     debug!("/read request {req_id} | resolve time: {elapsed:?}");
-                    Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
+                    ResponseResult::Ok((TypedHeader(ContentType::json()), res))
                 },
             ),
         )

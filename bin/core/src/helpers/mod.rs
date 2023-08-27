@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
+use axum::{headers::ContentType, http::StatusCode, TypedHeader};
 use monitor_types::{
     entities::{
         deployment::{Deployment, DockerContainerState},
@@ -15,6 +16,7 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
+use serror::serialize_error_pretty;
 
 use crate::{auth::RequestUser, state::State};
 
@@ -55,6 +57,14 @@ pub fn make_update(
         success: true,
         ..Default::default()
     }
+}
+
+pub fn into_response_error(e: anyhow::Error) -> (StatusCode, TypedHeader<ContentType>, String) {
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        TypedHeader(ContentType::json()),
+        serialize_error_pretty(e),
+    )
 }
 
 impl State {
@@ -218,11 +228,11 @@ impl State {
 
     pub fn periphery_client(&self, server: &Server) -> anyhow::Result<PeripheryClient> {
         if !server.config.enabled {
-            return Err(anyhow!("server not enabled"))
+            return Err(anyhow!("server not enabled"));
         }
 
         let client = PeripheryClient::new(&server.config.address, &self.config.passkey);
-        
+
         Ok(client)
     }
 }

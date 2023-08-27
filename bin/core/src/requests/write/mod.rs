@@ -1,20 +1,18 @@
 use std::time::Instant;
 
 use anyhow::Context;
-use axum::{
-    headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
-    TypedHeader,
-};
+use axum::{headers::ContentType, middleware, routing::post, Extension, Json, Router, TypedHeader};
 use monitor_types::requests::write::*;
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
-use serror::serialize_error;
 use typeshare::typeshare;
 use uuid::Uuid;
 
 use crate::{
     auth::{auth_request, RequestUser, RequestUserExtension},
+    helpers::into_response_error,
     state::{State, StateExtension},
+    ResponseResult,
 };
 
 mod alerter;
@@ -118,16 +116,14 @@ pub fn router() -> Router {
                     if let Err(e) = &res {
                         info!("/write request {req_id} SPAWN ERROR: {e:#?}");
                     }
-                    let res =
-                        res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
+                    let res = res.map_err(into_response_error)?;
                     if let Err(e) = &res {
                         info!("/write request {req_id} ERROR: {e:#?}");
                     }
-                    let res =
-                        res.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, serialize_error(e)))?;
+                    let res = res.map_err(into_response_error)?;
                     let elapsed = timer.elapsed();
                     info!("/write request {req_id} | resolve time: {elapsed:?}");
-                    Result::<_, (StatusCode, String)>::Ok((TypedHeader(ContentType::json()), res))
+                    ResponseResult::Ok((TypedHeader(ContentType::json()), res))
                 },
             ),
         )

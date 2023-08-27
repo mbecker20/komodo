@@ -1,7 +1,9 @@
 use anyhow::anyhow;
 use async_timing_util::unix_timestamp_ms;
+use axum::{http::StatusCode, TypedHeader, headers::ContentType};
 use monitor_types::entities::update::Log;
 use run_command::{async_run_command, CommandOutput};
+use serror::serialize_error_pretty;
 
 use crate::state::State;
 
@@ -58,4 +60,12 @@ pub fn output_into_log(stage: &str, command: String, start_ts: i64, output: Comm
         start_ts,
         end_ts: unix_timestamp_ms() as i64,
     }
+}
+
+pub fn into_response_error(e: anyhow::Error) -> (StatusCode, TypedHeader<ContentType>, String) {
+    (
+        StatusCode::INTERNAL_SERVER_ERROR,
+        TypedHeader(ContentType::json()),
+        serialize_error_pretty(e),
+    )
 }

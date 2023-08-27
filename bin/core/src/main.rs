@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate log;
 
-use axum::{Extension, Router};
+use axum::{Extension, Router, http::StatusCode, TypedHeader, headers::ContentType};
 use termination_signal::tokio::immediate_term_handle;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -14,6 +14,8 @@ mod monitor;
 mod requests;
 mod state;
 mod ws;
+
+type ResponseResult<T> = Result<T, (StatusCode, TypedHeader<ContentType>, String)>;
 
 async fn app() -> anyhow::Result<()> {
     let state = state::State::load().await?;

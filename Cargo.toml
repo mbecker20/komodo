@@ -28,7 +28,7 @@ make_option = "0.1.7"
 resolver_api = "0.1.6"
 parse_csl = "0.1.0"
 mungos = "0.4.19"
-serror = "0.1.1"
+serror = "0.1.3"
 svi = "0.1.4"
 # external
 tokio = { version = "1.32.0", features = ["full"] }
