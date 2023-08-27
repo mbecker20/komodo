@@ -1,4 +1,4 @@
-FROM rust:latest as builder
+FROM rust:1.71.1 as builder
 WORKDIR /builder
 
 COPY . .
