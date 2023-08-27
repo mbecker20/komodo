@@ -1,17 +1,14 @@
-use monitor_types::{
-    entities::{
-        alert::{Alert, AlertData, AlertDataVariant},
-        deployment::Deployment,
-        server::stats::SeverityLevel,
-        update::ResourceTarget,
-    },
-    monitor_timestamp,
+use monitor_types::entities::{
+    alert::{Alert, AlertData, AlertDataVariant},
+    deployment::Deployment,
+    server::stats::SeverityLevel,
+    update::ResourceTarget,
 };
 
 use crate::{helpers::resource::StateResource, state::State};
 
 impl State {
-    pub async fn alert_deployments(&self) {
+    pub async fn alert_deployments(&self, ts: i64) {
         let mut alerts = Vec::<Alert>::new();
         for v in self.deployment_status_cache.get_list().await {
             if v.prev.is_none() {
@@ -34,7 +31,6 @@ impl State {
                     from: prev,
                     to: v.curr.state,
                 };
-                let ts = monitor_timestamp();
                 let alert = Alert {
                     id: Default::default(),
                     level: SeverityLevel::Warning,

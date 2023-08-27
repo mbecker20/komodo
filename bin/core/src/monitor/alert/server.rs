@@ -21,7 +21,7 @@ type OpenDiskAlertMap = OpenAlertMap<PathBuf>;
 type OpenTempAlertMap = OpenAlertMap<String>;
 
 impl State {
-    pub async fn alert_servers(&self) {
+    pub async fn alert_servers(&self, ts: i64) {
         let server_statuses = self.server_status_cache.get_list().await;
         let servers = self.get_all_servers_map().await;
 
@@ -64,7 +64,7 @@ impl State {
                     // open unreachable alert
                     let alert = Alert {
                         id: Default::default(),
-                        ts: monitor_timestamp(),
+                        ts,
                         resolved: false,
                         resolved_ts: None,
                         level: SeverityLevel::Critical,
@@ -102,7 +102,7 @@ impl State {
                     // open alert
                     let alert = Alert {
                         id: Default::default(),
-                        ts: monitor_timestamp(),
+                        ts,
                         resolved: false,
                         resolved_ts: None,
                         level: health.cpu,
@@ -184,7 +184,7 @@ impl State {
                     // open alert
                     let alert = Alert {
                         id: Default::default(),
-                        ts: monitor_timestamp(),
+                        ts,
                         resolved: false,
                         resolved_ts: None,
                         level: health.cpu,
@@ -283,7 +283,7 @@ impl State {
                             .and_then(|s| s.disk.disks.iter().find(|disk| disk.mount == *path));
                         let alert = Alert {
                             id: Default::default(),
-                            ts: monitor_timestamp(),
+                            ts,
                             resolved: false,
                             resolved_ts: None,
                             level: *health,
@@ -342,7 +342,7 @@ impl State {
                         });
                         let alert = Alert {
                             id: Default::default(),
-                            ts: monitor_timestamp(),
+                            ts,
                             resolved: false,
                             resolved_ts: None,
                             level: *health,

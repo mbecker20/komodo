@@ -51,7 +51,7 @@ impl State {
                 self.update_cache_for_server(&server).await;
             });
             join_all(futures).await;
-            tokio::join!(self.check_alerts(), self.record_server_stats(ts));
+            tokio::join!(self.check_alerts(ts), self.record_server_stats(ts));
         }
     }
 
