@@ -48,6 +48,9 @@ impl State {
                 alerts.push(alert);
             }
         }
+        if alerts.is_empty() {
+            return;
+        }
         self.send_alerts(&alerts).await;
         let res = self.db.alerts.create_many(alerts).await;
         if let Err(e) = res {
