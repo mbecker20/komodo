@@ -1,4 +1,4 @@
-FROM rust:latest as builder
+FROM rust:1.71.1 as builder
 WORKDIR /builder
 
 COPY . .
@@ -6,8 +6,6 @@ COPY . .
 RUN cargo build -p alert_logger --release
 
 FROM gcr.io/distroless/cc
-
-# COPY ./frontend/build /frontend
 
 COPY --from=builder /builder/target/release/alert_logger /
 
