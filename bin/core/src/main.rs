@@ -1,9 +1,8 @@
 #[macro_use]
 extern crate log;
 
-use axum::{Extension, Router, http::StatusCode, TypedHeader, headers::ContentType};
+use axum::{headers::ContentType, http::StatusCode, Extension, Router, TypedHeader};
 use termination_signal::tokio::immediate_term_handle;
-use tower_http::cors::{Any, CorsLayer};
 
 mod auth;
 mod cloud;
@@ -31,13 +30,8 @@ async fn app() -> anyhow::Result<()> {
         .nest("/execute", requests::execute::router())
         .nest("/listener", listener::router())
         .nest("/ws", ws::router())
-        .layer(Extension(state))
-        .layer(
-            CorsLayer::new()
-                .allow_origin(Any)
-                .allow_methods(Any)
-                .allow_headers(Any),
-        );
+        .layer(state.cors()?)
+        .layer(Extension(state));
 
     info!("starting monitor core on {socket_addr}");
 

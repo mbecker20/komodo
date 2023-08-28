@@ -1,6 +1,7 @@
 use std::{net::SocketAddr, str::FromStr, sync::Arc};
 
 use anyhow::Context;
+use async_timing_util::{unix_timestamp_ms, wait_until_timelength, Timelength, ONE_DAY_MS};
 use axum::Extension;
 use monitor_types::entities::{
     build::BuildActionState,
@@ -9,6 +10,8 @@ use monitor_types::entities::{
     server::ServerActionState,
     update::UpdateListItem,
 };
+use mungos::mongodb::bson::doc;
+use tower_http::cors::{Any, CorsLayer};
 
 use crate::{
     auth::{GithubOauthClient, GoogleOauthClient, JwtClient},
@@ -70,13 +73,76 @@ impl State {
 
         let state_clone = state.clone();
         tokio::spawn(async move { state_clone.monitor().await });
+        let state_clone = state.clone();
+        tokio::spawn(async move { state_clone.prune().await });
 
         Ok(state)
+    }
+
+    async fn prune(&self) {
+        loop {
+            wait_until_timelength(Timelength::OneDay, 5000).await;
+            let (stats_res, alerts_res) = tokio::join!(self.prune_stats(), self.prune_alerts());
+            if let Err(e) = stats_res {
+                error!("error in pruning stats | {e:#?}");
+            }
+            if let Err(e) = alerts_res {
+                error!("error in pruning alerts | {e:#?}");
+            }
+        }
+    }
+
+    async fn prune_stats(&self) -> anyhow::Result<()> {
+        if self.config.keep_stats_for_days == 0 {
+            return Ok(());
+        }
+        let delete_before_ts =
+            (unix_timestamp_ms() - self.config.keep_stats_for_days * ONE_DAY_MS) as i64;
+        let res = self
+            .db
+            .stats
+            .delete_many(doc! {
+                "ts": { "$lt": delete_before_ts }
+            })
+            .await?;
+        info!("deleted {} stats from db", res.deleted_count);
+        Ok(())
+    }
+
+    async fn prune_alerts(&self) -> anyhow::Result<()> {
+        if self.config.keep_alerts_for_days == 0 {
+            return Ok(());
+        }
+        let delete_before_ts =
+            (unix_timestamp_ms() - self.config.keep_alerts_for_days * ONE_DAY_MS) as i64;
+        let res = self
+            .db
+            .alerts
+            .delete_many(doc! {
+                "ts": { "$lt": delete_before_ts }
+            })
+            .await?;
+        info!("deleted {} alerts from db", res.deleted_count);
+        Ok(())
     }
 
     pub fn socket_addr(&self) -> anyhow::Result<SocketAddr> {
         SocketAddr::from_str(&format!("0.0.0.0:{}", self.config.port))
             .context("failed to parse socket addr")
+    }
+
+    pub fn cors(&self) -> anyhow::Result<CorsLayer> {
+        let cors = CorsLayer::new()
+            .allow_origin(
+                // self.config
+                //     .host
+                //     .parse::<HeaderValue>()
+                //     .context("failed to parse host into origin")?,
+                Any,
+            )
+            .allow_methods(Any)
+            .allow_headers(Any);
+        Ok(cors)
     }
 }
 
