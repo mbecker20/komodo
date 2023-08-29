@@ -111,6 +111,8 @@ impl MonitorClient {
                     }
                 }
 
+                let _ = tx.send(UpdateWsMessage::Reconnected);
+
                 // ==================
                 // HANLDE MSGS
                 // ==================
