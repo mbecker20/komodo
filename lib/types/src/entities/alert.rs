@@ -99,7 +99,8 @@ pub enum AlertData {
     ContainerStateChange {
         id: String,
         name: String,
-        server: String, // server name
+        server_id: String,
+        server_name: String,
         from: DockerContainerState,
         to: DockerContainerState,
     },

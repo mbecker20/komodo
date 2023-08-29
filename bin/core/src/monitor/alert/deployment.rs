@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use monitor_types::entities::{
     alert::{Alert, AlertData, AlertDataVariant},
     deployment::Deployment,
@@ -8,7 +10,7 @@ use monitor_types::entities::{
 use crate::{helpers::resource::StateResource, state::State};
 
 impl State {
-    pub async fn alert_deployments(&self, ts: i64) {
+    pub async fn alert_deployments(&self, ts: i64, server_names: HashMap<String, String>) {
         let mut alerts = Vec::<Alert>::new();
         for v in self.deployment_status_cache.get_list().await {
             if v.prev.is_none() {
@@ -27,7 +29,11 @@ impl State {
                 let data = AlertData::ContainerStateChange {
                     id: v.curr.id.clone(),
                     name: d.name,
-                    server: d.config.server_id,
+                    server_name: server_names
+                        .get(&d.config.server_id)
+                        .cloned()
+                        .unwrap_or(String::from("unknown")),
+                    server_id: d.config.server_id,
                     from: prev,
                     to: v.curr.state,
                 };

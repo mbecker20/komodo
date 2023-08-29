@@ -192,7 +192,7 @@ async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
         }
         AlertData::ContainerStateChange {
             name,
-            server,
+            server_name,
             from,
             to,
             ..
@@ -201,7 +201,7 @@ async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             let text = format!("📦 container *{name}* is now {to}");
             let blocks = vec![
                 Block::header(format!("📦 container *{name}* is now {to}")),
-                Block::section(format!("server: {server}\nprevious: {from}")),
+                Block::section(format!("server: {server_name}\nprevious: {from}")),
             ];
             (text, blocks.into())
         }

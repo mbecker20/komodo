@@ -4,7 +4,7 @@ use anyhow::Context;
 use monitor_types::{
     entities::{
         alert::{Alert, AlertData, AlertDataVariant},
-        server::{stats::SeverityLevel, Server, ServerListItem, ServerStatus},
+        server::{stats::SeverityLevel, ServerStatus, ServerListItem},
         update::ResourceTarget,
     },
     monitor_timestamp, optional_string,
@@ -14,23 +14,15 @@ use mungos::{
     BulkUpdate,
 };
 
-use crate::{auth::InnerRequestUser, helpers::resource::StateResource, state::State};
+use crate::state::State;
 
 type OpenAlertMap<T = AlertDataVariant> = HashMap<ResourceTarget, HashMap<T, Alert>>;
 type OpenDiskAlertMap = OpenAlertMap<PathBuf>;
 type OpenTempAlertMap = OpenAlertMap<String>;
 
 impl State {
-    pub async fn alert_servers(&self, ts: i64) {
+    pub async fn alert_servers(&self, ts: i64, mut servers: HashMap<String, ServerListItem>) {
         let server_statuses = self.server_status_cache.get_list().await;
-        let servers = self.get_all_servers_map().await;
-
-        if let Err(e) = servers {
-            error!("{e:#?}");
-            return;
-        }
-
-        let mut servers = servers.unwrap();
 
         let alerts = self.get_open_alerts().await;
 
@@ -510,26 +502,5 @@ impl State {
         }
 
         Ok((map, disk_map, temp_map))
-    }
-
-    async fn get_all_servers_map(&self) -> anyhow::Result<HashMap<String, ServerListItem>> {
-        let servers = <State as StateResource<Server>>::list_resources_for_user(
-            self,
-            None,
-            &InnerRequestUser {
-                is_admin: true,
-                ..Default::default()
-            }
-            .into(),
-        )
-        .await
-        .context("failed to get servers from db (in alert_servers)")?;
-
-        let servers = servers
-            .into_iter()
-            .map(|server| (server.id.clone(), server))
-            .collect::<HashMap<_, _>>();
-
-        Ok(servers)
     }
 }
