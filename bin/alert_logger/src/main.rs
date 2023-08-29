@@ -13,10 +13,7 @@ async fn app() -> anyhow::Result<()> {
 
     let socket_addr = SocketAddr::from_str("0.0.0.0:7000").unwrap();
 
-    info!(
-        "v {} | {socket_addr}",
-        env!("CARGO_PKG_VERSION")
-    );
+    info!("v {} | {socket_addr}", env!("CARGO_PKG_VERSION"));
 
     let app = Router::new().route(
         "/",

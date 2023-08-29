@@ -48,6 +48,7 @@ async fn ws_handler(state: StateExtension, ws: WebSocketUpgrade) -> impl IntoRes
         let (mut ws_sender, mut ws_reciever) = socket.split();
         let cancel = CancellationToken::new();
         let cancel_clone = cancel.clone();
+
         tokio::spawn(async move {
             loop {
                 let update = select! {
@@ -69,10 +70,7 @@ async fn ws_handler(state: StateExtension, ws: WebSocketUpgrade) -> impl IntoRes
                 let res = state
                     .user_can_see_update(&user, &user.id, &update.target)
                     .await;
-                if let Err(_e) = res {
-                    // handle
-                    return;
-                } else {
+                if res.is_ok() {
                     let _ = ws_sender
                         .send(Message::Text(serde_json::to_string(&update).unwrap()))
                         .await;

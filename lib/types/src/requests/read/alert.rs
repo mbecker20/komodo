@@ -2,7 +2,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{entities::alert::Alert, I64, U64, MongoDocument};
+use crate::{entities::alert::Alert, MongoDocument, I64, U64};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
