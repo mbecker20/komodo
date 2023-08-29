@@ -244,7 +244,7 @@ fn parse_conversions(conversions: &[Conversion], flag: &str) -> String {
 fn parse_environment(environment: &[EnvironmentVar]) -> String {
     environment
         .iter()
-        .map(|p| format!(" --env {}={}", p.variable, p.value))
+        .map(|p| format!(" --env {}=\"{}\"", p.variable, p.value))
         .collect::<Vec<String>>()
         .join("")
 }
