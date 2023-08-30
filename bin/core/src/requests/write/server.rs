@@ -196,7 +196,7 @@ impl Resolve<RenameServer, RequestUser> for State {
             .await?;
         let mut update = make_update(&server, Operation::RenameServer, &user);
         self.db
-            .updates
+            .servers
             .update_one(
                 &id,
                 mungos::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }),
