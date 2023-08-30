@@ -1,16 +1,15 @@
-import { ActionWithDialog, ConfirmButton } from "@components/util";
-import { Play, Trash, Pause, Rocket } from "lucide-react";
-import { useExecute, useRead, useWrite } from "@hooks";
+import {
+  ActionButton,
+  ActionWithDialog,
+  ConfirmButton,
+} from "@components/util";
+import { Play, Trash, Pause, Rocket, Pen } from "lucide-react";
+import { useExecute, useInvalidate, useRead, useWrite } from "@hooks";
 import { DockerContainerState } from "@monitor/client/dist/types";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@ui/input";
-import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@ui/toast/use-toast";
-import { Input } from "@ui/input";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@ui/toast/use-toast";
 
 interface DeploymentId {
   deployment_id: string;
@@ -132,55 +131,6 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
       icon={<Trash className="h-4 w-4" />}
       onClick={async () => {
         await mutateAsync({ id });
-        nav("/");
-      }}
-      disabled={isLoading}
-      loading={deleting}
-    />
-  );
-};
-
-export const RenameDeployment = ({ id }: { id: string }) => {
-  const invalidate = useInvalidate();
-
-  const { toast } = useToast();
-  const { mutate, isLoading } = useWrite("RenameDeployment", {
-    onSuccess: () => {
-      invalidate(["ListDeployments"]);
-      toast({ title: "Deployment Renamed" });
-      set("");
-    },
-  });
-
-  const [name, set] = useState("");
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Rename Deployment</div>
-      <div className="flex gap-4 w-full justify-end">
-        <Input
-          value={name}
-          onChange={(e) => set(e.target.value)}
-          className="w-96"
-          placeholder="Enter new name"
-        />
-        <ActionButton
-          title="Rename"
-          icon={<Pen className="w-4 h-4" />}
-          disabled={isLoading}
-          onClick={() => mutate({ id, name })}
-        />
-      </div>
-    </div>
-  );
-  return (
-    <ActionWithDialog
-      name={d.name}
-      title="Delete"
-      intent="danger"
-      icon={<Trash className="h-4 w-4" />}
-      onClick={async () => {
-        await mutateAsync({ deployment_id: id });
         nav("/");
       }}
       disabled={isLoading}
