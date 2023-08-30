@@ -1,7 +1,9 @@
+use std::time::Duration;
+
 use anyhow::Context;
 use futures::{SinkExt, TryStreamExt};
 use monitor_types::entities::update::UpdateListItem;
-use serror::serialize_error_pretty;
+use serror::serialize_error;
 use thiserror::Error;
 use tokio::sync::broadcast;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
@@ -33,6 +35,7 @@ impl MonitorClient {
     pub fn subscribe_to_updates(
         &self,
         capacity: usize,
+        retry_cooldown_secs: u64,
     ) -> (broadcast::Receiver<UpdateWsMessage>, CancellationToken) {
         let (tx, rx) = broadcast::channel(capacity);
         let cancel = CancellationToken::new();
@@ -42,110 +45,128 @@ impl MonitorClient {
 
         tokio::spawn(async move {
             loop {
+                // OUTER LOOP (LONG RECONNECT)
                 if cancel.is_cancelled() {
                     break;
                 }
-
-                if client.creds.is_some() {
-                    let res = client.refresh_jwt().await;
-                    if let Err(e) = res {
-                        let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
-                            serialize_error_pretty(e),
-                        )));
+                loop {
+                    // INNER LOOP (SHORT RECONNECT)
+                    if cancel.is_cancelled() {
+                        break;
                     }
-                }
 
-                let res = connect_async(&address)
-                    .await
-                    .context("failed to connect to websocket endpoint");
-                if let Err(e) = res {
-                    let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::ConnectionError(
-                        serialize_error_pretty(e),
-                    )));
-                    return;
-                }
-                let (mut ws, _) = res.unwrap();
-
-                // ==================
-                // SEND LOGIN MSG
-                // ==================
-                let login_send_res = ws
-                    .send(Message::Text(client.jwt.clone()))
-                    .await
-                    .context("failed to send login message");
-
-                if let Err(e) = login_send_res {
-                    let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
-                        serialize_error_pretty(e),
-                    )));
-                    return;
-                }
-
-                // ==================
-                // HANDLE LOGIN RES
-                // ==================
-                match ws.try_next().await {
-                    Ok(Some(Message::Text(msg))) => {
-                        if msg != "LOGGED_IN" {
-                            let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(msg)));
-                            return;
+                    if client.creds.is_some() {
+                        let res = client.refresh_jwt().await;
+                        if let Err(e) = res {
+                            let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
+                                serialize_error(e),
+                            )));
+                            break;
                         }
                     }
-                    Ok(Some(msg)) => {
-                        let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
-                            format!("{msg:#?}"),
-                        )));
-                        return;
-                    }
-                    Ok(None) => {
-                        let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
-                            String::from("got None message after login message"),
-                        )));
-                        return;
-                    }
-                    Err(e) => {
-                        let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
-                            format!("failed to recieve message | {e:#?}"),
-                        )));
-                        return;
-                    }
-                }
 
-                let _ = tx.send(UpdateWsMessage::Reconnected);
+                    let res = connect_async(&address)
+                        .await
+                        .context("failed to connect to websocket endpoint");
 
-                // ==================
-                // HANLDE MSGS
-                // ==================
-                loop {
-                    match ws.try_next().await.context("failed to recieve message") {
+                    if let Err(e) = res {
+                        let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::ConnectionError(
+                            serialize_error(e),
+                        )));
+                        break;
+                    }
+
+                    let (mut ws, _) = res.unwrap();
+
+                    // ==================
+                    // SEND LOGIN MSG
+                    // ==================
+                    let login_send_res = ws
+                        .send(Message::Text(client.jwt.clone()))
+                        .await
+                        .context("failed to send login message");
+
+                    if let Err(e) = login_send_res {
+                        let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
+                            serialize_error(e),
+                        )));
+                        break;
+                    }
+
+                    // ==================
+                    // HANDLE LOGIN RES
+                    // ==================
+                    match ws.try_next().await {
                         Ok(Some(Message::Text(msg))) => {
-                            match serde_json::from_str::<UpdateListItem>(&msg) {
-                                Ok(msg) => {
-                                    let _ = tx.send(UpdateWsMessage::Update(msg));
-                                }
-                                Err(_) => {
-                                    let _ = tx.send(UpdateWsMessage::Error(
-                                        UpdateWsError::MessageUnrecognized(msg),
-                                    ));
-                                }
+                            if msg != "LOGGED_IN" {
+                                let _ =
+                                    tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(msg)));
+                                let _ = ws.close(None).await;
+                                break;
                             }
                         }
-                        Ok(Some(Message::Close(_))) => {
-                            let _ = tx.send(UpdateWsMessage::Disconnected);
+                        Ok(Some(msg)) => {
+                            let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
+                                format!("{msg:#?}"),
+                            )));
+                            let _ = ws.close(None).await;
+                            break;
+                        }
+                        Ok(None) => {
+                            let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
+                                String::from("got None message after login message"),
+                            )));
+                            let _ = ws.close(None).await;
                             break;
                         }
                         Err(e) => {
-                            let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::MessageError(
-                                serialize_error_pretty(e),
+                            let _ = tx.send(UpdateWsMessage::Error(UpdateWsError::LoginError(
+                                format!("failed to recieve message | {e:#?}"),
                             )));
-                            let _ = tx.send(UpdateWsMessage::Disconnected);
+                            let _ = ws.close(None).await;
                             break;
                         }
-                        Ok(_) => {
-                            // ignore
+                    }
+
+                    let _ = tx.send(UpdateWsMessage::Reconnected);
+
+                    // ==================
+                    // HANLDE MSGS
+                    // ==================
+                    loop {
+                        match ws.try_next().await.context("failed to recieve message") {
+                            Ok(Some(Message::Text(msg))) => {
+                                match serde_json::from_str::<UpdateListItem>(&msg) {
+                                    Ok(msg) => {
+                                        let _ = tx.send(UpdateWsMessage::Update(msg));
+                                    }
+                                    Err(_) => {
+                                        let _ = tx.send(UpdateWsMessage::Error(
+                                            UpdateWsError::MessageUnrecognized(msg),
+                                        ));
+                                    }
+                                }
+                            }
+                            Ok(Some(Message::Close(_))) => {
+                                let _ = tx.send(UpdateWsMessage::Disconnected);
+                                let _ = ws.close(None).await;
+                                break;
+                            }
+                            Err(e) => {
+                                let _ = tx.send(UpdateWsMessage::Error(
+                                    UpdateWsError::MessageError(serialize_error(e)),
+                                ));
+                                let _ = tx.send(UpdateWsMessage::Disconnected);
+                                let _ = ws.close(None).await;
+                                break;
+                            }
+                            Ok(_) => {
+                                // ignore
+                            }
                         }
                     }
                 }
+                tokio::time::sleep(Duration::from_secs(retry_cooldown_secs)).await;
             }
         });
 
