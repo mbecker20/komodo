@@ -153,10 +153,10 @@ impl Resolve<UpdateServer, RequestUser> for State {
         if self.action_states.server.busy(&id).await {
             return Err(anyhow!("server busy"));
         }
-        let start_ts = monitor_timestamp();
-        let _: Server = self
+        let server: Server = self
             .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
+        let mut update = make_update(&server, Operation::UpdateServer, &user);
         self.db
             .servers
             .update_one(
@@ -165,24 +165,14 @@ impl Resolve<UpdateServer, RequestUser> for State {
             )
             .await
             .context("failed to update server on mongo")?;
-        let update = Update {
-            operation: Operation::UpdateServer,
-            target: ResourceTarget::Server(id.clone()),
-            start_ts,
-            end_ts: Some(monitor_timestamp()),
-            status: UpdateStatus::Complete,
-            logs: vec![Log::simple(
-                "server update",
-                serde_json::to_string_pretty(&config).unwrap(),
-            )],
-            operator: user.id.clone(),
-            success: true,
-            ..Default::default()
-        };
 
+        update.push_simple_log("server update", serde_json::to_string_pretty(&config)?);
+        
         let new_server: Server = self.get_resource(&id).await?;
 
         self.update_cache_for_server(&new_server).await;
+
+        update.finalize();
 
         self.add_update(update).await?;
 
@@ -197,31 +187,23 @@ impl Resolve<RenameServer, RequestUser> for State {
         RenameServer { id, name }: RenameServer,
         user: RequestUser,
     ) -> anyhow::Result<Update> {
-        let start_ts = monitor_timestamp();
         let server: Server = self
             .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
             .await?;
+        let mut update = make_update(&server, Operation::RenameServer, &user);
         self.db
             .updates
             .update_one(
                 &id,
                 mungos::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }),
             )
-            .await?;
-        let mut update = Update {
-            target: ResourceTarget::Deployment(id.clone()),
-            operation: Operation::RenameServer,
-            start_ts,
-            end_ts: Some(monitor_timestamp()),
-            logs: vec![Log::simple(
-                "rename server",
-                format!("renamed server {id} from {} to {name}", server.name),
-            )],
-            status: UpdateStatus::Complete,
-            success: true,
-            operator: user.id.clone(),
-            ..Default::default()
-        };
+            .await
+            .context("failed to update server on db. this name may already be taken.")?;
+        update.push_simple_log(
+            "rename server",
+            format!("renamed server {id} from {} to {name}", server.name),
+        );
+        update.finalize();
         update.id = self.add_update(update.clone()).await?;
         Ok(update)
     }
