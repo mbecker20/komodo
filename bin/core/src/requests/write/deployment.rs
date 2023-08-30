@@ -98,6 +98,7 @@ impl Resolve<CopyDeployment, RequestUser> for State {
         CopyDeployment { name, id }: CopyDeployment,
         user: RequestUser,
     ) -> anyhow::Result<Deployment> {
+        let name = to_monitor_name(&name);
         let Deployment {
             config,
             description,

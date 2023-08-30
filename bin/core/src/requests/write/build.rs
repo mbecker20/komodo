@@ -76,6 +76,7 @@ impl Resolve<CopyBuild, RequestUser> for State {
         CopyBuild { name, id }: CopyBuild,
         user: RequestUser,
     ) -> anyhow::Result<Build> {
+        let name = to_monitor_name(&name);
         let Build {
             config,
             description,

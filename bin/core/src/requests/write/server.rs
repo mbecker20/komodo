@@ -21,21 +21,25 @@ use crate::{
 
 #[async_trait]
 impl Resolve<CreateServer, RequestUser> for State {
-    async fn resolve(&self, req: CreateServer, user: RequestUser) -> anyhow::Result<Server> {
+    async fn resolve(
+        &self,
+        CreateServer { name, config }: CreateServer,
+        user: RequestUser,
+    ) -> anyhow::Result<Server> {
         if !user.is_admin && !user.create_server_permissions {
             return Err(anyhow!("user does not have create server permissions"));
         }
         let start_ts = monitor_timestamp();
         let server = Server {
             id: Default::default(),
-            name: req.name,
+            name,
             updated_at: start_ts,
             permissions: [(user.id.clone(), PermissionLevel::Update)]
                 .into_iter()
                 .collect(),
             description: Default::default(),
             tags: Default::default(),
-            config: req.config.into(),
+            config: config.into(),
             info: (),
         };
         let server_id = self
@@ -167,7 +171,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
             .context("failed to update server on mongo")?;
 
         update.push_simple_log("server update", serde_json::to_string_pretty(&config)?);
-        
+
         let new_server: Server = self.get_resource(&id).await?;
 
         self.update_cache_for_server(&new_server).await;
