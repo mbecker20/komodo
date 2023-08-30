@@ -4,7 +4,11 @@ import { ResourceCard } from "@layouts/card";
 import { Resource } from "@layouts/resource";
 import { CardDescription } from "@ui/card";
 import { Link, useParams } from "react-router-dom";
-import { DeploymentActions } from "./actions";
+import {
+  DeleteDeployment,
+  DeploymentActions,
+  RenameDeployment,
+} from "./actions";
 import { DeploymentConfig } from "./config";
 import { DeploymentLogs } from "./logs";
 import {
@@ -60,6 +64,13 @@ export const DeploymentPage = () => {
       <ResourceUpdates type="Deployment" id={id} />
       <DeploymentLogs deployment_id={id} />
       <DeploymentConfig id={id} />
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between w-full">
+          danger zone {"B^)"}
+          <DeleteDeployment id={id} />
+        </div>
+        <RenameDeployment id={id} />
+      </div>
     </Resource>
   );
 };

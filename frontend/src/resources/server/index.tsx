@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import { Types } from "@monitor/client";
 import { ConfigInner } from "@layouts/page";
-import { DeleteServer } from "./actions";
+import { DeleteServer, RenameServer } from "./actions";
 
 export const ServerCard = ({ id }: { id: string }) => {
   const servers = useRead("ListServers", {}).data;
@@ -102,6 +102,7 @@ export const ServerPage = () => {
         danger zone {"B^)"}
         <DeleteServer id={id} />
       </div>
+      <RenameServer id={id} />
     </Resource>
   );
 };
