@@ -97,7 +97,7 @@ impl State {
             return Ok(());
         }
         let delete_before_ts =
-            (unix_timestamp_ms() - self.config.keep_stats_for_days * ONE_DAY_MS) as i64;
+            (unix_timestamp_ms() - self.config.keep_stats_for_days as u128 * ONE_DAY_MS) as i64;
         let res = self
             .db
             .stats
@@ -114,7 +114,7 @@ impl State {
             return Ok(());
         }
         let delete_before_ts =
-            (unix_timestamp_ms() - self.config.keep_alerts_for_days * ONE_DAY_MS) as i64;
+            (unix_timestamp_ms() - self.config.keep_alerts_for_days as u128 * ONE_DAY_MS) as i64;
         let res = self
             .db
             .alerts

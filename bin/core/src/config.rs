@@ -55,11 +55,11 @@ pub struct CoreConfig {
 
     // number of days to keep stats, or 0 to disable pruning. stats older than this number of days are deleted on a daily cycle
     #[serde(default)]
-    pub keep_stats_for_days: u128,
+    pub keep_stats_for_days: u64,
 
     // number of days to keep alerts, or 0 to disable pruning. alerts older than this number of days are deleted on a daily cycle
     #[serde(default)]
-    pub keep_alerts_for_days: u128,
+    pub keep_alerts_for_days: u64,
 
     // used to verify validity from github webhooks
     #[serde(default)]
