@@ -18,6 +18,7 @@ import {
   DeploymentName,
   DeploymentStatus,
 } from "./util";
+import { CopyResource } from "@components/util";
 
 export const DeploymentCard = ({ id }: { id: string }) => {
   const deployments = useRead("ListDeployments", {}).data;
@@ -70,6 +71,10 @@ export const DeploymentPage = () => {
           <DeleteDeployment id={id} />
         </div>
         <RenameDeployment id={id} />
+        <div className="flex items-center justify-between">
+          Copy Deployment
+          <CopyResource id={id} type="Deployment" />
+        </div>
       </div>
     </Resource>
   );

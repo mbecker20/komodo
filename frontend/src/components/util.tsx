@@ -1,6 +1,6 @@
 import { ReactNode, forwardRef, useEffect, useState } from "react";
 import { Button, ButtonProps } from "../ui/button";
-import { Check, Loader2, Moon, SunMedium } from "lucide-react";
+import { Check, Copy, Loader2, Moon, SunMedium } from "lucide-react";
 import { Input } from "../ui/input";
 import {
   Dialog,
@@ -13,6 +13,8 @@ import {
 // import { useNavigate } from "react-router-dom";
 import { toast } from "@ui/toast/use-toast";
 import { cn } from "@util/helpers";
+import { useInvalidate, useWrite } from "@hooks";
+import { useNavigate } from "react-router-dom";
 
 export const WithLoading = ({
   children,
@@ -153,6 +155,62 @@ export const ActionWithDialog = ({
             disabled={name !== input}
             onClick={() => {
               onClick && onClick();
+              setOpen(false);
+            }}
+          />
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const CopyResource = ({
+  id,
+  disabled,
+  type,
+}: {
+  id: string;
+  disabled?: boolean;
+  type: "Deployment" | "Build";
+}) => {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+
+  const nav = useNavigate();
+  const inv = useInvalidate();
+  const { mutate } = useWrite(`Copy${type}`, {
+    onSuccess: (res) => {
+      inv([`List${type}s`]);
+      nav(`/${type.toLowerCase()}s/${res._id?.$oid}`);
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <ActionButton
+          title="Copy"
+          icon={<Copy className="w-4 h-4" />}
+          disabled={disabled}
+          onClick={() => setOpen(true)}
+        />
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Copy {type}</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 my-4">
+          <p>Provide a name for the newly created {type.toLowerCase()}.</p>
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <DialogFooter>
+          <ActionButton
+            title="Confirm"
+            icon={<Check className="w-4 h-4" />}
+            intent="success"
+            disabled={!name}
+            onClick={() => {
+              mutate({ id, name });
               setOpen(false);
             }}
           />
