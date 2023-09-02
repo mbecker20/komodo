@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MonitorClient } from "@monitor/client";
 
 export const MONITOR_BASE_URL =
-  import.meta.env.VITE_MONITOR_HOST ?? "https://monitor.v1.api.mogh.tech";
+  import.meta.env.VITE_MONITOR_HOST ?? "https://v1.api.monitor.mogh.tech";
 
 export const UPDATE_WS_URL =
   MONITOR_BASE_URL.replace("http", "ws") + "/ws/update";
