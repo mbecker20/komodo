@@ -4,7 +4,7 @@ use anyhow::Context;
 use monitor_types::{
     entities::{
         alert::{Alert, AlertData, AlertDataVariant},
-        server::{stats::SeverityLevel, ServerStatus, ServerListItem},
+        server::{stats::SeverityLevel, ServerListItem, ServerStatus},
         update::ResourceTarget,
     },
     monitor_timestamp, optional_string,
