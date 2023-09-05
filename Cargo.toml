@@ -34,9 +34,9 @@ svi = "0.1.4"
 tokio = { version = "1.32.0", features = ["full"] }
 axum = { version = "0.6.20", features = ["ws", "json", "headers"] }
 tower = { version = "0.4.13", features = ["timeout"] }
-tower-http = { version = "0.4.3", features = ["fs", "cors"] }
+tower-http = { version = "0.4.4", features = ["fs", "cors"] }
 reqwest = { version = "0.11.20", features = ["json"] }
-clap = { version = "4.4.0", features = ["derive"] }
+clap = { version = "4.4.2", features = ["derive"] }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng", "serde"] }
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.105"
@@ -47,7 +47,7 @@ futures-util = "0.3.28"
 dotenv = "0.15.0"
 envy = "0.4.2"
 anyhow = "1.0.75"
-thiserror = "1.0.47"
+thiserror = "1.0.48"
 log = "0.4.20"
 simple_logger = "4.2.0"
 bollard = "0.14.0"
@@ -55,7 +55,7 @@ derive_builder = "0.12.0"
 typeshare = "1.0.1"
 strum = "0.25.0"
 strum_macros = "0.25.2"
-sysinfo = "0.29.8"
+sysinfo = "0.29.9"
 async-trait = "0.1.73"
 urlencoding = "2.1.3"
 rand = "0.8.5"
@@ -68,4 +68,4 @@ aws-config = "0.56.1"
 aws-sdk-ec2 = "0.30.0"
 proc-macro2 = "1.0.66"
 quote = "1.0.33"
-syn = "2.0.29"
+syn = "2.0.31"
