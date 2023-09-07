@@ -65,7 +65,7 @@ export const ConfigLayout = <T extends Resource<unknown, unknown>["config"]>({
       <div className="flex gap-2">
         <Button
           variant="outline"
-          intent="warning"
+          // intent="warning"
           onClick={onReset}
           disabled={content ? !Object.keys(content).length : true}
         >

@@ -30,29 +30,25 @@ const on_message = (
     if (update.target.type === "Deployment") {
       invalidate(
         ["ListDeployments"],
-        ["GetDeployment", { id: update.target.id }],
-        ["GetLog", { id: update.target.id }],
-        ["GetDeploymentActionState", { id: update.target.id }],
-        ["GetDeploymentStatus", { id: update.target.id }]
+        ["GetDeployment"],
+        ["GetLog"],
+        ["GetDeploymentActionState"],
+        ["GetDeploymentStatus"]
       );
     }
 
     if (update.target.type === "Server") {
       invalidate(
         ["ListServers"],
-        ["GetServer", { id: update.target.id }],
-        ["GetServerActionState", { id: update.target.id }],
-        ["GetServerStatus", { id: update.target.id }],
-        ["GetHistoricalServerStats", { id: update.target.id }]
+        ["GetServer"],
+        ["GetServerActionState"],
+        ["GetServerStatus"],
+        ["GetHistoricalServerStats"]
       );
     }
 
     if (update.target.type === "Build") {
-      invalidate(
-        ["ListBuilds"],
-        ["GetBuild", { id: update.target.id }],
-        ["GetBuildActionState", { id: update.target.id }]
-      );
+      invalidate(["ListBuilds"], ["GetBuild"], ["GetBuildActionState"]);
     }
   }, 100);
 };
@@ -90,7 +86,7 @@ export const WsStatusIndicator = () => {
       <Circle
         className={cn(
           "w-4 h-4 stroke-none",
-          !!ws ? "fill-green-500" : "fill-red-500"
+          ws ? "fill-green-500" : "fill-red-500"
         )}
       />
     </Button>
