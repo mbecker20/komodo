@@ -22,7 +22,8 @@ export const RESOURCE_TARGETS: UsableResource[] = [
 export const fmt_update_date = (d: Date) =>
   `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${d.getMinutes()}`;
 
-export const fmt_verison = (version: Types.Version) => {
+export const fmt_verison = (version: Types.Version | undefined) => {
+  if (!version) return "...";
   const { major, minor, patch } = version;
   if (major === 0 && minor === 0 && patch === 0) return "latest";
   return `v${major}.${minor}.${patch}`;

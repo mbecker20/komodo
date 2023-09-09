@@ -8,14 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
-import { Bot, Cloud, Factory, GitBranch, Hammer } from "lucide-react";
+import { Bot, Cloud, Factory, GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Deployment } from "./deployment";
 import { Server } from "./server";
 import { Alerter } from "./alerter";
-
-const useBuild = (id?: string) =>
-  useRead("ListBuilds", {}).data?.find((d) => d.id === id);
+import { Build } from "./build";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
@@ -27,15 +25,7 @@ export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
 } = {
   Alerter,
-  Build: {
-    Name: ({ id }) => <>{useBuild(id)?.name}</>,
-    Description: ({ id }) => <>{id}</>,
-    Info: ({ id }) => <>{id}</>,
-    Icon: () => <Hammer className="w-4 h-4" />,
-    Page: {},
-    Actions: () => null,
-    New: () => null,
-  },
+  Build,
   Builder: {
     Name: ({ id }) => <>{useBuilder(id)?.name}</>,
     Description: ({ id }) => <>{id}</>,
