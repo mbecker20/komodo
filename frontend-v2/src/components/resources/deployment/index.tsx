@@ -17,6 +17,7 @@ import {
 } from "./actions";
 import { Input } from "@ui/input";
 import { DeploymentLogs } from "./logs";
+import { Link } from "react-router-dom";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
@@ -28,18 +29,26 @@ export const Deployment: RequiredResourceComponents = {
   Description: ({ id }) => (
     <>{useDeployment(id)?.info.status ?? "Not Deployed"}</>
   ),
-  Info: ({ id }) => (
-    <>
-      <div className="flex items-center gap-2">
-        <Server className="w-4 h-4" />
-        {useServer(useDeployment(id)?.info.server_id)?.name ?? "N/A"}
-      </div>
-      <div className="flex items-center gap-2">
-        <HardDrive className="w-4 h-4" />
-        {useDeployment(id)?.info.image ?? "N/A"}
-      </div>
-    </>
-  ),
+  Info: ({ id }) => {
+    const info = useDeployment(id)?.info;
+    const server = useServer(info?.server_id);
+
+    return (
+      <>
+        <Link to={`/servers/${server?.id}`} className="flex items-center gap-2">
+          <Server className="w-4 h-4" />
+          {server?.name ?? "N/A"}
+        </Link>
+        <Link
+          to={info?.build_id ? `/builds/${info.build_id}` : "."}
+          className="flex items-center gap-2"
+        >
+          <HardDrive className="w-4 h-4" />
+          {useDeployment(id)?.info.image || "N/A"}
+        </Link>
+      </>
+    );
+  },
   Icon: ({ id }) => {
     const s = useDeployment(id)?.info.state;
 

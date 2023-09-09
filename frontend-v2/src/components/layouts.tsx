@@ -25,12 +25,13 @@ import {
   CardContent,
 } from "@ui/card";
 import { Logout, ResourceTypeDropdown, ResourcesDropdown } from "./util";
+import { HeaderUpdates } from "./updates/header";
 
 export const Layout = () => {
   const type = useResourceParamType();
   return (
     <>
-      <div className="fixed top-0 border-b bg-background z-50 w-full">
+      <div className="sticky top-0 border-b bg-background z-50 w-full">
         <div className="container flex items-center justify-between py-4 gap-8">
           <Link to={"/"} className="text-2xl tracking-widest">
             MONITOR
@@ -43,6 +44,7 @@ export const Layout = () => {
             <div className="flex">
               <Omnibar />
               <WsStatusIndicator />
+              <HeaderUpdates />
               <ThemeToggle />
               <Logout />
             </div>
@@ -62,7 +64,7 @@ interface PageProps {
 }
 
 export const Page = ({ title, subtitle, actions, children }: PageProps) => (
-  <div className="flex flex-col gap-12 container py-32">
+  <div className="flex flex-col gap-12 container py-16">
     <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 lg:items-start justify-between">
       <div className="flex flex-col">
         <h1 className="text-4xl">{title}</h1>

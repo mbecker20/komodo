@@ -65,6 +65,7 @@ export const UpdateDetails = ({
             </div>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
+                <Components.Icon id={update.target.id} />
                 <Components.Name id={update.target.id} />
               </div>
               {update.version && (

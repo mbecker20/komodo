@@ -10,7 +10,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-y-scroll;
     font-family: Inter;
   }
   pre {
