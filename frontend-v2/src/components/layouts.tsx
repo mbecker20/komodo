@@ -1,15 +1,7 @@
 import { useResourceParamType } from "@lib/hooks";
-import { RESOURCE_TARGETS } from "@lib/utils";
 import { Button } from "@ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@ui/dropdown-menu";
 import { ThemeToggle } from "@ui/theme";
-import { ChevronDown, LogOut, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { Omnibar } from "./omnibar";
@@ -32,51 +24,27 @@ import {
   CardDescription,
   CardContent,
 } from "@ui/card";
+import { Logout, ResourceTypeDropdown, ResourcesDropdown } from "./util";
 
 export const Layout = () => {
   const type = useResourceParamType();
   return (
     <>
       <div className="fixed top-0 border-b bg-background z-50 w-full">
-        <div className="container flex items-center justify-between py-4">
-          <Link to={"/"} className="text-xl">
-            Monitor
+        <div className="container flex items-center justify-between py-4 gap-8">
+          <Link to={"/"} className="text-2xl tracking-widest">
+            MONITOR
           </Link>
-          <div className="flex gap-4">
-            <Omnibar />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-48 justify-between">
-                  {type ? type + "s" : "Dashboard"}
-                  <ChevronDown className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48" side="bottom">
-                <DropdownMenuGroup>
-                  <Link to="/">
-                    <DropdownMenuItem>Dashboard</DropdownMenuItem>
-                  </Link>
-                  {RESOURCE_TARGETS.map((rt) => (
-                    <Link key={rt} to={`/${rt.toLowerCase()}s`}>
-                      <DropdownMenuItem>{rt}s</DropdownMenuItem>
-                    </Link>
-                  ))}
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex items-center justify-between w-full">
+            <div className="hidden md:flex md:gap-4">
+              <ResourceTypeDropdown />
+              {type && <ResourcesDropdown />}
+            </div>
             <div className="flex">
+              <Omnibar />
               <WsStatusIndicator />
               <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  localStorage.removeItem("monitor-auth-token");
-                  window.location.reload();
-                }}
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
+              <Logout />
             </div>
           </div>
         </div>

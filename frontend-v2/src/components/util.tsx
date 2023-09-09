@@ -1,6 +1,14 @@
 import { ReactNode, forwardRef, useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { Check, Copy, Loader2, Moon, SunMedium } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  Copy,
+  Loader2,
+  LogOut,
+  Moon,
+  SunMedium,
+} from "lucide-react";
 import { Input } from "../ui/input";
 import {
   Dialog,
@@ -12,9 +20,21 @@ import {
 } from "@ui/dialog";
 // import { useNavigate } from "react-router-dom";
 import { toast } from "@ui/use-toast";
-import { cn } from "@lib/utils";
-import { useInvalidate, useWrite } from "@lib/hooks";
-import { useNavigate } from "react-router-dom";
+import { RESOURCE_TARGETS, cn } from "@lib/utils";
+import {
+  useInvalidate,
+  useRead,
+  useResourceParamType,
+  useWrite,
+} from "@lib/hooks";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@ui/dropdown-menu";
 
 export const WithLoading = ({
   children,
@@ -254,3 +274,71 @@ export const ConfirmButton = ({
     </>
   );
 };
+
+export const ResourceTypeDropdown = () => {
+  const type = useResourceParamType();
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="w-48 justify-between">
+          {type ? type + "s" : "Dashboard"}
+          <ChevronDown className="w-4 h-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-48" side="bottom">
+        <DropdownMenuGroup>
+          <Link to="/">
+            <DropdownMenuItem>Dashboard</DropdownMenuItem>
+          </Link>
+          {RESOURCE_TARGETS.map((rt) => (
+            <Link key={rt} to={`/${rt.toLowerCase()}s`}>
+              <DropdownMenuItem>{rt}s</DropdownMenuItem>
+            </Link>
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export const ResourcesDropdown = () => {
+  const type = useResourceParamType();
+  const id = useParams().id as string;
+  const list = useRead(`List${type}s`, {}).data;
+
+  const selected = list?.find((i) => i.id === id);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" className="w-72 justify-between">
+          {selected ? selected.name : `Select ${type}`}
+          <ChevronDown className="w-4 h-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-72" side="bottom">
+        <DropdownMenuGroup>
+          {list?.map(({ id, name }) => (
+            <Link key={id} to={`/${type.toLowerCase()}s/${id}`}>
+              <DropdownMenuItem>{name}</DropdownMenuItem>
+            </Link>
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export const Logout = () => (
+  <Button
+    variant="ghost"
+    size="icon"
+    onClick={() => {
+      localStorage.removeItem("monitor-auth-token");
+      window.location.reload();
+    }}
+  >
+    <LogOut className="w-4 h-4" />
+  </Button>
+);

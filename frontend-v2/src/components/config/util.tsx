@@ -156,7 +156,7 @@ export const ResourceSelector = ({
 }) => {
   const resources = useRead(`List${type}s`, {}).data;
   return (
-    <Select value={selected || undefined} onValueChange={onSelect}>
+    <Select value={selected ?? undefined} onValueChange={onSelect}>
       <SelectTrigger className="w-full lg:w-[300px]">
         <SelectValue placeholder={`Select ${type}`} />
       </SelectTrigger>
