@@ -23,6 +23,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@ui/dialog";
+import { Types } from "@monitor/client";
+import { ResourceComponents } from "./resources";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@ui/card";
 
 export const Layout = () => {
   const type = useResourceParamType();
@@ -158,5 +167,37 @@ export const NewResource = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+};
+
+export const ResourceCard = ({
+  target: { type, id },
+}: {
+  target: Exclude<Types.ResourceTarget, { type: "System" }>;
+}) => {
+  const Components = ResourceComponents[type];
+
+  return (
+    <Link
+      to={`/${type.toLowerCase()}s/${id}`}
+      className="group hover:translate-y-[-2.5%] focus:translate-y-[-2.5%] transition-transform"
+    >
+      <Card className="h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors">
+        <CardHeader className="justify-between">
+          <div>
+            <CardTitle>
+              <Components.Name id={id} />
+            </CardTitle>
+            <CardDescription>
+              <Components.Description id={id} />
+            </CardDescription>
+          </div>
+          <Components.Icon id={id} />
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          <Components.Info id={id} />
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
