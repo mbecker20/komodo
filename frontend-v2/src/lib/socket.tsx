@@ -32,7 +32,8 @@ const on_message = (
       ["GetDeployment"],
       ["GetLog"],
       ["GetDeploymentActionState"],
-      ["GetDeploymentStatus"]
+      ["GetDeploymentStatus"],
+      ["GetDeploymentsSummary"]
     );
   }
 
@@ -42,12 +43,33 @@ const on_message = (
       ["GetServer"],
       ["GetServerActionState"],
       ["GetServerStatus"],
-      ["GetHistoricalServerStats"]
+      ["GetHistoricalServerStats"],
+      ["GetServersSummary"]
     );
   }
 
   if (update.target.type === "Build") {
-    invalidate(["ListBuilds"], ["GetBuild"], ["GetBuildActionState"]);
+    invalidate(
+      ["ListBuilds"],
+      ["GetBuild"],
+      ["GetBuildActionState"],
+      ["GetBuildMonthlyStats"],
+      ["GetBuildVersions"],
+      ["GetBuildsSummary"]
+    );
+  }
+
+  if (update.target.type === "Builder") {
+    invalidate(
+      ["ListBuilders"],
+      ["GetBuilder"],
+      ["GetBuilderAvailableAccounts"],
+      ["GetBuildersSummary"]
+    );
+  }
+
+  if (update.target.type === "Alerter") {
+    invalidate(["ListAlerters"], ["GetAlerter"], ["GetAlertersSummary"]);
   }
 };
 

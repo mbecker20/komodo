@@ -104,7 +104,7 @@ const NewBuilder = () => {
 
   return (
     <NewResource
-      type="Alerter"
+      type="Builder"
       onSuccess={async () =>
         !!type && mutateAsync({ name, config: { type, params: {} } })
       }
@@ -113,13 +113,13 @@ const NewBuilder = () => {
       <div className="grid md:grid-cols-2">
         Name
         <Input
-          placeholder="alerter-name"
+          placeholder="builder-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
       </div>
       <div className="grid md:grid-cols-2">
-        Alerter Type
+        Builder Type
         <Select
           value={type}
           onValueChange={(value) => setType(value as typeof type)}
@@ -129,8 +129,8 @@ const NewBuilder = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="Slack">Slack</SelectItem>
-              <SelectItem value="Custom">Custom</SelectItem>
+              <SelectItem value="Aws">Aws</SelectItem>
+              <SelectItem value="Server">Server</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
