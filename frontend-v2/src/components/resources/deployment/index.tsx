@@ -31,7 +31,9 @@ import {
 } from "./actions";
 
 export const useDeployment = (id?: string) =>
-  useRead("ListDeployments", {}).data?.find((d) => d.id === id);
+  useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
+    (d) => d.id === id
+  );
 
 const to_bottom = (id: string) => () =>
   document
