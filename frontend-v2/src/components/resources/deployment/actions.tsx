@@ -122,18 +122,20 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
 
   if (!d) return null;
   return (
-    <ActionWithDialog
-      name={d.name}
-      title="Delete"
-      //   intent="danger"
-      icon={<Trash className="h-4 w-4" />}
-      onClick={async () => {
-        await mutateAsync({ id });
-        nav("/");
-      }}
-      disabled={isLoading}
-      loading={deleting}
-    />
+    <div className="flex items-center justify-between">
+      <div className="w-full">Delete Deployment</div>
+      <ActionWithDialog
+        name={d.name}
+        title="Delete"
+        icon={<Trash className="h-4 w-4" />}
+        onClick={async () => {
+          await mutateAsync({ id });
+          nav("/");
+        }}
+        disabled={isLoading}
+        loading={deleting}
+      />
+    </div>
   );
 };
 

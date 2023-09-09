@@ -1,13 +1,13 @@
 import { Page, Section } from "@components/layouts";
-import { ResourceCard } from "@components/resources";
+import { ResourceCard, ResourceComponents } from "@components/resources";
 import { useRead, useResourceParamType } from "@lib/hooks";
-import { Button } from "@ui/button";
 import { Input } from "@ui/input";
-import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 
 export const Resources = () => {
   const type = useResourceParamType();
+  const Components = ResourceComponents[type];
+
   const list = useRead(`List${type}s`, {}).data;
 
   const [search, set] = useState("");
@@ -23,9 +23,7 @@ export const Resources = () => {
             placeholder="search..."
             className="w-96"
           />
-          <Button className="gap-2">
-            New <PlusCircle className="w-4 h-4" />
-          </Button>
+          <Components.New />
         </div>
       }
     >

@@ -22,9 +22,9 @@ const useServerStats = (server_id: string) => {
       !!server &&
       server.info.status !== "Disabled" &&
       client
-        .read({ type: "GetAllSystemStats", params: { server_id } })
+        .read({ type: "GetAllSystemStats", params: { server_id: server.id } })
         .then(set),
-    [server_id]
+    [server]
   );
 
   useEffect(() => {

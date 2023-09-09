@@ -11,4 +11,6 @@ export type RequiredComponents =
 
 export type RequiredResourceComponents = {
   [key in RequiredComponents]: React.FC<{ id: string }>;
-} & { Page: { [key: string]: React.FC<{ id: string }> } };
+} & { Page: { [key: string]: React.FC<{ id: string }> } } & {
+  New: () => React.ReactNode;
+};

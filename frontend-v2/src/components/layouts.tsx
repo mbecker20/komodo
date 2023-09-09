@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { ThemeToggle } from "@ui/theme";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown, LogOut, PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 import { Omnibar } from "./omnibar";
@@ -119,20 +119,21 @@ export const Section = ({ title, icon, actions, children }: SectionProps) => (
 
 export const NewResource = ({
   type,
-  loading,
   children,
   onSuccess,
 }: {
   type: UsableResource;
-  loading: boolean;
   children: ReactNode;
-  onSuccess: () => Promise<void>;
+  onSuccess: () => Promise<unknown>;
 }) => {
   const [open, set] = useState(false);
+  const [loading, setLoading] = useState(false);
   return (
     <Dialog open={open} onOpenChange={set}>
       <DialogTrigger asChild>
-        <Button>New {type}</Button>
+        <Button className="items-center gap-2">
+          New {type} <PlusCircle className="w-4 h-4" />
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -143,7 +144,9 @@ export const NewResource = ({
           <Button
             variant="outline"
             onClick={async () => {
+              setLoading(true);
               await onSuccess();
+              setLoading(false);
               set(false);
             }}
             disabled={loading}

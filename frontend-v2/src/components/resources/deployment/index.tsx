@@ -1,67 +1,27 @@
-import { useRead } from "@lib/hooks";
+import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
-import {
-  AlertOctagon,
-  ChevronDown,
-  RefreshCw,
-  Rocket,
-  Server,
-  TerminalSquare,
-} from "lucide-react";
+import { AlertTriangle, Rocket, Server } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
-import { Section } from "@components/layouts";
-import { Button } from "@ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ui/select";
+import { NewResource, Section } from "@components/layouts";
+
 import { useServer } from "../server";
 import { DeploymentConfig } from "./config";
 import {
   RedeployContainer,
   StartOrStopContainer,
   RemoveContainer,
+  DeleteDeployment,
+  RenameDeployment,
 } from "./actions";
+import { Input } from "@ui/input";
+import { DeploymentLogs } from "./logs";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
     (d) => d.id === id
   );
-
-const to_bottom = (id: string) => () =>
-  document
-    .getElementById(id)
-    ?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
-
-const TailLengthSelector = ({
-  selected,
-  onSelect,
-}: {
-  selected: string;
-  onSelect: (value: string) => void;
-}) => (
-  <Select value={selected} onValueChange={onSelect}>
-    <SelectTrigger>
-      <SelectValue />
-    </SelectTrigger>
-    <SelectContent>
-      <SelectGroup>
-        {["50", "100", "500", "1000"].map((length) => (
-          <SelectItem key={length} value={length}>
-            {length} lines
-          </SelectItem>
-        ))}
-      </SelectGroup>
-    </SelectContent>
-  </Select>
-);
 
 export const Deployment: RequiredResourceComponents = {
   Name: ({ id }) => <>{useDeployment(id)?.name}</>,
@@ -94,64 +54,31 @@ export const Deployment: RequiredResourceComponents = {
     </div>
   ),
   Page: {
-    Logs: ({ id }) => {
-      const [tail, set] = useState("50");
-
-      const { data: logs, refetch } = useRead(
-        "GetLog",
-        { deployment_id: id, tail: Number(tail) },
-        { refetchInterval: 30000 }
-      );
-
-      const deployment = useDeployment(id);
-
-      if (deployment?.info.state === Types.DockerContainerState.NotDeployed)
-        return null;
-
-      return (
-        <Tabs defaultValue="stdout">
-          <Section
-            title="Logs"
-            icon={<TerminalSquare className="w-4 h-4" />}
-            actions={
-              <div className="flex gap-2">
-                <TabsList className="w-fit place-self-end">
-                  <TabsTrigger value="stdout" onClick={to_bottom("stdout")}>
-                    stdout
-                  </TabsTrigger>
-                  <TabsTrigger value="stderr" onClick={to_bottom("stderr")}>
-                    stderr
-                    {logs?.stderr && (
-                      <AlertOctagon className="w-4 h-4 ml-2 stroke-red-500" />
-                    )}
-                  </TabsTrigger>
-                </TabsList>
-                <Button variant="secondary" onClick={() => refetch()}>
-                  <RefreshCw className="w-4 h-4" />
-                </Button>
-                <TailLengthSelector selected={tail} onSelect={set} />
-              </div>
-            }
-          >
-            {["stdout", "stderr"].map((t) => (
-              <TabsContent key={t} className="h-full relative" value={t}>
-                <div className="h-[60vh] overflow-y-auto">
-                  <pre id={t} className="-scroll-mt-24">
-                    {logs?.[t as keyof typeof logs] || `no ${t} logs`}
-                  </pre>
-                </div>
-                <Button
-                  className="absolute bottom-4 right-4"
-                  onClick={to_bottom(t)}
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </TabsContent>
-            ))}
-          </Section>
-        </Tabs>
-      );
-    },
+    Logs: ({ id }) => <DeploymentLogs id={id} />,
     Config: ({ id }) => <DeploymentConfig id={id} />,
+    Danger: ({ id }) => (
+      <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
+        <RenameDeployment id={id} />
+        <DeleteDeployment id={id} />
+      </Section>
+    ),
+  },
+  New: () => {
+    const { mutateAsync } = useWrite("CreateDeployment");
+    const [name, setName] = useState("");
+    return (
+      <NewResource
+        type="Deployment"
+        onSuccess={() => mutateAsync({ name, config: {} })}
+      >
+        <div className="flex items-center justify-between">
+          <Input
+            placeholder="deployment-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+      </NewResource>
+    );
   },
 };

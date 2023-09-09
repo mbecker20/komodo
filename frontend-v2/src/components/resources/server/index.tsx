@@ -104,4 +104,5 @@ export const Server: RequiredResourceComponents = {
       );
     },
   },
+  New: () => null,
 };
