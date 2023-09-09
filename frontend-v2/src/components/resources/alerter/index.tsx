@@ -19,14 +19,16 @@ const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
 
 const NewAlerter = () => {
-  const { mutateAsync } = useWrite("CreateDeployment");
+  const { mutateAsync } = useWrite("CreateAlerter");
   const [name, setName] = useState("");
   const [type, setType] = useState<Types.AlerterConfig["type"]>();
 
   return (
     <NewResource
       type="Alerter"
-      onSuccess={() => mutateAsync({ name, config: {} })}
+      onSuccess={async () =>
+        !!type && mutateAsync({ name, config: { type, params: {} } })
+      }
       enabled={!!name && !!type}
     >
       <div className="grid md:grid-cols-2">

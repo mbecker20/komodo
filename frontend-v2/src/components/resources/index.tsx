@@ -1,10 +1,10 @@
 import { RequiredResourceComponents, UsableResource } from "@types";
-import { Deployment } from "./deployment";
-import { Server } from "./server";
 import { Alerter } from "./alerter";
 import { Build } from "./build";
 import { Builder } from "./builder";
+import { Deployment } from "./deployment";
 import { Repo } from "./repo";
+import { Server } from "./server";
 
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
@@ -13,6 +13,6 @@ export const ResourceComponents: {
   Build,
   Builder,
   Deployment,
-  Server,
   Repo,
+  Server,
 };
