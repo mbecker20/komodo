@@ -9,7 +9,7 @@ import {
   CommandSeparator,
   CommandItem,
 } from "@ui/command";
-import { Search } from "lucide-react";
+import { Home, Search } from "lucide-react";
 import { useState, useEffect, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { ResourceComponents } from "./resources";
@@ -79,6 +79,16 @@ export const Omnibar = () => {
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup>
+            <CommandItem
+              className="flex items-center gap-2"
+              onSelect={() => nav("/")}
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </CommandItem>
+          </CommandGroup>
+          <CommandSeparator />
           {RESOURCE_TARGETS.map((rt) => (
             <Fragment key={rt}>
               <ResourceGroup type={rt} key={rt} onSelect={nav} />
