@@ -4,10 +4,9 @@ import { Button } from "@ui/button";
 import { toast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
 import { Circle } from "lucide-react";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useCallback, useEffect } from "react";
 import rws from "reconnecting-websocket";
 import { cn } from "@lib/utils";
-// import { UPDATE_WS_URL } from "@main";
 
 const rws_atom = atom<rws | null>(null);
 const useWebsocket = () => useAtom(rws_atom);
@@ -116,18 +115,15 @@ export const WebsocketProvider = ({
 
 export const WsStatusIndicator = () => {
   const [ws] = useWebsocket();
-  const [open, set] = useState(ws?.readyState === 1);
   const onclick = () =>
     toast({ title: "surprise", description: "motherfucker" });
-
-  useEffect(() => set(ws?.readyState === 1), [ws?.readyState]);
 
   return (
     <Button variant="ghost" onClick={onclick}>
       <Circle
         className={cn(
           "w-4 h-4 stroke-none",
-          open ? "fill-green-500" : "fill-red-500"
+          ws ? "fill-green-500" : "fill-red-500"
         )}
       />
     </Button>
