@@ -1,7 +1,6 @@
 import { useRead } from "@lib/hooks";
-import { Page, Section } from "@components/layouts";
+import { Page, Section, ResourceCard } from "@components/layouts";
 import { Box, History } from "lucide-react";
-import { ResourceCard } from "@components/resources";
 import { DeploymentsChart } from "@components/dashboard/deployments-chart";
 import { ServersChart } from "@components/dashboard/servers-chart";
 import { BuildChart } from "@components/dashboard/builds-chart";

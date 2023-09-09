@@ -1,5 +1,5 @@
-import { Page, Section } from "@components/layouts";
-import { ResourceCard, ResourceComponents } from "@components/resources";
+import { Page, Section, ResourceCard } from "@components/layouts";
+import { ResourceComponents } from "@components/resources";
 import { useRead, useResourceParamType } from "@lib/hooks";
 import { Input } from "@ui/input";
 import { useState } from "react";
