@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@ui/card";
 import { Hammer } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export const BuildChart = () => {
   const container_ref = useRef<HTMLDivElement>(null);
@@ -73,17 +74,21 @@ export const BuildChart = () => {
   }, [data]);
 
   return (
-    <Card className="w-full">
-      <CardHeader className="justify-between">
-        <div>
-          <CardTitle>Builds</CardTitle>
-          <CardDescription>{data?.total_time.toFixed(2)} Hours</CardDescription>
-        </div>
-        <Hammer className="w-4 h-4" />
-      </CardHeader>
-      <CardContent className="h-[200px]">
-        <div className="w-full max-w-full h-full" ref={container_ref} />
-      </CardContent>
-    </Card>
+    <Link to="/builds" className="w-full">
+      <Card>
+        <CardHeader className="justify-between">
+          <div>
+            <CardTitle>Builds</CardTitle>
+            <CardDescription>
+              {data?.total_time.toFixed(2)} Hours
+            </CardDescription>
+          </div>
+          <Hammer className="w-4 h-4" />
+        </CardHeader>
+        <CardContent className="h-[200px]">
+          <div className="w-full max-w-full h-full" ref={container_ref} />
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
