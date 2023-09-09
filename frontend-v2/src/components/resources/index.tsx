@@ -8,13 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
-import { AlarmClock, Factory, GitBranch, Hammer } from "lucide-react";
+import { Bot, Cloud, Factory, GitBranch, Hammer } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Deployment } from "./deployment";
 import { Server } from "./server";
-
-const useAlerter = (id?: string) =>
-  useRead("ListAlerters", {}).data?.find((d) => d.id === id);
+import { Alerter } from "./alerter";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -28,15 +26,7 @@ const useRepo = (id?: string) =>
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
 } = {
-  Alerter: {
-    Name: ({ id }) => <>{useAlerter(id)?.name}</>,
-    Description: ({ id }) => <>{id}</>,
-    Info: ({ id }) => <>{id}</>,
-    Icon: () => <AlarmClock className="w-4 h-4" />,
-    Page: {},
-    Actions: () => null,
-    New: () => null,
-  },
+  Alerter,
   Build: {
     Name: ({ id }) => <>{useBuild(id)?.name}</>,
     Description: ({ id }) => <>{id}</>,
@@ -49,7 +39,18 @@ export const ResourceComponents: {
   Builder: {
     Name: ({ id }) => <>{useBuilder(id)?.name}</>,
     Description: ({ id }) => <>{id}</>,
-    Info: ({ id }) => <>{id}</>,
+    Info: ({ id }) => (
+      <>
+        <div className="flex items-center gap-2">
+          <Cloud className="w-4 h-4" />
+          {useBuilder(id)?.info.provider}
+        </div>
+        <div className="flex items-center gap-2">
+          <Bot className="w-4 h-4" />
+          {useBuilder(id)?.info.instance_type ?? "N/A"}
+        </div>
+      </>
+    ),
     Icon: () => <Factory className="w-4 h-4" />,
     Page: {},
     Actions: () => null,

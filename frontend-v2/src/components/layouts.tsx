@@ -120,10 +120,12 @@ export const Section = ({ title, icon, actions, children }: SectionProps) => (
 export const NewResource = ({
   type,
   children,
+  enabled,
   onSuccess,
 }: {
   type: UsableResource;
   children: ReactNode;
+  enabled: boolean;
   onSuccess: () => Promise<unknown>;
 }) => {
   const [open, set] = useState(false);
@@ -139,7 +141,7 @@ export const NewResource = ({
         <DialogHeader>
           <DialogTitle>New {type}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4">{children}</div>
+        <div className="flex flex-col gap-4 py-8">{children}</div>
         <DialogFooter>
           <Button
             variant="outline"
@@ -149,7 +151,7 @@ export const NewResource = ({
               setLoading(false);
               set(false);
             }}
-            disabled={loading}
+            disabled={!enabled || loading}
           >
             Create
           </Button>

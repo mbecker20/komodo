@@ -1,7 +1,7 @@
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
-import { AlertTriangle, Rocket, Server } from "lucide-react";
+import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
@@ -29,10 +29,16 @@ export const Deployment: RequiredResourceComponents = {
     <>{useDeployment(id)?.info.status ?? "Not Deployed"}</>
   ),
   Info: ({ id }) => (
-    <div className="flex items-center gap-2">
-      <Server className="w-4 h-4" />
-      {useServer(useDeployment(id)?.info.server_id)?.name ?? "N/A"}
-    </div>
+    <>
+      <div className="flex items-center gap-2">
+        <Server className="w-4 h-4" />
+        {useServer(useDeployment(id)?.info.server_id)?.name ?? "N/A"}
+      </div>
+      <div className="flex items-center gap-2">
+        <HardDrive className="w-4 h-4" />
+        {useDeployment(id)?.info.image ?? "N/A"}
+      </div>
+    </>
   ),
   Icon: ({ id }) => {
     const s = useDeployment(id)?.info.state;
@@ -70,8 +76,10 @@ export const Deployment: RequiredResourceComponents = {
       <NewResource
         type="Deployment"
         onSuccess={() => mutateAsync({ name, config: {} })}
+        enabled={!!name}
       >
-        <div className="flex items-center justify-between">
+        <div className="grid md:grid-cols-2">
+          Deployment Name
           <Input
             placeholder="deployment-name"
             value={name}

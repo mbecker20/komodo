@@ -6,6 +6,8 @@ import { MapPin, Cpu, MemoryStick, Database, ServerIcon } from "lucide-react";
 import { ServerStats } from "./stats";
 import { ConfigInner } from "@components/config";
 import { useState } from "react";
+import { NewResource } from "@components/layouts";
+import { Input } from "@ui/input";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -104,5 +106,24 @@ export const Server: RequiredResourceComponents = {
       );
     },
   },
-  New: () => null,
+  New: () => {
+    const { mutateAsync } = useWrite("CreateDeployment");
+    const [name, setName] = useState("");
+    return (
+      <NewResource
+        type="Server"
+        onSuccess={() => mutateAsync({ name, config: {} })}
+        enabled={!!name}
+      >
+        <div className="grid md:grid-cols-2">
+          Server Name
+          <Input
+            placeholder="server-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+      </NewResource>
+    );
+  },
 };

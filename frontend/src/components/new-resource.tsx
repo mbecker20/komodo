@@ -30,7 +30,7 @@ export const NewResource = ({
         <DialogHeader>
           <DialogTitle>New {type}</DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col gap-4">{children}</div>
+        <div className="flex flex-col gap-4 my-4">{children}</div>
         <DialogFooter>
           <Button
             variant="outline"
