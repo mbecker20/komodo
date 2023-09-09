@@ -9,8 +9,19 @@
     @apply border-border;
   }
 
+  *::-webkit-scrollbar {
+    background-color: hsl(var(--border));
+    @apply w-2;
+  }
+  *::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--primary));
+    @apply rounded-lg;
+  }
+  html {
+    scrollbar-gutter: stable;
+  }
   body {
-    @apply bg-background text-foreground overflow-y-scroll;
+    @apply bg-background text-foreground;
     font-family: Inter;
   }
   pre {

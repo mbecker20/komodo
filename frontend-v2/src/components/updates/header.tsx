@@ -1,16 +1,17 @@
-import { useRead } from "@lib/hooks";
+import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { Bell } from "lucide-react";
+import { Bell, Circle } from "lucide-react";
 import { Button } from "@ui/button";
 import { Calendar, User } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateListItem, UpdateStatus } from "@monitor/client/dist/types";
 import { ResourceComponents } from "@components/resources";
+import { cn } from "@lib/utils";
 
 const fmt_date = (d: Date) =>
   `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${d.getMinutes()}`;
@@ -55,11 +56,27 @@ export const SingleUpdate = ({ update }: { update: UpdateListItem }) => {
 export const HeaderUpdates = () => {
   const updates = useRead("ListUpdates", {}).data;
 
+  const last_opened = useRead("GetUser", {}).data?.last_update_view;
+  const unseen_update = updates?.updates.some(
+    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER)
+  );
+
+  const invalidate = useInvalidate();
+  const { mutate } = useWrite("SetLastSeenUpdate", {
+    onSuccess: () => invalidate(["GetUser"]),
+  });
+
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={(o) => o && mutate({})}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-4 h-4" />
+          <Circle
+            className={cn(
+              "absolute top-2 right-2 w-2 h-2 stroke-red-500 fill-red-500 transition-opacity",
+              unseen_update ? "opacity-1" : "opacity-0"
+            )}
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[500px] h-[500px] overflow-auto">
