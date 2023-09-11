@@ -48,18 +48,15 @@ const ServerInfo = ({ id }: { id: string }) => {
   );
 };
 
-const ServerIconComponent = ({ id }: { id: string }) => {
+const ServerIconComponent = ({ id }: { id?: string }) => {
   const status = useServer(id)?.info.status;
-  return (
-    <ServerIcon
-      className={cn(
-        "w-4 h-4",
-        status === Types.ServerStatus.Ok && "fill-green-500",
-        status === Types.ServerStatus.NotOk && "fill-red-500",
-        status === Types.ServerStatus.Disabled && "fill-blue-500"
-      )}
-    />
-  );
+
+  const color = () => {
+    if (status === Types.ServerStatus.Ok) return "fill-green-500";
+    if (status === Types.ServerStatus.NotOk) return "fill-red-500";
+    if (status === Types.ServerStatus.Disabled) return "fill-blue-500";
+  };
+  return <ServerIcon className={cn("w-4 h-4", id && color())} />;
 };
 
 const ServerConfig = ({ id }: { id: string }) => {
