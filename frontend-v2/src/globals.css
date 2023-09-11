@@ -8,7 +8,6 @@
   * {
     @apply border-border;
   }
-
   *::-webkit-scrollbar {
     background-color: hsl(var(--border));
     @apply w-2;
