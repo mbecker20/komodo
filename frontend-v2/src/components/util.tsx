@@ -18,7 +18,6 @@ import {
   DialogContent,
   DialogFooter,
 } from "@ui/dialog";
-// import { useNavigate } from "react-router-dom";
 import { toast } from "@ui/use-toast";
 import { RESOURCE_TARGETS, cn } from "@lib/utils";
 import {
@@ -35,6 +34,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
+import { ResourceComponents } from "./resources";
 
 export const WithLoading = ({
   children,
@@ -308,12 +308,16 @@ export const ResourcesDropdown = () => {
   const list = useRead(`List${type}s`, {}).data;
 
   const selected = list?.find((i) => i.id === id);
+  const Components = ResourceComponents[type];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="w-72 justify-between">
-          {selected ? selected.name : `Select ${type}`}
+          <div className="flex items-center gap-2">
+            {selected && <Components.Icon id={selected.id} />}
+            {selected ? selected.name : `Select ${type}`}
+          </div>
           <ChevronDown className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -321,7 +325,10 @@ export const ResourcesDropdown = () => {
         <DropdownMenuGroup>
           {list?.map(({ id, name }) => (
             <Link key={id} to={`/${type.toLowerCase()}s/${id}`}>
-              <DropdownMenuItem>{name}</DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center gap-2">
+                <Components.Icon id={id} />
+                {name}
+              </DropdownMenuItem>
             </Link>
           ))}
         </DropdownMenuGroup>
