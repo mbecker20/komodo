@@ -40,7 +40,7 @@ export const Resources = () => {
         <div
           className={cn(
             "grid gap-4",
-            view === "cards" ? "grid-cols-3" : "items-center",
+            view === "cards" ? "grid-cols-3" : "items-center"
           )}
         >
           {list?.map(({ id }) =>
@@ -48,7 +48,7 @@ export const Resources = () => {
               <ResourceCard key={id} target={{ type, id }} />
             ) : (
               <ResourceRow key={id} target={{ type, id }} />
-            ),
+            )
           )}
         </div>
       </Section>

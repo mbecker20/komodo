@@ -59,7 +59,7 @@ export const Deployment: RequiredResourceComponents = {
       return "fill-red-500";
     };
 
-    return <Rocket className={cn("w-4 h-4", color())} />;
+    return <Rocket className={cn("w-4 h-4", id && color())} />;
   },
   Actions: ({ id }) => (
     <div className="flex gap-4">

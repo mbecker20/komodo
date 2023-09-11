@@ -1,8 +1,8 @@
 import { ReactNode, forwardRef, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import {
+  Box,
   Check,
-  ChevronDown,
   Copy,
   Loader2,
   LogOut,
@@ -277,25 +277,37 @@ export const ConfirmButton = ({
 
 export const ResourceTypeDropdown = () => {
   const type = useResourceParamType();
+  const Components = ResourceComponents[type];
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-48 justify-between">
-          {type ? type + "s" : "Dashboard"}
-          <ChevronDown className="w-4 h-4" />
+        <Button variant="ghost" className="w-36 justify-between px-3">
+          <div className="flex items-center gap-2">
+            {type ? <Components.Icon /> : <Box className="w-4 h-4" />}
+            {type ? type + "s" : "Dashboard"}
+          </div>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-48" side="bottom">
+      <DropdownMenuContent className="w-36" side="bottom">
         <DropdownMenuGroup>
           <Link to="/">
-            <DropdownMenuItem>Dashboard</DropdownMenuItem>
+            <DropdownMenuItem className="flex items-center gap-2">
+              <Box className="w-4 h-4" />
+              Dashboard
+            </DropdownMenuItem>
           </Link>
-          {RESOURCE_TARGETS.map((rt) => (
-            <Link key={rt} to={`/${rt.toLowerCase()}s`}>
-              <DropdownMenuItem>{rt}s</DropdownMenuItem>
-            </Link>
-          ))}
+          {RESOURCE_TARGETS.map((rt) => {
+            const RTIcon = ResourceComponents[rt].Icon;
+            return (
+              <Link key={rt} to={`/${rt.toLowerCase()}s`}>
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <RTIcon />
+                  {rt}s
+                </DropdownMenuItem>
+              </Link>
+            );
+          })}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -313,16 +325,26 @@ export const ResourcesDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="w-72 justify-between">
+        <Button variant="ghost" className="w-48 justify-between px-3">
           <div className="flex items-center gap-2">
-            {selected && <Components.Icon id={selected.id} />}
-            {selected ? selected.name : `Select ${type}`}
+            <Components.Icon id={selected?.id} />
+            {selected ? selected.name : `All ${type}s`}
           </div>
-          <ChevronDown className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-72" side="bottom">
+      <DropdownMenuContent className="w-48" side="bottom">
         <DropdownMenuGroup>
+          {!list?.length && (
+            <DropdownMenuItem disabled>No {type}s Found.</DropdownMenuItem>
+          )}
+          {list?.length && (
+            <Link to={`/${type.toLowerCase()}s`}>
+              <DropdownMenuItem className="flex items-center gap-2">
+                <Components.Icon />
+                All {type}s
+              </DropdownMenuItem>
+            </Link>
+          )}
           {list?.map(({ id, name }) => (
             <Link key={id} to={`/${type.toLowerCase()}s/${id}`}>
               <DropdownMenuItem className="flex items-center gap-2">

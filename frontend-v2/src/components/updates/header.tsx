@@ -58,7 +58,7 @@ export const HeaderUpdates = () => {
 
   const last_opened = useRead("GetUser", {}).data?.last_update_view;
   const unseen_update = updates?.updates.some(
-    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER),
+    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER)
   );
 
   const invalidate = useInvalidate();
@@ -74,7 +74,7 @@ export const HeaderUpdates = () => {
           <Circle
             className={cn(
               "absolute top-2 right-2 w-2 h-2 stroke-red-500 fill-red-500 transition-opacity",
-              unseen_update ? "opacity-1" : "opacity-0",
+              unseen_update ? "opacity-1" : "opacity-0"
             )}
           />
         </Button>
