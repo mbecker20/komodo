@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { ResourceComponents } from "./resources";
+import { WsStatusIndicator } from "@lib/socket";
 
 export const WithLoading = ({
   children,
@@ -371,3 +372,19 @@ export const Logout = () => (
     <LogOut className="w-4 h-4" />
   </Button>
 );
+
+export const UserDropdown = () => {
+  const user = useRead("GetUser", {}).data;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="gap-2" variant="outline">
+          <WsStatusIndicator />
+          {user?.username}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent></DropdownMenuContent>
+    </DropdownMenu>
+  );
+};

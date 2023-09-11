@@ -79,7 +79,7 @@ export const HeaderUpdates = () => {
           />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[500px] h-[500px] overflow-auto">
+      <DropdownMenuContent className="w-[100vw] md:w-[500px] h-[500px] overflow-auto">
         <DropdownMenuGroup>
           {updates?.updates.map((update) => (
             <SingleUpdate update={update} key={update.id} />

@@ -119,7 +119,12 @@ export const WsStatusIndicator = () => {
     toast({ title: "surprise", description: "motherfucker" });
 
   return (
-    <Button variant="ghost" onClick={onclick} size="icon" className="ml-4">
+    <Button
+      variant="ghost"
+      onClick={onclick}
+      size="icon"
+      className="hidden md:inline-flex"
+    >
       <Circle
         className={cn(
           "w-4 h-4 stroke-none",

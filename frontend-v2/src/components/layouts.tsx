@@ -41,12 +41,14 @@ export const Layout = () => {
               <ResourceTypeDropdown />
               {type && <ResourcesDropdown />}
             </div>
-            <div className="flex">
+            <div className="flex md:gap-4">
               <Omnibar />
-              <WsStatusIndicator />
-              <HeaderUpdates />
-              <ThemeToggle />
-              <Logout />
+              <div className="flex">
+                <WsStatusIndicator />
+                <HeaderUpdates />
+                <ThemeToggle />
+                <Logout />
+              </div>
             </div>
           </div>
         </div>
