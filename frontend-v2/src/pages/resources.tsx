@@ -40,7 +40,7 @@ export const Resources = () => {
         <div
           className={cn(
             "grid gap-4",
-            view === "cards" ? "grid-cols-3" : "items-center"
+            view === "cards" ? "md:grid-cols-2 lg:grid-cols-3" : "items-center"
           )}
         >
           {list?.map(({ id }) =>
