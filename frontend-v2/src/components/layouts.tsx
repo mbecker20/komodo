@@ -66,10 +66,8 @@ interface PageProps {
 export const Page = ({ title, subtitle, actions, children }: PageProps) => (
   <div className="flex flex-col gap-12 container py-16">
     <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 lg:items-start justify-between">
-      <div className="flex flex-col">
-        <h1 className="text-4xl">{title}</h1>
-        {subtitle}
-      </div>
+      <h1 className="text-4xl">{title}</h1>
+      <div className="flex flex-col">{subtitle}</div>
       {actions}
     </div>
     {children}
@@ -167,6 +165,36 @@ export const ResourceCard = ({
         <CardContent className="text-sm text-muted-foreground">
           <Components.Info id={id} />
         </CardContent>
+      </Card>
+    </Link>
+  );
+};
+
+export const ResourceRow = ({
+  target: { type, id },
+}: {
+  target: Exclude<Types.ResourceTarget, { type: "System" }>;
+}) => {
+  const Components = ResourceComponents[type];
+
+  return (
+    <Link
+      to={`/${type.toLowerCase()}s/${id}`}
+      className="group hover:translate-y-[-2.5%] focus:translate-y-[-2.5%] transition-transform"
+    >
+      <Card className="h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors">
+        <CardHeader className="grid grid-cols-4 items-center">
+          <CardTitle>
+            <Components.Name id={id} />
+          </CardTitle>
+          <Components.Info id={id} />
+          <div className="flex items-center gap-2">
+            <Components.Icon id={id} />
+            <CardDescription>
+              <Components.Description id={id} />
+            </CardDescription>
+          </div>
+        </CardHeader>
       </Card>
     </Link>
   );
