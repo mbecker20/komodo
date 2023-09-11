@@ -1,5 +1,5 @@
 import { ConfigItem } from "@components/config/util";
-import { DeploymentConfig } from "@monitor/client/dist/types";
+import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { MinusCircle, PlusCircle } from "lucide-react";
@@ -9,7 +9,7 @@ export const ExtraArgs = ({
   set,
 }: {
   args: string[];
-  set: (update: Partial<DeploymentConfig>) => void;
+  set: (update: Partial<Types.DeploymentConfig>) => void;
 }) => {
   return (
     <ConfigItem label="Extra Args" className="items-start">

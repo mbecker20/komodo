@@ -5,7 +5,6 @@ import {
   ReadResponses,
   WriteResponses,
 } from "@monitor/client/dist/responses";
-import { ResourceTarget } from "@monitor/client/dist/types";
 import {
   UseMutationOptions,
   UseQueryOptions,
@@ -35,11 +34,11 @@ export const useRead = <
       (T | P)[]
     >,
     "queryFn" | "queryKey"
-  >
+  >,
 >(
   type: T,
   params: P,
-  config?: C
+  config?: C,
 ) => useQuery([type, params], () => client.read({ type, params } as R), config);
 
 export const useWrite = <
@@ -49,10 +48,10 @@ export const useWrite = <
   C extends Omit<
     UseMutationOptions<WriteResponses[T], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
-  >
+  >,
 >(
   type: T,
-  config?: C
+  config?: C,
 ) =>
   useMutation([type], (params: P) => client.write({ type, params } as R), {
     ...config,
@@ -68,10 +67,10 @@ export const useExecute = <
   C extends Omit<
     UseMutationOptions<ExecuteResponses[T], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
-  >
+  >,
 >(
   type: T,
-  config?: C
+  config?: C,
 ) =>
   useMutation([type], (params: P) => client.execute({ type, params } as R), {
     ...config,
@@ -86,7 +85,7 @@ export const useInvalidate = () => {
 
   return <
     T extends Types.ReadRequest["type"],
-    P = Extract<Types.ReadRequest, { type: T }>["params"]
+    P = Extract<Types.ReadRequest, { type: T }>["params"],
   >(
     ...keys: Array<[T] | [T, P]>
   ) =>
@@ -96,7 +95,7 @@ export const useInvalidate = () => {
     });
 };
 
-export const usePushRecentlyViewed = ({ type, id }: ResourceTarget) => {
+export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
   const invalidate = useInvalidate();
 
   const push = useWrite("PushRecentlyViewed", {

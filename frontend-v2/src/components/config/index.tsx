@@ -4,7 +4,7 @@ import {
   ConfirmUpdate,
 } from "@components/config/util";
 import { Section } from "@components/layouts";
-import { Resource } from "@monitor/client/dist/types";
+import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
 import { History, Settings } from "lucide-react";
@@ -13,7 +13,9 @@ import { Fragment, ReactNode, SetStateAction, useState } from "react";
 const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
 
-export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
+export const ConfigAgain = <
+  T extends Types.Resource<unknown, unknown>["config"],
+>({
   config,
   update,
   components,
@@ -76,7 +78,7 @@ export const ConfigAgain = <T extends Resource<unknown, unknown>["config"]>({
   );
 };
 
-const ConfigLayout = <T extends Resource<unknown, unknown>["config"]>({
+const ConfigLayout = <T extends Types.Resource<unknown, unknown>["config"]>({
   content,
   children,
   onConfirm,

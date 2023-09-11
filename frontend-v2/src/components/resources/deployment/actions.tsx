@@ -5,11 +5,11 @@ import {
 } from "@components/util";
 import { Play, Trash, Pause, Rocket, Pen } from "lucide-react";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { DockerContainerState } from "@monitor/client/dist/types";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { useState } from "react";
+import { Types } from "@monitor/client";
 
 interface DeploymentId {
   id: string;
@@ -79,9 +79,10 @@ export const StartOrStopContainer = ({ id }: DeploymentId) => {
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === id);
 
-  if (deployment?.info.state === DockerContainerState.NotDeployed) return null;
+  if (deployment?.info.state === Types.DockerContainerState.NotDeployed)
+    return null;
 
-  if (deployment?.info.state === DockerContainerState.Running)
+  if (deployment?.info.state === Types.DockerContainerState.Running)
     return <StopContainer id={id} />;
   return <StartContainer id={id} />;
 };
@@ -98,7 +99,7 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
   }).data?.removing;
 
   if (!deployment) return null;
-  if (state === DockerContainerState.NotDeployed) return null;
+  if (state === Types.DockerContainerState.NotDeployed) return null;
 
   return (
     <ActionWithDialog

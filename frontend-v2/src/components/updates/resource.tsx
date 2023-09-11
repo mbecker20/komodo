@@ -11,7 +11,6 @@ import { Bell, ExternalLink, User, Calendar, Check, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Types } from "@monitor/client";
 import { Section } from "@components/layouts";
-import { ResourceTarget } from "@monitor/client/dist/types";
 import { fmt_update_date } from "@lib/utils";
 import { UpdateDetails, UpdateUser } from "./details";
 
@@ -55,7 +54,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => (
   </UpdateDetails>
 );
 
-export const ResourceUpdates = ({ type, id }: ResourceTarget) => {
+export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
   const { data, isLoading } = useRead("ListUpdates", {
     query: {
       "target.type": type,
@@ -77,9 +76,9 @@ export const ResourceUpdates = ({ type, id }: ResourceTarget) => {
     >
       <div className="grid md:grid-cols-3 gap-4">
         {isLoading && <UpdatePlaceHolder />}
-        {data?.updates.slice(0, 3).map((update) => (
-          <UpdateCard update={update} key={update.id} />
-        ))}
+        {data?.updates
+          .slice(0, 3)
+          .map((update) => <UpdateCard update={update} key={update.id} />)}
       </div>
     </Section>
   );

@@ -9,14 +9,14 @@ import { Bell, Circle } from "lucide-react";
 import { Button } from "@ui/button";
 import { Calendar, User } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
-import { UpdateListItem, UpdateStatus } from "@monitor/client/dist/types";
 import { ResourceComponents } from "@components/resources";
 import { cn } from "@lib/utils";
+import { Types } from "@monitor/client";
 
 const fmt_date = (d: Date) =>
   `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${d.getMinutes()}`;
 
-export const SingleUpdate = ({ update }: { update: UpdateListItem }) => {
+export const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
   const Components =
     update.target.type !== "System"
       ? ResourceComponents[update.target.type]
@@ -37,7 +37,7 @@ export const SingleUpdate = ({ update }: { update: UpdateListItem }) => {
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               <div>
-                {update.status === UpdateStatus.InProgress
+                {update.status === Types.UpdateStatus.InProgress
                   ? "ongoing"
                   : fmt_date(new Date(update.start_ts))}
               </div>
@@ -58,7 +58,7 @@ export const HeaderUpdates = () => {
 
   const last_opened = useRead("GetUser", {}).data?.last_update_view;
   const unseen_update = updates?.updates.some(
-    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER)
+    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER),
   );
 
   const invalidate = useInvalidate();
@@ -74,7 +74,7 @@ export const HeaderUpdates = () => {
           <Circle
             className={cn(
               "absolute top-2 right-2 w-2 h-2 stroke-red-500 fill-red-500 transition-opacity",
-              unseen_update ? "opacity-1" : "opacity-0"
+              unseen_update ? "opacity-1" : "opacity-0",
             )}
           />
         </Button>
