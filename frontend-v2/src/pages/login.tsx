@@ -15,6 +15,75 @@ import { useMutation } from "@tanstack/react-query";
 import { client } from "@main";
 import { ThemeToggle } from "@ui/theme";
 
+export const Signup = ({ setSignup }: { setSignup: (f: false) => void }) => {
+  // const { refetch } = useRead("GetUser", {});
+  const [creds, set] = useState({ username: "", password: "" });
+  const { mutateAsync, isLoading } = useMutation(
+    (creds: { username: string; password: string }) =>
+      client.auth({
+        type: "CreateLocalUser",
+        params: creds,
+      })
+  );
+
+  const signup = async () => {
+    const { jwt } = await mutateAsync(creds);
+    localStorage.setItem("monitor-auth-token", jwt);
+    location.reload();
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <div className="container flex justify-end items-center h-16">
+        <ThemeToggle />
+      </div>
+      <div className="flex justify-center items-center container mt-32">
+        <Card className="w-full max-w-[500px] place-self-center">
+          <CardHeader className="flex-col">
+            <CardTitle className="text-xl">Monitor</CardTitle>
+            <CardDescription>Sign Up</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                value={creds.username}
+                onChange={({ target }) =>
+                  set((c) => ({ ...c, username: target.value }))
+                }
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={creds.password}
+                onChange={({ target }) =>
+                  set((c) => ({ ...c, password: target.value }))
+                }
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex gap-4 w-full justify-end">
+            <Button
+              onClick={() => setSignup(false)}
+              disabled={isLoading}
+              variant="outline"
+            >
+              Log In
+            </Button>
+            <Button onClick={signup} disabled={isLoading}>
+              Sign Up
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    </div>
+  );
+};
+
 type LoginCredentials = { username: string; password: string };
 
 const useLogin = (creds: LoginCredentials) => {
@@ -44,7 +113,10 @@ const useLogin = (creds: LoginCredentials) => {
 
 export const Login = () => {
   const [creds, set] = useState({ username: "", password: "" });
+  const [signup, setSignup] = useState(false);
   const { mutate, isLoading } = useLogin(creds);
+
+  if (signup) return <Signup setSignup={setSignup} />;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -53,7 +125,7 @@ export const Login = () => {
       </div>
       <div className="flex justify-center items-center container mt-32">
         <Card className="w-full max-w-[500px] place-self-center">
-          <CardHeader className="flex-col gap-2">
+          <CardHeader className="flex-col">
             <CardTitle className="text-xl">Monitor</CardTitle>
             <CardDescription>Log In</CardDescription>
           </CardHeader>
@@ -80,12 +152,17 @@ export const Login = () => {
               />
             </div>
           </CardContent>
-          <CardFooter>
-            <div className="flex w-full justify-end">
-              <Button onClick={() => mutate(creds)} disabled={isLoading}>
-                Login
-              </Button>
-            </div>
+          <CardFooter className="flex gap-4 w-full justify-end">
+            <Button
+              onClick={() => setSignup(true)}
+              disabled={isLoading}
+              variant="outline"
+            >
+              Signup
+            </Button>
+            <Button onClick={() => mutate(creds)} disabled={isLoading}>
+              Login
+            </Button>
           </CardFooter>
         </Card>
       </div>
