@@ -36,7 +36,10 @@ const BuildVersionSelector = ({
           latest
         </SelectItem>
         {versions?.map((v) => (
-          <SelectItem key={JSON.stringify(v)} value={JSON.stringify(v)}>
+          <SelectItem
+            key={JSON.stringify(v.version) + v.ts}
+            value={JSON.stringify(v.version)}
+          >
             {fmt_verison(v.version)}
           </SelectItem>
         ))}

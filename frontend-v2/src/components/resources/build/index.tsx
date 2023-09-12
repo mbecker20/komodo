@@ -1,12 +1,13 @@
 import { ConfigInner } from "@components/config";
 import { ResourceSelector, AccountSelector } from "@components/config/util";
 import { NewResource } from "@components/layouts";
-import { useRead, useWrite } from "@lib/hooks";
+import { ConfirmButton } from "@components/util";
+import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { fmt_verison } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
-import { Hammer, History } from "lucide-react";
+import { Hammer, History, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 const useBuild = (id?: string) =>
@@ -110,6 +111,23 @@ export const Build: RequiredResourceComponents = {
   Page: {
     Config: ({ id }) => <BuildConfig id={id} />,
   },
-  Actions: () => null,
+  Actions: ({ id }) => {
+    const building = useRead("GetBuildActionState", { id }).data?.building;
+    const { mutate, isLoading } = useExecute("RunBuild");
+    return (
+      <ConfirmButton
+        title={building ? "Building" : "Build"}
+        icon={
+          building ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Hammer className="h-4 w-4" />
+          )
+        }
+        onClick={() => mutate({ build_id: id })}
+        disabled={building || isLoading}
+      />
+    );
+  },
   New: () => <NewBuild />,
 };
