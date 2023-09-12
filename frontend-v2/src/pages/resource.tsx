@@ -1,4 +1,5 @@
 import { Page } from "@components/layouts";
+import { ResourcePermissions } from "@components/permissions";
 import { ResourceComponents } from "@components/resources";
 import { ResourceUpdates } from "@components/updates/resource";
 import { usePushRecentlyViewed, useResourceParamType } from "@lib/hooks";
@@ -30,6 +31,7 @@ export const Resource = () => {
       actions={<Components.Actions id={id} />}
     >
       <ResourceUpdates type={type} id={id} />
+      <ResourcePermissions type={type} id={id} />
       {Object.keys(Components.Page).map((section) => {
         const Component = Components.Page[section];
         return <Component id={id} key={section} />;

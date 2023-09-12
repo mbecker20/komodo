@@ -35,16 +35,16 @@ export const Deployment: RequiredResourceComponents = {
 
     return (
       <>
-        <Link to={`/servers/${server?.id}`} className="flex items-center gap-2">
-          <Server className="w-4 h-4" />
-          {server?.name ?? "N/A"}
-        </Link>
         <Link
           to={info?.build_id ? `/builds/${info.build_id}` : "."}
           className="flex items-center gap-2"
         >
           <HardDrive className="w-4 h-4" />
           {useDeployment(id)?.info.image || "N/A"}
+        </Link>
+        <Link to={`/servers/${server?.id}`} className="flex items-center gap-2">
+          <Server className="w-4 h-4" />
+          {server?.name ?? "N/A"}
         </Link>
       </>
     );
