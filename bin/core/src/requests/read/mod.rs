@@ -35,6 +35,7 @@ mod user;
 enum ReadRequest {
     GetVersion(GetVersion),
     GetUser(GetUser),
+    GetUsers(GetUsers),
     GetUsername(GetUsername),
     GetCoreInfo(GetCoreInfo),
 

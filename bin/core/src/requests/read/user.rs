@@ -1,8 +1,8 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::user::User,
-    requests::read::{GetUser, GetUsername, GetUsernameResponse},
+    requests::read::{GetUser, GetUsername, GetUsernameResponse, GetUsers},
 };
 use resolver_api::Resolve;
 
@@ -43,5 +43,24 @@ impl Resolve<GetUsername, RequestUser> for State {
         Ok(GetUsernameResponse {
             username: user.username,
         })
+    }
+}
+
+#[async_trait]
+impl Resolve<GetUsers, RequestUser> for State {
+    async fn resolve(&self, GetUsers {}: GetUsers, user: RequestUser) -> anyhow::Result<Vec<User>> {
+        if !user.is_admin {
+            return Err(anyhow!("this route is only accessable by admins"));
+        }
+        let mut users = self
+            .db
+            .users
+            .get_some(None, None)
+            .await
+            .context("failed to pull users from db")?;
+        users.iter_mut().for_each(|user| {
+            user.secrets = Vec::new();
+        });
+        Ok(users)
     }
 }

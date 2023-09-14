@@ -314,7 +314,8 @@ export type AlertData =
 	| { type: "ContainerStateChange", data: {
 	id: string;
 	name: string;
-	server: string;
+	server_id: string;
+	server_name: string;
 	from: DockerContainerState;
 	to: DockerContainerState;
 }}
@@ -983,6 +984,9 @@ export interface GetVersionResponse {
 export interface GetUser {
 }
 
+export interface GetUsers {
+}
+
 export interface GetUsername {
 	user_id: string;
 }
@@ -1423,6 +1427,7 @@ export type ExecuteRequest =
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetUser", params: GetUser }
+	| { type: "GetUsers", params: GetUsers }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
 	| { type: "FindResources", params: FindResources }

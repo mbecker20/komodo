@@ -50,6 +50,13 @@ pub struct GetUser {}
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<User>)]
+pub struct GetUsers {}
+
+//
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(GetUsernameResponse)]
 pub struct GetUsername {
     pub user_id: String,

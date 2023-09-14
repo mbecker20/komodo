@@ -11,6 +11,7 @@ export type AuthResponses = {
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
   GetUser: Types.User;
+  GetUsers: Types.User[];
   GetUsername: Types.GetUsernameResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
 
