@@ -13,7 +13,7 @@ const useWebsocket = () => useAtom(rws_atom);
 
 const on_message = (
   { data }: MessageEvent,
-  invalidate: ReturnType<typeof useInvalidate>
+  invalidate: ReturnType<typeof useInvalidate>,
 ) => {
   if (data == "LOGGED_IN") return console.log("logged in to ws");
   const update = JSON.parse(data) as Types.UpdateListItem;
@@ -24,6 +24,7 @@ const on_message = (
   });
 
   invalidate(["ListUpdates"]);
+  invalidate(["GetUpdate", { id: update.id }]);
 
   if (update.target.type === "Deployment") {
     invalidate(
@@ -32,7 +33,7 @@ const on_message = (
       ["GetLog"],
       ["GetDeploymentActionState"],
       ["GetDeploymentStatus"],
-      ["GetDeploymentsSummary"]
+      ["GetDeploymentsSummary"],
     );
   }
 
@@ -43,7 +44,7 @@ const on_message = (
       ["GetServerActionState"],
       ["GetServerStatus"],
       ["GetHistoricalServerStats"],
-      ["GetServersSummary"]
+      ["GetServersSummary"],
     );
   }
 
@@ -54,7 +55,7 @@ const on_message = (
       ["GetBuildActionState"],
       ["GetBuildMonthlyStats"],
       ["GetBuildVersions"],
-      ["GetBuildsSummary"]
+      ["GetBuildsSummary"],
     );
   }
 
@@ -63,7 +64,7 @@ const on_message = (
       ["ListBuilders"],
       ["GetBuilder"],
       ["GetBuilderAvailableAccounts"],
-      ["GetBuildersSummary"]
+      ["GetBuildersSummary"],
     );
   }
 
@@ -90,7 +91,7 @@ export const WebsocketProvider = ({
   const on_open_fn = useCallback(() => on_open(ws), [ws]);
   const on_message_fn = useCallback(
     (e: MessageEvent) => on_message(e, invalidate),
-    [invalidate]
+    [invalidate],
   );
 
   useEffect(() => {
@@ -128,7 +129,7 @@ export const WsStatusIndicator = () => {
       <Circle
         className={cn(
           "w-4 h-4 stroke-none",
-          ws ? "fill-green-500" : "fill-red-500"
+          ws ? "fill-green-500" : "fill-red-500",
         )}
       />
     </Button>
