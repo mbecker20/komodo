@@ -1,5 +1,5 @@
 import { Section } from "./layouts";
-import { Lock, PlusCircle, User } from "lucide-react";
+import { Loader2, Lock, PlusCircle, User } from "lucide-react";
 import { useRead, useWrite } from "@lib/hooks";
 import { UsableResource } from "@types";
 import { Card, CardHeader, CardTitle } from "@ui/card";
@@ -22,25 +22,27 @@ import {
 } from "@ui/dialog";
 import { Button } from "@ui/button";
 import { useState } from "react";
+import { ResourceTarget } from "@monitor/client/dist/types";
 
 const Username = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data?.username;
+
+  console.log(user_id, useRead("GetUsername", { user_id }).data);
   return <>{username}</>;
 };
 
-const NewPermission = () => {
+const NewPermission = ({ id, type }: ResourceTarget) => {
   const [open, set] = useState(false);
-
-  //   const users = useRead("Lis");
-
-  //   const { mutate: update, isLoading } = useWrite(
-  //     "UpdateUserPermissionsOnTarget"
-  //   );
+  const [user_id, setUserId] = useState<string>();
+  const [permission, setPermission] = useState<Types.PermissionLevel>();
+  const users = useRead("GetUsers", {}).data?.filter((u) => !u.admin);
+  const { mutate, isLoading } = useWrite("UpdateUserPermissionsOnTarget");
 
   return (
     <Dialog open={open} onOpenChange={set}>
-      <DialogTrigger asChild disabled>
-        <Button size="icon">
+      <DialogTrigger asChild>
+        <Button className="gap-2">
+          Add Permission
           <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>
@@ -48,8 +50,67 @@ const NewPermission = () => {
         <DialogHeader>
           <DialogTitle>Add User</DialogTitle>
         </DialogHeader>
-        <div></div>
-        <DialogFooter></DialogFooter>
+        <div className="grid gap-4 my-4">
+          <div className="flex items-center justify-between">
+            User
+            <Select value={user_id} onValueChange={setUserId}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select User" />
+              </SelectTrigger>
+              <SelectContent className="w-48">
+                <SelectGroup>
+                  {users?.map((user) => (
+                    <SelectItem key={user._id?.$oid} value={user._id!.$oid}>
+                      {user.username}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between">
+            Permissions Level
+            <Select
+              value={permission}
+              onValueChange={(lv) => setPermission(lv as Types.PermissionLevel)}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Select Permission Level" />
+              </SelectTrigger>
+              <SelectContent className="w-48">
+                <SelectGroup>
+                  <SelectItem value={Types.PermissionLevel.Read}>
+                    Read
+                  </SelectItem>
+                  <SelectItem value={Types.PermissionLevel.Update}>
+                    Update
+                  </SelectItem>
+                  <SelectItem value={Types.PermissionLevel.Execute}>
+                    Execute
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <DialogFooter className="flex justify-end">
+          <Button
+            className="gap-2"
+            disabled={isLoading}
+            onClick={() =>
+              permission &&
+              user_id &&
+              mutate({ permission, user_id, target: { id, type } })
+            }
+          >
+            Add Permissions
+            {isLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <PlusCircle className="w-4 h-4" />
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
@@ -66,18 +127,26 @@ export const ResourcePermissions = ({
   const me = useRead("GetUser", {}).data?._id?.$oid;
   const permissions = useRead(`Get${type}`, { id }, { enabled: admin }).data
     ?.permissions;
+
+  const users = useRead("GetUsers", {}).data?.filter((u) => !u.admin);
+
   const { mutate: update, isLoading } = useWrite(
     "UpdateUserPermissionsOnTarget"
   );
 
-  const display = Object.keys(permissions ?? {}).filter((id) => id != me);
+  const display = Object.keys(permissions ?? {})
+    .filter((id) => id != me)
+    .filter((id) => !users?.find((u) => u._id?.$oid === id)?.admin);
+
+  console.log(users, display);
+
   if (!admin || !display.length) return null;
 
   return (
     <Section
       title="Permissions"
       icon={<Lock className="w-4 h-4" />}
-      actions={<NewPermission />}
+      actions={<NewPermission id={id} type={type} />}
     >
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {display.map((user_id) => (
