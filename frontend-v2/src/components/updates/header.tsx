@@ -5,7 +5,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { Bell, Circle } from "lucide-react";
+import { Bell, Check, Circle, Loader2, X } from "lucide-react";
 import { Button } from "@ui/button";
 import { Calendar, User } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
@@ -22,18 +22,28 @@ export const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
       ? ResourceComponents[update.target.type]
       : null;
 
+  const Icon = () => {
+    if (update.status === Types.UpdateStatus.Complete) {
+      if (update.success) return <Check className="w-4 h-4 stroke-green-500" />;
+      else return <X className="w-4 h-4 stroke-red-500" />;
+    } else return <Loader2 className="w-4 h-4 animate-spin" />;
+  };
+
   return (
     <UpdateDetails id={update.id}>
       <div className="px-2 py-4 hover:bg-muted transition-colors border-b last:border-none cursor-pointer">
         <div className="flex items-center justify-between">
+          <div className="ml-2 mr-4">
+            <Icon />
+          </div>
           <div className="text-sm w-full">
             {update.operation.match(/[A-Z][a-z]+|[0-9]+/g)?.join(" ")}
-            <div className="text-muted-foreground text-xs">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              {Components && <Components.Icon id={update.target.id} />}
               {Components && <Components.Name id={update.target.id} />}
             </div>
           </div>
-
-          <div className="w-48 text-xs">
+          <div className="text-xs w-48">
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               <div>
@@ -58,7 +68,7 @@ export const HeaderUpdates = () => {
 
   const last_opened = useRead("GetUser", {}).data?.last_update_view;
   const unseen_update = updates?.updates.some(
-    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER)
+    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER),
   );
 
   const invalidate = useInvalidate();
@@ -74,7 +84,7 @@ export const HeaderUpdates = () => {
           <Circle
             className={cn(
               "absolute top-2 right-2 w-2 h-2 stroke-red-500 fill-red-500 transition-opacity",
-              unseen_update ? "opacity-1" : "opacity-0"
+              unseen_update ? "opacity-1" : "opacity-0",
             )}
           />
         </Button>
