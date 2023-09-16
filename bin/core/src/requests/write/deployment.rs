@@ -4,7 +4,9 @@ use monitor_types::{
     all_logs_success,
     entities::{
         build::Build,
-        deployment::{Deployment, DeploymentImage, DockerContainerState},
+        deployment::{
+            Deployment, DeploymentImage, DockerContainerState,
+        },
         server::Server,
         update::{Log, ResourceTarget, Update, UpdateStatus},
         Operation, PermissionLevel,
@@ -19,7 +21,9 @@ use resolver_api::Resolve;
 
 use crate::{
     auth::RequestUser,
-    helpers::{empty_or_only_spaces, make_update, resource::StateResource},
+    helpers::{
+        empty_or_only_spaces, make_update, resource::StateResource,
+    },
     state::State,
 };
 
@@ -38,7 +42,9 @@ impl Resolve<CreateDeployment, RequestUser> for State {
                     .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
             }
         }
-        if let Some(DeploymentImage::Build { build_id, .. }) = &config.image {
+        if let Some(DeploymentImage::Build { build_id, .. }) =
+            &config.image
+        {
             if !build_id.is_empty() {
                 let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
                     .await
@@ -64,7 +70,8 @@ impl Resolve<CreateDeployment, RequestUser> for State {
             .create_one(&deployment)
             .await
             .context("failed to add deployment to db")?;
-        let deployment: Deployment = self.get_resource(&deployment_id).await?;
+        let deployment: Deployment =
+            self.get_resource(&deployment_id).await?;
         let update = Update {
             target: ResourceTarget::Deployment(deployment_id),
             operation: Operation::CreateDeployment,
@@ -80,7 +87,10 @@ impl Resolve<CreateDeployment, RequestUser> for State {
                         deployment.id, deployment.name
                     ),
                 ),
-                Log::simple("config", format!("{:#?}", deployment.config)),
+                Log::simple(
+                    "config",
+                    format!("{:#?}", deployment.config),
+                ),
             ],
             ..Default::default()
         };
@@ -105,14 +115,19 @@ impl Resolve<CopyDeployment, RequestUser> for State {
             tags,
             ..
         } = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
         if !config.server_id.is_empty() {
             let _: Server = self.get_resource_check_permissions(&config.server_id, &user, PermissionLevel::Update)
                     .await
                     .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
         }
-        if let DeploymentImage::Build { build_id, .. } = &config.image {
+        if let DeploymentImage::Build { build_id, .. } = &config.image
+        {
             if !build_id.is_empty() {
                 let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
                     .await
@@ -138,7 +153,8 @@ impl Resolve<CopyDeployment, RequestUser> for State {
             .create_one(&deployment)
             .await
             .context("failed to add deployment to db")?;
-        let deployment: Deployment = self.get_resource(&deployment_id).await?;
+        let deployment: Deployment =
+            self.get_resource(&deployment_id).await?;
         let update = Update {
             target: ResourceTarget::Deployment(deployment_id),
             operation: Operation::CreateDeployment,
@@ -154,7 +170,10 @@ impl Resolve<CopyDeployment, RequestUser> for State {
                         deployment.id, deployment.name
                     ),
                 ),
-                Log::simple("config", format!("{:#?}", deployment.config)),
+                Log::simple(
+                    "config",
+                    format!("{:#?}", deployment.config),
+                ),
             ],
             ..Default::default()
         };
@@ -177,7 +196,11 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
         }
 
         let deployment: Deployment = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let inner = || async move {
@@ -189,7 +212,9 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
                 .context("failed to get container state")?;
 
             let mut update = Update {
-                target: ResourceTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(
+                    deployment.id.clone(),
+                ),
                 operation: Operation::DeleteDeployment,
                 start_ts,
                 operator: user.id.clone(),
@@ -202,11 +227,13 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
 
             if !matches!(
                 state,
-                DockerContainerState::NotDeployed | DockerContainerState::Unknown
+                DockerContainerState::NotDeployed
+                    | DockerContainerState::Unknown
             ) {
                 // container needs to be destroyed
-                let server: anyhow::Result<Server> =
-                    self.get_resource(&deployment.config.server_id).await;
+                let server: anyhow::Result<Server> = self
+                    .get_resource(&deployment.config.server_id)
+                    .await;
                 if let Err(e) = server {
                     update.logs.push(Log::error(
                         "remove container",
@@ -301,7 +328,11 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
         }
 
         let deployment: Deployment = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let inner = || async move {
@@ -312,7 +343,9 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
                 .await
                 .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
             }
-            if let Some(DeploymentImage::Build { build_id, .. }) = &config.image {
+            if let Some(DeploymentImage::Build { build_id, .. }) =
+                &config.image
+            {
                 let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
                 .await
                 .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
@@ -320,17 +353,20 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
 
             if let Some(volumes) = &mut config.volumes {
                 volumes.retain(|v| {
-                    !empty_or_only_spaces(&v.local) && !empty_or_only_spaces(&v.container)
+                    !empty_or_only_spaces(&v.local)
+                        && !empty_or_only_spaces(&v.container)
                 })
             }
             if let Some(ports) = &mut config.ports {
                 ports.retain(|v| {
-                    !empty_or_only_spaces(&v.local) && !empty_or_only_spaces(&v.container)
+                    !empty_or_only_spaces(&v.local)
+                        && !empty_or_only_spaces(&v.container)
                 })
             }
             if let Some(environment) = &mut config.environment {
                 environment.retain(|v| {
-                    !empty_or_only_spaces(&v.variable) && !empty_or_only_spaces(&v.value)
+                    !empty_or_only_spaces(&v.variable)
+                        && !empty_or_only_spaces(&v.value)
                 })
             }
             if let Some(extra_args) = &mut config.extra_args {
@@ -341,7 +377,9 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
                 .deployments
                 .update_one(
                     &id,
-                    mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
+                    mungos::Update::FlattenSet(
+                        doc! { "config": to_bson(&config)? },
+                    ),
                 )
                 .await
                 .context("failed to update server on mongo")?;
@@ -363,7 +401,8 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
 
             self.add_update(update).await?;
 
-            let deployment: Deployment = self.get_resource(&id).await?;
+            let deployment: Deployment =
+                self.get_resource(&id).await?;
 
             anyhow::Ok(deployment)
         };
@@ -401,13 +440,18 @@ impl Resolve<RenameDeployment, RequestUser> for State {
         }
 
         let deployment: Deployment = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let inner = || async {
             let name = to_monitor_name(&name);
 
-            let container_state = self.get_deployment_state(&deployment).await?;
+            let container_state =
+                self.get_deployment_state(&deployment).await?;
 
             if container_state == DockerContainerState::Unknown {
                 return Err(anyhow!(
@@ -415,7 +459,11 @@ impl Resolve<RenameDeployment, RequestUser> for State {
                 ));
             }
 
-            let mut update = make_update(&deployment, Operation::RenameDeployment, &user);
+            let mut update = make_update(
+                &deployment,
+                Operation::RenameDeployment,
+                &user,
+            );
 
             self.db
                 .deployments
@@ -427,7 +475,9 @@ impl Resolve<RenameDeployment, RequestUser> for State {
                 .context("failed to update deployment name on db")?;
 
             if container_state != DockerContainerState::NotDeployed {
-                let server: Server = self.get_resource(&deployment.config.server_id).await?;
+                let server: Server = self
+                    .get_resource(&deployment.config.server_id)
+                    .await?;
                 let log = self
                     .periphery_client(&server)?
                     .request(requests::RenameContainer {
@@ -435,13 +485,18 @@ impl Resolve<RenameDeployment, RequestUser> for State {
                         new_name: name.clone(),
                     })
                     .await
-                    .context("failed to rename container on server")?;
+                    .context(
+                        "failed to rename container on server",
+                    )?;
                 update.logs.push(log);
             }
 
             update.push_simple_log(
                 "rename deployment",
-                format!("renamed deployment from {} to {}", deployment.name, name),
+                format!(
+                    "renamed deployment from {} to {}",
+                    deployment.name, name
+                ),
             );
             update.finalize();
 

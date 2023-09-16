@@ -72,7 +72,10 @@ impl Resolve<CreateRepo, RequestUser> for State {
             logs: vec![
                 Log::simple(
                     "create repo",
-                    format!("created repo\nid: {}\nname: {}", repo.id, repo.name),
+                    format!(
+                        "created repo\nid: {}\nname: {}",
+                        repo.id, repo.name
+                    ),
                 ),
                 Log::simple("config", format!("{:#?}", repo.config)),
             ],
@@ -81,7 +84,9 @@ impl Resolve<CreateRepo, RequestUser> for State {
 
         self.add_update(update).await?;
 
-        if !repo.config.repo.is_empty() && !repo.config.server_id.is_empty() {
+        if !repo.config.repo.is_empty()
+            && !repo.config.server_id.is_empty()
+        {
             let _ = self
                 .resolve(
                     execute::CloneRepo {
@@ -109,7 +114,11 @@ impl Resolve<CopyRepo, RequestUser> for State {
             tags,
             ..
         } = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
         if !config.server_id.is_empty() {
             let _: Server = self.get_resource_check_permissions(
@@ -150,7 +159,10 @@ impl Resolve<CopyRepo, RequestUser> for State {
             logs: vec![
                 Log::simple(
                     "create repo",
-                    format!("created repo\nid: {}\nname: {}", repo.id, repo.name),
+                    format!(
+                        "created repo\nid: {}\nname: {}",
+                        repo.id, repo.name
+                    ),
                 ),
                 Log::simple("config", format!("{:#?}", repo.config)),
             ],
@@ -171,64 +183,75 @@ impl Resolve<DeleteRepo, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Repo> {
         let repo: Repo = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let periphery = if repo.config.server_id.is_empty() {
             None
         } else {
-            let server: Server = self.get_resource(&repo.config.server_id).await?;
+            let server: Server =
+                self.get_resource(&repo.config.server_id).await?;
             let periphery = self.periphery_client(&server)?;
             Some(periphery)
         };
 
-        let inner = || async move {
-            let mut update = Update {
-                operation: Operation::DeleteRepo,
-                target: ResourceTarget::Repo(repo.id.clone()),
-                start_ts: monitor_timestamp(),
-                status: UpdateStatus::InProgress,
-                operator: user.id.clone(),
-                success: true,
-                ..Default::default()
-            };
-            update.id = self.add_update(update.clone()).await?;
+        let inner =
+            || async move {
+                let mut update = Update {
+                    operation: Operation::DeleteRepo,
+                    target: ResourceTarget::Repo(repo.id.clone()),
+                    start_ts: monitor_timestamp(),
+                    status: UpdateStatus::InProgress,
+                    operator: user.id.clone(),
+                    success: true,
+                    ..Default::default()
+                };
+                update.id = self.add_update(update.clone()).await?;
 
-            let res = self
-                .db
-                .repos
-                .delete_one(&repo.id)
-                .await
-                .context("failed to delete repo from database");
+                let res =
+                    self.db.repos.delete_one(&repo.id).await.context(
+                        "failed to delete repo from database",
+                    );
 
-            let log = match res {
-                Ok(_) => Log::simple("delete repo", format!("deleted repo {}", repo.name)),
-                Err(e) => Log::error("delete repo", format!("failed to delete repo\n{e:#?}")),
-            };
+                let log = match res {
+                    Ok(_) => Log::simple(
+                        "delete repo",
+                        format!("deleted repo {}", repo.name),
+                    ),
+                    Err(e) => Log::error(
+                        "delete repo",
+                        format!("failed to delete repo\n{e:#?}"),
+                    ),
+                };
 
-            update.logs.push(log);
+                update.logs.push(log);
 
-            if let Some(periphery) = periphery {
-                match periphery
-                    .request(requests::DeleteRepo {
-                        name: repo.name.clone(),
-                    })
-                    .await
-                {
-                    Ok(log) => update.logs.push(log),
-                    Err(e) => update
-                        .logs
-                        .push(Log::error("delete repo on periphery", format!("{e:#?}"))),
+                if let Some(periphery) = periphery {
+                    match periphery
+                        .request(requests::DeleteRepo {
+                            name: repo.name.clone(),
+                        })
+                        .await
+                    {
+                        Ok(log) => update.logs.push(log),
+                        Err(e) => update.logs.push(Log::error(
+                            "delete repo on periphery",
+                            format!("{e:#?}"),
+                        )),
+                    }
                 }
-            }
 
-            update.finalize();
-            self.update_update(update).await?;
+                update.finalize();
+                self.update_update(update).await?;
 
-            self.remove_from_recently_viewed(&repo).await?;
+                self.remove_from_recently_viewed(&repo).await?;
 
-            Ok(repo)
-        };
+                Ok(repo)
+            };
 
         if self.action_states.repo.busy(&id).await {
             return Err(anyhow!("repo busy"));
@@ -274,7 +297,11 @@ impl Resolve<UpdateRepo, RequestUser> for State {
         }
 
         let repo: Repo = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let inner = || async move {
@@ -282,12 +309,15 @@ impl Resolve<UpdateRepo, RequestUser> for State {
                 .repos
                 .update_one(
                     &repo.id,
-                    mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
+                    mungos::Update::FlattenSet(
+                        doc! { "config": to_bson(&config)? },
+                    ),
                 )
                 .await
                 .context("failed to update repo on database")?;
 
-            let mut update = make_update(&repo, Operation::UpdateRepo, &user);
+            let mut update =
+                make_update(&repo, Operation::UpdateRepo, &user);
             update.in_progress();
             update.push_simple_log(
                 "repo update",
@@ -298,10 +328,13 @@ impl Resolve<UpdateRepo, RequestUser> for State {
             if let Some(new_server_id) = config.server_id {
                 if new_server_id != repo.config.server_id {
                     if !repo.config.server_id.is_empty() {
-                        let old_server: anyhow::Result<Server> =
-                            self.get_resource(&repo.config.server_id).await;
+                        let old_server: anyhow::Result<Server> = self
+                            .get_resource(&repo.config.server_id)
+                            .await;
                         let periphery =
-                            old_server.and_then(|server| self.periphery_client(&server));
+                            old_server.and_then(|server| {
+                                self.periphery_client(&server)
+                            });
                         match periphery {
                             Ok(periphery) => match periphery
                                 .request(requests::DeleteRepo { name: repo.name })

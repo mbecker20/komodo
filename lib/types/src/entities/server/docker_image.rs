@@ -1,12 +1,16 @@
 use std::collections::HashMap;
 
-use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
+use serde::{
+    de::DeserializeOwned, Deserialize, Deserializer, Serialize,
+};
 use typeshare::typeshare;
 
 use crate::I64;
 
 #[typeshare]
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
 pub struct ImageSummary {
     /// ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image.
     #[serde(rename = "Id")]
@@ -52,16 +56,26 @@ pub struct ImageSummary {
     pub containers: I64,
 }
 
-fn deserialize_nonoptional_vec<'de, D: Deserializer<'de>, T: DeserializeOwned>(
+fn deserialize_nonoptional_vec<
+    'de,
+    D: Deserializer<'de>,
+    T: DeserializeOwned,
+>(
     d: D,
 ) -> Result<Vec<T>, D::Error> {
-    serde::Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or(Vec::new()))
+    serde::Deserialize::deserialize(d)
+        .map(|x: Option<_>| x.unwrap_or(Vec::new()))
 }
 
-fn deserialize_nonoptional_map<'de, D: Deserializer<'de>, T: DeserializeOwned>(
+fn deserialize_nonoptional_map<
+    'de,
+    D: Deserializer<'de>,
+    T: DeserializeOwned,
+>(
     d: D,
 ) -> Result<HashMap<String, T>, D::Error> {
-    serde::Deserialize::deserialize(d).map(|x: Option<_>| x.unwrap_or(HashMap::new()))
+    serde::Deserialize::deserialize(d)
+        .map(|x: Option<_>| x.unwrap_or(HashMap::new()))
 }
 
 impl From<bollard::service::ImageSummary> for ImageSummary {

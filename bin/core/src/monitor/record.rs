@@ -1,4 +1,6 @@
-use monitor_types::entities::server::stats::{BasicSystemStats, SystemStatsRecord};
+use monitor_types::entities::server::stats::{
+    BasicSystemStats, SystemStatsRecord,
+};
 
 use crate::state::State;
 

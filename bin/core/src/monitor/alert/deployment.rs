@@ -10,7 +10,11 @@ use monitor_types::entities::{
 use crate::{helpers::resource::StateResource, state::State};
 
 impl State {
-    pub async fn alert_deployments(&self, ts: i64, server_names: HashMap<String, String>) {
+    pub async fn alert_deployments(
+        &self,
+        ts: i64,
+        server_names: HashMap<String, String>,
+    ) {
         let mut alerts = Vec::<Alert>::new();
         for v in self.deployment_status_cache.get_list().await {
             if v.prev.is_none() {
@@ -21,7 +25,9 @@ impl State {
                 // send alert
                 let d = <State as StateResource<Deployment>>::get_resource(self, &v.curr.id).await;
                 if let Err(e) = d {
-                    error!("failed to get deployment from db | {e:#?}");
+                    error!(
+                        "failed to get deployment from db | {e:#?}"
+                    );
                     continue;
                 }
                 let d = d.unwrap();

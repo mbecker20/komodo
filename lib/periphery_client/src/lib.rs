@@ -18,7 +18,10 @@ pub struct PeripheryClient {
 }
 
 impl PeripheryClient {
-    pub fn new(address: impl Into<String>, passkey: impl Into<String>) -> PeripheryClient {
+    pub fn new(
+        address: impl Into<String>,
+        passkey: impl Into<String>,
+    ) -> PeripheryClient {
         PeripheryClient {
             reqwest: Default::default(),
             address: address.into(),
@@ -26,14 +29,20 @@ impl PeripheryClient {
         }
     }
 
-    pub async fn request<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+    pub async fn request<T: HasResponse>(
+        &self,
+        request: T,
+    ) -> anyhow::Result<T::Response> {
         self.health_check().await?;
         self.request_inner(request, None).await
     }
 
     pub async fn health_check(&self) -> anyhow::Result<()> {
-        self.request_inner(requests::GetHealth {}, Some(Duration::from_secs(1)))
-            .await?;
+        self.request_inner(
+            requests::GetHealth {},
+            Some(Duration::from_secs(1)),
+        )
+        .await?;
         Ok(())
     }
 
@@ -43,7 +52,9 @@ impl PeripheryClient {
         timeout: Option<Duration>,
     ) -> anyhow::Result<T::Response> {
         let req_type = T::req_type();
-        trace!("sending request | type: {req_type} | body: {request:?}");
+        trace!(
+            "sending request | type: {req_type} | body: {request:?}"
+        );
         let mut req = self
             .reqwest
             .post(&self.address)
@@ -55,7 +66,10 @@ impl PeripheryClient {
         if let Some(timeout) = timeout {
             req = req.timeout(timeout);
         }
-        let res = req.send().await.context("failed at request to periphery")?;
+        let res = req
+            .send()
+            .await
+            .context("failed at request to periphery")?;
         let status = res.status();
         debug!("got response | type: {req_type} | {status} | body: {res:?}",);
         if status == StatusCode::OK {
@@ -68,8 +82,9 @@ impl PeripheryClient {
                 .await
                 .context("failed to convert response to text")?;
 
-            let error =
-                deserialize_error(text).context(format!("request to periphery failed | {status}"));
+            let error = deserialize_error(text).context(format!(
+                "request to periphery failed | {status}"
+            ));
 
             Err(error)
         }

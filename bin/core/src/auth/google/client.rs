@@ -84,7 +84,10 @@ impl GoogleOauthClient {
         contained
     }
 
-    pub async fn get_access_token(&self, code: &str) -> anyhow::Result<AccessTokenResponse> {
+    pub async fn get_access_token(
+        &self,
+        code: &str,
+    ) -> anyhow::Result<AccessTokenResponse> {
         self.post::<_>(
             "https://oauth2.googleapis.com/token",
             &[
@@ -100,9 +103,13 @@ impl GoogleOauthClient {
         .context("failed to get google access token using code")
     }
 
-    pub fn get_google_user(&self, id_token: &str) -> anyhow::Result<GoogleUser> {
+    pub fn get_google_user(
+        &self,
+        id_token: &str,
+    ) -> anyhow::Result<GoogleUser> {
         let t: Token<Value, GoogleUser, jwt::Unverified> =
-            Token::parse_unverified(id_token).context("failed to parse id_token")?;
+            Token::parse_unverified(id_token)
+                .context("failed to parse id_token")?;
         Ok(t.claims().to_owned())
     }
 
@@ -120,24 +127,29 @@ impl GoogleOauthClient {
             .header("User-Agent", &self.user_agent);
 
         if let Some(bearer_token) = bearer_token {
-            req = req.header("Authorization", format!("Bearer {bearer_token}"));
+            req = req.header(
+                "Authorization",
+                format!("Bearer {bearer_token}"),
+            );
         }
 
-        let res = req.send().await.context("failed to reach google")?;
+        let res =
+            req.send().await.context("failed to reach google")?;
 
         let status = res.status();
 
         if status == StatusCode::OK {
-            let body = res
-                .json()
-                .await
-                .context("failed to parse POST body into expected type")?;
+            let body = res.json().await.context(
+                "failed to parse POST body into expected type",
+            )?;
             Ok(body)
         } else {
             let text = res.text().await.context(format!(
                 "method: POST | status: {status} | failed to get response text"
             ))?;
-            Err(anyhow!("method: POST | status: {status} | text: {text}"))
+            Err(anyhow!(
+                "method: POST | status: {status} | text: {text}"
+            ))
         }
     }
 }

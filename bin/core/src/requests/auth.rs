@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use monitor_types::requests::auth::{
-    CreateLocalUser, ExchangeForJwt, ExchangeForJwtResponse, GetLoginOptions,
-    GetLoginOptionsResponse, LoginLocalUser, LoginWithSecret,
+    CreateLocalUser, ExchangeForJwt, ExchangeForJwtResponse,
+    GetLoginOptions, GetLoginOptionsResponse, LoginLocalUser,
+    LoginWithSecret,
 };
 use resolver_api::{derive::Resolver, Resolve};
 use serde::{Deserialize, Serialize};
@@ -24,7 +25,11 @@ pub enum AuthRequest {
 
 #[async_trait]
 impl Resolve<GetLoginOptions> for State {
-    async fn resolve(&self, _: GetLoginOptions, _: ()) -> anyhow::Result<GetLoginOptionsResponse> {
+    async fn resolve(
+        &self,
+        _: GetLoginOptions,
+        _: (),
+    ) -> anyhow::Result<GetLoginOptionsResponse> {
         Ok(GetLoginOptionsResponse {
             local: self.config.local_auth,
             github: self.config.github_oauth.enabled

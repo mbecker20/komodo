@@ -2,7 +2,10 @@ use monitor_types::entities::update::Log;
 
 use crate::helpers::run_monitor_command;
 
-pub async fn create_network(name: &str, driver: Option<String>) -> Log {
+pub async fn create_network(
+    name: &str,
+    driver: Option<String>,
+) -> Log {
     let driver = match driver {
         Some(driver) => format!(" -d {driver}"),
         None => String::new(),

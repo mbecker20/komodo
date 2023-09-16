@@ -3,10 +3,19 @@ use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_types::{
     entities::{
-        alerter::{Alerter, AlerterConfig, AlerterListItem, AlerterListItemInfo},
+        alerter::{
+            Alerter, AlerterConfig, AlerterListItem,
+            AlerterListItemInfo,
+        },
         build::{Build, BuildListItem, BuildListItemInfo},
-        builder::{Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo},
-        deployment::{Deployment, DeploymentImage, DeploymentListItem, DeploymentListItemInfo},
+        builder::{
+            Builder, BuilderConfig, BuilderListItem,
+            BuilderListItemInfo,
+        },
+        deployment::{
+            Deployment, DeploymentImage, DeploymentListItem,
+            DeploymentListItemInfo,
+        },
         repo::{Repo, RepoInfo, RepoListItem},
         server::{Server, ServerListItem, ServerListItemInfo},
         update::ResourceTargetVariant,
@@ -24,19 +33,31 @@ use serde::{de::DeserializeOwned, Serialize};
 use crate::{auth::RequestUser, state::State};
 
 #[async_trait]
-pub trait StateResource<T: Send + Sync + Unpin + Serialize + DeserializeOwned + Permissioned> {
+pub trait StateResource<
+    T: Send + Sync + Unpin + Serialize + DeserializeOwned + Permissioned,
+>
+{
     type ListItem: Serialize + Send;
 
     fn name() -> &'static str;
     fn coll(&self) -> &Collection<T>;
-    async fn to_list_item(&self, resource: T) -> anyhow::Result<Self::ListItem>;
+    async fn to_list_item(
+        &self,
+        resource: T,
+    ) -> anyhow::Result<Self::ListItem>;
 
     async fn get_resource(&self, id: &str) -> anyhow::Result<T> {
         self.coll()
             .find_one_by_id(id)
             .await
-            .context(format!("failed to get {} from db", Self::name()))?
-            .context(format!("did not find any {} with id {id}", Self::name()))
+            .context(format!(
+                "failed to get {} from db",
+                Self::name()
+            ))?
+            .context(format!(
+                "did not find any {} with id {id}",
+                Self::name()
+            ))
     }
 
     async fn get_resource_check_permissions(
@@ -66,7 +87,10 @@ pub trait StateResource<T: Send + Sync + Unpin + Serialize + DeserializeOwned + 
         Ok(resource.get_user_permissions(user_id))
     }
 
-    async fn get_resource_ids_for_non_admin(&self, user_id: &str) -> anyhow::Result<Vec<String>> {
+    async fn get_resource_ids_for_non_admin(
+        &self,
+        user_id: &str,
+    ) -> anyhow::Result<Vec<String>> {
         self.coll()
             .aggregate_collect(
                 [
@@ -115,7 +139,10 @@ pub trait StateResource<T: Send + Sync + Unpin + Serialize + DeserializeOwned + 
             .coll()
             .get_some(query, None)
             .await
-            .context(format!("failed to pull {}s from mongo", Self::name()))?
+            .context(format!(
+                "failed to pull {}s from mongo",
+                Self::name()
+            ))?
             .into_iter()
             .map(|resource| self.to_list_item(resource));
 
@@ -123,7 +150,10 @@ pub trait StateResource<T: Send + Sync + Unpin + Serialize + DeserializeOwned + 
             .await
             .into_iter()
             .collect::<anyhow::Result<Vec<_>>>()
-            .context(format!("failed to convert {} list item", Self::name()))?;
+            .context(format!(
+                "failed to convert {} list item",
+                Self::name()
+            ))?;
 
         Ok(list)
     }
@@ -134,10 +164,19 @@ pub trait StateResource<T: Send + Sync + Unpin + Serialize + DeserializeOwned + 
         description: &str,
         user: &RequestUser,
     ) -> anyhow::Result<()> {
-        self.get_resource_check_permissions(id, user, PermissionLevel::Update)
-            .await?;
+        self.get_resource_check_permissions(
+            id,
+            user,
+            PermissionLevel::Update,
+        )
+        .await?;
         self.coll()
-            .update_one(id, mungos::Update::Set(doc! { "description": description }))
+            .update_one(
+                id,
+                mungos::Update::Set(
+                    doc! { "description": description },
+                ),
+            )
             .await?;
         Ok(())
     }
@@ -155,7 +194,10 @@ impl StateResource<Server> for State {
         &self.db.servers
     }
 
-    async fn to_list_item(&self, server: Server) -> anyhow::Result<ServerListItem> {
+    async fn to_list_item(
+        &self,
+        server: Server,
+    ) -> anyhow::Result<ServerListItem> {
         let status = self.server_status_cache.get(&server.id).await;
         Ok(ServerListItem {
             id: server.id,
@@ -182,11 +224,16 @@ impl StateResource<Deployment> for State {
         &self.db.deployments
     }
 
-    async fn to_list_item(&self, deployment: Deployment) -> anyhow::Result<DeploymentListItem> {
-        let status = self.deployment_status_cache.get(&deployment.id).await;
+    async fn to_list_item(
+        &self,
+        deployment: Deployment,
+    ) -> anyhow::Result<DeploymentListItem> {
+        let status =
+            self.deployment_status_cache.get(&deployment.id).await;
         let (image, build_id) = match deployment.config.image {
             DeploymentImage::Build { build_id, version } => {
-                let build: Build = self.get_resource(&build_id).await?;
+                let build: Build =
+                    self.get_resource(&build_id).await?;
                 let version = if version.is_none() {
                     build.config.version.to_string()
                 } else {
@@ -202,10 +249,16 @@ impl StateResource<Deployment> for State {
             tags: deployment.tags,
             resource_type: ResourceTargetVariant::Deployment,
             info: DeploymentListItemInfo {
-                state: status.as_ref().map(|s| s.curr.state).unwrap_or_default(),
-                status: status
+                state: status
                     .as_ref()
-                    .and_then(|s| s.curr.container.as_ref().and_then(|c| c.status.to_owned())),
+                    .map(|s| s.curr.state)
+                    .unwrap_or_default(),
+                status: status.as_ref().and_then(|s| {
+                    s.curr
+                        .container
+                        .as_ref()
+                        .and_then(|c| c.status.to_owned())
+                }),
                 image,
                 server_id: deployment.config.server_id,
                 build_id,
@@ -226,7 +279,10 @@ impl StateResource<Build> for State {
         &self.db.builds
     }
 
-    async fn to_list_item(&self, build: Build) -> anyhow::Result<BuildListItem> {
+    async fn to_list_item(
+        &self,
+        build: Build,
+    ) -> anyhow::Result<BuildListItem> {
         Ok(BuildListItem {
             id: build.id,
             name: build.name,
@@ -252,7 +308,10 @@ impl StateResource<Repo> for State {
         &self.db.repos
     }
 
-    async fn to_list_item(&self, repo: Repo) -> anyhow::Result<RepoListItem> {
+    async fn to_list_item(
+        &self,
+        repo: Repo,
+    ) -> anyhow::Result<RepoListItem> {
         Ok(RepoListItem {
             id: repo.id,
             name: repo.name,
@@ -277,10 +336,17 @@ impl StateResource<Builder> for State {
         &self.db.builders
     }
 
-    async fn to_list_item(&self, builder: Builder) -> anyhow::Result<BuilderListItem> {
+    async fn to_list_item(
+        &self,
+        builder: Builder,
+    ) -> anyhow::Result<BuilderListItem> {
         let (provider, instance_type) = match builder.config {
-            BuilderConfig::Server(config) => ("server".to_string(), Some(config.id)),
-            BuilderConfig::Aws(config) => ("aws ec2".to_string(), Some(config.instance_type)),
+            BuilderConfig::Server(config) => {
+                ("server".to_string(), Some(config.id))
+            }
+            BuilderConfig::Aws(config) => {
+                ("aws ec2".to_string(), Some(config.instance_type))
+            }
         };
 
         Ok(BuilderListItem {
@@ -308,7 +374,10 @@ impl StateResource<Alerter> for State {
         &self.db.alerters
     }
 
-    async fn to_list_item(&self, alerter: Alerter) -> anyhow::Result<AlerterListItem> {
+    async fn to_list_item(
+        &self,
+        alerter: Alerter,
+    ) -> anyhow::Result<AlerterListItem> {
         let alerter_type = match alerter.config {
             AlerterConfig::Custom(_) => "custom",
             AlerterConfig::Slack(_) => "slack",

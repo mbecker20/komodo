@@ -18,7 +18,9 @@ use monitor_types::{
 use mungos::mongodb::{bson::doc, options::FindOptions};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 const UPDATES_PER_PAGE: i64 = 20;
 
@@ -35,11 +37,12 @@ impl Resolve<ListUpdates, RequestUser> for State {
             let server_ids =
                 <State as StateResource<Server>>::get_resource_ids_for_non_admin(self, &user.id)
                     .await?;
-            let deployment_ids =
-                <State as StateResource<Deployment>>::get_resource_ids_for_non_admin(
-                    self, &user.id,
-                )
-                .await?;
+            let deployment_ids = <State as StateResource<
+                Deployment,
+            >>::get_resource_ids_for_non_admin(
+                self, &user.id
+            )
+            .await?;
             let build_ids =
                 <State as StateResource<Build>>::get_resource_ids_for_non_admin(self, &user.id)
                     .await?;
@@ -105,7 +108,8 @@ impl Resolve<ListUpdates, RequestUser> for State {
             })
             .collect::<Vec<_>>();
 
-        let next_page = if updates.len() == UPDATES_PER_PAGE as usize {
+        let next_page = if updates.len() == UPDATES_PER_PAGE as usize
+        {
             Some(page + 1)
         } else {
             None
@@ -134,36 +138,62 @@ impl Resolve<GetUpdate, RequestUser> for State {
         }
         match &update.target {
             ResourceTarget::System(_) => {
-                return Err(anyhow!("user must be admin to view system updates"))
+                return Err(anyhow!(
+                    "user must be admin to view system updates"
+                ))
             }
             ResourceTarget::Server(id) => {
                 let _: Server = self
-                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .get_resource_check_permissions(
+                        id,
+                        &user,
+                        PermissionLevel::Read,
+                    )
                     .await?;
             }
             ResourceTarget::Deployment(id) => {
                 let _: Deployment = self
-                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .get_resource_check_permissions(
+                        id,
+                        &user,
+                        PermissionLevel::Read,
+                    )
                     .await?;
             }
             ResourceTarget::Build(id) => {
                 let _: Build = self
-                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .get_resource_check_permissions(
+                        id,
+                        &user,
+                        PermissionLevel::Read,
+                    )
                     .await?;
             }
             ResourceTarget::Repo(id) => {
                 let _: Repo = self
-                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .get_resource_check_permissions(
+                        id,
+                        &user,
+                        PermissionLevel::Read,
+                    )
                     .await?;
             }
             ResourceTarget::Builder(id) => {
                 let _: Builder = self
-                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .get_resource_check_permissions(
+                        id,
+                        &user,
+                        PermissionLevel::Read,
+                    )
                     .await?;
             }
             ResourceTarget::Alerter(id) => {
                 let _: Alerter = self
-                    .get_resource_check_permissions(id, &user, PermissionLevel::Read)
+                    .get_resource_check_permissions(
+                        id,
+                        &user,
+                        PermissionLevel::Read,
+                    )
                     .await?;
             }
         }

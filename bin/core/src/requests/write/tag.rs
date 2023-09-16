@@ -49,7 +49,9 @@ impl Resolve<UpdateTag, RequestUser> for State {
             .tags
             .update_one(
                 &id,
-                mungos::Update::Custom(doc! { "$set": to_bson(&config)? }),
+                mungos::Update::Custom(
+                    doc! { "$set": to_bson(&config)? },
+                ),
             )
             .await
             .context("context")?;

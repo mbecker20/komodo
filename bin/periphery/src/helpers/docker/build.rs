@@ -43,9 +43,10 @@ pub async fn build(
 ) -> anyhow::Result<Vec<Log>> {
     let mut logs = Vec::new();
     let name = to_monitor_name(name);
-    let using_account = docker_login(&optional_string(docker_account), &docker_token)
-        .await
-        .context("failed to login to docker")?;
+    let using_account =
+        docker_login(&optional_string(docker_account), &docker_token)
+            .await
+            .context("failed to login to docker")?;
     repo_dir.push(&name);
     let build_dir = repo_dir.join(build_path);
     let dockerfile_path = match optional_string(dockerfile_path) {
@@ -71,16 +72,26 @@ pub async fn build(
         build_dir.display()
     );
     if *skip_secret_interp {
-        let build_log = run_monitor_command("docker build", command).await;
+        let build_log =
+            run_monitor_command("docker build", command).await;
         logs.push(build_log);
     } else {
-        let (command, replacers) =
-            svi::interpolate_variables(&command, secrets, svi::Interpolator::DoubleBrackets)
-                .context("failed to interpolate secrets into docker build command")?;
-        let mut build_log = run_monitor_command("docker build", command).await;
-        build_log.command = svi::replace_in_string(&build_log.command, &replacers);
-        build_log.stdout = svi::replace_in_string(&build_log.stdout, &replacers);
-        build_log.stderr = svi::replace_in_string(&build_log.stderr, &replacers);
+        let (command, replacers) = svi::interpolate_variables(
+            &command,
+            secrets,
+            svi::Interpolator::DoubleBrackets,
+        )
+        .context(
+            "failed to interpolate secrets into docker build command",
+        )?;
+        let mut build_log =
+            run_monitor_command("docker build", command).await;
+        build_log.command =
+            svi::replace_in_string(&build_log.command, &replacers);
+        build_log.stdout =
+            svi::replace_in_string(&build_log.stdout, &replacers);
+        build_log.stderr =
+            svi::replace_in_string(&build_log.stderr, &replacers);
         logs.push(build_log);
     }
     Ok(logs)
@@ -94,13 +105,18 @@ fn get_image_name(
     match docker_organization {
         Some(docker_org) => format!("{docker_org}/{name}"),
         None => match docker_account {
-            Some(docker_account) => format!("{docker_account}/{name}"),
+            Some(docker_account) => {
+                format!("{docker_account}/{name}")
+            }
             None => name.to_string(),
         },
     }
 }
 
-fn get_version_image_name(image_name: &str, version: &Version) -> String {
+fn get_version_image_name(
+    image_name: &str,
+    version: &Version,
+) -> String {
     format!("{image_name}:{}", version.to_string())
 }
 

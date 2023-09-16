@@ -90,7 +90,9 @@ pub struct DeploymentActionState {
     pub renaming: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq,
+)]
 pub struct TerminationSignalLabel {
     pub signal: TerminationSignal,
     pub label: String,
@@ -155,7 +157,9 @@ pub struct BasicContainerInfo {
     pub status: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 pub struct Conversion {
     pub local: String,
     pub container: String,
@@ -179,7 +183,17 @@ pub struct DockerContainerStats {
     pub pids: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum DockerContainerState {
     #[default]
@@ -194,7 +208,17 @@ pub enum DockerContainerState {
     Dead,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+)]
 pub enum RestartMode {
     #[default]
     #[serde(rename = "no")]
@@ -207,7 +231,17 @@ pub enum RestartMode {
     UnlessStopped,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+)]
 #[serde(rename_all = "UPPERCASE")]
 #[allow(clippy::enum_variant_names)]
 pub enum TerminationSignal {

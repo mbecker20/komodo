@@ -24,7 +24,15 @@ pub struct ServerListItemInfo {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Builder,
+    Partial,
+    MungosIndexed,
+)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 #[partial_from]
@@ -119,7 +127,17 @@ pub struct ServerActionState {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+)]
 pub enum ServerStatus {
     #[default]
     NotOk,

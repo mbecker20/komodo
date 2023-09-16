@@ -5,8 +5,9 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::{
         deployment::{
-            Deployment, DeploymentActionState, DeploymentConfig, DeploymentImage,
-            DeploymentListItem, DockerContainerState, DockerContainerStats,
+            Deployment, DeploymentActionState, DeploymentConfig,
+            DeploymentImage, DeploymentListItem,
+            DockerContainerState, DockerContainerStats,
         },
         server::Server,
         update::{Log, UpdateStatus},
@@ -18,7 +19,9 @@ use mungos::mongodb::{bson::doc, options::FindOneOptions};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<GetDeployment, RequestUser> for State {
@@ -27,8 +30,12 @@ impl Resolve<GetDeployment, RequestUser> for State {
         GetDeployment { id }: GetDeployment,
         user: RequestUser,
     ) -> anyhow::Result<Deployment> {
-        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
-            .await
+        self.get_resource_check_permissions(
+            &id,
+            &user,
+            PermissionLevel::Read,
+        )
+        .await
     }
 }
 
@@ -39,7 +46,10 @@ impl Resolve<ListDeployments, RequestUser> for State {
         ListDeployments { query }: ListDeployments,
         user: RequestUser,
     ) -> anyhow::Result<Vec<DeploymentListItem>> {
-        <State as StateResource<Deployment>>::list_resources_for_user(self, query, &user).await
+        <State as StateResource<Deployment>>::list_resources_for_user(
+            self, query, &user,
+        )
+        .await
     }
 }
 
@@ -51,7 +61,11 @@ impl Resolve<GetDeploymentStatus, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<GetDeploymentStatusResponse> {
         let _: Deployment = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
         let status = self
             .deployment_status_cache
@@ -87,7 +101,11 @@ impl Resolve<GetLog, RequestUser> for State {
             config: DeploymentConfig { server_id, .. },
             ..
         } = self
-            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &deployment_id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
         if server_id.is_empty() {
             return Ok(Log::default());
@@ -114,7 +132,11 @@ impl Resolve<GetDeployedVersion, RequestUser> for State {
             config: DeploymentConfig { image, .. },
             ..
         } = self
-            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &deployment_id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
         let version = match image {
             DeploymentImage::Build { .. } => {
@@ -170,7 +192,11 @@ impl Resolve<GetDeploymentStats, RequestUser> for State {
             config: DeploymentConfig { server_id, .. },
             ..
         } = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
         if server_id.is_empty() {
             return Err(anyhow!("deployment has no server attached"));
@@ -191,7 +217,11 @@ impl Resolve<GetDeploymentActionState, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<DeploymentActionState> {
         let _: Deployment = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
         let action_state = self
             .action_states
@@ -218,12 +248,10 @@ impl Resolve<GetDeploymentsSummary, RequestUser> for State {
             };
             Some(query)
         };
-        let deployments = self
-            .db
-            .deployments
-            .get_some(query, None)
-            .await
-            .context("failed to count all deployment documents")?;
+        let deployments =
+            self.db.deployments.get_some(query, None).await.context(
+                "failed to count all deployment documents",
+            )?;
         let mut res = GetDeploymentsSummaryResponse::default();
         for deployment in deployments {
             res.total += 1;

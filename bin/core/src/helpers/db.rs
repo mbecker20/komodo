@@ -69,16 +69,35 @@ impl DbClient {
 
         let client = DbClient {
             users: User::collection(&mungos, db_name, true).await?,
-            tags: CustomTag::collection(&mungos, db_name, true).await?,
-            updates: Update::collection(&mungos, db_name, true).await?,
+            tags: CustomTag::collection(&mungos, db_name, true)
+                .await?,
+            updates: Update::collection(&mungos, db_name, true)
+                .await?,
             alerts: Alert::collection(&mungos, db_name, true).await?,
-            stats: SystemStatsRecord::collection(&mungos, db_name, true).await?,
-            servers: resource_collection(&mungos, db_name, "Server").await?,
-            deployments: resource_collection(&mungos, db_name, "Deployment").await?,
-            builds: resource_collection(&mungos, db_name, "Build").await?,
-            builders: resource_collection(&mungos, db_name, "Builder").await?,
-            repos: resource_collection(&mungos, db_name, "Repo").await?,
-            alerters: resource_collection(&mungos, db_name, "Alerter").await?,
+            stats: SystemStatsRecord::collection(
+                &mungos, db_name, true,
+            )
+            .await?,
+            servers: resource_collection(&mungos, db_name, "Server")
+                .await?,
+            deployments: resource_collection(
+                &mungos,
+                db_name,
+                "Deployment",
+            )
+            .await?,
+            builds: resource_collection(&mungos, db_name, "Build")
+                .await?,
+            builders: resource_collection(
+                &mungos, db_name, "Builder",
+            )
+            .await?,
+            repos: resource_collection(&mungos, db_name, "Repo")
+                .await?,
+            alerters: resource_collection(
+                &mungos, db_name, "Alerter",
+            )
+            .await?,
         };
         Ok(client)
     }

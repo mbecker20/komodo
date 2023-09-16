@@ -10,7 +10,15 @@ use crate::{MongoId, I64};
 use super::update::ResourceTarget;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, StringObjectId)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Default,
+    MungosIndexed,
+    StringObjectId,
+)]
 pub struct User {
     #[serde(
         default,
@@ -60,7 +68,9 @@ pub struct User {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 pub struct ApiSecret {
     pub name: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]

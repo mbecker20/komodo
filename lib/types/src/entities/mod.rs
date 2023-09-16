@@ -24,7 +24,16 @@ pub mod user;
 pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, MungosIndexed)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    MungosIndexed,
+)]
 pub struct SystemCommand {
     #[serde(default)]
     pub path: String,
@@ -55,7 +64,15 @@ impl SystemCommand {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, MungosIndexed)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    MungosIndexed,
+)]
 pub struct Version {
     pub major: i32,
     pub minor: i32,
@@ -72,14 +89,19 @@ impl TryFrom<&str> for Version {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let vals = value
-            .split('.')
-            .map(|v| anyhow::Ok(v.parse().context("failed at parsing value into i32")?))
-            .collect::<anyhow::Result<Vec<i32>>>()?;
+        let vals =
+            value
+                .split('.')
+                .map(|v| {
+                    anyhow::Ok(v.parse().context(
+                        "failed at parsing value into i32",
+                    )?)
+                })
+                .collect::<anyhow::Result<Vec<i32>>>()?;
         let version = Version {
-            major: *vals
-                .first()
-                .ok_or(anyhow!("must include at least major version"))?,
+            major: *vals.first().ok_or(anyhow!(
+                "must include at least major version"
+            ))?,
             minor: *vals.get(1).unwrap_or(&0),
             patch: *vals.get(2).unwrap_or(&0),
         };
@@ -98,7 +120,9 @@ impl Version {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 pub struct EnvironmentVar {
     pub variable: String,
     pub value: String,
@@ -123,7 +147,9 @@ impl From<&self::build::Build> for CloneArgs {
             branch: optional_string(&build.config.branch),
             on_clone: build.config.pre_build.clone().into_option(),
             on_pull: None,
-            github_account: optional_string(&build.config.github_account),
+            github_account: optional_string(
+                &build.config.github_account,
+            ),
         }
     }
 }
@@ -136,14 +162,26 @@ impl From<&self::repo::Repo> for CloneArgs {
             branch: optional_string(&repo.config.branch),
             on_clone: repo.config.on_clone.clone().into_option(),
             on_pull: repo.config.on_pull.clone().into_option(),
-            github_account: optional_string(&repo.config.github_account),
+            github_account: optional_string(
+                &repo.config.github_account,
+            ),
         }
     }
 }
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Display, EnumString, PartialEq, Hash, Eq, Clone, Copy, Default,
+    Serialize,
+    Deserialize,
+    Debug,
+    Display,
+    EnumString,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]

@@ -8,9 +8,12 @@ use monitor_types::{
 };
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
-const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 4] = [Server, Build, Deployment, Repo];
+const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 4] =
+    [Server, Build, Deployment, Repo];
 
 #[async_trait]
 impl Resolve<FindResources, RequestUser> for State {
@@ -23,32 +26,38 @@ impl Resolve<FindResources, RequestUser> for State {
         let resource_types = resources
             .map(|rs| {
                 rs.into_iter()
-                    .filter(|r| !matches!(r, System | Builder | Alerter))
+                    .filter(|r| {
+                        !matches!(r, System | Builder | Alerter)
+                    })
                     .collect()
             })
             .unwrap_or(FIND_RESOURCE_TYPES.to_vec());
         for resource_type in resource_types {
             match resource_type {
                 Server => {
-                    res.servers =
-                        <State as StateResource<server::Server>>::list_resources_for_user(
-                            self,
-                            query.clone(),
-                            &user,
-                        )
-                        .await?;
+                    res.servers = <State as StateResource<
+                        server::Server,
+                    >>::list_resources_for_user(
+                        self,
+                        query.clone(),
+                        &user,
+                    )
+                    .await?;
                 }
                 Deployment => {
-                    res.deployments =
-                        <State as StateResource<deployment::Deployment>>::list_resources_for_user(
-                            self,
-                            query.clone(),
-                            &user,
-                        )
-                        .await?;
+                    res.deployments = <State as StateResource<
+                        deployment::Deployment,
+                    >>::list_resources_for_user(
+                        self,
+                        query.clone(),
+                        &user,
+                    )
+                    .await?;
                 }
                 Build => {
-                    res.builds = <State as StateResource<build::Build>>::list_resources_for_user(
+                    res.builds = <State as StateResource<
+                        build::Build,
+                    >>::list_resources_for_user(
                         self,
                         query.clone(),
                         &user,
@@ -56,7 +65,9 @@ impl Resolve<FindResources, RequestUser> for State {
                     .await?;
                 }
                 Repo => {
-                    res.repos = <State as StateResource<repo::Repo>>::list_resources_for_user(
+                    res.repos = <State as StateResource<
+                        repo::Repo,
+                    >>::list_resources_for_user(
                         self,
                         query.clone(),
                         &user,

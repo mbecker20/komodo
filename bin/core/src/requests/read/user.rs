@@ -2,7 +2,9 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
     entities::user::User,
-    requests::read::{GetUser, GetUsername, GetUsernameResponse, GetUsers},
+    requests::read::{
+        GetUser, GetUsername, GetUsernameResponse, GetUsers,
+    },
 };
 use resolver_api::Resolve;
 
@@ -10,7 +12,11 @@ use crate::{auth::RequestUser, state::State};
 
 #[async_trait]
 impl Resolve<GetUser, RequestUser> for State {
-    async fn resolve(&self, GetUser {}: GetUser, user: RequestUser) -> anyhow::Result<User> {
+    async fn resolve(
+        &self,
+        GetUser {}: GetUser,
+        user: RequestUser,
+    ) -> anyhow::Result<User> {
         let mut user = self
             .db
             .users
@@ -48,9 +54,15 @@ impl Resolve<GetUsername, RequestUser> for State {
 
 #[async_trait]
 impl Resolve<GetUsers, RequestUser> for State {
-    async fn resolve(&self, GetUsers {}: GetUsers, user: RequestUser) -> anyhow::Result<Vec<User>> {
+    async fn resolve(
+        &self,
+        GetUsers {}: GetUsers,
+        user: RequestUser,
+    ) -> anyhow::Result<Vec<User>> {
         if !user.is_admin {
-            return Err(anyhow!("this route is only accessable by admins"));
+            return Err(anyhow!(
+                "this route is only accessable by admins"
+            ));
         }
         let mut users = self
             .db

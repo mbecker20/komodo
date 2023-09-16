@@ -29,8 +29,18 @@ pub struct AlerterInfo {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants,
+)]
+#[variant_derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Display,
+    EnumString
+)]
 #[serde(tag = "type", content = "params")]
 pub enum AlerterConfig {
     Custom(CustomAlerterConfig),
@@ -44,8 +54,18 @@ pub type _PartialCustomAlerterConfig = PartialCustomAlerterConfig;
 pub type _PartialSlackAlerterConfig = PartialSlackAlerterConfig;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants,
+)]
+#[variant_derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Display,
+    EnumString
+)]
 #[serde(tag = "type", content = "params")]
 pub enum PartialAlerterConfig {
     Custom(_PartialCustomAlerterConfig),
@@ -55,14 +75,21 @@ pub enum PartialAlerterConfig {
 impl From<PartialAlerterConfig> for AlerterConfig {
     fn from(value: PartialAlerterConfig) -> AlerterConfig {
         match value {
-            PartialAlerterConfig::Custom(config) => AlerterConfig::Custom(config.into()),
-            PartialAlerterConfig::Slack(config) => AlerterConfig::Slack(config.into()),
+            PartialAlerterConfig::Custom(config) => {
+                AlerterConfig::Custom(config.into())
+            }
+            PartialAlerterConfig::Slack(config) => {
+                AlerterConfig::Slack(config.into())
+            }
         }
     }
 }
 
 impl AlerterConfig {
-    pub fn merge_partial(self, partial: PartialAlerterConfig) -> AlerterConfig {
+    pub fn merge_partial(
+        self,
+        partial: PartialAlerterConfig,
+    ) -> AlerterConfig {
         match partial {
             PartialAlerterConfig::Custom(partial) => match self {
                 AlerterConfig::Custom(config) => {

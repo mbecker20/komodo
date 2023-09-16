@@ -1,6 +1,8 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
-use monitor_types::{entities::user::ApiSecret, monitor_timestamp, requests::write::*};
+use monitor_types::{
+    entities::user::ApiSecret, monitor_timestamp, requests::write::*,
+};
 use mungos::{
     mongodb::bson::{doc, to_bson},
     Update,
@@ -25,7 +27,10 @@ impl Resolve<CreateLoginSecret, RequestUser> for State {
         let user = self.get_user(&user.id).await?;
         for s in &user.secrets {
             if s.name == secret.name {
-                return Err(anyhow!("secret with name {} already exists", secret.name));
+                return Err(anyhow!(
+                    "secret with name {} already exists",
+                    secret.name
+                ));
             }
         }
         let secret_str = random_string(SECRET_LENGTH);

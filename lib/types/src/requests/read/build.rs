@@ -79,7 +79,9 @@ pub struct BuildStatsDay {
 }
 
 impl GetBuildMonthlyStatsResponse {
-    pub fn new(mut days: Vec<BuildStatsDay>) -> GetBuildMonthlyStatsResponse {
+    pub fn new(
+        mut days: Vec<BuildStatsDay>,
+    ) -> GetBuildMonthlyStatsResponse {
         days.sort_by(|a, b| {
             if a.ts < b.ts {
                 Ordering::Less

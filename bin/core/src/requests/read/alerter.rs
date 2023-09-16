@@ -10,7 +10,9 @@ use monitor_types::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<GetAlerter, RequestUser> for State {
@@ -19,8 +21,12 @@ impl Resolve<GetAlerter, RequestUser> for State {
         GetAlerter { id }: GetAlerter,
         user: RequestUser,
     ) -> anyhow::Result<Alerter> {
-        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
-            .await
+        self.get_resource_check_permissions(
+            &id,
+            &user,
+            PermissionLevel::Read,
+        )
+        .await
     }
 }
 
@@ -31,7 +37,10 @@ impl Resolve<ListAlerters, RequestUser> for State {
         ListAlerters { query }: ListAlerters,
         user: RequestUser,
     ) -> anyhow::Result<Vec<AlerterListItem>> {
-        <State as StateResource<Alerter>>::list_resources_for_user(self, query, &user).await
+        <State as StateResource<Alerter>>::list_resources_for_user(
+            self, query, &user,
+        )
+        .await
     }
 }
 

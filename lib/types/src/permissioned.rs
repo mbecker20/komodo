@@ -1,4 +1,6 @@
-use crate::entities::{resource::Resource, PermissionLevel, PermissionsMap};
+use crate::entities::{
+    resource::Resource, PermissionLevel, PermissionsMap,
+};
 
 pub trait Permissioned {
     fn permissions_map(&self) -> &PermissionsMap;

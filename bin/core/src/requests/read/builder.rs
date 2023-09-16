@@ -10,7 +10,9 @@ use monitor_types::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<GetBuilder, RequestUser> for State {
@@ -19,8 +21,12 @@ impl Resolve<GetBuilder, RequestUser> for State {
         GetBuilder { id }: GetBuilder,
         user: RequestUser,
     ) -> anyhow::Result<Builder> {
-        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
-            .await
+        self.get_resource_check_permissions(
+            &id,
+            &user,
+            PermissionLevel::Read,
+        )
+        .await
     }
 }
 
@@ -31,7 +37,10 @@ impl Resolve<ListBuilders, RequestUser> for State {
         ListBuilders { query }: ListBuilders,
         user: RequestUser,
     ) -> anyhow::Result<Vec<BuilderListItem>> {
-        <State as StateResource<Builder>>::list_resources_for_user(self, query, &user).await
+        <State as StateResource<Builder>>::list_resources_for_user(
+            self, query, &user,
+        )
+        .await
     }
 }
 
@@ -72,16 +81,27 @@ impl Resolve<GetBuilderAvailableAccounts, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<GetBuilderAvailableAccountsResponse> {
         let builder: Builder = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
         match builder.config {
-            BuilderConfig::Aws(config) => Ok(GetBuilderAvailableAccountsResponse {
-                github: config.github_accounts,
-                docker: config.docker_accounts,
-            }),
+            BuilderConfig::Aws(config) => {
+                Ok(GetBuilderAvailableAccountsResponse {
+                    github: config.github_accounts,
+                    docker: config.docker_accounts,
+                })
+            }
             BuilderConfig::Server(config) => {
                 let res = self
-                    .resolve(read::GetServerAvailableAccounts { id: config.id }, user)
+                    .resolve(
+                        read::GetServerAvailableAccounts {
+                            id: config.id,
+                        },
+                        user,
+                    )
                     .await?;
                 Ok(GetBuilderAvailableAccountsResponse {
                     github: res.github,

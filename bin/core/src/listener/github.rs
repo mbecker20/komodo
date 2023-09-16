@@ -77,7 +77,9 @@ impl State {
         let request_branch = extract_branch(&body)?;
         let build: Build = self.get_resource(&build_id).await?;
         if request_branch != build.config.branch {
-            return Err(anyhow!("request branch does not match expected"));
+            return Err(anyhow!(
+                "request branch does not match expected"
+            ));
         }
         self.resolve(
             execute::RunBuild { build_id },
@@ -104,7 +106,9 @@ impl State {
         let request_branch = extract_branch(&body)?;
         let repo: Repo = self.get_resource(&repo_id).await?;
         if request_branch != repo.config.branch {
-            return Err(anyhow!("request branch does not match expected"));
+            return Err(anyhow!(
+                "request branch does not match expected"
+            ));
         }
         self.resolve(
             execute::CloneRepo { id: repo_id },
@@ -131,7 +135,9 @@ impl State {
         let request_branch = extract_branch(&body)?;
         let repo: Repo = self.get_resource(&repo_id).await?;
         if request_branch != repo.config.branch {
-            return Err(anyhow!("request branch does not match expected"));
+            return Err(anyhow!(
+                "request branch does not match expected"
+            ));
         }
         self.resolve(
             execute::PullRepo { id: repo_id },
@@ -148,7 +154,11 @@ impl State {
         Ok(())
     }
 
-    async fn verify_gh_signature(&self, headers: HeaderMap, body: &str) -> anyhow::Result<()> {
+    async fn verify_gh_signature(
+        &self,
+        headers: HeaderMap,
+        body: &str,
+    ) -> anyhow::Result<()> {
         // wait random amount of time
         tokio::time::sleep(random_duration(0, 500)).await;
 
@@ -161,10 +171,13 @@ impl State {
             return Err(anyhow!("failed to unwrap signature"));
         }
         let signature = signature.unwrap().replace("sha256=", "");
-        let mut mac = HmacSha256::new_from_slice(self.config.github_webhook_secret.as_bytes())
-            .expect("github webhook | failed to create hmac sha256");
+        let mut mac = HmacSha256::new_from_slice(
+            self.config.github_webhook_secret.as_bytes(),
+        )
+        .expect("github webhook | failed to create hmac sha256");
         mac.update(body.as_bytes());
-        let expected = mac.finalize().into_bytes().encode_hex::<String>();
+        let expected =
+            mac.finalize().into_bytes().encode_hex::<String>();
         if signature == expected {
             Ok(())
         } else {

@@ -17,7 +17,15 @@ use super::{
 };
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, StringObjectId)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Default,
+    MungosIndexed,
+    StringObjectId,
+)]
 #[doc_index(doc! { "data.type": 1 })]
 #[doc_index(doc! { "target.type": 1 })]
 #[doc_index(doc! { "target.id": 1 })]
@@ -46,7 +54,9 @@ pub struct Alert {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants, MungosIndexed)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, EnumVariants, MungosIndexed,
+)]
 #[variant_derive(
     Serialize,
     Deserialize,

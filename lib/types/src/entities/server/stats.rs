@@ -8,7 +8,9 @@ use typeshare::typeshare;
 use crate::{entities::Timelength, I64};
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, MungosIndexed,
+)]
 #[collection_name(Stats)]
 pub struct SystemStatsRecord {
     #[index]
@@ -53,7 +55,9 @@ pub struct AllSystemStats {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone, MungosIndexed)]
+#[derive(
+    Serialize, Deserialize, Debug, Default, Clone, MungosIndexed,
+)]
 pub struct BasicSystemStats {
     pub system_load: f64,
     pub cpu_perc: f32,
@@ -65,7 +69,9 @@ pub struct BasicSystemStats {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone, MungosIndexed)]
+#[derive(
+    Serialize, Deserialize, Debug, Default, Clone, MungosIndexed,
+)]
 pub struct CpuUsage {
     pub cpu_perc: f32,
     pub cpu_freq_mhz: f64,
@@ -81,7 +87,9 @@ pub struct SingleCpuUsage {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone, MungosIndexed)]
+#[derive(
+    Serialize, Deserialize, Debug, Default, Clone, MungosIndexed,
+)]
 pub struct DiskUsage {
     pub used_gb: f64,  // in GB
     pub total_gb: f64, // in GB
@@ -100,7 +108,9 @@ pub struct SingleDiskUsage {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone, MungosIndexed)]
+#[derive(
+    Serialize, Deserialize, Debug, Default, Clone, MungosIndexed,
+)]
 pub struct NetworkUsage {
     pub recieved_kb: f64,
     pub transmitted_kb: f64,
@@ -144,7 +154,16 @@ pub struct SystemComponent {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Copy, Default, Display, EnumString, PartialEq, Eq,
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Default,
+    Display,
+    EnumString,
+    PartialEq,
+    Eq,
 )]
 #[serde(rename_all = "UPPERCASE")]
 #[strum(serialize_all = "UPPERCASE")]

@@ -33,13 +33,25 @@ pub struct Procedure {
     pub updated_at: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 pub struct ProcedureStage {
     pub operation: ProcedureOperation,
     pub target_id: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum ProcedureOperation {
     // do nothing

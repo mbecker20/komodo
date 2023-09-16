@@ -4,7 +4,9 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use typeshare::typeshare;
 
 #[typeshare]
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
 pub struct DockerNetwork {
     #[serde(rename = "Name")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -64,11 +66,16 @@ pub struct DockerNetwork {
     pub labels: Option<HashMap<String, String>>,
 }
 
-fn deserialize_timestamp<'de, D: Deserializer<'de>>(d: D) -> Result<Option<String>, D::Error> {
+fn deserialize_timestamp<'de, D: Deserializer<'de>>(
+    d: D,
+) -> Result<Option<String>, D::Error> {
     serde::Deserialize::deserialize(d)
 }
 
-fn serialize_timestamp<S: Serializer>(date: &Option<String>, s: S) -> Result<S::Ok, S::Error> {
+fn serialize_timestamp<S: Serializer>(
+    date: &Option<String>,
+    s: S,
+) -> Result<S::Ok, S::Error> {
     match date {
         Some(inner) => s.serialize_some(inner),
         None => s.serialize_none(),
@@ -88,9 +95,12 @@ impl From<bollard::service::Network> for DockerNetwork {
             internal: value.internal,
             attachable: value.attachable,
             ingress: value.ingress,
-            containers: value
-                .containers
-                .map(|containers| containers.into_iter().map(|(k, v)| (k, v.into())).collect()),
+            containers: value.containers.map(|containers| {
+                containers
+                    .into_iter()
+                    .map(|(k, v)| (k, v.into()))
+                    .collect()
+            }),
             options: value.options,
             labels: value.labels,
         }
@@ -98,7 +108,9 @@ impl From<bollard::service::Network> for DockerNetwork {
 }
 
 #[typeshare]
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
 pub struct Ipam {
     /// Name of the IPAM driver to use.
     #[serde(rename = "Driver")]
@@ -120,16 +132,18 @@ impl From<bollard::service::Ipam> for Ipam {
     fn from(value: bollard::service::Ipam) -> Self {
         Self {
             driver: value.driver,
-            config: value
-                .config
-                .map(|config| config.into_iter().map(|c| c.into()).collect()),
+            config: value.config.map(|config| {
+                config.into_iter().map(|c| c.into()).collect()
+            }),
             options: value.options,
         }
     }
 }
 
 #[typeshare]
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
 pub struct IpamConfig {
     #[serde(rename = "Subnet")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -160,7 +174,9 @@ impl From<bollard::service::IpamConfig> for IpamConfig {
 }
 
 #[typeshare]
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Default, PartialEq, Serialize, Deserialize,
+)]
 pub struct NetworkContainer {
     #[serde(rename = "Name")]
     #[serde(skip_serializing_if = "Option::is_none")]

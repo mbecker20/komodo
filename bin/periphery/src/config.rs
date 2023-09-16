@@ -72,7 +72,10 @@ pub struct PeripheryConfig {
 }
 
 impl PeripheryConfig {
-    pub fn load(env: &Env, args: &CliArgs) -> anyhow::Result<PeripheryConfig> {
+    pub fn load(
+        env: &Env,
+        args: &CliArgs,
+    ) -> anyhow::Result<PeripheryConfig> {
         let env_config_paths = parse_comma_seperated(&env.config_paths)
             .context("failed to parse config paths on environment into comma seperated list")?;
         let config_paths = args

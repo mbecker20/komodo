@@ -24,7 +24,15 @@ pub struct RepoInfo {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Builder,
+    Partial,
+    MungosIndexed,
+)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 #[partial_from]

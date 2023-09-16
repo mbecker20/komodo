@@ -37,7 +37,10 @@ pub fn router() -> Router {
     Router::new().route("/update", get(ws_handler))
 }
 
-async fn ws_handler(state: StateExtension, ws: WebSocketUpgrade) -> impl IntoResponse {
+async fn ws_handler(
+    state: StateExtension,
+    ws: WebSocketUpgrade,
+) -> impl IntoResponse {
     let mut receiver = state.update.receiver.resubscribe();
     ws.on_upgrade(|socket| async move {
         let login_res = state.ws_login(socket).await;
@@ -96,28 +99,40 @@ async fn ws_handler(state: StateExtension, ws: WebSocketUpgrade) -> impl IntoRes
 }
 
 impl State {
-    pub async fn ws_login(&self, mut socket: WebSocket) -> Option<(WebSocket, RequestUser)> {
+    pub async fn ws_login(
+        &self,
+        mut socket: WebSocket,
+    ) -> Option<(WebSocket, RequestUser)> {
         if let Some(jwt) = socket.recv().await {
             match jwt {
                 Ok(jwt) => match jwt {
-                    Message::Text(jwt) => match self.auth_jwt_check_enabled(&jwt).await {
-                        Ok(user) => {
-                            let _ = socket.send(Message::Text("LOGGED_IN".to_string())).await;
-                            Some((socket, user))
-                        }
-                        Err(e) => {
-                            let _ = socket
+                    Message::Text(jwt) => {
+                        match self.auth_jwt_check_enabled(&jwt).await
+                        {
+                            Ok(user) => {
+                                let _ = socket
+                                    .send(Message::Text(
+                                        "LOGGED_IN".to_string(),
+                                    ))
+                                    .await;
+                                Some((socket, user))
+                            }
+                            Err(e) => {
+                                let _ = socket
                                 .send(Message::Text(format!(
                                     "failed to authenticate user | {e:#?}"
                                 )))
                                 .await;
-                            let _ = socket.close().await;
-                            None
+                                let _ = socket.close().await;
+                                None
+                            }
                         }
-                    },
+                    }
                     msg => {
                         let _ = socket
-                            .send(Message::Text(format!("invalid login msg: {msg:#?}")))
+                            .send(Message::Text(format!(
+                                "invalid login msg: {msg:#?}"
+                            )))
                             .await;
                         let _ = socket.close().await;
                         None
@@ -125,7 +140,9 @@ impl State {
                 },
                 Err(e) => {
                     let _ = socket
-                        .send(Message::Text(format!("failed to get jwt message: {e:#?}")))
+                        .send(Message::Text(format!(
+                            "failed to get jwt message: {e:#?}"
+                        )))
                         .await;
                     let _ = socket.close().await;
                     None
@@ -133,7 +150,9 @@ impl State {
             }
         } else {
             let _ = socket
-                .send(Message::Text(String::from("failed to get jwt message")))
+                .send(Message::Text(String::from(
+                    "failed to get jwt message",
+                )))
                 .await;
             let _ = socket.close().await;
             None
@@ -151,49 +170,57 @@ impl State {
         }
         let (permissions, target) = match update_target {
             ResourceTarget::Server(server_id) => {
-                let resource: Server = self.get_resource(server_id).await?;
+                let resource: Server =
+                    self.get_resource(server_id).await?;
                 (
                     resource.get_user_permissions(user_id),
                     ResourceTargetVariant::Server,
                 )
             }
             ResourceTarget::Deployment(deployment_id) => {
-                let resource: Deployment = self.get_resource(deployment_id).await?;
+                let resource: Deployment =
+                    self.get_resource(deployment_id).await?;
                 (
                     resource.get_user_permissions(user_id),
                     ResourceTargetVariant::Deployment,
                 )
             }
             ResourceTarget::Build(build_id) => {
-                let resource: Build = self.get_resource(build_id).await?;
+                let resource: Build =
+                    self.get_resource(build_id).await?;
                 (
                     resource.get_user_permissions(user_id),
                     ResourceTargetVariant::Build,
                 )
             }
             ResourceTarget::Builder(builder_id) => {
-                let resource: Builder = self.get_resource(builder_id).await?;
+                let resource: Builder =
+                    self.get_resource(builder_id).await?;
                 (
                     resource.get_user_permissions(user_id),
                     ResourceTargetVariant::Builder,
                 )
             }
             ResourceTarget::Repo(repo_id) => {
-                let resource: Repo = self.get_resource(repo_id).await?;
+                let resource: Repo =
+                    self.get_resource(repo_id).await?;
                 (
                     resource.get_user_permissions(user_id),
                     ResourceTargetVariant::Repo,
                 )
             }
             ResourceTarget::Alerter(alerter_id) => {
-                let resource: Alerter = self.get_resource(alerter_id).await?;
+                let resource: Alerter =
+                    self.get_resource(alerter_id).await?;
                 (
                     resource.get_user_permissions(user_id),
                     ResourceTargetVariant::Alerter,
                 )
             }
             ResourceTarget::System(_) => {
-                return Err(anyhow!("user not admin, can't recieve system updates"))
+                return Err(anyhow!(
+                    "user not admin, can't recieve system updates"
+                ))
             }
         };
         if permissions != PermissionLevel::None {

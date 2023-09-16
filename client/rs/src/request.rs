@@ -8,7 +8,10 @@ use serror::deserialize_error;
 use crate::MonitorClient;
 
 impl MonitorClient {
-    pub async fn auth<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+    pub async fn auth<T: HasResponse>(
+        &self,
+        request: T,
+    ) -> anyhow::Result<T::Response> {
         let req_type = T::req_type();
         self.post(
             "/auth",
@@ -20,7 +23,10 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn read<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+    pub async fn read<T: HasResponse>(
+        &self,
+        request: T,
+    ) -> anyhow::Result<T::Response> {
         let req_type = T::req_type();
         self.post(
             "/read",
@@ -32,7 +38,10 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn write<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+    pub async fn write<T: HasResponse>(
+        &self,
+        request: T,
+    ) -> anyhow::Result<T::Response> {
         let req_type = T::req_type();
         self.post(
             "/write",
@@ -44,7 +53,10 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn execute<T: HasResponse>(&self, request: T) -> anyhow::Result<T::Response> {
+    pub async fn execute<T: HasResponse>(
+        &self,
+        request: T,
+    ) -> anyhow::Result<T::Response> {
         let req_type = T::req_type();
         self.post(
             "/execute",
@@ -70,7 +82,10 @@ impl MonitorClient {
         } else {
             req
         };
-        let res = req.send().await.context("failed to reach monitor api")?;
+        let res = req
+            .send()
+            .await
+            .context("failed to reach monitor api")?;
         let status = res.status();
         if status == StatusCode::OK {
             match res.json().await {
@@ -79,7 +94,9 @@ impl MonitorClient {
             }
         } else {
             match res.text().await {
-                Ok(res) => Err(deserialize_error(res).context(status)),
+                Ok(res) => {
+                    Err(deserialize_error(res).context(status))
+                }
                 Err(e) => Err(anyhow!("{status} | {e:#?}")),
             }
         }

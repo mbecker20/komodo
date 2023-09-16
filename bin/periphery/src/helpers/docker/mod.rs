@@ -29,9 +29,11 @@ pub async fn docker_login(
     docker_account: &Option<String>,
     docker_token: &Option<String>,
 ) -> anyhow::Result<bool> {
-    let docker_account_u_pw = get_docker_username_pw(docker_account, docker_token)?;
+    let docker_account_u_pw =
+        get_docker_username_pw(docker_account, docker_token)?;
     if let Some((username, password)) = &docker_account_u_pw {
-        let login = format!("docker login -u {username} -p {password}");
+        let login =
+            format!("docker login -u {username} -p {password}");
         async_run_command(&login).await;
         Ok(true)
     } else {

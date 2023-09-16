@@ -4,8 +4,9 @@ use anyhow::{anyhow, Context};
 use monitor_types::{
     entities::{
         deployment::{
-            Conversion, Deployment, DeploymentConfig, DeploymentImage, DockerContainerStats,
-            RestartMode, TerminationSignal,
+            Conversion, Deployment, DeploymentConfig,
+            DeploymentImage, DockerContainerStats, RestartMode,
+            TerminationSignal,
         },
         update::Log,
         EnvironmentVar,
@@ -19,12 +20,17 @@ use crate::helpers::{docker::parse_extra_args, run_monitor_command};
 use super::docker_login;
 
 pub async fn container_log(container_name: &str, tail: u64) -> Log {
-    let command = format!("docker logs {container_name} --tail {tail}");
+    let command =
+        format!("docker logs {container_name} --tail {tail}");
     run_monitor_command("get container log", command).await
 }
 
-pub async fn container_log_search(container_name: &str, search: &str) -> Log {
-    let command = format!("docker logs {container_name} | grep {search}");
+pub async fn container_log_search(
+    container_name: &str,
+    search: &str,
+) -> Log {
+    let command =
+        format!("docker logs {container_name} | grep {search}");
     run_monitor_command("get container log grep", command).await
 }
 
@@ -36,7 +42,8 @@ pub async fn container_stats(
         Some(name) => format!(" {name}"),
         None => "".to_string(),
     };
-    let command = format!("docker stats{container_name} --no-stream {format}");
+    let command =
+        format!("docker stats{container_name} --no-stream {format}");
     let output = async_run_command(&command).await;
     if output.success() {
         let res = output
@@ -44,8 +51,9 @@ pub async fn container_stats(
             .split('\n')
             .filter(|e| !e.is_empty())
             .map(|e| {
-                let parsed =
-                    serde_json::from_str(e).context(format!("failed at parsing entry {e}"))?;
+                let parsed = serde_json::from_str(e).context(
+                    format!("failed at parsing entry {e}"),
+                )?;
                 Ok(parsed)
             })
             .collect::<anyhow::Result<Vec<DockerContainerStats>>>()?;
@@ -71,11 +79,14 @@ pub async fn stop_container(
     signal: Option<TerminationSignal>,
     time: Option<i32>,
 ) -> Log {
-    let command = stop_container_command(container_name, signal, time);
+    let command =
+        stop_container_command(container_name, signal, time);
     let log = run_monitor_command("docker stop", command).await;
     if log.stderr.contains("unknown flag: --signal") {
-        let command = stop_container_command(container_name, None, time);
-        let mut log = run_monitor_command("docker stop", command).await;
+        let command =
+            stop_container_command(container_name, None, time);
+        let mut log =
+            run_monitor_command("docker stop", command).await;
         log.stderr = format!(
             "old docker version: unable to use --signal flag{}",
             if !log.stderr.is_empty() {
@@ -95,13 +106,21 @@ pub async fn stop_and_remove_container(
     signal: Option<TerminationSignal>,
     time: Option<i32>,
 ) -> Log {
-    let stop_command = stop_container_command(container_name, signal, time);
-    let command = format!("{stop_command} && docker container rm {container_name}");
-    let log = run_monitor_command("docker stop and remove", command).await;
+    let stop_command =
+        stop_container_command(container_name, signal, time);
+    let command = format!(
+        "{stop_command} && docker container rm {container_name}"
+    );
+    let log =
+        run_monitor_command("docker stop and remove", command).await;
     if log.stderr.contains("unknown flag: --signal") {
-        let stop_command = stop_container_command(container_name, None, time);
-        let command = format!("{stop_command} && docker container rm {container_name}");
-        let mut log = run_monitor_command("docker stop", command).await;
+        let stop_command =
+            stop_container_command(container_name, None, time);
+        let command = format!(
+            "{stop_command} && docker container rm {container_name}"
+        );
+        let mut log =
+            run_monitor_command("docker stop", command).await;
         log.stderr = format!(
             "old docker version: unable to use --signal flag{}",
             if !log.stderr.is_empty() {
@@ -131,7 +150,10 @@ fn stop_container_command(
     format!("docker stop{signal}{time} {container_name}")
 }
 
-pub async fn rename_container(curr_name: &str, new_name: &str) -> Log {
+pub async fn rename_container(
+    curr_name: &str,
+    new_name: &str,
+) -> Log {
     let curr = to_monitor_name(curr_name);
     let new = to_monitor_name(new_name);
     let command = format!("docker rename {curr} {new}");
@@ -158,11 +180,15 @@ pub async fn deploy(
     {
         return Log::error("docker login", format!("{e:#?}"));
     }
-    let image = if let DeploymentImage::Image { image } = &deployment.config.image {
+    let image = if let DeploymentImage::Image { image } =
+        &deployment.config.image
+    {
         if image.is_empty() {
             return Log::error(
                 "get image",
-                String::from("deployment does not have image attached"),
+                String::from(
+                    "deployment does not have image attached",
+                ),
             );
         }
         image
@@ -173,20 +199,32 @@ pub async fn deploy(
         );
     };
     let _ = pull_image(image).await;
-    let _ = stop_and_remove_container(&deployment.name, stop_signal, stop_time).await;
+    let _ = stop_and_remove_container(
+        &deployment.name,
+        stop_signal,
+        stop_time,
+    )
+    .await;
     let command = docker_run_command(deployment, image);
     if deployment.config.skip_secret_interp {
         run_monitor_command("docker run", command).await
     } else {
-        let command =
-            svi::interpolate_variables(&command, secrets, svi::Interpolator::DoubleBrackets)
-                .context("failed to interpolate secrets into docker run command");
+        let command = svi::interpolate_variables(
+            &command,
+            secrets,
+            svi::Interpolator::DoubleBrackets,
+        )
+        .context(
+            "failed to interpolate secrets into docker run command",
+        );
         if let Err(e) = command {
             return Log::error("docker run", format!("{e:?}"));
         }
         let (command, replacers) = command.unwrap();
-        let mut log = run_monitor_command("docker run", command).await;
-        log.command = svi::replace_in_string(&log.command, &replacers);
+        let mut log =
+            run_monitor_command("docker run", command).await;
+        log.command =
+            svi::replace_in_string(&log.command, &replacers);
         log.stdout = svi::replace_in_string(&log.stdout, &replacers);
         log.stderr = svi::replace_in_string(&log.stderr, &replacers);
         log
@@ -233,7 +271,10 @@ fn parse_container_user(container_user: &String) -> String {
     }
 }
 
-fn parse_conversions(conversions: &[Conversion], flag: &str) -> String {
+fn parse_conversions(
+    conversions: &[Conversion],
+    flag: &str,
+) -> String {
     conversions
         .iter()
         .map(|p| format!(" {flag} {}:{}", p.local, p.container))

@@ -47,7 +47,9 @@ pub struct User {
     pub updated_at: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 pub struct ApiSecret {
     pub name: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]

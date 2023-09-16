@@ -15,7 +15,8 @@ use super::{
 pub type Deployment = Resource<DeploymentConfig, ()>;
 
 #[typeshare]
-pub type DeploymentListItem = ResourceListItem<DeploymentListItemInfo>;
+pub type DeploymentListItem =
+    ResourceListItem<DeploymentListItemInfo>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -28,7 +29,15 @@ pub struct DeploymentListItemInfo {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial, MungosIndexed)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Builder,
+    Partial,
+    MungosIndexed,
+)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
 #[partial_from]
@@ -115,8 +124,18 @@ fn default_network() -> String {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants,
+)]
+#[variant_derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Display,
+    EnumString
+)]
 #[serde(tag = "type", content = "params")]
 pub enum DeploymentImage {
     Image { image: String },
@@ -132,7 +151,9 @@ impl Default for DeploymentImage {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 pub struct Conversion {
     pub local: String,
     pub container: String,
@@ -258,7 +279,16 @@ pub enum TerminationSignal {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq, Builder)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Default,
+    PartialEq,
+    Eq,
+    Builder,
+)]
 pub struct TerminationSignalLabel {
     #[builder(default)]
     pub signal: TerminationSignal,

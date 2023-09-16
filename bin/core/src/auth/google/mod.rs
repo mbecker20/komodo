@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
-use axum::{extract::Query, http::StatusCode, response::Redirect, routing::get, Router};
+use axum::{
+    extract::Query, http::StatusCode, response::Redirect,
+    routing::get, Router,
+};
 use monitor_types::entities::user::User;
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
@@ -27,9 +30,13 @@ pub fn router() -> Router {
         .route(
             "/callback",
             get(|state, query| async {
-                let redirect = callback(state, query)
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")))?;
+                let redirect =
+                    callback(state, query).await.map_err(|e| {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            format!("{e:#?}"),
+                        )
+                    })?;
                 Result::<_, (StatusCode, String)>::Ok(redirect)
             }),
         )
@@ -51,22 +58,19 @@ async fn callback(
         return Err(anyhow!("auth error from google: {error}"));
     }
     if !client
-        .check_state(
-            &query
-                .state
-                .ok_or(anyhow!("callback query does not contain state"))?,
-        )
+        .check_state(&query.state.ok_or(anyhow!(
+            "callback query does not contain state"
+        ))?)
         .await
     {
         return Err(anyhow!("state mismatch"));
     }
-    let token = client
-        .get_access_token(
-            &query
-                .code
-                .ok_or(anyhow!("callback query does not contain code"))?,
-        )
-        .await?;
+    let token =
+        client
+            .get_access_token(&query.code.ok_or(anyhow!(
+                "callback query does not contain code"
+            ))?)
+            .await?;
     let google_user = client.get_google_user(&token.id_token)?;
     let google_id = google_user.id.to_string();
     let user = state
@@ -82,7 +86,8 @@ async fn callback(
             .context("failed to generate jwt")?,
         None => {
             let ts = unix_timestamp_ms() as i64;
-            let no_users_exist = state.db.users.find_one(None, None).await?.is_none();
+            let no_users_exist =
+                state.db.users.find_one(None, None).await?.is_none();
             let user = User {
                 username: google_user
                     .email

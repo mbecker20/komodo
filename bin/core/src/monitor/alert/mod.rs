@@ -6,7 +6,10 @@ use std::collections::HashMap;
 use anyhow::Context;
 use monitor_types::entities::server::{Server, ServerListItem};
 
-use crate::{auth::InnerRequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::InnerRequestUser, helpers::resource::StateResource,
+    state::State,
+};
 
 impl State {
     // called after cache update
@@ -28,7 +31,10 @@ impl State {
 
     async fn get_all_servers_map(
         &self,
-    ) -> anyhow::Result<(HashMap<String, ServerListItem>, HashMap<String, String>)> {
+    ) -> anyhow::Result<(
+        HashMap<String, ServerListItem>,
+        HashMap<String, String>,
+    )> {
         let servers = <State as StateResource<Server>>::list_resources_for_user(
             self,
             None,

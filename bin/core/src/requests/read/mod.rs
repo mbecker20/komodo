@@ -1,9 +1,14 @@
 use std::time::Instant;
 
 use async_trait::async_trait;
-use axum::{headers::ContentType, middleware, routing::post, Extension, Json, Router, TypedHeader};
+use axum::{
+    headers::ContentType, middleware, routing::post, Extension, Json,
+    Router, TypedHeader,
+};
 use monitor_types::requests::read::*;
-use resolver_api::{derive::Resolver, Resolve, ResolveToString, Resolver};
+use resolver_api::{
+    derive::Resolver, Resolve, ResolveToString, Resolver,
+};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 use uuid::Uuid;

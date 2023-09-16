@@ -19,7 +19,8 @@ pub async fn pull(
         Some(branch) => branch.to_owned(),
         None => "main".to_string(),
     };
-    let command = format!("cd {} && git pull origin {branch}", path.display());
+    let command =
+        format!("cd {} && git pull origin {branch}", path.display());
     let mut logs = Vec::new();
     let pull_log = run_monitor_command("git pull", command).await;
     if !pull_log.success {
@@ -31,8 +32,11 @@ pub async fn pull(
         if !on_pull.path.is_empty() && !on_pull.command.is_empty() {
             path.push(&on_pull.path);
             let path = path.display().to_string();
-            let on_pull_log =
-                run_monitor_command("on pull", format!("cd {path} && {}", on_pull.command)).await;
+            let on_pull_log = run_monitor_command(
+                "on pull",
+                format!("cd {path} && {}", on_pull.command),
+            )
+            .await;
             logs.push(on_pull_log);
         }
     }
@@ -52,11 +56,13 @@ pub async fn clone(
         on_pull,
         ..
     } = clone_args.into();
-    let repo = repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
+    let repo =
+        repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
     let name = to_monitor_name(&name);
     repo_dir.push(name);
     let destination = repo_dir.display().to_string();
-    let clone_log = clone_inner(repo, &destination, &branch, access_token).await;
+    let clone_log =
+        clone_inner(repo, &destination, &branch, access_token).await;
     if !clone_log.success {
         return Ok(vec![clone_log]);
     }
@@ -67,7 +73,11 @@ pub async fn clone(
             let on_clone_path = repo_dir.join(&command.path);
             let on_clone_log = run_monitor_command(
                 "on clone",
-                format!("cd {} && {}", on_clone_path.display(), command.command),
+                format!(
+                    "cd {} && {}",
+                    on_clone_path.display(),
+                    command.command
+                ),
             )
             .await;
             logs.push(on_clone_log);
@@ -78,7 +88,11 @@ pub async fn clone(
             let on_pull_path = repo_dir.join(&command.path);
             let on_pull_log = run_monitor_command(
                 "on pull",
-                format!("cd {} && {}", on_pull_path.display(), command.command),
+                format!(
+                    "cd {} && {}",
+                    on_pull_path.display(),
+                    command.command
+                ),
             )
             .await;
             logs.push(on_pull_log);
@@ -102,8 +116,10 @@ async fn clone_inner(
         Some(branch) => format!(" -b {branch}"),
         None => String::new(),
     };
-    let repo_url = format!("https://{access_token_at}github.com/{repo}.git");
-    let command = format!("git clone {repo_url} {destination}{branch}");
+    let repo_url =
+        format!("https://{access_token_at}github.com/{repo}.git");
+    let command =
+        format!("git clone {repo_url} {destination}{branch}");
     let start_ts = unix_timestamp_ms() as i64;
     let output = async_run_command(&command).await;
     let success = output.success();
@@ -132,15 +148,15 @@ async fn get_commit_hash_log(repo_dir: &str) -> anyhow::Result<Log> {
     let command = format!("cd {repo_dir} && git rev-parse --short HEAD && git rev-parse HEAD && git log -1 --pretty=%B");
     let output = async_run_command(&command).await;
     let mut split = output.stdout.split('\n');
-    let (short, long, msg) = (
+    let (short, _, msg) = (
         split.next().context("failed to get short commit hash")?,
         split.next().context("failed to get long commit hash")?,
         split.next().context("failed to get commit message")?,
     );
     let log = Log {
-        stage: "commit".into(),
+        stage: "latest commit".into(),
         command,
-        stdout: format!("{short}: {msg}\n\nfull hash: {long}"),
+        stdout: format!("hash: {short}\nmessage: {msg}"),
         stderr: String::new(),
         success: true,
         start_ts,

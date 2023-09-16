@@ -1,4 +1,6 @@
-use std::{collections::HashMap, net::SocketAddr, str::FromStr, sync::Arc};
+use std::{
+    collections::HashMap, net::SocketAddr, str::FromStr, sync::Arc,
+};
 
 use anyhow::Context;
 use clap::Parser;

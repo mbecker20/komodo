@@ -14,7 +14,9 @@ use monitor_types::{
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<Deploy, RequestUser> for State {
@@ -32,11 +34,17 @@ impl Resolve<Deploy, RequestUser> for State {
         }
 
         let mut deployment: Deployment = self
-            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+            .get_resource_check_permissions(
+                &deployment_id,
+                &user,
+                PermissionLevel::Execute,
+            )
             .await?;
 
         if deployment.config.server_id.is_empty() {
-            return Err(anyhow!("deployment has no server configured"));
+            return Err(anyhow!(
+                "deployment has no server configured"
+            ));
         }
 
         let (server, status) = self
@@ -55,18 +63,24 @@ impl Resolve<Deploy, RequestUser> for State {
 
             let version = match deployment.config.image {
                 DeploymentImage::Build { build_id, version } => {
-                    let build: Build = self.get_resource(&build_id).await?;
+                    let build: Build =
+                        self.get_resource(&build_id).await?;
                     let image_name = get_image_name(&build);
                     let version = if version.is_none() {
                         build.config.version
                     } else {
                         version
                     };
-                    deployment.config.image = DeploymentImage::Image {
-                        image: format!("{image_name}:{}", version.to_string()),
-                    };
+                    deployment.config.image =
+                        DeploymentImage::Image {
+                            image: format!(
+                                "{image_name}:{}",
+                                version.to_string()
+                            ),
+                        };
                     if deployment.config.docker_account.is_empty() {
-                        deployment.config.docker_account = build.config.docker_account;
+                        deployment.config.docker_account =
+                            build.config.docker_account;
                     }
                     version
                 }
@@ -74,7 +88,9 @@ impl Resolve<Deploy, RequestUser> for State {
             };
 
             let mut update = Update {
-                target: ResourceTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(
+                    deployment.id.clone(),
+                ),
                 operation: Operation::DeployContainer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -95,7 +111,9 @@ impl Resolve<Deploy, RequestUser> for State {
                 .await
             {
                 Ok(log) => log,
-                Err(e) => Log::error("deploy container", format!("{e:#?}")),
+                Err(e) => {
+                    Log::error("deploy container", format!("{e:#?}"))
+                }
             };
 
             update.logs.push(log);
@@ -138,11 +156,17 @@ impl Resolve<StartContainer, RequestUser> for State {
         }
 
         let deployment: Deployment = self
-            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+            .get_resource_check_permissions(
+                &deployment_id,
+                &user,
+                PermissionLevel::Execute,
+            )
             .await?;
 
         if deployment.config.server_id.is_empty() {
-            return Err(anyhow!("deployment has no server configured"));
+            return Err(anyhow!(
+                "deployment has no server configured"
+            ));
         }
 
         let (server, status) = self
@@ -160,7 +184,9 @@ impl Resolve<StartContainer, RequestUser> for State {
             let start_ts = monitor_timestamp();
 
             let mut update = Update {
-                target: ResourceTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(
+                    deployment.id.clone(),
+                ),
                 operation: Operation::StartContainer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -178,7 +204,9 @@ impl Resolve<StartContainer, RequestUser> for State {
                 .await
             {
                 Ok(log) => log,
-                Err(e) => Log::error("start container", format!("{e:#?}")),
+                Err(e) => {
+                    Log::error("start container", format!("{e:#?}"))
+                }
             };
 
             update.logs.push(log);
@@ -225,11 +253,17 @@ impl Resolve<StopContainer, RequestUser> for State {
         }
 
         let deployment: Deployment = self
-            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+            .get_resource_check_permissions(
+                &deployment_id,
+                &user,
+                PermissionLevel::Execute,
+            )
             .await?;
 
         if deployment.config.server_id.is_empty() {
-            return Err(anyhow!("deployment has no server configured"));
+            return Err(anyhow!(
+                "deployment has no server configured"
+            ));
         }
 
         let (server, status) = self
@@ -247,7 +281,9 @@ impl Resolve<StopContainer, RequestUser> for State {
             let start_ts = monitor_timestamp();
 
             let mut update = Update {
-                target: ResourceTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(
+                    deployment.id.clone(),
+                ),
                 operation: Operation::StopContainer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -262,14 +298,22 @@ impl Resolve<StopContainer, RequestUser> for State {
                 .request(requests::StopContainer {
                     name: deployment.name.clone(),
                     signal: signal
-                        .unwrap_or(deployment.config.termination_signal)
+                        .unwrap_or(
+                            deployment.config.termination_signal,
+                        )
                         .into(),
-                    time: time.unwrap_or(deployment.config.termination_timeout).into(),
+                    time: time
+                        .unwrap_or(
+                            deployment.config.termination_timeout,
+                        )
+                        .into(),
                 })
                 .await
             {
                 Ok(log) => log,
-                Err(e) => Log::error("stop container", format!("{e:#?}")),
+                Err(e) => {
+                    Log::error("stop container", format!("{e:#?}"))
+                }
             };
 
             update.logs.push(log);
@@ -316,11 +360,17 @@ impl Resolve<RemoveContainer, RequestUser> for State {
         }
 
         let deployment: Deployment = self
-            .get_resource_check_permissions(&deployment_id, &user, PermissionLevel::Execute)
+            .get_resource_check_permissions(
+                &deployment_id,
+                &user,
+                PermissionLevel::Execute,
+            )
             .await?;
 
         if deployment.config.server_id.is_empty() {
-            return Err(anyhow!("deployment has no server configured"));
+            return Err(anyhow!(
+                "deployment has no server configured"
+            ));
         }
 
         let (server, status) = self
@@ -338,7 +388,9 @@ impl Resolve<RemoveContainer, RequestUser> for State {
             let start_ts = monitor_timestamp();
 
             let mut update = Update {
-                target: ResourceTarget::Deployment(deployment.id.clone()),
+                target: ResourceTarget::Deployment(
+                    deployment.id.clone(),
+                ),
                 operation: Operation::RemoveContainer,
                 start_ts,
                 status: UpdateStatus::InProgress,
@@ -353,14 +405,22 @@ impl Resolve<RemoveContainer, RequestUser> for State {
                 .request(requests::RemoveContainer {
                     name: deployment.name.clone(),
                     signal: signal
-                        .unwrap_or(deployment.config.termination_signal)
+                        .unwrap_or(
+                            deployment.config.termination_signal,
+                        )
                         .into(),
-                    time: time.unwrap_or(deployment.config.termination_timeout).into(),
+                    time: time
+                        .unwrap_or(
+                            deployment.config.termination_timeout,
+                        )
+                        .into(),
                 })
                 .await
             {
                 Ok(log) => log,
-                Err(e) => Log::error("stop container", format!("{e:#?}")),
+                Err(e) => {
+                    Log::error("stop container", format!("{e:#?}"))
+                }
             };
 
             update.logs.push(log);

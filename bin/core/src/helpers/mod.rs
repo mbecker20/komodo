@@ -59,7 +59,9 @@ pub fn make_update(
     }
 }
 
-pub fn into_response_error(e: anyhow::Error) -> (StatusCode, TypedHeader<ContentType>, String) {
+pub fn into_response_error(
+    e: anyhow::Error,
+) -> (StatusCode, TypedHeader<ContentType>, String) {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
         TypedHeader(ContentType::json()),
@@ -68,7 +70,10 @@ pub fn into_response_error(e: anyhow::Error) -> (StatusCode, TypedHeader<Content
 }
 
 impl State {
-    pub async fn get_user(&self, user_id: &str) -> anyhow::Result<User> {
+    pub async fn get_user(
+        &self,
+        user_id: &str,
+    ) -> anyhow::Result<User> {
         self.db
             .users
             .find_one_by_id(user_id)
@@ -125,7 +130,10 @@ impl State {
 
     // TAG
 
-    pub async fn get_tag(&self, tag_id: &str) -> anyhow::Result<CustomTag> {
+    pub async fn get_tag(
+        &self,
+        tag_id: &str,
+    ) -> anyhow::Result<CustomTag> {
         self.db
             .tags
             .find_one_by_id(tag_id)
@@ -148,7 +156,10 @@ impl State {
 
     // UPDATE
 
-    async fn update_list_item(&self, update: Update) -> anyhow::Result<UpdateListItem> {
+    async fn update_list_item(
+        &self,
+        update: Update,
+    ) -> anyhow::Result<UpdateListItem> {
         let username = self
             .db
             .users
@@ -171,12 +182,18 @@ impl State {
         Ok(update)
     }
 
-    async fn send_update(&self, update: UpdateListItem) -> anyhow::Result<()> {
+    async fn send_update(
+        &self,
+        update: UpdateListItem,
+    ) -> anyhow::Result<()> {
         self.update.sender.lock().await.send(update)?;
         Ok(())
     }
 
-    pub async fn add_update(&self, mut update: Update) -> anyhow::Result<String> {
+    pub async fn add_update(
+        &self,
+        mut update: Update,
+    ) -> anyhow::Result<String> {
         update.id = self
             .db
             .updates
@@ -189,7 +206,10 @@ impl State {
         Ok(id)
     }
 
-    pub async fn update_update(&self, mut update: Update) -> anyhow::Result<()> {
+    pub async fn update_update(
+        &self,
+        mut update: Update,
+    ) -> anyhow::Result<()> {
         let mut update_id = String::new();
         std::mem::swap(&mut update.id, &mut update_id);
         self.db
@@ -226,12 +246,18 @@ impl State {
 
     //
 
-    pub fn periphery_client(&self, server: &Server) -> anyhow::Result<PeripheryClient> {
+    pub fn periphery_client(
+        &self,
+        server: &Server,
+    ) -> anyhow::Result<PeripheryClient> {
         if !server.config.enabled {
             return Err(anyhow!("server not enabled"));
         }
 
-        let client = PeripheryClient::new(&server.config.address, &self.config.passkey);
+        let client = PeripheryClient::new(
+            &server.config.address,
+            &self.config.passkey,
+        );
 
         Ok(client)
     }

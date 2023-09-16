@@ -27,7 +27,9 @@ impl Resolve<CreateServer, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Server> {
         if !user.is_admin && !user.create_server_permissions {
-            return Err(anyhow!("user does not have create server permissions"));
+            return Err(anyhow!(
+                "user does not have create server permissions"
+            ));
         }
         let start_ts = monitor_timestamp();
         let server = Server {
@@ -59,9 +61,15 @@ impl Resolve<CreateServer, RequestUser> for State {
             logs: vec![
                 Log::simple(
                     "create server",
-                    format!("created server\nid: {}\nname: {}", server.id, server.name),
+                    format!(
+                        "created server\nid: {}\nname: {}",
+                        server.id, server.name
+                    ),
                 ),
-                Log::simple("config", format!("{:#?}", server.config)),
+                Log::simple(
+                    "config",
+                    format!("{:#?}", server.config),
+                ),
             ],
             ..Default::default()
         };
@@ -86,7 +94,11 @@ impl Resolve<DeleteServer, RequestUser> for State {
         }
 
         let server: Server = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let start_ts = monitor_timestamp();
@@ -158,19 +170,29 @@ impl Resolve<UpdateServer, RequestUser> for State {
             return Err(anyhow!("server busy"));
         }
         let server: Server = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
-        let mut update = make_update(&server, Operation::UpdateServer, &user);
+        let mut update =
+            make_update(&server, Operation::UpdateServer, &user);
         self.db
             .servers
             .update_one(
                 &id,
-                mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
+                mungos::Update::FlattenSet(
+                    doc! { "config": to_bson(&config)? },
+                ),
             )
             .await
             .context("failed to update server on mongo")?;
 
-        update.push_simple_log("server update", serde_json::to_string_pretty(&config)?);
+        update.push_simple_log(
+            "server update",
+            serde_json::to_string_pretty(&config)?,
+        );
 
         let new_server: Server = self.get_resource(&id).await?;
 
@@ -192,9 +214,14 @@ impl Resolve<RenameServer, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Update> {
         let server: Server = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
-        let mut update = make_update(&server, Operation::RenameServer, &user);
+        let mut update =
+            make_update(&server, Operation::RenameServer, &user);
         self.db
             .servers
             .update_one(
@@ -205,7 +232,10 @@ impl Resolve<RenameServer, RequestUser> for State {
             .context("failed to update server on db. this name may already be taken.")?;
         update.push_simple_log(
             "rename server",
-            format!("renamed server {id} from {} to {name}", server.name),
+            format!(
+                "renamed server {id} from {} to {name}",
+                server.name
+            ),
         );
         update.finalize();
         update.id = self.add_update(update.clone()).await?;
@@ -221,12 +251,17 @@ impl Resolve<CreateNetwork, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Update> {
         let server: Server = self
-            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &server_id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let periphery = self.periphery_client(&server)?;
 
-        let mut update = make_update(&server, Operation::CreateNetwork, &user);
+        let mut update =
+            make_update(&server, Operation::CreateNetwork, &user);
         update.status = UpdateStatus::InProgress;
         update.id = self.add_update(update.clone()).await?;
 
@@ -235,7 +270,8 @@ impl Resolve<CreateNetwork, RequestUser> for State {
             .await
         {
             Ok(log) => update.logs.push(log),
-            Err(e) => update.push_error_log("create network", format!("{e:#?}")),
+            Err(e) => update
+                .push_error_log("create network", format!("{e:#?}")),
         };
 
         update.finalize();
@@ -253,18 +289,27 @@ impl Resolve<DeleteNetwork, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Update> {
         let server: Server = self
-            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &server_id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let periphery = self.periphery_client(&server)?;
 
-        let mut update = make_update(&server, Operation::DeleteNetwork, &user);
+        let mut update =
+            make_update(&server, Operation::DeleteNetwork, &user);
         update.status = UpdateStatus::InProgress;
         update.id = self.add_update(update.clone()).await?;
 
-        match periphery.request(requests::DeleteNetwork { name }).await {
+        match periphery
+            .request(requests::DeleteNetwork { name })
+            .await
+        {
             Ok(log) => update.logs.push(log),
-            Err(e) => update.push_error_log("delete network", format!("{e:#?}")),
+            Err(e) => update
+                .push_error_log("delete network", format!("{e:#?}")),
         };
 
         update.finalize();

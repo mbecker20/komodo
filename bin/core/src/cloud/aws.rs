@@ -4,9 +4,10 @@ use anyhow::{anyhow, Context};
 use aws_sdk_ec2::{
     config::Region,
     types::{
-        BlockDeviceMapping, EbsBlockDevice, InstanceNetworkInterfaceSpecification,
-        InstanceStateChange, InstanceStateName, InstanceStatus, InstanceType, ResourceType, Tag,
-        TagSpecification, VolumeType,
+        BlockDeviceMapping, EbsBlockDevice,
+        InstanceNetworkInterfaceSpecification, InstanceStateChange,
+        InstanceStateName, InstanceStatus, InstanceType,
+        ResourceType, Tag, TagSpecification, VolumeType,
     },
     Client,
 };
@@ -25,10 +26,17 @@ pub struct Ec2Instance {
 impl State {
     async fn create_ec2_client(&self, region: String) -> Client {
         // There may be a better way to pass these keys to client
-        std::env::set_var("AWS_ACCESS_KEY_ID", &self.config.aws.access_key_id);
-        std::env::set_var("AWS_SECRET_ACCESS_KEY", &self.config.aws.secret_access_key);
+        std::env::set_var(
+            "AWS_ACCESS_KEY_ID",
+            &self.config.aws.access_key_id,
+        );
+        std::env::set_var(
+            "AWS_SECRET_ACCESS_KEY",
+            &self.config.aws.secret_access_key,
+        );
         let region = Region::new(region);
-        let config = aws_config::from_env().region(region).load().await;
+        let config =
+            aws_config::from_env().region(region).load().await;
         Client::new(&config)
     }
 
@@ -47,7 +55,8 @@ impl State {
             key_pair_name,
             assign_public_ip,
         } = config.into();
-        let instance_type = InstanceType::from(instance_type.as_str());
+        let instance_type =
+            InstanceType::from(instance_type.as_str());
         if let InstanceType::Unknown(t) = instance_type {
             return Err(anyhow!("unknown instance type {t:?}"));
         }
@@ -67,7 +76,12 @@ impl State {
             .key_name(key_pair_name)
             .tag_specifications(
                 TagSpecification::builder()
-                    .tags(Tag::builder().key("Name").value(name).build())
+                    .tags(
+                        Tag::builder()
+                            .key("Name")
+                            .value(name)
+                            .build(),
+                    )
                     .resource_type(ResourceType::Instance)
                     .build(),
             )
@@ -80,12 +94,16 @@ impl State {
                 .set_iops(volume.iops)
                 .set_throughput(volume.throughput);
             if let Some(volume_type) = &volume.volume_type {
-                ebs = ebs
-                    .volume_type(VolumeType::from_str(volume_type).context("invalid volume type")?);
+                ebs = ebs.volume_type(
+                    VolumeType::from_str(volume_type)
+                        .context("invalid volume type")?,
+                );
             }
             req = req.block_device_mappings(
                 BlockDeviceMapping::builder()
-                    .set_device_name(volume.device_name.clone().into())
+                    .set_device_name(
+                        volume.device_name.clone().into(),
+                    )
                     .set_ebs(ebs.build().into())
                     .build(),
             )
@@ -108,19 +126,25 @@ impl State {
             .to_string();
 
         for _ in 0..MAX_POLL_TRIES {
-            let state_name = get_ec2_instance_state_name(&client, &instance_id).await?;
+            let state_name =
+                get_ec2_instance_state_name(&client, &instance_id)
+                    .await?;
             if state_name == Some(InstanceStateName::Running) {
                 let ip = if assign_public_ip {
-                    get_ec2_instance_public_ip(&client, &instance_id).await?
+                    get_ec2_instance_public_ip(&client, &instance_id)
+                        .await?
                 } else {
                     instance
                         .private_ip_address()
-                        .ok_or(anyhow!("instance does not have private ip"))?
+                        .ok_or(anyhow!(
+                            "instance does not have private ip"
+                        ))?
                         .to_string()
                 };
                 return Ok(Ec2Instance { instance_id, ip });
             }
-            tokio::time::sleep(Duration::from_secs(POLL_RATE_SECS)).await;
+            tokio::time::sleep(Duration::from_secs(POLL_RATE_SECS))
+                .await;
         }
         Err(anyhow!("instance not running after polling"))
     }
@@ -181,7 +205,10 @@ async fn get_ec2_instance_state_name(
     Ok(Some(state))
 }
 
-async fn get_ec2_instance_public_ip(client: &Client, instance_id: &str) -> anyhow::Result<String> {
+async fn get_ec2_instance_public_ip(
+    client: &Client,
+    instance_id: &str,
+) -> anyhow::Result<String> {
     let ip = client
         .describe_instances()
         .instance_ids(instance_id)

@@ -27,16 +27,22 @@ impl Resolve<LaunchServer, RequestUser> for State {
             Operation::LaunchServer,
             &user,
         );
-        update.push_simple_log("launching server", format!("{:#?}", config));
+        update.push_simple_log(
+            "launching server",
+            format!("{:#?}", config),
+        );
         update.id = self.add_update(update.clone()).await?;
         match config {
             LaunchServerConfig::Aws(config) => {
                 let region = config.region.clone();
-                let instance = self.launch_ec2_instance(&name, config).await;
+                let instance =
+                    self.launch_ec2_instance(&name, config).await;
                 if let Err(e) = &instance {
                     update.push_error_log(
                         "launch server",
-                        format!("failed to launch aws instance\n\n{e:#?}"),
+                        format!(
+                            "failed to launch aws instance\n\n{e:#?}"
+                        ),
                     );
                     update.finalize();
                     self.update_update(update.clone()).await?;
@@ -52,7 +58,11 @@ impl Resolve<LaunchServer, RequestUser> for State {
                         write::CreateServer {
                             name,
                             config: PartialServerConfig {
-                                address: format!("http://{}:8000", instance.ip).into(),
+                                address: format!(
+                                    "http://{}:8000",
+                                    instance.ip
+                                )
+                                .into(),
                                 region: region.into(),
                                 ..Default::default()
                             },

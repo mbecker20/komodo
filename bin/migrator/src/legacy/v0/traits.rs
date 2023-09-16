@@ -1,6 +1,8 @@
 use super::{
-    Build, BuildActionState, CloneArgs, CommandActionState, Deployment, DeploymentActionState,
-    Group, PeripheryCommand, PermissionLevel, PermissionsMap, Procedure, Server, ServerActionState,
+    Build, BuildActionState, CloneArgs, CommandActionState,
+    Deployment, DeploymentActionState, Group, PeripheryCommand,
+    PermissionLevel, PermissionsMap, Procedure, Server,
+    ServerActionState,
 };
 
 pub trait Permissioned {
@@ -53,7 +55,9 @@ pub trait Busy {
 
 impl Busy for ServerActionState {
     fn busy(&self) -> bool {
-        self.pruning_containers || self.pruning_images || self.pruning_networks
+        self.pruning_containers
+            || self.pruning_images
+            || self.pruning_networks
     }
 }
 

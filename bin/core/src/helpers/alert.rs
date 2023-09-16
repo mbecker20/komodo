@@ -26,7 +26,8 @@ impl State {
 
         let alerters = alerters.unwrap();
 
-        let handles = alerts.iter().map(|alert| send_alert(&alerters, alert));
+        let handles =
+            alerts.iter().map(|alert| send_alert(&alerters, alert));
 
         join_all(handles).await;
     }
@@ -39,12 +40,16 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
 
     let handles = alerters.iter().map(|alerter| async {
         match &alerter.config {
-            AlerterConfig::Slack(SlackAlerterConfig { url }) => send_slack_alert(url, alert)
-                .await
-                .context("failed to send slack alert"),
-            AlerterConfig::Custom(CustomAlerterConfig { url }) => send_custom_alert(url, alert)
-                .await
-                .context(format!("failed to send alert to custom alerter at {url}")),
+            AlerterConfig::Slack(SlackAlerterConfig { url }) => {
+                send_slack_alert(url, alert)
+                    .await
+                    .context("failed to send slack alert")
+            }
+            AlerterConfig::Custom(CustomAlerterConfig { url }) => {
+                send_custom_alert(url, alert).await.context(format!(
+                    "failed to send alert to custom alerter at {url}"
+                ))
+            }
         }
     });
 
@@ -55,7 +60,10 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
         .for_each(|e| error!("{e:#?}"));
 }
 
-async fn send_custom_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
+async fn send_custom_alert(
+    url: &str,
+    alert: &Alert,
+) -> anyhow::Result<()> {
     let res = reqwest::Client::new()
         .post(url)
         .json(alert)
@@ -64,16 +72,20 @@ async fn send_custom_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
         .context("failed at post request to alerter")?;
     let status = res.status();
     if status != StatusCode::OK {
-        let text = res
-            .text()
-            .await
-            .context("failed to get response text on alerter response")?;
-        return Err(anyhow!("post to alerter failed | {status} | {text}"));
+        let text = res.text().await.context(
+            "failed to get response text on alerter response",
+        )?;
+        return Err(anyhow!(
+            "post to alerter failed | {status} | {text}"
+        ));
     }
     Ok(())
 }
 
-async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
+async fn send_slack_alert(
+    url: &str,
+    alert: &Alert,
+) -> anyhow::Result<()> {
     let level = fmt_level(alert.level);
     let (text, blocks): (_, Option<_>) = match &alert.data {
         AlertData::ServerUnreachable { name, region, .. } => {
@@ -83,7 +95,9 @@ async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
                     let text = format!("{level} | *{name}*{region} is now *reachable*");
                     let blocks = vec![
                         Block::header(level),
-                        Block::section(format!("*{name}*{region} is now *reachable*")),
+                        Block::section(format!(
+                            "*{name}*{region} is now *reachable*"
+                        )),
                     ];
                     (text, blocks.into())
                 }
@@ -91,7 +105,9 @@ async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
                     let text = format!("{level} | *{name}*{region} is *unreachable* ❌");
                     let blocks = vec![
                         Block::header(level),
-                        Block::section(format!("*{name}*{region} is *unreachable* ❌")),
+                        Block::section(format!(
+                            "*{name}*{region} is *unreachable* ❌"
+                        )),
                     ];
                     (text, blocks.into())
                 }
@@ -200,8 +216,12 @@ async fn send_slack_alert(url: &str, alert: &Alert) -> anyhow::Result<()> {
             let to = fmt_docker_container_state(to);
             let text = format!("📦 container *{name}* is now {to}");
             let blocks = vec![
-                Block::header(format!("📦 container *{name}* is now {to}")),
-                Block::section(format!("server: {server_name}\nprevious: {from}")),
+                Block::header(format!(
+                    "📦 container *{name}* is now {to}"
+                )),
+                Block::section(format!(
+                    "server: {server_name}\nprevious: {from}"
+                )),
             ];
             (text, blocks.into())
         }
@@ -238,12 +258,18 @@ fn fmt_top_procs(top_procs: &[SystemProcess]) -> String {
         .join("")
 }
 
-fn fmt_docker_container_state(state: &DockerContainerState) -> String {
+fn fmt_docker_container_state(
+    state: &DockerContainerState,
+) -> String {
     match state {
         DockerContainerState::Running => String::from("Running ▶️"),
         DockerContainerState::Exited => String::from("Exited 🛑"),
-        DockerContainerState::Restarting => String::from("Restarting 🔄"),
-        DockerContainerState::NotDeployed => String::from("Not Deployed"),
+        DockerContainerState::Restarting => {
+            String::from("Restarting 🔄")
+        }
+        DockerContainerState::NotDeployed => {
+            String::from("Not Deployed")
+        }
         _ => state.to_string(),
     }
 }

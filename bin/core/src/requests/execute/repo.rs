@@ -14,7 +14,9 @@ use mungos::mongodb::bson::doc;
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<CloneRepo, RequestUser> for State {
@@ -24,14 +26,19 @@ impl Resolve<CloneRepo, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Update> {
         let repo: Repo = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Execute)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Execute,
+            )
             .await?;
 
         if repo.config.server_id.is_empty() {
             return Err(anyhow!("repo has no server attached"));
         }
 
-        let server: Server = self.get_resource(&repo.config.server_id).await?;
+        let server: Server =
+            self.get_resource(&repo.config.server_id).await?;
 
         let periphery = self.periphery_client(&server)?;
 
@@ -57,7 +64,9 @@ impl Resolve<CloneRepo, RequestUser> for State {
                 .await
             {
                 Ok(logs) => logs,
-                Err(e) => vec![Log::error("clone repo", format!("{e:#?}"))],
+                Err(e) => {
+                    vec![Log::error("clone repo", format!("{e:#?}"))]
+                }
             };
 
             update.logs.extend(logs);
@@ -116,14 +125,19 @@ impl Resolve<PullRepo, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Update> {
         let repo: Repo = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         if repo.config.server_id.is_empty() {
             return Err(anyhow!("repo has no server attached"));
         }
 
-        let server: Server = self.get_resource(&repo.config.server_id).await?;
+        let server: Server =
+            self.get_resource(&repo.config.server_id).await?;
 
         let periphery = self.periphery_client(&server)?;
 
@@ -151,7 +165,9 @@ impl Resolve<PullRepo, RequestUser> for State {
                 .await
             {
                 Ok(logs) => logs,
-                Err(e) => vec![Log::error("pull repo", format!("{e:#?}"))],
+                Err(e) => {
+                    vec![Log::error("pull repo", format!("{e:#?}"))]
+                }
             };
 
             update.logs.extend(logs);

@@ -42,7 +42,9 @@ pub struct CloneArgs {
     pub github_account: Option<GithubUsername>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq)]
+#[derive(
+    Serialize, Deserialize, Debug, Default, Clone, PartialEq, Eq,
+)]
 pub struct Command {
     #[serde(default)]
     pub path: String,
@@ -50,7 +52,9 @@ pub struct Command {
     pub command: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 pub struct EnvironmentVar {
     pub variable: String,
     pub value: String,
@@ -62,14 +66,26 @@ pub struct UserCredentials {
     pub password: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(
+    Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum AccountType {
     Github,
     Docker,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Default,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum Operation {
     // do nothing
@@ -131,7 +147,17 @@ pub enum Operation {
 }
 
 #[derive(
-    Serialize, Deserialize, Debug, Hash, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default,
+    Serialize,
+    Deserialize,
+    Debug,
+    Hash,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Default,
 )]
 #[serde(rename_all = "snake_case")]
 pub enum PermissionLevel {
@@ -148,7 +174,9 @@ impl Default for &PermissionLevel {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy)]
+#[derive(
+    Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum PermissionsTarget {
     Server,
@@ -158,7 +186,17 @@ pub enum PermissionsTarget {
     Group,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum Timelength {
     #[serde(rename = "1-sec")]
@@ -214,8 +252,12 @@ pub fn unix_from_monitor_ts(ts: &str) -> anyhow::Result<i64> {
 
 pub fn monitor_ts_from_unix(ts: i64) -> anyhow::Result<String> {
     match Utc.timestamp_millis_opt(ts) {
-        LocalResult::Single(dt) => Ok(dt.to_rfc3339_opts(SecondsFormat::Millis, false)),
-        LocalResult::None => Err(anyhow!("out of bounds timestamp passed")),
+        LocalResult::Single(dt) => {
+            Ok(dt.to_rfc3339_opts(SecondsFormat::Millis, false))
+        }
+        LocalResult::None => {
+            Err(anyhow!("out of bounds timestamp passed"))
+        }
         _ => unreachable!(),
     }
 }

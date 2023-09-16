@@ -1,7 +1,9 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::async_trait;
-use monitor_types::requests::auth::{LoginWithSecret, LoginWithSecretResponse};
+use monitor_types::requests::auth::{
+    LoginWithSecret, LoginWithSecretResponse,
+};
 use mungos::{mongodb::bson::doc, Update};
 use resolver_api::Resolve;
 
@@ -20,7 +22,9 @@ impl Resolve<LoginWithSecret> for State {
             .find_one(doc! { "username": &username }, None)
             .await
             .context("failed at mongo query")?
-            .ok_or(anyhow!("did not find user with username {username}"))?;
+            .ok_or(anyhow!(
+                "did not find user with username {username}"
+            ))?;
         let ts = unix_timestamp_ms() as i64;
         for s in user.secrets {
             if let Some(expires) = s.expires {
@@ -36,7 +40,9 @@ impl Resolve<LoginWithSecret> for State {
                     continue;
                 }
             }
-            if bcrypt::verify(&secret, &s.hash).context("failed at verifying hash")? {
+            if bcrypt::verify(&secret, &s.hash)
+                .context("failed at verifying hash")?
+            {
                 let jwt = self
                     .jwt
                     .generate(user.id)

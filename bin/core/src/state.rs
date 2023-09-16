@@ -1,7 +1,9 @@
 use std::{net::SocketAddr, str::FromStr, sync::Arc};
 
 use anyhow::Context;
-use async_timing_util::{unix_timestamp_ms, wait_until_timelength, Timelength, ONE_DAY_MS};
+use async_timing_util::{
+    unix_timestamp_ms, wait_until_timelength, Timelength, ONE_DAY_MS,
+};
 use axum::Extension;
 use monitor_types::entities::{
     build::BuildActionState,
@@ -16,7 +18,9 @@ use tower_http::cors::{Any, CorsLayer};
 use crate::{
     auth::{GithubOauthClient, GoogleOauthClient, JwtClient},
     config::{CoreConfig, Env},
-    helpers::{cache::Cache, channel::BroadcastChannel, db::DbClient},
+    helpers::{
+        cache::Cache, channel::BroadcastChannel, db::DbClient,
+    },
     monitor::{CachedDeploymentStatus, CachedServerStatus, History},
 };
 
@@ -34,8 +38,10 @@ pub struct State {
 
     // cache
     pub action_states: ActionStates,
-    pub deployment_status_cache:
-        Cache<String, Arc<History<CachedDeploymentStatus, DockerContainerState>>>,
+    pub deployment_status_cache: Cache<
+        String,
+        Arc<History<CachedDeploymentStatus, DockerContainerState>>,
+    >,
     pub server_status_cache: Cache<String, Arc<CachedServerStatus>>,
 
     // channels
@@ -82,7 +88,8 @@ impl State {
     async fn prune(&self) {
         loop {
             wait_until_timelength(Timelength::OneDay, 5000).await;
-            let (stats_res, alerts_res) = tokio::join!(self.prune_stats(), self.prune_alerts());
+            let (stats_res, alerts_res) =
+                tokio::join!(self.prune_stats(), self.prune_alerts());
             if let Err(e) = stats_res {
                 error!("error in pruning stats | {e:#?}");
             }
@@ -96,8 +103,9 @@ impl State {
         if self.config.keep_stats_for_days == 0 {
             return Ok(());
         }
-        let delete_before_ts =
-            (unix_timestamp_ms() - self.config.keep_stats_for_days as u128 * ONE_DAY_MS) as i64;
+        let delete_before_ts = (unix_timestamp_ms()
+            - self.config.keep_stats_for_days as u128 * ONE_DAY_MS)
+            as i64;
         let res = self
             .db
             .stats
@@ -113,8 +121,9 @@ impl State {
         if self.config.keep_alerts_for_days == 0 {
             return Ok(());
         }
-        let delete_before_ts =
-            (unix_timestamp_ms() - self.config.keep_alerts_for_days as u128 * ONE_DAY_MS) as i64;
+        let delete_before_ts = (unix_timestamp_ms()
+            - self.config.keep_alerts_for_days as u128 * ONE_DAY_MS)
+            as i64;
         let res = self
             .db
             .alerts

@@ -12,7 +12,9 @@ use monitor_types::{
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<CreateBuilder, RequestUser> for State {
@@ -56,7 +58,10 @@ impl Resolve<CreateBuilder, RequestUser> for State {
                         builder.id, builder.name
                     ),
                 ),
-                Log::simple("config", format!("{:#?}", builder.config)),
+                Log::simple(
+                    "config",
+                    format!("{:#?}", builder.config),
+                ),
             ],
             ..Default::default()
         };
@@ -79,7 +84,11 @@ impl Resolve<CopyBuilder, RequestUser> for State {
             description,
             ..
         } = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
         let start_ts = monitor_timestamp();
         let builder = Builder {
@@ -116,7 +125,10 @@ impl Resolve<CopyBuilder, RequestUser> for State {
                         builder.id, builder.name
                     ),
                 ),
-                Log::simple("config", format!("{:#?}", builder.config)),
+                Log::simple(
+                    "config",
+                    format!("{:#?}", builder.config),
+                ),
             ],
             ..Default::default()
         };
@@ -135,7 +147,11 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Builder> {
         let builder: Builder = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let start_ts = monitor_timestamp();
@@ -183,7 +199,11 @@ impl Resolve<UpdateBuilder, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Builder> {
         let builder: Builder = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let mut update = Update {
@@ -204,7 +224,9 @@ impl Resolve<UpdateBuilder, RequestUser> for State {
             .builders
             .update_one(
                 &id,
-                mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
+                mungos::Update::FlattenSet(
+                    doc! { "config": to_bson(&config)? },
+                ),
             )
             .await?;
 

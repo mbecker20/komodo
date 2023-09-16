@@ -16,7 +16,9 @@ use resolver_api::Resolve;
 
 use crate::{
     auth::RequestUser,
-    helpers::{empty_or_only_spaces, make_update, resource::StateResource},
+    helpers::{
+        empty_or_only_spaces, make_update, resource::StateResource,
+    },
     state::State,
 };
 
@@ -52,14 +54,21 @@ impl Resolve<CreateBuild, RequestUser> for State {
             .context("failed to add build to db")?;
         let build: Build = self.get_resource(&build_id).await?;
 
-        let mut update = make_update(&build, Operation::CreateBuild, &user);
+        let mut update =
+            make_update(&build, Operation::CreateBuild, &user);
 
         update.push_simple_log(
             "create build",
-            format!("created build\nid: {}\nname: {}", build.id, build.name),
+            format!(
+                "created build\nid: {}\nname: {}",
+                build.id, build.name
+            ),
         );
 
-        update.push_simple_log("config", format!("{:#?}", build.config));
+        update.push_simple_log(
+            "config",
+            format!("{:#?}", build.config),
+        );
 
         update.finalize();
 
@@ -83,7 +92,11 @@ impl Resolve<CopyBuild, RequestUser> for State {
             tags,
             ..
         } = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
         let _: Builder = self.get_resource_check_permissions(&config.builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
         let start_ts = monitor_timestamp();
@@ -107,13 +120,20 @@ impl Resolve<CopyBuild, RequestUser> for State {
             .context("failed to add build to db")?;
         let build: Build = self.get_resource(&build_id).await?;
 
-        let mut update = make_update(&build, Operation::CreateBuild, &user);
+        let mut update =
+            make_update(&build, Operation::CreateBuild, &user);
 
         update.push_simple_log(
             "create build",
-            format!("created build\nid: {}\nname: {}", build.id, build.name),
+            format!(
+                "created build\nid: {}\nname: {}",
+                build.id, build.name
+            ),
         );
-        update.push_simple_log("config", serde_json::to_string_pretty(&build)?);
+        update.push_simple_log(
+            "config",
+            serde_json::to_string_pretty(&build)?,
+        );
 
         update.finalize();
 
@@ -135,10 +155,15 @@ impl Resolve<DeleteBuild, RequestUser> for State {
         }
 
         let build: Build = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
-        let mut update = make_update(&build, Operation::DeleteBuild, &user);
+        let mut update =
+            make_update(&build, Operation::DeleteBuild, &user);
         update.status = UpdateStatus::InProgress;
         update.id = self.add_update(update.clone()).await?;
 
@@ -150,8 +175,14 @@ impl Resolve<DeleteBuild, RequestUser> for State {
             .context("failed to delete build from database");
 
         let log = match res {
-            Ok(_) => Log::simple("delete build", format!("deleted build {}", build.name)),
-            Err(e) => Log::error("delete build", format!("failed to delete build\n{e:#?}")),
+            Ok(_) => Log::simple(
+                "delete build",
+                format!("deleted build {}", build.name),
+            ),
+            Err(e) => Log::error(
+                "delete build",
+                format!("failed to delete build\n{e:#?}"),
+            ),
         };
 
         update.logs.push(log);
@@ -176,7 +207,11 @@ impl Resolve<UpdateBuild, RequestUser> for State {
         }
 
         let build: Build = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
         let inner = || async move {
@@ -186,7 +221,8 @@ impl Resolve<UpdateBuild, RequestUser> for State {
 
             if let Some(build_args) = &mut config.build_args {
                 build_args.retain(|v| {
-                    !empty_or_only_spaces(&v.variable) && !empty_or_only_spaces(&v.value)
+                    !empty_or_only_spaces(&v.variable)
+                        && !empty_or_only_spaces(&v.value)
                 })
             }
             if let Some(extra_args) = &mut config.extra_args {
@@ -197,14 +233,20 @@ impl Resolve<UpdateBuild, RequestUser> for State {
                 .builds
                 .update_one(
                     &build.id,
-                    mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
+                    mungos::Update::FlattenSet(
+                        doc! { "config": to_bson(&config)? },
+                    ),
                 )
                 .await
                 .context("failed to update build on database")?;
 
-            let mut update = make_update(&build, Operation::UpdateBuild, &user);
+            let mut update =
+                make_update(&build, Operation::UpdateBuild, &user);
 
-            update.push_simple_log("build update", serde_json::to_string_pretty(&config)?);
+            update.push_simple_log(
+                "build update",
+                serde_json::to_string_pretty(&config)?,
+            );
 
             update.finalize();
 

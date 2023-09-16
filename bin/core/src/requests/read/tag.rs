@@ -10,7 +10,11 @@ use crate::{auth::RequestUser, state::State};
 
 #[async_trait]
 impl Resolve<GetTag, RequestUser> for State {
-    async fn resolve(&self, GetTag { id }: GetTag, _: RequestUser) -> anyhow::Result<CustomTag> {
+    async fn resolve(
+        &self,
+        GetTag { id }: GetTag,
+        _: RequestUser,
+    ) -> anyhow::Result<CustomTag> {
         self.get_tag(&id).await
     }
 }

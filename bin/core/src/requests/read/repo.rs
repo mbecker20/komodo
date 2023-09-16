@@ -10,13 +10,23 @@ use monitor_types::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<GetRepo, RequestUser> for State {
-    async fn resolve(&self, GetRepo { id }: GetRepo, user: RequestUser) -> anyhow::Result<Repo> {
-        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
-            .await
+    async fn resolve(
+        &self,
+        GetRepo { id }: GetRepo,
+        user: RequestUser,
+    ) -> anyhow::Result<Repo> {
+        self.get_resource_check_permissions(
+            &id,
+            &user,
+            PermissionLevel::Read,
+        )
+        .await
     }
 }
 
@@ -27,7 +37,10 @@ impl Resolve<ListRepos, RequestUser> for State {
         ListRepos { query }: ListRepos,
         user: RequestUser,
     ) -> anyhow::Result<Vec<RepoListItem>> {
-        <State as StateResource<Repo>>::list_resources_for_user(self, query, &user).await
+        <State as StateResource<Repo>>::list_resources_for_user(
+            self, query, &user,
+        )
+        .await
     }
 }
 
@@ -39,9 +52,18 @@ impl Resolve<GetRepoActionState, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<RepoActionState> {
         let _: Repo = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
-        let action_state = self.action_states.repo.get(&id).await.unwrap_or_default();
+        let action_state = self
+            .action_states
+            .repo
+            .get(&id)
+            .await
+            .unwrap_or_default();
         Ok(action_state)
     }
 }

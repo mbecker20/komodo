@@ -8,15 +8,26 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{all_logs_success, entities::Operation, monitor_timestamp, MongoId, I64};
+use crate::{
+    all_logs_success, entities::Operation, monitor_timestamp,
+    MongoId, I64,
+};
 
 use super::{
-    alerter::Alerter, build::Build, builder::Builder, deployment::Deployment, repo::Repo,
-    server::Server, Version,
+    alerter::Alerter, build::Build, builder::Builder,
+    deployment::Deployment, repo::Repo, server::Server, Version,
 };
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, MungosIndexed, StringObjectId)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Default,
+    MungosIndexed,
+    StringObjectId,
+)]
 #[doc_index(doc! { "target.type": 1 })]
 #[sparse_doc_index(doc! { "target.id": 1 })]
 pub struct Update {
@@ -121,7 +132,15 @@ impl Log {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Hash, MungosIndexed, EnumVariants,
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    PartialEq,
+    Eq,
+    Hash,
+    MungosIndexed,
+    EnumVariants,
 )]
 #[variant_derive(
     Serialize,

@@ -41,17 +41,24 @@ pub struct CachedDeploymentStatus {
 impl State {
     pub async fn monitor(&self) {
         loop {
-            let ts = (wait_until_timelength(Timelength::FiveSeconds, 500).await - 500) as i64;
+            let ts =
+                (wait_until_timelength(Timelength::FiveSeconds, 500)
+                    .await
+                    - 500) as i64;
             let servers = self.db.servers.get_some(None, None).await;
             if let Err(e) = &servers {
                 error!("failed to get server list (manage status cache) | {e:#?}")
             }
             let servers = servers.unwrap();
-            let futures = servers.into_iter().map(|server| async move {
-                self.update_cache_for_server(&server).await;
-            });
+            let futures =
+                servers.into_iter().map(|server| async move {
+                    self.update_cache_for_server(&server).await;
+                });
             join_all(futures).await;
-            tokio::join!(self.check_alerts(ts), self.record_server_stats(ts));
+            tokio::join!(
+                self.check_alerts(ts),
+                self.record_server_stats(ts)
+            );
         }
     }
 
@@ -79,18 +86,30 @@ impl State {
         }
         // already handle server disabled case above, so using unwrap here
         let periphery = self.periphery_client(server).unwrap();
-        let version = periphery.request(requests::GetVersion {}).await;
+        let version =
+            periphery.request(requests::GetVersion {}).await;
         if version.is_err() {
             self.insert_deployments_status_unknown(deployments).await;
-            self.insert_server_status(server, ServerStatus::NotOk, String::from("unknown"), None)
-                .await;
+            self.insert_server_status(
+                server,
+                ServerStatus::NotOk,
+                String::from("unknown"),
+                None,
+            )
+            .await;
             return;
         }
-        let stats = periphery.request(requests::GetAllSystemStats {}).await;
+        let stats =
+            periphery.request(requests::GetAllSystemStats {}).await;
         if stats.is_err() {
             self.insert_deployments_status_unknown(deployments).await;
-            self.insert_server_status(server, ServerStatus::NotOk, String::from("unknown"), None)
-                .await;
+            self.insert_server_status(
+                server,
+                ServerStatus::NotOk,
+                String::from("unknown"),
+                None,
+            )
+            .await;
             return;
         }
         let stats = stats.unwrap();
@@ -101,7 +120,8 @@ impl State {
             stats.into(),
         )
         .await;
-        let containers = periphery.request(requests::GetContainerList {}).await;
+        let containers =
+            periphery.request(requests::GetContainerList {}).await;
         if containers.is_err() {
             self.insert_deployments_status_unknown(deployments).await;
             return;

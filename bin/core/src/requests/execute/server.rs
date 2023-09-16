@@ -12,7 +12,9 @@ use monitor_types::{
 use periphery_client::requests;
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<PruneDockerContainers, RequestUser> for State {
@@ -26,7 +28,11 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
         }
 
         let server: Server = self
-            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
+            .get_resource_check_permissions(
+                &server_id,
+                &user,
+                PermissionLevel::Execute,
+            )
             .await?;
 
         let periphery = self.periphery_client(&server)?;
@@ -52,7 +58,9 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
                     server.name
                 )) {
                 Ok(log) => log,
-                Err(e) => Log::error("prune containers", format!("{e:#?}")),
+                Err(e) => {
+                    Log::error("prune containers", format!("{e:#?}"))
+                }
             };
 
             update.success = log.success;
@@ -97,7 +105,11 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
         }
 
         let server: Server = self
-            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
+            .get_resource_check_permissions(
+                &server_id,
+                &user,
+                PermissionLevel::Execute,
+            )
             .await?;
 
         let periphery = self.periphery_client(&server)?;
@@ -123,7 +135,9 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
                     server.name
                 )) {
                 Ok(log) => log,
-                Err(e) => Log::error("prune networks", format!("{e:#?}")),
+                Err(e) => {
+                    Log::error("prune networks", format!("{e:#?}"))
+                }
             };
 
             update.success = log.success;
@@ -168,7 +182,11 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
         }
 
         let server: Server = self
-            .get_resource_check_permissions(&server_id, &user, PermissionLevel::Execute)
+            .get_resource_check_permissions(
+                &server_id,
+                &user,
+                PermissionLevel::Execute,
+            )
             .await?;
 
         let periphery = self.periphery_client(&server)?;
@@ -189,10 +207,14 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
             let log = match periphery
                 .request(requests::PruneImages {})
                 .await
-                .context(format!("failed to prune images on server {}", server.name))
-            {
+                .context(format!(
+                    "failed to prune images on server {}",
+                    server.name
+                )) {
                 Ok(log) => log,
-                Err(e) => Log::error("prune images", format!("{e:#?}")),
+                Err(e) => {
+                    Log::error("prune images", format!("{e:#?}"))
+                }
             };
 
             update.success = log.success;

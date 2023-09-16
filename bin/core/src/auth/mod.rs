@@ -1,8 +1,9 @@
 use std::{sync::Arc, time::Instant};
 
 use axum::{
-    body::Body, headers::ContentType, http::Request, middleware::Next, response::Response,
-    routing::post, Json, Router, TypedHeader,
+    body::Body, headers::ContentType, http::Request,
+    middleware::Next, response::Response, routing::post, Json,
+    Router, TypedHeader,
 };
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use reqwest::StatusCode;
@@ -22,7 +23,9 @@ use crate::{
     ResponseResult,
 };
 
-pub use self::jwt::{InnerRequestUser, JwtClient, RequestUser, RequestUserExtension};
+pub use self::jwt::{
+    InnerRequestUser, JwtClient, RequestUser, RequestUserExtension,
+};
 pub use github::client::GithubOauthClient;
 pub use google::client::GoogleOauthClient;
 

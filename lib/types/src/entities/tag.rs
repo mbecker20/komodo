@@ -15,16 +15,33 @@ use super::update::ResourceTargetVariant;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
+#[variant_derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Display,
+    EnumString
+)]
 #[serde(tag = "type", content = "params")]
 pub enum Tag {
     ResourceType { resource: ResourceTargetVariant }, // filter by resource type
     Server { server_id: String }, // filter by server, eg deployments, builds, repos
-    Custom { tag_id: String },    // filter by presence of custom tag on resource
+    Custom { tag_id: String }, // filter by presence of custom tag on resource
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, MungosIndexed, StringObjectId, Partial)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Builder,
+    MungosIndexed,
+    StringObjectId,
+    Partial,
+)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[collection_name(Tag)]
 #[unique_doc_index(doc! { "name": 1, "category": 1 })]
@@ -58,7 +75,15 @@ pub struct CustomTag {
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString, MungosIndexed, Default,
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Display,
+    EnumString,
+    MungosIndexed,
+    Default,
 )]
 pub enum TagColor {
     #[default]

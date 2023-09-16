@@ -1,7 +1,9 @@
 use std::{collections::HashMap, sync::Arc};
 
 use anyhow::{anyhow, Context};
-use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms, Timelength};
+use async_timing_util::{
+    get_timelength_in_ms, unix_timestamp_ms, Timelength,
+};
 use axum::{body::Body, http::Request, Extension};
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
@@ -46,12 +48,17 @@ impl JwtClient {
             .expect("failed at taking HmacSha256 of jwt secret");
         JwtClient {
             key,
-            valid_for_ms: get_timelength_in_ms(config.jwt_valid_for.to_string().parse().unwrap()),
+            valid_for_ms: get_timelength_in_ms(
+                config.jwt_valid_for.to_string().parse().unwrap(),
+            ),
             exchange_tokens: Default::default(),
         }
     }
 
-    pub fn generate(&self, user_id: String) -> anyhow::Result<String> {
+    pub fn generate(
+        &self,
+        user_id: String,
+    ) -> anyhow::Result<String> {
         let iat = unix_timestamp_ms();
         let exp = iat + self.valid_for_ms;
         let claims = JwtClaims {
@@ -71,13 +78,17 @@ impl JwtClient {
             exchange_token.clone(),
             (
                 jwt,
-                unix_timestamp_ms() + get_timelength_in_ms(Timelength::OneMinute),
+                unix_timestamp_ms()
+                    + get_timelength_in_ms(Timelength::OneMinute),
             ),
         );
         exchange_token
     }
 
-    pub async fn redeem_exchange_token(&self, exchange_token: &str) -> anyhow::Result<String> {
+    pub async fn redeem_exchange_token(
+        &self,
+        exchange_token: &str,
+    ) -> anyhow::Result<String> {
         let (jwt, valid_until) = self
             .exchange_tokens
             .lock()
@@ -113,7 +124,10 @@ impl State {
         Ok(user)
     }
 
-    pub async fn auth_jwt_check_enabled(&self, jwt: &str) -> anyhow::Result<RequestUser> {
+    pub async fn auth_jwt_check_enabled(
+        &self,
+        jwt: &str,
+    ) -> anyhow::Result<RequestUser> {
         let claims: JwtClaims = jwt
             .verify_with_key(&self.jwt.key)
             .context("failed to verify claims")?;
@@ -123,14 +137,19 @@ impl State {
                 .users
                 .find_one_by_id(&claims.id)
                 .await?
-                .ok_or(anyhow!("did not find user with id {}", claims.id))?;
+                .ok_or(anyhow!(
+                    "did not find user with id {}",
+                    claims.id
+                ))?;
             if user.enabled {
                 let user = InnerRequestUser {
                     id: claims.id,
                     username: user.username,
                     is_admin: user.admin,
-                    create_server_permissions: user.create_server_permissions,
-                    create_build_permissions: user.create_build_permissions,
+                    create_server_permissions: user
+                        .create_server_permissions,
+                    create_build_permissions: user
+                        .create_build_permissions,
                 };
                 Ok(user.into())
             } else {

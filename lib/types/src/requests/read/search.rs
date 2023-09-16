@@ -4,8 +4,9 @@ use typeshare::typeshare;
 
 use crate::{
     entities::{
-        build::BuildListItem, deployment::DeploymentListItem, repo::RepoListItem,
-        server::ServerListItem, update::ResourceTargetVariant,
+        build::BuildListItem, deployment::DeploymentListItem,
+        repo::RepoListItem, server::ServerListItem,
+        update::ResourceTargetVariant,
     },
     MongoDocument,
 };

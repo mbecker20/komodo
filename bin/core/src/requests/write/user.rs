@@ -5,8 +5,8 @@ use async_trait::async_trait;
 use monitor_types::{
     monitor_timestamp,
     requests::write::{
-        PushRecentlyViewed, PushRecentlyViewedResponse, SetLastSeenUpdate,
-        SetLastSeenUpdateResponse,
+        PushRecentlyViewed, PushRecentlyViewedResponse,
+        SetLastSeenUpdate, SetLastSeenUpdateResponse,
     },
 };
 use mungos::mongodb::bson::{doc, to_bson};
@@ -38,8 +38,8 @@ impl Resolve<PushRecentlyViewed, RequestUser> for State {
 
         recently_viewed.push_front(resource);
 
-        let recently_viewed =
-            to_bson(&recently_viewed).context("failed to convert recently views to bson")?;
+        let recently_viewed = to_bson(&recently_viewed)
+            .context("failed to convert recently views to bson")?;
 
         self.db
             .users

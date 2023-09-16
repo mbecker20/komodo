@@ -87,7 +87,11 @@ pub struct GetHealthResponse {}
 
 #[async_trait]
 impl ResolveToString<GetHealth> for State {
-    async fn resolve_to_string(&self, _: GetHealth, _: ()) -> anyhow::Result<String> {
+    async fn resolve_to_string(
+        &self,
+        _: GetHealth,
+        _: (),
+    ) -> anyhow::Result<String> {
         Ok(String::from("{}"))
     }
 }
@@ -105,7 +109,11 @@ pub struct GetVersionResponse {
 
 #[async_trait]
 impl Resolve<GetVersion> for State {
-    async fn resolve(&self, _: GetVersion, _: ()) -> anyhow::Result<GetVersionResponse> {
+    async fn resolve(
+        &self,
+        _: GetVersion,
+        _: (),
+    ) -> anyhow::Result<GetVersionResponse> {
         Ok(GetVersionResponse {
             version: env!("CARGO_PKG_VERSION").to_string(),
         })
@@ -126,7 +134,11 @@ pub struct GetAccountsResponse {
 
 #[async_trait]
 impl ResolveToString<GetAccounts> for State {
-    async fn resolve_to_string(&self, _: GetAccounts, _: ()) -> anyhow::Result<String> {
+    async fn resolve_to_string(
+        &self,
+        _: GetAccounts,
+        _: (),
+    ) -> anyhow::Result<String> {
         Ok(self.accounts_response.clone())
     }
 }
@@ -139,7 +151,11 @@ pub struct GetSecrets {}
 
 #[async_trait]
 impl ResolveToString<GetSecrets> for State {
-    async fn resolve_to_string(&self, _: GetSecrets, _: ()) -> anyhow::Result<String> {
+    async fn resolve_to_string(
+        &self,
+        _: GetSecrets,
+        _: (),
+    ) -> anyhow::Result<String> {
         Ok(self.secrets_response.clone())
     }
 }

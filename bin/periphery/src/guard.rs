@@ -43,8 +43,10 @@ pub async fn guard_request_by_passkey(
     if state.config.passkeys.contains(&req_passkey) {
         Ok(next.run(req).await)
     } else {
-        let ConnectInfo(socket_addr) =
-            req.extensions().get::<ConnectInfo<SocketAddr>>().ok_or((
+        let ConnectInfo(socket_addr) = req
+            .extensions()
+            .get::<ConnectInfo<SocketAddr>>()
+            .ok_or((
                 StatusCode::UNAUTHORIZED,
                 "could not get socket addr of request".to_string(),
             ))?;
@@ -73,10 +75,11 @@ pub async fn guard_request_by_ip(
     if state.config.allowed_ips.is_empty() {
         return Ok(next.run(req).await);
     }
-    let ConnectInfo(socket_addr) = req.extensions().get::<ConnectInfo<SocketAddr>>().ok_or((
-        StatusCode::UNAUTHORIZED,
-        "could not get socket addr of request".to_string(),
-    ))?;
+    let ConnectInfo(socket_addr) =
+        req.extensions().get::<ConnectInfo<SocketAddr>>().ok_or((
+            StatusCode::UNAUTHORIZED,
+            "could not get socket addr of request".to_string(),
+        ))?;
     let ip = socket_addr.ip();
     if state.config.allowed_ips.contains(&ip) {
         Ok(next.run(req).await)

@@ -15,9 +15,15 @@ pub struct CloneRepo {
 
 #[async_trait::async_trait]
 impl Resolve<CloneRepo> for State {
-    async fn resolve(&self, CloneRepo { args }: CloneRepo, _: ()) -> anyhow::Result<Vec<Log>> {
-        let access_token = self.get_github_token(&args.github_account)?;
-        git::clone(args, self.config.repo_dir.clone(), access_token).await
+    async fn resolve(
+        &self,
+        CloneRepo { args }: CloneRepo,
+        _: (),
+    ) -> anyhow::Result<Vec<Log>> {
+        let access_token =
+            self.get_github_token(&args.github_account)?;
+        git::clone(args, self.config.repo_dir.clone(), access_token)
+            .await
     }
 }
 
@@ -43,7 +49,12 @@ impl Resolve<PullRepo> for State {
         _: (),
     ) -> anyhow::Result<Vec<Log>> {
         let name = to_monitor_name(&name);
-        Ok(git::pull(self.config.repo_dir.join(name), &branch, &on_pull).await)
+        Ok(git::pull(
+            self.config.repo_dir.join(name),
+            &branch,
+            &on_pull,
+        )
+        .await)
     }
 }
 
@@ -57,9 +68,14 @@ pub struct DeleteRepo {
 
 #[async_trait::async_trait]
 impl Resolve<DeleteRepo> for State {
-    async fn resolve(&self, DeleteRepo { name }: DeleteRepo, _: ()) -> anyhow::Result<Log> {
+    async fn resolve(
+        &self,
+        DeleteRepo { name }: DeleteRepo,
+        _: (),
+    ) -> anyhow::Result<Log> {
         let name = to_monitor_name(&name);
-        let deleted = std::fs::remove_dir_all(self.config.repo_dir.join(&name));
+        let deleted =
+            std::fs::remove_dir_all(self.config.repo_dir.join(&name));
         let msg = match deleted {
             Ok(_) => format!("deleted repo {name}"),
             Err(_) => format!("no repo at {name} to delete"),

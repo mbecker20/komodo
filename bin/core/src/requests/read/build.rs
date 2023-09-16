@@ -15,13 +15,23 @@ use monitor_types::{
 use mungos::mongodb::{bson::doc, options::FindOptions};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::resource::StateResource, state::State};
+use crate::{
+    auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<GetBuild, RequestUser> for State {
-    async fn resolve(&self, GetBuild { id }: GetBuild, user: RequestUser) -> anyhow::Result<Build> {
-        self.get_resource_check_permissions(&id, &user, PermissionLevel::Read)
-            .await
+    async fn resolve(
+        &self,
+        GetBuild { id }: GetBuild,
+        user: RequestUser,
+    ) -> anyhow::Result<Build> {
+        self.get_resource_check_permissions(
+            &id,
+            &user,
+            PermissionLevel::Read,
+        )
+        .await
     }
 }
 
@@ -32,7 +42,10 @@ impl Resolve<ListBuilds, RequestUser> for State {
         ListBuilds { query }: ListBuilds,
         user: RequestUser,
     ) -> anyhow::Result<Vec<BuildListItem>> {
-        <State as StateResource<Build>>::list_resources_for_user(self, query, &user).await
+        <State as StateResource<Build>>::list_resources_for_user(
+            self, query, &user,
+        )
+        .await
     }
 }
 
@@ -44,9 +57,18 @@ impl Resolve<GetBuildActionState, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<BuildActionState> {
         let _: Build = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
-        let action_state = self.action_states.build.get(&id).await.unwrap_or_default();
+        let action_state = self
+            .action_states
+            .build
+            .get(&id)
+            .await
+            .unwrap_or_default();
         Ok(action_state)
     }
 }
@@ -112,7 +134,8 @@ impl Resolve<GetBuildMonthlyStats, RequestUser> for State {
             .await
             .context("failed to get updates cursor")?;
 
-        let mut days = HashMap::<i64, BuildStatsDay>::with_capacity(32);
+        let mut days =
+            HashMap::<i64, BuildStatsDay>::with_capacity(32);
 
         let mut curr = open_ts;
 
@@ -127,7 +150,8 @@ impl Resolve<GetBuildMonthlyStats, RequestUser> for State {
 
         while let Some(update) = build_updates.try_next().await? {
             if let Some(end_ts) = update.end_ts {
-                let day = update.start_ts - update.start_ts % ONE_DAY_MS;
+                let day =
+                    update.start_ts - update.start_ts % ONE_DAY_MS;
                 let entry = days.entry(day).or_default();
                 entry.count += 1.0;
                 entry.time += ms_to_hour(end_ts - update.start_ts);
@@ -161,7 +185,11 @@ impl Resolve<GetBuildVersions, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Vec<BuildVersionResponseItem>> {
         let _: Build = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Read)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Read,
+            )
             .await?;
 
         let mut filter = doc! {
@@ -198,7 +226,10 @@ impl Resolve<GetBuildVersions, RequestUser> for State {
             .into_iter()
             .map(|u| (u.version, u.start_ts))
             .filter(|(v, _)| !v.is_none())
-            .map(|(version, ts)| BuildVersionResponseItem { version, ts })
+            .map(|(version, ts)| BuildVersionResponseItem {
+                version,
+                ts,
+            })
             .collect();
         Ok(versions)
     }

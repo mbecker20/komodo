@@ -43,13 +43,21 @@ impl State {
     }
 }
 
-pub async fn run_monitor_command(stage: &str, command: String) -> Log {
+pub async fn run_monitor_command(
+    stage: &str,
+    command: String,
+) -> Log {
     let start_ts = unix_timestamp_ms() as i64;
     let output = async_run_command(&command).await;
     output_into_log(stage, command, start_ts, output)
 }
 
-pub fn output_into_log(stage: &str, command: String, start_ts: i64, output: CommandOutput) -> Log {
+pub fn output_into_log(
+    stage: &str,
+    command: String,
+    start_ts: i64,
+    output: CommandOutput,
+) -> Log {
     let success = output.success();
     Log {
         stage: stage.to_string(),
@@ -62,7 +70,9 @@ pub fn output_into_log(stage: &str, command: String, start_ts: i64, output: Comm
     }
 }
 
-pub fn into_response_error(e: anyhow::Error) -> (StatusCode, TypedHeader<ContentType>, String) {
+pub fn into_response_error(
+    e: anyhow::Error,
+) -> (StatusCode, TypedHeader<ContentType>, String) {
     (
         StatusCode::INTERNAL_SERVER_ERROR,
         TypedHeader(ContentType::json()),

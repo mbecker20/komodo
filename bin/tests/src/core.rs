@@ -1,6 +1,9 @@
 use monitor_client::MonitorClient;
 use monitor_types::{
-    entities::{build::PartialBuildConfig, repo::PartialRepoConfig, server::PartialServerConfig},
+    entities::{
+        build::PartialBuildConfig, repo::PartialRepoConfig,
+        server::PartialServerConfig,
+    },
     requests::{execute, read, write},
 };
 use serde::Deserialize;
@@ -27,17 +30,22 @@ pub async fn tests() -> anyhow::Result<()> {
     // let updates = monitor.read(read::ListUpdates { query: None, page: 0 }).await?;
     // println!("{updates:#?}");
 
-    let dep_summary = monitor.read(read::GetDeploymentsSummary {}).await?;
+    let dep_summary =
+        monitor.read(read::GetDeploymentsSummary {}).await?;
     println!("{dep_summary:#?}");
 
     Ok(())
 }
 
 #[allow(unused)]
-async fn run_build(monitor: &MonitorClient, build_id: String) -> anyhow::Result<()> {
+async fn run_build(
+    monitor: &MonitorClient,
+    build_id: String,
+) -> anyhow::Result<()> {
     println!("running build...");
 
-    let update = monitor.execute(execute::RunBuild { build_id }).await?;
+    let update =
+        monitor.execute(execute::RunBuild { build_id }).await?;
 
     println!("{update:#?}");
 
@@ -46,7 +54,8 @@ async fn run_build(monitor: &MonitorClient, build_id: String) -> anyhow::Result<
 
 #[allow(unused)]
 async fn create_build(monitor: &MonitorClient) -> anyhow::Result<()> {
-    let mut res = monitor.read(read::ListServers { query: None }).await?;
+    let mut res =
+        monitor.read(read::ListServers { query: None }).await?;
     let server_id = res.pop().unwrap().id;
 
     let build = monitor
@@ -56,7 +65,9 @@ async fn create_build(monitor: &MonitorClient) -> anyhow::Result<()> {
                 repo: "mbecker20/monitor".to_string().into(),
                 branch: "next".to_string().into(),
                 builder_id: Default::default(),
-                dockerfile_path: "bin/core/Dockerfile".to_string().into(),
+                dockerfile_path: "bin/core/Dockerfile"
+                    .to_string()
+                    .into(),
                 ..Default::default()
             },
         })
@@ -69,7 +80,8 @@ async fn create_build(monitor: &MonitorClient) -> anyhow::Result<()> {
 
 #[allow(unused)]
 async fn create_repo(monitor: &MonitorClient) -> anyhow::Result<()> {
-    let mut res = monitor.read(read::ListServers { query: None }).await?;
+    let mut res =
+        monitor.read(read::ListServers { query: None }).await?;
     let server_id = res.pop().unwrap().id;
 
     let repo = monitor
@@ -90,7 +102,9 @@ async fn create_repo(monitor: &MonitorClient) -> anyhow::Result<()> {
 }
 
 #[allow(unused)]
-async fn create_server(monitor: &MonitorClient) -> anyhow::Result<()> {
+async fn create_server(
+    monitor: &MonitorClient,
+) -> anyhow::Result<()> {
     let res = monitor
         .write(write::CreateServer {
             name: String::from("mogh-server"),

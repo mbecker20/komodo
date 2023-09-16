@@ -6,7 +6,9 @@ use monitor_types::{
         Operation,
     },
     monitor_timestamp,
-    requests::write::{UpdateUserPermissions, UpdateUserPermissionsOnTarget},
+    requests::write::{
+        UpdateUserPermissions, UpdateUserPermissionsOnTarget,
+    },
 };
 use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
@@ -46,10 +48,12 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
             update_doc.insert("enabled", enabled);
         }
         if let Some(create_servers) = create_servers {
-            update_doc.insert("create_server_permissions", create_servers);
+            update_doc
+                .insert("create_server_permissions", create_servers);
         }
         if let Some(create_builds) = create_builds {
-            update_doc.insert("create_build_permissions", create_builds);
+            update_doc
+                .insert("create_build_permissions", create_builds);
         }
         self.db
             .users
@@ -111,7 +115,9 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
             return Err(anyhow!("user not enabled"));
         }
         let log_text = match &target {
-            ResourceTarget::System(_) => return Err(anyhow!("target can not be system")),
+            ResourceTarget::System(_) => {
+                return Err(anyhow!("target can not be system"))
+            }
             ResourceTarget::Build(id) => {
                 let build = self
                     .db
@@ -119,7 +125,9 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .find_one_by_id(id)
                     .await
                     .context("failed at find build query")?
-                    .ok_or(anyhow!("failed to find a build with id {id}"))?;
+                    .ok_or(anyhow!(
+                        "failed to find a build with id {id}"
+                    ))?;
                 self.db
                     .builds
                     .update_one(
@@ -141,7 +149,9 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .find_one_by_id(id)
                     .await
                     .context("failed at find builder query")?
-                    .ok_or(anyhow!("failed to find a builder with id {id}"))?;
+                    .ok_or(anyhow!(
+                        "failed to find a builder with id {id}"
+                    ))?;
                 self.db
                     .builders
                     .update_one(
@@ -163,7 +173,9 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .find_one_by_id(id)
                     .await
                     .context("failed at find deployment query")?
-                    .ok_or(anyhow!("failed to find a deployment with id {id}"))?;
+                    .ok_or(anyhow!(
+                        "failed to find a deployment with id {id}"
+                    ))?;
                 self.db
                     .deployments
                     .update_one(
@@ -185,7 +197,9 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .find_one_by_id(id)
                     .await
                     .context("failed at find server query")?
-                    .ok_or(anyhow!("failed to find a server with id {id}"))?;
+                    .ok_or(anyhow!(
+                        "failed to find a server with id {id}"
+                    ))?;
                 self.db
                     .servers
                     .update_one(
@@ -207,7 +221,9 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .find_one_by_id(id)
                     .await
                     .context("failed at find repo query")?
-                    .ok_or(anyhow!("failed to find a repo with id {id}"))?;
+                    .ok_or(anyhow!(
+                        "failed to find a repo with id {id}"
+                    ))?;
                 self.db
                     .repos
                     .update_one(
@@ -229,7 +245,9 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
                     .find_one_by_id(id)
                     .await
                     .context("failed at find alerter query")?
-                    .ok_or(anyhow!("failed to find a alerter with id {id}"))?;
+                    .ok_or(anyhow!(
+                        "failed to find a alerter with id {id}"
+                    ))?;
                 self.db
                     .alerters
                     .update_one(

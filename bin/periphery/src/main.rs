@@ -5,8 +5,8 @@ use std::{net::SocketAddr, sync::Arc, time::Instant};
 
 use anyhow::Context;
 use axum::{
-    headers::ContentType, http::StatusCode, middleware, routing::post, Extension, Json, Router,
-    TypedHeader,
+    headers::ContentType, http::StatusCode, middleware,
+    routing::post, Extension, Json, Router, TypedHeader,
 };
 
 use resolver_api::Resolver;
@@ -24,7 +24,8 @@ use state::State;
 
 use crate::helpers::into_response_error;
 
-type ResponseResult<T> = Result<T, (StatusCode, TypedHeader<ContentType>, String)>;
+type ResponseResult<T> =
+    Result<T, (StatusCode, TypedHeader<ContentType>, String)>;
 
 async fn app() -> anyhow::Result<()> {
     let state = State::load().await?;
@@ -66,7 +67,9 @@ async fn app() -> anyhow::Result<()> {
     info!("starting server on {}", socket_addr);
 
     axum::Server::bind(&socket_addr)
-        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
+        .serve(
+            app.into_make_service_with_connect_info::<SocketAddr>(),
+        )
         .await?;
 
     Ok(())

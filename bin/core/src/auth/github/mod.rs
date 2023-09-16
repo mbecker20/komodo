@@ -1,5 +1,8 @@
 use anyhow::{anyhow, Context};
-use axum::{extract::Query, http::StatusCode, response::Redirect, routing::get, Router};
+use axum::{
+    extract::Query, http::StatusCode, response::Redirect,
+    routing::get, Router,
+};
 use monitor_types::{entities::user::User, monitor_timestamp};
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
@@ -25,9 +28,13 @@ pub fn router() -> Router {
         .route(
             "/callback",
             get(|state, query| async {
-                let redirect = callback(state, query)
-                    .await
-                    .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}")))?;
+                let redirect =
+                    callback(state, query).await.map_err(|e| {
+                        (
+                            StatusCode::INTERNAL_SERVER_ERROR,
+                            format!("{e:#?}"),
+                        )
+                    })?;
                 Result::<_, (StatusCode, String)>::Ok(redirect)
             }),
         )
@@ -48,7 +55,8 @@ async fn callback(
         return Err(anyhow!("state mismatch"));
     }
     let token = client.get_access_token(&query.code).await?;
-    let github_user = client.get_github_user(&token.access_token).await?;
+    let github_user =
+        client.get_github_user(&token.access_token).await?;
     let github_id = github_user.id.to_string();
     let user = state
         .db
@@ -63,7 +71,8 @@ async fn callback(
             .context("failed to generate jwt")?,
         None => {
             let ts = monitor_timestamp();
-            let no_users_exist = state.db.users.find_one(None, None).await?.is_none();
+            let no_users_exist =
+                state.db.users.find_one(None, None).await?.is_none();
             let user = User {
                 username: github_user.login,
                 avatar: github_user.avatar_url.into(),

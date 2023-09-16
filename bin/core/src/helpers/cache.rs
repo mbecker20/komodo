@@ -38,7 +38,11 @@ impl<K: PartialEq + Eq + Hash, T: Clone + Default> Cache<K, T> {
         self.cache.write().await.insert(key.into(), val);
     }
 
-    pub async fn update_entry(&self, key: impl Into<K>, handler: impl Fn(&mut T)) {
+    pub async fn update_entry(
+        &self,
+        key: impl Into<K>,
+        handler: impl Fn(&mut T),
+    ) {
         let mut cache = self.cache.write().await;
         handler(cache.entry(key.into()).or_default());
     }
@@ -52,7 +56,9 @@ impl<K: PartialEq + Eq + Hash, T: Clone + Default> Cache<K, T> {
     }
 }
 
-impl<K: PartialEq + Eq + Hash, T: Clone + Default + Busy> Cache<K, T> {
+impl<K: PartialEq + Eq + Hash, T: Clone + Default + Busy>
+    Cache<K, T>
+{
     pub async fn busy(&self, id: &K) -> bool {
         match self.get(id).await {
             Some(state) => state.busy(),

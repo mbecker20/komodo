@@ -1,7 +1,9 @@
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
-use super::{Build, Deployment, Group, Operation, Procedure, Server, Version};
+use super::{
+    Build, Deployment, Group, Operation, Procedure, Server, Version,
+};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Update {
@@ -108,7 +110,17 @@ impl From<&Group> for Option<UpdateTarget> {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Hash, Eq, Clone, Copy, Default)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    PartialEq,
+    Hash,
+    Eq,
+    Clone,
+    Copy,
+    Default,
+)]
 #[serde(rename_all = "snake_case")]
 pub enum UpdateStatus {
     Queued,

@@ -2,8 +2,8 @@ use monitor_types::entities::{
     deployment::{Deployment, DockerContainerState},
     server::{
         stats::{
-            AllSystemStats, BasicSystemStats, ServerHealth, SeverityLevel, SingleDiskUsage,
-            SystemComponent,
+            AllSystemStats, BasicSystemStats, ServerHealth,
+            SeverityLevel, SingleDiskUsage, SystemComponent,
         },
         Server, ServerConfig, ServerStatus,
     },
@@ -14,7 +14,10 @@ use crate::state::State;
 use super::{CachedDeploymentStatus, CachedServerStatus, History};
 
 impl State {
-    pub async fn insert_deployments_status_unknown(&self, deployments: Vec<Deployment>) {
+    pub async fn insert_deployments_status_unknown(
+        &self,
+        deployments: Vec<Deployment>,
+    ) {
         for deployment in deployments {
             let prev = self
                 .deployment_status_cache
@@ -45,7 +48,8 @@ impl State {
         version: String,
         stats: Option<AllSystemStats>,
     ) {
-        let health = stats.as_ref().map(|s| get_server_health(server, s));
+        let health =
+            stats.as_ref().map(|s| get_server_health(server, s));
         self.server_status_cache
             .insert(
                 server.id.clone(),
@@ -62,7 +66,10 @@ impl State {
     }
 }
 
-fn get_server_health(server: &Server, stats: &AllSystemStats) -> ServerHealth {
+fn get_server_health(
+    server: &Server,
+    stats: &AllSystemStats,
+) -> ServerHealth {
     let BasicSystemStats {
         cpu_perc,
         mem_used_gb,

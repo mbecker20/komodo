@@ -2,7 +2,9 @@ use anyhow::{anyhow, Context};
 use bollard::{container::ListContainersOptions, Docker};
 use monitor_types::entities::{
     deployment::ContainerSummary,
-    server::{docker_image::ImageSummary, docker_network::DockerNetwork},
+    server::{
+        docker_image::ImageSummary, docker_network::DockerNetwork,
+    },
 };
 
 pub struct DockerClient {
@@ -19,7 +21,9 @@ impl Default for DockerClient {
 }
 
 impl DockerClient {
-    pub async fn list_containers(&self) -> anyhow::Result<Vec<ContainerSummary>> {
+    pub async fn list_containers(
+        &self,
+    ) -> anyhow::Result<Vec<ContainerSummary>> {
         let res = self
             .docker
             .list_containers(Some(ListContainersOptions::<String> {
@@ -35,7 +39,9 @@ impl DockerClient {
                         .names
                         .ok_or(anyhow!("no names on container"))?
                         .pop()
-                        .ok_or(anyhow!("no names on container (empty vec)"))?
+                        .ok_or(anyhow!(
+                            "no names on container (empty vec)"
+                        ))?
                         .replace('/', ""),
                     image: s.image.unwrap_or(String::from("unknown")),
                     state: s
@@ -51,7 +57,9 @@ impl DockerClient {
         Ok(res)
     }
 
-    pub async fn list_networks(&self) -> anyhow::Result<Vec<DockerNetwork>> {
+    pub async fn list_networks(
+        &self,
+    ) -> anyhow::Result<Vec<DockerNetwork>> {
         let networks = self
             .docker
             .list_networks::<String>(None)
@@ -62,7 +70,9 @@ impl DockerClient {
         Ok(networks)
     }
 
-    pub async fn list_images(&self) -> anyhow::Result<Vec<ImageSummary>> {
+    pub async fn list_images(
+        &self,
+    ) -> anyhow::Result<Vec<ImageSummary>> {
         let images = self
             .docker
             .list_images::<String>(None)

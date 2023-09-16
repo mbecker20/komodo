@@ -9,8 +9,9 @@ use crate::{
             docker_image::ImageSummary,
             docker_network::DockerNetwork,
             stats::{
-                AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage,
-                SystemComponent, SystemInformation, SystemProcess, SystemStatsRecord,
+                AllSystemStats, BasicSystemStats, CpuUsage,
+                DiskUsage, NetworkUsage, SystemComponent,
+                SystemInformation, SystemProcess, SystemStatsRecord,
             },
             Server, ServerActionState, ServerListItem, ServerStatus,
         },

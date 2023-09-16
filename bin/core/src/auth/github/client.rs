@@ -82,7 +82,10 @@ impl GithubOauthClient {
         contained
     }
 
-    pub async fn get_access_token(&self, code: &str) -> anyhow::Result<AccessTokenResponse> {
+    pub async fn get_access_token(
+        &self,
+        code: &str,
+    ) -> anyhow::Result<AccessTokenResponse> {
         self.post::<(), _>(
             "https://github.com/login/oauth/access_token",
             &[
@@ -98,7 +101,10 @@ impl GithubOauthClient {
         .context("failed to get github access token using code")
     }
 
-    pub async fn get_github_user(&self, token: &str) -> anyhow::Result<GithubUserResponse> {
+    pub async fn get_github_user(
+        &self,
+        token: &str,
+    ) -> anyhow::Result<GithubUserResponse> {
         self.get("https://api.github.com/user", &[], Some(token))
             .await
             .context("failed to get github user using access token")
@@ -117,10 +123,14 @@ impl GithubOauthClient {
             .header("User-Agent", &self.user_agent);
 
         if let Some(bearer_token) = bearer_token {
-            req = req.header("Authorization", format!("Bearer {bearer_token}"));
+            req = req.header(
+                "Authorization",
+                format!("Bearer {bearer_token}"),
+            );
         }
 
-        let res = req.send().await.context("failed to reach github")?;
+        let res =
+            req.send().await.context("failed to reach github")?;
 
         let status = res.status();
 
@@ -131,10 +141,9 @@ impl GithubOauthClient {
                 .context("failed to parse body into expected type")?;
             Ok(body)
         } else {
-            let text = res
-                .text()
-                .await
-                .context(format!("status: {status} | failed to get response text"))?;
+            let text = res.text().await.context(format!(
+                "status: {status} | failed to get response text"
+            ))?;
             Err(anyhow!("status: {status} | text: {text}"))
         }
     }
@@ -158,24 +167,29 @@ impl GithubOauthClient {
         }
 
         if let Some(bearer_token) = bearer_token {
-            req = req.header("Authorization", format!("Bearer {bearer_token}"));
+            req = req.header(
+                "Authorization",
+                format!("Bearer {bearer_token}"),
+            );
         }
 
-        let res = req.send().await.context("failed to reach github")?;
+        let res =
+            req.send().await.context("failed to reach github")?;
 
         let status = res.status();
 
         if status == StatusCode::OK {
-            let body = res
-                .json()
-                .await
-                .context("failed to parse POST body into expected type")?;
+            let body = res.json().await.context(
+                "failed to parse POST body into expected type",
+            )?;
             Ok(body)
         } else {
             let text = res.text().await.context(format!(
                 "method: POST | status: {status} | failed to get response text"
             ))?;
-            Err(anyhow!("method: POST | status: {status} | text: {text}"))
+            Err(anyhow!(
+                "method: POST | status: {status} | text: {text}"
+            ))
         }
     }
 }

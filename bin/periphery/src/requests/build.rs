@@ -16,14 +16,29 @@ pub struct Build {
 
 #[async_trait]
 impl Resolve<Build> for State {
-    async fn resolve(&self, Build { build }: Build, _: ()) -> anyhow::Result<Vec<Log>> {
+    async fn resolve(
+        &self,
+        Build { build }: Build,
+        _: (),
+    ) -> anyhow::Result<Vec<Log>> {
         let secrets = self.secrets.clone();
         let repo_dir = self.config.repo_dir.clone();
-        let log = match self.get_docker_token(&optional_string(&build.config.docker_account)) {
+        let log = match self.get_docker_token(&optional_string(
+            &build.config.docker_account,
+        )) {
             Ok(docker_token) => {
-                match docker::build(&build, repo_dir, docker_token, &secrets).await {
+                match docker::build(
+                    &build,
+                    repo_dir,
+                    docker_token,
+                    &secrets,
+                )
+                .await
+                {
                     Ok(logs) => logs,
-                    Err(e) => vec![Log::error("build", format!("{e:#?}"))],
+                    Err(e) => {
+                        vec![Log::error("build", format!("{e:#?}"))]
+                    }
                 }
             }
             Err(e) => vec![Log::error("build", format!("{e:#?}"))],
@@ -40,7 +55,11 @@ pub struct GetImageList {}
 
 #[async_trait::async_trait]
 impl Resolve<GetImageList> for State {
-    async fn resolve(&self, _: GetImageList, _: ()) -> anyhow::Result<Vec<ImageSummary>> {
+    async fn resolve(
+        &self,
+        _: GetImageList,
+        _: (),
+    ) -> anyhow::Result<Vec<ImageSummary>> {
         self.docker.list_images().await
     }
 }
@@ -53,7 +72,11 @@ pub struct PruneImages {}
 
 #[async_trait]
 impl Resolve<PruneImages> for State {
-    async fn resolve(&self, _: PruneImages, _: ()) -> anyhow::Result<Log> {
+    async fn resolve(
+        &self,
+        _: PruneImages,
+        _: (),
+    ) -> anyhow::Result<Log> {
         Ok(docker::prune_images().await)
     }
 }

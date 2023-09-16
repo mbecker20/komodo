@@ -3,12 +3,17 @@ use std::{cmp::Ordering, sync::Arc};
 use async_timing_util::wait_until_timelength;
 use monitor_types::entities::{
     server::stats::{
-        AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage, NetworkUsage, SingleCpuUsage,
-        SingleDiskUsage, SystemComponent, SystemInformation, SystemNetwork, SystemProcess,
+        AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage,
+        NetworkUsage, SingleCpuUsage, SingleDiskUsage,
+        SystemComponent, SystemInformation, SystemNetwork,
+        SystemProcess,
     },
     Timelength,
 };
-use sysinfo::{ComponentExt, CpuExt, DiskExt, NetworkExt, PidExt, ProcessExt, SystemExt};
+use sysinfo::{
+    ComponentExt, CpuExt, DiskExt, NetworkExt, PidExt, ProcessExt,
+    SystemExt,
+};
 use tokio::sync::RwLock;
 
 pub type StatsClient = Arc<RwLock<InnerStatsClient>>;
@@ -39,7 +44,11 @@ impl InnerStatsClient {
         let clone = client.clone();
         tokio::spawn(async move {
             loop {
-                let ts = wait_until_timelength(async_timing_util::Timelength::FiveMinutes, 0).await;
+                let ts = wait_until_timelength(
+                    async_timing_util::Timelength::FiveMinutes,
+                    0,
+                )
+                .await;
                 let mut client = clone.write().await;
                 client.refresh_lists();
                 client.stats.refresh_list_ts = ts as i64;
@@ -47,7 +56,8 @@ impl InnerStatsClient {
         });
         let clone = client.clone();
         tokio::spawn(async move {
-            let polling_rate = polling_rate.to_string().parse().unwrap();
+            let polling_rate =
+                polling_rate.to_string().parse().unwrap();
             loop {
                 let ts = wait_until_timelength(polling_rate, 1).await;
                 let mut client = clone.write().await;
@@ -96,7 +106,8 @@ impl InnerStatsClient {
             cpu_perc: cpu.cpu_usage(),
             cpu_freq_mhz: cpu.frequency() as f64,
             mem_used_gb: self.sys.used_memory() as f64 / BYTES_PER_GB,
-            mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
+            mem_total_gb: self.sys.total_memory() as f64
+                / BYTES_PER_GB,
             disk_used_gb: disk.used_gb,
             disk_total_gb: disk.total_gb,
         }
@@ -127,8 +138,10 @@ impl InnerStatsClient {
             .disks()
             .iter()
             .map(|disk| {
-                let disk_total = disk.total_space() as f64 / BYTES_PER_GB;
-                let disk_free = disk.available_space() as f64 / BYTES_PER_GB;
+                let disk_total =
+                    disk.total_space() as f64 / BYTES_PER_GB;
+                let disk_free =
+                    disk.available_space() as f64 / BYTES_PER_GB;
                 total_gb += disk_total;
                 free_gb += disk_free;
                 SingleDiskUsage {
@@ -197,8 +210,10 @@ impl InnerStatsClient {
         comps.sort_by(|a, b| {
             if a.critical.is_some() {
                 if b.critical.is_some() {
-                    let a_perc = a.temp / *a.critical.as_ref().unwrap();
-                    let b_perc = b.temp / *b.critical.as_ref().unwrap();
+                    let a_perc =
+                        a.temp / *a.critical.as_ref().unwrap();
+                    let b_perc =
+                        b.temp / *b.critical.as_ref().unwrap();
                     if a_perc > b_perc {
                         Ordering::Less
                     } else {
@@ -231,8 +246,10 @@ impl InnerStatsClient {
                     start_time: (p.start_time() * 1000) as f64,
                     cpu_perc: p.cpu_usage(),
                     mem_mb: p.memory() as f64 / BYTES_PER_MB,
-                    disk_read_kb: disk_usage.read_bytes as f64 / BYTES_PER_KB,
-                    disk_write_kb: disk_usage.written_bytes as f64 / BYTES_PER_KB,
+                    disk_read_kb: disk_usage.read_bytes as f64
+                        / BYTES_PER_KB,
+                    disk_write_kb: disk_usage.written_bytes as f64
+                        / BYTES_PER_KB,
                 }
             })
             .collect();
@@ -247,7 +264,9 @@ impl InnerStatsClient {
     }
 }
 
-fn get_system_information(sys: &sysinfo::System) -> SystemInformation {
+fn get_system_information(
+    sys: &sysinfo::System,
+) -> SystemInformation {
     let cpu = sys.global_cpu_info();
     SystemInformation {
         name: sys.name(),

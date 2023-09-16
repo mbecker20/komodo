@@ -4,7 +4,8 @@ use async_trait::async_trait;
 use monitor_types::{
     entities::user::User,
     requests::auth::{
-        CreateLocalUser, CreateLocalUserResponse, LoginLocalUser, LoginLocalUserResponse,
+        CreateLocalUser, CreateLocalUserResponse, LoginLocalUser,
+        LoginLocalUserResponse,
     },
 };
 use mungos::mongodb::bson::doc;
@@ -25,9 +26,11 @@ impl Resolve<CreateLocalUser> for State {
             return Err(anyhow!("local auth is not enabled"));
         }
 
-        let password = bcrypt::hash(password, BCRYPT_COST).context("failed to hash password")?;
+        let password = bcrypt::hash(password, BCRYPT_COST)
+            .context("failed to hash password")?;
 
-        let no_users_exist = self.db.users.find_one(None, None).await?.is_none();
+        let no_users_exist =
+            self.db.users.find_one(None, None).await?.is_none();
 
         let ts = unix_timestamp_ms() as i64;
 
@@ -75,14 +78,16 @@ impl Resolve<LoginLocalUser> for State {
             .find_one(doc! { "username": &username }, None)
             .await
             .context("failed at mongo query")?
-            .ok_or(anyhow!("did not find user with username {username}"))?;
+            .ok_or(anyhow!(
+                "did not find user with username {username}"
+            ))?;
 
-        let user_pw_hash = user
-            .password
-            .ok_or(anyhow!("invalid login, user does not have password login"))?;
+        let user_pw_hash = user.password.ok_or(anyhow!(
+            "invalid login, user does not have password login"
+        ))?;
 
-        let verified =
-            bcrypt::verify(password, &user_pw_hash).context("failed at verify password")?;
+        let verified = bcrypt::verify(password, &user_pw_hash)
+            .context("failed at verify password")?;
 
         if !verified {
             return Err(anyhow!("invalid credentials"));

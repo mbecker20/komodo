@@ -25,8 +25,18 @@ pub struct BuilderListItemInfo {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants,
+)]
+#[variant_derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Display,
+    EnumString
+)]
 #[serde(tag = "type", content = "params")]
 pub enum BuilderConfig {
     Server(ServerBuilderConfig),
@@ -40,8 +50,18 @@ pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
 pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants)]
-#[variant_derive(Serialize, Deserialize, Debug, Clone, Copy, Display, EnumString)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants,
+)]
+#[variant_derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Copy,
+    Display,
+    EnumString
+)]
 #[serde(tag = "type", content = "params")]
 pub enum PartialBuilderConfig {
     Server(_PartialServerBuilderConfig),
@@ -51,14 +71,21 @@ pub enum PartialBuilderConfig {
 impl From<PartialBuilderConfig> for BuilderConfig {
     fn from(value: PartialBuilderConfig) -> BuilderConfig {
         match value {
-            PartialBuilderConfig::Server(server) => BuilderConfig::Server(server.into()),
-            PartialBuilderConfig::Aws(builder) => BuilderConfig::Aws(builder.into()),
+            PartialBuilderConfig::Server(server) => {
+                BuilderConfig::Server(server.into())
+            }
+            PartialBuilderConfig::Aws(builder) => {
+                BuilderConfig::Aws(builder.into())
+            }
         }
     }
 }
 
 impl BuilderConfig {
-    pub fn merge_partial(self, partial: PartialBuilderConfig) -> BuilderConfig {
+    pub fn merge_partial(
+        self,
+        partial: PartialBuilderConfig,
+    ) -> BuilderConfig {
         match partial {
             PartialBuilderConfig::Server(partial) => match self {
                 BuilderConfig::Server(config) => {
@@ -72,20 +99,36 @@ impl BuilderConfig {
             PartialBuilderConfig::Aws(partial) => match self {
                 BuilderConfig::Aws(config) => {
                     let config = AwsBuilderConfig {
-                        region: partial.region.unwrap_or(config.region),
-                        instance_type: partial.instance_type.unwrap_or(config.instance_type),
-                        volume_gb: partial.volume_gb.unwrap_or(config.volume_gb),
-                        ami_id: partial.ami_id.unwrap_or(config.ami_id),
-                        subnet_id: partial.subnet_id.unwrap_or(config.subnet_id),
+                        region: partial
+                            .region
+                            .unwrap_or(config.region),
+                        instance_type: partial
+                            .instance_type
+                            .unwrap_or(config.instance_type),
+                        volume_gb: partial
+                            .volume_gb
+                            .unwrap_or(config.volume_gb),
+                        ami_id: partial
+                            .ami_id
+                            .unwrap_or(config.ami_id),
+                        subnet_id: partial
+                            .subnet_id
+                            .unwrap_or(config.subnet_id),
                         security_group_ids: partial
                             .security_group_ids
                             .unwrap_or(config.security_group_ids),
-                        key_pair_name: partial.key_pair_name.unwrap_or(config.key_pair_name),
+                        key_pair_name: partial
+                            .key_pair_name
+                            .unwrap_or(config.key_pair_name),
                         assign_public_ip: partial
                             .assign_public_ip
                             .unwrap_or(config.assign_public_ip),
-                        github_accounts: partial.github_accounts.unwrap_or(config.github_accounts),
-                        docker_accounts: partial.docker_accounts.unwrap_or(config.docker_accounts),
+                        github_accounts: partial
+                            .github_accounts
+                            .unwrap_or(config.github_accounts),
+                        docker_accounts: partial
+                            .docker_accounts
+                            .unwrap_or(config.docker_accounts),
                     };
                     BuilderConfig::Aws(config)
                 }

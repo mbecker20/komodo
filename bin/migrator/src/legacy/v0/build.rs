@@ -62,7 +62,9 @@ pub struct BuildActionState {
     pub updating: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+)]
 pub struct Version {
     pub major: i32,
     pub minor: i32,
@@ -79,14 +81,19 @@ impl TryFrom<&str> for Version {
     type Error = anyhow::Error;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let vals = value
-            .split('.')
-            .map(|v| anyhow::Ok(v.parse().context("failed at parsing value into i32")?))
-            .collect::<anyhow::Result<Vec<i32>>>()?;
+        let vals =
+            value
+                .split('.')
+                .map(|v| {
+                    anyhow::Ok(v.parse().context(
+                        "failed at parsing value into i32",
+                    )?)
+                })
+                .collect::<anyhow::Result<Vec<i32>>>()?;
         let version = Version {
-            major: *vals
-                .first()
-                .ok_or(anyhow!("must include at least major version"))?,
+            major: *vals.first().ok_or(anyhow!(
+                "must include at least major version"
+            ))?,
             minor: *vals.get(1).unwrap_or(&0),
             patch: *vals.get(2).unwrap_or(&0),
         };
@@ -100,7 +107,9 @@ impl Version {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, PartialEq, Default,
+)]
 pub struct DockerBuildArgs {
     pub build_path: String,
     pub dockerfile_path: Option<String>,
@@ -118,7 +127,9 @@ pub struct BuildVersionsReponse {
     pub ts: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, PartialEq, Default,
+)]
 pub struct AwsBuilderBuildConfig {
     pub region: Option<String>,
 

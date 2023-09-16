@@ -6,7 +6,9 @@ use monitor_types::{
         Operation, PermissionLevel,
     },
     monitor_timestamp,
-    requests::write::{CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter},
+    requests::write::{
+        CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter,
+    },
 };
 use mungos::mongodb::bson::{doc, to_bson};
 use resolver_api::Resolve;
@@ -25,7 +27,8 @@ impl Resolve<CreateAlerter, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Alerter> {
         let start_ts = monitor_timestamp();
-        let is_default = self.db.alerters.find_one(None, None).await?.is_none();
+        let is_default =
+            self.db.alerters.find_one(None, None).await?.is_none();
         let alerter = Alerter {
             id: Default::default(),
             name,
@@ -46,7 +49,8 @@ impl Resolve<CreateAlerter, RequestUser> for State {
             .context("failed to add alerter to db")?;
         let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
-        let mut update = make_update(&alerter, Operation::CreateAlerter, &user);
+        let mut update =
+            make_update(&alerter, Operation::CreateAlerter, &user);
 
         update.push_simple_log(
             "create alerter",
@@ -55,7 +59,10 @@ impl Resolve<CreateAlerter, RequestUser> for State {
                 alerter.id, alerter.name
             ),
         );
-        update.push_simple_log("config", format!("{:#?}", alerter.config));
+        update.push_simple_log(
+            "config",
+            format!("{:#?}", alerter.config),
+        );
 
         update.finalize();
 
@@ -77,7 +84,11 @@ impl Resolve<CopyAlerter, RequestUser> for State {
             description,
             ..
         } = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
         let start_ts = monitor_timestamp();
         let alerter = Alerter {
@@ -100,7 +111,8 @@ impl Resolve<CopyAlerter, RequestUser> for State {
             .context("failed to add alerter to db")?;
         let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
-        let mut update = make_update(&alerter, Operation::CreateAlerter, &user);
+        let mut update =
+            make_update(&alerter, Operation::CreateAlerter, &user);
 
         update.push_simple_log(
             "create alerter",
@@ -110,7 +122,10 @@ impl Resolve<CopyAlerter, RequestUser> for State {
             ),
         );
 
-        update.push_simple_log("config", format!("{:#?}", alerter.config));
+        update.push_simple_log(
+            "config",
+            format!("{:#?}", alerter.config),
+        );
 
         update.finalize();
 
@@ -128,10 +143,15 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Alerter> {
         let alerter: Alerter = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
-        let mut update = make_update(&alerter, Operation::DeleteAlerter, &user);
+        let mut update =
+            make_update(&alerter, Operation::DeleteAlerter, &user);
 
         self.db
             .alerters
@@ -162,12 +182,20 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
         user: RequestUser,
     ) -> anyhow::Result<Alerter> {
         let alerter: Alerter = self
-            .get_resource_check_permissions(&id, &user, PermissionLevel::Update)
+            .get_resource_check_permissions(
+                &id,
+                &user,
+                PermissionLevel::Update,
+            )
             .await?;
 
-        let mut update = make_update(&alerter, Operation::UpdateAlerter, &user);
+        let mut update =
+            make_update(&alerter, Operation::UpdateAlerter, &user);
 
-        update.push_simple_log("alerter update", serde_json::to_string_pretty(&config)?);
+        update.push_simple_log(
+            "alerter update",
+            serde_json::to_string_pretty(&config)?,
+        );
 
         let config = alerter.config.merge_partial(config);
 
@@ -175,7 +203,9 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
             .alerters
             .update_one(
                 &id,
-                mungos::Update::FlattenSet(doc! { "config": to_bson(&config)? }),
+                mungos::Update::FlattenSet(
+                    doc! { "config": to_bson(&config)? },
+                ),
             )
             .await?;
 
