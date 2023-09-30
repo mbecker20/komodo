@@ -339,6 +339,9 @@ impl State {
             ))
             .await;
         }
+        let _ = self
+            .terminate_ec2_instance(config.region, &instance_id)
+            .await;
         Err(anyhow!("{:#?}", res.err().unwrap()))
     }
 
