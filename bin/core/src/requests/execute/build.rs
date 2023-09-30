@@ -282,20 +282,10 @@ impl State {
         let Ec2Instance { instance_id, ip } =
             self.launch_ec2_instance(&instance_name, &config).await?;
 
-        let readable_sec_group_ids =
-            config.security_group_ids.join(", ");
-        let AwsBuilderConfig {
-            ami_id,
-            instance_type,
-            volume_gb,
-            subnet_id,
-            ..
-        } = config;
-
         let log = Log {
             stage: "start build instance".to_string(),
             success: true,
-            stdout: format!("instance id: {instance_id}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}"),
+            stdout: start_aws_builder_log(&instance_id, &ip, &config),
             start_ts: start_create_ts,
             end_ts: monitor_timestamp(),
             ..Default::default()
@@ -452,4 +442,24 @@ impl State {
             }
         }
     }
+}
+
+fn start_aws_builder_log(
+    instance_id: &str,
+    ip: &str,
+    config: &AwsBuilderConfig,
+) -> String {
+    let AwsBuilderConfig {
+        ami_id,
+        instance_type,
+        volume_gb,
+        subnet_id,
+        assign_public_ip,
+        security_group_ids,
+        ..
+    } = config;
+
+    let readable_sec_group_ids = security_group_ids.join(", ");
+
+    format!("instance id: {instance_id}\nip: {ip}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}\nuse public ip: {assign_public_ip}")
 }
