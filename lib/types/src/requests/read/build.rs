@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 
+use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -12,37 +13,52 @@ use crate::{
     MongoDocument, I64,
 };
 
+use super::MonitorReadRequest;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Build)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetBuildResponse)]
 pub struct GetBuild {
     pub id: String,
 }
 
+#[typeshare]
+pub type GetBuildResponse = Build;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<BuildListItem>)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListBuildsResponse)]
 pub struct ListBuilds {
     pub query: Option<MongoDocument>,
 }
 
+#[typeshare]
+pub type ListBuildsResponse = Vec<BuildListItem>;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(BuildActionState)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetBuildActionStateResponse)]
 pub struct GetBuildActionState {
     pub id: String,
 }
 
+#[typeshare]
+pub type GetBuildActionStateResponse = BuildActionState;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetBuildsSummaryResponse)]
 pub struct GetBuildsSummary {}
 
@@ -55,7 +71,8 @@ pub struct GetBuildsSummaryResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetBuildMonthlyStatsResponse)]
 pub struct GetBuildMonthlyStats {
     #[serde(default)]
@@ -106,8 +123,9 @@ impl GetBuildMonthlyStatsResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Request)]
-#[response(Vec<BuildVersionResponseItem>)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetBuildVersionsResponse)]
 pub struct GetBuildVersions {
     pub id: String,
     #[serde(default)]
@@ -116,6 +134,9 @@ pub struct GetBuildVersions {
     pub minor: Option<i32>,
     pub patch: Option<i32>,
 }
+
+#[typeshare]
+pub type GetBuildVersionsResponse = Vec<BuildVersionResponseItem>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]

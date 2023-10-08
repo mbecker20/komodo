@@ -1,3 +1,4 @@
+use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -13,28 +14,39 @@ use crate::{
     MongoDocument, I64, U64,
 };
 
+use super::MonitorReadRequest;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Deployment)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetDeploymentResponse)]
 pub struct GetDeployment {
     pub id: String,
 }
 
+#[typeshare]
+pub type GetDeploymentResponse = Deployment;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<DeploymentListItem>)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListDeploymentsResponse)]
 pub struct ListDeployments {
     pub query: Option<MongoDocument>,
 }
 
+#[typeshare]
+pub type ListDeploymentsResponse = Vec<DeploymentListItem>;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentStatusResponse)]
 pub struct GetDeploymentStatus {
     pub id: String,
@@ -50,8 +62,9 @@ pub struct GetDeploymentStatusResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetLogResponse)]
 pub struct GetLog {
     pub deployment_id: String,
     #[serde(default = "default_tail")]
@@ -62,10 +75,14 @@ fn default_tail() -> u64 {
     50
 }
 
+#[typeshare]
+pub type GetLogResponse = Log;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetDeployedVersionResponse)]
 pub struct GetDeployedVersion {
     pub deployment_id: String,
@@ -80,25 +97,34 @@ pub struct GetDeployedVersionResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(DockerContainerStats)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetDeploymentStatsResponse)]
 pub struct GetDeploymentStats {
     pub id: String,
 }
 
+#[typeshare]
+pub type GetDeploymentStatsResponse = DockerContainerStats;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
 #[response(DeploymentActionState)]
 pub struct GetDeploymentActionState {
     pub id: String,
 }
 
+#[typeshare]
+pub type GetDeploymentActionStateResponse = DeploymentActionState;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentsSummaryResponse)]
 pub struct GetDeploymentsSummary {}
 

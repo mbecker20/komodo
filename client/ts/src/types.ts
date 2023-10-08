@@ -249,127 +249,47 @@ export type U64 = number;
 
 export type MongoDocument = any;
 
-export type _PartialBuildConfig = Partial<BuildConfig>;
+export type GetAlerterResponse = Alerter;
 
-export type _PartialDeploymentConfig = Partial<DeploymentConfig>;
+export type ListAlertersResponse = AlerterListItem[];
 
-export type _PartialRepoConfig = Partial<RepoConfig>;
+export type GetBuildResponse = Build;
 
-export type _PartialServerConfig = Partial<ServerConfig>;
-
-export type _PartialCustomTag = Partial<CustomTag>;
-
-export enum SeverityLevel {
-	Ok = "OK",
-	Warning = "WARNING",
-	Critical = "CRITICAL",
-}
-
-export type ResourceTarget = 
-	| { type: "System", id: string }
-	| { type: "Build", id: string }
-	| { type: "Builder", id: string }
-	| { type: "Deployment", id: string }
-	| { type: "Server", id: string }
-	| { type: "Repo", id: string }
-	| { type: "Alerter", id: string };
-
-export type AlertData = 
-	| { type: "ServerUnreachable", data: {
-	id: string;
-	name: string;
-	region?: string;
-}}
-	| { type: "ServerCpu", data: {
-	id: string;
-	name: string;
-	region?: string;
-	percentage: number;
-	top_procs: SystemProcess[];
-}}
-	| { type: "ServerMem", data: {
-	id: string;
-	name: string;
-	region?: string;
-	used_gb: number;
-	total_gb: number;
-	top_procs: SystemProcess[];
-}}
-	| { type: "ServerDisk", data: {
-	id: string;
-	name: string;
-	region?: string;
-	path: string;
-	used_gb: number;
-	total_gb: number;
-}}
-	| { type: "ServerTemp", data: {
-	id: string;
-	name: string;
-	region?: string;
-	component: string;
-	temp: number;
-	max: number;
-}}
-	| { type: "ContainerStateChange", data: {
-	id: string;
-	name: string;
-	server_id: string;
-	server_name: string;
-	from: DockerContainerState;
-	to: DockerContainerState;
-}}
-	| { type: "None", data: {
-}};
-
-export interface Alert {
-	_id?: MongoId;
-	ts: I64;
-	resolved: boolean;
-	level: SeverityLevel;
-	target: ResourceTarget;
-	variant: AlertData["type"];
-	data: AlertData;
-	resolved_ts?: I64;
-}
-
-export interface CustomAlerterConfig {
-	url: string;
-}
-
-export interface SlackAlerterConfig {
-	url: string;
-}
+export type ListBuildsResponse = BuildListItem[];
 
 export interface BuildActionState {
 	building: boolean;
 	updating: boolean;
 }
 
-export interface ServerBuilderConfig {
-	id: string;
+export type GetBuildActionStateResponse = BuildActionState;
+
+export interface BuildVersionResponseItem {
+	version: Version;
+	ts: I64;
 }
 
-export interface AwsBuilderConfig {
-	region: string;
-	instance_type: string;
-	volume_gb: number;
-	ami_id: string;
-	subnet_id: string;
-	security_group_ids: string[];
-	key_pair_name: string;
-	assign_public_ip: boolean;
-	github_accounts?: string[];
-	docker_accounts?: string[];
+export type GetBuildVersionsResponse = BuildVersionResponseItem[];
+
+export type GetBuilderResponse = Builder;
+
+export type ListBuildersResponse = BuilderListItem[];
+
+export type GetDeploymentResponse = Deployment;
+
+export type ListDeploymentsResponse = DeploymentListItem[];
+
+export interface Log {
+	stage: string;
+	command: string;
+	stdout: string;
+	stderr: string;
+	success: boolean;
+	start_ts: I64;
+	end_ts: I64;
 }
 
-export interface ContainerSummary {
-	name: string;
-	id: string;
-	image: string;
-	state: DockerContainerState;
-	status?: string;
-}
+export type GetLogResponse = Log;
 
 export interface DockerContainerStats {
 	name: string;
@@ -381,6 +301,8 @@ export interface DockerContainerStats {
 	pids: string;
 }
 
+export type GetDeploymentStatsResponse = DockerContainerStats;
+
 export interface DeploymentActionState {
 	deploying: boolean;
 	stopping: boolean;
@@ -391,14 +313,48 @@ export interface DeploymentActionState {
 	deleting: boolean;
 }
 
-export interface CloneArgs {
+export type GetDeploymentActionStateResponse = DeploymentActionState;
+
+export interface ApiSecret {
 	name: string;
-	repo?: string;
-	branch?: string;
-	on_clone?: SystemCommand;
-	on_pull?: SystemCommand;
-	github_account?: string;
+	hash?: string;
+	created_at: I64;
+	expires?: I64;
 }
+
+export type ResourceTarget = 
+	| { type: "System", id: string }
+	| { type: "Build", id: string }
+	| { type: "Builder", id: string }
+	| { type: "Deployment", id: string }
+	| { type: "Server", id: string }
+	| { type: "Repo", id: string }
+	| { type: "Alerter", id: string };
+
+export interface User {
+	_id?: MongoId;
+	username: string;
+	enabled?: boolean;
+	admin?: boolean;
+	create_server_permissions?: boolean;
+	create_build_permissions?: boolean;
+	avatar?: string;
+	secrets?: ApiSecret[];
+	password?: string;
+	github_id?: string;
+	google_id?: string;
+	last_update_view?: I64;
+	recently_viewed?: ResourceTarget[];
+	updated_at?: I64;
+}
+
+export type GetUserResponse = User;
+
+export type GetUsersResponse = User[];
+
+export type GetRepoResponse = Repo;
+
+export type ListReposResponse = RepoListItem[];
 
 export interface RepoActionState {
 	cloning: boolean;
@@ -407,68 +363,11 @@ export interface RepoActionState {
 	deleting: boolean;
 }
 
-export interface ImageSummary {
-	/** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
-	Id: string;
-	/** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
-	ParentId: string;
-	/** List of image names/tags in the local image cache that reference this image.  Multiple image tags can refer to the same image, and this list may be empty if no tags reference the image, in which case the image is \"untagged\", in which case it can still be referenced by its ID. */
-	RepoTags: string[];
-	/** List of content-addressable digests of locally available image manifests that the image is referenced from. Multiple manifests can refer to the same image.  These digests are usually only available if the image was either pulled from a registry, or if the image was pushed to a registry, which is when the manifest is generated and its digest calculated. */
-	RepoDigests: string[];
-	/** Date and time at which the image was created as a Unix timestamp (number of seconds sinds EPOCH). */
-	Created: I64;
-	/** Total size of the image including all layers it is composed of. */
-	Size: I64;
-	/** Total size of image layers that are shared between this image and other images.  This size is not calculated by default. `-1` indicates that the value has not been set / calculated. */
-	SharedSize: I64;
-	/** Total size of the image including all layers it is composed of.  In versions of Docker before v1.10, this field was calculated from the image itself and all of its parent images. Docker v1.10 and up store images self-contained, and no longer use a parent-chain, making this field an equivalent of the Size field.  This field is kept for backward compatibility, but may be removed in a future version of the API. */
-	VirtualSize: I64;
-	/** User-defined key/value metadata. */
-	Labels: Record<string, string>;
-	/** Number of containers using this image. Includes both stopped and running containers.  This size is not calculated by default, and depends on which API endpoint is used. `-1` indicates that the value has not been set / calculated. */
-	Containers: I64;
-}
+export type GetRepoActionStateResponse = RepoActionState;
 
-export interface IpamConfig {
-	Subnet?: string;
-	IPRange?: string;
-	Gateway?: string;
-	AuxiliaryAddresses?: Record<string, string>;
-}
+export type GetServerResponse = Server;
 
-export interface Ipam {
-	/** Name of the IPAM driver to use. */
-	Driver?: string;
-	/** List of IPAM configuration options, specified as a map:  ``` {\"Subnet\": <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\": <device_name:IP address>} ``` */
-	Config?: IpamConfig[];
-	/** Driver-specific options, specified as a map. */
-	Options?: Record<string, string>;
-}
-
-export interface NetworkContainer {
-	Name?: string;
-	EndpointID?: string;
-	MacAddress?: string;
-	IPv4Address?: string;
-	IPv6Address?: string;
-}
-
-export interface DockerNetwork {
-	Name?: string;
-	Id?: string;
-	Created?: string;
-	Scope?: string;
-	Driver?: string;
-	EnableIPv6?: boolean;
-	IPAM?: Ipam;
-	Internal?: boolean;
-	Attachable?: boolean;
-	Ingress?: boolean;
-	Containers?: Record<string, NetworkContainer>;
-	Options?: Record<string, string>;
-	Labels?: Record<string, string>;
-}
+export type ListServersResponse = ServerListItem[];
 
 export interface ServerActionState {
 	pruning_networks: boolean;
@@ -476,17 +375,7 @@ export interface ServerActionState {
 	pruning_images: boolean;
 }
 
-export interface SystemStatsRecord {
-	ts: I64;
-	sid: string;
-	system_load: number;
-	cpu_perc: number;
-	cpu_freq_mhz: number;
-	mem_used_gb: number;
-	mem_total_gb: number;
-	disk_used_gb: number;
-	disk_total_gb: number;
-}
+export type GetServerActionStateResponse = ServerActionState;
 
 export interface SystemInformation {
 	name?: string;
@@ -496,6 +385,8 @@ export interface SystemInformation {
 	host_name?: string;
 	cpu_brand: string;
 }
+
+export type GetSystemInformationResponse = SystemInformation;
 
 export interface BasicSystemStats {
 	system_load: number;
@@ -599,13 +490,98 @@ export interface AllSystemStats {
 	refresh_list_ts: I64;
 }
 
-export interface ServerHealth {
-	cpu: SeverityLevel;
-	mem: SeverityLevel;
-	disk: SeverityLevel;
-	disks: Record<string, SeverityLevel>;
-	temps: Record<string, SeverityLevel>;
+export type GetAllSystemStatsResponse = AllSystemStats;
+
+export type GetBasicSystemStatsResponse = BasicSystemStats;
+
+export type GetCpuUsageResponse = CpuUsage;
+
+export type GetDiskUsageResponse = DiskUsage;
+
+export type GetNetworkUsageResponse = NetworkUsage;
+
+export type GetSystemProcessesResponse = SystemProcess[];
+
+export type GetSystemComponentsResponse = SystemComponent[];
+
+export interface IpamConfig {
+	Subnet?: string;
+	IPRange?: string;
+	Gateway?: string;
+	AuxiliaryAddresses?: Record<string, string>;
 }
+
+export interface Ipam {
+	/** Name of the IPAM driver to use. */
+	Driver?: string;
+	/** List of IPAM configuration options, specified as a map:  ``` {\"Subnet\": <CIDR>, \"IPRange\": <CIDR>, \"Gateway\": <IP address>, \"AuxAddress\": <device_name:IP address>} ``` */
+	Config?: IpamConfig[];
+	/** Driver-specific options, specified as a map. */
+	Options?: Record<string, string>;
+}
+
+export interface NetworkContainer {
+	Name?: string;
+	EndpointID?: string;
+	MacAddress?: string;
+	IPv4Address?: string;
+	IPv6Address?: string;
+}
+
+export interface DockerNetwork {
+	Name?: string;
+	Id?: string;
+	Created?: string;
+	Scope?: string;
+	Driver?: string;
+	EnableIPv6?: boolean;
+	IPAM?: Ipam;
+	Internal?: boolean;
+	Attachable?: boolean;
+	Ingress?: boolean;
+	Containers?: Record<string, NetworkContainer>;
+	Options?: Record<string, string>;
+	Labels?: Record<string, string>;
+}
+
+export type GetDockerNetworksResponse = DockerNetwork[];
+
+export interface ImageSummary {
+	/** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
+	Id: string;
+	/** ID of the parent image.  Depending on how the image was created, this field may be empty and is only set for images that were built/created locally. This field is empty if the image was pulled from an image registry. */
+	ParentId: string;
+	/** List of image names/tags in the local image cache that reference this image.  Multiple image tags can refer to the same image, and this list may be empty if no tags reference the image, in which case the image is \"untagged\", in which case it can still be referenced by its ID. */
+	RepoTags: string[];
+	/** List of content-addressable digests of locally available image manifests that the image is referenced from. Multiple manifests can refer to the same image.  These digests are usually only available if the image was either pulled from a registry, or if the image was pushed to a registry, which is when the manifest is generated and its digest calculated. */
+	RepoDigests: string[];
+	/** Date and time at which the image was created as a Unix timestamp (number of seconds sinds EPOCH). */
+	Created: I64;
+	/** Total size of the image including all layers it is composed of. */
+	Size: I64;
+	/** Total size of image layers that are shared between this image and other images.  This size is not calculated by default. `-1` indicates that the value has not been set / calculated. */
+	SharedSize: I64;
+	/** Total size of the image including all layers it is composed of.  In versions of Docker before v1.10, this field was calculated from the image itself and all of its parent images. Docker v1.10 and up store images self-contained, and no longer use a parent-chain, making this field an equivalent of the Size field.  This field is kept for backward compatibility, but may be removed in a future version of the API. */
+	VirtualSize?: I64;
+	/** User-defined key/value metadata. */
+	Labels: Record<string, string>;
+	/** Number of containers using this image. Includes both stopped and running containers.  This size is not calculated by default, and depends on which API endpoint is used. `-1` indicates that the value has not been set / calculated. */
+	Containers: I64;
+}
+
+export type GetDockerImagesResponse = ImageSummary[];
+
+export interface ContainerSummary {
+	name: string;
+	id: string;
+	image: string;
+	state: DockerContainerState;
+	status?: string;
+}
+
+export type GetDockerContainersResponse = ContainerSummary[];
+
+export type GetAvailableSecretsResponse = string[];
 
 export enum TagColor {
 	Red = "Red",
@@ -624,6 +600,10 @@ export interface CustomTag {
 	category?: string;
 	color?: TagColor;
 }
+
+export type GetTagResponse = CustomTag;
+
+export type ListTagsResponse = CustomTag[];
 
 export enum Operation {
 	None = "None",
@@ -666,16 +646,6 @@ export enum Operation {
 	AutoPull = "AutoPull",
 }
 
-export interface Log {
-	stage: string;
-	command: string;
-	stdout: string;
-	stderr: string;
-	success: boolean;
-	start_ts: I64;
-	end_ts: I64;
-}
-
 export enum UpdateStatus {
 	Queued = "Queued",
 	InProgress = "InProgress",
@@ -695,6 +665,137 @@ export interface Update {
 	version: Version;
 }
 
+export type GetUpdateResponse = Update;
+
+export type _PartialBuildConfig = Partial<BuildConfig>;
+
+export type _PartialDeploymentConfig = Partial<DeploymentConfig>;
+
+export type _PartialRepoConfig = Partial<RepoConfig>;
+
+export type _PartialServerConfig = Partial<ServerConfig>;
+
+export type _PartialCustomTag = Partial<CustomTag>;
+
+export enum SeverityLevel {
+	Ok = "OK",
+	Warning = "WARNING",
+	Critical = "CRITICAL",
+}
+
+export type AlertData = 
+	| { type: "ServerUnreachable", data: {
+	id: string;
+	name: string;
+	region?: string;
+}}
+	| { type: "ServerCpu", data: {
+	id: string;
+	name: string;
+	region?: string;
+	percentage: number;
+	top_procs: SystemProcess[];
+}}
+	| { type: "ServerMem", data: {
+	id: string;
+	name: string;
+	region?: string;
+	used_gb: number;
+	total_gb: number;
+	top_procs: SystemProcess[];
+}}
+	| { type: "ServerDisk", data: {
+	id: string;
+	name: string;
+	region?: string;
+	path: string;
+	used_gb: number;
+	total_gb: number;
+}}
+	| { type: "ServerTemp", data: {
+	id: string;
+	name: string;
+	region?: string;
+	component: string;
+	temp: number;
+	max: number;
+}}
+	| { type: "ContainerStateChange", data: {
+	id: string;
+	name: string;
+	server_id: string;
+	server_name: string;
+	from: DockerContainerState;
+	to: DockerContainerState;
+}}
+	| { type: "None", data: {
+}};
+
+export interface Alert {
+	_id?: MongoId;
+	ts: I64;
+	resolved: boolean;
+	level: SeverityLevel;
+	target: ResourceTarget;
+	variant: AlertData["type"];
+	data: AlertData;
+	resolved_ts?: I64;
+}
+
+export interface CustomAlerterConfig {
+	url: string;
+}
+
+export interface SlackAlerterConfig {
+	url: string;
+}
+
+export interface ServerBuilderConfig {
+	id: string;
+}
+
+export interface AwsBuilderConfig {
+	region: string;
+	instance_type: string;
+	volume_gb: number;
+	ami_id: string;
+	subnet_id: string;
+	security_group_ids: string[];
+	key_pair_name: string;
+	assign_public_ip: boolean;
+	github_accounts?: string[];
+	docker_accounts?: string[];
+}
+
+export interface CloneArgs {
+	name: string;
+	repo?: string;
+	branch?: string;
+	on_clone?: SystemCommand;
+	on_pull?: SystemCommand;
+	github_account?: string;
+}
+
+export interface SystemStatsRecord {
+	ts: I64;
+	sid: string;
+	system_load: number;
+	cpu_perc: number;
+	cpu_freq_mhz: number;
+	mem_used_gb: number;
+	mem_total_gb: number;
+	disk_used_gb: number;
+	disk_total_gb: number;
+}
+
+export interface ServerHealth {
+	cpu: SeverityLevel;
+	mem: SeverityLevel;
+	disk: SeverityLevel;
+	disks: Record<string, SeverityLevel>;
+	temps: Record<string, SeverityLevel>;
+}
+
 export interface UpdateListItem {
 	id: string;
 	operation: Operation;
@@ -705,30 +806,6 @@ export interface UpdateListItem {
 	target: ResourceTarget;
 	status: UpdateStatus;
 	version: Version;
-}
-
-export interface ApiSecret {
-	name: string;
-	hash?: string;
-	created_at: I64;
-	expires?: I64;
-}
-
-export interface User {
-	_id?: MongoId;
-	username: string;
-	enabled?: boolean;
-	admin?: boolean;
-	create_server_permissions?: boolean;
-	create_build_permissions?: boolean;
-	avatar?: string;
-	secrets?: ApiSecret[];
-	password?: string;
-	github_id?: string;
-	google_id?: string;
-	last_update_view?: I64;
-	recently_viewed?: ResourceTarget[];
-	updated_at?: I64;
 }
 
 export interface GetLoginOptions {
@@ -894,11 +971,6 @@ export interface GetBuildVersions {
 	major?: number;
 	minor?: number;
 	patch?: number;
-}
-
-export interface BuildVersionResponseItem {
-	version: Version;
-	ts: I64;
 }
 
 export interface GetBuilder {
@@ -1136,12 +1208,8 @@ export interface GetServerAvailableAccountsResponse {
 	docker: string[];
 }
 
-export interface GetAvailableNetworks {
+export interface GetAvailableSecrets {
 	server_id: string;
-}
-
-export interface GetAvailableNetworksResponse {
-	networks: DockerNetwork[];
 }
 
 export interface GetTag {
@@ -1443,7 +1511,6 @@ export type ReadRequest =
 	| { type: "GetServerActionState", params: GetServerActionState }
 	| { type: "GetHistoricalServerStats", params: GetHistoricalServerStats }
 	| { type: "GetServerAvailableAccounts", params: GetServerAvailableAccounts }
-	| { type: "GetAvailableNetworks", params: GetAvailableNetworks }
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
 	| { type: "ListDeployments", params: ListDeployments }

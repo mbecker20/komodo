@@ -1,6 +1,9 @@
 use anyhow::{anyhow, Context};
+use monitor_types::requests::{
+    auth::MonitorAuthRequest, execute::MonitorExecuteRequest,
+    read::MonitorReadRequest, write::MonitorWriteRequest,
+};
 use reqwest::StatusCode;
-use resolver_api::HasResponse;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::json;
 use serror::deserialize_error;
@@ -8,7 +11,7 @@ use serror::deserialize_error;
 use crate::MonitorClient;
 
 impl MonitorClient {
-    pub async fn auth<T: HasResponse>(
+    pub async fn auth<T: MonitorAuthRequest>(
         &self,
         request: T,
     ) -> anyhow::Result<T::Response> {
@@ -23,7 +26,7 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn read<T: HasResponse>(
+    pub async fn read<T: MonitorReadRequest>(
         &self,
         request: T,
     ) -> anyhow::Result<T::Response> {
@@ -38,7 +41,7 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn write<T: HasResponse>(
+    pub async fn write<T: MonitorWriteRequest>(
         &self,
         request: T,
     ) -> anyhow::Result<T::Response> {
@@ -53,7 +56,7 @@ impl MonitorClient {
         .await
     }
 
-    pub async fn execute<T: HasResponse>(
+    pub async fn execute<T: MonitorExecuteRequest>(
         &self,
         request: T,
     ) -> anyhow::Result<T::Response> {

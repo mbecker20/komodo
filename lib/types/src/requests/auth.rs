@@ -1,11 +1,15 @@
-use resolver_api::derive::Request;
+use derive_empty_traits::EmptyTraits;
+use resolver_api::{derive::Request, HasResponse};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
+
+pub trait MonitorAuthRequest: HasResponse {}
 
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorAuthRequest)]
 #[response(GetLoginOptionsResponse)]
 pub struct GetLoginOptions {}
 
@@ -20,7 +24,8 @@ pub struct GetLoginOptionsResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorAuthRequest)]
 #[response(CreateLocalUserResponse)]
 pub struct CreateLocalUser {
     pub username: String,
@@ -36,7 +41,8 @@ pub struct CreateLocalUserResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorAuthRequest)]
 #[response(LoginLocalUserResponse)]
 pub struct LoginLocalUser {
     pub username: String,
@@ -52,7 +58,8 @@ pub struct LoginLocalUserResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorAuthRequest)]
 #[response(ExchangeForJwtResponse)]
 pub struct ExchangeForJwt {
     pub token: String,
@@ -67,7 +74,8 @@ pub struct ExchangeForJwtResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorAuthRequest)]
 #[response(LoginWithSecretResponse)]
 pub struct LoginWithSecret {
     pub username: String,

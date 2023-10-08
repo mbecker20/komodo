@@ -1,3 +1,4 @@
+use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -7,8 +8,11 @@ use crate::entities::{
     PermissionLevel,
 };
 
+use super::MonitorWriteRequest;
+
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct UpdateUserPermissionsOnTarget {
     pub user_id: String,
@@ -17,7 +21,8 @@ pub struct UpdateUserPermissionsOnTarget {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct UpdateUserPermissions {
     pub user_id: String,

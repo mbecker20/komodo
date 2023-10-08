@@ -19,7 +19,10 @@ pub use description::*;
 pub use launch::*;
 pub use permissions::*;
 pub use repo::*;
+use resolver_api::HasResponse;
 pub use secret::*;
 pub use server::*;
 pub use tags::*;
 pub use user::*;
+
+pub trait MonitorWriteRequest: HasResponse {}

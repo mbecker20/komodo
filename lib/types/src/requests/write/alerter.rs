@@ -1,13 +1,17 @@
+use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::alerter::{Alerter, PartialAlerterConfig};
 
+use super::MonitorWriteRequest;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct CreateAlerter {
     pub name: String,
@@ -17,7 +21,8 @@ pub struct CreateAlerter {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct CopyAlerter {
     pub name: String,
@@ -27,7 +32,8 @@ pub struct CopyAlerter {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct DeleteAlerter {
     pub id: String,
@@ -36,7 +42,8 @@ pub struct DeleteAlerter {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct UpdateAlerter {
     pub id: String,

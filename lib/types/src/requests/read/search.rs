@@ -1,3 +1,4 @@
+use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -11,10 +12,15 @@ use crate::{
     MongoDocument,
 };
 
+use super::MonitorReadRequest;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
 #[response(FindResourcesResponse)]
 pub struct FindResources {
     pub query: Option<MongoDocument>,

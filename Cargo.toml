@@ -18,16 +18,16 @@ periphery_client = { path = "lib/periphery_client" }
 logger = { path = "lib/logger" }
 # mogh
 run_command = { version = "0.0.6", features = ["async_tokio"] }
-slack = { package = "slack_client_rs", version = "0.1.0" }
+slack = { version = "0.1.0", package = "slack_client_rs" }
+derive_empty_traits = "0.1.0"
 merge_config_files = "0.1.3"
 termination_signal = "0.1.3"
 async_timing_util = "0.1.14"
 partial_derive2 = "0.2.1"
 derive_variants = "0.1.1"
-make_option = "0.1.7"
 resolver_api = "0.1.6"
 parse_csl = "0.1.0"
-mungos = "0.4.19"
+mungos = "0.4.22"
 serror = "0.1.3"
 svi = "0.1.4"
 # external
@@ -35,37 +35,37 @@ tokio = { version = "1.32.0", features = ["full"] }
 axum = { version = "0.6.20", features = ["ws", "json", "headers"] }
 tower = { version = "0.4.13", features = ["timeout"] }
 tower-http = { version = "0.4.4", features = ["fs", "cors"] }
-reqwest = { version = "0.11.20", features = ["json"] }
-clap = { version = "4.4.2", features = ["derive"] }
+reqwest = { version = "0.11.22", features = ["json"] }
+clap = { version = "4.4.6", features = ["derive"] }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng", "serde"] }
 serde = { version = "1.0.188", features = ["derive"] }
-serde_json = "1.0.105"
-tokio-tungstenite = "0.20.0"
-tokio-util = "0.7.8"
+serde_json = "1.0.107"
+tokio-tungstenite = "0.20.1"
+tokio-util = "0.7.9"
 futures = "0.3.28"
 futures-util = "0.3.28"
 dotenv = "0.15.0"
 envy = "0.4.2"
 anyhow = "1.0.75"
-thiserror = "1.0.48"
+thiserror = "1.0.49"
 log = "0.4.20"
 simple_logger = "4.2.0"
-bollard = "0.14.0"
+bollard = "0.15.0"
 derive_builder = "0.12.0"
 typeshare = "1.0.1"
 strum = "0.25.0"
 strum_macros = "0.25.2"
-sysinfo = "0.29.9"
+sysinfo = "0.29.10"
 async-trait = "0.1.73"
 urlencoding = "2.1.3"
 rand = "0.8.5"
 jwt = "0.16.0"
 hmac = "0.12.1"
-sha2 = "0.10.7"
+sha2 = "0.10.8"
 bcrypt = "0.15.0"
 hex = "0.4.3"
 aws-config = "0.56.1"
-aws-sdk-ec2 = "0.30.0"
-proc-macro2 = "1.0.66"
+aws-sdk-ec2 = "0.33.0"
+proc-macro2 = "1.0.68"
 quote = "1.0.33"
-syn = "2.0.31"
+syn = "2.0.38"

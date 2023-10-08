@@ -1,3 +1,4 @@
+use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -7,15 +8,28 @@ use crate::{
     MongoDocument,
 };
 
+use super::MonitorReadRequest;
+
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Update)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetUpdateResponse)]
 pub struct GetUpdate {
     pub id: String,
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+pub type GetUpdateResponse = Update;
+
+//
+
+#[typeshare]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
 #[response(ListUpdatesResponse)]
 pub struct ListUpdates {
     pub query: Option<MongoDocument>,

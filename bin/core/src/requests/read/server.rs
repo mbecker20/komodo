@@ -517,27 +517,3 @@ impl Resolve<GetServerAvailableAccounts, RequestUser> for State {
         Ok(res)
     }
 }
-
-#[async_trait]
-impl Resolve<GetAvailableNetworks, RequestUser> for State {
-    async fn resolve(
-        &self,
-        GetAvailableNetworks { server_id }: GetAvailableNetworks,
-        user: RequestUser,
-    ) -> anyhow::Result<GetAvailableNetworksResponse> {
-        let server: Server = self
-            .get_resource_check_permissions(
-                &server_id,
-                &user,
-                PermissionLevel::Read,
-            )
-            .await?;
-        let networks = self
-            .periphery_client(&server)?
-            .request(requests::GetNetworkList {})
-            .await
-            .context("failed to get accounts from periphery")?;
-        let res = GetAvailableNetworksResponse { networks };
-        Ok(res)
-    }
-}

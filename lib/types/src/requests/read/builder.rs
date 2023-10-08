@@ -1,3 +1,4 @@
+use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -7,28 +8,39 @@ use crate::{
     MongoDocument,
 };
 
+use super::MonitorReadRequest;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Builder)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetBuilderResponse)]
 pub struct GetBuilder {
     pub id: String,
 }
 
+#[typeshare]
+pub type GetBuilderResponse = Builder;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<BuilderListItem>)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListBuildersResponse)]
 pub struct ListBuilders {
     pub query: Option<MongoDocument>,
 }
 
+#[typeshare]
+pub type ListBuildersResponse = Vec<BuilderListItem>;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetBuildersSummaryResponse)]
 pub struct GetBuildersSummary {}
 
@@ -41,7 +53,8 @@ pub struct GetBuildersSummaryResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetBuilderAvailableAccountsResponse)]
 pub struct GetBuilderAvailableAccounts {
     pub id: String,

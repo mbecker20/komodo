@@ -1,4 +1,5 @@
-use resolver_api::derive::Request;
+use derive_empty_traits::EmptyTraits;
+use resolver_api::{derive::Request, HasResponse};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -26,10 +27,15 @@ pub use update::*;
 
 use crate::entities::{user::User, Timelength};
 
+pub trait MonitorReadRequest: HasResponse {}
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetVersionResponse)]
 pub struct GetVersion {}
 
@@ -42,21 +48,36 @@ pub struct GetVersionResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(User)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetUserResponse)]
 pub struct GetUser {}
 
+#[typeshare]
+pub type GetUserResponse = User;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<User>)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetUsersResponse)]
 pub struct GetUsers {}
 
+#[typeshare]
+pub type GetUsersResponse = Vec<User>;
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetUsernameResponse)]
 pub struct GetUsername {
     pub user_id: String,
@@ -71,7 +92,10 @@ pub struct GetUsernameResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetCoreInfoResponse)]
 pub struct GetCoreInfo {}
 

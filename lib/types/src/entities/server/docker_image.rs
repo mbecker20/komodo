@@ -44,7 +44,7 @@ pub struct ImageSummary {
 
     /// Total size of the image including all layers it is composed of.  In versions of Docker before v1.10, this field was calculated from the image itself and all of its parent images. Docker v1.10 and up store images self-contained, and no longer use a parent-chain, making this field an equivalent of the Size field.  This field is kept for backward compatibility, but may be removed in a future version of the API.
     #[serde(rename = "VirtualSize")]
-    pub virtual_size: I64,
+    pub virtual_size: Option<I64>,
 
     /// User-defined key/value metadata.
     #[serde(rename = "Labels")]
@@ -64,7 +64,7 @@ fn deserialize_nonoptional_vec<
     d: D,
 ) -> Result<Vec<T>, D::Error> {
     serde::Deserialize::deserialize(d)
-        .map(|x: Option<_>| x.unwrap_or(Vec::new()))
+        .map(|x: Option<_>| x.unwrap_or_default())
 }
 
 fn deserialize_nonoptional_map<
@@ -75,7 +75,7 @@ fn deserialize_nonoptional_map<
     d: D,
 ) -> Result<HashMap<String, T>, D::Error> {
     serde::Deserialize::deserialize(d)
-        .map(|x: Option<_>| x.unwrap_or(HashMap::new()))
+        .map(|x: Option<_>| x.unwrap_or_default())
 }
 
 impl From<bollard::service::ImageSummary> for ImageSummary {

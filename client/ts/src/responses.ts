@@ -10,8 +10,8 @@ export type AuthResponses = {
 
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
-  GetUser: Types.User;
-  GetUsers: Types.User[];
+  GetUser: Types.GetUserResponse;
+  GetUsers: Types.GetUsersResponse;
   GetUsername: Types.GetUsernameResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
 
@@ -20,73 +20,72 @@ export type ReadResponses = {
 
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;
-  GetServer: Types.Server;
-  ListServers: Types.ServerListItem[];
+  GetServer: Types.GetServerResponse;
+  ListServers: Types.ListServersResponse;
   GetServerStatus: Types.GetServerStatusResponse;
   GetPeripheryVersion: Types.GetPeripheryVersionResponse;
-  GetSystemInformation: Types.SystemInformation;
-  GetDockerContainers: Types.ContainerSummary[];
-  GetDockerImages: Types.ImageSummary[];
-  GetDockerNetworks: Types.DockerNetwork[];
-  GetServerActionState: Types.ServerActionState;
+  GetSystemInformation: Types.GetSystemInformationResponse;
+  GetDockerContainers: Types.GetDockerContainersResponse;
+  GetDockerImages: Types.GetDockerImagesResponse;
+  GetDockerNetworks: Types.GetDockerNetworksResponse;
+  GetServerActionState: Types.GetServerActionStateResponse;
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
   GetServerAvailableAccounts: Types.GetServerAvailableAccountsResponse;
-  GetAvailableNetworks: Types.GetAvailableNetworksResponse;
 
   // ==== DEPLOYMENT ====
   GetDeploymentsSummary: Types.GetDeploymentsSummaryResponse;
-  GetDeployment: Types.Deployment;
-  ListDeployments: Types.DeploymentListItem[];
+  GetDeployment: Types.GetDeploymentResponse;
+  ListDeployments: Types.ListDeploymentsResponse;
   GetDeploymentStatus: Types.GetDeploymentStatusResponse;
-  GetDeploymentActionState: Types.DeploymentActionState;
+  GetDeploymentActionState: Types.GetDeploymentActionStateResponse;
   GetDeployedVersion: Types.GetDeployedVersionResponse;
-  GetDeploymentStats: Types.GetDeploymentStatusResponse;
-  GetLog: Types.Log;
+  GetDeploymentStats: Types.GetDeploymentStatsResponse;
+  GetLog: Types.GetLogResponse;
 
   // ==== BUILD ====
   GetBuildsSummary: Types.GetBuildsSummaryResponse;
-  GetBuild: Types.Build;
-  ListBuilds: Types.BuildListItem[];
-  GetBuildActionState: Types.BuildActionState;
+  GetBuild: Types.GetBuildResponse;
+  ListBuilds: Types.ListBuildsResponse;
+  GetBuildActionState: Types.GetBuildActionStateResponse;
   GetBuildMonthlyStats: Types.GetBuildMonthlyStatsResponse;
-  GetBuildVersions: Types.BuildVersionResponseItem[];
+  GetBuildVersions: Types.GetBuildVersionsResponse;
 
   // ==== REPO ====
   GetReposSummary: Types.GetReposSummaryResponse;
-  GetRepo: Types.Repo;
-  ListRepos: Types.RepoListItem[];
-  GetRepoActionState: Types.RepoActionState;
+  GetRepo: Types.GetRepoResponse;
+  ListRepos: Types.ListReposResponse;
+  GetRepoActionState: Types.GetRepoActionStateResponse;
 
   // ==== BUILDER ====
   GetBuildersSummary: Types.GetBuildersSummaryResponse;
-  GetBuilder: Types.Builder;
-  ListBuilders: Types.BuilderListItem[];
+  GetBuilder: Types.GetBuilderResponse;
+  ListBuilders: Types.ListBuildersResponse;
   GetBuilderAvailableAccounts: Types.GetBuilderAvailableAccountsResponse;
 
   // ==== ALERTER ====
   GetAlertersSummary: Types.GetAlertersSummaryResponse;
-  GetAlerter: Types.Alerter;
-  ListAlerters: Types.AlerterListItem[];
+  GetAlerter: Types.GetAlerterResponse;
+  ListAlerters: Types.ListAlertersResponse;
 
   // ==== TAG ====
-  GetTag: Types.CustomTag;
-  ListTags: Types.CustomTag[];
+  GetTag: Types.GetTagResponse;
+  ListTags: Types.ListTagsResponse;
 
   // ==== UPDATE ====
-  GetUpdate: Types.Update;
+  GetUpdate: Types.GetUpdateResponse;
   ListUpdates: Types.ListUpdatesResponse;
 
   // ==== ALERT ====
   ListAlerts: Types.ListAlertsResponse;
 
   // ==== SERVER STATS ====
-  GetAllSystemStats: Types.AllSystemStats;
-  GetBasicSystemStats: Types.BasicSystemStats;
-  GetCpuUsage: Types.CpuUsage;
-  GetDiskUsage: Types.DiskUsage;
-  GetNetworkUsage: Types.NetworkUsage;
-  GetSystemProcesses: Types.SystemProcess[];
-  GetSystemComponents: Types.SystemComponent[];
+  GetAllSystemStats: Types.GetAllSystemStatsResponse;
+  GetBasicSystemStats: Types.GetBasicSystemStatsResponse;
+  GetCpuUsage: Types.GetCpuUsageResponse;
+  GetDiskUsage: Types.GetDiskUsageResponse;
+  GetNetworkUsage: Types.GetNetworkUsageResponse;
+  GetSystemProcesses: Types.GetSystemProcessesResponse;
+  GetSystemComponents: Types.GetSystemComponentsResponse;
 };
 
 export type WriteResponses = {

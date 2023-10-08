@@ -8,7 +8,13 @@ license.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-monitor_macros.workspace = true
+# mogh
+mungos.workspace = true
+resolver_api.workspace = true
+derive_empty_traits.workspace = true
+derive_variants.workspace = true
+partial_derive2.workspace = true
+# ext
 serde.workspace = true
 serde_json.workspace = true
 typeshare.workspace = true
@@ -17,10 +23,5 @@ strum_macros.workspace = true
 async-trait.workspace = true
 anyhow.workspace = true
 async_timing_util.workspace = true
-resolver_api.workspace = true
 derive_builder.workspace = true
 bollard.workspace = true
-derive_variants.workspace = true
-partial_derive2.workspace = true
-make_option.workspace = true
-mungos.workspace = true

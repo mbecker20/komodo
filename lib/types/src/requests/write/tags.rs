@@ -1,3 +1,4 @@
+use derive_empty_traits::EmptyTraits;
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -7,13 +8,16 @@ use crate::entities::{
     update::ResourceTarget,
 };
 
+use super::MonitorWriteRequest;
+
 #[typeshare(serialized_as = "Partial<CustomTag>")]
 type _PartialCustomTag = PartialCustomTag;
 
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(CustomTag)]
 pub struct CreateTag {
     pub name: String,
@@ -28,7 +32,8 @@ pub struct CreateTag {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(CustomTag)]
 pub struct DeleteTag {
     pub id: String,
@@ -37,7 +42,8 @@ pub struct DeleteTag {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(CustomTag)]
 pub struct UpdateTag {
     pub id: String,
@@ -47,7 +53,8 @@ pub struct UpdateTag {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(())]
 pub struct AddTags {
     pub target: ResourceTarget,
@@ -57,7 +64,8 @@ pub struct AddTags {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[empty_traits(MonitorWriteRequest)]
 #[response(())]
 pub struct RemoveTags {
     pub target: ResourceTarget,

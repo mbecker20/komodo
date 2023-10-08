@@ -60,7 +60,6 @@ enum ReadRequest {
     GetServerActionState(GetServerActionState),
     GetHistoricalServerStats(GetHistoricalServerStats),
     GetServerAvailableAccounts(GetServerAvailableAccounts),
-    GetAvailableNetworks(GetAvailableNetworks),
 
     // ==== DEPLOYMENT ====
     GetDeploymentsSummary(GetDeploymentsSummary),
