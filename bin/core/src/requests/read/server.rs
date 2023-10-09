@@ -494,15 +494,15 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetServerAvailableAccounts, RequestUser> for State {
+impl Resolve<GetAvailableAccounts, RequestUser> for State {
     async fn resolve(
         &self,
-        GetServerAvailableAccounts { id }: GetServerAvailableAccounts,
+        GetAvailableAccounts { server_id }: GetAvailableAccounts,
         user: RequestUser,
-    ) -> anyhow::Result<GetServerAvailableAccountsResponse> {
+    ) -> anyhow::Result<GetAvailableAccountsResponse> {
         let server: Server = self
             .get_resource_check_permissions(
-                &id,
+                &server_id,
                 &user,
                 PermissionLevel::Read,
             )
@@ -512,8 +512,30 @@ impl Resolve<GetServerAvailableAccounts, RequestUser> for State {
             .request(requests::GetAccounts {})
             .await
             .context("failed to get accounts from periphery")?;
-        let res =
-            GetServerAvailableAccountsResponse { github, docker };
+        let res = GetAvailableAccountsResponse { github, docker };
         Ok(res)
+    }
+}
+
+#[async_trait]
+impl Resolve<GetAvailableSecrets, RequestUser> for State {
+    async fn resolve(
+        &self,
+        GetAvailableSecrets { server_id }: GetAvailableSecrets,
+        user: RequestUser,
+    ) -> anyhow::Result<GetAvailableSecretsResponse> {
+        let server: Server = self
+            .get_resource_check_permissions(
+                &server_id,
+                &user,
+                PermissionLevel::Read,
+            )
+            .await?;
+        let secrets = self
+            .periphery_client(&server)?
+            .request(requests::GetSecrets {})
+            .await
+            .context("failed to get accounts from periphery")?;
+        Ok(secrets)
     }
 }

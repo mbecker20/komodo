@@ -30,7 +30,8 @@ export type ReadResponses = {
   GetDockerNetworks: Types.GetDockerNetworksResponse;
   GetServerActionState: Types.GetServerActionStateResponse;
   GetHistoricalServerStats: Types.GetHistoricalServerStatsResponse;
-  GetServerAvailableAccounts: Types.GetServerAvailableAccountsResponse;
+  GetAvailableAccounts: Types.GetAvailableAccountsResponse;
+  GetAvailableSecrets: Types.GetAvailableSecretsResponse;
 
   // ==== DEPLOYMENT ====
   GetDeploymentsSummary: Types.GetDeploymentsSummaryResponse;

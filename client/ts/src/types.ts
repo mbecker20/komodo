@@ -1199,11 +1199,11 @@ export interface GetServersSummaryResponse {
 	disabled: I64;
 }
 
-export interface GetServerAvailableAccounts {
-	id: string;
+export interface GetAvailableAccounts {
+	server_id: string;
 }
 
-export interface GetServerAvailableAccountsResponse {
+export interface GetAvailableAccountsResponse {
 	github: string[];
 	docker: string[];
 }
@@ -1510,7 +1510,8 @@ export type ReadRequest =
 	| { type: "GetDockerNetworks", params: GetDockerNetworks }
 	| { type: "GetServerActionState", params: GetServerActionState }
 	| { type: "GetHistoricalServerStats", params: GetHistoricalServerStats }
-	| { type: "GetServerAvailableAccounts", params: GetServerAvailableAccounts }
+	| { type: "GetAvailableAccounts", params: GetAvailableAccounts }
+	| { type: "GetAvailableSecrets", params: GetAvailableSecrets }
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
 	| { type: "ListDeployments", params: ListDeployments }

@@ -97,8 +97,8 @@ impl Resolve<GetBuilderAvailableAccounts, RequestUser> for State {
             BuilderConfig::Server(config) => {
                 let res = self
                     .resolve(
-                        read::GetServerAvailableAccounts {
-                            id: config.id,
+                        read::GetAvailableAccounts {
+                            server_id: config.id,
                         },
                         user,
                     )
