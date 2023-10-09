@@ -18,7 +18,7 @@ export const NetworkModeSelector = ({
   onSelect: (type: string) => void;
 }) => {
   const networks = useRead(
-    "GetAvailableNetworks",
+    "GetDockerNetworks",
     { server_id: server_id! },
     { enabled: !!server_id }
   ).data;
@@ -30,7 +30,7 @@ export const NetworkModeSelector = ({
           <SelectValue placeholder="Select Type" />
         </SelectTrigger>
         <SelectContent>
-          {networks?.networks.map((network) => (
+          {networks?.map((network) => (
             <SelectItem key={network.Id} value={network.Name ?? ""}>
               {network.Name}
             </SelectItem>

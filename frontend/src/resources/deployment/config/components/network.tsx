@@ -15,7 +15,7 @@ export const NetworkModeSelector = ({
   selected: string | undefined;
   onSelect: (type: string) => void;
 }) => {
-  const networks = useRead("GetAvailableNetworks", {}).data;
+  const networks = useRead("GetDockerNetworks", {}).data;
   // const networks = useRead("GetDockerNetworks", {}).data?.forEach(network => network.)
 
   return (
@@ -30,7 +30,7 @@ export const NetworkModeSelector = ({
               {network}
             </SelectItem>
           ))}
-          {networks?.networks.map((network) => (
+          {networks?.map((network) => (
             <SelectItem key={network.Id} value={network.Name ?? ""}>
               {network.Name}
             </SelectItem>
