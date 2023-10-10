@@ -59,12 +59,20 @@ pub struct Update {
 }
 
 impl Update {
-    pub fn push_simple_log(&mut self, stage: &str, msg: String) {
-        self.logs.push(Log::simple(stage, msg));
+    pub fn push_simple_log(
+        &mut self,
+        stage: &str,
+        msg: impl Into<String>,
+    ) {
+        self.logs.push(Log::simple(stage, msg.into()));
     }
 
-    pub fn push_error_log(&mut self, stage: &str, msg: String) {
-        self.logs.push(Log::error(stage, msg));
+    pub fn push_error_log(
+        &mut self,
+        stage: &str,
+        msg: impl Into<String>,
+    ) {
+        self.logs.push(Log::error(stage, msg.into()));
     }
 
     pub fn in_progress(&mut self) {

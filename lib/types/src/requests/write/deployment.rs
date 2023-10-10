@@ -16,7 +16,9 @@ type _PartialDeploymentConfig = PartialDeploymentConfig;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Deployment)]
 pub struct CreateDeployment {
@@ -27,7 +29,9 @@ pub struct CreateDeployment {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Deployment)]
 pub struct CopyDeployment {
@@ -38,7 +42,9 @@ pub struct CopyDeployment {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Deployment)]
 pub struct DeleteDeployment {
@@ -48,7 +54,9 @@ pub struct DeleteDeployment {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Deployment)]
 pub struct UpdateDeployment {
@@ -59,7 +67,9 @@ pub struct UpdateDeployment {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct RenameDeployment {

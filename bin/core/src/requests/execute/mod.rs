@@ -38,6 +38,7 @@ enum ExecuteRequest {
     Deploy(Deploy),
     StartContainer(StartContainer),
     StopContainer(StopContainer),
+    StopAllContainers(StopAllContainers),
     RemoveContainer(RemoveContainer),
 
     // ==== BUILD ====

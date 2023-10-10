@@ -18,7 +18,9 @@ use super::MonitorReadRequest;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildResponse)]
 pub struct GetBuild {
@@ -31,7 +33,9 @@ pub type GetBuildResponse = Build;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListBuildsResponse)]
 pub struct ListBuilds {
@@ -44,7 +48,9 @@ pub type ListBuildsResponse = Vec<BuildListItem>;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildActionStateResponse)]
 pub struct GetBuildActionState {
@@ -57,7 +63,9 @@ pub type GetBuildActionStateResponse = BuildActionState;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildsSummaryResponse)]
 pub struct GetBuildsSummary {}
@@ -71,7 +79,9 @@ pub struct GetBuildsSummaryResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildMonthlyStatsResponse)]
 pub struct GetBuildMonthlyStats {
@@ -123,7 +133,15 @@ impl GetBuildMonthlyStatsResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits)]
+#[derive(
+    Serialize,
+    Deserialize,
+    Debug,
+    Clone,
+    Default,
+    Request,
+    EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildVersionsResponse)]
 pub struct GetBuildVersions {

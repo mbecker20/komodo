@@ -10,7 +10,9 @@ use super::MonitorExecuteRequest;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct RunBuild {
@@ -20,7 +22,9 @@ pub struct RunBuild {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(CancelBuildResponse)]
 pub struct CancelBuild {

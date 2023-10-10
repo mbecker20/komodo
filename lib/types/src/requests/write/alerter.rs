@@ -10,7 +10,9 @@ use super::MonitorWriteRequest;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct CreateAlerter {
@@ -21,7 +23,9 @@ pub struct CreateAlerter {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct CopyAlerter {
@@ -32,7 +36,9 @@ pub struct CopyAlerter {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct DeleteAlerter {
@@ -42,7 +48,9 @@ pub struct DeleteAlerter {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Alerter)]
 pub struct UpdateAlerter {

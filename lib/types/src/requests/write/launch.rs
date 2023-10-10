@@ -8,7 +8,9 @@ use crate::entities::{builder::AwsBuilderConfig, update::Update};
 use super::MonitorWriteRequest;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct LaunchServer {

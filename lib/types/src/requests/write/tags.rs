@@ -16,7 +16,9 @@ type _PartialCustomTag = PartialCustomTag;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(CustomTag)]
 pub struct CreateTag {
@@ -32,7 +34,9 @@ pub struct CreateTag {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(CustomTag)]
 pub struct DeleteTag {
@@ -42,7 +46,9 @@ pub struct DeleteTag {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(CustomTag)]
 pub struct UpdateTag {
@@ -53,7 +59,9 @@ pub struct UpdateTag {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(())]
 pub struct AddTags {
@@ -64,7 +72,9 @@ pub struct AddTags {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(())]
 pub struct RemoveTags {

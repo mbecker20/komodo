@@ -16,7 +16,9 @@ type _PartialServerConfig = PartialServerConfig;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Server)]
 pub struct CreateServer {
@@ -27,7 +29,9 @@ pub struct CreateServer {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Server)]
 pub struct DeleteServer {
@@ -37,7 +41,9 @@ pub struct DeleteServer {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Server)]
 pub struct UpdateServer {
@@ -48,7 +54,9 @@ pub struct UpdateServer {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct RenameServer {
@@ -59,7 +67,9 @@ pub struct RenameServer {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct CreateNetwork {
@@ -70,7 +80,9 @@ pub struct CreateNetwork {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct DeleteNetwork {

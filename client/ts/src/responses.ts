@@ -161,6 +161,7 @@ export type ExecuteResponses = {
   Deploy: Types.Update;
   StartContainer: Types.Update;
   StopContainer: Types.Update;
+  StopAllContainers: Types.Update;
   RemoveContainer: Types.Update;
 
   // ==== BUILD ====

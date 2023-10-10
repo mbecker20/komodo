@@ -10,7 +10,9 @@ use super::MonitorWriteRequest;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(CreateLoginSecretResponse)]
 pub struct CreateLoginSecret {
@@ -27,7 +29,9 @@ pub struct CreateLoginSecretResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(DeleteLoginSecretResponse)]
 pub struct DeleteLoginSecret {

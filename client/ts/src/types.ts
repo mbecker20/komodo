@@ -159,6 +159,7 @@ export enum RestartMode {
 
 export interface DeploymentConfig {
 	server_id?: string;
+	send_alerts: boolean;
 	image?: DeploymentImage;
 	skip_secret_interp?: boolean;
 	redeploy_on_build?: boolean;
@@ -221,6 +222,7 @@ export interface ServerConfig {
 	address: string;
 	enabled: boolean;
 	auto_prune: boolean;
+	send_alerts: boolean;
 	region?: string;
 	cpu_warning: number;
 	cpu_critical: number;
@@ -241,6 +243,7 @@ export enum ServerStatus {
 export interface ServerListItemInfo {
 	status: ServerStatus;
 	region: string;
+	send_alerts: boolean;
 }
 
 export type ServerListItem = ResourceListItem<ServerListItemInfo>;
@@ -879,6 +882,10 @@ export interface StopContainer {
 	time?: number;
 }
 
+export interface StopAllContainers {
+	server_id: string;
+}
+
 export interface RemoveContainer {
 	deployment_id: string;
 	signal?: TerminationSignal;
@@ -1487,6 +1494,7 @@ export type ExecuteRequest =
 	| { type: "Deploy", params: Deploy }
 	| { type: "StartContainer", params: StartContainer }
 	| { type: "StopContainer", params: StopContainer }
+	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "RemoveContainer", params: RemoveContainer }
 	| { type: "RunBuild", params: RunBuild }
 	| { type: "CloneRepo", params: CloneRepo }

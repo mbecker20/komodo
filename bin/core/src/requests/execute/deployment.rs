@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use async_trait::async_trait;
+use futures::future::join_all;
 use monitor_types::{
     entities::{
         build::Build,
@@ -11,11 +12,15 @@ use monitor_types::{
     get_image_name, monitor_timestamp,
     requests::execute::*,
 };
+use mungos::mongodb::bson::doc;
 use periphery_client::requests;
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
-    auth::RequestUser, helpers::resource::StateResource, state::State,
+    auth::RequestUser,
+    helpers::{make_update, resource::StateResource},
+    state::State,
 };
 
 #[async_trait]
@@ -337,6 +342,95 @@ impl Resolve<StopContainer, RequestUser> for State {
             .deployment
             .update_entry(deployment_id, |entry| {
                 entry.stopping = false;
+            })
+            .await;
+
+        res
+    }
+}
+
+#[async_trait]
+impl Resolve<StopAllContainers, RequestUser> for State {
+    async fn resolve(
+        &self,
+        StopAllContainers { server_id }: StopAllContainers,
+        user: RequestUser,
+    ) -> anyhow::Result<Update> {
+        let (server, status) =
+            self.get_server_with_status(&server_id).await?;
+        if status != ServerStatus::Ok {
+            return Err(anyhow!(
+                "cannot send action when server is unreachable or disabled"
+            ));
+        }
+        let deployments = self
+            .db
+            .deployments
+            .get_some(
+                doc! {
+                    "config.server_id": &server_id
+                },
+                None,
+            )
+            .await?;
+        let inner = || async move {
+            let mut update = make_update(
+                ResourceTarget::Server(server.id),
+                Operation::StopAllContainers,
+                &user,
+            );
+            let futures =
+                deployments.iter().map(|deployment| async {
+                    (
+                        self.resolve(
+                            StopContainer {
+                                deployment_id: deployment.id.clone(),
+                                signal: None,
+                                time: None,
+                            },
+                            user.clone(),
+                        )
+                        .await,
+                        deployment.name.clone(),
+                        deployment.id.clone(),
+                    )
+                });
+            let results = join_all(futures).await;
+            let deployment_names = deployments
+                .iter()
+                .map(|d| format!("{} ({})", d.name, d.id))
+                .collect::<Vec<_>>()
+                .join("\n");
+            update.push_simple_log(
+                "stopping containers",
+                deployment_names,
+            );
+            for (res, name, id) in results {
+                if let Err(e) = res {
+                    update.push_error_log(
+                    "stop container failure",
+                    format!("failed to stop container {name} ({id})\n\n{}", serialize_error_pretty(e))
+                )
+                }
+            }
+            update.finalize();
+            self.add_update(update.clone()).await?;
+            Ok(update)
+        };
+
+        self.action_states
+            .server
+            .update_entry(server_id.to_string(), |entry| {
+                entry.stopping_containers = true;
+            })
+            .await;
+
+        let res = inner().await;
+
+        self.action_states
+            .server
+            .update_entry(server_id, |entry| {
+                entry.stopping_containers = false;
             })
             .await;
 

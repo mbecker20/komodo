@@ -333,6 +333,7 @@ pub enum Operation {
     DeleteDeployment,
     DeployContainer,
     StopContainer,
+    StopAllContainers,
     StartContainer,
     RemoveContainer,
     RenameDeployment,

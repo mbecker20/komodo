@@ -12,7 +12,9 @@ use super::MonitorExecuteRequest;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct Deploy {
@@ -24,7 +26,9 @@ pub struct Deploy {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct StartContainer {
@@ -34,7 +38,9 @@ pub struct StartContainer {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct StopContainer {
@@ -43,10 +49,22 @@ pub struct StopContainer {
     pub time: Option<i32>,
 }
 
+#[typeshare]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorExecuteRequest)]
+#[response(Update)]
+pub struct StopAllContainers {
+    pub server_id: String,
+}
+
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct RemoveContainer {

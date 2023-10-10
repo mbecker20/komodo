@@ -8,7 +8,9 @@ use crate::entities::update::ResourceTarget;
 use super::MonitorWriteRequest;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(UpdateDescriptionResponse)]
 pub struct UpdateDescription {

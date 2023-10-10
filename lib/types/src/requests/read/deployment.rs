@@ -19,7 +19,9 @@ use super::MonitorReadRequest;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentResponse)]
 pub struct GetDeployment {
@@ -32,7 +34,9 @@ pub type GetDeploymentResponse = Deployment;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListDeploymentsResponse)]
 pub struct ListDeployments {
@@ -45,7 +49,9 @@ pub type ListDeploymentsResponse = Vec<DeploymentListItem>;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentStatusResponse)]
 pub struct GetDeploymentStatus {
@@ -62,7 +68,9 @@ pub struct GetDeploymentStatusResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetLogResponse)]
 pub struct GetLog {
@@ -81,7 +89,9 @@ pub type GetLogResponse = Log;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeployedVersionResponse)]
 pub struct GetDeployedVersion {
@@ -97,7 +107,9 @@ pub struct GetDeployedVersionResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentStatsResponse)]
 pub struct GetDeploymentStats {
@@ -110,7 +122,9 @@ pub type GetDeploymentStatsResponse = DockerContainerStats;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(DeploymentActionState)]
 pub struct GetDeploymentActionState {
@@ -123,7 +137,9 @@ pub type GetDeploymentActionStateResponse = DeploymentActionState;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentsSummaryResponse)]
 pub struct GetDeploymentsSummary {}

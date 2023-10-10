@@ -8,7 +8,9 @@ pub trait MonitorAuthRequest: HasResponse {}
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorAuthRequest)]
 #[response(GetLoginOptionsResponse)]
 pub struct GetLoginOptions {}
@@ -24,7 +26,9 @@ pub struct GetLoginOptionsResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorAuthRequest)]
 #[response(CreateLocalUserResponse)]
 pub struct CreateLocalUser {
@@ -41,7 +45,9 @@ pub struct CreateLocalUserResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorAuthRequest)]
 #[response(LoginLocalUserResponse)]
 pub struct LoginLocalUser {
@@ -58,7 +64,9 @@ pub struct LoginLocalUserResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorAuthRequest)]
 #[response(ExchangeForJwtResponse)]
 pub struct ExchangeForJwt {
@@ -74,7 +82,9 @@ pub struct ExchangeForJwtResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorAuthRequest)]
 #[response(LoginWithSecretResponse)]
 pub struct LoginWithSecret {

@@ -13,7 +13,9 @@ use super::MonitorReadRequest;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuilderResponse)]
 pub struct GetBuilder {
@@ -26,7 +28,9 @@ pub type GetBuilderResponse = Builder;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListBuildersResponse)]
 pub struct ListBuilders {
@@ -39,7 +43,9 @@ pub type ListBuildersResponse = Vec<BuilderListItem>;
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildersSummaryResponse)]
 pub struct GetBuildersSummary {}
@@ -53,7 +59,9 @@ pub struct GetBuildersSummaryResponse {
 //
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuilderAvailableAccountsResponse)]
 pub struct GetBuilderAvailableAccounts {

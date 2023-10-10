@@ -11,7 +11,9 @@ use crate::entities::{
 use super::MonitorWriteRequest;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct UpdateUserPermissionsOnTarget {
@@ -21,7 +23,9 @@ pub struct UpdateUserPermissionsOnTarget {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Request, EmptyTraits)]
+#[derive(
+    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct UpdateUserPermissions {
