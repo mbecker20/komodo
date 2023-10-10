@@ -53,7 +53,9 @@ impl State {
                     data,
                     ts,
                 };
-                alerts.push(alert);
+                if d.config.send_alerts {
+                    alerts.push(alert);
+                }
             }
         }
         if alerts.is_empty() {

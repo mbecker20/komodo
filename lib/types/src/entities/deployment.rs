@@ -47,6 +47,11 @@ pub struct DeploymentConfig {
     #[index]
     pub server_id: String,
 
+    #[serde(default = "default_send_alerts")]
+    #[builder(default = "default_send_alerts()")]
+    #[partial_default(default_send_alerts())]
+    pub send_alerts: bool,
+
     #[serde(default)]
     #[builder(default)]
     pub image: DeploymentImage,
@@ -109,6 +114,10 @@ pub struct DeploymentConfig {
     #[serde(default)]
     #[builder(default)]
     pub docker_account: String, // the username of the dockerhub account. empty if no account.
+}
+
+fn default_send_alerts() -> bool {
+    true
 }
 
 fn default_term_signal_labels() -> Vec<TerminationSignalLabel> {

@@ -207,6 +207,7 @@ impl StateResource<Server> for State {
             info: ServerListItemInfo {
                 status: status.map(|s| s.status).unwrap_or_default(),
                 region: server.config.region,
+                send_alerts: server.config.send_alerts,
             },
         })
     }

@@ -20,6 +20,7 @@ use mungos::{
 
 use crate::state::State;
 
+type SendAlerts = bool;
 type OpenAlertMap<T = AlertDataVariant> =
     HashMap<ResourceTarget, HashMap<T, Alert>>;
 type OpenDiskAlertMap = OpenAlertMap<PathBuf>;
@@ -43,9 +44,10 @@ impl State {
 
         let (alerts, disk_alerts, temp_alerts) = alerts.unwrap();
 
-        let mut alerts_to_open = Vec::<Alert>::new();
-        let mut alerts_to_update = Vec::<Alert>::new();
-        let mut alert_ids_to_close = Vec::<String>::new();
+        let mut alerts_to_open = Vec::<(Alert, SendAlerts)>::new();
+        let mut alerts_to_update = Vec::<(Alert, SendAlerts)>::new();
+        let mut alert_ids_to_close =
+            Vec::<(String, SendAlerts)>::new();
 
         for server_status in server_statuses {
             let server = servers.remove(&server_status.id);
@@ -85,12 +87,16 @@ impl State {
                             ),
                         },
                     };
-                    alerts_to_open.push(alert);
+                    alerts_to_open
+                        .push((alert, server.info.send_alerts))
                 }
                 (
                     ServerStatus::Ok | ServerStatus::Disabled,
                     Some(health_alert),
-                ) => alert_ids_to_close.push(health_alert.id.clone()),
+                ) => alert_ids_to_close.push((
+                    health_alert.id.clone(),
+                    server.info.send_alerts,
+                )),
                 _ => {}
             }
 
@@ -157,7 +163,8 @@ impl State {
                                 .unwrap_or_default(),
                         },
                     };
-                    alerts_to_open.push(alert);
+                    alerts_to_open
+                        .push((alert, server.info.send_alerts));
                 }
                 (
                     SeverityLevel::Warning | SeverityLevel::Critical,
@@ -197,11 +204,15 @@ impl State {
                                 })
                                 .unwrap_or_default(),
                         };
-                        alerts_to_update.push(alert);
+                        alerts_to_update
+                            .push((alert, server.info.send_alerts));
                     }
                 }
                 (SeverityLevel::Ok, Some(alert)) => {
-                    alert_ids_to_close.push(alert.id.clone())
+                    alert_ids_to_close.push((
+                        alert.id.clone(),
+                        server.info.send_alerts,
+                    ))
                 }
                 _ => {}
             }
@@ -268,7 +279,8 @@ impl State {
                                 .unwrap_or_default(),
                         },
                     };
-                    alerts_to_open.push(alert);
+                    alerts_to_open
+                        .push((alert, server.info.send_alerts));
                 }
                 (
                     SeverityLevel::Warning | SeverityLevel::Critical,
@@ -312,11 +324,15 @@ impl State {
                                 })
                                 .unwrap_or_default(),
                         };
-                        alerts_to_update.push(alert);
+                        alerts_to_update
+                            .push((alert, server.info.send_alerts));
                     }
                 }
                 (SeverityLevel::Ok, Some(alert)) => {
-                    alert_ids_to_close.push(alert.id.clone())
+                    alert_ids_to_close.push((
+                        alert.id.clone(),
+                        server.info.send_alerts,
+                    ))
                 }
                 _ => {}
             }
@@ -373,7 +389,8 @@ impl State {
                                     .unwrap_or_default(),
                             },
                         };
-                        alerts_to_open.push(alert);
+                        alerts_to_open
+                            .push((alert, server.info.send_alerts));
                     }
                     (
                         SeverityLevel::Warning
@@ -404,11 +421,17 @@ impl State {
                                     .map(|d| d.used_gb)
                                     .unwrap_or_default(),
                             };
-                            alerts_to_update.push(alert);
+                            alerts_to_update.push((
+                                alert,
+                                server.info.send_alerts,
+                            ));
                         }
                     }
                     (SeverityLevel::Ok, Some(alert)) => {
-                        alert_ids_to_close.push(alert.id.clone())
+                        alert_ids_to_close.push((
+                            alert.id.clone(),
+                            server.info.send_alerts,
+                        ))
                     }
                     _ => {}
                 }
@@ -468,7 +491,8 @@ impl State {
                                     as f64,
                             },
                         };
-                        alerts_to_open.push(alert);
+                        alerts_to_open
+                            .push((alert, server.info.send_alerts));
                     }
                     (
                         SeverityLevel::Warning
@@ -501,11 +525,17 @@ impl State {
                                     .unwrap_or_default()
                                     as f64,
                             };
-                            alerts_to_update.push(alert);
+                            alerts_to_update.push((
+                                alert,
+                                server.info.send_alerts,
+                            ));
                         }
                     }
                     (SeverityLevel::Ok, Some(alert)) => {
-                        alert_ids_to_close.push(alert.id.clone())
+                        alert_ids_to_close.push((
+                            alert.id.clone(),
+                            server.info.send_alerts,
+                        ))
                     }
                     _ => {}
                 }
@@ -519,30 +549,41 @@ impl State {
         );
     }
 
-    async fn open_alerts(&self, alerts: &[Alert]) {
+    async fn open_alerts(&self, alerts: &[(Alert, SendAlerts)]) {
         if alerts.is_empty() {
             return;
         }
 
         let open = || async {
-            self.db.alerts.create_many(alerts).await?;
+            self.db
+                .alerts
+                .create_many(alerts.iter().map(|(alert, _)| alert))
+                .await?;
             anyhow::Ok(())
         };
 
-        let (res, _) = tokio::join!(open(), self.send_alerts(alerts));
+        let alerts = alerts
+            .iter()
+            .filter(|(_, send)| *send)
+            .map(|(alert, _)| alert)
+            .cloned()
+            .collect::<Vec<_>>();
+
+        let (res, _) =
+            tokio::join!(open(), self.send_alerts(&alerts));
 
         if let Err(e) = res {
             error!("failed to create alerts on db | {e:#?}");
         }
     }
 
-    async fn update_alerts(&self, alerts: &[Alert]) {
+    async fn update_alerts(&self, alerts: &[(Alert, SendAlerts)]) {
         if alerts.is_empty() {
             return;
         }
 
         let open = || async {
-            let updates = alerts.iter().map(|alert| {
+            let updates = alerts.iter().map(|(alert, _)| {
                 let update = BulkUpdate {
                     query: doc! { "_id": ObjectId::from_str(&alert.id).context("failed to convert alert id to ObjectId")? },
                     update: doc! { "$set": to_bson(alert).context("failed to convert alert to bson")? }
@@ -557,22 +598,36 @@ impl State {
             anyhow::Ok(())
         };
 
-        let (res, _) = tokio::join!(open(), self.send_alerts(alerts));
+        let alerts = alerts
+            .iter()
+            .filter(|(_, send)| *send)
+            .map(|(alert, _)| alert)
+            .cloned()
+            .collect::<Vec<_>>();
+
+        let (res, _) =
+            tokio::join!(open(), self.send_alerts(&alerts));
 
         if let Err(e) = res {
             error!("failed to create alerts on db | {e:#?}");
         }
     }
 
-    async fn resolve_alerts(&self, alert_ids: &[String]) {
+    async fn resolve_alerts(
+        &self,
+        alert_ids: &[(String, SendAlerts)],
+    ) {
         if alert_ids.is_empty() {
             return;
         }
 
+        let send_alerts_map =
+            alert_ids.iter().cloned().collect::<HashMap<_, _>>();
+
         let close = || async {
             let alert_ids = alert_ids
                 .iter()
-                .map(|id| {
+                .map(|(id, _)| {
                     ObjectId::from_str(id).context(
                         "failed to convert alert id to ObjectId",
                     )
@@ -601,6 +656,18 @@ impl State {
             for closed in &mut closed {
                 closed.level = SeverityLevel::Ok;
             }
+
+            let closed = closed
+                .into_iter()
+                .filter(|closed| {
+                    if let ResourceTarget::Server(id) = &closed.target {
+                        send_alerts_map.get(id).cloned().unwrap_or(true)
+                    } else {
+                        error!("got resource target other than server in resolve_server_alerts");
+                        true
+                    }
+                })
+                .collect::<Vec<_>>();
 
             self.send_alerts(&closed).await;
 

@@ -21,6 +21,7 @@ pub type ServerListItem = ResourceListItem<ServerListItemInfo>;
 pub struct ServerListItemInfo {
     pub status: ServerStatus,
     pub region: String,
+    pub send_alerts: bool,
 }
 
 #[typeshare]
@@ -50,6 +51,11 @@ pub struct ServerConfig {
     #[partial_default(default_auto_prune())]
     #[index]
     pub auto_prune: bool,
+
+    #[serde(default = "default_send_alerts")]
+    #[builder(default = "default_send_alerts()")]
+    #[partial_default(default_send_alerts())]
+    pub send_alerts: bool,
 
     #[serde(default)]
     #[builder(default)]
@@ -91,6 +97,10 @@ fn default_enabled() -> bool {
 }
 
 fn default_auto_prune() -> bool {
+    true
+}
+
+fn default_send_alerts() -> bool {
     true
 }
 
