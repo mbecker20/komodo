@@ -88,14 +88,14 @@ impl State {
                         },
                     };
                     alerts_to_open
-                        .push((alert, server.info.send_alerts))
+                        .push((alert, server.info.send_unreachable_alerts))
                 }
                 (
                     ServerStatus::Ok | ServerStatus::Disabled,
                     Some(health_alert),
                 ) => alert_ids_to_close.push((
                     health_alert.id.clone(),
-                    server.info.send_alerts,
+                    server.info.send_unreachable_alerts,
                 )),
                 _ => {}
             }
@@ -164,7 +164,7 @@ impl State {
                         },
                     };
                     alerts_to_open
-                        .push((alert, server.info.send_alerts));
+                        .push((alert, server.info.send_cpu_alerts));
                 }
                 (
                     SeverityLevel::Warning | SeverityLevel::Critical,
@@ -205,13 +205,13 @@ impl State {
                                 .unwrap_or_default(),
                         };
                         alerts_to_update
-                            .push((alert, server.info.send_alerts));
+                            .push((alert, server.info.send_cpu_alerts));
                     }
                 }
                 (SeverityLevel::Ok, Some(alert)) => {
                     alert_ids_to_close.push((
                         alert.id.clone(),
-                        server.info.send_alerts,
+                        server.info.send_cpu_alerts,
                     ))
                 }
                 _ => {}
@@ -280,7 +280,7 @@ impl State {
                         },
                     };
                     alerts_to_open
-                        .push((alert, server.info.send_alerts));
+                        .push((alert, server.info.send_mem_alerts));
                 }
                 (
                     SeverityLevel::Warning | SeverityLevel::Critical,
@@ -325,13 +325,13 @@ impl State {
                                 .unwrap_or_default(),
                         };
                         alerts_to_update
-                            .push((alert, server.info.send_alerts));
+                            .push((alert, server.info.send_mem_alerts));
                     }
                 }
                 (SeverityLevel::Ok, Some(alert)) => {
                     alert_ids_to_close.push((
                         alert.id.clone(),
-                        server.info.send_alerts,
+                        server.info.send_mem_alerts,
                     ))
                 }
                 _ => {}
@@ -390,7 +390,7 @@ impl State {
                             },
                         };
                         alerts_to_open
-                            .push((alert, server.info.send_alerts));
+                            .push((alert, server.info.send_disk_alerts));
                     }
                     (
                         SeverityLevel::Warning
@@ -423,14 +423,14 @@ impl State {
                             };
                             alerts_to_update.push((
                                 alert,
-                                server.info.send_alerts,
+                                server.info.send_disk_alerts,
                             ));
                         }
                     }
                     (SeverityLevel::Ok, Some(alert)) => {
                         alert_ids_to_close.push((
                             alert.id.clone(),
-                            server.info.send_alerts,
+                            server.info.send_disk_alerts,
                         ))
                     }
                     _ => {}
@@ -492,7 +492,7 @@ impl State {
                             },
                         };
                         alerts_to_open
-                            .push((alert, server.info.send_alerts));
+                            .push((alert, server.info.send_temp_alerts));
                     }
                     (
                         SeverityLevel::Warning
@@ -527,14 +527,14 @@ impl State {
                             };
                             alerts_to_update.push((
                                 alert,
-                                server.info.send_alerts,
+                                server.info.send_temp_alerts,
                             ));
                         }
                     }
                     (SeverityLevel::Ok, Some(alert)) => {
                         alert_ids_to_close.push((
                             alert.id.clone(),
-                            server.info.send_alerts,
+                            server.info.send_temp_alerts,
                         ))
                     }
                     _ => {}

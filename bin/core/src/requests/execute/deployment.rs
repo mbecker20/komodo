@@ -408,9 +408,9 @@ impl Resolve<StopAllContainers, RequestUser> for State {
             for (res, name, id) in results {
                 if let Err(e) = res {
                     update.push_error_log(
-                    "stop container failure",
-                    format!("failed to stop container {name} ({id})\n\n{}", serialize_error_pretty(e))
-                )
+                        "stop container failure",
+                        format!("failed to stop container {name} ({id})\n\n{}", serialize_error_pretty(e))
+                    );
                 }
             }
             update.finalize();

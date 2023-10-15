@@ -21,7 +21,11 @@ pub type ServerListItem = ResourceListItem<ServerListItemInfo>;
 pub struct ServerListItemInfo {
     pub status: ServerStatus,
     pub region: String,
-    pub send_alerts: bool,
+    pub send_unreachable_alerts: bool,
+    pub send_cpu_alerts: bool,
+    pub send_mem_alerts: bool,
+    pub send_disk_alerts: bool,
+    pub send_temp_alerts: bool,
 }
 
 #[typeshare]
@@ -55,7 +59,27 @@ pub struct ServerConfig {
     #[serde(default = "default_send_alerts")]
     #[builder(default = "default_send_alerts()")]
     #[partial_default(default_send_alerts())]
-    pub send_alerts: bool,
+    pub send_unreachable_alerts: bool,
+
+    #[serde(default = "default_send_alerts")]
+    #[builder(default = "default_send_alerts()")]
+    #[partial_default(default_send_alerts())]
+    pub send_cpu_alerts: bool,
+
+    #[serde(default = "default_send_alerts")]
+    #[builder(default = "default_send_alerts()")]
+    #[partial_default(default_send_alerts())]
+    pub send_mem_alerts: bool,
+
+    #[serde(default = "default_send_alerts")]
+    #[builder(default = "default_send_alerts()")]
+    #[partial_default(default_send_alerts())]
+    pub send_disk_alerts: bool,
+
+    #[serde(default = "default_send_alerts")]
+    #[builder(default = "default_send_alerts()")]
+    #[partial_default(default_send_alerts())]
+    pub send_temp_alerts: bool,
 
     #[serde(default)]
     #[builder(default)]

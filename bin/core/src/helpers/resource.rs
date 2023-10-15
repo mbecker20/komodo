@@ -207,7 +207,13 @@ impl StateResource<Server> for State {
             info: ServerListItemInfo {
                 status: status.map(|s| s.status).unwrap_or_default(),
                 region: server.config.region,
-                send_alerts: server.config.send_alerts,
+                send_unreachable_alerts: server
+                    .config
+                    .send_unreachable_alerts,
+                send_cpu_alerts: server.config.send_cpu_alerts,
+                send_mem_alerts: server.config.send_mem_alerts,
+                send_disk_alerts: server.config.send_disk_alerts,
+                send_temp_alerts: server.config.send_temp_alerts,
             },
         })
     }
