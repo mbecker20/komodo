@@ -60,6 +60,15 @@ pub struct EnvironmentVar {
     pub value: String,
 }
 
+impl From<EnvironmentVar> for monitor_types::entities::EnvironmentVar {
+    fn from(value: EnvironmentVar) -> Self {
+        Self {
+            variable: value.variable,
+            value: value.value,
+        }
+    }
+}
+
 #[derive(Deserialize, Debug)]
 pub struct UserCredentials {
     pub username: String,
@@ -171,6 +180,20 @@ pub enum PermissionLevel {
 impl Default for &PermissionLevel {
     fn default() -> Self {
         &PermissionLevel::None
+    }
+}
+
+impl From<PermissionLevel>
+    for monitor_types::entities::PermissionLevel
+{
+    fn from(value: PermissionLevel) -> Self {
+        use monitor_types::entities::PermissionLevel::*;
+        match value {
+            PermissionLevel::None => None,
+            PermissionLevel::Read => Read,
+            PermissionLevel::Execute => Execute,
+            PermissionLevel::Update => Update,
+        }
     }
 }
 

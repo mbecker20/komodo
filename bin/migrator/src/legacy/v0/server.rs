@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
-use super::{PermissionsMap, Timelength};
+use super::{unix_from_monitor_ts, PermissionsMap, Timelength};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Server {
@@ -284,4 +284,41 @@ pub struct SystemInformation {
     pub core_count: Option<u32>,
     pub host_name: Option<String>,
     pub cpu_brand: String,
+}
+
+impl TryFrom<Server> for monitor_types::entities::server::Server {
+    type Error = anyhow::Error;
+    fn try_from(value: Server) -> Result<Self, Self::Error> {
+        let server = Self {
+            id: value.id,
+            name: value.name,
+            description: value.description,
+            permissions: value
+                .permissions
+                .into_iter()
+                .map(|(id, p)| (id, p.into()))
+                .collect(),
+            updated_at: unix_from_monitor_ts(&value.updated_at)?,
+            tags: Vec::new(),
+            info: (),
+            config: monitor_types::entities::server::ServerConfig {
+                address: value.address,
+                enabled: value.enabled,
+                auto_prune: value.auto_prune,
+                send_unreachable_alerts: true,
+                send_cpu_alerts: true,
+                send_mem_alerts: true,
+                send_disk_alerts: true,
+                send_temp_alerts: true,
+                region: value.region.unwrap_or_default(),
+                cpu_warning: value.cpu_alert,
+                cpu_critical: value.cpu_alert,
+                mem_warning: value.mem_alert,
+                mem_critical: value.mem_alert,
+                disk_warning: value.disk_alert,
+                disk_critical: value.disk_alert,
+            },
+        };
+        Ok(server)
+    }
 }

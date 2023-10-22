@@ -1,8 +1,11 @@
 use anyhow::{anyhow, Context};
+use monitor_types::entities::build::{BuildConfig, BuildInfo};
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
-use super::{Command, EnvironmentVar, PermissionsMap};
+use super::{
+    unix_from_monitor_ts, Command, EnvironmentVar, PermissionsMap,
+};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Build {
@@ -107,6 +110,16 @@ impl Version {
     }
 }
 
+impl From<Version> for monitor_types::entities::Version {
+    fn from(value: Version) -> Self {
+        Self {
+            major: value.major,
+            minor: value.minor,
+            patch: value.patch,
+        }
+    }
+}
+
 #[derive(
     Serialize, Deserialize, Debug, Clone, PartialEq, Default,
 )]
@@ -146,4 +159,85 @@ pub struct AwsBuilderBuildConfig {
     pub key_pair_name: Option<String>,
 
     pub assign_public_ip: Option<bool>,
+}
+
+impl TryFrom<Build> for monitor_types::entities::build::Build {
+    type Error = anyhow::Error;
+    fn try_from(value: Build) -> Result<Self, Self::Error> {
+        let (
+            build_path,
+            dockerfile_path,
+            build_args,
+            extra_args,
+            use_buildx,
+        ) = value
+            .docker_build_args
+            .map(|args| {
+                (
+                    args.build_path,
+                    args.dockerfile_path.unwrap_or_default(),
+                    args.build_args
+                        .into_iter()
+                        .map(|arg| {
+                            monitor_types::entities::EnvironmentVar {
+                                variable: arg.variable,
+                                value: arg.value,
+                            }
+                        })
+                        .collect::<Vec<_>>(),
+                    args.extra_args,
+                    args.use_buildx,
+                )
+            })
+            .unwrap_or_default();
+
+        let build = Self {
+            id: value.id,
+            name: value.name,
+            description: value.description,
+            permissions: value
+                .permissions
+                .into_iter()
+                .map(|(id, p)| (id, p.into()))
+                .collect(),
+            updated_at: unix_from_monitor_ts(&value.updated_at)?,
+            tags: Vec::new(),
+            info: BuildInfo {
+                last_built_at: unix_from_monitor_ts(
+                    &value.last_built_at,
+                )?,
+            },
+            config: BuildConfig {
+                builder_id: String::new(),
+                skip_secret_interp: value.skip_secret_interp,
+                version: value.version.into(),
+                repo: value.repo.unwrap_or_default(),
+                branch: value.branch.unwrap_or_default(),
+                github_account: value
+                    .github_account
+                    .unwrap_or_default(),
+                docker_account: value
+                    .docker_account
+                    .unwrap_or_default(),
+                docker_organization: value
+                    .docker_organization
+                    .unwrap_or_default(),
+                pre_build: value
+                    .pre_build
+                    .map(|command| {
+                        monitor_types::entities::SystemCommand {
+                            path: command.path,
+                            command: command.command,
+                        }
+                    })
+                    .unwrap_or_default(),
+                build_path,
+                dockerfile_path,
+                build_args,
+                extra_args,
+                use_buildx,
+            },
+        };
+        Ok(build)
+    }
 }
