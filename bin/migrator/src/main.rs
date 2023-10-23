@@ -17,5 +17,7 @@ async fn main() -> anyhow::Result<()> {
 
   let state = State::load().await?;
 
+  state.migrate_all().await?;
+
   Ok(())
 }

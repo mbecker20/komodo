@@ -14,7 +14,7 @@ struct Env {
 }
 
 pub struct State {
-  pub legacy_mungos: Mungos,
+  pub legacy: LegacyDbClient,
   pub target: DbClient,
 }
 
@@ -27,7 +27,10 @@ impl State {
     let target_mungos =
       Mungos::builder().uri(&env.target_uri).build().await?;
     let state = State {
-      legacy_mungos,
+      legacy: LegacyDbClient::new(
+        &legacy_mungos,
+        &env.legacy_db_name,
+      ),
       target: DbClient::new(&MongoConfig {
         uri: Some(env.target_uri),
         db_name: env.target_db_name,
@@ -46,4 +49,16 @@ pub struct LegacyDbClient {
   pub deployments: Collection<Deployment>,
   pub builds: Collection<Build>,
   pub updates: Collection<Update>,
+}
+
+impl LegacyDbClient {
+  pub fn new(mungos: &Mungos, db_name: &str) -> LegacyDbClient {
+    LegacyDbClient {
+      users: mungos.collection(db_name, "users"),
+      servers: mungos.collection(db_name, "servers"),
+      deployments: mungos.collection(db_name, "deployments"),
+      builds: mungos.collection(db_name, "builds"),
+      updates: mungos.collection(db_name, "updates"),
+    }
+  }
 }

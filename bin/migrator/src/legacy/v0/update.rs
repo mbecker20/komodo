@@ -1,8 +1,10 @@
+use monitor_types::entities::update::ResourceTarget;
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
 use super::{
-  Build, Deployment, Group, Operation, Procedure, Server, Version,
+  unix_from_monitor_ts, Build, Deployment, Group, Operation,
+  Procedure, Server, Version,
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -26,6 +28,34 @@ pub struct Update {
   pub version: Option<Version>,
 }
 
+impl TryFrom<Update> for monitor_types::entities::update::Update {
+  type Error = anyhow::Error;
+  fn try_from(value: Update) -> Result<Self, Self::Error> {
+    let target: Option<ResourceTarget> = value.target.into();
+    let update = Self {
+      id: value.id,
+      operation: value.operation.into(),
+      start_ts: unix_from_monitor_ts(&value.start_ts)?,
+      success: value.success,
+      operator: value.operator,
+      target: target.unwrap_or_default(),
+      logs: value
+        .logs
+        .into_iter()
+        .map(|log| log.try_into())
+        .collect::<anyhow::Result<
+        Vec<monitor_types::entities::update::Log>,
+      >>()?,
+      end_ts: value
+        .end_ts
+        .and_then(|ts| unix_from_monitor_ts(&ts).ok()),
+      status: value.status.into(),
+      version: value.version.map(|v| v.into()).unwrap_or_default(),
+    };
+    Ok(update)
+  }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Log {
   pub stage: String,
@@ -35,6 +65,21 @@ pub struct Log {
   pub success: bool,
   pub start_ts: String,
   pub end_ts: String,
+}
+
+impl TryFrom<Log> for monitor_types::entities::update::Log {
+  type Error = anyhow::Error;
+  fn try_from(value: Log) -> Result<Self, Self::Error> {
+    Ok(Self {
+      stage: value.stage,
+      command: value.command,
+      stdout: value.stdout,
+      stderr: value.stderr,
+      success: value.success,
+      start_ts: unix_from_monitor_ts(&value.start_ts)?,
+      end_ts: unix_from_monitor_ts(&value.end_ts)?,
+    })
+  }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -50,63 +95,20 @@ pub enum UpdateTarget {
   Command(String),
 }
 
-impl From<&Build> for UpdateTarget {
-  fn from(build: &Build) -> Self {
-    Self::Build(build.id.clone())
-  }
-}
-
-impl From<&Build> for Option<UpdateTarget> {
-  fn from(build: &Build) -> Self {
-    Some(UpdateTarget::Build(build.id.clone()))
-  }
-}
-
-impl From<&Deployment> for UpdateTarget {
-  fn from(deployment: &Deployment) -> Self {
-    Self::Deployment(deployment.id.clone())
-  }
-}
-
-impl From<&Deployment> for Option<UpdateTarget> {
-  fn from(deployment: &Deployment) -> Self {
-    Some(UpdateTarget::Deployment(deployment.id.clone()))
-  }
-}
-
-impl From<&Server> for UpdateTarget {
-  fn from(server: &Server) -> Self {
-    Self::Server(server.id.clone())
-  }
-}
-
-impl From<&Server> for Option<UpdateTarget> {
-  fn from(server: &Server) -> Self {
-    Some(UpdateTarget::Server(server.id.clone()))
-  }
-}
-
-impl From<&Procedure> for UpdateTarget {
-  fn from(procedure: &Procedure) -> Self {
-    Self::Procedure(procedure.id.clone())
-  }
-}
-
-impl From<&Procedure> for Option<UpdateTarget> {
-  fn from(procedure: &Procedure) -> Self {
-    Some(UpdateTarget::Procedure(procedure.id.clone()))
-  }
-}
-
-impl From<&Group> for UpdateTarget {
-  fn from(group: &Group) -> Self {
-    Self::Group(group.id.clone())
-  }
-}
-
-impl From<&Group> for Option<UpdateTarget> {
-  fn from(group: &Group) -> Self {
-    Some(UpdateTarget::Group(group.id.clone()))
+impl From<UpdateTarget>
+  for Option<monitor_types::entities::update::ResourceTarget>
+{
+  fn from(value: UpdateTarget) -> Self {
+    use monitor_types::entities::update::ResourceTarget::*;
+    match value {
+      UpdateTarget::System => Some(System("system".to_string())),
+      UpdateTarget::Build(id) => Some(Build(id)),
+      UpdateTarget::Deployment(id) => Some(Deployment(id)),
+      UpdateTarget::Server(id) => Some(Server(id)),
+      UpdateTarget::Procedure(_) => None,
+      UpdateTarget::Group(_) => None,
+      UpdateTarget::Command(id) => None,
+    }
   }
 }
 
@@ -127,4 +129,17 @@ pub enum UpdateStatus {
   InProgress,
   #[default]
   Complete,
+}
+
+impl From<UpdateStatus>
+  for monitor_types::entities::update::UpdateStatus
+{
+  fn from(value: UpdateStatus) -> Self {
+    use monitor_types::entities::update::UpdateStatus::*;
+    match value {
+      UpdateStatus::Queued => Queued,
+      UpdateStatus::InProgress => InProgress,
+      UpdateStatus::Complete => Complete,
+    }
+  }
 }

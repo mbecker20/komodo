@@ -157,6 +157,58 @@ pub enum Operation {
   AutoPull,
 }
 
+impl From<Operation> for monitor_types::entities::Operation {
+  fn from(value: Operation) -> Self {
+    use monitor_types::entities::Operation::*;
+    match value {
+      Operation::None => None,
+      Operation::CreateServer => CreateServer,
+      Operation::UpdateServer => UpdateServer,
+      Operation::DeleteServer => DeleteServer,
+      Operation::PruneImagesServer => PruneImagesServer,
+      Operation::PruneContainersServer => PruneContainersServer,
+      Operation::PruneNetworksServer => PruneNetworksServer,
+      Operation::RenameServer => RenameServer,
+      Operation::CreateBuild => CreateBuild,
+      Operation::UpdateBuild => UpdateBuild,
+      Operation::DeleteBuild => DeleteBuild,
+      Operation::BuildBuild => RunBuild,
+      Operation::CreateDeployment => CreateDeployment,
+      Operation::UpdateDeployment => UpdateDeployment,
+      Operation::DeleteDeployment => DeleteDeployment,
+      Operation::DeployContainer => DeployContainer,
+      Operation::StopContainer => StopContainer,
+      Operation::StartContainer => StartContainer,
+      Operation::RemoveContainer => RemoveContainer,
+      Operation::PullDeployment => None,
+      Operation::RecloneDeployment => None,
+      Operation::RenameDeployment => RenameDeployment,
+      Operation::CreateProcedure => None,
+      Operation::UpdateProcedure => None,
+      Operation::DeleteProcedure => None,
+      Operation::CreateCommand => None,
+      Operation::UpdateCommand => None,
+      Operation::DeleteCommand => None,
+      Operation::RunCommand => None,
+      Operation::CreateGroup => None,
+      Operation::UpdateGroup => None,
+      Operation::DeleteGroup => None,
+      Operation::ModifyUserEnabled => UpdateUserPermissions,
+      Operation::ModifyUserCreateServerPermissions => {
+        UpdateUserPermissions
+      }
+      Operation::ModifyUserCreateBuildPermissions => {
+        UpdateUserPermissions
+      }
+      Operation::ModifyUserPermissions => {
+        UpdateUserPermissionsOnTarget
+      }
+      Operation::AutoBuild => AutoBuild,
+      Operation::AutoPull => AutoPull,
+    }
+  }
+}
+
 #[derive(
   Serialize,
   Deserialize,
