@@ -15,6 +15,7 @@ monitor_types = { path = "lib/types" }
 monitor_client = { path = "client/rs" }
 monitor_periphery = { path = "bin/periphery" }
 periphery_client = { path = "lib/periphery_client" }
+db_client = { path = "lib/db_client" }
 logger = { path = "lib/logger" }
 # mogh
 run_command = { version = "0.0.6", features = ["async_tokio"] }

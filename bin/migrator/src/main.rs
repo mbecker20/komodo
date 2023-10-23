@@ -1,20 +1,21 @@
 #![allow(unused)]
 
-use crate::config::State;
+use crate::state::State;
 
 #[macro_use]
 extern crate log;
 
-mod config;
 mod legacy;
+mod migrate;
+mod state;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    logger::init(log::LevelFilter::Info)?;
+  logger::init(log::LevelFilter::Info)?;
 
-    info!("starting migrator");
+  info!("starting migrator");
 
-    let state = State::load().await?;
+  let state = State::load().await?;
 
-    Ok(())
+  Ok(())
 }

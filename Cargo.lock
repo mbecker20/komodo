@@ -1009,6 +1009,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2e66c9d817f1720209181c316d28635c050fa304f9c79e47a520882661b7308"
 
 [[package]]
+name = "db_client"
+version = "1.0.1"
+dependencies = [
+ "anyhow",
+ "log",
+ "monitor_types",
+ "mungos",
+]
+
+[[package]]
 name = "derivative"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1836,6 +1846,7 @@ version = "1.0.1"
 dependencies = [
  "anyhow",
  "chrono",
+ "db_client",
  "dotenv",
  "envy",
  "log",
@@ -1963,6 +1974,7 @@ dependencies = [
  "aws-sdk-ec2",
  "axum",
  "bcrypt",
+ "db_client",
  "dotenv",
  "envy",
  "futures",

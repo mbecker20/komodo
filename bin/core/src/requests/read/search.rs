@@ -1,41 +1,39 @@
 use async_trait::async_trait;
 use monitor_types::{
-    entities::{
-        build, deployment, repo, server,
-        update::ResourceTargetVariant::{self, *},
-    },
-    requests::read::{FindResources, FindResourcesResponse},
+  entities::{
+    build, deployment, repo, server,
+    update::ResourceTargetVariant::{self, *},
+  },
+  requests::read::{FindResources, FindResourcesResponse},
 };
 use resolver_api::Resolve;
 
 use crate::{
-    auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser, helpers::resource::StateResource, state::State,
 };
 
 const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 4] =
-    [Server, Build, Deployment, Repo];
+  [Server, Build, Deployment, Repo];
 
 #[async_trait]
 impl Resolve<FindResources, RequestUser> for State {
-    async fn resolve(
-        &self,
-        FindResources { query, resources }: FindResources,
-        user: RequestUser,
-    ) -> anyhow::Result<FindResourcesResponse> {
-        let mut res = FindResourcesResponse::default();
-        let resource_types = resources
-            .map(|rs| {
-                rs.into_iter()
-                    .filter(|r| {
-                        !matches!(r, System | Builder | Alerter)
-                    })
-                    .collect()
-            })
-            .unwrap_or(FIND_RESOURCE_TYPES.to_vec());
-        for resource_type in resource_types {
-            match resource_type {
-                Server => {
-                    res.servers = <State as StateResource<
+  async fn resolve(
+    &self,
+    FindResources { query, resources }: FindResources,
+    user: RequestUser,
+  ) -> anyhow::Result<FindResourcesResponse> {
+    let mut res = FindResourcesResponse::default();
+    let resource_types = resources
+      .map(|rs| {
+        rs.into_iter()
+          .filter(|r| !matches!(r, System | Builder | Alerter))
+          .collect()
+      })
+      .unwrap_or(FIND_RESOURCE_TYPES.to_vec());
+    for resource_type in resource_types {
+      match resource_type {
+        Server => {
+          res.servers = <State as StateResource<
                         server::Server,
                     >>::list_resources_for_user(
                         self,
@@ -43,19 +41,17 @@ impl Resolve<FindResources, RequestUser> for State {
                         &user,
                     )
                     .await?;
-                }
-                Deployment => {
-                    res.deployments = <State as StateResource<
-                        deployment::Deployment,
-                    >>::list_resources_for_user(
-                        self,
-                        query.clone(),
-                        &user,
-                    )
-                    .await?;
-                }
-                Build => {
-                    res.builds = <State as StateResource<
+        }
+        Deployment => {
+          res.deployments = <State as StateResource<
+            deployment::Deployment,
+          >>::list_resources_for_user(
+            self, query.clone(), &user
+          )
+          .await?;
+        }
+        Build => {
+          res.builds = <State as StateResource<
                         build::Build,
                     >>::list_resources_for_user(
                         self,
@@ -63,9 +59,9 @@ impl Resolve<FindResources, RequestUser> for State {
                         &user,
                     )
                     .await?;
-                }
-                Repo => {
-                    res.repos = <State as StateResource<
+        }
+        Repo => {
+          res.repos = <State as StateResource<
                         repo::Repo,
                     >>::list_resources_for_user(
                         self,
@@ -73,13 +69,13 @@ impl Resolve<FindResources, RequestUser> for State {
                         &user,
                     )
                     .await?;
-                }
-                _ => unreachable!(),
-            }
         }
-
-        todo!()
+        _ => unreachable!(),
+      }
     }
+
+    todo!()
+  }
 }
 
 // #[async_trait]

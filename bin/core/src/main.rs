@@ -2,8 +2,8 @@
 extern crate log;
 
 use axum::{
-    headers::ContentType, http::StatusCode, Extension, Router,
-    TypedHeader,
+  headers::ContentType, http::StatusCode, Extension, Router,
+  TypedHeader,
 };
 use termination_signal::tokio::immediate_term_handle;
 
@@ -18,44 +18,44 @@ mod state;
 mod ws;
 
 type ResponseResult<T> =
-    Result<T, (StatusCode, TypedHeader<ContentType>, String)>;
+  Result<T, (StatusCode, TypedHeader<ContentType>, String)>;
 
 async fn app() -> anyhow::Result<()> {
-    let state = state::State::load().await?;
+  let state = state::State::load().await?;
 
-    info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
+  info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
 
-    let socket_addr = state.socket_addr()?;
+  let socket_addr = state.socket_addr()?;
 
-    let app = Router::new()
-        .nest("/auth", auth::router(&state))
-        .nest("/read", requests::read::router())
-        .nest("/write", requests::write::router())
-        .nest("/execute", requests::execute::router())
-        .nest("/listener", listener::router())
-        .nest("/ws", ws::router())
-        .layer(state.cors()?)
-        .layer(Extension(state));
+  let app = Router::new()
+    .nest("/auth", auth::router(&state))
+    .nest("/read", requests::read::router())
+    .nest("/write", requests::write::router())
+    .nest("/execute", requests::execute::router())
+    .nest("/listener", listener::router())
+    .nest("/ws", ws::router())
+    .layer(state.cors()?)
+    .layer(Extension(state));
 
-    info!("starting monitor core on {socket_addr}");
+  info!("starting monitor core on {socket_addr}");
 
-    axum::Server::bind(&socket_addr)
-        .serve(app.into_make_service())
-        .await?;
+  axum::Server::bind(&socket_addr)
+    .serve(app.into_make_service())
+    .await?;
 
-    Ok(())
+  Ok(())
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let term_signal = immediate_term_handle()?;
+  let term_signal = immediate_term_handle()?;
 
-    let app = tokio::spawn(app());
+  let app = tokio::spawn(app());
 
-    tokio::select! {
-        res = app => return res?,
-        _ = term_signal => {},
-    }
+  tokio::select! {
+      res = app => return res?,
+      _ = term_signal => {},
+  }
 
-    Ok(())
+  Ok(())
 }

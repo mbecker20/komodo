@@ -11,12 +11,12 @@ use super::MonitorReadRequest;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetTagResponse)]
 pub struct GetTag {
-    pub id: String,
+  pub id: String,
 }
 
 #[typeshare]
@@ -26,12 +26,12 @@ pub type GetTagResponse = CustomTag;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListTagsResponse)]
 pub struct ListTags {
-    pub query: Option<MongoDocument>,
+  pub query: Option<MongoDocument>,
 }
 
 #[typeshare]

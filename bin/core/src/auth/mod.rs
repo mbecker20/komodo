@@ -1,9 +1,8 @@
 use std::{sync::Arc, time::Instant};
 
 use axum::{
-    body::Body, headers::ContentType, http::Request,
-    middleware::Next, response::Response, routing::post, Json,
-    Router, TypedHeader,
+  body::Body, headers::ContentType, http::Request, middleware::Next,
+  response::Response, routing::post, Json, Router, TypedHeader,
 };
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use reqwest::StatusCode;
@@ -17,36 +16,36 @@ mod local;
 mod secret;
 
 use crate::{
-    helpers::into_response_error,
-    requests::auth::AuthRequest,
-    state::{State, StateExtension},
-    ResponseResult,
+  helpers::into_response_error,
+  requests::auth::AuthRequest,
+  state::{State, StateExtension},
+  ResponseResult,
 };
 
 pub use self::jwt::{
-    InnerRequestUser, JwtClient, RequestUser, RequestUserExtension,
+  InnerRequestUser, JwtClient, RequestUser, RequestUserExtension,
 };
 pub use github::client::GithubOauthClient;
 pub use google::client::GoogleOauthClient;
 
 pub async fn auth_request(
-    mut req: Request<Body>,
-    next: Next<Body>,
+  mut req: Request<Body>,
+  next: Next<Body>,
 ) -> Result<Response, (StatusCode, String)> {
-    let state = req.extensions().get::<Arc<State>>().ok_or((
-        StatusCode::UNAUTHORIZED,
-        "failed to get jwt client extension".to_string(),
-    ))?;
-    let user = state
-        .authenticate_check_enabled(&req)
-        .await
-        .map_err(|e| (StatusCode::UNAUTHORIZED, format!("{e:#?}")))?;
-    req.extensions_mut().insert(user);
-    Ok(next.run(req).await)
+  let state = req.extensions().get::<Arc<State>>().ok_or((
+    StatusCode::UNAUTHORIZED,
+    "failed to get jwt client extension".to_string(),
+  ))?;
+  let user = state
+    .authenticate_check_enabled(&req)
+    .await
+    .map_err(|e| (StatusCode::UNAUTHORIZED, format!("{e:#?}")))?;
+  req.extensions_mut().insert(user);
+  Ok(next.run(req).await)
 }
 
 pub fn router(state: &State) -> Router {
-    let mut router = Router::new().route(
+  let mut router = Router::new().route(
         "/",
         post(
             |state: StateExtension, Json(request): Json<AuthRequest>| async move {
@@ -66,23 +65,23 @@ pub fn router(state: &State) -> Router {
         ),
     );
 
-    if state.github_auth.is_some() {
-        router = router.nest("/github", github::router())
-    }
+  if state.github_auth.is_some() {
+    router = router.nest("/github", github::router())
+  }
 
-    if state.google_auth.is_some() {
-        router = router.nest("/google", google::router())
-    }
+  if state.google_auth.is_some() {
+    router = router.nest("/google", google::router())
+  }
 
-    router
+  router
 }
 
 pub fn random_string(length: usize) -> String {
-    thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(length)
-        .map(char::from)
-        .collect()
+  thread_rng()
+    .sample_iter(&Alphanumeric)
+    .take(length)
+    .map(char::from)
+    .collect()
 }
 
 // fn random_duration(min_ms: u64, max_ms: u64) -> Duration {

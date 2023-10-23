@@ -11,24 +11,24 @@ use super::MonitorExecuteRequest;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct RunBuild {
-    pub build_id: String,
+  pub build_id: String,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(CancelBuildResponse)]
 pub struct CancelBuild {
-    pub build_id: String,
+  pub build_id: String,
 }
 
 #[typeshare]

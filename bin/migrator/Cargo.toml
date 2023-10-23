@@ -9,12 +9,13 @@ license.workspace = true
 
 [dependencies]
 monitor_types.workspace = true
+db_client.workspace = true
 logger.workspace = true
 #
 termination_signal.workspace = true
+mungos.workspace = true
 #
 tokio.workspace = true
-mungos.workspace = true
 anyhow.workspace = true
 dotenv.workspace = true
 envy.workspace = true

@@ -14,49 +14,49 @@ type _PartialRepoConfig = PartialRepoConfig;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Repo)]
 pub struct CreateRepo {
-    pub name: String,
-    pub config: _PartialRepoConfig,
+  pub name: String,
+  pub config: _PartialRepoConfig,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Repo)]
 pub struct CopyRepo {
-    pub name: String,
-    pub id: String,
+  pub name: String,
+  pub id: String,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Repo)]
 pub struct DeleteRepo {
-    pub id: String,
+  pub id: String,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Repo)]
 pub struct UpdateRepo {
-    pub id: String,
-    pub config: _PartialRepoConfig,
+  pub id: String,
+  pub config: _PartialRepoConfig,
 }

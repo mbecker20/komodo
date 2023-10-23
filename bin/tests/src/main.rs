@@ -3,8 +3,8 @@ mod periphery;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // periphery::tests().await?;
-    core::tests().await?;
+  // periphery::tests().await?;
+  core::tests().await?;
 
-    Ok(())
+  Ok(())
 }

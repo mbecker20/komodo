@@ -9,13 +9,13 @@ use super::MonitorWriteRequest;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(UpdateDescriptionResponse)]
 pub struct UpdateDescription {
-    pub target: ResourceTarget,
-    pub description: String,
+  pub target: ResourceTarget,
+  pub description: String,
 }
 
 #[typeshare]

@@ -1,0 +1,16 @@
+[package]
+name = "db_client"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+monitor_types.workspace = true
+#
+mungos.workspace = true
+#
+anyhow.workspace = true
+log.workspace = true

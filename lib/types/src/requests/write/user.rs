@@ -11,12 +11,12 @@ use super::MonitorWriteRequest;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(PushRecentlyViewedResponse)]
 pub struct PushRecentlyViewed {
-    pub resource: ResourceTarget,
+  pub resource: ResourceTarget,
 }
 
 #[typeshare]
@@ -27,7 +27,7 @@ pub struct PushRecentlyViewedResponse {}
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(SetLastSeenUpdateResponse)]

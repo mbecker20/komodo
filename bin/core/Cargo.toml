@@ -15,6 +15,7 @@ path = "src/main.rs"
 # local
 monitor_types.workspace = true
 periphery_client.workspace = true
+db_client.workspace = true
 logger.workspace = true
 # mogh
 async_timing_util.workspace = true

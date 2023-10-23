@@ -11,31 +11,31 @@ use super::MonitorWriteRequest;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(CreateLoginSecretResponse)]
 pub struct CreateLoginSecret {
-    pub name: String,
-    pub expires: Option<I64>,
+  pub name: String,
+  pub expires: Option<I64>,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateLoginSecretResponse {
-    pub secret: String,
+  pub secret: String,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(DeleteLoginSecretResponse)]
 pub struct DeleteLoginSecret {
-    pub name: String,
+  pub name: String,
 }
 
 #[typeshare]

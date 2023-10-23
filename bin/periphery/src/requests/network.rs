@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use monitor_types::entities::{
-    server::docker_network::DockerNetwork, update::Log,
+  server::docker_network::DockerNetwork, update::Log,
 };
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
@@ -15,13 +15,13 @@ pub struct GetNetworkList {}
 
 #[async_trait]
 impl Resolve<GetNetworkList> for State {
-    async fn resolve(
-        &self,
-        _: GetNetworkList,
-        _: (),
-    ) -> anyhow::Result<Vec<DockerNetwork>> {
-        self.docker.list_networks().await
-    }
+  async fn resolve(
+    &self,
+    _: GetNetworkList,
+    _: (),
+  ) -> anyhow::Result<Vec<DockerNetwork>> {
+    self.docker.list_networks().await
+  }
 }
 
 //
@@ -29,19 +29,19 @@ impl Resolve<GetNetworkList> for State {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
 pub struct CreateNetwork {
-    pub name: String,
-    pub driver: Option<String>,
+  pub name: String,
+  pub driver: Option<String>,
 }
 
 #[async_trait]
 impl Resolve<CreateNetwork> for State {
-    async fn resolve(
-        &self,
-        CreateNetwork { name, driver }: CreateNetwork,
-        _: (),
-    ) -> anyhow::Result<Log> {
-        Ok(docker::create_network(&name, driver).await)
-    }
+  async fn resolve(
+    &self,
+    CreateNetwork { name, driver }: CreateNetwork,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    Ok(docker::create_network(&name, driver).await)
+  }
 }
 
 //
@@ -49,18 +49,18 @@ impl Resolve<CreateNetwork> for State {
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
 pub struct DeleteNetwork {
-    pub name: String,
+  pub name: String,
 }
 
 #[async_trait]
 impl Resolve<DeleteNetwork> for State {
-    async fn resolve(
-        &self,
-        DeleteNetwork { name }: DeleteNetwork,
-        _: (),
-    ) -> anyhow::Result<Log> {
-        Ok(docker::delete_network(&name).await)
-    }
+  async fn resolve(
+    &self,
+    DeleteNetwork { name }: DeleteNetwork,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    Ok(docker::delete_network(&name).await)
+  }
 }
 
 //
@@ -71,11 +71,11 @@ pub struct PruneNetworks {}
 
 #[async_trait]
 impl Resolve<PruneNetworks> for State {
-    async fn resolve(
-        &self,
-        _: PruneNetworks,
-        _: (),
-    ) -> anyhow::Result<Log> {
-        Ok(docker::prune_networks().await)
-    }
+  async fn resolve(
+    &self,
+    _: PruneNetworks,
+    _: (),
+  ) -> anyhow::Result<Log> {
+    Ok(docker::prune_networks().await)
+  }
 }

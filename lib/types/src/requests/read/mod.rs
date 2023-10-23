@@ -33,7 +33,7 @@ pub trait MonitorReadRequest: HasResponse {}
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetVersionResponse)]
@@ -42,14 +42,14 @@ pub struct GetVersion {}
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetVersionResponse {
-    pub version: String,
+  pub version: String,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetUserResponse)]
@@ -62,7 +62,7 @@ pub type GetUserResponse = User;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetUsersResponse)]
@@ -75,25 +75,25 @@ pub type GetUsersResponse = Vec<User>;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetUsernameResponse)]
 pub struct GetUsername {
-    pub user_id: String,
+  pub user_id: String,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetUsernameResponse {
-    pub username: String,
+  pub username: String,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetCoreInfoResponse)]
@@ -102,6 +102,6 @@ pub struct GetCoreInfo {}
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetCoreInfoResponse {
-    pub title: String,
-    pub monitoring_interval: Timelength,
+  pub title: String,
+  pub monitoring_interval: Timelength,
 }

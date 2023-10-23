@@ -11,49 +11,49 @@ use super::MonitorWriteRequest;
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Builder)]
 pub struct CreateBuilder {
-    pub name: String,
-    pub config: PartialBuilderConfig,
+  pub name: String,
+  pub config: PartialBuilderConfig,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Builder)]
 pub struct CopyBuilder {
-    pub name: String,
-    pub id: String,
+  pub name: String,
+  pub id: String,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Builder)]
 pub struct DeleteBuilder {
-    pub id: String,
+  pub id: String,
 }
 
 //
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
 #[response(Builder)]
 pub struct UpdateBuilder {
-    pub id: String,
-    pub config: PartialBuilderConfig,
+  pub id: String,
+  pub config: PartialBuilderConfig,
 }

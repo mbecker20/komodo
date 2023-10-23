@@ -1,6 +1,6 @@
 use mungos::{
-    derive::{MungosIndexed, StringObjectId},
-    mongodb::bson::serde_helpers::hex_string_as_object_id,
+  derive::{MungosIndexed, StringObjectId},
+  mongodb::bson::serde_helpers::hex_string_as_object_id,
 };
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -11,70 +11,70 @@ use super::update::ResourceTarget;
 
 #[typeshare]
 #[derive(
-    Serialize,
-    Deserialize,
-    Debug,
-    Clone,
-    Default,
-    MungosIndexed,
-    StringObjectId,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  Default,
+  MungosIndexed,
+  StringObjectId,
 )]
 pub struct User {
-    #[serde(
-        default,
-        rename = "_id",
-        skip_serializing_if = "String::is_empty",
-        with = "hex_string_as_object_id"
-    )]
-    pub id: MongoId,
+  #[serde(
+    default,
+    rename = "_id",
+    skip_serializing_if = "String::is_empty",
+    with = "hex_string_as_object_id"
+  )]
+  pub id: MongoId,
 
-    #[unique_index]
-    pub username: String,
+  #[unique_index]
+  pub username: String,
 
-    #[serde(default)]
-    #[index]
-    pub enabled: bool,
+  #[serde(default)]
+  #[index]
+  pub enabled: bool,
 
-    #[serde(default)]
-    pub admin: bool,
+  #[serde(default)]
+  pub admin: bool,
 
-    #[serde(default)]
-    pub create_server_permissions: bool,
+  #[serde(default)]
+  pub create_server_permissions: bool,
 
-    #[serde(default)]
-    pub create_build_permissions: bool,
+  #[serde(default)]
+  pub create_build_permissions: bool,
 
-    pub avatar: Option<String>,
+  pub avatar: Option<String>,
 
-    #[serde(default)]
-    pub secrets: Vec<ApiSecret>,
+  #[serde(default)]
+  pub secrets: Vec<ApiSecret>,
 
-    pub password: Option<String>,
+  pub password: Option<String>,
 
-    #[sparse_index]
-    pub github_id: Option<String>,
+  #[sparse_index]
+  pub github_id: Option<String>,
 
-    #[sparse_index]
-    pub google_id: Option<String>,
+  #[sparse_index]
+  pub google_id: Option<String>,
 
-    #[serde(default)]
-    pub last_update_view: I64,
+  #[serde(default)]
+  pub last_update_view: I64,
 
-    #[serde(default)]
-    pub recently_viewed: Vec<ResourceTarget>,
+  #[serde(default)]
+  pub recently_viewed: Vec<ResourceTarget>,
 
-    #[serde(default)]
-    pub updated_at: I64,
+  #[serde(default)]
+  pub updated_at: I64,
 }
 
 #[typeshare]
 #[derive(
-    Serialize, Deserialize, Debug, Clone, Default, PartialEq,
+  Serialize, Deserialize, Debug, Clone, Default, PartialEq,
 )]
 pub struct ApiSecret {
-    pub name: String,
-    #[serde(default, skip_serializing_if = "String::is_empty")]
-    pub hash: String,
-    pub created_at: I64,
-    pub expires: Option<I64>,
+  pub name: String,
+  #[serde(default, skip_serializing_if = "String::is_empty")]
+  pub hash: String,
+  pub created_at: I64,
+  pub expires: Option<I64>,
 }
