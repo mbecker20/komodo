@@ -222,7 +222,11 @@ export interface ServerConfig {
 	address: string;
 	enabled: boolean;
 	auto_prune: boolean;
-	send_alerts: boolean;
+	send_unreachable_alerts: boolean;
+	send_cpu_alerts: boolean;
+	send_mem_alerts: boolean;
+	send_disk_alerts: boolean;
+	send_temp_alerts: boolean;
 	region?: string;
 	cpu_warning: number;
 	cpu_critical: number;
@@ -243,7 +247,11 @@ export enum ServerStatus {
 export interface ServerListItemInfo {
 	status: ServerStatus;
 	region: string;
-	send_alerts: boolean;
+	send_unreachable_alerts: boolean;
+	send_cpu_alerts: boolean;
+	send_mem_alerts: boolean;
+	send_disk_alerts: boolean;
+	send_temp_alerts: boolean;
 }
 
 export type ServerListItem = ResourceListItem<ServerListItemInfo>;
@@ -376,6 +384,7 @@ export interface ServerActionState {
 	pruning_networks: boolean;
 	pruning_containers: boolean;
 	pruning_images: boolean;
+	stopping_containers: boolean;
 }
 
 export type GetServerActionStateResponse = ServerActionState;
@@ -632,6 +641,7 @@ export enum Operation {
 	DeleteDeployment = "DeleteDeployment",
 	DeployContainer = "DeployContainer",
 	StopContainer = "StopContainer",
+	StopAllContainers = "StopAllContainers",
 	StartContainer = "StartContainer",
 	RemoveContainer = "RemoveContainer",
 	RenameDeployment = "RenameDeployment",
