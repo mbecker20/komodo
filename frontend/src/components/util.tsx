@@ -1,6 +1,14 @@
 import { ReactNode, forwardRef, useEffect, useState } from "react";
-import { Button, ButtonProps } from "../ui/button";
-import { Check, Copy, Loader2, Moon, SunMedium } from "lucide-react";
+import { Button } from "../ui/button";
+import {
+  Box,
+  Check,
+  Copy,
+  Loader2,
+  LogOut,
+  Moon,
+  SunMedium,
+} from "lucide-react";
 import { Input } from "../ui/input";
 import {
   Dialog,
@@ -10,11 +18,24 @@ import {
   DialogContent,
   DialogFooter,
 } from "@ui/dialog";
-// import { useNavigate } from "react-router-dom";
-import { toast } from "@ui/toast/use-toast";
-import { cn } from "@util/helpers";
-import { useInvalidate, useWrite } from "@hooks";
-import { useNavigate } from "react-router-dom";
+import { toast } from "@ui/use-toast";
+import { RESOURCE_TARGETS, cn } from "@lib/utils";
+import {
+  useInvalidate,
+  useRead,
+  useResourceParamType,
+  useWrite,
+} from "@lib/hooks";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@ui/dropdown-menu";
+import { ResourceComponents } from "./resources";
+import { WsStatusIndicator } from "@lib/socket";
 
 export const WithLoading = ({
   children,
@@ -76,17 +97,15 @@ export const ActionButton = forwardRef<
   {
     title: string;
     icon: ReactNode;
-    intent?: ButtonProps["intent"];
     disabled?: boolean;
     className?: string;
     onClick?: () => void;
     loading?: boolean;
   }
->(({ title, icon, intent, disabled, className, loading, onClick }, ref) => (
+>(({ title, icon, disabled, className, loading, onClick }, ref) => (
   <Button
     variant="outline"
     className={cn("flex items-center justify-between w-[150px]", className)}
-    intent={intent}
     onClick={onClick}
     disabled={disabled}
     ref={ref}
@@ -99,7 +118,6 @@ export const ActionWithDialog = ({
   name,
   title,
   icon,
-  intent,
   disabled,
   loading,
   onClick,
@@ -107,7 +125,6 @@ export const ActionWithDialog = ({
   name: string;
   title: string;
   icon: ReactNode;
-  intent?: ButtonProps["intent"];
   disabled?: boolean;
   loading?: boolean;
   onClick?: () => void;
@@ -121,7 +138,6 @@ export const ActionWithDialog = ({
         <ActionButton
           title={title}
           icon={icon}
-          intent={intent}
           disabled={disabled}
           onClick={() => setOpen(true)}
           loading={loading}
@@ -151,7 +167,6 @@ export const ActionWithDialog = ({
           <ActionButton
             title={title}
             icon={icon}
-            intent={intent}
             disabled={name !== input}
             onClick={() => {
               onClick && onClick();
@@ -207,7 +222,6 @@ export const CopyResource = ({
           <ActionButton
             title="Confirm"
             icon={<Check className="w-4 h-4" />}
-            intent="success"
             disabled={!name}
             onClick={() => {
               mutate({ id, name });
@@ -223,7 +237,6 @@ export const CopyResource = ({
 export const ConfirmButton = ({
   title,
   icon,
-  intent,
   disabled,
   loading,
   onClick,
@@ -232,7 +245,6 @@ export const ConfirmButton = ({
   icon: ReactNode;
   onClick: () => void;
   loading?: boolean;
-  intent?: ButtonProps["intent"];
   disabled?: boolean;
 }) => {
   const [confirmed, set] = useState(false);
@@ -242,7 +254,6 @@ export const ConfirmButton = ({
       <ActionButton
         title={confirmed ? "Confirm" : title}
         icon={confirmed ? <Check className="w-4 h-4" /> : icon}
-        intent={intent}
         disabled={disabled}
         onClick={
           confirmed
@@ -257,10 +268,123 @@ export const ConfirmButton = ({
       />
       {confirmed && (
         <div
-          className="absolute z-40 top-0 left-0 w-[100vw] h-[100vh]"
+          className="fixed z-40 top-0 left-0 w-[100vw] h-[100vh]"
           onClick={() => set(false)}
         />
       )}
     </>
+  );
+};
+
+export const ResourceTypeDropdown = () => {
+  const type = useResourceParamType();
+  const Components = ResourceComponents[type];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="w-36 justify-between px-3">
+          <div className="flex items-center gap-2">
+            {type ? <Components.Icon /> : <Box className="w-4 h-4" />}
+            {type ? type + "s" : "Dashboard"}
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-36" side="bottom">
+        <DropdownMenuGroup>
+          <Link to="/">
+            <DropdownMenuItem className="flex items-center gap-2">
+              <Box className="w-4 h-4" />
+              Dashboard
+            </DropdownMenuItem>
+          </Link>
+          {RESOURCE_TARGETS.map((rt) => {
+            const RTIcon = ResourceComponents[rt].Icon;
+            return (
+              <Link key={rt} to={`/${rt.toLowerCase()}s`}>
+                <DropdownMenuItem className="flex items-center gap-2">
+                  <RTIcon />
+                  {rt}s
+                </DropdownMenuItem>
+              </Link>
+            );
+          })}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export const ResourcesDropdown = () => {
+  const type = useResourceParamType();
+  const id = useParams().id as string;
+  const list = useRead(`List${type}s`, {}).data;
+
+  const selected = list?.find((i) => i.id === id);
+  const Components = ResourceComponents[type];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="w-48 justify-between px-3">
+          <div className="flex items-center gap-2">
+            <Components.Icon id={selected?.id} />
+            {selected ? selected.name : `All ${type}s`}
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-48" side="bottom">
+        <DropdownMenuGroup>
+          {!list?.length && (
+            <DropdownMenuItem disabled>No {type}s Found.</DropdownMenuItem>
+          )}
+          {list?.length && (
+            <Link to={`/${type.toLowerCase()}s`}>
+              <DropdownMenuItem className="flex items-center gap-2">
+                <Components.Icon />
+                All {type}s
+              </DropdownMenuItem>
+            </Link>
+          )}
+          {list?.map(({ id, name }) => (
+            <Link key={id} to={`/${type.toLowerCase()}s/${id}`}>
+              <DropdownMenuItem className="flex items-center gap-2">
+                <Components.Icon id={id} />
+                {name}
+              </DropdownMenuItem>
+            </Link>
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+export const Logout = () => (
+  <Button
+    variant="ghost"
+    size="icon"
+    onClick={() => {
+      localStorage.removeItem("monitor-auth-token");
+      window.location.reload();
+    }}
+  >
+    <LogOut className="w-4 h-4" />
+  </Button>
+);
+
+export const UserDropdown = () => {
+  const user = useRead("GetUser", {}).data;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="gap-2" variant="outline">
+          <WsStatusIndicator />
+          {user?.username}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent></DropdownMenuContent>
+    </DropdownMenu>
   );
 };

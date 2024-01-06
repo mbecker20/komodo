@@ -1,4 +1,5 @@
-import { useRead } from "@hooks";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
   Select,
@@ -11,9 +12,17 @@ import {
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
-import { MinusCircle, PlusCircle } from "lucide-react";
-import { ReactNode } from "react";
-import { cn } from "@util/helpers";
+import { MinusCircle, PlusCircle, Save } from "lucide-react";
+import { ReactNode, useState } from "react";
+import { cn } from "@lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@ui/dialog";
 
 export const ConfigItem = ({
   label,
@@ -114,7 +123,7 @@ export const DoubleInput = <
           />
           <Button
             variant="outline"
-            intent="warning"
+            // intent="warning"
             onClick={() => onRemove(i)}
           >
             <MinusCircle className="w-4 h-4" />
@@ -123,7 +132,7 @@ export const DoubleInput = <
       ))}
       <Button
         variant="outline"
-        intent="success"
+        // intent="success"
         className="flex items-center gap-2 w-[200px] place-self-end"
         onClick={onAdd}
       >
@@ -136,26 +145,26 @@ export const DoubleInput = <
 
 type UsableResources = Exclude<Types.ResourceTarget["type"], "System">;
 
-export const ResourceSelector = <T extends UsableResources>({
+export const ResourceSelector = ({
   type,
   selected,
   onSelect,
 }: {
-  type: T;
+  type: UsableResources;
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const builds = useRead(`List${type}s`, {}).data;
+  const resources = useRead(`List${type}s`, {}).data;
   return (
-    <Select value={selected || undefined} onValueChange={onSelect}>
+    <Select value={selected ?? undefined} onValueChange={onSelect}>
       <SelectTrigger className="w-full lg:w-[300px]">
         <SelectValue placeholder={`Select ${type}`} />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          {builds?.map((b) => (
-            <SelectItem key={b.id} value={b.id}>
-              {b.name}
+          {resources?.map((resource) => (
+            <SelectItem key={resource.id} value={resource.id}>
+              {resource.name}
             </SelectItem>
           ))}
         </SelectGroup>
@@ -177,7 +186,12 @@ export const AccountSelector = ({
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const accounts = useRead(`Get${type}AvailableAccounts`, { id }).data;
+  const request = type === "Server" ? "GetAvailableAccounts" : "GetBuilderAvailableAccounts";
+  const accounts = useRead(
+    request,
+    { id: id! },
+    { enabled: !!id }
+  ).data;
   return (
     <ConfigItem label={`${account_type} Account`}>
       <Select
@@ -225,7 +239,7 @@ export const InputList = <T extends { [key: string]: unknown }>({
           />
           <Button
             variant="outline"
-            intent="warning"
+            // intent="warning"
             onClick={() =>
               set({
                 [field]: [...values.filter((_, idx) => idx !== i)],
@@ -239,7 +253,7 @@ export const InputList = <T extends { [key: string]: unknown }>({
 
       <Button
         variant="outline"
-        intent="success"
+        // intent="success"
         onClick={() => set({ [field]: [...values, ""] } as Partial<T>)}
       >
         Add Docker Account
@@ -247,3 +261,40 @@ export const InputList = <T extends { [key: string]: unknown }>({
     </div>
   </ConfigItem>
 );
+
+interface ConfirmUpdateProps {
+  content: string;
+  onConfirm: () => void;
+}
+
+export const ConfirmUpdate = ({ content, onConfirm }: ConfirmUpdateProps) => {
+  const [open, set] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={set}>
+      <DialogTrigger asChild>
+        <Button onClick={() => set(true)}>
+          <Save className="w-4 h-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Confirm Update</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4 py-4 my-4">
+          New configuration to be applied:
+          <pre className="h-[300px] overflow-auto">{content}</pre>
+        </div>
+        <DialogFooter>
+          <Button
+            onClick={() => {
+              onConfirm();
+              set(false);
+            }}
+          >
+            Confirm
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

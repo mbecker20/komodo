@@ -1,4 +1,4 @@
-import { useRead } from "@hooks";
+import { useRead } from "@lib/hooks";
 import { Button } from "@ui/button";
 import {
   Card,
@@ -7,13 +7,21 @@ import {
   CardContent,
   CardDescription,
 } from "@ui/card";
-import { fmt_update_date } from "@util/helpers";
-import { Bell, ExternalLink, User, Calendar, Check, X } from "lucide-react";
+import {
+  Bell,
+  ExternalLink,
+  User,
+  Calendar,
+  Check,
+  X,
+  Loader2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
-import { UpdateDetails, UpdateUser } from "./details";
 import { Types } from "@monitor/client";
-import { Section } from "@layouts/page";
-import { ResourceTarget } from "@monitor/client/dist/types";
+import { Section } from "@components/layouts";
+import { fmt_update_date } from "@lib/utils";
+import { UpdateDetails, UpdateUser } from "./details";
+import { UpdateStatus } from "@monitor/client/dist/types";
 
 const UpdatePlaceHolder = () => (
   <Card>
@@ -31,31 +39,37 @@ const UpdatePlaceHolder = () => (
   </Card>
 );
 
-const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => (
-  <UpdateDetails id={update.id}>
-    <Card hoverable>
-      <CardHeader className="flex-row justify-between">
-        <CardTitle>{update.operation}</CardTitle>
-        {update.success ? (
-          <Check className="w-4 h-4 stroke-green-500" />
-        ) : (
-          <X className="w-4 h-4 stroke-red-500" />
-        )}
-      </CardHeader>
-      <CardContent>
-        <CardDescription className="flex items-center gap-2">
-          <User className="w-4 h-4" /> <UpdateUser user_id={update.operator} />
-        </CardDescription>
-        <CardDescription className="flex items-center gap-2">
-          <Calendar className="w-4 h-4" />
-          {fmt_update_date(new Date(update.start_ts))}
-        </CardDescription>
-      </CardContent>
-    </Card>
-  </UpdateDetails>
-);
+const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
+  const Icon = () => {
+    if (update.status === UpdateStatus.Complete) {
+      if (update.success) return <Check className="w-4 h-4 stroke-green-500" />;
+      else return <X className="w-4 h-4 stroke-red-500" />;
+    } else return <Loader2 className="w-4 h-4 animate-spin" />;
+  };
 
-export const ResourceUpdates = ({ type, id }: ResourceTarget) => {
+  return (
+    <UpdateDetails id={update.id}>
+      <Card className="cursor-pointer hover:translate-y-[-2.5%] hover:bg-accent/50 transition-all">
+        <CardHeader className="flex-row justify-between">
+          <CardTitle>{update.operation}</CardTitle>
+          <Icon />
+        </CardHeader>
+        <CardContent>
+          <CardDescription className="flex items-center gap-2">
+            <User className="w-4 h-4" />{" "}
+            <UpdateUser user_id={update.operator} />
+          </CardDescription>
+          <CardDescription className="flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            {fmt_update_date(new Date(update.start_ts))}
+          </CardDescription>
+        </CardContent>
+      </Card>
+    </UpdateDetails>
+  );
+};
+
+export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
   const { data, isLoading } = useRead("ListUpdates", {
     query: {
       "target.type": type,
@@ -77,9 +91,9 @@ export const ResourceUpdates = ({ type, id }: ResourceTarget) => {
     >
       <div className="grid md:grid-cols-3 gap-4">
         {isLoading && <UpdatePlaceHolder />}
-        {data?.updates.slice(0, 3).map((update) => (
-          <UpdateCard update={update} key={update.id} />
-        ))}
+        {data?.updates
+          .slice(0, 3)
+          .map((update) => <UpdateCard update={update} key={update.id} />)}
       </div>
     </Section>
   );

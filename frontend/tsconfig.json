@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "useDefineForClassFields": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
 
@@ -21,7 +22,7 @@
 
     /* Paths */
     "baseUrl": "./src",
-    "paths": { "@*": ["./*"] },
+    "paths": { "@*": ["./*"] }
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

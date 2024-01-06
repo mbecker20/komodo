@@ -1,23 +1,10 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { Layout } from "@layouts/layout";
-import { Login } from "@pages/auth/login";
-import { Signup } from "@pages/auth/signup";
+import { Layout } from "@components/layouts";
+import { useRead } from "@lib/hooks";
 import { Dashboard } from "@pages/dashboard";
-import {
-  Deployments,
-  Builds,
-  Servers,
-  Builders,
-  Alerters,
-  Repos,
-} from "@resources/pages";
-
-import { ServerPage } from "@resources/server";
-import { DeploymentPage } from "@resources/deployment";
-import { BuildPage } from "@resources/build";
-import { BuilderPage } from "@resources/builder";
-import { AlerterPage } from "@resources/alerter";
-import { RepoPage } from "@resources/repo";
+import { Login } from "@pages/login";
+import { Resource } from "@pages/resource";
+import { Resources } from "@pages/resources";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
@@ -25,53 +12,22 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "", element: <Dashboard /> },
-      { path: "login", element: <Login /> },
-      { path: "signup", element: <Signup /> },
       {
-        path: "deployments",
+        path: ":type",
         children: [
-          { path: "", element: <Deployments /> },
-          { path: ":deploymentId", element: <DeploymentPage /> },
-        ],
-      },
-      {
-        path: "servers",
-        children: [
-          { path: "", element: <Servers /> },
-          { path: ":serverId", element: <ServerPage /> },
-        ],
-      },
-      {
-        path: "builds",
-        children: [
-          { path: "", element: <Builds /> },
-          { path: ":buildId", element: <BuildPage /> },
-        ],
-      },
-      {
-        path: "builders",
-        children: [
-          { path: "", element: <Builders /> },
-          { path: ":builderId", element: <BuilderPage /> },
-        ],
-      },
-      {
-        path: "alerters",
-        children: [
-          { path: "", element: <Alerters /> },
-          { path: ":alerterId", element: <AlerterPage /> },
-        ],
-      },
-      {
-        path: "repos",
-        children: [
-          { path: "", element: <Repos /> },
-          { path: ":repoId", element: <RepoPage /> },
+          { path: "", element: <Resources /> },
+          { path: ":id", element: <Resource /> },
         ],
       },
     ],
   },
 ]);
 
-const Router = () => <RouterProvider router={router} />;
-export default Router;
+export const Router = () => {
+  const { data: user, isLoading } = useRead("GetUser", {});
+
+  if (isLoading) return null;
+  if (!user) return <Login />;
+
+  return <RouterProvider router={router} />;
+};

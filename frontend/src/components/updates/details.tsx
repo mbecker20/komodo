@@ -6,21 +6,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@ui/sheet";
-import {
-  readableDuration,
-  readableVersion,
-  version_to_string,
-} from "@util/helpers";
-import {
-  Calendar,
-  Clock,
-  Hammer,
-  Milestone,
-  Rocket,
-  Server,
-  User,
-} from "lucide-react";
-// import { UpdateUser } from ".";
+import { Calendar, Clock, Milestone, User } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -29,10 +15,9 @@ import {
   CardTitle,
 } from "@ui/card";
 import { ReactNode } from "react";
-import { ServerName } from "@resources/server/util";
-import { DeploymentName } from "@resources/deployment/util";
-import { BuildName } from "@resources/build/util";
-import { useRead } from "@hooks";
+import { useRead } from "@lib/hooks";
+import { fmt_duration, fmt_verison } from "@lib/utils";
+import { ResourceComponents } from "@components/resources";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data;
@@ -51,17 +36,27 @@ export const UpdateDetails = ({
   const update = useRead("GetUpdate", { id }).data;
   if (!update) return null;
 
+  const Components =
+    update.target.type === "System"
+      ? null
+      : ResourceComponents[update.target.type];
+
+  if (!Components) return null;
+
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent position="right" size="lg" className="overflow-scroll">
+      <SheetContent
+        side="right"
+        className="overflow-y-auto w-[100vw] md:w-[75vw] lg:w-[50vw]"
+      >
         <SheetHeader className="mb-4">
           <SheetTitle>
             {update.operation
               .split("_")
               .map((s) => s[0].toUpperCase() + s.slice(1))
               .join(" ")}{" "}
-            {version_to_string(update.version)}
+            {fmt_verison(update.version)}
           </SheetTitle>
           <SheetDescription className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -70,29 +65,13 @@ export const UpdateDetails = ({
             </div>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
-                {update.target.type === "Server" && (
-                  <>
-                    <Server className="w-4 h-4" />
-                    <ServerName serverId={update.target.id} />
-                  </>
-                )}
-                {update.target.type === "Deployment" && (
-                  <>
-                    <Rocket className="w-4 h-4" />
-                    <DeploymentName deploymentId={update.target.id} />
-                  </>
-                )}
-                {update.target.type === "Build" && (
-                  <>
-                    <Hammer className="w-4 h-4" />
-                    <BuildName id={update.target.id} />
-                  </>
-                )}
+                <Components.Icon id={update.target.id} />
+                <Components.Name id={update.target.id} />
               </div>
               {update.version && (
                 <div className="flex items-center gap-2">
                   <Milestone className="w-4 h-4" />
-                  {readableVersion(update.version)}
+                  {fmt_verison(update.version)}
                 </div>
               )}
             </div>
@@ -104,7 +83,7 @@ export const UpdateDetails = ({
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
                 {update.end_ts
-                  ? readableDuration(update.start_ts, update.end_ts)
+                  ? fmt_duration(update.start_ts, update.end_ts)
                   : "ongoing"}
               </div>
             </div>
@@ -113,7 +92,7 @@ export const UpdateDetails = ({
         <div className="grid gap-2">
           {update.logs?.map((log, i) => (
             <Card key={i}>
-              <CardHeader>
+              <CardHeader className="flex-col">
                 <CardTitle>{log.stage}</CardTitle>
                 <CardDescription className="flex gap-2">
                   <span>
@@ -122,7 +101,7 @@ export const UpdateDetails = ({
                   <span>|</span>
                   <span className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    {readableDuration(log.start_ts, log.end_ts)}
+                    {fmt_duration(log.start_ts, log.end_ts)}
                   </span>
                 </CardDescription>
               </CardHeader>
