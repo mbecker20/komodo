@@ -2,7 +2,7 @@ FROM node:20.5-alpine
 
 WORKDIR /app
 
-COPY ./frontend-v2 ./frontend
+COPY ./frontend ./frontend
 COPY ./client/ts ./client
 
 RUN cd client && yarn && yarn build && yarn link
