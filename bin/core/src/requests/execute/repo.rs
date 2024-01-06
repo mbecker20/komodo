@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::anyhow;
 use async_trait::async_trait;
 use monitor_types::{
@@ -10,7 +12,7 @@ use monitor_types::{
   monitor_timestamp, optional_string,
   requests::execute::*,
 };
-use mungos::mongodb::bson::doc;
+use mungos::mongodb::bson::{doc, oid::ObjectId};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
@@ -77,17 +79,16 @@ impl Resolve<CloneRepo, RequestUser> for State {
           .db
           .repos
           .update_one(
-            &repo.id,
-            mungos::Update::Set(
-              doc! { "info.last_pulled_at": monitor_timestamp() },
-            ),
+            doc! { "_id": ObjectId::from_str(&repo.id)? },
+            doc! { "$set": { "info.last_pulled_at": monitor_timestamp() } },
+            None,
           )
           .await;
         if let Err(e) = res {
           warn!(
-                        "failed to update repo last_pulled_at | repo id: {} | {e:#?}",
-                        repo.id
-                    );
+            "failed to update repo last_pulled_at | repo id: {} | {e:#?}",
+            repo.id
+          );
         }
       }
 
@@ -183,17 +184,16 @@ impl Resolve<PullRepo, RequestUser> for State {
           .db
           .repos
           .update_one(
-            &repo.id,
-            mungos::Update::Set(
-              doc! { "last_pulled_at": monitor_timestamp() },
-            ),
+            doc! { "_id": ObjectId::from_str(&repo.id)? },
+            doc! { "$set": { "info.last_pulled_at": monitor_timestamp() } },
+            None,
           )
           .await;
         if let Err(e) = res {
           warn!(
-                        "failed to update repo last_pulled_at | repo id: {} | {e:#?}",
-                        repo.id
-                    );
+            "failed to update repo last_pulled_at | repo id: {} | {e:#?}",
+            repo.id
+          );
         }
       }
 

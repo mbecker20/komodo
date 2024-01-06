@@ -6,6 +6,7 @@ use monitor_types::{
     GetUser, GetUsername, GetUsernameResponse, GetUsers,
   },
 };
+use mungos::{by_id::find_one_by_id, find::find_collect};
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -17,10 +18,7 @@ impl Resolve<GetUser, RequestUser> for State {
     GetUser {}: GetUser,
     user: RequestUser,
   ) -> anyhow::Result<User> {
-    let mut user = self
-      .db
-      .users
-      .find_one_by_id(&user.id)
+    let mut user = find_one_by_id(&self.db.users, &user.id)
       .await
       .context("failed at mongo query")?
       .context("no user found with id")?;
@@ -38,12 +36,9 @@ impl Resolve<GetUsername, RequestUser> for State {
     GetUsername { user_id }: GetUsername,
     _: RequestUser,
   ) -> anyhow::Result<GetUsernameResponse> {
-    let user = self
-      .db
-      .users
-      .find_one_by_id(&user_id)
+    let user = find_one_by_id(&self.db.users, &user_id)
       .await
-      .context("failed at mongo query")?
+      .context("failed at mongo query for user")?
       .context("no user found with id")?;
 
     Ok(GetUsernameResponse {
@@ -62,10 +57,8 @@ impl Resolve<GetUsers, RequestUser> for State {
     if !user.is_admin {
       return Err(anyhow!("this route is only accessable by admins"));
     }
-    let mut users = self
-      .db
-      .users
-      .get_some(None, None)
+
+    let mut users = find_collect(&self.db.users, None, None)
       .await
       .context("failed to pull users from db")?;
     users.iter_mut().for_each(|user| {

@@ -4,6 +4,7 @@ use monitor_types::{
   entities::tag::CustomTag,
   requests::read::{GetTag, ListTags},
 };
+use mungos::find::find_collect;
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -26,10 +27,7 @@ impl Resolve<ListTags, RequestUser> for State {
     ListTags { query }: ListTags,
     _: RequestUser,
   ) -> anyhow::Result<Vec<CustomTag>> {
-    self
-      .db
-      .tags
-      .get_some(query, None)
+    find_collect(&self.db.tags, query, None)
       .await
       .context("failed to get tags from db")
   }

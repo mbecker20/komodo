@@ -48,9 +48,11 @@ impl Resolve<CreateLocalUser> for State {
     let user_id = self
       .db
       .users
-      .create_one(user)
+      .insert_one(user, None)
       .await
-      .context("failed to create user")?;
+      .context("failed to create user")?
+      .inserted_id
+      .to_string();
 
     let jwt = self
       .jwt

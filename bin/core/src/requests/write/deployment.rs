@@ -13,7 +13,10 @@ use monitor_types::{
   requests::write::*,
   to_monitor_name,
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  by_id::{delete_one_by_id, update_one_by_id},
+  mongodb::bson::{doc, to_bson},
+};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
@@ -65,9 +68,11 @@ impl Resolve<CreateDeployment, RequestUser> for State {
     let deployment_id = self
       .db
       .deployments
-      .create_one(&deployment)
+      .insert_one(&deployment, None)
       .await
-      .context("failed to add deployment to db")?;
+      .context("failed to add deployment to db")?
+      .inserted_id
+      .to_string();
     let deployment: Deployment =
       self.get_resource(&deployment_id).await?;
     let update = Update {
@@ -144,9 +149,11 @@ impl Resolve<CopyDeployment, RequestUser> for State {
     let deployment_id = self
       .db
       .deployments
-      .create_one(&deployment)
+      .insert_one(&deployment, None)
       .await
-      .context("failed to add deployment to db")?;
+      .context("failed to add deployment to db")?
+      .inserted_id
+      .to_string();
     let deployment: Deployment =
       self.get_resource(&deployment_id).await?;
     let update = Update {
@@ -258,12 +265,10 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
         }
       }
 
-      let res = self
-        .db
-        .deployments
-        .delete_one(&deployment.id)
-        .await
-        .context("failed to delete deployment from mongo");
+      let res =
+        delete_one_by_id(&self.db.deployments, &deployment.id, None)
+          .await
+          .context("failed to delete deployment from mongo");
 
       let log = match res {
         Ok(_) => Log::simple(
@@ -367,17 +372,16 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
         extra_args.retain(|v| !empty_or_only_spaces(v))
       }
 
-      self
-        .db
-        .deployments
-        .update_one(
-          &id,
-          mungos::Update::FlattenSet(
-            doc! { "config": to_bson(&config)? },
-          ),
-        )
-        .await
-        .context("failed to update server on mongo")?;
+      update_one_by_id(
+        &self.db.deployments,
+        &id,
+        mungos::update::Update::FlattenSet(
+          doc! { "config": to_bson(&config)? },
+        ),
+        None,
+      )
+      .await
+      .context("failed to update server on mongo")?;
 
       let update = Update {
         operation: Operation::UpdateDeployment,
@@ -458,17 +462,16 @@ impl Resolve<RenameDeployment, RequestUser> for State {
       let mut update =
         make_update(&deployment, Operation::RenameDeployment, &user);
 
-      self
-        .db
-        .deployments
-        .update_one(
-          &deployment.id,
-          mungos::Update::Set(
-            doc! { "name": &name, "updated_at": monitor_timestamp() },
-          ),
-        )
-        .await
-        .context("failed to update deployment name on db")?;
+      update_one_by_id(
+        &self.db.deployments,
+        &deployment.id,
+        mungos::update::Update::Set(
+          doc! { "name": &name, "updated_at": monitor_timestamp() },
+        ),
+        None,
+      )
+      .await
+      .context("failed to update deployment name on db")?;
 
       if container_state != DockerContainerState::NotDeployed {
         let server: Server =

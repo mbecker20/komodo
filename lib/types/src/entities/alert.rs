@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
 use derive_variants::EnumVariants;
-use mungos::{
-  derive::{MungosIndexed, StringObjectId},
-  mongodb::bson::{doc, serde_helpers::hex_string_as_object_id},
+use mongo_indexed::derive::MongoIndexed;
+use mungos::mongodb::bson::{
+  doc, serde_helpers::hex_string_as_object_id,
 };
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -18,13 +18,7 @@ use super::{
 
 #[typeshare]
 #[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Default,
-  MungosIndexed,
-  StringObjectId,
+  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
 #[doc_index(doc! { "data.type": 1 })]
 #[doc_index(doc! { "target.type": 1 })]
@@ -54,9 +48,7 @@ pub struct Alert {
 }
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, EnumVariants, MungosIndexed,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
   Serialize,
   Deserialize,
@@ -65,8 +57,7 @@ pub struct Alert {
   Copy,
   PartialEq,
   Eq,
-  Hash,
-  MungosIndexed
+  Hash
 )]
 #[serde(tag = "type", content = "data")]
 pub enum AlertData {

@@ -83,9 +83,11 @@ async fn callback(
       let user_id = state
         .db
         .users
-        .create_one(user)
+        .insert_one(user, None)
         .await
-        .context("failed to create user on mongo")?;
+        .context("failed to create user on mongo")?
+        .inserted_id
+        .to_string();
       state
         .jwt
         .generate(user_id)

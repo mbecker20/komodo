@@ -12,7 +12,10 @@ use monitor_types::{
   },
   requests::read::*,
 };
-use mungos::mongodb::{bson::doc, options::FindOptions};
+use mungos::{
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOptions},
+};
 use resolver_api::Resolve;
 
 use crate::{
@@ -88,7 +91,6 @@ impl Resolve<GetBuildsSummary, RequestUser> for State {
     let total = self
       .db
       .builds
-      .collection
       .count_documents(query, None)
       .await
       .context("failed to count all build documents")?;
@@ -117,14 +119,13 @@ impl Resolve<GetBuildMonthlyStats, RequestUser> for State {
     let mut build_updates = self
       .db
       .updates
-      .collection
       .find(
         doc! {
-            "start_ts": {
-                "$gte": open_ts,
-                "$lt": close_ts
-            },
-            "operation": Operation::RunBuild.to_string(),
+          "start_ts": {
+            "$gte": open_ts,
+            "$lt": close_ts
+          },
+          "operation": Operation::RunBuild.to_string(),
         },
         None,
       )
@@ -205,24 +206,23 @@ impl Resolve<GetBuildVersions, RequestUser> for State {
     if let Some(patch) = patch {
       filter.insert("version.patch", patch);
     }
-    let versions = self
-      .db
-      .updates
-      .get_some(
-        filter,
-        FindOptions::builder()
-          .sort(doc! { "_id": -1 })
-          .limit(NUM_VERSIONS_PER_PAGE as i64)
-          .skip(page as u64 * NUM_VERSIONS_PER_PAGE)
-          .build(),
-      )
-      .await
-      .context("failed to pull versions from mongo")?
-      .into_iter()
-      .map(|u| (u.version, u.start_ts))
-      .filter(|(v, _)| !v.is_none())
-      .map(|(version, ts)| BuildVersionResponseItem { version, ts })
-      .collect();
+
+    let versions = find_collect(
+      &self.db.updates,
+      filter,
+      FindOptions::builder()
+        .sort(doc! { "_id": -1 })
+        .limit(NUM_VERSIONS_PER_PAGE as i64)
+        .skip(page as u64 * NUM_VERSIONS_PER_PAGE)
+        .build(),
+    )
+    .await
+    .context("failed to pull versions from mongo")?
+    .into_iter()
+    .map(|u| (u.version, u.start_ts))
+    .filter(|(v, _)| !v.is_none())
+    .map(|(version, ts)| BuildVersionResponseItem { version, ts })
+    .collect();
     Ok(versions)
   }
 }

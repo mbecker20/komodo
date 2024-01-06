@@ -63,7 +63,6 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
     let total = self
       .db
       .builders
-      .collection
       .count_documents(query, None)
       .await
       .context("failed to count all builder documents")?;

@@ -1,6 +1,7 @@
 use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
+use aws_config::BehaviorVersion;
 use aws_sdk_ec2::{
   config::Region,
   types::{
@@ -35,7 +36,10 @@ impl State {
       &self.config.aws.secret_access_key,
     );
     let region = Region::new(region);
-    let config = aws_config::from_env().region(region).load().await;
+    let config = aws_config::defaults(BehaviorVersion::v2023_11_09())
+      .region(region)
+      .load()
+      .await;
     Client::new(&config)
   }
 
@@ -107,13 +111,12 @@ impl State {
 
     let instance = res
       .instances()
-      .ok_or(anyhow!("got None for created instances"))?
-      .get(0)
-      .ok_or(anyhow!("instances array is empty"))?;
+      .first()
+      .context("instances array is empty")?;
 
     let instance_id = instance
       .instance_id()
-      .ok_or(anyhow!("instance does not have instance_id"))?
+      .context("instance does not have instance_id")?
       .to_string();
 
     for _ in 0..MAX_POLL_TRIES {
@@ -148,9 +151,8 @@ impl State {
       .await
       .context("failed to terminate instance from aws")?
       .terminating_instances()
-      .ok_or(anyhow!("terminating instances is None"))?
-      .get(0)
-      .ok_or(anyhow!("terminating instances is empty"))?
+      .first()
+      .context("terminating instances is empty")?
       .to_owned();
     Ok(res)
   }
@@ -167,9 +169,8 @@ async fn get_ec2_instance_status(
     .await
     .context("failed to get instance status from aws")?
     .instance_statuses()
-    .ok_or(anyhow!("instance statuses is None"))?
-    .get(0)
-    .map(|s| s.to_owned());
+    .first()
+    .cloned();
   Ok(status)
 }
 
@@ -202,15 +203,13 @@ async fn get_ec2_instance_public_ip(
     .await
     .context("failed to get instance status from aws")?
     .reservations()
-    .ok_or(anyhow!("instance reservations is None"))?
-    .get(0)
-    .ok_or(anyhow!("instance reservations is empty"))?
+    .first()
+    .context("instance reservations is empty")?
     .instances()
-    .ok_or(anyhow!("instances is None"))?
-    .get(0)
-    .ok_or(anyhow!("instances is empty"))?
+    .first()
+    .context("instances is empty")?
     .public_ip_address()
-    .ok_or(anyhow!("instance has no public ip"))?
+    .context("instance has no public ip")?
     .to_string();
 
   Ok(ip)

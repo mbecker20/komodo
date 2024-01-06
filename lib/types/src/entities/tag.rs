@@ -1,8 +1,8 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use mungos::{
-  derive::{MungosIndexed, StringObjectId},
-  mongodb::bson::{doc, serde_helpers::hex_string_as_object_id},
+use mongo_indexed::derive::MongoIndexed;
+use mungos::mongodb::bson::{
+  doc, serde_helpers::hex_string_as_object_id,
 };
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
@@ -33,14 +33,7 @@ pub enum Tag {
 
 #[typeshare]
 #[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Builder,
-  MungosIndexed,
-  StringObjectId,
-  Partial,
+  Serialize, Deserialize, Debug, Clone, Builder, Partial, MongoIndexed,
 )]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[collection_name(Tag)]
@@ -82,7 +75,6 @@ pub struct CustomTag {
   Copy,
   Display,
   EnumString,
-  MungosIndexed,
   Default,
 )]
 pub enum TagColor {

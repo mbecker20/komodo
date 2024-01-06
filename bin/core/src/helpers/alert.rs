@@ -6,6 +6,7 @@ use monitor_types::entities::{
   deployment::DockerContainerState,
   server::stats::{SeverityLevel, SystemProcess},
 };
+use mungos::find::find_collect;
 use reqwest::StatusCode;
 use slack::types::Block;
 
@@ -17,7 +18,7 @@ impl State {
       return;
     }
 
-    let alerters = self.db.alerters.get_some(None, None).await;
+    let alerters = find_collect(&self.db.alerters, None, None).await;
 
     if let Err(e) = alerters {
       error!("ERROR sending alerts | failed to get alerters from db | {e:#?}");

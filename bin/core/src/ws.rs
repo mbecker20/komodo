@@ -23,6 +23,7 @@ use monitor_types::{
   },
   permissioned::Permissioned,
 };
+use mungos::by_id::find_one_by_id;
 use serde_json::json;
 use tokio::select;
 use tokio_util::sync::CancellationToken;
@@ -47,6 +48,7 @@ async fn ws_handler(
         if login_res.is_none() {
             return;
         }
+
         let (socket, user) = login_res.unwrap();
         let (mut ws_sender, mut ws_reciever) = socket.split();
         let cancel = CancellationToken::new();
@@ -58,20 +60,34 @@ async fn ws_handler(
                     _ = cancel_clone.cancelled() => break,
                     update = receiver.recv() => {update.expect("failed to recv update msg")}
                 };
-                let user = state.db.users.find_one_by_id(&user.id).await;
-                if user.is_err()
-                    || user.as_ref().unwrap().is_none()
-                    || !user.as_ref().unwrap().as_ref().unwrap().enabled
-                {
+                let user = find_one_by_id(&state.db.users, &user.id).await;
+                let user = match user {
+                  Err(e) => {
                     let _ = ws_sender
-                        .send(Message::Text(json!({ "type": "INVALID_USER" }).to_string()))
-                        .await;
+                      .send(Message::Text(json!({ "type": "INVALID_USER", "msg": format!("{e:#?}") }).to_string()))
+                      .await;
                     let _ = ws_sender.close().await;
                     return;
-                }
-                let user = user.unwrap().unwrap(); // already handle cases where this panics in the above early return
+                  },
+                  Ok(None) => {
+                    let _ = ws_sender
+                      .send(Message::Text(json!({ "type": "INVALID_USER", "msg": "user not found" }).to_string()))
+                      .await;
+                    let _ = ws_sender.close().await;
+                    return
+                  },
+                  Ok(Some(user)) if !user.enabled => {
+                    let _ = ws_sender
+                      .send(Message::Text(json!({ "type": "INVALID_USER", "msg": "user not enabled" }).to_string()))
+                      .await;
+                    let _ = ws_sender.close().await;
+                    return
+                  }
+                  Ok(Some(user)) => user
+
+                };
                 let res = state
-                    .user_can_see_update(&user, &user.id, &update.target)
+                    .user_can_see_update(&user, &update.target)
                     .await;
                 if res.is_ok() {
                     let _ = ws_sender
@@ -159,7 +175,6 @@ impl State {
   async fn user_can_see_update(
     &self,
     user: &User,
-    user_id: &str,
     update_target: &ResourceTarget,
   ) -> anyhow::Result<()> {
     if user.admin {
@@ -169,7 +184,7 @@ impl State {
       ResourceTarget::Server(server_id) => {
         let resource: Server = self.get_resource(server_id).await?;
         (
-          resource.get_user_permissions(user_id),
+          resource.get_user_permissions(&user.id),
           ResourceTargetVariant::Server,
         )
       }
@@ -177,35 +192,35 @@ impl State {
         let resource: Deployment =
           self.get_resource(deployment_id).await?;
         (
-          resource.get_user_permissions(user_id),
+          resource.get_user_permissions(&user.id),
           ResourceTargetVariant::Deployment,
         )
       }
       ResourceTarget::Build(build_id) => {
         let resource: Build = self.get_resource(build_id).await?;
         (
-          resource.get_user_permissions(user_id),
+          resource.get_user_permissions(&user.id),
           ResourceTargetVariant::Build,
         )
       }
       ResourceTarget::Builder(builder_id) => {
         let resource: Builder = self.get_resource(builder_id).await?;
         (
-          resource.get_user_permissions(user_id),
+          resource.get_user_permissions(&user.id),
           ResourceTargetVariant::Builder,
         )
       }
       ResourceTarget::Repo(repo_id) => {
         let resource: Repo = self.get_resource(repo_id).await?;
         (
-          resource.get_user_permissions(user_id),
+          resource.get_user_permissions(&user.id),
           ResourceTargetVariant::Repo,
         )
       }
       ResourceTarget::Alerter(alerter_id) => {
         let resource: Alerter = self.get_resource(alerter_id).await?;
         (
-          resource.get_user_permissions(user_id),
+          resource.get_user_permissions(&user.id),
           ResourceTargetVariant::Alerter,
         )
       }

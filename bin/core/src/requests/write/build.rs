@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
@@ -11,7 +13,10 @@ use monitor_types::{
   requests::write::*,
   to_monitor_name,
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  by_id::update_one_by_id,
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
+};
 use resolver_api::Resolve;
 
 use crate::{
@@ -31,7 +36,10 @@ impl Resolve<CreateBuild, RequestUser> for State {
   ) -> anyhow::Result<Build> {
     let name = to_monitor_name(&name);
     if let Some(builder_id) = &config.builder_id {
-      let _: Builder = self.get_resource_check_permissions(builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+      let _: Builder = self
+        .get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
+        .await
+        .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
     }
     let start_ts = monitor_timestamp();
     let build = Build {
@@ -49,9 +57,11 @@ impl Resolve<CreateBuild, RequestUser> for State {
     let build_id = self
       .db
       .builds
-      .create_one(build)
+      .insert_one(build, None)
       .await
-      .context("failed to add build to db")?;
+      .context("failed to add build to db")?
+      .inserted_id
+      .to_string();
     let build: Build = self.get_resource(&build_id).await?;
 
     let mut update =
@@ -112,9 +122,11 @@ impl Resolve<CopyBuild, RequestUser> for State {
     let build_id = self
       .db
       .builds
-      .create_one(build)
+      .insert_one(build, None)
       .await
-      .context("failed to add build to db")?;
+      .context("failed to add build to db")?
+      .inserted_id
+      .to_string();
     let build: Build = self.get_resource(&build_id).await?;
 
     let mut update =
@@ -167,7 +179,7 @@ impl Resolve<DeleteBuild, RequestUser> for State {
     let res = self
       .db
       .builds
-      .delete_one(&id)
+      .delete_one(doc! { "_id": ObjectId::from_str(&id)? }, None)
       .await
       .context("failed to delete build from database");
 
@@ -226,17 +238,16 @@ impl Resolve<UpdateBuild, RequestUser> for State {
         extra_args.retain(|v| !empty_or_only_spaces(v))
       }
 
-      self
-        .db
-        .builds
-        .update_one(
-          &build.id,
-          mungos::Update::FlattenSet(
-            doc! { "config": to_bson(&config)? },
-          ),
-        )
-        .await
-        .context("failed to update build on database")?;
+      update_one_by_id(
+        &self.db.builds,
+        &build.id,
+        mungos::update::Update::FlattenSet(
+          doc! { "config": to_bson(&config)? },
+        ),
+        None,
+      )
+      .await
+      .context("failed to update build on database")?;
 
       let mut update =
         make_update(&build, Operation::UpdateBuild, &user);

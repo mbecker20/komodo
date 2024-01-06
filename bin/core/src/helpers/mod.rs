@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
 use axum::{headers::ContentType, http::StatusCode, TypedHeader};
@@ -13,7 +13,10 @@ use monitor_types::{
   },
   monitor_timestamp,
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  by_id::find_one_by_id,
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
+};
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
 use serror::serialize_error_pretty;
@@ -73,12 +76,10 @@ impl State {
     &self,
     user_id: &str,
   ) -> anyhow::Result<User> {
-    self
-      .db
-      .users
-      .find_one_by_id(user_id)
-      .await?
-      .context(format!("no user exists with id {user_id}"))
+    find_one_by_id(&self.db.users, user_id)
+      .await
+      .context("failed to query mongo for user")?
+      .with_context(|| format!("no user found with id {user_id}"))
   }
 
   pub async fn get_server_with_status(
@@ -134,13 +135,10 @@ impl State {
     &self,
     tag_id: &str,
   ) -> anyhow::Result<CustomTag> {
-    self
-      .db
-      .tags
-      .find_one_by_id(tag_id)
+    find_one_by_id(&self.db.tags, tag_id)
       .await
-      .context("failed to get tag from db")?
-      .context(format!("did not find any tag with id {tag_id}"))
+      .context("failed to query mongo for tag")?
+      .with_context(|| format!("no tag found with id {tag_id}"))
   }
 
   pub async fn get_tag_check_owner(
@@ -161,13 +159,12 @@ impl State {
     &self,
     update: Update,
   ) -> anyhow::Result<UpdateListItem> {
-    let username = self
-      .db
-      .users
-      .find_one_by_id(&update.operator)
+    let username = find_one_by_id(&self.db.users, &update.operator)
       .await
-      .context("failed at get user query")?
-      .context("failed to find user at operator user id")?
+      .context("failed to query mongo for user")?
+      .with_context(|| {
+        format!("no user found with id {}", update.operator)
+      })?
       .username;
     let update = UpdateListItem {
       id: update.id,
@@ -198,9 +195,13 @@ impl State {
     update.id = self
       .db
       .updates
-      .create_one(update.clone())
+      .insert_one(&update, None)
       .await
-      .context("failed to insert update into db")?;
+      .context("failed to insert update into db")?
+      .inserted_id
+      .as_object_id()
+      .context("inserted_id is not object id")?
+      .to_string();
     let id = update.id.clone();
     let update = self.update_list_item(update).await?;
     let _ = self.send_update(update).await;
@@ -209,16 +210,13 @@ impl State {
 
   pub async fn update_update(
     &self,
-    mut update: Update,
+    update: Update,
   ) -> anyhow::Result<()> {
-    let mut update_id = String::new();
-    std::mem::swap(&mut update.id, &mut update_id);
     self.db
-            .updates
-            .update_one(&update_id, mungos::Update::Regular(&update))
-            .await
-            .context("failed to update the update on db. the update build process was deleted")?;
-    std::mem::swap(&mut update.id, &mut update_id);
+      .updates
+      .update_one(doc! { "_id": ObjectId::from_str(&update.id)? }, doc! { "$set": to_bson(&update)? }, None)
+      .await
+      .context("failed to update the update on db. the update build process was deleted")?;
     let update = self.update_list_item(update).await?;
     let _ = self.send_update(update).await;
     Ok(())
@@ -230,18 +228,19 @@ impl State {
   ) -> anyhow::Result<()> {
     let resource: ResourceTarget = resource.into();
     self.db
-            .users
-            .update_many(
-                doc! {},
-                doc! {
-                    "$pull": {
-                        "recently_viewed":
-                            to_bson(&resource).context("failed to convert resource to bson")?
-                    }
-                },
-            )
-            .await
-            .context("failed to remove resource from users recently viewed")?;
+      .users
+      .update_many(
+          doc! {},
+          doc! {
+              "$pull": {
+                  "recently_viewed":
+                      to_bson(&resource).context("failed to convert resource to bson")?
+              }
+          },
+          None
+      )
+      .await
+      .context("failed to remove resource from users recently viewed")?;
     Ok(())
   }
 

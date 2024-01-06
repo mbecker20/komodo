@@ -2,6 +2,9 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_types::{
   entities::{
+    alerter::Alerter,
+    repo::Repo,
+    server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
     Operation,
   },
@@ -10,10 +13,15 @@ use monitor_types::{
     UpdateUserPermissions, UpdateUserPermissionsOnTarget,
   },
 };
-use mungos::mongodb::bson::{doc, Document};
+use mungos::{
+  by_id::{find_one_by_id, update_one_by_id},
+  mongodb::bson::{doc, Document},
+};
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{
+  auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<UpdateUserPermissions, RequestUser> for State {
@@ -31,10 +39,8 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
     if !admin.is_admin {
       return Err(anyhow!("this method is admin only"));
     }
-    let user = self
-      .db
-      .users
-      .find_one_by_id(&user_id)
+
+    let user = find_one_by_id(&self.db.users, &user_id)
       .await
       .context("failed to query mongo for user")?
       .context("did not find user with given id")?;
@@ -53,31 +59,34 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
     if let Some(create_builds) = create_builds {
       update_doc.insert("create_build_permissions", create_builds);
     }
-    self
-      .db
-      .users
-      .update_one(&user_id, mungos::Update::Set(update_doc))
-      .await?;
+
+    update_one_by_id(
+      &self.db.users,
+      &user_id,
+      mungos::update::Update::Set(update_doc),
+      None,
+    )
+    .await?;
     let end_ts = monitor_timestamp();
     let mut update = Update {
-            target: ResourceTarget::System("system".to_string()),
-            operation: Operation::UpdateUserPermissions,
-            logs: vec![Log::simple(
-                "modify user enabled",
-                format!(
-                    "update permissions for {} ({})\nenabled: {enabled:?}\ncreate servers: {create_servers:?}\ncreate builds: {create_builds:?}", 
-                    user.username,
-                    user.id,
+      target: ResourceTarget::System("system".to_string()),
+      operation: Operation::UpdateUserPermissions,
+      logs: vec![Log::simple(
+        "modify user enabled",
+        format!(
+          "update permissions for {} ({})\nenabled: {enabled:?}\ncreate servers: {create_servers:?}\ncreate builds: {create_builds:?}", 
+          user.username,
+          user.id,
 
-                ),
-            )],
-            start_ts,
-            end_ts: end_ts.into(),
-            status: UpdateStatus::Complete,
-            success: true,
-            operator: admin.id.clone(),
-            ..Default::default()
-        };
+        ),
+      )],
+      start_ts,
+      end_ts: end_ts.into(),
+      status: UpdateStatus::Complete,
+      success: true,
+      operator: admin.id.clone(),
+      ..Default::default()
+    };
     update.id = self.add_update(update.clone()).await?;
     Ok(update)
   }
@@ -98,13 +107,8 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
     if !admin.is_admin {
       return Err(anyhow!("this method is admin only"));
     }
-    let user = self
-      .db
-      .users
-      .find_one_by_id(&user_id)
-      .await
-      .context("failed to query mongo for user")?
-      .context("did not find user with given id")?;
+
+    let user = self.get_user(&user_id).await?;
     if user.admin {
       return Err(anyhow!(
         "cannot use this method to update other admins permissions"
@@ -118,134 +122,115 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
         return Err(anyhow!("target can not be system"))
       }
       ResourceTarget::Build(id) => {
-        let build = self
-          .db
-          .builds
-          .find_one_by_id(id)
+        let build = find_one_by_id(&self.db.builds, id)
           .await
           .context("failed at find build query")?
           .ok_or(anyhow!("failed to find a build with id {id}"))?;
-        self.db
-                    .builds
-                    .update_one(
-                        id,
-                        mungos::Update::Set(doc! {
-                            format!("permissions.{}", user_id): permission.to_string()
-                        }),
-                    )
-                    .await?;
+
+        update_one_by_id(
+          &self.db.builds,
+          id,
+          mungos::update::Update::Set(doc! {
+            format!("permissions.{}", user_id): permission.to_string()
+          }),
+          None,
+        )
+        .await?;
         format!(
           "user {} given {} permissions on build {}",
           user.username, permission, build.name
         )
       }
       ResourceTarget::Builder(id) => {
-        let builder = self
-          .db
-          .builders
-          .find_one_by_id(id)
+        let builder = find_one_by_id(&self.db.builders, id)
           .await
           .context("failed at find builder query")?
-          .ok_or(anyhow!("failed to find a builder with id {id}"))?;
-        self.db
-                    .builders
-                    .update_one(
-                        id,
-                        mungos::Update::Set(doc! {
-                            format!("permissions.{}", user_id): permission.to_string()
-                        }),
-                    )
-                    .await?;
+          .with_context(|| {
+            format!("failed to find a builder with id {id}")
+          })?;
+
+        update_one_by_id(
+          &self.db.builders,
+          id,
+          mungos::update::Update::Set(doc! {
+            format!("permissions.{}", user_id): permission.to_string()
+          }),
+          None,
+        )
+        .await?;
         format!(
           "user {} given {} permissions on builder {}",
           user.username, permission, builder.name
         )
       }
       ResourceTarget::Deployment(id) => {
-        let deployment = self
-          .db
-          .deployments
-          .find_one_by_id(id)
+        let deployment = find_one_by_id(&self.db.deployments, id)
           .await
           .context("failed at find deployment query")?
-          .ok_or(anyhow!(
-            "failed to find a deployment with id {id}"
-          ))?;
-        self.db
-                    .deployments
-                    .update_one(
-                        id,
-                        mungos::Update::Set(doc! {
-                            format!("permissions.{}", user_id): permission.to_string()
-                        }),
-                    )
-                    .await?;
+          .with_context(|| {
+            format!("failed to find a deployment with id {id}")
+          })?;
+
+        update_one_by_id(
+          &self.db.deployments,
+          id,
+          mungos::update::Update::Set(doc! {
+            format!("permissions.{}", user_id): permission.to_string()
+          }),
+          None,
+        )
+        .await?;
         format!(
           "user {} given {} permissions on deployment {}",
           user.username, permission, deployment.name
         )
       }
       ResourceTarget::Server(id) => {
-        let server = self
-          .db
-          .servers
-          .find_one_by_id(id)
-          .await
-          .context("failed at find server query")?
-          .ok_or(anyhow!("failed to find a server with id {id}"))?;
-        self.db
-                    .servers
-                    .update_one(
-                        id,
-                        mungos::Update::Set(doc! {
-                            format!("permissions.{}", user_id): permission.to_string()
-                        }),
-                    )
-                    .await?;
+        // find_one_by_id(&self.db.servers, id)
+        let server: Server = self.get_resource(id).await?;
+
+        update_one_by_id(
+          &self.db.servers,
+          id,
+          mungos::update::Update::Set(doc! {
+            format!("permissions.{}", user_id): permission.to_string()
+          }),
+          None,
+        )
+        .await?;
         format!(
           "user {} given {} permissions on server {}",
           user.username, permission, server.name
         )
       }
       ResourceTarget::Repo(id) => {
-        let repo = self
-          .db
-          .repos
-          .find_one_by_id(id)
-          .await
-          .context("failed at find repo query")?
-          .ok_or(anyhow!("failed to find a repo with id {id}"))?;
-        self.db
-                    .repos
-                    .update_one(
-                        id,
-                        mungos::Update::Set(doc! {
-                            format!("permissions.{}", user_id): permission.to_string()
-                        }),
-                    )
-                    .await?;
+        let repo: Repo = self.get_resource(id).await?;
+
+        update_one_by_id(
+          &self.db.repos,
+          id,
+          mungos::update::Update::Set(doc! {
+            format!("permissions.{}", user_id): permission.to_string()
+          }),
+          None,
+        )
+        .await?;
         format!(
           "user {} given {} permissions on repo {}",
           user.username, permission, repo.name
         )
       }
       ResourceTarget::Alerter(id) => {
-        let alerter = self
-          .db
-          .alerters
-          .find_one_by_id(id)
-          .await
-          .context("failed at find alerter query")?
-          .ok_or(anyhow!("failed to find a alerter with id {id}"))?;
-        self.db
-                    .alerters
-                    .update_one(
-                        id,
-                        mungos::Update::Set(doc! {
-                            format!("permissions.{}", user_id): permission.to_string()
-                        }),
-                    )
-                    .await?;
+        let alerter: Alerter = self.get_resource(id).await?;
+        update_one_by_id(
+          &self.db.alerters,
+          id,
+          mungos::update::Update::Set(doc! {
+            format!("permissions.{}", user_id): permission.to_string()
+          }),
+          None,
+        )
+        .await?;
         format!(
           "user {} given {} permissions on alerter {}",
           user.username, permission, alerter.name

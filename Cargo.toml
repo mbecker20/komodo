@@ -28,20 +28,21 @@ partial_derive2 = "0.2.1"
 derive_variants = "0.1.1"
 resolver_api = "0.1.6"
 parse_csl = "0.1.0"
-mungos = "0.4.22"
+mungos = "0.5.4"
+mongo_indexed = "0.2.1"
 serror = "0.1.3"
 svi = "0.1.4"
 # external
-tokio = { version = "1.32.0", features = ["full"] }
+clap = { version = "4.4.6", features = ["derive"] }
+tokio = { version = "1.35.1", features = ["full"] }
 axum = { version = "0.6.20", features = ["ws", "json", "headers"] }
 tower = { version = "0.4.13", features = ["timeout"] }
 tower-http = { version = "0.4.4", features = ["fs", "cors"] }
-reqwest = { version = "0.11.22", features = ["json"] }
-clap = { version = "4.4.6", features = ["derive"] }
+reqwest = { version = "0.11.23", features = ["json"] }
 uuid = { version = "1.4.1", features = ["v4", "fast-rng", "serde"] }
-serde = { version = "1.0.188", features = ["derive"] }
+serde = { version = "1.0.194", features = ["derive"] }
 serde_json = "1.0.107"
-tokio-tungstenite = "0.20.1"
+tokio-tungstenite = "0.21.0"
 tokio-util = "0.7.9"
 futures = "0.3.28"
 futures-util = "0.3.28"
@@ -51,6 +52,8 @@ anyhow = "1.0.75"
 thiserror = "1.0.49"
 log = "0.4.20"
 simple_logger = "4.2.0"
+# tracing = "0.1.40"
+# tracing-subscriber = "0.3.18"
 bollard = "0.15.0"
 derive_builder = "0.12.0"
 typeshare = "1.0.1"
@@ -65,8 +68,8 @@ hmac = "0.12.1"
 sha2 = "0.10.8"
 bcrypt = "0.15.0"
 hex = "0.4.3"
-aws-config = "0.56.1"
-aws-sdk-ec2 = "0.33.0"
-proc-macro2 = "1.0.68"
-quote = "1.0.33"
-syn = "2.0.38"
+aws-config = "1.1.1"
+aws-sdk-ec2 = "1.12.0"
+proc-macro2 = "1.0.74"
+quote = "1.0.35"
+syn = "2.0.46"

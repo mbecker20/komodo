@@ -10,6 +10,7 @@ license.workspace = true
 [dependencies]
 # mogh
 mungos.workspace = true
+mongo_indexed.workspace = true
 resolver_api.workspace = true
 derive_empty_traits.workspace = true
 derive_variants.workspace = true

@@ -7,7 +7,7 @@ use monitor_types::entities::{
     Server, ServerStatus,
   },
 };
-use mungos::mongodb::bson::doc;
+use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::requests;
 
 use crate::state::State;
@@ -44,13 +44,17 @@ impl State {
       let ts = (wait_until_timelength(Timelength::FiveSeconds, 500)
         .await
         - 500) as i64;
-      let servers = self.db.servers.get_some(None, None).await;
-      if let Err(e) = &servers {
-        error!(
-          "failed to get server list (manage status cache) | {e:#?}"
-        )
-      }
-      let servers = servers.unwrap();
+      let servers = match find_collect(&self.db.servers, None, None)
+        .await
+      {
+        Ok(servers) => servers,
+        Err(e) => {
+          error!(
+              "failed to get server list (manage status cache) | {e:#?}"
+            );
+          continue;
+        }
+      };
       let futures = servers.into_iter().map(|server| async move {
         self.update_cache_for_server(&server).await;
       });
@@ -63,11 +67,12 @@ impl State {
   }
 
   pub async fn update_cache_for_server(&self, server: &Server) {
-    let deployments = self
-      .db
-      .deployments
-      .get_some(doc! { "config.server_id": &server.id }, None)
-      .await;
+    let deployments = find_collect(
+      &self.db.deployments,
+      doc! { "config.server_id": &server.id },
+      None,
+    )
+    .await;
     if let Err(e) = &deployments {
       error!("failed to get deployments list from mongo (update status cache) | server id: {} | {e:#?}", server.id);
       return;

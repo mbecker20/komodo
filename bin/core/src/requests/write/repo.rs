@@ -11,7 +11,10 @@ use monitor_types::{
   requests::{execute, write::*},
   to_monitor_name,
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  by_id::{delete_one_by_id, update_one_by_id},
+  mongodb::bson::{doc, to_bson},
+};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
@@ -56,9 +59,11 @@ impl Resolve<CreateRepo, RequestUser> for State {
     let repo_id = self
       .db
       .repos
-      .create_one(repo)
+      .insert_one(repo, None)
       .await
-      .context("failed to add repo to db")?;
+      .context("failed to add repo to db")?
+      .inserted_id
+      .to_string();
 
     let repo: Repo = self.get_resource(&repo_id).await?;
 
@@ -145,9 +150,11 @@ impl Resolve<CopyRepo, RequestUser> for State {
     let repo_id = self
       .db
       .repos
-      .create_one(repo)
+      .insert_one(repo, None)
       .await
-      .context("failed to add repo to db")?;
+      .context("failed to add repo to db")?
+      .inserted_id
+      .to_string();
     let repo: Repo = self.get_resource(&repo_id).await?;
     let update = Update {
       target: ResourceTarget::Repo(repo_id),
@@ -211,10 +218,7 @@ impl Resolve<DeleteRepo, RequestUser> for State {
       };
       update.id = self.add_update(update.clone()).await?;
 
-      let res = self
-        .db
-        .repos
-        .delete_one(&repo.id)
+      let res = delete_one_by_id(&self.db.repos, &repo.id, None)
         .await
         .context("failed to delete repo from database");
 
@@ -308,17 +312,16 @@ impl Resolve<UpdateRepo, RequestUser> for State {
       .await?;
 
     let inner = || async move {
-      self
-        .db
-        .repos
-        .update_one(
-          &repo.id,
-          mungos::Update::FlattenSet(
-            doc! { "config": to_bson(&config)? },
-          ),
-        )
-        .await
-        .context("failed to update repo on database")?;
+      update_one_by_id(
+        &self.db.repos,
+        &repo.id,
+        mungos::update::Update::FlattenSet(
+          doc! { "config": to_bson(&config)? },
+        ),
+        None,
+      )
+      .await
+      .context("failed to update repo on database")?;
 
       let mut update =
         make_update(&repo, Operation::UpdateRepo, &user);

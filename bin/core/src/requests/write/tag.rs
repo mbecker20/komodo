@@ -4,7 +4,10 @@ use monitor_types::{
   entities::tag::CustomTag,
   requests::write::{CreateTag, DeleteTag, UpdateTag},
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  by_id::{delete_one_by_id, update_one_by_id},
+  mongodb::bson::{doc, to_bson},
+};
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -30,9 +33,11 @@ impl Resolve<CreateTag, RequestUser> for State {
     tag.id = self
       .db
       .tags
-      .create_one(&tag)
+      .insert_one(&tag, None)
       .await
-      .context("failed to create tag on db")?;
+      .context("failed to create tag on db")?
+      .inserted_id
+      .to_string();
     Ok(tag)
   }
 }
@@ -45,15 +50,15 @@ impl Resolve<UpdateTag, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<CustomTag> {
     self.get_tag_check_owner(&id, &user).await?;
-    self
-      .db
-      .tags
-      .update_one(
-        &id,
-        mungos::Update::Custom(doc! { "$set": to_bson(&config)? }),
-      )
-      .await
-      .context("context")?;
+
+    update_one_by_id(
+      &self.db.tags,
+      &id,
+      doc! { "$set": to_bson(&config)? },
+      None,
+    )
+    .await
+    .context("context")?;
     self.get_tag(&id).await
   }
 }
@@ -66,7 +71,7 @@ impl Resolve<DeleteTag, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<CustomTag> {
     let tag = self.get_tag_check_owner(&id, &user).await?;
-    self.db.tags.delete_one(&id).await?;
+    delete_one_by_id(&self.db.tags, &id, None).await?;
     Ok(tag)
   }
 }

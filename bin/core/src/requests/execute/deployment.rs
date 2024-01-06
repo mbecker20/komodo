@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_types::{
@@ -12,7 +12,7 @@ use monitor_types::{
   get_image_name, monitor_timestamp,
   requests::execute::*,
 };
-use mungos::mongodb::bson::doc;
+use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::requests;
 use resolver_api::Resolve;
 use serror::serialize_error_pretty;
@@ -342,16 +342,16 @@ impl Resolve<StopAllContainers, RequestUser> for State {
         "cannot send action when server is unreachable or disabled"
       ));
     }
-    let deployments = self
-      .db
-      .deployments
-      .get_some(
-        doc! {
-            "config.server_id": &server_id
-        },
-        None,
-      )
-      .await?;
+
+    let deployments = find_collect(
+      &self.db.deployments,
+      doc! {
+        "config.server_id": &server_id
+      },
+      None,
+    )
+    .await
+    .context("failed to find deployments on server")?;
     let inner = || async move {
       let mut update = make_update(
         ResourceTarget::Server(server.id),

@@ -4,7 +4,10 @@ use monitor_types::{
   entities::{deployment::Deployment, server::Server},
   requests::read::{ListAlerts, ListAlertsResponse},
 };
-use mungos::mongodb::{bson::doc, options::FindOptions};
+use mungos::{
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOptions},
+};
 use resolver_api::Resolve;
 
 use crate::{
@@ -38,19 +41,18 @@ impl Resolve<ListAlerts, RequestUser> for State {
                 ]
             });
     }
-    let alerts = self
-      .db
-      .alerts
-      .get_some(
-        query,
-        FindOptions::builder()
-          .sort(doc! { "ts": -1 })
-          .limit(NUM_ALERTS_PER_PAGE as i64)
-          .skip(page * NUM_ALERTS_PER_PAGE)
-          .build(),
-      )
-      .await
-      .context("failed to get alerts from db")?;
+
+    let alerts = find_collect(
+      &self.db.alerts,
+      query,
+      FindOptions::builder()
+        .sort(doc! { "ts": -1 })
+        .limit(NUM_ALERTS_PER_PAGE as i64)
+        .skip(page * NUM_ALERTS_PER_PAGE)
+        .build(),
+    )
+    .await
+    .context("failed to get alerts from db")?;
 
     let next_page = if alerts.len() < NUM_ALERTS_PER_PAGE as usize {
       None

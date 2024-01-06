@@ -63,7 +63,7 @@ impl State {
       return;
     }
     self.send_alerts(&alerts).await;
-    let res = self.db.alerts.create_many(alerts).await;
+    let res = self.db.alerts.insert_many(alerts, None).await;
     if let Err(e) = res {
       error!(
         "failed to record deployment status alerts to db | {e:#?}"

@@ -1,6 +1,5 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use mungos::{derive::MungosIndexed, mongodb::bson::doc};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
@@ -29,22 +28,13 @@ pub struct DeploymentListItemInfo {
 }
 
 #[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Builder,
-  Partial,
-  MungosIndexed,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
 #[skip_serializing_none]
 #[partial_from]
 pub struct DeploymentConfig {
   #[serde(default)]
   #[builder(default)]
-  #[index]
   pub server_id: String,
 
   #[serde(default = "default_send_alerts")]
@@ -133,9 +123,7 @@ fn default_network() -> String {
 }
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
   Serialize,
   Deserialize,
@@ -210,7 +198,6 @@ pub struct DockerContainerStats {
   Default,
   Display,
   EnumString,
-  MungosIndexed,
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -240,7 +227,6 @@ pub enum DockerContainerState {
   Default,
   Display,
   EnumString,
-  MungosIndexed,
 )]
 pub enum RestartMode {
   #[default]
@@ -271,7 +257,6 @@ pub enum RestartMode {
   Default,
   Display,
   EnumString,
-  MungosIndexed,
 )]
 #[serde(rename_all = "UPPERCASE")]
 #[strum(serialize_all = "UPPERCASE")]

@@ -11,6 +11,7 @@ license.workspace = true
 monitor_types.workspace = true
 #
 mungos.workspace = true
+mongo_indexed.workspace = true
 #
 anyhow.workspace = true
 log.workspace = true

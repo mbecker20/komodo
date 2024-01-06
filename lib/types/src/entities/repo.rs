@@ -1,5 +1,4 @@
 use derive_builder::Builder;
-use mungos::derive::MungosIndexed;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -24,20 +23,11 @@ pub struct RepoInfo {
 }
 
 #[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Builder,
-  Partial,
-  MungosIndexed,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 #[partial_from]
 pub struct RepoConfig {
-  #[index]
   pub server_id: String,
 
   pub repo: String,

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::future::join_all;
@@ -22,9 +24,13 @@ use monitor_types::{
   permissioned::Permissioned,
 };
 use mungos::{
-  mongodb::bson::{doc, Document},
-  AggStage::*,
-  Collection,
+  aggregate::aggregate_collect,
+  by_id::find_one_by_id,
+  find::find_collect,
+  mongodb::{
+    bson::{doc, oid::ObjectId, Document},
+    Collection,
+  },
 };
 use serde::{de::DeserializeOwned, Serialize};
 
@@ -45,15 +51,12 @@ pub trait StateResource<
   ) -> anyhow::Result<Self::ListItem>;
 
   async fn get_resource(&self, id: &str) -> anyhow::Result<T> {
-    self
-      .coll()
-      .find_one_by_id(id)
+    find_one_by_id(self.coll(), id)
       .await
-      .context(format!("failed to get {} from db", Self::name()))?
-      .context(format!(
-        "did not find any {} with id {id}",
-        Self::name()
-      ))
+      .context("failed to query db for resource")?
+      .with_context(|| {
+        format!("did not find any {} with id {id}", Self::name())
+      })
   }
 
   async fn get_resource_check_permissions(
@@ -87,36 +90,32 @@ pub trait StateResource<
     &self,
     user_id: &str,
   ) -> anyhow::Result<Vec<String>> {
-    self.coll()
-            .aggregate_collect(
-                [
-                    Match(doc! {
-                        format!("permissions.{}", user_id): { "$in": ["update", "execute", "read"] }
-                    }),
-                    Project(doc! { "_id": 1 }),
-                ],
-                None,
-            )
-            .await
-            .context(format!(
-                "failed to get {} ids for non admin | aggregation",
-                Self::name()
-            ))?
-            .into_iter()
-            .map(|d| {
-                let id = d
-                    .get("_id")
-                    .context("no _id field")?
-                    .as_object_id()
-                    .context("_id not ObjectId")?
-                    .to_string();
-                anyhow::Ok(id)
-            })
-            .collect::<anyhow::Result<Vec<_>>>()
-            .context(format!(
-                "failed to get {} ids for non admin | extract id from document",
-                Self::name()
-            ))
+    use mungos::aggregate::AggStage::*;
+    aggregate_collect(
+      self.coll(),
+      [
+          Match(doc! {
+              format!("permissions.{}", user_id): { "$in": ["update", "execute", "read"] }
+          }),
+          Project(doc! { "_id": 1 }),
+      ], None)
+      .await
+      .with_context(|| format!("failed to get {} ids for non admin | aggregation", Self::name()))?
+      .into_iter()
+      .map(|d| {
+        let id = d
+          .get("_id")
+          .context("no _id field")?
+          .as_object_id()
+          .context("_id not ObjectId")?
+          .to_string();
+        anyhow::Ok(id)
+      })
+    .collect::<anyhow::Result<Vec<_>>>()
+    .with_context(|| format!(
+        "failed to get {} ids for non admin | extract id from document",
+        Self::name()
+    ))
   }
 
   async fn list_resources_for_user(
@@ -131,14 +130,11 @@ pub trait StateResource<
         doc! { "$in": ["read", "execute", "update"] },
       );
     }
-    let list = self
-      .coll()
-      .get_some(query, None)
+    let list = find_collect(self.coll(), query, None)
       .await
-      .context(format!(
-        "failed to pull {}s from mongo",
-        Self::name()
-      ))?
+      .with_context(|| {
+        format!("failed to pull {}s from mongo", Self::name())
+      })?
       .into_iter()
       .map(|resource| self.to_list_item(resource));
 
@@ -170,8 +166,9 @@ pub trait StateResource<
     self
       .coll()
       .update_one(
-        id,
-        mungos::Update::Set(doc! { "description": description }),
+        doc! { "_id": ObjectId::from_str(id)? },
+        doc! { "$set": { "description": description } },
+        None,
       )
       .await?;
     Ok(())

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate log;
 
-use anyhow::Context;
+use mongo_indexed::{create_index, create_unique_index, Indexed};
 use monitor_types::entities::{
   alert::Alert,
   alerter::Alerter,
@@ -15,7 +15,10 @@ use monitor_types::entities::{
   update::Update,
   user::User,
 };
-use mungos::{Collection, Indexed, Mungos};
+use mungos::{
+  init::MongoBuilder,
+  mongodb::{Collection, Database},
+};
 
 pub struct DbClient {
   pub users: Collection<User>,
@@ -29,6 +32,7 @@ pub struct DbClient {
   pub alerters: Collection<Alerter>,
   pub updates: Collection<Update>,
   pub alerts: Collection<Alert>,
+  pub db: Database,
 }
 
 impl DbClient {
@@ -42,20 +46,20 @@ impl DbClient {
       db_name,
     }: &MongoConfig,
   ) -> anyhow::Result<DbClient> {
-    let mut mungos = Mungos::builder().app_name(app_name);
+    let mut client = MongoBuilder::default().app_name(app_name);
 
     match (uri, address, username, password) {
       (Some(uri), _, _, _) => {
-        mungos = mungos.uri(uri);
+        client = client.uri(uri);
       }
       (_, Some(address), Some(username), Some(password)) => {
-        mungos = mungos
+        client = client
           .address(address)
           .username(username)
           .password(password);
       }
       (_, Some(address), _, _) => {
-        mungos = mungos.address(address);
+        client = client.address(address);
       }
       _ => {
         error!("config.mongo not configured correctly. must pass either config.mongo.uri, or config.mongo.address + config.mongo.username? + config.mongo.password?");
@@ -63,50 +67,36 @@ impl DbClient {
       }
     }
 
-    let mungos = mungos.build().await?;
+    let client = client.build().await?;
+    let db = client.database(db_name);
 
     let client = DbClient {
-      users: User::collection(&mungos, db_name, true).await?,
-      tags: CustomTag::collection(&mungos, db_name, true).await?,
-      updates: Update::collection(&mungos, db_name, true).await?,
-      alerts: Alert::collection(&mungos, db_name, true).await?,
-      stats: SystemStatsRecord::collection(&mungos, db_name, true)
-        .await?,
-      servers: resource_collection(&mungos, db_name, "Server")
-        .await?,
-      deployments: resource_collection(
-        &mungos,
-        db_name,
-        "Deployment",
-      )
-      .await?,
-      builds: resource_collection(&mungos, db_name, "Build").await?,
-      builders: resource_collection(&mungos, db_name, "Builder")
-        .await?,
-      repos: resource_collection(&mungos, db_name, "Repo").await?,
-      alerters: resource_collection(&mungos, db_name, "Alerter")
-        .await?,
+      users: User::collection(&db, true).await?,
+      tags: CustomTag::collection(&db, true).await?,
+      updates: Update::collection(&db, true).await?,
+      alerts: Alert::collection(&db, true).await?,
+      stats: SystemStatsRecord::collection(&db, true).await?,
+      servers: resource_collection(&db, "Server").await?,
+      deployments: resource_collection(&db, "Deployment").await?,
+      builds: resource_collection(&db, "Build").await?,
+      builders: resource_collection(&db, "Builder").await?,
+      repos: resource_collection(&db, "Repo").await?,
+      alerters: resource_collection(&db, "Alerter").await?,
+      db,
     };
     Ok(client)
   }
 }
 
 async fn resource_collection<T>(
-  mungos: &Mungos,
-  db_name: &str,
+  db: &Database,
   collection_name: &str,
 ) -> anyhow::Result<Collection<T>> {
-  let coll = mungos.collection::<T>(db_name, collection_name);
+  let coll = db.collection::<T>(collection_name);
 
-  coll
-    .create_unique_index("name")
-    .await
-    .context("failed to create name index")?;
+  create_unique_index(&coll, "name").await?;
 
-  coll
-    .create_index("tags")
-    .await
-    .context("failed to create tags index")?;
+  create_index(&coll, "tags").await?;
 
   Ok(coll)
 }

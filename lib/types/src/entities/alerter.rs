@@ -1,6 +1,5 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use mungos::derive::MungosIndexed;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
@@ -29,9 +28,7 @@ pub struct AlerterInfo {
 }
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
   Serialize,
   Deserialize,
@@ -54,9 +51,7 @@ pub type _PartialCustomAlerterConfig = PartialCustomAlerterConfig;
 pub type _PartialSlackAlerterConfig = PartialSlackAlerterConfig;
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, MungosIndexed, EnumVariants,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
   Serialize,
   Deserialize,

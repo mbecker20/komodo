@@ -34,7 +34,7 @@ impl State {
         }
       })
       .collect::<Vec<_>>();
-    let res = self.db.stats.create_many(records).await;
+    let res = self.db.stats.insert_many(records, None).await;
     if let Err(e) = res {
       error!("failed to record server stats | {e:#?}");
     }

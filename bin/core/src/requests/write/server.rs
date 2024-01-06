@@ -9,7 +9,10 @@ use monitor_types::{
   monitor_timestamp,
   requests::write::*,
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  by_id::{delete_one_by_id, update_one_by_id},
+  mongodb::bson::{doc, to_bson},
+};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
@@ -47,9 +50,11 @@ impl Resolve<CreateServer, RequestUser> for State {
     let server_id = self
       .db
       .servers
-      .create_one(&server)
+      .insert_one(&server, None)
       .await
-      .context("failed to add server to db")?;
+      .context("failed to add server to db")?
+      .inserted_id
+      .to_string();
     let server: Server = self.get_resource(&server_id).await?;
     let update = Update {
       target: ResourceTarget::Server(server_id),
@@ -106,6 +111,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .update_many(
         doc! { "config.builder.params.server_id": &id },
         doc! { "$set": { "config.builder.params.server_id": "" } },
+        None,
       )
       .await
       .context("failed to detach server from builds")?;
@@ -116,6 +122,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .update_many(
         doc! { "config.server_id": &id },
         doc! { "$set": { "config.server_id": "" } },
+        None,
       )
       .await
       .context("failed to detach server from deployments")?;
@@ -126,14 +133,12 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .update_many(
         doc! { "config.server_id": &id },
         doc! { "$set": { "config.server_id": "" } },
+        None,
       )
       .await
       .context("failed to detach server from repos")?;
 
-    self
-      .db
-      .servers
-      .delete_one(&id)
+    delete_one_by_id(&self.db.servers, &id, None)
       .await
       .context("failed to delete server from mongo")?;
 
@@ -179,17 +184,17 @@ impl Resolve<UpdateServer, RequestUser> for State {
       .await?;
     let mut update =
       make_update(&server, Operation::UpdateServer, &user);
-    self
-      .db
-      .servers
-      .update_one(
-        &id,
-        mungos::Update::FlattenSet(
-          doc! { "config": to_bson(&config)? },
-        ),
-      )
-      .await
-      .context("failed to update server on mongo")?;
+
+    update_one_by_id(
+      &self.db.servers,
+      &id,
+      mungos::update::Update::FlattenSet(
+        doc! { "config": to_bson(&config)? },
+      ),
+      None,
+    )
+    .await
+    .context("failed to update server on mongo")?;
 
     update.push_simple_log(
       "server update",
@@ -224,14 +229,10 @@ impl Resolve<RenameServer, RequestUser> for State {
       .await?;
     let mut update =
       make_update(&server, Operation::RenameServer, &user);
-    self.db
-            .servers
-            .update_one(
-                &id,
-                mungos::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }),
-            )
-            .await
-            .context("failed to update server on db. this name may already be taken.")?;
+
+    update_one_by_id(&self.db.servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }), None)
+      .await
+      .context("failed to update server on db. this name may already be taken.")?;
     update.push_simple_log(
       "rename server",
       format!("renamed server {id} from {} to {name}", server.name),

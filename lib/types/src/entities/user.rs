@@ -1,7 +1,5 @@
-use mungos::{
-  derive::{MungosIndexed, StringObjectId},
-  mongodb::bson::serde_helpers::hex_string_as_object_id,
-};
+use mongo_indexed::derive::MongoIndexed;
+use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
@@ -11,13 +9,7 @@ use super::update::ResourceTarget;
 
 #[typeshare]
 #[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Default,
-  MungosIndexed,
-  StringObjectId,
+  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
 pub struct User {
   #[serde(

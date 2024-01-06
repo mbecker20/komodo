@@ -15,7 +15,11 @@ use monitor_types::{
   },
   requests::read::{GetUpdate, ListUpdates, ListUpdatesResponse},
 };
-use mungos::mongodb::{bson::doc, options::FindOptions};
+use mungos::{
+  by_id::find_one_by_id,
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOptions},
+};
 use resolver_api::Resolve;
 
 use crate::{
@@ -69,44 +73,39 @@ impl Resolve<ListUpdates, RequestUser> for State {
       query.into()
     };
 
-    let usernames = self
-      .db
-      .users
-      .get_some(None, None)
+    let usernames = find_collect(&self.db.users, None, None)
       .await
       .context("failed to pull users from db")?
       .into_iter()
       .map(|u| (u.id, u.username))
       .collect::<HashMap<_, _>>();
 
-    let updates = self
-      .db
-      .updates
-      .get_some(
-        query,
-        FindOptions::builder()
-          .sort(doc! { "start_ts": -1 })
-          .skip(page as u64 * UPDATES_PER_PAGE as u64)
-          .limit(UPDATES_PER_PAGE)
-          .build(),
-      )
-      .await?
-      .into_iter()
-      .map(|u| UpdateListItem {
-        id: u.id,
-        operation: u.operation,
-        start_ts: u.start_ts,
-        success: u.success,
-        username: usernames
-          .get(&u.operator)
-          .cloned()
-          .unwrap_or("unknown".to_string()),
-        operator: u.operator,
-        target: u.target,
-        status: u.status,
-        version: u.version,
-      })
-      .collect::<Vec<_>>();
+    let updates = find_collect(
+      &self.db.updates,
+      query,
+      FindOptions::builder()
+        .sort(doc! { "start_ts": -1 })
+        .skip(page as u64 * UPDATES_PER_PAGE as u64)
+        .limit(UPDATES_PER_PAGE)
+        .build(),
+    )
+    .await?
+    .into_iter()
+    .map(|u| UpdateListItem {
+      id: u.id,
+      operation: u.operation,
+      start_ts: u.start_ts,
+      success: u.success,
+      username: usernames
+        .get(&u.operator)
+        .cloned()
+        .unwrap_or("unknown".to_string()),
+      operator: u.operator,
+      target: u.target,
+      status: u.status,
+      version: u.version,
+    })
+    .collect::<Vec<_>>();
 
     let next_page = if updates.len() == UPDATES_PER_PAGE as usize {
       Some(page + 1)
@@ -125,10 +124,7 @@ impl Resolve<GetUpdate, RequestUser> for State {
     GetUpdate { id }: GetUpdate,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    let update = self
-      .db
-      .updates
-      .find_one_by_id(&id)
+    let update = find_one_by_id(&self.db.updates, &id)
       .await
       .context("failed to query to db")?
       .context("no update exists with given id")?;

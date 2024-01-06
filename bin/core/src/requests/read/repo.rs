@@ -83,7 +83,6 @@ impl Resolve<GetReposSummary, RequestUser> for State {
     let total = self
       .db
       .repos
-      .collection
       .count_documents(query, None)
       .await
       .context("failed to count all build documents")?;

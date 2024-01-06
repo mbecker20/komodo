@@ -1,8 +1,8 @@
 use async_timing_util::unix_timestamp_ms;
 use derive_variants::EnumVariants;
-use mungos::{
-  derive::{MungosIndexed, StringObjectId},
-  mongodb::bson::{doc, serde_helpers::hex_string_as_object_id},
+use mongo_indexed::derive::MongoIndexed;
+use mungos::mongodb::bson::{
+  doc, serde_helpers::hex_string_as_object_id,
 };
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
@@ -20,13 +20,7 @@ use super::{
 
 #[typeshare]
 #[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Default,
-  MungosIndexed,
-  StringObjectId,
+  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
 #[doc_index(doc! { "target.type": 1 })]
 #[sparse_doc_index(doc! { "target.id": 1 })]
@@ -147,7 +141,6 @@ impl Log {
   PartialEq,
   Eq,
   Hash,
-  MungosIndexed,
   EnumVariants,
 )]
 #[variant_derive(
@@ -227,7 +220,6 @@ impl From<&Alerter> for ResourceTarget {
   Clone,
   Copy,
   Default,
-  MungosIndexed,
 )]
 pub enum UpdateStatus {
   Queued,

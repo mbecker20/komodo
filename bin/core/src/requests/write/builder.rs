@@ -9,7 +9,10 @@ use monitor_types::{
   monitor_timestamp,
   requests::write::*,
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  by_id::{delete_one_by_id, update_one_by_id},
+  mongodb::bson::{doc, to_bson},
+};
 use resolver_api::Resolve;
 
 use crate::{
@@ -39,9 +42,11 @@ impl Resolve<CreateBuilder, RequestUser> for State {
     let builder_id = self
       .db
       .builders
-      .create_one(builder)
+      .insert_one(builder, None)
       .await
-      .context("failed to add builder to db")?;
+      .context("failed to add builder to db")?
+      .inserted_id
+      .to_string();
     let builder: Builder = self.get_resource(&builder_id).await?;
     let update = Update {
       target: ResourceTarget::Builder(builder_id),
@@ -103,9 +108,11 @@ impl Resolve<CopyBuilder, RequestUser> for State {
     let builder_id = self
       .db
       .builders
-      .create_one(builder)
+      .insert_one(builder, None)
       .await
-      .context("failed to add builder to db")?;
+      .context("failed to add builder to db")?
+      .inserted_id
+      .to_string();
     let builder: Builder = self.get_resource(&builder_id).await?;
     let update = Update {
       target: ResourceTarget::Builder(builder_id),
@@ -155,14 +162,14 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
       .builds
       .update_many(
         doc! { "config.builder.params.builder_id": &id },
-        doc! { "$set": { "config.builder.params.builder_id": "" } },
+        mungos::update::Update::Set(
+          doc! { "config.builder.params.builder_id": "" },
+        ),
+        None,
       )
       .await?;
 
-    self
-      .db
-      .builders
-      .delete_one(&id)
+    delete_one_by_id(&self.db.builders, &id, None)
       .await
       .context("failed to delete builder from database")?;
 
@@ -216,16 +223,15 @@ impl Resolve<UpdateBuilder, RequestUser> for State {
 
     let config = builder.config.merge_partial(config);
 
-    self
-      .db
-      .builders
-      .update_one(
-        &id,
-        mungos::Update::FlattenSet(
-          doc! { "config": to_bson(&config)? },
-        ),
-      )
-      .await?;
+    update_one_by_id(
+      &self.db.builders,
+      &id,
+      mungos::update::Update::FlattenSet(
+        doc! { "config": to_bson(&config)? },
+      ),
+      None,
+    )
+    .await?;
 
     let builder: Builder = self.get_resource(&id).await?;
 

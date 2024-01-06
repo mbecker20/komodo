@@ -13,7 +13,10 @@ use monitor_types::{
   },
   requests::read::*,
 };
-use mungos::mongodb::{bson::doc, options::FindOptions};
+use mungos::{
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOptions},
+};
 use periphery_client::requests::{self, GetAccountsResponse};
 use resolver_api::{Resolve, ResolveToString};
 
@@ -395,22 +398,21 @@ impl Resolve<GetHistoricalServerStats, RequestUser> for State {
       ts_vec.push(curr_ts);
       curr_ts -= interval;
     }
-    let stats = self
-      .db
-      .stats
-      .get_some(
-        doc! {
-            "sid": server_id,
-            "ts": { "$in": ts_vec },
-        },
-        FindOptions::builder()
-          .sort(doc! { "ts": -1 })
-          .skip(page as u64 * STATS_PER_PAGE as u64)
-          .limit(STATS_PER_PAGE)
-          .build(),
-      )
-      .await
-      .context("failed to pull stats from db")?;
+
+    let stats = find_collect(
+      &self.db.stats,
+      doc! {
+        "sid": server_id,
+        "ts": { "$in": ts_vec },
+      },
+      FindOptions::builder()
+        .sort(doc! { "ts": -1 })
+        .skip(page as u64 * STATS_PER_PAGE as u64)
+        .limit(STATS_PER_PAGE)
+        .build(),
+    )
+    .await
+    .context("failed to pull stats from db")?;
     let next_page = if stats.len() == STATS_PER_PAGE as usize {
       Some(page + 1)
     } else {

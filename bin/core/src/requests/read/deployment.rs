@@ -15,7 +15,10 @@ use monitor_types::{
   },
   requests::read::*,
 };
-use mungos::mongodb::{bson::doc, options::FindOneOptions};
+use mungos::{
+  find::find_collect,
+  mongodb::{bson::doc, options::FindOneOptions},
+};
 use periphery_client::requests;
 use resolver_api::Resolve;
 
@@ -255,10 +258,8 @@ impl Resolve<GetDeploymentsSummary, RequestUser> for State {
       };
       Some(query)
     };
-    let deployments = self
-      .db
-      .deployments
-      .get_some(query, None)
+
+    let deployments = find_collect(&self.db.deployments, query, None)
       .await
       .context("failed to count all deployment documents")?;
     let mut res = GetDeploymentsSummaryResponse::default();

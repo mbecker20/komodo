@@ -1,5 +1,4 @@
 use derive_builder::Builder;
-use mungos::derive::MungosIndexed;
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -29,15 +28,7 @@ pub struct ServerListItemInfo {
 }
 
 #[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Builder,
-  Partial,
-  MungosIndexed,
-)]
+#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[skip_serializing_none]
 #[partial_from]
@@ -47,13 +38,11 @@ pub struct ServerConfig {
   #[serde(default = "default_enabled")]
   #[builder(default = "default_enabled()")]
   #[partial_default(default_enabled())]
-  #[index]
   pub enabled: bool,
 
   #[serde(default = "default_auto_prune")]
   #[builder(default = "default_auto_prune()")]
   #[partial_default(default_auto_prune())]
-  #[index]
   pub auto_prune: bool,
 
   #[serde(default = "default_send_alerts")]

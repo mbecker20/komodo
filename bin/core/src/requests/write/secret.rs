@@ -4,8 +4,8 @@ use monitor_types::{
   entities::user::ApiSecret, monitor_timestamp, requests::write::*,
 };
 use mungos::{
+  by_id::update_one_by_id,
   mongodb::bson::{doc, to_bson},
-  Update,
 };
 use resolver_api::Resolve;
 
@@ -41,18 +41,14 @@ impl Resolve<CreateLoginSecret, RequestUser> for State {
       hash: bcrypt::hash(&secret_str, BCRYPT_COST)
         .context("failed at hashing secret string")?,
     };
-    self.db
-            .users
-            .update_one(
-                &user.id,
-                Update::Custom(doc! {
-                    "$push": {
-                        "secrets": to_bson(&api_secret).context("failed at converting secret to bson")?
-                    }
-                }),
-            )
-            .await
-            .context("failed at mongo update query")?;
+
+    update_one_by_id(&self.db.users, &user.id, doc! {
+      "$push": {
+        "secrets": to_bson(&api_secret).context("failed at converting secret to bson")?
+      }
+    }, None)
+      .await
+      .context("failed at mongo update query")?;
     Ok(CreateLoginSecretResponse { secret: secret_str })
   }
 }
@@ -64,21 +60,20 @@ impl Resolve<DeleteLoginSecret, RequestUser> for State {
     DeleteLoginSecret { name }: DeleteLoginSecret,
     user: RequestUser,
   ) -> anyhow::Result<DeleteLoginSecretResponse> {
-    self
-      .db
-      .users
-      .update_one(
-        &user.id,
-        Update::Custom(doc! {
-            "$pull": {
-                "secrets": {
-                    "name": name
-                }
-            }
-        }),
-      )
-      .await
-      .context("failed at mongo update query")?;
+    update_one_by_id(
+      &self.db.users,
+      &user.id,
+      doc! {
+        "$pull": {
+          "secrets": {
+              "name": name
+          }
+        }
+      },
+      None,
+    )
+    .await
+    .context("failed at mongo update query")?;
     Ok(DeleteLoginSecretResponse {})
   }
 }

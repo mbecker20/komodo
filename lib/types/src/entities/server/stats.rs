@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use mungos::derive::MungosIndexed;
+use mongo_indexed::derive::MongoIndexed;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
@@ -9,7 +9,7 @@ use crate::{entities::Timelength, I64};
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Default, MungosIndexed,
+  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
 #[collection_name(Stats)]
 pub struct SystemStatsRecord {
@@ -55,9 +55,7 @@ pub struct AllSystemStats {
 }
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Default, Clone, MungosIndexed,
-)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct BasicSystemStats {
   pub system_load: f64,
   pub cpu_perc: f32,
@@ -69,9 +67,7 @@ pub struct BasicSystemStats {
 }
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Default, Clone, MungosIndexed,
-)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct CpuUsage {
   pub cpu_perc: f32,
   pub cpu_freq_mhz: f64,
@@ -87,9 +83,7 @@ pub struct SingleCpuUsage {
 }
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Default, Clone, MungosIndexed,
-)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct DiskUsage {
   pub used_gb: f64,  // in GB
   pub total_gb: f64, // in GB
@@ -108,9 +102,7 @@ pub struct SingleDiskUsage {
 }
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Default, Clone, MungosIndexed,
-)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct NetworkUsage {
   pub recieved_kb: f64,
   pub transmitted_kb: f64,

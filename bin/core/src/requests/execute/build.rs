@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
@@ -18,7 +18,10 @@ use monitor_types::{
     CancelBuild, CancelBuildResponse, Deploy, RunBuild,
   },
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  find::find_collect,
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
+};
 use periphery_client::{
   requests::{self, GetVersionResponse},
   PeripheryClient,
@@ -158,12 +161,15 @@ impl Resolve<RunBuild, RequestUser> for State {
           .db
           .builds
           .update_one(
-            &build.id,
-            mungos::Update::Set(doc! {
+            doc! { "_id": ObjectId::from_str(&build.id)? },
+            doc! {
+              "$set": {
                 "config.version": to_bson(&build.config.version)
-                    .context("failed at converting version to bson")?,
+                  .context("failed at converting version to bson")?,
                 "info.last_built_at": monitor_timestamp(),
-            }),
+              }
+            },
+            None,
           )
           .await;
       }
@@ -372,14 +378,15 @@ impl State {
   }
 
   async fn handle_post_build_redeploy(&self, build_id: &str) {
-    let redeploy_deployments = self
-      .db
-      .deployments
-      .get_some(
-        doc! { "build_id": build_id, "redeploy_on_build": true },
-        None,
-      )
-      .await;
+    let redeploy_deployments = find_collect(
+      &self.db.deployments,
+      doc! {
+        "config.image.params.build_id": build_id,
+        "config.redeploy_on_build": true
+      },
+      None,
+    )
+    .await;
 
     if let Ok(deployments) = redeploy_deployments {
       let futures =

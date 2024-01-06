@@ -130,10 +130,7 @@ impl State {
       .verify_with_key(&self.jwt.key)
       .context("failed to verify claims")?;
     if claims.exp > unix_timestamp_ms() {
-      let user =
-        self.db.users.find_one_by_id(&claims.id).await?.ok_or(
-          anyhow!("did not find user with id {}", claims.id),
-        )?;
+      let user = self.get_user(&claims.id).await?;
       if user.enabled {
         let user = InnerRequestUser {
           id: claims.id,

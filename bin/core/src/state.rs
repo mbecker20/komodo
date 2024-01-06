@@ -109,9 +109,12 @@ impl State {
     let res = self
       .db
       .stats
-      .delete_many(doc! {
-          "ts": { "$lt": delete_before_ts }
-      })
+      .delete_many(
+        doc! {
+            "ts": { "$lt": delete_before_ts }
+        },
+        None,
+      )
       .await?;
     info!("deleted {} stats from db", res.deleted_count);
     Ok(())
@@ -127,9 +130,12 @@ impl State {
     let res = self
       .db
       .alerts
-      .delete_many(doc! {
-          "ts": { "$lt": delete_before_ts }
-      })
+      .delete_many(
+        doc! {
+            "ts": { "$lt": delete_before_ts }
+        },
+        None,
+      )
       .await?;
     info!("deleted {} alerts from db", res.deleted_count);
     Ok(())

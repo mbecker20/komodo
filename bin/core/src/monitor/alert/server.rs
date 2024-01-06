@@ -3,6 +3,7 @@ use std::{
 };
 
 use anyhow::Context;
+use mongo_indexed::Indexed;
 use monitor_types::{
   entities::{
     alert::{Alert, AlertData, AlertDataVariant},
@@ -12,8 +13,9 @@ use monitor_types::{
   monitor_timestamp, optional_string,
 };
 use mungos::{
+  bulk_update::{self, BulkUpdate},
+  find::find_collect,
   mongodb::bson::{doc, oid::ObjectId, to_bson},
-  BulkUpdate,
 };
 
 use crate::state::State;
@@ -442,7 +444,7 @@ impl State {
       self
         .db
         .alerts
-        .create_many(alerts.iter().map(|(alert, _)| alert))
+        .insert_many(alerts.iter().map(|(alert, _)| alert), None)
         .await?;
       anyhow::Ok(())
     };
@@ -468,18 +470,29 @@ impl State {
 
     let open = || async {
       let updates = alerts.iter().map(|(alert, _)| {
-                let update = BulkUpdate {
-                    query: doc! { "_id": ObjectId::from_str(&alert.id).context("failed to convert alert id to ObjectId")? },
-                    update: doc! { "$set": to_bson(alert).context("failed to convert alert to bson")? }
-                };
-                anyhow::Ok(update)
-            }).collect::<anyhow::Result<Vec<_>>>()?;
-      self
-        .db
-        .alerts
-        .bulk_update(updates)
-        .await
-        .context("failed to bulk update alerts")?;
+        let update = BulkUpdate {
+          query: doc! { "_id": ObjectId::from_str(&alert.id).context("failed to convert alert id to ObjectId")? },
+          update: doc! { "$set": to_bson(alert).context("failed to convert alert to bson")? }
+        };
+        anyhow::Ok(update)
+      })
+      .filter_map(|update| match update {
+        Ok(update) => Some(update),
+        Err(e) => {
+          warn!("failed to generate bulk update for alert | {e:#?}");
+          None
+        }
+      }).collect::<Vec<_>>();
+
+      bulk_update::bulk_update(
+        &self.db.db,
+        Alert::default_collection_name(),
+        &updates,
+        false,
+      )
+      .await
+      .context("failed to bulk update alerts")?;
+
       anyhow::Ok(())
     };
 
@@ -519,20 +532,22 @@ impl State {
         .update_many(
           doc! { "_id": { "$in": &alert_ids } },
           doc! {
-              "$set": {
-                  "resolved": true,
-                  "resolved_ts": monitor_timestamp()
-              }
+            "$set": {
+              "resolved": true,
+              "resolved_ts": monitor_timestamp()
+            }
           },
+          None,
         )
         .await
         .context("failed to resolve alerts on db")?;
-      let mut closed = self
-        .db
-        .alerts
-        .get_some(doc! { "_id": { "$in": &alert_ids } }, None)
-        .await
-        .context("failed to get closed alerts from db")?;
+      let mut closed = find_collect(
+        &self.db.alerts,
+        doc! { "_id": { "$in": &alert_ids } },
+        None,
+      )
+      .await
+      .context("failed to get closed alerts from db")?;
 
       for closed in &mut closed {
         closed.level = SeverityLevel::Ok;
@@ -567,12 +582,10 @@ impl State {
     OpenDiskAlertMap,
     OpenTempAlertMap,
   )> {
-    let alerts = self
-      .db
-      .alerts
-      .get_some(doc! { "resolved": false }, None)
-      .await
-      .context("failed to get open alerts from db")?;
+    let alerts =
+      find_collect(&self.db.alerts, doc! { "resolved": false }, None)
+        .await
+        .context("failed to get open alerts from db")?;
 
     let mut map = OpenAlertMap::new();
     let mut disk_map = OpenDiskAlertMap::new();

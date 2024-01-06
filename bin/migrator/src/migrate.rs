@@ -1,4 +1,5 @@
 use anyhow::Context;
+use mongo_indexed::Indexed;
 use monitor_types::entities::{
   build::Build,
   deployment::{Deployment, DeploymentConfig},
@@ -6,7 +7,7 @@ use monitor_types::entities::{
   update::{ResourceTarget, Update},
   user::User,
 };
-use mungos::Indexed;
+use mungos::find::find_collect;
 
 use crate::{
   legacy::{self, v0},
@@ -24,10 +25,7 @@ impl State {
   }
 
   pub async fn migrate_users(&self) -> anyhow::Result<()> {
-    let users = self
-      .legacy
-      .users
-      .get_some(None, None)
+    let users = find_collect(&self.legacy.users, None, None)
       .await
       .context("failed to get legacy users")?
       .into_iter()
@@ -43,9 +41,9 @@ impl State {
     self
       .target
       .users
-      .create_many(users)
+      .insert_many(users, None)
       .await
-      .context("failed to create users on target")?;
+      .context("failed to insert users on target")?;
 
     info!("users have been migrated\n");
 
@@ -53,10 +51,7 @@ impl State {
   }
 
   pub async fn migrate_servers(&self) -> anyhow::Result<()> {
-    let servers = self
-      .legacy
-      .servers
-      .get_some(None, None)
+    let servers = find_collect(&self.legacy.servers, None, None)
       .await
       .context("failed to get legacy servers")?
       .into_iter()
@@ -71,9 +66,9 @@ impl State {
     self
       .target
       .servers
-      .create_many(servers)
+      .insert_many(servers, None)
       .await
-      .context("failed to create servers on target")?;
+      .context("failed to insert servers on target")?;
 
     info!("servers have been migrated\n");
 
@@ -81,28 +76,26 @@ impl State {
   }
 
   pub async fn migrate_deployments(&self) -> anyhow::Result<()> {
-    let deployments = self
-      .legacy
-      .deployments
-      .get_some(None, None)
-      .await
-      .context("failed to get legacy deployments")?
-      .into_iter()
-      .map(|s| {
-        let context =
-          format!("failed to convert deployment {}", s.name);
-        s.try_into().context(context)
-      })
-      .collect::<anyhow::Result<Vec<Deployment>>>()?;
+    let deployments =
+      find_collect(&self.legacy.deployments, None, None)
+        .await
+        .context("failed to get legacy deployments")?
+        .into_iter()
+        .map(|s| {
+          let context =
+            format!("failed to convert deployment {}", s.name);
+          s.try_into().context(context)
+        })
+        .collect::<anyhow::Result<Vec<Deployment>>>()?;
 
     info!("migrating {} deployments...", deployments.len());
 
     self
       .target
       .deployments
-      .create_many(deployments)
+      .insert_many(deployments, None)
       .await
-      .context("failed to create deployments on target")?;
+      .context("failed to insert deployments on target")?;
 
     info!("deployments have been migrated\n");
 
@@ -110,10 +103,7 @@ impl State {
   }
 
   pub async fn migrate_builds(&self) -> anyhow::Result<()> {
-    let builds = self
-      .legacy
-      .builds
-      .get_some(None, None)
+    let builds = find_collect(&self.legacy.builds, None, None)
       .await
       .context("failed to get legacy builds")?
       .into_iter()
@@ -128,9 +118,9 @@ impl State {
     self
       .target
       .builds
-      .create_many(builds)
+      .insert_many(builds, None)
       .await
-      .context("failed to create builds on target")?;
+      .context("failed to insert builds on target")?;
 
     info!("builds have been migrated\n");
 
@@ -138,10 +128,7 @@ impl State {
   }
 
   pub async fn migrate_updates(&self) -> anyhow::Result<()> {
-    let updates = self
-      .legacy
-      .updates
-      .get_some(None, None)
+    let updates = find_collect(&self.legacy.updates, None, None)
       .await
       .context("failed to get legacy updates")?
       .into_iter()
@@ -157,9 +144,9 @@ impl State {
     self
       .target
       .updates
-      .create_many(updates)
+      .insert_many(updates, None)
       .await
-      .context("failed to create updates on target")?;
+      .context("failed to insert updates on target")?;
 
     info!("updates have been migrated\n");
 

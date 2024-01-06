@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use mungos::derive::MungosIndexed;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
@@ -26,14 +25,7 @@ pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
 #[typeshare]
 #[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Default,
-  PartialEq,
-  Eq,
-  MungosIndexed,
+  Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq,
 )]
 pub struct SystemCommand {
   #[serde(default)]
@@ -66,13 +58,7 @@ impl SystemCommand {
 
 #[typeshare]
 #[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Clone,
-  Default,
-  PartialEq,
-  MungosIndexed,
+  Serialize, Deserialize, Debug, Clone, Default, PartialEq,
 )]
 pub struct Version {
   pub major: i32,
@@ -293,7 +279,6 @@ impl Default for &PermissionLevel {
   Eq,
   Clone,
   Copy,
-  MungosIndexed,
 )]
 pub enum Operation {
   // do nothing

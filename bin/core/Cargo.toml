@@ -24,6 +24,7 @@ parse_csl.workspace = true
 termination_signal.workspace = true
 resolver_api.workspace = true
 mungos.workspace = true
+mongo_indexed.workspace = true
 slack.workspace = true
 serror.workspace = true
 # external

@@ -10,7 +10,10 @@ use monitor_types::{
     CopyAlerter, CreateAlerter, DeleteAlerter, UpdateAlerter,
   },
 };
-use mungos::mongodb::bson::{doc, to_bson};
+use mungos::{
+  by_id::{delete_one_by_id, update_one_by_id},
+  mongodb::bson::{doc, to_bson},
+};
 use resolver_api::Resolve;
 
 use crate::{
@@ -44,9 +47,11 @@ impl Resolve<CreateAlerter, RequestUser> for State {
     let alerter_id = self
       .db
       .alerters
-      .create_one(alerter)
+      .insert_one(alerter, None)
       .await
-      .context("failed to add alerter to db")?;
+      .context("failed to add alerter to db")?
+      .inserted_id
+      .to_string();
     let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
     let mut update =
@@ -104,9 +109,11 @@ impl Resolve<CopyAlerter, RequestUser> for State {
     let alerter_id = self
       .db
       .alerters
-      .create_one(alerter)
+      .insert_one(alerter, None)
       .await
-      .context("failed to add alerter to db")?;
+      .context("failed to add alerter to db")?
+      .inserted_id
+      .to_string();
     let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
     let mut update =
@@ -149,10 +156,7 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
     let mut update =
       make_update(&alerter, Operation::DeleteAlerter, &user);
 
-    self
-      .db
-      .alerters
-      .delete_one(&id)
+    delete_one_by_id(&self.db.alerters, &id, None)
       .await
       .context("failed to delete alerter from database")?;
 
@@ -196,16 +200,16 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
 
     let config = alerter.config.merge_partial(config);
 
-    self
-      .db
-      .alerters
-      .update_one(
-        &id,
-        mungos::Update::FlattenSet(
-          doc! { "config": to_bson(&config)? },
-        ),
-      )
-      .await?;
+    update_one_by_id(
+      &self.db.alerters,
+      &id,
+      mungos::update::Update::FlattenSet(
+        doc! { "config": to_bson(&config)? },
+      ),
+      None,
+    )
+    .await
+    .with_context(|| format!("failed to update alerter {id}"))?;
 
     let alerter: Alerter = self.get_resource(&id).await?;
 

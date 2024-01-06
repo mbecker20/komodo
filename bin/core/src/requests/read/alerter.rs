@@ -63,7 +63,6 @@ impl Resolve<GetAlertersSummary, RequestUser> for State {
     let total = self
       .db
       .alerters
-      .collection
       .count_documents(query, None)
       .await
       .context("failed to count all alerter documents")?;
