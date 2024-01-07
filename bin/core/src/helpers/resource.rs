@@ -16,6 +16,9 @@ use monitor_client::{
       Deployment, DeploymentImage, DeploymentListItem,
       DeploymentListItemInfo,
     },
+    procedure::{
+      Procedure, ProcedureListItem, ProcedureListItemInfo,
+    },
     repo::{Repo, RepoInfo, RepoListItem},
     server::{Server, ServerListItem, ServerListItemInfo},
     update::ResourceTargetVariant,
@@ -386,6 +389,34 @@ impl StateResource<Alerter> for State {
       info: AlerterListItemInfo {
         alerter_type: alerter_type.to_string(),
         is_default: alerter.info.is_default,
+      },
+    })
+  }
+}
+
+#[async_trait]
+impl StateResource<Procedure> for State {
+  type ListItem = ProcedureListItem;
+
+  fn name() -> &'static str {
+    "procedure"
+  }
+
+  fn coll(&self) -> &Collection<Procedure> {
+    &self.db.procedures
+  }
+
+  async fn to_list_item(
+    &self,
+    procedure: Procedure,
+  ) -> anyhow::Result<ProcedureListItem> {
+    Ok(ProcedureListItem {
+      id: procedure.id,
+      name: procedure.name,
+      tags: procedure.tags,
+      resource_type: ResourceTargetVariant::Alerter,
+      info: ProcedureListItemInfo {
+        procedure_type: (&procedure.config).into(),
       },
     })
   }

@@ -1,12 +1,10 @@
-use std::str::FromStr;
-
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::async_trait;
 use monitor_client::api::auth::{
   LoginWithSecret, LoginWithSecretResponse,
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId};
+use mungos::{by_id::update_one_by_id, mongodb::bson::doc};
 use resolver_api::Resolve;
 
 use crate::state::State;
@@ -29,16 +27,14 @@ impl Resolve<LoginWithSecret> for State {
     for s in user.secrets {
       if let Some(expires) = s.expires {
         if expires < ts {
-          self
-            .db
-            .users
-            .update_one(
-              doc! { "_id": ObjectId::from_str(&user.id).context("user id is not valid ObjectId")? },
-              doc! { "$pull": { "secrets": { "name": s.name } } },
-              None,
-            )
-            .await
-            .context("failed to remove expired secret")?;
+          update_one_by_id(
+            &self.db.users,
+            &user.id,
+            doc! { "$pull": { "secrets": { "name": s.name } } },
+            None,
+          )
+          .await
+          .context("failed to remove expired secret")?;
           continue;
         }
       }

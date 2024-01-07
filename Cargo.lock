@@ -113,6 +113,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "080e9890a082662b09c1ad45f567faeeb47f22b5fb23895fbe1e651e718e25ca"
 
 [[package]]
+name = "async-recursion"
+version = "1.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5fd55a5ba1179988837d24ab4c7cc8ed6efdeff578ede0416b4225a5fca35bd0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.48",
+]
+
+[[package]]
 name = "async-trait"
 version = "0.1.77"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2093,6 +2104,7 @@ name = "monitor_core"
 version = "1.0.1"
 dependencies = [
  "anyhow",
+ "async-recursion",
  "async-trait",
  "async_timing_util",
  "aws-config",
@@ -2172,28 +2184,6 @@ dependencies = [
  "termination_signal",
  "tokio",
  "uuid",
-]
-
-[[package]]
-name = "monitor_types"
-version = "1.0.1"
-dependencies = [
- "anyhow",
- "async-trait",
- "async_timing_util",
- "bollard",
- "derive_builder",
- "derive_empty_traits",
- "derive_variants",
- "mongo_indexed",
- "mungos",
- "partial_derive2",
- "resolver_api",
- "serde",
- "serde_json",
- "strum 0.25.0",
- "strum_macros 0.25.3",
- "typeshare",
 ]
 
 [[package]]

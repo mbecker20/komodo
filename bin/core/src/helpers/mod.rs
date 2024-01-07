@@ -1,4 +1,4 @@
-use std::{str::FromStr, time::Duration};
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use axum::http::StatusCode;
@@ -13,8 +13,8 @@ use monitor_client::entities::{
   Operation,
 };
 use mungos::{
-  by_id::find_one_by_id,
-  mongodb::bson::{doc, oid::ObjectId, to_bson},
+  by_id::{find_one_by_id, update_one_by_id},
+  mongodb::bson::{doc, to_bson, to_document},
 };
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
@@ -27,6 +27,7 @@ use self::resource::StateResource;
 pub mod alert;
 pub mod cache;
 pub mod channel;
+pub mod procedure;
 pub mod resource;
 
 pub fn empty_or_only_spaces(word: &str) -> bool {
@@ -211,9 +212,7 @@ impl State {
     &self,
     update: Update,
   ) -> anyhow::Result<()> {
-    self.db
-      .updates
-      .update_one(doc! { "_id": ObjectId::from_str(&update.id)? }, doc! { "$set": to_bson(&update)? }, None)
+    update_one_by_id(&self.db.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
       .await
       .context("failed to update the update on db. the update build process was deleted")?;
     let update = self.update_list_item(update).await?;

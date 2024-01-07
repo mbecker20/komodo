@@ -7,6 +7,7 @@ use monitor_client::{
   entities::{
     alerter::Alerter,
     monitor_timestamp,
+    procedure::Procedure,
     repo::Repo,
     server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
@@ -234,6 +235,22 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
         format!(
           "user {} given {} permissions on alerter {}",
           user.username, permission, alerter.name
+        )
+      }
+      ResourceTarget::Procedure(id) => {
+        let procedure: Procedure = self.get_resource(id).await?;
+        update_one_by_id(
+          &self.db.procedures,
+          id,
+          mungos::update::Update::Set(doc! {
+            format!("permissions.{}", user_id): permission.to_string()
+          }),
+          None,
+        )
+        .await?;
+        format!(
+          "user {} given {} permissions on procedure {}",
+          user.username, permission, procedure.id
         )
       }
     };

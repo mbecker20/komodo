@@ -12,6 +12,7 @@ pub mod build;
 pub mod builder;
 pub mod config;
 pub mod deployment;
+pub mod procedure;
 pub mod repo;
 pub mod resource;
 pub mod server;
@@ -391,6 +392,9 @@ pub enum Operation {
   CreateAlerter,
   UpdateAlerter,
   DeleteAlerter,
+
+  // procedure
+  RunProcedure,
 
   // user
   UpdateUserPermissions,

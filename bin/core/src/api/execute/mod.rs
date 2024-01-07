@@ -18,6 +18,7 @@ use crate::{
 
 mod build;
 mod deployment;
+mod procedure;
 mod repo;
 mod server;
 
@@ -45,6 +46,9 @@ enum ExecuteRequest {
   // ==== REPO ====
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),
+
+  // ==== PROCEDURE ====
+  RunProcedure(RunProcedure),
 }
 
 pub fn router() -> Router {

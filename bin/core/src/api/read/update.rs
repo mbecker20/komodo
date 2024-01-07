@@ -9,6 +9,7 @@ use monitor_client::{
     build::Build,
     builder::Builder,
     deployment::Deployment,
+    procedure::Procedure,
     repo::Repo,
     server::Server,
     update::{ResourceTarget, Update, UpdateListItem},
@@ -184,6 +185,15 @@ impl Resolve<GetUpdate, RequestUser> for State {
       }
       ResourceTarget::Alerter(id) => {
         let _: Alerter = self
+          .get_resource_check_permissions(
+            id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+      }
+      ResourceTarget::Procedure(id) => {
+        let _: Procedure = self
           .get_resource_check_permissions(
             id,
             &user,

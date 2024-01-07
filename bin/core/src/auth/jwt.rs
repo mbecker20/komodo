@@ -30,6 +30,18 @@ pub struct InnerRequestUser {
   pub create_build_permissions: bool,
 }
 
+impl InnerRequestUser {
+  pub fn admin() -> InnerRequestUser {
+    InnerRequestUser {
+      id: String::from("admin"),
+      username: String::from("admin"),
+      is_admin: true,
+      create_build_permissions: true,
+      create_server_permissions: true,
+    }
+  }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct JwtClaims {
   pub id: String,

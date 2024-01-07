@@ -268,17 +268,7 @@ impl Resolve<StopContainer, RequestUser> for State {
     let periphery = self.periphery_client(&server)?;
 
     let inner = || async move {
-      let start_ts = monitor_timestamp();
-
-      let mut update = Update {
-        target: ResourceTarget::Deployment(deployment.id.clone()),
-        operation: Operation::StopContainer,
-        start_ts,
-        status: UpdateStatus::InProgress,
-        success: true,
-        operator: user.id.clone(),
-        ..Default::default()
-      };
+      let mut update = make_update(&deployment, Operation::StopContainer, &user);
 
       update.id = self.add_update(update.clone()).await?;
 

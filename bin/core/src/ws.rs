@@ -15,6 +15,7 @@ use monitor_client::{
     build::Build,
     builder::Builder,
     deployment::Deployment,
+    procedure::Procedure,
     repo::Repo,
     server::Server,
     update::{ResourceTarget, ResourceTargetVariant},
@@ -222,6 +223,14 @@ impl State {
         (
           resource.get_user_permissions(&user.id),
           ResourceTargetVariant::Alerter,
+        )
+      }
+      ResourceTarget::Procedure(prodecure_id) => {
+        let resource: Procedure =
+          self.get_resource(prodecure_id).await?;
+        (
+          resource.get_user_permissions(&user.id),
+          ResourceTargetVariant::Procedure,
         )
       }
       ResourceTarget::System(_) => {

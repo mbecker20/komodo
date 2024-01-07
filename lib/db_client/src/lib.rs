@@ -9,6 +9,7 @@ use monitor_client::entities::{
   builder::Builder,
   config::MongoConfig,
   deployment::Deployment,
+  procedure::Procedure,
   repo::Repo,
   server::{stats::SystemStatsRecord, Server},
   tag::CustomTag,
@@ -22,16 +23,19 @@ use mungos::{
 
 pub struct DbClient {
   pub users: Collection<User>,
-  pub servers: Collection<Server>,
+  pub tags: Collection<CustomTag>,
+  pub updates: Collection<Update>,
+  pub alerts: Collection<Alert>,
   pub stats: Collection<SystemStatsRecord>,
+  // RESOURCES
+  pub servers: Collection<Server>,
   pub deployments: Collection<Deployment>,
   pub builds: Collection<Build>,
   pub builders: Collection<Builder>,
   pub repos: Collection<Repo>,
-  pub tags: Collection<CustomTag>,
+  pub procedures: Collection<Procedure>,
   pub alerters: Collection<Alerter>,
-  pub updates: Collection<Update>,
-  pub alerts: Collection<Alert>,
+  //
   pub db: Database,
 }
 
@@ -82,6 +86,7 @@ impl DbClient {
       builders: resource_collection(&db, "Builder").await?,
       repos: resource_collection(&db, "Repo").await?,
       alerters: resource_collection(&db, "Alerter").await?,
+      procedures: resource_collection(&db, "Procedure").await?,
       db,
     };
     Ok(client)

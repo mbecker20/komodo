@@ -4,8 +4,8 @@ use monitor_client::{
   api::write::{UpdateDescription, UpdateDescriptionResponse},
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
-    deployment::Deployment, repo::Repo, server::Server,
-    update::ResourceTarget,
+    deployment::Deployment, procedure::Procedure, repo::Repo,
+    server::Server, update::ResourceTarget,
   },
 };
 use resolver_api::Resolve;
@@ -77,6 +77,15 @@ impl Resolve<UpdateDescription, RequestUser> for State {
       }
       ResourceTarget::Alerter(id) => {
         <State as StateResource<Alerter>>::update_description(
+          self,
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
+      }
+      ResourceTarget::Procedure(id) => {
+        <State as StateResource<Procedure>>::update_description(
           self,
           &id,
           &description,

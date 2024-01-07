@@ -14,7 +14,8 @@ use crate::entities::{
 
 use super::{
   alerter::Alerter, build::Build, builder::Builder,
-  deployment::Deployment, repo::Repo, server::Server, Version,
+  deployment::Deployment, procedure::Procedure, repo::Repo,
+  server::Server, Version,
 };
 
 #[typeshare]
@@ -162,6 +163,7 @@ pub enum ResourceTarget {
   Server(String),
   Repo(String),
   Alerter(String),
+  Procedure(String),
 }
 
 impl Default for ResourceTarget {
@@ -203,6 +205,12 @@ impl From<&Builder> for ResourceTarget {
 impl From<&Alerter> for ResourceTarget {
   fn from(alerter: &Alerter) -> Self {
     Self::Alerter(alerter.id.clone())
+  }
+}
+
+impl From<&Procedure> for ResourceTarget {
+  fn from(procedure: &Procedure) -> Self {
+    Self::Procedure(procedure.id.clone())
   }
 }
 
