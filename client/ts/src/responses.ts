@@ -21,6 +21,7 @@ export type ReadResponses = {
   // ==== PROCEDURE ====
   GetProceduresSummary: Types.GetProceduresSummaryResponse;
   GetProcedure: Types.GetProcedureResponse;
+  GetProcedureActionState: Types.GetProcedureActionStateResponse;
   ListProcedures: Types.ListProceduresResponse;
   ListProceduresByIds: Types.ListProceduresByIdsResponse;
 

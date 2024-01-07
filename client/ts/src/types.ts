@@ -1615,6 +1615,7 @@ export type ReadRequest =
 	| { type: "FindResources", params: FindResources }
 	| { type: "GetProceduresSummary", params: GetProceduresSummary }
 	| { type: "GetProcedure", params: GetProcedure }
+	| { type: "GetProcedureActionState", params: GetProcedureActionState }
 	| { type: "ListProcedures", params: ListProcedures }
 	| { type: "ListProceduresByIds", params: ListProceduresByIds }
 	| { type: "GetServersSummary", params: GetServersSummary }
