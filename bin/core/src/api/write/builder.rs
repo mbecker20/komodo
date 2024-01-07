@@ -46,6 +46,8 @@ impl Resolve<CreateBuilder, RequestUser> for State {
       .await
       .context("failed to add builder to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let builder: Builder = self.get_resource(&builder_id).await?;
     let update = Update {
@@ -112,6 +114,8 @@ impl Resolve<CopyBuilder, RequestUser> for State {
       .await
       .context("failed to add builder to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let builder: Builder = self.get_resource(&builder_id).await?;
     let update = Update {

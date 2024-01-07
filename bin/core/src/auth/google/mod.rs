@@ -111,6 +111,8 @@ async fn callback(
         .await
         .context("failed to create user on mongo")?
         .inserted_id
+        .as_object_id()
+        .context("inserted_id is not ObjectId")?
         .to_string();
       state
         .jwt

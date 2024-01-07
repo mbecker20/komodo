@@ -37,6 +37,8 @@ impl Resolve<CreateTag, RequestUser> for State {
       .await
       .context("failed to create tag on db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     Ok(tag)
   }

@@ -52,6 +52,8 @@ impl Resolve<CreateLocalUser> for State {
       .await
       .context("failed to create user")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
 
     let jwt = self

@@ -60,6 +60,8 @@ impl Resolve<CreateBuild, RequestUser> for State {
       .await
       .context("failed to add build to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let build: Build = self.get_resource(&build_id).await?;
 
@@ -125,6 +127,8 @@ impl Resolve<CopyBuild, RequestUser> for State {
       .await
       .context("failed to add build to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let build: Build = self.get_resource(&build_id).await?;
 

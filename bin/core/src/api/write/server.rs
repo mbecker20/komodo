@@ -54,6 +54,8 @@ impl Resolve<CreateServer, RequestUser> for State {
       .await
       .context("failed to add server to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let server: Server = self.get_resource(&server_id).await?;
     let update = Update {

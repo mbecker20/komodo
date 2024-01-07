@@ -47,6 +47,8 @@ impl Resolve<CreateProcedure, RequestUser> for State {
       .await
       .context("failed to add procedure to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let procedure: Procedure =
       self.get_resource(&procedure_id).await?;
@@ -113,6 +115,8 @@ impl Resolve<CopyProcedure, RequestUser> for State {
       .await
       .context("failed to add build to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let procedure: Procedure =
       self.get_resource(&procedure_id).await?;

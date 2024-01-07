@@ -72,6 +72,8 @@ impl Resolve<CreateDeployment, RequestUser> for State {
       .await
       .context("failed to add deployment to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let deployment: Deployment =
       self.get_resource(&deployment_id).await?;
@@ -153,6 +155,8 @@ impl Resolve<CopyDeployment, RequestUser> for State {
       .await
       .context("failed to add deployment to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let deployment: Deployment =
       self.get_resource(&deployment_id).await?;

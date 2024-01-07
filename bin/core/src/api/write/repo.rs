@@ -63,6 +63,8 @@ impl Resolve<CreateRepo, RequestUser> for State {
       .await
       .context("failed to add repo to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
 
     let repo: Repo = self.get_resource(&repo_id).await?;
@@ -154,6 +156,8 @@ impl Resolve<CopyRepo, RequestUser> for State {
       .await
       .context("failed to add repo to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let repo: Repo = self.get_resource(&repo_id).await?;
     let update = Update {

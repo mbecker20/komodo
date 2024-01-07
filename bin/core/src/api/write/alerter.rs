@@ -50,6 +50,8 @@ impl Resolve<CreateAlerter, RequestUser> for State {
       .await
       .context("failed to add alerter to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
@@ -112,6 +114,8 @@ impl Resolve<CopyAlerter, RequestUser> for State {
       .await
       .context("failed to add alerter to db")?
       .inserted_id
+      .as_object_id()
+      .context("inserted_id is not ObjectId")?
       .to_string();
     let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
