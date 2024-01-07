@@ -34,9 +34,11 @@ impl State {
         }
       })
       .collect::<Vec<_>>();
-    let res = self.db.stats.insert_many(records, None).await;
-    if let Err(e) = res {
-      error!("failed to record server stats | {e:#?}");
+    if !records.is_empty() {
+      let res = self.db.stats.insert_many(records, None).await;
+      if let Err(e) = res {
+        error!("failed to record server stats | {e:#?}");
+      }
     }
   }
 }
