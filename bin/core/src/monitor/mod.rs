@@ -1,6 +1,6 @@
 use async_timing_util::{wait_until_timelength, Timelength};
 use futures::future::join_all;
-use monitor_types::entities::{
+use monitor_client::entities::{
   deployment::{ContainerSummary, DockerContainerState},
   server::{
     stats::{AllSystemStats, ServerHealth},

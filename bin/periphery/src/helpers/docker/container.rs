@@ -1,16 +1,14 @@
 use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
-use monitor_types::{
-  entities::{
-    deployment::{
-      Conversion, Deployment, DeploymentConfig, DeploymentImage,
-      DockerContainerStats, RestartMode, TerminationSignal,
-    },
-    update::Log,
-    EnvironmentVar,
+use monitor_client::entities::{
+  deployment::{
+    Conversion, Deployment, DeploymentConfig, DeploymentImage,
+    DockerContainerStats, RestartMode, TerminationSignal,
   },
   optional_string, to_monitor_name,
+  update::Log,
+  EnvironmentVar,
 };
 use run_command::async_run_command;
 

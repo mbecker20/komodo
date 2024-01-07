@@ -17,7 +17,7 @@ path = "src/main.rs"
 
 [dependencies]
 # local
-monitor_types.workspace = true
+monitor_client.workspace = true
 logger.workspace = true
 # mogh
 async_timing_util.workspace = true

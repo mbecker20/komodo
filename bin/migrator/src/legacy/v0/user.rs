@@ -60,7 +60,9 @@ pub struct ApiSecret {
   pub expires: Option<String>,
 }
 
-impl TryFrom<ApiSecret> for monitor_types::entities::user::ApiSecret {
+impl TryFrom<ApiSecret>
+  for monitor_client::entities::user::ApiSecret
+{
   type Error = anyhow::Error;
   fn try_from(value: ApiSecret) -> Result<Self, Self::Error> {
     let secret = Self {
@@ -75,7 +77,7 @@ impl TryFrom<ApiSecret> for monitor_types::entities::user::ApiSecret {
   }
 }
 
-impl TryFrom<User> for monitor_types::entities::user::User {
+impl TryFrom<User> for monitor_client::entities::user::User {
   type Error = anyhow::Error;
   fn try_from(value: User) -> Result<Self, Self::Error> {
     let user = Self {

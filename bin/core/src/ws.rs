@@ -9,7 +9,7 @@ use axum::{
   Router,
 };
 use futures::{SinkExt, StreamExt};
-use monitor_types::{
+use monitor_client::{
   entities::{
     alerter::Alerter,
     build::Build,

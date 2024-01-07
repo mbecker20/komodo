@@ -3,7 +3,7 @@ use axum::{
   extract::Query, http::StatusCode, response::Redirect, routing::get,
   Router,
 };
-use monitor_types::{entities::user::User, monitor_timestamp};
+use monitor_client::entities::{monitor_timestamp, user::User};
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
 

@@ -1,4 +1,4 @@
-use monitor_types::entities::server::stats::{
+use monitor_client::entities::server::stats::{
   BasicSystemStats, SystemStatsRecord,
 };
 

@@ -1,7 +1,6 @@
 use async_trait::async_trait;
-use monitor_types::{
-  entities::{server::docker_image::ImageSummary, update::Log},
-  optional_string,
+use monitor_client::entities::{
+  optional_string, server::docker_image::ImageSummary, update::Log,
 };
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
@@ -11,7 +10,7 @@ use crate::{helpers::docker, state::State};
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<Log>)]
 pub struct Build {
-  pub build: monitor_types::entities::build::Build,
+  pub build: monitor_client::entities::build::Build,
 }
 
 #[async_trait]

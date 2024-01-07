@@ -1,4 +1,4 @@
-use monitor_types::entities::update::ResourceTarget;
+use monitor_client::entities::update::ResourceTarget;
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
@@ -28,7 +28,7 @@ pub struct Update {
   pub version: Option<Version>,
 }
 
-impl TryFrom<Update> for monitor_types::entities::update::Update {
+impl TryFrom<Update> for monitor_client::entities::update::Update {
   type Error = anyhow::Error;
   fn try_from(value: Update) -> Result<Self, Self::Error> {
     let target: Option<ResourceTarget> = value.target.into();
@@ -44,7 +44,7 @@ impl TryFrom<Update> for monitor_types::entities::update::Update {
         .into_iter()
         .map(|log| log.try_into())
         .collect::<anyhow::Result<
-        Vec<monitor_types::entities::update::Log>,
+        Vec<monitor_client::entities::update::Log>,
       >>()?,
       end_ts: value
         .end_ts
@@ -67,7 +67,7 @@ pub struct Log {
   pub end_ts: String,
 }
 
-impl TryFrom<Log> for monitor_types::entities::update::Log {
+impl TryFrom<Log> for monitor_client::entities::update::Log {
   type Error = anyhow::Error;
   fn try_from(value: Log) -> Result<Self, Self::Error> {
     Ok(Self {
@@ -96,10 +96,10 @@ pub enum UpdateTarget {
 }
 
 impl From<UpdateTarget>
-  for Option<monitor_types::entities::update::ResourceTarget>
+  for Option<monitor_client::entities::update::ResourceTarget>
 {
   fn from(value: UpdateTarget) -> Self {
-    use monitor_types::entities::update::ResourceTarget::*;
+    use monitor_client::entities::update::ResourceTarget::*;
     match value {
       UpdateTarget::System => Some(System("system".to_string())),
       UpdateTarget::Build(id) => Some(Build(id)),
@@ -132,10 +132,10 @@ pub enum UpdateStatus {
 }
 
 impl From<UpdateStatus>
-  for monitor_types::entities::update::UpdateStatus
+  for monitor_client::entities::update::UpdateStatus
 {
   fn from(value: UpdateStatus) -> Self {
-    use monitor_types::entities::update::UpdateStatus::*;
+    use monitor_client::entities::update::UpdateStatus::*;
     match value {
       UpdateStatus::Queued => Queued,
       UpdateStatus::InProgress => InProgress,

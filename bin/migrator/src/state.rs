@@ -1,6 +1,6 @@
 use anyhow::Context;
 use db_client::DbClient;
-use monitor_types::entities::config::MongoConfig;
+use monitor_client::entities::config::MongoConfig;
 use mungos::{
   init::MongoBuilder,
   mongodb::{Client, Collection, Database},

@@ -101,7 +101,7 @@ pub struct TerminationSignalLabel {
 }
 
 impl From<TerminationSignalLabel>
-  for monitor_types::entities::deployment::TerminationSignalLabel
+  for monitor_client::entities::deployment::TerminationSignalLabel
 {
   fn from(value: TerminationSignalLabel) -> Self {
     Self {
@@ -179,7 +179,7 @@ pub struct Conversion {
 }
 
 impl From<Conversion>
-  for monitor_types::entities::deployment::Conversion
+  for monitor_client::entities::deployment::Conversion
 {
   fn from(value: Conversion) -> Self {
     Self {
@@ -256,10 +256,10 @@ pub enum RestartMode {
 }
 
 impl From<RestartMode>
-  for monitor_types::entities::deployment::RestartMode
+  for monitor_client::entities::deployment::RestartMode
 {
   fn from(value: RestartMode) -> Self {
-    use monitor_types::entities::deployment::RestartMode::*;
+    use monitor_client::entities::deployment::RestartMode::*;
     match value {
       RestartMode::NoRestart => NoRestart,
       RestartMode::OnFailure => OnFailure,
@@ -295,10 +295,10 @@ pub enum TerminationSignal {
 }
 
 impl From<TerminationSignal>
-  for monitor_types::entities::deployment::TerminationSignal
+  for monitor_client::entities::deployment::TerminationSignal
 {
   fn from(value: TerminationSignal) -> Self {
-    use monitor_types::entities::deployment::TerminationSignal::*;
+    use monitor_client::entities::deployment::TerminationSignal::*;
     match value {
       TerminationSignal::SigHup => SigHup,
       TerminationSignal::SigInt => SigInt,
@@ -309,17 +309,17 @@ impl From<TerminationSignal>
 }
 
 impl TryFrom<Deployment>
-  for monitor_types::entities::deployment::Deployment
+  for monitor_client::entities::deployment::Deployment
 {
   type Error = anyhow::Error;
   fn try_from(value: Deployment) -> Result<Self, Self::Error> {
     let image = if let Some(build_id) = value.build_id {
-      monitor_types::entities::deployment::DeploymentImage::Build {
+      monitor_client::entities::deployment::DeploymentImage::Build {
         build_id,
         version: value.build_version.unwrap_or_default().into(),
       }
     } else {
-      monitor_types::entities::deployment::DeploymentImage::Image {
+      monitor_client::entities::deployment::DeploymentImage::Image {
         image: value.docker_run_args.image,
       }
     };
@@ -335,53 +335,54 @@ impl TryFrom<Deployment>
       updated_at: unix_from_monitor_ts(&value.updated_at)?,
       tags: Vec::new(),
       info: (),
-      config: monitor_types::entities::deployment::DeploymentConfig {
-        server_id: value.server_id,
-        send_alerts: true,
-        image,
-        skip_secret_interp: value.skip_secret_interp,
-        redeploy_on_build: value.redeploy_on_build,
-        term_signal_labels: value
-          .term_signal_labels
-          .into_iter()
-          .map(|t| t.into())
-          .collect(),
-        termination_signal: value.termination_signal.into(),
-        termination_timeout: value.termination_timeout,
-        ports: value
-          .docker_run_args
-          .ports
-          .into_iter()
-          .map(|p| p.into())
-          .collect(),
-        volumes: value
-          .docker_run_args
-          .volumes
-          .into_iter()
-          .map(|v| v.into())
-          .collect(),
-        environment: value
-          .docker_run_args
-          .environment
-          .into_iter()
-          .map(|e| e.into())
-          .collect(),
-        network: value.docker_run_args.network,
-        restart: value.docker_run_args.restart.into(),
-        process_args: value
-          .docker_run_args
-          .post_image
-          .unwrap_or_default(),
-        container_user: value
-          .docker_run_args
-          .container_user
-          .unwrap_or_default(),
-        extra_args: value.docker_run_args.extra_args,
-        docker_account: value
-          .docker_run_args
-          .docker_account
-          .unwrap_or_default(),
-      },
+      config:
+        monitor_client::entities::deployment::DeploymentConfig {
+          server_id: value.server_id,
+          send_alerts: true,
+          image,
+          skip_secret_interp: value.skip_secret_interp,
+          redeploy_on_build: value.redeploy_on_build,
+          term_signal_labels: value
+            .term_signal_labels
+            .into_iter()
+            .map(|t| t.into())
+            .collect(),
+          termination_signal: value.termination_signal.into(),
+          termination_timeout: value.termination_timeout,
+          ports: value
+            .docker_run_args
+            .ports
+            .into_iter()
+            .map(|p| p.into())
+            .collect(),
+          volumes: value
+            .docker_run_args
+            .volumes
+            .into_iter()
+            .map(|v| v.into())
+            .collect(),
+          environment: value
+            .docker_run_args
+            .environment
+            .into_iter()
+            .map(|e| e.into())
+            .collect(),
+          network: value.docker_run_args.network,
+          restart: value.docker_run_args.restart.into(),
+          process_args: value
+            .docker_run_args
+            .post_image
+            .unwrap_or_default(),
+          container_user: value
+            .docker_run_args
+            .container_user
+            .unwrap_or_default(),
+          extra_args: value.docker_run_args.extra_args,
+          docker_account: value
+            .docker_run_args
+            .docker_account
+            .unwrap_or_default(),
+        },
     };
     Ok(deployment)
   }

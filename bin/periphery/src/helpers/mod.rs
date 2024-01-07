@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use async_timing_util::unix_timestamp_ms;
 use axum::http::StatusCode;
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_types::entities::update::Log;
+use monitor_client::entities::update::Log;
 use run_command::{async_run_command, CommandOutput};
 use serror::serialize_error;
 

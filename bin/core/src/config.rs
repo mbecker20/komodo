@@ -1,6 +1,6 @@
 use anyhow::Context;
 use merge_config_files::parse_config_file;
-use monitor_types::entities::config::{CoreConfig, LogLevel};
+use monitor_client::entities::config::{CoreConfig, LogLevel};
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]

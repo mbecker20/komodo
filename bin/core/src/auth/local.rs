@@ -1,12 +1,12 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use async_trait::async_trait;
-use monitor_types::{
-  entities::user::User,
-  requests::auth::{
+use monitor_client::{
+  api::auth::{
     CreateLocalUser, CreateLocalUserResponse, LoginLocalUser,
     LoginLocalUserResponse,
   },
+  entities::user::User,
 };
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;

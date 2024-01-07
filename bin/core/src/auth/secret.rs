@@ -3,7 +3,7 @@ use std::str::FromStr;
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::async_trait;
-use monitor_types::requests::auth::{
+use monitor_client::api::auth::{
   LoginWithSecret, LoginWithSecretResponse,
 };
 use mungos::mongodb::bson::{doc, oid::ObjectId};

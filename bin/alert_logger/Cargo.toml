@@ -9,7 +9,7 @@ license.workspace = true
 
 [dependencies]
 # local
-monitor_types.workspace = true
+monitor_client.workspace = true
 logger.workspace = true
 # mogh
 termination_signal.workspace = true

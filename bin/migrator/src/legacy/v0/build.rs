@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Context};
-use monitor_types::entities::build::{BuildConfig, BuildInfo};
+use monitor_client::entities::build::{BuildConfig, BuildInfo};
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
@@ -109,7 +109,7 @@ impl Version {
   }
 }
 
-impl From<Version> for monitor_types::entities::Version {
+impl From<Version> for monitor_client::entities::Version {
   fn from(value: Version) -> Self {
     Self {
       major: value.major,
@@ -160,7 +160,7 @@ pub struct AwsBuilderBuildConfig {
   pub assign_public_ip: Option<bool>,
 }
 
-impl TryFrom<Build> for monitor_types::entities::build::Build {
+impl TryFrom<Build> for monitor_client::entities::build::Build {
   type Error = anyhow::Error;
   fn try_from(value: Build) -> Result<Self, Self::Error> {
     let (
@@ -178,7 +178,7 @@ impl TryFrom<Build> for monitor_types::entities::build::Build {
           args
             .build_args
             .into_iter()
-            .map(|arg| monitor_types::entities::EnvironmentVar {
+            .map(|arg| monitor_client::entities::EnvironmentVar {
               variable: arg.variable,
               value: arg.value,
             })
@@ -216,7 +216,7 @@ impl TryFrom<Build> for monitor_types::entities::build::Build {
           .unwrap_or_default(),
         pre_build: value
           .pre_build
-          .map(|command| monitor_types::entities::SystemCommand {
+          .map(|command| monitor_client::entities::SystemCommand {
             path: command.path,
             command: command.command,
           })

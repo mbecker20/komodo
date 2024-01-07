@@ -1,6 +1,6 @@
 use anyhow::Context;
 use mongo_indexed::Indexed;
-use monitor_types::entities::{
+use monitor_client::entities::{
   build::Build,
   deployment::{Deployment, DeploymentConfig},
   server::Server,

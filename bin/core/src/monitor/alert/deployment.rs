@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use monitor_types::entities::{
+use monitor_client::entities::{
   alert::{Alert, AlertData, AlertDataVariant},
   deployment::Deployment,
   server::stats::SeverityLevel,

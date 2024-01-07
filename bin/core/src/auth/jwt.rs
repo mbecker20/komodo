@@ -7,7 +7,7 @@ use async_timing_util::{
 use axum::{http::HeaderMap, Extension};
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
-use monitor_types::entities::config::CoreConfig;
+use monitor_client::entities::config::CoreConfig;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tokio::sync::Mutex;

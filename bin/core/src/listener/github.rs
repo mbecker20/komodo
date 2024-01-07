@@ -2,9 +2,9 @@ use anyhow::{anyhow, Context};
 use axum::{extract::Path, http::HeaderMap, routing::post, Router};
 use hex::ToHex;
 use hmac::{Hmac, Mac};
-use monitor_types::{
+use monitor_client::{
+  api::execute,
   entities::{build::Build, repo::Repo},
-  requests::execute,
 };
 use resolver_api::Resolve;
 use serde::Deserialize;

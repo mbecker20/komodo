@@ -1,6 +1,6 @@
 use anyhow::Context;
 use async_trait::async_trait;
-use monitor_types::entities::{update::Log, SystemCommand};
+use monitor_client::entities::{update::Log, SystemCommand};
 use resolver_api::{
   derive::{Request, Resolver},
   Resolve, ResolveToString,

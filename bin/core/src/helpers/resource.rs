@@ -3,7 +3,7 @@ use std::str::FromStr;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::future::join_all;
-use monitor_types::{
+use monitor_client::{
   entities::{
     alerter::{
       Alerter, AlerterConfig, AlerterListItem, AlerterListItemInfo,

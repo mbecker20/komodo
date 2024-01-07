@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, sync::Arc};
 
 use async_timing_util::wait_until_timelength;
-use monitor_types::entities::{
+use monitor_client::entities::{
   server::stats::{
     AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage,
     LoadAverage, NetworkUsage, SingleCpuUsage, SingleDiskUsage,

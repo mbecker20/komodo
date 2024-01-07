@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use monitor_types::entities::{
+use monitor_client::entities::{
   server::docker_network::DockerNetwork, update::Log,
 };
 use resolver_api::{derive::Request, Resolve};

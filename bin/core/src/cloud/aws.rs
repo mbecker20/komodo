@@ -12,7 +12,7 @@ use aws_sdk_ec2::{
   },
   Client,
 };
-use monitor_types::requests::write::LaunchAwsServerConfig;
+use monitor_client::api::write::LaunchAwsServerConfig;
 
 use crate::state::State;
 

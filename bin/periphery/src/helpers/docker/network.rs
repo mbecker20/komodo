@@ -1,4 +1,4 @@
-use monitor_types::entities::update::Log;
+use monitor_client::entities::update::Log;
 
 use crate::helpers::run_monitor_command;
 

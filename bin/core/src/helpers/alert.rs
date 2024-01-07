@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
-use monitor_types::entities::{
+use monitor_client::entities::{
   alert::{Alert, AlertData},
   alerter::*,
   deployment::DockerContainerState,

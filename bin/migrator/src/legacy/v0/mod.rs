@@ -61,7 +61,7 @@ pub struct EnvironmentVar {
 }
 
 impl From<EnvironmentVar>
-  for monitor_types::entities::EnvironmentVar
+  for monitor_client::entities::EnvironmentVar
 {
   fn from(value: EnvironmentVar) -> Self {
     Self {
@@ -157,9 +157,9 @@ pub enum Operation {
   AutoPull,
 }
 
-impl From<Operation> for monitor_types::entities::Operation {
+impl From<Operation> for monitor_client::entities::Operation {
   fn from(value: Operation) -> Self {
-    use monitor_types::entities::Operation::*;
+    use monitor_client::entities::Operation::*;
     match value {
       Operation::None => None,
       Operation::CreateServer => CreateServer,
@@ -238,10 +238,10 @@ impl Default for &PermissionLevel {
 }
 
 impl From<PermissionLevel>
-  for monitor_types::entities::PermissionLevel
+  for monitor_client::entities::PermissionLevel
 {
   fn from(value: PermissionLevel) -> Self {
-    use monitor_types::entities::PermissionLevel::*;
+    use monitor_client::entities::PermissionLevel::*;
     match value {
       PermissionLevel::None => None,
       PermissionLevel::Read => Read,

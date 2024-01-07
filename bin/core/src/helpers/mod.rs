@@ -3,16 +3,14 @@ use std::{str::FromStr, time::Duration};
 use anyhow::{anyhow, Context};
 use axum::http::StatusCode;
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_types::{
-  entities::{
-    deployment::{Deployment, DockerContainerState},
-    server::{Server, ServerStatus},
-    tag::CustomTag,
-    update::{ResourceTarget, Update, UpdateListItem},
-    user::User,
-    Operation,
-  },
+use monitor_client::entities::{
+  deployment::{Deployment, DockerContainerState},
   monitor_timestamp,
+  server::{Server, ServerStatus},
+  tag::CustomTag,
+  update::{ResourceTarget, Update, UpdateListItem},
+  user::User,
+  Operation,
 };
 use mungos::{
   by_id::find_one_by_id,

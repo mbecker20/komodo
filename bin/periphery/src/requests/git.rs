@@ -1,6 +1,5 @@
-use monitor_types::{
-  entities::{update::Log, CloneArgs, SystemCommand},
-  to_monitor_name,
+use monitor_client::entities::{
+  to_monitor_name, update::Log, CloneArgs, SystemCommand,
 };
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};

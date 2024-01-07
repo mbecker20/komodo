@@ -2,7 +2,7 @@
 extern crate log;
 
 use mongo_indexed::{create_index, create_unique_index, Indexed};
-use monitor_types::entities::{
+use monitor_client::entities::{
   alert::Alert,
   alerter::Alerter,
   build::Build,

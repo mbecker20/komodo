@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context};
 use bollard::{container::ListContainersOptions, Docker};
-use monitor_types::entities::{
+use monitor_client::entities::{
   deployment::ContainerSummary,
   server::{
     docker_image::ImageSummary, docker_network::DockerNetwork,

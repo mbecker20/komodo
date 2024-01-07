@@ -1,14 +1,16 @@
 use anyhow::{anyhow, Context};
-use monitor_types::requests::{
-  auth::MonitorAuthRequest, execute::MonitorExecuteRequest,
-  read::MonitorReadRequest, write::MonitorWriteRequest,
-};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Serialize};
 use serde_json::json;
 use serror::deserialize_error;
 
-use crate::MonitorClient;
+use crate::{
+  api::{
+    auth::MonitorAuthRequest, execute::MonitorExecuteRequest,
+    read::MonitorReadRequest, write::MonitorWriteRequest,
+  },
+  MonitorClient,
+};
 
 impl MonitorClient {
   pub async fn auth<T: MonitorAuthRequest>(

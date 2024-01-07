@@ -4,7 +4,7 @@ mod server;
 use std::collections::HashMap;
 
 use anyhow::Context;
-use monitor_types::entities::server::{Server, ServerListItem};
+use monitor_client::entities::server::{Server, ServerListItem};
 
 use crate::{
   auth::InnerRequestUser, helpers::resource::StateResource,

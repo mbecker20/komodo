@@ -21,7 +21,7 @@ mod secret;
 
 use crate::{
   helpers::into_response_error,
-  requests::auth::AuthRequest,
+  api::auth::AuthRequest,
   state::{State, StateExtension},
   ResponseResult,
 };

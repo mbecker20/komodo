@@ -4,13 +4,11 @@ use std::{
 
 use anyhow::Context;
 use mongo_indexed::Indexed;
-use monitor_types::{
-  entities::{
-    alert::{Alert, AlertData, AlertDataVariant},
-    server::{stats::SeverityLevel, ServerListItem, ServerStatus},
-    update::ResourceTarget,
-  },
+use monitor_client::entities::{
+  alert::{Alert, AlertData, AlertDataVariant},
   monitor_timestamp, optional_string,
+  server::{stats::SeverityLevel, ServerListItem, ServerStatus},
+  update::ResourceTarget,
 };
 use mungos::{
   bulk_update::{self, BulkUpdate},

@@ -6,13 +6,13 @@ use axum::{http::StatusCode, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use termination_signal::tokio::immediate_term_handle;
 
+mod api;
 mod auth;
 mod cloud;
 mod config;
 mod helpers;
 mod listener;
 mod monitor;
-mod requests;
 mod state;
 mod ws;
 
@@ -28,9 +28,9 @@ async fn app() -> anyhow::Result<()> {
 
   let app = Router::new()
     .nest("/auth", auth::router(&state))
-    .nest("/read", requests::read::router())
-    .nest("/write", requests::write::router())
-    .nest("/execute", requests::execute::router())
+    .nest("/read", api::read::router())
+    .nest("/write", api::write::router())
+    .nest("/execute", api::execute::router())
     .nest("/listener", listener::router())
     .nest("/ws", ws::router())
     .layer(state.cors()?)

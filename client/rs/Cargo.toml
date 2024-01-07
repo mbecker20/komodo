@@ -9,11 +9,18 @@ license.workspace = true
 
 [dependencies]
 # local
-monitor_types.workspace = true
+# monitor_types.workspace = true
 # mogh
 serror.workspace = true
 resolver_api.workspace = true
+derive_empty_traits.workspace = true
+partial_derive2.workspace = true
+derive_variants.workspace = true
+mungos.workspace = true
+mongo_indexed.workspace = true
+async_timing_util.workspace = true
 # external
+bollard.workspace = true
 reqwest.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
@@ -24,3 +31,7 @@ tokio.workspace = true
 tokio-util.workspace = true
 tokio-tungstenite.workspace = true
 futures.workspace = true
+typeshare.workspace = true
+strum.workspace = true
+strum_macros.workspace = true
+derive_builder.workspace = true

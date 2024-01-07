@@ -2,14 +2,13 @@ use std::time::Duration;
 
 use anyhow::Context;
 use futures::{SinkExt, TryStreamExt};
-use monitor_types::entities::update::UpdateListItem;
 use serror::serialize_error;
 use thiserror::Error;
 use tokio::sync::broadcast;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tokio_util::sync::CancellationToken;
 
-use crate::MonitorClient;
+use crate::{entities::update::UpdateListItem, MonitorClient};
 
 #[derive(Debug, Clone)]
 pub enum UpdateWsMessage {

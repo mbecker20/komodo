@@ -1,9 +1,10 @@
 use anyhow::{anyhow, Context};
-use monitor_types::requests::auth::{
-  self, CreateLocalUserResponse, LoginLocalUserResponse,
-  LoginWithSecretResponse,
-};
 use serde::Deserialize;
+
+pub mod api;
+pub mod busy;
+pub mod entities;
+pub mod permissioned;
 
 mod request;
 mod subscribe;
@@ -56,8 +57,8 @@ impl MonitorClient {
       creds: None,
     };
 
-    let LoginLocalUserResponse { jwt } = client
-      .auth(auth::LoginLocalUser {
+    let api::auth::LoginLocalUserResponse { jwt } = client
+      .auth(api::auth::LoginLocalUser {
         username: username.into(),
         password: password.into(),
       })
@@ -80,8 +81,8 @@ impl MonitorClient {
       creds: None,
     };
 
-    let CreateLocalUserResponse { jwt } = client
-      .auth(auth::CreateLocalUser {
+    let api::auth::CreateLocalUserResponse { jwt } = client
+      .auth(api::auth::CreateLocalUser {
         username: username.into(),
         password: password.into(),
       })
@@ -152,8 +153,8 @@ impl MonitorClient {
 
     let creds = self.creds.clone().unwrap();
 
-    let LoginWithSecretResponse { jwt } = self
-      .auth(auth::LoginWithSecret {
+    let api::auth::LoginWithSecretResponse { jwt } = self
+      .auth(api::auth::LoginWithSecret {
         username: creds.username,
         secret: creds.secret,
       })

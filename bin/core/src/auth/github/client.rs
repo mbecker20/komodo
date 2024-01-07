@@ -1,5 +1,7 @@
 use anyhow::{anyhow, Context};
-use monitor_types::entities::config::{CoreConfig, OauthCredentials};
+use monitor_client::entities::config::{
+  CoreConfig, OauthCredentials,
+};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::sync::Mutex;

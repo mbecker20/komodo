@@ -286,7 +286,7 @@ pub struct SystemInformation {
   pub cpu_brand: String,
 }
 
-impl TryFrom<Server> for monitor_types::entities::server::Server {
+impl TryFrom<Server> for monitor_client::entities::server::Server {
   type Error = anyhow::Error;
   fn try_from(value: Server) -> Result<Self, Self::Error> {
     let server = Self {
@@ -301,7 +301,7 @@ impl TryFrom<Server> for monitor_types::entities::server::Server {
       updated_at: unix_from_monitor_ts(&value.updated_at)?,
       tags: Vec::new(),
       info: (),
-      config: monitor_types::entities::server::ServerConfig {
+      config: monitor_client::entities::server::ServerConfig {
         address: value.address,
         enabled: value.enabled,
         auto_prune: value.auto_prune,

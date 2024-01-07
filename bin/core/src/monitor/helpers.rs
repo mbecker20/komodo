@@ -1,4 +1,4 @@
-use monitor_types::entities::{
+use monitor_client::entities::{
   deployment::{Deployment, DockerContainerState},
   server::{
     stats::{

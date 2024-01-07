@@ -5,7 +5,7 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::{routing::post, Json, Router};
-use monitor_types::entities::alert::Alert;
+use monitor_client::entities::alert::Alert;
 use termination_signal::tokio::immediate_term_handle;
 
 async fn app() -> anyhow::Result<()> {

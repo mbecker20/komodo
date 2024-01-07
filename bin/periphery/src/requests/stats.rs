@@ -1,5 +1,5 @@
 use anyhow::Context;
-use monitor_types::entities::server::stats::{
+use monitor_client::entities::server::stats::{
   AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage,
   NetworkUsage, SystemComponent, SystemInformation, SystemProcess,
 };

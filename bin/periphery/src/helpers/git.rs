@@ -2,9 +2,9 @@ use std::path::PathBuf;
 
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
-use monitor_types::{
-  entities::{update::Log, CloneArgs, SystemCommand},
-  monitor_timestamp, to_monitor_name,
+use monitor_client::entities::{
+  monitor_timestamp, to_monitor_name, update::Log, CloneArgs,
+  SystemCommand,
 };
 use run_command::async_run_command;
 

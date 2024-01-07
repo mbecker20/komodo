@@ -1,10 +1,10 @@
 use monitor_client::MonitorClient;
-use monitor_types::{
+use monitor_client::{
+  api::{execute, read, write},
   entities::{
     build::PartialBuildConfig, repo::PartialRepoConfig,
     server::PartialServerConfig,
   },
-  requests::{execute, read, write},
 };
 use serde::Deserialize;
 

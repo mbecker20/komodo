@@ -6,7 +6,7 @@ use async_timing_util::{
 };
 use axum::Extension;
 use db_client::DbClient;
-use monitor_types::entities::{
+use monitor_client::entities::{
   build::BuildActionState,
   config::CoreConfig,
   deployment::{DeploymentActionState, DockerContainerState},
