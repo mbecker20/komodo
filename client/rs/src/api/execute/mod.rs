@@ -20,6 +20,9 @@ pub trait MonitorExecuteRequest: HasResponse {}
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type", content = "params")]
 pub enum Execution {
+  /// For new executions upon instantiation
+  None(None),
+
   // PROCEDURE
   RunProcedure(RunProcedure),
 
@@ -42,3 +45,7 @@ pub enum Execution {
   PruneDockerImages(PruneDockerImages),
   PruneDockerContainers(PruneDockerContainers),
 }
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct None {}

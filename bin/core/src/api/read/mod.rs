@@ -23,6 +23,7 @@ mod alerter;
 mod build;
 mod builder;
 mod deployment;
+mod procedure;
 mod repo;
 mod search;
 mod server;
@@ -44,6 +45,13 @@ enum ReadRequest {
 
   // ==== SEARCH ====
   FindResources(FindResources),
+
+  // ==== PROCEDURE ====
+  GetProceduresSummary(GetProceduresSummary),
+  GetProcedure(GetProcedure),
+  GetProcedureActionState(GetProcedureActionState),
+  ListProcedures(ListProcedures),
+  ListProceduresByIds(ListProceduresByIds),
 
   // ==== SERVER ====
   GetServersSummary(GetServersSummary),

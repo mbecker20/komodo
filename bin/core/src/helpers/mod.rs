@@ -230,10 +230,10 @@ impl State {
       .update_many(
           doc! {},
           doc! {
-              "$pull": {
-                  "recently_viewed":
-                      to_bson(&resource).context("failed to convert resource to bson")?
-              }
+            "$pull": {
+              "recently_viewed":
+                to_bson(&resource).context("failed to convert resource to bson")?
+            }
           },
           None
       )

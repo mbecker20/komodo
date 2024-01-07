@@ -394,6 +394,9 @@ pub enum Operation {
   DeleteAlerter,
 
   // procedure
+  CreateProcedure,
+  UpdateProcedure,
+  DeleteProcedure,
   RunProcedure,
 
   // user

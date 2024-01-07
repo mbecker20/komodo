@@ -45,3 +45,9 @@ impl From<&ProcedureConfig> for ProcedureConfigVariant {
     }
   }
 }
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct ProcedureActionState {
+  pub running: bool
+}

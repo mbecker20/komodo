@@ -10,6 +10,7 @@ use monitor_client::entities::{
   build::BuildActionState,
   config::CoreConfig,
   deployment::{DeploymentActionState, DockerContainerState},
+  procedure::ProcedureActionState,
   repo::RepoActionState,
   server::ServerActionState,
   update::UpdateListItem,
@@ -167,5 +168,6 @@ pub struct ActionStates {
   pub deployment: Cache<String, DeploymentActionState>,
   pub server: Cache<String, ServerActionState>,
   pub repo: Cache<String, RepoActionState>,
+  pub procedure: Cache<String, ProcedureActionState>,
   // pub command: Cache<CommandActionState>,
 }

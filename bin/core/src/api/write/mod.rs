@@ -23,6 +23,7 @@ mod deployment;
 mod description;
 mod launch;
 mod permissions;
+mod procedure;
 mod repo;
 mod secret;
 mod server;
@@ -89,6 +90,12 @@ enum WriteRequest {
   CopyAlerter(CopyAlerter),
   DeleteAlerter(DeleteAlerter),
   UpdateAlerter(UpdateAlerter),
+
+  // ==== PROCEDURE ====
+  CreateProcedure(CreateProcedure),
+  CopyProcedure(CopyProcedure),
+  DeleteProcedure(DeleteProcedure),
+  UpdateProcedure(UpdateProcedure),
 
   // ==== TAG ====
   CreateTag(CreateTag),

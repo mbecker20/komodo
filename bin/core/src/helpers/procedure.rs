@@ -164,9 +164,10 @@ impl State {
     &self,
     execution: Execution,
   ) -> anyhow::Result<()> {
-    let user: Arc<_> = InnerRequestUser::admin().into();
+    let user: Arc<_> = InnerRequestUser::procedure().into();
     let update =
       match execution {
+        Execution::None(_) => return Ok(()),
         Execution::RunBuild(req) => self
           .resolve(req, user)
           .await

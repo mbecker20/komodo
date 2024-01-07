@@ -31,10 +31,10 @@ pub struct InnerRequestUser {
 }
 
 impl InnerRequestUser {
-  pub fn admin() -> InnerRequestUser {
+  pub fn procedure() -> InnerRequestUser {
     InnerRequestUser {
-      id: String::from("admin"),
-      username: String::from("admin"),
+      id: String::from("procedure"),
+      username: String::from("procedure"),
       is_admin: true,
       create_build_permissions: true,
       create_server_permissions: true,
