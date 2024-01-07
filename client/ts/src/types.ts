@@ -307,7 +307,7 @@ export type Procedure = Resource<ProcedureConfig, undefined>;
 export type GetProcedureResponse = Procedure;
 
 export interface ProcedureListItemInfo {
-	procedure_type: ProcedureConfigVariant;
+	procedure_type: ProcedureConfig["type"];
 }
 
 export type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
