@@ -186,12 +186,11 @@ export const AccountSelector = ({
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const request = type === "Server" ? "GetAvailableAccounts" : "GetBuilderAvailableAccounts";
-  const accounts = useRead(
-    request,
-    { id: id! },
-    { enabled: !!id }
-  ).data;
+  const request =
+    type === "Server"
+      ? "GetServerAvailableAccounts"
+      : "GetBuilderAvailableAccounts";
+  const accounts = useRead(request, { id: id! }, { enabled: !!id }).data;
   return (
     <ConfigItem label={`${account_type} Account`}>
       <Select
