@@ -31,6 +31,7 @@ serror.workspace = true
 # external
 tokio.workspace = true
 axum.workspace = true
+axum-extra.workspace = true
 dotenv.workspace = true
 envy.workspace = true
 serde.workspace = true

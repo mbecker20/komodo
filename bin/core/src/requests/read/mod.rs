@@ -1,10 +1,8 @@
 use std::time::Instant;
 
 use async_trait::async_trait;
-use axum::{
-  headers::ContentType, middleware, routing::post, Extension, Json,
-  Router, TypedHeader,
-};
+use axum::{middleware, routing::post, Extension, Json, Router};
+use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_types::requests::read::*;
 use resolver_api::{
   derive::Resolver, Resolve, ResolveToString, Resolver,

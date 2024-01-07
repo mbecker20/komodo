@@ -1,7 +1,8 @@
 use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
-use axum::{headers::ContentType, http::StatusCode, TypedHeader};
+use axum::http::StatusCode;
+use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_types::{
   entities::{
     deployment::{Deployment, DockerContainerState},

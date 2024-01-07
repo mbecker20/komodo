@@ -22,10 +22,10 @@ async fn app() -> anyhow::Result<()> {
     }),
   );
 
-  axum::Server::bind(&socket_addr)
-    .serve(app.into_make_service())
+  let listener = tokio::net::TcpListener::bind(socket_addr)
     .await
-    .context("server crashed")
+    .context("failed to bind tcp listener")?;
+  axum::serve(listener, app).await.context("server crashed")
 }
 
 #[tokio::main]

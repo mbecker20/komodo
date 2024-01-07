@@ -1,9 +1,10 @@
 use anyhow::anyhow;
 use async_timing_util::unix_timestamp_ms;
-use axum::{headers::ContentType, http::StatusCode, TypedHeader};
+use axum::http::StatusCode;
+use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_types::entities::update::Log;
 use run_command::{async_run_command, CommandOutput};
-use serror::serialize_error_pretty;
+use serror::serialize_error;
 
 use crate::state::State;
 
@@ -17,14 +18,15 @@ impl State {
     github_account: &Option<String>,
   ) -> anyhow::Result<Option<String>> {
     match github_account {
-            Some(account) => match self.config.github_accounts.get(account) {
-                Some(token) => Ok(Some(token.to_owned())),
-                None => Err(anyhow!(
-                    "did not find token in config for github account {account} "
-                )),
-            },
-            None => Ok(None),
-        }
+      Some(account) => match self.config.github_accounts.get(account)
+      {
+        Some(token) => Ok(Some(token.to_owned())),
+        None => Err(anyhow!(
+          "did not find token in config for github account {account} "
+        )),
+      },
+      None => Ok(None),
+    }
   }
 
   pub fn get_docker_token(
@@ -32,14 +34,14 @@ impl State {
     docker_account: &Option<String>,
   ) -> anyhow::Result<Option<String>> {
     match docker_account {
-            Some(account) => match self.config.docker_accounts.get(account) {
-                Some(token) => Ok(Some(token.to_owned())),
-                None => Err(anyhow!(
-                    "did not find token in config for docker account {account} "
-                )),
-            },
-            None => Ok(None),
-        }
+      Some(account) => match self.config.docker_accounts.get(account) {
+        Some(token) => Ok(Some(token.to_owned())),
+        None => Err(anyhow!(
+            "did not find token in config for docker account {account} "
+        )),
+      },
+      None => Ok(None),
+    }
   }
 }
 
@@ -76,6 +78,6 @@ pub fn into_response_error(
   (
     StatusCode::INTERNAL_SERVER_ERROR,
     TypedHeader(ContentType::json()),
-    serialize_error_pretty(e),
+    serialize_error(e),
   )
 }

@@ -14,7 +14,7 @@ use crate::state::State;
 
 pub async fn guard_request_by_passkey(
   req: Request<Body>,
-  next: Next<Body>,
+  next: Next,
 ) -> Result<Response, (StatusCode, String)> {
   let state = req.extensions().get::<Arc<State>>().ok_or((
     StatusCode::INTERNAL_SERVER_ERROR,
@@ -66,7 +66,7 @@ pub async fn guard_request_by_passkey(
 
 pub async fn guard_request_by_ip(
   req: Request<Body>,
-  next: Next<Body>,
+  next: Next,
 ) -> Result<Response, (StatusCode, String)> {
   let state = req.extensions().get::<Arc<State>>().ok_or((
     StatusCode::INTERNAL_SERVER_ERROR,

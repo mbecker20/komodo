@@ -1,11 +1,15 @@
 use std::{sync::Arc, time::Instant};
 
 use axum::{
-  body::Body, headers::ContentType, http::Request, middleware::Next,
-  response::Response, routing::post, Json, Router, TypedHeader,
+  extract::Request,
+  http::{HeaderMap, StatusCode},
+  middleware::Next,
+  response::Response,
+  routing::post,
+  Extension, Json, Router,
 };
+use axum_extra::{headers::ContentType, TypedHeader};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use reqwest::StatusCode;
 use resolver_api::Resolver;
 use uuid::Uuid;
 
@@ -29,41 +33,45 @@ pub use github::client::GithubOauthClient;
 pub use google::client::GoogleOauthClient;
 
 pub async fn auth_request(
-  mut req: Request<Body>,
-  next: Next<Body>,
-) -> Result<Response, (StatusCode, String)> {
-  let state = req.extensions().get::<Arc<State>>().ok_or((
-    StatusCode::UNAUTHORIZED,
-    "failed to get jwt client extension".to_string(),
-  ))?;
+  state: Extension<Arc<State>>,
+  headers: HeaderMap,
+  mut req: Request,
+  next: Next,
+) -> ResponseResult<Response> {
   let user = state
-    .authenticate_check_enabled(&req)
+    .authenticate_check_enabled(&headers)
     .await
-    .map_err(|e| (StatusCode::UNAUTHORIZED, format!("{e:#?}")))?;
+    .map_err(|e| {
+      (
+        StatusCode::UNAUTHORIZED,
+        TypedHeader(ContentType::json()),
+        format!("{e:#?}"),
+      )
+    })?;
   req.extensions_mut().insert(user);
   Ok(next.run(req).await)
 }
 
 pub fn router(state: &State) -> Router {
   let mut router = Router::new().route(
-        "/",
-        post(
-            |state: StateExtension, Json(request): Json<AuthRequest>| async move {
-                let timer = Instant::now();
-                let req_id = Uuid::new_v4();
-                info!("/auth request {req_id} | METHOD: {}", request.req_type());
-                let res = state.resolve_request(request, ()).await;
-                if let Err(e) = &res {
-                    info!("/auth request {req_id} | ERROR: {e:?}");
-                }
-                let res = res.map_err(into_response_error)?;
-                let elapsed = timer.elapsed();
-                info!("/auth request {req_id} | resolve time: {elapsed:?}");
-                debug!("/auth request {req_id} | RESPONSE: {res}");
-                ResponseResult::Ok((TypedHeader(ContentType::json()), res))
-            },
-        ),
-    );
+    "/",
+    post(
+      |state: StateExtension, Json(request): Json<AuthRequest>| async move {
+        let timer = Instant::now();
+        let req_id = Uuid::new_v4();
+        info!("/auth request {req_id} | METHOD: {}", request.req_type());
+        let res = state.resolve_request(request, ()).await;
+        if let Err(e) = &res {
+            info!("/auth request {req_id} | ERROR: {e:?}");
+        }
+        let res = res.map_err(into_response_error)?;
+        let elapsed = timer.elapsed();
+        info!("/auth request {req_id} | resolve time: {elapsed:?}");
+        debug!("/auth request {req_id} | RESPONSE: {res}");
+        ResponseResult::Ok((TypedHeader(ContentType::json()), res))
+      },
+    ),
+  );
 
   if state.github_auth.is_some() {
     router = router.nest("/github", github::router())

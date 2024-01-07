@@ -5,10 +5,11 @@ use std::{net::SocketAddr, sync::Arc, time::Instant};
 
 use anyhow::Context;
 use axum::{
-  headers::ContentType, http::StatusCode, middleware, routing::post,
-  Extension, Json, Router, TypedHeader,
+  http::StatusCode, middleware, routing::post, Extension, Json,
+  Router,
 };
 
+use axum_extra::{headers::ContentType, TypedHeader};
 use resolver_api::Resolver;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
@@ -69,9 +70,15 @@ async fn app() -> anyhow::Result<()> {
 
   info!("starting server on {}", socket_addr);
 
-  axum::Server::bind(&socket_addr)
-    .serve(app.into_make_service_with_connect_info::<SocketAddr>())
-    .await?;
+  let listener = tokio::net::TcpListener::bind(&socket_addr)
+    .await
+    .context("failed to bind tcp listener")?;
+
+  axum::serve(
+    listener,
+    app.into_make_service_with_connect_info::<SocketAddr>(),
+  )
+  .await?;
 
   Ok(())
 }

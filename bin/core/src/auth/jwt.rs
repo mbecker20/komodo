@@ -4,7 +4,7 @@ use anyhow::{anyhow, Context};
 use async_timing_util::{
   get_timelength_in_ms, unix_timestamp_ms, Timelength,
 };
-use axum::{body::Body, http::Request, Extension};
+use axum::{http::HeaderMap, Extension};
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
 use monitor_types::entities::config::CoreConfig;
@@ -104,17 +104,14 @@ impl JwtClient {
 impl State {
   pub async fn authenticate_check_enabled(
     &self,
-    req: &Request<Body>,
+    headers: &HeaderMap,
   ) -> anyhow::Result<RequestUser> {
-    let jwt = req
-            .headers()
-            .get("authorization")
-            .ok_or(anyhow!(
-                "no authorization header provided. must be Bearer <jwt_token>"
-            ))?
-            .to_str()?
-            .replace("Bearer ", "")
-            .replace("bearer ", "");
+    let jwt = headers
+      .get("authorization")
+      .context("no authorization header provided. must be Bearer <jwt_token>")?
+      .to_str()?
+      .replace("Bearer ", "")
+      .replace("bearer ", "");
     let user = self
       .auth_jwt_check_enabled(&jwt)
       .await

@@ -1,10 +1,9 @@
 #[macro_use]
 extern crate log;
 
-use axum::{
-  headers::ContentType, http::StatusCode, Extension, Router,
-  TypedHeader,
-};
+use anyhow::Context;
+use axum::{http::StatusCode, Extension, Router};
+use axum_extra::{headers::ContentType, TypedHeader};
 use termination_signal::tokio::immediate_term_handle;
 
 mod auth;
@@ -39,9 +38,11 @@ async fn app() -> anyhow::Result<()> {
 
   info!("starting monitor core on {socket_addr}");
 
-  axum::Server::bind(&socket_addr)
-    .serve(app.into_make_service())
-    .await?;
+  let listener = tokio::net::TcpListener::bind(&socket_addr)
+    .await
+    .context("failed to bind to tcp listener")?;
+
+  axum::serve(listener, app).await.context("server crashed")?;
 
   Ok(())
 }
