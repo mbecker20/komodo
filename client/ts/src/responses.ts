@@ -18,6 +18,12 @@ export type ReadResponses = {
   // ==== SEARCH ====
   FindResources: Types.FindResourcesResponse;
 
+  // ==== PROCEDURE ====
+  GetProceduresSummary: Types.GetProceduresSummaryResponse;
+  GetProcedure: Types.GetProcedureResponse;
+  ListProcedures: Types.ListProceduresResponse;
+  ListProceduresByIds: Types.ListProceduresByIdsResponse;
+
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;
   GetServer: Types.GetServerResponse;
@@ -145,6 +151,12 @@ export type WriteResponses = {
   DeleteAlerter: Types.Alerter;
   UpdateAlerter: Types.Alerter;
 
+  // ==== PROCEDURE ====
+  CreateProcedure: Types.Procedure;
+  CopyProcedure: Types.Procedure;
+  DeleteProcedure: Types.Procedure;
+  UpdateProcedure: Types.Procedure;
+
   // ==== TAG ====
   CreateTag: Types.CustomTag;
   DeleteTag: Types.CustomTag;
@@ -170,4 +182,7 @@ export type ExecuteResponses = {
   // ==== REPO ====
   CloneRepo: Types.Update;
   PullRepo: Types.Update;
+
+  // ==== PROCEDURE ====
+  RunProcedure: Types.Update;
 };

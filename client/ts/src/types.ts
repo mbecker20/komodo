@@ -40,6 +40,8 @@ export interface AlerterInfo {
 
 export type Alerter = Resource<AlerterConfig, AlerterInfo>;
 
+export type GetAlerterResponse = Alerter;
+
 export interface ResourceListItem<Info> {
 	id: string;
 	type: ResourceTarget["type"];
@@ -55,9 +57,7 @@ export interface AlerterListItemInfo {
 
 export type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
 
-export type _PartialCustomAlerterConfig = Partial<CustomAlerterConfig>;
-
-export type _PartialSlackAlerterConfig = Partial<SlackAlerterConfig>;
+export type ListAlertersResponse = AlerterListItem[];
 
 export interface Version {
 	major: number;
@@ -98,6 +98,8 @@ export interface BuildInfo {
 
 export type Build = Resource<BuildConfig, BuildInfo>;
 
+export type GetBuildResponse = Build;
+
 export interface BuildListItemInfo {
 	last_built_at: I64;
 	version: Version;
@@ -105,11 +107,29 @@ export interface BuildListItemInfo {
 
 export type BuildListItem = ResourceListItem<BuildListItemInfo>;
 
+export type ListBuildsResponse = BuildListItem[];
+
+export interface BuildActionState {
+	building: boolean;
+	updating: boolean;
+}
+
+export type GetBuildActionStateResponse = BuildActionState;
+
+export interface BuildVersionResponseItem {
+	version: Version;
+	ts: I64;
+}
+
+export type GetBuildVersionsResponse = BuildVersionResponseItem[];
+
 export type BuilderConfig = 
 	| { type: "Server", params: ServerBuilderConfig }
 	| { type: "Aws", params: AwsBuilderConfig };
 
 export type Builder = Resource<BuilderConfig, undefined>;
+
+export type GetBuilderResponse = Builder;
 
 export interface BuilderListItemInfo {
 	provider: string;
@@ -118,11 +138,7 @@ export interface BuilderListItemInfo {
 
 export type BuilderListItem = ResourceListItem<BuilderListItemInfo>;
 
-export type _PartialBuilderConfig = Partial<BuilderConfig>;
-
-export type _PartialServerBuilderConfig = Partial<ServerBuilderConfig>;
-
-export type _PartialAwsBuilderConfig = Partial<AwsBuilderConfig>;
+export type ListBuildersResponse = BuilderListItem[];
 
 export type DeploymentImage = 
 	| { type: "Image", params: {
@@ -179,6 +195,8 @@ export interface DeploymentConfig {
 
 export type Deployment = Resource<DeploymentConfig, undefined>;
 
+export type GetDeploymentResponse = Deployment;
+
 export enum DockerContainerState {
 	Unknown = "unknown",
 	NotDeployed = "not_deployed",
@@ -200,93 +218,6 @@ export interface DeploymentListItemInfo {
 }
 
 export type DeploymentListItem = ResourceListItem<DeploymentListItemInfo>;
-
-export interface RepoConfig {
-	server_id: string;
-	repo: string;
-	branch: string;
-	github_account?: string;
-	on_clone?: SystemCommand;
-	on_pull?: SystemCommand;
-}
-
-export interface RepoInfo {
-	last_pulled_at: I64;
-}
-
-export type Repo = Resource<RepoConfig, RepoInfo>;
-
-export type RepoListItem = ResourceListItem<RepoInfo>;
-
-export interface ServerConfig {
-	address: string;
-	enabled: boolean;
-	auto_prune: boolean;
-	send_unreachable_alerts: boolean;
-	send_cpu_alerts: boolean;
-	send_mem_alerts: boolean;
-	send_disk_alerts: boolean;
-	send_temp_alerts: boolean;
-	region?: string;
-	cpu_warning: number;
-	cpu_critical: number;
-	mem_warning: number;
-	mem_critical: number;
-	disk_warning: number;
-	disk_critical: number;
-}
-
-export type Server = Resource<ServerConfig, undefined>;
-
-export enum ServerStatus {
-	NotOk = "NotOk",
-	Ok = "Ok",
-	Disabled = "Disabled",
-}
-
-export interface ServerListItemInfo {
-	status: ServerStatus;
-	region: string;
-	send_unreachable_alerts: boolean;
-	send_cpu_alerts: boolean;
-	send_mem_alerts: boolean;
-	send_disk_alerts: boolean;
-	send_temp_alerts: boolean;
-}
-
-export type ServerListItem = ResourceListItem<ServerListItemInfo>;
-
-export type U64 = number;
-
-export type MongoDocument = any;
-
-export type GetAlerterResponse = Alerter;
-
-export type ListAlertersResponse = AlerterListItem[];
-
-export type GetBuildResponse = Build;
-
-export type ListBuildsResponse = BuildListItem[];
-
-export interface BuildActionState {
-	building: boolean;
-	updating: boolean;
-}
-
-export type GetBuildActionStateResponse = BuildActionState;
-
-export interface BuildVersionResponseItem {
-	version: Version;
-	ts: I64;
-}
-
-export type GetBuildVersionsResponse = BuildVersionResponseItem[];
-
-export type GetBuilderResponse = Builder;
-
-export type ListBuildersResponse = BuilderListItem[];
-
-export type GetDeploymentResponse = Deployment;
 
 export type ListDeploymentsResponse = DeploymentListItem[];
 
@@ -340,7 +271,8 @@ export type ResourceTarget =
 	| { type: "Deployment", id: string }
 	| { type: "Server", id: string }
 	| { type: "Repo", id: string }
-	| { type: "Alerter", id: string };
+	| { type: "Alerter", id: string }
+	| { type: "Procedure", id: string };
 
 export interface User {
 	_id?: MongoId;
@@ -363,7 +295,51 @@ export type GetUserResponse = User;
 
 export type GetUsersResponse = User[];
 
+export type ProcedureConfig = 
+	| { type: "Execution", data: Execution }
+	/** Vec<ProcedureId> */
+	| { type: "Sequence", data: string[] }
+	/** Vec<ProdecureId> */
+	| { type: "Parallel", data: string[] };
+
+export type Procedure = Resource<ProcedureConfig, undefined>;
+
+export type GetProcedureResponse = Procedure;
+
+export interface ProcedureListItemInfo {
+	procedure_type: ProcedureConfigVariant;
+}
+
+export type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
+
+export type ListProceduresResponse = ProcedureListItem[];
+
+export type ListProceduresByIdsResponse = ProcedureListItem[];
+
+export interface ProcedureActionState {
+	running: boolean;
+}
+
+export type GetProcedureActionStateResponse = ProcedureActionState;
+
+export interface RepoConfig {
+	server_id: string;
+	repo: string;
+	branch: string;
+	github_account?: string;
+	on_clone?: SystemCommand;
+	on_pull?: SystemCommand;
+}
+
+export interface RepoInfo {
+	last_pulled_at: I64;
+}
+
+export type Repo = Resource<RepoConfig, RepoInfo>;
+
 export type GetRepoResponse = Repo;
+
+export type RepoListItem = ResourceListItem<RepoInfo>;
 
 export type ListReposResponse = RepoListItem[];
 
@@ -376,7 +352,45 @@ export interface RepoActionState {
 
 export type GetRepoActionStateResponse = RepoActionState;
 
+export interface ServerConfig {
+	address: string;
+	enabled: boolean;
+	auto_prune: boolean;
+	send_unreachable_alerts: boolean;
+	send_cpu_alerts: boolean;
+	send_mem_alerts: boolean;
+	send_disk_alerts: boolean;
+	send_temp_alerts: boolean;
+	region?: string;
+	cpu_warning: number;
+	cpu_critical: number;
+	mem_warning: number;
+	mem_critical: number;
+	disk_warning: number;
+	disk_critical: number;
+}
+
+export type Server = Resource<ServerConfig, undefined>;
+
 export type GetServerResponse = Server;
+
+export enum ServerStatus {
+	NotOk = "NotOk",
+	Ok = "Ok",
+	Disabled = "Disabled",
+}
+
+export interface ServerListItemInfo {
+	status: ServerStatus;
+	region: string;
+	send_unreachable_alerts: boolean;
+	send_cpu_alerts: boolean;
+	send_mem_alerts: boolean;
+	send_disk_alerts: boolean;
+	send_temp_alerts: boolean;
+}
+
+export type ServerListItem = ResourceListItem<ServerListItemInfo>;
 
 export type ListServersResponse = ServerListItem[];
 
@@ -400,8 +414,14 @@ export interface SystemInformation {
 
 export type GetSystemInformationResponse = SystemInformation;
 
+export interface LoadAverage {
+	one: number;
+	five: number;
+	fifteen: number;
+}
+
 export interface BasicSystemStats {
-	system_load: number;
+	load_average: LoadAverage;
 	cpu_perc: number;
 	cpu_freq_mhz: number;
 	mem_used_gb: number;
@@ -653,6 +673,10 @@ export enum Operation {
 	CreateAlerter = "CreateAlerter",
 	UpdateAlerter = "UpdateAlerter",
 	DeleteAlerter = "DeleteAlerter",
+	CreateProcedure = "CreateProcedure",
+	UpdateProcedure = "UpdateProcedure",
+	DeleteProcedure = "DeleteProcedure",
+	RunProcedure = "RunProcedure",
 	UpdateUserPermissions = "UpdateUserPermissions",
 	UpdateUserPermissionsOnTarget = "UpdateUserPermissionsOnTarget",
 	AutoBuild = "AutoBuild",
@@ -684,142 +708,33 @@ export type _PartialBuildConfig = Partial<BuildConfig>;
 
 export type _PartialDeploymentConfig = Partial<DeploymentConfig>;
 
+export type CreateProcedureResponse = Procedure;
+
+export type CopyProcedureResponse = Procedure;
+
+export type DeleteProcedureResponse = Procedure;
+
+export type UpdateProcedureResponse = Procedure;
+
 export type _PartialRepoConfig = Partial<RepoConfig>;
 
 export type _PartialServerConfig = Partial<ServerConfig>;
 
 export type _PartialCustomTag = Partial<CustomTag>;
 
-export enum SeverityLevel {
-	Ok = "OK",
-	Warning = "WARNING",
-	Critical = "CRITICAL",
-}
+export type _PartialCustomAlerterConfig = Partial<CustomAlerterConfig>;
 
-export type AlertData = 
-	| { type: "ServerUnreachable", data: {
-	id: string;
-	name: string;
-	region?: string;
-}}
-	| { type: "ServerCpu", data: {
-	id: string;
-	name: string;
-	region?: string;
-	percentage: number;
-	top_procs: SystemProcess[];
-}}
-	| { type: "ServerMem", data: {
-	id: string;
-	name: string;
-	region?: string;
-	used_gb: number;
-	total_gb: number;
-	top_procs: SystemProcess[];
-}}
-	| { type: "ServerDisk", data: {
-	id: string;
-	name: string;
-	region?: string;
-	path: string;
-	used_gb: number;
-	total_gb: number;
-}}
-	| { type: "ServerTemp", data: {
-	id: string;
-	name: string;
-	region?: string;
-	component: string;
-	temp: number;
-	max: number;
-}}
-	| { type: "ContainerStateChange", data: {
-	id: string;
-	name: string;
-	server_id: string;
-	server_name: string;
-	from: DockerContainerState;
-	to: DockerContainerState;
-}}
-	| { type: "None", data: {
-}};
+export type _PartialSlackAlerterConfig = Partial<SlackAlerterConfig>;
 
-export interface Alert {
-	_id?: MongoId;
-	ts: I64;
-	resolved: boolean;
-	level: SeverityLevel;
-	target: ResourceTarget;
-	variant: AlertData["type"];
-	data: AlertData;
-	resolved_ts?: I64;
-}
+export type _PartialBuilderConfig = Partial<BuilderConfig>;
 
-export interface CustomAlerterConfig {
-	url: string;
-}
+export type _PartialServerBuilderConfig = Partial<ServerBuilderConfig>;
 
-export interface SlackAlerterConfig {
-	url: string;
-}
+export type _PartialAwsBuilderConfig = Partial<AwsBuilderConfig>;
 
-export interface ServerBuilderConfig {
-	id: string;
-}
+export type U64 = number;
 
-export interface AwsBuilderConfig {
-	region: string;
-	instance_type: string;
-	volume_gb: number;
-	ami_id: string;
-	subnet_id: string;
-	security_group_ids: string[];
-	key_pair_name: string;
-	assign_public_ip: boolean;
-	github_accounts?: string[];
-	docker_accounts?: string[];
-}
-
-export interface CloneArgs {
-	name: string;
-	repo?: string;
-	branch?: string;
-	on_clone?: SystemCommand;
-	on_pull?: SystemCommand;
-	github_account?: string;
-}
-
-export interface SystemStatsRecord {
-	ts: I64;
-	sid: string;
-	system_load: number;
-	cpu_perc: number;
-	cpu_freq_mhz: number;
-	mem_used_gb: number;
-	mem_total_gb: number;
-	disk_used_gb: number;
-	disk_total_gb: number;
-}
-
-export interface ServerHealth {
-	cpu: SeverityLevel;
-	mem: SeverityLevel;
-	disk: SeverityLevel;
-	disks: Record<string, SeverityLevel>;
-	temps: Record<string, SeverityLevel>;
-}
-
-export interface UpdateListItem {
-	id: string;
-	operation: Operation;
-	start_ts: I64;
-	success: boolean;
-	username: string;
-	operator: string;
-	target: ResourceTarget;
-	status: UpdateStatus;
-	version: Version;
-}
+export type MongoDocument = any;
 
 export interface GetLoginOptions {
 }
@@ -902,6 +817,10 @@ export interface RemoveContainer {
 	time?: number;
 }
 
+export interface RunProcedure {
+	procedure_id: string;
+}
+
 export interface CloneRepo {
 	id: string;
 }
@@ -925,6 +844,71 @@ export interface PruneDockerContainers {
 export interface ListAlerts {
 	query?: MongoDocument;
 	page?: U64;
+}
+
+export enum SeverityLevel {
+	Ok = "OK",
+	Warning = "WARNING",
+	Critical = "CRITICAL",
+}
+
+export type AlertData = 
+	| { type: "ServerUnreachable", data: {
+	id: string;
+	name: string;
+	region?: string;
+}}
+	| { type: "ServerCpu", data: {
+	id: string;
+	name: string;
+	region?: string;
+	percentage: number;
+	top_procs: SystemProcess[];
+}}
+	| { type: "ServerMem", data: {
+	id: string;
+	name: string;
+	region?: string;
+	used_gb: number;
+	total_gb: number;
+	top_procs: SystemProcess[];
+}}
+	| { type: "ServerDisk", data: {
+	id: string;
+	name: string;
+	region?: string;
+	path: string;
+	used_gb: number;
+	total_gb: number;
+}}
+	| { type: "ServerTemp", data: {
+	id: string;
+	name: string;
+	region?: string;
+	component: string;
+	temp: number;
+	max: number;
+}}
+	| { type: "ContainerStateChange", data: {
+	id: string;
+	name: string;
+	server_id: string;
+	server_name: string;
+	from: DockerContainerState;
+	to: DockerContainerState;
+}}
+	| { type: "None", data: {
+}};
+
+export interface Alert {
+	_id?: MongoId;
+	ts: I64;
+	resolved: boolean;
+	level: SeverityLevel;
+	target: ResourceTarget;
+	variant: AlertData["type"];
+	data: AlertData;
+	resolved_ts?: I64;
 }
 
 export interface ListAlertsResponse {
@@ -1092,6 +1076,29 @@ export interface GetCoreInfoResponse {
 	monitoring_interval: Timelength;
 }
 
+export interface GetProcedure {
+	id: string;
+}
+
+export interface ListProcedures {
+	query?: MongoDocument;
+}
+
+export interface ListProceduresByIds {
+	ids: string[];
+}
+
+export interface GetProceduresSummary {
+}
+
+export interface GetProceduresSummaryResponse {
+	total: number;
+}
+
+export interface GetProcedureActionState {
+	id: string;
+}
+
 export interface GetRepo {
 	id: string;
 }
@@ -1193,6 +1200,18 @@ export interface GetHistoricalServerStats {
 	page?: number;
 }
 
+export interface SystemStatsRecord {
+	ts: I64;
+	sid: string;
+	load_average: LoadAverage;
+	cpu_perc: number;
+	cpu_freq_mhz: number;
+	mem_used_gb: number;
+	mem_total_gb: number;
+	disk_used_gb: number;
+	disk_total_gb: number;
+}
+
 export interface GetHistoricalServerStatsResponse {
 	stats: SystemStatsRecord[];
 	next_page?: number;
@@ -1244,6 +1263,18 @@ export interface GetUpdate {
 export interface ListUpdates {
 	query?: MongoDocument;
 	page?: number;
+}
+
+export interface UpdateListItem {
+	id: string;
+	operation: Operation;
+	start_ts: I64;
+	success: boolean;
+	username: string;
+	operator: string;
+	target: ResourceTarget;
+	status: UpdateStatus;
+	version: Version;
 }
 
 export interface ListUpdatesResponse {
@@ -1388,6 +1419,25 @@ export interface UpdateUserPermissions {
 	create_builds?: boolean;
 }
 
+export interface CreateProcedure {
+	name: string;
+	config: ProcedureConfig;
+}
+
+export interface CopyProcedure {
+	name: string;
+	id: string;
+}
+
+export interface DeleteProcedure {
+	id: string;
+}
+
+export interface UpdateProcedure {
+	id: string;
+	config: ProcedureConfig;
+}
+
 export interface CreateRepo {
 	name: string;
 	config: _PartialRepoConfig;
@@ -1490,6 +1540,48 @@ export interface SetLastSeenUpdate {
 export interface SetLastSeenUpdateResponse {
 }
 
+export interface CustomAlerterConfig {
+	url: string;
+}
+
+export interface SlackAlerterConfig {
+	url: string;
+}
+
+export interface ServerBuilderConfig {
+	id: string;
+}
+
+export interface AwsBuilderConfig {
+	region: string;
+	instance_type: string;
+	volume_gb: number;
+	ami_id: string;
+	subnet_id: string;
+	security_group_ids: string[];
+	key_pair_name: string;
+	assign_public_ip: boolean;
+	github_accounts?: string[];
+	docker_accounts?: string[];
+}
+
+export interface CloneArgs {
+	name: string;
+	repo?: string;
+	branch?: string;
+	on_clone?: SystemCommand;
+	on_pull?: SystemCommand;
+	github_account?: string;
+}
+
+export interface ServerHealth {
+	cpu: SeverityLevel;
+	mem: SeverityLevel;
+	disk: SeverityLevel;
+	disks: Record<string, SeverityLevel>;
+	temps: Record<string, SeverityLevel>;
+}
+
 export type AuthRequest = 
 	| { type: "GetLoginOptions", params: GetLoginOptions }
 	| { type: "CreateLocalUser", params: CreateLocalUser }
@@ -1508,7 +1600,8 @@ export type ExecuteRequest =
 	| { type: "RemoveContainer", params: RemoveContainer }
 	| { type: "RunBuild", params: RunBuild }
 	| { type: "CloneRepo", params: CloneRepo }
-	| { type: "PullRepo", params: PullRepo };
+	| { type: "PullRepo", params: PullRepo }
+	| { type: "RunProcedure", params: RunProcedure };
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
@@ -1517,6 +1610,10 @@ export type ReadRequest =
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
 	| { type: "FindResources", params: FindResources }
+	| { type: "GetProceduresSummary", params: GetProceduresSummary }
+	| { type: "GetProcedure", params: GetProcedure }
+	| { type: "ListProcedures", params: ListProcedures }
+	| { type: "ListProceduresByIds", params: ListProceduresByIds }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }
@@ -1604,9 +1701,27 @@ export type WriteRequest =
 	| { type: "CopyAlerter", params: CopyAlerter }
 	| { type: "DeleteAlerter", params: DeleteAlerter }
 	| { type: "UpdateAlerter", params: UpdateAlerter }
+	| { type: "CreateProcedure", params: CreateProcedure }
+	| { type: "CopyProcedure", params: CopyProcedure }
+	| { type: "DeleteProcedure", params: DeleteProcedure }
+	| { type: "UpdateProcedure", params: UpdateProcedure }
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "UpdateTag", params: UpdateTag };
+
+export type Execution = 
+	| { type: "RunProcedure", params: RunProcedure }
+	| { type: "RunBuild", params: RunBuild }
+	| { type: "Deploy", params: Deploy }
+	| { type: "StartContainer", params: StartContainer }
+	| { type: "StopContainer", params: StopContainer }
+	| { type: "StopAllContainers", params: StopAllContainers }
+	| { type: "RemoveContainer", params: RemoveContainer }
+	| { type: "CloneRepo", params: CloneRepo }
+	| { type: "PullRepo", params: PullRepo }
+	| { type: "PruneDockerNetworks", params: PruneDockerNetworks }
+	| { type: "PruneDockerImages", params: PruneDockerImages }
+	| { type: "PruneDockerContainers", params: PruneDockerContainers };
 
 export type Tag = 
 	| { type: "ResourceType", params: {
