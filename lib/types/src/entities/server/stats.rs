@@ -18,7 +18,7 @@ pub struct SystemStatsRecord {
   #[index]
   pub sid: String,
   // basic stats
-  pub system_load: f64,
+  pub load_average: LoadAverage,
   pub cpu_perc: f32,
   pub cpu_freq_mhz: f64,
   pub mem_used_gb: f64,
@@ -57,13 +57,21 @@ pub struct AllSystemStats {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct BasicSystemStats {
-  pub system_load: f64,
+  pub load_average: LoadAverage,
   pub cpu_perc: f32,
   pub cpu_freq_mhz: f64,
   pub mem_used_gb: f64,
   pub mem_total_gb: f64,
   pub disk_used_gb: f64,
   pub disk_total_gb: f64,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, Copy)]
+pub struct LoadAverage {
+  pub one: f64,
+  pub five: f64,
+  pub fifteen: f64,
 }
 
 #[typeshare]

@@ -4,15 +4,12 @@ use async_timing_util::wait_until_timelength;
 use monitor_types::entities::{
   server::stats::{
     AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage,
-    NetworkUsage, SingleCpuUsage, SingleDiskUsage, SystemComponent,
-    SystemInformation, SystemNetwork, SystemProcess,
+    LoadAverage, NetworkUsage, SingleCpuUsage, SingleDiskUsage,
+    SystemComponent, SystemInformation, SystemNetwork, SystemProcess,
   },
   Timelength,
 };
-use sysinfo::{
-  ComponentExt, CpuExt, DiskExt, NetworkExt, PidExt, ProcessExt,
-  SystemExt,
-};
+use sysinfo::System;
 use tokio::sync::RwLock;
 
 pub type StatsClient = Arc<RwLock<InnerStatsClient>>;
@@ -20,7 +17,10 @@ pub type StatsClient = Arc<RwLock<InnerStatsClient>>;
 pub struct InnerStatsClient {
   pub info: SystemInformation,
   pub stats: AllSystemStats,
-  sys: sysinfo::System,
+  system: sysinfo::System,
+  disks: sysinfo::Disks,
+  components: sysinfo::Components,
+  networks: sysinfo::Networks,
 }
 
 const BYTES_PER_GB: f64 = 1073741824.0;
@@ -29,14 +29,20 @@ const BYTES_PER_KB: f64 = 1024.0;
 
 impl InnerStatsClient {
   pub fn new(polling_rate: Timelength) -> StatsClient {
-    let sys = sysinfo::System::new_all();
+    let system = sysinfo::System::new_all();
+    let disks = sysinfo::Disks::new_with_refreshed_list();
+    let components = sysinfo::Components::new_with_refreshed_list();
+    let networks = sysinfo::Networks::new_with_refreshed_list();
     let stats = AllSystemStats {
       polling_rate,
       ..Default::default()
     };
     let client = InnerStatsClient {
-      info: get_system_information(&sys),
-      sys,
+      info: get_system_information(&system),
+      system,
+      disks,
+      components,
+      networks,
       stats,
     };
     let client = Arc::new(RwLock::new(client));
@@ -68,18 +74,19 @@ impl InnerStatsClient {
   }
 
   fn refresh(&mut self) {
-    self.sys.refresh_cpu();
-    self.sys.refresh_memory();
-    self.sys.refresh_networks();
-    self.sys.refresh_disks();
-    self.sys.refresh_components();
-    self.sys.refresh_processes();
+    self.system.refresh_cpu();
+    self.system.refresh_memory();
+    self.system.refresh_processes();
+
+    self.networks.refresh();
+    self.components.refresh();
+    self.disks.refresh();
   }
 
   fn refresh_lists(&mut self) {
-    self.sys.refresh_networks_list();
-    self.sys.refresh_disks_list();
-    self.sys.refresh_components_list();
+    self.networks.refresh_list();
+    self.disks.refresh_list();
+    self.components.refresh_list();
   }
 
   fn get_all_stats(&self) -> AllSystemStats {
@@ -97,26 +104,31 @@ impl InnerStatsClient {
   }
 
   fn get_basic_system_stats(&self) -> BasicSystemStats {
-    let cpu = self.sys.global_cpu_info();
+    let cpu = self.system.global_cpu_info();
     let disk = self.get_disk_usage();
+    let load_average = System::load_average();
     BasicSystemStats {
-      system_load: self.sys.load_average().one,
+      load_average: LoadAverage {
+        one: load_average.one,
+        five: load_average.five,
+        fifteen: load_average.fifteen,
+      },
       cpu_perc: cpu.cpu_usage(),
       cpu_freq_mhz: cpu.frequency() as f64,
-      mem_used_gb: self.sys.used_memory() as f64 / BYTES_PER_GB,
-      mem_total_gb: self.sys.total_memory() as f64 / BYTES_PER_GB,
+      mem_used_gb: self.system.used_memory() as f64 / BYTES_PER_GB,
+      mem_total_gb: self.system.total_memory() as f64 / BYTES_PER_GB,
       disk_used_gb: disk.used_gb,
       disk_total_gb: disk.total_gb,
     }
   }
 
   fn get_cpu_usage(&self) -> CpuUsage {
-    let cpu = self.sys.global_cpu_info();
+    let cpu = self.system.global_cpu_info();
     CpuUsage {
       cpu_perc: cpu.cpu_usage(),
       cpu_freq_mhz: cpu.frequency() as f64,
       cpus: self
-        .sys
+        .system
         .cpus()
         .iter()
         .map(|cpu| SingleCpuUsage {
@@ -131,8 +143,8 @@ impl InnerStatsClient {
     let mut free_gb = 0.0;
     let mut total_gb = 0.0;
     let disks = self
-      .sys
-      .disks()
+      .disks
+      .list()
       .iter()
       .map(|disk| {
         let disk_total = disk.total_space() as f64 / BYTES_PER_GB;
@@ -149,7 +161,7 @@ impl InnerStatsClient {
     let used_gb = total_gb - free_gb;
     let mut read_bytes = 0;
     let mut write_bytes = 0;
-    for process in self.sys.processes().values() {
+    for process in self.system.processes().values() {
       let disk_usage = process.disk_usage();
       read_bytes += disk_usage.read_bytes;
       write_bytes += disk_usage.written_bytes;
@@ -167,9 +179,9 @@ impl InnerStatsClient {
     let mut recieved_kb = 0.0;
     let mut transmitted_kb = 0.0;
     let networks = self
-      .sys
-      .networks()
-      .into_iter()
+      .networks
+      .list()
+      .iter()
       .map(|(name, n)| {
         let recv = n.received() as f64 / BYTES_PER_KB;
         let trans = n.transmitted() as f64 / BYTES_PER_KB;
@@ -192,8 +204,8 @@ impl InnerStatsClient {
 
   fn get_components(&self) -> Vec<SystemComponent> {
     let mut comps: Vec<_> = self
-      .sys
-      .components()
+      .components
+      .list()
       .iter()
       .map(|c| SystemComponent {
         label: c.label().to_string(),
@@ -226,7 +238,7 @@ impl InnerStatsClient {
 
   fn get_processes(&self) -> Vec<SystemProcess> {
     let mut procs: Vec<_> = self
-      .sys
+      .system
       .processes()
       .iter()
       .map(|(pid, p)| {
@@ -234,7 +246,11 @@ impl InnerStatsClient {
         SystemProcess {
           pid: pid.as_u32(),
           name: p.name().to_string(),
-          exe: p.exe().to_str().unwrap_or("").to_string(),
+          exe: p
+            .exe()
+            .map(|exe| exe.to_str().unwrap_or_default())
+            .unwrap_or_default()
+            .to_string(),
           cmd: p.cmd().to_vec(),
           start_time: (p.start_time() * 1000) as f64,
           cpu_perc: p.cpu_usage(),
@@ -261,11 +277,11 @@ fn get_system_information(
 ) -> SystemInformation {
   let cpu = sys.global_cpu_info();
   SystemInformation {
-    name: sys.name(),
-    os: sys.long_os_version(),
-    kernel: sys.kernel_version(),
+    name: System::name(),
+    os: System::long_os_version(),
+    kernel: System::kernel_version(),
+    host_name: System::host_name(),
     core_count: sys.physical_core_count().map(|c| c as u32),
-    host_name: sys.host_name(),
     cpu_brand: cpu.brand().to_string(),
   }
 }

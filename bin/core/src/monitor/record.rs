@@ -12,7 +12,7 @@ impl State {
       .filter(|status| status.stats.is_some())
       .map(|status| {
         let BasicSystemStats {
-          system_load,
+          load_average,
           cpu_perc,
           cpu_freq_mhz,
           mem_total_gb,
@@ -24,7 +24,7 @@ impl State {
         SystemStatsRecord {
           ts,
           sid: status.id.clone(),
-          system_load,
+          load_average,
           cpu_perc,
           cpu_freq_mhz,
           mem_total_gb,
