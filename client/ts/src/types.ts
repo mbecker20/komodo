@@ -817,6 +817,9 @@ export interface RemoveContainer {
 	time?: number;
 }
 
+export interface None {
+}
+
 export interface RunProcedure {
 	procedure_id: string;
 }
@@ -1710,6 +1713,8 @@ export type WriteRequest =
 	| { type: "UpdateTag", params: UpdateTag };
 
 export type Execution = 
+	/** For new executions upon instantiation */
+	| { type: "None", params: None }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "RunBuild", params: RunBuild }
 	| { type: "Deploy", params: Deploy }
