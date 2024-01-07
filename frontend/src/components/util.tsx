@@ -335,17 +335,18 @@ export const ResourcesDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48" side="bottom">
         <DropdownMenuGroup>
+          <Link to={`/${type.toLowerCase()}s`}>
+            <DropdownMenuItem className="flex items-center gap-2">
+              <Components.Icon />
+              All {type}s
+            </DropdownMenuItem>
+          </Link>
+        </DropdownMenuGroup>
+        <DropdownMenuGroup>
           {!list?.length && (
             <DropdownMenuItem disabled>No {type}s Found.</DropdownMenuItem>
           )}
-          {list?.length && (
-            <Link to={`/${type.toLowerCase()}s`}>
-              <DropdownMenuItem className="flex items-center gap-2">
-                <Components.Icon />
-                All {type}s
-              </DropdownMenuItem>
-            </Link>
-          )}
+
           {list?.map(({ id, name }) => (
             <Link key={id} to={`/${type.toLowerCase()}s/${id}`}>
               <DropdownMenuItem className="flex items-center gap-2">

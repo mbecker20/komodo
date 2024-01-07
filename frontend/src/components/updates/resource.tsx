@@ -15,29 +15,30 @@ import {
   Check,
   X,
   Loader2,
+  Milestone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Types } from "@monitor/client";
 import { Section } from "@components/layouts";
-import { fmt_update_date } from "@lib/utils";
+import { fmt_update_date, fmt_verison } from "@lib/utils";
 import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateStatus } from "@monitor/client/dist/types";
 
-const UpdatePlaceHolder = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle>...</CardTitle>
-      <CardContent>
-        <CardDescription className="flex items-center gap-2">
-          <User className="w-4 h-4" /> ...
-        </CardDescription>
-        <CardDescription className="flex items-center gap-2">
-          <Calendar className="w-4 h-4" /> ...
-        </CardDescription>
-      </CardContent>
-    </CardHeader>
-  </Card>
-);
+// const UpdatePlaceHolder = () => (
+//   <Card>
+//     <CardHeader>
+//       <CardTitle>...</CardTitle>
+//       <CardContent>
+//         <CardDescription className="flex items-center gap-2">
+//           <User className="w-4 h-4" /> ...
+//         </CardDescription>
+//         <CardDescription className="flex items-center gap-2">
+//           <Calendar className="w-4 h-4" /> ...
+//         </CardDescription>
+//       </CardContent>
+//     </CardHeader>
+//   </Card>
+// );
 
 const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
   const Icon = () => {
@@ -50,8 +51,14 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
   return (
     <UpdateDetails id={update.id}>
       <Card className="cursor-pointer hover:translate-y-[-2.5%] hover:bg-accent/50 transition-all">
-        <CardHeader className="flex-row justify-between">
-          <CardTitle>{update.operation}</CardTitle>
+        <CardHeader className="justify-between">
+          <div>
+            <CardTitle>{update.operation}</CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <Milestone className="w-4 h-4" />
+              {fmt_verison(update.version)}
+            </CardDescription>
+          </div>
           <Icon />
         </CardHeader>
         <CardContent>
@@ -70,7 +77,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
 };
 
 export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
-  const { data, isLoading } = useRead("ListUpdates", {
+  const { data } = useRead("ListUpdates", {
     query: {
       "target.type": type,
       "target.id": id,
@@ -90,10 +97,10 @@ export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
       }
     >
       <div className="grid md:grid-cols-3 gap-4">
-        {isLoading && <UpdatePlaceHolder />}
-        {data?.updates
-          .slice(0, 3)
-          .map((update) => <UpdateCard update={update} key={update.id} />)}
+        {/* {isLoading && <UpdatePlaceHolder />} */}
+        {data?.updates.slice(0, 3).map((update) => (
+          <UpdateCard update={update} key={update.id} />
+        ))}
       </div>
     </Section>
   );
