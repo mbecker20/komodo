@@ -1,4 +1,4 @@
 [gen-ts-types]
 description = "generates typescript types for the ts client"
-path = "client/ts"
-cmd = "node ./generate_types.mjs"
+path = "."
+cmd = "node ./client/ts/generate_types.mjs"
