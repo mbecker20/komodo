@@ -349,6 +349,11 @@ const SequenceConfig = ({ id }: { id: string }) => {
         <NewProcedure parent={procedure} />
       </div>
       <pre>{JSON.stringify(procedure?.config, null, 2)}</pre>
+      <div>
+        {procedure.config.data.map((p) => (
+          <ProcedureConfig id={p} key={p} />
+        ))}
+      </div>
     </div>
   );
 };
