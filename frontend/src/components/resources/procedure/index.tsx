@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { Loader2, Route, Save } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -101,37 +101,6 @@ type ExecutionType = Extract<
   { type: "Execution" }
 >["data"]["type"];
 
-const TypeSelector = ({
-  type,
-  selected,
-  onSelect,
-}: {
-  type: UsableResource;
-  selected: string;
-  onSelect: (value: string) => void;
-}) => (
-  <div className="flex items-center justify-between">
-    {type}
-    <ResourceSelector type={type} selected={selected} onSelect={onSelect} />
-  </div>
-);
-
-// const EXECUTION_TYPES: ExecutionType[] = [
-//   "None",
-//   "CloneRepo",
-//   "Deploy",
-//   "PruneDockerContainers",
-//   "PruneDockerImages",
-//   "PruneDockerNetworks",
-//   "PullRepo",
-//   "RemoveContainer",
-//   "RunBuild",
-//   "RunProcedure",
-//   "StartContainer",
-//   "StopAllContainers",
-//   "StopContainer",
-// ];
-
 type ExecutionConfigComponent<
   T extends ExecutionType,
   P = Extract<Execution, { type: T }>["params"]
@@ -151,6 +120,21 @@ type ExecutionConfigs = {
     params: ExecutionConfigParams<ExType>;
   };
 };
+
+const TypeSelector = ({
+  type,
+  selected,
+  onSelect,
+}: {
+  type: UsableResource;
+  selected: string;
+  onSelect: (value: string) => void;
+}) => (
+  <div className="flex items-center justify-between">
+    {type}
+    <ResourceSelector type={type} selected={selected} onSelect={onSelect} />
+  </div>
+);
 
 const EXEC_TYPES: ExecutionConfigs = {
   None: {
@@ -300,13 +284,16 @@ const ExecutionConfig = ({ id }: { id: string }) => {
   if (procedure?.config.type !== "Execution") return null;
 
   const [type, setType] = useState<ExecutionType>(procedure.config.data.type);
-  const [params, setParams] = useState(
-    procedure.config.data ?? EXEC_TYPES[type].params
-  );
+  const [params, setParams] = useState(procedure.config.data.params);
+
+  useEffect(() => {
+    if (procedure?.config.type !== "Execution") return;
+    if (type !== procedure.config.data.type) {
+      setParams(EXEC_TYPES[type].params);
+    }
+  }, [procedure, type]);
 
   const Component = EXEC_TYPES[type].component;
-
-  console.log(params);
 
   return (
     <div className="p-4 border rounded-md flex flex-col gap-4">

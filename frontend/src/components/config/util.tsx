@@ -155,15 +155,20 @@ export const ResourceSelector = ({
   onSelect: (id: string) => void;
 }) => {
   const resources = useRead(`List${type}s`, {}).data;
-  const value = resources?.find((r) => r.id === selected)?.name;
+  const name = resources?.find((r) => r.id === selected)?.name;
+
+  console.log(selected, name, resources);
+
+  if (!resources) return null;
+
   return (
-    <Select value={value ?? undefined} onValueChange={onSelect}>
+    <Select value={name ?? undefined} onValueChange={onSelect}>
       <SelectTrigger className="w-full lg:w-[300px]">
-        {value ?? `Select ${type}`}
+        {name ?? `Select ${type}`}
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          {resources?.map((resource) => (
+          {resources.map((resource) => (
             <SelectItem key={resource.id} value={resource.id}>
               {resource.name}
             </SelectItem>
