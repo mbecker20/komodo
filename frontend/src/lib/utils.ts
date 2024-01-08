@@ -17,6 +17,7 @@ export const RESOURCE_TARGETS: UsableResource[] = [
   "Deployment",
   "Repo",
   "Server",
+  "Procedure",
 ];
 
 export const fmt_update_date = (d: Date) =>

@@ -27,7 +27,7 @@
     "cmdk": "^0.2.0",
     "jotai": "^2.4.1",
     "lightweight-charts": "^4.0.1",
-    "lucide-react": "^0.274.0",
+    "lucide-react": "^0.285.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-minimal-pie-chart": "^8.4.0",

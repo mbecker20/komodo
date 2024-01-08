@@ -155,10 +155,11 @@ export const ResourceSelector = ({
   onSelect: (id: string) => void;
 }) => {
   const resources = useRead(`List${type}s`, {}).data;
+  const value = resources?.find((r) => r.id === selected)?.name;
   return (
-    <Select value={selected ?? undefined} onValueChange={onSelect}>
+    <Select value={value ?? undefined} onValueChange={onSelect}>
       <SelectTrigger className="w-full lg:w-[300px]">
-        <SelectValue placeholder={`Select ${type}`} />
+        {value ?? `Select ${type}`}
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
@@ -187,9 +188,7 @@ export const AccountSelector = ({
   onSelect: (id: string) => void;
 }) => {
   const request =
-    type === "Server"
-      ? "GetServerAvailableAccounts"
-      : "GetBuilderAvailableAccounts";
+    type === "Server" ? "GetAvailableAccounts" : "GetBuilderAvailableAccounts";
   const accounts = useRead(request, { id: id! }, { enabled: !!id }).data;
   return (
     <ConfigItem label={`${account_type} Account`}>

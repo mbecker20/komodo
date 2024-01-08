@@ -5,6 +5,7 @@ import { Builder } from "./builder";
 import { Deployment } from "./deployment";
 import { Repo } from "./repo";
 import { Server } from "./server";
+import { Procedure } from "./procedure";
 
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
@@ -15,4 +16,5 @@ export const ResourceComponents: {
   Deployment,
   Repo,
   Server,
+  Procedure,
 };

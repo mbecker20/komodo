@@ -1,4 +1,5 @@
 import "globals.css";
+import React from "react";
 import ReactDOM from "react-dom/client";
 import { MonitorClient } from "@monitor/client";
 import { ThemeProvider } from "@ui/theme";
@@ -21,14 +22,14 @@ const query_client = new QueryClient({
 });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  // <React.StrictMode>
-  <QueryClientProvider client={query_client}>
-    <WebsocketProvider url={UPDATE_WS_URL}>
-      <ThemeProvider>
-        <Router />
-        <Toaster />
-      </ThemeProvider>
-    </WebsocketProvider>
-  </QueryClientProvider>
-  // </React.StrictMode>
+  <React.StrictMode>
+    <QueryClientProvider client={query_client}>
+      <WebsocketProvider url={UPDATE_WS_URL}>
+        <ThemeProvider>
+          <Router />
+          <Toaster />
+        </ThemeProvider>
+      </WebsocketProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );

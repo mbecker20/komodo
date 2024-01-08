@@ -26,8 +26,6 @@ import { ResourceTarget } from "@monitor/client/dist/types";
 
 const Username = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data?.username;
-
-  console.log(user_id, useRead("GetUsername", { user_id }).data);
   return <>{username}</>;
 };
 
@@ -137,8 +135,6 @@ export const ResourcePermissions = ({
   const display = Object.keys(permissions ?? {})
     .filter((id) => id != me)
     .filter((id) => !users?.find((u) => u._id?.$oid === id)?.admin);
-
-  console.log(users, display);
 
   if (!admin || !display.length) return null;
 

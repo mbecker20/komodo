@@ -34,11 +34,11 @@ export const useRead = <
       (T | P)[]
     >,
     "queryFn" | "queryKey"
-  >,
+  >
 >(
   type: T,
   params: P,
-  config?: C,
+  config?: C
 ) => useQuery([type, params], () => client.read({ type, params } as R), config);
 
 export const useWrite = <
@@ -48,10 +48,10 @@ export const useWrite = <
   C extends Omit<
     UseMutationOptions<WriteResponses[T], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
-  >,
+  >
 >(
   type: T,
-  config?: C,
+  config?: C
 ) =>
   useMutation([type], (params: P) => client.write({ type, params } as R), {
     ...config,
@@ -67,10 +67,10 @@ export const useExecute = <
   C extends Omit<
     UseMutationOptions<ExecuteResponses[T], unknown, P, unknown>,
     "mutationKey" | "mutationFn"
-  >,
+  >
 >(
   type: T,
-  config?: C,
+  config?: C
 ) =>
   useMutation([type], (params: P) => client.execute({ type, params } as R), {
     ...config,
@@ -85,14 +85,10 @@ export const useInvalidate = () => {
 
   return <
     T extends Types.ReadRequest["type"],
-    P = Extract<Types.ReadRequest, { type: T }>["params"],
+    P = Extract<Types.ReadRequest, { type: T }>["params"]
   >(
     ...keys: Array<[T] | [T, P]>
-  ) =>
-    keys.forEach((k) => {
-      console.log("invalidating", k);
-      qc.invalidateQueries([...k]);
-    });
+  ) => keys.forEach((k) => qc.invalidateQueries([...k]));
 };
 
 export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
