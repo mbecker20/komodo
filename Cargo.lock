@@ -2133,6 +2133,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serror",
+ "serror_axum",
  "sha2",
  "simple_logger",
  "slack_client_rs",
@@ -2960,14 +2961,25 @@ dependencies = [
 
 [[package]]
 name = "serror"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6bc462876e265831d80297a3898a173e3d5c72a1501dec9234423de2d25ac89c"
+checksum = "7fc001f673de08108f1602eafd1f7fb18894588004b9d91a6bf05a5e284fe50d"
 dependencies = [
  "anyhow",
  "serde",
  "serde-error",
  "serde_json",
+]
+
+[[package]]
+name = "serror_axum"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7ab34bc2fc163055ee8e2731a7ec9bbf6ebff834a10579e44fddce2695b6ea5"
+dependencies = [
+ "anyhow",
+ "axum",
+ "serror",
 ]
 
 [[package]]

@@ -268,7 +268,8 @@ impl Resolve<StopContainer, RequestUser> for State {
     let periphery = self.periphery_client(&server)?;
 
     let inner = || async move {
-      let mut update = make_update(&deployment, Operation::StopContainer, &user);
+      let mut update =
+        make_update(&deployment, Operation::StopContainer, &user);
 
       update.id = self.add_update(update.clone()).await?;
 

@@ -20,9 +20,7 @@ impl Resolve<GetUser, RequestUser> for State {
       .await
       .context("failed at mongo query")?
       .context("no user found with id")?;
-    for secret in &mut user.secrets {
-      secret.hash = String::new();
-    }
+    user.sanitize();
     Ok(user)
   }
 }
@@ -55,13 +53,10 @@ impl Resolve<GetUsers, RequestUser> for State {
     if !user.is_admin {
       return Err(anyhow!("this route is only accessable by admins"));
     }
-
     let mut users = find_collect(&self.db.users, None, None)
       .await
       .context("failed to pull users from db")?;
-    users.iter_mut().for_each(|user| {
-      user.secrets = Vec::new();
-    });
+    users.iter_mut().for_each(|user| user.sanitize());
     Ok(users)
   }
 }

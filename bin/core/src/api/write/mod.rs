@@ -1,22 +1,21 @@
 use std::time::Instant;
 
-use anyhow::Context;
 use axum::{middleware, routing::post, Extension, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::api::write::*;
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
+use serror_axum::AppResult;
 use typeshare::typeshare;
 use uuid::Uuid;
 
 use crate::{
   auth::{auth_request, RequestUser, RequestUserExtension},
-  helpers::into_response_error,
   state::{State, StateExtension},
-  ResponseResult,
 };
 
 mod alerter;
+mod api_key;
 mod build;
 mod builder;
 mod deployment;
@@ -25,7 +24,6 @@ mod launch;
 mod permissions;
 mod procedure;
 mod repo;
-mod secret;
 mod server;
 mod tag;
 mod user;
@@ -36,9 +34,9 @@ mod user;
 #[resolver_args(RequestUser)]
 #[serde(tag = "type", content = "params")]
 enum WriteRequest {
-  // ==== SECRET ====
-  CreateLoginSecret(CreateLoginSecret),
-  DeleteLoginSecret(DeleteLoginSecret),
+  // ==== API KEY ====
+  CreateApiKey(CreateApiKey),
+  DeleteApiKey(DeleteApiKey),
 
   // ==== USER ====
   PushRecentlyViewed(PushRecentlyViewed),
@@ -118,23 +116,21 @@ pub fn router() -> Router {
             user.username, user.id
           );
           let res = tokio::spawn(async move {
-            state.resolve_request(request, user).await
+            let res = state.resolve_request(request, user).await;
+            if let Err(e) = &res {
+              info!("/write request {req_id} ERROR: {e:#?}");
+            }
+            let elapsed = timer.elapsed();
+            info!(
+              "/write request {req_id} | resolve time: {elapsed:?}"
+            );
+            res
           })
-          .await
-          .context("failure in spawned write task");
+          .await;
           if let Err(e) = &res {
             info!("/write request {req_id} SPAWN ERROR: {e:#?}");
           }
-          let res = res.map_err(into_response_error)?;
-          if let Err(e) = &res {
-            info!("/write request {req_id} ERROR: {e:#?}");
-          }
-          let res = res.map_err(into_response_error)?;
-          let elapsed = timer.elapsed();
-          info!(
-            "/write request {req_id} | resolve time: {elapsed:?}"
-          );
-          ResponseResult::Ok((TypedHeader(ContentType::json()), res))
+          AppResult::Ok((TypedHeader(ContentType::json()), res??))
         },
       ),
     )

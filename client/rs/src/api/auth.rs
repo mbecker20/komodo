@@ -80,22 +80,3 @@ pub struct ExchangeForJwtResponse {
 }
 
 //
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorAuthRequest)]
-#[response(LoginWithSecretResponse)]
-pub struct LoginWithSecret {
-  pub username: String,
-  pub secret: String,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct LoginWithSecretResponse {
-  pub jwt: String,
-}
-
-//

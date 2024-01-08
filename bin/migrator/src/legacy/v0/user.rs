@@ -60,22 +60,22 @@ pub struct ApiSecret {
   pub expires: Option<String>,
 }
 
-impl TryFrom<ApiSecret>
-  for monitor_client::entities::user::ApiSecret
-{
-  type Error = anyhow::Error;
-  fn try_from(value: ApiSecret) -> Result<Self, Self::Error> {
-    let secret = Self {
-      name: value.name,
-      hash: value.hash,
-      created_at: unix_from_monitor_ts(&value.created_at)?,
-      expires: value
-        .expires
-        .and_then(|exp| unix_from_monitor_ts(&exp).ok()),
-    };
-    Ok(secret)
-  }
-}
+// impl TryFrom<ApiSecret>
+//   for monitor_client::entities::user::ApiSecret
+// {
+//   type Error = anyhow::Error;
+//   fn try_from(value: ApiSecret) -> Result<Self, Self::Error> {
+//     let secret = Self {
+//       name: value.name,
+//       hash: value.hash,
+//       created_at: unix_from_monitor_ts(&value.created_at)?,
+//       expires: value
+//         .expires
+//         .and_then(|exp| unix_from_monitor_ts(&exp).ok()),
+//     };
+//     Ok(secret)
+//   }
+// }
 
 impl TryFrom<User> for monitor_client::entities::user::User {
   type Error = anyhow::Error;
@@ -88,11 +88,6 @@ impl TryFrom<User> for monitor_client::entities::user::User {
       create_server_permissions: value.create_server_permissions,
       create_build_permissions: value.create_build_permissions,
       avatar: value.avatar,
-      secrets: value
-        .secrets
-        .into_iter()
-        .map(|s| s.try_into())
-        .collect::<anyhow::Result<_>>()?,
       password: value.password,
       github_id: value.github_id,
       google_id: value.google_id,

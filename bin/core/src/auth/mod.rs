@@ -1,29 +1,23 @@
 use std::{sync::Arc, time::Instant};
 
 use axum::{
-  extract::Request,
-  http::{HeaderMap, StatusCode},
-  middleware::Next,
-  response::Response,
-  routing::post,
-  Extension, Json, Router,
+  extract::Request, http::HeaderMap, middleware::Next,
+  response::Response, routing::post, Extension, Json, Router,
 };
 use axum_extra::{headers::ContentType, TypedHeader};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use resolver_api::Resolver;
+use serror_axum::{AppError, AuthError};
 use uuid::Uuid;
 
 mod github;
 mod google;
 mod jwt;
 mod local;
-mod secret;
 
 use crate::{
-  helpers::into_response_error,
   api::auth::AuthRequest,
   state::{State, StateExtension},
-  ResponseResult,
 };
 
 pub use self::jwt::{
@@ -37,17 +31,8 @@ pub async fn auth_request(
   headers: HeaderMap,
   mut req: Request,
   next: Next,
-) -> ResponseResult<Response> {
-  let user = state
-    .authenticate_check_enabled(&headers)
-    .await
-    .map_err(|e| {
-      (
-        StatusCode::UNAUTHORIZED,
-        TypedHeader(ContentType::json()),
-        format!("{e:#?}"),
-      )
-    })?;
+) -> Result<Response, AuthError> {
+  let user = state.authenticate_check_enabled(&headers).await?;
   req.extensions_mut().insert(user);
   Ok(next.run(req).await)
 }
@@ -64,11 +49,11 @@ pub fn router(state: &State) -> Router {
         if let Err(e) = &res {
             info!("/auth request {req_id} | ERROR: {e:?}");
         }
-        let res = res.map_err(into_response_error)?;
+        let res = res?;
         let elapsed = timer.elapsed();
         info!("/auth request {req_id} | resolve time: {elapsed:?}");
         debug!("/auth request {req_id} | RESPONSE: {res}");
-        ResponseResult::Ok((TypedHeader(ContentType::json()), res))
+        Result::<_, AppError>::Ok((TypedHeader(ContentType::json()), res))
       },
     ),
   );

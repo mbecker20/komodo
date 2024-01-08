@@ -1,11 +1,11 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
+  api::read::*,
   entities::{
     alerter::{Alerter, AlerterListItem},
     PermissionLevel,
   },
-  api::read::*,
 };
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;

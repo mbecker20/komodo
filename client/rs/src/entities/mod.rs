@@ -8,6 +8,7 @@ use typeshare::typeshare;
 
 pub mod alert;
 pub mod alerter;
+pub mod api_key;
 pub mod build;
 pub mod builder;
 pub mod config;

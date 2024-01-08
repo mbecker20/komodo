@@ -38,9 +38,6 @@ pub struct User {
 
   pub avatar: Option<String>,
 
-  #[serde(default)]
-  pub secrets: Vec<ApiSecret>,
-
   pub password: Option<String>,
 
   #[sparse_index]
@@ -59,14 +56,9 @@ pub struct User {
   pub updated_at: I64,
 }
 
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, PartialEq,
-)]
-pub struct ApiSecret {
-  pub name: String,
-  #[serde(default, skip_serializing_if = "String::is_empty")]
-  pub hash: String,
-  pub created_at: I64,
-  pub expires: Option<I64>,
+impl User {
+  /// Prepares user object for transport by removing any sensitive fields
+  pub fn sanitize(&mut self) {
+    self.password = None;
+  }
 }

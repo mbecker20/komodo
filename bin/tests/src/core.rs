@@ -6,7 +6,6 @@ use monitor_client::{
     server::PartialServerConfig,
   },
 };
-use serde::Deserialize;
 
 #[allow(unused)]
 pub async fn tests() -> anyhow::Result<()> {
@@ -118,32 +117,32 @@ async fn create_server(
   Ok(())
 }
 
-#[derive(Deserialize)]
-struct CreateSecretEnv {
-  monitor_address: String,
-  monitor_username: String,
-  monitor_password: String,
-}
+// #[derive(Deserialize)]
+// struct CreateSecretEnv {
+//   monitor_address: String,
+//   monitor_username: String,
+//   monitor_password: String,
+// }
 
-#[allow(unused)]
-async fn create_secret() -> anyhow::Result<()> {
-  let env: CreateSecretEnv = envy::from_env()?;
+// #[allow(unused)]
+// async fn create_secret() -> anyhow::Result<()> {
+//   let env: CreateSecretEnv = envy::from_env()?;
 
-  let monitor = MonitorClient::new_with_new_account(
-    env.monitor_address,
-    env.monitor_username,
-    env.monitor_password,
-  )
-  .await?;
+//   let monitor = MonitorClient::new_with_new_account(
+//     env.monitor_address,
+//     env.monitor_username,
+//     env.monitor_password,
+//   )
+//   .await?;
 
-  let secret = monitor
-    .write(write::CreateLoginSecret {
-      name: "tests".to_string(),
-      expires: None,
-    })
-    .await?;
+//   let secret = monitor
+//     .write(write::CreateLoginSecret {
+//       name: "tests".to_string(),
+//       expires: None,
+//     })
+//     .await?;
 
-  println!("{secret:#?}");
+//   println!("{secret:#?}");
 
-  Ok(())
-}
+//   Ok(())
+// }

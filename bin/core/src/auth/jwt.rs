@@ -7,7 +7,10 @@ use async_timing_util::{
 use axum::{http::HeaderMap, Extension};
 use hmac::{Hmac, Mac};
 use jwt::{SignWithKey, VerifyWithKey};
-use monitor_client::entities::config::CoreConfig;
+use monitor_client::entities::{
+  config::CoreConfig, monitor_timestamp,
+};
+use mungos::mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tokio::sync::Mutex;
@@ -118,17 +121,64 @@ impl State {
     &self,
     headers: &HeaderMap,
   ) -> anyhow::Result<RequestUser> {
-    let jwt = headers
-      .get("authorization")
-      .context("no authorization header provided. must be Bearer <jwt_token>")?
-      .to_str()?
-      .replace("Bearer ", "")
-      .replace("bearer ", "");
-    let user = self
-      .auth_jwt_check_enabled(&jwt)
-      .await
-      .context("failed to authenticate jwt")?;
-    Ok(user)
+    let user_id = match (
+      headers.get("authorization"),
+      headers.get("x-api-key"),
+      headers.get("x-api-secret"),
+    ) {
+      (Some(jwt), _, _) => {
+        // USE JWT
+        let jwt = jwt
+          .to_str()
+          .context("jwt is not str")?
+          .replace("Bearer ", "")
+          .replace("bearer ", "");
+        self
+          .auth_jwt_get_user_id(&jwt)
+          .await
+          .context("failed to authenticate jwt")?
+      }
+      (None, Some(key), Some(secret)) => {
+        // USE API KEY / SECRET
+        let key = key.to_str().context("key is not str")?;
+        let secret = secret.to_str().context("secret is not str")?;
+        self
+          .auth_api_key_get_user_id(key, secret)
+          .await
+          .context("failed to authenticate api key")?
+      }
+      _ => {
+        // AUTH FAIL
+        return Err(anyhow!("must attach either AUTHORIZATION header with jwt OR pass X-API-KEY and X-API-SECRET"));
+      }
+    };
+    let user = self.get_user(&user_id).await?;
+    if user.enabled {
+      let user = InnerRequestUser {
+        id: user_id,
+        username: user.username,
+        is_admin: user.admin,
+        create_server_permissions: user.create_server_permissions,
+        create_build_permissions: user.create_build_permissions,
+      };
+      Ok(user.into())
+    } else {
+      Err(anyhow!("user not enabled"))
+    }
+  }
+
+  pub async fn auth_jwt_get_user_id(
+    &self,
+    jwt: &str,
+  ) -> anyhow::Result<String> {
+    let claims: JwtClaims = jwt
+      .verify_with_key(&self.jwt.key)
+      .context("failed to verify claims")?;
+    if claims.exp > unix_timestamp_ms() {
+      Ok(claims.id)
+    } else {
+      Err(anyhow!("token has expired"))
+    }
   }
 
   pub async fn auth_jwt_check_enabled(
@@ -154,6 +204,32 @@ impl State {
       }
     } else {
       Err(anyhow!("token has expired"))
+    }
+  }
+
+  pub async fn auth_api_key_get_user_id(
+    &self,
+    key: &str,
+    secret: &str,
+  ) -> anyhow::Result<String> {
+    let key = self
+      .db
+      .api_keys
+      .find_one(doc! { "key": key }, None)
+      .await
+      .context("failed to query db")?
+      .context("no api key matching key")?;
+    if key.expires != 0 && key.expires < monitor_timestamp() {
+      return Err(anyhow!("api key expired"));
+    }
+    if bcrypt::verify(secret, &key.secret)
+      .context("failed to verify secret hash")?
+    {
+      // secret matches
+      Ok(key.user_id)
+    } else {
+      // secret mismatch
+      Err(anyhow!("invalid api secret"))
     }
   }
 }

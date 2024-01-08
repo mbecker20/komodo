@@ -1,8 +1,8 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
-  entities::{deployment::Deployment, server::Server},
   api::read::{ListAlerts, ListAlertsResponse},
+  entities::{deployment::Deployment, server::Server},
 };
 use mungos::{
   find::find_collect,

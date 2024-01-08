@@ -8,14 +8,13 @@ use resolver_api::{
   derive::Resolver, Resolve, ResolveToString, Resolver,
 };
 use serde::{Deserialize, Serialize};
+use serror_axum::AppResult;
 use typeshare::typeshare;
 use uuid::Uuid;
 
 use crate::{
   auth::{auth_request, RequestUser, RequestUserExtension},
-  helpers::into_response_error,
   state::{State, StateExtension},
-  ResponseResult,
 };
 
 mod alert;
@@ -149,12 +148,12 @@ pub fn router() -> Router {
           if let Err(e) = &res {
             warn!("/read request {req_id} ERROR: {e:#?}");
           }
-          let res = res.map_err(into_response_error)?;
+          let res = res?;
           let elapsed = timer.elapsed();
           debug!(
             "/read request {req_id} | resolve time: {elapsed:?}"
           );
-          ResponseResult::Ok((TypedHeader(ContentType::json()), res))
+          AppResult::Ok((TypedHeader(ContentType::json()), res))
         },
       ),
     )

@@ -1,12 +1,12 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{
-  extract::Query, http::StatusCode, response::Redirect, routing::get,
-  Router,
+  extract::Query, response::Redirect, routing::get, Router,
 };
 use monitor_client::entities::user::User;
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
+use serror_axum::AppError;
 
 use crate::state::StateExtension;
 
@@ -30,10 +30,8 @@ pub fn router() -> Router {
     .route(
       "/callback",
       get(|state, query| async {
-        let redirect = callback(state, query).await.map_err(|e| {
-          (StatusCode::INTERNAL_SERVER_ERROR, format!("{e:#?}"))
-        })?;
-        Result::<_, (StatusCode, String)>::Ok(redirect)
+        let redirect = callback(state, query).await?;
+        Result::<_, AppError>::Ok(redirect)
       }),
     )
 }

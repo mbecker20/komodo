@@ -14,15 +14,22 @@ use super::MonitorWriteRequest;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
-#[response(CreateLoginSecretResponse)]
-pub struct CreateLoginSecret {
+#[response(CreateApiKeyResponse)]
+pub struct CreateApiKey {
   pub name: String,
-  pub expires: Option<I64>,
+
+  #[serde(default)]
+  pub expires: I64,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct CreateLoginSecretResponse {
+pub struct CreateApiKeyResponse {
+  /// X-API-KEY
+  pub key: String,
+
+  /// X-API-SECRET
+  /// There is no way to get the secret again after it is distributed in this message
   pub secret: String,
 }
 
@@ -33,11 +40,11 @@ pub struct CreateLoginSecretResponse {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
-#[response(DeleteLoginSecretResponse)]
-pub struct DeleteLoginSecret {
-  pub name: String,
+#[response(DeleteApiKeyResponse)]
+pub struct DeleteApiKey {
+  pub key: String,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DeleteLoginSecretResponse {}
+pub struct DeleteApiKeyResponse {}

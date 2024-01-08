@@ -2,8 +2,7 @@
 extern crate log;
 
 use anyhow::Context;
-use axum::{http::StatusCode, Extension, Router};
-use axum_extra::{headers::ContentType, TypedHeader};
+use axum::{Extension, Router};
 use termination_signal::tokio::immediate_term_handle;
 
 mod api;
@@ -15,9 +14,6 @@ mod listener;
 mod monitor;
 mod state;
 mod ws;
-
-type ResponseResult<T> =
-  Result<T, (StatusCode, TypedHeader<ContentType>, String)>;
 
 async fn app() -> anyhow::Result<()> {
   let state = state::State::load().await?;

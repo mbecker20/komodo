@@ -1,9 +1,5 @@
 use async_trait::async_trait;
-use monitor_client::api::auth::{
-  CreateLocalUser, ExchangeForJwt, ExchangeForJwtResponse,
-  GetLoginOptions, GetLoginOptionsResponse, LoginLocalUser,
-  LoginWithSecret,
-};
+use monitor_client::api::auth::*;
 use resolver_api::{derive::Resolver, Resolve};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -19,7 +15,6 @@ pub enum AuthRequest {
   GetLoginOptions(GetLoginOptions),
   CreateLocalUser(CreateLocalUser),
   LoginLocalUser(LoginLocalUser),
-  LoginWithSecret(LoginWithSecret),
   ExchangeForJwt(ExchangeForJwt),
 }
 

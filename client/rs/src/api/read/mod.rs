@@ -27,7 +27,7 @@ pub use server::*;
 pub use tag::*;
 pub use update::*;
 
-use crate::entities::{user::User, Timelength};
+use crate::entities::{api_key::ApiKey, user::User, Timelength};
 
 pub trait MonitorReadRequest: HasResponse {}
 
@@ -59,6 +59,19 @@ pub struct GetUser {}
 
 #[typeshare]
 pub type GetUserResponse = User;
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListApiKeysResponse)]
+pub struct ListApiKeys {}
+
+#[typeshare]
+pub type ListApiKeysResponse = Vec<ApiKey>;
 
 //
 

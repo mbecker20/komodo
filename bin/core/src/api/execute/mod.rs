@@ -6,14 +6,13 @@ use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::api::execute::*;
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
+use serror_axum::AppResult;
 use typeshare::typeshare;
 use uuid::Uuid;
 
 use crate::{
   auth::{auth_request, RequestUser, RequestUserExtension},
-  helpers::into_response_error,
   state::{State, StateExtension},
-  ResponseResult,
 };
 
 mod build;
@@ -66,23 +65,22 @@ pub fn router() -> Router {
             user.username, user.id
           );
           let res = tokio::spawn(async move {
-            state.resolve_request(request, user).await
+            let res = state.resolve_request(request, user).await;
+            if let Err(e) = &res {
+              info!("/execute request {req_id} ERROR: {e:#?}");
+            }
+            let elapsed = timer.elapsed();
+            info!(
+              "/execute request {req_id} | resolve time: {elapsed:?}"
+            );
+            res
           })
           .await
           .context("failure in spawned execute task");
           if let Err(e) = &res {
-            info!("/execute request {req_id} SPAWN ERROR: {e:#?}");
+            info!("/execute request {req_id} SPAWN ERROR: {e:#?}",);
           }
-          let res = res.map_err(into_response_error)?;
-          if let Err(e) = &res {
-            info!("/execute request {req_id} ERROR: {e:#?}");
-          }
-          let res = res.map_err(into_response_error)?;
-          let elapsed = timer.elapsed();
-          info!(
-            "/execute request {req_id} | resolve time: {elapsed:?}"
-          );
-          ResponseResult::Ok((TypedHeader(ContentType::json()), res))
+          AppResult::Ok((TypedHeader(ContentType::json()), res??))
         },
       ),
     )

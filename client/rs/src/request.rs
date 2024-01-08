@@ -17,12 +17,11 @@ impl MonitorClient {
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
-    let req_type = T::req_type();
     self
       .post(
         "/auth",
         json!({
-            "type": req_type,
+            "type": T::req_type(),
             "params": request
         }),
       )
@@ -33,13 +32,12 @@ impl MonitorClient {
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
-    let req_type = T::req_type();
     self
       .post(
         "/read",
         json!({
-            "type": req_type,
-            "params": request
+          "type": T::req_type(),
+          "params": request
         }),
       )
       .await
@@ -49,13 +47,12 @@ impl MonitorClient {
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
-    let req_type = T::req_type();
     self
       .post(
         "/write",
         json!({
-            "type": req_type,
-            "params": request
+          "type": T::req_type(),
+          "params": request
         }),
       )
       .await
@@ -65,13 +62,12 @@ impl MonitorClient {
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
-    let req_type = T::req_type();
     self
       .post(
         "/execute",
         json!({
-            "type": req_type,
-            "params": request
+          "type": T::req_type(),
+          "params": request
         }),
       )
       .await
@@ -85,7 +81,8 @@ impl MonitorClient {
     let req = self
       .reqwest
       .post(format!("{}{endpoint}", self.address))
-      .header("Authorization", format!("Bearer {}", self.jwt));
+      .header("x-api-key", &self.key)
+      .header("x-api-secret", &self.secret);
     let req = if let Some(body) = body.into() {
       req.header("Content-Type", "application/json").json(&body)
     } else {

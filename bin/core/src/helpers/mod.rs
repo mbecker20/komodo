@@ -1,8 +1,6 @@
 use std::time::Duration;
 
 use anyhow::{anyhow, Context};
-use axum::http::StatusCode;
-use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::entities::{
   deployment::{Deployment, DockerContainerState},
   monitor_timestamp,
@@ -18,7 +16,6 @@ use mungos::{
 };
 use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
-use serror::serialize_error_pretty;
 
 use crate::{auth::RequestUser, state::State};
 
@@ -59,16 +56,6 @@ pub fn make_update(
     success: true,
     ..Default::default()
   }
-}
-
-pub fn into_response_error(
-  e: anyhow::Error,
-) -> (StatusCode, TypedHeader<ContentType>, String) {
-  (
-    StatusCode::INTERNAL_SERVER_ERROR,
-    TypedHeader(ContentType::json()),
-    serialize_error_pretty(e),
-  )
 }
 
 impl State {

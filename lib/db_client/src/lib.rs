@@ -5,6 +5,7 @@ use mongo_indexed::{create_index, create_unique_index, Indexed};
 use monitor_client::entities::{
   alert::Alert,
   alerter::Alerter,
+  api_key::ApiKey,
   build::Build,
   builder::Builder,
   config::MongoConfig,
@@ -23,6 +24,7 @@ use mungos::{
 
 pub struct DbClient {
   pub users: Collection<User>,
+  pub api_keys: Collection<ApiKey>,
   pub tags: Collection<CustomTag>,
   pub updates: Collection<Update>,
   pub alerts: Collection<Alert>,
@@ -76,6 +78,7 @@ impl DbClient {
 
     let client = DbClient {
       users: User::collection(&db, true).await?,
+      api_keys: ApiKey::collection(&db, true).await?,
       tags: CustomTag::collection(&db, true).await?,
       updates: Update::collection(&db, true).await?,
       alerts: Alert::collection(&db, true).await?,
