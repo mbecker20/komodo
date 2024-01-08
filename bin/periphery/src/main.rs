@@ -4,13 +4,11 @@ extern crate log;
 use std::{net::SocketAddr, sync::Arc, time::Instant};
 
 use anyhow::Context;
-use axum::{
-  http::StatusCode, middleware, routing::post, Extension, Json,
-  Router,
-};
+use axum::{middleware, routing::post, Extension, Json, Router};
 
 use axum_extra::{headers::ContentType, TypedHeader};
 use resolver_api::Resolver;
+use serror_axum::AppResult;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 
@@ -22,11 +20,6 @@ mod state;
 
 use requests::PeripheryRequest;
 use state::State;
-
-use crate::helpers::into_response_error;
-
-type ResponseResult<T> =
-  Result<T, (StatusCode, TypedHeader<ContentType>, String)>;
 
 async fn app() -> anyhow::Result<()> {
   let state = State::load().await?;
@@ -45,22 +38,21 @@ async fn app() -> anyhow::Result<()> {
           let req_id = Uuid::new_v4();
           info!("request {req_id} | {request:?}");
           let res = tokio::spawn(async move {
-            state.resolve_request(request, ()).await
+            let res = state.resolve_request(request, ()).await;
+            if let Err(e) = &res {
+              debug!("request {req_id} ERROR: {e:#?}");
+            }
+            let elapsed = timer.elapsed();
+            info!("request {req_id} | resolve time: {elapsed:?}");
+            res
           })
-          .await
-          .context("failed in spawned request handler");
+          .await;
           if let Err(e) = &res {
             debug!("request {req_id} SPAWN ERROR: {e:#?}");
           }
-          let res = res.map_err(into_response_error)?;
-          if let Err(e) = &res {
-            debug!("request {req_id} ERROR: {e:#?}");
-          }
-          let res = res.map_err(into_response_error)?;
-          let elapsed = timer.elapsed();
-          info!("request {req_id} | resolve time: {elapsed:?}");
+          let res = res??;
           debug!("request {req_id} RESPONSE: {res}");
-          ResponseResult::Ok((TypedHeader(ContentType::json()), res))
+          AppResult::Ok((TypedHeader(ContentType::json()), res))
         },
       ),
     )

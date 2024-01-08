@@ -2178,7 +2178,7 @@ dependencies = [
  "run_command",
  "serde",
  "serde_json",
- "serror",
+ "serror_axum",
  "simple_logger",
  "svi",
  "sysinfo",

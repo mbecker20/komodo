@@ -27,7 +27,7 @@ termination_signal.workspace = true
 run_command.workspace = true
 svi.workspace = true
 resolver_api.workspace = true
-serror.workspace = true
+serror_axum.workspace = true
 # external
 tokio.workspace = true
 axum.workspace = true
