@@ -6,9 +6,9 @@ pub mod api;
 pub mod busy;
 pub mod entities;
 pub mod permissioned;
+pub mod ws;
 
 mod request;
-mod subscribe;
 
 #[derive(Deserialize)]
 struct MonitorEnv {

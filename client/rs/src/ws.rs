@@ -1,4 +1,28 @@
-use std::time::Duration;
+use anyhow::Context;
+use serde::{Deserialize, Serialize};
+use typeshare::typeshare;
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", content = "params")]
+pub enum WsLoginMessage {
+  Jwt { jwt: String },
+  ApiKeys { key: String, secret: String },
+}
+
+impl WsLoginMessage {
+  pub fn from_json_str(json: &str) -> anyhow::Result<WsLoginMessage> {
+    serde_json::from_str(json)
+      .context("failed to parse json as WsLoginMessage")
+  }
+
+  pub fn to_json_string(&self) -> anyhow::Result<String> {
+    serde_json::to_string(self)
+      .context("failed to serialize WsLoginMessage to json string")
+  }
+}
+
+// use std::time::Duration;
 
 // use anyhow::Context;
 // use futures::{SinkExt, TryStreamExt};

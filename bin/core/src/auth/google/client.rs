@@ -63,9 +63,9 @@ impl GoogleOauthClient {
   pub async fn get_login_redirect_url(&self) -> String {
     let state = random_string(40);
     let redirect_url = format!(
-            "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&state={state}&client_id={}&redirect_uri={}&scope={}",
-            self.client_id, self.redirect_uri, self.scopes
-        );
+      "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&state={state}&client_id={}&redirect_uri={}&scope={}",
+      self.client_id, self.redirect_uri, self.scopes
+    );
     let mut states = self.states.lock().await;
     states.push(state);
     redirect_url

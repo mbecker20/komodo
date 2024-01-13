@@ -185,26 +185,8 @@ impl State {
     &self,
     jwt: &str,
   ) -> anyhow::Result<RequestUser> {
-    let claims: JwtClaims = jwt
-      .verify_with_key(&self.jwt.key)
-      .context("failed to verify claims")?;
-    if claims.exp > unix_timestamp_ms() {
-      let user = self.get_user(&claims.id).await?;
-      if user.enabled {
-        let user = InnerRequestUser {
-          id: claims.id,
-          username: user.username,
-          is_admin: user.admin,
-          create_server_permissions: user.create_server_permissions,
-          create_build_permissions: user.create_build_permissions,
-        };
-        Ok(user.into())
-      } else {
-        Err(anyhow!("user not enabled"))
-      }
-    } else {
-      Err(anyhow!("token has expired"))
-    }
+    let user_id = self.auth_jwt_get_user_id(jwt).await?;
+    self.check_enabled(user_id).await
   }
 
   pub async fn auth_api_key_get_user_id(
@@ -230,6 +212,34 @@ impl State {
     } else {
       // secret mismatch
       Err(anyhow!("invalid api secret"))
+    }
+  }
+
+  pub async fn auth_api_key_check_enabled(
+    &self,
+    key: &str,
+    secret: &str,
+  ) -> anyhow::Result<RequestUser> {
+    let user_id = self.auth_api_key_get_user_id(key, secret).await?;
+    self.check_enabled(user_id).await
+  }
+
+  async fn check_enabled(
+    &self,
+    user_id: String,
+  ) -> anyhow::Result<RequestUser> {
+    let user = self.get_user(&user_id).await?;
+    if user.enabled {
+      let user = InnerRequestUser {
+        id: user_id,
+        username: user.username,
+        is_admin: user.admin,
+        create_server_permissions: user.create_server_permissions,
+        create_build_permissions: user.create_build_permissions,
+      };
+      Ok(user.into())
+    } else {
+      Err(anyhow!("user not enabled"))
     }
   }
 }
