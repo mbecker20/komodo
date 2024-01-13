@@ -73,12 +73,19 @@ impl Resolve<ListApiKeys, RequestUser> for State {
     ListApiKeys {}: ListApiKeys,
     user: RequestUser,
   ) -> anyhow::Result<ListApiKeysResponse> {
-    find_collect(
+    let api_keys = find_collect(
       &self.db.api_keys,
       doc! { "user_id": &user.id },
       None,
     )
     .await
-    .context("failed to query db for api keys")
+    .context("failed to query db for api keys")?
+    .into_iter()
+    .map(|mut api_keys| {
+      api_keys.sanitize();
+      api_keys
+    })
+    .collect();
+    Ok(api_keys)
   }
 }
