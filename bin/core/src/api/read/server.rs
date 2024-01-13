@@ -5,6 +5,7 @@ use monitor_client::{
   api::read::*,
   entities::{
     deployment::ContainerSummary,
+    resource::AddFilters,
     server::{
       docker_image::ImageSummary, docker_network::DockerNetwork,
       stats::SystemInformation, Server, ServerActionState,
@@ -15,7 +16,10 @@ use monitor_client::{
 };
 use mungos::{
   find::find_collect,
-  mongodb::{bson::doc, options::FindOptions},
+  mongodb::{
+    bson::{doc, Document},
+    options::FindOptions,
+  },
 };
 use periphery_client::requests::{self, GetAccountsResponse};
 use resolver_api::{Resolve, ResolveToString};
@@ -33,7 +37,9 @@ impl Resolve<GetServersSummary, RequestUser> for State {
   ) -> anyhow::Result<GetServersSummaryResponse> {
     let servers =
       <State as StateResource<Server>>::list_resources_for_user(
-        self, None, &user,
+        self,
+        Document::new(),
+        &user,
       )
       .await?;
     let mut res = GetServersSummaryResponse::default();
@@ -103,8 +109,10 @@ impl Resolve<ListServers, RequestUser> for State {
     ListServers { query }: ListServers,
     user: RequestUser,
   ) -> anyhow::Result<Vec<ServerListItem>> {
+    let mut filters = Document::new();
+    query.add_filters(&mut filters);
     <State as StateResource<Server>>::list_resources_for_user(
-      self, query, &user,
+      self, filters, &user,
     )
     .await
   }

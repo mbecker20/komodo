@@ -3,9 +3,8 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{
-  procedure::{Procedure, ProcedureActionState, ProcedureListItem},
-  MongoDocument,
+use crate::entities::procedure::{
+  Procedure, ProcedureActionState, ProcedureListItem, ProcedureQuery,
 };
 
 use super::MonitorReadRequest;
@@ -29,12 +28,13 @@ pub type GetProcedureResponse = Procedure;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListProceduresResponse)]
 pub struct ListProcedures {
-  pub query: Option<MongoDocument>,
+  #[serde(default)]
+  pub query: ProcedureQuery,
 }
 
 #[typeshare]

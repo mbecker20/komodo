@@ -5,8 +5,9 @@ use typeshare::typeshare;
 
 use crate::entities::{
   build::BuildListItem, deployment::DeploymentListItem,
-  repo::RepoListItem, server::ServerListItem,
-  update::ResourceTargetVariant, MongoDocument,
+  procedure::ProcedureListItem, repo::RepoListItem,
+  server::ServerListItem, update::ResourceTargetVariant,
+  MongoDocument,
 };
 
 use super::MonitorReadRequest;
@@ -15,13 +16,15 @@ use super::MonitorReadRequest;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(FindResourcesResponse)]
 pub struct FindResources {
-  pub query: Option<MongoDocument>,
-  pub resources: Option<Vec<ResourceTargetVariant>>,
+  #[serde(default)]
+  pub query: MongoDocument,
+  #[serde(default)]
+  pub resources: Vec<ResourceTargetVariant>,
 }
 
 #[typeshare]
@@ -31,4 +34,5 @@ pub struct FindResourcesResponse {
   pub deployments: Vec<DeploymentListItem>,
   pub builds: Vec<BuildListItem>,
   pub repos: Vec<RepoListItem>,
+  pub procedures: Vec<ProcedureListItem>,
 }

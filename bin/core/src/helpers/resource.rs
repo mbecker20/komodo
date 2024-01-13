@@ -123,17 +123,16 @@ pub trait StateResource<
 
   async fn list_resources_for_user(
     &self,
-    query: Option<Document>,
+    mut filters: Document,
     user: &RequestUser,
   ) -> anyhow::Result<Vec<Self::ListItem>> {
-    let mut query = query.unwrap_or_default();
     if !user.is_admin {
-      query.insert(
+      filters.insert(
         format!("permissions.{}", user.id),
         doc! { "$in": ["read", "execute", "update"] },
       );
     }
-    let list = find_collect(self.coll(), query, None)
+    let list = find_collect(self.coll(), filters, None)
       .await
       .with_context(|| {
         format!("failed to pull {}s from mongo", Self::name())

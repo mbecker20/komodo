@@ -4,10 +4,11 @@ use monitor_client::{
   api::read::*,
   entities::{
     alerter::{Alerter, AlerterListItem},
+    resource::AddFilters,
     PermissionLevel,
   },
 };
-use mungos::mongodb::bson::doc;
+use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
@@ -38,8 +39,10 @@ impl Resolve<ListAlerters, RequestUser> for State {
     ListAlerters { query }: ListAlerters,
     user: RequestUser,
   ) -> anyhow::Result<Vec<AlerterListItem>> {
+    let mut filters = Document::new();
+    query.add_filters(&mut filters);
     <State as StateResource<Alerter>>::list_resources_for_user(
-      self, query, &user,
+      self, filters, &user,
     )
     .await
   }

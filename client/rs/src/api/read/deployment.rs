@@ -6,10 +6,10 @@ use typeshare::typeshare;
 use crate::entities::{
   deployment::{
     Deployment, DeploymentActionState, DeploymentListItem,
-    DockerContainerState, DockerContainerStats,
+    DeploymentQuery, DockerContainerState, DockerContainerStats,
   },
   update::Log,
-  MongoDocument, I64, U64,
+  I64, U64,
 };
 
 use super::MonitorReadRequest;
@@ -33,12 +33,13 @@ pub type GetDeploymentResponse = Deployment;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListDeploymentsResponse)]
 pub struct ListDeployments {
-  pub query: Option<MongoDocument>,
+  #[serde(default)]
+  pub query: DeploymentQuery,
 }
 
 #[typeshare]

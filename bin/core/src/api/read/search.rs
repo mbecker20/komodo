@@ -12,8 +12,8 @@ use crate::{
   auth::RequestUser, helpers::resource::StateResource, state::State,
 };
 
-const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 4] =
-  [Server, Build, Deployment, Repo];
+const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 5] =
+  [Server, Build, Deployment, Repo, Procedure];
 
 #[async_trait]
 impl Resolve<FindResources, RequestUser> for State {
@@ -23,24 +23,23 @@ impl Resolve<FindResources, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<FindResourcesResponse> {
     let mut res = FindResourcesResponse::default();
-    let resource_types = resources
-      .map(|rs| {
-        rs.into_iter()
-          .filter(|r| !matches!(r, System | Builder | Alerter))
-          .collect()
-      })
-      .unwrap_or(FIND_RESOURCE_TYPES.to_vec());
+    let resource_types = if resources.is_empty() {
+      FIND_RESOURCE_TYPES.to_vec()
+    } else {
+      resources
+        .into_iter()
+        .filter(|r| !matches!(r, System | Builder | Alerter))
+        .collect()
+    };
     for resource_type in resource_types {
       match resource_type {
         Server => {
-          res.servers = <State as StateResource<
-                        server::Server,
-                    >>::list_resources_for_user(
-                        self,
-                        query.clone(),
-                        &user,
-                    )
-                    .await?;
+          res.servers = <State as StateResource<server::Server,>>::list_resources_for_user(
+            self,
+            query.clone(),
+            &user,
+          )
+          .await?;
         }
         Deployment => {
           res.deployments = <State as StateResource<
@@ -52,23 +51,21 @@ impl Resolve<FindResources, RequestUser> for State {
         }
         Build => {
           res.builds = <State as StateResource<
-                        build::Build,
-                    >>::list_resources_for_user(
-                        self,
-                        query.clone(),
-                        &user,
-                    )
-                    .await?;
+            build::Build,
+          >>::list_resources_for_user(
+            self,
+            query.clone(),
+            &user,
+          )
+          .await?;
         }
         Repo => {
-          res.repos = <State as StateResource<
-                        repo::Repo,
-                    >>::list_resources_for_user(
-                        self,
-                        query.clone(),
-                        &user,
-                    )
-                    .await?;
+          res.repos = <State as StateResource<repo::Repo>>::list_resources_for_user(
+            self,
+            query.clone(),
+            &user,
+          )
+          .await?;
         }
         _ => unreachable!(),
       }

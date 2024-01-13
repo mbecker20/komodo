@@ -5,6 +5,7 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use monitor_client::entities::server::{Server, ServerListItem};
+use mungos::mongodb::bson::Document;
 
 use crate::{
   auth::InnerRequestUser, helpers::resource::StateResource,
@@ -38,7 +39,7 @@ impl State {
     let servers =
       <State as StateResource<Server>>::list_resources_for_user(
         self,
-        None,
+        Document::new(),
         &InnerRequestUser {
           is_admin: true,
           ..Default::default()

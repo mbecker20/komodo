@@ -53,8 +53,7 @@ async fn run_build(
 
 #[allow(unused)]
 async fn create_build(monitor: &MonitorClient) -> anyhow::Result<()> {
-  let mut res =
-    monitor.read(read::ListServers { query: None }).await?;
+  let mut res = monitor.read(read::ListServers::default()).await?;
   let server_id = res.pop().unwrap().id;
 
   let build = monitor
@@ -78,7 +77,7 @@ async fn create_build(monitor: &MonitorClient) -> anyhow::Result<()> {
 #[allow(unused)]
 async fn create_repo(monitor: &MonitorClient) -> anyhow::Result<()> {
   let mut res =
-    monitor.read(read::ListServers { query: None }).await?;
+    monitor.read(read::ListServers::default()).await?;
   let server_id = res.pop().unwrap().id;
 
   let repo = monitor

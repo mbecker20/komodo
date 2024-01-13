@@ -3,9 +3,8 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{
-  repo::{Repo, RepoActionState, RepoListItem},
-  MongoDocument,
+use crate::entities::repo::{
+  Repo, RepoActionState, RepoListItem, RepoQuery,
 };
 
 use super::MonitorReadRequest;
@@ -29,12 +28,13 @@ pub type GetRepoResponse = Repo;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(Vec<RepoListItem>)]
 pub struct ListRepos {
-  pub query: Option<MongoDocument>,
+  #[serde(default)]
+  pub query: RepoQuery,
 }
 
 #[typeshare]

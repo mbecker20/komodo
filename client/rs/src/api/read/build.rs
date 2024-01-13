@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  build::{Build, BuildActionState, BuildListItem},
-  MongoDocument, Version, I64,
+  build::{Build, BuildActionState, BuildListItem, BuildQuery},
+  Version, I64,
 };
 
 use super::MonitorReadRequest;
@@ -31,12 +31,13 @@ pub type GetBuildResponse = Build;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListBuildsResponse)]
 pub struct ListBuilds {
-  pub query: Option<MongoDocument>,
+  #[serde(default)]
+  pub query: BuildQuery,
 }
 
 #[typeshare]

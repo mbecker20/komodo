@@ -12,12 +12,12 @@ use monitor_client::{
     },
     server::Server,
     update::{Log, UpdateStatus},
-    Operation, PermissionLevel,
+    Operation, PermissionLevel, resource::AddFilters,
   },
 };
 use mungos::{
   find::find_collect,
-  mongodb::{bson::doc, options::FindOneOptions},
+  mongodb::{bson::{doc, Document}, options::FindOneOptions},
 };
 use periphery_client::requests;
 use resolver_api::Resolve;
@@ -50,8 +50,10 @@ impl Resolve<ListDeployments, RequestUser> for State {
     ListDeployments { query }: ListDeployments,
     user: RequestUser,
   ) -> anyhow::Result<Vec<DeploymentListItem>> {
+    let mut filters = Document::new();
+    query.add_filters(&mut filters);
     <State as StateResource<Deployment>>::list_resources_for_user(
-      self, query, &user,
+      self, filters, &user,
     )
     .await
   }

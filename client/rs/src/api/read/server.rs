@@ -13,9 +13,10 @@ use crate::entities::{
       NetworkUsage, SystemComponent, SystemInformation,
       SystemProcess, SystemStatsRecord,
     },
-    Server, ServerActionState, ServerListItem, ServerStatus,
+    Server, ServerActionState, ServerListItem, ServerQuery,
+    ServerStatus,
   },
-  MongoDocument, Timelength, I64,
+  Timelength, I64,
 };
 
 use super::MonitorReadRequest;
@@ -39,12 +40,13 @@ pub type GetServerResponse = Server;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListServersResponse)]
 pub struct ListServers {
-  pub query: Option<MongoDocument>,
+  #[serde(default)]
+  pub query: ServerQuery,
 }
 
 #[typeshare]

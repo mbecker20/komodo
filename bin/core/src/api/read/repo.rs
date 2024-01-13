@@ -4,10 +4,11 @@ use monitor_client::{
   api::read::*,
   entities::{
     repo::{Repo, RepoActionState, RepoListItem},
+    resource::AddFilters,
     PermissionLevel,
   },
 };
-use mungos::mongodb::bson::doc;
+use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
@@ -38,8 +39,10 @@ impl Resolve<ListRepos, RequestUser> for State {
     ListRepos { query }: ListRepos,
     user: RequestUser,
   ) -> anyhow::Result<Vec<RepoListItem>> {
+    let mut filters = Document::new();
+    query.add_filters(&mut filters);
     <State as StateResource<Repo>>::list_resources_for_user(
-      self, query, &user,
+      self, filters, &user,
     )
     .await
   }

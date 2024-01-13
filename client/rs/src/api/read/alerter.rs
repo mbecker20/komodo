@@ -3,9 +3,8 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{
-  alerter::{Alerter, AlerterListItem},
-  MongoDocument,
+use crate::entities::alerter::{
+  Alerter, AlerterListItem, AlerterQuery,
 };
 
 use super::MonitorReadRequest;
@@ -29,12 +28,13 @@ pub type GetAlerterResponse = Alerter;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListAlertersResponse)]
 pub struct ListAlerters {
-  pub query: Option<MongoDocument>,
+  #[serde(default)]
+  pub query: AlerterQuery,
 }
 
 #[typeshare]

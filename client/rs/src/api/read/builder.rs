@@ -3,9 +3,8 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{
-  builder::{Builder, BuilderListItem},
-  MongoDocument,
+use crate::entities::builder::{
+  Builder, BuilderListItem, BuilderQuery,
 };
 
 use super::MonitorReadRequest;
@@ -29,12 +28,13 @@ pub type GetBuilderResponse = Builder;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListBuildersResponse)]
 pub struct ListBuilders {
-  pub query: Option<MongoDocument>,
+  #[serde(default)]
+  pub query: BuilderQuery,
 }
 
 #[typeshare]

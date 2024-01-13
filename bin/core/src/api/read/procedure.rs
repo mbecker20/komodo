@@ -8,9 +8,11 @@ use monitor_client::{
     ListProcedures, ListProceduresByIds, ListProceduresByIdsResponse,
     ListProceduresResponse,
   },
-  entities::{procedure::Procedure, PermissionLevel},
+  entities::{
+    procedure::Procedure, resource::AddFilters, PermissionLevel,
+  },
 };
-use mungos::mongodb::bson::doc;
+use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
@@ -41,8 +43,10 @@ impl Resolve<ListProcedures, RequestUser> for State {
     ListProcedures { query }: ListProcedures,
     user: RequestUser,
   ) -> anyhow::Result<ListProceduresResponse> {
+    let mut filters = Document::new();
+    query.add_filters(&mut filters);
     <State as StateResource<Procedure>>::list_resources_for_user(
-      self, query, &user,
+      self, filters, &user,
     )
     .await
   }
@@ -57,7 +61,7 @@ impl Resolve<ListProceduresByIds, RequestUser> for State {
   ) -> anyhow::Result<ListProceduresByIdsResponse> {
     <State as StateResource<Procedure>>::list_resources_for_user(
       self,
-      doc! { "_id": { "$in": ids } }.into(),
+      doc! { "_id": { "$in": ids } },
       &user,
     )
     .await
