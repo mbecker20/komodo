@@ -5,7 +5,9 @@ use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
-use super::resource::{Resource, ResourceListItem};
+use super::resource::{
+  AddFilters, Resource, ResourceListItem, ResourceQuery,
+};
 
 #[typeshare]
 pub type Builder = Resource<BuilderConfig, ()>;
@@ -178,3 +180,12 @@ fn aws_default_instance_type() -> String {
 fn aws_default_volume_gb() -> i32 {
   20
 }
+
+#[typeshare]
+pub type BuilderQuery = ResourceQuery<BuilderQuerySpecifics>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct BuilderQuerySpecifics {}
+
+impl AddFilters for BuilderQuerySpecifics {}

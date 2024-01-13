@@ -3,7 +3,9 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use super::resource::{Resource, ResourceListItem, ResourceQuery};
+use super::resource::{
+  AddFilters, Resource, ResourceListItem, ResourceQuery,
+};
 
 pub mod docker_image;
 pub mod docker_network;
@@ -174,6 +176,6 @@ pub type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct ServerQuerySpecifics {
-  
-}
+pub struct ServerQuerySpecifics {}
+
+impl AddFilters for ServerQuerySpecifics {}

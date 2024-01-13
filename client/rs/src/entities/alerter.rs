@@ -1,11 +1,14 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
+use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
+use strum_macros::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
-use super::resource::{Resource, ResourceListItem};
+use super::resource::{
+  AddFilters, Resource, ResourceListItem, ResourceQuery,
+};
 
 #[typeshare]
 pub type Alerter = Resource<AlerterConfig, AlerterInfo>;
@@ -27,6 +30,9 @@ pub struct AlerterInfo {
   pub is_default: bool,
 }
 
+#[typeshare(serialized_as = "AlerterConfig['type']")]
+pub type _AlerterConfigVariant = AlerterConfigVariant;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
@@ -36,7 +42,8 @@ pub struct AlerterInfo {
   Clone,
   Copy,
   Display,
-  EnumString
+  EnumString,
+  AsRefStr
 )]
 #[serde(tag = "type", content = "params")]
 pub enum AlerterConfig {
@@ -59,7 +66,8 @@ pub type _PartialSlackAlerterConfig = PartialSlackAlerterConfig;
   Clone,
   Copy,
   Display,
-  EnumString
+  EnumString,
+  AsRefStr
 )]
 #[serde(tag = "type", content = "params")]
 pub enum PartialAlerterConfig {
@@ -128,4 +136,23 @@ pub struct SlackAlerterConfig {
         "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
     ))]
   pub url: String,
+}
+
+#[typeshare]
+pub type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct AlerterQuerySpecifics {
+  pub types: Vec<_AlerterConfigVariant>,
+}
+
+impl AddFilters for AlerterQuerySpecifics {
+  fn add_filters(&self, filters: &mut Document) {
+    let types =
+      self.types.iter().map(|t| t.as_ref()).collect::<Vec<_>>();
+    if !self.types.is_empty() {
+      filters.insert("config.type", doc! { "$in": types });
+    }
+  }
 }

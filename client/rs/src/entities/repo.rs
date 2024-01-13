@@ -1,4 +1,5 @@
 use derive_builder::Builder;
+use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -6,7 +7,7 @@ use typeshare::typeshare;
 use crate::entities::I64;
 
 use super::{
-  resource::{Resource, ResourceListItem},
+  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
   SystemCommand,
 };
 
@@ -61,4 +62,21 @@ pub struct RepoActionState {
   pub pulling: bool,
   pub updating: bool,
   pub deleting: bool,
+}
+
+#[typeshare]
+pub type RepoQuery = ResourceQuery<RepoQuerySpecifics>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct RepoQuerySpecifics {
+  pub repos: Vec<String>,
+}
+
+impl AddFilters for RepoQuerySpecifics {
+  fn add_filters(&self, filters: &mut Document) {
+    if !self.repos.is_empty() {
+      filters.insert("config.repo", doc! { "$in": &self.repos });
+    }
+  }
 }
