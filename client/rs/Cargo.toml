@@ -8,8 +8,6 @@ license.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# local
-# monitor_types.workspace = true
 # mogh
 serror.workspace = true
 resolver_api.workspace = true

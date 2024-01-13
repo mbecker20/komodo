@@ -1,5 +1,7 @@
 use mongo_indexed::derive::MongoIndexed;
-use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
+use mungos::mongodb::bson::{
+  serde_helpers::hex_string_as_object_id, Document,
+};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 

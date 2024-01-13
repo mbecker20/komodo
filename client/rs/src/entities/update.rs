@@ -2,7 +2,7 @@ use async_timing_util::unix_timestamp_ms;
 use derive_variants::EnumVariants;
 use mongo_indexed::derive::MongoIndexed;
 use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id,
+  doc, serde_helpers::hex_string_as_object_id, Document,
 };
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};

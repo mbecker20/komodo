@@ -1,5 +1,5 @@
 use derive_builder::Builder;
-use mungos::mongodb::bson::doc;
+use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -7,7 +7,7 @@ use typeshare::typeshare;
 use crate::entities::I64;
 
 use super::{
-  resource::{Resource, ResourceListItem},
+  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
   EnvironmentVar, SystemCommand, Version,
 };
 
@@ -113,4 +113,42 @@ fn default_dockerfile_path() -> String {
 pub struct BuildActionState {
   pub building: bool,
   pub updating: bool,
+}
+
+#[typeshare]
+pub type BuildQuery = ResourceQuery<BuildQuerySpecifics>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct BuildQuerySpecifics {
+  #[serde(default)]
+  pub builder_ids: Vec<String>,
+
+  #[serde(default)]
+  pub repos: Vec<String>,
+
+  /// query for builds last built more recently than this timestamp
+  /// defaults to 0 which is a no op
+  #[serde(default)]
+  pub built_since: I64,
+}
+
+impl AddFilters for BuildQuerySpecifics {
+  fn add_filters(&self, filters: &mut Document) {
+    if !self.builder_ids.is_empty() {
+      filters.insert(
+        "config.builder_id",
+        doc! { "$in": &self.builder_ids },
+      );
+    }
+    if !self.repos.is_empty() {
+      filters.insert("config.repo", doc! { "$in": &self.repos });
+    }
+    if self.built_since > 0 {
+      filters.insert(
+        "info.last_built_at",
+        doc! { "$gte": self.built_since },
+      );
+    }
+  }
 }

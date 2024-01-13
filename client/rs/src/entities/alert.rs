@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use derive_variants::EnumVariants;
 use mongo_indexed::derive::MongoIndexed;
 use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id,
+  doc, Document, serde_helpers::hex_string_as_object_id,
 };
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;

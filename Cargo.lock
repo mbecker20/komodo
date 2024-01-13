@@ -1998,9 +1998,9 @@ dependencies = [
 
 [[package]]
 name = "mongo_indexed"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d973a56f5991c904e1e212816717c978e43049319b084678ee8ab0ef7992e078"
+checksum = "f0cd571ac04a8ac4751e6899f404e5d1370ec79f17609ea5a3caa823619b7513"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2011,9 +2011,9 @@ dependencies = [
 
 [[package]]
 name = "mongo_indexed_derive"
-version = "0.2.0"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "737ea2a86127af23a996114a29457517ac5e457e384629192bb7f5802ba9a848"
+checksum = "da28743409e01e8a63877563786b227285423a0f36c3c16e83f6b8226de9990e"
 dependencies = [
  "proc-macro2",
  "quote",

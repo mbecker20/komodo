@@ -1,12 +1,13 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
+use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use strum_macros::{Display, EnumString};
 use typeshare::typeshare;
 
 use super::{
-  resource::{Resource, ResourceListItem},
+  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
   EnvironmentVar, Version,
 };
 
@@ -300,4 +301,23 @@ pub struct DeploymentActionState {
   pub updating: bool,
   pub renaming: bool,
   pub deleting: bool,
+}
+
+#[typeshare]
+pub type DeploymentQuery = ResourceQuery<DeploymentQuerySpecifics>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct DeploymentQuerySpecifics {
+  #[serde(default)]
+  pub server_ids: Vec<String>,
+}
+
+impl AddFilters for DeploymentQuerySpecifics {
+  fn add_filters(&self, filters: &mut Document) {
+    if !self.server_ids.is_empty() {
+      filters
+        .insert("config.server_id", doc! { "$in": &self.server_ids });
+    }
+  }
 }

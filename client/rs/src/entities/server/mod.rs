@@ -3,7 +3,7 @@ use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use super::resource::{Resource, ResourceListItem};
+use super::resource::{Resource, ResourceListItem, ResourceQuery};
 
 pub mod docker_image;
 pub mod docker_network;
@@ -167,4 +167,13 @@ pub enum ServerStatus {
   NotOk,
   Ok,
   Disabled,
+}
+
+#[typeshare]
+pub type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct ServerQuerySpecifics {
+  
 }
