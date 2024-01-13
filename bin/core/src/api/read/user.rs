@@ -1,10 +1,15 @@
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
-  api::read::{GetUser, GetUsername, GetUsernameResponse, GetUsers},
+  api::read::{
+    GetUser, GetUsername, GetUsernameResponse, GetUsers, ListApiKeys,
+    ListApiKeysResponse,
+  },
   entities::user::User,
 };
-use mungos::{by_id::find_one_by_id, find::find_collect};
+use mungos::{
+  by_id::find_one_by_id, find::find_collect, mongodb::bson::doc,
+};
 use resolver_api::Resolve;
 
 use crate::{auth::RequestUser, state::State};
@@ -58,5 +63,22 @@ impl Resolve<GetUsers, RequestUser> for State {
       .context("failed to pull users from db")?;
     users.iter_mut().for_each(|user| user.sanitize());
     Ok(users)
+  }
+}
+
+#[async_trait]
+impl Resolve<ListApiKeys, RequestUser> for State {
+  async fn resolve(
+    &self,
+    ListApiKeys {}: ListApiKeys,
+    user: RequestUser,
+  ) -> anyhow::Result<ListApiKeysResponse> {
+    find_collect(
+      &self.db.api_keys,
+      doc! { "user_id": &user.id },
+      None,
+    )
+    .await
+    .context("failed to query db for api keys")
   }
 }

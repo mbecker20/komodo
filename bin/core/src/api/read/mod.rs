@@ -41,6 +41,7 @@ enum ReadRequest {
   GetUsers(GetUsers),
   GetUsername(GetUsername),
   GetCoreInfo(GetCoreInfo),
+  ListApiKeys(ListApiKeys),
 
   // ==== SEARCH ====
   FindResources(FindResources),
