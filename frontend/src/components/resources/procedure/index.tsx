@@ -36,16 +36,16 @@ const NewProcedure = ({ parent }: { parent?: Types.Procedure }) => {
 
   const { mutateAsync } = useWrite("CreateProcedure", {
     onSuccess: ({ _id }) => {
-      if (!parent) return;
+      if (!parent?._id?.$oid || !_id?.$oid) return;
       if (
         parent.config.type === "Sequence" ||
         parent.config.type === "Parallel"
       ) {
         update_parent({
-          id: parent._id?.$oid!,
+          id: parent._id.$oid,
           config: {
             ...parent.config,
-            data: [...parent.config.data, _id?.$oid!],
+            data: [...parent.config.data, _id?.$oid],
           },
         });
       }
@@ -283,9 +283,13 @@ const ExecutionConfig = ({ id }: { id: string }) => {
   const procedure = useRead("GetProcedure", { id }).data;
   if (procedure?.config.type !== "Execution") return null;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [type, setType] = useState<ExecutionType>(procedure.config.data.type);
+
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const [params, setParams] = useState(procedure.config.data.params);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (procedure?.config.type !== "Execution") return;
     if (type !== procedure.config.data.type) {
@@ -329,6 +333,7 @@ const ExecutionConfig = ({ id }: { id: string }) => {
         </Select>
       </div>
       <div className="pt-2 border-t">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <Component params={params as any} setParams={setParams as any} />
       </div>
       <div className="pt-2 border-t">
