@@ -13,7 +13,7 @@ const useWebsocket = () => useAtom(rws_atom);
 
 const on_message = (
   { data }: MessageEvent,
-  invalidate: ReturnType<typeof useInvalidate>,
+  invalidate: ReturnType<typeof useInvalidate>
 ) => {
   if (data == "LOGGED_IN") return console.log("logged in to ws");
   const update = JSON.parse(data) as Types.UpdateListItem;
@@ -33,7 +33,7 @@ const on_message = (
       ["GetLog"],
       ["GetDeploymentActionState"],
       ["GetDeploymentStatus"],
-      ["GetDeploymentsSummary"],
+      ["GetDeploymentsSummary"]
     );
   }
 
@@ -44,7 +44,7 @@ const on_message = (
       ["GetServerActionState"],
       ["GetServerStatus"],
       ["GetHistoricalServerStats"],
-      ["GetServersSummary"],
+      ["GetServersSummary"]
     );
   }
 
@@ -55,7 +55,7 @@ const on_message = (
       ["GetBuildActionState"],
       ["GetBuildMonthlyStats"],
       ["GetBuildVersions"],
-      ["GetBuildsSummary"],
+      ["GetBuildsSummary"]
     );
   }
 
@@ -64,7 +64,7 @@ const on_message = (
       ["ListBuilders"],
       ["GetBuilder"],
       ["GetBuilderAvailableAccounts"],
-      ["GetBuildersSummary"],
+      ["GetBuildersSummary"]
     );
   }
 
@@ -74,8 +74,10 @@ const on_message = (
 };
 
 const on_open = (ws: rws | null) => {
-  const token = localStorage.getItem("monitor-auth-token");
-  if (token && ws) ws.send(token);
+  const jwt = localStorage.getItem("monitor-auth-token");
+  if (!ws || !jwt) return;
+  const msg: Types.WsLoginMessage = { type: "Jwt", params: { jwt } };
+  if (jwt && ws) ws.send(JSON.stringify(msg));
 };
 
 export const WebsocketProvider = ({
@@ -91,7 +93,7 @@ export const WebsocketProvider = ({
   const on_open_fn = useCallback(() => on_open(ws), [ws]);
   const on_message_fn = useCallback(
     (e: MessageEvent) => on_message(e, invalidate),
-    [invalidate],
+    [invalidate]
   );
 
   useEffect(() => {
@@ -129,7 +131,7 @@ export const WsStatusIndicator = () => {
       <Circle
         className={cn(
           "w-4 h-4 stroke-none",
-          ws ? "fill-green-500" : "fill-red-500",
+          ws ? "fill-green-500" : "fill-red-500"
         )}
       />
     </Button>
