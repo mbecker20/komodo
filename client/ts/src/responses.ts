@@ -5,7 +5,6 @@ export type AuthResponses = {
   CreateLocalUser: Types.CreateLocalUserResponse;
   LoginLocalUser: Types.LoginLocalUserResponse;
   ExchangeForJwt: Types.ExchangeForJwtResponse;
-  LoginWithSecret: Types.LoginWithSecretResponse;
 };
 
 export type ReadResponses = {
@@ -14,6 +13,7 @@ export type ReadResponses = {
   GetUsers: Types.GetUsersResponse;
   GetUsername: Types.GetUsernameResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;
+  ListApiKeys: Types.ListApiKeysResponse;
 
   // ==== SEARCH ====
   FindResources: Types.FindResourcesResponse;
@@ -97,9 +97,9 @@ export type ReadResponses = {
 };
 
 export type WriteResponses = {
-  // ==== SECRET ====
-  CreateLoginSecret: Types.CreateLoginSecretResponse;
-  DeleteLoginSecret: Types.DeleteLoginSecretResponse;
+  // ==== API KEY ====
+  CreateApiKey: Types.CreateApiKeyResponse;
+  DeleteApiKey: Types.DeleteApiKeyResponse;
 
   // ==== USER ====
   PushRecentlyViewed: Types.PushRecentlyViewedResponse;

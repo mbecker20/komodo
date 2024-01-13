@@ -14,83 +14,39 @@ import {
 
 export * as Types from "./types";
 
-export type LoginOptions = {
-  jwt?: string;
-  username?: string;
-  password?: string;
-  secret?: string;
-};
+type InitOptions =
+  | { type: "jwt"; params: { jwt: string } }
+  | { type: "api-key"; params: { api_key: string; secret: string } };
 
-export function MonitorClient(base_url: string, token?: string) {
-  const state = { jwt: token ?? "" };
-
-  const auth = async <R extends AuthRequest>(
-    request: R
-  ): Promise<AuthResponses[R["type"]]> => {
-    return await axios({
-      method: "post",
-      url: base_url + "/auth",
-      data: request,
-    }).then(({ data }) => data);
+export function MonitorClient(url: string, options: InitOptions) {
+  const state = {
+    jwt: options.type === "jwt" ? options.params.jwt : undefined,
+    api_key: options.type === "api-key" ? options.params.api_key : undefined,
+    secret: options.type === "api-key" ? options.params.secret : undefined,
   };
 
-  const login = async (options: LoginOptions) => {
-    if (options.username) {
-      if (options.password) {
-        const res = await auth({
-          type: "LoginLocalUser",
-          params: { username: options.username, password: options.password },
-        });
-        state.jwt = res.jwt;
-        return res.jwt;
-      } else if (options.secret) {
-        const { jwt } = await auth({
-          type: "LoginWithSecret",
-          params: { username: options.username, secret: options.secret },
-        });
-        state.jwt = jwt;
-        return jwt;
-      }
-    }
-  };
+  const request = async <Req, Res>(path: string, request: Req) =>
+    await axios
+      .post<Res>(url + path, request, {
+        headers: {
+          Authorization: state.jwt,
+          "X-API-KEY": state.api_key,
+          "X-API-SECRET": state.secret,
+        },
+      })
+      .then(({ data }) => data);
 
-  const request = async <Req, Res>(
-    path: string,
-    request: Req
-  ): Promise<Res> => {
-    return await axios({
-      method: "post",
-      url: base_url + path,
-      headers: {
-        Authorization: `Bearer ${state.jwt}`,
-      },
-      data: request,
-    }).then(({ data }) => data);
-  };
+  const auth = async <Req extends AuthRequest>(req: Req) =>
+    await request<Req, AuthResponses[Req["type"]]>("/auth", req);
 
-  const read = async <R extends ReadRequest>(
-    req: R
-  ): Promise<ReadResponses[R["type"]]> => {
-    return await request("/read", req);
-  };
+  const read = async <Req extends ReadRequest>(req: Req) =>
+    await request<Req, ReadResponses[Req["type"]]>("/read", req);
 
-  const write = async <R extends WriteRequest>(
-    req: R
-  ): Promise<WriteResponses[R["type"]]> => {
-    return await request("/write", req);
-  };
+  const write = async <Req extends WriteRequest>(req: Req) =>
+    await request<Req, WriteResponses[Req["type"]]>("/write", req);
 
-  const execute = async <R extends ExecuteRequest>(
-    req: R
-  ): Promise<ExecuteResponses[R["type"]]> => {
-    return await request("/execute", req);
-  };
+  const execute = async <Req extends ExecuteRequest>(req: Req) =>
+    await request<Req, ExecuteResponses[Req["type"]]>("/execute", req);
 
-  return {
-    auth,
-    login,
-    read,
-    write,
-    execute,
-  };
+  return { request, auth, read, write, execute };
 }
