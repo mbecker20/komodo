@@ -11,16 +11,16 @@ async fn app() -> anyhow::Result<()> {
 
   let monitor = MonitorClient::new_from_env().await?;
 
-  // let (mut rx, _) = monitor.subscribe_to_updates(1000, 5);
+  let (mut rx, _) = monitor.subscribe_to_updates(1000, 5)?;
 
-  // loop {
-  //   let msg = rx.recv().await;
-  //   if let Err(e) = msg {
-  //     error!("🚨 recv error | {e:#?}");
-  //     break;
-  //   }
-  //   info!("{msg:#?}")
-  // }
+  loop {
+    let msg = rx.recv().await;
+    if let Err(e) = msg {
+      error!("🚨 recv error | {e:#?}");
+      break;
+    }
+    info!("{msg:#?}")
+  }
 
   Ok(())
 }
