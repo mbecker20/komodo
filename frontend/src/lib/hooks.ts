@@ -1,6 +1,7 @@
-import { client } from "@main";
-import { Types } from "@monitor/client";
+import { MONITOR_BASE_URL } from "@main";
+import { MonitorClient as Client, Types } from "@monitor/client";
 import {
+  AuthResponses,
   ExecuteResponses,
   ReadResponses,
   WriteResponses,
@@ -16,10 +17,19 @@ import { UsableResource } from "@types";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-export const useResourceParamType = () => {
-  const type = useParams().type;
-  if (!type) return undefined as unknown as UsableResource;
-  return (type[0].toUpperCase() + type.slice(1, -1)) as UsableResource;
+// ============== RESOLVER ==============
+
+const token = () => ({ jwt: localStorage.getItem("monitor-auth-token") ?? "" });
+const client = () => Client(MONITOR_BASE_URL, { type: "jwt", params: token() });
+
+export const useInvalidate = () => {
+  const qc = useQueryClient();
+  return <
+    Type extends Types.ReadRequest["type"],
+    Params extends Extract<Types.ReadRequest, { type: Type }>["params"]
+  >(
+    ...keys: Array<[Type] | [Type, Params]>
+  ) => keys.forEach((key) => qc.invalidateQueries({ queryKey: key }));
 };
 
 export const useRead = <
@@ -39,7 +49,12 @@ export const useRead = <
   type: T,
   params: P,
   config?: C
-) => useQuery([type, params], () => client.read({ type, params } as R), config);
+) =>
+  useQuery({
+    queryKey: [type, params],
+    queryFn: () => client().read({ type, params } as R),
+    ...config,
+  });
 
 export const useWrite = <
   T extends Types.WriteRequest["type"],
@@ -53,11 +68,10 @@ export const useWrite = <
   type: T,
   config?: C
 ) =>
-  useMutation([type], (params: P) => client.write({ type, params } as R), {
+  useMutation({
+    mutationKey: [type],
+    mutationFn: (params: P) => client().write({ type, params } as R),
     ...config,
-    onError: (e, v, c) => {
-      config?.onError && config.onError(e, v, c);
-    },
   });
 
 export const useExecute = <
@@ -72,23 +86,36 @@ export const useExecute = <
   type: T,
   config?: C
 ) =>
-  useMutation([type], (params: P) => client.execute({ type, params } as R), {
+  useMutation({
+    mutationKey: [type],
+    mutationFn: (params: P) => client().execute({ type, params } as R),
     ...config,
-    onError: (e, v, c) => {
-      // toast({ title: `Error - ${type} Failed`, intent: "danger" });
-      config?.onError && config.onError(e, v, c);
-    },
   });
 
-export const useInvalidate = () => {
-  const qc = useQueryClient();
+export const useAuth = <
+  T extends Types.AuthRequest["type"],
+  R extends Extract<Types.AuthRequest, { type: T }>,
+  P extends R["params"],
+  C extends Omit<
+    UseMutationOptions<AuthResponses[T], unknown, P, unknown>,
+    "mutationKey" | "mutationFn"
+  >
+>(
+  type: T,
+  config?: C
+) =>
+  useMutation({
+    mutationKey: [type],
+    mutationFn: (params: P) => client().auth({ type, params } as R),
+    ...config,
+  });
 
-  return <
-    T extends Types.ReadRequest["type"],
-    P = Extract<Types.ReadRequest, { type: T }>["params"]
-  >(
-    ...keys: Array<[T] | [T, P]>
-  ) => keys.forEach((k) => qc.invalidateQueries([...k]));
+// ============== UTILITY ==============
+
+export const useResourceParamType = () => {
+  const type = useParams().type;
+  if (!type) return undefined as unknown as UsableResource;
+  return (type[0].toUpperCase() + type.slice(1, -1)) as UsableResource;
 };
 
 export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {

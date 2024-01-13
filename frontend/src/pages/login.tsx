@@ -9,22 +9,13 @@ import {
 } from "@ui/card";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
-import { useInvalidate } from "@lib/hooks";
+import { useAuth, useInvalidate } from "@lib/hooks";
 import { useEffect, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { client } from "@main";
 import { ThemeToggle } from "@ui/theme";
 
 export const Signup = ({ setSignup }: { setSignup: (f: false) => void }) => {
-  // const { refetch } = useRead("GetUser", {});
   const [creds, set] = useState({ username: "", password: "" });
-  const { mutateAsync, isLoading } = useMutation(
-    (creds: { username: string; password: string }) =>
-      client.auth({
-        type: "CreateLocalUser",
-        params: creds,
-      })
-  );
+  const { mutateAsync, isPending } = useAuth("CreateLocalUser");
 
   const signup = async () => {
     const { jwt } = await mutateAsync(creds);
@@ -69,12 +60,12 @@ export const Signup = ({ setSignup }: { setSignup: (f: false) => void }) => {
           <CardFooter className="flex gap-4 w-full justify-end">
             <Button
               onClick={() => setSignup(false)}
-              disabled={isLoading}
+              disabled={isPending}
               variant="outline"
             >
               Log In
             </Button>
-            <Button onClick={signup} disabled={isLoading}>
+            <Button onClick={signup} disabled={isPending}>
               Sign Up
             </Button>
           </CardFooter>
@@ -84,37 +75,27 @@ export const Signup = ({ setSignup }: { setSignup: (f: false) => void }) => {
   );
 };
 
-type LoginCredentials = { username: string; password: string };
+export const Login = () => {
+  const [creds, set] = useState({ username: "", password: "" });
+  const [signup, setSignup] = useState(false);
 
-const useLogin = (creds: LoginCredentials) => {
-  const invalidate = useInvalidate();
-
-  const mutation = useMutation(
-    (creds: LoginCredentials) => client.login(creds),
-    {
-      onSuccess: (jwt) => {
-        localStorage.setItem("monitor-auth-token", jwt ?? "");
-        invalidate(["GetUser"]);
-      },
-    }
-  );
+  const inv = useInvalidate();
+  const { mutate, isPending } = useAuth("LoginLocalUser", {
+    onSuccess: ({ jwt }) => {
+      localStorage.setItem("monitor-auth-token", jwt);
+      inv(["GetUser"]);
+    },
+  });
 
   useEffect(() => {
-    const handler = (e: KeyboardEvent) =>
-      e.key === "Enter" && !mutation.isLoading && mutation.mutate(creds);
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !isPending) mutate(creds);
+    };
     addEventListener("keydown", handler);
     return () => {
       removeEventListener("keydown", handler);
     };
   });
-
-  return mutation;
-};
-
-export const Login = () => {
-  const [creds, set] = useState({ username: "", password: "" });
-  const [signup, setSignup] = useState(false);
-  const { mutate, isLoading } = useLogin(creds);
 
   if (signup) return <Signup setSignup={setSignup} />;
 
@@ -155,12 +136,12 @@ export const Login = () => {
           <CardFooter className="flex gap-4 w-full justify-end">
             <Button
               onClick={() => setSignup(true)}
-              disabled={isLoading}
+              disabled={isPending}
               variant="outline"
             >
               Signup
             </Button>
-            <Button onClick={() => mutate(creds)} disabled={isLoading}>
+            <Button onClick={() => mutate(creds)} disabled={isPending}>
               Login
             </Button>
           </CardFooter>

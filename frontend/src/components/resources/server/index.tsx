@@ -127,7 +127,7 @@ export const Server: RequiredResourceComponents = {
   Actions: () => null,
   Icon: ({ id }) => <ServerIconComponent id={id} />,
   Page: {
-    Stats: ({ id }) => <ServerStats id={id} />,
+    Stats: ({ id }) => <ServerStats server_id={id} />,
     Config: ({ id }) => <ServerConfig id={id} />,
   },
   New: () => <NewServer />,

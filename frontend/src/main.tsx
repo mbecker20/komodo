@@ -1,7 +1,6 @@
 import "globals.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { MonitorClient } from "@monitor/client";
 import { ThemeProvider } from "@ui/theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Router } from "@router";
@@ -13,9 +12,6 @@ export const MONITOR_BASE_URL =
 
 export const UPDATE_WS_URL =
   MONITOR_BASE_URL.replace("http", "ws") + "/ws/update";
-
-const token = localStorage.getItem("monitor-auth-token");
-export const client = MonitorClient(MONITOR_BASE_URL, token ?? undefined);
 
 const query_client = new QueryClient({
   defaultOptions: { queries: { retry: false } },

@@ -1,6 +1,4 @@
 import { Section } from "@components/layouts";
-import { client } from "@main";
-import { Types } from "@monitor/client";
 import {
   Card,
   CardContent,
@@ -10,39 +8,16 @@ import {
 } from "@ui/card";
 import { Progress } from "@ui/progress";
 import { Cpu, Database, LineChart, MemoryStick } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
-import { useServer } from ".";
+import { useRead } from "@lib/hooks";
+import { Types } from "@monitor/client";
 
-const useServerStats = (server_id: string) => {
-  const [stats, set] = useState<Types.AllSystemStats>();
-  const server = useServer(server_id);
+export const ServerStats = ({ server_id }: { server_id: string }) => {
+  const stats = useRead(
+    "GetAllSystemStats",
+    { server_id },
+    { refetchInterval: 1000 }
+  ).data;
 
-  const fetch = useCallback(
-    () =>
-      !!server &&
-      server.info.status !== "Disabled" &&
-      client
-        .read({ type: "GetAllSystemStats", params: { server_id: server.id } })
-        .then(set),
-    [server]
-  );
-
-  useEffect(() => {
-    fetch();
-    if (!!server && server.info.status !== "Disabled") {
-      const handle = setInterval(() => {
-        fetch();
-      }, 1000);
-      return () => {
-        clearInterval(handle);
-      };
-    }
-  }, [server, fetch]);
-
-  return stats;
-};
-
-export const ServerStats = ({ id }: { id: string }) => {
   return (
     <Section
       title="Server Stats"
@@ -50,18 +25,17 @@ export const ServerStats = ({ id }: { id: string }) => {
       actions=""
     >
       <div className="flex flex-col lg:flex-row gap-4">
-        <CPU id={id} />
-        <RAM id={id} />
-        <DISK id={id} />
+        <CPU stats={stats} />
+        <RAM stats={stats} />
+        <DISK stats={stats} />
       </div>
     </Section>
   );
 };
 
-const CPU = ({ id }: { id: string }) => {
-  const stats = useServerStats(id);
-
+const CPU = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
   const perc = stats?.cpu.cpu_perc;
+
   return (
     <Card className="w-full">
       <CardHeader className="flex-row justify-between">
@@ -78,8 +52,7 @@ const CPU = ({ id }: { id: string }) => {
   );
 };
 
-const RAM = ({ id }: { id: string }) => {
-  const stats = useServerStats(id);
+const RAM = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
   const used = stats?.basic.mem_used_gb;
   const total = stats?.basic.mem_total_gb;
 
@@ -101,8 +74,7 @@ const RAM = ({ id }: { id: string }) => {
   );
 };
 
-const DISK = ({ id }: { id: string }) => {
-  const stats = useServerStats(id);
+const DISK = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
   const used = stats?.disk.used_gb;
   const total = stats?.disk.total_gb;
 
