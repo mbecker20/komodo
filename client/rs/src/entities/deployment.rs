@@ -317,6 +317,9 @@ pub type DeploymentQuery = ResourceQuery<DeploymentQuerySpecifics>;
 pub struct DeploymentQuerySpecifics {
   #[serde(default)]
   pub server_ids: Vec<String>,
+
+  #[serde(default)]
+  pub build_ids: Vec<String>,
 }
 
 impl AddFilters for DeploymentQuerySpecifics {
@@ -324,6 +327,13 @@ impl AddFilters for DeploymentQuerySpecifics {
     if !self.server_ids.is_empty() {
       filters
         .insert("config.server_id", doc! { "$in": &self.server_ids });
+    }
+    if !self.build_ids.is_empty() {
+      filters.insert("config.image.type", "Build");
+      filters.insert(
+        "config.image.params.build_id",
+        doc! { "$in": &self.build_ids },
+      );
     }
   }
 }

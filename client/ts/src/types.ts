@@ -768,6 +768,7 @@ export type _PartialDeploymentConfig = Partial<DeploymentConfig>;
 
 export interface DeploymentQuerySpecifics {
 	server_ids?: string[];
+	build_ids?: string[];
 }
 
 export type DeploymentQuery = ResourceQuery<DeploymentQuerySpecifics>;
