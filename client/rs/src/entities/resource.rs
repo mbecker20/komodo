@@ -1,4 +1,5 @@
 use derive_builder::Builder;
+use derive_default_builder::DefaultBuilder;
 use mungos::mongodb::bson::{
   doc, serde_helpers::hex_string_as_object_id, Document,
 };
@@ -60,8 +61,10 @@ pub struct ResourceListItem<Info> {
 
 /// Passing empty Vec is the same as not filtering by that field
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct ResourceQuery<T> {
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
+)]
+pub struct ResourceQuery<T: Default> {
   #[serde(default)]
   pub names: Vec<String>,
   #[serde(default)]
@@ -76,7 +79,7 @@ pub trait AddFilters {
 
 impl AddFilters for () {}
 
-impl<T: AddFilters> AddFilters for ResourceQuery<T> {
+impl<T: AddFilters + Default> AddFilters for ResourceQuery<T> {
   fn add_filters(&self, filters: &mut Document) {
     if !self.names.is_empty() {
       filters.insert("name", doc! { "$in": &self.names });
@@ -85,43 +88,5 @@ impl<T: AddFilters> AddFilters for ResourceQuery<T> {
       filters.insert("tags", doc! { "$all": &self.tags });
     }
     self.specific.add_filters(filters);
-  }
-}
-
-#[derive(Default)]
-pub struct ResourceQueryBuilder<T> {
-  pub names: Option<Vec<String>>,
-  pub tags: Option<Vec<String>>,
-  pub specific: Option<T>,
-}
-
-impl<T: Default> ResourceQueryBuilder<T> {
-  pub fn build(self) -> ResourceQuery<T> {
-    ResourceQuery {
-      names: self.names.unwrap_or_default(),
-      tags: self.tags.unwrap_or_default(),
-      specific: self.specific.unwrap_or_default(),
-    }
-  }
-
-  pub fn names(
-    mut self,
-    names: impl Into<Vec<String>>,
-  ) -> ResourceQueryBuilder<T> {
-    self.names = Some(names.into());
-    self
-  }
-
-  pub fn tags(
-    mut self,
-    tags: impl Into<Vec<String>>,
-  ) -> ResourceQueryBuilder<T> {
-    self.tags = Some(tags.into());
-    self
-  }
-
-  pub fn specific(mut self, specific: T) -> ResourceQueryBuilder<T> {
-    self.specific = Some(specific);
-    self
   }
 }

@@ -1,3 +1,4 @@
+use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
 use mungos::mongodb::bson::{doc, Document};
 use serde::{Deserialize, Serialize};
@@ -72,7 +73,9 @@ pub struct ProcedureActionState {
 pub type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
+)]
 pub struct ProcedureQuerySpecifics {
   pub types: Vec<ProcedureConfigVariant>,
 }

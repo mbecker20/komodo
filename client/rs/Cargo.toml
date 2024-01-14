@@ -14,6 +14,7 @@ resolver_api.workspace = true
 derive_empty_traits.workspace = true
 partial_derive2.workspace = true
 derive_variants.workspace = true
+derive_default_builder.workspace = true
 mungos.workspace = true
 mongo_indexed.workspace = true
 async_timing_util.workspace = true

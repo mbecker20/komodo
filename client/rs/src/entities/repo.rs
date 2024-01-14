@@ -1,4 +1,5 @@
 use derive_builder::Builder;
+use derive_default_builder::DefaultBuilder;
 use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
@@ -71,7 +72,9 @@ pub struct RepoActionState {
 pub type RepoQuery = ResourceQuery<RepoQuerySpecifics>;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
+)]
 pub struct RepoQuerySpecifics {
   pub repos: Vec<String>,
 }

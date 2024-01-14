@@ -1,4 +1,5 @@
 use derive_builder::Builder;
+use derive_default_builder::DefaultBuilder;
 use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
@@ -122,7 +123,9 @@ pub struct BuildActionState {
 pub type BuildQuery = ResourceQuery<BuildQuerySpecifics>;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(
+  Debug, Clone, Default, Serialize, Deserialize, DefaultBuilder,
+)]
 pub struct BuildQuerySpecifics {
   #[serde(default)]
   pub builder_ids: Vec<String>,

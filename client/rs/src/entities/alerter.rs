@@ -1,4 +1,5 @@
 use derive_builder::Builder;
+use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
 use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
@@ -139,7 +140,9 @@ pub struct SlackAlerterConfig {
 pub type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
+)]
 pub struct AlerterQuerySpecifics {
   pub types: Vec<AlerterConfigVariant>,
 }
