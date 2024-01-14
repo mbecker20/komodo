@@ -1,6 +1,5 @@
-use monitor_client::entities::deployment::{
-  DeploymentQuery, DeploymentQuerySpecifics,
-};
+use monitor_client::entities::deployment::DeploymentQuerySpecifics;
+use monitor_client::entities::resource::ResourceQuery;
 use monitor_client::MonitorClient;
 use monitor_client::{
   api::{execute, read, write},
@@ -39,16 +38,14 @@ pub async fn tests() -> anyhow::Result<()> {
 
   let deps = monitor
     .read(read::ListDeployments {
-      query: DeploymentQuery {
-        names: vec![
-          String::from("haboda"),
-          String::from("actual_shit"),
-        ],
-        specific: DeploymentQuerySpecifics {
-          server_ids: vec![String::from("64b4cb8c384ffd253e375ed2")],
-        },
-        ..Default::default()
-      },
+      query: ResourceQuery::builder()
+        .names([String::from("haboda"), String::from("actual_shit")])
+        .specific(
+          DeploymentQuerySpecifics::builder()
+            // .server_ids([String::from("")])
+            .build(),
+        )
+        .build(),
       // query: Default::default(),
     })
     .await?;
