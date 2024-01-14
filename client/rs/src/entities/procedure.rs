@@ -19,11 +19,11 @@ pub type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ProcedureListItemInfo {
-  pub procedure_type: _ProcedureConfigVariant,
+  pub procedure_type: ProcedureConfigVariant,
 }
 
-#[typeshare(serialized_as = "ProcedureConfig['type']")]
-pub type _ProcedureConfigVariant = ProcedureConfigVariant;
+// #[typeshare(serialized_as = "ProcedureConfig['type']")]
+// pub type _ProcedureConfigVariant = ProcedureConfigVariant;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
@@ -74,7 +74,7 @@ pub type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ProcedureQuerySpecifics {
-  pub types: Vec<_ProcedureConfigVariant>,
+  pub types: Vec<ProcedureConfigVariant>,
 }
 
 impl AddFilters for ProcedureQuerySpecifics {

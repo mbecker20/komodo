@@ -10,14 +10,18 @@ use monitor_client::{
       DeploymentImage, DeploymentListItem, DockerContainerState,
       DockerContainerStats,
     },
+    resource::AddFilters,
     server::Server,
     update::{Log, UpdateStatus},
-    Operation, PermissionLevel, resource::AddFilters,
+    Operation, PermissionLevel,
   },
 };
 use mungos::{
   find::find_collect,
-  mongodb::{bson::{doc, Document}, options::FindOneOptions},
+  mongodb::{
+    bson::{doc, Document},
+    options::FindOneOptions,
+  },
 };
 use periphery_client::requests;
 use resolver_api::Resolve;

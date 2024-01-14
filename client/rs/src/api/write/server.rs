@@ -4,14 +4,11 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  server::{PartialServerConfig, Server},
+  server::{Server, _PartialServerConfig},
   update::Update,
 };
 
 use super::MonitorWriteRequest;
-
-#[typeshare(serialized_as = "Partial<ServerConfig>")]
-type _PartialServerConfig = PartialServerConfig;
 
 //
 

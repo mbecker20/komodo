@@ -23,6 +23,9 @@ pub struct RepoInfo {
   pub last_pulled_at: I64,
 }
 
+#[typeshare(serialized_as = "Partial<RepoConfig>")]
+pub type _PartialRepoConfig = PartialRepoConfig;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]

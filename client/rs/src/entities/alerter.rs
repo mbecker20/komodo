@@ -30,9 +30,6 @@ pub struct AlerterInfo {
   pub is_default: bool,
 }
 
-#[typeshare(serialized_as = "AlerterConfig['type']")]
-pub type _AlerterConfigVariant = AlerterConfigVariant;
-
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
@@ -144,7 +141,7 @@ pub type AlerterQuery = ResourceQuery<AlerterQuerySpecifics>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct AlerterQuerySpecifics {
-  pub types: Vec<_AlerterConfigVariant>,
+  pub types: Vec<AlerterConfigVariant>,
 }
 
 impl AddFilters for AlerterQuerySpecifics {

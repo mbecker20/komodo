@@ -4,14 +4,11 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  tag::{CustomTag, PartialCustomTag, TagColor},
+  tag::{CustomTag, TagColor, _PartialCustomTag},
   update::ResourceTarget,
 };
 
 use super::MonitorWriteRequest;
-
-#[typeshare(serialized_as = "Partial<CustomTag>")]
-type _PartialCustomTag = PartialCustomTag;
 
 //
 

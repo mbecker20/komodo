@@ -31,6 +31,9 @@ pub enum Tag {
   Custom { tag_id: String }, // filter by presence of custom tag on resource
 }
 
+#[typeshare(serialized_as = "Partial<CustomTag>")]
+pub type _PartialCustomTag = PartialCustomTag;
+
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Builder, Partial, MongoIndexed,

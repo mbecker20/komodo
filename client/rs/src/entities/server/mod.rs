@@ -29,6 +29,9 @@ pub struct ServerListItemInfo {
   pub send_temp_alerts: bool,
 }
 
+#[typeshare(serialized_as = "Partial<ServerConfig>")]
+pub type _PartialServerConfig = PartialServerConfig;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]

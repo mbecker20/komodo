@@ -27,6 +27,7 @@ function fix_types() {
     .toString()
     .replaceAll("ResourceTargetVariant", 'ResourceTarget["type"]')
 	.replaceAll("AlertDataVariant", 'AlertData["type"]')
-	.replaceAll("ProcedureConfigVariant", 'ProcedureConfig["type"]');
+	.replaceAll("ProcedureConfigVariant", 'ProcedureConfig["type"]')
+	.replaceAll("AlerterConfigVariant", 'AlerterConfig["type"]')
 	writeFileSync(types_path, fixed);
 }

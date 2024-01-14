@@ -30,6 +30,9 @@ pub struct BuildInfo {
   pub last_built_at: I64,
 }
 
+#[typeshare(serialized_as = "Partial<BuildConfig>")]
+pub type _PartialBuildConfig = PartialBuildConfig;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]

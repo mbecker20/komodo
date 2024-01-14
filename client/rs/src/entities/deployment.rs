@@ -28,6 +28,9 @@ pub struct DeploymentListItemInfo {
   pub build_id: Option<String>,
 }
 
+#[typeshare(serialized_as = "Partial<DeploymentConfig>")]
+pub type _PartialDeploymentConfig = PartialDeploymentConfig;
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
@@ -321,4 +324,3 @@ impl AddFilters for DeploymentQuerySpecifics {
     }
   }
 }
-

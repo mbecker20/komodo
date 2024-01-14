@@ -3,12 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::repo::{PartialRepoConfig, Repo};
+use crate::entities::repo::{Repo, _PartialRepoConfig};
 
 use super::MonitorWriteRequest;
-
-#[typeshare(serialized_as = "Partial<RepoConfig>")]
-type _PartialRepoConfig = PartialRepoConfig;
 
 //
 
