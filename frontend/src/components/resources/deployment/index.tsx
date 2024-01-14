@@ -34,7 +34,7 @@ const deployment_state_color = (state: Types.DockerContainerState) => {
 };
 
 const deployment_state_fill_color = (state: Types.DockerContainerState) => {
-  return `fill-${deployment_state_color(state)}`
+  return `fill-${deployment_state_color(state)}`;
 };
 
 const deployment_state_text_color = (state: Types.DockerContainerState) => {
@@ -45,7 +45,9 @@ const Icon = ({ id }: { id?: string }) => {
   const state = useDeployment(id)?.info.state;
 
   return (
-    <Rocket className={cn("w-4", state && deployment_state_fill_color(state))} />
+    <Rocket
+      className={cn("w-4", state && deployment_state_fill_color(state))}
+    />
   );
 };
 

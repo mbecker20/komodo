@@ -6,7 +6,7 @@ type IdComponent = React.FC<{ id: string }>;
 type OptionalIdComponent = React.FC<{ id?: string }>;
 
 export interface RequiredResourceComponents {
-  Icon: IdComponent;
+  Icon: OptionalIdComponent;
 
   New: React.FC;
 

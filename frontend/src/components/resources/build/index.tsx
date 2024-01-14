@@ -121,7 +121,10 @@ export const BuildComponents: RequiredResourceComponents = {
   Page: {
     Config: ({ id }) => <BuildConfig id={id} />,
   },
-  Icon,
+  Icon: ({ id }) => {
+    if (id) return <Icon id={id} />;
+    else return <Hammer className="w-4 h-4" />;
+  },
   Actions: ({ id }) => {
     const building = useRead("GetBuildActionState", { id }).data?.building;
     const { mutate, isPending } = useExecute("RunBuild");
