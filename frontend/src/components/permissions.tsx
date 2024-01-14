@@ -34,7 +34,7 @@ const NewPermission = ({ id, type }: ResourceTarget) => {
   const [user_id, setUserId] = useState<string>();
   const [permission, setPermission] = useState<Types.PermissionLevel>();
   const users = useRead("GetUsers", {}).data?.filter((u) => !u.admin);
-  const { mutate, isLoading } = useWrite("UpdateUserPermissionsOnTarget");
+  const { mutate, isPending } = useWrite("UpdateUserPermissionsOnTarget");
 
   return (
     <Dialog open={open} onOpenChange={set}>
@@ -70,7 +70,7 @@ const NewPermission = ({ id, type }: ResourceTarget) => {
             Permissions Level
             <Select
               value={permission}
-              onValueChange={(lv) => setPermission(lv as Types.PermissionLevel)}
+              onValueChange={(lv: any) => setPermission(lv as Types.PermissionLevel)}
             >
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Select Permission Level" />
@@ -94,7 +94,7 @@ const NewPermission = ({ id, type }: ResourceTarget) => {
         <DialogFooter className="flex justify-end">
           <Button
             className="gap-2"
-            disabled={isLoading}
+            disabled={isPending}
             onClick={() =>
               permission &&
               user_id &&
@@ -102,7 +102,7 @@ const NewPermission = ({ id, type }: ResourceTarget) => {
             }
           >
             Add Permissions
-            {isLoading ? (
+            {isPending ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <PlusCircle className="w-4 h-4" />
@@ -128,7 +128,7 @@ export const ResourcePermissions = ({
 
   const users = useRead("GetUsers", {}).data?.filter((u) => !u.admin);
 
-  const { mutate: update, isLoading } = useWrite(
+  const { mutate: update, isPending } = useWrite(
     "UpdateUserPermissionsOnTarget"
   );
 
@@ -154,14 +154,14 @@ export const ResourcePermissions = ({
               </CardTitle>
               <Select
                 value={permissions?.[user_id]}
-                onValueChange={(p) =>
+                onValueChange={(p: any) =>
                   update({
                     permission: p as Types.PermissionLevel,
                     user_id,
                     target: { type, id },
                   })
                 }
-                disabled={isLoading}
+                disabled={isPending}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Set Permissions" />

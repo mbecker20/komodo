@@ -16,7 +16,7 @@ interface DeploymentId {
 }
 
 export const RedeployContainer = ({ id }: DeploymentId) => {
-  const { mutate, isLoading } = useExecute("Deploy");
+  const { mutate, isPending } = useExecute("Deploy");
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === id);
   const deploying = useRead("GetDeploymentActionState", { id }).data?.deploying;
@@ -27,7 +27,7 @@ export const RedeployContainer = ({ id }: DeploymentId) => {
       //   intent="success"
       icon={<Rocket className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id: id })}
-      disabled={isLoading}
+      disabled={isPending}
       loading={deploying}
     />
   );
@@ -35,7 +35,7 @@ export const RedeployContainer = ({ id }: DeploymentId) => {
 
 const StartContainer = ({ id }: DeploymentId) => {
   const { data: d } = useRead("GetDeployment", { id });
-  const { mutate, isLoading } = useExecute("StartContainer");
+  const { mutate, isPending } = useExecute("StartContainer");
   const starting = useRead("GetDeploymentActionState", {
     id,
   }).data?.starting;
@@ -48,7 +48,7 @@ const StartContainer = ({ id }: DeploymentId) => {
       //   intent="success"
       icon={<Play className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id: id })}
-      disabled={isLoading}
+      disabled={isPending}
       loading={starting}
     />
   );
@@ -56,7 +56,7 @@ const StartContainer = ({ id }: DeploymentId) => {
 
 const StopContainer = ({ id }: DeploymentId) => {
   const { data: d } = useRead("GetDeployment", { id });
-  const { mutate, isLoading } = useExecute("StopContainer");
+  const { mutate, isPending } = useExecute("StopContainer");
   const stopping = useRead("GetDeploymentActionState", {
     id,
   }).data?.stopping;
@@ -69,7 +69,7 @@ const StopContainer = ({ id }: DeploymentId) => {
       //   intent="warning"
       icon={<Pause className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id: id })}
-      disabled={isLoading}
+      disabled={isPending}
       loading={stopping}
     />
   );
@@ -89,7 +89,7 @@ export const StartOrStopContainer = ({ id }: DeploymentId) => {
 
 export const RemoveContainer = ({ id }: DeploymentId) => {
   const deployment = useRead("GetDeployment", { id }).data;
-  const { mutate, isLoading } = useExecute("RemoveContainer");
+  const { mutate, isPending } = useExecute("RemoveContainer");
 
   const deployments = useRead("ListDeployments", {}).data;
   const state = deployments?.find((d) => d.id === id)?.info.state;
@@ -108,7 +108,7 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
       //   intent="warning"
       icon={<Trash className="h-4 w-4" />}
       onClick={() => mutate({ deployment_id: id })}
-      disabled={isLoading}
+      disabled={isPending}
       loading={removing}
     />
   );
@@ -117,7 +117,7 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
 export const DeleteDeployment = ({ id }: { id: string }) => {
   const nav = useNavigate();
   const { data: d } = useRead("GetDeployment", { id });
-  const { mutateAsync, isLoading } = useWrite("DeleteDeployment");
+  const { mutateAsync, isPending } = useWrite("DeleteDeployment");
 
   const deleting = useRead("GetDeploymentActionState", { id }).data?.deleting;
 
@@ -133,7 +133,7 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
           await mutateAsync({ id });
           nav("/");
         }}
-        disabled={isLoading}
+        disabled={isPending}
         loading={deleting}
       />
     </div>
@@ -144,7 +144,7 @@ export const RenameDeployment = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();
 
   const { toast } = useToast();
-  const { mutate, isLoading } = useWrite("RenameDeployment", {
+  const { mutate, isPending } = useWrite("RenameDeployment", {
     onSuccess: () => {
       invalidate(["ListDeployments"]);
       toast({ title: "Deployment Renamed" });
@@ -167,7 +167,7 @@ export const RenameDeployment = ({ id }: { id: string }) => {
         <ActionButton
           title="Rename"
           icon={<Pen className="w-4 h-4" />}
-          disabled={isLoading}
+          disabled={isPending}
           onClick={() => mutate({ id, name })}
         />
       </div>

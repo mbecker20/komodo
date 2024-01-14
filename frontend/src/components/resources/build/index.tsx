@@ -125,7 +125,7 @@ export const BuildComponents: RequiredResourceComponents = {
   },
   Actions: ({ id }) => {
     const building = useRead("GetBuildActionState", { id }).data?.building;
-    const { mutate, isLoading } = useExecute("RunBuild");
+    const { mutate, isPending } = useExecute("RunBuild");
     return (
       <ConfirmButton
         title={building ? "Building" : "Build"}
@@ -137,7 +137,7 @@ export const BuildComponents: RequiredResourceComponents = {
           )
         }
         onClick={() => mutate({ build_id: id })}
-        disabled={building || isLoading}
+        disabled={building || isPending}
       />
     );
   },

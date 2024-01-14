@@ -384,7 +384,7 @@ export const Procedure: RequiredResourceComponents = {
   },
   Actions: ({ id }) => {
     const running = useRead("GetProcedureActionState", { id }).data?.running;
-    const { mutate, isLoading } = useExecute("RunProcedure");
+    const { mutate, isPending } = useExecute("RunProcedure");
     return (
       <ConfirmButton
         title={running ? "Building" : "Run"}
@@ -396,7 +396,7 @@ export const Procedure: RequiredResourceComponents = {
           )
         }
         onClick={() => mutate({ procedure_id: id })}
-        disabled={running || isLoading}
+        disabled={running || isPending}
       />
     );
   },
