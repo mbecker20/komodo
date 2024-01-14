@@ -1,5 +1,5 @@
 import { useRead, useWrite } from "@lib/hooks";
-import { cn } from "@lib/utils";
+import { cn, fmt_date_with_minutes } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { MapPin, Cpu, MemoryStick, Database, ServerIcon } from "lucide-react";
@@ -122,8 +122,10 @@ const NewServer = () => {
   );
 };
 
+const Name = ({ id }: { id: string }) => <>{useServer(id)?.name}</>;
+
 export const ServerComponents: RequiredResourceComponents = {
-  Name: ({ id }) => <>{useServer(id)?.name}</>,
+  Name,
   Description: ({ id }) => <>{useServer(id)?.info.status}</>,
   Info: ({ id }) => <ServerInfo id={id} />,
   Actions: () => null,
@@ -153,8 +155,30 @@ export const ServerComponents: RequiredResourceComponents = {
               );
             },
           },
-          { header: "Region", accessorKey: "info.region" },
+          // {
+          //   header: "Description",
+          //   accessorKey: "description",
+          // },
           { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Deployments",
+            cell: ({ row: { original: { id } } }) => {
+              const count = useRead("ListDeployments", {
+                query: { specific: { server_ids: [id] } },
+              }).data?.length;
+              if (count) {
+                return <>{count}</>
+              } else {
+                return <>0</>
+              }
+            },
+          },
+          { header: "Region", accessorKey: "info.region" },
+          {
+            header: "Created",
+            accessorFn: ({ created_at }) =>
+              fmt_date_with_minutes(new Date(created_at)),
+          },
         ]}
       />
     );

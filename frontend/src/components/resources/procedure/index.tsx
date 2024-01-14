@@ -4,8 +4,10 @@ import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Execution } from "@monitor/client/dist/types";
+import { Icon } from "@radix-ui/react-select";
 import { RequiredResourceComponents, UsableResource } from "@types";
 import { Button } from "@ui/button";
+import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import {
   Select,
@@ -15,11 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Loader2, Route, Save } from "lucide-react";
+import { Link, Loader2, Route, Save } from "lucide-react";
 import React, { useEffect, useState } from "react";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
+
+const Name = ({ id }: { id: string }) => <>{useProcedure(id)?.name}</>;
 
 const get_default_data = <T extends Types.ProcedureConfig["type"]>(
   type: T
@@ -393,6 +397,33 @@ export const Procedure: RequiredResourceComponents = {
         }
         onClick={() => mutate({ procedure_id: id })}
         disabled={running || isLoading}
+      />
+    );
+  },
+  Table: () => {
+    const alerters = useRead("ListAlerters", {}).data;
+    return (
+      <DataTable
+        data={alerters ?? []}
+        columns={[
+          {
+            accessorKey: "id",
+            header: "Name",
+            cell: ({ row }) => {
+              const id = row.original.id;
+              return (
+                <Link
+                  to={`/procedures/${id}`}
+                  className="flex items-center gap-2"
+                >
+                  <Icon id={id} />
+                  <Name id={id} />
+                </Link>
+              );
+            },
+          },
+          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+        ]}
       />
     );
   },

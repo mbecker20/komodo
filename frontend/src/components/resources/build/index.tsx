@@ -3,12 +3,14 @@ import { ResourceSelector, AccountSelector } from "@components/config/util";
 import { NewResource } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
-import { fmt_verison } from "@lib/utils";
+import { fmt_date_with_minutes, fmt_version } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
+import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import { Hammer, History, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -95,9 +97,20 @@ export const BuildConfig = ({ id }: { id: string }) => {
   );
 };
 
+const Name = ({ id }: { id: string }) => <>{useBuild(id)?.name}</>;
+const Icon = ({ id }: { id?: string }) => {
+  if (!id) return <Hammer className="w-4 h-4" />;
+  const building = useRead("GetBuildActionState", { id }).data?.building;
+  const className = building
+    ? "w-4 h-4 animate-spin fill-green-500"
+    : "w-4 h-4";
+  return <Hammer className={className} />;
+};
+
 export const BuildComponents: RequiredResourceComponents = {
-  Name: ({ id }) => <>{useBuild(id)?.name}</>,
-  Description: ({ id }) => <>{fmt_verison(useBuild(id)?.info.version)}</>,
+  Name,
+  Icon,
+  Description: ({ id }) => <>{fmt_version(useBuild(id)?.info.version)}</>,
   Info: ({ id }) => {
     const ts = useBuild(id)?.info.last_built_at;
     return (
@@ -107,7 +120,6 @@ export const BuildComponents: RequiredResourceComponents = {
       </div>
     );
   },
-  Icon: () => <Hammer className="w-4 h-4" />,
   Page: {
     Config: ({ id }) => <BuildConfig id={id} />,
   },
@@ -126,6 +138,56 @@ export const BuildComponents: RequiredResourceComponents = {
         }
         onClick={() => mutate({ build_id: id })}
         disabled={building || isLoading}
+      />
+    );
+  },
+  Table: () => {
+    const builds = useRead("ListBuilds", {}).data;
+    return (
+      <DataTable
+        data={builds ?? []}
+        columns={[
+          {
+            accessorKey: "id",
+            header: "Name",
+            cell: ({ row }) => {
+              const id = row.original.id;
+              return (
+                <Link to={`/builds/${id}`} className="flex items-center gap-2">
+                  <Icon id={id} />
+                  <Name id={id} />
+                </Link>
+              );
+            },
+          },
+          {
+            header: "Deployments",
+            cell: ({ row }) => {
+              const deps = useRead("ListDeployments", {
+                query: { specific: { build_ids: [row.original.id] } },
+              })?.data?.map((d) => (
+                <Link to={`/deployments/${d.id}`}>{d.name}</Link>
+              ));
+              return <div className="flex items-center gap-2">{deps}</div>;
+            },
+          },
+          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Last Built",
+            accessorFn: ({ info: { last_built_at } }) => {
+              if (last_built_at > 0) {
+                return fmt_date_with_minutes(new Date(last_built_at));
+              } else {
+                return "never";
+              }
+            },
+          },
+          {
+            header: "Created",
+            accessorFn: ({ created_at }) =>
+              fmt_date_with_minutes(new Date(created_at)),
+          },
+        ]}
       />
     );
   },

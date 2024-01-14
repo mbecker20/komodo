@@ -20,7 +20,7 @@ import {
 import { Link } from "react-router-dom";
 import { Types } from "@monitor/client";
 import { Section } from "@components/layouts";
-import { fmt_update_date, fmt_verison } from "@lib/utils";
+import { fmt_update_date, fmt_version } from "@lib/utils";
 import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateStatus } from "@monitor/client/dist/types";
 
@@ -56,7 +56,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
             <CardTitle>{update.operation}</CardTitle>
             <CardDescription className="flex items-center gap-2">
               <Milestone className="w-4 h-4" />
-              {fmt_verison(update.version)}
+              {fmt_version(update.version)}
             </CardDescription>
           </div>
           <Icon />

@@ -3,7 +3,9 @@ import { InputList, ResourceSelector } from "@components/config/util";
 import { NewResource } from "@components/layouts";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
+import { Icon } from "@radix-ui/react-select";
 import { RequiredResourceComponents } from "@types";
+import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import {
   Select,
@@ -13,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Cloud, Bot, Factory } from "lucide-react";
+import { Cloud, Bot, Factory, Link } from "lucide-react";
 import { useState } from "react";
 
 const useBuilder = (id?: string) =>
@@ -138,9 +140,10 @@ const NewBuilder = () => {
     </NewResource>
   );
 };
+const Name = ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>;
 
 export const Builder: RequiredResourceComponents = {
-  Name: ({ id }) => <>{useBuilder(id)?.name}</>,
+  Name,
   Description: ({ id }) => <>{id}</>,
   Info: ({ id }) => (
     <>
@@ -161,6 +164,33 @@ export const Builder: RequiredResourceComponents = {
       if (config?.type === "Aws") return <AwsBuilderConfig id={id} />;
       if (config?.type === "Server") return <ServerBuilderConfig id={id} />;
     },
+  },
+  Table: () => {
+    const alerters = useRead("ListAlerters", {}).data;
+    return (
+      <DataTable
+        data={alerters ?? []}
+        columns={[
+          {
+            accessorKey: "id",
+            header: "Name",
+            cell: ({ row }) => {
+              const id = row.original.id;
+              return (
+                <Link
+                  to={`/builders/${id}`}
+                  className="flex items-center gap-2"
+                >
+                  <Icon id={id} />
+                  <Name id={id} />
+                </Link>
+              );
+            },
+          },
+          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+        ]}
+      />
+    );
   },
   Actions: () => null,
   New: () => <NewBuilder />,

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigItem, ResourceSelector } from "@components/config/util";
 import { useRead } from "@lib/hooks";
-import { fmt_verison } from "@lib/utils";
+import { fmt_version } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Input } from "@ui/input";
 import {
@@ -40,7 +40,7 @@ const BuildVersionSelector = ({
             key={JSON.stringify(v.version) + v.ts}
             value={JSON.stringify(v.version)}
           >
-            {fmt_verison(v.version)}
+            {fmt_version(v.version)}
           </SelectItem>
         ))}
       </SelectContent>

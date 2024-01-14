@@ -2,7 +2,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
-import { cn } from "@lib/utils";
+import { cn, fmt_date_with_minutes } from "@lib/utils";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 
@@ -26,18 +26,27 @@ export const useDeployment = (id?: string) =>
     (d) => d.id === id
   );
 
+const deployment_state_color = (state: Types.DockerContainerState) => {
+  if (state === Types.DockerContainerState.Running) return "green-500";
+  if (state === Types.DockerContainerState.Paused) return "orange-500";
+  if (state === Types.DockerContainerState.NotDeployed) return "blue-500";
+  return "red-500";
+};
+
+const deployment_state_fill_color = (state: Types.DockerContainerState) => {
+  return `fill-${deployment_state_color(state)}`
+};
+
+const deployment_state_text_color = (state: Types.DockerContainerState) => {
+  return `text-${deployment_state_color(state)}`;
+};
+
 const Icon = ({ id }: { id?: string }) => {
   const state = useDeployment(id)?.info.state;
 
-  const color = () => {
-    if (state === Types.DockerContainerState.Running) return "fill-green-500";
-    if (state === Types.DockerContainerState.Paused) return "fill-orange-500";
-    if (state === Types.DockerContainerState.NotDeployed)
-      return "fill-blue-500";
-    return "fill-red-500";
-  };
-
-  return <Rocket className={cn("w-4", state && color())} />;
+  return (
+    <Rocket className={cn("w-4", state && deployment_state_fill_color(state))} />
+  );
 };
 
 const Name = ({ id }: { id: string }) => <>{useDeployment(id)?.name}</>;
@@ -124,12 +133,17 @@ export const Deployment: RequiredResourceComponents = {
                   to={`/deployments/${id}`}
                   className="flex items-center gap-2"
                 >
-                  <Icon id={id} />
-                  <Name id={id} />
+                  <ResourceComponents.Deployment.Icon id={id} />
+                  <ResourceComponents.Deployment.Name id={id} />
                 </Link>
               );
             },
           },
+          // {
+          //   header: "Description",
+          //   accessorKey: "description",
+          // },
+          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
           {
             header: "Server",
             cell: ({ row }) => {
@@ -159,7 +173,21 @@ export const Deployment: RequiredResourceComponents = {
             accessorKey: "info.image",
             header: "Image",
           },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Status",
+            cell: ({ row }) => {
+              const status = row.original.info.status;
+              if (!status) return null;
+              const state = row.original.info.state;
+              const color = deployment_state_text_color(state);
+              return <div className={color}>{status}</div>;
+            },
+          },
+          {
+            header: "Created",
+            accessorFn: ({ created_at }) =>
+              fmt_date_with_minutes(new Date(created_at)),
+          },
         ]}
       />
     );

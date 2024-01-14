@@ -2,15 +2,19 @@ import { ConfigInner } from "@components/config";
 import { AccountSelector, ResourceSelector } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
+import { Icon } from "@radix-ui/react-select";
 import { RequiredResourceComponents } from "@types";
-import { GitBranch } from "lucide-react";
+import { DataTable } from "@ui/data-table";
+import { GitBranch, Link } from "lucide-react";
 import { useState } from "react";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
 
+const Name = ({ id }: { id: string }) => <>{useRepo(id)?.name}</>;
+
 export const Repo: RequiredResourceComponents = {
-  Name: ({ id }) => <>{useRepo(id)?.name}</>,
+  Name,
   Description: ({ id }) => <>{id}</>,
   Info: ({ id }) => <>{id}</>,
   Icon: () => <GitBranch className="w-4 h-4" />,
@@ -55,6 +59,33 @@ export const Repo: RequiredResourceComponents = {
         />
       );
     },
+  },
+  Table: () => {
+    const alerters = useRead("ListAlerters", {}).data;
+    return (
+      <DataTable
+        data={alerters ?? []}
+        columns={[
+          {
+            accessorKey: "id",
+            header: "Name",
+            cell: ({ row }) => {
+              const id = row.original.id;
+              return (
+                <Link
+                  to={`/repos/${id}`}
+                  className="flex items-center gap-2"
+                >
+                  <Icon id={id} />
+                  <Name id={id} />
+                </Link>
+              );
+            },
+          },
+          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+        ]}
+      />
+    );
   },
   Actions: () => null,
   New: () => null,

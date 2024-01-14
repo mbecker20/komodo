@@ -16,7 +16,7 @@ import {
 } from "@ui/card";
 import { ReactNode } from "react";
 import { useRead } from "@lib/hooks";
-import { fmt_duration, fmt_verison } from "@lib/utils";
+import { fmt_duration, fmt_version } from "@lib/utils";
 import { ResourceComponents } from "@components/resources";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
@@ -53,7 +53,7 @@ export const UpdateDetails = ({
               .split("_")
               .map((s) => s[0].toUpperCase() + s.slice(1))
               .join(" ")}{" "}
-            {fmt_verison(update.version)}
+            {fmt_version(update.version)}
           </SheetTitle>
           <SheetDescription className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -68,7 +68,7 @@ export const UpdateDetails = ({
               {update.version && (
                 <div className="flex items-center gap-2">
                   <Milestone className="w-4 h-4" />
-                  {fmt_verison(update.version)}
+                  {fmt_version(update.version)}
                 </div>
               )}
             </div>
