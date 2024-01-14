@@ -46,10 +46,7 @@ export const UpdateDetails = ({
   return (
     <Sheet>
       <SheetTrigger asChild>{children}</SheetTrigger>
-      <SheetContent
-        side="right"
-        className="overflow-y-auto w-[100vw] md:w-[75vw] lg:w-[50vw]"
-      >
+      <SheetContent className="overflow-y-auto w-[100vw] md:w-[75vw] lg:w-[50vw]">
         <SheetHeader className="mb-4">
           <SheetTitle>
             {update.operation

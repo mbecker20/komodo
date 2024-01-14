@@ -66,7 +66,7 @@ interface PageProps {
 }
 
 export const Page = ({ title, subtitle, actions, children }: PageProps) => (
-  <div className="flex flex-col gap-12 container py-16">
+  <div className="flex flex-col gap-16 container py-8">
     <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 lg:items-start justify-between">
       <div className="flex flex-col gap-2">
         <h1 className="text-4xl">{title}</h1>
