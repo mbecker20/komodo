@@ -15,7 +15,7 @@ import { AlarmClock, Link } from "lucide-react";
 import { useState } from "react";
 import { ConfigInner } from "@components/config";
 import { DataTable } from "@ui/data-table";
-import { Icon } from "@radix-ui/react-select";
+import { ResourceComponents } from "..";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -108,10 +108,8 @@ const CustomAlerterConfig = ({ id }: { id: string }) => {
   );
 };
 
-const Name = ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>;
-
 export const Alerter: RequiredResourceComponents = {
-  Name,
+  Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
   Description: ({ id }) => <>{useAlerter(id)?.info.alerter_type} alerter</>,
   Info: ({ id }) => <>{id}</>,
   Icon: () => <AlarmClock className="w-4 h-4" />,
@@ -135,9 +133,12 @@ export const Alerter: RequiredResourceComponents = {
             cell: ({ row }) => {
               const id = row.original.id;
               return (
-                <Link to={`/alerters/${id}`} className="flex items-center gap-2">
-                  <Icon id={id} />
-                  <Name id={id} />
+                <Link
+                  to={`/alerters/${id}`}
+                  className="flex items-center gap-2"
+                >
+                  <ResourceComponents.Alerter.Icon id={id} />
+                  <ResourceComponents.Alerter.Name id={id} />
                 </Link>
               );
             },

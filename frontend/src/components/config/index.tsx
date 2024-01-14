@@ -7,6 +7,13 @@ import { Section } from "@components/layouts";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
 import { History, Settings } from "lucide-react";
 import { Fragment, ReactNode, SetStateAction, useState } from "react";
 
@@ -14,7 +21,7 @@ const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
 
 export const ConfigAgain = <
-  T extends Types.Resource<unknown, unknown>["config"],
+  T extends Types.Resource<unknown, unknown>["config"]
 >({
   config,
   update,
@@ -83,17 +90,20 @@ const ConfigLayout = <T extends Types.Resource<unknown, unknown>["config"]>({
   children,
   onConfirm,
   onReset,
+  selector,
 }: {
   content: Partial<T>;
   children: ReactNode;
   onConfirm: () => void;
   onReset: () => void;
+  selector?: ReactNode;
 }) => (
   <Section
     title="Config"
     icon={<Settings className="w-4 h-4" />}
     actions={
       <div className="flex gap-2">
+        {selector}
         <Button
           variant="outline"
           onClick={onReset}
@@ -138,9 +148,27 @@ export const ConfigInner = <T,>({
   const [show, setShow] = useState(keys(components)[0]);
 
   return (
-    <ConfigLayout content={update} onConfirm={onSave} onReset={() => set({})}>
+    <ConfigLayout
+      content={update}
+      onConfirm={onSave}
+      onReset={() => set({})}
+      selector={
+        <Select value={show} onValueChange={setShow}>
+          <SelectTrigger className="w-32 capitalize lg:hidden">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="w-32">
+            {keys(components).map((key) => (
+              <SelectItem value={key} key={key} className="capitalize">
+                {key}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      }
+    >
       <div className="flex gap-4">
-        <div className="flex flex-col gap-4 w-[300px]">
+        <div className="hidden lg:flex flex-col gap-4 w-[300px]">
           {keys(components).map((tab) => (
             <Button
               key={tab}
@@ -156,7 +184,7 @@ export const ConfigInner = <T,>({
           {Object.entries(components[show]).map(([k, v]) => (
             <Card className="w-full" key={k}>
               <CardHeader className="border-b">
-                <CardTitle className="capitalize">{k}</CardTitle>
+                <CardTitle className="capitalize">{k} Settings</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4 mt-4">
                 <ConfigAgain

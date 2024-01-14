@@ -55,7 +55,7 @@ export const ConfigInput = ({
 }) => (
   <ConfigItem label={label}>
     <Input
-      className="max-w-[400px]"
+      className="max-w-[75%] lg:max-w-[400px]"
       type={typeof value === "number" ? "number" : undefined}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -163,7 +163,7 @@ export const ResourceSelector = ({
 
   return (
     <Select value={name ?? undefined} onValueChange={onSelect}>
-      <SelectTrigger className="w-full lg:w-[300px]">
+      <SelectTrigger className="w-full lg:w-[300px] max-w-[50%]">
         {name ?? `Select ${type}`}
       </SelectTrigger>
       <SelectContent>
@@ -201,7 +201,10 @@ export const AccountSelector = ({
         value={type === "Builder" ? selected || undefined : selected}
         onValueChange={onSelect}
       >
-        <SelectTrigger className="w-full lg:w-[300px]" disabled={!id}>
+        <SelectTrigger
+          className="w-full lg:w-[300px] max-w-[50%]"
+          disabled={!id}
+        >
           <SelectValue placeholder="Select Account" />
         </SelectTrigger>
         <SelectContent>

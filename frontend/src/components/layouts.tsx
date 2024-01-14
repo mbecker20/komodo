@@ -33,22 +33,22 @@ export const Layout = () => {
     <>
       <div className="sticky top-0 border-b bg-background z-50 w-full">
         <div className="container flex items-center justify-between py-4 gap-8">
-          <Link to={"/"} className="text-2xl tracking-widest">
-            MONITOR
-          </Link>
-          <div className="flex items-center justify-between w-full">
-            <div className="hidden md:flex md:gap-4">
+          <div className="flex items-center gap-4">
+            <Link to={"/"} className="text-2xl tracking-widest">
+              MONITOR
+            </Link>
+            <div className="flex gap-4">
               <ResourceTypeDropdown />
               {type && <ResourcesDropdown />}
             </div>
-            <div className="flex md:gap-4">
-              <Omnibar />
-              <div className="flex">
-                <WsStatusIndicator />
-                <HeaderUpdates />
-                <ThemeToggle />
-                <Logout />
-              </div>
+          </div>
+          <div className="flex md:gap-4">
+            <Omnibar />
+            <div className="flex">
+              <WsStatusIndicator />
+              <HeaderUpdates />
+              <ThemeToggle />
+              <Logout />
             </div>
           </div>
         </div>

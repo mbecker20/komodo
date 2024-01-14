@@ -68,10 +68,10 @@ export const Omnibar = () => {
       <Button
         variant="outline"
         onClick={() => set(true)}
-        className="flex items-center gap-4 md:w-72 justify-start"
+        className="flex items-center gap-4 lg:w-72 justify-start"
       >
         <Search className="w-4 h-4" />{" "}
-        <span className="text-muted-foreground hidden md:block">
+        <span className="text-muted-foreground hidden lg:block">
           Search {"(shift+s)"}
         </span>
       </Button>

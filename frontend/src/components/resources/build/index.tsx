@@ -98,8 +98,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
 };
 
 const Name = ({ id }: { id: string }) => <>{useBuild(id)?.name}</>;
-const Icon = ({ id }: { id?: string }) => {
-  if (!id) return <Hammer className="w-4 h-4" />;
+const Icon = ({ id }: { id: string }) => {
   const building = useRead("GetBuildActionState", { id }).data?.building;
   const className = building
     ? "w-4 h-4 animate-spin fill-green-500"
@@ -109,7 +108,6 @@ const Icon = ({ id }: { id?: string }) => {
 
 export const BuildComponents: RequiredResourceComponents = {
   Name,
-  Icon,
   Description: ({ id }) => <>{fmt_version(useBuild(id)?.info.version)}</>,
   Info: ({ id }) => {
     const ts = useBuild(id)?.info.last_built_at;
@@ -123,6 +121,7 @@ export const BuildComponents: RequiredResourceComponents = {
   Page: {
     Config: ({ id }) => <BuildConfig id={id} />,
   },
+  Icon,
   Actions: ({ id }) => {
     const building = useRead("GetBuildActionState", { id }).data?.building;
     const { mutate, isPending } = useExecute("RunBuild");
@@ -161,16 +160,22 @@ export const BuildComponents: RequiredResourceComponents = {
             },
           },
           {
-            header: "Deployments",
-            cell: ({ row }) => {
-              const deps = useRead("ListDeployments", {
-                query: { specific: { build_ids: [row.original.id] } },
-              })?.data?.map((d) => (
-                <Link to={`/deployments/${d.id}`}>{d.name}</Link>
-              ));
-              return <div className="flex items-center gap-2">{deps}</div>;
+            header: "Version",
+            accessorFn: ({ info }) => {
+              return fmt_version(info.version);
             },
           },
+          // {
+          //   header: "Deployments",
+          //   cell: ({ row }) => {
+          //     const deps = useRead("ListDeployments", {
+          //       query: { specific: { build_ids: [row.original.id] } },
+          //     })?.data?.map((d) => (
+          //       <Link to={`/deployments/${d.id}`}>{d.name}</Link>
+          //     ));
+          //     return <div className="flex items-center gap-2">{deps}</div>;
+          //   },
+          // },
           { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
           {
             header: "Last Built",
