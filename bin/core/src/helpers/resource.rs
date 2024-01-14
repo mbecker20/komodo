@@ -195,8 +195,11 @@ impl StateResource<Server> for State {
   ) -> anyhow::Result<ServerListItem> {
     let status = self.server_status_cache.get(&server.id).await;
     Ok(ServerListItem {
-      id: server.id,
       name: server.name,
+      created_at: ObjectId::from_str(&server.id)?
+        .timestamp()
+        .timestamp_millis(),
+      id: server.id,
       tags: server.tags,
       resource_type: ResourceTargetVariant::Server,
       info: ServerListItemInfo {
@@ -245,8 +248,11 @@ impl StateResource<Deployment> for State {
       DeploymentImage::Image { image } => (image, None),
     };
     Ok(DeploymentListItem {
-      id: deployment.id,
       name: deployment.name,
+      created_at: ObjectId::from_str(&deployment.id)?
+        .timestamp()
+        .timestamp_millis(),
+      id: deployment.id,
       tags: deployment.tags,
       resource_type: ResourceTargetVariant::Deployment,
       info: DeploymentListItemInfo {
@@ -282,8 +288,11 @@ impl StateResource<Build> for State {
     build: Build,
   ) -> anyhow::Result<BuildListItem> {
     Ok(BuildListItem {
-      id: build.id,
       name: build.name,
+      created_at: ObjectId::from_str(&build.id)?
+        .timestamp()
+        .timestamp_millis(),
+      id: build.id,
       tags: build.tags,
       resource_type: ResourceTargetVariant::Build,
       info: BuildListItemInfo {
@@ -311,8 +320,11 @@ impl StateResource<Repo> for State {
     repo: Repo,
   ) -> anyhow::Result<RepoListItem> {
     Ok(RepoListItem {
-      id: repo.id,
       name: repo.name,
+      created_at: ObjectId::from_str(&repo.id)?
+        .timestamp()
+        .timestamp_millis(),
+      id: repo.id,
       tags: repo.tags,
       resource_type: ResourceTargetVariant::Repo,
       info: RepoInfo {
@@ -348,8 +360,11 @@ impl StateResource<Builder> for State {
     };
 
     Ok(BuilderListItem {
-      id: builder.id,
       name: builder.name,
+      created_at: ObjectId::from_str(&builder.id)?
+        .timestamp()
+        .timestamp_millis(),
+      id: builder.id,
       tags: builder.tags,
       resource_type: ResourceTargetVariant::Builder,
       info: BuilderListItemInfo {
@@ -381,8 +396,11 @@ impl StateResource<Alerter> for State {
       AlerterConfig::Slack(_) => "slack",
     };
     Ok(AlerterListItem {
-      id: alerter.id,
       name: alerter.name,
+      created_at: ObjectId::from_str(&alerter.id)?
+        .timestamp()
+        .timestamp_millis(),
+      id: alerter.id,
       tags: alerter.tags,
       resource_type: ResourceTargetVariant::Alerter,
       info: AlerterListItemInfo {
@@ -410,8 +428,11 @@ impl StateResource<Procedure> for State {
     procedure: Procedure,
   ) -> anyhow::Result<ProcedureListItem> {
     Ok(ProcedureListItem {
-      id: procedure.id,
       name: procedure.name,
+      created_at: ObjectId::from_str(&procedure.id)?
+        .timestamp()
+        .timestamp_millis(),
+      id: procedure.id,
       tags: procedure.tags,
       resource_type: ResourceTargetVariant::Alerter,
       info: ProcedureListItemInfo {

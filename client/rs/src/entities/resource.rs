@@ -53,6 +53,7 @@ pub struct ResourceListItem<Info> {
   #[serde(rename = "type")]
   pub resource_type: ResourceTargetVariant,
   pub name: String,
+  pub created_at: I64,
   pub tags: Vec<String>,
   pub info: Info,
 }
@@ -84,5 +85,43 @@ impl<T: AddFilters> AddFilters for ResourceQuery<T> {
       filters.insert("tags", doc! { "$all": &self.tags });
     }
     self.specific.add_filters(filters);
+  }
+}
+
+#[derive(Default)]
+pub struct ResourceQueryBuilder<T> {
+  pub names: Option<Vec<String>>,
+  pub tags: Option<Vec<String>>,
+  pub specific: Option<T>,
+}
+
+impl<T: Default> ResourceQueryBuilder<T> {
+  pub fn build(self) -> ResourceQuery<T> {
+    ResourceQuery {
+      names: self.names.unwrap_or_default(),
+      tags: self.tags.unwrap_or_default(),
+      specific: self.specific.unwrap_or_default(),
+    }
+  }
+
+  pub fn names(
+    mut self,
+    names: impl Into<Vec<String>>,
+  ) -> ResourceQueryBuilder<T> {
+    self.names = Some(names.into());
+    self
+  }
+
+  pub fn tags(
+    mut self,
+    tags: impl Into<Vec<String>>,
+  ) -> ResourceQueryBuilder<T> {
+    self.tags = Some(tags.into());
+    self
+  }
+
+  pub fn specific(mut self, specific: T) -> ResourceQueryBuilder<T> {
+    self.specific = Some(specific);
+    self
   }
 }

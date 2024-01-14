@@ -1,3 +1,6 @@
+use monitor_client::entities::deployment::{
+  DeploymentQuery, DeploymentQuerySpecifics,
+};
 use monitor_client::MonitorClient;
 use monitor_client::{
   api::{execute, read, write},
@@ -10,8 +13,6 @@ use monitor_client::{
 #[allow(unused)]
 pub async fn tests() -> anyhow::Result<()> {
   dotenv::dotenv().ok();
-
-  // create_secret().await?;
 
   let monitor = MonitorClient::new_from_env().await?;
 
@@ -29,9 +30,29 @@ pub async fn tests() -> anyhow::Result<()> {
   // let updates = monitor.read(read::ListUpdates { query: None, page: 0 }).await?;
   // println!("{updates:#?}");
 
-  let dep_summary =
-    monitor.read(read::GetDeploymentsSummary {}).await?;
-  println!("{dep_summary:#?}");
+  // let dep_summary =
+  //   monitor.read(read::GetDeploymentsSummary {}).await?;
+  // println!("{dep_summary:#?}");
+
+  // let deps = monitor.read(read::ListDeployments::default()).await?;
+  // println!("{deps:#?}");
+
+  let deps = monitor
+    .read(read::ListDeployments {
+      query: DeploymentQuery {
+        names: vec![
+          String::from("haboda"),
+          String::from("actual_shit"),
+        ],
+        specific: DeploymentQuerySpecifics {
+          server_ids: vec![String::from("64b4cb8c384ffd253e375ed2")],
+        },
+        ..Default::default()
+      },
+      // query: Default::default(),
+    })
+    .await?;
+  println!("{deps:#?}");
 
   Ok(())
 }
@@ -76,8 +97,7 @@ async fn create_build(monitor: &MonitorClient) -> anyhow::Result<()> {
 
 #[allow(unused)]
 async fn create_repo(monitor: &MonitorClient) -> anyhow::Result<()> {
-  let mut res =
-    monitor.read(read::ListServers::default()).await?;
+  let mut res = monitor.read(read::ListServers::default()).await?;
   let server_id = res.pop().unwrap().id;
 
   let repo = monitor
