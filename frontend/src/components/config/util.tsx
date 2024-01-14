@@ -206,7 +206,7 @@ export const AccountSelector = ({
         </SelectTrigger>
         <SelectContent>
           {type === "Server" && (
-            <SelectItem value={""}>Same as build</SelectItem>
+            <SelectItem value={" "}>Same as build</SelectItem>
           )}
           {accounts?.[account_type]?.map((account) => (
             <SelectItem key={account} value={account}>

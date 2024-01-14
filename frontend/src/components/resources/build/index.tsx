@@ -95,7 +95,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
   );
 };
 
-export const Build: RequiredResourceComponents = {
+export const BuildComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useBuild(id)?.name}</>,
   Description: ({ id }) => <>{fmt_verison(useBuild(id)?.info.version)}</>,
   Info: ({ id }) => {

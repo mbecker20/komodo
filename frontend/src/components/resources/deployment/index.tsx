@@ -18,49 +18,59 @@ import {
 import { Input } from "@ui/input";
 import { DeploymentLogs } from "./logs";
 import { Link } from "react-router-dom";
+import { DataTable } from "@ui/data-table";
+import { ResourceComponents } from "..";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
     (d) => d.id === id
   );
 
+const Icon = ({ id }: { id?: string }) => {
+  const state = useDeployment(id)?.info.state;
+
+  const color = () => {
+    if (state === Types.DockerContainerState.Running) return "fill-green-500";
+    if (state === Types.DockerContainerState.Paused) return "fill-orange-500";
+    if (state === Types.DockerContainerState.NotDeployed)
+      return "fill-blue-500";
+    return "fill-red-500";
+  };
+
+  return <Rocket className={cn("w-4", state && color())} />;
+};
+
+const Name = ({ id }: { id: string }) => <>{useDeployment(id)?.name}</>;
+const Description = ({ id }: { id: string }) => (
+  <>{useDeployment(id)?.info.status}</>
+);
+
+const Info = ({ id }: { id: string }) => {
+  const info = useDeployment(id)?.info;
+  const server = useServer(info?.server_id);
+
+  return (
+    <>
+      <Link
+        to={info?.build_id ? `/builds/${info.build_id}` : "."}
+        className="flex items-center gap-2"
+      >
+        <HardDrive className="w-4 h-4" />
+        {useDeployment(id)?.info.image || "N/A"}
+      </Link>
+      <Link to={`/servers/${server?.id}`} className="flex items-center gap-2">
+        <Server className="w-4 h-4" />
+        {server?.name ?? "N/A"}
+      </Link>
+    </>
+  );
+};
+
 export const Deployment: RequiredResourceComponents = {
-  Name: ({ id }) => <>{useDeployment(id)?.name}</>,
-  Description: ({ id }) => (
-    <>{useDeployment(id)?.info.status ?? "Not Deployed"}</>
-  ),
-  Info: ({ id }) => {
-    const info = useDeployment(id)?.info;
-    const server = useServer(info?.server_id);
-
-    return (
-      <>
-        <Link
-          to={info?.build_id ? `/builds/${info.build_id}` : "."}
-          className="flex items-center gap-2"
-        >
-          <HardDrive className="w-4 h-4" />
-          {useDeployment(id)?.info.image || "N/A"}
-        </Link>
-        <Link to={`/servers/${server?.id}`} className="flex items-center gap-2">
-          <Server className="w-4 h-4" />
-          {server?.name ?? "N/A"}
-        </Link>
-      </>
-    );
-  },
-  Icon: ({ id }) => {
-    const s = useDeployment(id)?.info.state;
-
-    const color = () => {
-      if (s === Types.DockerContainerState.Running) return "fill-green-500";
-      if (s === Types.DockerContainerState.Paused) return "fill-orange-500";
-      if (s === Types.DockerContainerState.NotDeployed) return "fill-blue-500";
-      return "fill-red-500";
-    };
-
-    return <Rocket className={cn("w-4 h-4", id && color())} />;
-  },
+  Name,
+  Description,
+  Info,
+  Icon,
   Actions: ({ id }) => (
     <div className="flex gap-4">
       <RedeployContainer id={id} />
@@ -96,6 +106,62 @@ export const Deployment: RequiredResourceComponents = {
           />
         </div>
       </NewResource>
+    );
+  },
+  Table: () => {
+    const deployments = useRead("ListDeployments", {}).data;
+    return (
+      <DataTable
+        data={deployments ?? []}
+        columns={[
+          {
+            accessorKey: "id",
+            header: "Name",
+            cell: ({ row }) => {
+              const id = row.original.id;
+              return (
+                <Link
+                  to={`/deployments/${id}`}
+                  className="flex items-center gap-2"
+                >
+                  <Icon id={id} />
+                  <Name id={id} />
+                </Link>
+              );
+            },
+          },
+          {
+            header: "Server",
+            cell: ({ row }) => {
+              const id = row.original.info.server_id;
+              return (
+                <Link to={`/servers/${id}`} className="flex items-center gap-2">
+                  <ResourceComponents.Server.Icon id={id} />
+                  <ResourceComponents.Server.Name id={id} />
+                </Link>
+              );
+            },
+          },
+          {
+            header: "Build",
+            cell: ({ row }) => {
+              const id = row.original.info.build_id;
+              if (!id) return null;
+              return (
+                <Link to={`/builds/${id}`} className="flex items-center gap-2">
+                  <ResourceComponents.Build.Icon id={id} />
+                  <ResourceComponents.Build.Name id={id} />
+                </Link>
+              );
+            },
+          },
+          {
+            accessorKey: "info.image",
+            header: "Image",
+          },
+          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+        ]}
+      />
     );
   },
 };

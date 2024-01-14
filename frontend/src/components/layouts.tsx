@@ -87,7 +87,7 @@ interface SectionProps {
 
 export const Section = ({ title, icon, actions, children }: SectionProps) => (
   <div className="flex flex-col gap-2">
-    <div className="flex items-start justify-between min-h-[40px]">
+    <div className="flex items-start justify-between">
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
         <h2 className="text-xl">{title}</h2>
@@ -155,7 +155,7 @@ export const ResourceCard = ({
       className="group hover:translate-y-[-2.5%] focus:translate-y-[-2.5%] transition-transform"
     >
       <Card className="h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors">
-        <CardHeader className="justify-between">
+        <CardHeader className="flex-row justify-between">
           <div>
             <CardTitle>
               <Components.Name id={id} />

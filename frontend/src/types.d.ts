@@ -8,12 +8,14 @@ type OptionalIdComponent = React.FC<{ id?: string }>;
 export interface RequiredResourceComponents {
   Icon: OptionalIdComponent;
 
+  New: React.FC;
+
   Name: IdComponent;
   Description: IdComponent;
   Info: IdComponent;
   Actions: IdComponent;
 
-  New: React.FC;
+  Table: React.FC;
 
   Page: { [section: string]: IdComponent };
 }

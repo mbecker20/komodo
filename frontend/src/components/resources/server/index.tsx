@@ -8,6 +8,8 @@ import { ConfigInner } from "@components/config";
 import { useState } from "react";
 import { NewResource } from "@components/layouts";
 import { Input } from "@ui/input";
+import { DataTable } from "@ui/data-table";
+import { useNavigate } from "react-router-dom";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -120,7 +122,7 @@ const NewServer = () => {
   );
 };
 
-export const Server: RequiredResourceComponents = {
+export const ServerComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useServer(id)?.name}</>,
   Description: ({ id }) => <>{useServer(id)?.info.status}</>,
   Info: ({ id }) => <ServerInfo id={id} />,
@@ -131,4 +133,30 @@ export const Server: RequiredResourceComponents = {
     Config: ({ id }) => <ServerConfig id={id} />,
   },
   New: () => <NewServer />,
+  Table: () => {
+    const servers = useRead("ListServers", {}).data;
+    const nav = useNavigate();
+    return (
+      <DataTable
+        onRowClick={({ id }) => nav(`/servers/${id}`)}
+        data={servers ?? []}
+        columns={[
+          {
+            header: "Name",
+            accessorKey: "id",
+            cell: ({ row }) => {
+              return (
+                <div className="flex gap-2">
+                  <ServerIconComponent id={row.original.id} />
+                  {row.original.name}
+                </div>
+              );
+            },
+          },
+          { header: "Region", accessorKey: "info.region" },
+          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+        ]}
+      />
+    );
+  },
 };
