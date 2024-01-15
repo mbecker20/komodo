@@ -2,6 +2,7 @@ import { ResourceSelector } from "@components/config/util";
 import { NewResource } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
+import { fmt_date_with_minutes } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Execution } from "@monitor/client/dist/types";
 import { Icon } from "@radix-ui/react-select";
@@ -17,8 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Link, Loader2, Route, Save } from "lucide-react";
+import { Loader2, Route, Save } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -423,6 +425,11 @@ export const Procedure: RequiredResourceComponents = {
             },
           },
           { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Created",
+            accessorFn: ({ created_at }) =>
+              fmt_date_with_minutes(new Date(created_at)),
+          },
         ]}
       />
     );

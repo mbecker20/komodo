@@ -9,7 +9,8 @@ import { useState } from "react";
 import { NewResource } from "@components/layouts";
 import { Input } from "@ui/input";
 import { DataTable } from "@ui/data-table";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { ResourceComponents } from "..";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -122,14 +123,12 @@ const NewServer = () => {
   );
 };
 
-const Name = ({ id }: { id: string }) => <>{useServer(id)?.name}</>;
-
 export const ServerComponents: RequiredResourceComponents = {
-  Name,
+  Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
   Description: ({ id }) => <>{useServer(id)?.info.status}</>,
   Info: ({ id }) => <ServerInfo id={id} />,
   Actions: () => null,
-  Icon: ({ id }) => <ServerIconComponent id={id} />,
+  Icon: ServerIconComponent,
   Page: {
     Stats: ({ id }) => <ServerStats server_id={id} />,
     Config: ({ id }) => <ServerConfig id={id} />,
@@ -137,21 +136,25 @@ export const ServerComponents: RequiredResourceComponents = {
   New: () => <NewServer />,
   Table: () => {
     const servers = useRead("ListServers", {}).data;
-    const nav = useNavigate();
+    // const nav = useNavigate();
     return (
       <DataTable
-        onRowClick={({ id }) => nav(`/servers/${id}`)}
+        // onRowClick={({ id }) => nav(`/servers/${id}`)}
         data={servers ?? []}
         columns={[
           {
             header: "Name",
             accessorKey: "id",
-            cell: ({ row }) => {
+            cell: ({
+              row: {
+                original: { id },
+              },
+            }) => {
               return (
-                <div className="flex gap-2">
-                  <ServerIconComponent id={row.original.id} />
-                  {row.original.name}
-                </div>
+                <Link to={`/servers/${id}`} className="flex gap-2">
+                  <ResourceComponents.Server.Icon id={id} />
+                  <ResourceComponents.Server.Name id={id} />
+                </Link>
               );
             },
           },
@@ -162,14 +165,18 @@ export const ServerComponents: RequiredResourceComponents = {
           { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
           {
             header: "Deployments",
-            cell: ({ row: { original: { id } } }) => {
+            cell: ({
+              row: {
+                original: { id },
+              },
+            }) => {
               const count = useRead("ListDeployments", {
                 query: { specific: { server_ids: [id] } },
               }).data?.length;
               if (count) {
-                return <>{count}</>
+                return <>{count}</>;
               } else {
-                return <>0</>
+                return <>0</>;
               }
             },
           },

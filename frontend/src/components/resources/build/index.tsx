@@ -11,6 +11,7 @@ import { Input } from "@ui/input";
 import { Hammer, History, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ResourceComponents } from "..";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -98,6 +99,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
 };
 
 const Name = ({ id }: { id: string }) => <>{useBuild(id)?.name}</>;
+
 const Icon = ({ id }: { id: string }) => {
   const building = useRead("GetBuildActionState", { id }).data?.building;
   const className = building
@@ -156,8 +158,8 @@ export const BuildComponents: RequiredResourceComponents = {
               const id = row.original.id;
               return (
                 <Link to={`/builds/${id}`} className="flex items-center gap-2">
-                  <Icon id={id} />
-                  <Name id={id} />
+                  <ResourceComponents.Build.Icon id={id} />
+                  <ResourceComponents.Build.Name id={id} />
                 </Link>
               );
             },

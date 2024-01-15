@@ -5,8 +5,9 @@ import { Types } from "@monitor/client";
 import { Icon } from "@radix-ui/react-select";
 import { RequiredResourceComponents } from "@types";
 import { DataTable } from "@ui/data-table";
-import { GitBranch, Link } from "lucide-react";
+import { GitBranch } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);

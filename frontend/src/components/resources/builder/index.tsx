@@ -2,6 +2,7 @@ import { ConfigInner } from "@components/config";
 import { InputList, ResourceSelector } from "@components/config/util";
 import { NewResource } from "@components/layouts";
 import { useRead, useWrite } from "@lib/hooks";
+import { fmt_date_with_minutes } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Icon } from "@radix-ui/react-select";
 import { RequiredResourceComponents } from "@types";
@@ -15,8 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Cloud, Bot, Factory, Link } from "lucide-react";
+import { Cloud, Bot, Factory } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
@@ -188,6 +190,11 @@ export const Builder: RequiredResourceComponents = {
             },
           },
           { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Created",
+            accessorFn: ({ created_at }) =>
+              fmt_date_with_minutes(new Date(created_at)),
+          },
         ]}
       />
     );

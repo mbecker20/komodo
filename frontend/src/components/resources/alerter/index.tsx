@@ -11,11 +11,13 @@ import {
 } from "@ui/select";
 import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
-import { AlarmClock, Link } from "lucide-react";
+import { AlarmClock } from "lucide-react";
 import { useState } from "react";
 import { ConfigInner } from "@components/config";
 import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
+import { Link } from "react-router-dom";
+import { fmt_date_with_minutes } from "@lib/utils";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -110,9 +112,9 @@ const CustomAlerterConfig = ({ id }: { id: string }) => {
 
 export const Alerter: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
+  Icon: () => <AlarmClock className="w-4 h-4" />,
   Description: ({ id }) => <>{useAlerter(id)?.info.alerter_type} alerter</>,
   Info: ({ id }) => <>{id}</>,
-  Icon: () => <AlarmClock className="w-4 h-4" />,
   Page: {
     Config: ({ id }: { id: string }) => {
       const config = useRead("GetAlerter", { id }).data?.config;
@@ -123,6 +125,7 @@ export const Alerter: RequiredResourceComponents = {
   Actions: () => null,
   Table: () => {
     const alerters = useRead("ListAlerters", {}).data;
+    console.log(alerters);
     return (
       <DataTable
         data={alerters ?? []}
@@ -144,6 +147,11 @@ export const Alerter: RequiredResourceComponents = {
             },
           },
           { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Created",
+            accessorFn: ({ created_at }) =>
+              fmt_date_with_minutes(new Date(created_at)),
+          },
         ]}
       />
     );
