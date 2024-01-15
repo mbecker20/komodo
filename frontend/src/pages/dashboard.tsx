@@ -43,7 +43,7 @@ export const Dashboard = () => {
 
   return (
     <Page title={`Hello, ${user?.username}.`}>
-      <RecentlyViewed />
+      {/* <RecentlyViewed /> */}
       <MyResources />
     </Page>
   );
