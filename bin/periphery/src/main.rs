@@ -8,7 +8,7 @@ use axum::{middleware, routing::post, Extension, Json, Router};
 
 use axum_extra::{headers::ContentType, TypedHeader};
 use resolver_api::Resolver;
-use serror_axum::AppResult;
+use serror::AppResult;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 

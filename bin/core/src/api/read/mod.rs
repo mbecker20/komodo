@@ -8,7 +8,7 @@ use resolver_api::{
   derive::Resolver, Resolve, ResolveToString, Resolver,
 };
 use serde::{Deserialize, Serialize};
-use serror_axum::AppResult;
+use serror::AppResult;
 use typeshare::typeshare;
 use uuid::Uuid;
 

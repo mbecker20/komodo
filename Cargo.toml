@@ -19,6 +19,7 @@ db_client = { path = "lib/db_client" }
 logger = { path = "lib/logger" }
 # mogh
 run_command = { version = "0.0.6", features = ["async_tokio"] }
+serror = { version = "0.1.6", features = ["axum"] }
 slack = { version = "0.1.0", package = "slack_client_rs" }
 derive_default_builder = "0.1.8"
 derive_empty_traits = "0.1.0"
@@ -31,8 +32,6 @@ resolver_api = "0.1.6"
 parse_csl = "0.1.0"
 mungos = "0.5.4"
 mongo_indexed = "0.2.2"
-serror = "0.1.5"
-serror_axum = "0.1.5"
 svi = "0.1.4"
 # external
 clap = { version = "4.4.16", features = ["derive"] }

@@ -7,7 +7,7 @@ use axum::{
 use axum_extra::{headers::ContentType, TypedHeader};
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use resolver_api::Resolver;
-use serror_axum::{AppError, AuthError};
+use serror::{AppError, AuthError};
 use uuid::Uuid;
 
 mod github;

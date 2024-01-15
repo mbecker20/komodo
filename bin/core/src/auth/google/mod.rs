@@ -6,7 +6,7 @@ use axum::{
 use monitor_client::entities::user::User;
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
-use serror_axum::AppError;
+use serror::AppError;
 
 use crate::state::StateExtension;
 

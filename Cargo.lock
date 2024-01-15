@@ -2122,7 +2122,6 @@ dependencies = [
  "serde",
  "serde_json",
  "serror",
- "serror_axum",
  "sha2",
  "slack_client_rs",
  "termination_signal",
@@ -2166,7 +2165,7 @@ dependencies = [
  "run_command",
  "serde",
  "serde_json",
- "serror_axum",
+ "serror",
  "svi",
  "sysinfo",
  "termination_signal",
@@ -2179,6 +2178,12 @@ dependencies = [
 name = "monitor_sync"
 version = "1.0.1"
 dependencies = [
+ "anyhow",
+ "clap",
+ "dotenv",
+ "merge_config_files",
+ "monitor_client",
+ "serde",
  "tokio",
 ]
 
@@ -2954,24 +2959,15 @@ dependencies = [
 
 [[package]]
 name = "serror"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "14dfbd9ae6a51c56840be22954364717d391b46e9f0c65cb7b45ca79a2523e5b"
-dependencies = [
- "anyhow",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "serror_axum"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "181d9f80caad3a01f9ab41ec6d9ad3badee56185f3ad3c89e0bbdfc8e3f315a9"
+checksum = "eefe7ba3cfc7e288ae60ca1e2ba2104acabb96dcadb9ec40ece559876529a163"
 dependencies = [
  "anyhow",
  "axum",
- "serror",
+ "axum-extra",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

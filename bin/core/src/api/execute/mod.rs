@@ -6,7 +6,7 @@ use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::api::execute::*;
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
-use serror_axum::AppResult;
+use serror::AppResult;
 use typeshare::typeshare;
 use uuid::Uuid;
 
