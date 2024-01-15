@@ -59,7 +59,7 @@ impl State {
       config.port = port;
     }
 
-    logger::init(into_log_level(config.log_level))?;
+    logger::init(into_log_level(config.log_level));
 
     debug!("loading state");
 

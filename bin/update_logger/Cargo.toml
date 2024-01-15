@@ -15,5 +15,5 @@ logger.workspace = true
 termination_signal.workspace = true
 # external
 tokio.workspace = true
-log.workspace = true
+tracing.workspace = true
 anyhow.workspace = true

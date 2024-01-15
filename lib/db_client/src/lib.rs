@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 use mongo_indexed::{create_index, create_unique_index, Indexed};
 use monitor_client::entities::{

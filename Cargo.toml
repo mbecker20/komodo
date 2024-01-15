@@ -31,14 +31,14 @@ resolver_api = "0.1.6"
 parse_csl = "0.1.0"
 mungos = "0.5.4"
 mongo_indexed = "0.2.2"
-serror = "0.1.4"
-serror_axum = "0.1.2"
+serror = "0.1.5"
+serror_axum = "0.1.5"
 svi = "0.1.4"
 # external
-clap = { version = "4.4.13", features = ["derive"] }
+clap = { version = "4.4.16", features = ["derive"] }
 tokio = { version = "1.35.1", features = ["full"] }
-axum = { version = "0.7.3", features = ["ws", "json"] }
-axum-extra = { version = "0.9.1", features = ["typed-header"] }
+axum = { version = "0.7.4", features = ["ws", "json"] }
+axum-extra = { version = "0.9.2", features = ["typed-header"] }
 tower = { version = "0.4.13", features = ["timeout"] }
 tower-http = { version = "0.5.0", features = ["fs", "cors"] }
 reqwest = { version = "0.11.23", features = ["json"] }
@@ -53,10 +53,8 @@ dotenv = "0.15.0"
 envy = "0.4.2"
 anyhow = "1.0.79"
 thiserror = "1.0.56"
-log = "0.4.20"
-simple_logger = "4.3.3"
-# tracing = "0.1.40"
-# tracing-subscriber = "0.3.18"
+tracing = "0.1.40"
+tracing-subscriber = "0.3.18"
 bollard = "0.15.0"
 derive_builder = "0.12.0"
 typeshare = "1.0.1"

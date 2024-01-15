@@ -1,5 +1,5 @@
 [package]
-name = "db_client"
+name = "monitor_sync"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -8,10 +8,4 @@ license.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-monitor_client.workspace = true
-#
-mungos.workspace = true
-mongo_indexed.workspace = true
-#
-anyhow.workspace = true
-tracing.workspace = true
+tokio.workspace = true

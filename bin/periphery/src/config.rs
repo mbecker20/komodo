@@ -27,8 +27,8 @@ pub struct CliArgs {
   pub extend_config_arrays: bool,
 
   /// Configure the logging level: error, warn, info, debug, trace
-  #[arg(long, default_value_t = log::LevelFilter::Info)]
-  pub log_level: log::LevelFilter,
+  #[arg(long, default_value_t = tracing::Level::INFO)]
+  pub log_level: tracing::Level,
 }
 
 #[derive(Deserialize)]

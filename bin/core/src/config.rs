@@ -33,13 +33,12 @@ pub fn config_load(config_path: &str) -> CoreConfig {
   })
 }
 
-pub fn into_log_level(value: LogLevel) -> log::LevelFilter {
+pub fn into_log_level(value: LogLevel) -> tracing::Level {
   match value {
-    LogLevel::Off => log::LevelFilter::Off,
-    LogLevel::Error => log::LevelFilter::Error,
-    LogLevel::Warn => log::LevelFilter::Warn,
-    LogLevel::Info => log::LevelFilter::Info,
-    LogLevel::Debug => log::LevelFilter::Debug,
-    LogLevel::Trace => log::LevelFilter::Trace,
+    LogLevel::Error => tracing::Level::ERROR,
+    LogLevel::Warn => tracing::Level::WARN,
+    LogLevel::Info => tracing::Level::INFO,
+    LogLevel::Debug => tracing::Level::DEBUG,
+    LogLevel::Trace => tracing::Level::TRACE,
   }
 }

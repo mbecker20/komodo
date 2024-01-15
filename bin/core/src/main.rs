@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 use anyhow::Context;
 use axum::{Extension, Router};

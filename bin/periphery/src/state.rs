@@ -27,7 +27,7 @@ impl State {
   pub async fn load() -> anyhow::Result<Arc<State>> {
     let env = Env::load()?;
     let args = CliArgs::parse();
-    logger::init(args.log_level)?;
+    logger::init(args.log_level);
     let config = PeripheryConfig::load(&env, &args)?;
     let state = State {
       secrets: config.secrets.clone().into(),

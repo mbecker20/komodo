@@ -21,5 +21,5 @@ anyhow.workspace = true
 dotenv.workspace = true
 envy.workspace = true
 serde.workspace = true
-log.workspace = true
+tracing.workspace = true
 chrono = "0.4"

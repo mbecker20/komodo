@@ -118,7 +118,6 @@ pub struct AwsCredentials {
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum LogLevel {
-  Off,
   Error,
   Warn,
   #[default]

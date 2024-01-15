@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 use std::{net::SocketAddr, str::FromStr};
 
@@ -9,7 +9,7 @@ use monitor_client::entities::alert::Alert;
 use termination_signal::tokio::immediate_term_handle;
 
 async fn app() -> anyhow::Result<()> {
-  logger::init(log::LevelFilter::Info)?;
+  logger::init(tracing::Level::INFO);
 
   let socket_addr = SocketAddr::from_str("0.0.0.0:7000").unwrap();
 

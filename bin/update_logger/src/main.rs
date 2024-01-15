@@ -1,11 +1,11 @@
 #[macro_use]
-extern crate log;
+extern crate tracing;
 
 use monitor_client::MonitorClient;
 use termination_signal::tokio::immediate_term_handle;
 
 async fn app() -> anyhow::Result<()> {
-  logger::init(log::LevelFilter::Info)?;
+  logger::init(tracing::Level::INFO);
 
   info!("v {}", env!("CARGO_PKG_VERSION"));
 
