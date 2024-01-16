@@ -27,7 +27,7 @@ export const Resource = () => {
           <div className="flex gap-8">
             <Components.Info id={id} />
           </div>
-          <div className="flex gap-8">
+          <div className="flex gap-2">
             <ResourceTags target={{ id, type }} />
             <ManageTags target={{ id, type }} />
           </div>

@@ -123,6 +123,14 @@ const NewServer = () => {
   );
 };
 
+const DeploymentCountOnServer = ({ id }: { id: string }) => {
+  const { data } = useRead("ListDeployments", {
+    query: { specific: { server_ids: [id] } },
+  });
+
+  return <>{data?.length ?? 0}</>;
+};
+
 export const ServerComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
   Description: ({ id }) => <>{useServer(id)?.info.status}</>,
@@ -136,6 +144,8 @@ export const ServerComponents: RequiredResourceComponents = {
   New: () => <NewServer />,
   Table: () => {
     const servers = useRead("ListServers", {}).data;
+    const all_tags = useRead("ListTags", {}).data;
+
     // const nav = useNavigate();
     return (
       <DataTable
@@ -162,23 +172,16 @@ export const ServerComponents: RequiredResourceComponents = {
           //   header: "Description",
           //   accessorKey: "description",
           // },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Tags",
+            accessorFn: ({ tags }) =>
+              tags
+                .map((t) => all_tags?.find((tg) => tg._id?.$oid === t)?.name)
+                .join(", "),
+          },
           {
             header: "Deployments",
-            cell: ({
-              row: {
-                original: { id },
-              },
-            }) => {
-              const count = useRead("ListDeployments", {
-                query: { specific: { server_ids: [id] } },
-              }).data?.length;
-              if (count) {
-                return <>{count}</>;
-              } else {
-                return <>0</>;
-              }
-            },
+            cell: ({ row }) => <DeploymentCountOnServer id={row.original.id} />,
           },
           { header: "Region", accessorKey: "info.region" },
           {
