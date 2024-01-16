@@ -1585,14 +1585,12 @@ export interface UpdateTag {
 	config: _PartialCustomTag;
 }
 
-export interface AddTags {
+export interface UpdateTagsOnResource {
 	target: ResourceTarget;
 	tags: string[];
 }
 
-export interface RemoveTags {
-	target: ResourceTarget;
-	tags: string[];
+export interface UpdateTagsOnResourceResponse {
 }
 
 export interface PushRecentlyViewed {
@@ -1776,7 +1774,8 @@ export type WriteRequest =
 	| { type: "UpdateProcedure", params: UpdateProcedure }
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
-	| { type: "UpdateTag", params: UpdateTag };
+	| { type: "UpdateTag", params: UpdateTag }
+	| { type: "UpdateTagsOnResource", params: UpdateTagsOnResource };
 
 export type Execution = 
 	/** For new executions upon instantiation */

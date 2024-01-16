@@ -162,6 +162,7 @@ export type WriteResponses = {
   CreateTag: Types.CustomTag;
   DeleteTag: Types.CustomTag;
   UpdateTag: Types.CustomTag;
+  UpdateTagsOnResource: Types.UpdateTagsOnResourceResponse;
 };
 
 export type ExecuteResponses = {
