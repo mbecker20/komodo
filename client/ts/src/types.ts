@@ -1488,6 +1488,7 @@ export interface LaunchAwsServerConfig {
 	security_group_ids: string[];
 	key_pair_name: string;
 	assign_public_ip: boolean;
+	use_public_ip: boolean;
 }
 
 export interface UpdateUserPermissionsOnTarget {
@@ -1627,6 +1628,7 @@ export interface AwsBuilderConfig {
 	security_group_ids: string[];
 	key_pair_name: string;
 	assign_public_ip: boolean;
+	use_public_ip: boolean;
 	github_accounts?: string[];
 	docker_accounts?: string[];
 }

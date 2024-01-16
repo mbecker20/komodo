@@ -45,6 +45,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
             subnet_id: true,
             key_pair_name: true,
             assign_public_ip: true,
+            use_public_ip: true,
             security_group_ids: (values, set) => (
               <InputList field="security_group_ids" values={values} set={set} />
             ),
