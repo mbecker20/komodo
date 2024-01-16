@@ -36,6 +36,7 @@ pub struct LaunchAwsServerConfig {
   pub security_group_ids: Vec<String>,
   pub key_pair_name: String,
   pub assign_public_ip: bool,
+  pub use_public_ip: bool,
 }
 
 #[typeshare]
@@ -65,6 +66,7 @@ impl From<&AwsBuilderConfig> for LaunchAwsServerConfig {
       security_group_ids: value.security_group_ids.clone(),
       key_pair_name: value.key_pair_name.clone(),
       assign_public_ip: value.assign_public_ip,
+      use_public_ip: value.use_public_ip,
     }
   }
 }

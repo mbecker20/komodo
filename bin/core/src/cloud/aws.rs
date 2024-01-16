@@ -57,6 +57,7 @@ impl State {
       security_group_ids,
       key_pair_name,
       assign_public_ip,
+      use_public_ip,
     } = config.into();
     let instance_type = handle_unknown_instance_type(
       InstanceType::from(instance_type.as_str()),
@@ -122,7 +123,7 @@ impl State {
       let state_name =
         get_ec2_instance_state_name(&client, &instance_id).await?;
       if state_name == Some(InstanceStateName::Running) {
-        let ip = if assign_public_ip {
+        let ip = if use_public_ip {
           get_ec2_instance_public_ip(&client, &instance_id).await?
         } else {
           instance

@@ -112,6 +112,9 @@ impl BuilderConfig {
             assign_public_ip: partial
               .assign_public_ip
               .unwrap_or(config.assign_public_ip),
+            use_public_ip: partial
+              .use_public_ip
+              .unwrap_or(config.use_public_ip),
             github_accounts: partial
               .github_accounts
               .unwrap_or(config.github_accounts),
@@ -162,6 +165,7 @@ pub struct AwsBuilderConfig {
   pub security_group_ids: Vec<String>,
   pub key_pair_name: String,
   pub assign_public_ip: bool,
+  pub use_public_ip: bool,
 
   #[serde(default)]
   pub github_accounts: Vec<String>,
