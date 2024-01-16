@@ -449,10 +449,11 @@ fn start_aws_builder_log(
     subnet_id,
     assign_public_ip,
     security_group_ids,
+    use_public_ip,
     ..
   } = config;
 
   let readable_sec_group_ids = security_group_ids.join(", ");
 
-  format!("instance id: {instance_id}\nip: {ip}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}\nuse public ip: {assign_public_ip}")
+  format!("instance id: {instance_id}\nip: {ip}\nami id: {ami_id}\ninstance type: {instance_type}\nvolume size: {volume_gb} GB\nsubnet id: {subnet_id}\nsecurity groups: {readable_sec_group_ids}\nassign public ip: {assign_public_ip}\nuse public ip: {use_public_ip}")
 }
