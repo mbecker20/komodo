@@ -28,7 +28,7 @@ use monitor_client::{
 };
 use mungos::{
   aggregate::aggregate_collect,
-  by_id::find_one_by_id,
+  by_id::{find_one_by_id, update_one_by_id},
   find::find_collect,
   mongodb::{
     bson::{doc, oid::ObjectId, Document},
@@ -173,6 +173,21 @@ pub trait StateResource<
         None,
       )
       .await?;
+    Ok(())
+  }
+
+  async fn update_tags_on_resource(
+    &self,
+    id: &str,
+    tags: Vec<String>,
+  ) -> anyhow::Result<()> {
+    update_one_by_id(
+      self.coll(),
+      id,
+      doc! { "$set": { "tags": tags } },
+      None,
+    )
+    .await?;
     Ok(())
   }
 }

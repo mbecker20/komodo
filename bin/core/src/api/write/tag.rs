@@ -1,8 +1,16 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
-  api::write::{CreateTag, DeleteTag, UpdateTag},
-  entities::tag::CustomTag,
+  api::write::{
+    CreateTag, DeleteTag, UpdateTag, UpdateTagsOnResource,
+    UpdateTagsOnResourceResponse,
+  },
+  entities::{
+    alerter::Alerter, build::Build, builder::Builder,
+    deployment::Deployment, procedure::Procedure, repo::Repo,
+    server::Server, tag::CustomTag, update::ResourceTarget,
+    PermissionLevel,
+  },
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
@@ -10,7 +18,9 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{
+  auth::RequestUser, helpers::resource::StateResource, state::State,
+};
 
 #[async_trait]
 impl Resolve<CreateTag, RequestUser> for State {
@@ -75,5 +85,89 @@ impl Resolve<DeleteTag, RequestUser> for State {
     let tag = self.get_tag_check_owner(&id, &user).await?;
     delete_one_by_id(&self.db.tags, &id, None).await?;
     Ok(tag)
+  }
+}
+
+#[async_trait]
+impl Resolve<UpdateTagsOnResource, RequestUser> for State {
+  async fn resolve(
+    &self,
+    UpdateTagsOnResource { target, tags }: UpdateTagsOnResource,
+    user: RequestUser,
+  ) -> anyhow::Result<UpdateTagsOnResourceResponse> {
+    match target {
+      ResourceTarget::System(_) => return Err(anyhow!("")),
+      ResourceTarget::Build(id) => {
+        <State as StateResource<Build>>::get_resource_check_permissions(
+          self, &id, &user, PermissionLevel::Update
+        )
+        .await?;
+        <State as StateResource<Build>>::update_tags_on_resource(
+          self, &id, tags,
+        )
+        .await?;
+      }
+      ResourceTarget::Builder(id) => {
+        <State as StateResource<Builder>>::get_resource_check_permissions(
+          self, &id, &user, PermissionLevel::Update
+        )
+        .await?;
+        <State as StateResource<Builder>>::update_tags_on_resource(
+          self, &id, tags,
+        )
+        .await?
+      }
+      ResourceTarget::Deployment(id) => {
+        <State as StateResource<Deployment>>::get_resource_check_permissions(
+          self, &id, &user, PermissionLevel::Update
+        )
+        .await?;
+        <State as StateResource<Deployment>>::update_tags_on_resource(
+          self, &id, tags,
+        )
+        .await?
+      }
+      ResourceTarget::Server(id) => {
+        <State as StateResource<Server>>::get_resource_check_permissions(
+          self, &id, &user, PermissionLevel::Update
+        )
+        .await?;
+        <State as StateResource<Server>>::update_tags_on_resource(
+          self, &id, tags,
+        )
+        .await?
+      }
+      ResourceTarget::Repo(id) => {
+        <State as StateResource<Repo>>::get_resource_check_permissions(
+          self, &id, &user, PermissionLevel::Update
+        )
+        .await?;
+        <State as StateResource<Repo>>::update_tags_on_resource(
+          self, &id, tags,
+        )
+        .await?
+      }
+      ResourceTarget::Alerter(id) => {
+        <State as StateResource<Alerter>>::get_resource_check_permissions(
+          self, &id, &user, PermissionLevel::Update
+        )
+        .await?;
+        <State as StateResource<Alerter>>::update_tags_on_resource(
+          self, &id, tags,
+        )
+        .await?
+      }
+      ResourceTarget::Procedure(id) => {
+        <State as StateResource<Procedure>>::get_resource_check_permissions(
+          self, &id, &user, PermissionLevel::Update
+        )
+        .await?;
+        <State as StateResource<Procedure>>::update_tags_on_resource(
+          self, &id, tags,
+        )
+        .await?
+      }
+    };
+    Ok(UpdateTagsOnResourceResponse {})
   }
 }

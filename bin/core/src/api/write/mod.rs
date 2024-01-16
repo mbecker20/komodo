@@ -99,6 +99,7 @@ enum WriteRequest {
   CreateTag(CreateTag),
   DeleteTag(DeleteTag),
   UpdateTag(UpdateTag),
+  UpdateTagsOnResource(UpdateTagsOnResource),
 }
 
 pub fn router() -> Router {

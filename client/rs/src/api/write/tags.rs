@@ -60,21 +60,14 @@ pub struct UpdateTag {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
-#[response(())]
-pub struct AddTags {
+#[response(UpdateTagsOnResourceResponse)]
+pub struct UpdateTagsOnResource {
   pub target: ResourceTarget,
   pub tags: Vec<String>, // custom tag ids
 }
-
-//
 
 #[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorWriteRequest)]
-#[response(())]
-pub struct RemoveTags {
-  pub target: ResourceTarget,
-  pub tags: Vec<String>, // custom tag ids
-}
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct UpdateTagsOnResourceResponse {}
+
+//
