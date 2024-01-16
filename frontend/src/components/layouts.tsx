@@ -23,9 +23,11 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
+  CardFooter,
 } from "@ui/card";
 import { Logout, ResourceTypeDropdown, ResourcesDropdown } from "./util";
 import { HeaderUpdates } from "./updates/header";
+import { ManageTags, ResourceTags } from "./tags";
 
 export const Layout = () => {
   const type = useResourceParamType();
@@ -169,6 +171,10 @@ export const ResourceCard = ({
         <CardContent className="text-sm text-muted-foreground">
           <Components.Info id={id} />
         </CardContent>
+        <CardFooter className="flex items-center justify-end gap-2">
+          <ResourceTags target={{ type, id }} />
+          <ManageTags target={{ type, id }} />
+        </CardFooter>
       </Card>
     </Link>
   );

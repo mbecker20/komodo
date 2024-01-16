@@ -1,6 +1,7 @@
 import { Page } from "@components/layouts";
 import { ResourcePermissions } from "@components/permissions";
 import { ResourceComponents } from "@components/resources";
+import { ManageTags, ResourceTags } from "@components/tags";
 import { ResourceUpdates } from "@components/updates/resource";
 import { usePushRecentlyViewed, useResourceParamType } from "@lib/hooks";
 import { useParams } from "react-router-dom";
@@ -25,6 +26,10 @@ export const Resource = () => {
           </div>
           <div className="flex gap-8">
             <Components.Info id={id} />
+          </div>
+          <div className="flex gap-8">
+            <ResourceTags target={{ id, type }} />
+            <ManageTags target={{ id, type }} />
           </div>
         </div>
       }
