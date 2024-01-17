@@ -10,6 +10,7 @@ import {
   CommandItem,
 } from "@ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
+import { useToast } from "@ui/use-toast";
 import { Pen, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -44,6 +45,10 @@ export const ManageTags = ({ target }: { target: TargetExcludingSystem }) => {
     onSuccess: () => inv([`List${type}s`]),
   });
 
+  const { mutateAsync: create } = useWrite("CreateTag", {
+    onSuccess: () => inv([`ListTags`]),
+  });
+
   useEffect(() => {
     if (!open && !!resource && !!tags) update({ target, tags });
   }, [target, open, resource, tags, update]);
@@ -52,23 +57,25 @@ export const ManageTags = ({ target }: { target: TargetExcludingSystem }) => {
     if (resource && !tags) setTags(resource.tags);
   }, [resource, tags]);
 
-  const { mutateAsync: create } = useWrite("CreateTag");
-
   const update_tags = (tag: Types.CustomTag) => {
     const exists = tags?.some((id) => id === tag._id?.$oid);
     if (exists) return setTags((t) => t?.filter((id) => id !== tag._id?.$oid));
     else return setTags((t) => [...(t ?? []), tag._id?.$oid as string]);
   };
 
-  const create_tag = async () =>
-    !!input && update_tags(await create({ name: input }));
+  const { toast } = useToast();
+  const create_tag = async () => {
+    if (!input) return toast({ title: "Must provide tag name in input" });
+    update_tags(await create({ name: input }));
+    setOpen(false);
+  };
 
   if (!resource) return null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger>
-        <Badge className="flex gap-2">
+        <Badge className="flex gap-2" variant="outline">
           Edit Tags <Pen className="w-3" />
         </Badge>
       </PopoverTrigger>
@@ -80,7 +87,10 @@ export const ManageTags = ({ target }: { target: TargetExcludingSystem }) => {
             value={input}
             onValueChange={setInput}
           />
-          <CommandEmpty className="justify-between" onClick={create_tag}>
+          <CommandEmpty
+            className="justify-between cursor-pointer hover:bg-accent m-1"
+            onClick={create_tag}
+          >
             Create Tag
             <PlusCircle className="w-4" />
           </CommandEmpty>
