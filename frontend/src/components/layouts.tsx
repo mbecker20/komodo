@@ -39,7 +39,7 @@ export const Layout = () => {
             <Link to={"/"} className="text-2xl tracking-widest">
               MONITOR
             </Link>
-            <div className="flex gap-4">
+            <div className="flex gap-2">
               <ResourceTypeDropdown />
               {type && <ResourcesDropdown />}
             </div>
@@ -171,7 +171,7 @@ export const ResourceCard = ({
         <CardContent className="text-sm text-muted-foreground">
           <Components.Info id={id} />
         </CardContent>
-        <CardFooter className="flex items-center justify-end gap-2">
+        <CardFooter className="flex items-center gap-2">
           <ResourceTags target={{ type, id }} />
         </CardFooter>
       </Card>

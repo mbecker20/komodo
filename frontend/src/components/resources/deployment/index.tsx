@@ -121,6 +121,8 @@ export const Deployment: RequiredResourceComponents = {
   },
   Table: () => {
     const deployments = useRead("ListDeployments", {}).data;
+    const all_tags = useRead("ListTags", {}).data;
+
     return (
       <DataTable
         data={deployments ?? []}
@@ -145,7 +147,13 @@ export const Deployment: RequiredResourceComponents = {
           //   header: "Description",
           //   accessorKey: "description",
           // },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Tags",
+            accessorFn: ({ tags }) =>
+              tags
+                .map((t) => all_tags?.find((tg) => tg._id?.$oid === t)?.name)
+                .join(", "),
+          },
           {
             header: "Server",
             cell: ({ row }) => {
