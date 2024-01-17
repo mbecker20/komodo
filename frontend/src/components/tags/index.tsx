@@ -57,6 +57,10 @@ export const ManageTags = ({ target }: { target: TargetExcludingSystem }) => {
     if (resource && !tags) setTags(resource.tags);
   }, [resource, tags]);
 
+  useEffect(() => {
+    if (open) setInput("");
+  }, [open]);
+
   const update_tags = (tag: Types.CustomTag) => {
     const exists = tags?.some((id) => id === tag._id?.$oid);
     if (exists) return setTags((t) => t?.filter((id) => id !== tag._id?.$oid));
