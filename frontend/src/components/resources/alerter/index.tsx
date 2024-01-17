@@ -125,7 +125,6 @@ export const Alerter: RequiredResourceComponents = {
   Actions: () => null,
   Table: () => {
     const alerters = useRead("ListAlerters", {}).data;
-    console.log(alerters);
     return (
       <DataTable
         data={alerters ?? []}

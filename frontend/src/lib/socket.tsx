@@ -15,7 +15,7 @@ const on_message = (
   { data }: MessageEvent,
   invalidate: ReturnType<typeof useInvalidate>
 ) => {
-  if (data == "LOGGED_IN") return console.log("logged in to ws");
+  if (data == "LOGGED_IN") return console.info("logged in to ws");
   const update = JSON.parse(data) as Types.UpdateListItem;
 
   toast({

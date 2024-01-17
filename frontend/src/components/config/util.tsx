@@ -157,8 +157,6 @@ export const ResourceSelector = ({
   const resources = useRead(`List${type}s`, {}).data;
   const name = resources?.find((r) => r.id === selected)?.name;
 
-  console.log(selected, name, resources);
-
   if (!resources) return null;
 
   return (

@@ -19,7 +19,7 @@ export const Resource = () => {
     <Page
       title={<Components.Name id={id} />}
       subtitle={
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground flex flex-col gap-2">
           <div className="flex gap-2">
             <Components.Icon id={id} />
             <Components.Description id={id} />
