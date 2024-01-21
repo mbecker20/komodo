@@ -9,7 +9,7 @@ use monitor_client::{
   api::execute::Execution,
   entities::{
     monitor_timestamp,
-    procedure::{Procedure, ProcedureConfig},
+    procedure::{EnabledId, Procedure, ProcedureConfig},
     update::Update,
   },
 };
@@ -97,8 +97,14 @@ impl State {
             ),
           )
           .await;
-        self.execute_sequence(ids, map, update).await.with_context(
-          || {
+        self
+          .execute_sequence(
+            &filter_list_by_enabled(ids),
+            map,
+            update,
+          )
+          .await
+          .with_context(|| {
             let time = Duration::from_millis(
               (monitor_timestamp() - start_ts) as u64,
             );
@@ -106,8 +112,7 @@ impl State {
               "failed sequence execution after {time:?}. {} ({})",
               procedure.name, procedure.id
             )
-          },
-        )?;
+          })?;
         let time = Duration::from_millis(
           (monitor_timestamp() - start_ts) as u64,
         );
@@ -132,8 +137,14 @@ impl State {
             ),
           )
           .await;
-        self.execute_parallel(ids, map, update).await.with_context(
-          || {
+        self
+          .execute_parallel(
+            &filter_list_by_enabled(ids),
+            map,
+            update,
+          )
+          .await
+          .with_context(|| {
             let time = Duration::from_millis(
               (monitor_timestamp() - start_ts) as u64,
             );
@@ -141,8 +152,7 @@ impl State {
               "failed parallel execution after {time:?}. {} ({})",
               procedure.name, procedure.id
             )
-          },
-        )?;
+          })?;
         let time = Duration::from_millis(
           (monitor_timestamp() - start_ts) as u64,
         );
@@ -282,7 +292,10 @@ impl State {
 
     let more_ids = more
       .iter()
-      .map(|id| ObjectId::from_str(id).context("id is not ObjectId"))
+      .filter(|id| id.enabled)
+      .map(|id| {
+        ObjectId::from_str(&id.id).context("id is not ObjectId")
+      })
       .collect::<anyhow::Result<Vec<_>>>()?;
 
     let procedures = find_collect(
@@ -297,11 +310,14 @@ impl State {
     .collect::<HashMap<_, _>>();
 
     // make sure we aren't missing any procedures
-    for more in more {
-      if !procedures.contains_key(more) {
-        return Err(anyhow!(
-          "did not find a procedure with id {more}"
-        ));
+    for EnabledId { id, enabled } in more {
+      if !enabled {
+        continue;
+      }
+      if !procedures.contains_key(id) {
+        return Err(
+          anyhow!("did not find a procedure with id {id}",),
+        );
       }
     }
 
@@ -318,4 +334,12 @@ impl State {
 
     Ok(())
   }
+}
+
+fn filter_list_by_enabled(list: &[EnabledId]) -> Vec<String> {
+  list
+    .iter()
+    .filter(|item| item.enabled)
+    .map(|item| item.id.clone())
+    .collect()
 }

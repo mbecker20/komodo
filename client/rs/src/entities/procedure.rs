@@ -26,6 +26,14 @@ pub struct ProcedureListItemInfo {
 // #[typeshare(serialized_as = "ProcedureConfig['type']")]
 // pub type _ProcedureConfigVariant = ProcedureConfigVariant;
 
+/// Allows to enable / disabled procedures in the sequence / parallel vec on the fly
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct EnabledId {
+  pub id: String,
+  pub enabled: bool,
+}
+
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
@@ -42,9 +50,9 @@ pub struct ProcedureListItemInfo {
 pub enum ProcedureConfig {
   Execution(Execution),
   /// Vec<ProcedureId>
-  Sequence(Vec<String>),
+  Sequence(Vec<EnabledId>),
   /// Vec<ProdecureId>
-  Parallel(Vec<String>),
+  Parallel(Vec<EnabledId>),
 }
 
 impl From<&ProcedureConfig> for ProcedureConfigVariant {
