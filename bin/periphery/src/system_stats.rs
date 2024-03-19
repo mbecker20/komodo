@@ -1,22 +1,58 @@
-use std::{cmp::Ordering, sync::Arc};
+use std::{cmp::Ordering, sync::OnceLock};
 
 use async_timing_util::wait_until_timelength;
-use monitor_client::entities::{
-  server::stats::{
-    AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage,
-    LoadAverage, NetworkUsage, SingleCpuUsage, SingleDiskUsage,
-    SystemComponent, SystemInformation, SystemNetwork, SystemProcess,
-  },
-  Timelength,
-};
+use monitor_client::entities::server::stats::*;
 use sysinfo::System;
 use tokio::sync::RwLock;
 
-pub type StatsClient = Arc<RwLock<InnerStatsClient>>;
+use crate::config::periphery_config;
 
-pub struct InnerStatsClient {
-  pub info: SystemInformation,
+pub fn stats_client() -> &'static RwLock<StatsClient> {
+  static STATS_CLIENT: OnceLock<RwLock<StatsClient>> =
+    OnceLock::new();
+  STATS_CLIENT.get_or_init(|| RwLock::new(StatsClient::default()))
+}
+
+/// This should be called before starting the server in main.rs.
+/// Keeps the caches stats up to date
+pub fn spawn_system_stats_polling_threads() {
+  tokio::spawn(async move {
+    let client = stats_client();
+    loop {
+      let ts = wait_until_timelength(
+        async_timing_util::Timelength::FiveMinutes,
+        0,
+      )
+      .await;
+      let mut client = client.write().await;
+      client.refresh_lists();
+      client.stats.refresh_list_ts = ts as i64;
+    }
+  });
+  tokio::spawn(async move {
+    let polling_rate = periphery_config()
+      .stats_polling_rate
+      .to_string()
+      .parse()
+      .expect("invalid stats polling rate");
+    let client = stats_client();
+    loop {
+      let ts = wait_until_timelength(polling_rate, 1).await;
+      let mut client = client.write().await;
+      client.refresh();
+      client.stats = client.get_all_stats();
+      client.stats.refresh_ts = ts as i64;
+    }
+  });
+}
+
+pub struct StatsClient {
+  /// Cached system stats
   pub stats: AllSystemStats,
+  /// Cached system information
+  pub info: SystemInformation,
+
+  // the handles used to get the stats
   system: sysinfo::System,
   disks: sysinfo::Disks,
   components: sysinfo::Components,
@@ -27,52 +63,28 @@ const BYTES_PER_GB: f64 = 1073741824.0;
 const BYTES_PER_MB: f64 = 1048576.0;
 const BYTES_PER_KB: f64 = 1024.0;
 
-impl InnerStatsClient {
-  pub fn new(polling_rate: Timelength) -> StatsClient {
+impl Default for StatsClient {
+  fn default() -> Self {
     let system = sysinfo::System::new_all();
     let disks = sysinfo::Disks::new_with_refreshed_list();
     let components = sysinfo::Components::new_with_refreshed_list();
     let networks = sysinfo::Networks::new_with_refreshed_list();
     let stats = AllSystemStats {
-      polling_rate,
+      polling_rate: periphery_config().stats_polling_rate,
       ..Default::default()
     };
-    let client = InnerStatsClient {
+    StatsClient {
       info: get_system_information(&system),
       system,
       disks,
       components,
       networks,
       stats,
-    };
-    let client = Arc::new(RwLock::new(client));
-    let clone = client.clone();
-    tokio::spawn(async move {
-      loop {
-        let ts = wait_until_timelength(
-          async_timing_util::Timelength::FiveMinutes,
-          0,
-        )
-        .await;
-        let mut client = clone.write().await;
-        client.refresh_lists();
-        client.stats.refresh_list_ts = ts as i64;
-      }
-    });
-    let clone = client.clone();
-    tokio::spawn(async move {
-      let polling_rate = polling_rate.to_string().parse().unwrap();
-      loop {
-        let ts = wait_until_timelength(polling_rate, 1).await;
-        let mut client = clone.write().await;
-        client.refresh();
-        client.stats = client.get_all_stats();
-        client.stats.refresh_ts = ts as i64;
-      }
-    });
-    client
+    }
   }
+}
 
+impl StatsClient {
   fn refresh(&mut self) {
     self.system.refresh_cpu();
     self.system.refresh_memory();

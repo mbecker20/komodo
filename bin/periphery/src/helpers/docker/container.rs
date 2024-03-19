@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
   deployment::{
@@ -12,7 +10,12 @@ use monitor_client::entities::{
 };
 use run_command::async_run_command;
 
-use crate::helpers::{docker::parse_extra_args, run_monitor_command};
+use crate::{
+  config::periphery_config,
+  helpers::{
+    docker::parse_extra_args, get_docker_token, run_monitor_command,
+  },
+};
 
 use super::docker_login;
 
@@ -157,19 +160,25 @@ async fn pull_image(image: &str) -> Log {
 
 pub async fn deploy(
   deployment: &Deployment,
-  docker_token: &Option<String>,
-  secrets: &HashMap<String, String>,
   stop_signal: Option<TerminationSignal>,
   stop_time: Option<i32>,
 ) -> Log {
+  let docker_token = match get_docker_token(&optional_string(
+    &deployment.config.docker_account,
+  )) {
+    Ok(token) => token,
+    Err(e) => return Log::error("docker login", format!("{e:#?}")),
+  };
+
   if let Err(e) = docker_login(
     &optional_string(&deployment.config.docker_account),
-    docker_token,
+    &docker_token,
   )
   .await
   {
     return Log::error("docker login", format!("{e:#?}"));
   }
+
   let image = if let DeploymentImage::Image { image } =
     &deployment.config.image
   {
@@ -186,6 +195,7 @@ pub async fn deploy(
       String::from("deployment does not have image attached"),
     );
   };
+
   let _ = pull_image(image).await;
   let _ = stop_and_remove_container(
     &deployment.name,
@@ -193,13 +203,15 @@ pub async fn deploy(
     stop_time,
   )
   .await;
+
   let command = docker_run_command(deployment, image);
+
   if deployment.config.skip_secret_interp {
     run_monitor_command("docker run", command).await
   } else {
     let command = svi::interpolate_variables(
       &command,
-      secrets,
+      &periphery_config().secrets,
       svi::Interpolator::DoubleBrackets,
     )
     .context("failed to interpolate secrets into docker run command");

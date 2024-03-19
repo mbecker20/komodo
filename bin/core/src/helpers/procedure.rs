@@ -98,11 +98,7 @@ impl State {
           )
           .await;
         self
-          .execute_sequence(
-            &filter_list_by_enabled(ids),
-            map,
-            update,
-          )
+          .execute_sequence(&filter_list_by_enabled(ids), map, update)
           .await
           .with_context(|| {
             let time = Duration::from_millis(
@@ -138,11 +134,7 @@ impl State {
           )
           .await;
         self
-          .execute_parallel(
-            &filter_list_by_enabled(ids),
-            map,
-            update,
-          )
+          .execute_parallel(&filter_list_by_enabled(ids), map, update)
           .await
           .with_context(|| {
             let time = Duration::from_millis(

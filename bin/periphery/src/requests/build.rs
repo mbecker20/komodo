@@ -5,7 +5,13 @@ use monitor_client::entities::{
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
 
-use crate::{helpers::docker, state::State};
+use crate::{
+  helpers::{
+    docker::{self, client::docker_client},
+    get_docker_token,
+  },
+  State,
+};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<Log>)]
@@ -20,15 +26,11 @@ impl Resolve<Build> for State {
     Build { build }: Build,
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
-    let secrets = self.secrets.clone();
-    let repo_dir = self.config.repo_dir.clone();
-    let log = match self.get_docker_token(&optional_string(
+    let log = match get_docker_token(&optional_string(
       &build.config.docker_account,
     )) {
       Ok(docker_token) => {
-        match docker::build(&build, repo_dir, docker_token, &secrets)
-          .await
-        {
+        match docker::build::build(&build, docker_token).await {
           Ok(logs) => logs,
           Err(e) => {
             vec![Log::error("build", format!("{e:#?}"))]
@@ -54,7 +56,7 @@ impl Resolve<GetImageList> for State {
     _: GetImageList,
     _: (),
   ) -> anyhow::Result<Vec<ImageSummary>> {
-    self.docker.list_images().await
+    docker_client().list_images().await
   }
 }
 

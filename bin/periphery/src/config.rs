@@ -1,20 +1,35 @@
-use std::{collections::HashMap, net::IpAddr, path::PathBuf};
+use std::{
+  collections::HashMap, net::IpAddr, path::PathBuf, sync::OnceLock,
+};
 
-use anyhow::Context;
 use clap::Parser;
 use merge_config_files::parse_config_paths;
 use monitor_client::entities::Timelength;
-use parse_csl::parse_comma_seperated;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
+
+#[derive(Deserialize)]
+struct Env {
+  #[serde(default = "default_config_paths")]
+  config_paths: Vec<String>,
+  #[serde(default)]
+  config_keywords: Vec<String>,
+  port: Option<u16>,
+}
+
+fn default_config_paths() -> Vec<String> {
+  vec!["~/.config/monitor/periphery.config.toml".to_string()]
+}
 
 #[derive(Parser)]
 #[command(author, about, version)]
-pub struct CliArgs {
+struct CliArgs {
   /// Sets the path of a config file or directory to use. can use multiple times
   #[arg(short, long)]
   pub config_path: Option<Vec<String>>,
 
-  /// Sets the keywords to match directory periphery config file names on. can use multiple times. default "periphery" and "config"
+  /// Sets the keywords to match directory periphery config file names on.
+  /// can use multiple times. default "periphery" and "config"
   #[arg(long)]
   pub config_keyword: Option<Vec<String>>,
 
@@ -31,66 +46,16 @@ pub struct CliArgs {
   pub log_level: tracing::Level,
 }
 
-#[derive(Deserialize)]
-pub struct Env {
-  #[serde(default = "default_config_path")]
-  config_paths: String,
-  #[serde(default)]
-  config_keywords: String,
-  port: Option<u16>,
-}
-
-impl Env {
-  pub fn load() -> anyhow::Result<Env> {
-    dotenv::dotenv().ok();
-    envy::from_env().context("failed to parse environment")
-  }
-}
-
-fn default_config_path() -> String {
-  "~/.config/monitor.periphery.config.toml".to_string()
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PeripheryConfig {
-  #[serde(default = "default_periphery_port")]
-  pub port: u16,
-  #[serde(default = "default_repo_dir")]
-  pub repo_dir: PathBuf,
-  #[serde(default = "default_stats_refresh_interval")]
-  pub stats_polling_rate: Timelength,
-  #[serde(default)]
-  pub allowed_ips: Vec<IpAddr>,
-  #[serde(default)]
-  pub passkeys: Vec<String>,
-  #[serde(default)]
-  pub secrets: HashMap<String, String>,
-  #[serde(default)]
-  pub github_accounts: HashMap<String, String>,
-  #[serde(default)]
-  pub docker_accounts: HashMap<String, String>,
-}
-
-impl PeripheryConfig {
-  pub fn load(
-    env: &Env,
-    args: &CliArgs,
-  ) -> anyhow::Result<PeripheryConfig> {
-    let env_config_paths = parse_comma_seperated(&env.config_paths)
-            .context("failed to parse config paths on environment into comma seperated list")?;
-    let config_paths = args
-      .config_path
-      .as_ref()
-      .unwrap_or(&env_config_paths)
-      .to_vec();
-    let env_match_keywords = parse_comma_seperated::<String>(&env.config_keywords)
-            .context("failed to parse environemt CONFIG_KEYWORDS into comma seperated list")?;
-    let match_keywords = args
-      .config_keyword
-      .as_ref()
-      .unwrap_or(&env_match_keywords)
-      .iter()
-      .map(|kw| kw.as_str());
+pub fn periphery_config() -> &'static PeripheryConfig {
+  static PERIPHERY_CONFIG: OnceLock<PeripheryConfig> =
+    OnceLock::new();
+  PERIPHERY_CONFIG.get_or_init(|| {
+    let env: Env = envy::from_env()
+      .expect("failed to parse periphery environment");
+    let args = CliArgs::parse();
+    let config_paths = args.config_path.unwrap_or(env.config_paths);
+    let match_keywords =
+      args.config_keyword.unwrap_or(env.config_keywords);
     let mut config = parse_config_paths::<PeripheryConfig>(
       config_paths,
       match_keywords,
@@ -101,12 +66,73 @@ impl PeripheryConfig {
     if let Some(port) = env.port {
       config.port = port;
     }
-    Ok(config)
-  }
+    config
+  })
+}
+
+pub fn accounts_response() -> &'static String {
+  static ACCOUNTS_RESPONSE: OnceLock<String> = OnceLock::new();
+  ACCOUNTS_RESPONSE.get_or_init(|| json!({
+    "docker": periphery_config().docker_accounts.keys().collect::<Vec<_>>(),
+    "github": periphery_config().github_accounts.keys().collect::<Vec<_>>(),
+  }).to_string())
+}
+
+pub fn secrets_response() -> &'static String {
+  static SECRETS_RESPONSE: OnceLock<String> = OnceLock::new();
+  SECRETS_RESPONSE.get_or_init(|| {
+    serde_json::to_string(
+      &periphery_config().secrets.keys().collect::<Vec<_>>(),
+    )
+    .unwrap()
+  })
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PeripheryConfig {
+  /// The port periphery will run on
+  #[serde(default = "default_periphery_port")]
+  pub port: u16,
+
+  /// Configure the logging level: error, warn, info, debug, trace
+  #[serde(default = "default_log_level")]
+  pub log_level: logger::LogLevel,
+
+  /// The system directory where monitor managed repos will be cloned
+  #[serde(default = "default_repo_dir")]
+  pub repo_dir: PathBuf,
+
+  /// The rate at which the system stats will be polled to update the cache
+  #[serde(default = "default_stats_refresh_interval")]
+  pub stats_polling_rate: Timelength,
+
+  /// Limits which IPv4 addresses are allowed to call the api
+  #[serde(default)]
+  pub allowed_ips: Vec<IpAddr>,
+
+  /// Limits the accepted passkeys
+  #[serde(default)]
+  pub passkeys: Vec<String>,
+
+  /// Mapping on local periphery secrets. These can be interpolated into eg. Deployment environment variables.
+  #[serde(default)]
+  pub secrets: HashMap<String, String>,
+
+  /// Mapping of github usernames to access tokens
+  #[serde(default)]
+  pub github_accounts: HashMap<String, String>,
+
+  /// Mapping of docker usernames to access tokens
+  #[serde(default)]
+  pub docker_accounts: HashMap<String, String>,
 }
 
 fn default_periphery_port() -> u16 {
   8000
+}
+
+fn default_log_level() -> logger::LogLevel {
+  logger::LogLevel::Info
 }
 
 fn default_repo_dir() -> PathBuf {

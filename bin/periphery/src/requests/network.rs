@@ -5,7 +5,10 @@ use monitor_client::entities::{
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
 
-use crate::{helpers::docker, state::State};
+use crate::{
+  helpers::docker::{self, client::docker_client},
+  State,
+};
 
 //
 
@@ -20,7 +23,7 @@ impl Resolve<GetNetworkList> for State {
     _: GetNetworkList,
     _: (),
   ) -> anyhow::Result<Vec<DockerNetwork>> {
-    self.docker.list_networks().await
+    docker_client().list_networks().await
   }
 }
 
@@ -40,7 +43,7 @@ impl Resolve<CreateNetwork> for State {
     CreateNetwork { name, driver }: CreateNetwork,
     _: (),
   ) -> anyhow::Result<Log> {
-    Ok(docker::create_network(&name, driver).await)
+    Ok(docker::network::create_network(&name, driver).await)
   }
 }
 
@@ -59,7 +62,7 @@ impl Resolve<DeleteNetwork> for State {
     DeleteNetwork { name }: DeleteNetwork,
     _: (),
   ) -> anyhow::Result<Log> {
-    Ok(docker::delete_network(&name).await)
+    Ok(docker::network::delete_network(&name).await)
   }
 }
 
@@ -76,6 +79,6 @@ impl Resolve<PruneNetworks> for State {
     _: PruneNetworks,
     _: (),
   ) -> anyhow::Result<Log> {
-    Ok(docker::prune_networks().await)
+    Ok(docker::network::prune_networks().await)
   }
 }

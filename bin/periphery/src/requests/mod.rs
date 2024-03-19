@@ -7,7 +7,11 @@ use resolver_api::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{helpers::run_monitor_command, state::State};
+use crate::{
+  config::{accounts_response, secrets_response},
+  helpers::run_monitor_command,
+  State,
+};
 
 mod stats;
 pub use stats::*;
@@ -139,7 +143,7 @@ impl ResolveToString<GetAccounts> for State {
     _: GetAccounts,
     _: (),
   ) -> anyhow::Result<String> {
-    Ok(self.accounts_response.clone())
+    Ok(accounts_response().clone())
   }
 }
 
@@ -156,7 +160,7 @@ impl ResolveToString<GetSecrets> for State {
     _: GetSecrets,
     _: (),
   ) -> anyhow::Result<String> {
-    Ok(self.secrets_response.clone())
+    Ok(secrets_response().clone())
   }
 }
 

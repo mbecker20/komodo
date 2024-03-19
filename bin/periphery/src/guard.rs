@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, sync::Arc};
+use std::net::SocketAddr;
 
 use axum::{
   body::Body,
@@ -10,17 +10,13 @@ use axum::{
 };
 use serde_json::Value;
 
-use crate::state::State;
+use crate::config::periphery_config;
 
 pub async fn guard_request_by_passkey(
   req: Request<Body>,
   next: Next,
 ) -> Result<Response, (StatusCode, String)> {
-  let state = req.extensions().get::<Arc<State>>().ok_or((
-    StatusCode::INTERNAL_SERVER_ERROR,
-    "could not get state extension".to_string(),
-  ))?;
-  if state.config.passkeys.is_empty() {
+  if periphery_config().passkeys.is_empty() {
     return Ok(next.run(req).await);
   }
   let req_passkey = req.headers().get("authorization");
@@ -31,16 +27,16 @@ pub async fn guard_request_by_passkey(
     ));
   }
   let req_passkey = req_passkey
-        .unwrap()
-        .to_str()
-        .map_err(|e| {
-            (
-                StatusCode::UNAUTHORIZED,
-                format!("failed to get passkey from authorization header as str: {e:?}"),
-            )
-        })?
-        .replace("Bearer ", "");
-  if state.config.passkeys.contains(&req_passkey) {
+    .unwrap()
+    .to_str()
+    .map_err(|e| {
+      (
+        StatusCode::UNAUTHORIZED,
+        format!("failed to get passkey from authorization header as str: {e:?}"),
+      )
+    })?
+    .replace("Bearer ", "");
+  if periphery_config().passkeys.contains(&req_passkey) {
     Ok(next.run(req).await)
   } else {
     let ConnectInfo(socket_addr) =
@@ -68,11 +64,7 @@ pub async fn guard_request_by_ip(
   req: Request<Body>,
   next: Next,
 ) -> Result<Response, (StatusCode, String)> {
-  let state = req.extensions().get::<Arc<State>>().ok_or((
-    StatusCode::INTERNAL_SERVER_ERROR,
-    "could not get state extension".to_string(),
-  ))?;
-  if state.config.allowed_ips.is_empty() {
+  if periphery_config().allowed_ips.is_empty() {
     return Ok(next.run(req).await);
   }
   let ConnectInfo(socket_addr) =
@@ -81,7 +73,7 @@ pub async fn guard_request_by_ip(
       "could not get socket addr of request".to_string(),
     ))?;
   let ip = socket_addr.ip();
-  if state.config.allowed_ips.contains(&ip) {
+  if periphery_config().allowed_ips.contains(&ip) {
     Ok(next.run(req).await)
   } else {
     let body = req
@@ -90,7 +82,7 @@ pub async fn guard_request_by_ip(
       .ok()
       .map(|Json(body)| body);
     warn!(
-      "unauthorized request from {ip} (bad passkey) | body: {body:?}"
+      "unauthorized request from {ip} (unknown ip) | body: {body:?}"
     );
     Err((
       StatusCode::UNAUTHORIZED,

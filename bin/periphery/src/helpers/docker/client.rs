@@ -1,4 +1,6 @@
-use anyhow::{anyhow, Context};
+use std::sync::OnceLock;
+
+use anyhow::Context;
 use bollard::{container::ListContainersOptions, Docker};
 use monitor_client::entities::{
   deployment::ContainerSummary,
@@ -6,6 +8,11 @@ use monitor_client::entities::{
     docker_image::ImageSummary, docker_network::DockerNetwork,
   },
 };
+
+pub fn docker_client() -> &'static DockerClient {
+  static DOCKER_CLIENT: OnceLock<DockerClient> = OnceLock::new();
+  DOCKER_CLIENT.get_or_init(Default::default)
+}
 
 pub struct DockerClient {
   docker: Docker,
@@ -37,9 +44,9 @@ impl DockerClient {
           id: s.id.unwrap_or_default(),
           name: s
             .names
-            .ok_or(anyhow!("no names on container"))?
+            .context("no names on container")?
             .pop()
-            .ok_or(anyhow!("no names on container (empty vec)"))?
+            .context("no names on container (empty vec)")?
             .replace('/', ""),
           image: s.image.unwrap_or(String::from("unknown")),
           state: s

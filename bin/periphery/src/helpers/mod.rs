@@ -3,42 +3,40 @@ use async_timing_util::unix_timestamp_ms;
 use monitor_client::entities::update::Log;
 use run_command::{async_run_command, CommandOutput};
 
-use crate::state::State;
+use crate::config::periphery_config;
 
 pub mod docker;
 pub mod git;
-pub mod stats;
 
-impl State {
-  pub fn get_github_token(
-    &self,
-    github_account: &Option<String>,
-  ) -> anyhow::Result<Option<String>> {
-    match github_account {
-      Some(account) => match self.config.github_accounts.get(account)
-      {
+pub fn get_github_token(
+  github_account: &Option<String>,
+) -> anyhow::Result<Option<String>> {
+  match github_account {
+    Some(account) => {
+      match periphery_config().github_accounts.get(account) {
         Some(token) => Ok(Some(token.to_owned())),
         None => Err(anyhow!(
           "did not find token in config for github account {account} "
         )),
-      },
-      None => Ok(None),
+      }
     }
+    None => Ok(None),
   }
+}
 
-  pub fn get_docker_token(
-    &self,
-    docker_account: &Option<String>,
-  ) -> anyhow::Result<Option<String>> {
-    match docker_account {
-      Some(account) => match self.config.docker_accounts.get(account) {
+pub fn get_docker_token(
+  docker_account: &Option<String>,
+) -> anyhow::Result<Option<String>> {
+  match docker_account {
+    Some(account) => {
+      match periphery_config().docker_accounts.get(account) {
         Some(token) => Ok(Some(token.to_owned())),
         None => Err(anyhow!(
-            "did not find token in config for docker account {account} "
-        )),
-      },
-      None => Ok(None),
+        "did not find token in config for docker account {account} "
+      )),
+      }
     }
+    None => Ok(None),
   }
 }
 

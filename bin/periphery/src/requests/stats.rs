@@ -6,7 +6,7 @@ use monitor_client::entities::server::stats::{
 use resolver_api::{derive::Request, ResolveToString};
 use serde::{Deserialize, Serialize};
 
-use crate::state::State;
+use crate::{system_stats::stats_client, State};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(SystemInformation)]
@@ -19,7 +19,7 @@ impl ResolveToString<GetSystemInformation> for State {
     _: GetSystemInformation,
     _: (),
   ) -> anyhow::Result<String> {
-    let info = &self.stats.read().await.info;
+    let info = &stats_client().read().await.info;
     serde_json::to_string(info)
       .context("failed to serialize response to string")
   }
@@ -38,7 +38,7 @@ impl ResolveToString<GetAllSystemStats> for State {
     _: GetAllSystemStats,
     _: (),
   ) -> anyhow::Result<String> {
-    let stats = &self.stats.read().await.stats;
+    let stats = &stats_client().read().await.stats;
     serde_json::to_string(stats)
       .context("failed to serialize response to string")
   }
@@ -57,7 +57,7 @@ impl ResolveToString<GetBasicSystemStats> for State {
     _: GetBasicSystemStats,
     _: (),
   ) -> anyhow::Result<String> {
-    let stats = &self.stats.read().await.stats.basic;
+    let stats = &stats_client().read().await.stats.basic;
     serde_json::to_string(stats)
       .context("failed to serialize response to string")
   }
@@ -76,7 +76,7 @@ impl ResolveToString<GetCpuUsage> for State {
     _: GetCpuUsage,
     _: (),
   ) -> anyhow::Result<String> {
-    let stats = &self.stats.read().await.stats.cpu;
+    let stats = &stats_client().read().await.stats.cpu;
     serde_json::to_string(stats)
       .context("failed to serialize response to string")
   }
@@ -95,7 +95,7 @@ impl ResolveToString<GetDiskUsage> for State {
     _: GetDiskUsage,
     _: (),
   ) -> anyhow::Result<String> {
-    let stats = &self.stats.read().await.stats.disk;
+    let stats = &stats_client().read().await.stats.disk;
     serde_json::to_string(stats)
       .context("failed to serialize response to string")
   }
@@ -114,7 +114,7 @@ impl ResolveToString<GetNetworkUsage> for State {
     _: GetNetworkUsage,
     _: (),
   ) -> anyhow::Result<String> {
-    let stats = &self.stats.read().await.stats.network;
+    let stats = &stats_client().read().await.stats.network;
     serde_json::to_string(&stats)
       .context("failed to serialize response to string")
   }
@@ -133,7 +133,7 @@ impl ResolveToString<GetSystemProcesses> for State {
     _: GetSystemProcesses,
     _: (),
   ) -> anyhow::Result<String> {
-    let stats = &self.stats.read().await.stats.processes;
+    let stats = &stats_client().read().await.stats.processes;
     serde_json::to_string(&stats)
       .context("failed to serialize response to string")
   }
@@ -152,7 +152,7 @@ impl ResolveToString<GetSystemComponents> for State {
     _: GetSystemComponents,
     _: (),
   ) -> anyhow::Result<String> {
-    let stats = &self.stats.read().await.stats.components;
+    let stats = &stats_client().read().await.stats.components;
     serde_json::to_string(&stats)
       .context("failed to serialize response to string")
   }

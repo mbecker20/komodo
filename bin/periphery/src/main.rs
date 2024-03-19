@@ -1,10 +1,10 @@
 #[macro_use]
 extern crate tracing;
 
-use std::{net::SocketAddr, sync::Arc, time::Instant};
+use std::{net::SocketAddr, str::FromStr, time::Instant};
 
 use anyhow::Context;
-use axum::{middleware, routing::post, Extension, Json, Router};
+use axum::{middleware, routing::post, Json, Router};
 
 use axum_extra::{headers::ContentType, TypedHeader};
 use resolver_api::Resolver;
@@ -12,33 +12,35 @@ use serror::AppResult;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 
-mod config;
-mod guard;
-mod helpers;
-mod requests;
-mod state;
-
-use requests::PeripheryRequest;
-use state::State;
+use monitor_periphery::*;
 
 async fn app() -> anyhow::Result<()> {
-  let state = State::load().await?;
+  dotenv::dotenv().ok();
+  let config = config::periphery_config();
+  logger::init(config.log_level);
 
   info!("version: v{}", env!("CARGO_PKG_VERSION"));
 
-  let socket_addr = state.socket_addr()?;
+  system_stats::spawn_system_stats_polling_threads();
+
+  let socket_addr =
+    SocketAddr::from_str(&format!("0.0.0.0:{}", config.port))
+      .context("failed to parse socket addr")?;
 
   let app = Router::new()
     .route(
       "/",
       post(
-        |state: Extension<Arc<State>>,
-         Json(request): Json<PeripheryRequest>| async move {
+        |Json(request): Json<
+          monitor_periphery::requests::PeripheryRequest,
+        >| async move {
           let timer = Instant::now();
           let req_id = Uuid::new_v4();
           info!("request {req_id} | {request:?}");
           let res = tokio::spawn(async move {
-            let res = state.resolve_request(request, ()).await;
+            let res = monitor_periphery::State
+              .resolve_request(request, ())
+              .await;
             if let Err(e) = &res {
               debug!("request {req_id} ERROR: {e:#?}");
             }
@@ -57,8 +59,7 @@ async fn app() -> anyhow::Result<()> {
       ),
     )
     .layer(middleware::from_fn(guard::guard_request_by_ip))
-    .layer(middleware::from_fn(guard::guard_request_by_passkey))
-    .layer(Extension(state));
+    .layer(middleware::from_fn(guard::guard_request_by_passkey));
 
   info!("starting server on {}", socket_addr);
 

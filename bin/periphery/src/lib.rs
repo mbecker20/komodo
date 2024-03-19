@@ -5,4 +5,6 @@ pub mod config;
 pub mod guard;
 pub mod helpers;
 pub mod requests;
-pub mod state;
+pub mod system_stats;
+
+pub struct State;

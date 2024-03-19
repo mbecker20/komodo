@@ -8,7 +8,9 @@ use monitor_client::entities::{
 };
 use run_command::async_run_command;
 
-use super::run_monitor_command;
+use crate::config::periphery_config;
+
+use super::{get_github_token, run_monitor_command};
 
 pub async fn pull(
   mut path: PathBuf,
@@ -45,8 +47,6 @@ pub async fn pull(
 
 pub async fn clone(
   clone_args: impl Into<CloneArgs>,
-  mut repo_dir: PathBuf,
-  access_token: Option<String>,
 ) -> anyhow::Result<Vec<Log>> {
   let CloneArgs {
     name,
@@ -54,19 +54,23 @@ pub async fn clone(
     branch,
     on_clone,
     on_pull,
-    ..
+    github_account,
   } = clone_args.into();
+  let access_token = get_github_token(&github_account)?;
   let repo =
     repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
   let name = to_monitor_name(&name);
+  let mut repo_dir = periphery_config().repo_dir.clone();
   repo_dir.push(name);
-  let destination = repo_dir.display().to_string();
+  let clone_destination = repo_dir.display().to_string();
   let clone_log =
-    clone_inner(repo, &destination, &branch, access_token).await;
+    clone_inner(repo, &clone_destination, &branch, access_token)
+      .await;
   if !clone_log.success {
     return Ok(vec![clone_log]);
   }
-  let commit_hash_log = get_commit_hash_log(&destination).await?;
+  let commit_hash_log =
+    get_commit_hash_log(&clone_destination).await?;
   let mut logs = vec![clone_log, commit_hash_log];
   if let Some(command) = on_clone {
     if !command.path.is_empty() && !command.command.is_empty() {

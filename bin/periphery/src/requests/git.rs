@@ -4,7 +4,7 @@ use monitor_client::entities::{
 use resolver_api::{derive::Request, Resolve};
 use serde::{Deserialize, Serialize};
 
-use crate::{helpers::git, state::State};
+use crate::{config::periphery_config, helpers::git, State};
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<Log>)]
@@ -19,8 +19,7 @@ impl Resolve<CloneRepo> for State {
     CloneRepo { args }: CloneRepo,
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
-    let access_token = self.get_github_token(&args.github_account)?;
-    git::clone(args, self.config.repo_dir.clone(), access_token).await
+    git::clone(args).await
   }
 }
 
@@ -47,8 +46,12 @@ impl Resolve<PullRepo> for State {
   ) -> anyhow::Result<Vec<Log>> {
     let name = to_monitor_name(&name);
     Ok(
-      git::pull(self.config.repo_dir.join(name), &branch, &on_pull)
-        .await,
+      git::pull(
+        periphery_config().repo_dir.join(name),
+        &branch,
+        &on_pull,
+      )
+      .await,
     )
   }
 }
@@ -69,8 +72,9 @@ impl Resolve<DeleteRepo> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     let name = to_monitor_name(&name);
-    let deleted =
-      std::fs::remove_dir_all(self.config.repo_dir.join(&name));
+    let deleted = std::fs::remove_dir_all(
+      periphery_config().repo_dir.join(&name),
+    );
     let msg = match deleted {
       Ok(_) => format!("deleted repo {name}"),
       Err(_) => format!("no repo at {name} to delete"),
