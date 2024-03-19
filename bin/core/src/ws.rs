@@ -31,7 +31,9 @@ use tokio::select;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-  auth::RequestUser,
+  auth::{
+    auth_api_key_check_enabled, auth_jwt_check_enabled, RequestUser,
+  },
   db_client,
   helpers::{channel::update_channel, resource::StateResource},
   state::State,
@@ -122,7 +124,7 @@ pub async fn ws_login(
       // login
       match WsLoginMessage::from_json_str(&login_msg) {
         Ok(WsLoginMessage::Jwt { jwt }) => {
-          match State.auth_jwt_check_enabled(&jwt).await {
+          match auth_jwt_check_enabled(&jwt).await {
             Ok(user) => {
               let _ = socket
                 .send(Message::Text("LOGGED_IN".to_string()))
@@ -141,8 +143,7 @@ pub async fn ws_login(
           }
         }
         Ok(WsLoginMessage::ApiKeys { key, secret }) => {
-          match State.auth_api_key_check_enabled(&key, &secret).await
-          {
+          match auth_api_key_check_enabled(&key, &secret).await {
             Ok(user) => {
               let _ = socket
                 .send(Message::Text("LOGGED_IN".to_string()))

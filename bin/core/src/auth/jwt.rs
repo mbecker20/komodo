@@ -7,20 +7,16 @@ use anyhow::{anyhow, Context};
 use async_timing_util::{
   get_timelength_in_ms, unix_timestamp_ms, Timelength,
 };
-use axum::{http::HeaderMap, Extension};
+use axum::Extension;
 use hmac::{Hmac, Mac};
-use jwt::{SignWithKey, VerifyWithKey};
-use monitor_client::entities::{
-  config::CoreConfig, monitor_timestamp,
-};
+use jwt::SignWithKey;
+use monitor_client::entities::config::CoreConfig;
 use mungos::mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tokio::sync::Mutex;
 
-use crate::{
-  config::core_config, db_client, helpers::get_user, state::State,
-};
+use crate::config::core_config;
 
 use super::random_string;
 
@@ -63,7 +59,7 @@ pub struct JwtClaims {
 }
 
 pub struct JwtClient {
-  key: Hmac<Sha256>,
+  pub key: Hmac<Sha256>,
   valid_for_ms: u128,
   exchange_tokens: ExchangeTokenMap,
 }
@@ -122,134 +118,6 @@ impl JwtClient {
       Ok(jwt)
     } else {
       Err(anyhow!("invalid exchange token: expired"))
-    }
-  }
-}
-
-impl State {
-  pub async fn authenticate_check_enabled(
-    &self,
-    headers: &HeaderMap,
-  ) -> anyhow::Result<RequestUser> {
-    let user_id = match (
-      headers.get("authorization"),
-      headers.get("x-api-key"),
-      headers.get("x-api-secret"),
-    ) {
-      (Some(jwt), _, _) => {
-        // USE JWT
-        let jwt = jwt
-          .to_str()
-          .context("jwt is not str")?
-          .replace("Bearer ", "")
-          .replace("bearer ", "");
-        self
-          .auth_jwt_get_user_id(&jwt)
-          .await
-          .context("failed to authenticate jwt")?
-      }
-      (None, Some(key), Some(secret)) => {
-        // USE API KEY / SECRET
-        let key = key.to_str().context("key is not str")?;
-        let secret = secret.to_str().context("secret is not str")?;
-        self
-          .auth_api_key_get_user_id(key, secret)
-          .await
-          .context("failed to authenticate api key")?
-      }
-      _ => {
-        // AUTH FAIL
-        return Err(anyhow!("must attach either AUTHORIZATION header with jwt OR pass X-API-KEY and X-API-SECRET"));
-      }
-    };
-    let user = get_user(&user_id).await?;
-    if user.enabled {
-      let user = InnerRequestUser {
-        id: user_id,
-        username: user.username,
-        is_admin: user.admin,
-        create_server_permissions: user.create_server_permissions,
-        create_build_permissions: user.create_build_permissions,
-      };
-      Ok(user.into())
-    } else {
-      Err(anyhow!("user not enabled"))
-    }
-  }
-
-  pub async fn auth_jwt_get_user_id(
-    &self,
-    jwt: &str,
-  ) -> anyhow::Result<String> {
-    let claims: JwtClaims = jwt
-      .verify_with_key(&jwt_client().key)
-      .context("failed to verify claims")?;
-    if claims.exp > unix_timestamp_ms() {
-      Ok(claims.id)
-    } else {
-      Err(anyhow!("token has expired"))
-    }
-  }
-
-  pub async fn auth_jwt_check_enabled(
-    &self,
-    jwt: &str,
-  ) -> anyhow::Result<RequestUser> {
-    let user_id = self.auth_jwt_get_user_id(jwt).await?;
-    self.check_enabled(user_id).await
-  }
-
-  pub async fn auth_api_key_get_user_id(
-    &self,
-    key: &str,
-    secret: &str,
-  ) -> anyhow::Result<String> {
-    let key = db_client()
-      .await
-      .api_keys
-      .find_one(doc! { "key": key }, None)
-      .await
-      .context("failed to query db")?
-      .context("no api key matching key")?;
-    if key.expires != 0 && key.expires < monitor_timestamp() {
-      return Err(anyhow!("api key expired"));
-    }
-    if bcrypt::verify(secret, &key.secret)
-      .context("failed to verify secret hash")?
-    {
-      // secret matches
-      Ok(key.user_id)
-    } else {
-      // secret mismatch
-      Err(anyhow!("invalid api secret"))
-    }
-  }
-
-  pub async fn auth_api_key_check_enabled(
-    &self,
-    key: &str,
-    secret: &str,
-  ) -> anyhow::Result<RequestUser> {
-    let user_id = self.auth_api_key_get_user_id(key, secret).await?;
-    self.check_enabled(user_id).await
-  }
-
-  async fn check_enabled(
-    &self,
-    user_id: String,
-  ) -> anyhow::Result<RequestUser> {
-    let user = get_user(&user_id).await?;
-    if user.enabled {
-      let user = InnerRequestUser {
-        id: user_id,
-        username: user.username,
-        is_admin: user.admin,
-        create_server_permissions: user.create_server_permissions,
-        create_build_permissions: user.create_build_permissions,
-      };
-      Ok(user.into())
-    } else {
-      Err(anyhow!("user not enabled"))
     }
   }
 }

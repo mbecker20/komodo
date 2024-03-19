@@ -11,7 +11,13 @@ use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::requests;
 
 use crate::{
-  db_client, helpers::{cache::deployment_status_cache, periphery_client}, state::State,
+  db_client,
+  helpers::{cache::deployment_status_cache, periphery_client},
+  monitor::{alert::check_alerts, record::record_server_stats},
+};
+
+use self::helpers::{
+  insert_deployments_status_unknown, insert_server_status,
 };
 
 mod alert;
@@ -62,10 +68,7 @@ pub fn spawn_monitor_loop() {
         update_cache_for_server(&server).await;
       });
       join_all(futures).await;
-      tokio::join!(
-        State.check_alerts(ts),
-        State.record_server_stats(ts)
-      );
+      tokio::join!(check_alerts(ts), record_server_stats(ts));
     }
   });
 }
@@ -83,58 +86,54 @@ pub async fn update_cache_for_server(server: &Server) {
   }
   let deployments = deployments.unwrap();
   if !server.config.enabled {
-    State.insert_deployments_status_unknown(deployments).await;
-    State
-      .insert_server_status(
-        server,
-        ServerStatus::Disabled,
-        String::from("unknown"),
-        None,
-      )
-      .await;
+    insert_deployments_status_unknown(deployments).await;
+    insert_server_status(
+      server,
+      ServerStatus::Disabled,
+      String::from("unknown"),
+      None,
+    )
+    .await;
     return;
   }
   // already handle server disabled case above, so using unwrap here
   let periphery = periphery_client(server).unwrap();
   let version = periphery.request(requests::GetVersion {}).await;
   if version.is_err() {
-    State.insert_deployments_status_unknown(deployments).await;
-    State
-      .insert_server_status(
-        server,
-        ServerStatus::NotOk,
-        String::from("unknown"),
-        None,
-      )
-      .await;
+    insert_deployments_status_unknown(deployments).await;
+    insert_server_status(
+      server,
+      ServerStatus::NotOk,
+      String::from("unknown"),
+      None,
+    )
+    .await;
     return;
   }
   let stats = periphery.request(requests::GetAllSystemStats {}).await;
   if stats.is_err() {
-    State.insert_deployments_status_unknown(deployments).await;
-    State
-      .insert_server_status(
-        server,
-        ServerStatus::NotOk,
-        String::from("unknown"),
-        None,
-      )
-      .await;
+    insert_deployments_status_unknown(deployments).await;
+    insert_server_status(
+      server,
+      ServerStatus::NotOk,
+      String::from("unknown"),
+      None,
+    )
+    .await;
     return;
   }
   let stats = stats.unwrap();
-  State
-    .insert_server_status(
-      server,
-      ServerStatus::Ok,
-      version.unwrap().version,
-      stats.into(),
-    )
-    .await;
+  insert_server_status(
+    server,
+    ServerStatus::Ok,
+    version.unwrap().version,
+    stats.into(),
+  )
+  .await;
   let containers =
     periphery.request(requests::GetContainerList {}).await;
   if containers.is_err() {
-    State.insert_deployments_status_unknown(deployments).await;
+    insert_deployments_status_unknown(deployments).await;
     return;
   }
   let containers = containers.unwrap();

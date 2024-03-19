@@ -9,61 +9,56 @@ use monitor_client::entities::{
   },
 };
 
-use crate::{
-  helpers::cache::{deployment_status_cache, server_status_cache},
-  state::State,
+use crate::helpers::cache::{
+  deployment_status_cache, server_status_cache,
 };
 
 use super::{CachedDeploymentStatus, CachedServerStatus, History};
 
-impl State {
-  pub async fn insert_deployments_status_unknown(
-    &self,
-    deployments: Vec<Deployment>,
-  ) {
-    let status_cache = deployment_status_cache();
-    for deployment in deployments {
-      let prev =
-        status_cache.get(&deployment.id).await.map(|s| s.curr.state);
-      status_cache
-        .insert(
-          deployment.id.clone(),
-          History {
-            curr: CachedDeploymentStatus {
-              id: deployment.id,
-              state: DockerContainerState::Unknown,
-              container: None,
-            },
-            prev,
-          }
-          .into(),
-        )
-        .await;
-    }
-  }
-
-  pub async fn insert_server_status(
-    &self,
-    server: &Server,
-    status: ServerStatus,
-    version: String,
-    stats: Option<AllSystemStats>,
-  ) {
-    let health = stats.as_ref().map(|s| get_server_health(server, s));
-    server_status_cache()
+pub async fn insert_deployments_status_unknown(
+  deployments: Vec<Deployment>,
+) {
+  let status_cache = deployment_status_cache();
+  for deployment in deployments {
+    let prev =
+      status_cache.get(&deployment.id).await.map(|s| s.curr.state);
+    status_cache
       .insert(
-        server.id.clone(),
-        CachedServerStatus {
-          id: server.id.clone(),
-          status,
-          version,
-          stats,
-          health,
+        deployment.id.clone(),
+        History {
+          curr: CachedDeploymentStatus {
+            id: deployment.id,
+            state: DockerContainerState::Unknown,
+            container: None,
+          },
+          prev,
         }
         .into(),
       )
       .await;
   }
+}
+
+pub async fn insert_server_status(
+  server: &Server,
+  status: ServerStatus,
+  version: String,
+  stats: Option<AllSystemStats>,
+) {
+  let health = stats.as_ref().map(|s| get_server_health(server, s));
+  server_status_cache()
+    .insert(
+      server.id.clone(),
+      CachedServerStatus {
+        id: server.id.clone(),
+        status,
+        version,
+        stats,
+        health,
+      }
+      .into(),
+    )
+    .await;
 }
 
 fn get_server_health(
