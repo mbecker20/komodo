@@ -14,7 +14,8 @@ use uuid::Uuid;
 
 use crate::{
   auth::{auth_request, RequestUser, RequestUserExtension},
-  state::{State, StateExtension},
+  config::core_config,
+  state::State,
 };
 
 mod alert;
@@ -136,8 +137,7 @@ pub fn router() -> Router {
     .route(
       "/",
       post(
-        |state: StateExtension,
-         Extension(user): RequestUserExtension,
+        |Extension(user): RequestUserExtension,
          Json(request): Json<ReadRequest>| async move {
           let timer = Instant::now();
           let req_id = Uuid::new_v4();
@@ -145,7 +145,7 @@ pub fn router() -> Router {
             "/read request {req_id} | user: {} ({}) | {request:?}",
             user.username, user.id
           );
-          let res = state.resolve_request(request, user).await;
+          let res = State.resolve_request(request, user).await;
           if let Err(e) = &res {
             warn!("/read request {req_id} ERROR: {e:#?}");
           }
@@ -182,8 +182,8 @@ impl Resolve<GetCoreInfo, RequestUser> for State {
     _: RequestUser,
   ) -> anyhow::Result<GetCoreInfoResponse> {
     Ok(GetCoreInfoResponse {
-      title: self.config.title.clone(),
-      monitoring_interval: self.config.monitoring_interval,
+      title: core_config().title.clone(),
+      monitoring_interval: core_config().monitoring_interval,
     })
   }
 }

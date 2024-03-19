@@ -9,7 +9,10 @@ use monitor_client::entities::{
   },
 };
 
-use crate::state::State;
+use crate::{
+  helpers::cache::{deployment_status_cache, server_status_cache},
+  state::State,
+};
 
 use super::{CachedDeploymentStatus, CachedServerStatus, History};
 
@@ -18,14 +21,11 @@ impl State {
     &self,
     deployments: Vec<Deployment>,
   ) {
+    let status_cache = deployment_status_cache();
     for deployment in deployments {
-      let prev = self
-        .deployment_status_cache
-        .get(&deployment.id)
-        .await
-        .map(|s| s.curr.state);
-      self
-        .deployment_status_cache
+      let prev =
+        status_cache.get(&deployment.id).await.map(|s| s.curr.state);
+      status_cache
         .insert(
           deployment.id.clone(),
           History {
@@ -50,8 +50,7 @@ impl State {
     stats: Option<AllSystemStats>,
   ) {
     let health = stats.as_ref().map(|s| get_server_health(server, s));
-    self
-      .server_status_cache
+    server_status_cache()
       .insert(
         server.id.clone(),
         CachedServerStatus {

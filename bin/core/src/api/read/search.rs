@@ -109,7 +109,7 @@ impl Resolve<FindResources, RequestUser> for State {
 //             match resource_type {
 //                 Server => {
 //                     let servers = if server_ids.is_empty() {
-//                         self.db.servers.get_some(query.clone(), None).await?
+//                         db_client().await.servers.get_some(query.clone(), None).await?
 //                     } else {
 //                         let server_ids = server_ids
 //                             .iter()
@@ -120,7 +120,7 @@ impl Resolve<FindResources, RequestUser> for State {
 //                             .collect::<anyhow::Result<Vec<_>>>()?;
 //                         let mut query = query.clone();
 //                         query.insert("_id", doc! { "$in": server_ids });
-//                         self.db.servers.get_some(query, None).await?
+//                         db_client().await.servers.get_some(query, None).await?
 //                     };
 //                     for server in servers {
 //                         let status = self

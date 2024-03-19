@@ -15,7 +15,9 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, state::State};
+use crate::{
+  auth::RequestUser, db_client, helpers::get_user, state::State,
+};
 
 const RECENTLY_VIEWED_MAX: usize = 10;
 
@@ -26,8 +28,7 @@ impl Resolve<PushRecentlyViewed, RequestUser> for State {
     PushRecentlyViewed { resource }: PushRecentlyViewed,
     user: RequestUser,
   ) -> anyhow::Result<PushRecentlyViewedResponse> {
-    let mut recently_viewed = self
-      .get_user(&user.id)
+    let mut recently_viewed = get_user(&user.id)
       .await?
       .recently_viewed
       .into_iter()
@@ -41,7 +42,7 @@ impl Resolve<PushRecentlyViewed, RequestUser> for State {
       .context("failed to convert recently views to bson")?;
 
     update_one_by_id(
-      &self.db.users,
+      &db_client().await.users,
       &user.id,
       mungos::update::Update::Set(doc! {
         "recently_viewed": recently_viewed
@@ -63,7 +64,7 @@ impl Resolve<SetLastSeenUpdate, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<SetLastSeenUpdateResponse> {
     update_one_by_id(
-      &self.db.users,
+      &db_client().await.users,
       &user.id,
       mungos::update::Update::Set(doc! {
         "last_update_view": monitor_timestamp()

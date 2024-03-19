@@ -20,10 +20,11 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
+  db_client,
   helpers::{
-    empty_or_only_spaces, make_update, resource::StateResource,
+    add_update, empty_or_only_spaces, make_update, remove_from_recently_viewed, resource::StateResource, update_update
   },
-  state::State,
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -53,8 +54,8 @@ impl Resolve<CreateBuild, RequestUser> for State {
       config: config.into(),
       info: Default::default(),
     };
-    let build_id = self
-      .db
+    let build_id = db_client()
+      .await
       .builds
       .insert_one(build, None)
       .await
@@ -80,7 +81,7 @@ impl Resolve<CreateBuild, RequestUser> for State {
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(build)
   }
@@ -120,8 +121,8 @@ impl Resolve<CopyBuild, RequestUser> for State {
       config,
       info: Default::default(),
     };
-    let build_id = self
-      .db
+    let build_id = db_client()
+      .await
       .builds
       .insert_one(build, None)
       .await
@@ -149,7 +150,7 @@ impl Resolve<CopyBuild, RequestUser> for State {
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(build)
   }
@@ -162,7 +163,7 @@ impl Resolve<DeleteBuild, RequestUser> for State {
     DeleteBuild { id }: DeleteBuild,
     user: RequestUser,
   ) -> anyhow::Result<Build> {
-    if self.action_states.build.busy(&id).await {
+    if action_states().build.busy(&id).await {
       return Err(anyhow!("build busy"));
     }
 
@@ -177,10 +178,10 @@ impl Resolve<DeleteBuild, RequestUser> for State {
     let mut update =
       make_update(&build, Operation::DeleteBuild, &user);
     update.status = UpdateStatus::InProgress;
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
 
-    let res = self
-      .db
+    let res = db_client()
+      .await
       .builds
       .delete_one(doc! { "_id": ObjectId::from_str(&id)? }, None)
       .await
@@ -199,9 +200,9 @@ impl Resolve<DeleteBuild, RequestUser> for State {
 
     update.logs.push(log);
     update.finalize();
-    self.update_update(update).await?;
+    update_update(update).await?;
 
-    self.remove_from_recently_viewed(&build).await?;
+    remove_from_recently_viewed(&build).await?;
 
     Ok(build)
   }
@@ -214,7 +215,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
     UpdateBuild { id, mut config }: UpdateBuild,
     user: RequestUser,
   ) -> anyhow::Result<Build> {
-    if self.action_states.build.busy(&id).await {
+    if action_states().build.busy(&id).await {
       return Err(anyhow!("build busy"));
     }
 
@@ -242,7 +243,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
       }
 
       update_one_by_id(
-        &self.db.builds,
+        &db_client().await.builds,
         &build.id,
         mungos::update::Update::FlattenSet(
           doc! { "config": to_bson(&config)? },
@@ -262,15 +263,14 @@ impl Resolve<UpdateBuild, RequestUser> for State {
 
       update.finalize();
 
-      self.add_update(update).await?;
+      add_update(update).await?;
 
       let build: Build = self.get_resource(&build.id).await?;
 
       anyhow::Ok(build)
     };
 
-    self
-      .action_states
+    action_states()
       .build
       .update_entry(id.clone(), |entry| {
         entry.updating = true;
@@ -279,8 +279,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .build
       .update_entry(id, |entry| {
         entry.updating = false;

@@ -22,10 +22,13 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
+  db_client,
   helpers::{
-    empty_or_only_spaces, make_update, resource::StateResource,
+    add_update, empty_or_only_spaces, get_deployment_state,
+    make_update, periphery_client, remove_from_recently_viewed,
+    resource::StateResource, update_update,
   },
-  state::State,
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -65,8 +68,8 @@ impl Resolve<CreateDeployment, RequestUser> for State {
       config: config.into(),
       info: (),
     };
-    let deployment_id = self
-      .db
+    let deployment_id = db_client()
+      .await
       .deployments
       .insert_one(&deployment, None)
       .await
@@ -97,7 +100,7 @@ impl Resolve<CreateDeployment, RequestUser> for State {
       ..Default::default()
     };
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(deployment)
   }
@@ -148,8 +151,8 @@ impl Resolve<CopyDeployment, RequestUser> for State {
       config,
       info: (),
     };
-    let deployment_id = self
-      .db
+    let deployment_id = db_client()
+      .await
       .deployments
       .insert_one(&deployment, None)
       .await
@@ -180,7 +183,7 @@ impl Resolve<CopyDeployment, RequestUser> for State {
       ..Default::default()
     };
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(deployment)
   }
@@ -193,7 +196,7 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
     DeleteDeployment { id }: DeleteDeployment,
     user: RequestUser,
   ) -> anyhow::Result<Deployment> {
-    if self.action_states.deployment.busy(&id).await {
+    if action_states().deployment.busy(&id).await {
       return Err(anyhow!("deployment busy"));
     }
 
@@ -208,8 +211,7 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
     let inner = || async move {
       let start_ts = monitor_timestamp();
 
-      let state = self
-        .get_deployment_state(&deployment)
+      let state = get_deployment_state(&deployment)
         .await
         .context("failed to get container state")?;
 
@@ -223,7 +225,7 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
         ..Default::default()
       };
 
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       if !matches!(
         state,
@@ -242,7 +244,7 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
             ),
           ));
         } else if let Ok(server) = server {
-          match self.periphery_client(&server) {
+          match periphery_client(&server) {
             Ok(periphery) => match periphery
               .request(requests::RemoveContainer {
                 name: deployment.name.clone(),
@@ -269,10 +271,13 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
         }
       }
 
-      let res =
-        delete_one_by_id(&self.db.deployments, &deployment.id, None)
-          .await
-          .context("failed to delete deployment from mongo");
+      let res = delete_one_by_id(
+        &db_client().await.deployments,
+        &deployment.id,
+        None,
+      )
+      .await
+      .context("failed to delete deployment from mongo");
 
       let log = match res {
         Ok(_) => Log::simple(
@@ -290,15 +295,14 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
       update.status = UpdateStatus::Complete;
       update.success = all_logs_success(&update.logs);
 
-      self.update_update(update).await?;
+      update_update(update).await?;
 
-      self.remove_from_recently_viewed(&deployment).await?;
+      remove_from_recently_viewed(&deployment).await?;
 
       Ok(deployment)
     };
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(id.clone(), |entry| {
         entry.deleting = true;
@@ -307,8 +311,7 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(id, |entry| {
         entry.deleting = false;
@@ -326,7 +329,7 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
     UpdateDeployment { id, mut config }: UpdateDeployment,
     user: RequestUser,
   ) -> anyhow::Result<Deployment> {
-    if self.action_states.deployment.busy(&id).await {
+    if action_states().deployment.busy(&id).await {
       return Err(anyhow!("deployment busy"));
     }
 
@@ -377,7 +380,7 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
       }
 
       update_one_by_id(
-        &self.db.deployments,
+        &db_client().await.deployments,
         &id,
         mungos::update::Update::FlattenSet(
           doc! { "config": to_bson(&config)? },
@@ -402,15 +405,14 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
         ..Default::default()
       };
 
-      self.add_update(update).await?;
+      add_update(update).await?;
 
       let deployment: Deployment = self.get_resource(&id).await?;
 
       anyhow::Ok(deployment)
     };
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment.id.clone(), |entry| {
         entry.updating = true;
@@ -419,8 +421,7 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment.id, |entry| {
         entry.updating = false;
@@ -439,7 +440,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<Update> {
     let name = to_monitor_name(&name);
-    if self.action_states.deployment.busy(&id).await {
+    if action_states().deployment.busy(&id).await {
       return Err(anyhow!("deployment busy"));
     }
 
@@ -454,8 +455,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
     let inner = || async {
       let name = to_monitor_name(&name);
 
-      let container_state =
-        self.get_deployment_state(&deployment).await?;
+      let container_state = get_deployment_state(&deployment).await?;
 
       if container_state == DockerContainerState::Unknown {
         return Err(anyhow!(
@@ -467,7 +467,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
         make_update(&deployment, Operation::RenameDeployment, &user);
 
       update_one_by_id(
-        &self.db.deployments,
+        &db_client().await.deployments,
         &deployment.id,
         mungos::update::Update::Set(
           doc! { "name": &name, "updated_at": monitor_timestamp() },
@@ -480,8 +480,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
       if container_state != DockerContainerState::NotDeployed {
         let server: Server =
           self.get_resource(&deployment.config.server_id).await?;
-        let log = self
-          .periphery_client(&server)?
+        let log = periphery_client(&server)?
           .request(requests::RenameContainer {
             curr_name: deployment.name.clone(),
             new_name: name.clone(),
@@ -500,13 +499,12 @@ impl Resolve<RenameDeployment, RequestUser> for State {
       );
       update.finalize();
 
-      self.add_update(update.clone()).await?;
+      add_update(update.clone()).await?;
 
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(id.clone(), |entry| {
         entry.renaming = true;
@@ -515,8 +513,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(id, |entry| {
         entry.renaming = false;

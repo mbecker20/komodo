@@ -16,7 +16,7 @@ pub trait MonitorAuthRequest: HasResponse {}
 pub struct GetLoginOptions {}
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 pub struct GetLoginOptionsResponse {
   pub local: bool,
   pub github: bool,

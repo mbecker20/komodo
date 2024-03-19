@@ -7,7 +7,13 @@ use monitor_client::entities::{
   update::ResourceTarget,
 };
 
-use crate::{helpers::resource::StateResource, state::State};
+use crate::{
+  db_client,
+  helpers::{
+    cache::deployment_status_cache, resource::StateResource,
+  },
+  state::State,
+};
 
 impl State {
   pub async fn alert_deployments(
@@ -16,7 +22,7 @@ impl State {
     server_names: HashMap<String, String>,
   ) {
     let mut alerts = Vec::<Alert>::new();
-    for v in self.deployment_status_cache.get_list().await {
+    for v in deployment_status_cache().get_list().await {
       if v.prev.is_none() {
         continue;
       }
@@ -63,7 +69,8 @@ impl State {
       return;
     }
     self.send_alerts(&alerts).await;
-    let res = self.db.alerts.insert_many(alerts, None).await;
+    let res =
+      db_client().await.alerts.insert_many(alerts, None).await;
     if let Err(e) = res {
       error!(
         "failed to record deployment status alerts to db | {e:#?}"

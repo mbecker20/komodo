@@ -1,10 +1,12 @@
+use std::sync::OnceLock;
+
 use async_trait::async_trait;
 use monitor_client::api::auth::*;
 use resolver_api::{derive::Resolver, Resolve};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::state::State;
+use crate::{auth::jwt_client, config::core_config, state::State};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -18,6 +20,24 @@ pub enum AuthRequest {
   ExchangeForJwt(ExchangeForJwt),
 }
 
+fn login_options_reponse() -> &'static GetLoginOptionsResponse {
+  static GET_LOGIN_OPTIONS_RESPONSE: OnceLock<
+    GetLoginOptionsResponse,
+  > = OnceLock::new();
+  GET_LOGIN_OPTIONS_RESPONSE.get_or_init(|| {
+    let config = core_config();
+    GetLoginOptionsResponse {
+      local: config.local_auth,
+      github: config.github_oauth.enabled
+        && !config.github_oauth.id.is_empty()
+        && !config.github_oauth.secret.is_empty(),
+      google: config.google_oauth.enabled
+        && !config.google_oauth.id.is_empty()
+        && !config.google_oauth.secret.is_empty(),
+    }
+  })
+}
+
 #[async_trait]
 impl Resolve<GetLoginOptions> for State {
   async fn resolve(
@@ -25,15 +45,7 @@ impl Resolve<GetLoginOptions> for State {
     _: GetLoginOptions,
     _: (),
   ) -> anyhow::Result<GetLoginOptionsResponse> {
-    Ok(GetLoginOptionsResponse {
-      local: self.config.local_auth,
-      github: self.config.github_oauth.enabled
-        && !self.config.github_oauth.id.is_empty()
-        && !self.config.github_oauth.secret.is_empty(),
-      google: self.config.google_oauth.enabled
-        && !self.config.google_oauth.id.is_empty()
-        && !self.config.google_oauth.secret.is_empty(),
-    })
+    Ok(*login_options_reponse())
   }
 }
 
@@ -44,7 +56,7 @@ impl Resolve<ExchangeForJwt> for State {
     ExchangeForJwt { token }: ExchangeForJwt,
     _: (),
   ) -> anyhow::Result<ExchangeForJwtResponse> {
-    let jwt = self.jwt.redeem_exchange_token(&token).await?;
+    let jwt = jwt_client().redeem_exchange_token(&token).await?;
     let res = ExchangeForJwtResponse { jwt };
     Ok(res)
   }

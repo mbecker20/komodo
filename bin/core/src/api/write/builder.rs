@@ -16,7 +16,12 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser,
+  db_client,
+  helpers::{
+    add_update, remove_from_recently_viewed, resource::StateResource,
+  },
+  state::State,
 };
 
 #[async_trait]
@@ -39,8 +44,8 @@ impl Resolve<CreateBuilder, RequestUser> for State {
       config: config.into(),
       info: Default::default(),
     };
-    let builder_id = self
-      .db
+    let builder_id = db_client()
+      .await
       .builders
       .insert_one(builder, None)
       .await
@@ -70,7 +75,7 @@ impl Resolve<CreateBuilder, RequestUser> for State {
       ..Default::default()
     };
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(builder)
   }
@@ -107,8 +112,8 @@ impl Resolve<CopyBuilder, RequestUser> for State {
       config,
       info: (),
     };
-    let builder_id = self
-      .db
+    let builder_id = db_client()
+      .await
       .builders
       .insert_one(builder, None)
       .await
@@ -138,7 +143,7 @@ impl Resolve<CopyBuilder, RequestUser> for State {
       ..Default::default()
     };
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(builder)
   }
@@ -161,8 +166,8 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
 
     let start_ts = monitor_timestamp();
 
-    self
-      .db
+    db_client()
+      .await
       .builds
       .update_many(
         doc! { "config.builder.params.builder_id": &id },
@@ -173,7 +178,7 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
       )
       .await?;
 
-    delete_one_by_id(&self.db.builders, &id, None)
+    delete_one_by_id(&db_client().await.builders, &id, None)
       .await
       .context("failed to delete builder from database")?;
 
@@ -190,9 +195,9 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
     };
 
     update.finalize();
-    self.add_update(update).await?;
+    add_update(update).await?;
 
-    self.remove_from_recently_viewed(&builder).await?;
+    remove_from_recently_viewed(&builder).await?;
 
     Ok(builder)
   }
@@ -228,7 +233,7 @@ impl Resolve<UpdateBuilder, RequestUser> for State {
     let config = builder.config.merge_partial(config);
 
     update_one_by_id(
-      &self.db.builders,
+      &db_client().await.builders,
       &id,
       mungos::update::Update::FlattenSet(
         doc! { "config": to_bson(&config)? },
@@ -240,7 +245,7 @@ impl Resolve<UpdateBuilder, RequestUser> for State {
     let builder: Builder = self.get_resource(&id).await?;
 
     update.finalize();
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(builder)
   }

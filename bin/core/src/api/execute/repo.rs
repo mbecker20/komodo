@@ -17,7 +17,8 @@ use periphery_client::requests;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser, db_client, helpers::{add_update, periphery_client, resource::StateResource, update_update},
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -42,7 +43,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
     let server: Server =
       self.get_resource(&repo.config.server_id).await?;
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async move {
       let start_ts = monitor_timestamp();
@@ -57,7 +58,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
         ..Default::default()
       };
 
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let logs = match periphery
         .request(requests::CloneRepo {
@@ -75,8 +76,8 @@ impl Resolve<CloneRepo, RequestUser> for State {
       update.finalize();
 
       if update.success {
-        let res = self
-          .db
+        let res = db_client()
+          .await
           .repos
           .update_one(
             doc! { "_id": ObjectId::from_str(&repo.id)? },
@@ -92,16 +93,15 @@ impl Resolve<CloneRepo, RequestUser> for State {
         }
       }
 
-      self.update_update(update.clone()).await?;
+      update_update(update.clone()).await?;
       Ok(update)
     };
 
-    if self.action_states.repo.busy(&id).await {
+    if action_states().repo.busy(&id).await {
       return Err(anyhow!("repo busy"));
     }
 
-    self
-      .action_states
+    action_states()
       .repo
       .update_entry(&id, |entry| {
         entry.cloning = true;
@@ -110,8 +110,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .repo
       .update_entry(id, |entry| {
         entry.cloning = false;
@@ -144,7 +143,7 @@ impl Resolve<PullRepo, RequestUser> for State {
     let server: Server =
       self.get_resource(&repo.config.server_id).await?;
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async move {
       let start_ts = monitor_timestamp();
@@ -159,7 +158,7 @@ impl Resolve<PullRepo, RequestUser> for State {
         ..Default::default()
       };
 
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let logs = match periphery
         .request(requests::PullRepo {
@@ -180,8 +179,7 @@ impl Resolve<PullRepo, RequestUser> for State {
       update.finalize();
 
       if update.success {
-        let res = self
-          .db
+        let res = db_client().await
           .repos
           .update_one(
             doc! { "_id": ObjectId::from_str(&repo.id)? },
@@ -197,16 +195,15 @@ impl Resolve<PullRepo, RequestUser> for State {
         }
       }
 
-      self.update_update(update.clone()).await?;
+      update_update(update.clone()).await?;
       Ok(update)
     };
 
-    if self.action_states.repo.busy(&id).await {
+    if action_states().repo.busy(&id).await {
       return Err(anyhow!("repo busy"));
     }
 
-    self
-      .action_states
+    action_states()
       .repo
       .update_entry(id.clone(), |entry| {
         entry.pulling = true;
@@ -215,8 +212,7 @@ impl Resolve<PullRepo, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .repo
       .update_entry(id, |entry| {
         entry.pulling = false;

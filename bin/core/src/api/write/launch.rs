@@ -10,7 +10,12 @@ use monitor_client::{
 };
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, helpers::make_update, state::State};
+use crate::{
+  auth::RequestUser,
+  cloud::aws::launch_ec2_instance,
+  helpers::{add_update, make_update, update_update},
+  state::State,
+};
 
 #[async_trait]
 impl Resolve<LaunchServer, RequestUser> for State {
@@ -29,18 +34,18 @@ impl Resolve<LaunchServer, RequestUser> for State {
     );
     update
       .push_simple_log("launching server", format!("{:#?}", config));
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
     match config {
       LaunchServerConfig::Aws(config) => {
         let region = config.region.clone();
-        let instance = self.launch_ec2_instance(&name, config).await;
+        let instance = launch_ec2_instance(&name, config).await;
         if let Err(e) = &instance {
           update.push_error_log(
             "launch server",
             format!("failed to launch aws instance\n\n{e:#?}"),
           );
           update.finalize();
-          self.update_update(update.clone()).await?;
+          update_update(update.clone()).await?;
           return Ok(update);
         }
         let instance = instance.unwrap();
@@ -68,7 +73,7 @@ impl Resolve<LaunchServer, RequestUser> for State {
       }
     }
     update.finalize();
-    self.update_update(update.clone()).await?;
+    update_update(update.clone()).await?;
     Ok(update)
   }
 }

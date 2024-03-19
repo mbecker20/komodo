@@ -18,8 +18,14 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
-  helpers::{make_update, resource::StateResource},
-  state::State,
+  db_client,
+  helpers::{
+    add_update, cache::server_status_cache, make_update,
+    periphery_client, remove_from_recently_viewed,
+    resource::StateResource, update_update,
+  },
+  monitor::update_cache_for_server,
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -47,8 +53,8 @@ impl Resolve<CreateServer, RequestUser> for State {
       config: config.into(),
       info: (),
     };
-    let server_id = self
-      .db
+    let server_id = db_client()
+      .await
       .servers
       .insert_one(&server, None)
       .await
@@ -78,9 +84,9 @@ impl Resolve<CreateServer, RequestUser> for State {
       ..Default::default()
     };
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
-    self.update_cache_for_server(&server).await;
+    update_cache_for_server(&server).await;
 
     Ok(server)
   }
@@ -93,7 +99,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
     DeleteServer { id }: DeleteServer,
     user: RequestUser,
   ) -> anyhow::Result<Server> {
-    if self.action_states.server.busy(&id).await {
+    if action_states().server.busy(&id).await {
       return Err(anyhow!("server busy"));
     }
 
@@ -107,8 +113,8 @@ impl Resolve<DeleteServer, RequestUser> for State {
 
     let start_ts = monitor_timestamp();
 
-    self
-      .db
+    db_client()
+      .await
       .builds
       .update_many(
         doc! { "config.builder.params.server_id": &id },
@@ -118,8 +124,8 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .await
       .context("failed to detach server from builds")?;
 
-    self
-      .db
+    db_client()
+      .await
       .deployments
       .update_many(
         doc! { "config.server_id": &id },
@@ -129,8 +135,8 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .await
       .context("failed to detach server from deployments")?;
 
-    self
-      .db
+    db_client()
+      .await
       .repos
       .update_many(
         doc! { "config.server_id": &id },
@@ -140,7 +146,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .await
       .context("failed to detach server from repos")?;
 
-    delete_one_by_id(&self.db.servers, &id, None)
+    delete_one_by_id(&db_client().await.servers, &id, None)
       .await
       .context("failed to delete server from mongo")?;
 
@@ -157,11 +163,11 @@ impl Resolve<DeleteServer, RequestUser> for State {
     };
 
     update.finalize();
-    self.add_update(update).await?;
+    add_update(update).await?;
 
-    self.server_status_cache.remove(&id).await;
+    server_status_cache().remove(&id).await;
 
-    self.remove_from_recently_viewed(&server).await?;
+    remove_from_recently_viewed(&server).await?;
 
     Ok(server)
   }
@@ -174,7 +180,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
     UpdateServer { id, config }: UpdateServer,
     user: RequestUser,
   ) -> anyhow::Result<Server> {
-    if self.action_states.server.busy(&id).await {
+    if action_states().server.busy(&id).await {
       return Err(anyhow!("server busy"));
     }
     let server: Server = self
@@ -188,7 +194,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
       make_update(&server, Operation::UpdateServer, &user);
 
     update_one_by_id(
-      &self.db.servers,
+      &db_client().await.servers,
       &id,
       mungos::update::Update::FlattenSet(
         doc! { "config": to_bson(&config)? },
@@ -205,11 +211,11 @@ impl Resolve<UpdateServer, RequestUser> for State {
 
     let new_server: Server = self.get_resource(&id).await?;
 
-    self.update_cache_for_server(&new_server).await;
+    update_cache_for_server(&new_server).await;
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(new_server)
   }
@@ -232,7 +238,7 @@ impl Resolve<RenameServer, RequestUser> for State {
     let mut update =
       make_update(&server, Operation::RenameServer, &user);
 
-    update_one_by_id(&self.db.servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }), None)
+    update_one_by_id(&db_client().await.servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }), None)
       .await
       .context("failed to update server on db. this name may already be taken.")?;
     update.push_simple_log(
@@ -240,7 +246,7 @@ impl Resolve<RenameServer, RequestUser> for State {
       format!("renamed server {id} from {} to {name}", server.name),
     );
     update.finalize();
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
     Ok(update)
   }
 }
@@ -260,12 +266,12 @@ impl Resolve<CreateNetwork, RequestUser> for State {
       )
       .await?;
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let mut update =
       make_update(&server, Operation::CreateNetwork, &user);
     update.status = UpdateStatus::InProgress;
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
 
     match periphery
       .request(requests::CreateNetwork { name, driver: None })
@@ -278,7 +284,7 @@ impl Resolve<CreateNetwork, RequestUser> for State {
     };
 
     update.finalize();
-    self.update_update(update.clone()).await?;
+    update_update(update.clone()).await?;
 
     Ok(update)
   }
@@ -299,12 +305,12 @@ impl Resolve<DeleteNetwork, RequestUser> for State {
       )
       .await?;
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let mut update =
       make_update(&server, Operation::DeleteNetwork, &user);
     update.status = UpdateStatus::InProgress;
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
 
     match periphery.request(requests::DeleteNetwork { name }).await {
       Ok(log) => update.logs.push(log),
@@ -314,7 +320,7 @@ impl Resolve<DeleteNetwork, RequestUser> for State {
     };
 
     update.finalize();
-    self.update_update(update.clone()).await?;
+    update_update(update.clone()).await?;
 
     Ok(update)
   }

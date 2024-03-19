@@ -1,7 +1,36 @@
-use std::{collections::HashMap, hash::Hash};
+use std::{
+  collections::HashMap,
+  hash::Hash,
+  sync::{Arc, OnceLock},
+};
 
-use monitor_client::busy::Busy;
+use monitor_client::{
+  busy::Busy, entities::deployment::DockerContainerState,
+};
 use tokio::sync::RwLock;
+
+use crate::monitor::{
+  CachedDeploymentStatus, CachedServerStatus, History,
+};
+
+pub type DeploymentStatusCache = Cache<
+  String,
+  Arc<History<CachedDeploymentStatus, DockerContainerState>>,
+>;
+
+pub fn deployment_status_cache() -> &'static DeploymentStatusCache {
+  static DEPLOYMENT_STATUS_CACHE: OnceLock<DeploymentStatusCache> =
+    OnceLock::new();
+  DEPLOYMENT_STATUS_CACHE.get_or_init(Default::default)
+}
+
+pub type ServerStatusCache = Cache<String, Arc<CachedServerStatus>>;
+
+pub fn server_status_cache() -> &'static ServerStatusCache {
+  static SERVER_STATUS_CACHE: OnceLock<ServerStatusCache> =
+    OnceLock::new();
+  SERVER_STATUS_CACHE.get_or_init(Default::default)
+}
 
 #[derive(Default)]
 pub struct Cache<K: PartialEq + Eq + Hash, T: Clone + Default> {

@@ -20,8 +20,13 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
-  helpers::{make_update, resource::StateResource},
-  state::State,
+  db_client,
+  helpers::{
+    add_update, make_update, periphery_client,
+    remove_from_recently_viewed, resource::StateResource,
+    update_update,
+  },
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -56,8 +61,8 @@ impl Resolve<CreateRepo, RequestUser> for State {
       config: config.into(),
       info: Default::default(),
     };
-    let repo_id = self
-      .db
+    let repo_id = db_client()
+      .await
       .repos
       .insert_one(repo, None)
       .await
@@ -89,7 +94,7 @@ impl Resolve<CreateRepo, RequestUser> for State {
       ..Default::default()
     };
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     if !repo.config.repo.is_empty()
       && !repo.config.server_id.is_empty()
@@ -149,8 +154,8 @@ impl Resolve<CopyRepo, RequestUser> for State {
       config,
       info: Default::default(),
     };
-    let repo_id = self
-      .db
+    let repo_id = db_client()
+      .await
       .repos
       .insert_one(repo, None)
       .await
@@ -180,7 +185,7 @@ impl Resolve<CopyRepo, RequestUser> for State {
       ..Default::default()
     };
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(repo)
   }
@@ -206,7 +211,7 @@ impl Resolve<DeleteRepo, RequestUser> for State {
     } else {
       let server: Server =
         self.get_resource(&repo.config.server_id).await?;
-      let periphery = self.periphery_client(&server)?;
+      let periphery = periphery_client(&server)?;
       Some(periphery)
     };
 
@@ -220,11 +225,12 @@ impl Resolve<DeleteRepo, RequestUser> for State {
         success: true,
         ..Default::default()
       };
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
-      let res = delete_one_by_id(&self.db.repos, &repo.id, None)
-        .await
-        .context("failed to delete repo from database");
+      let res =
+        delete_one_by_id(&db_client().await.repos, &repo.id, None)
+          .await
+          .context("failed to delete repo from database");
 
       let log = match res {
         Ok(_) => Log::simple(
@@ -255,19 +261,18 @@ impl Resolve<DeleteRepo, RequestUser> for State {
       }
 
       update.finalize();
-      self.update_update(update).await?;
+      update_update(update).await?;
 
-      self.remove_from_recently_viewed(&repo).await?;
+      remove_from_recently_viewed(&repo).await?;
 
       Ok(repo)
     };
 
-    if self.action_states.repo.busy(&id).await {
+    if action_states().repo.busy(&id).await {
       return Err(anyhow!("repo busy"));
     }
 
-    self
-      .action_states
+    action_states()
       .repo
       .update_entry(id.clone(), |entry| {
         entry.deleting = true;
@@ -276,8 +281,7 @@ impl Resolve<DeleteRepo, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .repo
       .update_entry(id, |entry| {
         entry.deleting = false;
@@ -317,7 +321,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
 
     let inner = || async move {
       update_one_by_id(
-        &self.db.repos,
+        &db_client().await.repos,
         &repo.id,
         mungos::update::Update::FlattenSet(
           doc! { "config": to_bson(&config)? },
@@ -334,15 +338,15 @@ impl Resolve<UpdateRepo, RequestUser> for State {
         "repo update",
         serde_json::to_string_pretty(&config).unwrap(),
       );
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       if let Some(new_server_id) = config.server_id {
         if new_server_id != repo.config.server_id {
           if !repo.config.server_id.is_empty() {
             let old_server: anyhow::Result<Server> =
               self.get_resource(&repo.config.server_id).await;
-            let periphery = old_server
-              .and_then(|server| self.periphery_client(&server));
+            let periphery =
+              old_server.and_then(|server| periphery_client(&server));
             match periphery {
               Ok(periphery) => match periphery
                 .request(requests::DeleteRepo { name: repo.name })
@@ -380,17 +384,16 @@ impl Resolve<UpdateRepo, RequestUser> for State {
       }
 
       update.finalize();
-      self.update_update(update).await?;
+      update_update(update).await?;
 
       self.get_resource(&repo.id).await
     };
 
-    if self.action_states.repo.busy(&id).await {
+    if action_states().repo.busy(&id).await {
       return Err(anyhow!("repo busy"));
     }
 
-    self
-      .action_states
+    action_states()
       .repo
       .update_entry(id.clone(), |entry| {
         entry.updating = true;
@@ -399,8 +402,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .repo
       .update_entry(id, |entry| {
         entry.updating = false;

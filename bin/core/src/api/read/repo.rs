@@ -12,7 +12,8 @@ use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser, db_client, helpers::resource::StateResource,
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -63,7 +64,7 @@ impl Resolve<GetRepoActionState, RequestUser> for State {
       )
       .await?;
     let action_state =
-      self.action_states.repo.get(&id).await.unwrap_or_default();
+      action_states().repo.get(&id).await.unwrap_or_default();
     Ok(action_state)
   }
 }
@@ -83,8 +84,8 @@ impl Resolve<GetReposSummary, RequestUser> for State {
       };
       Some(query)
     };
-    let total = self
-      .db
+    let total = db_client()
+      .await
       .repos
       .count_documents(query, None)
       .await

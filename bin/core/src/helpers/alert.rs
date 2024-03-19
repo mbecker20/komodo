@@ -10,7 +10,7 @@ use mungos::find::find_collect;
 use reqwest::StatusCode;
 use slack::types::Block;
 
-use crate::state::State;
+use crate::{db_client, state::State};
 
 impl State {
   pub async fn send_alerts(&self, alerts: &[Alert]) {
@@ -18,7 +18,8 @@ impl State {
       return;
     }
 
-    let alerters = find_collect(&self.db.alerters, None, None).await;
+    let alerters =
+      find_collect(&db_client().await.alerters, None, None).await;
 
     if let Err(e) = alerters {
       error!("ERROR sending alerts | failed to get alerters from db | {e:#?}");

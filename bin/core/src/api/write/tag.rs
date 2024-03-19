@@ -19,7 +19,10 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser,
+  db_client,
+  helpers::{get_tag, get_tag_check_owner, resource::StateResource},
+  state::State,
 };
 
 #[async_trait]
@@ -40,8 +43,8 @@ impl Resolve<CreateTag, RequestUser> for State {
       color,
       owner: user.id.clone(),
     };
-    tag.id = self
-      .db
+    tag.id = db_client()
+      .await
       .tags
       .insert_one(&tag, None)
       .await
@@ -61,17 +64,17 @@ impl Resolve<UpdateTag, RequestUser> for State {
     UpdateTag { id, config }: UpdateTag,
     user: RequestUser,
   ) -> anyhow::Result<CustomTag> {
-    self.get_tag_check_owner(&id, &user).await?;
+    get_tag_check_owner(&id, &user).await?;
 
     update_one_by_id(
-      &self.db.tags,
+      &db_client().await.tags,
       &id,
       doc! { "$set": to_bson(&config)? },
       None,
     )
     .await
     .context("context")?;
-    self.get_tag(&id).await
+    get_tag(&id).await
   }
 }
 
@@ -82,8 +85,8 @@ impl Resolve<DeleteTag, RequestUser> for State {
     DeleteTag { id }: DeleteTag,
     user: RequestUser,
   ) -> anyhow::Result<CustomTag> {
-    let tag = self.get_tag_check_owner(&id, &user).await?;
-    delete_one_by_id(&self.db.tags, &id, None).await?;
+    let tag = get_tag_check_owner(&id, &user).await?;
+    delete_one_by_id(&db_client().await.tags, &id, None).await?;
     Ok(tag)
   }
 }

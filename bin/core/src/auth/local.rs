@@ -11,7 +11,9 @@ use monitor_client::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::state::State;
+use crate::{config::core_config, db_client, state::State};
+
+use super::jwt::jwt_client;
 
 const BCRYPT_COST: u32 = 10;
 
@@ -22,15 +24,19 @@ impl Resolve<CreateLocalUser> for State {
     CreateLocalUser { username, password }: CreateLocalUser,
     _: (),
   ) -> anyhow::Result<CreateLocalUserResponse> {
-    if !self.config.local_auth {
+    if !core_config().local_auth {
       return Err(anyhow!("local auth is not enabled"));
     }
 
     let password = bcrypt::hash(password, BCRYPT_COST)
       .context("failed to hash password")?;
 
-    let no_users_exist =
-      self.db.users.find_one(None, None).await?.is_none();
+    let no_users_exist = db_client()
+      .await
+      .users
+      .find_one(None, None)
+      .await?
+      .is_none();
 
     let ts = unix_timestamp_ms() as i64;
 
@@ -45,8 +51,8 @@ impl Resolve<CreateLocalUser> for State {
       ..Default::default()
     };
 
-    let user_id = self
-      .db
+    let user_id = db_client()
+      .await
       .users
       .insert_one(user, None)
       .await
@@ -56,8 +62,7 @@ impl Resolve<CreateLocalUser> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
 
-    let jwt = self
-      .jwt
+    let jwt = jwt_client()
       .generate(user_id)
       .context("failed to generate jwt for user")?;
 
@@ -72,12 +77,12 @@ impl Resolve<LoginLocalUser> for State {
     LoginLocalUser { username, password }: LoginLocalUser,
     _: (),
   ) -> anyhow::Result<LoginLocalUserResponse> {
-    if !self.config.local_auth {
+    if !core_config().local_auth {
       return Err(anyhow!("local auth is not enabled"));
     }
 
-    let user = self
-      .db
+    let user = db_client()
+      .await
       .users
       .find_one(doc! { "username": &username }, None)
       .await
@@ -95,8 +100,7 @@ impl Resolve<LoginLocalUser> for State {
       return Err(anyhow!("invalid credentials"));
     }
 
-    let jwt = self
-      .jwt
+    let jwt = jwt_client()
       .generate(user.id)
       .context("failed at generating jwt for user")?;
 

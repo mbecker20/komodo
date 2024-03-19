@@ -1,3 +1,5 @@
+use std::sync::OnceLock;
+
 use anyhow::{anyhow, Context};
 use jwt::Token;
 use monitor_client::entities::config::{
@@ -8,7 +10,14 @@ use serde::{de::DeserializeOwned, Deserialize};
 use serde_json::Value;
 use tokio::sync::Mutex;
 
-use crate::auth::random_string;
+use crate::{auth::random_string, config::core_config};
+
+pub fn google_oauth_client() -> &'static Option<GoogleOauthClient> {
+  static GOOGLE_OAUTH_CLIENT: OnceLock<Option<GoogleOauthClient>> =
+    OnceLock::new();
+  GOOGLE_OAUTH_CLIENT
+    .get_or_init(|| GoogleOauthClient::new(core_config()))
+}
 
 pub struct GoogleOauthClient {
   http: reqwest::Client,

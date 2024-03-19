@@ -13,7 +13,7 @@ use periphery_client::requests;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser, helpers::{add_update, periphery_client, resource::StateResource, update_update}, state::{action_states, State},
 };
 
 #[async_trait]
@@ -23,7 +23,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
     PruneDockerContainers { server_id }: PruneDockerContainers,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    if self.action_states.server.busy(&server_id).await {
+    if action_states().server.busy(&server_id).await {
       return Err(anyhow!("server busy"));
     }
 
@@ -35,7 +35,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
       )
       .await?;
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async {
       let start_ts = monitor_timestamp();
@@ -48,7 +48,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
         operator: user.id.clone(),
         ..Default::default()
       };
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let log = match periphery
         .request(requests::PruneNetworks {})
@@ -66,13 +66,12 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
       update.end_ts = Some(monitor_timestamp());
       update.logs.push(log);
 
-      self.update_update(update.clone()).await?;
+      update_update(update.clone()).await?;
 
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .server
       .update_entry(server.id.to_string(), |entry| {
         entry.pruning_containers = true;
@@ -81,8 +80,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .server
       .update_entry(server.id, |entry| {
         entry.pruning_containers = false;
@@ -100,7 +98,7 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
     PruneDockerNetworks { server_id }: PruneDockerNetworks,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    if self.action_states.server.busy(&server_id).await {
+    if action_states().server.busy(&server_id).await {
       return Err(anyhow!("server busy"));
     }
 
@@ -112,7 +110,7 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
       )
       .await?;
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async {
       let start_ts = monitor_timestamp();
@@ -125,7 +123,7 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
         operator: user.id.clone(),
         ..Default::default()
       };
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let log = match periphery
         .request(requests::PruneNetworks {})
@@ -143,13 +141,12 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
       update.end_ts = Some(monitor_timestamp());
       update.logs.push(log);
 
-      self.update_update(update.clone()).await?;
+      update_update(update.clone()).await?;
 
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .server
       .update_entry(server_id.to_string(), |entry| {
         entry.pruning_networks = true;
@@ -158,8 +155,7 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .server
       .update_entry(server_id.to_string(), |entry| {
         entry.pruning_networks = false;
@@ -177,7 +173,7 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
     PruneDockerImages { server_id }: PruneDockerImages,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    if self.action_states.server.busy(&server_id).await {
+    if action_states().server.busy(&server_id).await {
       return Err(anyhow!("server busy"));
     }
 
@@ -189,7 +185,7 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
       )
       .await?;
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async {
       let start_ts = monitor_timestamp();
@@ -202,7 +198,7 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
         operator: user.id.clone(),
         ..Default::default()
       };
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let log = match periphery
         .request(requests::PruneImages {})
@@ -220,13 +216,12 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
       update.end_ts = Some(monitor_timestamp());
       update.logs.push(log);
 
-      self.update_update(update.clone()).await?;
+      update_update(update.clone()).await?;
 
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .server
       .update_entry(server_id.to_string(), |entry| {
         entry.pruning_images = true;
@@ -235,8 +230,7 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .server
       .update_entry(server_id.to_string(), |entry| {
         entry.pruning_images = false;

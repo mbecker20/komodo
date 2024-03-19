@@ -27,7 +27,13 @@ use periphery_client::requests;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser,
+  db_client,
+  helpers::{
+    cache::deployment_status_cache, periphery_client,
+    resource::StateResource,
+  },
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -77,11 +83,8 @@ impl Resolve<GetDeploymentStatus, RequestUser> for State {
         PermissionLevel::Read,
       )
       .await?;
-    let status = self
-      .deployment_status_cache
-      .get(&id)
-      .await
-      .unwrap_or_default();
+    let status =
+      deployment_status_cache().get(&id).await.unwrap_or_default();
     let response = GetDeploymentStatusResponse {
       status: status
         .curr
@@ -121,8 +124,7 @@ impl Resolve<GetLog, RequestUser> for State {
       return Ok(Log::default());
     }
     let server: Server = self.get_resource(&server_id).await?;
-    self
-      .periphery_client(&server)?
+    periphery_client(&server)?
       .request(requests::GetContainerLog {
         name,
         tail: cmp::min(tail, MAX_LOG_LENGTH),
@@ -151,8 +153,8 @@ impl Resolve<GetDeployedVersion, RequestUser> for State {
       .await?;
     let version = match image {
       DeploymentImage::Build { .. } => {
-        let latest_deploy_update = self
-          .db
+        let latest_deploy_update = db_client()
+          .await
           .updates
           .find_one(
             doc! {
@@ -217,8 +219,7 @@ impl Resolve<GetDeploymentStats, RequestUser> for State {
       return Err(anyhow!("deployment has no server attached"));
     }
     let server: Server = self.get_resource(&server_id).await?;
-    self
-      .periphery_client(&server)?
+    periphery_client(&server)?
       .request(requests::GetContainerStats { name })
       .await
       .context("failed to get stats from periphery")
@@ -239,8 +240,7 @@ impl Resolve<GetDeploymentActionState, RequestUser> for State {
         PermissionLevel::Read,
       )
       .await?;
-    let action_state = self
-      .action_states
+    let action_state = action_states()
       .deployment
       .get(&id)
       .await
@@ -265,17 +265,16 @@ impl Resolve<GetDeploymentsSummary, RequestUser> for State {
       Some(query)
     };
 
-    let deployments = find_collect(&self.db.deployments, query, None)
-      .await
-      .context("failed to count all deployment documents")?;
+    let deployments =
+      find_collect(&db_client().await.deployments, query, None)
+        .await
+        .context("failed to count all deployment documents")?;
     let mut res = GetDeploymentsSummaryResponse::default();
+    let status_cache = deployment_status_cache();
     for deployment in deployments {
       res.total += 1;
-      let status = self
-        .deployment_status_cache
-        .get(&deployment.id)
-        .await
-        .unwrap_or_default();
+      let status =
+        status_cache.get(&deployment.id).await.unwrap_or_default();
       match status.curr.state {
         DockerContainerState::Running => {
           res.running += 1;

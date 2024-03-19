@@ -11,7 +11,12 @@ use tokio::sync::Mutex;
 
 use crate::{
   auth::RequestUser,
-  helpers::{make_update, resource::StateResource},
+  helpers::{
+    add_update, make_update,
+    procedure::{execute_procedure, make_procedure_map},
+    resource::StateResource,
+    update_update,
+  },
   state::State,
 };
 
@@ -30,7 +35,7 @@ impl Resolve<RunProcedure, RequestUser> for State {
       )
       .await?;
 
-    let map = self.make_procedure_map(&procedure).await?;
+    let map = make_procedure_map(&procedure).await?;
 
     let mut update =
       make_update(&procedure, Operation::StopContainer, &user);
@@ -40,11 +45,11 @@ impl Resolve<RunProcedure, RequestUser> for State {
       format!("Executing procedure: {}", procedure.name),
     );
 
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
 
     let update = Mutex::new(update);
 
-    let res = self.execute_procedure(&procedure, &map, &update).await;
+    let res = execute_procedure(&procedure, &map, &update).await;
 
     let mut update = update.into_inner();
 
@@ -61,7 +66,7 @@ impl Resolve<RunProcedure, RequestUser> for State {
 
     update.finalize();
 
-    self.update_update(update.clone()).await?;
+    update_update(update.clone()).await?;
 
     Ok(update)
   }

@@ -1,4 +1,7 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{
+  collections::HashMap,
+  sync::{Arc, OnceLock},
+};
 
 use anyhow::{anyhow, Context};
 use async_timing_util::{
@@ -15,7 +18,9 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tokio::sync::Mutex;
 
-use crate::state::State;
+use crate::{
+  config::core_config, db_client, helpers::get_user, state::State,
+};
 
 use super::random_string;
 
@@ -43,6 +48,11 @@ impl InnerRequestUser {
       create_server_permissions: true,
     }
   }
+}
+
+pub fn jwt_client() -> &'static JwtClient {
+  static JWT_CLIENT: OnceLock<JwtClient> = OnceLock::new();
+  JWT_CLIENT.get_or_init(|| JwtClient::new(core_config()))
 }
 
 #[derive(Serialize, Deserialize)]
@@ -152,7 +162,7 @@ impl State {
         return Err(anyhow!("must attach either AUTHORIZATION header with jwt OR pass X-API-KEY and X-API-SECRET"));
       }
     };
-    let user = self.get_user(&user_id).await?;
+    let user = get_user(&user_id).await?;
     if user.enabled {
       let user = InnerRequestUser {
         id: user_id,
@@ -172,7 +182,7 @@ impl State {
     jwt: &str,
   ) -> anyhow::Result<String> {
     let claims: JwtClaims = jwt
-      .verify_with_key(&self.jwt.key)
+      .verify_with_key(&jwt_client().key)
       .context("failed to verify claims")?;
     if claims.exp > unix_timestamp_ms() {
       Ok(claims.id)
@@ -194,8 +204,8 @@ impl State {
     key: &str,
     secret: &str,
   ) -> anyhow::Result<String> {
-    let key = self
-      .db
+    let key = db_client()
+      .await
       .api_keys
       .find_one(doc! { "key": key }, None)
       .await
@@ -228,7 +238,7 @@ impl State {
     &self,
     user_id: String,
   ) -> anyhow::Result<RequestUser> {
-    let user = self.get_user(&user_id).await?;
+    let user = get_user(&user_id).await?;
     if user.enabled {
       let user = InnerRequestUser {
         id: user_id,

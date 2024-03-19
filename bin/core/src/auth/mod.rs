@@ -15,16 +15,15 @@ mod google;
 mod jwt;
 mod local;
 
-use crate::{
-  api::auth::AuthRequest,
-  state::{State, StateExtension},
-};
+use crate::{api::auth::AuthRequest, state::State};
 
 pub use self::jwt::{
-  InnerRequestUser, JwtClient, RequestUser, RequestUserExtension,
+  jwt_client, InnerRequestUser, RequestUser, RequestUserExtension,
 };
-pub use github::client::GithubOauthClient;
-pub use google::client::GoogleOauthClient;
+use self::{
+  github::client::github_oauth_client,
+  google::client::google_oauth_client,
+};
 
 pub async fn auth_request(
   state: Extension<Arc<State>>,
@@ -37,32 +36,36 @@ pub async fn auth_request(
   Ok(next.run(req).await)
 }
 
-pub fn router(state: &State) -> Router {
+pub fn router() -> Router {
   let mut router = Router::new().route(
     "/",
-    post(
-      |state: StateExtension, Json(request): Json<AuthRequest>| async move {
-        let timer = Instant::now();
-        let req_id = Uuid::new_v4();
-        info!("/auth request {req_id} | METHOD: {}", request.req_type());
-        let res = state.resolve_request(request, ()).await;
-        if let Err(e) = &res {
-            info!("/auth request {req_id} | ERROR: {e:?}");
-        }
-        let res = res?;
-        let elapsed = timer.elapsed();
-        info!("/auth request {req_id} | resolve time: {elapsed:?}");
-        debug!("/auth request {req_id} | RESPONSE: {res}");
-        Result::<_, AppError>::Ok((TypedHeader(ContentType::json()), res))
-      },
-    ),
+    post(|Json(request): Json<AuthRequest>| async move {
+      let timer = Instant::now();
+      let req_id = Uuid::new_v4();
+      info!(
+        "/auth request {req_id} | METHOD: {}",
+        request.req_type()
+      );
+      let res = State.resolve_request(request, ()).await;
+      if let Err(e) = &res {
+        info!("/auth request {req_id} | ERROR: {e:?}");
+      }
+      let res = res?;
+      let elapsed = timer.elapsed();
+      info!("/auth request {req_id} | resolve time: {elapsed:?}");
+      debug!("/auth request {req_id} | RESPONSE: {res}");
+      Result::<_, AppError>::Ok((
+        TypedHeader(ContentType::json()),
+        res,
+      ))
+    }),
   );
 
-  if state.github_auth.is_some() {
+  if github_oauth_client().is_some() {
     router = router.nest("/github", github::router())
   }
 
-  if state.google_auth.is_some() {
+  if google_oauth_client().is_some() {
     router = router.nest("/google", google::router())
   }
 

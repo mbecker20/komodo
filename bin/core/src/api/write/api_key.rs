@@ -9,6 +9,8 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::{random_string, RequestUser},
+  db_client,
+  helpers::get_user,
   state::State,
 };
 
@@ -22,7 +24,7 @@ impl Resolve<CreateApiKey, RequestUser> for State {
     CreateApiKey { name, expires }: CreateApiKey,
     user: RequestUser,
   ) -> anyhow::Result<CreateApiKeyResponse> {
-    let user = self.get_user(&user.id).await?;
+    let user = get_user(&user.id).await?;
 
     let key = format!("K-{}", random_string(SECRET_LENGTH));
     let secret = format!("S-{}", random_string(SECRET_LENGTH));
@@ -37,8 +39,8 @@ impl Resolve<CreateApiKey, RequestUser> for State {
       created_at: monitor_timestamp(),
       expires,
     };
-    self
-      .db
+    db_client()
+      .await
       .api_keys
       .insert_one(api_key, None)
       .await
@@ -54,8 +56,8 @@ impl Resolve<DeleteApiKey, RequestUser> for State {
     DeleteApiKey { key }: DeleteApiKey,
     user: RequestUser,
   ) -> anyhow::Result<DeleteApiKeyResponse> {
-    let key = self
-      .db
+    let client = db_client().await;
+    let key = client
       .api_keys
       .find_one(doc! { "key": &key }, None)
       .await
@@ -64,8 +66,7 @@ impl Resolve<DeleteApiKey, RequestUser> for State {
     if user.id != key.user_id {
       return Err(anyhow!("api key does not belong to user"));
     }
-    self
-      .db
+    client
       .api_keys
       .delete_one(doc! { "key": key.key }, None)
       .await

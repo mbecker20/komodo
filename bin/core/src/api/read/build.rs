@@ -23,7 +23,8 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser, db_client, helpers::resource::StateResource,
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -74,7 +75,7 @@ impl Resolve<GetBuildActionState, RequestUser> for State {
       )
       .await?;
     let action_state =
-      self.action_states.build.get(&id).await.unwrap_or_default();
+      action_states().build.get(&id).await.unwrap_or_default();
     Ok(action_state)
   }
 }
@@ -94,8 +95,8 @@ impl Resolve<GetBuildsSummary, RequestUser> for State {
       };
       Some(query)
     };
-    let total = self
-      .db
+    let total = db_client()
+      .await
       .builds
       .count_documents(query, None)
       .await
@@ -122,8 +123,8 @@ impl Resolve<GetBuildMonthlyStats, RequestUser> for State {
     let close_ts = next_day - page as i64 * 30 * ONE_DAY_MS;
     let open_ts = close_ts - 30 * ONE_DAY_MS;
 
-    let mut build_updates = self
-      .db
+    let mut build_updates = db_client()
+      .await
       .updates
       .find(
         doc! {
@@ -214,7 +215,7 @@ impl Resolve<GetBuildVersions, RequestUser> for State {
     }
 
     let versions = find_collect(
-      &self.db.updates,
+      &db_client().await.updates,
       filter,
       FindOptions::builder()
         .sort(doc! { "_id": -1 })

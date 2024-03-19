@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::{
   auth::{auth_request, RequestUser, RequestUserExtension},
-  state::{State, StateExtension},
+  state::State,
 };
 
 mod alerter;
@@ -107,8 +107,7 @@ pub fn router() -> Router {
     .route(
       "/",
       post(
-        |state: StateExtension,
-         Extension(user): RequestUserExtension,
+        |Extension(user): RequestUserExtension,
          Json(request): Json<WriteRequest>| async move {
           let timer = Instant::now();
           let req_id = Uuid::new_v4();
@@ -117,7 +116,7 @@ pub fn router() -> Router {
             user.username, user.id
           );
           let res = tokio::spawn(async move {
-            let res = state.resolve_request(request, user).await;
+            let res = State.resolve_request(request, user).await;
             if let Err(e) = &res {
               info!("/write request {req_id} ERROR: {e:#?}");
             }

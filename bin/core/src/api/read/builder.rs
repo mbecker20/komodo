@@ -12,7 +12,7 @@ use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser, db_client, helpers::resource::StateResource, state::State
 };
 
 #[async_trait]
@@ -63,8 +63,8 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
       };
       Some(query)
     };
-    let total = self
-      .db
+    let total = db_client()
+      .await
       .builders
       .count_documents(query, None)
       .await

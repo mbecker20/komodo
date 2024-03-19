@@ -7,7 +7,11 @@ use mungos::mongodb::bson::doc;
 use serde::Deserialize;
 use serror::AppError;
 
-use crate::state::StateExtension;
+use crate::{config::core_config, db_client};
+
+use self::client::github_oauth_client;
+
+use super::jwt::jwt_client;
 
 pub mod client;
 
@@ -15,10 +19,10 @@ pub fn router() -> Router {
   Router::new()
     .route(
       "/login",
-      get(|state: StateExtension| async move {
-        let redirect_to = state
-          .github_auth
+      get(|| async {
+        let redirect_to = github_oauth_client()
           .as_ref()
+          // OK: the router is only mounted in case that the client is populated
           .unwrap()
           .get_login_redirect_url()
           .await;
@@ -27,8 +31,8 @@ pub fn router() -> Router {
     )
     .route(
       "/callback",
-      get(|state, query| async {
-        let redirect = callback(state, query).await?;
+      get(|query| async {
+        let redirect = callback(query).await?;
         Result::<_, AppError>::Ok(redirect)
       }),
     )
@@ -41,10 +45,9 @@ struct CallbackQuery {
 }
 
 async fn callback(
-  state: StateExtension,
   Query(query): Query<CallbackQuery>,
 ) -> anyhow::Result<Redirect> {
-  let client = state.github_auth.as_ref().unwrap();
+  let client = github_oauth_client().as_ref().unwrap();
   if !client.check_state(&query.state).await {
     return Err(anyhow!("state mismatch"));
   }
@@ -52,21 +55,20 @@ async fn callback(
   let github_user =
     client.get_github_user(&token.access_token).await?;
   let github_id = github_user.id.to_string();
-  let user = state
-    .db
+  let db_client = db_client().await;
+  let user = db_client
     .users
     .find_one(doc! { "github_id": &github_id }, None)
     .await
     .context("failed at find user query from mongo")?;
   let jwt = match user {
-    Some(user) => state
-      .jwt
+    Some(user) => jwt_client()
       .generate(user.id)
       .context("failed to generate jwt")?,
     None => {
       let ts = monitor_timestamp();
       let no_users_exist =
-        state.db.users.find_one(None, None).await?.is_none();
+        db_client.users.find_one(None, None).await?.is_none();
       let user = User {
         username: github_user.login,
         avatar: github_user.avatar_url.into(),
@@ -78,8 +80,7 @@ async fn callback(
         updated_at: ts,
         ..Default::default()
       };
-      let user_id = state
-        .db
+      let user_id = db_client
         .users
         .insert_one(user, None)
         .await
@@ -88,15 +89,14 @@ async fn callback(
         .as_object_id()
         .context("inserted_id is not ObjectId")?
         .to_string();
-      state
-        .jwt
+      jwt_client()
         .generate(user_id)
         .context("failed to generate jwt")?
     }
   };
-  let exchange_token = state.jwt.create_exchange_token(jwt).await;
+  let exchange_token = jwt_client().create_exchange_token(jwt).await;
   Ok(Redirect::to(&format!(
     "{}?token={exchange_token}",
-    state.config.host
+    core_config().host
   )))
 }

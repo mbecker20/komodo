@@ -2,11 +2,13 @@ use monitor_client::entities::server::stats::{
   BasicSystemStats, SystemStatsRecord,
 };
 
-use crate::state::State;
+use crate::{
+  db_client, helpers::cache::server_status_cache, state::State,
+};
 
 impl State {
   pub async fn record_server_stats(&self, ts: i64) {
-    let status = self.server_status_cache.get_list().await;
+    let status = server_status_cache().get_list().await;
     let records = status
       .into_iter()
       .filter(|status| status.stats.is_some())
@@ -35,7 +37,8 @@ impl State {
       })
       .collect::<Vec<_>>();
     if !records.is_empty() {
-      let res = self.db.stats.insert_many(records, None).await;
+      let res =
+        db_client().await.stats.insert_many(records, None).await;
       if let Err(e) = res {
         error!("failed to record server stats | {e:#?}");
       }

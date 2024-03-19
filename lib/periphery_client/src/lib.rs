@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate tracing;
 
-use std::time::Duration;
+use std::{sync::OnceLock, time::Duration};
 
 use anyhow::Context;
 use reqwest::StatusCode;
@@ -11,8 +11,13 @@ use serde_json::json;
 pub use monitor_periphery::requests;
 use serror::deserialize_error;
 
+fn http_client() -> &'static reqwest::Client {
+  static PERIPHERY_HTTP_CLIENT: OnceLock<reqwest::Client> =
+    OnceLock::new();
+  PERIPHERY_HTTP_CLIENT.get_or_init(Default::default)
+}
+
 pub struct PeripheryClient {
-  reqwest: reqwest::Client,
   address: String,
   passkey: String,
 }
@@ -23,7 +28,6 @@ impl PeripheryClient {
     passkey: impl Into<String>,
   ) -> PeripheryClient {
     PeripheryClient {
-      reqwest: Default::default(),
       address: address.into(),
       passkey: passkey.into(),
     }
@@ -54,8 +58,7 @@ impl PeripheryClient {
   ) -> anyhow::Result<T::Response> {
     let req_type = T::req_type();
     trace!("sending request | type: {req_type} | body: {request:?}");
-    let mut req = self
-      .reqwest
+    let mut req = http_client()
       .post(&self.address)
       .json(&json!({
           "type": req_type,

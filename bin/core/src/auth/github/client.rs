@@ -1,3 +1,5 @@
+use std::sync::OnceLock;
+
 use anyhow::{anyhow, Context};
 use monitor_client::entities::config::{
   CoreConfig, OauthCredentials,
@@ -6,7 +8,14 @@ use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::sync::Mutex;
 
-use crate::auth::random_string;
+use crate::{auth::random_string, config::core_config};
+
+pub fn github_oauth_client() -> &'static Option<GithubOauthClient> {
+  static GITHUB_OAUTH_CLIENT: OnceLock<Option<GithubOauthClient>> =
+    OnceLock::new();
+  GITHUB_OAUTH_CLIENT
+    .get_or_init(|| GithubOauthClient::new(core_config()))
+}
 
 pub struct GithubOauthClient {
   http: reqwest::Client,

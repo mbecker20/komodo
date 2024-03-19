@@ -17,7 +17,11 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
-  helpers::{make_update, resource::StateResource},
+  db_client,
+  helpers::{
+    add_update, make_update, remove_from_recently_viewed,
+    resource::StateResource,
+  },
   state::State,
 };
 
@@ -29,8 +33,12 @@ impl Resolve<CreateAlerter, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<Alerter> {
     let start_ts = monitor_timestamp();
-    let is_default =
-      self.db.alerters.find_one(None, None).await?.is_none();
+    let is_default = db_client()
+      .await
+      .alerters
+      .find_one(None, None)
+      .await?
+      .is_none();
     let alerter = Alerter {
       id: Default::default(),
       name,
@@ -43,8 +51,8 @@ impl Resolve<CreateAlerter, RequestUser> for State {
       config: config.into(),
       info: AlerterInfo { is_default },
     };
-    let alerter_id = self
-      .db
+    let alerter_id = db_client()
+      .await
       .alerters
       .insert_one(alerter, None)
       .await
@@ -70,7 +78,7 @@ impl Resolve<CreateAlerter, RequestUser> for State {
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(alerter)
   }
@@ -107,8 +115,8 @@ impl Resolve<CopyAlerter, RequestUser> for State {
       tags: Default::default(),
       info: Default::default(),
     };
-    let alerter_id = self
-      .db
+    let alerter_id = db_client()
+      .await
       .alerters
       .insert_one(alerter, None)
       .await
@@ -135,7 +143,7 @@ impl Resolve<CopyAlerter, RequestUser> for State {
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(alerter)
   }
@@ -159,7 +167,7 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
     let mut update =
       make_update(&alerter, Operation::DeleteAlerter, &user);
 
-    delete_one_by_id(&self.db.alerters, &id, None)
+    delete_one_by_id(&db_client().await.alerters, &id, None)
       .await
       .context("failed to delete alerter from database")?;
 
@@ -170,9 +178,9 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
-    self.remove_from_recently_viewed(&alerter).await?;
+    remove_from_recently_viewed(&alerter).await?;
 
     Ok(alerter)
   }
@@ -204,7 +212,7 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
     let config = alerter.config.merge_partial(config);
 
     update_one_by_id(
-      &self.db.alerters,
+      &db_client().await.alerters,
       &id,
       mungos::update::Update::FlattenSet(
         doc! { "config": to_bson(&config)? },
@@ -217,7 +225,7 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
     let alerter: Alerter = self.get_resource(&id).await?;
 
     update.finalize();
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(alerter)
   }

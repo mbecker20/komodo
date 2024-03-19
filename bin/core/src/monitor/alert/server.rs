@@ -16,7 +16,9 @@ use mungos::{
   mongodb::bson::{doc, oid::ObjectId, to_bson},
 };
 
-use crate::state::State;
+use crate::{
+  db_client, helpers::cache::server_status_cache, state::State,
+};
 
 type SendAlerts = bool;
 type OpenAlertMap<T = AlertDataVariant> =
@@ -30,7 +32,7 @@ impl State {
     ts: i64,
     mut servers: HashMap<String, ServerListItem>,
   ) {
-    let server_statuses = self.server_status_cache.get_list().await;
+    let server_statuses = server_status_cache().get_list().await;
 
     let alerts = self.get_open_alerts().await;
 
@@ -439,8 +441,8 @@ impl State {
     }
 
     let open = || async {
-      self
-        .db
+      db_client()
+        .await
         .alerts
         .insert_many(alerts.iter().map(|(alert, _)| alert), None)
         .await?;
@@ -483,7 +485,7 @@ impl State {
       }).collect::<Vec<_>>();
 
       bulk_update::bulk_update(
-        &self.db.db,
+        &db_client().await.db,
         Alert::default_collection_name(),
         &updates,
         false,
@@ -524,8 +526,8 @@ impl State {
             .context("failed to convert alert id to ObjectId")
         })
         .collect::<anyhow::Result<Vec<_>>>()?;
-      self
-        .db
+      db_client()
+        .await
         .alerts
         .update_many(
           doc! { "_id": { "$in": &alert_ids } },
@@ -540,7 +542,7 @@ impl State {
         .await
         .context("failed to resolve alerts on db")?;
       let mut closed = find_collect(
-        &self.db.alerts,
+        &db_client().await.alerts,
         doc! { "_id": { "$in": &alert_ids } },
         None,
       )
@@ -580,10 +582,13 @@ impl State {
     OpenDiskAlertMap,
     OpenTempAlertMap,
   )> {
-    let alerts =
-      find_collect(&self.db.alerts, doc! { "resolved": false }, None)
-        .await
-        .context("failed to get open alerts from db")?;
+    let alerts = find_collect(
+      &db_client().await.alerts,
+      doc! { "resolved": false },
+      None,
+    )
+    .await
+    .context("failed to get open alerts from db")?;
 
     let mut map = OpenAlertMap::new();
     let mut disk_map = OpenDiskAlertMap::new();

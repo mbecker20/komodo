@@ -11,7 +11,7 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser, db_client, helpers::resource::StateResource, state::State
 };
 
 const NUM_ALERTS_PER_PAGE: u64 = 10;
@@ -43,7 +43,7 @@ impl Resolve<ListAlerts, RequestUser> for State {
     }
 
     let alerts = find_collect(
-      &self.db.alerts,
+      &db_client().await.alerts,
       query,
       FindOptions::builder()
         .sort(doc! { "ts": -1 })

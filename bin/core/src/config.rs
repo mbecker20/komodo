@@ -1,7 +1,15 @@
-use anyhow::Context;
+use std::sync::OnceLock;
+
 use merge_config_files::parse_config_file;
 use monitor_client::entities::config::{CoreConfig, LogLevel};
 use serde::Deserialize;
+
+pub fn env() -> &'static Env {
+  static ENV: OnceLock<Env> = OnceLock::new();
+  ENV.get_or_init(|| {
+    envy::from_env().expect("failed to parse environment")
+  })
+}
 
 #[derive(Deserialize, Debug)]
 pub struct Env {
@@ -20,16 +28,20 @@ fn default_frontend_path() -> String {
   "/frontend".to_string()
 }
 
-impl Env {
-  pub fn load() -> anyhow::Result<Env> {
-    dotenv::dotenv().ok();
-    envy::from_env().context("failed to parse environment")
-  }
-}
-
-pub fn config_load(config_path: &str) -> CoreConfig {
-  parse_config_file::<CoreConfig>(config_path).unwrap_or_else(|e| {
-    panic!("failed at parsing config at {config_path} | {e:#?}")
+pub fn core_config() -> &'static CoreConfig {
+  static CORE_CONFIG: OnceLock<CoreConfig> = OnceLock::new();
+  CORE_CONFIG.get_or_init(|| {
+    let env = &env();
+    let config_path = &env.config_path;
+    let mut config =
+      parse_config_file::<CoreConfig>(config_path.as_str())
+        .unwrap_or_else(|e| {
+          panic!("failed at parsing config at {config_path} | {e:#?}")
+        });
+    if let Some(port) = env.port {
+      config.port = port;
+    }
+    config
   })
 }
 

@@ -15,8 +15,12 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
-  helpers::{make_update, resource::StateResource},
-  state::State,
+  db_client,
+  helpers::{
+    add_update, make_update, remove_from_recently_viewed,
+    resource::StateResource, update_update,
+  },
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -40,8 +44,8 @@ impl Resolve<CreateProcedure, RequestUser> for State {
       info: Default::default(),
       config,
     };
-    let procedure_id = self
-      .db
+    let procedure_id = db_client()
+      .await
       .procedures
       .insert_one(procedure, None)
       .await
@@ -69,7 +73,7 @@ impl Resolve<CreateProcedure, RequestUser> for State {
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(procedure)
   }
@@ -108,8 +112,8 @@ impl Resolve<CopyProcedure, RequestUser> for State {
       config,
       info: Default::default(),
     };
-    let procedure_id = self
-      .db
+    let procedure_id = db_client()
+      .await
       .procedures
       .insert_one(build, None)
       .await
@@ -138,7 +142,7 @@ impl Resolve<CopyProcedure, RequestUser> for State {
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     Ok(procedure)
   }
@@ -160,7 +164,7 @@ impl Resolve<UpdateProcedure, RequestUser> for State {
       .await?;
 
     update_one_by_id(
-      &self.db.procedures,
+      &db_client().await.procedures,
       &procedure.id,
       mungos::update::Update::FlattenSet(
         doc! { "config": to_document(&config)? },
@@ -180,7 +184,7 @@ impl Resolve<UpdateProcedure, RequestUser> for State {
 
     update.finalize();
 
-    self.add_update(update).await?;
+    add_update(update).await?;
 
     let procedure: Procedure =
       self.get_resource(&procedure.id).await?;
@@ -197,7 +201,7 @@ impl Resolve<DeleteProcedure, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<DeleteProcedureResponse> {
     // needs to pull its id from all container procedures
-    if self.action_states.procedure.busy(&id).await {
+    if action_states().procedure.busy(&id).await {
       return Err(anyhow!("procedure busy"));
     }
 
@@ -212,11 +216,12 @@ impl Resolve<DeleteProcedure, RequestUser> for State {
     let mut update =
       make_update(&procedure, Operation::DeleteProcedure, &user);
     update.in_progress();
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
 
-    let res = delete_one_by_id(&self.db.procedures, &id, None)
-      .await
-      .context("failed to delete build from database");
+    let res =
+      delete_one_by_id(&db_client().await.procedures, &id, None)
+        .await
+        .context("failed to delete build from database");
 
     let log = match res {
       Ok(_) => Log::simple(
@@ -231,9 +236,9 @@ impl Resolve<DeleteProcedure, RequestUser> for State {
 
     update.logs.push(log);
     update.finalize();
-    self.update_update(update).await?;
+    update_update(update).await?;
 
-    self.remove_from_recently_viewed(&procedure).await?;
+    remove_from_recently_viewed(&procedure).await?;
 
     Ok(procedure)
   }

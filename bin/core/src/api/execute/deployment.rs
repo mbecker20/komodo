@@ -19,8 +19,13 @@ use serror::serialize_error_pretty;
 
 use crate::{
   auth::RequestUser,
-  helpers::{make_update, resource::StateResource},
-  state::State,
+  db_client,
+  helpers::{
+    add_update, get_server_with_status, make_update,
+    periphery_client, resource::StateResource, update_update,
+  },
+  monitor::update_cache_for_server,
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -34,7 +39,7 @@ impl Resolve<Deploy, RequestUser> for State {
     }: Deploy,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    if self.action_states.deployment.busy(&deployment_id).await {
+    if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
     }
 
@@ -50,23 +55,22 @@ impl Resolve<Deploy, RequestUser> for State {
       return Err(anyhow!("deployment has no server configured"));
     }
 
-    let (server, status) = self
-      .get_server_with_status(&deployment.config.server_id)
-      .await?;
+    let (server, status) =
+      get_server_with_status(&deployment.config.server_id).await?;
     if status != ServerStatus::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));
     }
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async move {
       let start_ts = monitor_timestamp();
 
       let version = match deployment.config.image {
         DeploymentImage::Build { build_id, version } => {
-          let build: Build = self.get_resource(&build_id).await?;
+          let build: Build = State.get_resource(&build_id).await?;
           let image_name = get_image_name(&build);
           let version = if version.is_none() {
             build.config.version
@@ -96,7 +100,7 @@ impl Resolve<Deploy, RequestUser> for State {
         ..Default::default()
       };
 
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let log = match periphery
         .request(requests::Deploy {
@@ -112,14 +116,13 @@ impl Resolve<Deploy, RequestUser> for State {
 
       update.logs.push(log);
       update.finalize();
-      self.update_cache_for_server(&server).await;
-      self.update_update(update.clone()).await?;
+      update_cache_for_server(&server).await;
+      update_update(update.clone()).await?;
 
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment_id.to_string(), |entry| {
         entry.deploying = true;
@@ -128,8 +131,7 @@ impl Resolve<Deploy, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment_id, |entry| {
         entry.deploying = false;
@@ -147,11 +149,11 @@ impl Resolve<StartContainer, RequestUser> for State {
     StartContainer { deployment_id }: StartContainer,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    if self.action_states.deployment.busy(&deployment_id).await {
+    if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
     }
 
-    let deployment: Deployment = self
+    let deployment: Deployment = State
       .get_resource_check_permissions(
         &deployment_id,
         &user,
@@ -163,16 +165,15 @@ impl Resolve<StartContainer, RequestUser> for State {
       return Err(anyhow!("deployment has no server configured"));
     }
 
-    let (server, status) = self
-      .get_server_with_status(&deployment.config.server_id)
-      .await?;
+    let (server, status) =
+      get_server_with_status(&deployment.config.server_id).await?;
     if status != ServerStatus::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));
     }
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async move {
       let start_ts = monitor_timestamp();
@@ -187,7 +188,7 @@ impl Resolve<StartContainer, RequestUser> for State {
         ..Default::default()
       };
 
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let log = match periphery
         .request(requests::StartContainer {
@@ -201,14 +202,13 @@ impl Resolve<StartContainer, RequestUser> for State {
 
       update.logs.push(log);
       update.finalize();
-      self.update_cache_for_server(&server).await;
-      self.update_update(update.clone()).await?;
+      update_cache_for_server(&server).await;
+      update_update(update.clone()).await?;
 
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment_id.to_string(), |entry| {
         entry.starting = true;
@@ -217,8 +217,7 @@ impl Resolve<StartContainer, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment_id, |entry| {
         entry.starting = false;
@@ -240,7 +239,7 @@ impl Resolve<StopContainer, RequestUser> for State {
     }: StopContainer,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    if self.action_states.deployment.busy(&deployment_id).await {
+    if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
     }
 
@@ -256,22 +255,21 @@ impl Resolve<StopContainer, RequestUser> for State {
       return Err(anyhow!("deployment has no server configured"));
     }
 
-    let (server, status) = self
-      .get_server_with_status(&deployment.config.server_id)
-      .await?;
+    let (server, status) =
+      get_server_with_status(&deployment.config.server_id).await?;
     if status != ServerStatus::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));
     }
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async move {
       let mut update =
         make_update(&deployment, Operation::StopContainer, &user);
 
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let log = match periphery
         .request(requests::StopContainer {
@@ -291,14 +289,13 @@ impl Resolve<StopContainer, RequestUser> for State {
 
       update.logs.push(log);
       update.finalize();
-      self.update_cache_for_server(&server).await;
-      self.update_update(update.clone()).await?;
+      update_cache_for_server(&server).await;
+      update_update(update.clone()).await?;
 
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment_id.to_string(), |entry| {
         entry.stopping = true;
@@ -307,8 +304,7 @@ impl Resolve<StopContainer, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment_id, |entry| {
         entry.stopping = false;
@@ -326,8 +322,7 @@ impl Resolve<StopAllContainers, RequestUser> for State {
     StopAllContainers { server_id }: StopAllContainers,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    let (server, status) =
-      self.get_server_with_status(&server_id).await?;
+    let (server, status) = get_server_with_status(&server_id).await?;
     if status != ServerStatus::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
@@ -335,7 +330,7 @@ impl Resolve<StopAllContainers, RequestUser> for State {
     }
 
     let deployments = find_collect(
-      &self.db.deployments,
+      &db_client().await.deployments,
       doc! {
         "config.server_id": &server_id
       },
@@ -384,12 +379,11 @@ impl Resolve<StopAllContainers, RequestUser> for State {
         }
       }
       update.finalize();
-      self.add_update(update.clone()).await?;
+      add_update(update.clone()).await?;
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .server
       .update_entry(server_id.to_string(), |entry| {
         entry.stopping_containers = true;
@@ -398,8 +392,7 @@ impl Resolve<StopAllContainers, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .server
       .update_entry(server_id, |entry| {
         entry.stopping_containers = false;
@@ -421,7 +414,7 @@ impl Resolve<RemoveContainer, RequestUser> for State {
     }: RemoveContainer,
     user: RequestUser,
   ) -> anyhow::Result<Update> {
-    if self.action_states.deployment.busy(&deployment_id).await {
+    if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
     }
 
@@ -437,16 +430,15 @@ impl Resolve<RemoveContainer, RequestUser> for State {
       return Err(anyhow!("deployment has no server configured"));
     }
 
-    let (server, status) = self
-      .get_server_with_status(&deployment.config.server_id)
-      .await?;
+    let (server, status) =
+      get_server_with_status(&deployment.config.server_id).await?;
     if status != ServerStatus::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
       ));
     }
 
-    let periphery = self.periphery_client(&server)?;
+    let periphery = periphery_client(&server)?;
 
     let inner = || async move {
       let start_ts = monitor_timestamp();
@@ -461,7 +453,7 @@ impl Resolve<RemoveContainer, RequestUser> for State {
         ..Default::default()
       };
 
-      update.id = self.add_update(update.clone()).await?;
+      update.id = add_update(update.clone()).await?;
 
       let log = match periphery
         .request(requests::RemoveContainer {
@@ -481,14 +473,13 @@ impl Resolve<RemoveContainer, RequestUser> for State {
 
       update.logs.push(log);
       update.finalize();
-      self.update_cache_for_server(&server).await;
-      self.update_update(update.clone()).await?;
+      update_cache_for_server(&server).await;
+      update_update(update.clone()).await?;
 
       Ok(update)
     };
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment_id.to_string(), |entry| {
         entry.removing = true;
@@ -497,8 +488,7 @@ impl Resolve<RemoveContainer, RequestUser> for State {
 
     let res = inner().await;
 
-    self
-      .action_states
+    action_states()
       .deployment
       .update_entry(deployment_id, |entry| {
         entry.removing = false;

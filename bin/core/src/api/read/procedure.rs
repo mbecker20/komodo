@@ -16,7 +16,8 @@ use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser, db_client, helpers::resource::StateResource,
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -83,8 +84,8 @@ impl Resolve<GetProceduresSummary, RequestUser> for State {
       };
       Some(query)
     };
-    let total = self
-      .db
+    let total = db_client()
+      .await
       .procedures
       .count_documents(query, None)
       .await
@@ -110,12 +111,8 @@ impl Resolve<GetProcedureActionState, RequestUser> for State {
         PermissionLevel::Read,
       )
       .await?;
-    let action_state = self
-      .action_states
-      .procedure
-      .get(&id)
-      .await
-      .unwrap_or_default();
+    let action_state =
+      action_states().procedure.get(&id).await.unwrap_or_default();
     Ok(action_state)
   }
 }

@@ -37,7 +37,9 @@ use mungos::{
 };
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{auth::RequestUser, state::State};
+use crate::{auth::RequestUser, db_client, state::State};
+
+use super::cache::{deployment_status_cache, server_status_cache};
 
 #[async_trait]
 pub trait StateResource<
@@ -47,14 +49,14 @@ pub trait StateResource<
   type ListItem: Serialize + Send;
 
   fn name() -> &'static str;
-  fn coll(&self) -> &Collection<T>;
+  async fn coll(&self) -> &Collection<T>;
   async fn to_list_item(
     &self,
     resource: T,
   ) -> anyhow::Result<Self::ListItem>;
 
   async fn get_resource(&self, id: &str) -> anyhow::Result<T> {
-    find_one_by_id(self.coll(), id)
+    find_one_by_id(self.coll().await, id)
       .await
       .context("failed to query db for resource")?
       .with_context(|| {
@@ -95,7 +97,7 @@ pub trait StateResource<
   ) -> anyhow::Result<Vec<String>> {
     use mungos::aggregate::AggStage::*;
     aggregate_collect(
-      self.coll(),
+      self.coll().await,
       [
           Match(doc! {
               format!("permissions.{}", user_id): { "$in": ["update", "execute", "read"] }
@@ -132,7 +134,7 @@ pub trait StateResource<
         doc! { "$in": ["read", "execute", "update"] },
       );
     }
-    let list = find_collect(self.coll(), filters, None)
+    let list = find_collect(self.coll().await, filters, None)
       .await
       .with_context(|| {
         format!("failed to pull {}s from mongo", Self::name())
@@ -167,6 +169,7 @@ pub trait StateResource<
       .await?;
     self
       .coll()
+      .await
       .update_one(
         doc! { "_id": ObjectId::from_str(id)? },
         doc! { "$set": { "description": description } },
@@ -182,7 +185,7 @@ pub trait StateResource<
     tags: Vec<String>,
   ) -> anyhow::Result<()> {
     update_one_by_id(
-      self.coll(),
+      self.coll().await,
       id,
       doc! { "$set": { "tags": tags } },
       None,
@@ -200,15 +203,15 @@ impl StateResource<Server> for State {
     "server"
   }
 
-  fn coll(&self) -> &Collection<Server> {
-    &self.db.servers
+  async fn coll(&self) -> &Collection<Server> {
+    &db_client().await.servers
   }
 
   async fn to_list_item(
     &self,
     server: Server,
   ) -> anyhow::Result<ServerListItem> {
-    let status = self.server_status_cache.get(&server.id).await;
+    let status = server_status_cache().get(&server.id).await;
     Ok(ServerListItem {
       name: server.name,
       created_at: ObjectId::from_str(&server.id)?
@@ -240,16 +243,15 @@ impl StateResource<Deployment> for State {
     "deployment"
   }
 
-  fn coll(&self) -> &Collection<Deployment> {
-    &self.db.deployments
+  async fn coll(&self) -> &Collection<Deployment> {
+    &db_client().await.deployments
   }
 
   async fn to_list_item(
     &self,
     deployment: Deployment,
   ) -> anyhow::Result<DeploymentListItem> {
-    let status =
-      self.deployment_status_cache.get(&deployment.id).await;
+    let status = deployment_status_cache().get(&deployment.id).await;
     let (image, build_id) = match deployment.config.image {
       DeploymentImage::Build { build_id, version } => {
         let build: Build = self.get_resource(&build_id).await?;
@@ -294,8 +296,8 @@ impl StateResource<Build> for State {
     "build"
   }
 
-  fn coll(&self) -> &Collection<Build> {
-    &self.db.builds
+  async fn coll(&self) -> &Collection<Build> {
+    &db_client().await.builds
   }
 
   async fn to_list_item(
@@ -326,8 +328,8 @@ impl StateResource<Repo> for State {
     "repo"
   }
 
-  fn coll(&self) -> &Collection<Repo> {
-    &self.db.repos
+  async fn coll(&self) -> &Collection<Repo> {
+    &db_client().await.repos
   }
 
   async fn to_list_item(
@@ -357,8 +359,8 @@ impl StateResource<Builder> for State {
     "builder"
   }
 
-  fn coll(&self) -> &Collection<Builder> {
-    &self.db.builders
+  async fn coll(&self) -> &Collection<Builder> {
+    &db_client().await.builders
   }
 
   async fn to_list_item(
@@ -398,8 +400,8 @@ impl StateResource<Alerter> for State {
     "alerter"
   }
 
-  fn coll(&self) -> &Collection<Alerter> {
-    &self.db.alerters
+  async fn coll(&self) -> &Collection<Alerter> {
+    &db_client().await.alerters
   }
 
   async fn to_list_item(
@@ -434,8 +436,8 @@ impl StateResource<Procedure> for State {
     "procedure"
   }
 
-  fn coll(&self) -> &Collection<Procedure> {
-    &self.db.procedures
+  async fn coll(&self) -> &Collection<Procedure> {
+    &db_client().await.procedures
   }
 
   async fn to_list_item(

@@ -21,7 +21,10 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
+  auth::RequestUser,
+  db_client,
+  helpers::{add_update, get_user, resource::StateResource},
+  state::State,
 };
 
 #[async_trait]
@@ -41,7 +44,7 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
       return Err(anyhow!("this method is admin only"));
     }
 
-    let user = find_one_by_id(&self.db.users, &user_id)
+    let user = find_one_by_id(&db_client().await.users, &user_id)
       .await
       .context("failed to query mongo for user")?
       .context("did not find user with given id")?;
@@ -62,7 +65,7 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
     }
 
     update_one_by_id(
-      &self.db.users,
+      &db_client().await.users,
       &user_id,
       mungos::update::Update::Set(update_doc),
       None,
@@ -88,7 +91,7 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
       operator: admin.id.clone(),
       ..Default::default()
     };
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
     Ok(update)
   }
 }
@@ -109,7 +112,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
       return Err(anyhow!("this method is admin only"));
     }
 
-    let user = self.get_user(&user_id).await?;
+    let user = get_user(&user_id).await?;
     if user.admin {
       return Err(anyhow!(
         "cannot use this method to update other admins permissions"
@@ -123,13 +126,13 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
         return Err(anyhow!("target can not be system"))
       }
       ResourceTarget::Build(id) => {
-        let build = find_one_by_id(&self.db.builds, id)
+        let build = find_one_by_id(&db_client().await.builds, id)
           .await
           .context("failed at find build query")?
           .ok_or(anyhow!("failed to find a build with id {id}"))?;
 
         update_one_by_id(
-          &self.db.builds,
+          &db_client().await.builds,
           id,
           mungos::update::Update::Set(doc! {
             format!("permissions.{}", user_id): permission.to_string()
@@ -143,7 +146,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
         )
       }
       ResourceTarget::Builder(id) => {
-        let builder = find_one_by_id(&self.db.builders, id)
+        let builder = find_one_by_id(&db_client().await.builders, id)
           .await
           .context("failed at find builder query")?
           .with_context(|| {
@@ -151,7 +154,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
           })?;
 
         update_one_by_id(
-          &self.db.builders,
+          &db_client().await.builders,
           id,
           mungos::update::Update::Set(doc! {
             format!("permissions.{}", user_id): permission.to_string()
@@ -165,15 +168,16 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
         )
       }
       ResourceTarget::Deployment(id) => {
-        let deployment = find_one_by_id(&self.db.deployments, id)
-          .await
-          .context("failed at find deployment query")?
-          .with_context(|| {
-            format!("failed to find a deployment with id {id}")
-          })?;
+        let deployment =
+          find_one_by_id(&db_client().await.deployments, id)
+            .await
+            .context("failed at find deployment query")?
+            .with_context(|| {
+              format!("failed to find a deployment with id {id}")
+            })?;
 
         update_one_by_id(
-          &self.db.deployments,
+          &db_client().await.deployments,
           id,
           mungos::update::Update::Set(doc! {
             format!("permissions.{}", user_id): permission.to_string()
@@ -187,11 +191,11 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
         )
       }
       ResourceTarget::Server(id) => {
-        // find_one_by_id(&self.db.servers, id)
+        // find_one_by_id(&db_client().await.servers, id)
         let server: Server = self.get_resource(id).await?;
 
         update_one_by_id(
-          &self.db.servers,
+          &db_client().await.servers,
           id,
           mungos::update::Update::Set(doc! {
             format!("permissions.{}", user_id): permission.to_string()
@@ -208,7 +212,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
         let repo: Repo = self.get_resource(id).await?;
 
         update_one_by_id(
-          &self.db.repos,
+          &db_client().await.repos,
           id,
           mungos::update::Update::Set(doc! {
             format!("permissions.{}", user_id): permission.to_string()
@@ -224,7 +228,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
       ResourceTarget::Alerter(id) => {
         let alerter: Alerter = self.get_resource(id).await?;
         update_one_by_id(
-          &self.db.alerters,
+          &db_client().await.alerters,
           id,
           mungos::update::Update::Set(doc! {
             format!("permissions.{}", user_id): permission.to_string()
@@ -240,7 +244,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
       ResourceTarget::Procedure(id) => {
         let procedure: Procedure = self.get_resource(id).await?;
         update_one_by_id(
-          &self.db.procedures,
+          &db_client().await.procedures,
           id,
           mungos::update::Update::Set(doc! {
             format!("permissions.{}", user_id): permission.to_string()
@@ -265,7 +269,7 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
       end_ts: monitor_timestamp().into(),
       ..Default::default()
     };
-    update.id = self.add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
     Ok(update)
   }
 }
