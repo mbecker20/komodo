@@ -31,7 +31,7 @@ fn default_frontend_path() -> String {
 pub fn core_config() -> &'static CoreConfig {
   static CORE_CONFIG: OnceLock<CoreConfig> = OnceLock::new();
   CORE_CONFIG.get_or_init(|| {
-    let env = &env();
+    let env = env();
     let config_path = &env.config_path;
     let mut config =
       parse_config_file::<CoreConfig>(config_path.as_str())

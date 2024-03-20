@@ -7,47 +7,49 @@ pub struct CoreConfig {
   #[serde(default = "default_title")]
   pub title: String,
 
-  // the host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'
+  /// The host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'
   #[serde(default)]
   pub host: String,
 
-  // port the core web server runs on
+  /// Port the core web server runs on
   #[serde(default = "default_core_port")]
   pub port: u16,
 
-  // sent in auth header with req to periphery
+  /// Sent in auth header with req to periphery
   pub passkey: String,
 
+  /// Configure custom log level: trace | debug | info | warn | error. default: info
   #[serde(default)]
   pub log_level: LogLevel,
 
+  /// Control how long distributed JWT remain valid for. Default is 1-day
   #[serde(default = "default_jwt_valid_for")]
   pub jwt_valid_for: Timelength,
 
-  // interval at which to collect server stats and send any alerts
+  /// interval at which to collect server stats and send any alerts
   #[serde(default = "default_monitoring_interval")]
   pub monitoring_interval: Timelength,
 
-  // number of days to keep stats, or 0 to disable pruning. stats older than this number of days are deleted on a daily cycle
+  /// number of days to keep stats, or 0 to disable pruning. stats older than this number of days are deleted on a daily cycle
   #[serde(default)]
   pub keep_stats_for_days: u64,
 
-  // number of days to keep alerts, or 0 to disable pruning. alerts older than this number of days are deleted on a daily cycle
+  /// number of days to keep alerts, or 0 to disable pruning. alerts older than this number of days are deleted on a daily cycle
   #[serde(default)]
   pub keep_alerts_for_days: u64,
 
-  // used to verify validity from github webhooks
+  /// used to verify validity from github webhooks
   #[serde(default)]
   pub github_webhook_secret: String,
 
-  // used to form the frontend listener url, if None will use 'host'.
+  /// used to form the frontend listener url, if None will use 'host'.
   pub github_webhook_base_url: Option<String>,
 
-  // allowed docker orgs used with monitor. first in this list will be default for build
+  /// allowed docker orgs used with monitor. first in this list will be default for build
   #[serde(default)]
   pub docker_organizations: Vec<String>,
 
-  // enable login with local auth
+  /// enable login with local auth
   #[serde(default)]
   pub local_auth: bool,
 

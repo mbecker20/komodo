@@ -95,7 +95,7 @@ pub struct PeripheryConfig {
   pub port: u16,
 
   /// Configure the logging level: error, warn, info, debug, trace
-  #[serde(default = "default_log_level")]
+  #[serde(default)]
   pub log_level: logger::LogLevel,
 
   /// The system directory where monitor managed repos will be cloned
@@ -129,10 +129,6 @@ pub struct PeripheryConfig {
 
 fn default_periphery_port() -> u16 {
   8000
-}
-
-fn default_log_level() -> logger::LogLevel {
-  logger::LogLevel::Info
 }
 
 fn default_repo_dir() -> PathBuf {

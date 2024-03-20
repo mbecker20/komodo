@@ -9,11 +9,21 @@ pub fn init(log_level: impl Into<tracing::Level>) {
 }
 
 #[derive(
-  Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize,
+  Debug,
+  Clone,
+  Copy,
+  Default,
+  PartialEq,
+  Eq,
+  Hash,
+  Serialize,
+  Deserialize,
 )]
+#[serde(rename_all = "lowercase")]
 pub enum LogLevel {
   Trace,
   Debug,
+  #[default]
   Info,
   Warn,
   Error,
