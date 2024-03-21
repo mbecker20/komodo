@@ -2,8 +2,10 @@ use async_trait::async_trait;
 use monitor_client::entities::{
   server::docker_network::DockerNetwork, update::Log,
 };
-use resolver_api::{derive::Request, Resolve};
-use serde::{Deserialize, Serialize};
+use periphery_client::api::network::{
+  CreateNetwork, DeleteNetwork, GetNetworkList, PruneNetworks,
+};
+use resolver_api::Resolve;
 
 use crate::{
   helpers::docker::{self, client::docker_client},
@@ -11,10 +13,6 @@ use crate::{
 };
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<DockerNetwork>)]
-pub struct GetNetworkList {}
 
 #[async_trait]
 impl Resolve<GetNetworkList> for State {
@@ -29,13 +27,6 @@ impl Resolve<GetNetworkList> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct CreateNetwork {
-  pub name: String,
-  pub driver: Option<String>,
-}
-
 #[async_trait]
 impl Resolve<CreateNetwork> for State {
   async fn resolve(
@@ -49,12 +40,6 @@ impl Resolve<CreateNetwork> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct DeleteNetwork {
-  pub name: String,
-}
-
 #[async_trait]
 impl Resolve<DeleteNetwork> for State {
   async fn resolve(
@@ -67,10 +52,6 @@ impl Resolve<DeleteNetwork> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct PruneNetworks {}
 
 #[async_trait]
 impl Resolve<PruneNetworks> for State {

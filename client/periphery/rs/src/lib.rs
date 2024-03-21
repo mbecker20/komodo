@@ -1,15 +1,12 @@
-#[macro_use]
-extern crate tracing;
-
 use std::{sync::OnceLock, time::Duration};
 
 use anyhow::Context;
 use reqwest::StatusCode;
 use resolver_api::HasResponse;
 use serde_json::json;
-
-pub use monitor_periphery::requests;
 use serror::deserialize_error;
+
+pub mod api;
 
 fn http_client() -> &'static reqwest::Client {
   static PERIPHERY_HTTP_CLIENT: OnceLock<reqwest::Client> =
@@ -43,10 +40,7 @@ impl PeripheryClient {
 
   pub async fn health_check(&self) -> anyhow::Result<()> {
     self
-      .request_inner(
-        requests::GetHealth {},
-        Some(Duration::from_secs(1)),
-      )
+      .request_inner(api::GetHealth {}, Some(Duration::from_secs(1)))
       .await?;
     Ok(())
   }
@@ -57,7 +51,9 @@ impl PeripheryClient {
     timeout: Option<Duration>,
   ) -> anyhow::Result<T::Response> {
     let req_type = T::req_type();
-    trace!("sending request | type: {req_type} | body: {request:?}");
+    tracing::trace!(
+      "sending request | type: {req_type} | body: {request:?}"
+    );
     let mut req = http_client()
       .post(&self.address)
       .json(&json!({
@@ -71,7 +67,7 @@ impl PeripheryClient {
     let res =
       req.send().await.context("failed at request to periphery")?;
     let status = res.status();
-    debug!(
+    tracing::debug!(
       "got response | type: {req_type} | {status} | body: {res:?}",
     );
     if status == StatusCode::OK {

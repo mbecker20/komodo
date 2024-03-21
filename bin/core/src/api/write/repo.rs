@@ -15,7 +15,7 @@ use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
   mongodb::bson::{doc, to_bson},
 };
-use periphery_client::requests;
+use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
@@ -247,7 +247,7 @@ impl Resolve<DeleteRepo, RequestUser> for State {
 
       if let Some(periphery) = periphery {
         match periphery
-          .request(requests::DeleteRepo {
+          .request(api::git::DeleteRepo {
             name: repo.name.clone(),
           })
           .await
@@ -349,7 +349,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
               old_server.and_then(|server| periphery_client(&server));
             match periphery {
               Ok(periphery) => match periphery
-                .request(requests::DeleteRepo { name: repo.name })
+                .request(api::git::DeleteRepo { name: repo.name })
                 .await
               {
                 Ok(mut log) => {

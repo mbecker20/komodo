@@ -23,7 +23,7 @@ use mungos::{
     options::FindOneOptions,
   },
 };
-use periphery_client::requests;
+use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
@@ -125,7 +125,7 @@ impl Resolve<GetLog, RequestUser> for State {
     }
     let server: Server = self.get_resource(&server_id).await?;
     periphery_client(&server)?
-      .request(requests::GetContainerLog {
+      .request(api::container::GetContainerLog {
         name,
         tail: cmp::min(tail, MAX_LOG_LENGTH),
       })
@@ -220,7 +220,7 @@ impl Resolve<GetDeploymentStats, RequestUser> for State {
     }
     let server: Server = self.get_resource(&server_id).await?;
     periphery_client(&server)?
-      .request(requests::GetContainerStats { name })
+      .request(api::container::GetContainerStats { name })
       .await
       .context("failed to get stats from periphery")
   }

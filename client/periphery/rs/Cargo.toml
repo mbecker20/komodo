@@ -8,11 +8,14 @@ license.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# local
 monitor_client.workspace = true
-monitor_periphery.workspace = true
+# mogh
+serror.workspace = true
+resolver_api.workspace = true
+# external
 reqwest.workspace = true
 anyhow.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 tracing.workspace = true
-resolver_api.workspace = true
-serror.workspace = true

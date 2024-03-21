@@ -1,16 +1,8 @@
-use monitor_client::entities::{
-  to_monitor_name, update::Log, CloneArgs, SystemCommand,
-};
-use resolver_api::{derive::Request, Resolve};
-use serde::{Deserialize, Serialize};
+use monitor_client::entities::{to_monitor_name, update::Log};
+use periphery_client::api::git::{CloneRepo, DeleteRepo, PullRepo};
+use resolver_api::Resolve;
 
 use crate::{config::periphery_config, helpers::git, State};
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Log>)]
-pub struct CloneRepo {
-  pub args: CloneArgs,
-}
 
 #[async_trait::async_trait]
 impl Resolve<CloneRepo> for State {
@@ -24,14 +16,6 @@ impl Resolve<CloneRepo> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Log>)]
-pub struct PullRepo {
-  pub name: String,
-  pub branch: Option<String>,
-  pub on_pull: Option<SystemCommand>,
-}
 
 #[async_trait::async_trait]
 impl Resolve<PullRepo> for State {
@@ -57,12 +41,6 @@ impl Resolve<PullRepo> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct DeleteRepo {
-  pub name: String,
-}
 
 #[async_trait::async_trait]
 impl Resolve<DeleteRepo> for State {

@@ -12,7 +12,13 @@ use serror::AppResult;
 use termination_signal::tokio::immediate_term_handle;
 use uuid::Uuid;
 
-use monitor_periphery::*;
+mod api;
+mod config;
+mod guard;
+mod helpers;
+mod system_stats;
+
+struct State;
 
 async fn app() -> anyhow::Result<()> {
   dotenv::dotenv().ok();
@@ -30,33 +36,27 @@ async fn app() -> anyhow::Result<()> {
   let app = Router::new()
     .route(
       "/",
-      post(
-        |Json(request): Json<
-          monitor_periphery::requests::PeripheryRequest,
-        >| async move {
-          let timer = Instant::now();
-          let req_id = Uuid::new_v4();
-          info!("request {req_id} | {request:?}");
-          let res = tokio::spawn(async move {
-            let res = monitor_periphery::State
-              .resolve_request(request, ())
-              .await;
-            if let Err(e) = &res {
-              debug!("request {req_id} ERROR: {e:#?}");
-            }
-            let elapsed = timer.elapsed();
-            info!("request {req_id} | resolve time: {elapsed:?}");
-            res
-          })
-          .await;
+      post(|Json(request): Json<api::PeripheryRequest>| async move {
+        let timer = Instant::now();
+        let req_id = Uuid::new_v4();
+        info!("request {req_id} | {request:?}");
+        let res = tokio::spawn(async move {
+          let res = State.resolve_request(request, ()).await;
           if let Err(e) = &res {
-            debug!("request {req_id} SPAWN ERROR: {e:#?}");
+            debug!("request {req_id} ERROR: {e:#?}");
           }
-          let res = res??;
-          debug!("request {req_id} RESPONSE: {res}");
-          AppResult::Ok((TypedHeader(ContentType::json()), res))
-        },
-      ),
+          let elapsed = timer.elapsed();
+          info!("request {req_id} | resolve time: {elapsed:?}");
+          res
+        })
+        .await;
+        if let Err(e) = &res {
+          debug!("request {req_id} SPAWN ERROR: {e:#?}");
+        }
+        let res = res??;
+        debug!("request {req_id} RESPONSE: {res}");
+        AppResult::Ok((TypedHeader(ContentType::json()), res))
+      }),
     )
     .layer(middleware::from_fn(guard::guard_request_by_ip))
     .layer(middleware::from_fn(guard::guard_request_by_passkey));

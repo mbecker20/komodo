@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["bin/*", "lib/*", "client/rs"]
+members = ["bin/*", "lib/*", "client/core/rs", "client/periphery/rs"]
 
 [workspace.package]
 version = "1.0.1"
@@ -11,9 +11,8 @@ license = "GPL-3.0-or-later"
 [workspace.dependencies]
 # local
 monitor_macros = { path = "lib/macros" }
-monitor_client = { path = "client/rs" }
-monitor_periphery = { path = "bin/periphery" }
-periphery_client = { path = "lib/periphery_client" }
+monitor_client = { path = "client/core/rs" }
+periphery_client = { path = "client/periphery/rs" }
 logger = { path = "lib/logger" }
 # mogh
 run_command = { version = "0.0.6", features = ["async_tokio"] }

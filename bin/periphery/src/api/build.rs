@@ -2,8 +2,10 @@ use async_trait::async_trait;
 use monitor_client::entities::{
   optional_string, server::docker_image::ImageSummary, update::Log,
 };
-use resolver_api::{derive::Request, Resolve};
-use serde::{Deserialize, Serialize};
+use periphery_client::api::build::{
+  Build, GetImageList, PruneImages,
+};
+use resolver_api::Resolve;
 
 use crate::{
   helpers::{
@@ -12,12 +14,6 @@ use crate::{
   },
   State,
 };
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Log>)]
-pub struct Build {
-  pub build: monitor_client::entities::build::Build,
-}
 
 #[async_trait]
 impl Resolve<Build> for State {
@@ -45,10 +41,6 @@ impl Resolve<Build> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<ImageSummary>)]
-pub struct GetImageList {}
-
 #[async_trait::async_trait]
 impl Resolve<GetImageList> for State {
   async fn resolve(
@@ -61,10 +53,6 @@ impl Resolve<GetImageList> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct PruneImages {}
 
 #[async_trait]
 impl Resolve<PruneImages> for State {

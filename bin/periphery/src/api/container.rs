@@ -1,13 +1,10 @@
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  deployment::{
-    ContainerSummary, Deployment, DockerContainerStats,
-    TerminationSignal,
-  },
+  deployment::{ContainerSummary, DockerContainerStats},
   update::Log,
 };
-use resolver_api::{derive::Request, Resolve};
-use serde::{Deserialize, Serialize};
+use periphery_client::api::container::*;
+use resolver_api::Resolve;
 
 use crate::{
   helpers::docker::{self, client::docker_client},
@@ -15,10 +12,6 @@ use crate::{
 };
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<ContainerSummary>)]
-pub struct GetContainerList {}
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerList> for State {
@@ -33,18 +26,6 @@ impl Resolve<GetContainerList> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct GetContainerLog {
-  pub name: String,
-  #[serde(default = "default_tail")]
-  pub tail: u64,
-}
-
-fn default_tail() -> u64 {
-  50
-}
-
 #[async_trait::async_trait]
 impl Resolve<GetContainerLog> for State {
   async fn resolve(
@@ -57,13 +38,6 @@ impl Resolve<GetContainerLog> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct GetContainerLogSearch {
-  pub name: String,
-  pub search: String,
-}
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerLogSearch> for State {
@@ -80,12 +54,6 @@ impl Resolve<GetContainerLogSearch> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(DockerContainerStats)]
-pub struct GetContainerStats {
-  pub name: String,
-}
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerStats> for State {
@@ -104,10 +72,6 @@ impl Resolve<GetContainerStats> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<DockerContainerStats>)]
-pub struct GetContainerStatsList {}
-
 #[async_trait::async_trait]
 impl Resolve<GetContainerStatsList> for State {
   async fn resolve(
@@ -121,12 +85,6 @@ impl Resolve<GetContainerStatsList> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct StartContainer {
-  pub name: String,
-}
-
 #[async_trait::async_trait]
 impl Resolve<StartContainer> for State {
   async fn resolve(
@@ -139,14 +97,6 @@ impl Resolve<StartContainer> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct StopContainer {
-  pub name: String,
-  pub signal: Option<TerminationSignal>,
-  pub time: Option<i32>,
-}
 
 #[async_trait::async_trait]
 impl Resolve<StopContainer> for State {
@@ -166,14 +116,6 @@ impl Resolve<StopContainer> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct RemoveContainer {
-  pub name: String,
-  pub signal: Option<TerminationSignal>,
-  pub time: Option<i32>,
-}
-
 #[async_trait::async_trait]
 impl Resolve<RemoveContainer> for State {
   async fn resolve(
@@ -191,13 +133,6 @@ impl Resolve<RemoveContainer> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct RenameContainer {
-  pub curr_name: String,
-  pub new_name: String,
-}
 
 #[async_trait::async_trait]
 impl Resolve<RenameContainer> for State {
@@ -218,10 +153,6 @@ impl Resolve<RenameContainer> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct PruneContainers {}
-
 #[async_trait::async_trait]
 impl Resolve<PruneContainers> for State {
   async fn resolve(
@@ -234,14 +165,6 @@ impl Resolve<PruneContainers> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct Deploy {
-  pub deployment: Deployment,
-  pub stop_signal: Option<TerminationSignal>,
-  pub stop_time: Option<i32>,
-}
 
 #[async_trait::async_trait]
 impl Resolve<Deploy> for State {

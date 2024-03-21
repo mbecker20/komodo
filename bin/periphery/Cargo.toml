@@ -5,10 +5,6 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
-[lib]
-name = "monitor_periphery"
-path = "src/lib.rs"
-
 [[bin]]
 name = "periphery"
 path = "src/main.rs"
@@ -18,6 +14,7 @@ path = "src/main.rs"
 [dependencies]
 # local
 monitor_client.workspace = true
+periphery_client.workspace = true
 logger.workspace = true
 # mogh
 async_timing_util.workspace = true

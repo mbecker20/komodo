@@ -21,7 +21,7 @@ use mungos::{
     options::FindOptions,
   },
 };
-use periphery_client::requests::{self, GetAccountsResponse};
+use periphery_client::api::{self, GetAccountsResponse};
 use resolver_api::{Resolve, ResolveToString};
 
 use crate::{
@@ -183,7 +183,7 @@ impl Resolve<GetSystemInformation, RequestUser> for State {
       )
       .await?;
     periphery_client(&server)?
-      .request(requests::GetSystemInformation {})
+      .request(api::stats::GetSystemInformation {})
       .await
   }
 }
@@ -443,7 +443,7 @@ impl Resolve<GetDockerImages, RequestUser> for State {
       )
       .await?;
     periphery_client(&server)?
-      .request(requests::GetImageList {})
+      .request(api::build::GetImageList {})
       .await
   }
 }
@@ -463,7 +463,7 @@ impl Resolve<GetDockerNetworks, RequestUser> for State {
       )
       .await?;
     periphery_client(&server)?
-      .request(requests::GetNetworkList {})
+      .request(api::network::GetNetworkList {})
       .await
   }
 }
@@ -483,7 +483,7 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
       )
       .await?;
     periphery_client(&server)?
-      .request(requests::GetContainerList {})
+      .request(api::container::GetContainerList {})
       .await
   }
 }
@@ -504,7 +504,7 @@ impl Resolve<GetAvailableAccounts, RequestUser> for State {
       .await?;
     let GetAccountsResponse { github, docker } =
       periphery_client(&server)?
-        .request(requests::GetAccounts {})
+        .request(api::GetAccounts {})
         .await
         .context("failed to get accounts from periphery")?;
     let res = GetAvailableAccountsResponse { github, docker };
@@ -527,7 +527,7 @@ impl Resolve<GetAvailableSecrets, RequestUser> for State {
       )
       .await?;
     let secrets = periphery_client(&server)?
-      .request(requests::GetSecrets {})
+      .request(api::GetSecrets {})
       .await
       .context("failed to get accounts from periphery")?;
     Ok(secrets)

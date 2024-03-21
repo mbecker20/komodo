@@ -13,7 +13,7 @@ use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
   mongodb::bson::{doc, to_bson},
 };
-use periphery_client::requests;
+use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
@@ -274,7 +274,7 @@ impl Resolve<CreateNetwork, RequestUser> for State {
     update.id = add_update(update.clone()).await?;
 
     match periphery
-      .request(requests::CreateNetwork { name, driver: None })
+      .request(api::network::CreateNetwork { name, driver: None })
       .await
     {
       Ok(log) => update.logs.push(log),
@@ -312,7 +312,10 @@ impl Resolve<DeleteNetwork, RequestUser> for State {
     update.status = UpdateStatus::InProgress;
     update.id = add_update(update.clone()).await?;
 
-    match periphery.request(requests::DeleteNetwork { name }).await {
+    match periphery
+      .request(api::network::DeleteNetwork { name })
+      .await
+    {
       Ok(log) => update.logs.push(log),
       Err(e) => {
         update.push_error_log("delete network", format!("{e:#?}"))

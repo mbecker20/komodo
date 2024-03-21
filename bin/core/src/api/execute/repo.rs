@@ -13,7 +13,7 @@ use monitor_client::{
   },
 };
 use mungos::mongodb::bson::{doc, oid::ObjectId};
-use periphery_client::requests;
+use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
@@ -66,7 +66,7 @@ impl Resolve<CloneRepo, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let logs = match periphery
-        .request(requests::CloneRepo {
+        .request(api::git::CloneRepo {
           args: (&repo).into(),
         })
         .await
@@ -166,7 +166,7 @@ impl Resolve<PullRepo, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let logs = match periphery
-        .request(requests::PullRepo {
+        .request(api::git::PullRepo {
           name: repo.name,
           branch: optional_string(&repo.config.branch),
           on_pull: repo.config.on_pull.into_option(),

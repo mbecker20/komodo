@@ -1,10 +1,11 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::entities::{update::Log, SystemCommand};
-use resolver_api::{
-  derive::{Request, Resolver},
-  Resolve, ResolveToString,
+use periphery_client::api::{
+  build::*, container::*, git::*, network::*, stats::*, GetAccounts,
+  GetHealth, GetSecrets, GetVersion, GetVersionResponse, RunCommand,
 };
+use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -13,20 +14,11 @@ use crate::{
   State,
 };
 
-mod stats;
-pub use stats::*;
-
-mod container;
-pub use container::*;
-
-mod git;
-pub use git::*;
-
 mod build;
-pub use build::*;
-
+mod container;
+mod git;
 mod network;
-pub use network::*;
+mod stats;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[serde(tag = "type", content = "params")]
@@ -82,13 +74,6 @@ pub enum PeripheryRequest {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetHealthResponse)]
-pub struct GetHealth {}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetHealthResponse {}
-
 #[async_trait]
 impl ResolveToString<GetHealth> for State {
   async fn resolve_to_string(
@@ -101,15 +86,6 @@ impl ResolveToString<GetHealth> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetVersionResponse)]
-pub struct GetVersion {}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetVersionResponse {
-  pub version: String,
-}
 
 #[async_trait]
 impl Resolve<GetVersion> for State {
@@ -126,16 +102,6 @@ impl Resolve<GetVersion> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(GetAccountsResponse)]
-pub struct GetAccounts {}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetAccountsResponse {
-  pub docker: Vec<String>,
-  pub github: Vec<String>,
-}
-
 #[async_trait]
 impl ResolveToString<GetAccounts> for State {
   async fn resolve_to_string(
@@ -149,10 +115,6 @@ impl ResolveToString<GetAccounts> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<String>)]
-pub struct GetSecrets {}
-
 #[async_trait]
 impl ResolveToString<GetSecrets> for State {
   async fn resolve_to_string(
@@ -162,12 +124,6 @@ impl ResolveToString<GetSecrets> for State {
   ) -> anyhow::Result<String> {
     Ok(secrets_response().clone())
   }
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Log)]
-pub struct RunCommand {
-  pub command: SystemCommand,
 }
 
 #[async_trait]

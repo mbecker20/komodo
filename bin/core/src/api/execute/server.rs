@@ -9,7 +9,7 @@ use monitor_client::{
     Operation, PermissionLevel,
   },
 };
-use periphery_client::requests;
+use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
@@ -51,7 +51,7 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
-        .request(requests::PruneNetworks {})
+        .request(api::container::PruneContainers {})
         .await
         .context(format!(
           "failed to prune containers on server {}",
@@ -126,7 +126,7 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
-        .request(requests::PruneNetworks {})
+        .request(api::network::PruneNetworks {})
         .await
         .context(format!(
           "failed to prune networks on server {}",
@@ -201,7 +201,7 @@ impl Resolve<PruneDockerImages, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
-        .request(requests::PruneImages {})
+        .request(api::build::PruneImages {})
         .await
         .context(format!(
           "failed to prune images on server {}",

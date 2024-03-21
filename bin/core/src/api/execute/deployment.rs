@@ -13,7 +13,7 @@ use monitor_client::{
   },
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
-use periphery_client::requests;
+use periphery_client::api;
 use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
@@ -103,7 +103,7 @@ impl Resolve<Deploy, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
-        .request(requests::Deploy {
+        .request(api::container::Deploy {
           deployment,
           stop_signal,
           stop_time,
@@ -191,7 +191,7 @@ impl Resolve<StartContainer, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
-        .request(requests::StartContainer {
+        .request(api::container::StartContainer {
           name: deployment.name.clone(),
         })
         .await
@@ -272,7 +272,7 @@ impl Resolve<StopContainer, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
-        .request(requests::StopContainer {
+        .request(api::container::StopContainer {
           name: deployment.name.clone(),
           signal: signal
             .unwrap_or(deployment.config.termination_signal)
@@ -456,7 +456,7 @@ impl Resolve<RemoveContainer, RequestUser> for State {
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
-        .request(requests::RemoveContainer {
+        .request(api::container::RemoveContainer {
           name: deployment.name.clone(),
           signal: signal
             .unwrap_or(deployment.config.termination_signal)

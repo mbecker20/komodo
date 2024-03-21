@@ -17,7 +17,7 @@ use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
   mongodb::bson::{doc, to_bson},
 };
-use periphery_client::requests;
+use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
@@ -246,7 +246,7 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
         } else if let Ok(server) = server {
           match periphery_client(&server) {
             Ok(periphery) => match periphery
-              .request(requests::RemoveContainer {
+              .request(api::container::RemoveContainer {
                 name: deployment.name.clone(),
                 signal: deployment.config.termination_signal.into(),
                 time: deployment.config.termination_timeout.into(),
@@ -481,7 +481,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
         let server: Server =
           self.get_resource(&deployment.config.server_id).await?;
         let log = periphery_client(&server)?
-          .request(requests::RenameContainer {
+          .request(api::container::RenameContainer {
             curr_name: deployment.name.clone(),
             new_name: name.clone(),
           })

@@ -8,7 +8,7 @@ use monitor_client::entities::{
   },
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
-use periphery_client::requests;
+use periphery_client::api;
 
 use crate::{
   db::db_client,
@@ -98,7 +98,7 @@ pub async fn update_cache_for_server(server: &Server) {
   }
   // already handle server disabled case above, so using unwrap here
   let periphery = periphery_client(server).unwrap();
-  let version = periphery.request(requests::GetVersion {}).await;
+  let version = periphery.request(api::GetVersion {}).await;
   if version.is_err() {
     insert_deployments_status_unknown(deployments).await;
     insert_server_status(
@@ -110,7 +110,8 @@ pub async fn update_cache_for_server(server: &Server) {
     .await;
     return;
   }
-  let stats = periphery.request(requests::GetAllSystemStats {}).await;
+  let stats =
+    periphery.request(api::stats::GetAllSystemStats {}).await;
   if stats.is_err() {
     insert_deployments_status_unknown(deployments).await;
     insert_server_status(
@@ -131,7 +132,7 @@ pub async fn update_cache_for_server(server: &Server) {
   )
   .await;
   let containers =
-    periphery.request(requests::GetContainerList {}).await;
+    periphery.request(api::container::GetContainerList {}).await;
   if containers.is_err() {
     insert_deployments_status_unknown(deployments).await;
     return;

@@ -14,7 +14,7 @@ use mungos::{
   by_id::{find_one_by_id, update_one_by_id},
   mongodb::bson::{doc, to_bson, to_document},
 };
-use periphery_client::{requests, PeripheryClient};
+use periphery_client::{api, PeripheryClient};
 use rand::{thread_rng, Rng};
 
 use crate::{
@@ -74,13 +74,12 @@ pub async fn get_server_with_status(
   if !server.config.enabled {
     return Ok((server, ServerStatus::Disabled));
   }
-  let status = match periphery_client(&server)?
-    .request(requests::GetHealth {})
-    .await
-  {
-    Ok(_) => ServerStatus::Ok,
-    Err(_) => ServerStatus::NotOk,
-  };
+  let status =
+    match periphery_client(&server)?.request(api::GetHealth {}).await
+    {
+      Ok(_) => ServerStatus::Ok,
+      Err(_) => ServerStatus::NotOk,
+    };
   Ok((server, status))
 }
 
@@ -96,7 +95,7 @@ pub async fn get_deployment_state(
     return Ok(DockerContainerState::Unknown);
   }
   let container = periphery_client(&server)?
-    .request(requests::GetContainerList {})
+    .request(api::container::GetContainerList {})
     .await?
     .into_iter()
     .find(|container| container.name == deployment.name);

@@ -23,7 +23,7 @@ use mungos::{
   mongodb::bson::{doc, oid::ObjectId, to_bson},
 };
 use periphery_client::{
-  requests::{self, GetVersionResponse},
+  api::{self, GetVersionResponse},
   PeripheryClient,
 };
 use resolver_api::Resolve;
@@ -119,7 +119,7 @@ impl Resolve<RunBuild, RequestUser> for State {
 
       let res = tokio::select! {
         res = periphery
-          .request(requests::CloneRepo {
+          .request(api::git::CloneRepo {
             args: (&build).into(),
           }) => res,
         _ = cancel.cancelled() => {
@@ -144,7 +144,7 @@ impl Resolve<RunBuild, RequestUser> for State {
       if all_logs_success(&update.logs) {
         let res = tokio::select! {
           res = periphery
-            .request(requests::Build {
+            .request(api::build::Build {
               build: build.clone(),
             }) => res.context("failed at call to periphery to build"),
           _ = cancel.cancelled() => {
@@ -306,7 +306,7 @@ async fn get_aws_builder(
   });
   for _ in 0..BUILDER_POLL_MAX_TRIES {
     let version = periphery
-      .request(requests::GetVersion {})
+      .request(api::GetVersion {})
       .await
       .context("failed to reach periphery client on builder");
     if let Ok(GetVersionResponse { version }) = &version {
@@ -347,7 +347,7 @@ async fn cleanup_builder_instance(
   match cleanup_data {
     BuildCleanupData::Server { repo_name } => {
       let _ = periphery
-        .request(requests::DeleteRepo { name: repo_name })
+        .request(api::git::DeleteRepo { name: repo_name })
         .await;
     }
     BuildCleanupData::Aws {

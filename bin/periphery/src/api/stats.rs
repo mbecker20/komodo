@@ -1,16 +1,12 @@
 use anyhow::Context;
-use monitor_client::entities::server::stats::{
-  AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage,
-  NetworkUsage, SystemComponent, SystemInformation, SystemProcess,
+use periphery_client::api::stats::{
+  GetAllSystemStats, GetBasicSystemStats, GetCpuUsage, GetDiskUsage,
+  GetNetworkUsage, GetSystemComponents, GetSystemInformation,
+  GetSystemProcesses,
 };
-use resolver_api::{derive::Request, ResolveToString};
-use serde::{Deserialize, Serialize};
+use resolver_api::ResolveToString;
 
 use crate::{system_stats::stats_client, State};
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(SystemInformation)]
-pub struct GetSystemInformation {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemInformation> for State {
@@ -27,10 +23,6 @@ impl ResolveToString<GetSystemInformation> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(AllSystemStats)]
-pub struct GetAllSystemStats {}
-
 #[async_trait::async_trait]
 impl ResolveToString<GetAllSystemStats> for State {
   async fn resolve_to_string(
@@ -45,10 +37,6 @@ impl ResolveToString<GetAllSystemStats> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(BasicSystemStats)]
-pub struct GetBasicSystemStats {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetBasicSystemStats> for State {
@@ -65,10 +53,6 @@ impl ResolveToString<GetBasicSystemStats> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(CpuUsage)]
-pub struct GetCpuUsage {}
-
 #[async_trait::async_trait]
 impl ResolveToString<GetCpuUsage> for State {
   async fn resolve_to_string(
@@ -83,10 +67,6 @@ impl ResolveToString<GetCpuUsage> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(DiskUsage)]
-pub struct GetDiskUsage {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetDiskUsage> for State {
@@ -103,10 +83,6 @@ impl ResolveToString<GetDiskUsage> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(NetworkUsage)]
-pub struct GetNetworkUsage {}
-
 #[async_trait::async_trait]
 impl ResolveToString<GetNetworkUsage> for State {
   async fn resolve_to_string(
@@ -122,10 +98,6 @@ impl ResolveToString<GetNetworkUsage> for State {
 
 //
 
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<SystemProcess>)]
-pub struct GetSystemProcesses {}
-
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemProcesses> for State {
   async fn resolve_to_string(
@@ -140,10 +112,6 @@ impl ResolveToString<GetSystemProcesses> for State {
 }
 
 //
-
-#[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<SystemComponent>)]
-pub struct GetSystemComponents {}
 
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemComponents> for State {
