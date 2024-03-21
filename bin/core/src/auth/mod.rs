@@ -21,7 +21,8 @@ mod jwt;
 mod local;
 
 use crate::{
-  api::auth::AuthRequest, db_client, helpers::get_user, state::State,
+  api::auth::AuthRequest, db::db_client, helpers::get_user,
+  state::State,
 };
 
 pub use self::jwt::{

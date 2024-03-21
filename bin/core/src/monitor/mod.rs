@@ -11,7 +11,7 @@ use mungos::{find::find_collect, mongodb::bson::doc};
 use periphery_client::requests;
 
 use crate::{
-  db_client,
+  db::db_client,
   helpers::{cache::deployment_status_cache, periphery_client},
   monitor::{alert::check_alerts, record::record_server_stats},
 };

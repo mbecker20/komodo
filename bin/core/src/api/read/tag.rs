@@ -8,7 +8,7 @@ use mungos::find::find_collect;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, db_client, helpers::get_tag, state::State,
+  auth::RequestUser, db::db_client, helpers::get_tag, state::State,
 };
 
 #[async_trait]

@@ -16,7 +16,7 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, db_client, helpers::get_user, state::State,
+  auth::RequestUser, db::db_client, helpers::get_user, state::State,
 };
 
 const RECENTLY_VIEWED_MAX: usize = 10;

@@ -8,7 +8,7 @@ use monitor_client::entities::{
 };
 
 use crate::{
-  db_client,
+  db::db_client,
   helpers::{
     alert::send_alerts, cache::deployment_status_cache,
     resource::StateResource,

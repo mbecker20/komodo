@@ -9,7 +9,7 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::{random_string, RequestUser},
-  db_client,
+  db::db_client,
   helpers::get_user,
   state::State,
 };

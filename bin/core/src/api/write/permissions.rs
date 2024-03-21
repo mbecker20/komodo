@@ -22,7 +22,7 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
-  db_client,
+  db::db_client,
   helpers::{add_update, get_user, resource::StateResource},
   state::State,
 };

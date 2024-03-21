@@ -18,7 +18,7 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
-  db_client,
+  db::db_client,
   helpers::{
     add_update, cache::server_status_cache, make_update,
     periphery_client, remove_from_recently_viewed,

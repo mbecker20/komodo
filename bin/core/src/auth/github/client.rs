@@ -1,14 +1,14 @@
 use std::sync::OnceLock;
 
 use anyhow::{anyhow, Context};
-use monitor_client::entities::config::{
-  CoreConfig, OauthCredentials,
-};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::sync::Mutex;
 
-use crate::{auth::random_string, config::core_config};
+use crate::{
+  auth::random_string,
+  config::{core_config, CoreConfig, OauthCredentials},
+};
 
 pub fn github_oauth_client() -> &'static Option<GithubOauthClient> {
   static GITHUB_OAUTH_CLIENT: OnceLock<Option<GithubOauthClient>> =
@@ -70,9 +70,9 @@ impl GithubOauthClient {
   pub async fn get_login_redirect_url(&self) -> String {
     let state = random_string(40);
     let redirect_url = format!(
-            "https://github.com/login/oauth/authorize?state={state}&client_id={}&redirect_uri={}&scope={}",
-            self.client_id, self.redirect_uri, self.scopes
-        );
+      "https://github.com/login/oauth/authorize?state={state}&client_id={}&redirect_uri={}&scope={}",
+      self.client_id, self.redirect_uri, self.scopes
+    );
     let mut states = self.states.lock().await;
     states.push(state);
     redirect_url
@@ -190,9 +190,9 @@ impl GithubOauthClient {
         .context("failed to parse POST body into expected type")?;
       Ok(body)
     } else {
-      let text = res.text().await.context(format!(
-                "method: POST | status: {status} | failed to get response text"
-            ))?;
+      let text = res.text().await.with_context(|| format!(
+        "method: POST | status: {status} | failed to get response text"
+      ))?;
       Err(anyhow!("method: POST | status: {status} | text: {text}"))
     }
   }

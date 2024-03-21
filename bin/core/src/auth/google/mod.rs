@@ -8,7 +8,7 @@ use mungos::mongodb::bson::doc;
 use serde::Deserialize;
 use serror::AppError;
 
-use crate::{config::core_config, db_client};
+use crate::{config::core_config, db::db_client};
 
 use self::client::google_oauth_client;
 

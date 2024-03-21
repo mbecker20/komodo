@@ -5,10 +5,7 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
-use config::into_log_level;
-use db_client::DbClient;
 use termination_signal::tokio::immediate_term_handle;
-use tokio::sync::OnceCell;
 use tower_http::cors::{Any, CorsLayer};
 
 use crate::config::core_config;
@@ -17,6 +14,7 @@ mod api;
 mod auth;
 mod cloud;
 mod config;
+mod db;
 mod helpers;
 mod listener;
 mod monitor;
@@ -24,22 +22,10 @@ mod prune;
 mod state;
 mod ws;
 
-async fn db_client() -> &'static DbClient {
-  static DB_CLIENT: OnceCell<DbClient> = OnceCell::const_new();
-  DB_CLIENT
-    .get_or_init(|| async {
-      let config = core_config();
-      DbClient::new(&config.mongo)
-        .await
-        .expect("failed to initialize mongo client")
-    })
-    .await
-}
-
 async fn app() -> anyhow::Result<()> {
   dotenv::dotenv().ok();
   let config = core_config();
-  logger::init(into_log_level(config.log_level));
+  logger::init(config.log_level);
   info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
 
   monitor::spawn_monitor_loop();

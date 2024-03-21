@@ -19,7 +19,7 @@ use serror::serialize_error_pretty;
 
 use crate::{
   auth::RequestUser,
-  db_client,
+  db::db_client,
   helpers::{
     add_update, get_server_with_status, make_update,
     periphery_client, resource::StateResource, update_update,

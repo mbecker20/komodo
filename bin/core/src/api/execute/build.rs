@@ -36,7 +36,7 @@ use crate::{
     BuildCleanupData,
   },
   config::core_config,
-  db_client,
+  db::db_client,
   helpers::{
     add_update, channel::build_cancel_channel, get_deployment_state,
     make_update, periphery_client, resource::StateResource,

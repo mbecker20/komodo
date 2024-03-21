@@ -34,7 +34,7 @@ use crate::{
   auth::{
     auth_api_key_check_enabled, auth_jwt_check_enabled, RequestUser,
   },
-  db_client,
+  db::db_client,
   helpers::{channel::update_channel, resource::StateResource},
   state::State,
 };

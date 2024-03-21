@@ -18,7 +18,7 @@ use periphery_client::{requests, PeripheryClient};
 use rand::{thread_rng, Rng};
 
 use crate::{
-  auth::RequestUser, config::core_config, db_client, state::State,
+  auth::RequestUser, config::core_config, db::db_client, state::State,
 };
 
 use self::{channel::update_channel, resource::StateResource};

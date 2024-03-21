@@ -12,7 +12,9 @@ use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, db_client, helpers::resource::StateResource,
+  auth::RequestUser,
+  db::db_client,
+  helpers::resource::StateResource,
   state::{action_states, State},
 };
 

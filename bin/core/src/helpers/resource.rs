@@ -37,7 +37,7 @@ use mungos::{
 };
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{auth::RequestUser, db_client, state::State};
+use crate::{auth::RequestUser, db::db_client, state::State};
 
 use super::cache::{deployment_status_cache, server_status_cache};
 

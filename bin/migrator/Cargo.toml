@@ -9,7 +9,7 @@ license.workspace = true
 
 [dependencies]
 monitor_client.workspace = true
-db_client.workspace = true
+# db_client.workspace = true
 logger.workspace = true
 #
 termination_signal.workspace = true

@@ -11,7 +11,7 @@ use monitor_client::{
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
-use crate::{config::core_config, db_client, state::State};
+use crate::{config::core_config, db::db_client, state::State};
 
 use super::jwt::jwt_client;
 

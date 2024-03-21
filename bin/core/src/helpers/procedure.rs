@@ -20,7 +20,7 @@ use mungos::{
 use resolver_api::Resolve;
 use tokio::sync::Mutex;
 
-use crate::{auth::InnerRequestUser, db_client, state::State};
+use crate::{auth::InnerRequestUser, db::db_client, state::State};
 
 use super::update_update;
 

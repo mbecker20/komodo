@@ -17,7 +17,7 @@ use mungos::{
 };
 
 use crate::{
-  db_client,
+  db::db_client,
   helpers::{alert::send_alerts, cache::server_status_cache},
 };
 

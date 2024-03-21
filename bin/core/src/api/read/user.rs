@@ -12,7 +12,7 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, db_client, state::State};
+use crate::{auth::RequestUser, db::db_client, state::State};
 
 #[async_trait]
 impl Resolve<GetUser, RequestUser> for State {

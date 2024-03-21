@@ -10,7 +10,7 @@ use mungos::find::find_collect;
 use reqwest::StatusCode;
 use slack::types::Block;
 
-use crate::db_client;
+use crate::db::db_client;
 
 pub async fn send_alerts(alerts: &[Alert]) {
   if alerts.is_empty() {

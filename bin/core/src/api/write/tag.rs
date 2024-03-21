@@ -20,7 +20,7 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
-  db_client,
+  db::db_client,
   helpers::{get_tag, get_tag_check_owner, resource::StateResource},
   state::State,
 };

@@ -55,22 +55,6 @@ pub enum ProcedureConfig {
   Parallel(Vec<EnabledId>),
 }
 
-impl From<&ProcedureConfig> for ProcedureConfigVariant {
-  fn from(value: &ProcedureConfig) -> Self {
-    match value {
-      ProcedureConfig::Execution(_) => {
-        ProcedureConfigVariant::Execution
-      }
-      ProcedureConfig::Parallel(_) => {
-        ProcedureConfigVariant::Parallel
-      }
-      ProcedureConfig::Sequence(_) => {
-        ProcedureConfigVariant::Sequence
-      }
-    }
-  }
-}
-
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ProcedureActionState {

@@ -3,7 +3,7 @@ use async_timing_util::{
 };
 use mungos::mongodb::bson::doc;
 
-use crate::{config::core_config, db_client};
+use crate::{config::core_config, db::db_client};
 
 pub fn spawn_prune_loop() {
   tokio::spawn(async move {

@@ -28,7 +28,7 @@ use resolver_api::Resolve;
 
 use crate::{
   auth::RequestUser,
-  db_client,
+  db::db_client,
   helpers::{
     cache::deployment_status_cache, periphery_client,
     resource::StateResource,

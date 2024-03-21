@@ -11,7 +11,6 @@ pub mod alerter;
 pub mod api_key;
 pub mod build;
 pub mod builder;
-pub mod config;
 pub mod deployment;
 pub mod procedure;
 pub mod repo;

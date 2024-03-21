@@ -2,7 +2,7 @@ use monitor_client::entities::server::stats::{
   BasicSystemStats, SystemStatsRecord,
 };
 
-use crate::{db_client, helpers::cache::server_status_cache};
+use crate::{db::db_client, helpers::cache::server_status_cache};
 
 pub async fn record_server_stats(ts: i64) {
   let status = server_status_cache().get_list().await;

@@ -11,7 +11,8 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, db_client, helpers::resource::StateResource, state::State
+  auth::RequestUser, db::db_client, helpers::resource::StateResource,
+  state::State,
 };
 
 const NUM_ALERTS_PER_PAGE: u64 = 10;
