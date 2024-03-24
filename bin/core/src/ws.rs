@@ -31,9 +31,7 @@ use tokio::select;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-  auth::{
-    auth_api_key_check_enabled, auth_jwt_check_enabled, RequestUser,
-  },
+  auth::{auth_api_key_check_enabled, auth_jwt_check_enabled},
   db::db_client,
   helpers::{channel::update_channel, resource::StateResource},
   state::State,
@@ -118,7 +116,7 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
 
 pub async fn ws_login(
   mut socket: WebSocket,
-) -> Option<(WebSocket, RequestUser)> {
+) -> Option<(WebSocket, User)> {
   match socket.recv().await {
     Some(Ok(Message::Text(login_msg))) => {
       // login

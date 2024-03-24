@@ -5,24 +5,22 @@ use monitor_client::{
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
-    server::Server, update::ResourceTarget,
+    server::Server, update::ResourceTarget, user::User,
   },
 };
 use resolver_api::Resolve;
 
-use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
-};
+use crate::{helpers::resource::StateResource, state::State};
 
 #[async_trait]
-impl Resolve<UpdateDescription, RequestUser> for State {
+impl Resolve<UpdateDescription, User> for State {
   async fn resolve(
     &self,
     UpdateDescription {
       target,
       description,
     }: UpdateDescription,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<UpdateDescriptionResponse> {
     match target {
       ResourceTarget::System(_) => {

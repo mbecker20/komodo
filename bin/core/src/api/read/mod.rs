@@ -3,7 +3,7 @@ use std::time::Instant;
 use async_trait::async_trait;
 use axum::{middleware, routing::post, Extension, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::api::read::*;
+use monitor_client::{api::read::*, entities::user::User};
 use resolver_api::{
   derive::Resolver, Resolve, ResolveToString, Resolver,
 };
@@ -12,11 +12,7 @@ use serror::AppResult;
 use typeshare::typeshare;
 use uuid::Uuid;
 
-use crate::{
-  auth::{auth_request, RequestUser, RequestUserExtension},
-  config::core_config,
-  state::State,
-};
+use crate::{auth::auth_request, config::core_config, state::State};
 
 mod alert;
 mod alerter;
@@ -34,7 +30,7 @@ mod user;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[resolver_target(State)]
-#[resolver_args(RequestUser)]
+#[resolver_args(User)]
 #[serde(tag = "type", content = "params")]
 enum ReadRequest {
   GetVersion(GetVersion),
@@ -137,7 +133,7 @@ pub fn router() -> Router {
     .route(
       "/",
       post(
-        |Extension(user): RequestUserExtension,
+        |Extension(user): Extension<User>,
          Json(request): Json<ReadRequest>| async move {
           let timer = Instant::now();
           let req_id = Uuid::new_v4();
@@ -162,11 +158,11 @@ pub fn router() -> Router {
 }
 
 #[async_trait]
-impl Resolve<GetVersion, RequestUser> for State {
+impl Resolve<GetVersion, User> for State {
   async fn resolve(
     &self,
     GetVersion {}: GetVersion,
-    _: RequestUser,
+    _: User,
   ) -> anyhow::Result<GetVersionResponse> {
     Ok(GetVersionResponse {
       version: env!("CARGO_PKG_VERSION").to_string(),
@@ -175,11 +171,11 @@ impl Resolve<GetVersion, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetCoreInfo, RequestUser> for State {
+impl Resolve<GetCoreInfo, User> for State {
   async fn resolve(
     &self,
     GetCoreInfo {}: GetCoreInfo,
-    _: RequestUser,
+    _: User,
   ) -> anyhow::Result<GetCoreInfoResponse> {
     Ok(GetCoreInfoResponse {
       title: core_config().title.clone(),

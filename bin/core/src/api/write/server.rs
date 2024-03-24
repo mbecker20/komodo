@@ -6,6 +6,7 @@ use monitor_client::{
     monitor_timestamp,
     server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -17,7 +18,6 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, cache::server_status_cache, make_update,
@@ -29,13 +29,13 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<CreateServer, RequestUser> for State {
+impl Resolve<CreateServer, User> for State {
   async fn resolve(
     &self,
     CreateServer { name, config }: CreateServer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Server> {
-    if !user.is_admin && !user.create_server_permissions {
+    if !user.admin && !user.create_server_permissions {
       return Err(anyhow!(
         "user does not have create server permissions"
       ));
@@ -93,11 +93,11 @@ impl Resolve<CreateServer, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteServer, RequestUser> for State {
+impl Resolve<DeleteServer, User> for State {
   async fn resolve(
     &self,
     DeleteServer { id }: DeleteServer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Server> {
     if action_states().server.busy(&id).await {
       return Err(anyhow!("server busy"));
@@ -174,11 +174,11 @@ impl Resolve<DeleteServer, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateServer, RequestUser> for State {
+impl Resolve<UpdateServer, User> for State {
   async fn resolve(
     &self,
     UpdateServer { id, config }: UpdateServer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Server> {
     if action_states().server.busy(&id).await {
       return Err(anyhow!("server busy"));
@@ -222,11 +222,11 @@ impl Resolve<UpdateServer, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<RenameServer, RequestUser> for State {
+impl Resolve<RenameServer, User> for State {
   async fn resolve(
     &self,
     RenameServer { id, name }: RenameServer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let server: Server = self
       .get_resource_check_permissions(
@@ -252,11 +252,11 @@ impl Resolve<RenameServer, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<CreateNetwork, RequestUser> for State {
+impl Resolve<CreateNetwork, User> for State {
   async fn resolve(
     &self,
     CreateNetwork { server_id, name }: CreateNetwork,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let server: Server = self
       .get_resource_check_permissions(
@@ -291,11 +291,11 @@ impl Resolve<CreateNetwork, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteNetwork, RequestUser> for State {
+impl Resolve<DeleteNetwork, User> for State {
   async fn resolve(
     &self,
     DeleteNetwork { server_id, name }: DeleteNetwork,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let server: Server = self
       .get_resource_check_permissions(

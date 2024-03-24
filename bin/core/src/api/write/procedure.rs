@@ -4,7 +4,7 @@ use monitor_client::{
   api::write::*,
   entities::{
     monitor_timestamp, procedure::Procedure, to_monitor_name,
-    update::Log, Operation, PermissionLevel,
+    update::Log, user::User, Operation, PermissionLevel,
   },
 };
 use mungos::{
@@ -14,7 +14,6 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, make_update, remove_from_recently_viewed,
@@ -24,11 +23,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<CreateProcedure, RequestUser> for State {
+impl Resolve<CreateProcedure, User> for State {
   async fn resolve(
     &self,
     CreateProcedure { name, config }: CreateProcedure,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<CreateProcedureResponse> {
     let name = to_monitor_name(&name);
     let start_ts = monitor_timestamp();
@@ -80,11 +79,11 @@ impl Resolve<CreateProcedure, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<CopyProcedure, RequestUser> for State {
+impl Resolve<CopyProcedure, User> for State {
   async fn resolve(
     &self,
     CopyProcedure { name, id }: CopyProcedure,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<CopyProcedureResponse> {
     let name = to_monitor_name(&name);
     let Procedure {
@@ -149,11 +148,11 @@ impl Resolve<CopyProcedure, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateProcedure, RequestUser> for State {
+impl Resolve<UpdateProcedure, User> for State {
   async fn resolve(
     &self,
     UpdateProcedure { id, config }: UpdateProcedure,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<UpdateProcedureResponse> {
     let procedure: Procedure = self
       .get_resource_check_permissions(
@@ -194,11 +193,11 @@ impl Resolve<UpdateProcedure, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteProcedure, RequestUser> for State {
+impl Resolve<DeleteProcedure, User> for State {
   async fn resolve(
     &self,
     DeleteProcedure { id }: DeleteProcedure,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<DeleteProcedureResponse> {
     // needs to pull its id from all container procedures
     if action_states().procedure.busy(&id).await {

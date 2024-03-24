@@ -2,7 +2,8 @@ use async_trait::async_trait;
 use monitor_client::{
   api::execute::RunProcedure,
   entities::{
-    procedure::Procedure, update::Update, Operation, PermissionLevel,
+    procedure::Procedure, update::Update, user::User, Operation,
+    PermissionLevel,
   },
 };
 use resolver_api::Resolve;
@@ -10,7 +11,6 @@ use serror::serialize_error_pretty;
 use tokio::sync::Mutex;
 
 use crate::{
-  auth::RequestUser,
   helpers::{
     add_update, make_update,
     procedure::{execute_procedure, make_procedure_map},
@@ -21,11 +21,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<RunProcedure, RequestUser> for State {
+impl Resolve<RunProcedure, User> for State {
   async fn resolve(
     &self,
     RunProcedure { procedure_id }: RunProcedure,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let procedure: Procedure = self
       .get_resource_check_permissions(

@@ -6,7 +6,9 @@ use resolver_api::{derive::Resolver, Resolve};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::{auth::jwt_client, config::core_config, state::State};
+use crate::{
+  auth::jwt::jwt_client, config::core_config, state::State,
+};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]

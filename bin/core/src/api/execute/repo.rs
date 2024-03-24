@@ -9,6 +9,7 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -17,7 +18,6 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, periphery_client, resource::StateResource,
@@ -27,11 +27,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<CloneRepo, RequestUser> for State {
+impl Resolve<CloneRepo, User> for State {
   async fn resolve(
     &self,
     CloneRepo { id }: CloneRepo,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let repo: Repo = self
       .get_resource_check_permissions(
@@ -126,11 +126,11 @@ impl Resolve<CloneRepo, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<PullRepo, RequestUser> for State {
+impl Resolve<PullRepo, User> for State {
   async fn resolve(
     &self,
     PullRepo { id }: PullRepo,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let repo: Repo = self
       .get_resource_check_permissions(

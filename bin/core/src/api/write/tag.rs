@@ -9,7 +9,7 @@ use monitor_client::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
     server::Server, tag::CustomTag, update::ResourceTarget,
-    PermissionLevel,
+    user::User, PermissionLevel,
   },
 };
 use mungos::{
@@ -19,14 +19,13 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{get_tag, get_tag_check_owner, resource::StateResource},
   state::State,
 };
 
 #[async_trait]
-impl Resolve<CreateTag, RequestUser> for State {
+impl Resolve<CreateTag, User> for State {
   async fn resolve(
     &self,
     CreateTag {
@@ -34,7 +33,7 @@ impl Resolve<CreateTag, RequestUser> for State {
       category,
       color,
     }: CreateTag,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<CustomTag> {
     let mut tag = CustomTag {
       id: Default::default(),
@@ -58,11 +57,11 @@ impl Resolve<CreateTag, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateTag, RequestUser> for State {
+impl Resolve<UpdateTag, User> for State {
   async fn resolve(
     &self,
     UpdateTag { id, config }: UpdateTag,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<CustomTag> {
     get_tag_check_owner(&id, &user).await?;
 
@@ -79,11 +78,11 @@ impl Resolve<UpdateTag, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteTag, RequestUser> for State {
+impl Resolve<DeleteTag, User> for State {
   async fn resolve(
     &self,
     DeleteTag { id }: DeleteTag,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<CustomTag> {
     let tag = get_tag_check_owner(&id, &user).await?;
     delete_one_by_id(&db_client().await.tags, &id, None).await?;
@@ -92,11 +91,11 @@ impl Resolve<DeleteTag, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateTagsOnResource, RequestUser> for State {
+impl Resolve<UpdateTagsOnResource, User> for State {
   async fn resolve(
     &self,
     UpdateTagsOnResource { target, tags }: UpdateTagsOnResource,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<UpdateTagsOnResourceResponse> {
     match target {
       ResourceTarget::System(_) => return Err(anyhow!("")),

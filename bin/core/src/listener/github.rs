@@ -4,14 +4,13 @@ use hex::ToHex;
 use hmac::{Hmac, Mac};
 use monitor_client::{
   api::execute,
-  entities::{build::Build, repo::Repo},
+  entities::{build::Build, repo::Repo, user::User},
 };
 use resolver_api::Resolve;
 use serde::Deserialize;
 use sha2::Sha256;
 
 use crate::{
-  auth::InnerRequestUser,
   config::core_config,
   helpers::{random_duration, resource::StateResource},
   state::State,
@@ -81,14 +80,7 @@ async fn handle_build_webhook(
   State
     .resolve(
       execute::RunBuild { build_id },
-      InnerRequestUser {
-        id: String::from("github"),
-        username: String::from("github"),
-        is_admin: true,
-        create_server_permissions: false,
-        create_build_permissions: false,
-      }
-      .into(),
+      User::admin_service_user("github"),
     )
     .await?;
   Ok(())
@@ -108,14 +100,7 @@ async fn handle_repo_clone_webhook(
   State
     .resolve(
       execute::CloneRepo { id: repo_id },
-      InnerRequestUser {
-        id: String::from("github"),
-        username: String::from("github"),
-        is_admin: true,
-        create_server_permissions: false,
-        create_build_permissions: false,
-      }
-      .into(),
+      User::admin_service_user("github"),
     )
     .await?;
   Ok(())
@@ -135,14 +120,7 @@ async fn handle_repo_pull_webhook(
   State
     .resolve(
       execute::PullRepo { id: repo_id },
-      InnerRequestUser {
-        id: String::from("github"),
-        username: String::from("github"),
-        is_admin: true,
-        create_server_permissions: false,
-        create_build_permissions: false,
-      }
-      .into(),
+      User::admin_service_user("github"),
     )
     .await?;
   Ok(())

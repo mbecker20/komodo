@@ -15,6 +15,7 @@ use monitor_client::{
     monitor_timestamp,
     server::Server,
     update::{Log, Update},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -30,7 +31,6 @@ use resolver_api::Resolve;
 use tokio_util::sync::CancellationToken;
 
 use crate::{
-  auth::{InnerRequestUser, RequestUser},
   cloud::{
     aws::{launch_ec2_instance, terminate_ec2_instance, Ec2Instance},
     BuildCleanupData,
@@ -46,11 +46,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<RunBuild, RequestUser> for State {
+impl Resolve<RunBuild, User> for State {
   async fn resolve(
     &self,
     RunBuild { build_id }: RunBuild,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     if action_states().build.busy(&build_id).await {
       return Err(anyhow!("build busy"));
@@ -218,11 +218,11 @@ impl Resolve<RunBuild, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<CancelBuild, RequestUser> for State {
+impl Resolve<CancelBuild, User> for State {
   async fn resolve(
     &self,
     CancelBuild { build_id }: CancelBuild,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<CancelBuildResponse> {
     let _: Build = self
       .get_resource_check_permissions(
@@ -383,12 +383,12 @@ async fn handle_post_build_redeploy(build_id: &str) {
   if let Ok(deployments) = redeploy_deployments {
     let futures =
       deployments.into_iter().map(|deployment| async move {
-        let request_user: RequestUser = InnerRequestUser {
+        let request_user = User {
           id: "auto redeploy".to_string(),
-          is_admin: true,
+          username: "auto redeploy".to_string(),
+          admin: true,
           ..Default::default()
-        }
-        .into();
+        };
         let state =
           get_deployment_state(&deployment).await.unwrap_or_default();
         if state == DockerContainerState::Running {

@@ -5,26 +5,26 @@ use monitor_client::{
   entities::{
     server::PartialServerConfig,
     update::{ResourceTarget, Update},
+    user::User,
     Operation,
   },
 };
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   cloud::aws::launch_ec2_instance,
   helpers::{add_update, make_update, update_update},
   state::State,
 };
 
 #[async_trait]
-impl Resolve<LaunchServer, RequestUser> for State {
+impl Resolve<LaunchServer, User> for State {
   async fn resolve(
     &self,
     LaunchServer { name, config }: LaunchServer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
-    if !user.is_admin {
+    if !user.admin {
       return Err(anyhow!("only admins can launch servers"));
     }
     let mut update = make_update(

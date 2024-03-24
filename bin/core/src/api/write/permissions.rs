@@ -11,6 +11,7 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
+    user::User,
     Operation,
   },
 };
@@ -21,14 +22,13 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{add_update, get_user, resource::StateResource},
   state::State,
 };
 
 #[async_trait]
-impl Resolve<UpdateUserPermissions, RequestUser> for State {
+impl Resolve<UpdateUserPermissions, User> for State {
   async fn resolve(
     &self,
     UpdateUserPermissions {
@@ -37,10 +37,10 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
       create_servers,
       create_builds,
     }: UpdateUserPermissions,
-    admin: RequestUser,
+    admin: User,
   ) -> anyhow::Result<Update> {
     let start_ts = monitor_timestamp();
-    if !admin.is_admin {
+    if !admin.admin {
       return Err(anyhow!("this method is admin only"));
     }
 
@@ -97,7 +97,7 @@ impl Resolve<UpdateUserPermissions, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
+impl Resolve<UpdateUserPermissionsOnTarget, User> for State {
   async fn resolve(
     &self,
     UpdateUserPermissionsOnTarget {
@@ -105,10 +105,10 @@ impl Resolve<UpdateUserPermissionsOnTarget, RequestUser> for State {
       permission,
       target,
     }: UpdateUserPermissionsOnTarget,
-    admin: RequestUser,
+    admin: User,
   ) -> anyhow::Result<Update> {
     let start_ts = monitor_timestamp();
-    if !admin.is_admin {
+    if !admin.admin {
       return Err(anyhow!("this method is admin only"));
     }
 

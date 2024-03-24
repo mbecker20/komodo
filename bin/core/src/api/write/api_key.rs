@@ -2,27 +2,24 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
-  entities::{api_key::ApiKey, monitor_timestamp},
+  entities::{api_key::ApiKey, monitor_timestamp, user::User},
 };
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::{random_string, RequestUser},
-  db::db_client,
-  helpers::get_user,
-  state::State,
+  auth::random_string, db::db_client, helpers::get_user, state::State,
 };
 
 const SECRET_LENGTH: usize = 40;
 const BCRYPT_COST: u32 = 10;
 
 #[async_trait]
-impl Resolve<CreateApiKey, RequestUser> for State {
+impl Resolve<CreateApiKey, User> for State {
   async fn resolve(
     &self,
     CreateApiKey { name, expires }: CreateApiKey,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<CreateApiKeyResponse> {
     let user = get_user(&user.id).await?;
 
@@ -50,11 +47,11 @@ impl Resolve<CreateApiKey, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteApiKey, RequestUser> for State {
+impl Resolve<DeleteApiKey, User> for State {
   async fn resolve(
     &self,
     DeleteApiKey { key }: DeleteApiKey,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<DeleteApiKeyResponse> {
     let client = db_client().await;
     let key = client

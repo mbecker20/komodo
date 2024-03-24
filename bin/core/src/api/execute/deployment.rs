@@ -9,6 +9,7 @@ use monitor_client::{
     get_image_name, monitor_timestamp,
     server::ServerStatus,
     update::{Log, ResourceTarget, Update, UpdateStatus},
+    user::User,
     Operation, PermissionLevel, Version,
   },
 };
@@ -18,7 +19,6 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, get_server_with_status, make_update,
@@ -29,7 +29,7 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<Deploy, RequestUser> for State {
+impl Resolve<Deploy, User> for State {
   async fn resolve(
     &self,
     Deploy {
@@ -37,7 +37,7 @@ impl Resolve<Deploy, RequestUser> for State {
       stop_signal,
       stop_time,
     }: Deploy,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
@@ -143,11 +143,11 @@ impl Resolve<Deploy, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<StartContainer, RequestUser> for State {
+impl Resolve<StartContainer, User> for State {
   async fn resolve(
     &self,
     StartContainer { deployment_id }: StartContainer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
@@ -229,7 +229,7 @@ impl Resolve<StartContainer, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<StopContainer, RequestUser> for State {
+impl Resolve<StopContainer, User> for State {
   async fn resolve(
     &self,
     StopContainer {
@@ -237,7 +237,7 @@ impl Resolve<StopContainer, RequestUser> for State {
       signal,
       time,
     }: StopContainer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
@@ -316,11 +316,11 @@ impl Resolve<StopContainer, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<StopAllContainers, RequestUser> for State {
+impl Resolve<StopAllContainers, User> for State {
   async fn resolve(
     &self,
     StopAllContainers { server_id }: StopAllContainers,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let (server, status) = get_server_with_status(&server_id).await?;
     if status != ServerStatus::Ok {
@@ -404,7 +404,7 @@ impl Resolve<StopAllContainers, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<RemoveContainer, RequestUser> for State {
+impl Resolve<RemoveContainer, User> for State {
   async fn resolve(
     &self,
     RemoveContainer {
@@ -412,7 +412,7 @@ impl Resolve<RemoveContainer, RequestUser> for State {
       signal,
       time,
     }: RemoveContainer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));

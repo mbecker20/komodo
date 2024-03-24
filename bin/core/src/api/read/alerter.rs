@@ -5,6 +5,7 @@ use monitor_client::{
   entities::{
     alerter::{Alerter, AlerterListItem},
     resource::AddFilters,
+    user::User,
     PermissionLevel,
   },
 };
@@ -12,16 +13,15 @@ use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, db::db_client, helpers::resource::StateResource,
-  state::State,
+  db::db_client, helpers::resource::StateResource, state::State,
 };
 
 #[async_trait]
-impl Resolve<GetAlerter, RequestUser> for State {
+impl Resolve<GetAlerter, User> for State {
   async fn resolve(
     &self,
     GetAlerter { id }: GetAlerter,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Alerter> {
     self
       .get_resource_check_permissions(
@@ -34,11 +34,11 @@ impl Resolve<GetAlerter, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListAlerters, RequestUser> for State {
+impl Resolve<ListAlerters, User> for State {
   async fn resolve(
     &self,
     ListAlerters { query }: ListAlerters,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<AlerterListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
@@ -50,13 +50,13 @@ impl Resolve<ListAlerters, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetAlertersSummary, RequestUser> for State {
+impl Resolve<GetAlertersSummary, User> for State {
   async fn resolve(
     &self,
     GetAlertersSummary {}: GetAlertersSummary,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetAlertersSummaryResponse> {
-    let query = if user.is_admin {
+    let query = if user.admin {
       None
     } else {
       let query = doc! {

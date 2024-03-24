@@ -1,13 +1,9 @@
-use std::{
-  collections::HashMap,
-  sync::{Arc, OnceLock},
-};
+use std::{collections::HashMap, sync::OnceLock};
 
 use anyhow::{anyhow, Context};
 use async_timing_util::{
   get_timelength_in_ms, unix_timestamp_ms, Timelength,
 };
-use axum::Extension;
 use hmac::{Hmac, Mac};
 use jwt::SignWithKey;
 use mungos::mongodb::bson::doc;
@@ -20,30 +16,6 @@ use crate::config::{core_config, CoreConfig};
 use super::random_string;
 
 type ExchangeTokenMap = Mutex<HashMap<String, (String, u128)>>;
-
-pub type RequestUser = Arc<InnerRequestUser>;
-pub type RequestUserExtension = Extension<RequestUser>;
-
-#[derive(Default)]
-pub struct InnerRequestUser {
-  pub id: String,
-  pub username: String,
-  pub is_admin: bool,
-  pub create_server_permissions: bool,
-  pub create_build_permissions: bool,
-}
-
-impl InnerRequestUser {
-  pub fn procedure() -> InnerRequestUser {
-    InnerRequestUser {
-      id: String::from("procedure"),
-      username: String::from("procedure"),
-      is_admin: true,
-      create_build_permissions: true,
-      create_server_permissions: true,
-    }
-  }
-}
 
 pub fn jwt_client() -> &'static JwtClient {
   static JWT_CLIENT: OnceLock<JwtClient> = OnceLock::new();

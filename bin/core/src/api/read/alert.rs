@@ -2,7 +2,7 @@ use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
   api::read::{ListAlerts, ListAlertsResponse},
-  entities::{deployment::Deployment, server::Server},
+  entities::{deployment::Deployment, server::Server, user::User},
 };
 use mungos::{
   find::find_collect,
@@ -11,21 +11,20 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, db::db_client, helpers::resource::StateResource,
-  state::State,
+  db::db_client, helpers::resource::StateResource, state::State,
 };
 
 const NUM_ALERTS_PER_PAGE: u64 = 10;
 
 #[async_trait]
-impl Resolve<ListAlerts, RequestUser> for State {
+impl Resolve<ListAlerts, User> for State {
   async fn resolve(
     &self,
     ListAlerts { query, page }: ListAlerts,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<ListAlertsResponse> {
     let mut query = query.unwrap_or_default();
-    if !user.is_admin {
+    if !user.admin {
       let server_ids =
                 <State as StateResource<Server>>::get_resource_ids_for_non_admin(self, &user.id)
                     .await?;

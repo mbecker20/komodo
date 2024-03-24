@@ -8,6 +8,7 @@ use monitor_client::{
     server::Server,
     to_monitor_name,
     update::{Log, ResourceTarget, Update, UpdateStatus},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -19,7 +20,6 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, make_update, periphery_client,
@@ -30,11 +30,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<CreateRepo, RequestUser> for State {
+impl Resolve<CreateRepo, User> for State {
   async fn resolve(
     &self,
     CreateRepo { name, config }: CreateRepo,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Repo> {
     let name = to_monitor_name(&name);
     if let Some(server_id) = &config.server_id {
@@ -114,11 +114,11 @@ impl Resolve<CreateRepo, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<CopyRepo, RequestUser> for State {
+impl Resolve<CopyRepo, User> for State {
   async fn resolve(
     &self,
     CopyRepo { name, id }: CopyRepo,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Repo> {
     let Repo {
       config,
@@ -192,11 +192,11 @@ impl Resolve<CopyRepo, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteRepo, RequestUser> for State {
+impl Resolve<DeleteRepo, User> for State {
   async fn resolve(
     &self,
     DeleteRepo { id }: DeleteRepo,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Repo> {
     let repo: Repo = self
       .get_resource_check_permissions(
@@ -293,11 +293,11 @@ impl Resolve<DeleteRepo, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateRepo, RequestUser> for State {
+impl Resolve<UpdateRepo, User> for State {
   async fn resolve(
     &self,
     UpdateRepo { id, config }: UpdateRepo,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Repo> {
     if let Some(server_id) = &config.server_id {
       if !server_id.is_empty() {

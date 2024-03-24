@@ -6,6 +6,7 @@ use monitor_client::{
     monitor_timestamp,
     server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -13,7 +14,6 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   helpers::{
     add_update, periphery_client, resource::StateResource,
     update_update,
@@ -22,11 +22,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<PruneDockerContainers, RequestUser> for State {
+impl Resolve<PruneDockerContainers, User> for State {
   async fn resolve(
     &self,
     PruneDockerContainers { server_id }: PruneDockerContainers,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     if action_states().server.busy(&server_id).await {
       return Err(anyhow!("server busy"));
@@ -97,11 +97,11 @@ impl Resolve<PruneDockerContainers, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<PruneDockerNetworks, RequestUser> for State {
+impl Resolve<PruneDockerNetworks, User> for State {
   async fn resolve(
     &self,
     PruneDockerNetworks { server_id }: PruneDockerNetworks,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     if action_states().server.busy(&server_id).await {
       return Err(anyhow!("server busy"));
@@ -172,11 +172,11 @@ impl Resolve<PruneDockerNetworks, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<PruneDockerImages, RequestUser> for State {
+impl Resolve<PruneDockerImages, User> for State {
   async fn resolve(
     &self,
     PruneDockerImages { server_id }: PruneDockerImages,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     if action_states().server.busy(&server_id).await {
       return Err(anyhow!("server busy"));

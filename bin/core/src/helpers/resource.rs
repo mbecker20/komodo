@@ -22,6 +22,7 @@ use monitor_client::{
     repo::{Repo, RepoInfo, RepoListItem},
     server::{Server, ServerListItem, ServerListItemInfo},
     update::ResourceTargetVariant,
+    user::User,
     PermissionLevel,
   },
   permissioned::Permissioned,
@@ -37,7 +38,7 @@ use mungos::{
 };
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{auth::RequestUser, db::db_client, state::State};
+use crate::{db::db_client, state::State};
 
 use super::cache::{deployment_status_cache, server_status_cache};
 
@@ -67,12 +68,12 @@ pub trait StateResource<
   async fn get_resource_check_permissions(
     &self,
     id: &str,
-    user: &RequestUser,
+    user: &User,
     permission_level: PermissionLevel,
   ) -> anyhow::Result<T> {
     let resource = self.get_resource(id).await?;
     let permissions = resource.get_user_permissions(&user.id);
-    if user.is_admin || permissions >= permission_level {
+    if user.admin || permissions >= permission_level {
       Ok(resource)
     } else {
       Err(anyhow!(
@@ -126,9 +127,9 @@ pub trait StateResource<
   async fn list_resources_for_user(
     &self,
     mut filters: Document,
-    user: &RequestUser,
+    user: &User,
   ) -> anyhow::Result<Vec<Self::ListItem>> {
-    if !user.is_admin {
+    if !user.admin {
       filters.insert(
         format!("permissions.{}", user.id),
         doc! { "$in": ["read", "execute", "update"] },
@@ -158,7 +159,7 @@ pub trait StateResource<
     &self,
     id: &str,
     description: &str,
-    user: &RequestUser,
+    user: &User,
   ) -> anyhow::Result<()> {
     self
       .get_resource_check_permissions(

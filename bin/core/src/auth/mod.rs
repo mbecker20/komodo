@@ -8,16 +8,17 @@ use axum::{
   response::Response, routing::post, Json, Router,
 };
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::entities::monitor_timestamp;
+use monitor_client::entities::{monitor_timestamp, user::User};
 use mungos::mongodb::bson::doc;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use resolver_api::Resolver;
 use serror::{AppError, AuthError};
 use uuid::Uuid;
 
+pub mod jwt;
+
 mod github;
 mod google;
-mod jwt;
 mod local;
 
 use crate::{
@@ -25,12 +26,10 @@ use crate::{
   state::State,
 };
 
-pub use self::jwt::{
-  jwt_client, InnerRequestUser, RequestUser, RequestUserExtension,
-};
 use self::{
   github::client::github_oauth_client,
-  google::client::google_oauth_client, jwt::JwtClaims,
+  google::client::google_oauth_client, jwt::jwt_client,
+  jwt::JwtClaims,
 };
 
 pub async fn auth_request(
@@ -89,7 +88,7 @@ pub fn random_string(length: usize) -> String {
 
 pub async fn authenticate_check_enabled(
   headers: &HeaderMap,
-) -> anyhow::Result<RequestUser> {
+) -> anyhow::Result<User> {
   let user_id = match (
     headers.get("authorization"),
     headers.get("x-api-key"),
@@ -121,14 +120,7 @@ pub async fn authenticate_check_enabled(
   };
   let user = get_user(&user_id).await?;
   if user.enabled {
-    let user = InnerRequestUser {
-      id: user_id,
-      username: user.username,
-      is_admin: user.admin,
-      create_server_permissions: user.create_server_permissions,
-      create_build_permissions: user.create_build_permissions,
-    };
-    Ok(user.into())
+    Ok(user)
   } else {
     Err(anyhow!("user not enabled"))
   }
@@ -149,7 +141,7 @@ pub async fn auth_jwt_get_user_id(
 
 pub async fn auth_jwt_check_enabled(
   jwt: &str,
-) -> anyhow::Result<RequestUser> {
+) -> anyhow::Result<User> {
   let user_id = auth_jwt_get_user_id(jwt).await?;
   check_enabled(user_id).await
 }
@@ -182,24 +174,15 @@ pub async fn auth_api_key_get_user_id(
 pub async fn auth_api_key_check_enabled(
   key: &str,
   secret: &str,
-) -> anyhow::Result<RequestUser> {
+) -> anyhow::Result<User> {
   let user_id = auth_api_key_get_user_id(key, secret).await?;
   check_enabled(user_id).await
 }
 
-async fn check_enabled(
-  user_id: String,
-) -> anyhow::Result<RequestUser> {
+async fn check_enabled(user_id: String) -> anyhow::Result<User> {
   let user = get_user(&user_id).await?;
   if user.enabled {
-    let user = InnerRequestUser {
-      id: user_id,
-      username: user.username,
-      is_admin: user.admin,
-      create_server_permissions: user.create_server_permissions,
-      create_build_permissions: user.create_build_permissions,
-    };
-    Ok(user.into())
+    Ok(user)
   } else {
     Err(anyhow!("user not enabled"))
   }

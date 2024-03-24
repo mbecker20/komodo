@@ -10,6 +10,7 @@ use monitor_client::{
     server::Server,
     to_monitor_name,
     update::{Log, ResourceTarget, Update, UpdateStatus},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -21,7 +22,6 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, empty_or_only_spaces, get_deployment_state,
@@ -32,11 +32,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<CreateDeployment, RequestUser> for State {
+impl Resolve<CreateDeployment, User> for State {
   async fn resolve(
     &self,
     CreateDeployment { name, config }: CreateDeployment,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Deployment> {
     let name = to_monitor_name(&name);
     if let Some(server_id) = &config.server_id {
@@ -107,11 +107,11 @@ impl Resolve<CreateDeployment, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<CopyDeployment, RequestUser> for State {
+impl Resolve<CopyDeployment, User> for State {
   async fn resolve(
     &self,
     CopyDeployment { name, id }: CopyDeployment,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Deployment> {
     let name = to_monitor_name(&name);
     let Deployment {
@@ -190,11 +190,11 @@ impl Resolve<CopyDeployment, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteDeployment, RequestUser> for State {
+impl Resolve<DeleteDeployment, User> for State {
   async fn resolve(
     &self,
     DeleteDeployment { id }: DeleteDeployment,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Deployment> {
     if action_states().deployment.busy(&id).await {
       return Err(anyhow!("deployment busy"));
@@ -323,11 +323,11 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateDeployment, RequestUser> for State {
+impl Resolve<UpdateDeployment, User> for State {
   async fn resolve(
     &self,
     UpdateDeployment { id, mut config }: UpdateDeployment,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Deployment> {
     if action_states().deployment.busy(&id).await {
       return Err(anyhow!("deployment busy"));
@@ -433,11 +433,11 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<RenameDeployment, RequestUser> for State {
+impl Resolve<RenameDeployment, User> for State {
   async fn resolve(
     &self,
     RenameDeployment { id, name }: RenameDeployment,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let name = to_monitor_name(&name);
     if action_states().deployment.busy(&id).await {

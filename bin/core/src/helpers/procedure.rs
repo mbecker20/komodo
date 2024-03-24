@@ -1,6 +1,4 @@
-use std::{
-  collections::HashMap, str::FromStr, sync::Arc, time::Duration,
-};
+use std::{collections::HashMap, str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context, Ok};
 use async_recursion::async_recursion;
@@ -11,6 +9,7 @@ use monitor_client::{
     monitor_timestamp,
     procedure::{EnabledId, Procedure, ProcedureConfig},
     update::Update,
+    user::User,
   },
 };
 use mungos::{
@@ -20,7 +19,7 @@ use mungos::{
 use resolver_api::Resolve;
 use tokio::sync::Mutex;
 
-use crate::{auth::InnerRequestUser, db::db_client, state::State};
+use crate::{db::db_client, state::State};
 
 use super::update_update;
 
@@ -149,7 +148,7 @@ pub async fn execute_procedure(
 async fn execute_execution(
   execution: Execution,
 ) -> anyhow::Result<()> {
-  let user: Arc<_> = InnerRequestUser::procedure().into();
+  let user = User::admin_service_user("procedure");
   let update =
     match execution {
       Execution::None(_) => return Ok(()),

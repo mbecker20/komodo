@@ -10,6 +10,7 @@ use monitor_client::{
     build::{Build, BuildActionState, BuildListItem},
     resource::AddFilters,
     update::UpdateStatus,
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -23,18 +24,17 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::resource::StateResource,
   state::{action_states, State},
 };
 
 #[async_trait]
-impl Resolve<GetBuild, RequestUser> for State {
+impl Resolve<GetBuild, User> for State {
   async fn resolve(
     &self,
     GetBuild { id }: GetBuild,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Build> {
     self
       .get_resource_check_permissions(
@@ -47,11 +47,11 @@ impl Resolve<GetBuild, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListBuilds, RequestUser> for State {
+impl Resolve<ListBuilds, User> for State {
   async fn resolve(
     &self,
     ListBuilds { query }: ListBuilds,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<BuildListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
@@ -63,11 +63,11 @@ impl Resolve<ListBuilds, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetBuildActionState, RequestUser> for State {
+impl Resolve<GetBuildActionState, User> for State {
   async fn resolve(
     &self,
     GetBuildActionState { id }: GetBuildActionState,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<BuildActionState> {
     let _: Build = self
       .get_resource_check_permissions(
@@ -83,13 +83,13 @@ impl Resolve<GetBuildActionState, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetBuildsSummary, RequestUser> for State {
+impl Resolve<GetBuildsSummary, User> for State {
   async fn resolve(
     &self,
     GetBuildsSummary {}: GetBuildsSummary,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetBuildsSummaryResponse> {
-    let query = if user.is_admin {
+    let query = if user.admin {
       None
     } else {
       let query = doc! {
@@ -113,11 +113,11 @@ impl Resolve<GetBuildsSummary, RequestUser> for State {
 const ONE_DAY_MS: i64 = 86400000;
 
 #[async_trait]
-impl Resolve<GetBuildMonthlyStats, RequestUser> for State {
+impl Resolve<GetBuildMonthlyStats, User> for State {
   async fn resolve(
     &self,
     GetBuildMonthlyStats { page }: GetBuildMonthlyStats,
-    _: RequestUser,
+    _: User,
   ) -> anyhow::Result<GetBuildMonthlyStatsResponse> {
     let curr_ts = unix_timestamp_ms() as i64;
     let next_day = curr_ts - curr_ts % ONE_DAY_MS + ONE_DAY_MS;
@@ -177,7 +177,7 @@ fn ms_to_hour(duration: i64) -> f64 {
 const NUM_VERSIONS_PER_PAGE: u64 = 10;
 
 #[async_trait]
-impl Resolve<GetBuildVersions, RequestUser> for State {
+impl Resolve<GetBuildVersions, User> for State {
   async fn resolve(
     &self,
     GetBuildVersions {
@@ -187,7 +187,7 @@ impl Resolve<GetBuildVersions, RequestUser> for State {
       minor,
       patch,
     }: GetBuildVersions,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<BuildVersionResponseItem>> {
     let _: Build = self
       .get_resource_check_permissions(

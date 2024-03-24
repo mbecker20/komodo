@@ -6,6 +6,7 @@ use monitor_client::{
     builder::Builder,
     monitor_timestamp,
     update::{Log, ResourceTarget, Update},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -16,7 +17,6 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, remove_from_recently_viewed, resource::StateResource,
@@ -25,11 +25,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<CreateBuilder, RequestUser> for State {
+impl Resolve<CreateBuilder, User> for State {
   async fn resolve(
     &self,
     CreateBuilder { name, config }: CreateBuilder,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Builder> {
     let start_ts = monitor_timestamp();
     let builder = Builder {
@@ -82,11 +82,11 @@ impl Resolve<CreateBuilder, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<CopyBuilder, RequestUser> for State {
+impl Resolve<CopyBuilder, User> for State {
   async fn resolve(
     &self,
     CopyBuilder { name, id }: CopyBuilder,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Builder> {
     let Builder {
       config,
@@ -150,11 +150,11 @@ impl Resolve<CopyBuilder, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteBuilder, RequestUser> for State {
+impl Resolve<DeleteBuilder, User> for State {
   async fn resolve(
     &self,
     DeleteBuilder { id }: DeleteBuilder,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Builder> {
     let builder: Builder = self
       .get_resource_check_permissions(
@@ -204,11 +204,11 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateBuilder, RequestUser> for State {
+impl Resolve<UpdateBuilder, User> for State {
   async fn resolve(
     &self,
     UpdateBuilder { id, config }: UpdateBuilder,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Builder> {
     let builder: Builder = self
       .get_resource_check_permissions(

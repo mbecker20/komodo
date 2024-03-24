@@ -9,6 +9,7 @@ use monitor_client::{
     builder::Builder,
     monitor_timestamp, to_monitor_name,
     update::{Log, UpdateStatus},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -19,7 +20,6 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, empty_or_only_spaces, make_update,
@@ -30,11 +30,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<CreateBuild, RequestUser> for State {
+impl Resolve<CreateBuild, User> for State {
   async fn resolve(
     &self,
     CreateBuild { name, config }: CreateBuild,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Build> {
     let name = to_monitor_name(&name);
     if let Some(builder_id) = &config.builder_id {
@@ -90,11 +90,11 @@ impl Resolve<CreateBuild, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<CopyBuild, RequestUser> for State {
+impl Resolve<CopyBuild, User> for State {
   async fn resolve(
     &self,
     CopyBuild { name, id }: CopyBuild,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Build> {
     let name = to_monitor_name(&name);
     let Build {
@@ -159,11 +159,11 @@ impl Resolve<CopyBuild, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteBuild, RequestUser> for State {
+impl Resolve<DeleteBuild, User> for State {
   async fn resolve(
     &self,
     DeleteBuild { id }: DeleteBuild,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Build> {
     if action_states().build.busy(&id).await {
       return Err(anyhow!("build busy"));
@@ -211,11 +211,11 @@ impl Resolve<DeleteBuild, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateBuild, RequestUser> for State {
+impl Resolve<UpdateBuild, User> for State {
   async fn resolve(
     &self,
     UpdateBuild { id, mut config }: UpdateBuild,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Build> {
     if action_states().build.busy(&id).await {
       return Err(anyhow!("build busy"));

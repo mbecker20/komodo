@@ -6,7 +6,9 @@ use monitor_client::{
   },
   entities::{
     alerter::{Alerter, AlerterInfo},
-    monitor_timestamp, Operation, PermissionLevel,
+    monitor_timestamp,
+    user::User,
+    Operation, PermissionLevel,
   },
 };
 use mungos::{
@@ -16,7 +18,6 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     add_update, make_update, remove_from_recently_viewed,
@@ -26,11 +27,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<CreateAlerter, RequestUser> for State {
+impl Resolve<CreateAlerter, User> for State {
   async fn resolve(
     &self,
     CreateAlerter { name, config }: CreateAlerter,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Alerter> {
     let start_ts = monitor_timestamp();
     let is_default = db_client()
@@ -85,11 +86,11 @@ impl Resolve<CreateAlerter, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<CopyAlerter, RequestUser> for State {
+impl Resolve<CopyAlerter, User> for State {
   async fn resolve(
     &self,
     CopyAlerter { name, id }: CopyAlerter,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Alerter> {
     let Alerter {
       config,
@@ -150,11 +151,11 @@ impl Resolve<CopyAlerter, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<DeleteAlerter, RequestUser> for State {
+impl Resolve<DeleteAlerter, User> for State {
   async fn resolve(
     &self,
     DeleteAlerter { id }: DeleteAlerter,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Alerter> {
     let alerter: Alerter = self
       .get_resource_check_permissions(
@@ -187,11 +188,11 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateAlerter, RequestUser> for State {
+impl Resolve<UpdateAlerter, User> for State {
   async fn resolve(
     &self,
     UpdateAlerter { id, config }: UpdateAlerter,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Alerter> {
     let alerter: Alerter = self
       .get_resource_check_permissions(

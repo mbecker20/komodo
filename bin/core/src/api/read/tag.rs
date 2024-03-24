@@ -2,32 +2,30 @@ use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
   api::read::{GetTag, ListTags},
-  entities::tag::CustomTag,
+  entities::{tag::CustomTag, user::User},
 };
 use mungos::find::find_collect;
 use resolver_api::Resolve;
 
-use crate::{
-  auth::RequestUser, db::db_client, helpers::get_tag, state::State,
-};
+use crate::{db::db_client, helpers::get_tag, state::State};
 
 #[async_trait]
-impl Resolve<GetTag, RequestUser> for State {
+impl Resolve<GetTag, User> for State {
   async fn resolve(
     &self,
     GetTag { id }: GetTag,
-    _: RequestUser,
+    _: User,
   ) -> anyhow::Result<CustomTag> {
     get_tag(&id).await
   }
 }
 
 #[async_trait]
-impl Resolve<ListTags, RequestUser> for State {
+impl Resolve<ListTags, User> for State {
   async fn resolve(
     &self,
     ListTags { query }: ListTags,
-    _: RequestUser,
+    _: User,
   ) -> anyhow::Result<Vec<CustomTag>> {
     find_collect(&db_client().await.tags, query, None)
       .await

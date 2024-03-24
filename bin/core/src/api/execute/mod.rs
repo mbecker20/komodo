@@ -3,17 +3,14 @@ use std::time::Instant;
 use anyhow::Context;
 use axum::{middleware, routing::post, Extension, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::api::execute::*;
+use monitor_client::{api::execute::*, entities::user::User};
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
 use serror::AppResult;
 use typeshare::typeshare;
 use uuid::Uuid;
 
-use crate::{
-  auth::{auth_request, RequestUser, RequestUserExtension},
-  state::State,
-};
+use crate::{auth::auth_request, state::State};
 
 mod build;
 mod deployment;
@@ -24,7 +21,7 @@ mod server;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[resolver_target(State)]
-#[resolver_args(RequestUser)]
+#[resolver_args(User)]
 #[serde(tag = "type", content = "params")]
 enum ExecuteRequest {
   // ==== SERVER ====
@@ -55,7 +52,7 @@ pub fn router() -> Router {
     .route(
       "/",
       post(
-        |Extension(user): RequestUserExtension,
+        |Extension(user): Extension<User>,
          Json(request): Json<ExecuteRequest>| async move {
           let timer = Instant::now();
           let req_id = Uuid::new_v4();

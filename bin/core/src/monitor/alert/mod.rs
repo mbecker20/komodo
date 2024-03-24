@@ -4,13 +4,13 @@ mod server;
 use std::collections::HashMap;
 
 use anyhow::Context;
-use monitor_client::entities::server::{Server, ServerListItem};
+use monitor_client::entities::{
+  server::{Server, ServerListItem},
+  user::User,
+};
 use mungos::mongodb::bson::Document;
 
-use crate::{
-  auth::InnerRequestUser, helpers::resource::StateResource,
-  state::State,
-};
+use crate::{helpers::resource::StateResource, state::State};
 
 // called after cache update
 pub async fn check_alerts(ts: i64) {
@@ -37,11 +37,10 @@ async fn get_all_servers_map() -> anyhow::Result<(
     <State as StateResource<Server>>::list_resources_for_user(
       &State,
       Document::new(),
-      &InnerRequestUser {
-        is_admin: true,
+      &User {
+        admin: true,
         ..Default::default()
-      }
-      .into(),
+      },
     )
     .await
     .context("failed to get servers from db (in alert_servers)")?;

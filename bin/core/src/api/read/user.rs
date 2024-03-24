@@ -12,14 +12,14 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::{auth::RequestUser, db::db_client, state::State};
+use crate::{db::db_client, state::State};
 
 #[async_trait]
-impl Resolve<GetUser, RequestUser> for State {
+impl Resolve<GetUser, User> for State {
   async fn resolve(
     &self,
     GetUser {}: GetUser,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<User> {
     let mut user = find_one_by_id(&db_client().await.users, &user.id)
       .await
@@ -31,11 +31,11 @@ impl Resolve<GetUser, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetUsername, RequestUser> for State {
+impl Resolve<GetUsername, User> for State {
   async fn resolve(
     &self,
     GetUsername { user_id }: GetUsername,
-    _: RequestUser,
+    _: User,
   ) -> anyhow::Result<GetUsernameResponse> {
     let user = find_one_by_id(&db_client().await.users, &user_id)
       .await
@@ -49,13 +49,13 @@ impl Resolve<GetUsername, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetUsers, RequestUser> for State {
+impl Resolve<GetUsers, User> for State {
   async fn resolve(
     &self,
     GetUsers {}: GetUsers,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<User>> {
-    if !user.is_admin {
+    if !user.admin {
       return Err(anyhow!("this route is only accessable by admins"));
     }
     let mut users =
@@ -68,11 +68,11 @@ impl Resolve<GetUsers, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListApiKeys, RequestUser> for State {
+impl Resolve<ListApiKeys, User> for State {
   async fn resolve(
     &self,
     ListApiKeys {}: ListApiKeys,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<ListApiKeysResponse> {
     let api_keys = find_collect(
       &db_client().await.api_keys,

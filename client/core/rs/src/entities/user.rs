@@ -63,4 +63,16 @@ impl User {
   pub fn sanitize(&mut self) {
     self.password = None;
   }
+
+  pub fn admin_service_user(id_name: impl Into<String>) -> User {
+    let id_name: String = id_name.into();
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      create_build_permissions: true,
+      create_server_permissions: true,
+      ..Default::default()
+    }
+  }
 }

@@ -7,7 +7,7 @@ use monitor_client::{
     PushRecentlyViewed, PushRecentlyViewedResponse,
     SetLastSeenUpdate, SetLastSeenUpdateResponse,
   },
-  entities::monitor_timestamp,
+  entities::{monitor_timestamp, user::User},
 };
 use mungos::{
   by_id::update_one_by_id,
@@ -15,18 +15,16 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::{
-  auth::RequestUser, db::db_client, helpers::get_user, state::State,
-};
+use crate::{db::db_client, helpers::get_user, state::State};
 
 const RECENTLY_VIEWED_MAX: usize = 10;
 
 #[async_trait]
-impl Resolve<PushRecentlyViewed, RequestUser> for State {
+impl Resolve<PushRecentlyViewed, User> for State {
   async fn resolve(
     &self,
     PushRecentlyViewed { resource }: PushRecentlyViewed,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<PushRecentlyViewedResponse> {
     let mut recently_viewed = get_user(&user.id)
       .await?
@@ -57,11 +55,11 @@ impl Resolve<PushRecentlyViewed, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<SetLastSeenUpdate, RequestUser> for State {
+impl Resolve<SetLastSeenUpdate, User> for State {
   async fn resolve(
     &self,
     SetLastSeenUpdate {}: SetLastSeenUpdate,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<SetLastSeenUpdateResponse> {
     update_one_by_id(
       &db_client().await.users,

@@ -13,6 +13,7 @@ use monitor_client::{
     resource::AddFilters,
     server::Server,
     update::{Log, UpdateStatus},
+    user::User,
     Operation, PermissionLevel,
   },
 };
@@ -27,7 +28,6 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     cache::deployment_status_cache, periphery_client,
@@ -37,11 +37,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<GetDeployment, RequestUser> for State {
+impl Resolve<GetDeployment, User> for State {
   async fn resolve(
     &self,
     GetDeployment { id }: GetDeployment,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Deployment> {
     self
       .get_resource_check_permissions(
@@ -54,11 +54,11 @@ impl Resolve<GetDeployment, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListDeployments, RequestUser> for State {
+impl Resolve<ListDeployments, User> for State {
   async fn resolve(
     &self,
     ListDeployments { query }: ListDeployments,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<DeploymentListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
@@ -70,11 +70,11 @@ impl Resolve<ListDeployments, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDeploymentStatus, RequestUser> for State {
+impl Resolve<GetDeploymentStatus, User> for State {
   async fn resolve(
     &self,
     GetDeploymentStatus { id }: GetDeploymentStatus,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetDeploymentStatusResponse> {
     let _: Deployment = self
       .get_resource_check_permissions(
@@ -100,14 +100,14 @@ impl Resolve<GetDeploymentStatus, RequestUser> for State {
 const MAX_LOG_LENGTH: u64 = 5000;
 
 #[async_trait]
-impl Resolve<GetLog, RequestUser> for State {
+impl Resolve<GetLog, User> for State {
   async fn resolve(
     &self,
     GetLog {
       deployment_id,
       tail,
     }: GetLog,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Log> {
     let Deployment {
       name,
@@ -135,11 +135,11 @@ impl Resolve<GetLog, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDeployedVersion, RequestUser> for State {
+impl Resolve<GetDeployedVersion, User> for State {
   async fn resolve(
     &self,
     GetDeployedVersion { deployment_id }: GetDeployedVersion,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetDeployedVersionResponse> {
     let Deployment {
       config: DeploymentConfig { image, .. },
@@ -198,11 +198,11 @@ impl Resolve<GetDeployedVersion, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDeploymentStats, RequestUser> for State {
+impl Resolve<GetDeploymentStats, User> for State {
   async fn resolve(
     &self,
     GetDeploymentStats { id }: GetDeploymentStats,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<DockerContainerStats> {
     let Deployment {
       name,
@@ -227,11 +227,11 @@ impl Resolve<GetDeploymentStats, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDeploymentActionState, RequestUser> for State {
+impl Resolve<GetDeploymentActionState, User> for State {
   async fn resolve(
     &self,
     GetDeploymentActionState { id }: GetDeploymentActionState,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<DeploymentActionState> {
     let _: Deployment = self
       .get_resource_check_permissions(
@@ -250,13 +250,13 @@ impl Resolve<GetDeploymentActionState, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDeploymentsSummary, RequestUser> for State {
+impl Resolve<GetDeploymentsSummary, User> for State {
   async fn resolve(
     &self,
     GetDeploymentsSummary {}: GetDeploymentsSummary,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetDeploymentsSummaryResponse> {
-    let query = if user.is_admin {
+    let query = if user.admin {
       None
     } else {
       let query = doc! {

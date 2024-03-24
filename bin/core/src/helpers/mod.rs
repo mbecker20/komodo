@@ -17,9 +17,7 @@ use mungos::{
 use periphery_client::{api, PeripheryClient};
 use rand::{thread_rng, Rng};
 
-use crate::{
-  auth::RequestUser, config::core_config, db::db_client, state::State,
-};
+use crate::{config::core_config, db::db_client, state::State};
 
 use self::{channel::update_channel, resource::StateResource};
 
@@ -48,7 +46,7 @@ pub fn random_duration(min_ms: u64, max_ms: u64) -> Duration {
 pub fn make_update(
   target: impl Into<ResourceTarget>,
   operation: Operation,
-  user: &RequestUser,
+  user: &User,
 ) -> Update {
   Update {
     start_ts: monitor_timestamp(),
@@ -119,10 +117,10 @@ pub async fn get_tag(tag_id: &str) -> anyhow::Result<CustomTag> {
 
 pub async fn get_tag_check_owner(
   tag_id: &str,
-  user: &RequestUser,
+  user: &User,
 ) -> anyhow::Result<CustomTag> {
   let tag = get_tag(tag_id).await?;
-  if !user.is_admin && tag.owner != user.id {
+  if !user.admin && tag.owner != user.id {
     return Err(anyhow!("user must be tag owner or admin"));
   }
   Ok(tag)

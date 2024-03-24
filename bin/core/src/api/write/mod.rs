@@ -2,17 +2,14 @@ use std::time::Instant;
 
 use axum::{middleware, routing::post, Extension, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
-use monitor_client::api::write::*;
+use monitor_client::{api::write::*, entities::user::User};
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
 use serror::AppResult;
 use typeshare::typeshare;
 use uuid::Uuid;
 
-use crate::{
-  auth::{auth_request, RequestUser, RequestUserExtension},
-  state::State,
-};
+use crate::{auth::auth_request, state::State};
 
 mod alerter;
 mod api_key;
@@ -31,7 +28,7 @@ mod user;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
 #[resolver_target(State)]
-#[resolver_args(RequestUser)]
+#[resolver_args(User)]
 #[serde(tag = "type", content = "params")]
 enum WriteRequest {
   // ==== API KEY ====
@@ -107,7 +104,7 @@ pub fn router() -> Router {
     .route(
       "/",
       post(
-        |Extension(user): RequestUserExtension,
+        |Extension(user): Extension<User>,
          Json(request): Json<WriteRequest>| async move {
           let timer = Instant::now();
           let req_id = Uuid::new_v4();

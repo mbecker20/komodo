@@ -9,25 +9,25 @@ use monitor_client::{
     ListProceduresResponse,
   },
   entities::{
-    procedure::Procedure, resource::AddFilters, PermissionLevel,
+    procedure::Procedure, resource::AddFilters, user::User,
+    PermissionLevel,
   },
 };
 use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::resource::StateResource,
   state::{action_states, State},
 };
 
 #[async_trait]
-impl Resolve<GetProcedure, RequestUser> for State {
+impl Resolve<GetProcedure, User> for State {
   async fn resolve(
     &self,
     GetProcedure { id }: GetProcedure,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetProcedureResponse> {
     self
       .get_resource_check_permissions(
@@ -40,11 +40,11 @@ impl Resolve<GetProcedure, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListProcedures, RequestUser> for State {
+impl Resolve<ListProcedures, User> for State {
   async fn resolve(
     &self,
     ListProcedures { query }: ListProcedures,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<ListProceduresResponse> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
@@ -56,11 +56,11 @@ impl Resolve<ListProcedures, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListProceduresByIds, RequestUser> for State {
+impl Resolve<ListProceduresByIds, User> for State {
   async fn resolve(
     &self,
     ListProceduresByIds { ids }: ListProceduresByIds,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<ListProceduresByIdsResponse> {
     <State as StateResource<Procedure>>::list_resources_for_user(
       self,
@@ -72,13 +72,13 @@ impl Resolve<ListProceduresByIds, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetProceduresSummary, RequestUser> for State {
+impl Resolve<GetProceduresSummary, User> for State {
   async fn resolve(
     &self,
     GetProceduresSummary {}: GetProceduresSummary,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetProceduresSummaryResponse> {
-    let query = if user.is_admin {
+    let query = if user.admin {
       None
     } else {
       let query = doc! {
@@ -100,11 +100,11 @@ impl Resolve<GetProceduresSummary, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetProcedureActionState, RequestUser> for State {
+impl Resolve<GetProcedureActionState, User> for State {
   async fn resolve(
     &self,
     GetProcedureActionState { id }: GetProcedureActionState,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetProcedureActionStateResponse> {
     let _: Procedure = self
       .get_resource_check_permissions(

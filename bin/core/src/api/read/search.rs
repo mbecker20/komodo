@@ -4,23 +4,22 @@ use monitor_client::{
   entities::{
     build, deployment, repo, server,
     update::ResourceTargetVariant::{self, *},
+    user::User,
   },
 };
 use resolver_api::Resolve;
 
-use crate::{
-  auth::RequestUser, helpers::resource::StateResource, state::State,
-};
+use crate::{helpers::resource::StateResource, state::State};
 
 const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 5] =
   [Server, Build, Deployment, Repo, Procedure];
 
 #[async_trait]
-impl Resolve<FindResources, RequestUser> for State {
+impl Resolve<FindResources, User> for State {
   async fn resolve(
     &self,
     FindResources { query, resources }: FindResources,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<FindResourcesResponse> {
     let mut res = FindResourcesResponse::default();
     let resource_types = if resources.is_empty() {
@@ -76,11 +75,11 @@ impl Resolve<FindResources, RequestUser> for State {
 }
 
 // #[async_trait]
-// impl Resolve<FindResources, RequestUser> for State {
+// impl Resolve<FindResources, User> for State {
 //     async fn resolve(
 //         &self,
 //         FindResources { search, tags }: FindResources,
-//         user: RequestUser,
+//         user: User,
 //     ) -> anyhow::Result<FindResourcesResponse> {
 //         let SeperateTags {
 //             resource_types,
@@ -92,7 +91,7 @@ impl Resolve<FindResources, RequestUser> for State {
 //             "name": { "$regex": search }
 //         };
 
-//         if !user.is_admin {
+//         if !user.admin {
 //             query.insert(
 //                 format!("permissions.{}", user.id),
 //                 doc! { "$in": ["read", "execute", "update"] },

@@ -5,6 +5,7 @@ use monitor_client::{
   entities::{
     repo::{Repo, RepoActionState, RepoListItem},
     resource::AddFilters,
+    user::User,
     PermissionLevel,
   },
 };
@@ -12,18 +13,17 @@ use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::resource::StateResource,
   state::{action_states, State},
 };
 
 #[async_trait]
-impl Resolve<GetRepo, RequestUser> for State {
+impl Resolve<GetRepo, User> for State {
   async fn resolve(
     &self,
     GetRepo { id }: GetRepo,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Repo> {
     self
       .get_resource_check_permissions(
@@ -36,11 +36,11 @@ impl Resolve<GetRepo, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListRepos, RequestUser> for State {
+impl Resolve<ListRepos, User> for State {
   async fn resolve(
     &self,
     ListRepos { query }: ListRepos,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<RepoListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
@@ -52,11 +52,11 @@ impl Resolve<ListRepos, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetRepoActionState, RequestUser> for State {
+impl Resolve<GetRepoActionState, User> for State {
   async fn resolve(
     &self,
     GetRepoActionState { id }: GetRepoActionState,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<RepoActionState> {
     let _: Repo = self
       .get_resource_check_permissions(
@@ -72,13 +72,13 @@ impl Resolve<GetRepoActionState, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetReposSummary, RequestUser> for State {
+impl Resolve<GetReposSummary, User> for State {
   async fn resolve(
     &self,
     GetReposSummary {}: GetReposSummary,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetReposSummaryResponse> {
-    let query = if user.is_admin {
+    let query = if user.admin {
       None
     } else {
       let query = doc! {

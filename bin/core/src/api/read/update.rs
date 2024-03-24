@@ -13,6 +13,7 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     update::{ResourceTarget, Update, UpdateListItem},
+    user::User,
     PermissionLevel,
   },
 };
@@ -24,20 +25,19 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, db::db_client, helpers::resource::StateResource,
-  state::State,
+  db::db_client, helpers::resource::StateResource, state::State,
 };
 
 const UPDATES_PER_PAGE: i64 = 20;
 
 #[async_trait]
-impl Resolve<ListUpdates, RequestUser> for State {
+impl Resolve<ListUpdates, User> for State {
   async fn resolve(
     &self,
     ListUpdates { query, page }: ListUpdates,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<ListUpdatesResponse> {
-    let query = if user.is_admin {
+    let query = if user.admin {
       query
     } else {
       let server_ids =
@@ -121,17 +121,17 @@ impl Resolve<ListUpdates, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetUpdate, RequestUser> for State {
+impl Resolve<GetUpdate, User> for State {
   async fn resolve(
     &self,
     GetUpdate { id }: GetUpdate,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Update> {
     let update = find_one_by_id(&db_client().await.updates, &id)
       .await
       .context("failed to query to db")?
       .context("no update exists with given id")?;
-    if user.is_admin {
+    if user.admin {
       return Ok(update);
     }
     match &update.target {

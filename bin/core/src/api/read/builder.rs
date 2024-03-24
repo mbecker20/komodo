@@ -5,6 +5,7 @@ use monitor_client::{
   entities::{
     builder::{Builder, BuilderConfig, BuilderListItem},
     resource::AddFilters,
+    user::User,
     PermissionLevel,
   },
 };
@@ -12,16 +13,15 @@ use mungos::mongodb::bson::{doc, Document};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, db::db_client, helpers::resource::StateResource,
-  state::State,
+  db::db_client, helpers::resource::StateResource, state::State,
 };
 
 #[async_trait]
-impl Resolve<GetBuilder, RequestUser> for State {
+impl Resolve<GetBuilder, User> for State {
   async fn resolve(
     &self,
     GetBuilder { id }: GetBuilder,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Builder> {
     self
       .get_resource_check_permissions(
@@ -34,11 +34,11 @@ impl Resolve<GetBuilder, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListBuilders, RequestUser> for State {
+impl Resolve<ListBuilders, User> for State {
   async fn resolve(
     &self,
     ListBuilders { query }: ListBuilders,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<BuilderListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
@@ -50,13 +50,13 @@ impl Resolve<ListBuilders, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetBuildersSummary, RequestUser> for State {
+impl Resolve<GetBuildersSummary, User> for State {
   async fn resolve(
     &self,
     GetBuildersSummary {}: GetBuildersSummary,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetBuildersSummaryResponse> {
-    let query = if user.is_admin {
+    let query = if user.admin {
       None
     } else {
       let query = doc! {
@@ -78,11 +78,11 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetBuilderAvailableAccounts, RequestUser> for State {
+impl Resolve<GetBuilderAvailableAccounts, User> for State {
   async fn resolve(
     &self,
     GetBuilderAvailableAccounts { id }: GetBuilderAvailableAccounts,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetBuilderAvailableAccountsResponse> {
     let builder: Builder = self
       .get_resource_check_permissions(

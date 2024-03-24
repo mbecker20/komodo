@@ -11,6 +11,7 @@ use monitor_client::{
       stats::SystemInformation, Server, ServerActionState,
       ServerListItem, ServerStatus,
     },
+    user::User,
     PermissionLevel,
   },
 };
@@ -25,7 +26,6 @@ use periphery_client::api::{self, GetAccountsResponse};
 use resolver_api::{Resolve, ResolveToString};
 
 use crate::{
-  auth::RequestUser,
   db::db_client,
   helpers::{
     cache::server_status_cache, periphery_client,
@@ -35,11 +35,11 @@ use crate::{
 };
 
 #[async_trait]
-impl Resolve<GetServersSummary, RequestUser> for State {
+impl Resolve<GetServersSummary, User> for State {
   async fn resolve(
     &self,
     GetServersSummary {}: GetServersSummary,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetServersSummaryResponse> {
     let servers =
       <State as StateResource<Server>>::list_resources_for_user(
@@ -68,11 +68,11 @@ impl Resolve<GetServersSummary, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetPeripheryVersion, RequestUser> for State {
+impl Resolve<GetPeripheryVersion, User> for State {
   async fn resolve(
     &self,
     req: GetPeripheryVersion,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetPeripheryVersionResponse> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -91,11 +91,11 @@ impl Resolve<GetPeripheryVersion, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetServer, RequestUser> for State {
+impl Resolve<GetServer, User> for State {
   async fn resolve(
     &self,
     req: GetServer,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Server> {
     self
       .get_resource_check_permissions(
@@ -108,11 +108,11 @@ impl Resolve<GetServer, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<ListServers, RequestUser> for State {
+impl Resolve<ListServers, User> for State {
   async fn resolve(
     &self,
     ListServers { query }: ListServers,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<ServerListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
@@ -124,11 +124,11 @@ impl Resolve<ListServers, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetServerStatus, RequestUser> for State {
+impl Resolve<GetServerStatus, User> for State {
   async fn resolve(
     &self,
     GetServerStatus { id }: GetServerStatus,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetServerStatusResponse> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -149,11 +149,11 @@ impl Resolve<GetServerStatus, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetServerActionState, RequestUser> for State {
+impl Resolve<GetServerActionState, User> for State {
   async fn resolve(
     &self,
     GetServerActionState { id }: GetServerActionState,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<ServerActionState> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -169,11 +169,11 @@ impl Resolve<GetServerActionState, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetSystemInformation, RequestUser> for State {
+impl Resolve<GetSystemInformation, User> for State {
   async fn resolve(
     &self,
     GetSystemInformation { server_id }: GetSystemInformation,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<SystemInformation> {
     let server: Server = self
       .get_resource_check_permissions(
@@ -189,11 +189,11 @@ impl Resolve<GetSystemInformation, RequestUser> for State {
 }
 
 #[async_trait]
-impl ResolveToString<GetAllSystemStats, RequestUser> for State {
+impl ResolveToString<GetAllSystemStats, User> for State {
   async fn resolve_to_string(
     &self,
     GetAllSystemStats { server_id }: GetAllSystemStats,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<String> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -216,11 +216,11 @@ impl ResolveToString<GetAllSystemStats, RequestUser> for State {
 }
 
 #[async_trait]
-impl ResolveToString<GetBasicSystemStats, RequestUser> for State {
+impl ResolveToString<GetBasicSystemStats, User> for State {
   async fn resolve_to_string(
     &self,
     GetBasicSystemStats { server_id }: GetBasicSystemStats,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<String> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -242,11 +242,11 @@ impl ResolveToString<GetBasicSystemStats, RequestUser> for State {
 }
 
 #[async_trait]
-impl ResolveToString<GetCpuUsage, RequestUser> for State {
+impl ResolveToString<GetCpuUsage, User> for State {
   async fn resolve_to_string(
     &self,
     GetCpuUsage { server_id }: GetCpuUsage,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<String> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -268,11 +268,11 @@ impl ResolveToString<GetCpuUsage, RequestUser> for State {
 }
 
 #[async_trait]
-impl ResolveToString<GetDiskUsage, RequestUser> for State {
+impl ResolveToString<GetDiskUsage, User> for State {
   async fn resolve_to_string(
     &self,
     GetDiskUsage { server_id }: GetDiskUsage,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<String> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -294,11 +294,11 @@ impl ResolveToString<GetDiskUsage, RequestUser> for State {
 }
 
 #[async_trait]
-impl ResolveToString<GetNetworkUsage, RequestUser> for State {
+impl ResolveToString<GetNetworkUsage, User> for State {
   async fn resolve_to_string(
     &self,
     GetNetworkUsage { server_id }: GetNetworkUsage,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<String> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -320,11 +320,11 @@ impl ResolveToString<GetNetworkUsage, RequestUser> for State {
 }
 
 #[async_trait]
-impl ResolveToString<GetSystemProcesses, RequestUser> for State {
+impl ResolveToString<GetSystemProcesses, User> for State {
   async fn resolve_to_string(
     &self,
     GetSystemProcesses { server_id }: GetSystemProcesses,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<String> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -346,11 +346,11 @@ impl ResolveToString<GetSystemProcesses, RequestUser> for State {
 }
 
 #[async_trait]
-impl ResolveToString<GetSystemComponents, RequestUser> for State {
+impl ResolveToString<GetSystemComponents, User> for State {
   async fn resolve_to_string(
     &self,
     GetSystemComponents { server_id }: GetSystemComponents,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<String> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -374,7 +374,7 @@ impl ResolveToString<GetSystemComponents, RequestUser> for State {
 const STATS_PER_PAGE: i64 = 500;
 
 #[async_trait]
-impl Resolve<GetHistoricalServerStats, RequestUser> for State {
+impl Resolve<GetHistoricalServerStats, User> for State {
   async fn resolve(
     &self,
     GetHistoricalServerStats {
@@ -382,7 +382,7 @@ impl Resolve<GetHistoricalServerStats, RequestUser> for State {
       interval,
       page,
     }: GetHistoricalServerStats,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetHistoricalServerStatsResponse> {
     let _: Server = self
       .get_resource_check_permissions(
@@ -429,11 +429,11 @@ impl Resolve<GetHistoricalServerStats, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDockerImages, RequestUser> for State {
+impl Resolve<GetDockerImages, User> for State {
   async fn resolve(
     &self,
     GetDockerImages { server_id }: GetDockerImages,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<ImageSummary>> {
     let server: Server = self
       .get_resource_check_permissions(
@@ -449,11 +449,11 @@ impl Resolve<GetDockerImages, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDockerNetworks, RequestUser> for State {
+impl Resolve<GetDockerNetworks, User> for State {
   async fn resolve(
     &self,
     GetDockerNetworks { server_id }: GetDockerNetworks,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<DockerNetwork>> {
     let server: Server = self
       .get_resource_check_permissions(
@@ -469,11 +469,11 @@ impl Resolve<GetDockerNetworks, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDockerContainers, RequestUser> for State {
+impl Resolve<GetDockerContainers, User> for State {
   async fn resolve(
     &self,
     GetDockerContainers { server_id }: GetDockerContainers,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<Vec<ContainerSummary>> {
     let server: Server = self
       .get_resource_check_permissions(
@@ -489,11 +489,11 @@ impl Resolve<GetDockerContainers, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetAvailableAccounts, RequestUser> for State {
+impl Resolve<GetAvailableAccounts, User> for State {
   async fn resolve(
     &self,
     GetAvailableAccounts { server_id }: GetAvailableAccounts,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetAvailableAccountsResponse> {
     let server: Server = self
       .get_resource_check_permissions(
@@ -513,11 +513,11 @@ impl Resolve<GetAvailableAccounts, RequestUser> for State {
 }
 
 #[async_trait]
-impl Resolve<GetAvailableSecrets, RequestUser> for State {
+impl Resolve<GetAvailableSecrets, User> for State {
   async fn resolve(
     &self,
     GetAvailableSecrets { server_id }: GetAvailableSecrets,
-    user: RequestUser,
+    user: User,
   ) -> anyhow::Result<GetAvailableSecretsResponse> {
     let server: Server = self
       .get_resource_check_permissions(
