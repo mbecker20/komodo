@@ -12,7 +12,7 @@ use super::{update::ResourceTargetVariant, PermissionsMap};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder)]
-pub struct Resource<Config, Info: Default> {
+pub struct Resource<Config, Info: Default = ()> {
   #[serde(
     default,
     rename = "_id",

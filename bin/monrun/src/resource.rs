@@ -2,10 +2,16 @@ use std::{fs, path::Path};
 
 use anyhow::{anyhow, Context};
 use clap::ValueEnum;
-use monitor_client::entities::{
-  build::Build, deployment::Deployment, server::Server,
+use monitor_client::{
+  api::write,
+  entities::{
+    build::PartialBuildConfig, deployment::PartialDeploymentConfig,
+    resource::Resource, server::PartialServerConfig,
+  },
 };
 use serde::Deserialize;
+
+use crate::{maps::name_to_server, monitor_client, wait_for_enter};
 
 pub async fn run_resource(
   action: SyncDirection,
@@ -15,7 +21,82 @@ pub async fn run_resource(
 
   let resources = read_resources(path)?;
 
-  println!("{resources:#?}");
+  match action {
+    SyncDirection::Up => run_resource_up(resources).await,
+    SyncDirection::Down => {
+      todo!()
+    }
+  }
+}
+
+async fn run_resource_up(
+  resources: ResourceFile,
+) -> anyhow::Result<()> {
+  let servers = name_to_server();
+
+  // (name, partial config)
+  let mut to_update =
+    Vec::<(String, Resource<PartialServerConfig>)>::new();
+  let mut to_create = Vec::<Resource<PartialServerConfig>>::new();
+
+  for server in resources.servers {
+    match servers.get(&server.name).map(|s| s.id.clone()) {
+      Some(id) => {
+        to_update.push((id, server));
+      }
+      None => {
+        to_create.push(server);
+      }
+    }
+  }
+
+  if !to_create.is_empty() {
+    println!(
+      "\nTO CREATE: {}",
+      to_create
+        .iter()
+        .map(|server| server.name.as_str())
+        .collect::<Vec<_>>()
+        .join(", ")
+    );
+  }
+
+  if !to_update.is_empty() {
+    println!(
+      "\nTO UPDATE: {}",
+      to_update
+        .iter()
+        .map(|(_, server)| server.name.as_str())
+        .collect::<Vec<_>>()
+        .join(", ")
+    );
+  }
+
+  wait_for_enter("CONTINUE")?;
+
+  for (id, server) in to_update {
+    if let Err(e) = monitor_client()
+      .write(write::UpdateServer {
+        id,
+        config: server.config,
+      })
+      .await
+    {
+      warn!("failed to update server {} | {e:#}", server.name)
+    }
+  }
+
+  for server in to_create {
+    if let Err(e) = monitor_client()
+      .write(write::CreateServer {
+        name: server.name.clone(),
+        config: server.config,
+      })
+      .await
+    {
+      warn!("failed to create server {} | {e:#}", server.name)
+    }
+  }
 
   Ok(())
 }
@@ -24,11 +105,11 @@ pub async fn run_resource(
 #[derive(Debug, Clone, Default, Deserialize)]
 struct ResourceFile {
   #[serde(default, rename = "server")]
-  servers: Vec<Server>,
+  servers: Vec<Resource<PartialServerConfig>>,
   #[serde(default, rename = "build")]
-  builds: Vec<Build>,
+  builds: Vec<Resource<PartialBuildConfig>>,
   #[serde(default, rename = "deployment")]
-  deployments: Vec<Deployment>,
+  deployments: Vec<Resource<PartialDeploymentConfig>>,
   // #[serde(rename = "builder")]
   // builders: (),
   // #[serde(rename = "repo")]

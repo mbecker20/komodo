@@ -56,7 +56,7 @@ pub fn name_to_deployment(
   })
 }
 
-pub fn _name_to_server() -> &'static HashMap<String, ServerListItem> {
+pub fn name_to_server() -> &'static HashMap<String, ServerListItem> {
   static NAME_TO_SERVER: OnceLock<HashMap<String, ServerListItem>> =
     OnceLock::new();
   NAME_TO_SERVER.get_or_init(|| {
