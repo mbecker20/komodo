@@ -10,7 +10,7 @@ use serde::{de::DeserializeOwned, Deserialize};
 
 mod execution;
 mod maps;
-mod resource;
+mod sync;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -29,9 +29,7 @@ fn cli_args() -> &'static CliArgs {
 #[derive(Debug, Clone, Subcommand)]
 enum Command {
   /// Runs syncs on resource files
-  Resource {
-    /// The resource action to take
-    action: resource::SyncDirection,
+  Sync {
     /// The path of the resource folder / file
     /// Folder paths will recursively incorporate all the resources it finds under the folder
     #[arg(default_value_t = String::from("./resources"))]
@@ -72,9 +70,8 @@ async fn main() -> anyhow::Result<()> {
 
   match &cli_args().command {
     Command::Exec { path } => execution::run_execution(path).await?,
-    Command::Resource { action, path } => {
-      resource::run_resource(*action, &PathBuf::from_str(path)?)
-        .await?
+    Command::Sync { path } => {
+      sync::run_sync(&PathBuf::from_str(path)?).await?
     }
   }
 

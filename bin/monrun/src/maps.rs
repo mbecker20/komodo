@@ -4,8 +4,10 @@ use anyhow::Context;
 use monitor_client::{
   api::read,
   entities::{
-    build::BuildListItem, deployment::DeploymentListItem,
-    resource::ResourceListItem, server::ServerListItem,
+    alerter::AlerterListItem, build::BuildListItem,
+    builder::BuilderListItem, deployment::DeploymentListItem,
+    repo::RepoListItem, resource::ResourceListItem,
+    server::ServerListItem,
   },
 };
 
@@ -66,6 +68,50 @@ pub fn name_to_server() -> &'static HashMap<String, ServerListItem> {
     .expect("failed to get servers from monitor")
     .into_iter()
     .map(|server| (server.name.clone(), server))
+    .collect()
+  })
+}
+
+pub fn name_to_builder() -> &'static HashMap<String, BuilderListItem>
+{
+  static NAME_TO_BUILDER: OnceLock<HashMap<String, BuilderListItem>> =
+    OnceLock::new();
+  NAME_TO_BUILDER.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListBuilders::default()),
+    )
+    .expect("failed to get builders from monitor")
+    .into_iter()
+    .map(|builder| (builder.name.clone(), builder))
+    .collect()
+  })
+}
+
+pub fn name_to_alerter() -> &'static HashMap<String, AlerterListItem>
+{
+  static NAME_TO_ALERTER: OnceLock<HashMap<String, AlerterListItem>> =
+    OnceLock::new();
+  NAME_TO_ALERTER.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListAlerters::default()),
+    )
+    .expect("failed to get alerters from monitor")
+    .into_iter()
+    .map(|alerter| (alerter.name.clone(), alerter))
+    .collect()
+  })
+}
+
+pub fn name_to_repo() -> &'static HashMap<String, RepoListItem> {
+  static NAME_TO_ALERTER: OnceLock<HashMap<String, RepoListItem>> =
+    OnceLock::new();
+  NAME_TO_ALERTER.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListRepos::default()),
+    )
+    .expect("failed to get repos from monitor")
+    .into_iter()
+    .map(|repo| (repo.name.clone(), repo))
     .collect()
   })
 }
