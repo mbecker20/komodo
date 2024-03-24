@@ -20,6 +20,7 @@ import { DeploymentLogs } from "./logs";
 import { Link } from "react-router-dom";
 import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
+import { TagsWithBadge } from "@components/tags";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
@@ -121,8 +122,6 @@ export const Deployment: RequiredResourceComponents = {
   },
   Table: () => {
     const deployments = useRead("ListDeployments", {}).data;
-    const all_tags = useRead("ListTags", {}).data;
-
     return (
       <DataTable
         data={deployments ?? []}
@@ -147,13 +146,7 @@ export const Deployment: RequiredResourceComponents = {
           //   header: "Description",
           //   accessorKey: "description",
           // },
-          {
-            header: "Tags",
-            accessorFn: ({ tags }) =>
-              tags
-                .map((t) => all_tags?.find((tg) => tg._id?.$oid === t)?.name)
-                .join(", "),
-          },
+
           {
             header: "Server",
             cell: ({ row }) => {
@@ -166,19 +159,19 @@ export const Deployment: RequiredResourceComponents = {
               );
             },
           },
-          {
-            header: "Build",
-            cell: ({ row }) => {
-              const id = row.original.info.build_id;
-              if (!id) return null;
-              return (
-                <Link to={`/builds/${id}`} className="flex items-center gap-2">
-                  <ResourceComponents.Build.Icon id={id} />
-                  <ResourceComponents.Build.Name id={id} />
-                </Link>
-              );
-            },
-          },
+          // {
+          //   header: "Build",
+          //   cell: ({ row }) => {
+          //     const id = row.original.info.build_id;
+          //     if (!id) return null;
+          //     return (
+          //       <Link to={`/builds/${id}`} className="flex items-center gap-2">
+          //         <ResourceComponents.Build.Icon id={id} />
+          //         <ResourceComponents.Build.Name id={id} />
+          //       </Link>
+          //     );
+          //   },
+          // },
           {
             accessorKey: "info.image",
             header: "Image",
@@ -192,6 +185,16 @@ export const Deployment: RequiredResourceComponents = {
               const color = deployment_state_text_color(state);
               return <div className={color}>{status}</div>;
             },
+          },
+          {
+            header: "Tags",
+            cell: ({ row }) => {
+              return (
+                <div className="flex gap-1">
+                  <TagsWithBadge resource_tags={row.original.tags} />
+                </div>
+              );
+            }
           },
           {
             header: "Created",

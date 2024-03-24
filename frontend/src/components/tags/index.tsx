@@ -19,12 +19,22 @@ type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
 export const ResourceTags = ({ target }: { target: TargetExcludingSystem }) => {
   const { type, id } = target;
   const resource = useRead(`List${type}s`, {}).data?.find((d) => d.id === id);
-  const tags = useRead("ListTags", {}).data;
 
+  return <TagsWithBadge resource_tags={resource?.tags} />;
+};
+
+export const TagsWithBadge = ({
+  resource_tags,
+}: {
+  resource_tags?: string[];
+}) => {
+  const all_tags = useRead("ListTags", {}).data;
   return (
     <>
-      {resource?.tags.map((id) => (
-        <Badge key={id}>{tags?.find((t) => t._id?.$oid === id)?.name}</Badge>
+      {resource_tags?.map((tag_id) => (
+        <Badge key={tag_id} variant="secondary" className="px-1.5 py-0.5">
+          {all_tags?.find((t) => t._id?.$oid === tag_id)?.name}
+        </Badge>
       ))}
     </>
   );
