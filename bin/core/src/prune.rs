@@ -29,6 +29,7 @@ async fn prune_stats() -> anyhow::Result<()> {
     - core_config().keep_stats_for_days as u128 * ONE_DAY_MS)
     as i64;
   let res = db_client()
+    .await
     .stats
     .delete_many(
       doc! {
@@ -49,6 +50,7 @@ async fn prune_alerts() -> anyhow::Result<()> {
     - core_config().keep_alerts_for_days as u128 * ONE_DAY_MS)
     as i64;
   let res = db_client()
+    .await
     .alerts
     .delete_many(
       doc! {

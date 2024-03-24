@@ -154,6 +154,7 @@ impl Resolve<GetDeployedVersion, RequestUser> for State {
     let version = match image {
       DeploymentImage::Build { .. } => {
         let latest_deploy_update = db_client()
+          .await
           .updates
           .find_one(
             doc! {
@@ -265,7 +266,7 @@ impl Resolve<GetDeploymentsSummary, RequestUser> for State {
     };
 
     let deployments =
-      find_collect(&db_client().deployments, query, None)
+      find_collect(&db_client().await.deployments, query, None)
         .await
         .context("failed to count all deployment documents")?;
     let mut res = GetDeploymentsSummaryResponse::default();

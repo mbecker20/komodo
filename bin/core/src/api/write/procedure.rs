@@ -45,6 +45,7 @@ impl Resolve<CreateProcedure, RequestUser> for State {
       config,
     };
     let procedure_id = db_client()
+      .await
       .procedures
       .insert_one(procedure, None)
       .await
@@ -112,6 +113,7 @@ impl Resolve<CopyProcedure, RequestUser> for State {
       info: Default::default(),
     };
     let procedure_id = db_client()
+      .await
       .procedures
       .insert_one(build, None)
       .await
@@ -162,7 +164,7 @@ impl Resolve<UpdateProcedure, RequestUser> for State {
       .await?;
 
     update_one_by_id(
-      &db_client().procedures,
+      &db_client().await.procedures,
       &procedure.id,
       mungos::update::Update::FlattenSet(
         doc! { "config": to_document(&config)? },
@@ -216,9 +218,10 @@ impl Resolve<DeleteProcedure, RequestUser> for State {
     update.in_progress();
     update.id = add_update(update.clone()).await?;
 
-    let res = delete_one_by_id(&db_client().procedures, &id, None)
-      .await
-      .context("failed to delete build from database");
+    let res =
+      delete_one_by_id(&db_client().await.procedures, &id, None)
+        .await
+        .context("failed to delete build from database");
 
     let log = match res {
       Ok(_) => Log::simple(

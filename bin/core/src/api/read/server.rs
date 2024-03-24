@@ -405,7 +405,7 @@ impl Resolve<GetHistoricalServerStats, RequestUser> for State {
     }
 
     let stats = find_collect(
-      &db_client().stats,
+      &db_client().await.stats,
       doc! {
         "sid": server_id,
         "ts": { "$in": ts_vec },

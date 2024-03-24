@@ -87,6 +87,7 @@ impl Resolve<GetProceduresSummary, RequestUser> for State {
       Some(query)
     };
     let total = db_client()
+      .await
       .procedures
       .count_documents(query, None)
       .await

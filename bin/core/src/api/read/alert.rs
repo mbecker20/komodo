@@ -44,7 +44,7 @@ impl Resolve<ListAlerts, RequestUser> for State {
     }
 
     let alerts = find_collect(
-      &db_client().alerts,
+      &db_client().await.alerts,
       query,
       FindOptions::builder()
         .sort(doc! { "ts": -1 })

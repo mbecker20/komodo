@@ -45,6 +45,7 @@ impl Resolve<CreateBuilder, RequestUser> for State {
       info: Default::default(),
     };
     let builder_id = db_client()
+      .await
       .builders
       .insert_one(builder, None)
       .await
@@ -112,6 +113,7 @@ impl Resolve<CopyBuilder, RequestUser> for State {
       info: (),
     };
     let builder_id = db_client()
+      .await
       .builders
       .insert_one(builder, None)
       .await
@@ -165,6 +167,7 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
     let start_ts = monitor_timestamp();
 
     db_client()
+      .await
       .builds
       .update_many(
         doc! { "config.builder.params.builder_id": &id },
@@ -175,7 +178,7 @@ impl Resolve<DeleteBuilder, RequestUser> for State {
       )
       .await?;
 
-    delete_one_by_id(&db_client().builders, &id, None)
+    delete_one_by_id(&db_client().await.builders, &id, None)
       .await
       .context("failed to delete builder from database")?;
 
@@ -230,7 +233,7 @@ impl Resolve<UpdateBuilder, RequestUser> for State {
     let config = builder.config.merge_partial(config);
 
     update_one_by_id(
-      &db_client().builders,
+      &db_client().await.builders,
       &id,
       mungos::update::Update::FlattenSet(
         doc! { "config": to_bson(&config)? },

@@ -29,7 +29,7 @@ impl Resolve<ListTags, RequestUser> for State {
     ListTags { query }: ListTags,
     _: RequestUser,
   ) -> anyhow::Result<Vec<CustomTag>> {
-    find_collect(&db_client().tags, query, None)
+    find_collect(&db_client().await.tags, query, None)
       .await
       .context("failed to get tags from db")
   }

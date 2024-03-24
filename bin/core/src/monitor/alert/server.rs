@@ -421,6 +421,7 @@ async fn open_alerts(alerts: &[(Alert, SendAlerts)]) {
 
   let open = || async {
     db_client()
+      .await
       .alerts
       .insert_many(alerts.iter().map(|(alert, _)| alert), None)
       .await?;
@@ -463,7 +464,7 @@ async fn update_alerts(alerts: &[(Alert, SendAlerts)]) {
       }).collect::<Vec<_>>();
 
     bulk_update::bulk_update(
-      &db_client().db,
+      &db_client().await.db,
       Alert::default_collection_name(),
       &updates,
       false,
@@ -505,6 +506,7 @@ async fn resolve_alerts(alert_ids: &[(String, SendAlerts)]) {
       })
       .collect::<anyhow::Result<Vec<_>>>()?;
     db_client()
+      .await
       .alerts
       .update_many(
         doc! { "_id": { "$in": &alert_ids } },
@@ -519,7 +521,7 @@ async fn resolve_alerts(alert_ids: &[(String, SendAlerts)]) {
       .await
       .context("failed to resolve alerts on db")?;
     let mut closed = find_collect(
-      &db_client().alerts,
+      &db_client().await.alerts,
       doc! { "_id": { "$in": &alert_ids } },
       None,
     )
@@ -556,7 +558,7 @@ async fn get_open_alerts(
 ) -> anyhow::Result<(OpenAlertMap, OpenDiskAlertMap, OpenTempAlertMap)>
 {
   let alerts = find_collect(
-    &db_client().alerts,
+    &db_client().await.alerts,
     doc! { "resolved": false },
     None,
   )

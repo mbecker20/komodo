@@ -42,7 +42,7 @@ impl Resolve<PushRecentlyViewed, RequestUser> for State {
       .context("failed to convert recently views to bson")?;
 
     update_one_by_id(
-      &db_client().users,
+      &db_client().await.users,
       &user.id,
       mungos::update::Update::Set(doc! {
         "recently_viewed": recently_viewed
@@ -64,7 +64,7 @@ impl Resolve<SetLastSeenUpdate, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<SetLastSeenUpdateResponse> {
     update_one_by_id(
-      &db_client().users,
+      &db_client().await.users,
       &user.id,
       mungos::update::Update::Set(doc! {
         "last_update_view": monitor_timestamp()

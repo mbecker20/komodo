@@ -159,6 +159,7 @@ pub async fn auth_api_key_get_user_id(
   secret: &str,
 ) -> anyhow::Result<String> {
   let key = db_client()
+    .await
     .api_keys
     .find_one(doc! { "key": key }, None)
     .await

@@ -270,7 +270,7 @@ async fn make_procedure_map_rec(
     .collect::<anyhow::Result<Vec<_>>>()?;
 
   let procedures = find_collect(
-    &db_client().procedures,
+    &db_client().await.procedures,
     doc! { "_id": { "$in": &more_ids } },
     None,
   )

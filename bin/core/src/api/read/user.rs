@@ -21,7 +21,7 @@ impl Resolve<GetUser, RequestUser> for State {
     GetUser {}: GetUser,
     user: RequestUser,
   ) -> anyhow::Result<User> {
-    let mut user = find_one_by_id(&db_client().users, &user.id)
+    let mut user = find_one_by_id(&db_client().await.users, &user.id)
       .await
       .context("failed at mongo query")?
       .context("no user found with id")?;
@@ -37,7 +37,7 @@ impl Resolve<GetUsername, RequestUser> for State {
     GetUsername { user_id }: GetUsername,
     _: RequestUser,
   ) -> anyhow::Result<GetUsernameResponse> {
-    let user = find_one_by_id(&db_client().users, &user_id)
+    let user = find_one_by_id(&db_client().await.users, &user_id)
       .await
       .context("failed at mongo query for user")?
       .context("no user found with id")?;
@@ -58,9 +58,10 @@ impl Resolve<GetUsers, RequestUser> for State {
     if !user.is_admin {
       return Err(anyhow!("this route is only accessable by admins"));
     }
-    let mut users = find_collect(&db_client().users, None, None)
-      .await
-      .context("failed to pull users from db")?;
+    let mut users =
+      find_collect(&db_client().await.users, None, None)
+        .await
+        .context("failed to pull users from db")?;
     users.iter_mut().for_each(|user| user.sanitize());
     Ok(users)
   }
@@ -74,7 +75,7 @@ impl Resolve<ListApiKeys, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<ListApiKeysResponse> {
     let api_keys = find_collect(
-      &db_client().api_keys,
+      &db_client().await.api_keys,
       doc! { "user_id": &user.id },
       None,
     )

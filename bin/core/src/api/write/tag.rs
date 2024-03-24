@@ -44,6 +44,7 @@ impl Resolve<CreateTag, RequestUser> for State {
       owner: user.id.clone(),
     };
     tag.id = db_client()
+      .await
       .tags
       .insert_one(&tag, None)
       .await
@@ -66,7 +67,7 @@ impl Resolve<UpdateTag, RequestUser> for State {
     get_tag_check_owner(&id, &user).await?;
 
     update_one_by_id(
-      &db_client().tags,
+      &db_client().await.tags,
       &id,
       doc! { "$set": to_bson(&config)? },
       None,
@@ -85,7 +86,7 @@ impl Resolve<DeleteTag, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<CustomTag> {
     let tag = get_tag_check_owner(&id, &user).await?;
-    delete_one_by_id(&db_client().tags, &id, None).await?;
+    delete_one_by_id(&db_client().await.tags, &id, None).await?;
     Ok(tag)
   }
 }

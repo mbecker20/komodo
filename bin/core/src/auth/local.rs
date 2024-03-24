@@ -31,8 +31,12 @@ impl Resolve<CreateLocalUser> for State {
     let password = bcrypt::hash(password, BCRYPT_COST)
       .context("failed to hash password")?;
 
-    let no_users_exist =
-      db_client().users.find_one(None, None).await?.is_none();
+    let no_users_exist = db_client()
+      .await
+      .users
+      .find_one(None, None)
+      .await?
+      .is_none();
 
     let ts = unix_timestamp_ms() as i64;
 
@@ -48,6 +52,7 @@ impl Resolve<CreateLocalUser> for State {
     };
 
     let user_id = db_client()
+      .await
       .users
       .insert_one(user, None)
       .await
@@ -77,6 +82,7 @@ impl Resolve<LoginLocalUser> for State {
     }
 
     let user = db_client()
+      .await
       .users
       .find_one(doc! { "username": &username }, None)
       .await

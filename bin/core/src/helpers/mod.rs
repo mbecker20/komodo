@@ -61,7 +61,7 @@ pub fn make_update(
 }
 
 pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
-  find_one_by_id(&db_client().users, user_id)
+  find_one_by_id(&db_client().await.users, user_id)
     .await
     .context("failed to query mongo for user")?
     .with_context(|| format!("no user found with id {user_id}"))
@@ -111,7 +111,7 @@ pub async fn get_deployment_state(
 // TAG
 
 pub async fn get_tag(tag_id: &str) -> anyhow::Result<CustomTag> {
-  find_one_by_id(&db_client().tags, tag_id)
+  find_one_by_id(&db_client().await.tags, tag_id)
     .await
     .context("failed to query mongo for tag")?
     .with_context(|| format!("no tag found with id {tag_id}"))
@@ -133,13 +133,14 @@ pub async fn get_tag_check_owner(
 async fn update_list_item(
   update: Update,
 ) -> anyhow::Result<UpdateListItem> {
-  let username = find_one_by_id(&db_client().users, &update.operator)
-    .await
-    .context("failed to query mongo for user")?
-    .with_context(|| {
-      format!("no user found with id {}", update.operator)
-    })?
-    .username;
+  let username =
+    find_one_by_id(&db_client().await.users, &update.operator)
+      .await
+      .context("failed to query mongo for user")?
+      .with_context(|| {
+        format!("no user found with id {}", update.operator)
+      })?
+      .username;
   let update = UpdateListItem {
     id: update.id,
     operation: update.operation,
@@ -163,6 +164,7 @@ pub async fn add_update(
   mut update: Update,
 ) -> anyhow::Result<String> {
   update.id = db_client()
+    .await
     .updates
     .insert_one(&update, None)
     .await
@@ -178,7 +180,7 @@ pub async fn add_update(
 }
 
 pub async fn update_update(update: Update) -> anyhow::Result<()> {
-  update_one_by_id(&db_client().updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
+  update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
       .await
       .context("failed to update the update on db. the update build process was deleted")?;
   let update = update_list_item(update).await?;
@@ -190,7 +192,7 @@ pub async fn remove_from_recently_viewed(
   resource: impl Into<ResourceTarget>,
 ) -> anyhow::Result<()> {
   let resource: ResourceTarget = resource.into();
-  db_client()
+  db_client().await
       .users
       .update_many(
           doc! {},

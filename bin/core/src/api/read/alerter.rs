@@ -65,6 +65,7 @@ impl Resolve<GetAlertersSummary, RequestUser> for State {
       Some(query)
     };
     let total = db_client()
+      .await
       .alerters
       .count_documents(query, None)
       .await

@@ -57,7 +57,7 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
     let cancel_clone = cancel.clone();
 
     tokio::spawn(async move {
-      let db_client = db_client();
+      let db_client = db_client().await;
       loop {
         let update = select! {
           _ = cancel_clone.cancelled() => break,

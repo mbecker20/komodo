@@ -73,7 +73,7 @@ async fn callback(
     .await?;
   let google_user = client.get_google_user(&token.id_token)?;
   let google_id = google_user.id.to_string();
-  let db_client = db_client();
+  let db_client = db_client().await;
   let user = db_client
     .users
     .find_one(doc! { "google_id": &google_id }, None)

@@ -40,6 +40,7 @@ impl Resolve<CreateApiKey, RequestUser> for State {
       expires,
     };
     db_client()
+      .await
       .api_keys
       .insert_one(api_key, None)
       .await
@@ -55,7 +56,7 @@ impl Resolve<DeleteApiKey, RequestUser> for State {
     DeleteApiKey { key }: DeleteApiKey,
     user: RequestUser,
   ) -> anyhow::Result<DeleteApiKeyResponse> {
-    let client = db_client();
+    let client = db_client().await;
     let key = client
       .api_keys
       .find_one(doc! { "key": &key }, None)

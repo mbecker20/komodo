@@ -54,6 +54,7 @@ impl Resolve<CreateServer, RequestUser> for State {
       info: (),
     };
     let server_id = db_client()
+      .await
       .servers
       .insert_one(&server, None)
       .await
@@ -113,6 +114,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
     let start_ts = monitor_timestamp();
 
     db_client()
+      .await
       .builds
       .update_many(
         doc! { "config.builder.params.server_id": &id },
@@ -123,6 +125,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .context("failed to detach server from builds")?;
 
     db_client()
+      .await
       .deployments
       .update_many(
         doc! { "config.server_id": &id },
@@ -133,6 +136,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .context("failed to detach server from deployments")?;
 
     db_client()
+      .await
       .repos
       .update_many(
         doc! { "config.server_id": &id },
@@ -142,7 +146,7 @@ impl Resolve<DeleteServer, RequestUser> for State {
       .await
       .context("failed to detach server from repos")?;
 
-    delete_one_by_id(&db_client().servers, &id, None)
+    delete_one_by_id(&db_client().await.servers, &id, None)
       .await
       .context("failed to delete server from mongo")?;
 
@@ -190,7 +194,7 @@ impl Resolve<UpdateServer, RequestUser> for State {
       make_update(&server, Operation::UpdateServer, &user);
 
     update_one_by_id(
-      &db_client().servers,
+      &db_client().await.servers,
       &id,
       mungos::update::Update::FlattenSet(
         doc! { "config": to_bson(&config)? },
@@ -234,7 +238,7 @@ impl Resolve<RenameServer, RequestUser> for State {
     let mut update =
       make_update(&server, Operation::RenameServer, &user);
 
-    update_one_by_id(&db_client().servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }), None)
+    update_one_by_id(&db_client().await.servers, &id, mungos::update::Update::Set(doc! { "name": &name, "updated_at": monitor_timestamp() }), None)
       .await
       .context("failed to update server on db. this name may already be taken.")?;
     update.push_simple_log(
