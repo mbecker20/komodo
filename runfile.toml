@@ -3,6 +3,14 @@ description = "generates typescript types for the ts client"
 path = "."
 cmd = "node ./client/ts/generate_types.mjs"
 
-[try-monrun]
+[monrun-help]
 path = "bin/monrun"
-cmd = "cargo run -- resource down ./resources/deployments.toml"
+cmd = "cargo run -- resource --help"
+
+[monrun-exec]
+path = "bin/monrun"
+cmd = "cargo run -- exec --help"
+
+[monrun-resource]
+path = "bin/monrun"
+cmd = "cargo run -- resource up"

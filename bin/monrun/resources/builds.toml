@@ -1,0 +1,19 @@
+[[build]]
+name = "monitor-core-v1"
+description = "the prod build for monitor"
+tags = ["monitor", "prod"]
+config.repo = "mbecker20/monitor"
+config.branch = "next"
+config.build_path = "."
+config.dockerfile_path = "Dockerfile"
+config.docker_account = "mbecker2020"
+
+[[build]]
+name = "monitor-core-v1-dev"
+description = "the dev build for monitor"
+tags = ["monitor", "dev"]
+config.repo = "mbecker20/monitor"
+config.branch = "next"
+config.build_path = "."
+config.dockerfile_path = "Dockerfile"
+config.docker_account = "mbecker2020"

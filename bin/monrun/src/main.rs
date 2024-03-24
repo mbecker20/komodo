@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate tracing;
 
-use std::{io::Read, path::PathBuf, sync::OnceLock};
+use std::{io::Read, path::PathBuf, str::FromStr, sync::OnceLock};
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
@@ -32,8 +32,10 @@ enum Command {
   Resource {
     /// The resource action to take
     action: resource::SyncDirection,
-    /// The path of the resource file
-    path: PathBuf,
+    /// The path of the resource folder / file
+    /// Folder paths will recursively incorporate all the resources it finds under the folder
+    #[arg(default_value_t = String::from("./resources"))]
+    path: String,
   },
   /// Runs execution files
   Exec {
@@ -71,7 +73,8 @@ async fn main() -> anyhow::Result<()> {
   match &cli_args().command {
     Command::Exec { path } => execution::run_execution(path).await?,
     Command::Resource { action, path } => {
-      info!("got RESOURCE! action: {action:?} | path: {path:?}")
+      resource::run_resource(*action, &PathBuf::from_str(path)?)
+        .await?
     }
   }
 

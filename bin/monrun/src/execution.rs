@@ -12,10 +12,7 @@ use crate::{
 };
 
 pub async fn run_execution(path: &Path) -> anyhow::Result<()> {
-  let ExecutionFile {
-    name,
-    stage: stages,
-  } = crate::parse_toml_file(path)?;
+  let ExecutionFile { name, stages } = crate::parse_toml_file(path)?;
 
   info!("EXECUTION: {name}");
   info!("path: {path:?}");
@@ -36,7 +33,8 @@ pub async fn run_execution(path: &Path) -> anyhow::Result<()> {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ExecutionFile {
   pub name: String,
-  pub stage: Vec<Stage>,
+  #[serde(rename = "stage")]
+  pub stages: Vec<Stage>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

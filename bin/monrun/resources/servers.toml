@@ -1,0 +1,13 @@
+[[server]]
+name = "mogh-server"
+description = "main mogh server"
+tags = ["mogh", "prod"]
+config.address = "http://localhost:8001"
+config.region = "us-east-2"
+
+[[server]]
+name = "testo"
+description = "test server 1"
+tags = ["mogh", "test"]
+config.address = ""
+config.enabled = false
