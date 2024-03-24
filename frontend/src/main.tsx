@@ -1,5 +1,4 @@
 import "globals.css";
-import React from "react";
 import ReactDOM from "react-dom/client";
 import { ThemeProvider } from "@ui/theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
