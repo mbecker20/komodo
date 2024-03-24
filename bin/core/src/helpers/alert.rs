@@ -18,7 +18,7 @@ pub async fn send_alerts(alerts: &[Alert]) {
   }
 
   let alerters =
-    find_collect(&db_client().await.alerters, None, None).await;
+    find_collect(&db_client().alerters, None, None).await;
 
   if let Err(e) = alerters {
     error!("ERROR sending alerts | failed to get alerters from db | {e:#?}");

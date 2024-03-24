@@ -330,7 +330,7 @@ impl Resolve<StopAllContainers, RequestUser> for State {
     }
 
     let deployments = find_collect(
-      &db_client().await.deployments,
+      &db_client().deployments,
       doc! {
         "config.server_id": &server_id
       },

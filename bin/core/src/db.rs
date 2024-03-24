@@ -1,3 +1,6 @@
+use std::sync::OnceLock;
+
+use futures::executor::block_on;
 use mongo_indexed::{create_index, create_unique_index, Indexed};
 use monitor_client::entities::{
   alert::Alert,
@@ -17,20 +20,15 @@ use mungos::{
   init::MongoBuilder,
   mongodb::{Collection, Database},
 };
-use tokio::sync::OnceCell;
 
 use crate::config::{core_config, MongoConfig};
 
-pub async fn db_client() -> &'static DbClient {
-  static DB_CLIENT: OnceCell<DbClient> = OnceCell::const_new();
-  DB_CLIENT
-    .get_or_init(|| async {
-      let config = core_config();
-      DbClient::new(&config.mongo)
-        .await
-        .expect("failed to initialize mongo client")
-    })
-    .await
+pub fn db_client() -> &'static DbClient {
+  static DB_CLIENT: OnceLock<DbClient> = OnceLock::new();
+  DB_CLIENT.get_or_init(|| {
+    block_on(DbClient::new(&core_config().mongo))
+      .expect("failed to initialize mongo client")
+  })
 }
 
 pub struct DbClient {

@@ -62,7 +62,6 @@ impl Resolve<CreateRepo, RequestUser> for State {
       info: Default::default(),
     };
     let repo_id = db_client()
-      .await
       .repos
       .insert_one(repo, None)
       .await
@@ -155,7 +154,6 @@ impl Resolve<CopyRepo, RequestUser> for State {
       info: Default::default(),
     };
     let repo_id = db_client()
-      .await
       .repos
       .insert_one(repo, None)
       .await
@@ -227,10 +225,9 @@ impl Resolve<DeleteRepo, RequestUser> for State {
       };
       update.id = add_update(update.clone()).await?;
 
-      let res =
-        delete_one_by_id(&db_client().await.repos, &repo.id, None)
-          .await
-          .context("failed to delete repo from database");
+      let res = delete_one_by_id(&db_client().repos, &repo.id, None)
+        .await
+        .context("failed to delete repo from database");
 
       let log = match res {
         Ok(_) => Log::simple(
@@ -321,7 +318,7 @@ impl Resolve<UpdateRepo, RequestUser> for State {
 
     let inner = || async move {
       update_one_by_id(
-        &db_client().await.repos,
+        &db_client().repos,
         &repo.id,
         mungos::update::Update::FlattenSet(
           doc! { "config": to_bson(&config)? },

@@ -13,7 +13,12 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  auth::RequestUser, helpers::{add_update, periphery_client, resource::StateResource, update_update}, state::{action_states, State},
+  auth::RequestUser,
+  helpers::{
+    add_update, periphery_client, resource::StateResource,
+    update_update,
+  },
+  state::{action_states, State},
 };
 
 #[async_trait]

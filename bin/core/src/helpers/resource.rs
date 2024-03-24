@@ -204,7 +204,7 @@ impl StateResource<Server> for State {
   }
 
   async fn coll(&self) -> &Collection<Server> {
-    &db_client().await.servers
+    &db_client().servers
   }
 
   async fn to_list_item(
@@ -244,7 +244,7 @@ impl StateResource<Deployment> for State {
   }
 
   async fn coll(&self) -> &Collection<Deployment> {
-    &db_client().await.deployments
+    &db_client().deployments
   }
 
   async fn to_list_item(
@@ -297,7 +297,7 @@ impl StateResource<Build> for State {
   }
 
   async fn coll(&self) -> &Collection<Build> {
-    &db_client().await.builds
+    &db_client().builds
   }
 
   async fn to_list_item(
@@ -329,7 +329,7 @@ impl StateResource<Repo> for State {
   }
 
   async fn coll(&self) -> &Collection<Repo> {
-    &db_client().await.repos
+    &db_client().repos
   }
 
   async fn to_list_item(
@@ -360,7 +360,7 @@ impl StateResource<Builder> for State {
   }
 
   async fn coll(&self) -> &Collection<Builder> {
-    &db_client().await.builders
+    &db_client().builders
   }
 
   async fn to_list_item(
@@ -401,7 +401,7 @@ impl StateResource<Alerter> for State {
   }
 
   async fn coll(&self) -> &Collection<Alerter> {
-    &db_client().await.alerters
+    &db_client().alerters
   }
 
   async fn to_list_item(
@@ -437,7 +437,7 @@ impl StateResource<Procedure> for State {
   }
 
   async fn coll(&self) -> &Collection<Procedure> {
-    &db_client().await.procedures
+    &db_client().procedures
   }
 
   async fn to_list_item(

@@ -57,7 +57,6 @@ impl Resolve<CreateBuild, RequestUser> for State {
       info: Default::default(),
     };
     let build_id = db_client()
-      .await
       .builds
       .insert_one(build, None)
       .await
@@ -124,7 +123,6 @@ impl Resolve<CopyBuild, RequestUser> for State {
       info: Default::default(),
     };
     let build_id = db_client()
-      .await
       .builds
       .insert_one(build, None)
       .await
@@ -183,7 +181,6 @@ impl Resolve<DeleteBuild, RequestUser> for State {
     update.id = add_update(update.clone()).await?;
 
     let res = db_client()
-      .await
       .builds
       .delete_one(doc! { "_id": ObjectId::from_str(&id)? }, None)
       .await
@@ -245,7 +242,7 @@ impl Resolve<UpdateBuild, RequestUser> for State {
       }
 
       update_one_by_id(
-        &db_client().await.builds,
+        &db_client().builds,
         &build.id,
         mungos::update::Update::FlattenSet(
           doc! { "config": to_bson(&config)? },

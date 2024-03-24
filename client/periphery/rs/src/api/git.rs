@@ -1,4 +1,6 @@
-use monitor_client::entities::{update::Log, CloneArgs, SystemCommand};
+use monitor_client::entities::{
+  update::Log, CloneArgs, SystemCommand,
+};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 

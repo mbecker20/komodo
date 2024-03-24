@@ -167,7 +167,6 @@ impl Resolve<RunBuild, RequestUser> for State {
 
       if update.success {
         let _ = db_client()
-          .await
           .builds
           .update_one(
             doc! { "_id": ObjectId::from_str(&build.id)? },
@@ -371,7 +370,7 @@ async fn cleanup_builder_instance(
 
 async fn handle_post_build_redeploy(build_id: &str) {
   let redeploy_deployments = find_collect(
-    &db_client().await.deployments,
+    &db_client().deployments,
     doc! {
       "config.image.params.build_id": build_id,
       "config.redeploy_on_build": true

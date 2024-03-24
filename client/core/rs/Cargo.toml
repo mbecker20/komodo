@@ -32,5 +32,4 @@ tokio-tungstenite.workspace = true
 futures.workspace = true
 typeshare.workspace = true
 strum.workspace = true
-strum_macros.workspace = true
 derive_builder.workspace = true

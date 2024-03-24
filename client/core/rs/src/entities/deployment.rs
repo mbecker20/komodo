@@ -4,7 +4,7 @@ use derive_variants::EnumVariants;
 use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
+use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use super::{

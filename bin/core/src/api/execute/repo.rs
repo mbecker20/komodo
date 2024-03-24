@@ -82,7 +82,6 @@ impl Resolve<CloneRepo, RequestUser> for State {
 
       if update.success {
         let res = db_client()
-          .await
           .repos
           .update_one(
             doc! { "_id": ObjectId::from_str(&repo.id)? },
@@ -184,7 +183,7 @@ impl Resolve<PullRepo, RequestUser> for State {
       update.finalize();
 
       if update.success {
-        let res = db_client().await
+        let res = db_client()
           .repos
           .update_one(
             doc! { "_id": ObjectId::from_str(&repo.id)? },

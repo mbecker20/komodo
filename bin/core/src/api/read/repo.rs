@@ -87,7 +87,6 @@ impl Resolve<GetReposSummary, RequestUser> for State {
       Some(query)
     };
     let total = db_client()
-      .await
       .repos
       .count_documents(query, None)
       .await

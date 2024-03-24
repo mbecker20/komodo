@@ -69,7 +69,6 @@ impl Resolve<CreateDeployment, RequestUser> for State {
       info: (),
     };
     let deployment_id = db_client()
-      .await
       .deployments
       .insert_one(&deployment, None)
       .await
@@ -152,7 +151,6 @@ impl Resolve<CopyDeployment, RequestUser> for State {
       info: (),
     };
     let deployment_id = db_client()
-      .await
       .deployments
       .insert_one(&deployment, None)
       .await
@@ -272,7 +270,7 @@ impl Resolve<DeleteDeployment, RequestUser> for State {
       }
 
       let res = delete_one_by_id(
-        &db_client().await.deployments,
+        &db_client().deployments,
         &deployment.id,
         None,
       )
@@ -380,7 +378,7 @@ impl Resolve<UpdateDeployment, RequestUser> for State {
       }
 
       update_one_by_id(
-        &db_client().await.deployments,
+        &db_client().deployments,
         &id,
         mungos::update::Update::FlattenSet(
           doc! { "config": to_bson(&config)? },
@@ -467,7 +465,7 @@ impl Resolve<RenameDeployment, RequestUser> for State {
         make_update(&deployment, Operation::RenameDeployment, &user);
 
       update_one_by_id(
-        &db_client().await.deployments,
+        &db_client().deployments,
         &deployment.id,
         mungos::update::Update::Set(
           doc! { "name": &name, "updated_at": monitor_timestamp() },

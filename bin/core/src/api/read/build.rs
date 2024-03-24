@@ -98,7 +98,6 @@ impl Resolve<GetBuildsSummary, RequestUser> for State {
       Some(query)
     };
     let total = db_client()
-      .await
       .builds
       .count_documents(query, None)
       .await
@@ -126,7 +125,6 @@ impl Resolve<GetBuildMonthlyStats, RequestUser> for State {
     let open_ts = close_ts - 30 * ONE_DAY_MS;
 
     let mut build_updates = db_client()
-      .await
       .updates
       .find(
         doc! {
@@ -217,7 +215,7 @@ impl Resolve<GetBuildVersions, RequestUser> for State {
     }
 
     let versions = find_collect(
-      &db_client().await.updates,
+      &db_client().updates,
       filter,
       FindOptions::builder()
         .sort(doc! { "_id": -1 })

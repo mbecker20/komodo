@@ -1,4 +1,6 @@
-use monitor_client::entities::{server::docker_image::ImageSummary, update::Log};
+use monitor_client::entities::{
+  server::docker_image::ImageSummary, update::Log,
+};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
@@ -27,4 +29,3 @@ pub struct PruneImages {}
 pub type PruneImagesResponse = Log;
 
 //
-

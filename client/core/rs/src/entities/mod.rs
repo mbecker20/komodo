@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
+use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 pub mod alert;

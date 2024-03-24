@@ -7,7 +7,10 @@ use serde::{de::DeserializeOwned, Deserialize};
 use serde_json::Value;
 use tokio::sync::Mutex;
 
-use crate::{auth::random_string, config::{core_config, CoreConfig, OauthCredentials}};
+use crate::{
+  auth::random_string,
+  config::{core_config, CoreConfig, OauthCredentials},
+};
 
 pub fn google_oauth_client() -> &'static Option<GoogleOauthClient> {
   static GOOGLE_OAUTH_CLIENT: OnceLock<Option<GoogleOauthClient>> =

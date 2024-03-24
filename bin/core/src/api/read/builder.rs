@@ -65,7 +65,6 @@ impl Resolve<GetBuildersSummary, RequestUser> for State {
       Some(query)
     };
     let total = db_client()
-      .await
       .builders
       .count_documents(query, None)
       .await

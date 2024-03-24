@@ -33,12 +33,8 @@ impl Resolve<CreateAlerter, RequestUser> for State {
     user: RequestUser,
   ) -> anyhow::Result<Alerter> {
     let start_ts = monitor_timestamp();
-    let is_default = db_client()
-      .await
-      .alerters
-      .find_one(None, None)
-      .await?
-      .is_none();
+    let is_default =
+      db_client().alerters.find_one(None, None).await?.is_none();
     let alerter = Alerter {
       id: Default::default(),
       name,
@@ -52,7 +48,6 @@ impl Resolve<CreateAlerter, RequestUser> for State {
       info: AlerterInfo { is_default },
     };
     let alerter_id = db_client()
-      .await
       .alerters
       .insert_one(alerter, None)
       .await
@@ -116,7 +111,6 @@ impl Resolve<CopyAlerter, RequestUser> for State {
       info: Default::default(),
     };
     let alerter_id = db_client()
-      .await
       .alerters
       .insert_one(alerter, None)
       .await
@@ -167,7 +161,7 @@ impl Resolve<DeleteAlerter, RequestUser> for State {
     let mut update =
       make_update(&alerter, Operation::DeleteAlerter, &user);
 
-    delete_one_by_id(&db_client().await.alerters, &id, None)
+    delete_one_by_id(&db_client().alerters, &id, None)
       .await
       .context("failed to delete alerter from database")?;
 
@@ -212,7 +206,7 @@ impl Resolve<UpdateAlerter, RequestUser> for State {
     let config = alerter.config.merge_partial(config);
 
     update_one_by_id(
-      &db_client().await.alerters,
+      &db_client().alerters,
       &id,
       mungos::update::Update::FlattenSet(
         doc! { "config": to_bson(&config)? },

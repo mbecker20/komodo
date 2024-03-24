@@ -6,7 +6,7 @@ use mungos::mongodb::bson::{
 };
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
+use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::entities::MongoId;

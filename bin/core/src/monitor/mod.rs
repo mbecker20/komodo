@@ -53,9 +53,7 @@ pub fn spawn_monitor_loop() {
         .await
         - 500) as i64;
       let servers =
-        match find_collect(&db_client().await.servers, None, None)
-          .await
-        {
+        match find_collect(&db_client().servers, None, None).await {
           Ok(servers) => servers,
           Err(e) => {
             error!(
@@ -75,7 +73,7 @@ pub fn spawn_monitor_loop() {
 
 pub async fn update_cache_for_server(server: &Server) {
   let deployments = find_collect(
-    &db_client().await.deployments,
+    &db_client().deployments,
     doc! { "config.server_id": &server.id },
     None,
   )

@@ -2,7 +2,7 @@ use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
 use mungos::mongodb::bson::{doc, Document};
 use serde::{Deserialize, Serialize};
-use strum_macros::{AsRefStr, Display, EnumString};
+use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
 use crate::api::execute::Execution;

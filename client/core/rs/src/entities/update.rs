@@ -5,7 +5,7 @@ use mungos::mongodb::bson::{
   doc, serde_helpers::hex_string_as_object_id, Document,
 };
 use serde::{Deserialize, Serialize};
-use strum_macros::{Display, EnumString};
+use strum::{Display, EnumString};
 use typeshare::typeshare;
 
 use crate::entities::{

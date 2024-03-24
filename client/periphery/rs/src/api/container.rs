@@ -1,4 +1,10 @@
-use monitor_client::entities::{deployment::{ContainerSummary, Deployment, DockerContainerStats, TerminationSignal}, update::Log};
+use monitor_client::entities::{
+  deployment::{
+    ContainerSummary, Deployment, DockerContainerStats,
+    TerminationSignal,
+  },
+  update::Log,
+};
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
