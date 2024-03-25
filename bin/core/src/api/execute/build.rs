@@ -79,12 +79,21 @@ impl Resolve<RunBuild, User> for State {
     tokio::spawn(async move {
       let poll = async {
         loop {
-          let build_id = tokio::select! {
-              _ = cancel_clone.cancelled() => return Ok(()),
-              id = cancel_recv.recv() => id?
+          let (build_id, mut update) = tokio::select! {
+            _ = cancel_clone.cancelled() => return Ok(()),
+            id = cancel_recv.recv() => id?
           };
           if build_id == id_clone {
             cancel_clone.cancel();
+            update.push_simple_log(
+              "cancel acknowledged",
+              "the build cancellation has been queud, it may still take some time",
+            );
+            update.finalize();
+            let id = update.id.clone();
+            if let Err(e) = update_update(update).await {
+              warn!("failed to update Update {id} | {e:#}");
+            }
             return Ok(());
           }
         }
@@ -224,14 +233,46 @@ impl Resolve<CancelBuild, User> for State {
     CancelBuild { build_id }: CancelBuild,
     user: User,
   ) -> anyhow::Result<CancelBuildResponse> {
-    let _: Build = self
+    let build: Build = self
       .get_resource_check_permissions(
         &build_id,
         &user,
         PermissionLevel::Execute,
       )
       .await?;
-    build_cancel_channel().sender.lock().await.send(build_id)?;
+
+    // check if theres already an open cancel build update
+    if db_client()
+      .await
+      .updates
+      .find_one(
+        doc! {
+          "operation": "CancelBuild",
+          "status": "InProgress",
+          "target.id": &build_id,
+        },
+        None,
+      )
+      .await
+      .context("failed to query updates")?
+      .is_some()
+    {
+      return Err(anyhow!("Build cancel is already in progress"));
+    }
+
+    let mut update =
+      make_update(&build, Operation::CancelBuild, &user);
+
+    update.in_progress();
+    update.id =
+      add_update(make_update(&build, Operation::CancelBuild, &user))
+        .await?;
+    build_cancel_channel()
+      .sender
+      .lock()
+      .await
+      .send((build_id, update))?;
+
     Ok(CancelBuildResponse {})
   }
 }

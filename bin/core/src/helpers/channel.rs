@@ -1,10 +1,11 @@
 use std::sync::OnceLock;
 
-use monitor_client::entities::update::UpdateListItem;
+use monitor_client::entities::update::{Update, UpdateListItem};
 use tokio::sync::{broadcast, Mutex};
 
-pub fn build_cancel_channel() -> &'static BroadcastChannel<String> {
-  static BUILD_CANCEL_CHANNEL: OnceLock<BroadcastChannel<String>> =
+/// A channel sending (build_id, update_id)
+pub fn build_cancel_channel() -> &'static BroadcastChannel<(String, Update)> {
+  static BUILD_CANCEL_CHANNEL: OnceLock<BroadcastChannel<(String, Update)>> =
     OnceLock::new();
   BUILD_CANCEL_CHANNEL.get_or_init(|| BroadcastChannel::new(100))
 }

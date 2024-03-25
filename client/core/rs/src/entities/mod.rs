@@ -364,6 +364,7 @@ pub enum Operation {
   UpdateBuild,
   DeleteBuild,
   RunBuild,
+  CancelBuild,
 
   // builder
   CreateBuilder,
