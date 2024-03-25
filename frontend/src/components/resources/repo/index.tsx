@@ -4,6 +4,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Icon } from "@radix-ui/react-select";
 import { RequiredResourceComponents } from "@types";
+import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
 import { GitBranch } from "lucide-react";
 import { useState } from "react";
@@ -14,7 +15,24 @@ const useRepo = (id?: string) =>
 
 const Name = ({ id }: { id: string }) => <>{useRepo(id)?.name}</>;
 
-export const Repo: RequiredResourceComponents = {
+export const RepoDashboard = () => {
+  const repo_count = useRead("ListRepos", {}).data?.length;
+  return (
+    <Link to="/repos/" className="w-full">
+      <Card>
+        <CardHeader className="justify-between">
+          <div>
+            <CardTitle>Repos</CardTitle>
+            <CardDescription>{repo_count} Total</CardDescription>
+          </div>
+          <GitBranch className="w-4 h-4" />
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+};
+
+export const RepoComponents: RequiredResourceComponents = {
   Name,
   Description: ({ id }) => <>{id}</>,
   Info: ({ id }) => <>{id}</>,
@@ -73,10 +91,7 @@ export const Repo: RequiredResourceComponents = {
             cell: ({ row }) => {
               const id = row.original.id;
               return (
-                <Link
-                  to={`/repos/${id}`}
-                  className="flex items-center gap-2"
-                >
+                <Link to={`/repos/${id}`} className="flex items-center gap-2">
                   <Icon id={id} />
                   <Name id={id} />
                 </Link>
@@ -90,4 +105,5 @@ export const Repo: RequiredResourceComponents = {
   },
   Actions: () => null,
   New: () => null,
+  Dashboard: RepoDashboard,
 };

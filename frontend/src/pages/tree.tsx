@@ -4,7 +4,7 @@ import { ServerIconComponent, ServerInfo } from "@components/resources/server";
 import { TagsFilter, TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead } from "@lib/hooks";
 import { Button } from "@ui/button";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import { Card, CardHeader, CardTitle } from "@ui/card";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -14,16 +14,18 @@ export const Tree = () => {
   return (
     <Page title="Tree" actions={<TagsFilter />}>
       <Section title="">
-        {servers?.map((server) => (
-          <Server key={server.id} id={server.id} />
-        ))}
+        <div className="grid gap-6">
+          {servers?.map((server) => (
+            <Server key={server.id} id={server.id} />
+          ))}
+        </div>
       </Section>
     </Page>
   );
 };
 
 const Server = ({ id }: { id: string }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const server = useRead("ListServers", {}).data?.find(
     (server) => server.id === id
   );
@@ -31,16 +33,13 @@ const Server = ({ id }: { id: string }) => {
     (deployment) => deployment.info.server_id === id
   );
   return (
-    <>
+    <div className="grid gap-2">
       <Card
         className="h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer"
         onClick={() => setOpen(!open)}
       >
         <CardHeader className="p-4 flex-row justify-between items-center">
-          <div>
-            <CardTitle>{server?.name}</CardTitle>
-            <CardDescription>Server</CardDescription>
-          </div>
+          <CardTitle>{server?.name}</CardTitle>
           <div className="flex gap-3 justify-between items-center">
             <TagsWithBadge tag_ids={server?.tags} />
             {server?.id && <ServerInfo id={server.id} showRegion={false} />}
@@ -53,6 +52,6 @@ const Server = ({ id }: { id: string }) => {
         </CardHeader>
       </Card>
       {open && <DeploymentTable deployments={deployments} />}
-    </>
+    </div>
   );
 };

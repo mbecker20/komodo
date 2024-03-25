@@ -8,6 +8,7 @@ import { Execution } from "@monitor/client/dist/types";
 import { Icon } from "@radix-ui/react-select";
 import { RequiredResourceComponents, UsableResource } from "@types";
 import { Button } from "@ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import {
@@ -376,7 +377,24 @@ export const ProcedureConfig = ({ id }: { id: string }) => {
     return <ExecutionConfig id={id} />;
 };
 
-export const Procedure: RequiredResourceComponents = {
+export const ProcedureDashboard = () => {
+  const procedure_count = useRead("ListProcedures", {}).data?.length;
+  return (
+    <Link to="/procedures/" className="w-full">
+      <Card>
+        <CardHeader className="justify-between">
+          <div>
+            <CardTitle>Procedures</CardTitle>
+            <CardDescription>{procedure_count} Total</CardDescription>
+          </div>
+          <Route className="w-4 h-4" />
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+};
+
+export const ProcedureComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useProcedure(id)?.name}</>,
   Description: ({ id }) => <>{useProcedure(id)?.info.procedure_type}</>,
   Info: ({ id }) => <>{id}</>,
@@ -435,4 +453,5 @@ export const Procedure: RequiredResourceComponents = {
     );
   },
   New: () => <NewProcedure />,
+  Dashboard: ProcedureDashboard,
 };

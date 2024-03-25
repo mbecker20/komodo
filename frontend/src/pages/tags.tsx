@@ -1,7 +1,6 @@
 import { Page } from "@components/layouts";
-import { ConfirmButton, CopyButton } from "@components/util";
+import { ConfirmButton } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { fmt_date } from "@lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -13,27 +12,49 @@ import {
 import { Button } from "@ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 import { useToast } from "@ui/use-toast";
-import { Trash, PlusCircle, Loader2, Check, Tag } from "lucide-react";
+import { Trash, PlusCircle, Loader2, Check } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@ui/input";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@ui/dropdown-menu";
 import { UpdateUser } from "@components/updates/details";
+import { DataTable } from "@ui/data-table";
 
 export const Tags = () => {
   return (
-    <Page title="Tags" actions={<CreateKey />}>
-      <TagList />
+    <Page title="Tags" actions={<CreateTag />}>
+      <TagCards />
     </Page>
   );
 };
 
-export const TagList = () => {
+export const TagTable = () => {
+  const tags = useRead("ListTags", {}).data;
+  return (
+    <DataTable
+      data={tags ?? []}
+      columns={[
+        {
+          header: "Name",
+          accessorKey: "name",
+        },
+        {
+          header: "Owner",
+          cell: ({ row }) =>
+            row.original.owner ? (
+              <UpdateUser user_id={row.original.owner} />
+            ) : (
+              "Unknown"
+            ),
+        },
+        {
+          id: "Delete",
+          cell: ({ row }) => <DeleteTag tag_id={row.original._id!.$oid} />,
+        },
+      ]}
+    />
+  );
+};
+
+export const TagCards = () => {
   const tags = useRead("ListTags", {}).data;
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -59,120 +80,55 @@ export const TagList = () => {
   );
 };
 
-const ONE_DAY_MS = 1000 * 60 * 60 * 24;
-
-type ExpiresOptions = "90 days" | "180 days" | "1 year" | "never";
-
-const CreateKey = () => {
+const CreateTag = () => {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [expires, setExpires] = useState<ExpiresOptions>("never");
-  const [submitted, setSubmitted] = useState<{ key: string; secret: string }>();
   const invalidate = useInvalidate();
-  const { mutate, isPending } = useWrite("CreateApiKey", {
-    onSuccess: ({ key, secret }) => {
-      invalidate(["ListApiKeys"]);
-      setSubmitted({ key, secret });
+  const { mutate, isPending } = useWrite("CreateTag", {
+    onSuccess: () => {
+      invalidate(["ListTags"]);
+      toast({ title: "Tag Created" });
+      setOpen(false);
+    },
+    onError: (e) => {
+      console.log("create tag error:" + e);
+      toast({ title: "Failed to create tag" });
+      setOpen(false);
     },
   });
-  const now = Date.now();
-  const expiresOptions: Record<ExpiresOptions, number> = {
-    "90 days": now + ONE_DAY_MS * 90,
-    "180 days": now + ONE_DAY_MS * 180,
-    "1 year": now + ONE_DAY_MS * 365,
-    never: 0,
-  };
-  const submit = () => mutate({ name, expires: expiresOptions[expires] });
-  const onOpenChange = (open: boolean) => {
-    setOpen(open);
-    if (!open) {
-      setName("");
-      setExpires("never");
-      setSubmitted(undefined);
-    }
-  };
+  const submit = () => mutate({ name });
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="items-center gap-2">
-          New Api Key <PlusCircle className="w-4 h-4" />
+          New Tag <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
-        {submitted ? (
-          <>
-            <DialogHeader>
-              <DialogTitle>Api Key Created</DialogTitle>
-            </DialogHeader>
-            <div className="py-8 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                Key
-                <Input className="w-72" value={submitted.key} disabled />
-                <CopyButton content={submitted.key} />
-              </div>
-              <div className="flex items-center justify-between">
-                Secret
-                <Input className="w-72" value={submitted.secret} disabled />
-                <CopyButton content={submitted.secret} />
-              </div>
-            </div>
-            <DialogFooter className="flex justify-end">
-              <Button className="gap-4" onClick={() => onOpenChange(false)}>
-                Confirm <Check className="w-4" />
-              </Button>
-            </DialogFooter>
-          </>
-        ) : (
-          <>
-            <DialogHeader>
-              <DialogTitle>Create Api Key</DialogTitle>
-            </DialogHeader>
-            <div className="py-8 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                Name
-                <Input
-                  className="w-72"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                Expiry
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="w-36 justify-between px-3">
-                      {expires}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-36" side="bottom">
-                    <DropdownMenuGroup>
-                      {Object.keys(expiresOptions)
-                        .filter((option) => option !== expires)
-                        .map((option) => (
-                          <DropdownMenuItem
-                            key={option}
-                            onClick={() => setExpires(option as any)}
-                          >
-                            {option}
-                          </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-            <DialogFooter className="flex justify-end">
-              <Button className="gap-4" onClick={submit} disabled={isPending}>
-                Submit
-                {isPending ? (
-                  <Loader2 className="w-4 animate-spin" />
-                ) : (
-                  <Check className="w-4" />
-                )}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
+        <DialogHeader>
+          <DialogTitle>Create Tag</DialogTitle>
+        </DialogHeader>
+        <div className="py-8 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            Name
+            <Input
+              className="w-72"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter className="flex justify-end">
+          <Button className="gap-4" onClick={submit} disabled={isPending}>
+            Submit
+            {isPending ? (
+              <Loader2 className="w-4 animate-spin" />
+            ) : (
+              <Check className="w-4" />
+            )}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

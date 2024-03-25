@@ -21,6 +21,7 @@ import { Link } from "react-router-dom";
 import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
+import { DeploymentsChart } from "@components/dashboard/deployments-chart";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
@@ -76,54 +77,6 @@ const Info = ({ id }: { id: string }) => {
       </Link>
     </>
   );
-};
-
-export const Deployment: RequiredResourceComponents = {
-  Name,
-  Description,
-  Info,
-  Icon,
-  Actions: ({ id }) => (
-    <div className="flex gap-4">
-      <RedeployContainer id={id} />
-      <StartOrStopContainer id={id} />
-      <RemoveContainer id={id} />
-    </div>
-  ),
-  Page: {
-    Logs: ({ id }) => <DeploymentLogs id={id} />,
-    Config: ({ id }) => <DeploymentConfig id={id} />,
-    Danger: ({ id }) => (
-      <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
-        <RenameDeployment id={id} />
-        <DeleteDeployment id={id} />
-      </Section>
-    ),
-  },
-  New: () => {
-    const { mutateAsync } = useWrite("CreateDeployment");
-    const [name, setName] = useState("");
-    return (
-      <NewResource
-        type="Deployment"
-        onSuccess={() => mutateAsync({ name, config: {} })}
-        enabled={!!name}
-      >
-        <div className="grid md:grid-cols-2">
-          Deployment Name
-          <Input
-            placeholder="deployment-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-      </NewResource>
-    );
-  },
-  Table: () => {
-    const deployments = useRead("ListDeployments", {}).data;
-    return <DeploymentTable deployments={deployments} />;
-  },
 };
 
 export const DeploymentTable = ({
@@ -218,4 +171,53 @@ export const DeploymentTable = ({
       ]}
     />
   );
+};
+
+export const DeploymentComponents: RequiredResourceComponents = {
+  Name,
+  Description,
+  Info,
+  Icon,
+  Actions: ({ id }) => (
+    <div className="flex gap-4">
+      <RedeployContainer id={id} />
+      <StartOrStopContainer id={id} />
+      <RemoveContainer id={id} />
+    </div>
+  ),
+  Page: {
+    Logs: ({ id }) => <DeploymentLogs id={id} />,
+    Config: ({ id }) => <DeploymentConfig id={id} />,
+    Danger: ({ id }) => (
+      <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
+        <RenameDeployment id={id} />
+        <DeleteDeployment id={id} />
+      </Section>
+    ),
+  },
+  New: () => {
+    const { mutateAsync } = useWrite("CreateDeployment");
+    const [name, setName] = useState("");
+    return (
+      <NewResource
+        type="Deployment"
+        onSuccess={() => mutateAsync({ name, config: {} })}
+        enabled={!!name}
+      >
+        <div className="grid md:grid-cols-2">
+          Deployment Name
+          <Input
+            placeholder="deployment-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+      </NewResource>
+    );
+  },
+  Table: () => {
+    const deployments = useRead("ListDeployments", {}).data;
+    return <DeploymentTable deployments={deployments} />;
+  },
+  Dashboard: DeploymentsChart,
 };

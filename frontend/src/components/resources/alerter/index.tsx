@@ -18,6 +18,7 @@ import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
 import { Link } from "react-router-dom";
 import { fmt_date_with_minutes } from "@lib/utils";
+import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -110,7 +111,54 @@ const CustomAlerterConfig = ({ id }: { id: string }) => {
   );
 };
 
-export const Alerter: RequiredResourceComponents = {
+const AlerterTable = () => {
+  const alerters = useRead("ListAlerters", {}).data;
+  return (
+    <DataTable
+      data={alerters ?? []}
+      columns={[
+        {
+          accessorKey: "id",
+          header: "Name",
+          cell: ({ row }) => {
+            const id = row.original.id;
+            return (
+              <Link to={`/alerters/${id}`} className="flex items-center gap-2">
+                <ResourceComponents.Alerter.Icon id={id} />
+                <ResourceComponents.Alerter.Name id={id} />
+              </Link>
+            );
+          },
+        },
+        { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+        {
+          header: "Created",
+          accessorFn: ({ created_at }) =>
+            fmt_date_with_minutes(new Date(created_at)),
+        },
+      ]}
+    />
+  );
+};
+
+export const AlerterDashboard = () => {
+  const alerters_count = useRead("ListAlerters", {}).data?.length;
+  return (
+    <Link to="/alerters/" className="w-full">
+      <Card>
+        <CardHeader className="justify-between">
+          <div>
+            <CardTitle>Alerters</CardTitle>
+            <CardDescription>{alerters_count} Total</CardDescription>
+          </div>
+          <AlarmClock className="w-4 h-4" />
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+};
+
+export const AlerterComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
   Icon: () => <AlarmClock className="w-4 h-4" />,
   Description: ({ id }) => <>{useAlerter(id)?.info.alerter_type} alerter</>,
@@ -123,37 +171,7 @@ export const Alerter: RequiredResourceComponents = {
     },
   },
   Actions: () => null,
-  Table: () => {
-    const alerters = useRead("ListAlerters", {}).data;
-    return (
-      <DataTable
-        data={alerters ?? []}
-        columns={[
-          {
-            accessorKey: "id",
-            header: "Name",
-            cell: ({ row }) => {
-              const id = row.original.id;
-              return (
-                <Link
-                  to={`/alerters/${id}`}
-                  className="flex items-center gap-2"
-                >
-                  <ResourceComponents.Alerter.Icon id={id} />
-                  <ResourceComponents.Alerter.Name id={id} />
-                </Link>
-              );
-            },
-          },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
-          {
-            header: "Created",
-            accessorFn: ({ created_at }) =>
-              fmt_date_with_minutes(new Date(created_at)),
-          },
-        ]}
-      />
-    );
-  },
+  Table: AlerterTable,
   New: () => <NewAlerter />,
+  Dashboard: AlerterDashboard,
 };

@@ -10,6 +10,9 @@ export interface RequiredResourceComponents {
 
   New: React.FC;
 
+  /// Used on the dashboard
+  Dashboard: React.FC;
+
   Name: IdComponent;
   Description: IdComponent;
   Info: IdComponent;

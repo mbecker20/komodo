@@ -1,20 +1,20 @@
 import { RequiredResourceComponents, UsableResource } from "@types";
-import { Alerter } from "./alerter";
+import { AlerterComponents } from "./alerter";
 import { BuildComponents } from "./build";
-import { Builder } from "./builder";
-import { Deployment } from "./deployment";
-import { Repo } from "./repo";
+import { BuilderComponents } from "./builder";
+import { DeploymentComponents } from "./deployment";
+import { RepoComponents } from "./repo";
 import { ServerComponents } from "./server";
-import { Procedure } from "./procedure";
+import { ProcedureComponents } from "./procedure";
 
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
 } = {
-  Alerter,
+  Alerter: AlerterComponents,
   Build: BuildComponents,
-  Builder,
-  Deployment,
-  Repo,
+  Builder: BuilderComponents,
+  Deployment: DeploymentComponents,
+  Repo: RepoComponents,
   Server: ServerComponents,
-  Procedure,
+  Procedure: ProcedureComponents,
 };

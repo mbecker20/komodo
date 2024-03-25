@@ -12,6 +12,8 @@ import { Hammer, History, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ResourceComponents } from "..";
+import { BuildChart } from "@components/dashboard/builds-chart";
+import { useTagsFilter } from "@components/tags";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -108,6 +110,68 @@ const Icon = ({ id }: { id: string }) => {
   return <Hammer className={className} />;
 };
 
+const BuildTable = () => {
+  const builds = useRead("ListBuilds", {}).data;
+  const tags = useTagsFilter();
+  return (
+    <DataTable
+      data={
+        builds?.filter((build) =>
+          tags.every((tag) => build.tags.includes(tag))
+        ) ?? []
+      }
+      columns={[
+        {
+          accessorKey: "id",
+          header: "Name",
+          cell: ({ row }) => {
+            const id = row.original.id;
+            return (
+              <Link to={`/builds/${id}`} className="flex items-center gap-2">
+                <ResourceComponents.Build.Icon id={id} />
+                <ResourceComponents.Build.Name id={id} />
+              </Link>
+            );
+          },
+        },
+        {
+          header: "Version",
+          accessorFn: ({ info }) => {
+            return fmt_version(info.version);
+          },
+        },
+        // {
+        //   header: "Deployments",
+        //   cell: ({ row }) => {
+        //     const deps = useRead("ListDeployments", {
+        //       query: { specific: { build_ids: [row.original.id] } },
+        //     })?.data?.map((d) => (
+        //       <Link to={`/deployments/${d.id}`}>{d.name}</Link>
+        //     ));
+        //     return <div className="flex items-center gap-2">{deps}</div>;
+        //   },
+        // },
+        { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+        {
+          header: "Last Built",
+          accessorFn: ({ info: { last_built_at } }) => {
+            if (last_built_at > 0) {
+              return fmt_date_with_minutes(new Date(last_built_at));
+            } else {
+              return "never";
+            }
+          },
+        },
+        {
+          header: "Created",
+          accessorFn: ({ created_at }) =>
+            fmt_date_with_minutes(new Date(created_at)),
+        },
+      ]}
+    />
+  );
+};
+
 export const BuildComponents: RequiredResourceComponents = {
   Name,
   Description: ({ id }) => <>{fmt_version(useBuild(id)?.info.version)}</>,
@@ -145,61 +209,7 @@ export const BuildComponents: RequiredResourceComponents = {
       />
     );
   },
-  Table: () => {
-    const builds = useRead("ListBuilds", {}).data;
-    return (
-      <DataTable
-        data={builds ?? []}
-        columns={[
-          {
-            accessorKey: "id",
-            header: "Name",
-            cell: ({ row }) => {
-              const id = row.original.id;
-              return (
-                <Link to={`/builds/${id}`} className="flex items-center gap-2">
-                  <ResourceComponents.Build.Icon id={id} />
-                  <ResourceComponents.Build.Name id={id} />
-                </Link>
-              );
-            },
-          },
-          {
-            header: "Version",
-            accessorFn: ({ info }) => {
-              return fmt_version(info.version);
-            },
-          },
-          // {
-          //   header: "Deployments",
-          //   cell: ({ row }) => {
-          //     const deps = useRead("ListDeployments", {
-          //       query: { specific: { build_ids: [row.original.id] } },
-          //     })?.data?.map((d) => (
-          //       <Link to={`/deployments/${d.id}`}>{d.name}</Link>
-          //     ));
-          //     return <div className="flex items-center gap-2">{deps}</div>;
-          //   },
-          // },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
-          {
-            header: "Last Built",
-            accessorFn: ({ info: { last_built_at } }) => {
-              if (last_built_at > 0) {
-                return fmt_date_with_minutes(new Date(last_built_at));
-              } else {
-                return "never";
-              }
-            },
-          },
-          {
-            header: "Created",
-            accessorFn: ({ created_at }) =>
-              fmt_date_with_minutes(new Date(created_at)),
-          },
-        ]}
-      />
-    );
-  },
-  New: () => <NewBuild />,
+  Table: BuildTable,
+  New: NewBuild,
+  Dashboard: BuildChart,
 };

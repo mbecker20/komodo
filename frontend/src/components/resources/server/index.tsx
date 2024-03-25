@@ -1,17 +1,26 @@
-import { useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { cn, fmt_date_with_minutes } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
-import { MapPin, Cpu, MemoryStick, Database, ServerIcon } from "lucide-react";
+import {
+  MapPin,
+  Cpu,
+  MemoryStick,
+  Database,
+  ServerIcon,
+  AlertTriangle,
+} from "lucide-react";
 import { ServerStats } from "./stats";
 import { ConfigInner } from "@components/config";
 import { useState } from "react";
-import { NewResource } from "@components/layouts";
+import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
 import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { ResourceComponents } from "..";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
+import { DeleteServer, RenameServer } from "./actions";
+import { ServersChart } from "@components/dashboard/servers-chart";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -72,9 +81,15 @@ export const ServerIconComponent = ({ id }: { id?: string }) => {
 };
 
 const ServerConfig = ({ id }: { id: string }) => {
+  const invalidate = useInvalidate();
   const config = useRead("GetServer", { id }).data?.config;
   const [update, set] = useState<Partial<Types.ServerConfig>>({});
-  const { mutate } = useWrite("UpdateServer");
+  const { mutate } = useWrite("UpdateServer", {
+    onSuccess: () => {
+      // In case of disabling to resolve unreachable alert
+      invalidate(["ListAlerts"]);
+    },
+  });
   if (!config) return null;
 
   return (
@@ -140,6 +155,64 @@ const DeploymentCountOnServer = ({ id }: { id: string }) => {
   return <>{data?.length ?? 0}</>;
 };
 
+const ServerTable = () => {
+  const servers = useRead("ListServers", {}).data;
+  const tags = useTagsFilter();
+  return (
+    <DataTable
+      // onRowClick={({ id }) => nav(`/servers/${id}`)}
+      data={
+        servers?.filter((server) =>
+          tags.every((tag) => server.tags.includes(tag))
+        ) ?? []
+      }
+      columns={[
+        {
+          header: "Name",
+          accessorKey: "id",
+          cell: ({
+            row: {
+              original: { id },
+            },
+          }) => {
+            return (
+              <Link to={`/servers/${id}`} className="flex gap-2">
+                <ResourceComponents.Server.Icon id={id} />
+                <ResourceComponents.Server.Name id={id} />
+              </Link>
+            );
+          },
+        },
+        // {
+        //   header: "Description",
+        //   accessorKey: "description",
+        // },
+
+        {
+          header: "Deployments",
+          cell: ({ row }) => <DeploymentCountOnServer id={row.original.id} />,
+        },
+        { header: "Region", accessorKey: "info.region" },
+        {
+          header: "Tags",
+          cell: ({ row }) => {
+            return (
+              <div className="flex gap-1">
+                <TagsWithBadge tag_ids={row.original.tags} />
+              </div>
+            );
+          },
+        },
+        {
+          header: "Created",
+          accessorFn: ({ created_at }) =>
+            fmt_date_with_minutes(new Date(created_at)),
+        },
+      ]}
+    />
+  );
+};
+
 export const ServerComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
   Description: ({ id }) => <>{useServer(id)?.info.status}</>,
@@ -149,63 +222,14 @@ export const ServerComponents: RequiredResourceComponents = {
   Page: {
     Stats: ({ id }) => <ServerStats server_id={id} />,
     Config: ({ id }) => <ServerConfig id={id} />,
+    Danger: ({ id }) => (
+      <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
+        <RenameServer id={id} />
+        <DeleteServer id={id} />
+      </Section>
+    ),
   },
   New: () => <NewServer />,
-  Table: () => {
-    const servers = useRead("ListServers", {}).data;
-    const tags = useTagsFilter();
-    return (
-      <DataTable
-        // onRowClick={({ id }) => nav(`/servers/${id}`)}
-        data={
-          servers?.filter((server) =>
-            tags.every((tag) => server.tags.includes(tag))
-          ) ?? []
-        }
-        columns={[
-          {
-            header: "Name",
-            accessorKey: "id",
-            cell: ({
-              row: {
-                original: { id },
-              },
-            }) => {
-              return (
-                <Link to={`/servers/${id}`} className="flex gap-2">
-                  <ResourceComponents.Server.Icon id={id} />
-                  <ResourceComponents.Server.Name id={id} />
-                </Link>
-              );
-            },
-          },
-          // {
-          //   header: "Description",
-          //   accessorKey: "description",
-          // },
-
-          {
-            header: "Deployments",
-            cell: ({ row }) => <DeploymentCountOnServer id={row.original.id} />,
-          },
-          { header: "Region", accessorKey: "info.region" },
-          {
-            header: "Tags",
-            cell: ({ row }) => {
-              return (
-                <div className="flex gap-1">
-                  <TagsWithBadge tag_ids={row.original.tags} />
-                </div>
-              );
-            },
-          },
-          {
-            header: "Created",
-            accessorFn: ({ created_at }) =>
-              fmt_date_with_minutes(new Date(created_at)),
-          },
-        ]}
-      />
-    );
-  },
+  Table: ServerTable,
+  Dashboard: ServersChart,
 };

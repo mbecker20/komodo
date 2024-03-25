@@ -1,11 +1,12 @@
 import { ConfigInner } from "@components/config";
 import { InputList, ResourceSelector } from "@components/config/util";
 import { NewResource } from "@components/layouts";
+import { useTagsFilter } from "@components/tags";
 import { useRead, useWrite } from "@lib/hooks";
 import { fmt_date_with_minutes } from "@lib/utils";
 import { Types } from "@monitor/client";
-import { Icon } from "@radix-ui/react-select";
 import { RequiredResourceComponents } from "@types";
+import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import {
@@ -145,7 +146,67 @@ const NewBuilder = () => {
 };
 const Name = ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>;
 
-export const Builder: RequiredResourceComponents = {
+const BuilderDashboard = () => {
+  const builders_count = useRead("ListBuilders", {}).data?.length;
+  return (
+    <Link to="/builders/" className="w-full">
+      <Card>
+        <CardHeader className="justify-between">
+          <div>
+            <CardTitle>Builders</CardTitle>
+            <CardDescription>{builders_count} Total</CardDescription>
+          </div>
+          <Factory className="w-4 h-4" />
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+};
+
+const BuilderTable = () => {
+  const tags = useTagsFilter();
+  const builders = useRead("ListBuilders", {}).data;
+  return (
+    <DataTable
+      data={
+        builders?.filter((builder) =>
+          tags.every((tag) => builder.tags.includes(tag))
+        ) ?? []
+      }
+      columns={[
+        {
+          accessorKey: "id",
+          header: "Name",
+          cell: ({ row }) => {
+            const id = row.original.id;
+            return (
+              <Link to={`/builders/${id}`} className="flex items-center gap-2">
+                <Factory className="w-4 h-4" />
+                <Name id={id} />
+              </Link>
+            );
+          },
+        },
+        {
+          header: "Provider",
+          accessorKey: "info.provider",
+        },
+        {
+          header: "Instance Type",
+          accessorKey: "info.instance_type",
+        },
+        { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+        {
+          header: "Created",
+          accessorFn: ({ created_at }) =>
+            fmt_date_with_minutes(new Date(created_at)),
+        },
+      ]}
+    />
+  );
+};
+
+export const BuilderComponents: RequiredResourceComponents = {
   Name,
   Description: ({ id }) => <>{id}</>,
   Info: ({ id }) => (
@@ -168,38 +229,8 @@ export const Builder: RequiredResourceComponents = {
       if (config?.type === "Server") return <ServerBuilderConfig id={id} />;
     },
   },
-  Table: () => {
-    const alerters = useRead("ListAlerters", {}).data;
-    return (
-      <DataTable
-        data={alerters ?? []}
-        columns={[
-          {
-            accessorKey: "id",
-            header: "Name",
-            cell: ({ row }) => {
-              const id = row.original.id;
-              return (
-                <Link
-                  to={`/builders/${id}`}
-                  className="flex items-center gap-2"
-                >
-                  <Icon id={id} />
-                  <Name id={id} />
-                </Link>
-              );
-            },
-          },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
-          {
-            header: "Created",
-            accessorFn: ({ created_at }) =>
-              fmt_date_with_minutes(new Date(created_at)),
-          },
-        ]}
-      />
-    );
-  },
+  Table: BuilderTable,
   Actions: () => null,
   New: () => <NewBuilder />,
+  Dashboard: BuilderDashboard,
 };
