@@ -111,10 +111,10 @@ const ConfigLayout = <T extends Types.Resource<unknown, unknown>["config"]>({
         >
           <History className="w-4 h-4" />
         </Button>
-        <ConfirmUpdate
+        {Object.keys(content).length && <ConfirmUpdate
           content={JSON.stringify(content, null, 2)}
           onConfirm={onConfirm}
-        />
+        />}
       </div>
     }
   >
