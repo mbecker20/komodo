@@ -7,6 +7,10 @@ cmd = "node ./client/core/ts/generate_types.mjs"
 path = "frontend"
 cmd = "yarn dev"
 
+[build-frontend]
+path = "frontend"
+cmd = "yarn build"
+
 [monrun-sync]
 path = "bin/monrun"
 cmd = "cargo run -- sync"

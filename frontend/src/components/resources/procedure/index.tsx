@@ -52,7 +52,7 @@ const NewProcedure = ({ parent }: { parent?: Types.Procedure }) => {
           id: parent._id.$oid,
           config: {
             ...parent.config,
-            data: [...parent.config.data, _id?.$oid],
+            data: [...parent.config.data, { enabled: true, id: _id!.$oid }],
           },
         });
       }
@@ -363,7 +363,7 @@ const SequenceConfig = ({ id }: { id: string }) => {
       <pre>{JSON.stringify(procedure?.config, null, 2)}</pre>
       <div>
         {procedure.config.data.map((p) => (
-          <ProcedureConfig id={p} key={p} />
+          <ProcedureConfig id={p.id} key={p.id} />
         ))}
       </div>
     </div>
