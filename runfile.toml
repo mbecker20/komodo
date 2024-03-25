@@ -3,6 +3,10 @@ description = "generates typescript types for the ts client"
 path = "."
 cmd = "node ./client/core/ts/generate_types.mjs"
 
+[build-ts-client]
+path = "client/core/ts"
+cmd = "yarn build"
+
 [start-frontend]
 path = "frontend"
 cmd = "yarn dev"

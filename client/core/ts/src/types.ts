@@ -665,6 +665,7 @@ export enum Operation {
 	UpdateBuild = "UpdateBuild",
 	DeleteBuild = "DeleteBuild",
 	RunBuild = "RunBuild",
+	CancelBuild = "CancelBuild",
 	CreateBuilder = "CreateBuilder",
 	UpdateBuilder = "UpdateBuilder",
 	DeleteBuilder = "DeleteBuilder",
