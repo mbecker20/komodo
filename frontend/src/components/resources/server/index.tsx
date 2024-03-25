@@ -21,6 +21,7 @@ import { ResourceComponents } from "..";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { DeleteServer, RenameServer } from "./actions";
 import { ServersChart } from "@components/dashboard/servers-chart";
+import { DeploymentTable } from "../deployment";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -221,6 +222,10 @@ export const ServerComponents: RequiredResourceComponents = {
   Icon: ServerIconComponent,
   Page: {
     Stats: ({ id }) => <ServerStats server_id={id} />,
+    Deployments: ({ id }) => {
+      const deployments = useRead("ListDeployments", {}).data?.filter(deployment => deployment.info.server_id === id);
+      return <DeploymentTable deployments={deployments} />
+    },
     Config: ({ id }) => <ServerConfig id={id} />,
     Danger: ({ id }) => (
       <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
