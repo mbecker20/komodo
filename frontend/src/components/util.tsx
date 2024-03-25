@@ -20,7 +20,7 @@ import {
   DialogContent,
   DialogFooter,
 } from "@ui/dialog";
-import { toast } from "@ui/use-toast";
+import { toast, useToast } from "@ui/use-toast";
 import { RESOURCE_TARGETS, cn } from "@lib/utils";
 import {
   useInvalidate,
@@ -432,5 +432,36 @@ export const UserDropdown = () => {
         <Logout />
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+};
+
+export const CopyButton = ({ content }: { content: string | undefined }) => {
+  const { toast } = useToast();
+  const [copied, set] = useState(false);
+
+  useEffect(() => {
+    if (copied) {
+      toast({ title: `Copied "${content}"` });
+      const timeout = setTimeout(() => set(false), 3000);
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [content, copied, toast]);
+
+  return (
+    <Button
+      className="shrink-0"
+      size="icon"
+      variant="outline"
+      onClick={() => {
+        if (!content) return;
+        navigator.clipboard.writeText(content);
+        set(true);
+      }}
+      disabled={!content}
+    >
+      {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+    </Button>
   );
 };
