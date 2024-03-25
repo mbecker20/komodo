@@ -4,6 +4,8 @@ import {
   Box,
   Check,
   Copy,
+  FolderTree,
+  Key,
   Loader2,
   LogOut,
   Moon,
@@ -311,13 +313,21 @@ export const ResourceTypeDropdown = () => {
   const type = useResourceParamType();
   const Components = ResourceComponents[type];
 
+  const [icon, title] = type
+    ? [<Components.Icon />, type + "s"]
+    : location.pathname === "/tree"
+    ? [<FolderTree className="w-4 h-4" />, "Tree"]
+    : location.pathname === "/keys"
+    ? [<Key className="w-4 h-4" />, "Api Keys"]
+    : [<Box className="w-4 h-4" />, "Dashboard"];
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="w-36 justify-between px-3">
           <div className="flex items-center gap-2">
-            {type ? <Components.Icon /> : <Box className="w-4 h-4" />}
-            {type ? type + "s" : "Dashboard"}
+            {icon}
+            {title}
           </div>
         </Button>
       </DropdownMenuTrigger>
@@ -327,6 +337,12 @@ export const ResourceTypeDropdown = () => {
             <DropdownMenuItem className="flex items-center gap-2">
               <Box className="w-4 h-4" />
               Dashboard
+            </DropdownMenuItem>
+          </Link>
+          <Link to="/tree">
+            <DropdownMenuItem className="flex items-center gap-2">
+              <FolderTree className="w-4 h-4" />
+              Tree
             </DropdownMenuItem>
           </Link>
           {RESOURCE_TARGETS.map((rt) => {

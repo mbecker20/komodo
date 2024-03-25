@@ -150,6 +150,7 @@ const CreateKey = () => {
                         .filter((option) => option !== expires)
                         .map((option) => (
                           <DropdownMenuItem
+                            key={option}
                             onClick={() => setExpires(option as any)}
                           >
                             {option}
