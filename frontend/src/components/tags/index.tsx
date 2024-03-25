@@ -124,6 +124,8 @@ export const TagsWithBadge = ({
 };
 
 export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
+  const { toast } = useToast();
+
   const { type, id } = target;
   const resource = useRead(`List${type}s`, {}).data?.find((d) => d.id === id);
 
@@ -137,6 +139,7 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
   const { mutate: update } = useWrite("UpdateTagsOnResource", {
     onSuccess: () => {
       inv([`List${type}s`]);
+      toast({ title: `Added tag ${input}` });
       setOpen(false);
     },
   });
@@ -157,7 +160,6 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
     if (open) setInput("");
   }, [open]);
 
-  const { toast } = useToast();
   const create_tag = async () => {
     if (!input) return toast({ title: "Must provide tag name in input" });
     const tag = await create({ name: input });
@@ -180,10 +182,19 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
       <PopoverContent className="w-[200px] p-0" sideOffset={12}>
         <Command>
           <CommandInput
-            placeholder="Search Tags"
+            placeholder="Search / Create"
             className="h-9"
             value={input}
             onValueChange={setInput}
+            onKeyDown={(e) => {
+              if (
+                e.key === "Enter" &&
+                // check that no tags still match
+                all_tags?.every((tag) => !tag.name.includes(input))
+              ) {
+                create_tag();
+              }
+            }}
           />
           <CommandEmpty
             className="justify-between cursor-pointer hover:bg-accent m-1"

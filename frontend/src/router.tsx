@@ -8,6 +8,7 @@ import { Keys } from "@pages/keys";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/tree";
 import { Tags } from "@pages/tags";
+import { ResourceUpdates } from "@pages/resource_update";
 
 const router = createBrowserRouter([
   {
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
         children: [
           { path: "", element: <Resources /> },
           { path: ":id", element: <Resource /> },
+          { path: ":id/updates", element: <ResourceUpdates /> }
         ],
       },
     ],
