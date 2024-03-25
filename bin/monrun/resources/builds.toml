@@ -1,19 +1,59 @@
 [[build]]
 name = "monitor-core-v1"
 description = "the prod build for monitor"
-tags = ["monitor", "prod"]
+tags = ["monitor", "prod", "api"]
+config.builder_id = "mogh-builder"
 config.repo = "mbecker20/monitor"
 config.branch = "next"
 config.build_path = "."
-config.dockerfile_path = "Dockerfile"
+config.dockerfile_path = "bin/core/Dockerfile"
+config.docker_account = "mbecker2020"
+
+[[build]]
+name = "monitor-frontend-v1"
+description = "the prod frontend build for monitor"
+tags = ["monitor", "prod", "frontend"]
+config.builder_id = "mogh-builder"
+config.repo = "mbecker20/monitor"
+config.branch = "next"
+config.build_path = "."
+config.dockerfile_path = "frontend/Dockerfile"
 config.docker_account = "mbecker2020"
 
 [[build]]
 name = "monitor-core-v1-dev"
 description = "the dev build for monitor"
-tags = ["monitor", "dev"]
+tags = ["monitor", "dev", "api"]
+config.builder_id = "mogh-builder"
 config.repo = "mbecker20/monitor"
 config.branch = "next"
 config.build_path = "."
-config.dockerfile_path = "Dockerfile"
+config.dockerfile_path = "bin/core/Dockerfile"
 config.docker_account = "mbecker2020"
+
+[[build]]
+name = "monitor-frontend-v1-dev"
+description = "the prod frontend build for monitor"
+tags = ["monitor", "prod", "frontend"]
+config.builder_id = "mogh-builder"
+config.repo = "mbecker20/monitor"
+config.branch = "next"
+config.build_path = "."
+config.dockerfile_path = "frontend/Dockerfile"
+config.docker_account = "mbecker2020"
+
+[[builder]]
+name = "mogh-builder"
+description = "the builder for the mogh images"
+config.type = "Aws"
+config.params.region = "us-east-2"
+config.params.instance_type = "c5.2xlarge"
+config.params.volume_gb = 20
+config.params.ami_id = "ami-01c8bdba63708cde6"
+config.params.subnet_id = "subnet-02ae5ad480eacc4bc"
+config.params.key_pair_name = "mogh-key"
+config.params.assign_public_ip = true
+config.params.use_public_ip = false
+config.params.security_group_ids = ["sg-049d98c819f9ace58", "sg-006c0ca638af8eb44"]
+config.params.github_accounts = ["mbecker20"]
+config.params.docker_accounts = ["mbecker2020"]

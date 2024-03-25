@@ -84,7 +84,6 @@ impl Resolve<RunBuild, User> for State {
             id = cancel_recv.recv() => id?
           };
           if build_id == id_clone {
-            cancel_clone.cancel();
             update.push_simple_log(
               "cancel acknowledged",
               "the build cancellation has been queud, it may still take some time",
@@ -94,6 +93,7 @@ impl Resolve<RunBuild, User> for State {
             if let Err(e) = update_update(update).await {
               warn!("failed to update Update {id} | {e:#}");
             }
+            cancel_clone.cancel();
             return Ok(());
           }
         }
@@ -263,10 +263,16 @@ impl Resolve<CancelBuild, User> for State {
     let mut update =
       make_update(&build, Operation::CancelBuild, &user);
 
+    update.push_simple_log(
+      "cancel triggered",
+      "the build cancel has been triggered",
+    );
     update.in_progress();
+
     update.id =
       add_update(make_update(&build, Operation::CancelBuild, &user))
         .await?;
+
     build_cancel_channel()
       .sender
       .lock()

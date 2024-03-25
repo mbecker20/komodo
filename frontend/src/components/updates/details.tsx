@@ -14,10 +14,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@ui/card";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { useRead } from "@lib/hooks";
 import { fmt_duration, fmt_version } from "@lib/utils";
 import { ResourceComponents } from "@components/resources";
+import { Link } from "react-router-dom";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data;
@@ -33,6 +34,8 @@ export const UpdateDetails = ({
   id: string;
   children: ReactNode;
 }) => {
+  const [open, setOpen] = useState(false);
+
   const update = useRead("GetUpdate", { id }).data;
   if (!update) return null;
 
@@ -44,7 +47,7 @@ export const UpdateDetails = ({
   if (!Components) return null;
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="overflow-y-auto w-[100vw] md:w-[75vw] lg:w-[50vw]">
         <SheetHeader className="mb-4">
@@ -61,10 +64,12 @@ export const UpdateDetails = ({
               <UpdateUser user_id={update.operator} />
             </div>
             <div className="flex gap-4">
-              <div className="flex items-center gap-2">
-                <Components.Icon id={update.target.id} />
-                <Components.Name id={update.target.id} />
-              </div>
+              <Link to={`/${update.target.type.toLowerCase()}s/${update.target.id}`}>
+                <div className="flex items-center gap-2" onClick={() => setOpen(false)}>
+                  <Components.Icon id={update.target.id} />
+                  <Components.Name id={update.target.id} />
+                </div>
+              </Link>
               {update.version && (
                 <div className="flex items-center gap-2">
                   <Milestone className="w-4 h-4" />
