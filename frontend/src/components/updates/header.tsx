@@ -10,11 +10,8 @@ import { Button } from "@ui/button";
 import { Calendar, User } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
 import { ResourceComponents } from "@components/resources";
-import { cn, fmt_version } from "@lib/utils";
+import { cn, fmt_date, fmt_version } from "@lib/utils";
 import { Types } from "@monitor/client";
-
-const fmt_date = (d: Date) =>
-  `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${d.getMinutes()}`;
 
 export const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
   const Components =

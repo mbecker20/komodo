@@ -20,7 +20,7 @@ export const RESOURCE_TARGETS: UsableResource[] = [
   "Procedure",
 ];
 
-export const fmt_update_date = (d: Date) => {
+export const fmt_date = (d: Date) => {
   return `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${d.getMinutes()}`;
 };
 

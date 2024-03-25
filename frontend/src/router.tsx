@@ -4,6 +4,7 @@ import { Dashboard } from "@pages/dashboard";
 import { Login } from "@pages/login";
 import { Resource } from "@pages/resource";
 import { Resources } from "@pages/resources";
+import { Keys }  from "@pages/keys";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
@@ -12,6 +13,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "", element: <Dashboard /> },
+      { path: "keys", element: <Keys /> },
       {
         path: ":type",
         children: [

@@ -13,7 +13,7 @@ import {
 import { Link } from "react-router-dom";
 import { Types } from "@monitor/client";
 import { Section } from "@components/layouts";
-import { fmt_update_date, fmt_version } from "@lib/utils";
+import { fmt_date, fmt_version } from "@lib/utils";
 import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateStatus } from "@monitor/client/dist/types";
 
@@ -57,7 +57,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
         <div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="w-4" />
-            {fmt_update_date(new Date(update.start_ts))}
+            {fmt_date(new Date(update.start_ts))}
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <User className="w-4" />

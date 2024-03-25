@@ -50,6 +50,7 @@ export const Layout = () => {
               <WsStatusIndicator />
               <HeaderUpdates />
               <ThemeToggle />
+              {/* <UserSettings /> */}
               <Logout />
             </div>
           </div>

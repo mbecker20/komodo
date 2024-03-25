@@ -7,7 +7,9 @@ import {
   Loader2,
   LogOut,
   Moon,
+  Settings,
   SunMedium,
+  User,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import {
@@ -35,7 +37,6 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { ResourceComponents } from "./resources";
-import { WsStatusIndicator } from "@lib/socket";
 
 export const WithLoading = ({
   children,
@@ -95,6 +96,16 @@ export const ThemeToggle = () => {
 export const ActionButton = forwardRef<
   HTMLButtonElement,
   {
+    variant?:
+      | "link"
+      | "default"
+      | "destructive"
+      | "outline"
+      | "secondary"
+      | "ghost"
+      | null
+      | undefined;
+    size?: "default" | "sm" | "lg" | "icon" | null | undefined;
     title: string;
     icon: ReactNode;
     disabled?: boolean;
@@ -102,17 +113,23 @@ export const ActionButton = forwardRef<
     onClick?: () => void;
     loading?: boolean;
   }
->(({ title, icon, disabled, className, loading, onClick }, ref) => (
-  <Button
-    variant="outline"
-    className={cn("flex items-center justify-between w-[150px]", className)}
-    onClick={onClick}
-    disabled={disabled}
-    ref={ref}
-  >
-    {title} {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
-  </Button>
-));
+>(
+  (
+    { variant, size, title, icon, disabled, className, loading, onClick },
+    ref
+  ) => (
+    <Button
+      size={size}
+      variant={variant || "outline"}
+      className={cn("flex items-center justify-between w-[150px]", className)}
+      onClick={onClick}
+      disabled={disabled}
+      ref={ref}
+    >
+      {title} {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
+    </Button>
+  )
+);
 
 export const ActionWithDialog = ({
   name,
@@ -235,12 +252,24 @@ export const CopyResource = ({
 };
 
 export const ConfirmButton = ({
+  variant,
+  size,
   title,
   icon,
   disabled,
   loading,
   onClick,
 }: {
+  variant?:
+    | "link"
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | null
+    | undefined;
+  size?: "default" | "sm" | "lg" | "icon" | null | undefined;
   title: string;
   icon: ReactNode;
   onClick: () => void;
@@ -252,6 +281,8 @@ export const ConfirmButton = ({
   return (
     <>
       <ActionButton
+        variant={variant}
+        size={size}
         title={confirmed ? "Confirm" : title}
         icon={confirmed ? <Check className="w-4 h-4" /> : icon}
         disabled={disabled}
@@ -309,6 +340,12 @@ export const ResourceTypeDropdown = () => {
               </Link>
             );
           })}
+          <Link to="/keys">
+            <DropdownMenuItem className="flex items-center gap-2">
+              <Box className="w-4 h-4" />
+              Api Keys
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -374,18 +411,26 @@ export const Logout = () => (
   </Button>
 );
 
-export const UserDropdown = () => {
-  const user = useRead("GetUser", {}).data;
+export const UserSettings = () => (
+  <Link to="/settings">
+    <Button variant="ghost" size="icon">
+      <Settings className="w-4 h-4" />
+    </Button>
+  </Link>
+);
 
+export const UserDropdown = () => {
+  // const user = useRead("GetUser", {}).data;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="gap-2" variant="outline">
-          <WsStatusIndicator />
-          {user?.username}
+        <Button variant="ghost" size="icon">
+          <User className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent></DropdownMenuContent>
+      <DropdownMenuContent>
+        <Logout />
+      </DropdownMenuContent>
     </DropdownMenu>
   );
 };
