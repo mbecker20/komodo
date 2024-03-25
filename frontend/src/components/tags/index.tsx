@@ -2,7 +2,6 @@ import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
-import { Checkbox } from "@ui/checkbox";
 import {
   Command,
   CommandEmpty,
@@ -20,7 +19,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
-import { Pen, PlusCircle } from "lucide-react";
+import { PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
@@ -68,11 +67,34 @@ export const TagsFilter = () => {
   );
 };
 
-export const ResourceTags = ({ target }: { target: TargetExcludingSystem }) => {
+export const ResourceTags = ({
+  target,
+  click_to_delete,
+}: {
+  target: TargetExcludingSystem;
+  click_to_delete?: boolean;
+}) => {
+  const inv = useInvalidate();
   const { type, id } = target;
   const resource = useRead(`List${type}s`, {}).data?.find((d) => d.id === id);
+  const { mutate } = useWrite("UpdateTagsOnResource", {
+    onSuccess: () => {
+      inv([`List${type}s`]);
+    },
+  });
 
-  return <TagsWithBadge tag_ids={resource?.tags} />;
+  return (
+    <TagsWithBadge
+      tag_ids={resource?.tags}
+      onBadgeClick={(tag_id) => {
+        if (!click_to_delete) return;
+        mutate({
+          target,
+          tags: resource!.tags.filter((tag) => tag !== tag_id),
+        });
+      }}
+    />
+  );
 };
 
 export const TagsWithBadge = ({
@@ -101,47 +123,48 @@ export const TagsWithBadge = ({
   );
 };
 
-export const ManageTags = ({ target }: { target: TargetExcludingSystem }) => {
+export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
   const { type, id } = target;
   const resource = useRead(`List${type}s`, {}).data?.find((d) => d.id === id);
 
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const [tags, setTags] = useState(resource?.tags);
 
   const all_tags = useRead("ListTags", {}).data;
 
   const inv = useInvalidate();
+
   const { mutate: update } = useWrite("UpdateTagsOnResource", {
-    onSuccess: () => inv([`List${type}s`]),
+    onSuccess: () => {
+      inv([`List${type}s`]);
+      setOpen(false);
+    },
   });
 
   const { mutateAsync: create } = useWrite("CreateTag", {
     onSuccess: () => inv([`ListTags`]),
   });
 
-  useEffect(() => {
-    if (!open && !!resource && !!tags) update({ target, tags });
-  }, [target, open, resource, tags, update]);
+  // useEffect(() => {
+  //   if (!open && !!resource && !!tags) update({ target, tags });
+  // }, [target, open, resource, tags, update]);
 
-  useEffect(() => {
-    if (resource && !tags) setTags(resource.tags);
-  }, [resource, tags]);
+  // useEffect(() => {
+  //   if (resource && !tags) setTags(resource.tags);
+  // }, [resource, tags]);
 
   useEffect(() => {
     if (open) setInput("");
   }, [open]);
 
-  const update_tags = (tag: Types.CustomTag) => {
-    const exists = tags?.some((id) => id === tag._id?.$oid);
-    if (exists) return setTags((t) => t?.filter((id) => id !== tag._id?.$oid));
-    else return setTags((t) => [...(t ?? []), tag._id?.$oid as string]);
-  };
-
   const { toast } = useToast();
   const create_tag = async () => {
     if (!input) return toast({ title: "Must provide tag name in input" });
-    update_tags(await create({ name: input }));
+    const tag = await create({ name: input });
+    update({
+      target,
+      tags: [...(resource?.tags ?? []), tag._id!.$oid],
+    });
     setOpen(false);
   };
 
@@ -149,12 +172,12 @@ export const ManageTags = ({ target }: { target: TargetExcludingSystem }) => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger>
-        <Badge className="flex gap-2" variant="outline">
-          Edit Tags <Pen className="w-3" />
-        </Badge>
+      <PopoverTrigger asChild>
+        <Button variant="secondary" className="px-2 py-0 h-auto">
+          <PlusCircle className="w-3" />
+        </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[200px] p-0" sideOffset={12}>
         <Command>
           <CommandInput
             placeholder="Search Tags"
@@ -170,17 +193,23 @@ export const ManageTags = ({ target }: { target: TargetExcludingSystem }) => {
             <PlusCircle className="w-4" />
           </CommandEmpty>
           <CommandGroup>
-            {all_tags?.map((tag) => (
-              <CommandItem
-                key={tag._id?.$oid}
-                value={tag.name}
-                onSelect={() => update_tags(tag)}
-                className="flex items-center justify-between"
-              >
-                {tag.name}
-                <Checkbox checked={tags?.includes(tag._id?.$oid as string)} />
-              </CommandItem>
-            ))}
+            {all_tags
+              ?.filter((tag) => !resource?.tags.includes(tag._id!.$oid))
+              .map((tag) => (
+                <CommandItem
+                  key={tag._id?.$oid}
+                  value={tag.name}
+                  onSelect={() =>
+                    update({
+                      target,
+                      tags: [...(resource?.tags ?? []), tag._id!.$oid],
+                    })
+                  }
+                  className="flex items-center justify-between"
+                >
+                  <div className="p-1">{tag.name}</div>
+                </CommandItem>
+              ))}
           </CommandGroup>
         </Command>
       </PopoverContent>
