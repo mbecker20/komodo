@@ -6,7 +6,7 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::sync::Mutex;
 
 use crate::{
-  auth::random_string,
+  auth::{random_string, STATE_PREFIX_LENGTH},
   config::{core_config, CoreConfig, OauthCredentials},
 };
 
@@ -67,8 +67,15 @@ impl GithubOauthClient {
     .into()
   }
 
-  pub async fn get_login_redirect_url(&self) -> String {
-    let state = random_string(40);
+  pub async fn get_login_redirect_url(
+    &self,
+    redirect: Option<String>,
+  ) -> String {
+    let state_prefix = random_string(STATE_PREFIX_LENGTH);
+    let state = match redirect {
+      Some(redirect) => format!("{state_prefix}{redirect}"),
+      None => state_prefix,
+    };
     let redirect_url = format!(
       "https://github.com/login/oauth/authorize?state={state}&client_id={}&redirect_uri={}&scope={}",
       self.client_id, self.redirect_uri, self.scopes

@@ -11,7 +11,7 @@ use crate::{config::core_config, db::db_client};
 
 use self::client::github_oauth_client;
 
-use super::jwt::jwt_client;
+use super::{jwt::jwt_client, RedirectQuery, STATE_PREFIX_LENGTH};
 
 pub mod client;
 
@@ -19,14 +19,15 @@ pub fn router() -> Router {
   Router::new()
     .route(
       "/login",
-      get(|| async {
-        let redirect_to = github_oauth_client()
-          .as_ref()
-          // OK: the router is only mounted in case that the client is populated
-          .unwrap()
-          .get_login_redirect_url()
-          .await;
-        Redirect::to(&redirect_to)
+      get(|Query(query): Query<RedirectQuery>| async {
+        Redirect::to(
+          &github_oauth_client()
+            .as_ref()
+            // OK: the router is only mounted in case that the client is populated
+            .unwrap()
+            .get_login_redirect_url(query.redirect)
+            .await,
+        )
       }),
     )
     .route(
@@ -95,8 +96,12 @@ async fn callback(
     }
   };
   let exchange_token = jwt_client().create_exchange_token(jwt).await;
-  Ok(Redirect::to(&format!(
-    "{}?token={exchange_token}",
-    core_config().host
-  )))
+  let redirect = &query.state[STATE_PREFIX_LENGTH..];
+  let redirect_url = if redirect.is_empty() {
+    format!("{}?token={exchange_token}", core_config().host)
+  } else {
+    let splitter = if redirect.contains('?') { '&' } else { '?' };
+    format!("{}{splitter}token={exchange_token}", redirect)
+  };
+  Ok(Redirect::to(&redirect_url))
 }

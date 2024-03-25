@@ -12,6 +12,7 @@ use monitor_client::entities::{monitor_timestamp, user::User};
 use mungos::mongodb::bson::doc;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use resolver_api::Resolver;
+use serde::Deserialize;
 use serror::{AppError, AuthError};
 use uuid::Uuid;
 
@@ -31,6 +32,13 @@ use self::{
   google::client::google_oauth_client, jwt::jwt_client,
   jwt::JwtClaims,
 };
+
+const STATE_PREFIX_LENGTH: usize = 20;
+
+#[derive(Deserialize)]
+pub struct RedirectQuery {
+  pub redirect: Option<String>, 
+}
 
 pub async fn auth_request(
   headers: HeaderMap,

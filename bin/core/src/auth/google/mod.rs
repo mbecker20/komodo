@@ -12,7 +12,7 @@ use crate::{config::core_config, db::db_client};
 
 use self::client::google_oauth_client;
 
-use super::jwt::jwt_client;
+use super::{jwt::jwt_client, RedirectQuery, STATE_PREFIX_LENGTH};
 
 pub mod client;
 
@@ -20,13 +20,13 @@ pub fn router() -> Router {
   Router::new()
     .route(
       "/login",
-      get(|| async {
+      get(|Query(query): Query<RedirectQuery>| async move {
         Redirect::to(
           &google_oauth_client()
             .as_ref()
             // OK: its not mounted unless the client is populated
             .unwrap()
-            .get_login_redirect_url()
+            .get_login_redirect_url(query.redirect)
             .await,
         )
       }),
@@ -54,21 +54,15 @@ async fn callback(
   if let Some(error) = query.error {
     return Err(anyhow!("auth error from google: {error}"));
   }
-  if !client
-    .check_state(
-      &query
-        .state
-        .ok_or(anyhow!("callback query does not contain state"))?,
-    )
-    .await
-  {
+  let state = query
+    .state
+    .context("callback query does not contain state")?;
+  if !client.check_state(&state).await {
     return Err(anyhow!("state mismatch"));
   }
   let token = client
     .get_access_token(
-      &query
-        .code
-        .ok_or(anyhow!("callback query does not contain code"))?,
+      &query.code.context("callback query does not contain code")?,
     )
     .await?;
   let google_user = client.get_google_user(&token.id_token)?;
@@ -119,8 +113,12 @@ async fn callback(
     }
   };
   let exchange_token = jwt_client().create_exchange_token(jwt).await;
-  Ok(Redirect::to(&format!(
-    "{}?token={exchange_token}",
-    core_config().host
-  )))
+  let redirect = &state[STATE_PREFIX_LENGTH..];
+  let redirect_url = if redirect.is_empty() {
+    format!("{}?token={exchange_token}", core_config().host)
+  } else {
+    let splitter = if redirect.contains('?') { '&' } else { '?' };
+    format!("{}{splitter}token={exchange_token}", redirect)
+  };
+  Ok(Redirect::to(&redirect_url))
 }

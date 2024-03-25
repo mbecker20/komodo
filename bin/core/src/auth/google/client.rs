@@ -8,7 +8,7 @@ use serde_json::Value;
 use tokio::sync::Mutex;
 
 use crate::{
-  auth::random_string,
+  auth::{random_string, STATE_PREFIX_LENGTH},
   config::{core_config, CoreConfig, OauthCredentials},
 };
 
@@ -69,8 +69,15 @@ impl GoogleOauthClient {
     .into()
   }
 
-  pub async fn get_login_redirect_url(&self) -> String {
-    let state = random_string(40);
+  pub async fn get_login_redirect_url(
+    &self,
+    redirect: Option<String>,
+  ) -> String {
+    let state_prefix = random_string(STATE_PREFIX_LENGTH);
+    let state = match redirect {
+      Some(redirect) => format!("{state_prefix}{redirect}"),
+      None => state_prefix,
+    };
     let redirect_url = format!(
       "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&state={state}&client_id={}&redirect_uri={}&scope={}",
       self.client_id, self.redirect_uri, self.scopes

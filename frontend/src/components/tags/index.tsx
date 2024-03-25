@@ -10,7 +10,13 @@ import {
   CommandInput,
   CommandItem,
 } from "@ui/command";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
@@ -23,8 +29,8 @@ const tagsAtom = atom<string[]>([]);
 
 export const useTagsFilter = () => {
   const [tags, _] = useAtom(tagsAtom);
-  return tags
-}
+  return tags;
+};
 
 export const TagsFilter = () => {
   const [tags, setTags] = useAtom(tagsAtom);
@@ -60,7 +66,7 @@ export const TagsFilter = () => {
       </DropdownMenu>
     </div>
   );
-}
+};
 
 export const ResourceTags = ({ target }: { target: TargetExcludingSystem }) => {
   const { type, id } = target;
