@@ -22,7 +22,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ResourceComponents } from "..";
 import { BuildChart } from "@components/dashboard/builds-chart";
-import { useTagsFilter } from "@components/tags";
+import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { Textarea } from "@ui/textarea";
 import { useToast } from "@ui/use-toast";
 
@@ -180,9 +180,7 @@ const BuildTable = () => {
         },
         {
           header: "Version",
-          accessorFn: ({ info }) => {
-            return fmt_version(info.version);
-          },
+          accessorFn: ({ info }) => fmt_version(info.version),
         },
         // {
         //   header: "Deployments",
@@ -195,7 +193,6 @@ const BuildTable = () => {
         //     return <div className="flex items-center gap-2">{deps}</div>;
         //   },
         // },
-        { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
         {
           header: "Last Built",
           accessorFn: ({ info: { last_built_at } }) => {
@@ -204,6 +201,16 @@ const BuildTable = () => {
             } else {
               return "never";
             }
+          },
+        },
+        {
+          header: "Tags",
+          cell: ({ row }) => {
+            return (
+              <div className="flex gap-1">
+                <TagsWithBadge tag_ids={row.original.tags} />
+              </div>
+            );
           },
         },
         {
