@@ -54,6 +54,9 @@ export const Omnibar = () => {
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
+      console.log(e);
+      const target = e.target as any;
+      if (target.matches("input") || target.matches("textarea")) return;
       if (e.shiftKey && e.key === "S") {
         e.preventDefault();
         set(true);

@@ -57,6 +57,7 @@ export type ReadResponses = {
   GetBuildActionState: Types.GetBuildActionStateResponse;
   GetBuildMonthlyStats: Types.GetBuildMonthlyStatsResponse;
   GetBuildVersions: Types.GetBuildVersionsResponse;
+  ListDockerOrganizations: Types.ListDockerOrganizationsResponse;
 
   // ==== REPO ====
   GetReposSummary: Types.GetReposSummaryResponse;
@@ -180,6 +181,7 @@ export type ExecuteResponses = {
 
   // ==== BUILD ====
   RunBuild: Types.Update;
+  CancelBuild: Types.CancelBuildResponse;
 
   // ==== REPO ====
   CloneRepo: Types.Update;

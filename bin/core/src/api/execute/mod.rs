@@ -38,6 +38,7 @@ enum ExecuteRequest {
 
   // ==== BUILD ====
   RunBuild(RunBuild),
+  CancelBuild(CancelBuild),
 
   // ==== REPO ====
   CloneRepo(CloneRepo),

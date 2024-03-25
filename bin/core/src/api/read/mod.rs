@@ -82,6 +82,8 @@ enum ReadRequest {
   GetBuildActionState(GetBuildActionState),
   GetBuildMonthlyStats(GetBuildMonthlyStats),
   GetBuildVersions(GetBuildVersions),
+  #[to_string_resolver]
+  ListDockerOrganizations(ListDockerOrganizations),
 
   // ==== REPO ====
   GetReposSummary(GetReposSummary),

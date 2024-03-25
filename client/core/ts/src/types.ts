@@ -124,6 +124,8 @@ export interface BuildVersionResponseItem {
 
 export type GetBuildVersionsResponse = BuildVersionResponseItem[];
 
+export type ListDockerOrganizationsResponse = string[];
+
 export type BuilderConfig = 
 	| { type: "Server", params: ServerBuilderConfig }
 	| { type: "Aws", params: AwsBuilderConfig };
@@ -308,9 +310,9 @@ export type GetUsersResponse = User[];
 export type ProcedureConfig = 
 	| { type: "Execution", data: Execution }
 	/** Vec<ProcedureId> */
-	| { type: "Sequence", data: string[] }
+	| { type: "Sequence", data: EnabledId[] }
 	/** Vec<ProdecureId> */
-	| { type: "Parallel", data: string[] };
+	| { type: "Parallel", data: EnabledId[] };
 
 export type Procedure = Resource<ProcedureConfig, undefined>;
 
@@ -729,6 +731,7 @@ export type _PartialSlackAlerterConfig = Partial<SlackAlerterConfig>;
 /** Passing empty Vec is the same as not filtering by that field */
 export interface ResourceQuery<T> {
 	names?: string[];
+	/** Pass Vec of tag ids */
 	tags?: string[];
 	specific?: T;
 }
@@ -1030,6 +1033,9 @@ export interface GetBuildVersions {
 	major?: number;
 	minor?: number;
 	patch?: number;
+}
+
+export interface ListDockerOrganizations {
 }
 
 export interface GetBuilder {
@@ -1642,6 +1648,12 @@ export interface CloneArgs {
 	github_account?: string;
 }
 
+/** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
+export interface EnabledId {
+	id: string;
+	enabled: boolean;
+}
+
 export interface ServerHealth {
 	cpu: SeverityLevel;
 	mem: SeverityLevel;
@@ -1666,6 +1678,7 @@ export type ExecuteRequest =
 	| { type: "StopAllContainers", params: StopAllContainers }
 	| { type: "RemoveContainer", params: RemoveContainer }
 	| { type: "RunBuild", params: RunBuild }
+	| { type: "CancelBuild", params: CancelBuild }
 	| { type: "CloneRepo", params: CloneRepo }
 	| { type: "PullRepo", params: PullRepo }
 	| { type: "RunProcedure", params: RunProcedure };
@@ -1710,6 +1723,7 @@ export type ReadRequest =
 	| { type: "GetBuildActionState", params: GetBuildActionState }
 	| { type: "GetBuildMonthlyStats", params: GetBuildMonthlyStats }
 	| { type: "GetBuildVersions", params: GetBuildVersions }
+	| { type: "ListDockerOrganizations", params: ListDockerOrganizations }
 	| { type: "GetReposSummary", params: GetReposSummary }
 	| { type: "GetRepo", params: GetRepo }
 	| { type: "ListRepos", params: ListRepos }

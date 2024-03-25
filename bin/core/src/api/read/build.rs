@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::OnceLock};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -21,9 +21,10 @@ use mungos::{
     options::FindOptions,
   },
 };
-use resolver_api::Resolve;
+use resolver_api::{Resolve, ResolveToString};
 
 use crate::{
+  config::core_config,
   db::db_client,
   helpers::resource::StateResource,
   state::{action_states, State},
@@ -233,5 +234,24 @@ impl Resolve<GetBuildVersions, User> for State {
     .map(|(version, ts)| BuildVersionResponseItem { version, ts })
     .collect();
     Ok(versions)
+  }
+}
+
+fn docker_organizations() -> &'static String {
+  static DOCKER_ORGANIZATIONS: OnceLock<String> = OnceLock::new();
+  DOCKER_ORGANIZATIONS.get_or_init(|| {
+    serde_json::to_string(&core_config().docker_organizations)
+      .expect("failed to serialize docker organizations")
+  })
+}
+
+#[async_trait]
+impl ResolveToString<ListDockerOrganizations, User> for State {
+  async fn resolve_to_string(
+    &self,
+    ListDockerOrganizations {}: ListDockerOrganizations,
+    _: User,
+  ) -> anyhow::Result<String> {
+    Ok(docker_organizations().clone())
   }
 }

@@ -154,3 +154,16 @@ pub struct BuildVersionResponseItem {
   pub version: Version,
   pub ts: I64,
 }
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListDockerOrganizationsResponse)]
+pub struct ListDockerOrganizations {}
+
+#[typeshare]
+pub type ListDockerOrganizationsResponse = Vec<String>;

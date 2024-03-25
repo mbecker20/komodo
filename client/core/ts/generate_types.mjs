@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 console.log("generating typescript types...");
 
 const gen_command =
-  "RUST_BACKTRACE=1 typeshare . --lang=typescript --output-file=./client/ts/src/types.ts";
+  "RUST_BACKTRACE=1 typeshare . --lang=typescript --output-file=./client/core/ts/src/types.ts";
 
 exec(gen_command, (error, stdout, stderr) => {
 	if (error) {

@@ -100,8 +100,8 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
         },
         environment: {
           environment: {
-            skip_secret_interp: true,
             environment: (vars, set) => <EnvVars vars={vars ?? []} set={set} />,
+            skip_secret_interp: true,
           },
         },
       }}

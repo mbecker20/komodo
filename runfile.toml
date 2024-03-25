@@ -1,7 +1,7 @@
 [gen-ts-types]
 description = "generates typescript types for the ts client"
 path = "."
-cmd = "node ./client/ts/generate_types.mjs"
+cmd = "node ./client/core/ts/generate_types.mjs"
 
 [start-frontend]
 path = "frontend"

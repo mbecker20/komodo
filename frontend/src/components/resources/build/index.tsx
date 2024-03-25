@@ -1,19 +1,30 @@
 import { ConfigInner } from "@components/config";
-import { ResourceSelector, AccountSelector } from "@components/config/util";
+import {
+  ResourceSelector,
+  AccountSelector,
+  ConfigItem,
+} from "@components/config/util";
 import { NewResource } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
-import { fmt_date_with_minutes, fmt_version } from "@lib/utils";
+import {
+  env_to_text,
+  fmt_date_with_minutes,
+  fmt_version,
+  text_to_env,
+} from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
-import { Hammer, History, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { Ban, Hammer, History, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ResourceComponents } from "..";
 import { BuildChart } from "@components/dashboard/builds-chart";
 import { useTagsFilter } from "@components/tags";
+import { Textarea } from "@ui/textarea";
+import { useToast } from "@ui/use-toast";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -39,8 +50,33 @@ const NewBuild = () => {
   );
 };
 
+export const BuildArgs = ({
+  vars,
+  set,
+}: {
+  vars: Types.EnvironmentVar[];
+  set: (input: Partial<Types.BuildConfig>) => void;
+}) => {
+  const [args, setArgs] = useState(env_to_text(vars));
+  useEffect(() => {
+    !!args && set({ build_args: text_to_env(args) });
+  }, [args, set]);
+
+  return (
+    <ConfigItem label="Build Args" className="flex-col gap-4 items-start">
+      <Textarea
+        className="min-h-[300px]"
+        placeholder="VARIABLE=value"
+        value={args}
+        onChange={(e) => setArgs(e.target.value)}
+      />
+    </ConfigItem>
+  );
+};
+
 export const BuildConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuild", { id }).data?.config;
+  // const orgs = useRead("GetAccounts")
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
   const { mutate } = useWrite("UpdateBuild");
 
@@ -65,6 +101,8 @@ export const BuildConfig = ({ id }: { id: string }) => {
                 />
               </div>
             ),
+          },
+          git: {
             repo: true,
             branch: true,
             github_account: (account, set) => (
@@ -77,8 +115,6 @@ export const BuildConfig = ({ id }: { id: string }) => {
               />
             ),
           },
-        },
-        docker: {
           docker: {
             build_path: true,
             dockerfile_path: true,
@@ -93,6 +129,14 @@ export const BuildConfig = ({ id }: { id: string }) => {
             ),
             use_buildx: true,
             // docker_organization,
+          },
+        },
+        "Build Args": {
+          "Build Args": {
+            build_args: (vars, set) => (
+              <BuildArgs vars={vars ?? []} set={set} />
+            ),
+            skip_secret_interp: true,
           },
         },
       }}
@@ -192,22 +236,53 @@ export const BuildComponents: RequiredResourceComponents = {
     else return <Hammer className="w-4 h-4" />;
   },
   Actions: ({ id }) => {
+    const { toast } = useToast();
     const building = useRead("GetBuildActionState", { id }).data?.building;
-    const { mutate, isPending } = useExecute("RunBuild");
-    return (
-      <ConfirmButton
-        title={building ? "Building" : "Build"}
-        icon={
-          building ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Hammer className="h-4 w-4" />
-          )
-        }
-        onClick={() => mutate({ build_id: id })}
-        disabled={building || isPending}
-      />
+    const { mutate: run_mutate, isPending: runPending } = useExecute(
+      "RunBuild",
+      {
+        onMutate: () => {
+          toast({ title: "Run Build Sent" });
+        },
+      }
     );
+    const { mutate: cancel_mutate, isPending: cancelPending } = useExecute(
+      "CancelBuild",
+      {
+        onMutate: () => {
+          toast({ title: "Cancel Build Sent" });
+        },
+        onSuccess: () => {
+          toast({ title: "Build Cancelled" });
+        },
+      }
+    );
+    if (building) {
+      return (
+        <ConfirmButton
+          title="Cancel Build"
+          variant="destructive"
+          icon={<Ban className="h-4 w-4" />}
+          onClick={() => cancel_mutate({ build_id: id })}
+          disabled={cancelPending}
+        />
+      );
+    } else {
+      return (
+        <ConfirmButton
+          title="Build"
+          icon={
+            runPending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Hammer className="h-4 w-4" />
+            )
+          }
+          onClick={() => run_mutate({ build_id: id })}
+          disabled={runPending}
+        />
+      );
+    }
   },
   Table: BuildTable,
   New: NewBuild,
