@@ -85,7 +85,33 @@ impl Resolve<DeleteTag, User> for State {
     user: User,
   ) -> anyhow::Result<CustomTag> {
     let tag = get_tag_check_owner(&id, &user).await?;
+
+    tokio::try_join!(
+      <State as StateResource<Server>>::remove_tag_from_resources(
+        self, &id,
+      ),
+      <State as StateResource<Deployment>>::remove_tag_from_resources(
+        self, &id,
+      ),
+      <State as StateResource<Build>>::remove_tag_from_resources(
+        self, &id,
+      ),
+      <State as StateResource<Repo>>::remove_tag_from_resources(
+        self, &id,
+      ),
+      <State as StateResource<Builder>>::remove_tag_from_resources(
+        self, &id,
+      ),
+      <State as StateResource<Alerter>>::remove_tag_from_resources(
+        self, &id,
+      ),
+      <State as StateResource<Procedure>>::remove_tag_from_resources(
+        self, &id,
+      ),
+    )?;
+
     delete_one_by_id(&db_client().await.tags, &id, None).await?;
+
     Ok(tag)
   }
 }

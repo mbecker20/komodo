@@ -11,11 +11,18 @@ import { Input } from "@ui/input";
 import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { ResourceComponents } from "..";
+import { TagsWithBadge, useTagsFilter } from "@components/tags";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
 
-const ServerInfo = ({ id }: { id: string }) => {
+export const ServerInfo = ({
+  id,
+  showRegion = true,
+}: {
+  id: string;
+  showRegion?: boolean;
+}) => {
   const server = useServer(id);
   const stats = useRead(
     "GetBasicSystemStats",
@@ -29,10 +36,12 @@ const ServerInfo = ({ id }: { id: string }) => {
   ).data;
   return (
     <>
-      <div className="flex items-center gap-2">
-        <MapPin className="w-4 h-4" />
-        {useServer(id)?.info.region}
-      </div>
+      {showRegion && (
+        <div className="flex items-center gap-2">
+          <MapPin className="w-4 h-4" />
+          {useServer(id)?.info.region}
+        </div>
+      )}
       <div className="flex gap-4 text-muted-foreground">
         <div className="flex gap-2 items-center">
           <Cpu className="w-4 h-4" />
@@ -51,7 +60,7 @@ const ServerInfo = ({ id }: { id: string }) => {
   );
 };
 
-const ServerIconComponent = ({ id }: { id?: string }) => {
+export const ServerIconComponent = ({ id }: { id?: string }) => {
   const status = useServer(id)?.info.status;
 
   const color = () => {
@@ -144,13 +153,15 @@ export const ServerComponents: RequiredResourceComponents = {
   New: () => <NewServer />,
   Table: () => {
     const servers = useRead("ListServers", {}).data;
-    const all_tags = useRead("ListTags", {}).data;
-
-    // const nav = useNavigate();
+    const tags = useTagsFilter();
     return (
       <DataTable
         // onRowClick={({ id }) => nav(`/servers/${id}`)}
-        data={servers ?? []}
+        data={
+          servers?.filter((server) =>
+            tags.every((tag) => server.tags.includes(tag))
+          ) ?? []
+        }
         columns={[
           {
             header: "Name",
@@ -172,18 +183,22 @@ export const ServerComponents: RequiredResourceComponents = {
           //   header: "Description",
           //   accessorKey: "description",
           // },
-          {
-            header: "Tags",
-            accessorFn: ({ tags }) =>
-              tags
-                .map((t) => all_tags?.find((tg) => tg._id?.$oid === t)?.name)
-                .join(", "),
-          },
+
           {
             header: "Deployments",
             cell: ({ row }) => <DeploymentCountOnServer id={row.original.id} />,
           },
           { header: "Region", accessorKey: "info.region" },
+          {
+            header: "Tags",
+            cell: ({ row }) => {
+              return (
+                <div className="flex gap-1">
+                  <TagsWithBadge tag_ids={row.original.tags} />
+                </div>
+              );
+            },
+          },
           {
             header: "Created",
             accessorFn: ({ created_at }) =>

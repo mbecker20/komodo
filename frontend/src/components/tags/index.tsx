@@ -1,6 +1,7 @@
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
+import { Button } from "@ui/button";
 import { Checkbox } from "@ui/checkbox";
 import {
   Command,
@@ -9,31 +10,85 @@ import {
   CommandInput,
   CommandItem,
 } from "@ui/command";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
+import { atom, useAtom } from "jotai";
 import { Pen, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
 
+const tagsAtom = atom<string[]>([]);
+
+export const useTagsFilter = () => {
+  const [tags, _] = useAtom(tagsAtom);
+  return tags
+}
+
+export const TagsFilter = () => {
+  const [tags, setTags] = useAtom(tagsAtom);
+  const all_tags = useRead("ListTags", {}).data;
+  return (
+    <div className="flex gap-4">
+      <TagsWithBadge
+        className="cursor-pointer"
+        tag_ids={tags}
+        onBadgeClick={(tag_id) => setTags(tags.filter((id) => id !== tag_id))}
+      />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="flex gap-2">
+            Filter by Tag <PlusCircle className="w-4 h-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-36" side="bottom">
+          <DropdownMenuGroup>
+            {all_tags
+              ?.filter((tag) => !tags.includes(tag._id!.$oid))
+              .map((tag) => (
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  key={tag.name}
+                  onClick={() => setTags([...tags, tag._id!.$oid])}
+                >
+                  {tag.name}
+                </DropdownMenuItem>
+              ))}
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 export const ResourceTags = ({ target }: { target: TargetExcludingSystem }) => {
   const { type, id } = target;
   const resource = useRead(`List${type}s`, {}).data?.find((d) => d.id === id);
 
-  return <TagsWithBadge resource_tags={resource?.tags} />;
+  return <TagsWithBadge tag_ids={resource?.tags} />;
 };
 
 export const TagsWithBadge = ({
-  resource_tags,
+  tag_ids,
+  onBadgeClick,
+  className,
 }: {
-  resource_tags?: string[];
+  tag_ids?: string[];
+  onBadgeClick?: (tag_id: string) => void;
+  className?: string;
 }) => {
   const all_tags = useRead("ListTags", {}).data;
   return (
     <>
-      {resource_tags?.map((tag_id) => (
-        <Badge key={tag_id} variant="secondary" className="px-1.5 py-0.5">
-          {all_tags?.find((t) => t._id?.$oid === tag_id)?.name}
+      {tag_ids?.map((tag_id) => (
+        <Badge
+          key={tag_id}
+          variant="secondary"
+          className={className ?? "px-1.5 py-0.5 cursor-pointer"}
+          onClick={() => onBadgeClick && onBadgeClick(tag_id)}
+        >
+          {all_tags?.find((t) => t._id?.$oid === tag_id)?.name ?? "unknown"}
         </Badge>
       ))}
     </>

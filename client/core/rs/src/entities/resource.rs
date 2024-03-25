@@ -67,6 +67,7 @@ pub struct ResourceListItem<Info> {
 pub struct ResourceQuery<T: Default> {
   #[serde(default)]
   pub names: Vec<String>,
+  /// Pass Vec of tag ids
   #[serde(default)]
   pub tags: Vec<String>,
   #[serde(default)]

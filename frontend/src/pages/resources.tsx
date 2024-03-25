@@ -1,5 +1,6 @@
 import { Page, Section, ResourceCard } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
+import { TagsFilter, useTagsFilter } from "@components/tags";
 import { useRead, useResourceParamType } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
@@ -9,7 +10,9 @@ export const Resources = () => {
   const type = useResourceParamType();
   const Components = ResourceComponents[type];
 
-  const list = useRead(`List${type}s`, {}).data;
+  const tags = useTagsFilter();
+
+  const list = useRead(`List${type}s`, { query: { tags } }).data;
 
   const [search, set] = useState("");
   const [view, setView] = useState<"cards" | "table">("table");
@@ -18,20 +21,25 @@ export const Resources = () => {
     <Page
       title={`${type}s`}
       actions={
-        <div className="flex gap-4">
-          <Button
-            variant="outline"
-            onClick={() => setView((v) => (v === "cards" ? "table" : "cards"))}
-          >
-            show as {view === "cards" ? "table" : "cards"}
-          </Button>
-          <Input
-            value={search}
-            onChange={(e) => set(e.target.value)}
-            placeholder="search..."
-            className="w-96"
-          />
-          <Components.New />
+        <div className="grid gap-4 justify-items-end">
+          <div className="flex gap-4">
+            <Button
+              variant="outline"
+              onClick={() =>
+                setView((v) => (v === "cards" ? "table" : "cards"))
+              }
+            >
+              show as {view === "cards" ? "table" : "cards"}
+            </Button>
+            <Input
+              value={search}
+              onChange={(e) => set(e.target.value)}
+              placeholder="search..."
+              className="w-96"
+            />
+            <Components.New />
+          </div>
+          <TagsFilter />
         </div>
       }
     >

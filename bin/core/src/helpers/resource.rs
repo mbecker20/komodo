@@ -194,6 +194,23 @@ pub trait StateResource<
     .await?;
     Ok(())
   }
+
+  async fn remove_tag_from_resources(
+    &self,
+    tag_id: &str,
+  ) -> anyhow::Result<()> {
+    self
+      .coll()
+      .await
+      .update_many(
+        doc! {},
+        doc! { "$pull": { "tags": tag_id } },
+        None,
+      )
+      .await
+      .context("failed to remove tag from resources")?;
+    Ok(())
+  }
 }
 
 #[async_trait]

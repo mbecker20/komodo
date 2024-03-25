@@ -20,7 +20,7 @@ import { DeploymentLogs } from "./logs";
 import { Link } from "react-router-dom";
 import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
-import { TagsWithBadge } from "@components/tags";
+import { TagsWithBadge, useTagsFilter } from "@components/tags";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
@@ -122,87 +122,100 @@ export const Deployment: RequiredResourceComponents = {
   },
   Table: () => {
     const deployments = useRead("ListDeployments", {}).data;
-    return (
-      <DataTable
-        data={deployments ?? []}
-        columns={[
-          {
-            accessorKey: "id",
-            header: "Name",
-            cell: ({ row }) => {
-              const id = row.original.id;
-              return (
-                <Link
-                  to={`/deployments/${id}`}
-                  className="flex items-center gap-2"
-                >
-                  <ResourceComponents.Deployment.Icon id={id} />
-                  <ResourceComponents.Deployment.Name id={id} />
-                </Link>
-              );
-            },
-          },
-          // {
-          //   header: "Description",
-          //   accessorKey: "description",
-          // },
-
-          {
-            header: "Server",
-            cell: ({ row }) => {
-              const id = row.original.info.server_id;
-              return (
-                <Link to={`/servers/${id}`} className="flex items-center gap-2">
-                  <ResourceComponents.Server.Icon id={id} />
-                  <ResourceComponents.Server.Name id={id} />
-                </Link>
-              );
-            },
-          },
-          // {
-          //   header: "Build",
-          //   cell: ({ row }) => {
-          //     const id = row.original.info.build_id;
-          //     if (!id) return null;
-          //     return (
-          //       <Link to={`/builds/${id}`} className="flex items-center gap-2">
-          //         <ResourceComponents.Build.Icon id={id} />
-          //         <ResourceComponents.Build.Name id={id} />
-          //       </Link>
-          //     );
-          //   },
-          // },
-          {
-            accessorKey: "info.image",
-            header: "Image",
-          },
-          {
-            header: "Status",
-            cell: ({ row }) => {
-              const status = row.original.info.status;
-              if (!status) return null;
-              const state = row.original.info.state;
-              const color = deployment_state_text_color(state);
-              return <div className={color}>{status}</div>;
-            },
-          },
-          {
-            header: "Tags",
-            cell: ({ row }) => {
-              return (
-                <div className="flex gap-1">
-                  <TagsWithBadge resource_tags={row.original.tags} />
-                </div>
-              );
-            }
-          },
-          {
-            header: "Created",
-            accessorFn: ({ created_at }) =>
-              fmt_date_with_minutes(new Date(created_at)),
-          },
-        ]}
-      />
-    );
+    return <DeploymentTable deployments={deployments} />;
   },
+};
+
+export const DeploymentTable = ({
+  deployments,
+}: {
+  deployments: Types.DeploymentListItem[] | undefined;
+}) => {
+  const tags = useTagsFilter();
+  return (
+    <DataTable
+      data={
+        deployments?.filter((deployment) =>
+          tags.every((tag) => deployment.tags.includes(tag))
+        ) ?? []
+      }
+      columns={[
+        {
+          accessorKey: "id",
+          header: "Name",
+          cell: ({ row }) => {
+            const id = row.original.id;
+            return (
+              <Link
+                to={`/deployments/${id}`}
+                className="flex items-center gap-2"
+              >
+                <ResourceComponents.Deployment.Icon id={id} />
+                <ResourceComponents.Deployment.Name id={id} />
+              </Link>
+            );
+          },
+        },
+        // {
+        //   header: "Description",
+        //   accessorKey: "description",
+        // },
+
+        {
+          header: "Server",
+          cell: ({ row }) => {
+            const id = row.original.info.server_id;
+            return (
+              <Link to={`/servers/${id}`} className="flex items-center gap-2">
+                <ResourceComponents.Server.Icon id={id} />
+                <ResourceComponents.Server.Name id={id} />
+              </Link>
+            );
+          },
+        },
+        // {
+        //   header: "Build",
+        //   cell: ({ row }) => {
+        //     const id = row.original.info.build_id;
+        //     if (!id) return null;
+        //     return (
+        //       <Link to={`/builds/${id}`} className="flex items-center gap-2">
+        //         <ResourceComponents.Build.Icon id={id} />
+        //         <ResourceComponents.Build.Name id={id} />
+        //       </Link>
+        //     );
+        //   },
+        // },
+        {
+          accessorKey: "info.image",
+          header: "Image",
+        },
+        {
+          header: "Status",
+          cell: ({ row }) => {
+            const status = row.original.info.status;
+            if (!status) return null;
+            const state = row.original.info.state;
+            const color = deployment_state_text_color(state);
+            return <div className={color}>{status}</div>;
+          },
+        },
+        {
+          header: "Tags",
+          cell: ({ row }) => {
+            return (
+              <div className="flex gap-1">
+                <TagsWithBadge tag_ids={row.original.tags} />
+              </div>
+            );
+          },
+        },
+        {
+          header: "Created",
+          accessorFn: ({ created_at }) =>
+            fmt_date_with_minutes(new Date(created_at)),
+        },
+      ]}
+    />
+  );
 };

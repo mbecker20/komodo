@@ -7,6 +7,7 @@ import { Resources } from "@pages/resources";
 import { Keys } from "@pages/keys";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/tree";
+import { Tags } from "@pages/tags";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ const router = createBrowserRouter([
       { path: "", element: <Dashboard /> },
       { path: "tree", element: <Tree /> },
       { path: "keys", element: <Keys /> },
+      { path: "tags", element: <Tags /> },
       {
         path: ":type",
         children: [

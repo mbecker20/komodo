@@ -11,6 +11,7 @@ import {
   Moon,
   Settings,
   SunMedium,
+  Tag,
   User,
 } from "lucide-react";
 import { Input } from "../ui/input";
@@ -319,6 +320,8 @@ export const ResourceTypeDropdown = () => {
     ? [<FolderTree className="w-4 h-4" />, "Tree"]
     : location.pathname === "/keys"
     ? [<Key className="w-4 h-4" />, "Api Keys"]
+    : location.pathname === "/tags"
+    ? [<Tag className="w-4 h-4" />, "Tags"]
     : [<Box className="w-4 h-4" />, "Dashboard"];
 
   return (
@@ -356,6 +359,12 @@ export const ResourceTypeDropdown = () => {
               </Link>
             );
           })}
+          <Link to="/tags">
+            <DropdownMenuItem className="flex items-center gap-2">
+              <Tag className="w-4 h-4" />
+              Tags
+            </DropdownMenuItem>
+          </Link>
           <Link to="/keys">
             <DropdownMenuItem className="flex items-center gap-2">
               <Box className="w-4 h-4" />
