@@ -9,6 +9,7 @@ import {
   Database,
   ServerIcon,
   AlertTriangle,
+  Rocket,
 } from "lucide-react";
 import { ServerStats } from "./stats";
 import { ConfigInner } from "@components/config";
@@ -224,7 +225,11 @@ export const ServerComponents: RequiredResourceComponents = {
     Stats: ({ id }) => <ServerStats server_id={id} />,
     Deployments: ({ id }) => {
       const deployments = useRead("ListDeployments", {}).data?.filter(deployment => deployment.info.server_id === id);
-      return <DeploymentTable deployments={deployments} />
+      return (
+        <Section title="Deployments" icon={<Rocket className="w-4 h-4" />}>
+          <DeploymentTable deployments={deployments} />
+        </Section>
+      );
     },
     Config: ({ id }) => <ServerConfig id={id} />,
     Danger: ({ id }) => (
