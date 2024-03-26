@@ -1,4 +1,4 @@
-use std::cmp;
+use std::{cmp, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
@@ -13,7 +13,7 @@ use monitor_client::{
     permission::PermissionLevel,
     resource::AddFilters,
     server::Server,
-    update::{Log, UpdateStatus},
+    update::{Log, ResourceTargetVariant, UpdateStatus},
     user::User,
     Operation,
   },
@@ -21,7 +21,7 @@ use monitor_client::{
 use mungos::{
   find::find_collect,
   mongodb::{
-    bson::{doc, Document},
+    bson::{doc, oid::ObjectId, Document},
     options::FindOneOptions,
   },
 };
@@ -31,8 +31,9 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    cache::deployment_status_cache, periphery_client,
-    resource::StateResource,
+    cache::deployment_status_cache,
+    periphery_client,
+    resource::{get_resource_ids_for_non_admin, StateResource},
   },
   state::{action_states, State},
 };
@@ -260,8 +261,16 @@ impl Resolve<GetDeploymentsSummary, User> for State {
     let query = if user.admin {
       None
     } else {
+      let ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Deployment,
+      )
+      .await?
+      .into_iter()
+      .flat_map(|id| ObjectId::from_str(&id))
+      .collect::<Vec<_>>();
       let query = doc! {
-          format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
+        "_id": { "$in": ids }
       };
       Some(query)
     };

@@ -18,7 +18,8 @@ use crate::{
   db::db_client,
   helpers::{
     add_update, create_permission, make_update,
-    remove_from_recently_viewed, resource::StateResource,
+    remove_from_recently_viewed,
+    resource::{delete_all_permissions_on_resource, StateResource},
     update_update,
   },
   state::{action_states, State},
@@ -223,6 +224,8 @@ impl Resolve<DeleteProcedure, User> for State {
       delete_one_by_id(&db_client().await.procedures, &id, None)
         .await
         .context("failed to delete build from database");
+
+    delete_all_permissions_on_resource(&procedure).await;
 
     let log = match res {
       Ok(_) => Log::simple(

@@ -8,7 +8,7 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     to_monitor_name,
-    update::{Log, ResourceTarget, Update, UpdateStatus},
+    update::{Log, ResourceTarget, Update},
     user::User,
     Operation,
   },
@@ -24,7 +24,8 @@ use crate::{
   db::db_client,
   helpers::{
     add_update, create_permission, make_update, periphery_client,
-    remove_from_recently_viewed, resource::StateResource,
+    remove_from_recently_viewed,
+    resource::{delete_all_permissions_on_resource, StateResource},
     update_update,
   },
   state::{action_states, State},
@@ -163,25 +164,13 @@ impl Resolve<CopyRepo, User> for State {
       .to_string();
     let repo: Repo = self.get_resource(&repo_id).await?;
     create_permission(&user, &repo, PermissionLevel::Update).await;
-    let update = Update {
-      target: ResourceTarget::Repo(repo_id),
-      operation: Operation::CreateRepo,
-      start_ts,
-      end_ts: Some(monitor_timestamp()),
-      operator: user.id.clone(),
-      success: true,
-      logs: vec![
-        Log::simple(
-          "create repo",
-          format!(
-            "created repo\nid: {}\nname: {}",
-            repo.id, repo.name
-          ),
-        ),
-        Log::simple("config", format!("{:#?}", repo.config)),
-      ],
-      ..Default::default()
-    };
+    let mut update = make_update(&repo, Operation::CreateRepo, &user);
+    update.push_simple_log(
+      "create repo",
+      format!("created repo\nid: {}\nname: {}", repo.id, repo.name),
+    );
+    update.push_simple_log("config", format!("{:#?}", repo.config));
+    update.finalize();
 
     add_update(update).await?;
 
@@ -214,21 +203,17 @@ impl Resolve<DeleteRepo, User> for State {
     };
 
     let inner = || async move {
-      let mut update = Update {
-        operation: Operation::DeleteRepo,
-        target: ResourceTarget::Repo(repo.id.clone()),
-        start_ts: monitor_timestamp(),
-        status: UpdateStatus::InProgress,
-        operator: user.id.clone(),
-        success: true,
-        ..Default::default()
-      };
+      let mut update =
+        make_update(&repo, Operation::DeleteRepo, &user);
+      update.in_progress();
       update.id = add_update(update.clone()).await?;
 
       let res =
         delete_one_by_id(&db_client().await.repos, &repo.id, None)
           .await
           .context("failed to delete repo from database");
+
+      delete_all_permissions_on_resource(&repo).await;
 
       let log = match res {
         Ok(_) => Log::simple(

@@ -21,9 +21,12 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, cache::server_status_cache, create_permission,
-    make_update, periphery_client, remove_from_recently_viewed,
-    resource::StateResource, update_update,
+    add_update,
+    cache::server_status_cache,
+    create_permission, make_update, periphery_client,
+    remove_from_recently_viewed,
+    resource::{delete_all_permissions_on_resource, StateResource},
+    update_update,
   },
   monitor::update_cache_for_server,
   state::{action_states, State},
@@ -110,8 +113,6 @@ impl Resolve<DeleteServer, User> for State {
       )
       .await?;
 
-    let start_ts = monitor_timestamp();
-
     db_client()
       .await
       .builds
@@ -149,17 +150,14 @@ impl Resolve<DeleteServer, User> for State {
       .await
       .context("failed to delete server from mongo")?;
 
-    let mut update = Update {
-      target: ResourceTarget::Server(id.clone()),
-      operation: Operation::DeleteServer,
-      start_ts,
-      operator: user.id.clone(),
-      logs: vec![Log::simple(
-        "delete server",
-        format!("deleted server {}", server.name),
-      )],
-      ..Default::default()
-    };
+    delete_all_permissions_on_resource(&server).await;
+
+    let mut update =
+      make_update(&server, Operation::DeleteServer, &user);
+    update.push_simple_log(
+      "delete server",
+      format!("deleted server {}", server.name),
+    );
 
     update.finalize();
     add_update(update).await?;

@@ -20,8 +20,9 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, create_permission, remove_from_recently_viewed,
-    resource::StateResource,
+    add_update, create_permission, make_update,
+    remove_from_recently_viewed,
+    resource::{delete_all_permissions_on_resource, StateResource},
   },
   state::State,
 };
@@ -162,8 +163,6 @@ impl Resolve<DeleteBuilder, User> for State {
       )
       .await?;
 
-    let start_ts = monitor_timestamp();
-
     db_client()
       .await
       .builds
@@ -180,17 +179,15 @@ impl Resolve<DeleteBuilder, User> for State {
       .await
       .context("failed to delete builder from database")?;
 
-    let mut update = Update {
-      target: (&builder).into(),
-      operation: Operation::DeleteBuilder,
-      start_ts,
-      operator: user.id.clone(),
-      logs: vec![Log::simple(
-        "delete builder",
-        format!("deleted builder {}", builder.name),
-      )],
-      ..Default::default()
-    };
+    delete_all_permissions_on_resource(&builder).await;
+
+    let mut update =
+      make_update(&builder, Operation::DeleteBuilder, &user);
+
+    update.push_simple_log(
+      "delete builder",
+      format!("deleted builder {}", builder.name),
+    );
 
     update.finalize();
     add_update(update).await?;

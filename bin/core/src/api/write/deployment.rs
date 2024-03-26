@@ -27,7 +27,8 @@ use crate::{
   helpers::{
     add_update, create_permission, empty_or_only_spaces,
     get_deployment_state, make_update, periphery_client,
-    remove_from_recently_viewed, resource::StateResource,
+    remove_from_recently_viewed,
+    resource::{delete_all_permissions_on_resource, StateResource},
     update_update,
   },
   state::{action_states, State},
@@ -198,21 +199,13 @@ impl Resolve<DeleteDeployment, User> for State {
       .await?;
 
     let inner = || async move {
-      let start_ts = monitor_timestamp();
-
       let state = get_deployment_state(&deployment)
         .await
         .context("failed to get container state")?;
 
-      let mut update = Update {
-        target: ResourceTarget::Deployment(deployment.id.clone()),
-        operation: Operation::DeleteDeployment,
-        start_ts,
-        operator: user.id.clone(),
-        success: true,
-        status: UpdateStatus::InProgress,
-        ..Default::default()
-      };
+      let mut update =
+        make_update(&deployment, Operation::DeleteDeployment, &user);
+      update.in_progress();
 
       update.id = add_update(update.clone()).await?;
 
@@ -278,6 +271,8 @@ impl Resolve<DeleteDeployment, User> for State {
           format!("failed to delete deployment\n{e:#?}"),
         ),
       };
+
+      delete_all_permissions_on_resource(&deployment).await;
 
       update.logs.push(log);
       update.end_ts = Some(monitor_timestamp());

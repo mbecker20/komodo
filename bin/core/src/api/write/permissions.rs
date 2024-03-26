@@ -5,21 +5,23 @@ use monitor_client::{
     UpdateUserPermissions, UpdateUserPermissionsOnTarget,
   },
   entities::{
-    monitor_timestamp,
-    update::{Log, ResourceTarget, Update, UpdateStatus},
+    update::{ResourceTarget, Update},
     user::User,
     Operation,
   },
 };
 use mungos::{
   by_id::{find_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, Document},
+  mongodb::{
+    bson::{doc, Document},
+    options::UpdateOptions,
+  },
 };
 use resolver_api::Resolve;
 
 use crate::{
   db::db_client,
-  helpers::{add_update, get_user},
+  helpers::{add_update, get_user, make_update},
   state::State,
 };
 
@@ -35,7 +37,6 @@ impl Resolve<UpdateUserPermissions, User> for State {
     }: UpdateUserPermissions,
     admin: User,
   ) -> anyhow::Result<Update> {
-    let start_ts = monitor_timestamp();
     if !admin.admin {
       return Err(anyhow!("this method is admin only"));
     }
@@ -66,25 +67,18 @@ impl Resolve<UpdateUserPermissions, User> for State {
       None,
     )
     .await?;
-    let end_ts = monitor_timestamp();
-    let mut update = Update {
-      target: ResourceTarget::System("system".to_string()),
-      operation: Operation::UpdateUserPermissions,
-      logs: vec![Log::simple(
-        "modify user enabled",
-        format!(
-          "update permissions for {} ({})\nenabled: {enabled:?}\ncreate servers: {create_servers:?}\ncreate builds: {create_builds:?}", 
-          user.username,
-          user.id,
-        ),
-      )],
-      start_ts,
-      end_ts: end_ts.into(),
-      status: UpdateStatus::Complete,
-      success: true,
-      operator: admin.id.clone(),
-      ..Default::default()
-    };
+
+    let mut update = make_update(
+      ResourceTarget::System("system".to_string()),
+      Operation::UpdateUserPermissions,
+      &admin,
+    );
+    update.push_simple_log("modify user enabled", format!(
+      "update permissions for {} ({})\nenabled: {enabled:?}\ncreate servers: {create_servers:?}\ncreate builds: {create_builds:?}", 
+      user.username,
+      user.id,
+    ));
+    update.finalize();
     update.id = add_update(update.clone()).await?;
     Ok(update)
   }
@@ -101,7 +95,6 @@ impl Resolve<UpdateUserPermissionsOnTarget, User> for State {
     }: UpdateUserPermissionsOnTarget,
     admin: User,
   ) -> anyhow::Result<Update> {
-    let start_ts = monitor_timestamp();
     if !admin.admin {
       return Err(anyhow!("this method is admin only"));
     }
@@ -125,23 +118,19 @@ impl Resolve<UpdateUserPermissionsOnTarget, User> for State {
           "level": permission.as_ref(),
         }
       },
-      None
+      UpdateOptions::builder().upsert(true).build()
     ).await?;
     let log_text = format!(
       "user {} given {} permissions on {target:?}",
       user.username, permission,
     );
-    let mut update = Update {
-      operation: Operation::UpdateUserPermissionsOnTarget,
-      start_ts,
-      success: true,
-      operator: admin.id.clone(),
-      status: UpdateStatus::Complete,
-      target: target.clone(),
-      logs: vec![Log::simple("modify permissions", log_text)],
-      end_ts: monitor_timestamp().into(),
-      ..Default::default()
-    };
+    let mut update = make_update(
+      target,
+      Operation::UpdateUserPermissionsOnTarget,
+      &admin,
+    );
+    update.push_simple_log("modify permissions", log_text);
+    update.finalize();
     update.id = add_update(update.clone()).await?;
     Ok(update)
   }

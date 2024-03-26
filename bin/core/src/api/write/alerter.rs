@@ -22,7 +22,8 @@ use crate::{
   db::db_client,
   helpers::{
     add_update, create_permission, make_update,
-    remove_from_recently_viewed, resource::StateResource,
+    remove_from_recently_viewed,
+    resource::{delete_all_permissions_on_resource, StateResource},
   },
   state::State,
 };
@@ -170,6 +171,8 @@ impl Resolve<DeleteAlerter, User> for State {
     delete_one_by_id(&db_client().await.alerters, &id, None)
       .await
       .context("failed to delete alerter from database")?;
+
+    delete_all_permissions_on_resource(&alerter).await;
 
     update.push_simple_log(
       "delete alerter",

@@ -25,7 +25,8 @@ use crate::{
   db::db_client,
   helpers::{
     add_update, create_permission, empty_or_only_spaces, make_update,
-    remove_from_recently_viewed, resource::StateResource,
+    remove_from_recently_viewed,
+    resource::{delete_all_permissions_on_resource, StateResource},
     update_update,
   },
   state::{action_states, State},
@@ -188,6 +189,8 @@ impl Resolve<DeleteBuild, User> for State {
       .delete_one(doc! { "_id": ObjectId::from_str(&id)? }, None)
       .await
       .context("failed to delete build from database");
+
+    delete_all_permissions_on_resource(&build).await;
 
     let log = match res {
       Ok(_) => Log::simple(

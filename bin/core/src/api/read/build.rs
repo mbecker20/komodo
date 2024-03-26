@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::{collections::HashMap, str::FromStr, sync::OnceLock};
 
 use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
@@ -10,7 +10,7 @@ use monitor_client::{
     build::{Build, BuildActionState, BuildListItem},
     permission::PermissionLevel,
     resource::AddFilters,
-    update::UpdateStatus,
+    update::{ResourceTargetVariant, UpdateStatus},
     user::User,
     Operation,
   },
@@ -18,7 +18,7 @@ use monitor_client::{
 use mungos::{
   find::find_collect,
   mongodb::{
-    bson::{doc, Document},
+    bson::{doc, oid::ObjectId, Document},
     options::FindOptions,
   },
 };
@@ -27,7 +27,9 @@ use resolver_api::{Resolve, ResolveToString};
 use crate::{
   config::core_config,
   db::db_client,
-  helpers::resource::StateResource,
+  helpers::resource::{
+    get_resource_ids_for_non_admin, StateResource,
+  },
   state::{action_states, State},
 };
 
@@ -94,8 +96,16 @@ impl Resolve<GetBuildsSummary, User> for State {
     let query = if user.admin {
       None
     } else {
+      let ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Build,
+      )
+      .await?
+      .into_iter()
+      .flat_map(|id| ObjectId::from_str(&id))
+      .collect::<Vec<_>>();
       let query = doc! {
-          format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
+        "_id": { "$in": ids }
       };
       Some(query)
     };

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
@@ -10,15 +12,17 @@ use monitor_client::{
   },
   entities::{
     permission::PermissionLevel, procedure::Procedure,
-    resource::AddFilters, user::User,
+    resource::AddFilters, update::ResourceTargetVariant, user::User,
   },
 };
-use mungos::mongodb::bson::{doc, Document};
+use mungos::mongodb::bson::{doc, oid::ObjectId, Document};
 use resolver_api::Resolve;
 
 use crate::{
   db::db_client,
-  helpers::resource::StateResource,
+  helpers::resource::{
+    get_resource_ids_for_non_admin, StateResource,
+  },
   state::{action_states, State},
 };
 
@@ -81,8 +85,16 @@ impl Resolve<GetProceduresSummary, User> for State {
     let query = if user.admin {
       None
     } else {
+      let ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Procedure,
+      )
+      .await?
+      .into_iter()
+      .flat_map(|id| ObjectId::from_str(&id))
+      .collect::<Vec<_>>();
       let query = doc! {
-          format!("permissions.{}", user.id): { "$in": ["read", "execute", "update"] }
+        "_id": { "$in": ids }
       };
       Some(query)
     };

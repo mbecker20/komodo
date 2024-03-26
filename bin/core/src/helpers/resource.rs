@@ -19,7 +19,7 @@ use monitor_client::entities::{
   procedure::{Procedure, ProcedureListItem, ProcedureListItemInfo},
   repo::{Repo, RepoInfo, RepoListItem},
   server::{Server, ServerListItem, ServerListItemInfo},
-  update::ResourceTargetVariant,
+  update::{ResourceTarget, ResourceTargetVariant},
   user::User,
 };
 use mungos::{
@@ -96,17 +96,11 @@ pub trait StateResource<
     &self,
     user_id: &str,
   ) -> anyhow::Result<Vec<String>> {
-    let permissions = find_collect(
-      &db_client().await.permissions,
-      doc! { "user_id": user_id, "target.type": self.resource_target_variant().as_ref() },
-      None,
+    get_resource_ids_for_non_admin(
+      user_id,
+      self.resource_target_variant(),
     )
     .await
-    .context("failed to query permissions on db")?
-    .into_iter()
-    .map(|p| p.target.extract_variant_id().1.to_string())
-    .collect();
-    Ok(permissions)
   }
 
   async fn list_resources_for_user(
@@ -514,4 +508,43 @@ pub async fn get_user_permission_on_resource(
     .map(|permission| permission.level)
     .unwrap_or_default();
   Ok(permission)
+}
+
+pub async fn delete_all_permissions_on_resource(
+  target: impl Into<ResourceTarget>,
+) {
+  let target: ResourceTarget = target.into();
+  let (variant, id) = target.extract_variant_id();
+  if let Err(e) = db_client()
+    .await
+    .permissions
+    .delete_many(
+      doc! { "target.type": variant.as_ref(), "target.id": &id },
+      None,
+    )
+    .await
+  {
+    warn!("failed to delete_many permissions matching target {target:?} | {e:#}");
+  }
+}
+
+pub async fn get_resource_ids_for_non_admin(
+  user_id: &str,
+  resource_type: ResourceTargetVariant,
+) -> anyhow::Result<Vec<String>> {
+  let permissions = find_collect(
+      &db_client().await.permissions,
+      doc! {
+        "user_id": user_id,
+        "target.type": resource_type.as_ref(),
+        "level": { "$in": ["Read", "Execute", "Update"] }
+      },
+      None,
+    )
+    .await
+    .context("failed to query permissions on db")?
+    .into_iter()
+    .map(|p| p.target.extract_variant_id().1.to_string())
+    .collect();
+  Ok(permissions)
 }
