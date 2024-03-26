@@ -7,7 +7,6 @@ config.server_id = "mogh-server"
 [[deployment.config.environment]]
 variable = "TEST_1"
 value = "VALUE"
-
 [[deployment.config.environment]]
 variable = "TEST_2"
 value = "VALUE"

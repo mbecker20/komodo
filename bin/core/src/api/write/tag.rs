@@ -2,19 +2,19 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::{
-    CreateTag, DeleteTag, UpdateTag, UpdateTagsOnResource,
+    CreateTag, DeleteTag, RenameTag, UpdateTagsOnResource,
     UpdateTagsOnResourceResponse,
   },
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, permission::PermissionLevel,
-    procedure::Procedure, repo::Repo, server::Server, tag::CustomTag,
+    procedure::Procedure, repo::Repo, server::Server, tag::Tag,
     update::ResourceTarget, user::User,
   },
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, to_bson},
+  mongodb::bson::doc,
 };
 use resolver_api::Resolve;
 
@@ -28,18 +28,12 @@ use crate::{
 impl Resolve<CreateTag, User> for State {
   async fn resolve(
     &self,
-    CreateTag {
-      name,
-      category,
-      color,
-    }: CreateTag,
+    CreateTag { name }: CreateTag,
     user: User,
-  ) -> anyhow::Result<CustomTag> {
-    let mut tag = CustomTag {
+  ) -> anyhow::Result<Tag> {
+    let mut tag = Tag {
       id: Default::default(),
       name,
-      category,
-      color,
       owner: user.id.clone(),
     };
     tag.id = db_client()
@@ -57,22 +51,23 @@ impl Resolve<CreateTag, User> for State {
 }
 
 #[async_trait]
-impl Resolve<UpdateTag, User> for State {
+impl Resolve<RenameTag, User> for State {
   async fn resolve(
     &self,
-    UpdateTag { id, config }: UpdateTag,
+    RenameTag { id, name }: RenameTag,
     user: User,
-  ) -> anyhow::Result<CustomTag> {
+  ) -> anyhow::Result<Tag> {
     get_tag_check_owner(&id, &user).await?;
 
     update_one_by_id(
       &db_client().await.tags,
       &id,
-      doc! { "$set": to_bson(&config)? },
+      doc! { "$set": { "name": name } },
       None,
     )
     .await
-    .context("context")?;
+    .context("failed to rename tag on db")?;
+
     get_tag(&id).await
   }
 }
@@ -83,7 +78,7 @@ impl Resolve<DeleteTag, User> for State {
     &self,
     DeleteTag { id }: DeleteTag,
     user: User,
-  ) -> anyhow::Result<CustomTag> {
+  ) -> anyhow::Result<Tag> {
     let tag = get_tag_check_owner(&id, &user).await?;
 
     tokio::try_join!(

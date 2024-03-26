@@ -2,7 +2,7 @@ use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
   api::read::{GetTag, ListTags},
-  entities::{tag::CustomTag, user::User},
+  entities::{tag::Tag, user::User},
 };
 use mungos::find::find_collect;
 use resolver_api::Resolve;
@@ -15,7 +15,7 @@ impl Resolve<GetTag, User> for State {
     &self,
     GetTag { id }: GetTag,
     _: User,
-  ) -> anyhow::Result<CustomTag> {
+  ) -> anyhow::Result<Tag> {
     get_tag(&id).await
   }
 }
@@ -26,7 +26,7 @@ impl Resolve<ListTags, User> for State {
     &self,
     ListTags { query }: ListTags,
     _: User,
-  ) -> anyhow::Result<Vec<CustomTag>> {
+  ) -> anyhow::Result<Vec<Tag>> {
     find_collect(&db_client().await.tags, query, None)
       .await
       .context("failed to get tags from db")

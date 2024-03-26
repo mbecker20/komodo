@@ -32,6 +32,7 @@ pub struct Resource<Config, Info: Default = ()> {
   #[builder(setter(skip))]
   pub updated_at: I64,
 
+  /// Tag Ids
   #[serde(default)]
   #[builder(default)]
   pub tags: Vec<String>,
@@ -51,6 +52,7 @@ pub struct ResourceListItem<Info> {
   pub resource_type: ResourceTargetVariant,
   pub name: String,
   pub created_at: I64,
+  /// Tag Ids
   pub tags: Vec<String>,
   pub info: Info,
 }

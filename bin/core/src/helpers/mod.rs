@@ -6,7 +6,7 @@ use monitor_client::entities::{
   monitor_timestamp,
   permission::{Permission, PermissionLevel},
   server::{Server, ServerStatus},
-  tag::CustomTag,
+  tag::Tag,
   update::{ResourceTarget, Update, UpdateListItem},
   user::User,
   Operation,
@@ -109,7 +109,7 @@ pub async fn get_deployment_state(
 
 // TAG
 
-pub async fn get_tag(tag_id: &str) -> anyhow::Result<CustomTag> {
+pub async fn get_tag(tag_id: &str) -> anyhow::Result<Tag> {
   find_one_by_id(&db_client().await.tags, tag_id)
     .await
     .context("failed to query mongo for tag")?
@@ -119,7 +119,7 @@ pub async fn get_tag(tag_id: &str) -> anyhow::Result<CustomTag> {
 pub async fn get_tag_check_owner(
   tag_id: &str,
   user: &User,
-) -> anyhow::Result<CustomTag> {
+) -> anyhow::Result<Tag> {
   let tag = get_tag(tag_id).await?;
   if !user.admin && tag.owner != user.id {
     return Err(anyhow!("user must be tag owner or admin"));

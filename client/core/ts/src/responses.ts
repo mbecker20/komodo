@@ -164,9 +164,9 @@ export type WriteResponses = {
   UpdateProcedure: Types.Procedure;
 
   // ==== TAG ====
-  CreateTag: Types.CustomTag;
-  DeleteTag: Types.CustomTag;
-  UpdateTag: Types.CustomTag;
+  CreateTag: Types.Tag;
+  DeleteTag: Types.Tag;
+  RenameTag: Types.Tag;
   UpdateTagsOnResource: Types.UpdateTagsOnResourceResponse;
 };
 

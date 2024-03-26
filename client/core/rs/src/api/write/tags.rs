@@ -3,10 +3,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{
-  tag::{CustomTag, TagColor, _PartialCustomTag},
-  update::ResourceTarget,
-};
+use crate::entities::{tag::Tag, update::ResourceTarget};
 
 use super::MonitorWriteRequest;
 
@@ -17,15 +14,9 @@ use super::MonitorWriteRequest;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
-#[response(CustomTag)]
+#[response(Tag)]
 pub struct CreateTag {
   pub name: String,
-
-  #[serde(default)]
-  pub category: String,
-
-  #[serde(default)]
-  pub color: TagColor,
 }
 
 //
@@ -35,7 +26,7 @@ pub struct CreateTag {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
-#[response(CustomTag)]
+#[response(Tag)]
 pub struct DeleteTag {
   pub id: String,
 }
@@ -47,10 +38,10 @@ pub struct DeleteTag {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorWriteRequest)]
-#[response(CustomTag)]
-pub struct UpdateTag {
+#[response(Tag)]
+pub struct RenameTag {
   pub id: String,
-  pub config: _PartialCustomTag,
+  pub name: String,
 }
 
 //
@@ -63,7 +54,8 @@ pub struct UpdateTag {
 #[response(UpdateTagsOnResourceResponse)]
 pub struct UpdateTagsOnResource {
   pub target: ResourceTarget,
-  pub tags: Vec<String>, // custom tag ids
+  /// Tag Ids
+  pub tags: Vec<String>,
 }
 
 #[typeshare]

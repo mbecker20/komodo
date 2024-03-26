@@ -15,6 +15,7 @@ export interface Resource<Config, Info> {
 	name: string;
 	description?: string;
 	updated_at?: I64;
+	/** Tag Ids */
 	tags?: string[];
 	info?: Info;
 	config: Config;
@@ -37,6 +38,7 @@ export interface ResourceListItem<Info> {
 	type: ResourceTarget["type"];
 	name: string;
 	created_at: I64;
+	/** Tag Ids */
 	tags: string[];
 	info: Info;
 }
@@ -634,27 +636,15 @@ export type GetDockerContainersResponse = ContainerSummary[];
 
 export type GetAvailableSecretsResponse = string[];
 
-export enum TagColor {
-	Red = "Red",
-	Green = "Green",
-	Blue = "Blue",
-	Yellow = "Yellow",
-	Purple = "Purple",
-	Magenta = "Magenta",
-	Cyan = "Cyan",
-}
-
-export interface CustomTag {
+export interface Tag {
 	_id?: MongoId;
 	name: string;
 	owner?: string;
-	category?: string;
-	color?: TagColor;
 }
 
-export type GetTagResponse = CustomTag;
+export type GetTagResponse = Tag;
 
-export type ListTagsResponse = CustomTag[];
+export type ListTagsResponse = Tag[];
 
 export enum Operation {
 	None = "None",
@@ -825,7 +815,7 @@ export interface ServerQuerySpecifics {
 
 export type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
 
-export type _PartialCustomTag = Partial<CustomTag>;
+export type _PartialTag = Partial<Tag>;
 
 export interface GetLoginOptions {
 }
@@ -1616,21 +1606,20 @@ export interface DeleteNetwork {
 
 export interface CreateTag {
 	name: string;
-	category?: string;
-	color?: TagColor;
 }
 
 export interface DeleteTag {
 	id: string;
 }
 
-export interface UpdateTag {
+export interface RenameTag {
 	id: string;
-	config: _PartialCustomTag;
+	name: string;
 }
 
 export interface UpdateTagsOnResource {
 	target: ResourceTarget;
+	/** Tag Ids */
 	tags: string[];
 }
 
@@ -1850,7 +1839,7 @@ export type WriteRequest =
 	| { type: "UpdateProcedure", params: UpdateProcedure }
 	| { type: "CreateTag", params: CreateTag }
 	| { type: "DeleteTag", params: DeleteTag }
-	| { type: "UpdateTag", params: UpdateTag }
+	| { type: "RenameTag", params: RenameTag }
 	| { type: "UpdateTagsOnResource", params: UpdateTagsOnResource };
 
 export type Execution = 
@@ -1868,17 +1857,6 @@ export type Execution =
 	| { type: "PruneDockerNetworks", params: PruneDockerNetworks }
 	| { type: "PruneDockerImages", params: PruneDockerImages }
 	| { type: "PruneDockerContainers", params: PruneDockerContainers };
-
-export type Tag = 
-	| { type: "ResourceType", params: {
-	resource: ResourceTarget["type"];
-}}
-	| { type: "Server", params: {
-	server_id: string;
-}}
-	| { type: "Custom", params: {
-	tag_id: string;
-}};
 
 export type WsLoginMessage = 
 	| { type: "Jwt", params: {

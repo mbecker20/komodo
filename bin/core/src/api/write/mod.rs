@@ -99,7 +99,7 @@ enum WriteRequest {
   // ==== TAG ====
   CreateTag(CreateTag),
   DeleteTag(DeleteTag),
-  UpdateTag(UpdateTag),
+  RenameTag(RenameTag),
   UpdateTagsOnResource(UpdateTagsOnResource),
 }
 
