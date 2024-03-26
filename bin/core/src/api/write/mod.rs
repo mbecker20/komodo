@@ -34,10 +34,14 @@ enum WriteRequest {
   // ==== API KEY ====
   CreateApiKey(CreateApiKey),
   DeleteApiKey(DeleteApiKey),
+  CreateApiKeyForServiceUser(CreateApiKeyForServiceUser),
+  DeleteApiKeyForServiceUser(DeleteApiKeyForServiceUser),
 
   // ==== USER ====
   PushRecentlyViewed(PushRecentlyViewed),
   SetLastSeenUpdate(SetLastSeenUpdate),
+  CreateServiceUser(CreateServiceUser),
+  UpdateServiceUserDescription(UpdateServiceUserDescription),
 
   // ==== PERMISSIONS ====
   UpdateUserPerimissions(UpdateUserPermissions),

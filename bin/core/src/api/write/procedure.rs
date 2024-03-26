@@ -56,7 +56,7 @@ impl Resolve<CreateProcedure, User> for State {
     let procedure: Procedure =
       self.get_resource(&procedure_id).await?;
 
-    create_permission(&user, &procedure, PermissionLevel::Update)
+    create_permission(&user, &procedure, PermissionLevel::Write)
       .await;
 
     let mut update =
@@ -98,7 +98,7 @@ impl Resolve<CopyProcedure, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     let start_ts = monitor_timestamp();
@@ -124,7 +124,7 @@ impl Resolve<CopyProcedure, User> for State {
     let procedure: Procedure =
       self.get_resource(&procedure_id).await?;
 
-    create_permission(&user, &procedure, PermissionLevel::Update)
+    create_permission(&user, &procedure, PermissionLevel::Write)
       .await;
 
     let mut update =
@@ -161,7 +161,7 @@ impl Resolve<UpdateProcedure, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -211,7 +211,7 @@ impl Resolve<DeleteProcedure, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 

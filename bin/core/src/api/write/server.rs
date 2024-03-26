@@ -65,7 +65,7 @@ impl Resolve<CreateServer, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let server: Server = self.get_resource(&server_id).await?;
-    create_permission(&user, &server, PermissionLevel::Update).await;
+    create_permission(&user, &server, PermissionLevel::Write).await;
     let update = Update {
       target: ResourceTarget::Server(server_id),
       operation: Operation::CreateServer,
@@ -109,7 +109,7 @@ impl Resolve<DeleteServer, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -184,7 +184,7 @@ impl Resolve<UpdateServer, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     let mut update =
@@ -229,7 +229,7 @@ impl Resolve<RenameServer, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     let mut update =
@@ -259,7 +259,7 @@ impl Resolve<CreateNetwork, User> for State {
       .get_resource_check_permissions(
         &server_id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -298,7 +298,7 @@ impl Resolve<DeleteNetwork, User> for State {
       .get_resource_check_permissions(
         &server_id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 

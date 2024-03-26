@@ -1,13 +1,18 @@
 use std::collections::VecDeque;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::{
-    PushRecentlyViewed, PushRecentlyViewedResponse,
-    SetLastSeenUpdate, SetLastSeenUpdateResponse,
+    CreateServiceUser, CreateServiceUserResponse, PushRecentlyViewed,
+    PushRecentlyViewedResponse, SetLastSeenUpdate,
+    SetLastSeenUpdateResponse, UpdateServiceUserDescription,
+    UpdateServiceUserDescriptionResponse,
   },
-  entities::{monitor_timestamp, user::User},
+  entities::{
+    monitor_timestamp,
+    user::{User, UserConfig},
+  },
 };
 use mungos::{
   by_id::update_one_by_id,
@@ -72,5 +77,84 @@ impl Resolve<SetLastSeenUpdate, User> for State {
     .await
     .context("failed to update user last_update_view")?;
     Ok(SetLastSeenUpdateResponse {})
+  }
+}
+
+#[async_trait]
+impl Resolve<CreateServiceUser, User> for State {
+  async fn resolve(
+    &self,
+    CreateServiceUser {
+      username,
+      description,
+    }: CreateServiceUser,
+    user: User,
+  ) -> anyhow::Result<CreateServiceUserResponse> {
+    if !user.admin {
+      return Err(anyhow!("user not admin"));
+    }
+    let config = UserConfig::Service { description };
+    let mut user = User {
+      id: Default::default(),
+      username,
+      config,
+      enabled: true,
+      admin: false,
+      create_server_permissions: false,
+      create_build_permissions: false,
+      last_update_view: 0,
+      recently_viewed: Vec::new(),
+      updated_at: monitor_timestamp(),
+    };
+    user.id = db_client()
+      .await
+      .users
+      .insert_one(&user, None)
+      .await
+      .context("failed to create service user on db")?
+      .inserted_id
+      .as_object_id()
+      .context("inserted id is not object id")?
+      .to_string();
+    Ok(user)
+  }
+}
+
+#[async_trait]
+impl Resolve<UpdateServiceUserDescription, User> for State {
+  async fn resolve(
+    &self,
+    UpdateServiceUserDescription {
+      username,
+      description,
+    }: UpdateServiceUserDescription,
+    user: User,
+  ) -> anyhow::Result<UpdateServiceUserDescriptionResponse> {
+    if !user.admin {
+      return Err(anyhow!("user not admin"));
+    }
+    let db = db_client().await;
+    let service_user = db
+      .users
+      .find_one(doc! { "username": &username }, None)
+      .await
+      .context("failed to query db for user")?
+      .context("no user with given username")?;
+    let UserConfig::Service { .. } = &service_user.config else {
+      return Err(anyhow!("user is not service user"));
+    };
+    db.users
+      .update_one(
+        doc! { "username": &username },
+        doc! { "$set": { "config.data.description": description } },
+        None,
+      )
+      .await
+      .context("failed to update user on db")?;
+    db.users
+      .find_one(doc! { "username": &username }, None)
+      .await
+      .context("failed to query db for user")?
+      .context("user with username not found")
   }
 }

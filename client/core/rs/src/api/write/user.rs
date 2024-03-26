@@ -3,7 +3,7 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::update::ResourceTarget;
+use crate::entities::{update::ResourceTarget, user::User};
 
 use super::MonitorWriteRequest;
 
@@ -36,3 +36,37 @@ pub struct SetLastSeenUpdate {}
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SetLastSeenUpdateResponse {}
+
+//
+
+/// ADMIN ONLY
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(CreateServiceUserResponse)]
+pub struct CreateServiceUser {
+  pub username: String,
+  pub description: String,
+}
+
+#[typeshare]
+pub type CreateServiceUserResponse = User;
+
+//
+
+/// ADMIN ONLY
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(UpdateServiceUserDescriptionResponse)]
+pub struct UpdateServiceUserDescription {
+  pub username: String,
+  pub description: String,
+}
+
+#[typeshare]
+pub type UpdateServiceUserDescriptionResponse = User;

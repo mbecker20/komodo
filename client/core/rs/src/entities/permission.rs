@@ -51,7 +51,7 @@ pub enum PermissionLevel {
   None,
   Read,
   Execute,
-  Update,
+  Write,
 }
 
 impl Default for &PermissionLevel {

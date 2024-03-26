@@ -55,7 +55,7 @@ impl Resolve<CreateBuilder, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let builder: Builder = self.get_resource(&builder_id).await?;
-    create_permission(&user, &builder, PermissionLevel::Update).await;
+    create_permission(&user, &builder, PermissionLevel::Write).await;
     let update = Update {
       target: ResourceTarget::Builder(builder_id),
       operation: Operation::CreateBuilder,
@@ -97,7 +97,7 @@ impl Resolve<CopyBuilder, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     let start_ts = monitor_timestamp();
@@ -121,7 +121,7 @@ impl Resolve<CopyBuilder, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let builder: Builder = self.get_resource(&builder_id).await?;
-    create_permission(&user, &builder, PermissionLevel::Update).await;
+    create_permission(&user, &builder, PermissionLevel::Write).await;
     let update = Update {
       target: ResourceTarget::Builder(builder_id),
       operation: Operation::CreateBuilder,
@@ -159,7 +159,7 @@ impl Resolve<DeleteBuilder, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -209,7 +209,7 @@ impl Resolve<UpdateBuilder, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 

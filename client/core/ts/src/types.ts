@@ -8,22 +8,12 @@ export interface MongoIdObj {
 
 export type MongoId = MongoIdObj;
 
-export enum PermissionLevel {
-	None = "none",
-	Read = "read",
-	Execute = "execute",
-	Update = "update",
-}
-
-export type PermissionsMap = Record<string, PermissionLevel>;
-
 export type I64 = number;
 
 export interface Resource<Config, Info> {
 	_id?: MongoId;
 	name: string;
 	description?: string;
-	permissions?: PermissionsMap;
 	updated_at?: I64;
 	tags?: string[];
 	info?: Info;
@@ -260,6 +250,26 @@ export interface DeploymentActionState {
 
 export type GetDeploymentActionStateResponse = DeploymentActionState;
 
+export type UserConfig = 
+	/** User that logs in with username / password */
+	| { type: "Local", data: {
+	password: string;
+}}
+	/** User that logs in via Google Oauth */
+	| { type: "Google", data: {
+	google_id: string;
+	avatar: string;
+}}
+	/** User that logs in via Github Oauth */
+	| { type: "Github", data: {
+	github_id: string;
+	avatar: string;
+}}
+	/** Non-human managed user, can have it's own permissions / api keys */
+	| { type: "Service", data: {
+	description: string;
+}};
+
 export type ResourceTarget = 
 	| { type: "System", id: string }
 	| { type: "Build", id: string }
@@ -277,10 +287,7 @@ export interface User {
 	admin?: boolean;
 	create_server_permissions?: boolean;
 	create_build_permissions?: boolean;
-	avatar?: string;
-	password?: string;
-	github_id?: string;
-	google_id?: string;
+	config: UserConfig;
 	last_update_view?: I64;
 	recently_viewed?: ResourceTarget[];
 	updated_at?: I64;
@@ -717,6 +724,18 @@ export interface Update {
 
 export type GetUpdateResponse = Update;
 
+export interface CreateApiKeyResponse {
+	/** X-API-KEY */
+	key: string;
+	/**
+	 * X-API-SECRET
+	 * There is no way to get the secret again after it is distributed in this message
+	 */
+	secret: string;
+}
+
+export type CreateApiKeyForServiceUserResponse = CreateApiKeyResponse;
+
 export type CreateProcedureResponse = Procedure;
 
 export type CopyProcedureResponse = Procedure;
@@ -724,6 +743,10 @@ export type CopyProcedureResponse = Procedure;
 export type DeleteProcedureResponse = Procedure;
 
 export type UpdateProcedureResponse = Procedure;
+
+export type CreateServiceUserResponse = User;
+
+export type UpdateServiceUserDescriptionResponse = User;
 
 export type _PartialCustomAlerterConfig = Partial<CustomAlerterConfig>;
 
@@ -1379,21 +1402,27 @@ export interface CreateApiKey {
 	expires?: I64;
 }
 
-export interface CreateApiKeyResponse {
-	/** X-API-KEY */
-	key: string;
-	/**
-	 * X-API-SECRET
-	 * There is no way to get the secret again after it is distributed in this message
-	 */
-	secret: string;
-}
-
 export interface DeleteApiKey {
 	key: string;
 }
 
 export interface DeleteApiKeyResponse {
+}
+
+/** ADMIN ONLY */
+export interface CreateApiKeyForServiceUser {
+	/** Must be service user */
+	user_id: string;
+	name: string;
+	expires?: I64;
+}
+
+/** ADMIN ONLY */
+export interface DeleteApiKeyForServiceUser {
+	key: string;
+}
+
+export interface DeleteApiKeyForServiceUserResponse {
 }
 
 export interface CreateBuild {
@@ -1496,6 +1525,13 @@ export interface LaunchAwsServerConfig {
 	key_pair_name: string;
 	assign_public_ip: boolean;
 	use_public_ip: boolean;
+}
+
+export enum PermissionLevel {
+	None = "None",
+	Read = "Read",
+	Execute = "Execute",
+	Write = "Write",
 }
 
 export interface UpdateUserPermissionsOnTarget {
@@ -1614,6 +1650,18 @@ export interface SetLastSeenUpdate {
 export interface SetLastSeenUpdateResponse {
 }
 
+/** ADMIN ONLY */
+export interface CreateServiceUser {
+	username: string;
+	description: string;
+}
+
+/** ADMIN ONLY */
+export interface UpdateServiceUserDescription {
+	username: string;
+	description: string;
+}
+
 export interface CustomAlerterConfig {
 	url: string;
 }
@@ -1647,6 +1695,13 @@ export interface CloneArgs {
 	on_clone?: SystemCommand;
 	on_pull?: SystemCommand;
 	github_account?: string;
+}
+
+export interface Permission {
+	_id?: MongoId;
+	user_id: string;
+	target: ResourceTarget;
+	level?: PermissionLevel;
 }
 
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
@@ -1752,8 +1807,12 @@ export type ReadRequest =
 export type WriteRequest = 
 	| { type: "CreateApiKey", params: CreateApiKey }
 	| { type: "DeleteApiKey", params: DeleteApiKey }
+	| { type: "CreateApiKeyForServiceUser", params: CreateApiKeyForServiceUser }
+	| { type: "DeleteApiKeyForServiceUser", params: DeleteApiKeyForServiceUser }
 	| { type: "PushRecentlyViewed", params: PushRecentlyViewed }
 	| { type: "SetLastSeenUpdate", params: SetLastSeenUpdate }
+	| { type: "CreateServiceUser", params: CreateServiceUser }
+	| { type: "UpdateServiceUserDescription", params: UpdateServiceUserDescription }
 	| { type: "UpdateUserPerimissions", params: UpdateUserPermissions }
 	| { type: "UpdateUserPermissionsOnTarget", params: UpdateUserPermissionsOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }

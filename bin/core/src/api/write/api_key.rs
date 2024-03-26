@@ -2,9 +2,13 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
-  entities::{api_key::ApiKey, monitor_timestamp, user::User},
+  entities::{
+    api_key::ApiKey,
+    monitor_timestamp,
+    user::{User, UserConfig},
+  },
 };
-use mungos::mongodb::bson::doc;
+use mungos::{by_id::find_one_by_id, mongodb::bson::doc};
 use resolver_api::Resolve;
 
 use crate::{
@@ -69,5 +73,66 @@ impl Resolve<DeleteApiKey, User> for State {
       .await
       .context("failed to delete api key from db")?;
     Ok(DeleteApiKeyResponse {})
+  }
+}
+
+#[async_trait]
+impl Resolve<CreateApiKeyForServiceUser, User> for State {
+  async fn resolve(
+    &self,
+    CreateApiKeyForServiceUser {
+      user_id,
+      name,
+      expires,
+    }: CreateApiKeyForServiceUser,
+    user: User,
+  ) -> anyhow::Result<CreateApiKeyForServiceUserResponse> {
+    if !user.admin {
+      return Err(anyhow!("user not admin"));
+    }
+    let service_user =
+      find_one_by_id(&db_client().await.users, &user_id)
+        .await
+        .context("failed to query db for user")?
+        .context("no user found with id")?;
+    let UserConfig::Service { .. } = &service_user.config else {
+      return Err(anyhow!("user is not service user"));
+    };
+    self
+      .resolve(CreateApiKey { name, expires }, service_user)
+      .await
+  }
+}
+
+#[async_trait]
+impl Resolve<DeleteApiKeyForServiceUser, User> for State {
+  async fn resolve(
+    &self,
+    DeleteApiKeyForServiceUser { key }: DeleteApiKeyForServiceUser,
+    user: User,
+  ) -> anyhow::Result<DeleteApiKeyForServiceUserResponse> {
+    if !user.admin {
+      return Err(anyhow!("user not admin"));
+    }
+    let db = db_client().await;
+    let api_key = db
+      .api_keys
+      .find_one(doc! { "key": &key }, None)
+      .await
+      .context("failed to query db for api key")?
+      .context("did not find matching api key")?;
+    let service_user =
+      find_one_by_id(&db_client().await.users, &api_key.user_id)
+        .await
+        .context("failed to query db for user")?
+        .context("no user found with id")?;
+    let UserConfig::Service { .. } = &service_user.config else {
+      return Err(anyhow!("user is not service user"));
+    };
+    db.api_keys
+      .delete_one(doc! { "key": key }, None)
+      .await
+      .context("failed to delete api key on db")?;
+    Ok(DeleteApiKeyForServiceUserResponse {})
   }
 }

@@ -63,7 +63,7 @@ impl Resolve<CreateAlerter, User> for State {
       .to_string();
     let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
-    create_permission(&user, &alerter, PermissionLevel::Update).await;
+    create_permission(&user, &alerter, PermissionLevel::Write).await;
 
     let mut update =
       make_update(&alerter, Operation::CreateAlerter, &user);
@@ -101,7 +101,7 @@ impl Resolve<CopyAlerter, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     let start_ts = monitor_timestamp();
@@ -126,7 +126,7 @@ impl Resolve<CopyAlerter, User> for State {
       .to_string();
     let alerter: Alerter = self.get_resource(&alerter_id).await?;
 
-    create_permission(&user, &alerter, PermissionLevel::Update).await;
+    create_permission(&user, &alerter, PermissionLevel::Write).await;
 
     let mut update =
       make_update(&alerter, Operation::CreateAlerter, &user);
@@ -161,7 +161,7 @@ impl Resolve<DeleteAlerter, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -200,7 +200,7 @@ impl Resolve<UpdateAlerter, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 

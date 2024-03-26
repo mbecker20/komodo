@@ -68,7 +68,7 @@ impl Resolve<CreateBuild, User> for State {
       .to_string();
     let build: Build = self.get_resource(&build_id).await?;
 
-    create_permission(&user, &build, PermissionLevel::Update).await;
+    create_permission(&user, &build, PermissionLevel::Write).await;
 
     let mut update =
       make_update(&build, Operation::CreateBuild, &user);
@@ -108,7 +108,7 @@ impl Resolve<CopyBuild, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     let _: Builder = self.get_resource_check_permissions(&config.builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
@@ -134,7 +134,7 @@ impl Resolve<CopyBuild, User> for State {
       .to_string();
     let build: Build = self.get_resource(&build_id).await?;
 
-    create_permission(&user, &build, PermissionLevel::Update).await;
+    create_permission(&user, &build, PermissionLevel::Write).await;
 
     let mut update =
       make_update(&build, Operation::CreateBuild, &user);
@@ -174,7 +174,7 @@ impl Resolve<DeleteBuild, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -228,7 +228,7 @@ impl Resolve<UpdateBuild, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 

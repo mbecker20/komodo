@@ -101,10 +101,14 @@ export type WriteResponses = {
   // ==== API KEY ====
   CreateApiKey: Types.CreateApiKeyResponse;
   DeleteApiKey: Types.DeleteApiKeyResponse;
+  CreateApiKeyForServiceUser: Types.CreateApiKeyForServiceUser;
+  DeleteApiKeyForServiceUser: Types.DeleteApiKeyForServiceUser;
 
   // ==== USER ====
   PushRecentlyViewed: Types.PushRecentlyViewedResponse;
   SetLastSeenUpdate: Types.SetLastSeenUpdateResponse;
+  CreateServiceUser: Types.CreateServiceUserResponse;
+  UpdateServiceUserDescription: Types.UpdateServiceUserDescription;
 
   // ==== PERMISSIONS ====
   UpdateUserPerimissions: Types.Update;

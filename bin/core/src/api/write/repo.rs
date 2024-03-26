@@ -44,7 +44,7 @@ impl Resolve<CreateRepo, User> for State {
         let _: Server = self.get_resource_check_permissions(
             server_id,
             &user,
-            PermissionLevel::Update,
+            PermissionLevel::Write,
           )
           .await
           .context("cannot create repo on this server. user must have update permissions on the server.")?;
@@ -73,7 +73,7 @@ impl Resolve<CreateRepo, User> for State {
 
     let repo: Repo = self.get_resource(&repo_id).await?;
 
-    create_permission(&user, &repo, PermissionLevel::Update).await;
+    create_permission(&user, &repo, PermissionLevel::Write).await;
 
     let update = Update {
       target: ResourceTarget::Repo(repo_id),
@@ -130,14 +130,14 @@ impl Resolve<CopyRepo, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     if !config.server_id.is_empty() {
       let _: Server = self.get_resource_check_permissions(
           &config.server_id,
           &user,
-          PermissionLevel::Update,
+          PermissionLevel::Write,
         )
         .await
         .context("cannot create repo on this server. user must have update permissions on the server.")?;
@@ -163,7 +163,7 @@ impl Resolve<CopyRepo, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let repo: Repo = self.get_resource(&repo_id).await?;
-    create_permission(&user, &repo, PermissionLevel::Update).await;
+    create_permission(&user, &repo, PermissionLevel::Write).await;
     let mut update = make_update(&repo, Operation::CreateRepo, &user);
     update.push_simple_log(
       "create repo",
@@ -189,7 +189,7 @@ impl Resolve<DeleteRepo, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -287,7 +287,7 @@ impl Resolve<UpdateRepo, User> for State {
         let _: Server = self.get_resource_check_permissions(
           server_id,
           &user,
-          PermissionLevel::Update,
+          PermissionLevel::Write,
         )
         .await
         .context("cannot move repo to this server. user must have update permissions on the server.")?;
@@ -298,7 +298,7 @@ impl Resolve<UpdateRepo, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 

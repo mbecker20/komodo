@@ -127,7 +127,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
       ResourceTarget::System(_) => return Err(anyhow!("")),
       ResourceTarget::Build(id) => {
         <State as StateResource<Build>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Update
+          self, &id, &user, PermissionLevel::Write
         )
         .await?;
         <State as StateResource<Build>>::update_tags_on_resource(
@@ -137,7 +137,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
       }
       ResourceTarget::Builder(id) => {
         <State as StateResource<Builder>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Update
+          self, &id, &user, PermissionLevel::Write
         )
         .await?;
         <State as StateResource<Builder>>::update_tags_on_resource(
@@ -147,7 +147,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
       }
       ResourceTarget::Deployment(id) => {
         <State as StateResource<Deployment>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Update
+          self, &id, &user, PermissionLevel::Write
         )
         .await?;
         <State as StateResource<Deployment>>::update_tags_on_resource(
@@ -157,7 +157,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
       }
       ResourceTarget::Server(id) => {
         <State as StateResource<Server>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Update
+          self, &id, &user, PermissionLevel::Write
         )
         .await?;
         <State as StateResource<Server>>::update_tags_on_resource(
@@ -167,7 +167,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
       }
       ResourceTarget::Repo(id) => {
         <State as StateResource<Repo>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Update
+          self, &id, &user, PermissionLevel::Write
         )
         .await?;
         <State as StateResource<Repo>>::update_tags_on_resource(
@@ -177,7 +177,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
       }
       ResourceTarget::Alerter(id) => {
         <State as StateResource<Alerter>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Update
+          self, &id, &user, PermissionLevel::Write
         )
         .await?;
         <State as StateResource<Alerter>>::update_tags_on_resource(
@@ -187,7 +187,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
       }
       ResourceTarget::Procedure(id) => {
         <State as StateResource<Procedure>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Update
+          self, &id, &user, PermissionLevel::Write
         )
         .await?;
         <State as StateResource<Procedure>>::update_tags_on_resource(

@@ -78,9 +78,17 @@ impl User {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "type", content = "data")]
 pub enum UserConfig {
+  /// User that logs in with username / password
   Local { password: String },
+  
+  /// User that logs in via Google Oauth
   Google { google_id: String, avatar: String },
+
+  /// User that logs in via Github Oauth
   Github { github_id: String, avatar: String },
+
+  /// Non-human managed user, can have it's own permissions / api keys
+  Service { description: String },
 }
 
 impl Default for UserConfig {

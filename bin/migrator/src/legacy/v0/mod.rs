@@ -246,7 +246,7 @@ impl From<PermissionLevel>
       PermissionLevel::None => None,
       PermissionLevel::Read => Read,
       PermissionLevel::Execute => Execute,
-      PermissionLevel::Update => Update,
+      PermissionLevel::Update => Write,
     }
   }
 }

@@ -147,7 +147,7 @@ pub trait StateResource<
       .get_resource_check_permissions(
         id,
         user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     self
@@ -533,18 +533,18 @@ pub async fn get_resource_ids_for_non_admin(
   resource_type: ResourceTargetVariant,
 ) -> anyhow::Result<Vec<String>> {
   let permissions = find_collect(
-      &db_client().await.permissions,
-      doc! {
-        "user_id": user_id,
-        "target.type": resource_type.as_ref(),
-        "level": { "$in": ["Read", "Execute", "Update"] }
-      },
-      None,
-    )
-    .await
-    .context("failed to query permissions on db")?
-    .into_iter()
-    .map(|p| p.target.extract_variant_id().1.to_string())
-    .collect();
+    &db_client().await.permissions,
+    doc! {
+      "user_id": user_id,
+      "target.type": resource_type.as_ref(),
+      "level": { "$in": ["Read", "Execute", "Update"] }
+    },
+    None,
+  )
+  .await
+  .context("failed to query permissions on db")?
+  .into_iter()
+  .map(|p| p.target.extract_variant_id().1.to_string())
+  .collect();
   Ok(permissions)
 }

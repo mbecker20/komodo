@@ -44,7 +44,7 @@ impl Resolve<CreateDeployment, User> for State {
     let name = to_monitor_name(&name);
     if let Some(server_id) = &config.server_id {
       if !server_id.is_empty() {
-        let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Update)
+        let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
                     .await
                     .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
       }
@@ -80,7 +80,7 @@ impl Resolve<CreateDeployment, User> for State {
       .to_string();
     let deployment: Deployment =
       self.get_resource(&deployment_id).await?;
-    create_permission(&user, &deployment, PermissionLevel::Update)
+    create_permission(&user, &deployment, PermissionLevel::Write)
       .await;
 
     let mut update =
@@ -119,11 +119,11 @@ impl Resolve<CopyDeployment, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
     if !config.server_id.is_empty() {
-      let _: Server = self.get_resource_check_permissions(&config.server_id, &user, PermissionLevel::Update)
+      let _: Server = self.get_resource_check_permissions(&config.server_id, &user, PermissionLevel::Write)
         .await
         .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
     }
@@ -157,7 +157,7 @@ impl Resolve<CopyDeployment, User> for State {
     let deployment: Deployment =
       self.get_resource(&deployment_id).await?;
 
-    create_permission(&user, &deployment, PermissionLevel::Update)
+    create_permission(&user, &deployment, PermissionLevel::Write)
       .await;
 
     let mut update =
@@ -194,7 +194,7 @@ impl Resolve<DeleteDeployment, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -321,7 +321,7 @@ impl Resolve<UpdateDeployment, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 
@@ -329,7 +329,7 @@ impl Resolve<UpdateDeployment, User> for State {
       let start_ts = monitor_timestamp();
 
       if let Some(server_id) = &config.server_id {
-        let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Update)
+        let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
                 .await
                 .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
       }
@@ -432,7 +432,7 @@ impl Resolve<RenameDeployment, User> for State {
       .get_resource_check_permissions(
         &id,
         &user,
-        PermissionLevel::Update,
+        PermissionLevel::Write,
       )
       .await?;
 

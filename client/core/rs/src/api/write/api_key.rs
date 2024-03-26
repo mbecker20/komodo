@@ -48,3 +48,40 @@ pub struct DeleteApiKey {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DeleteApiKeyResponse {}
+
+//
+
+/// ADMIN ONLY
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(CreateApiKeyForServiceUserResponse)]
+pub struct CreateApiKeyForServiceUser {
+  /// Must be service user
+  pub user_id: String,
+  pub name: String,
+  #[serde(default)]
+  pub expires: I64,
+}
+
+#[typeshare]
+pub type CreateApiKeyForServiceUserResponse = CreateApiKeyResponse;
+
+//
+
+/// ADMIN ONLY
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(DeleteApiKeyForServiceUserResponse)]
+pub struct DeleteApiKeyForServiceUser {
+  pub key: String,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DeleteApiKeyForServiceUserResponse {}
