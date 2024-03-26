@@ -2,7 +2,10 @@ use anyhow::{anyhow, Context};
 use axum::{
   extract::Query, response::Redirect, routing::get, Router,
 };
-use monitor_client::entities::{monitor_timestamp, user::User};
+use monitor_client::entities::{
+  monitor_timestamp,
+  user::{User, UserConfig},
+};
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
 use serror::AppError;
@@ -59,7 +62,7 @@ async fn callback(
   let db_client = db_client().await;
   let user = db_client
     .users
-    .find_one(doc! { "github_id": &github_id }, None)
+    .find_one(doc! { "config.data.github_id": &github_id }, None)
     .await
     .context("failed at find user query from mongo")?;
   let jwt = match user {
@@ -71,15 +74,19 @@ async fn callback(
       let no_users_exist =
         db_client.users.find_one(None, None).await?.is_none();
       let user = User {
+        id: Default::default(),
         username: github_user.login,
-        avatar: github_user.avatar_url.into(),
-        github_id: github_id.into(),
         enabled: no_users_exist,
         admin: no_users_exist,
         create_server_permissions: no_users_exist,
         create_build_permissions: no_users_exist,
         updated_at: ts,
-        ..Default::default()
+        last_update_view: 0,
+        recently_viewed: Vec::new(),
+        config: UserConfig::Github {
+          github_id,
+          avatar: github_user.avatar_url,
+        },
       };
       let user_id = db_client
         .users

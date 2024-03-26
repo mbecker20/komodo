@@ -1,6 +1,6 @@
 use mongo_indexed::derive::MongoIndexed;
 use mungos::mongodb::bson::{
-  serde_helpers::hex_string_as_object_id, Document,
+  doc, serde_helpers::hex_string_as_object_id, Document,
 };
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -13,6 +13,9 @@ use super::update::ResourceTarget;
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
+#[doc_index(doc! { "config.type": 1 })]
+#[sparse_doc_index(doc! { "config.data.google_id": 1 })]
+#[sparse_doc_index(doc! { "config.data.github_id": 1 })]
 pub struct User {
   #[serde(
     default,
@@ -25,8 +28,8 @@ pub struct User {
   #[unique_index]
   pub username: String,
 
-  #[serde(default)]
   #[index]
+  #[serde(default)]
   pub enabled: bool,
 
   #[serde(default)]
@@ -38,15 +41,7 @@ pub struct User {
   #[serde(default)]
   pub create_build_permissions: bool,
 
-  pub avatar: Option<String>,
-
-  pub password: Option<String>,
-
-  #[sparse_index]
-  pub github_id: Option<String>,
-
-  #[sparse_index]
-  pub google_id: Option<String>,
+  pub config: UserConfig,
 
   #[serde(default)]
   pub last_update_view: I64,
@@ -61,7 +56,9 @@ pub struct User {
 impl User {
   /// Prepares user object for transport by removing any sensitive fields
   pub fn sanitize(&mut self) {
-    self.password = None;
+    if let UserConfig::Local { .. } = &self.config {
+      self.config = UserConfig::default();
+    }
   }
 
   pub fn admin_service_user(id_name: impl Into<String>) -> User {
@@ -73,6 +70,23 @@ impl User {
       create_build_permissions: true,
       create_server_permissions: true,
       ..Default::default()
+    }
+  }
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", content = "data")]
+pub enum UserConfig {
+  Local { password: String },
+  Google { google_id: String, avatar: String },
+  Github { github_id: String, avatar: String },
+}
+
+impl Default for UserConfig {
+  fn default() -> Self {
+    Self::Local {
+      password: String::new(),
     }
   }
 }

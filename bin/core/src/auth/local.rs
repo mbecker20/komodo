@@ -6,7 +6,7 @@ use monitor_client::{
     CreateLocalUser, CreateLocalUserResponse, LoginLocalUser,
     LoginLocalUserResponse,
   },
-  entities::user::User,
+  entities::user::{User, UserConfig},
 };
 use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
@@ -45,14 +45,16 @@ impl Resolve<CreateLocalUser> for State {
     let ts = unix_timestamp_ms() as i64;
 
     let user = User {
+      id: Default::default(),
       username,
-      password: Some(password),
       enabled: no_users_exist,
       admin: no_users_exist,
       create_server_permissions: no_users_exist,
       create_build_permissions: no_users_exist,
       updated_at: ts,
-      ..Default::default()
+      last_update_view: 0,
+      recently_viewed: Vec::new(),
+      config: UserConfig::Local { password },
     };
 
     let user_id = db_client()
@@ -90,12 +92,19 @@ impl Resolve<LoginLocalUser> for State {
       .users
       .find_one(doc! { "username": &username }, None)
       .await
-      .context("failed at mongo query")?
-      .ok_or(anyhow!("did not find user with username {username}"))?;
+      .context("failed at db query for users")?
+      .with_context(|| {
+        format!("did not find user with username {username}")
+      })?;
 
-    let user_pw_hash = user.password.ok_or(anyhow!(
-      "invalid login, user does not have password login"
-    ))?;
+    let UserConfig::Local {
+      password: user_pw_hash,
+    } = user.config
+    else {
+      return Err(anyhow!(
+        "non-local auth users can not log in with a password"
+      ));
+    };
 
     let verified = bcrypt::verify(password, &user_pw_hash)
       .context("failed at verify password")?;

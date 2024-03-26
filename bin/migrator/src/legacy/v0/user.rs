@@ -1,3 +1,5 @@
+use anyhow::anyhow;
+use monitor_client::entities::user::UserConfig;
 use mungos::mongodb::bson::serde_helpers::hex_string_as_object_id;
 use serde::{Deserialize, Serialize};
 
@@ -80,17 +82,29 @@ pub struct ApiSecret {
 impl TryFrom<User> for monitor_client::entities::user::User {
   type Error = anyhow::Error;
   fn try_from(value: User) -> Result<Self, Self::Error> {
+    let config =
+      match (value.password, value.github_id, value.google_id) {
+        (Some(password), _, _) => UserConfig::Local { password },
+        (None, Some(github_id), _) => UserConfig::Github {
+          github_id,
+          avatar: value.avatar.unwrap_or_default(),
+        },
+        (None, None, Some(google_id)) => UserConfig::Google {
+          google_id,
+          avatar: value.avatar.unwrap_or_default(),
+        },
+        _ => {
+          return Err(anyhow!("user is not local, github, or google"))
+        }
+      };
     let user = Self {
+      config,
       id: value.id,
       username: value.username,
       enabled: value.enabled,
       admin: value.admin,
       create_server_permissions: value.create_server_permissions,
       create_build_permissions: value.create_build_permissions,
-      avatar: value.avatar,
-      password: value.password,
-      github_id: value.github_id,
-      google_id: value.google_id,
       last_update_view: Default::default(),
       recently_viewed: Default::default(),
       updated_at: unix_from_monitor_ts(&value.updated_at)?,

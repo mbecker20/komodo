@@ -3,7 +3,7 @@ use async_timing_util::unix_timestamp_ms;
 use axum::{
   extract::Query, response::Redirect, routing::get, Router,
 };
-use monitor_client::entities::user::User;
+use monitor_client::entities::user::{User, UserConfig};
 use mungos::mongodb::bson::doc;
 use serde::Deserialize;
 use serror::AppError;
@@ -70,7 +70,7 @@ async fn callback(
   let db_client = db_client().await;
   let user = db_client
     .users
-    .find_one(doc! { "google_id": &google_id }, None)
+    .find_one(doc! { "config.data.google_id": &google_id }, None)
     .await
     .context("failed at find user query from mongo")?;
   let jwt = match user {
@@ -82,6 +82,7 @@ async fn callback(
       let no_users_exist =
         db_client.users.find_one(None, None).await?.is_none();
       let user = User {
+        id: Default::default(),
         username: google_user
           .email
           .split('@')
@@ -89,14 +90,17 @@ async fn callback(
           .first()
           .unwrap()
           .to_string(),
-        avatar: google_user.picture.into(),
-        google_id: google_id.into(),
         enabled: no_users_exist,
         admin: no_users_exist,
         create_server_permissions: no_users_exist,
         create_build_permissions: no_users_exist,
         updated_at: ts,
-        ..Default::default()
+        last_update_view: 0,
+        recently_viewed: Vec::new(),
+        config: UserConfig::Google {
+          google_id,
+          avatar: google_user.picture,
+        },
       };
       let user_id = db_client
         .users
