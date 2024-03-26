@@ -7,11 +7,12 @@ use monitor_client::{
     build::Build,
     deployment::{Deployment, DeploymentImage, DockerContainerState},
     monitor_timestamp,
+    permission::PermissionLevel,
     server::Server,
     to_monitor_name,
     update::{Log, ResourceTarget, Update, UpdateStatus},
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::{
@@ -24,9 +25,10 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, empty_or_only_spaces, get_deployment_state,
-    make_update, periphery_client, remove_from_recently_viewed,
-    resource::StateResource, update_update,
+    add_update, create_permission, empty_or_only_spaces,
+    get_deployment_state, make_update, periphery_client,
+    remove_from_recently_viewed, resource::StateResource,
+    update_update,
   },
   state::{action_states, State},
 };
@@ -60,9 +62,6 @@ impl Resolve<CreateDeployment, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description: Default::default(),
       tags: Default::default(),
       config: config.into(),
@@ -80,25 +79,21 @@ impl Resolve<CreateDeployment, User> for State {
       .to_string();
     let deployment: Deployment =
       self.get_resource(&deployment_id).await?;
-    let update = Update {
-      target: ResourceTarget::Deployment(deployment_id),
-      operation: Operation::CreateDeployment,
-      start_ts,
-      end_ts: Some(monitor_timestamp()),
-      operator: user.id.clone(),
-      success: true,
-      logs: vec![
-        Log::simple(
-          "create deployment",
-          format!(
-            "created deployment\nid: {}\nname: {}",
-            deployment.id, deployment.name
-          ),
-        ),
-        Log::simple("config", format!("{:#?}", deployment.config)),
-      ],
-      ..Default::default()
-    };
+    create_permission(&user, &deployment, PermissionLevel::Update)
+      .await;
+
+    let mut update =
+      make_update(&deployment, Operation::CreateDeployment, &user);
+    update.push_simple_log(
+      "create deployment",
+      format!(
+        "created deployment\nid: {}\nname: {}",
+        deployment.id, deployment.name
+      ),
+    );
+    update
+      .push_simple_log("config", format!("{:#?}", deployment.config));
+    update.finalize();
 
     add_update(update).await?;
 
@@ -128,14 +123,14 @@ impl Resolve<CopyDeployment, User> for State {
       .await?;
     if !config.server_id.is_empty() {
       let _: Server = self.get_resource_check_permissions(&config.server_id, &user, PermissionLevel::Update)
-                    .await
-                    .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+        .await
+        .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
     }
     if let DeploymentImage::Build { build_id, .. } = &config.image {
       if !build_id.is_empty() {
         let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
-                    .await
-                    .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+          .await
+          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
       }
     }
     let start_ts = monitor_timestamp();
@@ -143,9 +138,6 @@ impl Resolve<CopyDeployment, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description,
       tags,
       config,
@@ -163,25 +155,22 @@ impl Resolve<CopyDeployment, User> for State {
       .to_string();
     let deployment: Deployment =
       self.get_resource(&deployment_id).await?;
-    let update = Update {
-      target: ResourceTarget::Deployment(deployment_id),
-      operation: Operation::CreateDeployment,
-      start_ts,
-      end_ts: Some(monitor_timestamp()),
-      operator: user.id.clone(),
-      success: true,
-      logs: vec![
-        Log::simple(
-          "create deployment",
-          format!(
-            "created deployment\nid: {}\nname: {}",
-            deployment.id, deployment.name
-          ),
-        ),
-        Log::simple("config", format!("{:#?}", deployment.config)),
-      ],
-      ..Default::default()
-    };
+
+    create_permission(&user, &deployment, PermissionLevel::Update)
+      .await;
+
+    let mut update =
+      make_update(&deployment, Operation::CreateDeployment, &user);
+    update.push_simple_log(
+      "create deployment",
+      format!(
+        "created deployment\nid: {}\nname: {}",
+        deployment.id, deployment.name
+      ),
+    );
+    update
+      .push_simple_log("config", format!("{:#?}", deployment.config));
+    update.finalize();
 
     add_update(update).await?;
 

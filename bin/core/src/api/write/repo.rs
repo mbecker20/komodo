@@ -4,12 +4,13 @@ use monitor_client::{
   api::{execute, write::*},
   entities::{
     monitor_timestamp,
+    permission::PermissionLevel,
     repo::Repo,
     server::Server,
     to_monitor_name,
     update::{Log, ResourceTarget, Update, UpdateStatus},
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::{
@@ -22,7 +23,7 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, make_update, periphery_client,
+    add_update, create_permission, make_update, periphery_client,
     remove_from_recently_viewed, resource::StateResource,
     update_update,
   },
@@ -40,12 +41,12 @@ impl Resolve<CreateRepo, User> for State {
     if let Some(server_id) = &config.server_id {
       if !server_id.is_empty() {
         let _: Server = self.get_resource_check_permissions(
-                        server_id,
-                        &user,
-                        PermissionLevel::Update,
-                    )
-                    .await
-                    .context("cannot create repo on this server. user must have update permissions on the server.")?;
+            server_id,
+            &user,
+            PermissionLevel::Update,
+          )
+          .await
+          .context("cannot create repo on this server. user must have update permissions on the server.")?;
       }
     }
     let start_ts = monitor_timestamp();
@@ -53,9 +54,6 @@ impl Resolve<CreateRepo, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description: Default::default(),
       tags: Default::default(),
       config: config.into(),
@@ -73,6 +71,8 @@ impl Resolve<CreateRepo, User> for State {
       .to_string();
 
     let repo: Repo = self.get_resource(&repo_id).await?;
+
+    create_permission(&user, &repo, PermissionLevel::Update).await;
 
     let update = Update {
       target: ResourceTarget::Repo(repo_id),
@@ -134,21 +134,18 @@ impl Resolve<CopyRepo, User> for State {
       .await?;
     if !config.server_id.is_empty() {
       let _: Server = self.get_resource_check_permissions(
-                    &config.server_id,
-                    &user,
-                    PermissionLevel::Update,
-                )
-                .await
-                .context("cannot create repo on this server. user must have update permissions on the server.")?;
+          &config.server_id,
+          &user,
+          PermissionLevel::Update,
+        )
+        .await
+        .context("cannot create repo on this server. user must have update permissions on the server.")?;
     }
     let start_ts = monitor_timestamp();
     let repo = Repo {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description,
       tags,
       config,
@@ -165,6 +162,7 @@ impl Resolve<CopyRepo, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let repo: Repo = self.get_resource(&repo_id).await?;
+    create_permission(&user, &repo, PermissionLevel::Update).await;
     let update = Update {
       target: ResourceTarget::Repo(repo_id),
       operation: Operation::CreateRepo,

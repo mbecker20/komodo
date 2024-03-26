@@ -4,10 +4,11 @@ use monitor_client::{
   api::execute::*,
   entities::{
     monitor_timestamp,
+    permission::PermissionLevel,
     server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use periphery_client::api;

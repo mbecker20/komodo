@@ -13,10 +13,11 @@ use monitor_client::{
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
     deployment::DockerContainerState,
     monitor_timestamp,
+    permission::PermissionLevel,
     server::Server,
     update::{Log, Update},
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::{

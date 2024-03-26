@@ -7,10 +7,11 @@ use monitor_client::{
     build::Build,
     deployment::{Deployment, DeploymentImage},
     get_image_name, monitor_timestamp,
+    permission::PermissionLevel,
     server::ServerStatus,
     update::{Log, ResourceTarget, Update, UpdateStatus},
     user::User,
-    Operation, PermissionLevel, Version,
+    Operation, Version,
   },
 };
 use mungos::{find::find_collect, mongodb::bson::doc};

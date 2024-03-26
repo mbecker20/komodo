@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use serde::{Deserialize, Serialize};
@@ -12,6 +10,7 @@ pub mod api_key;
 pub mod build;
 pub mod builder;
 pub mod deployment;
+pub mod permission;
 pub mod procedure;
 pub mod repo;
 pub mod resource;
@@ -28,8 +27,6 @@ pub type U64 = u64;
 pub type MongoDocument = mungos::mongodb::bson::Document;
 #[typeshare(serialized_as = "MongoIdObj")]
 pub type MongoId = String;
-#[typeshare]
-pub type PermissionsMap = HashMap<String, PermissionLevel>;
 
 pub fn all_logs_success(logs: &[update::Log]) -> bool {
   for log in logs {
@@ -294,38 +291,6 @@ pub enum Timelength {
   #[serde(rename = "30-day")]
   #[strum(serialize = "30-day")]
   ThirtyDays,
-}
-
-#[typeshare]
-#[derive(
-  Serialize,
-  Deserialize,
-  Debug,
-  Display,
-  EnumString,
-  Hash,
-  Clone,
-  Copy,
-  PartialEq,
-  Eq,
-  PartialOrd,
-  Ord,
-  Default,
-)]
-#[serde(rename_all = "snake_case")]
-#[strum(serialize_all = "snake_case")]
-pub enum PermissionLevel {
-  #[default]
-  None,
-  Read,
-  Execute,
-  Update,
-}
-
-impl Default for &PermissionLevel {
-  fn default() -> Self {
-    &PermissionLevel::None
-  }
 }
 
 #[typeshare]

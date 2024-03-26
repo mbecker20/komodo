@@ -3,8 +3,9 @@ use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
   entities::{
-    monitor_timestamp, procedure::Procedure, to_monitor_name,
-    update::Log, user::User, Operation, PermissionLevel,
+    monitor_timestamp, permission::PermissionLevel,
+    procedure::Procedure, to_monitor_name, update::Log, user::User,
+    Operation,
   },
 };
 use mungos::{
@@ -16,8 +17,9 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, make_update, remove_from_recently_viewed,
-    resource::StateResource, update_update,
+    add_update, create_permission, make_update,
+    remove_from_recently_viewed, resource::StateResource,
+    update_update,
   },
   state::{action_states, State},
 };
@@ -35,9 +37,6 @@ impl Resolve<CreateProcedure, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description: Default::default(),
       tags: Default::default(),
       info: Default::default(),
@@ -55,6 +54,9 @@ impl Resolve<CreateProcedure, User> for State {
       .to_string();
     let procedure: Procedure =
       self.get_resource(&procedure_id).await?;
+
+    create_permission(&user, &procedure, PermissionLevel::Update)
+      .await;
 
     let mut update =
       make_update(&procedure, Operation::CreateProcedure, &user);
@@ -103,9 +105,6 @@ impl Resolve<CopyProcedure, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description,
       tags,
       config,
@@ -123,6 +122,9 @@ impl Resolve<CopyProcedure, User> for State {
       .to_string();
     let procedure: Procedure =
       self.get_resource(&procedure_id).await?;
+
+    create_permission(&user, &procedure, PermissionLevel::Update)
+      .await;
 
     let mut update =
       make_update(&procedure, Operation::CreateProcedure, &user);

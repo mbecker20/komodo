@@ -3,10 +3,10 @@ use async_trait::async_trait;
 use monitor_client::{
   api::read::*,
   entities::{
+    permission::PermissionLevel,
     repo::{Repo, RepoActionState, RepoListItem},
     resource::AddFilters,
     user::User,
-    PermissionLevel,
   },
 };
 use mungos::mongodb::bson::{doc, Document};

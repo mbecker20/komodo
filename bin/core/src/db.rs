@@ -6,6 +6,7 @@ use monitor_client::entities::{
   build::Build,
   builder::Builder,
   deployment::Deployment,
+  permission::Permission,
   procedure::Procedure,
   repo::Repo,
   server::{stats::SystemStatsRecord, Server},
@@ -34,6 +35,7 @@ pub async fn db_client() -> &'static DbClient {
 
 pub struct DbClient {
   pub users: Collection<User>,
+  pub permissions: Collection<Permission>,
   pub api_keys: Collection<ApiKey>,
   pub tags: Collection<CustomTag>,
   pub updates: Collection<Update>,
@@ -88,6 +90,7 @@ impl DbClient {
 
     let client = DbClient {
       users: User::collection(&db, true).await?,
+      permissions: Permission::collection(&db, true).await?,
       api_keys: ApiKey::collection(&db, true).await?,
       tags: CustomTag::collection(&db, true).await?,
       updates: Update::collection(&db, true).await?,

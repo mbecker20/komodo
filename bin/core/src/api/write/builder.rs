@@ -5,9 +5,10 @@ use monitor_client::{
   entities::{
     builder::Builder,
     monitor_timestamp,
+    permission::PermissionLevel,
     update::{Log, ResourceTarget, Update},
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::{
@@ -19,7 +20,8 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, remove_from_recently_viewed, resource::StateResource,
+    add_update, create_permission, remove_from_recently_viewed,
+    resource::StateResource,
   },
   state::State,
 };
@@ -36,9 +38,6 @@ impl Resolve<CreateBuilder, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description: Default::default(),
       tags: Default::default(),
       config: config.into(),
@@ -55,6 +54,7 @@ impl Resolve<CreateBuilder, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let builder: Builder = self.get_resource(&builder_id).await?;
+    create_permission(&user, &builder, PermissionLevel::Update).await;
     let update = Update {
       target: ResourceTarget::Builder(builder_id),
       operation: Operation::CreateBuilder,
@@ -104,9 +104,6 @@ impl Resolve<CopyBuilder, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description,
       tags: Default::default(),
       config,
@@ -123,6 +120,7 @@ impl Resolve<CopyBuilder, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let builder: Builder = self.get_resource(&builder_id).await?;
+    create_permission(&user, &builder, PermissionLevel::Update).await;
     let update = Update {
       target: ResourceTarget::Builder(builder_id),
       operation: Operation::CreateBuilder,

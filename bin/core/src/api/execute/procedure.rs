@@ -2,8 +2,8 @@ use async_trait::async_trait;
 use monitor_client::{
   api::execute::RunProcedure,
   entities::{
-    procedure::Procedure, update::Update, user::User, Operation,
-    PermissionLevel,
+    permission::PermissionLevel, procedure::Procedure,
+    update::Update, user::User, Operation,
   },
 };
 use resolver_api::Resolve;

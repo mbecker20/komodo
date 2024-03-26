@@ -7,9 +7,9 @@ use monitor_client::{
   },
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
-    deployment::Deployment, procedure::Procedure, repo::Repo,
-    server::Server, tag::CustomTag, update::ResourceTarget,
-    user::User, PermissionLevel,
+    deployment::Deployment, permission::PermissionLevel,
+    procedure::Procedure, repo::Repo, server::Server, tag::CustomTag,
+    update::ResourceTarget, user::User,
   },
 };
 use mungos::{

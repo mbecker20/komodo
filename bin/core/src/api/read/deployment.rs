@@ -10,11 +10,12 @@ use monitor_client::{
       DeploymentImage, DeploymentListItem, DockerContainerState,
       DockerContainerStats,
     },
+    permission::PermissionLevel,
     resource::AddFilters,
     server::Server,
     update::{Log, UpdateStatus},
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::{

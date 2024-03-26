@@ -9,12 +9,12 @@ use monitor_client::{
     build::Build,
     builder::Builder,
     deployment::Deployment,
+    permission::PermissionLevel,
     procedure::Procedure,
     repo::Repo,
     server::Server,
     update::{ResourceTarget, Update, UpdateListItem},
     user::User,
-    PermissionLevel,
   },
 };
 use mungos::{

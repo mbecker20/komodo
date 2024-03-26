@@ -7,8 +7,9 @@ use monitor_client::{
   entities::{
     alerter::{Alerter, AlerterInfo},
     monitor_timestamp,
+    permission::PermissionLevel,
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::{
@@ -20,8 +21,8 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, make_update, remove_from_recently_viewed,
-    resource::StateResource,
+    add_update, create_permission, make_update,
+    remove_from_recently_viewed, resource::StateResource,
   },
   state::State,
 };
@@ -44,9 +45,6 @@ impl Resolve<CreateAlerter, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description: Default::default(),
       tags: Default::default(),
       config: config.into(),
@@ -63,6 +61,8 @@ impl Resolve<CreateAlerter, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let alerter: Alerter = self.get_resource(&alerter_id).await?;
+
+    create_permission(&user, &alerter, PermissionLevel::Update).await;
 
     let mut update =
       make_update(&alerter, Operation::CreateAlerter, &user);
@@ -108,9 +108,6 @@ impl Resolve<CopyAlerter, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description,
       config,
       tags: Default::default(),
@@ -127,6 +124,8 @@ impl Resolve<CopyAlerter, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let alerter: Alerter = self.get_resource(&alerter_id).await?;
+
+    create_permission(&user, &alerter, PermissionLevel::Update).await;
 
     let mut update =
       make_update(&alerter, Operation::CreateAlerter, &user);

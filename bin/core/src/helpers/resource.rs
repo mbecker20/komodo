@@ -3,32 +3,26 @@ use std::str::FromStr;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::future::join_all;
-use monitor_client::{
-  entities::{
-    alerter::{
-      Alerter, AlerterConfig, AlerterListItem, AlerterListItemInfo,
-    },
-    build::{Build, BuildListItem, BuildListItemInfo},
-    builder::{
-      Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo,
-    },
-    deployment::{
-      Deployment, DeploymentImage, DeploymentListItem,
-      DeploymentListItemInfo,
-    },
-    procedure::{
-      Procedure, ProcedureListItem, ProcedureListItemInfo,
-    },
-    repo::{Repo, RepoInfo, RepoListItem},
-    server::{Server, ServerListItem, ServerListItemInfo},
-    update::ResourceTargetVariant,
-    user::User,
-    PermissionLevel,
+use monitor_client::entities::{
+  alerter::{
+    Alerter, AlerterConfig, AlerterListItem, AlerterListItemInfo,
   },
-  permissioned::Permissioned,
+  build::{Build, BuildListItem, BuildListItemInfo},
+  builder::{
+    Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo,
+  },
+  deployment::{
+    Deployment, DeploymentImage, DeploymentListItem,
+    DeploymentListItemInfo,
+  },
+  permission::PermissionLevel,
+  procedure::{Procedure, ProcedureListItem, ProcedureListItemInfo},
+  repo::{Repo, RepoInfo, RepoListItem},
+  server::{Server, ServerListItem, ServerListItemInfo},
+  update::ResourceTargetVariant,
+  user::User,
 };
 use mungos::{
-  aggregate::aggregate_collect,
   by_id::{find_one_by_id, update_one_by_id},
   find::find_collect,
   mongodb::{
@@ -44,12 +38,13 @@ use super::cache::{deployment_status_cache, server_status_cache};
 
 #[async_trait]
 pub trait StateResource<
-  T: Send + Sync + Unpin + Serialize + DeserializeOwned + Permissioned,
+  T: Send + Sync + Unpin + Serialize + DeserializeOwned,
 >
 {
   type ListItem: Serialize + Send;
 
   fn name() -> &'static str;
+  fn resource_target_variant(&self) -> ResourceTargetVariant;
   async fn coll(&self) -> &Collection<T>;
   async fn to_list_item(
     &self,
@@ -72,7 +67,8 @@ pub trait StateResource<
     permission_level: PermissionLevel,
   ) -> anyhow::Result<T> {
     let resource = self.get_resource(id).await?;
-    let permissions = resource.get_user_permissions(&user.id);
+    let permissions =
+      self.get_user_permission_on_resource(&user.id, id).await?;
     if user.admin || permissions >= permission_level {
       Ok(resource)
     } else {
@@ -88,40 +84,29 @@ pub trait StateResource<
     user_id: &str,
     resource_id: &str,
   ) -> anyhow::Result<PermissionLevel> {
-    let resource = self.get_resource(resource_id).await?;
-    Ok(resource.get_user_permissions(user_id))
+    get_user_permission_on_resource(
+      user_id,
+      self.resource_target_variant(),
+      resource_id,
+    )
+    .await
   }
 
   async fn get_resource_ids_for_non_admin(
     &self,
     user_id: &str,
   ) -> anyhow::Result<Vec<String>> {
-    use mungos::aggregate::AggStage::*;
-    aggregate_collect(
-      self.coll().await,
-      [
-          Match(doc! {
-              format!("permissions.{}", user_id): { "$in": ["update", "execute", "read"] }
-          }),
-          Project(doc! { "_id": 1 }),
-      ], None)
-      .await
-      .with_context(|| format!("failed to get {} ids for non admin | aggregation", Self::name()))?
-      .into_iter()
-      .map(|d| {
-        let id = d
-          .get("_id")
-          .context("no _id field")?
-          .as_object_id()
-          .context("_id not ObjectId")?
-          .to_string();
-        anyhow::Ok(id)
-      })
-    .collect::<anyhow::Result<Vec<_>>>()
-    .with_context(|| format!(
-        "failed to get {} ids for non admin | extract id from document",
-        Self::name()
-    ))
+    let permissions = find_collect(
+      &db_client().await.permissions,
+      doc! { "user_id": user_id, "target.type": self.resource_target_variant().as_ref() },
+      None,
+    )
+    .await
+    .context("failed to query permissions on db")?
+    .into_iter()
+    .map(|p| p.target.extract_variant_id().1.to_string())
+    .collect();
+    Ok(permissions)
   }
 
   async fn list_resources_for_user(
@@ -130,10 +115,13 @@ pub trait StateResource<
     user: &User,
   ) -> anyhow::Result<Vec<Self::ListItem>> {
     if !user.admin {
-      filters.insert(
-        format!("permissions.{}", user.id),
-        doc! { "$in": ["read", "execute", "update"] },
-      );
+      let ids = self
+        .get_resource_ids_for_non_admin(&user.id)
+        .await?
+        .into_iter()
+        .flat_map(|id| ObjectId::from_str(&id))
+        .collect::<Vec<_>>();
+      filters.insert("_id", doc! { "$in": ids });
     }
     let list = find_collect(self.coll().await, filters, None)
       .await
@@ -221,6 +209,10 @@ impl StateResource<Server> for State {
     "server"
   }
 
+  fn resource_target_variant(&self) -> ResourceTargetVariant {
+    ResourceTargetVariant::Server
+  }
+
   async fn coll(&self) -> &Collection<Server> {
     &db_client().await.servers
   }
@@ -259,6 +251,10 @@ impl StateResource<Deployment> for State {
 
   fn name() -> &'static str {
     "deployment"
+  }
+
+  fn resource_target_variant(&self) -> ResourceTargetVariant {
+    ResourceTargetVariant::Deployment
   }
 
   async fn coll(&self) -> &Collection<Deployment> {
@@ -314,6 +310,10 @@ impl StateResource<Build> for State {
     "build"
   }
 
+  fn resource_target_variant(&self) -> ResourceTargetVariant {
+    ResourceTargetVariant::Build
+  }
+
   async fn coll(&self) -> &Collection<Build> {
     &db_client().await.builds
   }
@@ -346,6 +346,10 @@ impl StateResource<Repo> for State {
     "repo"
   }
 
+  fn resource_target_variant(&self) -> ResourceTargetVariant {
+    ResourceTargetVariant::Repo
+  }
+
   async fn coll(&self) -> &Collection<Repo> {
     &db_client().await.repos
   }
@@ -375,6 +379,10 @@ impl StateResource<Builder> for State {
 
   fn name() -> &'static str {
     "builder"
+  }
+
+  fn resource_target_variant(&self) -> ResourceTargetVariant {
+    ResourceTargetVariant::Builder
   }
 
   async fn coll(&self) -> &Collection<Builder> {
@@ -418,6 +426,10 @@ impl StateResource<Alerter> for State {
     "alerter"
   }
 
+  fn resource_target_variant(&self) -> ResourceTargetVariant {
+    ResourceTargetVariant::Alerter
+  }
+
   async fn coll(&self) -> &Collection<Alerter> {
     &db_client().await.alerters
   }
@@ -454,6 +466,10 @@ impl StateResource<Procedure> for State {
     "procedure"
   }
 
+  fn resource_target_variant(&self) -> ResourceTargetVariant {
+    ResourceTargetVariant::Procedure
+  }
+
   async fn coll(&self) -> &Collection<Procedure> {
     &db_client().await.procedures
   }
@@ -475,4 +491,27 @@ impl StateResource<Procedure> for State {
       },
     })
   }
+}
+
+pub async fn get_user_permission_on_resource(
+  user_id: &str,
+  resource_variant: ResourceTargetVariant,
+  resource_id: &str,
+) -> anyhow::Result<PermissionLevel> {
+  let permission = db_client()
+    .await
+    .permissions
+    .find_one(
+      doc! {
+        "user_id": user_id,
+        "target.type": resource_variant.as_ref(),
+        "target.id": resource_id
+      },
+      None,
+    )
+    .await
+    .context("failed to query permissions table")?
+    .map(|permission| permission.level)
+    .unwrap_or_default();
+  Ok(permission)
 }

@@ -11,18 +11,8 @@ use axum::{
 use futures::{SinkExt, StreamExt};
 use monitor_client::{
   entities::{
-    alerter::Alerter,
-    build::Build,
-    builder::Builder,
-    deployment::Deployment,
-    procedure::Procedure,
-    repo::Repo,
-    server::Server,
-    update::{ResourceTarget, ResourceTargetVariant},
-    user::User,
-    PermissionLevel,
+    permission::PermissionLevel, update::ResourceTarget, user::User,
   },
-  permissioned::Permissioned,
   ws::WsLoginMessage,
 };
 use mungos::by_id::find_one_by_id;
@@ -33,8 +23,10 @@ use tokio_util::sync::CancellationToken;
 use crate::{
   auth::{auth_api_key_check_enabled, auth_jwt_check_enabled},
   db::db_client,
-  helpers::{channel::update_channel, resource::StateResource},
-  state::State,
+  helpers::{
+    channel::update_channel,
+    resource::get_user_permission_on_resource,
+  },
 };
 
 pub fn router() -> Router {
@@ -207,67 +199,12 @@ async fn user_can_see_update(
   if user.admin {
     return Ok(());
   }
-  let (permissions, target) = match update_target {
-    ResourceTarget::Server(server_id) => {
-      let resource: Server = State.get_resource(server_id).await?;
-      (
-        resource.get_user_permissions(&user.id),
-        ResourceTargetVariant::Server,
-      )
-    }
-    ResourceTarget::Deployment(deployment_id) => {
-      let resource: Deployment =
-        State.get_resource(deployment_id).await?;
-      (
-        resource.get_user_permissions(&user.id),
-        ResourceTargetVariant::Deployment,
-      )
-    }
-    ResourceTarget::Build(build_id) => {
-      let resource: Build = State.get_resource(build_id).await?;
-      (
-        resource.get_user_permissions(&user.id),
-        ResourceTargetVariant::Build,
-      )
-    }
-    ResourceTarget::Builder(builder_id) => {
-      let resource: Builder = State.get_resource(builder_id).await?;
-      (
-        resource.get_user_permissions(&user.id),
-        ResourceTargetVariant::Builder,
-      )
-    }
-    ResourceTarget::Repo(repo_id) => {
-      let resource: Repo = State.get_resource(repo_id).await?;
-      (
-        resource.get_user_permissions(&user.id),
-        ResourceTargetVariant::Repo,
-      )
-    }
-    ResourceTarget::Alerter(alerter_id) => {
-      let resource: Alerter = State.get_resource(alerter_id).await?;
-      (
-        resource.get_user_permissions(&user.id),
-        ResourceTargetVariant::Alerter,
-      )
-    }
-    ResourceTarget::Procedure(prodecure_id) => {
-      let resource: Procedure =
-        State.get_resource(prodecure_id).await?;
-      (
-        resource.get_user_permissions(&user.id),
-        ResourceTargetVariant::Procedure,
-      )
-    }
-    ResourceTarget::System(_) => {
-      return Err(anyhow!(
-        "user not admin, can't recieve system updates"
-      ))
-    }
-  };
-  if permissions != PermissionLevel::None {
+  let (variant, id) = update_target.extract_variant_id();
+  let permissions =
+    get_user_permission_on_resource(&user.id, variant, id).await?;
+  if permissions > PermissionLevel::None {
     Ok(())
   } else {
-    Err(anyhow!("user does not have permissions on {target}"))
+    Err(anyhow!("user does not have permissions on {variant} {id}"))
   }
 }

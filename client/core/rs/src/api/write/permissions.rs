@@ -4,8 +4,8 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
+  permission::PermissionLevel,
   update::{ResourceTarget, Update},
-  PermissionLevel,
 };
 
 use super::MonitorWriteRequest;

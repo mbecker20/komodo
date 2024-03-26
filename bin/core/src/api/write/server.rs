@@ -4,10 +4,11 @@ use monitor_client::{
   api::write::*,
   entities::{
     monitor_timestamp,
+    permission::PermissionLevel,
     server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::{
@@ -20,8 +21,8 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, cache::server_status_cache, make_update,
-    periphery_client, remove_from_recently_viewed,
+    add_update, cache::server_status_cache, create_permission,
+    make_update, periphery_client, remove_from_recently_viewed,
     resource::StateResource, update_update,
   },
   monitor::update_cache_for_server,
@@ -45,9 +46,6 @@ impl Resolve<CreateServer, User> for State {
       id: Default::default(),
       name,
       updated_at: start_ts,
-      permissions: [(user.id.clone(), PermissionLevel::Update)]
-        .into_iter()
-        .collect(),
       description: Default::default(),
       tags: Default::default(),
       config: config.into(),
@@ -64,6 +62,7 @@ impl Resolve<CreateServer, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
     let server: Server = self.get_resource(&server_id).await?;
+    create_permission(&user, &server, PermissionLevel::Update).await;
     let update = Update {
       target: ResourceTarget::Server(server_id),
       operation: Operation::CreateServer,

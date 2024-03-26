@@ -8,10 +8,11 @@ use monitor_client::{
   api::read::*,
   entities::{
     build::{Build, BuildActionState, BuildListItem},
+    permission::PermissionLevel,
     resource::AddFilters,
     update::UpdateStatus,
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::{

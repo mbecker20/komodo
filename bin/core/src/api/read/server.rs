@@ -5,6 +5,7 @@ use monitor_client::{
   api::read::*,
   entities::{
     deployment::ContainerSummary,
+    permission::PermissionLevel,
     resource::AddFilters,
     server::{
       docker_image::ImageSummary, docker_network::DockerNetwork,
@@ -12,7 +13,6 @@ use monitor_client::{
       ServerListItem, ServerStatus,
     },
     user::User,
-    PermissionLevel,
   },
 };
 use mungos::{

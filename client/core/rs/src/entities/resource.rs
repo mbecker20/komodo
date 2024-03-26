@@ -8,7 +8,7 @@ use typeshare::typeshare;
 
 use crate::entities::{MongoId, I64};
 
-use super::{update::ResourceTargetVariant, PermissionsMap};
+use super::update::ResourceTargetVariant;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder)]
@@ -27,10 +27,6 @@ pub struct Resource<Config, Info: Default = ()> {
   #[serde(default)]
   #[builder(default)]
   pub description: String,
-
-  #[serde(default)]
-  #[builder(setter(skip))]
-  pub permissions: PermissionsMap,
 
   #[serde(default)]
   #[builder(setter(skip))]

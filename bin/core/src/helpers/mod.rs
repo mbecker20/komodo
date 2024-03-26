@@ -4,6 +4,7 @@ use anyhow::{anyhow, Context};
 use monitor_client::entities::{
   deployment::{Deployment, DockerContainerState},
   monitor_timestamp,
+  permission::{Permission, PermissionLevel},
   server::{Server, ServerStatus},
   tag::CustomTag,
   update::{ResourceTarget, Update, UpdateListItem},
@@ -222,4 +223,32 @@ pub fn periphery_client(
   );
 
   Ok(client)
+}
+
+pub async fn create_permission(
+  user: &User,
+  target: impl Into<ResourceTarget>,
+  level: PermissionLevel,
+) {
+  // No need to actually create permissions for admins
+  if user.admin {
+    return;
+  }
+  let target: ResourceTarget = target.into();
+  if let Err(e) = db_client()
+    .await
+    .permissions
+    .insert_one(
+      Permission {
+        id: Default::default(),
+        user_id: user.id.clone(),
+        target: target.clone(),
+        level,
+      },
+      None,
+    )
+    .await
+  {
+    warn!("failed to create permission for {target:?} | {e:#}");
+  };
 }

@@ -4,9 +4,9 @@ use monitor_client::{
   api::read::{self, *},
   entities::{
     builder::{Builder, BuilderConfig, BuilderListItem},
+    permission::PermissionLevel,
     resource::AddFilters,
     user::User,
-    PermissionLevel,
   },
 };
 use mungos::mongodb::bson::{doc, Document};

@@ -9,8 +9,8 @@ use monitor_client::{
     ListProceduresResponse,
   },
   entities::{
-    procedure::Procedure, resource::AddFilters, user::User,
-    PermissionLevel,
+    permission::PermissionLevel, procedure::Procedure,
+    resource::AddFilters, user::User,
   },
 };
 use mungos::mongodb::bson::{doc, Document};

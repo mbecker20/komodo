@@ -4,9 +4,9 @@ use monitor_client::{
   api::read::*,
   entities::{
     alerter::{Alerter, AlerterListItem},
+    permission::PermissionLevel,
     resource::AddFilters,
     user::User,
-    PermissionLevel,
   },
 };
 use mungos::mongodb::bson::{doc, Document};

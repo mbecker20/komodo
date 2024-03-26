@@ -6,11 +6,12 @@ use monitor_client::{
   api::execute::*,
   entities::{
     monitor_timestamp, optional_string,
+    permission::PermissionLevel,
     repo::Repo,
     server::Server,
     update::{Log, ResourceTarget, Update, UpdateStatus},
     user::User,
-    Operation, PermissionLevel,
+    Operation,
   },
 };
 use mungos::mongodb::bson::{doc, oid::ObjectId};

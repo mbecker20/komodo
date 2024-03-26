@@ -327,11 +327,11 @@ impl TryFrom<Deployment>
       id: value.id,
       name: value.name,
       description: value.description,
-      permissions: value
-        .permissions
-        .into_iter()
-        .map(|(id, p)| (id, p.into()))
-        .collect(),
+      // permissions: value
+      //   .permissions
+      //   .into_iter()
+      //   .map(|(id, p)| (id, p.into()))
+      //   .collect(),
       updated_at: unix_from_monitor_ts(&value.updated_at)?,
       tags: Vec::new(),
       info: (),

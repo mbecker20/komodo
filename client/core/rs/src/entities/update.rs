@@ -5,7 +5,7 @@ use mungos::mongodb::bson::{
   doc, serde_helpers::hex_string_as_object_id, Document,
 };
 use serde::{Deserialize, Serialize};
-use strum::{Display, EnumString};
+use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
 use crate::entities::{
@@ -151,6 +151,7 @@ impl Log {
   Copy,
   Display,
   EnumString,
+  AsRefStr,
   PartialEq,
   Eq
 )]
@@ -164,6 +165,25 @@ pub enum ResourceTarget {
   Repo(String),
   Alerter(String),
   Procedure(String),
+}
+
+impl ResourceTarget {
+  pub fn extract_variant_id(
+    &self,
+  ) -> (ResourceTargetVariant, &String) {
+    let variant: ResourceTargetVariant = self.into();
+    let id = match &self {
+      ResourceTarget::System(id) => id,
+      ResourceTarget::Build(id) => id,
+      ResourceTarget::Builder(id) => id,
+      ResourceTarget::Deployment(id) => id,
+      ResourceTarget::Server(id) => id,
+      ResourceTarget::Repo(id) => id,
+      ResourceTarget::Alerter(id) => id,
+      ResourceTarget::Procedure(id) => id,
+    };
+    (variant, id)
+  }
 }
 
 impl Default for ResourceTarget {

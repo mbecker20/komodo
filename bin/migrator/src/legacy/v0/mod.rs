@@ -238,10 +238,10 @@ impl Default for &PermissionLevel {
 }
 
 impl From<PermissionLevel>
-  for monitor_client::entities::PermissionLevel
+  for monitor_client::entities::permission::PermissionLevel
 {
   fn from(value: PermissionLevel) -> Self {
-    use monitor_client::entities::PermissionLevel::*;
+    use monitor_client::entities::permission::PermissionLevel::*;
     match value {
       PermissionLevel::None => None,
       PermissionLevel::Read => Read,
