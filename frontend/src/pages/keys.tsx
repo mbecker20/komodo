@@ -1,7 +1,7 @@
 import { Page } from "@components/layouts";
 import { ConfirmButton, CopyButton } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { fmt_date } from "@lib/utils";
+import { fmt_date, fmt_date_with_minutes } from "@lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -23,11 +23,47 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
+import { DataTable } from "@ui/data-table";
 
 export const Keys = () => {
+  const keys = useRead("ListApiKeys", {}).data ?? [];
   return (
     <Page title="Api Keys" actions={<CreateKey />}>
-      <ApiKeysList />
+      {/* <ApiKeysList /> */}
+      <DataTable
+        data={keys}
+        columns={[
+          { header: "Name", accessorKey: "name" },
+          {
+            header: "Key",
+            cell: ({
+              row: {
+                original: { key },
+              },
+            }) => {
+              return (
+                <div className="flex items-center gap-2">
+                  <Input className="w-40" value={key} disabled />
+                  <CopyButton content={key} />
+                </div>
+              );
+            },
+          },
+          {
+            header: "Expires",
+            accessorFn: ({ expires }) =>
+              expires
+                ? "In " +
+                  ((expires - Date.now()) / ONE_DAY_MS).toFixed() +
+                  " Days"
+                : "Never",
+          },
+          {
+            header: "Delete",
+            cell: ({ row }) => <DeleteKey api_key={row.original.key} />,
+          },
+        ]}
+      />
     </Page>
   );
 };
@@ -187,14 +223,17 @@ const DeleteKey = ({ api_key }: { api_key: string }) => {
       toast({ title: "Api Key Deleted" });
     },
     onError: () => {
-      toast({ title: "Failed to delte api key" });
+      toast({ title: "Failed to delete api key" });
     },
   });
   return (
     <ConfirmButton
       title="Delete"
       icon={<Trash className="w-4 h-4" />}
-      onClick={() => mutate({ key: api_key })}
+      onClick={(e) => {
+        e.stopPropagation();
+        mutate({ key: api_key });
+      }}
       loading={isPending}
     />
   );

@@ -9,6 +9,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/tree";
 import { Tags } from "@pages/tags";
 import { ResourceUpdates } from "@pages/resource_update";
+import { UsersPage } from "@pages/users";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
       { path: "tree", element: <Tree /> },
       { path: "keys", element: <Keys /> },
       { path: "tags", element: <Tags /> },
+      { path: "users", element: <UsersPage /> },
       {
         path: ":type",
         children: [

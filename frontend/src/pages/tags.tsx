@@ -19,38 +19,47 @@ import { UpdateUser } from "@components/updates/details";
 import { DataTable } from "@ui/data-table";
 
 export const Tags = () => {
-  return (
-    <Page title="Tags" actions={<CreateTag />}>
-      <TagCards />
-    </Page>
-  );
-};
+  const [search, setSearch] = useState("");
 
-export const TagTable = () => {
   const tags = useRead("ListTags", {}).data;
+
   return (
-    <DataTable
-      data={tags ?? []}
-      columns={[
-        {
-          header: "Name",
-          accessorKey: "name",
-        },
-        {
-          header: "Owner",
-          cell: ({ row }) =>
-            row.original.owner ? (
-              <UpdateUser user_id={row.original.owner} />
-            ) : (
-              "Unknown"
-            ),
-        },
-        {
-          id: "Delete",
-          cell: ({ row }) => <DeleteTag tag_id={row.original._id!.$oid} />,
-        },
-      ]}
-    />
+    <Page
+      title="Tags"
+      actions={
+        <div className="flex gap-4">
+          <Input
+            placeholder="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <CreateTag />
+        </div>
+      }
+    >
+      <DataTable
+        data={tags?.filter((tag) => tag.name.includes(search)) ?? []}
+        columns={[
+          {
+            header: "Name",
+            accessorKey: "name",
+          },
+          {
+            header: "Owner",
+            cell: ({ row }) =>
+              row.original.owner ? (
+                <UpdateUser user_id={row.original.owner} />
+              ) : (
+                "Unknown"
+              ),
+          },
+          {
+            header: "Delete",
+            cell: ({ row }) => <DeleteTag tag_id={row.original._id!.$oid} />,
+          },
+        ]}
+      />
+    </Page>
   );
 };
 

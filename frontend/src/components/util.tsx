@@ -1,4 +1,11 @@
-import { ReactNode, forwardRef, useEffect, useState } from "react";
+import {
+  FocusEventHandler,
+  MouseEventHandler,
+  ReactNode,
+  forwardRef,
+  useEffect,
+  useState,
+} from "react";
 import { Button } from "../ui/button";
 import {
   Box,
@@ -13,6 +20,7 @@ import {
   SunMedium,
   Tag,
   User,
+  UserCircle2,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import {
@@ -114,12 +122,23 @@ export const ActionButton = forwardRef<
     icon: ReactNode;
     disabled?: boolean;
     className?: string;
-    onClick?: () => void;
+    onClick?: MouseEventHandler<HTMLButtonElement>;
+    onBlur?: FocusEventHandler<HTMLButtonElement>;
     loading?: boolean;
   }
 >(
   (
-    { variant, size, title, icon, disabled, className, loading, onClick },
+    {
+      variant,
+      size,
+      title,
+      icon,
+      disabled,
+      className,
+      loading,
+      onClick,
+      onBlur,
+    },
     ref
   ) => (
     <Button
@@ -127,6 +146,7 @@ export const ActionButton = forwardRef<
       variant={variant || "outline"}
       className={cn("flex items-center justify-between w-[150px]", className)}
       onClick={onClick}
+      onBlur={onBlur}
       disabled={disabled}
       ref={ref}
     >
@@ -276,38 +296,30 @@ export const ConfirmButton = ({
   size?: "default" | "sm" | "lg" | "icon" | null | undefined;
   title: string;
   icon: ReactNode;
-  onClick: () => void;
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   loading?: boolean;
   disabled?: boolean;
 }) => {
   const [confirmed, set] = useState(false);
 
   return (
-    <>
-      <ActionButton
-        variant={variant}
-        size={size}
-        title={confirmed ? "Confirm" : title}
-        icon={confirmed ? <Check className="w-4 h-4" /> : icon}
-        disabled={disabled}
-        onClick={
-          confirmed
-            ? () => {
-                onClick();
-                set(false);
-              }
-            : () => set(true)
-        }
-        className={confirmed ? "z-50" : ""}
-        loading={loading}
-      />
-      {confirmed && (
-        <div
-          className="fixed z-40 top-0 left-0 w-[100vw] h-[100vh]"
-          onClick={() => set(false)}
-        />
-      )}
-    </>
+    <ActionButton
+      variant={variant}
+      size={size}
+      title={confirmed ? "Confirm" : title}
+      icon={confirmed ? <Check className="w-4 h-4" /> : icon}
+      disabled={disabled}
+      onClick={
+        confirmed
+          ? (e) => {
+              onClick && onClick(e);
+              set(false);
+            }
+          : () => set(true)
+      }
+      onBlur={() => set(false)}
+      loading={loading}
+    />
   );
 };
 
@@ -323,6 +335,8 @@ export const ResourceTypeDropdown = () => {
     ? [<Key className="w-4 h-4" />, "Api Keys"]
     : location.pathname === "/tags"
     ? [<Tag className="w-4 h-4" />, "Tags"]
+    : location.pathname === "/users"
+    ? [<UserCircle2 className="w-4 h-4" />, "Users"]
     : [<Box className="w-4 h-4" />, "Dashboard"];
 
   return (
@@ -370,6 +384,12 @@ export const ResourceTypeDropdown = () => {
             <DropdownMenuItem className="flex items-center gap-2">
               <Box className="w-4 h-4" />
               Api Keys
+            </DropdownMenuItem>
+          </Link>
+          <Link to="/users">
+            <DropdownMenuItem className="flex items-center gap-2">
+              <UserCircle2 className="w-4 h-4" />
+              Users
             </DropdownMenuItem>
           </Link>
         </DropdownMenuGroup>

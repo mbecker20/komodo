@@ -28,6 +28,10 @@ impl Resolve<CreateLocalUser> for State {
       return Err(anyhow!("local auth is not enabled"));
     }
 
+    if username.is_empty() {
+      return Err(anyhow!("username cannot be empty string"));
+    }
+
     let password = bcrypt::hash(password, BCRYPT_COST)
       .context("failed to hash password")?;
 
