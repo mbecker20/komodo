@@ -44,9 +44,9 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
   wait_for_enter("CONTINUE")?;
 
   // Run these first, which require no name -> id replacement
+  Alerter::run_updates(alerter_updates, alerter_creates).await;
   Builder::run_updates(builder_updates, builder_creates).await;
   Server::run_updates(server_updates, server_creates).await;
-  Alerter::run_updates(alerter_updates, alerter_creates).await;
 
   Build::run_updates(build_updates, build_creates).await;
   Deployment::run_updates(deployment_updates, deployment_creates)
@@ -147,6 +147,8 @@ pub trait ResourceSync {
 
     let ext_lookup = Self::init_lookup_data().await;
 
+    let log_after = !to_update.is_empty() || !to_create.is_empty();
+
     for (id, resource) in to_update {
       // Update resource
       let name = resource.name.clone();
@@ -165,6 +167,7 @@ pub trait ResourceSync {
       )
       .await;
       Self::update_description(id, description).await;
+      info!("{} {name} updated", Self::display());
     }
 
     for resource in to_create {
@@ -189,6 +192,13 @@ pub trait ResourceSync {
       )
       .await;
       Self::update_description(id, description).await;
+      info!("{} {name} created", Self::display());
+    }
+    if log_after {
+      info!(
+        "============ {}s synced ✅ ============",
+        Self::display()
+      );
     }
   }
 

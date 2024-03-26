@@ -18,11 +18,11 @@ pub struct ResourceFile {
   pub builds: Vec<Resource<PartialBuildConfig>>,
   #[serde(default, rename = "deployment")]
   pub deployments: Vec<Resource<PartialDeploymentConfig>>,
-  #[serde(rename = "builder")]
+  #[serde(default, rename = "builder")]
   pub builders: Vec<Resource<PartialBuilderConfig>>,
-  #[serde(rename = "repo")]
+  #[serde(default, rename = "repo")]
   pub repos: Vec<Resource<PartialRepoConfig>>,
-  #[serde(rename = "alerter")]
+  #[serde(default, rename = "alerter")]
   pub alerters: Vec<Resource<PartialAlerterConfig>>,
 }
 
