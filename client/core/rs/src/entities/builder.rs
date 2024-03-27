@@ -87,7 +87,7 @@ impl BuilderConfig {
       PartialBuilderConfig::Server(partial) => match self {
         BuilderConfig::Server(config) => {
           let config = ServerBuilderConfig {
-            id: partial.id.unwrap_or(config.id),
+            server_id: partial.server_id.unwrap_or(config.server_id),
           };
           BuilderConfig::Server(config)
         }
@@ -137,7 +137,9 @@ impl BuilderConfig {
 #[skip_serializing_none]
 #[partial_from]
 pub struct ServerBuilderConfig {
-  pub id: String,
+  #[serde(alias = "server")]
+  #[partial_attr(serde(alias = "server"))]
+  pub server_id: String,
 }
 
 #[typeshare]

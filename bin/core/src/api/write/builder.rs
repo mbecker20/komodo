@@ -5,9 +5,12 @@ use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
   entities::{
-    builder::Builder,
+    builder::{
+      Builder, PartialBuilderConfig, PartialServerBuilderConfig,
+    },
     monitor_timestamp,
     permission::PermissionLevel,
+    server::Server,
     update::{Log, ResourceTarget, Update},
     user::User,
     Operation,
@@ -29,17 +32,40 @@ use crate::{
   state::State,
 };
 
+async fn validate_config(
+  config: &mut PartialBuilderConfig,
+  user: &User,
+) -> anyhow::Result<()> {
+  match config {
+    PartialBuilderConfig::Server(PartialServerBuilderConfig {
+      server_id: Some(server_id),
+    }) if !server_id.is_empty() => {
+      let server = Server::get_resource_check_permissions(
+        server_id,
+        user,
+        PermissionLevel::Write,
+      )
+      .await?;
+      *server_id = server.id;
+    }
+    _ => {}
+  }
+  Ok(())
+}
+
 #[async_trait]
 impl Resolve<CreateBuilder, User> for State {
   async fn resolve(
     &self,
-    CreateBuilder { name, config }: CreateBuilder,
+    CreateBuilder { name, mut config }: CreateBuilder,
     user: User,
   ) -> anyhow::Result<Builder> {
     let start_ts = monitor_timestamp();
     if ObjectId::from_str(&name).is_ok() {
       return Err(anyhow!("valid ObjectIds cannot be used as names"));
     }
+    validate_config(&mut config, &user).await?;
+
     let builder = Builder {
       id: Default::default(),
       name,
@@ -205,7 +231,7 @@ impl Resolve<DeleteBuilder, User> for State {
 impl Resolve<UpdateBuilder, User> for State {
   async fn resolve(
     &self,
-    UpdateBuilder { id, config }: UpdateBuilder,
+    UpdateBuilder { id, mut config }: UpdateBuilder,
     user: User,
   ) -> anyhow::Result<Builder> {
     let builder = Builder::get_resource_check_permissions(
@@ -214,6 +240,8 @@ impl Resolve<UpdateBuilder, User> for State {
       PermissionLevel::Write,
     )
     .await?;
+
+    validate_config(&mut config, &user).await?;
 
     let mut update = Update {
       target: ResourceTarget::Builder(id.clone()),

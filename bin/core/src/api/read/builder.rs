@@ -111,7 +111,9 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
       BuilderConfig::Server(config) => {
         let res = self
           .resolve(
-            read::GetAvailableAccounts { server: config.id },
+            read::GetAvailableAccounts {
+              server: config.server_id,
+            },
             user,
           )
           .await?;

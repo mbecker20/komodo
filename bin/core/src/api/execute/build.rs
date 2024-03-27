@@ -298,10 +298,10 @@ async fn get_build_builder(
     Builder::get_resource(&build.config.builder_id).await?;
   match builder.config {
     BuilderConfig::Server(config) => {
-      if config.id.is_empty() {
+      if config.server_id.is_empty() {
         return Err(anyhow!("build has not configured a builder"));
       }
-      let server = Server::get_resource(&config.id).await?;
+      let server = Server::get_resource(&config.server_id).await?;
       let periphery = periphery_client(&server)?;
       Ok((
         periphery,

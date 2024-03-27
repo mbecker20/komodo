@@ -7,7 +7,7 @@ use monitor_client::{
   entities::{
     monitor_timestamp,
     permission::PermissionLevel,
-    repo::Repo,
+    repo::{PartialRepoConfig, Repo},
     server::Server,
     to_monitor_name,
     update::{Log, ResourceTarget, Update},
@@ -33,6 +33,26 @@ use crate::{
   state::{action_states, State},
 };
 
+async fn validate_config(
+  config: &mut PartialRepoConfig,
+  user: &User,
+) -> anyhow::Result<()> {
+  match &config.server_id {
+    Some(server_id) if !server_id.is_empty() => {
+      let server = Server::get_resource_check_permissions(
+          server_id,
+          &user,
+          PermissionLevel::Write,
+        )
+        .await
+        .context("cannot create repo on this server. user must have update permissions on the server.")?;
+      config.server_id = Some(server.id);
+    }
+    _ => {}
+  }
+  Ok(())
+}
+
 #[async_trait]
 impl Resolve<CreateRepo, User> for State {
   async fn resolve(
@@ -44,18 +64,7 @@ impl Resolve<CreateRepo, User> for State {
     if ObjectId::from_str(&name).is_ok() {
       return Err(anyhow!("valid ObjectIds cannot be used as names"));
     }
-    if let Some(server_id) = &config.server_id {
-      if !server_id.is_empty() {
-        let server = Server::get_resource_check_permissions(
-          server_id,
-          &user,
-          PermissionLevel::Write,
-        )
-        .await
-        .context("cannot create repo on this server. user must have update permissions on the server.")?;
-        config.server_id = Some(server.id);
-      }
-    }
+    validate_config(&mut config, &user).await?;
     let start_ts = monitor_timestamp();
     let repo = Repo {
       id: Default::default(),
@@ -283,20 +292,10 @@ impl Resolve<DeleteRepo, User> for State {
 impl Resolve<UpdateRepo, User> for State {
   async fn resolve(
     &self,
-    UpdateRepo { id, config }: UpdateRepo,
+    UpdateRepo { id, mut config }: UpdateRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
-    if let Some(server_id) = &config.server_id {
-      if !server_id.is_empty() {
-        Server::get_resource_check_permissions(
-          server_id,
-          &user,
-          PermissionLevel::Write,
-        )
-        .await
-        .context("cannot move repo to this server. user must have update permissions on the server.")?;
-      }
-    }
+    validate_config(&mut config, &user).await?;
 
     let repo = Repo::get_resource_check_permissions(
       &id,

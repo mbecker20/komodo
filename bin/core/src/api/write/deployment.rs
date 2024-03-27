@@ -7,7 +7,10 @@ use monitor_client::{
   entities::{
     all_logs_success,
     build::Build,
-    deployment::{Deployment, DeploymentImage, DockerContainerState},
+    deployment::{
+      Deployment, DeploymentImage, DockerContainerState,
+      PartialDeploymentConfig,
+    },
     monitor_timestamp,
     permission::PermissionLevel,
     server::Server,
@@ -36,6 +39,55 @@ use crate::{
   state::{action_states, State},
 };
 
+async fn validate_config(
+  config: &mut PartialDeploymentConfig,
+  user: &User,
+) -> anyhow::Result<()> {
+  if let Some(server_id) = &config.server_id {
+    if !server_id.is_empty() {
+      let server = Server::get_resource_check_permissions(server_id, user, PermissionLevel::Write)
+          .await
+          .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+      config.server_id = Some(server.id);
+    }
+  }
+  if let Some(DeploymentImage::Build { build_id, version }) =
+    &config.image
+  {
+    if !build_id.is_empty() {
+      let build = Build::get_resource_check_permissions(build_id, user, PermissionLevel::Read)
+          .await
+          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+      config.image = Some(DeploymentImage::Build {
+        build_id: build.id,
+        version: version.clone(),
+      });
+    }
+  }
+  if let Some(volumes) = &mut config.volumes {
+    volumes.retain(|v| {
+      !empty_or_only_spaces(&v.local)
+        && !empty_or_only_spaces(&v.container)
+    })
+  }
+  if let Some(ports) = &mut config.ports {
+    ports.retain(|v| {
+      !empty_or_only_spaces(&v.local)
+        && !empty_or_only_spaces(&v.container)
+    })
+  }
+  if let Some(environment) = &mut config.environment {
+    environment.retain(|v| {
+      !empty_or_only_spaces(&v.variable)
+        && !empty_or_only_spaces(&v.value)
+    })
+  }
+  if let Some(extra_args) = &mut config.extra_args {
+    extra_args.retain(|v| !empty_or_only_spaces(v))
+  }
+  Ok(())
+}
+
 #[async_trait]
 impl Resolve<CreateDeployment, User> for State {
   async fn resolve(
@@ -47,27 +99,7 @@ impl Resolve<CreateDeployment, User> for State {
     if ObjectId::from_str(&name).is_ok() {
       return Err(anyhow!("valid ObjectIds cannot be used as names"));
     }
-    if let Some(server_id) = &config.server_id {
-      if !server_id.is_empty() {
-        let server = Server::get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
-          .await
-          .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
-        config.server_id = Some(server.id);
-      }
-    }
-    if let Some(DeploymentImage::Build { build_id, version }) =
-      &config.image
-    {
-      if !build_id.is_empty() {
-        let build = Build::get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
-          .await
-          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
-        config.image = Some(DeploymentImage::Build {
-          build_id: build.id,
-          version: version.clone(),
-        });
-      }
-    }
+    validate_config(&mut config, &user).await?;
     let start_ts = monitor_timestamp();
     let deployment = Deployment {
       id: Default::default(),
@@ -333,40 +365,7 @@ impl Resolve<UpdateDeployment, User> for State {
     let inner = || async move {
       let start_ts = monitor_timestamp();
 
-      if let Some(server_id) = &config.server_id {
-        Server::get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
-          .await
-          .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
-      }
-      if let Some(DeploymentImage::Build { build_id, .. }) =
-        &config.image
-      {
-        Build::get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
-          .await
-          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
-      }
-
-      if let Some(volumes) = &mut config.volumes {
-        volumes.retain(|v| {
-          !empty_or_only_spaces(&v.local)
-            && !empty_or_only_spaces(&v.container)
-        })
-      }
-      if let Some(ports) = &mut config.ports {
-        ports.retain(|v| {
-          !empty_or_only_spaces(&v.local)
-            && !empty_or_only_spaces(&v.container)
-        })
-      }
-      if let Some(environment) = &mut config.environment {
-        environment.retain(|v| {
-          !empty_or_only_spaces(&v.variable)
-            && !empty_or_only_spaces(&v.value)
-        })
-      }
-      if let Some(extra_args) = &mut config.extra_args {
-        extra_args.retain(|v| !empty_or_only_spaces(v))
-      }
+      validate_config(&mut config, &user).await?;
 
       update_one_by_id(
         &db_client().await.deployments,
