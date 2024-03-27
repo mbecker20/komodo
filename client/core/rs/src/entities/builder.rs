@@ -115,6 +115,7 @@ impl BuilderConfig {
             use_public_ip: partial
               .use_public_ip
               .unwrap_or(config.use_public_ip),
+            port: partial.port.unwrap_or(config.port),
             github_accounts: partial
               .github_accounts
               .unwrap_or(config.github_accounts),
@@ -167,6 +168,9 @@ pub struct AwsBuilderConfig {
   pub assign_public_ip: bool,
   pub use_public_ip: bool,
 
+  /// The port periphery will be running on
+  #[serde(default = "default_port")]
+  pub port: i32,
   #[serde(default)]
   pub github_accounts: Vec<String>,
   #[serde(default)]
@@ -183,6 +187,10 @@ fn aws_default_instance_type() -> String {
 
 fn aws_default_volume_gb() -> i32 {
   20
+}
+
+fn default_port() -> i32 {
+  8120
 }
 
 #[typeshare]

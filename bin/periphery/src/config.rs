@@ -128,7 +128,7 @@ pub struct PeripheryConfig {
 }
 
 fn default_periphery_port() -> u16 {
-  8000
+  8120
 }
 
 fn default_repo_dir() -> PathBuf {

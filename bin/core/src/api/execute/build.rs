@@ -344,7 +344,7 @@ async fn get_aws_builder(
 
   update_update(update.clone()).await?;
 
-  let periphery_address = format!("http://{ip}:8000");
+  let periphery_address = format!("http://{ip}:{}", config.port);
   let periphery =
     PeripheryClient::new(&periphery_address, &core_config().passkey);
 

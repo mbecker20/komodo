@@ -61,7 +61,7 @@ impl Resolve<LaunchServer, User> for State {
             write::CreateServer {
               name,
               config: PartialServerConfig {
-                address: format!("http://{}:8000", instance.ip)
+                address: format!("http://{}:8120", instance.ip)
                   .into(),
                 region: region.into(),
                 ..Default::default()
