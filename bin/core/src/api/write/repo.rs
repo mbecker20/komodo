@@ -41,7 +41,7 @@ async fn validate_config(
     Some(server_id) if !server_id.is_empty() => {
       let server = Server::get_resource_check_permissions(
           server_id,
-          &user,
+          user,
           PermissionLevel::Write,
         )
         .await
