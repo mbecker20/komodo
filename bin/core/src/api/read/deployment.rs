@@ -42,16 +42,15 @@ use crate::{
 impl Resolve<GetDeployment, User> for State {
   async fn resolve(
     &self,
-    GetDeployment { id }: GetDeployment,
+    GetDeployment { deployment }: GetDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
-    self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await
+    Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await
   }
 }
 
@@ -64,10 +63,7 @@ impl Resolve<ListDeployments, User> for State {
   ) -> anyhow::Result<Vec<DeploymentListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
-    <State as StateResource<Deployment>>::list_resources_for_user(
-      self, filters, &user,
-    )
-    .await
+    Deployment::list_resources_for_user(filters, &user).await
   }
 }
 
@@ -75,18 +71,19 @@ impl Resolve<ListDeployments, User> for State {
 impl Resolve<GetDeploymentStatus, User> for State {
   async fn resolve(
     &self,
-    GetDeploymentStatus { id }: GetDeploymentStatus,
+    GetDeploymentStatus { deployment }: GetDeploymentStatus,
     user: User,
   ) -> anyhow::Result<GetDeploymentStatusResponse> {
-    let _: Deployment = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
-    let status =
-      deployment_status_cache().get(&id).await.unwrap_or_default();
+    let deployment = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let status = deployment_status_cache()
+      .get(&deployment.id)
+      .await
+      .unwrap_or_default();
     let response = GetDeploymentStatusResponse {
       status: status
         .curr
@@ -105,27 +102,23 @@ const MAX_LOG_LENGTH: u64 = 5000;
 impl Resolve<GetLog, User> for State {
   async fn resolve(
     &self,
-    GetLog {
-      deployment_id,
-      tail,
-    }: GetLog,
+    GetLog { deployment, tail }: GetLog,
     user: User,
   ) -> anyhow::Result<Log> {
     let Deployment {
       name,
       config: DeploymentConfig { server_id, .. },
       ..
-    } = self
-      .get_resource_check_permissions(
-        &deployment_id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
+    } = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
     if server_id.is_empty() {
       return Ok(Log::default());
     }
-    let server: Server = self.get_resource(&server_id).await?;
+    let server = Server::get_resource(&server_id).await?;
     periphery_client(&server)?
       .request(api::container::GetContainerLog {
         name,
@@ -140,19 +133,19 @@ impl Resolve<GetLog, User> for State {
 impl Resolve<GetDeployedVersion, User> for State {
   async fn resolve(
     &self,
-    GetDeployedVersion { deployment_id }: GetDeployedVersion,
+    GetDeployedVersion { deployment }: GetDeployedVersion,
     user: User,
   ) -> anyhow::Result<GetDeployedVersionResponse> {
     let Deployment {
+      id,
       config: DeploymentConfig { image, .. },
       ..
-    } = self
-      .get_resource_check_permissions(
-        &deployment_id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
+    } = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
     let version = match image {
       DeploymentImage::Build { .. } => {
         let latest_deploy_update = db_client()
@@ -162,7 +155,7 @@ impl Resolve<GetDeployedVersion, User> for State {
             doc! {
                 "target": {
                     "type": "Deployment",
-                    "id": deployment_id
+                    "id": id
                 },
                 "operation": Operation::DeployContainer.to_string(),
                 "status": UpdateStatus::Complete.to_string(),
@@ -203,24 +196,23 @@ impl Resolve<GetDeployedVersion, User> for State {
 impl Resolve<GetDeploymentStats, User> for State {
   async fn resolve(
     &self,
-    GetDeploymentStats { id }: GetDeploymentStats,
+    GetDeploymentStats { deployment }: GetDeploymentStats,
     user: User,
   ) -> anyhow::Result<DockerContainerStats> {
     let Deployment {
       name,
       config: DeploymentConfig { server_id, .. },
       ..
-    } = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
+    } = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
     if server_id.is_empty() {
       return Err(anyhow!("deployment has no server attached"));
     }
-    let server: Server = self.get_resource(&server_id).await?;
+    let server = Server::get_resource(&server_id).await?;
     periphery_client(&server)?
       .request(api::container::GetContainerStats { name })
       .await
@@ -232,19 +224,18 @@ impl Resolve<GetDeploymentStats, User> for State {
 impl Resolve<GetDeploymentActionState, User> for State {
   async fn resolve(
     &self,
-    GetDeploymentActionState { id }: GetDeploymentActionState,
+    GetDeploymentActionState { deployment }: GetDeploymentActionState,
     user: User,
   ) -> anyhow::Result<DeploymentActionState> {
-    let _: Deployment = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
+    let deployment = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
     let action_state = action_states()
       .deployment
-      .get(&id)
+      .get(&deployment.id)
       .await
       .unwrap_or_default();
     Ok(action_state)

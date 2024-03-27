@@ -33,38 +33,31 @@ impl Resolve<FindResources, User> for State {
     for resource_type in resource_types {
       match resource_type {
         Server => {
-          res.servers = <State as StateResource<server::Server,>>::list_resources_for_user(
-            self,
+          res.servers = server::Server::list_resources_for_user(
             query.clone(),
             &user,
           )
           .await?;
         }
         Deployment => {
-          res.deployments = <State as StateResource<
-            deployment::Deployment,
-          >>::list_resources_for_user(
-            self, query.clone(), &user
-          )
-          .await?;
+          res.deployments =
+            deployment::Deployment::list_resources_for_user(
+              query.clone(),
+              &user,
+            )
+            .await?;
         }
         Build => {
-          res.builds = <State as StateResource<
-            build::Build,
-          >>::list_resources_for_user(
-            self,
+          res.builds = build::Build::list_resources_for_user(
             query.clone(),
             &user,
           )
           .await?;
         }
         Repo => {
-          res.repos = <State as StateResource<repo::Repo>>::list_resources_for_user(
-            self,
-            query.clone(),
-            &user,
-          )
-          .await?;
+          res.repos =
+            repo::Repo::list_resources_for_user(query.clone(), &user)
+              .await?;
         }
         _ => unreachable!(),
       }

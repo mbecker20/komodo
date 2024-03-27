@@ -18,7 +18,9 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetProcedureResponse)]
 pub struct GetProcedure {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub procedure: String,
 }
 
 #[typeshare]
@@ -80,7 +82,9 @@ pub struct GetProceduresSummaryResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetProcedureActionStateResponse)]
 pub struct GetProcedureActionState {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub procedure: String,
 }
 
 #[typeshare]

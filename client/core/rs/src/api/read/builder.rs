@@ -18,7 +18,9 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuilderResponse)]
 pub struct GetBuilder {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub builder: String,
 }
 
 #[typeshare]
@@ -65,7 +67,9 @@ pub struct GetBuildersSummaryResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuilderAvailableAccountsResponse)]
 pub struct GetBuilderAvailableAccounts {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub builder: String,
 }
 
 #[typeshare]

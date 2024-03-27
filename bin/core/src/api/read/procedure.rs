@@ -30,16 +30,15 @@ use crate::{
 impl Resolve<GetProcedure, User> for State {
   async fn resolve(
     &self,
-    GetProcedure { id }: GetProcedure,
+    GetProcedure { procedure }: GetProcedure,
     user: User,
   ) -> anyhow::Result<GetProcedureResponse> {
-    self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await
+    Procedure::get_resource_check_permissions(
+      &procedure,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await
   }
 }
 
@@ -52,10 +51,7 @@ impl Resolve<ListProcedures, User> for State {
   ) -> anyhow::Result<ListProceduresResponse> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
-    <State as StateResource<Procedure>>::list_resources_for_user(
-      self, filters, &user,
-    )
-    .await
+    Procedure::list_resources_for_user(filters, &user).await
   }
 }
 
@@ -66,8 +62,7 @@ impl Resolve<ListProceduresByIds, User> for State {
     ListProceduresByIds { ids }: ListProceduresByIds,
     user: User,
   ) -> anyhow::Result<ListProceduresByIdsResponse> {
-    <State as StateResource<Procedure>>::list_resources_for_user(
-      self,
+    Procedure::list_resources_for_user(
       doc! { "_id": { "$in": ids } },
       &user,
     )
@@ -115,18 +110,20 @@ impl Resolve<GetProceduresSummary, User> for State {
 impl Resolve<GetProcedureActionState, User> for State {
   async fn resolve(
     &self,
-    GetProcedureActionState { id }: GetProcedureActionState,
+    GetProcedureActionState { procedure }: GetProcedureActionState,
     user: User,
   ) -> anyhow::Result<GetProcedureActionStateResponse> {
-    let _: Procedure = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
-    let action_state =
-      action_states().procedure.get(&id).await.unwrap_or_default();
+    let procedure = Procedure::get_resource_check_permissions(
+      &procedure,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let action_state = action_states()
+      .procedure
+      .get(&procedure.id)
+      .await
+      .unwrap_or_default();
     Ok(action_state)
   }
 }

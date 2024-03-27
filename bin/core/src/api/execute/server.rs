@@ -6,7 +6,7 @@ use monitor_client::{
     monitor_timestamp,
     permission::PermissionLevel,
     server::Server,
-    update::{Log, ResourceTarget, Update, UpdateStatus},
+    update::{Log, Update, UpdateStatus},
     user::User,
     Operation,
   },
@@ -16,8 +16,8 @@ use resolver_api::Resolve;
 
 use crate::{
   helpers::{
-    add_update, periphery_client, resource::StateResource,
-    update_update,
+    add_update, make_update, periphery_client,
+    resource::StateResource, update_update,
   },
   state::{action_states, State},
 };
@@ -26,34 +26,26 @@ use crate::{
 impl Resolve<PruneDockerContainers, User> for State {
   async fn resolve(
     &self,
-    PruneDockerContainers { server_id }: PruneDockerContainers,
+    PruneDockerContainers { server }: PruneDockerContainers,
     user: User,
   ) -> anyhow::Result<Update> {
-    if action_states().server.busy(&server_id).await {
+    let server = Server::get_resource_check_permissions(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    if action_states().server.busy(&server.id).await {
       return Err(anyhow!("server busy"));
     }
-
-    let server: Server = self
-      .get_resource_check_permissions(
-        &server_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
 
     let periphery = periphery_client(&server)?;
 
     let inner = || async {
-      let start_ts = monitor_timestamp();
-      let mut update = Update {
-        target: ResourceTarget::Server(server_id),
-        operation: Operation::PruneContainersServer,
-        start_ts,
-        status: UpdateStatus::InProgress,
-        success: true,
-        operator: user.id.clone(),
-        ..Default::default()
-      };
+      let mut update =
+        make_update(&server, Operation::PruneContainersServer, &user);
+      update.in_progress();
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
@@ -101,34 +93,26 @@ impl Resolve<PruneDockerContainers, User> for State {
 impl Resolve<PruneDockerNetworks, User> for State {
   async fn resolve(
     &self,
-    PruneDockerNetworks { server_id }: PruneDockerNetworks,
+    PruneDockerNetworks { server }: PruneDockerNetworks,
     user: User,
   ) -> anyhow::Result<Update> {
-    if action_states().server.busy(&server_id).await {
+    let server = Server::get_resource_check_permissions(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    if action_states().server.busy(&server.id).await {
       return Err(anyhow!("server busy"));
     }
-
-    let server: Server = self
-      .get_resource_check_permissions(
-        &server_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
 
     let periphery = periphery_client(&server)?;
 
     let inner = || async {
-      let start_ts = monitor_timestamp();
-      let mut update = Update {
-        target: ResourceTarget::Server(server_id.to_owned()),
-        operation: Operation::PruneNetworksServer,
-        start_ts,
-        status: UpdateStatus::InProgress,
-        success: true,
-        operator: user.id.clone(),
-        ..Default::default()
-      };
+      let mut update =
+        make_update(&server, Operation::PruneNetworksServer, &user);
+      update.in_progress();
       update.id = add_update(update.clone()).await?;
 
       let log = match periphery
@@ -154,7 +138,7 @@ impl Resolve<PruneDockerNetworks, User> for State {
 
     action_states()
       .server
-      .update_entry(server_id.to_string(), |entry| {
+      .update_entry(server.id.clone(), |entry| {
         entry.pruning_networks = true;
       })
       .await;
@@ -163,7 +147,7 @@ impl Resolve<PruneDockerNetworks, User> for State {
 
     action_states()
       .server
-      .update_entry(server_id.to_string(), |entry| {
+      .update_entry(server.id, |entry| {
         entry.pruning_networks = false;
       })
       .await;
@@ -176,51 +160,43 @@ impl Resolve<PruneDockerNetworks, User> for State {
 impl Resolve<PruneDockerImages, User> for State {
   async fn resolve(
     &self,
-    PruneDockerImages { server_id }: PruneDockerImages,
+    PruneDockerImages { server }: PruneDockerImages,
     user: User,
   ) -> anyhow::Result<Update> {
-    if action_states().server.busy(&server_id).await {
+    let server = Server::get_resource_check_permissions(
+      &server,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    if action_states().server.busy(&server.id).await {
       return Err(anyhow!("server busy"));
     }
-
-    let server: Server = self
-      .get_resource_check_permissions(
-        &server_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
 
     let periphery = periphery_client(&server)?;
 
     let inner = || async {
-      let start_ts = monitor_timestamp();
-      let mut update = Update {
-        target: ResourceTarget::Server(server_id.to_owned()),
-        operation: Operation::PruneImagesServer,
-        start_ts,
-        status: UpdateStatus::InProgress,
-        success: true,
-        operator: user.id.clone(),
-        ..Default::default()
-      };
+      let mut update =
+        make_update(&server, Operation::PruneImagesServer, &user);
+      update.in_progress();
       update.id = add_update(update.clone()).await?;
 
-      let log = match periphery
-        .request(api::build::PruneImages {})
-        .await
-        .context(format!(
-          "failed to prune images on server {}",
-          server.name
-        )) {
-        Ok(log) => log,
-        Err(e) => Log::error("prune images", format!("{e:#?}")),
-      };
+      let log =
+        match periphery.request(api::build::PruneImages {}).await {
+          Ok(log) => log,
+          Err(e) => Log::error(
+            "prune images",
+            format!(
+              "failed to prune images on server {} | {e:#?}",
+              server.name
+            ),
+          ),
+        };
 
-      update.success = log.success;
-      update.status = UpdateStatus::Complete;
-      update.end_ts = Some(monitor_timestamp());
       update.logs.push(log);
+
+      update.finalize();
 
       update_update(update.clone()).await?;
 
@@ -229,7 +205,7 @@ impl Resolve<PruneDockerImages, User> for State {
 
     action_states()
       .server
-      .update_entry(server_id.to_string(), |entry| {
+      .update_entry(&server.id, |entry| {
         entry.pruning_images = true;
       })
       .await;
@@ -238,7 +214,7 @@ impl Resolve<PruneDockerImages, User> for State {
 
     action_states()
       .server
-      .update_entry(server_id.to_string(), |entry| {
+      .update_entry(server.id, |entry| {
         entry.pruning_images = false;
       })
       .await;

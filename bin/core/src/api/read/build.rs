@@ -37,16 +37,15 @@ use crate::{
 impl Resolve<GetBuild, User> for State {
   async fn resolve(
     &self,
-    GetBuild { id }: GetBuild,
+    GetBuild { build }: GetBuild,
     user: User,
   ) -> anyhow::Result<Build> {
-    self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await
+    Build::get_resource_check_permissions(
+      &build,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await
   }
 }
 
@@ -59,10 +58,7 @@ impl Resolve<ListBuilds, User> for State {
   ) -> anyhow::Result<Vec<BuildListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
-    <State as StateResource<Build>>::list_resources_for_user(
-      self, filters, &user,
-    )
-    .await
+    Build::list_resources_for_user(filters, &user).await
   }
 }
 
@@ -70,18 +66,20 @@ impl Resolve<ListBuilds, User> for State {
 impl Resolve<GetBuildActionState, User> for State {
   async fn resolve(
     &self,
-    GetBuildActionState { id }: GetBuildActionState,
+    GetBuildActionState { build }: GetBuildActionState,
     user: User,
   ) -> anyhow::Result<BuildActionState> {
-    let _: Build = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
-    let action_state =
-      action_states().build.get(&id).await.unwrap_or_default();
+    let build = Build::get_resource_check_permissions(
+      &build,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    let action_state = action_states()
+      .build
+      .get(&build.id)
+      .await
+      .unwrap_or_default();
     Ok(action_state)
   }
 }
@@ -193,7 +191,7 @@ impl Resolve<GetBuildVersions, User> for State {
   async fn resolve(
     &self,
     GetBuildVersions {
-      id,
+      build,
       page,
       major,
       minor,
@@ -201,22 +199,21 @@ impl Resolve<GetBuildVersions, User> for State {
     }: GetBuildVersions,
     user: User,
   ) -> anyhow::Result<Vec<BuildVersionResponseItem>> {
-    let _: Build = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
+    let build = Build::get_resource_check_permissions(
+      &build,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
 
     let mut filter = doc! {
-        "target": {
-            "type": "Build",
-            "id": id
-        },
-        "operation": Operation::RunBuild.to_string(),
-        "status": UpdateStatus::Complete.to_string(),
-        "success": true
+      "target": {
+        "type": "Build",
+        "id": build.id
+      },
+      "operation": Operation::RunBuild.to_string(),
+      "status": UpdateStatus::Complete.to_string(),
+      "success": true
     };
     if let Some(major) = major {
       filter.insert("version.major", major);

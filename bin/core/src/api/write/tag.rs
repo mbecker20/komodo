@@ -82,27 +82,13 @@ impl Resolve<DeleteTag, User> for State {
     let tag = get_tag_check_owner(&id, &user).await?;
 
     tokio::try_join!(
-      <State as StateResource<Server>>::remove_tag_from_resources(
-        self, &id,
-      ),
-      <State as StateResource<Deployment>>::remove_tag_from_resources(
-        self, &id,
-      ),
-      <State as StateResource<Build>>::remove_tag_from_resources(
-        self, &id,
-      ),
-      <State as StateResource<Repo>>::remove_tag_from_resources(
-        self, &id,
-      ),
-      <State as StateResource<Builder>>::remove_tag_from_resources(
-        self, &id,
-      ),
-      <State as StateResource<Alerter>>::remove_tag_from_resources(
-        self, &id,
-      ),
-      <State as StateResource<Procedure>>::remove_tag_from_resources(
-        self, &id,
-      ),
+      Server::remove_tag_from_resources(&id,),
+      Deployment::remove_tag_from_resources(&id,),
+      Build::remove_tag_from_resources(&id,),
+      Repo::remove_tag_from_resources(&id,),
+      Builder::remove_tag_from_resources(&id,),
+      Alerter::remove_tag_from_resources(&id,),
+      Procedure::remove_tag_from_resources(&id,),
     )?;
 
     delete_one_by_id(&db_client().await.tags, &id, None).await?;
@@ -121,74 +107,67 @@ impl Resolve<UpdateTagsOnResource, User> for State {
     match target {
       ResourceTarget::System(_) => return Err(anyhow!("")),
       ResourceTarget::Build(id) => {
-        <State as StateResource<Build>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Write
+        Build::get_resource_check_permissions(
+          &id,
+          &user,
+          PermissionLevel::Write,
         )
         .await?;
-        <State as StateResource<Build>>::update_tags_on_resource(
-          self, &id, tags,
-        )
-        .await?;
+        Build::update_tags_on_resource(&id, tags).await?;
       }
       ResourceTarget::Builder(id) => {
-        <State as StateResource<Builder>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Write
+        Builder::get_resource_check_permissions(
+          &id,
+          &user,
+          PermissionLevel::Write,
         )
         .await?;
-        <State as StateResource<Builder>>::update_tags_on_resource(
-          self, &id, tags,
-        )
-        .await?
+        Builder::update_tags_on_resource(&id, tags).await?
       }
       ResourceTarget::Deployment(id) => {
-        <State as StateResource<Deployment>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Write
+        Deployment::get_resource_check_permissions(
+          &id,
+          &user,
+          PermissionLevel::Write,
         )
         .await?;
-        <State as StateResource<Deployment>>::update_tags_on_resource(
-          self, &id, tags,
-        )
-        .await?
+        Deployment::update_tags_on_resource(&id, tags).await?
       }
       ResourceTarget::Server(id) => {
-        <State as StateResource<Server>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Write
+        Server::get_resource_check_permissions(
+          &id,
+          &user,
+          PermissionLevel::Write,
         )
         .await?;
-        <State as StateResource<Server>>::update_tags_on_resource(
-          self, &id, tags,
-        )
-        .await?
+        Server::update_tags_on_resource(&id, tags).await?
       }
       ResourceTarget::Repo(id) => {
-        <State as StateResource<Repo>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Write
+        Repo::get_resource_check_permissions(
+          &id,
+          &user,
+          PermissionLevel::Write,
         )
         .await?;
-        <State as StateResource<Repo>>::update_tags_on_resource(
-          self, &id, tags,
-        )
-        .await?
+        Repo::update_tags_on_resource(&id, tags).await?
       }
       ResourceTarget::Alerter(id) => {
-        <State as StateResource<Alerter>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Write
+        Alerter::get_resource_check_permissions(
+          &id,
+          &user,
+          PermissionLevel::Write,
         )
         .await?;
-        <State as StateResource<Alerter>>::update_tags_on_resource(
-          self, &id, tags,
-        )
-        .await?
+        Alerter::update_tags_on_resource(&id, tags).await?
       }
       ResourceTarget::Procedure(id) => {
-        <State as StateResource<Procedure>>::get_resource_check_permissions(
-          self, &id, &user, PermissionLevel::Write
+        Procedure::get_resource_check_permissions(
+          &id,
+          &user,
+          PermissionLevel::Write,
         )
         .await?;
-        <State as StateResource<Procedure>>::update_tags_on_resource(
-          self, &id, tags,
-        )
-        .await?
+        Procedure::update_tags_on_resource(&id, tags).await?
       }
     };
     Ok(UpdateTagsOnResourceResponse {})

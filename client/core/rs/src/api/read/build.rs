@@ -21,7 +21,9 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildResponse)]
 pub struct GetBuild {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub build: String,
 }
 
 #[typeshare]
@@ -52,7 +54,9 @@ pub type ListBuildsResponse = Vec<BuildListItem>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildActionStateResponse)]
 pub struct GetBuildActionState {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub build: String,
 }
 
 #[typeshare]
@@ -137,7 +141,9 @@ impl GetBuildMonthlyStatsResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildVersionsResponse)]
 pub struct GetBuildVersions {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub build: String,
   #[serde(default)]
   pub page: u32,
   pub major: Option<i32>,

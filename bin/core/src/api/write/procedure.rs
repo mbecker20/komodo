@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
@@ -10,7 +12,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, to_document},
+  mongodb::bson::{doc, oid::ObjectId, to_document},
 };
 use resolver_api::Resolve;
 
@@ -32,7 +34,9 @@ impl Resolve<CreateProcedure, User> for State {
     CreateProcedure { name, config }: CreateProcedure,
     user: User,
   ) -> anyhow::Result<CreateProcedureResponse> {
-    let name = to_monitor_name(&name);
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("valid ObjectIds cannot be used as names"));
+    }
     let start_ts = monitor_timestamp();
     let procedure = Procedure {
       id: Default::default(),
@@ -53,8 +57,7 @@ impl Resolve<CreateProcedure, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let procedure: Procedure =
-      self.get_resource(&procedure_id).await?;
+    let procedure = Procedure::get_resource(&procedure_id).await?;
 
     create_permission(&user, &procedure, PermissionLevel::Write)
       .await;
@@ -94,13 +97,12 @@ impl Resolve<CopyProcedure, User> for State {
       description,
       tags,
       ..
-    } = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    } = Procedure::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
     let start_ts = monitor_timestamp();
     let build = Procedure {
       id: Default::default(),
@@ -121,8 +123,7 @@ impl Resolve<CopyProcedure, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let procedure: Procedure =
-      self.get_resource(&procedure_id).await?;
+    let procedure = Procedure::get_resource(&procedure_id).await?;
 
     create_permission(&user, &procedure, PermissionLevel::Write)
       .await;
@@ -157,13 +158,12 @@ impl Resolve<UpdateProcedure, User> for State {
     UpdateProcedure { id, config }: UpdateProcedure,
     user: User,
   ) -> anyhow::Result<UpdateProcedureResponse> {
-    let procedure: Procedure = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let procedure = Procedure::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     update_one_by_id(
       &db_client().await.procedures,
@@ -188,8 +188,7 @@ impl Resolve<UpdateProcedure, User> for State {
 
     add_update(update).await?;
 
-    let procedure: Procedure =
-      self.get_resource(&procedure.id).await?;
+    let procedure = Procedure::get_resource(&procedure.id).await?;
 
     Ok(procedure)
   }
@@ -207,13 +206,12 @@ impl Resolve<DeleteProcedure, User> for State {
       return Err(anyhow!("procedure busy"));
     }
 
-    let procedure: Procedure = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let procedure = Procedure::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let mut update =
       make_update(&procedure, Operation::DeleteProcedure, &user);

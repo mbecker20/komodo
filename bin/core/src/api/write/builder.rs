@@ -1,4 +1,6 @@
-use anyhow::Context;
+use std::str::FromStr;
+
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
@@ -13,7 +15,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
 };
 use resolver_api::Resolve;
 
@@ -35,6 +37,9 @@ impl Resolve<CreateBuilder, User> for State {
     user: User,
   ) -> anyhow::Result<Builder> {
     let start_ts = monitor_timestamp();
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("valid ObjectIds cannot be used as names"));
+    }
     let builder = Builder {
       id: Default::default(),
       name,
@@ -54,7 +59,7 @@ impl Resolve<CreateBuilder, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let builder: Builder = self.get_resource(&builder_id).await?;
+    let builder = Builder::get_resource(&builder_id).await?;
     create_permission(&user, &builder, PermissionLevel::Write).await;
     let update = Update {
       target: ResourceTarget::Builder(builder_id),
@@ -93,13 +98,12 @@ impl Resolve<CopyBuilder, User> for State {
       config,
       description,
       ..
-    } = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    } = Builder::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
     let start_ts = monitor_timestamp();
     let builder = Builder {
       id: Default::default(),
@@ -120,7 +124,7 @@ impl Resolve<CopyBuilder, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let builder: Builder = self.get_resource(&builder_id).await?;
+    let builder = Builder::get_resource(&builder_id).await?;
     create_permission(&user, &builder, PermissionLevel::Write).await;
     let update = Update {
       target: ResourceTarget::Builder(builder_id),
@@ -155,13 +159,12 @@ impl Resolve<DeleteBuilder, User> for State {
     DeleteBuilder { id }: DeleteBuilder,
     user: User,
   ) -> anyhow::Result<Builder> {
-    let builder: Builder = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let builder = Builder::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     db_client()
       .await
@@ -205,13 +208,12 @@ impl Resolve<UpdateBuilder, User> for State {
     UpdateBuilder { id, config }: UpdateBuilder,
     user: User,
   ) -> anyhow::Result<Builder> {
-    let builder: Builder = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let builder = Builder::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let mut update = Update {
       target: ResourceTarget::Builder(id.clone()),
@@ -237,7 +239,7 @@ impl Resolve<UpdateBuilder, User> for State {
     )
     .await?;
 
-    let builder: Builder = self.get_resource(&id).await?;
+    let builder = Builder::get_resource(&id).await?;
 
     update.finalize();
     add_update(update).await?;

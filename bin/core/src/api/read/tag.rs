@@ -13,10 +13,10 @@ use crate::{db::db_client, helpers::get_tag, state::State};
 impl Resolve<GetTag, User> for State {
   async fn resolve(
     &self,
-    GetTag { id }: GetTag,
+    GetTag { tag }: GetTag,
     _: User,
   ) -> anyhow::Result<Tag> {
-    get_tag(&id).await
+    get_tag(&tag).await
   }
 }
 

@@ -34,23 +34,24 @@ impl Resolve<Deploy, User> for State {
   async fn resolve(
     &self,
     Deploy {
-      deployment_id,
+      deployment,
       stop_signal,
       stop_time,
     }: Deploy,
     user: User,
   ) -> anyhow::Result<Update> {
-    if action_states().deployment.busy(&deployment_id).await {
+    let mut deployment = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    let deployment_id = deployment.id.clone();
+
+    if action_states().deployment.busy(&deployment.id).await {
       return Err(anyhow!("deployment busy"));
     }
-
-    let mut deployment: Deployment = self
-      .get_resource_check_permissions(
-        &deployment_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -71,7 +72,7 @@ impl Resolve<Deploy, User> for State {
 
       let version = match deployment.config.image {
         DeploymentImage::Build { build_id, version } => {
-          let build: Build = State.get_resource(&build_id).await?;
+          let build = Build::get_resource(&build_id).await?;
           let image_name = get_image_name(&build);
           let version = if version.is_none() {
             build.config.version
@@ -147,20 +148,21 @@ impl Resolve<Deploy, User> for State {
 impl Resolve<StartContainer, User> for State {
   async fn resolve(
     &self,
-    StartContainer { deployment_id }: StartContainer,
+    StartContainer { deployment }: StartContainer,
     user: User,
   ) -> anyhow::Result<Update> {
+    let deployment = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    let deployment_id = deployment.id.clone();
+
     if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
     }
-
-    let deployment: Deployment = State
-      .get_resource_check_permissions(
-        &deployment_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -234,23 +236,24 @@ impl Resolve<StopContainer, User> for State {
   async fn resolve(
     &self,
     StopContainer {
-      deployment_id,
+      deployment,
       signal,
       time,
     }: StopContainer,
     user: User,
   ) -> anyhow::Result<Update> {
+    let deployment = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    let deployment_id = deployment.id.clone();
+
     if action_states().deployment.busy(&deployment_id).await {
       return Err(anyhow!("deployment busy"));
     }
-
-    let deployment: Deployment = self
-      .get_resource_check_permissions(
-        &deployment_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -320,10 +323,10 @@ impl Resolve<StopContainer, User> for State {
 impl Resolve<StopAllContainers, User> for State {
   async fn resolve(
     &self,
-    StopAllContainers { server_id }: StopAllContainers,
+    StopAllContainers { server }: StopAllContainers,
     user: User,
   ) -> anyhow::Result<Update> {
-    let (server, status) = get_server_with_status(&server_id).await?;
+    let (server, status) = get_server_with_status(&server).await?;
     if status != ServerStatus::Ok {
       return Err(anyhow!(
         "cannot send action when server is unreachable or disabled"
@@ -333,12 +336,13 @@ impl Resolve<StopAllContainers, User> for State {
     let deployments = find_collect(
       &db_client().await.deployments,
       doc! {
-        "config.server_id": &server_id
+        "config.server_id": &server.id
       },
       None,
     )
     .await
     .context("failed to find deployments on server")?;
+    let server_id = server.id.clone();
     let inner = || async move {
       let mut update = make_update(
         ResourceTarget::Server(server.id),
@@ -350,7 +354,7 @@ impl Resolve<StopAllContainers, User> for State {
           self
             .resolve(
               StopContainer {
-                deployment_id: deployment.id.clone(),
+                deployment: deployment.id.clone(),
                 signal: None,
                 time: None,
               },
@@ -409,23 +413,22 @@ impl Resolve<RemoveContainer, User> for State {
   async fn resolve(
     &self,
     RemoveContainer {
-      deployment_id,
+      deployment,
       signal,
       time,
     }: RemoveContainer,
     user: User,
   ) -> anyhow::Result<Update> {
-    if action_states().deployment.busy(&deployment_id).await {
+    let deployment = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    if action_states().deployment.busy(&deployment.id).await {
       return Err(anyhow!("deployment busy"));
     }
-
-    let deployment: Deployment = self
-      .get_resource_check_permissions(
-        &deployment_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -440,6 +443,8 @@ impl Resolve<RemoveContainer, User> for State {
     }
 
     let periphery = periphery_client(&server)?;
+
+    let deployment_id = deployment.id.clone();
 
     let inner = || async move {
       let start_ts = monitor_timestamp();

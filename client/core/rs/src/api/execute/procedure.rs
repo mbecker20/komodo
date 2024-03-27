@@ -14,5 +14,6 @@ use super::MonitorExecuteRequest;
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct RunProcedure {
-  pub procedure_id: String,
+  /// Id or name
+  pub procedure: String,
 }

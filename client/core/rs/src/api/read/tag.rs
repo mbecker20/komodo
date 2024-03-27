@@ -16,7 +16,9 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetTagResponse)]
 pub struct GetTag {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub tag: String,
 }
 
 #[typeshare]

@@ -23,7 +23,9 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentResponse)]
 pub struct GetDeployment {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub deployment: String,
 }
 
 #[typeshare]
@@ -54,7 +56,9 @@ pub type ListDeploymentsResponse = Vec<DeploymentListItem>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentStatusResponse)]
 pub struct GetDeploymentStatus {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub deployment: String,
 }
 
 #[typeshare]
@@ -73,7 +77,9 @@ pub struct GetDeploymentStatusResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetLogResponse)]
 pub struct GetLog {
-  pub deployment_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub deployment: String,
   #[serde(default = "default_tail")]
   pub tail: U64,
 }
@@ -94,7 +100,9 @@ pub type GetLogResponse = Log;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeployedVersionResponse)]
 pub struct GetDeployedVersion {
-  pub deployment_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub deployment: String,
 }
 
 #[typeshare]
@@ -112,7 +120,9 @@ pub struct GetDeployedVersionResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDeploymentStatsResponse)]
 pub struct GetDeploymentStats {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub deployment: String,
 }
 
 #[typeshare]
@@ -127,7 +137,9 @@ pub type GetDeploymentStatsResponse = DockerContainerStats;
 #[empty_traits(MonitorReadRequest)]
 #[response(DeploymentActionState)]
 pub struct GetDeploymentActionState {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub deployment: String,
 }
 
 #[typeshare]

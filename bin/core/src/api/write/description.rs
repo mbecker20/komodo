@@ -29,67 +29,27 @@ impl Resolve<UpdateDescription, User> for State {
         ))
       }
       ResourceTarget::Server(id) => {
-        <State as StateResource<Server>>::update_description(
-          self,
-          &id,
-          &description,
-          &user,
-        )
-        .await?;
+        Server::update_description(&id, &description, &user).await?;
       }
       ResourceTarget::Deployment(id) => {
-        <State as StateResource<Deployment>>::update_description(
-          self,
-          &id,
-          &description,
-          &user,
-        )
-        .await?;
+        Deployment::update_description(&id, &description, &user)
+          .await?;
       }
       ResourceTarget::Build(id) => {
-        <State as StateResource<Build>>::update_description(
-          self,
-          &id,
-          &description,
-          &user,
-        )
-        .await?;
+        Build::update_description(&id, &description, &user).await?;
       }
       ResourceTarget::Repo(id) => {
-        <State as StateResource<Repo>>::update_description(
-          self,
-          &id,
-          &description,
-          &user,
-        )
-        .await?;
+        Repo::update_description(&id, &description, &user).await?;
       }
       ResourceTarget::Builder(id) => {
-        <State as StateResource<Builder>>::update_description(
-          self,
-          &id,
-          &description,
-          &user,
-        )
-        .await?;
+        Builder::update_description(&id, &description, &user).await?;
       }
       ResourceTarget::Alerter(id) => {
-        <State as StateResource<Alerter>>::update_description(
-          self,
-          &id,
-          &description,
-          &user,
-        )
-        .await?;
+        Alerter::update_description(&id, &description, &user).await?;
       }
       ResourceTarget::Procedure(id) => {
-        <State as StateResource<Procedure>>::update_description(
-          self,
-          &id,
-          &description,
-          &user,
-        )
-        .await?;
+        Procedure::update_description(&id, &description, &user)
+          .await?;
       }
     }
     Ok(UpdateDescriptionResponse {})

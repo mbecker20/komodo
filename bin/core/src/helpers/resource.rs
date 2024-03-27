@@ -1,29 +1,36 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
-use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_client::entities::{
   alerter::{
-    Alerter, AlerterConfig, AlerterListItem, AlerterListItemInfo,
+    Alerter, AlerterConfig, AlerterInfo, AlerterListItem,
+    AlerterListItemInfo,
   },
-  build::{Build, BuildListItem, BuildListItemInfo},
+  build::{
+    Build, BuildConfig, BuildInfo, BuildListItem, BuildListItemInfo,
+  },
   builder::{
     Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo,
   },
   deployment::{
-    Deployment, DeploymentImage, DeploymentListItem,
-    DeploymentListItemInfo,
+    Deployment, DeploymentConfig, DeploymentImage,
+    DeploymentListItem, DeploymentListItemInfo,
   },
   permission::PermissionLevel,
-  procedure::{Procedure, ProcedureListItem, ProcedureListItemInfo},
-  repo::{Repo, RepoInfo, RepoListItem},
-  server::{Server, ServerListItem, ServerListItemInfo},
+  procedure::{
+    Procedure, ProcedureConfig, ProcedureListItem,
+    ProcedureListItemInfo,
+  },
+  repo::{Repo, RepoConfig, RepoInfo, RepoListItem},
+  resource::Resource,
+  server::{
+    Server, ServerConfig, ServerListItem, ServerListItemInfo,
+  },
   update::{ResourceTarget, ResourceTargetVariant},
   user::User,
 };
 use mungos::{
-  by_id::{find_one_by_id, update_one_by_id},
   find::find_collect,
   mongodb::{
     bson::{doc, oid::ObjectId, Document},
@@ -32,43 +39,66 @@ use mungos::{
 };
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{db::db_client, state::State};
+use crate::db::db_client;
 
 use super::cache::{deployment_status_cache, server_status_cache};
 
-#[async_trait]
-pub trait StateResource<
-  T: Send + Sync + Unpin + Serialize + DeserializeOwned,
->
-{
+pub trait StateResource {
   type ListItem: Serialize + Send;
+  type Config: Send
+    + Sync
+    + Unpin
+    + Serialize
+    + DeserializeOwned
+    + 'static;
+  type Info: Send
+    + Sync
+    + Unpin
+    + Default
+    + Serialize
+    + DeserializeOwned
+    + 'static;
 
   fn name() -> &'static str;
-  fn resource_target_variant(&self) -> ResourceTargetVariant;
-  async fn coll(&self) -> &Collection<T>;
+
+  fn resource_target_variant() -> ResourceTargetVariant;
+
+  async fn coll(
+  ) -> &'static Collection<Resource<Self::Config, Self::Info>>;
+
   async fn to_list_item(
-    &self,
-    resource: T,
+    resource: Resource<Self::Config, Self::Info>,
   ) -> anyhow::Result<Self::ListItem>;
 
-  async fn get_resource(&self, id: &str) -> anyhow::Result<T> {
-    find_one_by_id(self.coll().await, id)
+  async fn get_resource(
+    id_or_name: &str,
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
+    let filter = match ObjectId::from_str(id_or_name) {
+      Ok(id) => doc! { "_id": id },
+      Err(_) => doc! { "name": id_or_name },
+    };
+    Self::coll()
+      .await
+      .find_one(filter, None)
       .await
       .context("failed to query db for resource")?
       .with_context(|| {
-        format!("did not find any {} with id {id}", Self::name())
+        format!(
+          "did not find any {} matching {id_or_name}",
+          Self::name()
+        )
       })
   }
 
   async fn get_resource_check_permissions(
-    &self,
-    id: &str,
+    id_or_name: &str,
     user: &User,
     permission_level: PermissionLevel,
-  ) -> anyhow::Result<T> {
-    let resource = self.get_resource(id).await?;
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
+    let resource = Self::get_resource(id_or_name).await?;
     let permissions =
-      self.get_user_permission_on_resource(&user.id, id).await?;
+      Self::get_user_permission_on_resource(&user.id, &resource.id)
+        .await?;
     if user.admin || permissions >= permission_level {
       Ok(resource)
     } else {
@@ -80,50 +110,46 @@ pub trait StateResource<
   }
 
   async fn get_user_permission_on_resource(
-    &self,
     user_id: &str,
     resource_id: &str,
   ) -> anyhow::Result<PermissionLevel> {
     get_user_permission_on_resource(
       user_id,
-      self.resource_target_variant(),
+      Self::resource_target_variant(),
       resource_id,
     )
     .await
   }
 
   async fn get_resource_ids_for_non_admin(
-    &self,
     user_id: &str,
   ) -> anyhow::Result<Vec<String>> {
     get_resource_ids_for_non_admin(
       user_id,
-      self.resource_target_variant(),
+      Self::resource_target_variant(),
     )
     .await
   }
 
   async fn list_resources_for_user(
-    &self,
     mut filters: Document,
     user: &User,
   ) -> anyhow::Result<Vec<Self::ListItem>> {
     if !user.admin {
-      let ids = self
-        .get_resource_ids_for_non_admin(&user.id)
+      let ids = Self::get_resource_ids_for_non_admin(&user.id)
         .await?
         .into_iter()
         .flat_map(|id| ObjectId::from_str(&id))
         .collect::<Vec<_>>();
       filters.insert("_id", doc! { "$in": ids });
     }
-    let list = find_collect(self.coll().await, filters, None)
+    let list = find_collect(Self::coll().await, filters, None)
       .await
       .with_context(|| {
         format!("failed to pull {}s from mongo", Self::name())
       })?
       .into_iter()
-      .map(|resource| self.to_list_item(resource));
+      .map(|resource| Self::to_list_item(resource));
 
     let list = join_all(list)
       .await
@@ -138,23 +164,24 @@ pub trait StateResource<
   }
 
   async fn update_description(
-    &self,
-    id: &str,
+    id_or_name: &str,
     description: &str,
     user: &User,
   ) -> anyhow::Result<()> {
-    self
-      .get_resource_check_permissions(
-        id,
-        user,
-        PermissionLevel::Write,
-      )
-      .await?;
-    self
-      .coll()
+    Self::get_resource_check_permissions(
+      id_or_name,
+      user,
+      PermissionLevel::Write,
+    )
+    .await?;
+    let filter = match ObjectId::from_str(id_or_name) {
+      Ok(id) => doc! { "_id": id },
+      Err(_) => doc! { "name": id_or_name },
+    };
+    Self::coll()
       .await
       .update_one(
-        doc! { "_id": ObjectId::from_str(id)? },
+        filter,
         doc! { "$set": { "description": description } },
         None,
       )
@@ -163,26 +190,24 @@ pub trait StateResource<
   }
 
   async fn update_tags_on_resource(
-    &self,
-    id: &str,
+    id_or_name: &str,
     tags: Vec<String>,
   ) -> anyhow::Result<()> {
-    update_one_by_id(
-      self.coll().await,
-      id,
-      doc! { "$set": { "tags": tags } },
-      None,
-    )
-    .await?;
+    Self::coll()
+      .await
+      .update_one(
+        id_or_name_filter(id_or_name),
+        doc! { "$set": { "tags": tags } },
+        None,
+      )
+      .await?;
     Ok(())
   }
 
   async fn remove_tag_from_resources(
-    &self,
     tag_id: &str,
   ) -> anyhow::Result<()> {
-    self
-      .coll()
+    Self::coll()
       .await
       .update_many(
         doc! {},
@@ -195,24 +220,31 @@ pub trait StateResource<
   }
 }
 
-#[async_trait]
-impl StateResource<Server> for State {
+fn id_or_name_filter(id_or_name: &str) -> Document {
+  match ObjectId::from_str(id_or_name) {
+    Ok(id) => doc! { "_id": id },
+    Err(_) => doc! { "name": id_or_name },
+  }
+}
+
+impl StateResource for Server {
   type ListItem = ServerListItem;
+  type Config = ServerConfig;
+  type Info = ();
 
   fn name() -> &'static str {
     "server"
   }
 
-  fn resource_target_variant(&self) -> ResourceTargetVariant {
+  fn resource_target_variant() -> ResourceTargetVariant {
     ResourceTargetVariant::Server
   }
 
-  async fn coll(&self) -> &Collection<Server> {
+  async fn coll() -> &'static Collection<Server> {
     &db_client().await.servers
   }
 
   async fn to_list_item(
-    &self,
     server: Server,
   ) -> anyhow::Result<ServerListItem> {
     let status = server_status_cache().get(&server.id).await;
@@ -239,30 +271,30 @@ impl StateResource<Server> for State {
   }
 }
 
-#[async_trait]
-impl StateResource<Deployment> for State {
+impl StateResource for Deployment {
   type ListItem = DeploymentListItem;
+  type Config = DeploymentConfig;
+  type Info = ();
 
   fn name() -> &'static str {
     "deployment"
   }
 
-  fn resource_target_variant(&self) -> ResourceTargetVariant {
+  fn resource_target_variant() -> ResourceTargetVariant {
     ResourceTargetVariant::Deployment
   }
 
-  async fn coll(&self) -> &Collection<Deployment> {
+  async fn coll() -> &'static Collection<Deployment> {
     &db_client().await.deployments
   }
 
   async fn to_list_item(
-    &self,
     deployment: Deployment,
   ) -> anyhow::Result<DeploymentListItem> {
     let status = deployment_status_cache().get(&deployment.id).await;
     let (image, build_id) = match deployment.config.image {
       DeploymentImage::Build { build_id, version } => {
-        let build: Build = self.get_resource(&build_id).await?;
+        let build = Build::get_resource(&build_id).await?;
         let version = if version.is_none() {
           build.config.version.to_string()
         } else {
@@ -296,24 +328,24 @@ impl StateResource<Deployment> for State {
   }
 }
 
-#[async_trait]
-impl StateResource<Build> for State {
+impl StateResource for Build {
   type ListItem = BuildListItem;
+  type Config = BuildConfig;
+  type Info = BuildInfo;
 
   fn name() -> &'static str {
     "build"
   }
 
-  fn resource_target_variant(&self) -> ResourceTargetVariant {
+  fn resource_target_variant() -> ResourceTargetVariant {
     ResourceTargetVariant::Build
   }
 
-  async fn coll(&self) -> &Collection<Build> {
+  async fn coll() -> &'static Collection<Build> {
     &db_client().await.builds
   }
 
   async fn to_list_item(
-    &self,
     build: Build,
   ) -> anyhow::Result<BuildListItem> {
     Ok(BuildListItem {
@@ -332,26 +364,24 @@ impl StateResource<Build> for State {
   }
 }
 
-#[async_trait]
-impl StateResource<Repo> for State {
+impl StateResource for Repo {
   type ListItem = RepoListItem;
+  type Config = RepoConfig;
+  type Info = RepoInfo;
 
   fn name() -> &'static str {
     "repo"
   }
 
-  fn resource_target_variant(&self) -> ResourceTargetVariant {
+  fn resource_target_variant() -> ResourceTargetVariant {
     ResourceTargetVariant::Repo
   }
 
-  async fn coll(&self) -> &Collection<Repo> {
+  async fn coll() -> &'static Collection<Repo> {
     &db_client().await.repos
   }
 
-  async fn to_list_item(
-    &self,
-    repo: Repo,
-  ) -> anyhow::Result<RepoListItem> {
+  async fn to_list_item(repo: Repo) -> anyhow::Result<RepoListItem> {
     Ok(RepoListItem {
       name: repo.name,
       created_at: ObjectId::from_str(&repo.id)?
@@ -367,24 +397,24 @@ impl StateResource<Repo> for State {
   }
 }
 
-#[async_trait]
-impl StateResource<Builder> for State {
+impl StateResource for Builder {
   type ListItem = BuilderListItem;
+  type Config = BuilderConfig;
+  type Info = ();
 
   fn name() -> &'static str {
     "builder"
   }
 
-  fn resource_target_variant(&self) -> ResourceTargetVariant {
+  fn resource_target_variant() -> ResourceTargetVariant {
     ResourceTargetVariant::Builder
   }
 
-  async fn coll(&self) -> &Collection<Builder> {
+  async fn coll() -> &'static Collection<Builder> {
     &db_client().await.builders
   }
 
   async fn to_list_item(
-    &self,
     builder: Builder,
   ) -> anyhow::Result<BuilderListItem> {
     let (provider, instance_type) = match builder.config {
@@ -412,24 +442,24 @@ impl StateResource<Builder> for State {
   }
 }
 
-#[async_trait]
-impl StateResource<Alerter> for State {
+impl StateResource for Alerter {
   type ListItem = AlerterListItem;
+  type Config = AlerterConfig;
+  type Info = AlerterInfo;
 
   fn name() -> &'static str {
     "alerter"
   }
 
-  fn resource_target_variant(&self) -> ResourceTargetVariant {
+  fn resource_target_variant() -> ResourceTargetVariant {
     ResourceTargetVariant::Alerter
   }
 
-  async fn coll(&self) -> &Collection<Alerter> {
+  async fn coll() -> &'static Collection<Alerter> {
     &db_client().await.alerters
   }
 
   async fn to_list_item(
-    &self,
     alerter: Alerter,
   ) -> anyhow::Result<AlerterListItem> {
     let alerter_type = match alerter.config {
@@ -452,24 +482,24 @@ impl StateResource<Alerter> for State {
   }
 }
 
-#[async_trait]
-impl StateResource<Procedure> for State {
+impl StateResource for Procedure {
   type ListItem = ProcedureListItem;
+  type Config = ProcedureConfig;
+  type Info = ();
 
   fn name() -> &'static str {
     "procedure"
   }
 
-  fn resource_target_variant(&self) -> ResourceTargetVariant {
+  fn resource_target_variant() -> ResourceTargetVariant {
     ResourceTargetVariant::Procedure
   }
 
-  async fn coll(&self) -> &Collection<Procedure> {
+  async fn coll() -> &'static Collection<Procedure> {
     &db_client().await.procedures
   }
 
   async fn to_list_item(
-    &self,
     procedure: Procedure,
   ) -> anyhow::Result<ProcedureListItem> {
     Ok(ProcedureListItem {

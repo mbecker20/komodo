@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
@@ -13,7 +15,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
 };
 use periphery_client::api;
 use resolver_api::Resolve;
@@ -44,6 +46,9 @@ impl Resolve<CreateServer, User> for State {
         "user does not have create server permissions"
       ));
     }
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("valid ObjectIds cannot be used as names"));
+    }
     let start_ts = monitor_timestamp();
     let server = Server {
       id: Default::default(),
@@ -64,7 +69,7 @@ impl Resolve<CreateServer, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let server: Server = self.get_resource(&server_id).await?;
+    let server = Server::get_resource(&server_id).await?;
     create_permission(&user, &server, PermissionLevel::Write).await;
     let update = Update {
       target: ResourceTarget::Server(server_id),
@@ -105,13 +110,12 @@ impl Resolve<DeleteServer, User> for State {
       return Err(anyhow!("server busy"));
     }
 
-    let server: Server = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let server = Server::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     db_client()
       .await
@@ -180,13 +184,12 @@ impl Resolve<UpdateServer, User> for State {
     if action_states().server.busy(&id).await {
       return Err(anyhow!("server busy"));
     }
-    let server: Server = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let server = Server::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
     let mut update =
       make_update(&server, Operation::UpdateServer, &user);
 
@@ -206,7 +209,7 @@ impl Resolve<UpdateServer, User> for State {
       serde_json::to_string_pretty(&config)?,
     );
 
-    let new_server: Server = self.get_resource(&id).await?;
+    let new_server = Server::get_resource(&id).await?;
 
     update_cache_for_server(&new_server).await;
 
@@ -225,13 +228,12 @@ impl Resolve<RenameServer, User> for State {
     RenameServer { id, name }: RenameServer,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server: Server = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let server = Server::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
     let mut update =
       make_update(&server, Operation::RenameServer, &user);
 
@@ -255,13 +257,12 @@ impl Resolve<CreateNetwork, User> for State {
     CreateNetwork { server_id, name }: CreateNetwork,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server: Server = self
-      .get_resource_check_permissions(
-        &server_id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let server = Server::get_resource_check_permissions(
+      &server_id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -294,13 +295,12 @@ impl Resolve<DeleteNetwork, User> for State {
     DeleteNetwork { server_id, name }: DeleteNetwork,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server: Server = self
-      .get_resource_check_permissions(
-        &server_id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let server = Server::get_resource_check_permissions(
+      &server_id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let periphery = periphery_client(&server)?;
 

@@ -26,20 +26,15 @@ impl Resolve<ListAlerts, User> for State {
     let mut query = query.unwrap_or_default();
     if !user.admin {
       let server_ids =
-                <State as StateResource<Server>>::get_resource_ids_for_non_admin(self, &user.id)
-                    .await?;
-      let deployment_ids = <State as StateResource<
-                Deployment,
-            >>::get_resource_ids_for_non_admin(
-                self, &user.id
-            )
-            .await?;
+        Server::get_resource_ids_for_non_admin(&user.id).await?;
+      let deployment_ids =
+        Deployment::get_resource_ids_for_non_admin(&user.id).await?;
       query.extend(doc! {
-                "$or": [
-                   { "target.type": "Server", "target.id": { "$in": &server_ids } },
-                   { "target.type": "Deployment", "target.id": { "$in": &deployment_ids } },
-                ]
-            });
+        "$or": [
+          { "target.type": "Server", "target.id": { "$in": &server_ids } },
+          { "target.type": "Deployment", "target.id": { "$in": &deployment_ids } },
+        ]
+      });
     }
 
     let alerts = find_collect(

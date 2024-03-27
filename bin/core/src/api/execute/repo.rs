@@ -31,25 +31,25 @@ use crate::{
 impl Resolve<CloneRepo, User> for State {
   async fn resolve(
     &self,
-    CloneRepo { id }: CloneRepo,
+    CloneRepo { repo }: CloneRepo,
     user: User,
   ) -> anyhow::Result<Update> {
-    let repo: Repo = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
+    let repo = Repo::get_resource_check_permissions(
+      &repo,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
 
     if repo.config.server_id.is_empty() {
       return Err(anyhow!("repo has no server attached"));
     }
 
-    let server: Server =
-      self.get_resource(&repo.config.server_id).await?;
+    let server = Server::get_resource(&repo.config.server_id).await?;
 
     let periphery = periphery_client(&server)?;
+
+    let repo_id = repo.id.clone();
 
     let inner = || async move {
       let start_ts = monitor_timestamp();
@@ -102,13 +102,13 @@ impl Resolve<CloneRepo, User> for State {
       Ok(update)
     };
 
-    if action_states().repo.busy(&id).await {
+    if action_states().repo.busy(&repo_id).await {
       return Err(anyhow!("repo busy"));
     }
 
     action_states()
       .repo
-      .update_entry(&id, |entry| {
+      .update_entry(&repo_id, |entry| {
         entry.cloning = true;
       })
       .await;
@@ -117,7 +117,7 @@ impl Resolve<CloneRepo, User> for State {
 
     action_states()
       .repo
-      .update_entry(id, |entry| {
+      .update_entry(repo_id, |entry| {
         entry.cloning = false;
       })
       .await;
@@ -130,25 +130,25 @@ impl Resolve<CloneRepo, User> for State {
 impl Resolve<PullRepo, User> for State {
   async fn resolve(
     &self,
-    PullRepo { id }: PullRepo,
+    PullRepo { repo }: PullRepo,
     user: User,
   ) -> anyhow::Result<Update> {
-    let repo: Repo = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let repo = Repo::get_resource_check_permissions(
+      &repo,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     if repo.config.server_id.is_empty() {
       return Err(anyhow!("repo has no server attached"));
     }
 
-    let server: Server =
-      self.get_resource(&repo.config.server_id).await?;
+    let server = Server::get_resource(&repo.config.server_id).await?;
 
     let periphery = periphery_client(&server)?;
+
+    let repo_id = repo.id.clone();
 
     let inner = || async move {
       let start_ts = monitor_timestamp();
@@ -204,13 +204,13 @@ impl Resolve<PullRepo, User> for State {
       Ok(update)
     };
 
-    if action_states().repo.busy(&id).await {
+    if action_states().repo.busy(&repo_id).await {
       return Err(anyhow!("repo busy"));
     }
 
     action_states()
       .repo
-      .update_entry(id.clone(), |entry| {
+      .update_entry(&repo_id, |entry| {
         entry.pulling = true;
       })
       .await;
@@ -219,7 +219,7 @@ impl Resolve<PullRepo, User> for State {
 
     action_states()
       .repo
-      .update_entry(id, |entry| {
+      .update_entry(repo_id, |entry| {
         entry.pulling = false;
       })
       .await;

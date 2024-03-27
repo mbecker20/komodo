@@ -57,12 +57,11 @@ pub async fn tests() -> anyhow::Result<()> {
 #[allow(unused)]
 async fn run_build(
   monitor: &MonitorClient,
-  build_id: String,
+  build: String,
 ) -> anyhow::Result<()> {
   println!("running build...");
 
-  let update =
-    monitor.execute(execute::RunBuild { build_id }).await?;
+  let update = monitor.execute(execute::RunBuild { build }).await?;
 
   println!("{update:#?}");
 

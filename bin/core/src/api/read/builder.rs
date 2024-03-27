@@ -27,16 +27,15 @@ use crate::{
 impl Resolve<GetBuilder, User> for State {
   async fn resolve(
     &self,
-    GetBuilder { id }: GetBuilder,
+    GetBuilder { builder }: GetBuilder,
     user: User,
   ) -> anyhow::Result<Builder> {
-    self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await
+    Builder::get_resource_check_permissions(
+      &builder,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await
   }
 }
 
@@ -49,10 +48,7 @@ impl Resolve<ListBuilders, User> for State {
   ) -> anyhow::Result<Vec<BuilderListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
-    <State as StateResource<Builder>>::list_resources_for_user(
-      self, filters, &user,
-    )
-    .await
+    Builder::list_resources_for_user(filters, &user).await
   }
 }
 
@@ -96,16 +92,15 @@ impl Resolve<GetBuildersSummary, User> for State {
 impl Resolve<GetBuilderAvailableAccounts, User> for State {
   async fn resolve(
     &self,
-    GetBuilderAvailableAccounts { id }: GetBuilderAvailableAccounts,
+    GetBuilderAvailableAccounts { builder }: GetBuilderAvailableAccounts,
     user: User,
   ) -> anyhow::Result<GetBuilderAvailableAccountsResponse> {
-    let builder: Builder = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
+    let builder = Builder::get_resource_check_permissions(
+      &builder,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
     match builder.config {
       BuilderConfig::Aws(config) => {
         Ok(GetBuilderAvailableAccountsResponse {
@@ -116,9 +111,7 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
       BuilderConfig::Server(config) => {
         let res = self
           .resolve(
-            read::GetAvailableAccounts {
-              server_id: config.id,
-            },
+            read::GetAvailableAccounts { server: config.id },
             user,
           )
           .await?;

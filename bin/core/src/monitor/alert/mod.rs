@@ -10,7 +10,7 @@ use monitor_client::entities::{
 };
 use mungos::mongodb::bson::Document;
 
-use crate::{helpers::resource::StateResource, state::State};
+use crate::helpers::resource::StateResource;
 
 // called after cache update
 pub async fn check_alerts(ts: i64) {
@@ -33,17 +33,15 @@ async fn get_all_servers_map() -> anyhow::Result<(
   HashMap<String, ServerListItem>,
   HashMap<String, String>,
 )> {
-  let servers =
-    <State as StateResource<Server>>::list_resources_for_user(
-      &State,
-      Document::new(),
-      &User {
-        admin: true,
-        ..Default::default()
-      },
-    )
-    .await
-    .context("failed to get servers from db (in alert_servers)")?;
+  let servers = Server::list_resources_for_user(
+    Document::new(),
+    &User {
+      admin: true,
+      ..Default::default()
+    },
+  )
+  .await
+  .context("failed to get servers from db (in alert_servers)")?;
 
   let servers = servers
     .into_iter()

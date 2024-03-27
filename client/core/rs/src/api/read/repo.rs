@@ -18,7 +18,9 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(Repo)]
 pub struct GetRepo {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub repo: String,
 }
 
 #[typeshare]
@@ -49,7 +51,9 @@ pub type ListReposResponse = Vec<RepoListItem>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetRepoActionStateResponse)]
 pub struct GetRepoActionState {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub repo: String,
 }
 
 #[typeshare]

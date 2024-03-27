@@ -11,7 +11,7 @@ use crate::entities::{MongoId, I64};
 use super::update::ResourceTargetVariant;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder)]
+#[derive(Debug, Clone, Serialize, Deserialize, Builder)]
 pub struct Resource<Config, Info: Default = ()> {
   #[serde(
     default,

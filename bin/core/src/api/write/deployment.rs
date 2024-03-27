@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
@@ -17,7 +19,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
 };
 use periphery_client::api;
 use resolver_api::Resolve;
@@ -42,20 +44,23 @@ impl Resolve<CreateDeployment, User> for State {
     user: User,
   ) -> anyhow::Result<Deployment> {
     let name = to_monitor_name(&name);
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("valid ObjectIds cannot be used as names"));
+    }
     if let Some(server_id) = &config.server_id {
       if !server_id.is_empty() {
-        let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
-                    .await
-                    .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+        Server::get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
+          .await
+          .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
       }
     }
     if let Some(DeploymentImage::Build { build_id, .. }) =
       &config.image
     {
       if !build_id.is_empty() {
-        let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
-                    .await
-                    .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+        Build::get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
+          .await
+          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
       }
     }
     let start_ts = monitor_timestamp();
@@ -78,8 +83,7 @@ impl Resolve<CreateDeployment, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let deployment: Deployment =
-      self.get_resource(&deployment_id).await?;
+    let deployment = Deployment::get_resource(&deployment_id).await?;
     create_permission(&user, &deployment, PermissionLevel::Write)
       .await;
 
@@ -115,21 +119,20 @@ impl Resolve<CopyDeployment, User> for State {
       description,
       tags,
       ..
-    } = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    } = Deployment::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
     if !config.server_id.is_empty() {
-      let _: Server = self.get_resource_check_permissions(&config.server_id, &user, PermissionLevel::Write)
+      Server::get_resource_check_permissions(&config.server_id, &user, PermissionLevel::Write)
         .await
         .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
     }
     if let DeploymentImage::Build { build_id, .. } = &config.image {
       if !build_id.is_empty() {
-        let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
+        Build::get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
           .await
           .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
       }
@@ -154,8 +157,7 @@ impl Resolve<CopyDeployment, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let deployment: Deployment =
-      self.get_resource(&deployment_id).await?;
+    let deployment = Deployment::get_resource(&deployment_id).await?;
 
     create_permission(&user, &deployment, PermissionLevel::Write)
       .await;
@@ -190,13 +192,12 @@ impl Resolve<DeleteDeployment, User> for State {
       return Err(anyhow!("deployment busy"));
     }
 
-    let deployment: Deployment = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let deployment = Deployment::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let inner = || async move {
       let state = get_deployment_state(&deployment)
@@ -215,8 +216,8 @@ impl Resolve<DeleteDeployment, User> for State {
           | DockerContainerState::Unknown
       ) {
         // container needs to be destroyed
-        let server: anyhow::Result<Server> =
-          self.get_resource(&deployment.config.server_id).await;
+        let server =
+          Server::get_resource(&deployment.config.server_id).await;
         if let Err(e) = server {
           update.logs.push(Log::error(
             "remove container",
@@ -317,28 +318,27 @@ impl Resolve<UpdateDeployment, User> for State {
       return Err(anyhow!("deployment busy"));
     }
 
-    let deployment: Deployment = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let deployment = Deployment::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let inner = || async move {
       let start_ts = monitor_timestamp();
 
       if let Some(server_id) = &config.server_id {
-        let _: Server = self.get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
-                .await
-                .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+        Server::get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
+          .await
+          .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
       }
       if let Some(DeploymentImage::Build { build_id, .. }) =
         &config.image
       {
-        let _: Build = self.get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
-                .await
-                .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+        Build::get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
+          .await
+          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
       }
 
       if let Some(volumes) = &mut config.volumes {
@@ -391,7 +391,8 @@ impl Resolve<UpdateDeployment, User> for State {
 
       add_update(update).await?;
 
-      let deployment: Deployment = self.get_resource(&id).await?;
+      let deployment: Deployment =
+        Deployment::get_resource(&id).await?;
 
       anyhow::Ok(deployment)
     };
@@ -428,13 +429,12 @@ impl Resolve<RenameDeployment, User> for State {
       return Err(anyhow!("deployment busy"));
     }
 
-    let deployment: Deployment = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let deployment = Deployment::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let inner = || async {
       let name = to_monitor_name(&name);
@@ -462,8 +462,8 @@ impl Resolve<RenameDeployment, User> for State {
       .context("failed to update deployment name on db")?;
 
       if container_state != DockerContainerState::NotDeployed {
-        let server: Server =
-          self.get_resource(&deployment.config.server_id).await?;
+        let server =
+          Server::get_resource(&deployment.config.server_id).await?;
         let log = periphery_client(&server)?
           .request(api::container::RenameContainer {
             curr_name: deployment.name.clone(),

@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{str::FromStr, time::Duration};
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
@@ -13,12 +13,12 @@ use monitor_client::entities::{
 };
 use mungos::{
   by_id::{find_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, to_bson, to_document},
+  mongodb::bson::{doc, oid::ObjectId, to_bson, to_document},
 };
 use periphery_client::{api, PeripheryClient};
 use rand::{thread_rng, Rng};
 
-use crate::{config::core_config, db::db_client, state::State};
+use crate::{config::core_config, db::db_client};
 
 use self::{channel::update_channel, resource::StateResource};
 
@@ -67,9 +67,9 @@ pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
 }
 
 pub async fn get_server_with_status(
-  server_id: &str,
+  server_id_or_name: &str,
 ) -> anyhow::Result<(Server, ServerStatus)> {
-  let server: Server = State.get_resource(server_id).await?;
+  let server = Server::get_resource(server_id_or_name).await?;
   if !server.config.enabled {
     return Ok((server, ServerStatus::Disabled));
   }
@@ -109,18 +109,25 @@ pub async fn get_deployment_state(
 
 // TAG
 
-pub async fn get_tag(tag_id: &str) -> anyhow::Result<Tag> {
-  find_one_by_id(&db_client().await.tags, tag_id)
+pub async fn get_tag(id_or_name: &str) -> anyhow::Result<Tag> {
+  let query = match ObjectId::from_str(id_or_name) {
+    Ok(id) => doc! { "_id": id },
+    Err(_) => doc! { "name": id_or_name },
+  };
+  db_client()
+    .await
+    .tags
+    .find_one(query, None)
     .await
     .context("failed to query mongo for tag")?
-    .with_context(|| format!("no tag found with id {tag_id}"))
+    .with_context(|| format!("no tag found matching {id_or_name}"))
 }
 
 pub async fn get_tag_check_owner(
-  tag_id: &str,
+  id_or_name: &str,
   user: &User,
 ) -> anyhow::Result<Tag> {
-  let tag = get_tag(tag_id).await?;
+  let tag = get_tag(id_or_name).await?;
   if !user.admin && tag.owner != user.id {
     return Err(anyhow!("user must be tag owner or admin"));
   }

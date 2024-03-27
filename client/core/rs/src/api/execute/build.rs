@@ -16,8 +16,8 @@ use super::MonitorExecuteRequest;
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct RunBuild {
-  #[serde(alias = "build")]
-  pub build_id: String,
+  /// Can be id or name
+  pub build: String,
 }
 
 //
@@ -29,7 +29,8 @@ pub struct RunBuild {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(CancelBuildResponse)]
 pub struct CancelBuild {
-  pub build_id: String,
+  /// Can be id or name
+  pub build: String,
 }
 
 #[typeshare]

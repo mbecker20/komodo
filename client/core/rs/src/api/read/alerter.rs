@@ -18,7 +18,9 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetAlerterResponse)]
 pub struct GetAlerter {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub alerter: String,
 }
 
 #[typeshare]

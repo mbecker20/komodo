@@ -50,20 +50,19 @@ use crate::{
 impl Resolve<RunBuild, User> for State {
   async fn resolve(
     &self,
-    RunBuild { build_id }: RunBuild,
+    RunBuild { build }: RunBuild,
     user: User,
   ) -> anyhow::Result<Update> {
-    if action_states().build.busy(&build_id).await {
+    let mut build = Build::get_resource_check_permissions(
+      &build,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
+
+    if action_states().build.busy(&build.id).await {
       return Err(anyhow!("build busy"));
     }
-
-    let mut build: Build = self
-      .get_resource_check_permissions(
-        &build_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
 
     build.config.version.increment();
 
@@ -75,16 +74,16 @@ impl Resolve<RunBuild, User> for State {
     let cancel_clone = cancel.clone();
     let mut cancel_recv =
       build_cancel_channel().receiver.resubscribe();
-    let id_clone = build_id.clone();
+    let build_id = build.id.clone();
 
     tokio::spawn(async move {
       let poll = async {
         loop {
-          let (build_id, mut update) = tokio::select! {
+          let (incoming_build_id, mut update) = tokio::select! {
             _ = cancel_clone.cancelled() => return Ok(()),
             id = cancel_recv.recv() => id?
           };
-          if build_id == id_clone {
+          if incoming_build_id == build_id {
             update.push_simple_log(
               "cancel acknowledged",
               "the build cancellation has been queud, it may still take some time",
@@ -107,6 +106,8 @@ impl Resolve<RunBuild, User> for State {
       }
     });
 
+    let build_id = build.id.clone();
+    
     let inner = || async move {
       update.id = add_update(update.clone()).await?;
 
@@ -209,7 +210,7 @@ impl Resolve<RunBuild, User> for State {
 
     action_states()
       .build
-      .update_entry(build_id.clone(), |entry| {
+      .update_entry(&build_id, |entry| {
         entry.building = true;
       })
       .await;
@@ -231,16 +232,15 @@ impl Resolve<RunBuild, User> for State {
 impl Resolve<CancelBuild, User> for State {
   async fn resolve(
     &self,
-    CancelBuild { build_id }: CancelBuild,
+    CancelBuild { build }: CancelBuild,
     user: User,
   ) -> anyhow::Result<CancelBuildResponse> {
-    let build: Build = self
-      .get_resource_check_permissions(
-        &build_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
+    let build = Build::get_resource_check_permissions(
+      &build,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
 
     // check if theres already an open cancel build update
     if db_client()
@@ -250,7 +250,7 @@ impl Resolve<CancelBuild, User> for State {
         doc! {
           "operation": "CancelBuild",
           "status": "InProgress",
-          "target.id": &build_id,
+          "target.id": &build.id,
         },
         None,
       )
@@ -278,7 +278,7 @@ impl Resolve<CancelBuild, User> for State {
       .sender
       .lock()
       .await
-      .send((build_id, update))?;
+      .send((build.id, update))?;
 
     Ok(CancelBuildResponse {})
   }
@@ -294,14 +294,14 @@ async fn get_build_builder(
   if build.config.builder_id.is_empty() {
     return Err(anyhow!(""));
   }
-  let builder: Builder =
-    State.get_resource(&build.config.builder_id).await?;
+  let builder =
+    Builder::get_resource(&build.config.builder_id).await?;
   match builder.config {
     BuilderConfig::Server(config) => {
       if config.id.is_empty() {
         return Err(anyhow!("build has not configured a builder"));
       }
-      let server: Server = State.get_resource(&config.id).await?;
+      let server = Server::get_resource(&config.id).await?;
       let periphery = periphery_client(&server)?;
       Ok((
         periphery,
@@ -443,7 +443,7 @@ async fn handle_post_build_redeploy(build_id: &str) {
           let res = State
             .resolve(
               Deploy {
-                deployment_id: deployment.id.clone(),
+                deployment: deployment.id.clone(),
                 stop_signal: None,
                 stop_time: None,
               },

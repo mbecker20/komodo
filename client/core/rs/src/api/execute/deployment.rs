@@ -18,8 +18,8 @@ use super::MonitorExecuteRequest;
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct Deploy {
-  #[serde(alias = "deployment")]
-  pub deployment_id: String,
+  /// Name or id
+  pub deployment: String,
   pub stop_signal: Option<TerminationSignal>,
   pub stop_time: Option<i32>,
 }
@@ -33,7 +33,8 @@ pub struct Deploy {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct StartContainer {
-  pub deployment_id: String,
+  /// Name or id
+  pub deployment: String,
 }
 
 //
@@ -45,7 +46,8 @@ pub struct StartContainer {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct StopContainer {
-  pub deployment_id: String,
+  /// Name or id
+  pub deployment: String,
   pub signal: Option<TerminationSignal>,
   pub time: Option<i32>,
 }
@@ -57,7 +59,8 @@ pub struct StopContainer {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct StopAllContainers {
-  pub server_id: String,
+  /// Name or id
+  pub server: String,
 }
 
 //
@@ -69,7 +72,8 @@ pub struct StopAllContainers {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct RemoveContainer {
-  pub deployment_id: String,
+  /// Name or id
+  pub deployment: String,
   pub signal: Option<TerminationSignal>,
   pub time: Option<i32>,
 }

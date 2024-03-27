@@ -97,7 +97,7 @@ async fn redeploy_deployments_in_parallel(
 ) -> anyhow::Result<()> {
   let futes = deployment_ids.iter().map(|id| async move {
     monitor_client()
-      .execute(execute::Deploy { deployment_id: id.to_string(), stop_signal: None, stop_time: None })
+      .execute(execute::Deploy { deployment: id.to_string(), stop_signal: None, stop_time: None })
       .await
       .with_context(|| format!("failed to deploy {id}"))
       .and_then(|update| {
@@ -118,7 +118,7 @@ async fn start_containers_in_parallel(
 ) -> anyhow::Result<()> {
   let futes = deployment_ids.iter().map(|id| async move {
     monitor_client()
-    .execute(execute::StartContainer { deployment_id: id.to_string() })
+    .execute(execute::StartContainer { deployment: id.to_string() })
       .await
       .with_context(|| format!("failed to start container {id}"))
       .and_then(|update| {
@@ -139,7 +139,7 @@ async fn stop_containers_in_parallel(
 ) -> anyhow::Result<()> {
   let futes = deployment_ids.iter().map(|id| async move {
     monitor_client()
-      .execute(execute::StopContainer { deployment_id: id.to_string(), signal: None, time: None })
+      .execute(execute::StopContainer { deployment: id.to_string(), signal: None, time: None })
       .await
       .with_context(|| format!("failed to stop container {id}"))
       .and_then(|update| {
@@ -160,7 +160,7 @@ async fn destroy_containers_in_parallel(
 ) -> anyhow::Result<()> {
   let futes = deployment_ids.iter().map(|id| async move {
     monitor_client()
-      .execute(execute::RemoveContainer { deployment_id: id.to_string(), signal: None, time: None })
+      .execute(execute::RemoveContainer { deployment: id.to_string(), signal: None, time: None })
       .await
       .with_context(|| format!("failed to destroy container {id}"))
       .and_then(|update| {
@@ -181,7 +181,7 @@ async fn trigger_builds_in_parallel(
 ) -> anyhow::Result<()> {
   let futes = build_ids.iter().map(|id| async move {
     monitor_client()
-      .execute(execute::RunBuild { build_id: id.to_string() })
+      .execute(execute::RunBuild { build: id.to_string() })
       .await
       .with_context(|| format!("failed to build {id}"))
       .and_then(|update| {

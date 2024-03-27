@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
@@ -15,7 +17,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
 };
 use periphery_client::api;
 use resolver_api::Resolve;
@@ -39,15 +41,18 @@ impl Resolve<CreateRepo, User> for State {
     user: User,
   ) -> anyhow::Result<Repo> {
     let name = to_monitor_name(&name);
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("valid ObjectIds cannot be used as names"));
+    }
     if let Some(server_id) = &config.server_id {
       if !server_id.is_empty() {
-        let _: Server = self.get_resource_check_permissions(
-            server_id,
-            &user,
-            PermissionLevel::Write,
-          )
-          .await
-          .context("cannot create repo on this server. user must have update permissions on the server.")?;
+        Server::get_resource_check_permissions(
+          server_id,
+          &user,
+          PermissionLevel::Write,
+        )
+        .await
+        .context("cannot create repo on this server. user must have update permissions on the server.")?;
       }
     }
     let start_ts = monitor_timestamp();
@@ -71,7 +76,7 @@ impl Resolve<CreateRepo, User> for State {
       .context("inserted_id is not ObjectId")?
       .to_string();
 
-    let repo: Repo = self.get_resource(&repo_id).await?;
+    let repo = Repo::get_resource(&repo_id).await?;
 
     create_permission(&user, &repo, PermissionLevel::Write).await;
 
@@ -103,7 +108,7 @@ impl Resolve<CreateRepo, User> for State {
       let _ = self
         .resolve(
           execute::CloneRepo {
-            id: repo.id.clone(),
+            repo: repo.id.clone(),
           },
           user,
         )
@@ -126,15 +131,14 @@ impl Resolve<CopyRepo, User> for State {
       description,
       tags,
       ..
-    } = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    } = Repo::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
     if !config.server_id.is_empty() {
-      let _: Server = self.get_resource_check_permissions(
+      Server::get_resource_check_permissions(
           &config.server_id,
           &user,
           PermissionLevel::Write,
@@ -162,7 +166,7 @@ impl Resolve<CopyRepo, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let repo: Repo = self.get_resource(&repo_id).await?;
+    let repo = Repo::get_resource(&repo_id).await?;
     create_permission(&user, &repo, PermissionLevel::Write).await;
     let mut update = make_update(&repo, Operation::CreateRepo, &user);
     update.push_simple_log(
@@ -185,19 +189,18 @@ impl Resolve<DeleteRepo, User> for State {
     DeleteRepo { id }: DeleteRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
-    let repo: Repo = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let repo = Repo::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let periphery = if repo.config.server_id.is_empty() {
       None
     } else {
-      let server: Server =
-        self.get_resource(&repo.config.server_id).await?;
+      let server =
+        Server::get_resource(&repo.config.server_id).await?;
       let periphery = periphery_client(&server)?;
       Some(periphery)
     };
@@ -284,7 +287,7 @@ impl Resolve<UpdateRepo, User> for State {
   ) -> anyhow::Result<Repo> {
     if let Some(server_id) = &config.server_id {
       if !server_id.is_empty() {
-        let _: Server = self.get_resource_check_permissions(
+        Server::get_resource_check_permissions(
           server_id,
           &user,
           PermissionLevel::Write,
@@ -294,13 +297,12 @@ impl Resolve<UpdateRepo, User> for State {
       }
     }
 
-    let repo: Repo = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let repo = Repo::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let inner = || async move {
       update_one_by_id(
@@ -327,7 +329,7 @@ impl Resolve<UpdateRepo, User> for State {
         if new_server_id != repo.config.server_id {
           if !repo.config.server_id.is_empty() {
             let old_server: anyhow::Result<Server> =
-              self.get_resource(&repo.config.server_id).await;
+              Server::get_resource(&repo.config.server_id).await;
             let periphery =
               old_server.and_then(|server| periphery_client(&server));
             match periphery {
@@ -357,7 +359,7 @@ impl Resolve<UpdateRepo, User> for State {
             let _ = self
               .resolve(
                 execute::CloneRepo {
-                  id: repo.id.clone(),
+                  repo: repo.id.clone(),
                 },
                 user,
               )
@@ -369,7 +371,7 @@ impl Resolve<UpdateRepo, User> for State {
       update.finalize();
       update_update(update).await?;
 
-      self.get_resource(&repo.id).await
+      Repo::get_resource(&repo.id).await
     };
 
     if action_states().repo.busy(&id).await {

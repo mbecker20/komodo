@@ -16,7 +16,8 @@ use super::MonitorExecuteRequest;
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct PruneDockerNetworks {
-  pub server_id: String,
+  /// Id or name
+  pub server: String,
 }
 
 //
@@ -28,7 +29,8 @@ pub struct PruneDockerNetworks {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct PruneDockerImages {
-  pub server_id: String,
+  /// Id or name
+  pub server: String,
 }
 
 //
@@ -40,5 +42,6 @@ pub struct PruneDockerImages {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct PruneDockerContainers {
-  pub server_id: String,
+  /// Id or name
+  pub server: String,
 }

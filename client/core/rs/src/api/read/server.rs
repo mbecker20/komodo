@@ -30,7 +30,9 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(Server)]
 pub struct GetServer {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -61,7 +63,9 @@ pub type ListServersResponse = Vec<ServerListItem>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetServerStatusResponse)]
 pub struct GetServerStatus {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -79,7 +83,9 @@ pub struct GetServerStatusResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(ServerActionState)]
 pub struct GetServerActionState {
-  pub id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -94,7 +100,9 @@ pub type GetServerActionStateResponse = ServerActionState;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetPeripheryVersionResponse)]
 pub struct GetPeripheryVersion {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -112,7 +120,9 @@ pub struct GetPeripheryVersionResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetSystemInformationResponse)]
 pub struct GetSystemInformation {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -127,7 +137,9 @@ pub type GetSystemInformationResponse = SystemInformation;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetAllSystemStatsResponse)]
 pub struct GetAllSystemStats {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -142,7 +154,9 @@ pub type GetAllSystemStatsResponse = AllSystemStats;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBasicSystemStatsResponse)]
 pub struct GetBasicSystemStats {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -157,7 +171,9 @@ pub type GetBasicSystemStatsResponse = BasicSystemStats;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetCpuUsageResponse)]
 pub struct GetCpuUsage {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -172,7 +188,9 @@ pub type GetCpuUsageResponse = CpuUsage;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDiskUsageResponse)]
 pub struct GetDiskUsage {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -187,7 +205,9 @@ pub type GetDiskUsageResponse = DiskUsage;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetNetworkUsageResponse)]
 pub struct GetNetworkUsage {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -202,7 +222,9 @@ pub type GetNetworkUsageResponse = NetworkUsage;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetSystemProcessesResponse)]
 pub struct GetSystemProcesses {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -217,7 +239,9 @@ pub type GetSystemProcessesResponse = Vec<SystemProcess>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetSystemComponentsResponse)]
 pub struct GetSystemComponents {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -232,7 +256,9 @@ pub type GetSystemComponentsResponse = Vec<SystemComponent>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDockerNetworksResponse)]
 pub struct GetDockerNetworks {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -247,7 +273,9 @@ pub type GetDockerNetworksResponse = Vec<DockerNetwork>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetHistoricalServerStatsResponse)]
 pub struct GetHistoricalServerStats {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
   pub interval: Timelength,
   #[serde(default)]
   pub page: u32,
@@ -269,7 +297,9 @@ pub struct GetHistoricalServerStatsResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDockerImagesResponse)]
 pub struct GetDockerImages {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -284,7 +314,9 @@ pub type GetDockerImagesResponse = Vec<ImageSummary>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetDockerContainersResponse)]
 pub struct GetDockerContainers {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -318,7 +350,9 @@ pub struct GetServersSummaryResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetAvailableAccountsResponse)]
 pub struct GetAvailableAccounts {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]
@@ -337,7 +371,9 @@ pub struct GetAvailableAccountsResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetAvailableSecretsResponse)]
 pub struct GetAvailableSecrets {
-  pub server_id: String,
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
 }
 
 #[typeshare]

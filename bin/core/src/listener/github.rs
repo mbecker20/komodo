@@ -73,13 +73,13 @@ async fn handle_build_webhook(
 ) -> anyhow::Result<()> {
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
-  let build: Build = State.get_resource(&build_id).await?;
+  let build = Build::get_resource(&build_id).await?;
   if request_branch != build.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
   State
     .resolve(
-      execute::RunBuild { build_id },
+      execute::RunBuild { build: build_id },
       User::admin_service_user("github"),
     )
     .await?;
@@ -93,13 +93,13 @@ async fn handle_repo_clone_webhook(
 ) -> anyhow::Result<()> {
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
-  let repo: Repo = State.get_resource(&repo_id).await?;
+  let repo = Repo::get_resource(&repo_id).await?;
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
   State
     .resolve(
-      execute::CloneRepo { id: repo_id },
+      execute::CloneRepo { repo: repo_id },
       User::admin_service_user("github"),
     )
     .await?;
@@ -113,13 +113,13 @@ async fn handle_repo_pull_webhook(
 ) -> anyhow::Result<()> {
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
-  let repo: Repo = State.get_resource(&repo_id).await?;
+  let repo = Repo::get_resource(&repo_id).await?;
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
   State
     .resolve(
-      execute::PullRepo { id: repo_id },
+      execute::PullRepo { repo: repo_id },
       User::admin_service_user("github"),
     )
     .await?;

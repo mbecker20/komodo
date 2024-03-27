@@ -16,7 +16,8 @@ use super::MonitorExecuteRequest;
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct CloneRepo {
-  pub id: String,
+  /// Id or name
+  pub repo: String,
 }
 
 //
@@ -28,5 +29,6 @@ pub struct CloneRepo {
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct PullRepo {
-  pub id: String,
+  /// Id or name
+  pub repo: String,
 }

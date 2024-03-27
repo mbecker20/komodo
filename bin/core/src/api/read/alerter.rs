@@ -27,16 +27,15 @@ use crate::{
 impl Resolve<GetAlerter, User> for State {
   async fn resolve(
     &self,
-    GetAlerter { id }: GetAlerter,
+    GetAlerter { alerter }: GetAlerter,
     user: User,
   ) -> anyhow::Result<Alerter> {
-    self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await
+    Alerter::get_resource_check_permissions(
+      &alerter,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await
   }
 }
 
@@ -49,10 +48,7 @@ impl Resolve<ListAlerters, User> for State {
   ) -> anyhow::Result<Vec<AlerterListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
-    <State as StateResource<Alerter>>::list_resources_for_user(
-      self, filters, &user,
-    )
-    .await
+    Alerter::list_resources_for_user(filters, &user).await
   }
 }
 

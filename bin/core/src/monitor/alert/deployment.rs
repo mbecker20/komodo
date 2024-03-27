@@ -13,7 +13,6 @@ use crate::{
     alert::send_alerts, cache::deployment_status_cache,
     resource::StateResource,
   },
-  state::State,
 };
 
 pub async fn alert_deployments(
@@ -28,10 +27,7 @@ pub async fn alert_deployments(
     let prev = v.prev.as_ref().unwrap().to_owned();
     if v.curr.state != prev {
       // send alert
-      let d = <State as StateResource<Deployment>>::get_resource(
-        &State, &v.curr.id,
-      )
-      .await;
+      let d = Deployment::get_resource(&v.curr.id).await;
       if let Err(e) = d {
         error!("failed to get deployment from db | {e:#?}");
         continue;

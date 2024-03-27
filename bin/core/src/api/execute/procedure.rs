@@ -24,16 +24,15 @@ use crate::{
 impl Resolve<RunProcedure, User> for State {
   async fn resolve(
     &self,
-    RunProcedure { procedure_id }: RunProcedure,
+    RunProcedure { procedure }: RunProcedure,
     user: User,
   ) -> anyhow::Result<Update> {
-    let procedure: Procedure = self
-      .get_resource_check_permissions(
-        &procedure_id,
-        &user,
-        PermissionLevel::Execute,
-      )
-      .await?;
+    let procedure = Procedure::get_resource_check_permissions(
+      &procedure,
+      &user,
+      PermissionLevel::Execute,
+    )
+    .await?;
 
     let map = make_procedure_map(&procedure).await?;
 

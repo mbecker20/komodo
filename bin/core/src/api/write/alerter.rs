@@ -1,4 +1,6 @@
-use anyhow::Context;
+use std::str::FromStr;
+
+use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::{
@@ -14,7 +16,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
 };
 use resolver_api::Resolve;
 
@@ -35,6 +37,9 @@ impl Resolve<CreateAlerter, User> for State {
     CreateAlerter { name, config }: CreateAlerter,
     user: User,
   ) -> anyhow::Result<Alerter> {
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("valid ObjectIds cannot be used as names"));
+    }
     let start_ts = monitor_timestamp();
     let is_default = db_client()
       .await
@@ -61,7 +66,7 @@ impl Resolve<CreateAlerter, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let alerter: Alerter = self.get_resource(&alerter_id).await?;
+    let alerter = Alerter::get_resource(&alerter_id).await?;
 
     create_permission(&user, &alerter, PermissionLevel::Write).await;
 
@@ -97,13 +102,12 @@ impl Resolve<CopyAlerter, User> for State {
       config,
       description,
       ..
-    } = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    } = Alerter::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
     let start_ts = monitor_timestamp();
     let alerter = Alerter {
       id: Default::default(),
@@ -124,7 +128,7 @@ impl Resolve<CopyAlerter, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let alerter: Alerter = self.get_resource(&alerter_id).await?;
+    let alerter = Alerter::get_resource(&alerter_id).await?;
 
     create_permission(&user, &alerter, PermissionLevel::Write).await;
 
@@ -157,13 +161,12 @@ impl Resolve<DeleteAlerter, User> for State {
     DeleteAlerter { id }: DeleteAlerter,
     user: User,
   ) -> anyhow::Result<Alerter> {
-    let alerter: Alerter = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let alerter = Alerter::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let mut update =
       make_update(&alerter, Operation::DeleteAlerter, &user);
@@ -196,13 +199,12 @@ impl Resolve<UpdateAlerter, User> for State {
     UpdateAlerter { id, config }: UpdateAlerter,
     user: User,
   ) -> anyhow::Result<Alerter> {
-    let alerter: Alerter = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let alerter = Alerter::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let mut update =
       make_update(&alerter, Operation::UpdateAlerter, &user);
@@ -225,7 +227,7 @@ impl Resolve<UpdateAlerter, User> for State {
     .await
     .with_context(|| format!("failed to update alerter {id}"))?;
 
-    let alerter: Alerter = self.get_resource(&id).await?;
+    let alerter = Alerter::get_resource(&id).await?;
 
     update.finalize();
     add_update(update).await?;

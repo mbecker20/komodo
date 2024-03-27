@@ -41,37 +41,28 @@ impl Resolve<ListUpdates, User> for State {
       query
     } else {
       let server_ids =
-                <State as StateResource<Server>>::get_resource_ids_for_non_admin(self, &user.id)
-                    .await?;
-      let deployment_ids = <State as StateResource<
-                Deployment,
-            >>::get_resource_ids_for_non_admin(
-                self, &user.id
-            )
-            .await?;
+        Server::get_resource_ids_for_non_admin(&user.id).await?;
+      let deployment_ids =
+        Deployment::get_resource_ids_for_non_admin(&user.id).await?;
       let build_ids =
-                <State as StateResource<Build>>::get_resource_ids_for_non_admin(self, &user.id)
-                    .await?;
+        Build::get_resource_ids_for_non_admin(&user.id).await?;
       let repo_ids =
-                <State as StateResource<Repo>>::get_resource_ids_for_non_admin(self, &user.id)
-                    .await?;
+        Repo::get_resource_ids_for_non_admin(&user.id).await?;
       let builder_ids =
-                <State as StateResource<Builder>>::get_resource_ids_for_non_admin(self, &user.id)
-                    .await?;
+        Builder::get_resource_ids_for_non_admin(&user.id).await?;
       let alerter_ids =
-                <State as StateResource<Alerter>>::get_resource_ids_for_non_admin(self, &user.id)
-                    .await?;
+        Alerter::get_resource_ids_for_non_admin(&user.id).await?;
       let mut query = query.unwrap_or_default();
       query.extend(doc! {
-                "$or": [
-                   { "target.type": "Server", "target.id": { "$in": &server_ids } },
-                   { "target.type": "Deployment", "target.id": { "$in": &deployment_ids } },
-                   { "target.type": "Build", "target.id": { "$in": &build_ids } },
-                   { "target.type": "Repo", "target.id": { "$in": &repo_ids } },
-                   { "target.type": "Builder", "target.id": { "$in": &builder_ids } },
-                   { "target.type": "Alerter", "target.id": { "$in": &alerter_ids } },
-                ]
-            });
+        "$or": [
+          { "target.type": "Server", "target.id": { "$in": &server_ids } },
+          { "target.type": "Deployment", "target.id": { "$in": &deployment_ids } },
+          { "target.type": "Build", "target.id": { "$in": &build_ids } },
+          { "target.type": "Repo", "target.id": { "$in": &repo_ids } },
+          { "target.type": "Builder", "target.id": { "$in": &builder_ids } },
+          { "target.type": "Alerter", "target.id": { "$in": &alerter_ids } },
+        ]
+      });
       query.into()
     };
 
@@ -141,67 +132,60 @@ impl Resolve<GetUpdate, User> for State {
         ))
       }
       ResourceTarget::Server(id) => {
-        let _: Server = self
-          .get_resource_check_permissions(
-            id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+        Server::get_resource_check_permissions(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
       }
       ResourceTarget::Deployment(id) => {
-        let _: Deployment = self
-          .get_resource_check_permissions(
-            id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+        Deployment::get_resource_check_permissions(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
       }
       ResourceTarget::Build(id) => {
-        let _: Build = self
-          .get_resource_check_permissions(
-            id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+        Build::get_resource_check_permissions(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
       }
       ResourceTarget::Repo(id) => {
-        let _: Repo = self
-          .get_resource_check_permissions(
-            id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+        Repo::get_resource_check_permissions(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
       }
       ResourceTarget::Builder(id) => {
-        let _: Builder = self
-          .get_resource_check_permissions(
-            id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+        Builder::get_resource_check_permissions(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
       }
       ResourceTarget::Alerter(id) => {
-        let _: Alerter = self
-          .get_resource_check_permissions(
-            id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+        Alerter::get_resource_check_permissions(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
       }
       ResourceTarget::Procedure(id) => {
-        let _: Procedure = self
-          .get_resource_check_permissions(
-            id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+        Procedure::get_resource_check_permissions(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
       }
     }
     Ok(update)

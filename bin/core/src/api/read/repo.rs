@@ -27,16 +27,15 @@ use crate::{
 impl Resolve<GetRepo, User> for State {
   async fn resolve(
     &self,
-    GetRepo { id }: GetRepo,
+    GetRepo { repo }: GetRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
-    self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await
+    Repo::get_resource_check_permissions(
+      &repo,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await
   }
 }
 
@@ -49,10 +48,7 @@ impl Resolve<ListRepos, User> for State {
   ) -> anyhow::Result<Vec<RepoListItem>> {
     let mut filters = Document::new();
     query.add_filters(&mut filters);
-    <State as StateResource<Repo>>::list_resources_for_user(
-      self, filters, &user,
-    )
-    .await
+    Repo::list_resources_for_user(filters, &user).await
   }
 }
 
@@ -60,18 +56,17 @@ impl Resolve<ListRepos, User> for State {
 impl Resolve<GetRepoActionState, User> for State {
   async fn resolve(
     &self,
-    GetRepoActionState { id }: GetRepoActionState,
+    GetRepoActionState { repo }: GetRepoActionState,
     user: User,
   ) -> anyhow::Result<RepoActionState> {
-    let _: Repo = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Read,
-      )
-      .await?;
+    let repo = Repo::get_resource_check_permissions(
+      &repo,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
     let action_state =
-      action_states().repo.get(&id).await.unwrap_or_default();
+      action_states().repo.get(&repo.id).await.unwrap_or_default();
     Ok(action_state)
   }
 }

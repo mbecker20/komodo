@@ -40,9 +40,11 @@ impl Resolve<CreateBuild, User> for State {
     user: User,
   ) -> anyhow::Result<Build> {
     let name = to_monitor_name(&name);
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("valid ObjectIds cannot be used as names"));
+    }
     if let Some(builder_id) = &config.builder_id {
-      let _: Builder = self
-        .get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
+      Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
         .await
         .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
     }
@@ -66,7 +68,7 @@ impl Resolve<CreateBuild, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let build: Build = self.get_resource(&build_id).await?;
+    let build = Build::get_resource(&build_id).await?;
 
     create_permission(&user, &build, PermissionLevel::Write).await;
 
@@ -104,14 +106,13 @@ impl Resolve<CopyBuild, User> for State {
       description,
       tags,
       ..
-    } = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
-    let _: Builder = self.get_resource_check_permissions(&config.builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+    } = Build::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
+    Builder::get_resource_check_permissions(&config.builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
     let start_ts = monitor_timestamp();
     let build = Build {
       id: Default::default(),
@@ -132,7 +133,7 @@ impl Resolve<CopyBuild, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    let build: Build = self.get_resource(&build_id).await?;
+    let build = Build::get_resource(&build_id).await?;
 
     create_permission(&user, &build, PermissionLevel::Write).await;
 
@@ -170,13 +171,12 @@ impl Resolve<DeleteBuild, User> for State {
       return Err(anyhow!("build busy"));
     }
 
-    let build: Build = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let build = Build::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let mut update =
       make_update(&build, Operation::DeleteBuild, &user);
@@ -224,17 +224,16 @@ impl Resolve<UpdateBuild, User> for State {
       return Err(anyhow!("build busy"));
     }
 
-    let build: Build = self
-      .get_resource_check_permissions(
-        &id,
-        &user,
-        PermissionLevel::Write,
-      )
-      .await?;
+    let build = Build::get_resource_check_permissions(
+      &id,
+      &user,
+      PermissionLevel::Write,
+    )
+    .await?;
 
     let inner = || async move {
       if let Some(builder_id) = &config.builder_id {
-        let _: Builder = self.get_resource_check_permissions(builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+        Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
       }
 
       if let Some(build_args) = &mut config.build_args {
@@ -270,7 +269,7 @@ impl Resolve<UpdateBuild, User> for State {
 
       add_update(update).await?;
 
-      let build: Build = self.get_resource(&build.id).await?;
+      let build = Build::get_resource(&build.id).await?;
 
       anyhow::Ok(build)
     };
