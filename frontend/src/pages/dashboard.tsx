@@ -14,7 +14,7 @@ import { BuildComponents } from "@components/resources/build";
 import { RepoComponents } from "@components/resources/repo";
 import { BuilderComponents } from "@components/resources/builder";
 import { AlerterComponents } from "@components/resources/alerter";
-import { ProcedureComponents } from "@components/resources/procedure/index2";
+import { ProcedureComponents } from "@components/resources/procedure/index";
 import { TagsSummary } from "@components/dashboard/tags";
 import { ApiKeysSummary } from "@components/dashboard/api-keys";
 

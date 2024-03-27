@@ -37,7 +37,7 @@ const STATE_PREFIX_LENGTH: usize = 20;
 
 #[derive(Deserialize)]
 pub struct RedirectQuery {
-  pub redirect: Option<String>, 
+  pub redirect: Option<String>,
 }
 
 pub async fn auth_request(

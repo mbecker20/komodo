@@ -28,6 +28,8 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
 
   let resources = resource_file::read_resources(path)?;
 
+  println!("{resources:#?}");
+
   let (server_updates, server_creates) =
     Server::get_updates(resources.servers)?;
   let (deployment_updates, deployment_creates) =
@@ -112,7 +114,8 @@ pub trait ResourceSync {
 
     if !to_create.is_empty() {
       println!(
-        "\nTO CREATE: {}",
+        "\n{} TO CREATE: {}",
+        Self::display(),
         to_create
           .iter()
           .map(|item| item.name.as_str())
@@ -123,7 +126,8 @@ pub trait ResourceSync {
 
     if !to_update.is_empty() {
       println!(
-        "\nTO UPDATE: {}",
+        "\n{} TO UPDATE: {}",
+        Self::display(),
         to_update
           .iter()
           .map(|(_, item)| item.name.as_str())

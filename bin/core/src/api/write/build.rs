@@ -36,7 +36,7 @@ use crate::{
 impl Resolve<CreateBuild, User> for State {
   async fn resolve(
     &self,
-    CreateBuild { name, config }: CreateBuild,
+    CreateBuild { name, mut config }: CreateBuild,
     user: User,
   ) -> anyhow::Result<Build> {
     let name = to_monitor_name(&name);
@@ -44,9 +44,10 @@ impl Resolve<CreateBuild, User> for State {
       return Err(anyhow!("valid ObjectIds cannot be used as names"));
     }
     if let Some(builder_id) = &config.builder_id {
-      Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
+      let builder = Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
         .await
         .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+      config.builder_id = Some(builder.id)
     }
     let start_ts = monitor_timestamp();
     let build = Build {
@@ -112,7 +113,9 @@ impl Resolve<CopyBuild, User> for State {
       PermissionLevel::Write,
     )
     .await?;
-    Builder::get_resource_check_permissions(&config.builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+    Builder::get_resource_check_permissions(&config.builder_id, &user, PermissionLevel::Read)
+      .await
+      .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
     let start_ts = monitor_timestamp();
     let build = Build {
       id: Default::default(),
@@ -233,7 +236,10 @@ impl Resolve<UpdateBuild, User> for State {
 
     let inner = || async move {
       if let Some(builder_id) = &config.builder_id {
-        Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read).await.context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+        let builder = Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
+          .await
+          .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+        config.builder_id = Some(builder.id)
       }
 
       if let Some(build_args) = &mut config.build_args {

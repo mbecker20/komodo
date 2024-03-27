@@ -34,6 +34,7 @@ pub type _PartialRepoConfig = PartialRepoConfig;
 #[partial_from]
 pub struct RepoConfig {
   #[serde(default, alias = "server")]
+  #[partial_attr(serde(alias = "server"))]
   #[builder(default)]
   pub server_id: String,
 

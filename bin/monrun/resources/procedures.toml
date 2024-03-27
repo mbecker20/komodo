@@ -1,59 +1,38 @@
 [[procedure]]
-name = "redeploy-v1"
-description = "builds v1 core / frontend, and redeploys them"
+name = "build-deploy-monitor-v1"
+description = "builds v1 core / frontend, then redeploys them"
 config.type = "Sequence"
-
 [[procedure.config.data]]
-id = ""
 enabled = true
-
-
-# Deploys
+execution.type = "RunProcedure"
+execution.params.procedure = "build-monitor-v1"
+[[procedure.config.data]]
+enabled = true
+execution.type = "RunProcedure"
+execution.params.procedure = "deploy-monitor-v1"
 
 [[procedure]]
-name = "deploy-v1"
+name = "deploy-monitor-v1"
 description = "deploys v1 core / frontend"
 config.type = "Parallel"
 [[procedure.config.data]]
-id = "deploy-v1-core"
 enabled = true
+execution.type = "Deploy"
+execution.params.deployment = "monitor-core-v1"
 [[procedure.config.data]]
-id = "deploy-v1-frontend"
 enabled = true
+execution.type = "Deploy"
+execution.params.deployment = "monitor-frontend-v1"
 
 [[procedure]]
-name = "deploy-v1-core"
-config.type = "Execution"
-config.data.type = "Deploy"
-config.data.params.deployment = "monitor-core-v1"
-
-[[procedure]]
-name = "deploy-v1-frontend"
-config.type = "Execution"
-config.data.type = "Deploy"
-config.data.params.deployment = "monitor-frontend-v1"
-
-# Builds
-
-[[procedure]]
-name = "build-v1"
+name = "build-monitor-v1"
 description = "builds v1 core / frontend"
 config.type = "Parallel"
 [[procedure.config.data]]
-id = "build-v1-core"
 enabled = true
+execution.type = "RunBuild"
+execution.params.build = "monitor-core-v1"
 [[procedure.config.data]]
-id = "build-v1-frontend"
 enabled = true
-
-[[procedure]]
-name = "build-v1-core"
-config.type = "Execution"
-config.data.type = "RunBuild"
-config.data.params.build = "monitor-core-v1"
-
-[[procedure]]
-name = "build-v1-frontend"
-config.type = "Execution"
-config.data.type = "RunBuild"
-config.data.params.build = "monitor-frontend-v1"
+execution.type = "RunBuild"
+execution.params.build = "monitor-frontend-v1"

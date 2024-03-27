@@ -3,10 +3,17 @@ use std::str::FromStr;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
-  api::write::*,
+  api::{execute::Execution, write::*},
   entities::{
-    monitor_timestamp, permission::PermissionLevel,
-    procedure::Procedure, to_monitor_name, update::Log, user::User,
+    build::Build,
+    deployment::Deployment,
+    monitor_timestamp,
+    permission::PermissionLevel,
+    procedure::{Procedure, ProcedureConfig},
+    repo::Repo,
+    server::Server,
+    update::Log,
+    user::User,
     Operation,
   },
 };
@@ -31,13 +38,17 @@ use crate::{
 impl Resolve<CreateProcedure, User> for State {
   async fn resolve(
     &self,
-    CreateProcedure { name, config }: CreateProcedure,
+    CreateProcedure { name, mut config }: CreateProcedure,
     user: User,
   ) -> anyhow::Result<CreateProcedureResponse> {
     if ObjectId::from_str(&name).is_ok() {
       return Err(anyhow!("valid ObjectIds cannot be used as names"));
     }
+
     let start_ts = monitor_timestamp();
+
+    validate_procedure_config(&mut config, &user).await?;
+
     let procedure = Procedure {
       id: Default::default(),
       name,
@@ -84,6 +95,130 @@ impl Resolve<CreateProcedure, User> for State {
   }
 }
 
+async fn validate_procedure_config(
+  config: &mut ProcedureConfig,
+  user: &User,
+) -> anyhow::Result<()> {
+  let execs = match config {
+    ProcedureConfig::Sequence(execs) => execs,
+    ProcedureConfig::Parallel(execs) => execs,
+  };
+  for exec in execs {
+    match &mut exec.execution {
+      Execution::None(_) => {}
+      Execution::RunProcedure(data) => {
+        let procedure = Procedure::get_resource_check_permissions(
+          &data.procedure,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.procedure = procedure.id;
+      }
+      Execution::RunBuild(data) => {
+        let build = Build::get_resource_check_permissions(
+          &data.build,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.build = build.id;
+      }
+      Execution::Deploy(data) => {
+        let deployment = Deployment::get_resource_check_permissions(
+          &data.deployment,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.deployment = deployment.id;
+      }
+      Execution::StartContainer(data) => {
+        let deployment = Deployment::get_resource_check_permissions(
+          &data.deployment,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.deployment = deployment.id;
+      }
+      Execution::StopContainer(data) => {
+        let deployment = Deployment::get_resource_check_permissions(
+          &data.deployment,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.deployment = deployment.id;
+      }
+      Execution::StopAllContainers(data) => {
+        let server = Server::get_resource_check_permissions(
+          &data.server,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.server = server.id;
+      }
+      Execution::RemoveContainer(data) => {
+        let deployment = Deployment::get_resource_check_permissions(
+          &data.deployment,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.deployment = deployment.id;
+      }
+      Execution::CloneRepo(data) => {
+        let repo = Repo::get_resource_check_permissions(
+          &data.repo,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.repo = repo.id;
+      }
+      Execution::PullRepo(data) => {
+        let repo = Repo::get_resource_check_permissions(
+          &data.repo,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.repo = repo.id;
+      }
+      Execution::PruneDockerNetworks(data) => {
+        let server = Server::get_resource_check_permissions(
+          &data.server,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.server = server.id;
+      }
+      Execution::PruneDockerImages(data) => {
+        let server = Server::get_resource_check_permissions(
+          &data.server,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.server = server.id;
+      }
+      Execution::PruneDockerContainers(data) => {
+        let server = Server::get_resource_check_permissions(
+          &data.server,
+          user,
+          PermissionLevel::Execute,
+        )
+        .await?;
+        data.server = server.id;
+      }
+    }
+  }
+  Ok(())
+}
+
 #[async_trait]
 impl Resolve<CopyProcedure, User> for State {
   async fn resolve(
@@ -91,7 +226,6 @@ impl Resolve<CopyProcedure, User> for State {
     CopyProcedure { name, id }: CopyProcedure,
     user: User,
   ) -> anyhow::Result<CopyProcedureResponse> {
-    let name = to_monitor_name(&name);
     let Procedure {
       config,
       description,

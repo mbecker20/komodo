@@ -40,7 +40,7 @@ use crate::{
 impl Resolve<CreateDeployment, User> for State {
   async fn resolve(
     &self,
-    CreateDeployment { name, config }: CreateDeployment,
+    CreateDeployment { name, mut config }: CreateDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
     let name = to_monitor_name(&name);
@@ -49,18 +49,23 @@ impl Resolve<CreateDeployment, User> for State {
     }
     if let Some(server_id) = &config.server_id {
       if !server_id.is_empty() {
-        Server::get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
+        let server = Server::get_resource_check_permissions(server_id, &user, PermissionLevel::Write)
           .await
           .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
+        config.server_id = Some(server.id);
       }
     }
-    if let Some(DeploymentImage::Build { build_id, .. }) =
+    if let Some(DeploymentImage::Build { build_id, version }) =
       &config.image
     {
       if !build_id.is_empty() {
-        Build::get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
+        let build = Build::get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
           .await
           .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
+        config.image = Some(DeploymentImage::Build {
+          build_id: build.id,
+          version: version.clone(),
+        });
       }
     }
     let start_ts = monitor_timestamp();

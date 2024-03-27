@@ -39,6 +39,7 @@ pub type _PartialDeploymentConfig = PartialDeploymentConfig;
 #[partial_from]
 pub struct DeploymentConfig {
   #[serde(default, alias = "server")]
+  #[partial_attr(serde(alias = "server"))]
   #[builder(default)]
   pub server_id: String,
 

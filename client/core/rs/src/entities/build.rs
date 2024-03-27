@@ -41,6 +41,7 @@ pub type _PartialBuildConfig = PartialBuildConfig;
 #[partial_from]
 pub struct BuildConfig {
   #[serde(default, alias = "builder")]
+  #[partial_attr(serde(alias = "builder"))]
   #[builder(default)]
   pub builder_id: String,
 

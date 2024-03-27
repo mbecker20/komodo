@@ -80,7 +80,7 @@ impl User {
 pub enum UserConfig {
   /// User that logs in with username / password
   Local { password: String },
-  
+
   /// User that logs in via Google Oauth
   Google { google_id: String, avatar: String },
 

@@ -1,7 +1,7 @@
 import { Page } from "@components/layouts";
 import { ConfirmButton, CopyButton } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { fmt_date, fmt_date_with_minutes } from "@lib/utils";
+import { fmt_date } from "@lib/utils";
 import {
   Dialog,
   DialogContent,

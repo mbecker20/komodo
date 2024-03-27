@@ -37,7 +37,7 @@ use crate::{
 impl Resolve<CreateRepo, User> for State {
   async fn resolve(
     &self,
-    CreateRepo { name, config }: CreateRepo,
+    CreateRepo { name, mut config }: CreateRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
     let name = to_monitor_name(&name);
@@ -46,13 +46,14 @@ impl Resolve<CreateRepo, User> for State {
     }
     if let Some(server_id) = &config.server_id {
       if !server_id.is_empty() {
-        Server::get_resource_check_permissions(
+        let server = Server::get_resource_check_permissions(
           server_id,
           &user,
           PermissionLevel::Write,
         )
         .await
         .context("cannot create repo on this server. user must have update permissions on the server.")?;
+        config.server_id = Some(server.id);
       }
     }
     let start_ts = monitor_timestamp();

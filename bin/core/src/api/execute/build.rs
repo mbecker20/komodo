@@ -107,7 +107,7 @@ impl Resolve<RunBuild, User> for State {
     });
 
     let build_id = build.id.clone();
-    
+
     let inner = || async move {
       update.id = add_update(update.clone()).await?;
 

@@ -62,6 +62,7 @@ fn read_resources_recursive(
     resources.builders.extend(more.builders);
     resources.repos.extend(more.repos);
     resources.alerters.extend(more.alerters);
+    resources.procedures.extend(more.procedures);
     Ok(())
   } else if res.is_dir() {
     let directory = fs::read_dir(path)
