@@ -6,8 +6,8 @@ use monitor_client::{
   entities::{
     alerter::AlerterListItem, build::BuildListItem,
     builder::BuilderListItem, deployment::DeploymentListItem,
-    repo::RepoListItem, resource::ResourceListItem,
-    server::ServerListItem,
+    procedure::ProcedureListItem, repo::RepoListItem,
+    resource::ResourceListItem, server::ServerListItem,
   },
 };
 
@@ -112,6 +112,22 @@ pub fn name_to_repo() -> &'static HashMap<String, RepoListItem> {
     .expect("failed to get repos from monitor")
     .into_iter()
     .map(|repo| (repo.name.clone(), repo))
+    .collect()
+  })
+}
+
+pub fn name_to_procedure(
+) -> &'static HashMap<String, ProcedureListItem> {
+  static NAME_TO_PROCEDURE: OnceLock<
+    HashMap<String, ProcedureListItem>,
+  > = OnceLock::new();
+  NAME_TO_PROCEDURE.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListProcedures::default()),
+    )
+    .expect("failed to get procedures from monitor")
+    .into_iter()
+    .map(|procedure| (procedure.name.clone(), procedure))
     .collect()
   })
 }

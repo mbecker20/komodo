@@ -16,6 +16,7 @@ use super::MonitorExecuteRequest;
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct RunBuild {
+  #[serde(alias = "build")]
   pub build_id: String,
 }
 

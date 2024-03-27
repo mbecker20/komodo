@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use async_trait::async_trait;
 use monitor_client::{
   api::{
     read::{ListBuilds, ListServers},
@@ -25,7 +24,6 @@ pub struct DeploymentExtLookup {
   pub builds: HashMap<String, String>,
 }
 
-#[async_trait]
 impl ResourceSync for Deployment {
   type PartialConfig = PartialDeploymentConfig;
   type ListItemInfo = DeploymentListItemInfo;

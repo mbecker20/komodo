@@ -18,6 +18,7 @@ use super::MonitorExecuteRequest;
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct Deploy {
+  #[serde(alias = "deployment")]
   pub deployment_id: String,
   pub stop_signal: Option<TerminationSignal>,
   pub stop_time: Option<i32>,

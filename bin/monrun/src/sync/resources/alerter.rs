@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use async_trait::async_trait;
 use monitor_client::{
   api::write::{CreateAlerter, UpdateAlerter},
   entities::{
@@ -14,7 +13,6 @@ use crate::{
   maps::name_to_alerter, monitor_client, sync::ResourceSync,
 };
 
-#[async_trait]
 impl ResourceSync for Alerter {
   type PartialConfig = PartialAlerterConfig;
   type ListItemInfo = AlerterListItemInfo;
@@ -34,9 +32,7 @@ impl ResourceSync for Alerter {
     name_to_alerter()
   }
 
-  async fn init_lookup_data() -> Self::ExtLookup {
-    ()
-  }
+  async fn init_lookup_data() -> Self::ExtLookup {}
 
   async fn create(
     resource: Resource<Self::PartialConfig>,

@@ -33,8 +33,12 @@ pub type _PartialRepoConfig = PartialRepoConfig;
 #[skip_serializing_none]
 #[partial_from]
 pub struct RepoConfig {
+  #[serde(default, alias = "server")]
+  #[builder(default)]
   pub server_id: String,
 
+  #[serde(default)]
+  #[builder(default)]
   pub repo: String,
 
   #[serde(default = "default_branch")]

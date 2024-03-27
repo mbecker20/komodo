@@ -1,8 +1,8 @@
 [[deployment]]
 name = "monitor-core-v1-dev"
 description = "v1 dev core api"
-tags = ["mogh", "dev"]
-config.server_id = "mogh-server"
+tags = ["monitor", "v1", "dev"]
+config.server = "mogh-server"
 
 [[deployment.config.environment]]
 variable = "TEST_1"

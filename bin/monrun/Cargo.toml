@@ -20,4 +20,3 @@ clap.workspace = true
 futures.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
-async-trait.workspace = true

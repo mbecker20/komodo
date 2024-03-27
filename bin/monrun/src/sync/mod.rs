@@ -1,6 +1,5 @@
 use std::{collections::HashMap, path::Path};
 
-use async_trait::async_trait;
 use monitor_client::{
   api::{
     read::ListTags,
@@ -11,6 +10,7 @@ use monitor_client::{
     build::Build,
     builder::Builder,
     deployment::Deployment,
+    procedure::Procedure,
     repo::Repo,
     resource::{Resource, ResourceListItem},
     server::Server,
@@ -40,6 +40,8 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
     Alerter::get_updates(resources.alerters)?;
   let (repo_updates, repo_creates) =
     Repo::get_updates(resources.repos)?;
+  let (procedure_updates, procedure_creates) =
+    Procedure::get_updates(resources.procedures)?;
 
   wait_for_enter("CONTINUE")?;
 
@@ -52,6 +54,7 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
   Deployment::run_updates(deployment_updates, deployment_creates)
     .await;
   Repo::run_updates(repo_updates, repo_creates).await;
+  Procedure::run_updates(procedure_updates, procedure_creates).await;
 
   Ok(())
 }
@@ -60,7 +63,6 @@ type ToUpdate<T> = Vec<(String, Resource<T>)>;
 type ToCreate<T> = Vec<Resource<T>>;
 type UpdatesResult<T> = (ToUpdate<T>, ToCreate<T>);
 
-#[async_trait]
 pub trait ResourceSync {
   type PartialConfig: Clone + Send + 'static;
   type ListItemInfo: 'static;

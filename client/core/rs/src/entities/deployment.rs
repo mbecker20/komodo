@@ -38,7 +38,7 @@ pub type _PartialDeploymentConfig = PartialDeploymentConfig;
 #[skip_serializing_none]
 #[partial_from]
 pub struct DeploymentConfig {
-  #[serde(default)]
+  #[serde(default, alias = "server")]
   #[builder(default)]
   pub server_id: String,
 
@@ -140,8 +140,16 @@ fn default_network() -> String {
 )]
 #[serde(tag = "type", content = "params")]
 pub enum DeploymentImage {
-  Image { image: String },
-  Build { build_id: String, version: Version },
+  Image {
+    #[serde(default)]
+    image: String,
+  },
+  Build {
+    #[serde(default, alias = "build")]
+    build_id: String,
+    #[serde(default)]
+    version: Version,
+  },
 }
 
 impl Default for DeploymentImage {

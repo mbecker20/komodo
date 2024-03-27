@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use async_trait::async_trait;
 use monitor_client::{
   api::{
     read::ListBuilders,
@@ -17,7 +16,6 @@ use crate::{
   maps::name_to_build, monitor_client, sync::ResourceSync,
 };
 
-#[async_trait]
 impl ResourceSync for Build {
   type PartialConfig = PartialBuildConfig;
   type ListItemInfo = BuildListItemInfo;

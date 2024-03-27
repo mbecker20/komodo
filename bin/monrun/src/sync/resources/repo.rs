@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use async_trait::async_trait;
 use monitor_client::{
   api::write::{CreateRepo, UpdateRepo},
   entities::{
@@ -12,7 +11,6 @@ use monitor_client::{
 
 use crate::{maps::name_to_repo, monitor_client, sync::ResourceSync};
 
-#[async_trait]
 impl ResourceSync for Repo {
   type PartialConfig = PartialRepoConfig;
   type ListItemInfo = RepoInfo;
@@ -32,9 +30,7 @@ impl ResourceSync for Repo {
     name_to_repo()
   }
 
-  async fn init_lookup_data() -> Self::ExtLookup {
-    ()
-  }
+  async fn init_lookup_data() -> Self::ExtLookup {}
 
   async fn create(
     resource: Resource<Self::PartialConfig>,
