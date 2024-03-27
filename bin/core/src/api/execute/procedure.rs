@@ -12,10 +12,8 @@ use tokio::sync::Mutex;
 
 use crate::{
   helpers::{
-    add_update, make_update,
-    procedure::{execute_procedure, make_procedure_map},
-    resource::StateResource,
-    update_update,
+    add_update, make_update, procedure::execute_procedure,
+    resource::StateResource, update_update,
   },
   state::State,
 };
@@ -34,8 +32,6 @@ impl Resolve<RunProcedure, User> for State {
     )
     .await?;
 
-    let map = make_procedure_map(&procedure).await?;
-
     let mut update =
       make_update(&procedure, Operation::StopContainer, &user);
     update.in_progress();
@@ -48,7 +44,7 @@ impl Resolve<RunProcedure, User> for State {
 
     let update = Mutex::new(update);
 
-    let res = execute_procedure(&procedure, &map, &update).await;
+    let res = execute_procedure(&procedure, &update).await;
 
     let mut update = update.into_inner();
 

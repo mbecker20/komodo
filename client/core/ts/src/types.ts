@@ -137,11 +137,11 @@ export type ListBuildersResponse = BuilderListItem[];
 
 export type DeploymentImage = 
 	| { type: "Image", params: {
-	image: string;
+	image?: string;
 }}
 	| { type: "Build", params: {
-	build_id: string;
-	version: Version;
+	build_id?: string;
+	version?: Version;
 }};
 
 export enum TerminationSignal {
@@ -317,11 +317,8 @@ export type ListApiKeysResponse = ApiKey[];
 export type GetUsersResponse = User[];
 
 export type ProcedureConfig = 
-	| { type: "Execution", data: Execution }
-	/** Vec<ProcedureId> */
-	| { type: "Sequence", data: EnabledId[] }
-	/** Vec<ProdecureId> */
-	| { type: "Parallel", data: EnabledId[] };
+	| { type: "Sequence", data: EnabledExecution[] }
+	| { type: "Parallel", data: EnabledExecution[] };
 
 export type Procedure = Resource<ProcedureConfig, undefined>;
 
@@ -344,8 +341,8 @@ export interface ProcedureActionState {
 export type GetProcedureActionStateResponse = ProcedureActionState;
 
 export interface RepoConfig {
-	server_id: string;
-	repo: string;
+	server_id?: string;
+	repo?: string;
 	branch: string;
 	github_account?: string;
 	on_clone?: SystemCommand;
@@ -853,38 +850,45 @@ export interface ExchangeForJwtResponse {
 }
 
 export interface RunBuild {
-	build_id: string;
+	/** Can be id or name */
+	build: string;
 }
 
 export interface CancelBuild {
-	build_id: string;
+	/** Can be id or name */
+	build: string;
 }
 
 export interface CancelBuildResponse {
 }
 
 export interface Deploy {
-	deployment_id: string;
+	/** Name or id */
+	deployment: string;
 	stop_signal?: TerminationSignal;
 	stop_time?: number;
 }
 
 export interface StartContainer {
-	deployment_id: string;
+	/** Name or id */
+	deployment: string;
 }
 
 export interface StopContainer {
-	deployment_id: string;
+	/** Name or id */
+	deployment: string;
 	signal?: TerminationSignal;
 	time?: number;
 }
 
 export interface StopAllContainers {
-	server_id: string;
+	/** Name or id */
+	server: string;
 }
 
 export interface RemoveContainer {
-	deployment_id: string;
+	/** Name or id */
+	deployment: string;
 	signal?: TerminationSignal;
 	time?: number;
 }
@@ -893,27 +897,33 @@ export interface None {
 }
 
 export interface RunProcedure {
-	procedure_id: string;
+	/** Id or name */
+	procedure: string;
 }
 
 export interface CloneRepo {
-	id: string;
+	/** Id or name */
+	repo: string;
 }
 
 export interface PullRepo {
-	id: string;
+	/** Id or name */
+	repo: string;
 }
 
 export interface PruneDockerNetworks {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface PruneDockerImages {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface PruneDockerContainers {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface ListAlerts {
@@ -992,7 +1002,8 @@ export interface ListAlertsResponse {
 }
 
 export interface GetAlerter {
-	id: string;
+	/** Id or name */
+	alerter: string;
 }
 
 export interface ListAlerters {
@@ -1007,7 +1018,8 @@ export interface GetAlertersSummaryResponse {
 }
 
 export interface GetBuild {
-	id: string;
+	/** Id or name */
+	build: string;
 }
 
 export interface ListBuilds {
@@ -1015,7 +1027,8 @@ export interface ListBuilds {
 }
 
 export interface GetBuildActionState {
-	id: string;
+	/** Id or name */
+	build: string;
 }
 
 export interface GetBuildsSummary {
@@ -1042,7 +1055,8 @@ export interface GetBuildMonthlyStatsResponse {
 }
 
 export interface GetBuildVersions {
-	id: string;
+	/** Id or name */
+	build: string;
 	page?: number;
 	major?: number;
 	minor?: number;
@@ -1053,7 +1067,8 @@ export interface ListDockerOrganizations {
 }
 
 export interface GetBuilder {
-	id: string;
+	/** Id or name */
+	builder: string;
 }
 
 export interface ListBuilders {
@@ -1068,7 +1083,8 @@ export interface GetBuildersSummaryResponse {
 }
 
 export interface GetBuilderAvailableAccounts {
-	id: string;
+	/** Id or name */
+	builder: string;
 }
 
 export interface GetBuilderAvailableAccountsResponse {
@@ -1077,7 +1093,8 @@ export interface GetBuilderAvailableAccountsResponse {
 }
 
 export interface GetDeployment {
-	id: string;
+	/** Id or name */
+	deployment: string;
 }
 
 export interface ListDeployments {
@@ -1085,7 +1102,8 @@ export interface ListDeployments {
 }
 
 export interface GetDeploymentStatus {
-	id: string;
+	/** Id or name */
+	deployment: string;
 }
 
 export interface GetDeploymentStatusResponse {
@@ -1094,12 +1112,14 @@ export interface GetDeploymentStatusResponse {
 }
 
 export interface GetLog {
-	deployment_id: string;
+	/** Id or name */
+	deployment: string;
 	tail: U64;
 }
 
 export interface GetDeployedVersion {
-	deployment_id: string;
+	/** Id or name */
+	deployment: string;
 }
 
 export interface GetDeployedVersionResponse {
@@ -1107,11 +1127,13 @@ export interface GetDeployedVersionResponse {
 }
 
 export interface GetDeploymentStats {
-	id: string;
+	/** Id or name */
+	deployment: string;
 }
 
 export interface GetDeploymentActionState {
-	id: string;
+	/** Id or name */
+	deployment: string;
 }
 
 export interface GetDeploymentsSummary {
@@ -1158,7 +1180,8 @@ export interface GetCoreInfoResponse {
 }
 
 export interface GetProcedure {
-	id: string;
+	/** Id or name */
+	procedure: string;
 }
 
 export interface ListProcedures {
@@ -1177,11 +1200,13 @@ export interface GetProceduresSummaryResponse {
 }
 
 export interface GetProcedureActionState {
-	id: string;
+	/** Id or name */
+	procedure: string;
 }
 
 export interface GetRepo {
-	id: string;
+	/** Id or name */
+	repo: string;
 }
 
 export interface ListRepos {
@@ -1189,7 +1214,8 @@ export interface ListRepos {
 }
 
 export interface GetRepoActionState {
-	id: string;
+	/** Id or name */
+	repo: string;
 }
 
 export interface GetReposSummary {
@@ -1213,7 +1239,8 @@ export interface FindResourcesResponse {
 }
 
 export interface GetServer {
-	id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface ListServers {
@@ -1221,7 +1248,8 @@ export interface ListServers {
 }
 
 export interface GetServerStatus {
-	id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetServerStatusResponse {
@@ -1229,11 +1257,13 @@ export interface GetServerStatusResponse {
 }
 
 export interface GetServerActionState {
-	id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetPeripheryVersion {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetPeripheryVersionResponse {
@@ -1241,43 +1271,53 @@ export interface GetPeripheryVersionResponse {
 }
 
 export interface GetSystemInformation {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetAllSystemStats {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetBasicSystemStats {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetCpuUsage {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetDiskUsage {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetNetworkUsage {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetSystemProcesses {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetSystemComponents {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetDockerNetworks {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetHistoricalServerStats {
-	server_id: string;
+	/** Id or name */
+	server: string;
 	interval: Timelength;
 	page?: number;
 }
@@ -1300,11 +1340,13 @@ export interface GetHistoricalServerStatsResponse {
 }
 
 export interface GetDockerImages {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetDockerContainers {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetServersSummary {
@@ -1318,7 +1360,8 @@ export interface GetServersSummaryResponse {
 }
 
 export interface GetAvailableAccounts {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetAvailableAccountsResponse {
@@ -1327,11 +1370,13 @@ export interface GetAvailableAccountsResponse {
 }
 
 export interface GetAvailableSecrets {
-	server_id: string;
+	/** Id or name */
+	server: string;
 }
 
 export interface GetTag {
-	id: string;
+	/** Id or name */
+	tag: string;
 }
 
 export interface ListTags {
@@ -1673,6 +1718,8 @@ export interface AwsBuilderConfig {
 	key_pair_name: string;
 	assign_public_ip: boolean;
 	use_public_ip: boolean;
+	/** The port periphery will be running on */
+	port: number;
 	github_accounts?: string[];
 	docker_accounts?: string[];
 }
@@ -1693,9 +1740,25 @@ export interface Permission {
 	level?: PermissionLevel;
 }
 
+export type Execution = 
+	/** For new executions upon instantiation */
+	| { type: "None", params: None }
+	| { type: "RunProcedure", params: RunProcedure }
+	| { type: "RunBuild", params: RunBuild }
+	| { type: "Deploy", params: Deploy }
+	| { type: "StartContainer", params: StartContainer }
+	| { type: "StopContainer", params: StopContainer }
+	| { type: "StopAllContainers", params: StopAllContainers }
+	| { type: "RemoveContainer", params: RemoveContainer }
+	| { type: "CloneRepo", params: CloneRepo }
+	| { type: "PullRepo", params: PullRepo }
+	| { type: "PruneDockerNetworks", params: PruneDockerNetworks }
+	| { type: "PruneDockerImages", params: PruneDockerImages }
+	| { type: "PruneDockerContainers", params: PruneDockerContainers };
+
 /** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
-export interface EnabledId {
-	id: string;
+export interface EnabledExecution {
+	execution: Execution;
 	enabled: boolean;
 }
 
@@ -1841,22 +1904,6 @@ export type WriteRequest =
 	| { type: "DeleteTag", params: DeleteTag }
 	| { type: "RenameTag", params: RenameTag }
 	| { type: "UpdateTagsOnResource", params: UpdateTagsOnResource };
-
-export type Execution = 
-	/** For new executions upon instantiation */
-	| { type: "None", params: None }
-	| { type: "RunProcedure", params: RunProcedure }
-	| { type: "RunBuild", params: RunBuild }
-	| { type: "Deploy", params: Deploy }
-	| { type: "StartContainer", params: StartContainer }
-	| { type: "StopContainer", params: StopContainer }
-	| { type: "StopAllContainers", params: StopAllContainers }
-	| { type: "RemoveContainer", params: RemoveContainer }
-	| { type: "CloneRepo", params: CloneRepo }
-	| { type: "PullRepo", params: PullRepo }
-	| { type: "PruneDockerNetworks", params: PruneDockerNetworks }
-	| { type: "PruneDockerImages", params: PruneDockerImages }
-	| { type: "PruneDockerContainers", params: PruneDockerContainers };
 
 export type WsLoginMessage = 
 	| { type: "Jwt", params: {

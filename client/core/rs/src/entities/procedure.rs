@@ -29,8 +29,8 @@ pub struct ProcedureListItemInfo {
 /// Allows to enable / disabled procedures in the sequence / parallel vec on the fly
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct EnabledId {
-  pub id: String,
+pub struct EnabledExecution {
+  pub execution: Execution,
   pub enabled: bool,
 }
 
@@ -48,11 +48,8 @@ pub struct EnabledId {
 )]
 #[serde(tag = "type", content = "data")]
 pub enum ProcedureConfig {
-  Execution(Execution),
-  /// Vec<ProcedureId>
-  Sequence(Vec<EnabledId>),
-  /// Vec<ProdecureId>
-  Parallel(Vec<EnabledId>),
+  Sequence(Vec<EnabledExecution>),
+  Parallel(Vec<EnabledExecution>),
 }
 
 #[typeshare]
