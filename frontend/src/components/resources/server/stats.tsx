@@ -14,7 +14,7 @@ import { Types } from "@monitor/client";
 export const ServerStats = ({ server_id }: { server_id: string }) => {
   const stats = useRead(
     "GetAllSystemStats",
-    { server_id },
+    { server: server_id },
     { refetchInterval: 1000 }
   ).data;
 

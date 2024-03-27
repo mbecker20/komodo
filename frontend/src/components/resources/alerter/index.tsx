@@ -66,7 +66,7 @@ const NewAlerter = () => {
 };
 
 const SlackAlerterConfig = ({ id }: { id: string }) => {
-  const config = useRead("GetAlerter", { id }).data?.config;
+  const config = useRead("GetAlerter", { alerter: id }).data?.config;
   const [update, set] = useState<Partial<Types.SlackAlerterConfig>>({});
   const { mutate } = useWrite("UpdateAlerter");
   if (!config) return null;
@@ -89,7 +89,7 @@ const SlackAlerterConfig = ({ id }: { id: string }) => {
 };
 
 const CustomAlerterConfig = ({ id }: { id: string }) => {
-  const config = useRead("GetAlerter", { id }).data?.config;
+  const config = useRead("GetAlerter", { alerter: id }).data?.config;
   const [update, set] = useState<Partial<Types.CustomAlerterConfig>>({});
   const { mutate } = useWrite("UpdateAlerter");
   if (!config) return null;
@@ -165,7 +165,7 @@ export const AlerterComponents: RequiredResourceComponents = {
   Info: ({ id }) => <>{id}</>,
   Page: {
     Config: ({ id }: { id: string }) => {
-      const config = useRead("GetAlerter", { id }).data?.config;
+      const config = useRead("GetAlerter", { alerter: id }).data?.config;
       if (config?.type === "Slack") return <SlackAlerterConfig id={id} />;
       if (config?.type === "Custom") return <CustomAlerterConfig id={id} />;
     },

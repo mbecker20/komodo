@@ -23,7 +23,7 @@ const BuildVersionSelector = ({
 }) => {
   const versions = useRead(
     "GetBuildVersions",
-    { id: buildId! },
+    { build: buildId! },
     { enabled: !!buildId }
   ).data;
   return (

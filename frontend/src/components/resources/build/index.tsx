@@ -75,7 +75,7 @@ export const BuildArgs = ({
 };
 
 export const BuildConfig = ({ id }: { id: string }) => {
-  const config = useRead("GetBuild", { id }).data?.config;
+  const config = useRead("GetBuild", { build: id }).data?.config;
   // const orgs = useRead("GetAccounts")
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
   const { mutate } = useWrite("UpdateBuild");
@@ -147,7 +147,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
 const Name = ({ id }: { id: string }) => <>{useBuild(id)?.name}</>;
 
 const Icon = ({ id }: { id: string }) => {
-  const building = useRead("GetBuildActionState", { id }).data?.building;
+  const building = useRead("GetBuildActionState", { build: id }).data?.building;
   const className = building
     ? "w-4 h-4 animate-spin fill-green-500"
     : "w-4 h-4";
@@ -244,7 +244,7 @@ export const BuildComponents: RequiredResourceComponents = {
   },
   Actions: ({ id }) => {
     const { toast } = useToast();
-    const building = useRead("GetBuildActionState", { id }).data?.building;
+    const building = useRead("GetBuildActionState", { build: id }).data?.building;
     const { mutate: run_mutate, isPending: runPending } = useExecute(
       "RunBuild",
       {
@@ -270,7 +270,7 @@ export const BuildComponents: RequiredResourceComponents = {
           title="Cancel Build"
           variant="destructive"
           icon={<Ban className="h-4 w-4" />}
-          onClick={() => cancel_mutate({ build_id: id })}
+          onClick={() => cancel_mutate({ build: id })}
           disabled={cancelPending}
         />
       );
@@ -285,7 +285,7 @@ export const BuildComponents: RequiredResourceComponents = {
               <Hammer className="h-4 w-4" />
             )
           }
-          onClick={() => run_mutate({ build_id: id })}
+          onClick={() => run_mutate({ build: id })}
           disabled={runPending}
         />
       );

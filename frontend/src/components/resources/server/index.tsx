@@ -37,12 +37,12 @@ export const ServerInfo = ({
   const server = useServer(id);
   const stats = useRead(
     "GetBasicSystemStats",
-    { server_id: id },
+    { server: id },
     { enabled: server ? server.info.status !== "Disabled" : false }
   ).data;
   const info = useRead(
     "GetSystemInformation",
-    { server_id: id },
+    { server: id },
     { enabled: server ? server.info.status !== "Disabled" : false }
   ).data;
   return (
@@ -84,7 +84,7 @@ export const ServerIconComponent = ({ id }: { id?: string }) => {
 
 const ServerConfig = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();
-  const config = useRead("GetServer", { id }).data?.config;
+  const config = useRead("GetServer", { server: id }).data?.config;
   const [update, set] = useState<Partial<Types.ServerConfig>>({});
   const { mutate } = useWrite("UpdateServer", {
     onSuccess: () => {

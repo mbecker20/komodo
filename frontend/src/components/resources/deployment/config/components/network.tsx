@@ -19,7 +19,7 @@ export const NetworkModeSelector = ({
 }) => {
   const networks = useRead(
     "GetDockerNetworks",
-    { server_id: server_id! },
+    { server: server_id! },
     { enabled: !!server_id }
   ).data;
 

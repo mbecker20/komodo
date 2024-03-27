@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 export const DeleteServer = ({ id }: { id: string }) => {
   const nav = useNavigate();
-  const server = useRead("GetServer", { id }).data;
+  const server = useRead("GetServer", { server: id }).data;
   const { mutateAsync, isPending } = useWrite("DeleteServer");
 
   if (!server) return null;

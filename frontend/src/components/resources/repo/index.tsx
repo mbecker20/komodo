@@ -39,7 +39,7 @@ export const RepoComponents: RequiredResourceComponents = {
   Icon: () => <GitBranch className="w-4 h-4" />,
   Page: {
     Config: ({ id }) => {
-      const config = useRead("GetRepo", { id }).data?.config;
+      const config = useRead("GetRepo", { repo: id }).data?.config;
       const [update, set] = useState<Partial<Types.RepoConfig>>({});
       const mutate = useWrite("UpdateRepo");
       if (!config) return null;

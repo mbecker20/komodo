@@ -53,7 +53,7 @@ export const DeploymentLogs = ({ id }: { id: string }) => {
 
   const { data: logs, refetch } = useRead(
     "GetLog",
-    { deployment_id: id, tail: Number(tail) },
+    { deployment: id, tail: Number(tail) },
     { refetchInterval: 30000 }
   );
 

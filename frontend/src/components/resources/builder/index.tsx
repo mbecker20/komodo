@@ -25,7 +25,7 @@ const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
 
 const AwsBuilderConfig = ({ id }: { id: string }) => {
-  const config = useRead("GetBuilder", { id }).data?.config;
+  const config = useRead("GetBuilder", { builder: id }).data?.config;
   const [update, set] = useState<Partial<Types.AwsBuilderConfig>>({});
   const { mutate } = useWrite("UpdateBuilder");
   if (!config) return null;
@@ -72,7 +72,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
 };
 
 const ServerBuilderConfig = ({ id }: { id: string }) => {
-  const config = useRead("GetBuilder", { id }).data?.config;
+  const config = useRead("GetBuilder", { builder: id }).data?.config;
   const [update, set] = useState<Partial<Types.ServerBuilderConfig>>({});
   const { mutate } = useWrite("UpdateBuilder");
   if (!config) return null;
@@ -224,7 +224,7 @@ export const BuilderComponents: RequiredResourceComponents = {
   Icon: () => <Factory className="w-4 h-4" />,
   Page: {
     Config: ({ id }) => {
-      const config = useRead("GetBuilder", { id }).data?.config;
+      const config = useRead("GetBuilder", { builder: id }).data?.config;
       if (config?.type === "Aws") return <AwsBuilderConfig id={id} />;
       if (config?.type === "Server") return <ServerBuilderConfig id={id} />;
     },
