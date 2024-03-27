@@ -1,9 +1,20 @@
 [[deployment]]
-name = "monitor-core-v1-dev"
-description = "v1 dev core api"
-tags = ["monitor", "v1", "dev"]
+name = "monitor-core-v1"
+description = "v1 core api"
+tags = ["monitor", "v1", "api"]
 config.server = "mogh-server"
+[[deployment.config.environment]]
+variable = "TEST_1"
+value = "VALUE"
+[[deployment.config.environment]]
+variable = "TEST_2"
+value = "VALUE"
 
+[[deployment]]
+name = "monitor-frontend-v1"
+description = "v1 frontend"
+tags = ["monitor", "v1", "frontend"]
+config.server = "mogh-server"
 [[deployment.config.environment]]
 variable = "TEST_1"
 value = "VALUE"

@@ -16,7 +16,6 @@ use crate::{
 impl ResourceSync for Server {
   type ListItemInfo = ServerListItemInfo;
   type PartialConfig = PartialServerConfig;
-  type ExtLookup = ();
 
   fn display() -> &'static str {
     "server"
@@ -32,11 +31,8 @@ impl ResourceSync for Server {
     name_to_server()
   }
 
-  async fn init_lookup_data() -> Self::ExtLookup {}
-
   async fn create(
     resource: Resource<Self::PartialConfig>,
-    _: &(),
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(CreateServer {
@@ -50,7 +46,6 @@ impl ResourceSync for Server {
   async fn update(
     id: String,
     resource: Resource<Self::PartialConfig>,
-    _: &(),
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(UpdateServer {

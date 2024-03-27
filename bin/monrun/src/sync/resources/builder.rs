@@ -16,7 +16,6 @@ use crate::{
 impl ResourceSync for Builder {
   type PartialConfig = PartialBuilderConfig;
   type ListItemInfo = BuilderListItemInfo;
-  type ExtLookup = ();
 
   fn display() -> &'static str {
     "builder"
@@ -32,11 +31,8 @@ impl ResourceSync for Builder {
     name_to_builder()
   }
 
-  async fn init_lookup_data() -> Self::ExtLookup {}
-
   async fn create(
     resource: Resource<Self::PartialConfig>,
-    _: &(),
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(CreateBuilder {
@@ -50,7 +46,6 @@ impl ResourceSync for Builder {
   async fn update(
     id: String,
     resource: Resource<Self::PartialConfig>,
-    _: &(),
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(UpdateBuilder {

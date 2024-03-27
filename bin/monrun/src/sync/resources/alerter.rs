@@ -16,7 +16,6 @@ use crate::{
 impl ResourceSync for Alerter {
   type PartialConfig = PartialAlerterConfig;
   type ListItemInfo = AlerterListItemInfo;
-  type ExtLookup = ();
 
   fn display() -> &'static str {
     "alerter"
@@ -32,11 +31,8 @@ impl ResourceSync for Alerter {
     name_to_alerter()
   }
 
-  async fn init_lookup_data() -> Self::ExtLookup {}
-
   async fn create(
     resource: Resource<Self::PartialConfig>,
-    _: &(),
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(CreateAlerter {
@@ -50,7 +46,6 @@ impl ResourceSync for Alerter {
   async fn update(
     id: String,
     resource: Resource<Self::PartialConfig>,
-    _: &(),
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(UpdateAlerter {

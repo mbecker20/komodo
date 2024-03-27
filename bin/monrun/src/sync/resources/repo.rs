@@ -14,7 +14,6 @@ use crate::{maps::name_to_repo, monitor_client, sync::ResourceSync};
 impl ResourceSync for Repo {
   type PartialConfig = PartialRepoConfig;
   type ListItemInfo = RepoInfo;
-  type ExtLookup = ();
 
   fn display() -> &'static str {
     "repo"
@@ -30,11 +29,8 @@ impl ResourceSync for Repo {
     name_to_repo()
   }
 
-  async fn init_lookup_data() -> Self::ExtLookup {}
-
   async fn create(
     resource: Resource<Self::PartialConfig>,
-    _: &(),
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(CreateRepo {
@@ -48,7 +44,6 @@ impl ResourceSync for Repo {
   async fn update(
     id: String,
     resource: Resource<Self::PartialConfig>,
-    _: &(),
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(UpdateRepo {

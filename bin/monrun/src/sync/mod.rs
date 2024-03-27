@@ -47,15 +47,22 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
 
   wait_for_enter("CONTINUE")?;
 
-  // Run these first, which require no name -> id replacement
-  Alerter::run_updates(alerter_updates, alerter_creates).await;
-  Builder::run_updates(builder_updates, builder_creates).await;
+  // No deps
   Server::run_updates(server_updates, server_creates).await;
+  Alerter::run_updates(alerter_updates, alerter_creates).await;
 
+  // Dependant on server
+  Builder::run_updates(builder_updates, builder_creates).await;
+  Repo::run_updates(repo_updates, repo_creates).await;
+
+  // Dependant on builder
   Build::run_updates(build_updates, build_creates).await;
+
+  // Dependant on server / builder
   Deployment::run_updates(deployment_updates, deployment_creates)
     .await;
-  Repo::run_updates(repo_updates, repo_creates).await;
+
+  // Dependant on everything
   Procedure::run_updates(procedure_updates, procedure_creates).await;
 
   Ok(())
@@ -68,7 +75,6 @@ type UpdatesResult<T> = (ToUpdate<T>, ToCreate<T>);
 pub trait ResourceSync {
   type PartialConfig: Clone + Send + 'static;
   type ListItemInfo: 'static;
-  type ExtLookup: Send + Sync;
 
   fn display() -> &'static str;
 
@@ -77,18 +83,14 @@ pub trait ResourceSync {
   fn name_to_resource(
   ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>;
 
-  async fn init_lookup_data() -> Self::ExtLookup;
-
   /// Returns created id
   async fn create(
     resource: Resource<Self::PartialConfig>,
-    ext_lookup: &Self::ExtLookup,
   ) -> anyhow::Result<String>;
 
   async fn update(
     id: String,
     resource: Resource<Self::PartialConfig>,
-    ext_lookup: &Self::ExtLookup,
   ) -> anyhow::Result<()>;
 
   fn get_updates(
@@ -151,8 +153,6 @@ pub trait ResourceSync {
       .map(|tag| (tag.name, tag.id))
       .collect::<HashMap<_, _>>();
 
-    let ext_lookup = Self::init_lookup_data().await;
-
     let log_after = !to_update.is_empty() || !to_create.is_empty();
 
     for (id, resource) in to_update {
@@ -160,9 +160,7 @@ pub trait ResourceSync {
       let name = resource.name.clone();
       let tags = resource.tags.clone();
       let description = resource.description.clone();
-      if let Err(e) =
-        Self::update(id.clone(), resource, &ext_lookup).await
-      {
+      if let Err(e) = Self::update(id.clone(), resource).await {
         warn!("failed to update {} {name} | {e:#}", Self::display());
       }
       Self::update_tags(
@@ -180,7 +178,7 @@ pub trait ResourceSync {
       let name = resource.name.clone();
       let tags = resource.tags.clone();
       let description = resource.description.clone();
-      let id = match Self::create(resource, &ext_lookup).await {
+      let id = match Self::create(resource).await {
         Ok(id) => id,
         Err(e) => {
           warn!(
