@@ -1,11 +1,25 @@
+import { ConfigLayout } from "@components/config";
+import { NewResource } from "@components/layouts";
 import { TagsWithBadge } from "@components/tags";
 import { ConfirmButton } from "@components/util";
-import { useExecute, useRead } from "@lib/hooks";
+import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { fmt_date_with_minutes } from "@lib/utils";
+import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
-import { Link, Loader2, Route } from "lucide-react";
+import { Input } from "@ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
+import { Loader2, Route } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ProcedureConfig } from "./config";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -13,10 +27,10 @@ const useProcedure = (id?: string) =>
 export const ProcedureComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useProcedure(id)?.name}</>,
   Description: ({ id }) => <>{useProcedure(id)?.info.procedure_type}</>,
-  Info: ({ id }) => <>{id}</>,
+  Info: () => <></>,
   Icon: () => <Route className="w-4" />,
   Page: {
-    // Config: ({ id }) => <ProcedureConfig id={id} />,
+    Config: ProcedureConfig,
   },
   Actions: ({ id }) => {
     const running = useRead("GetProcedureActionState", { procedure: id }).data
@@ -78,7 +92,42 @@ export const ProcedureComponents: RequiredResourceComponents = {
       />
     );
   },
-  New: () => <></>,
+  New: () => {
+    const { mutateAsync } = useWrite("CreateProcedure");
+    const [name, setName] = useState("");
+    const [type, setType] = useState<Types.ProcedureConfig["type"]>("Sequence");
+    return (
+      <NewResource
+        type="Procedure"
+        onSuccess={() => mutateAsync({ name, config: { type, data: [] } })}
+        enabled={!!name}
+      >
+        <div className="grid md:grid-cols-2 items-center">
+          Procedure Name
+          <Input
+            placeholder="procedure-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="flex justify-between items-center">
+          Procedure Type
+          <Select value={type} onValueChange={setType as any}>
+            <SelectTrigger className="w-32 capitalize">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="w-32">
+              {["Sequence", "Parallel"].map((key) => (
+                <SelectItem value={key} key={key} className="capitalize">
+                  {key}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </NewResource>
+    );
+  },
   Dashboard: () => {
     const procedure_count = useRead("ListProcedures", {}).data?.length;
     return (

@@ -80,7 +80,7 @@ export const Page = ({
     {(title || subtitle || actions) && (
       <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 lg:items-start justify-between">
         <div className="flex flex-col gap-2">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-4 items-center">
             <h1 className="text-4xl">{title}</h1>
             {titleRight}
           </div>
@@ -101,7 +101,7 @@ interface SectionProps {
 }
 
 export const Section = ({ title, icon, actions, children }: SectionProps) => (
-  <div className="flex flex-col gap-2">
+  <div className="flex flex-col gap-4">
     <div className="flex items-start justify-between">
       <div className="flex items-center gap-2 text-muted-foreground">
         {icon}

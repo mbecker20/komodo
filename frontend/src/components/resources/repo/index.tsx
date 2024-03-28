@@ -1,4 +1,4 @@
-import { ConfigInner } from "@components/config";
+import { Config } from "@components/config";
 import { AccountSelector, ResourceSelector } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
@@ -44,7 +44,7 @@ export const RepoComponents: RequiredResourceComponents = {
       const mutate = useWrite("UpdateRepo");
       if (!config) return null;
       return (
-        <ConfigInner
+        <Config
           config={config}
           update={update}
           set={set}

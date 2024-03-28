@@ -13,7 +13,7 @@ import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
 import { AlarmClock } from "lucide-react";
 import { useState } from "react";
-import { ConfigInner } from "@components/config";
+import { Config } from "@components/config";
 import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
 import { Link } from "react-router-dom";
@@ -72,7 +72,7 @@ const SlackAlerterConfig = ({ id }: { id: string }) => {
   if (!config) return null;
 
   return (
-    <ConfigInner
+    <Config
       config={config.params}
       update={update}
       set={set}
@@ -95,7 +95,7 @@ const CustomAlerterConfig = ({ id }: { id: string }) => {
   if (!config) return null;
 
   return (
-    <ConfigInner
+    <Config
       config={config.params}
       update={update}
       set={set}

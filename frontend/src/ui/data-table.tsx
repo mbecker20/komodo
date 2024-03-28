@@ -65,7 +65,7 @@ export function DataTable<TData, TValue>({
                 className={cn(onRowClick && "cursor-pointer")}
               >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell key={cell.id} className="p-4">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -73,7 +73,7 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-16 text-center">
+              <TableCell colSpan={columns.length} className="h-12 text-center">
                 No results.
               </TableCell>
             </TableRow>

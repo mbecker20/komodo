@@ -14,7 +14,7 @@ import { PortsConfig } from "./components/ports";
 import { EnvVars } from "./components/environment";
 import { VolumesConfig } from "./components/volumes";
 import { ExtraArgs } from "./components/extra-args";
-import { ConfigInner } from "@components/config";
+import { Config } from "@components/config";
 
 export const ServerSelector = ({
   selected,
@@ -46,7 +46,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
     : false;
 
   return (
-    <ConfigInner
+    <Config
       config={config}
       update={update}
       set={set}

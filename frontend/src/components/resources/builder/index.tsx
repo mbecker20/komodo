@@ -1,4 +1,4 @@
-import { ConfigInner } from "@components/config";
+import { Config } from "@components/config";
 import { InputList, ResourceSelector } from "@components/config/util";
 import { NewResource } from "@components/layouts";
 import { useTagsFilter } from "@components/tags";
@@ -31,7 +31,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
   if (!config) return null;
 
   return (
-    <ConfigInner
+    <Config
       config={config.params as Types.AwsBuilderConfig}
       update={update}
       set={set}
@@ -78,7 +78,7 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
   if (!config) return null;
 
   return (
-    <ConfigInner
+    <Config
       config={config.params as Types.ServerBuilderConfig}
       update={update}
       set={set}

@@ -1,4 +1,4 @@
-import { ConfigInner } from "@components/config";
+import { Config } from "@components/config";
 import {
   ResourceSelector,
   AccountSelector,
@@ -83,7 +83,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
   if (!config) return null;
 
   return (
-    <ConfigInner
+    <Config
       config={config}
       update={update}
       set={set}

@@ -106,113 +106,113 @@ async fn validate_procedure_config(
   for exec in execs {
     match &mut exec.execution {
       Execution::None(_) => {}
-      Execution::RunProcedure(data) => {
+      Execution::RunProcedure(params) => {
         let procedure = Procedure::get_resource_check_permissions(
-          &data.procedure,
+          &params.procedure,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.procedure = procedure.id;
+        params.procedure = procedure.id;
       }
-      Execution::RunBuild(data) => {
+      Execution::RunBuild(params) => {
         let build = Build::get_resource_check_permissions(
-          &data.build,
+          &params.build,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.build = build.id;
+        params.build = build.id;
       }
-      Execution::Deploy(data) => {
+      Execution::Deploy(params) => {
         let deployment = Deployment::get_resource_check_permissions(
-          &data.deployment,
+          &params.deployment,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.deployment = deployment.id;
+        params.deployment = deployment.id;
       }
-      Execution::StartContainer(data) => {
+      Execution::StartContainer(params) => {
         let deployment = Deployment::get_resource_check_permissions(
-          &data.deployment,
+          &params.deployment,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.deployment = deployment.id;
+        params.deployment = deployment.id;
       }
-      Execution::StopContainer(data) => {
+      Execution::StopContainer(params) => {
         let deployment = Deployment::get_resource_check_permissions(
-          &data.deployment,
+          &params.deployment,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.deployment = deployment.id;
+        params.deployment = deployment.id;
       }
-      Execution::StopAllContainers(data) => {
+      Execution::StopAllContainers(params) => {
         let server = Server::get_resource_check_permissions(
-          &data.server,
+          &params.server,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.server = server.id;
+        params.server = server.id;
       }
-      Execution::RemoveContainer(data) => {
+      Execution::RemoveContainer(params) => {
         let deployment = Deployment::get_resource_check_permissions(
-          &data.deployment,
+          &params.deployment,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.deployment = deployment.id;
+        params.deployment = deployment.id;
       }
-      Execution::CloneRepo(data) => {
+      Execution::CloneRepo(params) => {
         let repo = Repo::get_resource_check_permissions(
-          &data.repo,
+          &params.repo,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.repo = repo.id;
+        params.repo = repo.id;
       }
-      Execution::PullRepo(data) => {
+      Execution::PullRepo(params) => {
         let repo = Repo::get_resource_check_permissions(
-          &data.repo,
+          &params.repo,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.repo = repo.id;
+        params.repo = repo.id;
       }
-      Execution::PruneDockerNetworks(data) => {
+      Execution::PruneDockerNetworks(params) => {
         let server = Server::get_resource_check_permissions(
-          &data.server,
+          &params.server,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.server = server.id;
+        params.server = server.id;
       }
-      Execution::PruneDockerImages(data) => {
+      Execution::PruneDockerImages(params) => {
         let server = Server::get_resource_check_permissions(
-          &data.server,
+          &params.server,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.server = server.id;
+        params.server = server.id;
       }
-      Execution::PruneDockerContainers(data) => {
+      Execution::PruneDockerContainers(params) => {
         let server = Server::get_resource_check_permissions(
-          &data.server,
+          &params.server,
           user,
           PermissionLevel::Execute,
         )
         .await?;
-        data.server = server.id;
+        params.server = server.id;
       }
     }
   }

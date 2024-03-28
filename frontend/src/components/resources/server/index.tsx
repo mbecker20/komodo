@@ -12,7 +12,7 @@ import {
   Rocket,
 } from "lucide-react";
 import { ServerStats } from "./stats";
-import { ConfigInner } from "@components/config";
+import { Config } from "@components/config";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
@@ -95,7 +95,7 @@ const ServerConfig = ({ id }: { id: string }) => {
   if (!config) return null;
 
   return (
-    <ConfigInner
+    <Config
       config={config}
       update={update}
       set={set}

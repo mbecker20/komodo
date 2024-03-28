@@ -38,10 +38,9 @@ export const Resource = () => {
     >
       <ResourceUpdates type={type} id={id} />
       {/* <ResourcePermissions type={type} id={id} /> */}
-      {Object.keys(Components.Page).map((section) => {
-        const Component = Components.Page[section];
-        return <Component id={id} key={section} />;
-      })}
+      {Object.entries(Components.Page).map(([section, Component]) => (
+        <Component id={id} key={section} />
+      ))}
     </Page>
   );
 };
