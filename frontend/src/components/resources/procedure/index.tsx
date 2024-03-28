@@ -1,4 +1,3 @@
-import { ConfigLayout } from "@components/config";
 import { NewResource } from "@components/layouts";
 import { TagsWithBadge } from "@components/tags";
 import { ConfirmButton } from "@components/util";

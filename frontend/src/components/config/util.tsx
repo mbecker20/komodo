@@ -7,12 +7,17 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
-  SelectGroup,
 } from "@ui/select";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
-import { MinusCircle, PlusCircle, Save } from "lucide-react";
+import {
+  ChevronsUpDown,
+  MinusCircle,
+  PlusCircle,
+  Save,
+  SearchX,
+} from "lucide-react";
 import { ReactNode, useState } from "react";
 import { cn } from "@lib/utils";
 import {
@@ -23,6 +28,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@ui/command";
 
 export const ConfigItem = ({
   label,
@@ -154,26 +167,48 @@ export const ResourceSelector = ({
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
+
   const resources = useRead(`List${type}s`, {}).data;
   const name = resources?.find((r) => r.id === selected)?.name;
 
   if (!resources) return null;
 
   return (
-    <Select value={name ?? undefined} onValueChange={onSelect}>
-      <SelectTrigger className="w-full lg:w-[300px] max-w-[50%]">
-        {name ?? `Select ${type}`}
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {resources.map((resource) => (
-            <SelectItem key={resource.id} value={resource.id}>
-              {resource.name}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="secondary" className="flex gap-2">
+          {name ?? `Select ${type}`}
+          <ChevronsUpDown className="w-3 h-3" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] max-h-[200px] p-0" sideOffset={12}>
+        <Command>
+          <CommandInput
+            placeholder={`Search ${type}s`}
+            className="h-9"
+            value={input}
+            onValueChange={setInput}
+          />
+          <CommandEmpty className="flex justify-evenly items-center">
+            {`No ${type}s Found`}
+            <SearchX className="w-3 h-3" />
+          </CommandEmpty>
+          <CommandGroup>
+            {resources.map((resource) => (
+              <CommandItem
+                key={resource.id}
+                onSelect={() => onSelect(resource.id)}
+                className="flex items-center justify-between"
+              >
+                <div className="p-1">{resource.name}</div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
 

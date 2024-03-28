@@ -9,17 +9,11 @@ import {
   CommandInput,
   CommandItem,
 } from "@ui/command";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
@@ -43,8 +37,8 @@ export const TagsFilter = () => {
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="flex gap-2">
-            Filter by Tag <PlusCircle className="w-4 h-4" />
+          <Button variant="outline" className="flex gap-3">
+            Filter by Tag <Tag className="w-3 h-3" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-36" side="bottom">

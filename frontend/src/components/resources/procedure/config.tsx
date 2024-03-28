@@ -2,8 +2,16 @@ import { ConfigLayout } from "@components/config";
 import { ResourceSelector } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { UsableResource } from "@types";
+import { Button } from "@ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@ui/command";
 import { DataTable } from "@ui/data-table";
+import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   Select,
   SelectContent,
@@ -12,6 +20,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { Switch } from "@ui/switch";
+import { ChevronsUpDown, SearchX } from "lucide-react";
 import { useState } from "react";
 
 export const ProcedureConfig = ({ id }: { id: string }) => {
@@ -66,7 +75,30 @@ const ProcedureConfigInner = ({
           columns={[
             {
               header: "Execution",
-              accessorKey: "execution.type",
+              cell: ({ row: { original, index } }) => (
+                <ExecutionTypeSelector
+                  type={original.execution.type}
+                  onSelect={(type) =>
+                    setConfig({
+                      ...config,
+                      data: config.data.map((item, i) =>
+                        i === index
+                          ? ({
+                              ...item,
+                              execution: {
+                                type,
+                                params:
+                                  TARGET_COMPONENTS[
+                                    type as Types.Execution["type"]
+                                  ].params,
+                              },
+                            } as Types.EnabledExecution)
+                          : item
+                      ),
+                    })
+                  }
+                />
+              ),
             },
             {
               header: "Target",
@@ -78,7 +110,7 @@ const ProcedureConfigInner = ({
                   index,
                 },
               }) => {
-                const Component = EXEC_TYPES[type].Component;
+                const Component = TARGET_COMPONENTS[type].Component;
                 return (
                   <Component
                     params={params as any}
@@ -86,7 +118,12 @@ const ProcedureConfigInner = ({
                       setConfig({
                         ...config,
                         data: config.data.map((item, i) =>
-                          i === index ? { ...item, params } : item
+                          i === index
+                            ? {
+                                ...item,
+                                execution: { type, params: params as any },
+                              }
+                            : item
                         ),
                       })
                     }
@@ -127,6 +164,52 @@ const ProcedureConfigInner = ({
   );
 };
 
+export const ExecutionTypeSelector = ({
+  type,
+  onSelect,
+}: {
+  type: Types.Execution["type"];
+  onSelect: (type: Types.Execution["type"]) => void;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="secondary" className="flex gap-2">
+          {type}
+          <ChevronsUpDown className="w-3 h-3" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] max-h-[200px] p-0" sideOffset={12}>
+        <Command>
+          <CommandInput
+            placeholder="Search Executions"
+            className="h-9"
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandEmpty className="flex justify-evenly items-center">
+            Empty.
+            <SearchX className="w-3 h-3" />
+          </CommandEmpty>
+          <CommandGroup className="overflow-auto">
+            {Object.keys(TARGET_COMPONENTS).map((type) => (
+              <CommandItem
+                key={type}
+                onSelect={() => onSelect(type as Types.Execution["type"])}
+                className="flex items-center justify-between"
+              >
+                <div className="p-1">{type}</div>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 type ExecutionType = Types.Execution["type"];
 
 type ExecutionConfigComponent<
@@ -149,22 +232,7 @@ type ExecutionConfigs = {
   };
 };
 
-const TypeSelector = ({
-  type,
-  selected,
-  onSelect,
-}: {
-  type: UsableResource;
-  selected: string;
-  onSelect: (value: string) => void;
-}) => (
-  <div className="flex gap-2 items-center">
-    {type}
-    <ResourceSelector type={type} selected={selected} onSelect={onSelect} />
-  </div>
-);
-
-const EXEC_TYPES: ExecutionConfigs = {
+const TARGET_COMPONENTS: ExecutionConfigs = {
   None: {
     params: {},
     Component: () => <></>,
@@ -172,7 +240,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   CloneRepo: {
     params: { repo: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Repo"
         selected={params.repo}
         onSelect={(repo) => setParams({ repo })}
@@ -182,7 +250,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   Deploy: {
     params: { deployment: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Deployment"
         selected={params.deployment}
         onSelect={(deployment) => setParams({ deployment })}
@@ -192,7 +260,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   PruneDockerContainers: {
     params: { server: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Server"
         selected={params.server}
         onSelect={(server) => setParams({ server })}
@@ -202,7 +270,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   PruneDockerImages: {
     params: { server: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Server"
         selected={params.server}
         onSelect={(server) => setParams({ server })}
@@ -212,7 +280,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   PruneDockerNetworks: {
     params: { server: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Server"
         selected={params.server}
         onSelect={(server) => setParams({ server })}
@@ -222,7 +290,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   PullRepo: {
     params: { repo: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Repo"
         selected={params.repo}
         onSelect={(repo) => setParams({ repo })}
@@ -232,7 +300,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   RemoveContainer: {
     params: { deployment: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Deployment"
         selected={params.deployment}
         onSelect={(deployment) => setParams({ deployment })}
@@ -242,7 +310,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   RunBuild: {
     params: { build: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Build"
         selected={params.build}
         onSelect={(build) => setParams({ build })}
@@ -252,7 +320,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   RunProcedure: {
     params: { procedure: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Procedure"
         selected={params.procedure}
         onSelect={(procedure) => setParams({ procedure })}
@@ -262,7 +330,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   StartContainer: {
     params: { deployment: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Deployment"
         selected={params.deployment}
         onSelect={(deployment) => setParams({ deployment })}
@@ -272,7 +340,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   StopAllContainers: {
     params: { server: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Server"
         selected={params.server}
         onSelect={(id) => setParams({ server: id })}
@@ -282,7 +350,7 @@ const EXEC_TYPES: ExecutionConfigs = {
   StopContainer: {
     params: { deployment: "" },
     Component: ({ params, setParams }) => (
-      <TypeSelector
+      <ResourceSelector
         type="Deployment"
         selected={params.deployment}
         onSelect={(id) => setParams({ deployment: id })}

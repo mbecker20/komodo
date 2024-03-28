@@ -1,6 +1,7 @@
 [[procedure]]
 name = "build-deploy-monitor-v1"
 description = "builds v1 core / frontend, then redeploys them"
+tags = ["monitor", "v1"]
 config.type = "Sequence"
 [[procedure.config.data]]
 enabled = true
@@ -14,19 +15,21 @@ execution.params.procedure = "deploy-monitor-v1"
 [[procedure]]
 name = "deploy-monitor-v1"
 description = "deploys v1 core / frontend"
+tags = ["monitor", "v1"]
 config.type = "Parallel"
 [[procedure.config.data]]
 enabled = true
 execution.type = "Deploy"
-execution.params.deployment = "monitor-core-v1"
+execution.params.deployment = "monitor-core-v1-dev"
 [[procedure.config.data]]
 enabled = true
 execution.type = "Deploy"
-execution.params.deployment = "monitor-frontend-v1"
+execution.params.deployment = "monitor-frontend-v1-dev"
 
 [[procedure]]
 name = "build-monitor-v1"
 description = "builds v1 core / frontend"
+tags = ["monitor", "v1"]
 config.type = "Parallel"
 [[procedure.config.data]]
 enabled = true

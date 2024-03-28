@@ -59,6 +59,24 @@ const on_message = (
     );
   }
 
+  if (update.target.type === "Repo") {
+    invalidate(
+      ["ListRepos"],
+      ["GetRepo"],
+      ["GetRepoActionState"],
+      ["GetReposSummary"]
+    );
+  }
+
+  if (update.target.type === "Procedure") {
+    invalidate(
+      ["ListProcedures"],
+      ["GetProcedure"],
+      ["GetProcedureActionState"],
+      ["GetProceduresSummary"]
+    );
+  }
+
   if (update.target.type === "Builder") {
     invalidate(
       ["ListBuilders"],

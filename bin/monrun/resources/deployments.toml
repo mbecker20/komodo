@@ -1,23 +1,23 @@
 [[deployment]]
-name = "monitor-core-v1"
+name = "monitor-core-v1-dev"
 description = "v1 core api"
 tags = ["monitor", "v1", "api"]
 config.server = "mogh-server"
+config.redeploy_on_build = true
+config.image.type = "Build"
+config.image.params.build = "monitor-core-v1"
+[[deployment.config.volumes]]
+local = "/home/ubuntu/.monitor-next/core.config.toml"
+container = "/config/config.toml"
 [[deployment.config.environment]]
-variable = "TEST_1"
-value = "VALUE"
-[[deployment.config.environment]]
-variable = "TEST_2"
-value = "VALUE"
+variable = "PORT"
+value = "9001"
 
 [[deployment]]
-name = "monitor-frontend-v1"
+name = "monitor-frontend-v1-dev"
 description = "v1 frontend"
 tags = ["monitor", "v1", "frontend"]
 config.server = "mogh-server"
-[[deployment.config.environment]]
-variable = "TEST_1"
-value = "VALUE"
-[[deployment.config.environment]]
-variable = "TEST_2"
-value = "VALUE"
+config.redeploy_on_build = true
+config.image.type = "Build"
+config.image.params.build = "monitor-frontend-v1"
