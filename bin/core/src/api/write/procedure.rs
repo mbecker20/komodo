@@ -289,7 +289,7 @@ impl Resolve<CopyProcedure, User> for State {
 impl Resolve<UpdateProcedure, User> for State {
   async fn resolve(
     &self,
-    UpdateProcedure { id, config }: UpdateProcedure,
+    UpdateProcedure { id, mut config }: UpdateProcedure,
     user: User,
   ) -> anyhow::Result<UpdateProcedureResponse> {
     let procedure = Procedure::get_resource_check_permissions(
@@ -298,6 +298,8 @@ impl Resolve<UpdateProcedure, User> for State {
       PermissionLevel::Write,
     )
     .await?;
+
+    validate_procedure_config(&mut config, &user).await?;
 
     update_one_by_id(
       &db_client().await.procedures,
