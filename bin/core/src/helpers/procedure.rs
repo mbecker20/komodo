@@ -48,17 +48,21 @@ pub async fn execute_procedure(
         ),
       )
       .await;
-      execute_sequence(filter_list_by_enabled(executions))
-        .await
-        .with_context(|| {
-          let time = Duration::from_millis(
-            (monitor_timestamp() - start_ts) as u64,
-          );
-          format!(
-            "failed sequence execution after {time:?}. {} ({})",
-            procedure.name, procedure.id
-          )
-        })?;
+      execute_sequence(
+        filter_list_by_enabled(executions),
+        &procedure.id,
+        &procedure.name,
+      )
+      .await
+      .with_context(|| {
+        let time = Duration::from_millis(
+          (monitor_timestamp() - start_ts) as u64,
+        );
+        format!(
+          "failed sequence execution after {time:?}. {} ({})",
+          procedure.name, procedure.id
+        )
+      })?;
       let time = Duration::from_millis(
         (monitor_timestamp() - start_ts) as u64,
       );
@@ -81,17 +85,21 @@ pub async fn execute_procedure(
         ),
       )
       .await;
-      execute_parallel(filter_list_by_enabled(executions))
-        .await
-        .with_context(|| {
-          let time = Duration::from_millis(
-            (monitor_timestamp() - start_ts) as u64,
-          );
-          format!(
-            "failed parallel execution after {time:?}. {} ({})",
-            procedure.name, procedure.id
-          )
-        })?;
+      execute_parallel(
+        filter_list_by_enabled(executions),
+        &procedure.id,
+        &procedure.name,
+      )
+      .await
+      .with_context(|| {
+        let time = Duration::from_millis(
+          (monitor_timestamp() - start_ts) as u64,
+        );
+        format!(
+          "failed parallel execution after {time:?}. {} ({})",
+          procedure.name, procedure.id
+        )
+      })?;
       let time = Duration::from_millis(
         (monitor_timestamp() - start_ts) as u64,
       );
@@ -110,59 +118,69 @@ pub async fn execute_procedure(
 
 async fn execute_execution(
   execution: Execution,
+
+  // used to prevent recursive procedure
+  parent_id: &str,
+  parent_name: &str,
 ) -> anyhow::Result<()> {
   let user = User::admin_service_user("procedure");
-  let update =
-    match execution {
-      Execution::None(_) => return Ok(()),
-      Execution::RunBuild(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at RunBuild")?,
-      Execution::Deploy(req) => {
-        State.resolve(req, user).await.context("failed at Deploy")?
+  let update = match execution {
+    Execution::None(_) => return Ok(()),
+    Execution::RunProcedure(req) => {
+      if req.procedure == parent_id || req.procedure == parent_name {
+        return Err(anyhow!("Self referential procedure detected"));
       }
-      Execution::StartContainer(req) => State
+      State
         .resolve(req, user)
         .await
-        .context("failed at StartContainer")?,
-      Execution::StopContainer(req) => State
+        .context("failed at RunProcedure")?
+    }
+    Execution::RunBuild(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at RunBuild")?,
+    Execution::Deploy(req) => {
+      State.resolve(req, user).await.context("failed at Deploy")?
+    }
+    Execution::StartContainer(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at StartContainer")?,
+    Execution::StopContainer(req) => {
+      State
         .resolve(req, user)
         .await
-        .context("failed at StopContainer")?,
-      Execution::StopAllContainers(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at StopAllContainers")?,
-      Execution::RemoveContainer(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at RemoveContainer")?,
-      Execution::CloneRepo(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at CloneRepo")?,
-      Execution::PullRepo(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at PullRepo")?,
-      Execution::PruneDockerNetworks(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at PruneDockerNetworks")?,
-      Execution::PruneDockerImages(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at PruneDockerImages")?,
-      Execution::PruneDockerContainers(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at PruneDockerContainers")?,
-      Execution::RunProcedure(req) => State
-        .resolve(req, user)
-        .await
-        .context("failed at RunProcedure")?,
-    };
+        .context("failed at StopContainer")?
+    }
+    Execution::StopAllContainers(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at StopAllContainers")?,
+    Execution::RemoveContainer(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at RemoveContainer")?,
+    Execution::CloneRepo(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at CloneRepo")?,
+    Execution::PullRepo(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at PullRepo")?,
+    Execution::PruneDockerNetworks(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at PruneDockerNetworks")?,
+    Execution::PruneDockerImages(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at PruneDockerImages")?,
+    Execution::PruneDockerContainers(req) => State
+      .resolve(req, user)
+      .await
+      .context("failed at PruneDockerContainers")?,
+  };
   if update.success {
     Ok(())
   } else {
@@ -175,20 +193,28 @@ async fn execute_execution(
 
 async fn execute_sequence(
   executions: Vec<Execution>,
+  parent_id: &str,
+  parent_name: &str,
 ) -> anyhow::Result<()> {
   for execution in executions {
     let fail_log = format!("failed on {execution:?}");
-    execute_execution(execution).await.context(fail_log)?;
+    execute_execution(execution, parent_id, parent_name)
+      .await
+      .context(fail_log)?;
   }
   Ok(())
 }
 
 async fn execute_parallel(
   executions: Vec<Execution>,
+  parent_id: &str,
+  parent_name: &str,
 ) -> anyhow::Result<()> {
   let futures = executions.into_iter().map(|execution| async {
     let fail_log = format!("failed on {execution:?}");
-    execute_execution(execution).await.context(fail_log)
+    execute_execution(execution, parent_id, parent_name)
+      .await
+      .context(fail_log)
   });
   join_all(futures)
     .await

@@ -47,7 +47,7 @@ impl Resolve<CreateProcedure, User> for State {
 
     let start_ts = monitor_timestamp();
 
-    validate_procedure_config(&mut config, &user).await?;
+    validate_procedure_config(&mut config, &user, None).await?;
 
     let procedure = Procedure {
       id: Default::default(),
@@ -98,6 +98,7 @@ impl Resolve<CreateProcedure, User> for State {
 async fn validate_procedure_config(
   config: &mut ProcedureConfig,
   user: &User,
+  id: Option<&str>,
 ) -> anyhow::Result<()> {
   let execs = match config {
     ProcedureConfig::Sequence(execs) => execs,
@@ -113,6 +114,14 @@ async fn validate_procedure_config(
           PermissionLevel::Execute,
         )
         .await?;
+        match id {
+          Some(id) if procedure.id == id => {
+            return Err(anyhow!(
+              "Cannot have self-referential procedure"
+            ))
+          }
+          _ => {}
+        }
         params.procedure = procedure.id;
       }
       Execution::RunBuild(params) => {
@@ -299,7 +308,12 @@ impl Resolve<UpdateProcedure, User> for State {
     )
     .await?;
 
-    validate_procedure_config(&mut config, &user).await?;
+    validate_procedure_config(
+      &mut config,
+      &user,
+      Some(&procedure.id),
+    )
+    .await?;
 
     update_one_by_id(
       &db_client().await.procedures,
