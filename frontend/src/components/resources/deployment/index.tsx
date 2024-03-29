@@ -2,7 +2,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
-import { cn, fmt_date_with_minutes } from "@lib/utils";
+import { cn } from "@lib/utils";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 
@@ -109,11 +109,6 @@ export const DeploymentTable = ({
             );
           },
         },
-        // {
-        //   header: "Description",
-        //   accessorKey: "description",
-        // },
-
         {
           header: "Server",
           cell: ({ row }) => {
@@ -162,11 +157,6 @@ export const DeploymentTable = ({
               </div>
             );
           },
-        },
-        {
-          header: "Created",
-          accessorFn: ({ created_at }) =>
-            fmt_date_with_minutes(new Date(created_at)),
         },
       ]}
     />

@@ -9,6 +9,7 @@ import {
 import { Button } from "../ui/button";
 import {
   Box,
+  Boxes,
   Check,
   Copy,
   FolderTree,
@@ -45,6 +46,7 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { ResourceComponents } from "./resources";
@@ -357,12 +359,24 @@ export const ResourceTypeDropdown = () => {
               Dashboard
             </DropdownMenuItem>
           </Link>
+
+          <DropdownMenuSeparator />
+
+          <Link to="/resources">
+            <DropdownMenuItem className="flex items-center gap-2">
+              <Boxes className="w-4 h-4" />
+              Resources
+            </DropdownMenuItem>
+          </Link>
           <Link to="/tree">
             <DropdownMenuItem className="flex items-center gap-2">
               <FolderTree className="w-4 h-4" />
               Tree
             </DropdownMenuItem>
           </Link>
+
+          <DropdownMenuSeparator />
+
           {RESOURCE_TARGETS.map((rt) => {
             const RTIcon = ResourceComponents[rt].Icon;
             return (
@@ -374,12 +388,18 @@ export const ResourceTypeDropdown = () => {
               </Link>
             );
           })}
+
+          <DropdownMenuSeparator />
+
           <Link to="/tags">
             <DropdownMenuItem className="flex items-center gap-2">
               <Tag className="w-4 h-4" />
               Tags
             </DropdownMenuItem>
           </Link>
+
+          <DropdownMenuSeparator />
+          
           <Link to="/keys">
             <DropdownMenuItem className="flex items-center gap-2">
               <Box className="w-4 h-4" />

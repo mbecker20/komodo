@@ -17,7 +17,6 @@ import { Config } from "@components/config";
 import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
 import { Link } from "react-router-dom";
-import { fmt_date_with_minutes } from "@lib/utils";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 
 const useAlerter = (id?: string) =>
@@ -131,11 +130,6 @@ const AlerterTable = () => {
           },
         },
         { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
-        {
-          header: "Created",
-          accessorFn: ({ created_at }) =>
-            fmt_date_with_minutes(new Date(created_at)),
-        },
       ]}
     />
   );

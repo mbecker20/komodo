@@ -10,6 +10,7 @@ import { Tree } from "@pages/tree";
 import { Tags } from "@pages/tags";
 import { ResourceUpdates } from "@pages/resource_update";
 import { UsersPage } from "@pages/users";
+import { AllResources } from "@pages/all_resources";
 
 const router = createBrowserRouter([
   {
@@ -17,16 +18,17 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { path: "", element: <Dashboard /> },
-      { path: "tree", element: <Tree /> },
+      { path: "users", element: <UsersPage /> },
       { path: "keys", element: <Keys /> },
       { path: "tags", element: <Tags /> },
-      { path: "users", element: <UsersPage /> },
+      { path: "tree", element: <Tree /> },
+      { path: "resources", element: <AllResources /> },
       {
         path: ":type",
         children: [
           { path: "", element: <Resources /> },
           { path: ":id", element: <Resource /> },
-          { path: ":id/updates", element: <ResourceUpdates /> }
+          { path: ":id/updates", element: <ResourceUpdates /> },
         ],
       },
     ],

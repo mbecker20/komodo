@@ -11,23 +11,25 @@ export const keys = <T extends object>(o: T): (keyof T)[] =>
   Object.keys(o) as (keyof T)[];
 
 export const RESOURCE_TARGETS: UsableResource[] = [
-  "Alerter",
-  "Build",
-  "Builder",
-  "Deployment",
-  "Repo",
-  "Server",
   "Procedure",
+  "Deployment",
+  "Server",
+  "Build",
+  "Repo",
+  "Builder",
+  "Alerter",
 ];
 
 export const fmt_date = (d: Date) => {
-  return `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${d.getMinutes()}`;
+  return `${d.getDate()}/${
+    d.getMonth() + 1
+  } @ ${d.getHours()}:${d.getMinutes()}`;
 };
 
 export const fmt_date_with_minutes = (d: Date) => {
   // return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
-  return d.toLocaleString()
-}
+  return d.toLocaleString();
+};
 
 export const fmt_version = (version: Types.Version | undefined) => {
   if (!version) return "...";
@@ -79,4 +81,12 @@ export function text_to_env(env: string): Types.EnvironmentVar[] {
       return [first, rest.join("=")];
     })
     .map(([variable, value]) => ({ variable, value }));
+}
+
+/// list_all_items => List All Items
+export function snake_case_to_upper_space_case(snake: string) {
+  return snake
+    .split("_")
+    .map((item) => item[0].toUpperCase() + item.slice(1))
+    .join(" ");
 }

@@ -19,7 +19,7 @@ import {
   SearchX,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { cn } from "@lib/utils";
+import { cn, snake_case_to_upper_space_case } from "@lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +52,7 @@ export const ConfigItem = ({
       className
     )}
   >
-    <div className="capitalize"> {label} </div>
+    <div className="capitalize"> {snake_case_to_upper_space_case(label)} </div>
     {children}
   </div>
 );
@@ -295,7 +295,7 @@ export const InputList = <T extends { [key: string]: unknown }>({
         // intent="success"
         onClick={() => set({ [field]: [...values, ""] } as Partial<T>)}
       >
-        Add Docker Account
+        Add {snake_case_to_upper_space_case(field as string).slice(0, -1)}
       </Button>
     </div>
   </ConfigItem>

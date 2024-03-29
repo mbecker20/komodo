@@ -1,5 +1,6 @@
 import { Config } from "@components/config";
 import { AccountSelector, ResourceSelector } from "@components/config/util";
+import { TagsWithBadge } from "@components/tags";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Icon } from "@radix-ui/react-select";
@@ -98,7 +99,16 @@ export const RepoComponents: RequiredResourceComponents = {
               );
             },
           },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
+          {
+            header: "Tags",
+            cell: ({ row }) => {
+              return (
+                <div className="flex gap-1">
+                  <TagsWithBadge tag_ids={row.original.tags} />
+                </div>
+              );
+            },
+          },
         ]}
       />
     );

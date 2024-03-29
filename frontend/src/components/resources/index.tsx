@@ -10,11 +10,11 @@ import { ProcedureComponents } from "./procedure/index";
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
 } = {
-  Alerter: AlerterComponents,
-  Build: BuildComponents,
-  Builder: BuilderComponents,
   Deployment: DeploymentComponents,
-  Repo: RepoComponents,
   Server: ServerComponents,
+  Build: BuildComponents,
+  Repo: RepoComponents,
   Procedure: ProcedureComponents,
+  Builder: BuilderComponents,
+  Alerter: AlerterComponents,
 };

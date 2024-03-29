@@ -2,7 +2,6 @@ import { NewResource } from "@components/layouts";
 import { TagsWithBadge } from "@components/tags";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
-import { fmt_date_with_minutes } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
@@ -73,6 +72,10 @@ export const ProcedureComponents: RequiredResourceComponents = {
             },
           },
           {
+            header: "Type",
+            accessorKey: "info.procedure_type",
+          },
+          {
             header: "Tags",
             cell: ({ row }) => {
               return (
@@ -81,11 +84,6 @@ export const ProcedureComponents: RequiredResourceComponents = {
                 </div>
               );
             },
-          },
-          {
-            header: "Created",
-            accessorFn: ({ created_at }) =>
-              fmt_date_with_minutes(new Date(created_at)),
           },
         ]}
       />

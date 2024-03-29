@@ -20,7 +20,9 @@ import { Fragment, ReactNode, SetStateAction, useState } from "react";
 const keys = <T extends Record<string, unknown>>(obj: T) =>
   Object.keys(obj) as Array<keyof T>;
 
-export const ConfigLayout = <T extends Types.Resource<unknown, unknown>["config"]>({
+export const ConfigLayout = <
+  T extends Types.Resource<unknown, unknown>["config"]
+>({
   config,
   children,
   onConfirm,
@@ -46,10 +48,12 @@ export const ConfigLayout = <T extends Types.Resource<unknown, unknown>["config"
         >
           <History className="w-4 h-4" />
         </Button>
-        {Object.keys(config).length ? <ConfirmUpdate
-          content={JSON.stringify(config, null, 2)}
-          onConfirm={onConfirm}
-        /> : null}
+        {Object.keys(config).length ? (
+          <ConfirmUpdate
+            content={JSON.stringify(config, null, 2)}
+            onConfirm={onConfirm}
+          />
+        ) : null}
       </div>
     }
   >

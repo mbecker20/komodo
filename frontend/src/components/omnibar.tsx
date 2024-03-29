@@ -15,6 +15,9 @@ import { useNavigate } from "react-router-dom";
 import { ResourceComponents } from "./resources";
 import { UsableResource } from "@types";
 import { RESOURCE_TARGETS } from "@lib/utils";
+import { DeploymentComponents } from "./resources/deployment";
+import { BuildComponents } from "./resources/build";
+import { ServerComponents } from "./resources/server";
 
 const ResourceGroup = ({
   type,
@@ -25,6 +28,8 @@ const ResourceGroup = ({
 }) => {
   const data = useRead(`List${type}s`, {}).data;
   const Components = ResourceComponents[type];
+
+  if (!data || !data.length) return
 
   return (
     <CommandGroup heading={`${type}s`}>
@@ -54,9 +59,10 @@ export const Omnibar = () => {
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      console.log(e);
+      // This will ignore Shift + S if it is sent from input / textarea
       const target = e.target as any;
       if (target.matches("input") || target.matches("textarea")) return;
+
       if (e.shiftKey && e.key === "S") {
         e.preventDefault();
         set(true);
@@ -90,8 +96,31 @@ export const Omnibar = () => {
               <Home className="w-4 h-4" />
               Home
             </CommandItem>
+            <CommandItem
+              className="flex items-center gap-2"
+              onSelect={() => nav("/deployments")}
+            >
+              <DeploymentComponents.Icon />
+              Deployments
+            </CommandItem>
+            <CommandItem
+              className="flex items-center gap-2"
+              onSelect={() => nav("/builds")}
+            >
+              <BuildComponents.Icon />
+              Builds
+            </CommandItem>
+            <CommandItem
+              className="flex items-center gap-2"
+              onSelect={() => nav("/servers")}
+            >
+              <ServerComponents.Icon />
+              Servers
+            </CommandItem>
           </CommandGroup>
+
           <CommandSeparator />
+
           {RESOURCE_TARGETS.map((rt) => (
             <Fragment key={rt}>
               <ResourceGroup type={rt} key={rt} onSelect={nav} />

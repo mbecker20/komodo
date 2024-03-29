@@ -1,5 +1,5 @@
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { cn, fmt_date_with_minutes } from "@lib/utils";
+import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import {
@@ -205,11 +205,6 @@ const ServerTable = () => {
             );
           },
         },
-        {
-          header: "Created",
-          accessorFn: ({ created_at }) =>
-            fmt_date_with_minutes(new Date(created_at)),
-        },
       ]}
     />
   );
@@ -224,7 +219,9 @@ export const ServerComponents: RequiredResourceComponents = {
   Page: {
     Stats: ({ id }) => <ServerStats server_id={id} />,
     Deployments: ({ id }) => {
-      const deployments = useRead("ListDeployments", {}).data?.filter(deployment => deployment.info.server_id === id);
+      const deployments = useRead("ListDeployments", {}).data?.filter(
+        (deployment) => deployment.info.server_id === id
+      );
       return (
         <Section title="Deployments" icon={<Rocket className="w-4 h-4" />}>
           <DeploymentTable deployments={deployments} />

@@ -1,30 +1,18 @@
-import { Config } from "@components/config";
-import {
-  ResourceSelector,
-  AccountSelector,
-  ConfigItem,
-} from "@components/config/util";
 import { NewResource } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
-import {
-  env_to_text,
-  fmt_date_with_minutes,
-  fmt_version,
-  text_to_env,
-} from "@lib/utils";
-import { Types } from "@monitor/client";
+import { fmt_date_with_minutes, fmt_version } from "@lib/utils";
 import { RequiredResourceComponents } from "@types";
 import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import { Ban, Hammer, History, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ResourceComponents } from "..";
 import { BuildChart } from "@components/dashboard/builds-chart";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
-import { Textarea } from "@ui/textarea";
 import { useToast } from "@ui/use-toast";
+import { BuildConfig } from "./config";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -47,100 +35,6 @@ const NewBuild = () => {
         />
       </div>
     </NewResource>
-  );
-};
-
-export const BuildArgs = ({
-  vars,
-  set,
-}: {
-  vars: Types.EnvironmentVar[];
-  set: (input: Partial<Types.BuildConfig>) => void;
-}) => {
-  const [args, setArgs] = useState(env_to_text(vars));
-  useEffect(() => {
-    !!args && set({ build_args: text_to_env(args) });
-  }, [args, set]);
-
-  return (
-    <ConfigItem label="Build Args" className="flex-col gap-4 items-start">
-      <Textarea
-        className="min-h-[300px]"
-        placeholder="VARIABLE=value"
-        value={args}
-        onChange={(e) => setArgs(e.target.value)}
-      />
-    </ConfigItem>
-  );
-};
-
-export const BuildConfig = ({ id }: { id: string }) => {
-  const config = useRead("GetBuild", { build: id }).data?.config;
-  // const orgs = useRead("GetAccounts")
-  const [update, set] = useState<Partial<Types.BuildConfig>>({});
-  const { mutate } = useWrite("UpdateBuild");
-
-  if (!config) return null;
-
-  return (
-    <Config
-      config={config}
-      update={update}
-      set={set}
-      onSave={() => mutate({ id, config: update })}
-      components={{
-        general: {
-          general: {
-            builder_id: (id, set) => (
-              <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
-                <div>Builder</div>
-                <ResourceSelector
-                  type="Builder"
-                  selected={id}
-                  onSelect={(builder_id) => set({ builder_id })}
-                />
-              </div>
-            ),
-          },
-          git: {
-            repo: true,
-            branch: true,
-            github_account: (account, set) => (
-              <AccountSelector
-                id={update.builder_id ?? config.builder_id ?? undefined}
-                type="Builder"
-                account_type="github"
-                selected={account}
-                onSelect={(github_account) => set({ github_account })}
-              />
-            ),
-          },
-          docker: {
-            build_path: true,
-            dockerfile_path: true,
-            docker_account: (account, set) => (
-              <AccountSelector
-                id={update.builder_id ?? config.builder_id ?? undefined}
-                type="Builder"
-                account_type="docker"
-                selected={account}
-                onSelect={(docker_account) => set({ docker_account })}
-              />
-            ),
-            use_buildx: true,
-            // docker_organization,
-          },
-        },
-        "Build Args": {
-          "Build Args": {
-            build_args: (vars, set) => (
-              <BuildArgs vars={vars ?? []} set={set} />
-            ),
-            skip_secret_interp: true,
-          },
-        },
-      }}
-    />
   );
 };
 
@@ -182,17 +76,6 @@ const BuildTable = () => {
           header: "Version",
           accessorFn: ({ info }) => fmt_version(info.version),
         },
-        // {
-        //   header: "Deployments",
-        //   cell: ({ row }) => {
-        //     const deps = useRead("ListDeployments", {
-        //       query: { specific: { build_ids: [row.original.id] } },
-        //     })?.data?.map((d) => (
-        //       <Link to={`/deployments/${d.id}`}>{d.name}</Link>
-        //     ));
-        //     return <div className="flex items-center gap-2">{deps}</div>;
-        //   },
-        // },
         {
           header: "Last Built",
           accessorFn: ({ info: { last_built_at } }) => {
@@ -212,11 +95,6 @@ const BuildTable = () => {
               </div>
             );
           },
-        },
-        {
-          header: "Created",
-          accessorFn: ({ created_at }) =>
-            fmt_date_with_minutes(new Date(created_at)),
         },
       ]}
     />
@@ -244,7 +122,8 @@ export const BuildComponents: RequiredResourceComponents = {
   },
   Actions: ({ id }) => {
     const { toast } = useToast();
-    const building = useRead("GetBuildActionState", { build: id }).data?.building;
+    const building = useRead("GetBuildActionState", { build: id }).data
+      ?.building;
     const { mutate: run_mutate, isPending: runPending } = useExecute(
       "RunBuild",
       {

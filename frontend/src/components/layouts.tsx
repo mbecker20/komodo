@@ -94,7 +94,7 @@ export const Page = ({
 );
 
 interface SectionProps {
-  title: string;
+  title: ReactNode;
   children: ReactNode;
   icon?: ReactNode;
   actions?: ReactNode;
@@ -129,7 +129,7 @@ export const NewResource = ({
   return (
     <Dialog open={open} onOpenChange={set}>
       <DialogTrigger asChild>
-        <Button className="items-center gap-2">
+        <Button variant="secondary" className="items-center gap-2">
           New {type} <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>
