@@ -110,6 +110,12 @@ pub struct ServerConfig {
   pub disk_critical: f64,
 }
 
+impl ServerConfig {
+  pub fn builder() -> ServerConfigBuilder {
+    ServerConfigBuilder::default()
+  }
+}
+
 fn default_enabled() -> bool {
   true
 }

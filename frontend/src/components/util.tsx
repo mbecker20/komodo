@@ -354,7 +354,7 @@ export const ResourceTypeDropdown = () => {
       <DropdownMenuContent className="w-36" side="bottom">
         <DropdownMenuGroup>
           <Link to="/">
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <Box className="w-4 h-4" />
               Dashboard
             </DropdownMenuItem>
@@ -363,13 +363,13 @@ export const ResourceTypeDropdown = () => {
           <DropdownMenuSeparator />
 
           <Link to="/resources">
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <Boxes className="w-4 h-4" />
               Resources
             </DropdownMenuItem>
           </Link>
           <Link to="/tree">
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <FolderTree className="w-4 h-4" />
               Tree
             </DropdownMenuItem>
@@ -381,7 +381,7 @@ export const ResourceTypeDropdown = () => {
             const RTIcon = ResourceComponents[rt].Icon;
             return (
               <Link key={rt} to={`/${rt.toLowerCase()}s`}>
-                <DropdownMenuItem className="flex items-center gap-2">
+                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
                   <RTIcon />
                   {rt}s
                 </DropdownMenuItem>
@@ -392,7 +392,7 @@ export const ResourceTypeDropdown = () => {
           <DropdownMenuSeparator />
 
           <Link to="/tags">
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <Tag className="w-4 h-4" />
               Tags
             </DropdownMenuItem>
@@ -401,13 +401,13 @@ export const ResourceTypeDropdown = () => {
           <DropdownMenuSeparator />
           
           <Link to="/keys">
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <Box className="w-4 h-4" />
               Api Keys
             </DropdownMenuItem>
           </Link>
           <Link to="/users">
-            <DropdownMenuItem className="flex items-center gap-2">
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <UserCircle2 className="w-4 h-4" />
               Users
             </DropdownMenuItem>

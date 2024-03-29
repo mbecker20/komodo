@@ -29,6 +29,7 @@ use periphery_client::{
   PeripheryClient,
 };
 use resolver_api::Resolve;
+use serror::{serialize_error, serialize_error_pretty};
 use tokio_util::sync::CancellationToken;
 
 use crate::{
@@ -115,10 +116,12 @@ impl Resolve<RunBuild, User> for State {
 
       let builder = get_build_builder(&build, &mut update).await;
 
-      if let Err(e) = &builder {
-        update
-          .logs
-          .push(Log::error("get builder", format!("{e:#?}")));
+      if builder.is_err() {
+        update.logs.push(Log::error(
+          "get builder",
+          // The unwrap is safe, it is inside a block which checks for .is_err()
+          serialize_error_pretty(builder.err().unwrap()),
+        ));
         update.finalize();
         update_update(update.clone()).await?;
         return Ok(update);
@@ -146,7 +149,7 @@ impl Resolve<RunBuild, User> for State {
       match res {
         Ok(clone_logs) => update.logs.extend(clone_logs),
         Err(e) => {
-          update.push_error_log("clone repo", format!("{e:#?}"))
+          update.push_error_log("clone repo", serialize_error(e));
         }
       }
 
@@ -170,7 +173,9 @@ impl Resolve<RunBuild, User> for State {
 
         match res {
           Ok(logs) => update.logs.extend(logs),
-          Err(e) => update.push_error_log("build", format!("{e:#?}")),
+          Err(e) => {
+            update.push_error_log("build", serialize_error(e))
+          }
         };
       }
 
@@ -384,7 +389,9 @@ async fn get_aws_builder(
       .await;
   }
   let _ = terminate_ec2_instance(config.region, &instance_id).await;
-  Err(anyhow!("{:#?}", res.err().unwrap()))
+
+  // Unwrap is safe, only way to get here is after check Ok / early return, so it must be err
+  Err(res.err().unwrap())
 }
 
 async fn cleanup_builder_instance(
@@ -410,7 +417,9 @@ async fn cleanup_builder_instance(
           "terminate instance",
           format!("terminate instance id {}", instance_id),
         ),
-        Err(e) => Log::error("terminate instance", format!("{e:#?}")),
+        Err(e) => {
+          Log::error("terminate instance", serialize_error_pretty(e))
+        }
       };
       update.logs.push(log);
     }

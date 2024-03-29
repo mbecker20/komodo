@@ -21,6 +21,7 @@ use mungos::{
 };
 use periphery_client::api;
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
   db::db_client,
@@ -251,7 +252,7 @@ impl Resolve<DeleteRepo, User> for State {
           Ok(log) => update.logs.push(log),
           Err(e) => update.logs.push(Log::error(
             "delete repo on periphery",
-            format!("{e:#?}"),
+            serialize_error_pretty(e),
           )),
         }
       }

@@ -112,6 +112,12 @@ pub struct DeploymentConfig {
   pub docker_account: String, // the username of the dockerhub account. empty if no account.
 }
 
+impl DeploymentConfig {
+  pub fn builder() -> DeploymentConfigBuilder {
+    DeploymentConfigBuilder::default()
+  }
+}
+
 fn default_send_alerts() -> bool {
   true
 }

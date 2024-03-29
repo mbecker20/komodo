@@ -12,10 +12,10 @@ pub fn spawn_prune_loop() {
       let (stats_res, alerts_res) =
         tokio::join!(prune_stats(), prune_alerts());
       if let Err(e) = stats_res {
-        error!("error in pruning stats | {e:#?}");
+        error!("error in pruning stats | {e:#}");
       }
       if let Err(e) = alerts_res {
-        error!("error in pruning alerts | {e:#?}");
+        error!("error in pruning alerts | {e:#}");
       }
     }
   });

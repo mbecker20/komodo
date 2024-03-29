@@ -17,6 +17,7 @@ use monitor_client::{
 };
 use mungos::by_id::find_one_by_id;
 use serde_json::json;
+use serror::serialize_error;
 use tokio::select;
 use tokio_util::sync::CancellationToken;
 
@@ -57,9 +58,9 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
         let user = match user {
           Err(e) => {
             let _ = ws_sender
-              .send(Message::Text(json!({ "type": "INVALID_USER", "msg": format!("{e:#?}") }).to_string()))
+              .send(Message::Text(json!({ "type": "INVALID_USER", "msg": serialize_error(e) }).to_string()))
               .await;
-            let _ = ws_sender.close().await;
+            let _ = ws_sender.close().await; 
             return;
           },
           Ok(None) => {
@@ -124,7 +125,7 @@ pub async fn ws_login(
             Err(e) => {
               let _ = socket
                 .send(Message::Text(format!(
-                  "failed to authenticate user using jwt | {e:#?}"
+                  "failed to authenticate user using jwt | {e:#}"
                 )))
                 .await;
               let _ = socket.close().await;
@@ -143,7 +144,7 @@ pub async fn ws_login(
             Err(e) => {
               let _ = socket
                   .send(Message::Text(format!(
-                    "failed to authenticate user using api keys | {e:#?}"
+                    "failed to authenticate user using api keys | {e:#}"
                   )))
                   .await;
               let _ = socket.close().await;
@@ -154,7 +155,7 @@ pub async fn ws_login(
         Err(e) => {
           let _ = socket
             .send(Message::Text(format!(
-              "failed to parse login message: {e:#?}"
+              "failed to parse login message: {e:#}"
             )))
             .await;
           let _ = socket.close().await;
@@ -165,7 +166,7 @@ pub async fn ws_login(
     Some(Ok(msg)) => {
       let _ = socket
         .send(Message::Text(format!(
-          "invalid login message: {msg:#?}"
+          "invalid login message: {msg:?}"
         )))
         .await;
       let _ = socket.close().await;
@@ -174,7 +175,7 @@ pub async fn ws_login(
     Some(Err(e)) => {
       let _ = socket
         .send(Message::Text(format!(
-          "failed to get login message: {e:#?}"
+          "failed to get login message: {e:#}"
         )))
         .await;
       let _ = socket.close().await;

@@ -60,6 +60,12 @@ pub struct RepoConfig {
   pub on_pull: SystemCommand,
 }
 
+impl RepoConfig {
+  pub fn builder() -> RepoConfigBuilder {
+    RepoConfigBuilder::default()
+  }
+}
+
 fn default_branch() -> String {
   String::from("main")
 }

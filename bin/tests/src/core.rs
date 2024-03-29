@@ -1,13 +1,19 @@
-use monitor_client::entities::deployment::DeploymentQuerySpecifics;
-use monitor_client::entities::resource::ResourceQuery;
-use monitor_client::MonitorClient;
 use monitor_client::{
-  api::{execute, read, write},
-  entities::{
-    build::PartialBuildConfig, repo::PartialRepoConfig,
-    server::PartialServerConfig,
+  api::write::{
+    CreateBuild, CreateBuilder, CreateDeployment, CreateServer,
+    UpdateTagsOnResource,
   },
+  entities::{
+    build::BuildConfig,
+    builder::{PartialBuilderConfig, ServerBuilderConfig},
+    deployment::DeploymentConfig,
+    server::ServerConfig,
+  },
+  MonitorClient,
 };
+use rand::Rng;
+
+use crate::random_string;
 
 #[allow(unused)]
 pub async fn tests() -> anyhow::Result<()> {
@@ -15,149 +21,100 @@ pub async fn tests() -> anyhow::Result<()> {
 
   let monitor = MonitorClient::new_from_env().await?;
 
-  // create_server(&monitor).await?;
+  let tags = (0..6).map(|_| random_string(5)).collect::<Vec<_>>();
 
-  // let mut servers = monitor.read(read::ListServers { query: None }).await?;
-  // let server_id = servers.pop().unwrap().id;
-  // let server = monitor.read(read::GetServer { id: server_id }).await?;
-  // println!("{servers:#?}");
+  let mut rng = rand::thread_rng();
+  let mut get_tags = || vec![tags[rng.gen_range(0..6)].to_string()];
 
-  // let mut builds = monitor.read(read::ListBuilds { query: None }).await?;
-  // let build_id = builds.pop().unwrap().id;
-  // run_build(&monitor, build_id).await?;
+  let server_names = (0..20)
+    .map(|i| format!("server-{}-{}", random_string(8), i))
+    .collect::<Vec<_>>();
 
-  // let updates = monitor.read(read::ListUpdates { query: None, page: 0 }).await?;
-  // println!("{updates:#?}");
+  for name in &server_names {
+    let resource = monitor
+      .write(CreateServer {
+        name: name.to_string(),
+        config: ServerConfig::builder()
+          .address(String::new())
+          .build()?
+          .into(),
+      })
+      .await?;
+    info!("created server {}", resource.name);
+    monitor
+      .write(UpdateTagsOnResource {
+        target: (&resource).into(),
+        tags: get_tags(),
+      })
+      .await?;
+    info!("updated tags on server {}", resource.name);
+  }
 
-  // let dep_summary =
-  //   monitor.read(read::GetDeploymentsSummary {}).await?;
-  // println!("{dep_summary:#?}");
+  for (i, server_name) in server_names.iter().enumerate() {
+    let resource = monitor
+      .write(CreateDeployment {
+        name: format!("dep-{}-{}", random_string(8), i),
+        config: DeploymentConfig::builder()
+          .server_id(server_name.to_string())
+          .build()?
+          .into(),
+      })
+      .await?;
+    info!("created deployment {}", resource.name);
+    monitor
+      .write(UpdateTagsOnResource {
+        target: (&resource).into(),
+        tags: get_tags(),
+      })
+      .await?;
+    info!("updated tags on deployment {}", resource.name);
+  }
 
-  // let deps = monitor.read(read::ListDeployments::default()).await?;
-  // println!("{deps:#?}");
+  let builder_names = (0..20)
+    .map(|i| format!("builder-{}-{}", random_string(8), i))
+    .collect::<Vec<_>>();
 
-  let deps = monitor
-    .read(read::ListDeployments {
-      query: ResourceQuery::builder()
-        .names([String::from("haboda"), String::from("actual_shit")])
-        .specific(
-          DeploymentQuerySpecifics::builder()
-            // .server_ids([String::from("")])
-            .build(),
-        )
-        .build(),
-      // query: Default::default(),
-    })
-    .await?;
-  println!("{deps:#?}");
+  for (i, server_name) in server_names.iter().enumerate() {
+    let resource = monitor
+      .write(CreateBuilder {
+        name: builder_names[i].clone(),
+        config: PartialBuilderConfig::Server(
+          ServerBuilderConfig {
+            server_id: server_name.to_string(),
+          }
+          .into(),
+        ),
+      })
+      .await?;
+    info!("created builder {}", resource.name);
+    monitor
+      .write(UpdateTagsOnResource {
+        target: (&resource).into(),
+        tags: get_tags(),
+      })
+      .await?;
+    info!("updated tags on builder {}", resource.name);
+  }
 
-  Ok(())
-}
-
-#[allow(unused)]
-async fn run_build(
-  monitor: &MonitorClient,
-  build: String,
-) -> anyhow::Result<()> {
-  println!("running build...");
-
-  let update = monitor.execute(execute::RunBuild { build }).await?;
-
-  println!("{update:#?}");
-
-  Ok(())
-}
-
-#[allow(unused)]
-async fn create_build(monitor: &MonitorClient) -> anyhow::Result<()> {
-  let mut res = monitor.read(read::ListServers::default()).await?;
-  let server_id = res.pop().unwrap().id;
-
-  let build = monitor
-    .write(write::CreateBuild {
-      name: String::from("monitor-core"),
-      config: PartialBuildConfig {
-        repo: "mbecker20/monitor".to_string().into(),
-        branch: "next".to_string().into(),
-        builder_id: Default::default(),
-        dockerfile_path: "bin/core/Dockerfile".to_string().into(),
-        ..Default::default()
-      },
-    })
-    .await?;
-
-  println!("{build:#?}");
-
-  Ok(())
-}
-
-#[allow(unused)]
-async fn create_repo(monitor: &MonitorClient) -> anyhow::Result<()> {
-  let mut res = monitor.read(read::ListServers::default()).await?;
-  let server_id = res.pop().unwrap().id;
-
-  let repo = monitor
-    .write(write::CreateRepo {
-      name: String::from("monitor"),
-      config: PartialRepoConfig {
-        server_id: server_id.into(),
-        repo: "mbecker20/monitor".to_string().into(),
-        branch: "next".to_string().into(),
-        ..Default::default()
-      },
-    })
-    .await?;
-
-  println!("{repo:#?}");
-
-  Ok(())
-}
-
-#[allow(unused)]
-async fn create_server(
-  monitor: &MonitorClient,
-) -> anyhow::Result<()> {
-  let res = monitor
-    .write(write::CreateServer {
-      name: String::from("mogh-server"),
-      config: PartialServerConfig {
-        address: "http://localhost:8001".to_string().into(),
-        ..Default::default()
-      },
-    })
-    .await?;
-
-  println!("{res:#?}");
+  for (i, builder_name) in builder_names.iter().enumerate() {
+    let resource = monitor
+      .write(CreateBuild {
+        name: format!("build-{}-{}", random_string(8), i),
+        config: BuildConfig::builder()
+          .builder_id(builder_name.to_string())
+          .build()?
+          .into(),
+      })
+      .await?;
+    info!("created build {}", resource.name);
+    monitor
+      .write(UpdateTagsOnResource {
+        target: (&resource).into(),
+        tags: get_tags(),
+      })
+      .await?;
+    info!("updated tags on build {}", resource.name);
+  }
 
   Ok(())
 }
-
-// #[derive(Deserialize)]
-// struct CreateSecretEnv {
-//   monitor_address: String,
-//   monitor_username: String,
-//   monitor_password: String,
-// }
-
-// #[allow(unused)]
-// async fn create_secret() -> anyhow::Result<()> {
-//   let env: CreateSecretEnv = envy::from_env()?;
-
-//   let monitor = MonitorClient::new_with_new_account(
-//     env.monitor_address,
-//     env.monitor_username,
-//     env.monitor_password,
-//   )
-//   .await?;
-
-//   let secret = monitor
-//     .write(write::CreateLoginSecret {
-//       name: "tests".to_string(),
-//       expires: None,
-//     })
-//     .await?;
-
-//   println!("{secret:#?}");
-
-//   Ok(())
-// }

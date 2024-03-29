@@ -19,6 +19,7 @@ use mungos::{
 };
 use periphery_client::api;
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
   db::db_client,
@@ -276,9 +277,8 @@ impl Resolve<CreateNetwork, User> for State {
       .await
     {
       Ok(log) => update.logs.push(log),
-      Err(e) => {
-        update.push_error_log("create network", format!("{e:#?}"))
-      }
+      Err(e) => update
+        .push_error_log("create network", serialize_error_pretty(e)),
     };
 
     update.finalize();
@@ -314,9 +314,8 @@ impl Resolve<DeleteNetwork, User> for State {
       .await
     {
       Ok(log) => update.logs.push(log),
-      Err(e) => {
-        update.push_error_log("delete network", format!("{e:#?}"))
-      }
+      Err(e) => update
+        .push_error_log("delete network", serialize_error_pretty(e)),
     };
 
     update.finalize();

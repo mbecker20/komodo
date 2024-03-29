@@ -113,7 +113,9 @@ impl Resolve<Deploy, User> for State {
         .await
       {
         Ok(log) => log,
-        Err(e) => Log::error("deploy container", format!("{e:#?}")),
+        Err(e) => {
+          Log::error("deploy container", serialize_error_pretty(e))
+        }
       };
 
       update.logs.push(log);
@@ -200,7 +202,9 @@ impl Resolve<StartContainer, User> for State {
         .await
       {
         Ok(log) => log,
-        Err(e) => Log::error("start container", format!("{e:#?}")),
+        Err(e) => {
+          Log::error("start container", serialize_error_pretty(e))
+        }
       };
 
       update.logs.push(log);
@@ -288,7 +292,9 @@ impl Resolve<StopContainer, User> for State {
         .await
       {
         Ok(log) => log,
-        Err(e) => Log::error("stop container", format!("{e:#?}")),
+        Err(e) => {
+          Log::error("stop container", serialize_error_pretty(e))
+        }
       };
 
       update.logs.push(log);
@@ -474,7 +480,9 @@ impl Resolve<RemoveContainer, User> for State {
         .await
       {
         Ok(log) => log,
-        Err(e) => Log::error("stop container", format!("{e:#?}")),
+        Err(e) => {
+          Log::error("stop container", serialize_error_pretty(e))
+        }
       };
 
       update.logs.push(log);

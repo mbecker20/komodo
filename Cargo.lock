@@ -3392,12 +3392,15 @@ dependencies = [
  "anyhow",
  "dotenv",
  "envy",
+ "logger",
  "monitor_client",
  "mungos",
  "partial_derive2",
+ "rand",
  "serde",
  "serde_json",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

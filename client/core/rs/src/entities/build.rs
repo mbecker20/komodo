@@ -101,6 +101,12 @@ pub struct BuildConfig {
   pub use_buildx: bool,
 }
 
+impl BuildConfig {
+  pub fn builder() -> BuildConfigBuilder {
+    BuildConfigBuilder::default()
+  }
+}
+
 fn default_branch() -> String {
   String::from("main")
 }

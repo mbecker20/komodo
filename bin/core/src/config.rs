@@ -36,7 +36,7 @@ pub fn core_config() -> &'static CoreConfig {
     let mut config =
       parse_config_file::<CoreConfig>(config_path.as_str())
         .unwrap_or_else(|e| {
-          panic!("failed at parsing config at {config_path} | {e:#?}")
+          panic!("failed at parsing config at {config_path} | {e:#}")
         });
     if let Some(port) = env.port {
       config.port = port;

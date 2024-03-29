@@ -6,6 +6,7 @@ use periphery_client::api::build::{
   Build, GetImageList, PruneImages,
 };
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
@@ -29,11 +30,11 @@ impl Resolve<Build> for State {
         match docker::build::build(&build, docker_token).await {
           Ok(logs) => logs,
           Err(e) => {
-            vec![Log::error("build", format!("{e:#?}"))]
+            vec![Log::error("build", serialize_error_pretty(e))]
           }
         }
       }
-      Err(e) => vec![Log::error("build", format!("{e:#?}"))],
+      Err(e) => vec![Log::error("build", serialize_error_pretty(e))],
     };
     Ok(log)
   }

@@ -13,6 +13,7 @@ use monitor_client::{
 };
 use periphery_client::api;
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
@@ -56,7 +57,9 @@ impl Resolve<PruneDockerContainers, User> for State {
           server.name
         )) {
         Ok(log) => log,
-        Err(e) => Log::error("prune containers", format!("{e:#?}")),
+        Err(e) => {
+          Log::error("prune containers", serialize_error_pretty(e))
+        }
       };
 
       update.success = log.success;
@@ -123,7 +126,9 @@ impl Resolve<PruneDockerNetworks, User> for State {
           server.name
         )) {
         Ok(log) => log,
-        Err(e) => Log::error("prune networks", format!("{e:#?}")),
+        Err(e) => {
+          Log::error("prune networks", serialize_error_pretty(e))
+        }
       };
 
       update.success = log.success;

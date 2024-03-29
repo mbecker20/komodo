@@ -9,6 +9,7 @@ use monitor_client::entities::{
   EnvironmentVar,
 };
 use run_command::async_run_command;
+use serror::serialize_error_pretty;
 
 use crate::{
   config::periphery_config,
@@ -167,7 +168,9 @@ pub async fn deploy(
     &deployment.config.docker_account,
   )) {
     Ok(token) => token,
-    Err(e) => return Log::error("docker login", format!("{e:#?}")),
+    Err(e) => {
+      return Log::error("docker login", serialize_error_pretty(e))
+    }
   };
 
   if let Err(e) = docker_login(
@@ -176,7 +179,7 @@ pub async fn deploy(
   )
   .await
   {
-    return Log::error("docker login", format!("{e:#?}"));
+    return Log::error("docker login", serialize_error_pretty(e));
   }
 
   let image = if let DeploymentImage::Image { image } =

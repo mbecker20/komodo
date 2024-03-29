@@ -179,6 +179,12 @@ pub struct AwsBuilderConfig {
   pub docker_accounts: Vec<String>,
 }
 
+impl AwsBuilderConfig {
+  pub fn builder() -> AwsBuilderConfigBuilder {
+    AwsBuilderConfigBuilder::default()
+  }
+}
+
 fn aws_default_region() -> String {
   String::from("us-east-1")
 }

@@ -17,6 +17,7 @@ use monitor_client::{
 use mungos::mongodb::bson::{doc, oid::ObjectId};
 use periphery_client::api;
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
   db::db_client,
@@ -74,7 +75,7 @@ impl Resolve<CloneRepo, User> for State {
       {
         Ok(logs) => logs,
         Err(e) => {
-          vec![Log::error("clone repo", format!("{e:#?}"))]
+          vec![Log::error("clone repo", serialize_error_pretty(e))]
         }
       };
 
@@ -175,7 +176,7 @@ impl Resolve<PullRepo, User> for State {
       {
         Ok(logs) => logs,
         Err(e) => {
-          vec![Log::error("pull repo", format!("{e:#?}"))]
+          vec![Log::error("pull repo", serialize_error_pretty(e))]
         }
       };
 
