@@ -509,7 +509,7 @@ impl StateResource for Procedure {
         .timestamp_millis(),
       id: procedure.id,
       tags: procedure.tags,
-      resource_type: ResourceTargetVariant::Alerter,
+      resource_type: ResourceTargetVariant::Procedure,
       info: ProcedureListItemInfo {
         procedure_type: (&procedure.config).into(),
       },
