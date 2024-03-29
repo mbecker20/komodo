@@ -16,17 +16,20 @@ import {
   TableHeader,
   TableRow,
 } from "@ui/table";
+import { ReactNode } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onRowClick?: (row: TData) => void;
+  noResults?: ReactNode;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onRowClick,
+  noResults,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -73,8 +76,8 @@ export function DataTable<TData, TValue>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-12 text-center">
-                No results.
+              <TableCell colSpan={columns.length} className="p-4 text-center">
+                {noResults ?? "No results."}
               </TableCell>
             </TableRow>
           )}

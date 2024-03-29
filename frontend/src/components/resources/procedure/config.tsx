@@ -1,7 +1,9 @@
 import { ConfigLayout } from "@components/config";
 import { ResourceSelector } from "@components/config/util";
+import { ConfirmButton } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Button } from "@ui/button";
 import {
   Command,
@@ -11,6 +13,14 @@ import {
   CommandItem,
 } from "@ui/command";
 import { DataTable } from "@ui/data-table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import {
   Select,
@@ -20,7 +30,14 @@ import {
   SelectValue,
 } from "@ui/select";
 import { Switch } from "@ui/switch";
-import { ChevronsUpDown, SearchX } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronsUpDown,
+  Plus,
+  SearchX,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 
 export const ProcedureConfig = ({ id }: { id: string }) => {
@@ -68,11 +85,47 @@ const ProcedureConfigInner = ({
         <div className="text-muted-foreground">
           {config.type === "Parallel"
             ? "Type Parallel: All of these executions will be started at the same time"
-            : ""}
+            : "Type Sequence: These executions will be started only after the previous one finishes"}
         </div>
         <DataTable
           data={config.data}
+          noResults={
+            <Button
+              onClick={() =>
+                setConfig({ ...config, data: [default_enabled_execution()] })
+              }
+            >
+              Create Stage
+            </Button>
+          }
           columns={[
+            {
+              header: "Stage",
+              cell: ({ row: { index } }) => <>{index + 1}</>,
+            },
+            {
+              header: "Enabled",
+              cell: ({
+                row: {
+                  original: { enabled },
+                  index,
+                },
+              }) => {
+                return (
+                  <Switch
+                    checked={enabled}
+                    onClick={() =>
+                      setConfig({
+                        ...config,
+                        data: config.data.map((item, i) =>
+                          i === index ? { ...item, enabled: !enabled } : item
+                        ),
+                      })
+                    }
+                  />
+                );
+              },
+            },
             {
               header: "Execution",
               cell: ({ row: { original, index } }) => (
@@ -132,30 +185,127 @@ const ProcedureConfigInner = ({
               },
             },
             {
-              header: "Enabled",
-              cell: ({
-                row: {
-                  original: { enabled },
-                  index,
-                },
-              }) => {
+              header: "Modify",
+              cell: ({ row }) => {
                 return (
-                  <Switch
-                    checked={enabled}
-                    onClick={() =>
-                      setConfig({
-                        ...config,
-                        data: config.data.map((item, i) =>
-                          i === index ? { ...item, enabled: !enabled } : item
-                        ),
-                      })
-                    }
-                  />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <DotsHorizontalIcon className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {row.index ? (
+                        <DropdownMenuItem
+                          className="flex gap-4 justify-between cursor-pointer"
+                          onClick={() =>
+                            setConfig({
+                              ...config,
+                              data: config.data.map((item, i) => {
+                                // Make sure its not the first row
+                                if (i === row.index && row.index !== 0) {
+                                  return config.data[row.index - 1];
+                                } else if (i === row.index - 1) {
+                                  // Reverse the entry, moving this row "Up"
+                                  return config.data[row.index];
+                                } else {
+                                  return item;
+                                }
+                              }),
+                            })
+                          }
+                        >
+                          Move Up <ArrowUp className="w-4 h-4" />
+                        </DropdownMenuItem>
+                      ) : undefined}
+                      {row.index < config.data.length - 1 && (
+                        <DropdownMenuItem
+                          className="flex gap-4 justify-between cursor-pointer"
+                          onClick={() =>
+                            setConfig({
+                              ...config,
+                              data: config.data.map((item, i) => {
+                                // The index also cannot be the last index, which cannot be moved down
+                                if (
+                                  i === row.index &&
+                                  row.index !== config.data.length - 1
+                                ) {
+                                  return config.data[row.index + 1];
+                                } else if (i === row.index + 1) {
+                                  // Move the row "Down"
+                                  return config.data[row.index];
+                                } else {
+                                  return item;
+                                }
+                              }),
+                            })
+                          }
+                        >
+                          Move Down <ArrowDown className="w-4 h-4" />
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        className="flex gap-4 justify-between cursor-pointer"
+                        onClick={() =>
+                          setConfig({
+                            ...config,
+                            data: [
+                              ...config.data.slice(0, row.index),
+                              default_enabled_execution(),
+                              ...config.data.slice(row.index),
+                            ],
+                          })
+                        }
+                      >
+                        Insert Above{" "}
+                        <div className="flex">
+                          <ArrowUp className="w-4 h-4" />
+                          <Plus className="w-4 h-4" />
+                        </div>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="flex gap-4 justify-between cursor-pointer"
+                        onClick={() =>
+                          setConfig({
+                            ...config,
+                            data: [
+                              ...config.data.slice(0, row.index + 1),
+                              default_enabled_execution(),
+                              ...config.data.slice(row.index + 1),
+                            ],
+                          })
+                        }
+                      >
+                        Insert Below{" "}
+                        <div className="flex">
+                          <ArrowDown className="w-4 h-4" />
+                          <Plus className="w-4 h-4" />
+                        </div>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 );
               },
             },
             {
-              header: "Menu",
+              header: "Delete",
+              cell: ({ row: { index } }) => (
+                <ConfirmButton
+                  title="Delete"
+                  icon={<Trash2 className="w-4 h-4" />}
+                  variant="destructive"
+                  onClick={() =>
+                    setConfig({
+                      ...config,
+                      data: config.data.filter((_, i) => i !== index),
+                    })
+                  }
+                />
+              ),
             },
           ]}
         />
@@ -164,7 +314,15 @@ const ProcedureConfigInner = ({
   );
 };
 
-export const ExecutionTypeSelector = ({
+const default_enabled_execution: () => Types.EnabledExecution = () => ({
+  enabled: true,
+  execution: {
+    type: "None",
+    params: {},
+  },
+});
+
+const ExecutionTypeSelector = ({
   type,
   onSelect,
 }: {
@@ -194,7 +352,17 @@ export const ExecutionTypeSelector = ({
             <SearchX className="w-3 h-3" />
           </CommandEmpty>
           <CommandGroup className="overflow-auto">
-            {Object.keys(TARGET_COMPONENTS).map((type) => (
+            {[
+              "RunProcedure",
+              "RunBuild",
+              "Deploy",
+              "StartContainer",
+              "StopContainer",
+              "StopAllContainers",
+              "RemoveContainer",
+              "CloneRepo",
+              "PullRepo",
+            ].map((type) => (
               <CommandItem
                 key={type}
                 onSelect={() => onSelect(type as Types.Execution["type"])}
