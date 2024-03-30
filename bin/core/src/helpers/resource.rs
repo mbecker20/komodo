@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
-use futures::future::join_all;
+use futures::{future::join_all, FutureExt};
 use monitor_client::entities::{
   alerter::{
     Alerter, AlerterConfig, AlerterInfo, AlerterListItem,
@@ -41,7 +41,10 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use crate::db::db_client;
 
-use super::cache::{deployment_status_cache, server_status_cache};
+use super::{
+  cache::{deployment_status_cache, server_status_cache},
+  get_tag,
+};
 
 pub trait StateResource {
   type ListItem: Serialize + Send;
@@ -193,6 +196,14 @@ pub trait StateResource {
     id_or_name: &str,
     tags: Vec<String>,
   ) -> anyhow::Result<()> {
+    let futures = tags
+      .iter()
+      .map(|tag| get_tag(tag).map(|tag| tag.map(|tag| tag.id)));
+    let tags = join_all(futures)
+      .await
+      .into_iter()
+      .flatten()
+      .collect::<Vec<_>>();
     Self::coll()
       .await
       .update_one(
