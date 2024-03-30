@@ -72,13 +72,13 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
       components={{
         general: {
           general: {
-            id: (id, set) => (
+            server_id: (id, set) => (
               <div className="flex justify-between items-center border-b pb-4">
                 Select Server
                 <ResourceSelector
                   type="Server"
                   selected={id}
-                  onSelect={(id) => set({ id })}
+                  onSelect={(server_id) => set({ server_id })}
                 />
               </div>
             ),

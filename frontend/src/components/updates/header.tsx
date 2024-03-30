@@ -1,4 +1,4 @@
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useRead, useUser, useUserInvalidate, useWrite } from "@lib/hooks";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,14 +66,14 @@ export const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
 export const HeaderUpdates = () => {
   const updates = useRead("ListUpdates", {}).data;
 
-  const last_opened = useRead("GetUser", {}).data?.last_update_view;
+  const last_opened = useUser().data?.last_update_view;
   const unseen_update = updates?.updates.some(
     (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER)
   );
 
-  const invalidate = useInvalidate();
+  const userInvalidate = useUserInvalidate();
   const { mutate } = useWrite("SetLastSeenUpdate", {
-    onSuccess: () => invalidate(["GetUser"]),
+    onSuccess: userInvalidate,
   });
 
   return (

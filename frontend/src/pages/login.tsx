@@ -9,7 +9,7 @@ import {
 } from "@ui/card";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
-import { useAuth, useInvalidate } from "@lib/hooks";
+import { useAuth, useUserInvalidate } from "@lib/hooks";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@ui/theme";
 
@@ -79,11 +79,11 @@ export const Login = () => {
   const [creds, set] = useState({ username: "", password: "" });
   const [signup, setSignup] = useState(false);
 
-  const inv = useInvalidate();
+  const userInvalidate = useUserInvalidate();
   const { mutate, isPending } = useAuth("LoginLocalUser", {
     onSuccess: ({ jwt }) => {
       localStorage.setItem("monitor-auth-token", jwt);
-      inv(["GetUser"]);
+      userInvalidate();
     },
   });
 

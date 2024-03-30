@@ -1,5 +1,5 @@
 import { Layout } from "@components/layouts";
-import { useRead } from "@lib/hooks";
+import { useUser } from "@lib/hooks";
 import { Dashboard } from "@pages/dashboard";
 import { Login } from "@pages/login";
 import { Resource } from "@pages/resource";
@@ -36,10 +36,11 @@ const router = createBrowserRouter([
 ]);
 
 export const Router = () => {
-  const { data: user, isLoading } = useRead("GetUser", {});
+  const { data: user, isLoading } = useUser();
 
   if (isLoading) return null;
   if (!user) return <Login />;
+  if (!user.enabled) return <div>User Not Enabled</div>
 
   return <RouterProvider router={router} />;
 };

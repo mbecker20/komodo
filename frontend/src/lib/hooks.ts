@@ -22,6 +22,20 @@ import { useParams } from "react-router-dom";
 const token = () => ({ jwt: localStorage.getItem("monitor-auth-token") ?? "" });
 const client = () => Client(MONITOR_BASE_URL, { type: "jwt", params: token() });
 
+export const useUser = () =>
+  useQuery({
+    queryKey: ["GetUser"],
+    queryFn: () => client().auth({ type: "GetUser", params: {} }),
+  });
+
+export const useUserInvalidate = () => {
+  const qc = useQueryClient();
+  return () => {
+    qc.invalidateQueries({ queryKey: ["GetUser"] });
+  }
+}
+
+
 export const useInvalidate = () => {
   const qc = useQueryClient();
   return <
@@ -119,10 +133,10 @@ export const useResourceParamType = () => {
 };
 
 export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
-  const invalidate = useInvalidate();
+  const userInvalidate = useUserInvalidate();
 
   const push = useWrite("PushRecentlyViewed", {
-    onSuccess: () => invalidate(["GetUser"]),
+    onSuccess: userInvalidate,
   }).mutate;
 
   useEffect(() => {
