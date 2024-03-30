@@ -54,19 +54,6 @@ pub struct GetVersionResponse {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetUserResponse)]
-pub struct GetUser {}
-
-#[typeshare]
-pub type GetUserResponse = User;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
 #[response(ListApiKeysResponse)]
 pub struct ListApiKeys {}
 

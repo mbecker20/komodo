@@ -3,6 +3,8 @@ use resolver_api::{derive::Request, HasResponse};
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
+use crate::entities::user::User;
+
 pub trait MonitorAuthRequest: HasResponse {}
 
 //
@@ -78,5 +80,18 @@ pub struct ExchangeForJwt {
 pub struct ExchangeForJwtResponse {
   pub jwt: String,
 }
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorAuthRequest)]
+#[response(GetUserResponse)]
+pub struct GetUser {}
+
+#[typeshare]
+pub type GetUserResponse = User;
 
 //

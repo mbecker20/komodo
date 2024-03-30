@@ -2,7 +2,7 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::read::{
-    GetUser, GetUsername, GetUsernameResponse, GetUsers, ListApiKeys,
+    GetUsername, GetUsernameResponse, GetUsers, ListApiKeys,
     ListApiKeysResponse,
   },
   entities::user::User,
@@ -13,22 +13,6 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{db::db_client, state::State};
-
-#[async_trait]
-impl Resolve<GetUser, User> for State {
-  async fn resolve(
-    &self,
-    GetUser {}: GetUser,
-    user: User,
-  ) -> anyhow::Result<User> {
-    let mut user = find_one_by_id(&db_client().await.users, &user.id)
-      .await
-      .context("failed at mongo query")?
-      .context("no user found with id")?;
-    user.sanitize();
-    Ok(user)
-  }
-}
 
 #[async_trait]
 impl Resolve<GetUsername, User> for State {

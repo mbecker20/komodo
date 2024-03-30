@@ -72,9 +72,11 @@ const Info = ({ id }: { id: string }) => {
         <HardDrive className="w-4 h-4" />
         {useDeployment(id)?.info.image || "N/A"}
       </Link>
-      <Link to={`/servers/${server?.id}`} className="flex items-center gap-2">
-        <Server className="w-4 h-4" />
-        {server?.name ?? "N/A"}
+      <Link to={`/servers/${server?.id}`}>
+        <Button variant="link" className="flex items-center gap-2">
+          <Server className="w-4 h-4" />
+          {server?.name ?? "N/A"}
+        </Button>
       </Link>
     </>
   );

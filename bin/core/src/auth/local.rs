@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use async_trait::async_trait;
+use axum::http::HeaderMap;
 use monitor_client::{
   api::auth::{
     CreateLocalUser, CreateLocalUserResponse, LoginLocalUser,
@@ -18,11 +19,11 @@ use super::jwt::jwt_client;
 const BCRYPT_COST: u32 = 10;
 
 #[async_trait]
-impl Resolve<CreateLocalUser> for State {
+impl Resolve<CreateLocalUser, HeaderMap> for State {
   async fn resolve(
     &self,
     CreateLocalUser { username, password }: CreateLocalUser,
-    _: (),
+    _: HeaderMap,
   ) -> anyhow::Result<CreateLocalUserResponse> {
     if !core_config().local_auth {
       return Err(anyhow!("local auth is not enabled"));
@@ -77,11 +78,11 @@ impl Resolve<CreateLocalUser> for State {
 }
 
 #[async_trait]
-impl Resolve<LoginLocalUser> for State {
+impl Resolve<LoginLocalUser, HeaderMap> for State {
   async fn resolve(
     &self,
     LoginLocalUser { username, password }: LoginLocalUser,
-    _: (),
+    _: HeaderMap,
   ) -> anyhow::Result<LoginLocalUserResponse> {
     if !core_config().local_auth {
       return Err(anyhow!("local auth is not enabled"));

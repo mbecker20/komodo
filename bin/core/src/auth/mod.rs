@@ -1,37 +1,25 @@
-use std::time::Instant;
-
 use ::jwt::VerifyWithKey;
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use axum::{
   extract::Request, http::HeaderMap, middleware::Next,
-  response::Response, routing::post, Json, Router,
+  response::Response,
 };
-use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::entities::{monitor_timestamp, user::User};
 use mungos::mongodb::bson::doc;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use resolver_api::Resolver;
 use serde::Deserialize;
-use serror::{AppError, AuthError};
-use uuid::Uuid;
+use serror::AuthError;
 
+use crate::{db::db_client, helpers::get_user};
+
+use self::jwt::{jwt_client, JwtClaims};
+
+pub mod github;
+pub mod google;
 pub mod jwt;
 
-mod github;
-mod google;
 mod local;
-
-use crate::{
-  api::auth::AuthRequest, db::db_client, helpers::get_user,
-  state::State,
-};
-
-use self::{
-  github::client::github_oauth_client,
-  google::client::google_oauth_client, jwt::jwt_client,
-  jwt::JwtClaims,
-};
 
 const STATE_PREFIX_LENGTH: usize = 20;
 
@@ -50,42 +38,6 @@ pub async fn auth_request(
   Ok(next.run(req).await)
 }
 
-pub fn router() -> Router {
-  let mut router = Router::new().route(
-    "/",
-    post(|Json(request): Json<AuthRequest>| async move {
-      let timer = Instant::now();
-      let req_id = Uuid::new_v4();
-      info!(
-        "/auth request {req_id} | METHOD: {}",
-        request.req_type()
-      );
-      let res = State.resolve_request(request, ()).await;
-      if let Err(e) = &res {
-        info!("/auth request {req_id} | ERROR: {e:?}");
-      }
-      let res = res?;
-      let elapsed = timer.elapsed();
-      info!("/auth request {req_id} | resolve time: {elapsed:?}");
-      debug!("/auth request {req_id} | RESPONSE: {res}");
-      Result::<_, AppError>::Ok((
-        TypedHeader(ContentType::json()),
-        res,
-      ))
-    }),
-  );
-
-  if github_oauth_client().is_some() {
-    router = router.nest("/github", github::router())
-  }
-
-  if google_oauth_client().is_some() {
-    router = router.nest("/google", google::router())
-  }
-
-  router
-}
-
 pub fn random_string(length: usize) -> String {
   thread_rng()
     .sample_iter(&Alphanumeric)
@@ -94,24 +46,20 @@ pub fn random_string(length: usize) -> String {
     .collect()
 }
 
-pub async fn authenticate_check_enabled(
+pub async fn get_user_id_from_headers(
   headers: &HeaderMap,
-) -> anyhow::Result<User> {
-  let user_id = match (
+) -> anyhow::Result<String> {
+  match (
     headers.get("authorization"),
     headers.get("x-api-key"),
     headers.get("x-api-secret"),
   ) {
     (Some(jwt), _, _) => {
       // USE JWT
-      let jwt = jwt
-        .to_str()
-        .context("jwt is not str")?
-        .replace("Bearer ", "")
-        .replace("bearer ", "");
-      auth_jwt_get_user_id(&jwt)
+      let jwt = jwt.to_str().context("jwt is not str")?;
+      auth_jwt_get_user_id(jwt)
         .await
-        .context("failed to authenticate jwt")?
+        .context("failed to authenticate jwt")
     }
     (None, Some(key), Some(secret)) => {
       // USE API KEY / SECRET
@@ -119,13 +67,19 @@ pub async fn authenticate_check_enabled(
       let secret = secret.to_str().context("secret is not str")?;
       auth_api_key_get_user_id(key, secret)
         .await
-        .context("failed to authenticate api key")?
+        .context("failed to authenticate api key")
     }
     _ => {
       // AUTH FAIL
-      return Err(anyhow!("must attach either AUTHORIZATION header with jwt OR pass X-API-KEY and X-API-SECRET"));
+      Err(anyhow!("must attach either AUTHORIZATION header with jwt OR pass X-API-KEY and X-API-SECRET"))
     }
-  };
+  }
+}
+
+pub async fn authenticate_check_enabled(
+  headers: &HeaderMap,
+) -> anyhow::Result<User> {
+  let user_id = get_user_id_from_headers(headers).await?;
   let user = get_user(&user_id).await?;
   if user.enabled {
     Ok(user)

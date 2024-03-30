@@ -34,7 +34,6 @@ mod user;
 #[serde(tag = "type", content = "params")]
 enum ReadRequest {
   GetVersion(GetVersion),
-  GetUser(GetUser),
   GetUsers(GetUsers),
   GetUsername(GetUsername),
   GetCoreInfo(GetCoreInfo),

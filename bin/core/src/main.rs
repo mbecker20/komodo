@@ -36,7 +36,7 @@ async fn app() -> anyhow::Result<()> {
       .context("failed to parse socket addr")?;
 
   let app = Router::new()
-    .nest("/auth", auth::router())
+    .nest("/auth", api::auth::router())
     .nest("/read", api::read::router())
     .nest("/write", api::write::router())
     .nest("/execute", api::execute::router())
