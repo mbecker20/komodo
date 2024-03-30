@@ -19,15 +19,15 @@ import {
 import { ReactNode } from "react";
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
+  columns?: ColumnDef<TData, TValue>[];
+  data?: TData[];
   onRowClick?: (row: TData) => void;
   noResults?: ReactNode;
 }
 
 export function DataTable<TData, TValue>({
-  columns,
-  data,
+  columns = [],
+  data = [],
   onRowClick,
   noResults,
 }: DataTableProps<TData, TValue>) {

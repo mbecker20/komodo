@@ -94,8 +94,8 @@ export const Page = ({
 );
 
 interface SectionProps {
-  title: ReactNode;
-  children: ReactNode;
+  title?: ReactNode;
+  children?: ReactNode;
   icon?: ReactNode;
   actions?: ReactNode;
 }
@@ -103,10 +103,10 @@ interface SectionProps {
 export const Section = ({ title, icon, actions, children }: SectionProps) => (
   <div className="flex flex-col gap-4">
     <div className="flex items-start justify-between">
-      <div className="flex items-center gap-2 text-muted-foreground">
+      {(title || icon) && <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
         <h2 className="text-xl">{title}</h2>
-      </div>
+      </div>}
       {actions}
     </div>
     {children}

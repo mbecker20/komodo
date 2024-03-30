@@ -316,6 +316,22 @@ export type ListApiKeysResponse = ApiKey[];
 
 export type GetUsersResponse = User[];
 
+export enum PermissionLevel {
+	None = "None",
+	Read = "Read",
+	Execute = "Execute",
+	Write = "Write",
+}
+
+export interface Permission {
+	_id?: MongoId;
+	user_id: string;
+	target: ResourceTarget;
+	level?: PermissionLevel;
+}
+
+export type ListUserPermissionsResponse = Permission[];
+
 export type ProcedureConfig = 
 	| { type: "Sequence", data: EnabledExecution[] }
 	| { type: "Parallel", data: EnabledExecution[] };
@@ -1186,6 +1202,10 @@ export interface GetCoreInfoResponse {
 	monitoring_interval: Timelength;
 }
 
+export interface ListUserPermissions {
+	user_id: string;
+}
+
 export interface GetProcedure {
 	/** Id or name */
 	procedure: string;
@@ -1565,13 +1585,6 @@ export interface LaunchAwsServerConfig {
 	use_public_ip: boolean;
 }
 
-export enum PermissionLevel {
-	None = "None",
-	Read = "Read",
-	Execute = "Execute",
-	Write = "Write",
-}
-
 export interface UpdateUserPermissionsOnTarget {
 	user_id: string;
 	permission: PermissionLevel;
@@ -1736,13 +1749,6 @@ export interface CloneArgs {
 	github_account?: string;
 }
 
-export interface Permission {
-	_id?: MongoId;
-	user_id: string;
-	target: ResourceTarget;
-	level?: PermissionLevel;
-}
-
 export type Execution = 
 	/** For new executions upon instantiation */
 	| { type: "None", params: None }
@@ -1797,10 +1803,11 @@ export type ExecuteRequest =
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
+	| { type: "GetCoreInfo", params: GetCoreInfo }
 	| { type: "GetUsers", params: GetUsers }
 	| { type: "GetUsername", params: GetUsername }
-	| { type: "GetCoreInfo", params: GetCoreInfo }
 	| { type: "ListApiKeys", params: ListApiKeys }
+	| { type: "ListUserPermissions", params: ListUserPermissions }
 	| { type: "FindResources", params: FindResources }
 	| { type: "GetProceduresSummary", params: GetProceduresSummary }
 	| { type: "GetProcedure", params: GetProcedure }

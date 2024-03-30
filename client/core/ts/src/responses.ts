@@ -10,10 +10,13 @@ export type AuthResponses = {
 
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
+  GetCoreInfo: Types.GetCoreInfoResponse;
+
+  // ==== USER ====
   GetUsers: Types.GetUsersResponse;
   GetUsername: Types.GetUsernameResponse;
-  GetCoreInfo: Types.GetCoreInfoResponse;
   ListApiKeys: Types.ListApiKeysResponse;
+  ListUserPermissions: Types.ListUserPermissionsResponse;
 
   // ==== SEARCH ====
   FindResources: Types.FindResourcesResponse;

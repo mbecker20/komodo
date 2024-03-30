@@ -19,6 +19,7 @@ mod alerter;
 mod build;
 mod builder;
 mod deployment;
+mod permission;
 mod procedure;
 mod repo;
 mod search;
@@ -34,10 +35,13 @@ mod user;
 #[serde(tag = "type", content = "params")]
 enum ReadRequest {
   GetVersion(GetVersion),
+  GetCoreInfo(GetCoreInfo),
+
+  // ==== USER ====
   GetUsers(GetUsers),
   GetUsername(GetUsername),
-  GetCoreInfo(GetCoreInfo),
   ListApiKeys(ListApiKeys),
+  ListUserPermissions(ListUserPermissions),
 
   // ==== SEARCH ====
   FindResources(FindResources),
