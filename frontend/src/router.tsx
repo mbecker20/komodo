@@ -11,6 +11,7 @@ import { Tags } from "@pages/tags";
 import { ResourceUpdates } from "@pages/resource_update";
 import { UsersPage } from "@pages/users";
 import { AllResources } from "@pages/all_resources";
+import { UserDisabled } from "@pages/user_disabled";
 
 const router = createBrowserRouter([
   {
@@ -40,7 +41,7 @@ export const Router = () => {
 
   if (isLoading) return null;
   if (!user) return <Login />;
-  if (!user.enabled) return <div>User Not Enabled</div>
+  if (!user.enabled) return <UserDisabled />;
 
   return <RouterProvider router={router} />;
 };

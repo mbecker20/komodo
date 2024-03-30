@@ -26,15 +26,15 @@ export const useUser = () =>
   useQuery({
     queryKey: ["GetUser"],
     queryFn: () => client().auth({ type: "GetUser", params: {} }),
+    refetchInterval: 30_000,
   });
 
 export const useUserInvalidate = () => {
   const qc = useQueryClient();
   return () => {
     qc.invalidateQueries({ queryKey: ["GetUser"] });
-  }
-}
-
+  };
+};
 
 export const useInvalidate = () => {
   const qc = useQueryClient();
