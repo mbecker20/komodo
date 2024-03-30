@@ -1,34 +1,37 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
-use futures::{future::join_all, FutureExt};
-use monitor_client::entities::{
-  alerter::{
-    Alerter, AlerterConfig, AlerterInfo, AlerterListItem,
-    AlerterListItemInfo,
+use futures::future::join_all;
+use monitor_client::{
+  api::write::CreateTag,
+  entities::{
+    alerter::{
+      Alerter, AlerterConfig, AlerterInfo, AlerterListItem,
+      AlerterListItemInfo,
+    },
+    build::{
+      Build, BuildConfig, BuildInfo, BuildListItem, BuildListItemInfo,
+    },
+    builder::{
+      Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo,
+    },
+    deployment::{
+      Deployment, DeploymentConfig, DeploymentImage,
+      DeploymentListItem, DeploymentListItemInfo,
+    },
+    permission::PermissionLevel,
+    procedure::{
+      Procedure, ProcedureConfig, ProcedureListItem,
+      ProcedureListItemInfo,
+    },
+    repo::{Repo, RepoConfig, RepoInfo, RepoListItem},
+    resource::Resource,
+    server::{
+      Server, ServerConfig, ServerListItem, ServerListItemInfo,
+    },
+    update::{ResourceTarget, ResourceTargetVariant},
+    user::User,
   },
-  build::{
-    Build, BuildConfig, BuildInfo, BuildListItem, BuildListItemInfo,
-  },
-  builder::{
-    Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo,
-  },
-  deployment::{
-    Deployment, DeploymentConfig, DeploymentImage,
-    DeploymentListItem, DeploymentListItemInfo,
-  },
-  permission::PermissionLevel,
-  procedure::{
-    Procedure, ProcedureConfig, ProcedureListItem,
-    ProcedureListItemInfo,
-  },
-  repo::{Repo, RepoConfig, RepoInfo, RepoListItem},
-  resource::Resource,
-  server::{
-    Server, ServerConfig, ServerListItem, ServerListItemInfo,
-  },
-  update::{ResourceTarget, ResourceTargetVariant},
-  user::User,
 };
 use mungos::{
   find::find_collect,
@@ -37,9 +40,10 @@ use mungos::{
     Collection,
   },
 };
+use resolver_api::Resolve;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::db::db_client;
+use crate::{db::db_client, state::State};
 
 use super::{
   cache::{deployment_status_cache, server_status_cache},
@@ -195,10 +199,22 @@ pub trait StateResource {
   async fn update_tags_on_resource(
     id_or_name: &str,
     tags: Vec<String>,
+    user: User,
   ) -> anyhow::Result<()> {
-    let futures = tags
-      .iter()
-      .map(|tag| get_tag(tag).map(|tag| tag.map(|tag| tag.id)));
+    let futures = tags.iter().map(|tag| async {
+      match get_tag(tag).await {
+        Ok(tag) => Ok(tag.id),
+        Err(_) => State
+          .resolve(
+            CreateTag {
+              name: tag.to_string(),
+            },
+            user.clone(),
+          )
+          .await
+          .map(|tag| tag.id),
+      }
+    });
     let tags = join_all(futures)
       .await
       .into_iter()

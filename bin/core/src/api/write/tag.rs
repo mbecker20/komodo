@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
@@ -14,7 +16,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::doc,
+  mongodb::bson::{doc, oid::ObjectId},
 };
 use resolver_api::Resolve;
 
@@ -31,11 +33,16 @@ impl Resolve<CreateTag, User> for State {
     CreateTag { name }: CreateTag,
     user: User,
   ) -> anyhow::Result<Tag> {
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("tag name cannot be ObjectId"));
+    }
+
     let mut tag = Tag {
       id: Default::default(),
       name,
       owner: user.id.clone(),
     };
+
     tag.id = db_client()
       .await
       .tags
@@ -46,6 +53,7 @@ impl Resolve<CreateTag, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
+    
     Ok(tag)
   }
 }
@@ -57,6 +65,10 @@ impl Resolve<RenameTag, User> for State {
     RenameTag { id, name }: RenameTag,
     user: User,
   ) -> anyhow::Result<Tag> {
+    if ObjectId::from_str(&name).is_ok() {
+      return Err(anyhow!("tag name cannot be ObjectId"));
+    }
+
     get_tag_check_owner(&id, &user).await?;
 
     update_one_by_id(
@@ -113,7 +125,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
           PermissionLevel::Write,
         )
         .await?;
-        Build::update_tags_on_resource(&id, tags).await?;
+        Build::update_tags_on_resource(&id, tags, user).await?;
       }
       ResourceTarget::Builder(id) => {
         Builder::get_resource_check_permissions(
@@ -122,7 +134,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
           PermissionLevel::Write,
         )
         .await?;
-        Builder::update_tags_on_resource(&id, tags).await?
+        Builder::update_tags_on_resource(&id, tags, user).await?
       }
       ResourceTarget::Deployment(id) => {
         Deployment::get_resource_check_permissions(
@@ -131,7 +143,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
           PermissionLevel::Write,
         )
         .await?;
-        Deployment::update_tags_on_resource(&id, tags).await?
+        Deployment::update_tags_on_resource(&id, tags, user).await?
       }
       ResourceTarget::Server(id) => {
         Server::get_resource_check_permissions(
@@ -140,7 +152,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
           PermissionLevel::Write,
         )
         .await?;
-        Server::update_tags_on_resource(&id, tags).await?
+        Server::update_tags_on_resource(&id, tags, user).await?
       }
       ResourceTarget::Repo(id) => {
         Repo::get_resource_check_permissions(
@@ -149,7 +161,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
           PermissionLevel::Write,
         )
         .await?;
-        Repo::update_tags_on_resource(&id, tags).await?
+        Repo::update_tags_on_resource(&id, tags, user).await?
       }
       ResourceTarget::Alerter(id) => {
         Alerter::get_resource_check_permissions(
@@ -158,7 +170,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
           PermissionLevel::Write,
         )
         .await?;
-        Alerter::update_tags_on_resource(&id, tags).await?
+        Alerter::update_tags_on_resource(&id, tags, user).await?
       }
       ResourceTarget::Procedure(id) => {
         Procedure::get_resource_check_permissions(
@@ -167,7 +179,7 @@ impl Resolve<UpdateTagsOnResource, User> for State {
           PermissionLevel::Write,
         )
         .await?;
-        Procedure::update_tags_on_resource(&id, tags).await?
+        Procedure::update_tags_on_resource(&id, tags, user).await?
       }
     };
     Ok(UpdateTagsOnResourceResponse {})

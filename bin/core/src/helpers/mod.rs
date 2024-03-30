@@ -128,10 +128,10 @@ pub async fn get_tag_check_owner(
   user: &User,
 ) -> anyhow::Result<Tag> {
   let tag = get_tag(id_or_name).await?;
-  if !user.admin && tag.owner != user.id {
-    return Err(anyhow!("user must be tag owner or admin"));
+  if user.admin || tag.owner == user.id {
+    return Ok(tag);
   }
-  Ok(tag)
+  Err(anyhow!("user must be tag owner or admin"))
 }
 
 // UPDATE
