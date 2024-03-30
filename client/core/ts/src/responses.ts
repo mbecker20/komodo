@@ -5,11 +5,11 @@ export type AuthResponses = {
   CreateLocalUser: Types.CreateLocalUserResponse;
   LoginLocalUser: Types.LoginLocalUserResponse;
   ExchangeForJwt: Types.ExchangeForJwtResponse;
+  GetUser: Types.GetUserResponse;
 };
 
 export type ReadResponses = {
   GetVersion: Types.GetVersionResponse;
-  GetUser: Types.GetUserResponse;
   GetUsers: Types.GetUsersResponse;
   GetUsername: Types.GetUsernameResponse;
   GetCoreInfo: Types.GetCoreInfoResponse;

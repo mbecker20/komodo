@@ -8,7 +8,52 @@ export interface MongoIdObj {
 
 export type MongoId = MongoIdObj;
 
+export type UserConfig = 
+	/** User that logs in with username / password */
+	| { type: "Local", data: {
+	password: string;
+}}
+	/** User that logs in via Google Oauth */
+	| { type: "Google", data: {
+	google_id: string;
+	avatar: string;
+}}
+	/** User that logs in via Github Oauth */
+	| { type: "Github", data: {
+	github_id: string;
+	avatar: string;
+}}
+	/** Non-human managed user, can have it's own permissions / api keys */
+	| { type: "Service", data: {
+	description: string;
+}};
+
 export type I64 = number;
+
+export type ResourceTarget = 
+	| { type: "System", id: string }
+	| { type: "Build", id: string }
+	| { type: "Builder", id: string }
+	| { type: "Deployment", id: string }
+	| { type: "Server", id: string }
+	| { type: "Repo", id: string }
+	| { type: "Alerter", id: string }
+	| { type: "Procedure", id: string };
+
+export interface User {
+	_id?: MongoId;
+	username: string;
+	enabled?: boolean;
+	admin?: boolean;
+	create_server_permissions?: boolean;
+	create_build_permissions?: boolean;
+	config: UserConfig;
+	last_update_view?: I64;
+	recently_viewed?: ResourceTarget[];
+	updated_at?: I64;
+}
+
+export type GetUserResponse = User;
 
 export interface Resource<Config, Info> {
 	_id?: MongoId;
@@ -251,51 +296,6 @@ export interface DeploymentActionState {
 }
 
 export type GetDeploymentActionStateResponse = DeploymentActionState;
-
-export type UserConfig = 
-	/** User that logs in with username / password */
-	| { type: "Local", data: {
-	password: string;
-}}
-	/** User that logs in via Google Oauth */
-	| { type: "Google", data: {
-	google_id: string;
-	avatar: string;
-}}
-	/** User that logs in via Github Oauth */
-	| { type: "Github", data: {
-	github_id: string;
-	avatar: string;
-}}
-	/** Non-human managed user, can have it's own permissions / api keys */
-	| { type: "Service", data: {
-	description: string;
-}};
-
-export type ResourceTarget = 
-	| { type: "System", id: string }
-	| { type: "Build", id: string }
-	| { type: "Builder", id: string }
-	| { type: "Deployment", id: string }
-	| { type: "Server", id: string }
-	| { type: "Repo", id: string }
-	| { type: "Alerter", id: string }
-	| { type: "Procedure", id: string };
-
-export interface User {
-	_id?: MongoId;
-	username: string;
-	enabled?: boolean;
-	admin?: boolean;
-	create_server_permissions?: boolean;
-	create_build_permissions?: boolean;
-	config: UserConfig;
-	last_update_view?: I64;
-	recently_viewed?: ResourceTarget[];
-	updated_at?: I64;
-}
-
-export type GetUserResponse = User;
 
 export interface ApiKey {
 	/** UNIQUE KEY ASSOCIATED WITH SECRET */
@@ -856,6 +856,9 @@ export interface ExchangeForJwtResponse {
 	jwt: string;
 }
 
+export interface GetUser {
+}
+
 export interface RunBuild {
 	/** Can be id or name */
 	build: string;
@@ -1159,9 +1162,6 @@ export interface GetVersion {
 
 export interface GetVersionResponse {
 	version: string;
-}
-
-export interface GetUser {
 }
 
 export interface ListApiKeys {
@@ -1777,7 +1777,8 @@ export type AuthRequest =
 	| { type: "GetLoginOptions", params: GetLoginOptions }
 	| { type: "CreateLocalUser", params: CreateLocalUser }
 	| { type: "LoginLocalUser", params: LoginLocalUser }
-	| { type: "ExchangeForJwt", params: ExchangeForJwt };
+	| { type: "ExchangeForJwt", params: ExchangeForJwt }
+	| { type: "GetUser", params: GetUser };
 
 export type ExecuteRequest = 
 	| { type: "PruneContainers", params: PruneDockerContainers }
@@ -1796,7 +1797,6 @@ export type ExecuteRequest =
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
-	| { type: "GetUser", params: GetUser }
 	| { type: "GetUsers", params: GetUsers }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
