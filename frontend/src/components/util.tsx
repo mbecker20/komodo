@@ -51,6 +51,7 @@ import {
 } from "@ui/dropdown-menu";
 import { ResourceComponents } from "./resources";
 import { Types } from "@monitor/client";
+import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 
 export const WithLoading = ({
   children,
@@ -399,7 +400,7 @@ export const ResourceTypeDropdown = () => {
           </Link>
 
           <DropdownMenuSeparator />
-          
+
           <Link to="/keys">
             <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
               <Box className="w-4 h-4" />
@@ -469,8 +470,8 @@ export const Logout = () => (
     variant="ghost"
     size="icon"
     onClick={() => {
-      localStorage.removeItem("monitor-auth-token");
-      window.location.reload();
+      localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
+      location.reload();
     }}
   >
     <LogOut className="w-4 h-4" />

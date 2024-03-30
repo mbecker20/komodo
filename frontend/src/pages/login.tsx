@@ -1,104 +1,76 @@
 import { Button } from "@ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@ui/card";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
-import { useAuth, useUserInvalidate } from "@lib/hooks";
+import { useAuth, useLoginOptions, useUserInvalidate } from "@lib/hooks";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@ui/theme";
+import { AUTH_TOKEN_STORAGE_KEY, MONITOR_BASE_URL } from "@main";
+import { useQueryClient } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
-export const Signup = ({ setSignup }: { setSignup: (f: false) => void }) => {
-  const [creds, set] = useState({ username: "", password: "" });
-  const { mutateAsync, isPending } = useAuth("CreateLocalUser");
+type OauthProvider = "Github" | "Google";
 
-  const signup = async () => {
-    const { jwt } = await mutateAsync(creds);
-    localStorage.setItem("monitor-auth-token", jwt);
-    location.reload();
-  };
-
-  return (
-    <div className="flex flex-col min-h-screen">
-      <div className="container flex justify-end items-center h-16">
-        <ThemeToggle />
-      </div>
-      <div className="flex justify-center items-center container mt-32">
-        <Card className="w-full max-w-[500px] place-self-center">
-          <CardHeader className="flex-col">
-            <CardTitle className="text-xl">Monitor</CardTitle>
-            <CardDescription>Sign Up</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={creds.username}
-                onChange={({ target }) =>
-                  set((c) => ({ ...c, username: target.value }))
-                }
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={creds.password}
-                onChange={({ target }) =>
-                  set((c) => ({ ...c, password: target.value }))
-                }
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex gap-4 w-full justify-end">
-            <Button
-              onClick={() => setSignup(false)}
-              disabled={isPending}
-              variant="outline"
-            >
-              Log In
-            </Button>
-            <Button onClick={signup} disabled={isPending}>
-              Sign Up
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    </div>
+const login_with_oauth = (provider: OauthProvider) => {
+  const redirect = encodeURIComponent(location.href);
+  location.replace(
+    `${MONITOR_BASE_URL}/auth/${provider.toLowerCase()}/login?redirect=${redirect}`
   );
 };
 
-export const Login = () => {
-  const [creds, set] = useState({ username: "", password: "" });
-  const [signup, setSignup] = useState(false);
+const sanitize_query = (search: URLSearchParams) => {
+  search.delete("token");
+  const query = search.toString();
+  location.replace(
+    `${location.origin}${location.pathname}${query.length ? "?" + query : ""}`
+  );
+}
 
-  const userInvalidate = useUserInvalidate();
-  const { mutate, isPending } = useAuth("LoginLocalUser", {
+/// returns whether to show login / loading screen depending on state of exchange token loop
+const useExchangeToken = () => {
+  const search = new URLSearchParams(location.search);
+  const exchange_token = search.get("token");
+  const { mutate, isPending } = useAuth("ExchangeForJwt", {
     onSuccess: ({ jwt }) => {
-      localStorage.setItem("monitor-auth-token", jwt);
-      userInvalidate();
+      localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, jwt);
+      sanitize_query(search);
     },
+    onError: (e) => {
+      console.log("exchange token for jwt error:", e);
+      sanitize_query(search);
+    }
   });
+  if (!exchange_token) return false;
+  mutate({ token: exchange_token });
+  return isPending;
+};
 
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && !isPending) mutate(creds);
-    };
-    addEventListener("keydown", handler);
-    return () => {
-      removeEventListener("keydown", handler);
-    };
+export const Login2 = () => {
+  // const exchange_token =
+  const options = useLoginOptions().data;
+  const [creds, set] = useState({ username: "", password: "" });
+  const userInvalidate = useUserInvalidate();
+  const onSuccess = ({ jwt }: { jwt: string }) => {
+    localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, jwt);
+    userInvalidate();
+  };
+  const { mutate: signup, isPending: signupPending } = useAuth(
+    "CreateLocalUser",
+    {
+      onSuccess,
+    }
+  );
+  const { mutate: login, isPending: loginPending } = useAuth("LoginLocalUser", {
+    onSuccess,
   });
-
-  if (signup) return <Signup setSignup={setSignup} />;
-
+  const exchangeTokenPending = useExchangeToken();
+  if (exchangeTokenPending) {
+    return (
+      <div className="w-screen h-screen flex justify-center items-center">
+        <Loader2 className="w-8 h-7 animate-spin" />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col min-h-screen">
       <div className="container flex justify-end items-center h-16">
@@ -106,45 +78,78 @@ export const Login = () => {
       </div>
       <div className="flex justify-center items-center container mt-32">
         <Card className="w-full max-w-[500px] place-self-center">
-          <CardHeader className="flex-col">
+          <CardHeader className="flex justify-between items-center">
             <CardTitle className="text-xl">Monitor</CardTitle>
-            <CardDescription>Log In</CardDescription>
+            <div className="flex gap-2">
+              {(
+                [
+                  [options?.google, "Google"],
+                  [options?.github, "Github"],
+                ] as Array<[boolean | undefined, OauthProvider]>
+              ).map(
+                ([enabled, provider]) =>
+                  enabled && (
+                    <Button
+                      key={provider}
+                      variant="outline"
+                      className="flex gap-2 px-3 items-center"
+                      onClick={() => login_with_oauth(provider)}
+                    >
+                      {provider}
+                      <img
+                        src={`/icons/${provider.toLowerCase()}.svg`}
+                        alt={provider}
+                        className="w-4 h-4"
+                      />
+                    </Button>
+                  )
+              )}
+            </div>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={creds.username}
-                onChange={({ target }) =>
-                  set((c) => ({ ...c, username: target.value }))
-                }
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={creds.password}
-                onChange={({ target }) =>
-                  set((c) => ({ ...c, password: target.value }))
-                }
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="flex gap-4 w-full justify-end">
-            <Button
-              onClick={() => setSignup(true)}
-              disabled={isPending}
-              variant="outline"
-            >
-              Signup
-            </Button>
-            <Button onClick={() => mutate(creds)} disabled={isPending}>
-              Login
-            </Button>
-          </CardFooter>
+          {options?.local && (
+            <>
+              <CardContent className="flex flex-col justify-center w-full gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    value={creds.username}
+                    onChange={({ target }) =>
+                      set((c) => ({ ...c, username: target.value }))
+                    }
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={creds.password}
+                    onChange={({ target }) =>
+                      set((c) => ({ ...c, password: target.value }))
+                    }
+                    onKeyDown={(e) => e.key === "Enter" && login(creds)}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter className="flex gap-4 w-full justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => signup(creds)}
+                  disabled={signupPending}
+                >
+                  Sign Up
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => login(creds)}
+                  disabled={loginPending}
+                >
+                  Log In
+                </Button>
+              </CardFooter>
+            </>
+          )}
         </Card>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { MONITOR_BASE_URL } from "@main";
+import { AUTH_TOKEN_STORAGE_KEY, MONITOR_BASE_URL } from "@main";
 import { MonitorClient as Client, Types } from "@monitor/client";
 import {
   AuthResponses,
@@ -19,8 +19,14 @@ import { useParams } from "react-router-dom";
 
 // ============== RESOLVER ==============
 
-const token = () => ({ jwt: localStorage.getItem("monitor-auth-token") ?? "" });
+const token = () => ({ jwt: localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ?? "" });
 const client = () => Client(MONITOR_BASE_URL, { type: "jwt", params: token() });
+
+export const useLoginOptions = () =>
+  useQuery({
+    queryKey: ["GetLoginOptions"],
+    queryFn: () => client().auth({ type: "GetLoginOptions", params: {} }),
+  });
 
 export const useUser = () =>
   useQuery({
@@ -34,16 +40,6 @@ export const useUserInvalidate = () => {
   return () => {
     qc.invalidateQueries({ queryKey: ["GetUser"] });
   };
-};
-
-export const useInvalidate = () => {
-  const qc = useQueryClient();
-  return <
-    Type extends Types.ReadRequest["type"],
-    Params extends Extract<Types.ReadRequest, { type: Type }>["params"]
-  >(
-    ...keys: Array<[Type] | [Type, Params]>
-  ) => keys.forEach((key) => qc.invalidateQueries({ queryKey: key }));
 };
 
 export const useRead = <
@@ -69,6 +65,16 @@ export const useRead = <
     queryFn: () => client().read({ type, params } as R),
     ...config,
   });
+
+export const useInvalidate = () => {
+  const qc = useQueryClient();
+  return <
+    Type extends Types.ReadRequest["type"],
+    Params extends Extract<Types.ReadRequest, { type: Type }>["params"]
+  >(
+    ...keys: Array<[Type] | [Type, Params]>
+  ) => keys.forEach((key) => qc.invalidateQueries({ queryKey: key }));
+};
 
 export const useWrite = <
   T extends Types.WriteRequest["type"],
