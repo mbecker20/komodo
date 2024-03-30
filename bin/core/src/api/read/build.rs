@@ -9,7 +9,6 @@ use monitor_client::{
   entities::{
     build::{Build, BuildActionState, BuildListItem},
     permission::PermissionLevel,
-    resource::AddFilters,
     update::{ResourceTargetVariant, UpdateStatus},
     user::User,
     Operation,
@@ -18,7 +17,7 @@ use monitor_client::{
 use mungos::{
   find::find_collect,
   mongodb::{
-    bson::{doc, oid::ObjectId, Document},
+    bson::{doc, oid::ObjectId},
     options::FindOptions,
   },
 };
@@ -56,9 +55,7 @@ impl Resolve<ListBuilds, User> for State {
     ListBuilds { query }: ListBuilds,
     user: User,
   ) -> anyhow::Result<Vec<BuildListItem>> {
-    let mut filters = Document::new();
-    query.add_filters(&mut filters);
-    Build::list_resources_for_user(filters, &user).await
+    Build::list_resources_for_user(query, &user).await
   }
 }
 

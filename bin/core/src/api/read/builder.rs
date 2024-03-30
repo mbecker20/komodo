@@ -7,12 +7,11 @@ use monitor_client::{
   entities::{
     builder::{Builder, BuilderConfig, BuilderListItem},
     permission::PermissionLevel,
-    resource::AddFilters,
     update::ResourceTargetVariant,
     user::User,
   },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId, Document};
+use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
@@ -46,9 +45,7 @@ impl Resolve<ListBuilders, User> for State {
     ListBuilders { query }: ListBuilders,
     user: User,
   ) -> anyhow::Result<Vec<BuilderListItem>> {
-    let mut filters = Document::new();
-    query.add_filters(&mut filters);
-    Builder::list_resources_for_user(filters, &user).await
+    Builder::list_resources_for_user(query, &user).await
   }
 }
 

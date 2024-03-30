@@ -23,7 +23,6 @@ export type ReadResponses = {
   GetProcedure: Types.GetProcedureResponse;
   GetProcedureActionState: Types.GetProcedureActionStateResponse;
   ListProcedures: Types.ListProceduresResponse;
-  ListProceduresByIds: Types.ListProceduresByIdsResponse;
 
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;

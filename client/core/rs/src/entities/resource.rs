@@ -1,7 +1,10 @@
+use std::str::FromStr;
+
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use mungos::mongodb::bson::{
-  doc, serde_helpers::hex_string_as_object_id, Document,
+  doc, oid::ObjectId, serde_helpers::hex_string_as_object_id,
+  Document,
 };
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -64,12 +67,26 @@ pub struct ResourceListItem<Info> {
 )]
 pub struct ResourceQuery<T: Default> {
   #[serde(default)]
+  pub ids: Vec<String>,
+  #[serde(default)]
   pub names: Vec<String>,
-  /// Pass Vec of tag ids
+  /// Pass Vec of tag ids or tag names
   #[serde(default)]
   pub tags: Vec<String>,
   #[serde(default)]
+  pub tag_behavior: TagBehavior,
+  #[serde(default)]
   pub specific: T,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+pub enum TagBehavior {
+  /// Returns resources which have strictly all the tags
+  #[default]
+  All,
+  /// Returns resources which have one or more of the tags
+  Any,
 }
 
 pub trait AddFilters {
@@ -80,11 +97,31 @@ impl AddFilters for () {}
 
 impl<T: AddFilters + Default> AddFilters for ResourceQuery<T> {
   fn add_filters(&self, filters: &mut Document) {
+    if !self.ids.is_empty() {
+      let ids = self
+        .ids
+        .iter()
+        .flat_map(|id| ObjectId::from_str(id))
+        .collect::<Vec<_>>();
+      filters.insert("_id", doc! { "$in": &ids });
+    }
     if !self.names.is_empty() {
       filters.insert("name", doc! { "$in": &self.names });
     }
     if !self.tags.is_empty() {
-      filters.insert("tags", doc! { "$all": &self.tags });
+      match self.tag_behavior {
+        TagBehavior::All => {
+          filters.insert("tags", doc! { "$all": &self.tags });
+        }
+        TagBehavior::Any => {
+          let ors = self
+            .tags
+            .iter()
+            .map(|tag| doc! { "tags": tag })
+            .collect::<Vec<_>>();
+          filters.insert("$or", ors);
+        }
+      }
     }
     self.specific.add_filters(filters);
   }

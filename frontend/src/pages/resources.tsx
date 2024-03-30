@@ -5,6 +5,10 @@ import { useRead, useResourceParamType } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { useState } from "react";
+import { atomWithStorage } from "jotai/utils";
+import { useAtom } from "jotai";
+
+const viewAtom = atomWithStorage<"cards" | "table">("list-show-as-v0", "table");
 
 export const Resources = () => {
   const type = useResourceParamType();
@@ -15,7 +19,7 @@ export const Resources = () => {
   const list = useRead(`List${type}s`, { query: { tags } }).data;
 
   const [search, set] = useState("");
-  const [view, setView] = useState<"cards" | "table">("table");
+  const [view, setView] = useAtom(viewAtom);
 
   return (
     <Page

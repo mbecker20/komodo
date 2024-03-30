@@ -332,8 +332,6 @@ export type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
 
 export type ListProceduresResponse = ProcedureListItem[];
 
-export type ListProceduresByIdsResponse = ProcedureListItem[];
-
 export interface ProcedureActionState {
 	running: boolean;
 }
@@ -739,11 +737,20 @@ export type _PartialCustomAlerterConfig = Partial<CustomAlerterConfig>;
 
 export type _PartialSlackAlerterConfig = Partial<SlackAlerterConfig>;
 
+export enum TagBehavior {
+	/** Returns resources which have strictly all the tags */
+	All = "All",
+	/** Returns resources which have one or more of the tags */
+	Any = "Any",
+}
+
 /** Passing empty Vec is the same as not filtering by that field */
 export interface ResourceQuery<T> {
+	ids?: string[];
 	names?: string[];
-	/** Pass Vec of tag ids */
+	/** Pass Vec of tag ids or tag names */
 	tags?: string[];
+	tag_behavior?: TagBehavior;
 	specific?: T;
 }
 
@@ -1186,10 +1193,6 @@ export interface GetProcedure {
 
 export interface ListProcedures {
 	query?: ProcedureQuery;
-}
-
-export interface ListProceduresByIds {
-	ids: string[];
 }
 
 export interface GetProceduresSummary {
@@ -1705,7 +1708,7 @@ export interface SlackAlerterConfig {
 }
 
 export interface ServerBuilderConfig {
-	id: string;
+	server_id: string;
 }
 
 export interface AwsBuilderConfig {
@@ -1803,7 +1806,6 @@ export type ReadRequest =
 	| { type: "GetProcedure", params: GetProcedure }
 	| { type: "GetProcedureActionState", params: GetProcedureActionState }
 	| { type: "ListProcedures", params: ListProcedures }
-	| { type: "ListProceduresByIds", params: ListProceduresByIds }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }

@@ -12,13 +12,14 @@ import {
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
-import { atom, useAtom } from "jotai";
-import { PlusCircle, Tag } from "lucide-react";
+import { useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
+import { MinusCircle, PlusCircle, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
 
-const tagsAtom = atom<string[]>([]);
+const tagsAtom = atomWithStorage<string[]>("tags-v0", []);
 
 export const useTagsFilter = () => {
   const [tags, _] = useAtom(tagsAtom);
@@ -29,9 +30,8 @@ export const TagsFilter = () => {
   const [tags, setTags] = useAtom(tagsAtom);
   const all_tags = useRead("ListTags", {}).data;
   return (
-    <div className="flex gap-4">
-      <TagsWithBadge
-        className="cursor-pointer"
+    <div className="flex gap-4 items-center">
+      <TagsFilterTags
         tag_ids={tags}
         onBadgeClick={(tag_id) => setTags(tags.filter((id) => id !== tag_id))}
       />
@@ -58,6 +58,33 @@ export const TagsFilter = () => {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
+  );
+};
+
+export const TagsFilterTags = ({
+  tag_ids,
+  onBadgeClick,
+}: {
+  tag_ids?: string[];
+  onBadgeClick?: (tag_id: string) => void;
+}) => {
+  const all_tags = useRead("ListTags", {}).data;
+  const get_name = (tag_id: string) =>
+    all_tags?.find((t) => t._id?.$oid === tag_id)?.name ?? "unknown";
+  return (
+    <>
+      {tag_ids?.map((tag_id) => (
+        <Badge
+          key={tag_id}
+          variant="destructive"
+          className="flex gap-1 px-2 py-1.5 cursor-pointer"
+          onClick={() => onBadgeClick && onBadgeClick(tag_id)}
+        >
+          {get_name(tag_id)}
+          <MinusCircle className="w-3 h-3" />
+        </Badge>
+      ))}
+    </>
   );
 };
 
@@ -101,6 +128,8 @@ export const TagsWithBadge = ({
   className?: string;
 }) => {
   const all_tags = useRead("ListTags", {}).data;
+  const get_name = (tag_id: string) =>
+    all_tags?.find((t) => t._id?.$oid === tag_id)?.name ?? "unknown";
   return (
     <>
       {tag_ids?.map((tag_id) => (
@@ -110,7 +139,7 @@ export const TagsWithBadge = ({
           className={className ?? "px-1.5 py-0.5 cursor-pointer"}
           onClick={() => onBadgeClick && onBadgeClick(tag_id)}
         >
-          {all_tags?.find((t) => t._id?.$oid === tag_id)?.name ?? "unknown"}
+          {get_name(tag_id)}
         </Badge>
       ))}
     </>

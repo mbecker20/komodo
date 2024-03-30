@@ -5,10 +5,10 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use monitor_client::entities::{
+  resource::ResourceQuery,
   server::{Server, ServerListItem},
   user::User,
 };
-use mungos::mongodb::bson::Document;
 
 use crate::helpers::resource::StateResource;
 
@@ -34,7 +34,7 @@ async fn get_all_servers_map() -> anyhow::Result<(
   HashMap<String, String>,
 )> {
   let servers = Server::list_resources_for_user(
-    Document::new(),
+    ResourceQuery::default(),
     &User {
       admin: true,
       ..Default::default()

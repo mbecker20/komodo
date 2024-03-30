@@ -49,21 +49,6 @@ pub type ListProceduresResponse = Vec<ProcedureListItem>;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(ListProceduresByIdsResponse)]
-pub struct ListProceduresByIds {
-  pub ids: Vec<String>,
-}
-
-#[typeshare]
-pub type ListProceduresByIdsResponse = Vec<ProcedureListItem>;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
 #[response(GetProceduresSummaryResponse)]
 pub struct GetProceduresSummary {}
 

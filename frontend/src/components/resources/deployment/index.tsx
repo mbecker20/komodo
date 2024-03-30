@@ -2,7 +2,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
-import { cn } from "@lib/utils";
+import { cn, snake_case_to_upper_space_case } from "@lib/utils";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 
@@ -22,6 +22,7 @@ import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { DeploymentsChart } from "@components/dashboard/deployments-chart";
+import { Button } from "@ui/button";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
@@ -94,7 +95,6 @@ export const DeploymentTable = ({
       }
       columns={[
         {
-          accessorKey: "id",
           header: "Name",
           cell: ({ row }) => {
             const id = row.original.id;
@@ -103,10 +103,45 @@ export const DeploymentTable = ({
                 to={`/deployments/${id}`}
                 className="flex items-center gap-2"
               >
-                <ResourceComponents.Deployment.Icon id={id} />
-                <ResourceComponents.Deployment.Name id={id} />
+                <Button variant="link" className="flex gap-2 items-center p-0">
+                  <ResourceComponents.Deployment.Icon id={id} />
+                  <ResourceComponents.Deployment.Name id={id} />
+                </Button>
               </Link>
             );
+          },
+        },
+        {
+          header: "Image",
+          cell: ({
+            row: {
+              original: {
+                info: { build_id, image },
+              },
+            },
+          }) => {
+            const builds = useRead("ListBuilds", {}).data;
+            if (build_id) {
+              const build = builds?.find((build) => build.id === build_id);
+              if (build) {
+                return (
+                  <Link to={`/builds/${build_id}`}>
+                    <Button
+                      variant="link"
+                      className="flex gap-2 items-center p-0"
+                    >
+                      <ResourceComponents.Build.Icon id={build_id} />
+                      <ResourceComponents.Build.Name id={build_id} />
+                    </Button>
+                  </Link>
+                );
+              } else {
+                return undefined;
+              }
+            } else {
+              const [img, _] = image.split(":");
+              return img;
+            }
           },
         },
         {
@@ -114,38 +149,25 @@ export const DeploymentTable = ({
           cell: ({ row }) => {
             const id = row.original.info.server_id;
             return (
-              <Link to={`/servers/${id}`} className="flex items-center gap-2">
-                <ResourceComponents.Server.Icon id={id} />
-                <ResourceComponents.Server.Name id={id} />
+              <Link to={`/servers/${id}`}>
+                <Button variant="link" className="flex items-center gap-2 p-0">
+                  <ResourceComponents.Server.Icon id={id} />
+                  <ResourceComponents.Server.Name id={id} />
+                </Button>
               </Link>
             );
           },
         },
-        // {
-        //   header: "Build",
-        //   cell: ({ row }) => {
-        //     const id = row.original.info.build_id;
-        //     if (!id) return null;
-        //     return (
-        //       <Link to={`/builds/${id}`} className="flex items-center gap-2">
-        //         <ResourceComponents.Build.Icon id={id} />
-        //         <ResourceComponents.Build.Name id={id} />
-        //       </Link>
-        //     );
-        //   },
-        // },
         {
-          accessorKey: "info.image",
-          header: "Image",
-        },
-        {
-          header: "Status",
+          header: "State",
           cell: ({ row }) => {
-            const status = row.original.info.status;
-            if (!status) return null;
             const state = row.original.info.state;
             const color = deployment_state_text_color(state);
-            return <div className={color}>{status}</div>;
+            return (
+              <div className={color}>
+                {snake_case_to_upper_space_case(state)}
+              </div>
+            );
           },
         },
         {

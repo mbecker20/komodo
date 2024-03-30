@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { ServerComponents } from "@components/resources/server";
 import { AlertLevel } from "@components/util";
 import { fmt_date_with_minutes } from "@lib/utils";
-import { useState } from "react";
 import { Button } from "@ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DeploymentComponents } from "@components/resources/deployment";
@@ -17,6 +16,8 @@ import { AlerterComponents } from "@components/resources/alerter";
 import { ProcedureComponents } from "@components/resources/procedure/index";
 import { TagsSummary } from "@components/dashboard/tags";
 import { ApiKeysSummary } from "@components/dashboard/api-keys";
+import { atomWithStorage } from "jotai/utils";
+import { useAtom } from "jotai";
 
 export const Dashboard = () => {
   return (
@@ -28,8 +29,10 @@ export const Dashboard = () => {
   );
 };
 
+const openAtom = atomWithStorage("show-alerts-v0", true);
+
 const OpenAlerts = () => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useAtom(openAtom);
   const alerts = useRead("ListAlerts", { query: { resolved: false } }).data
     ?.alerts;
   if (!alerts || alerts.length === 0) return null;

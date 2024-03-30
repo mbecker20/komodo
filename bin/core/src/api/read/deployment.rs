@@ -11,7 +11,6 @@ use monitor_client::{
       DockerContainerStats,
     },
     permission::PermissionLevel,
-    resource::AddFilters,
     server::Server,
     update::{Log, ResourceTargetVariant, UpdateStatus},
     user::User,
@@ -21,7 +20,7 @@ use monitor_client::{
 use mungos::{
   find::find_collect,
   mongodb::{
-    bson::{doc, oid::ObjectId, Document},
+    bson::{doc, oid::ObjectId},
     options::FindOneOptions,
   },
 };
@@ -61,9 +60,7 @@ impl Resolve<ListDeployments, User> for State {
     ListDeployments { query }: ListDeployments,
     user: User,
   ) -> anyhow::Result<Vec<DeploymentListItem>> {
-    let mut filters = Document::new();
-    query.add_filters(&mut filters);
-    Deployment::list_resources_for_user(filters, &user).await
+    Deployment::list_resources_for_user(query, &user).await
   }
 }
 

@@ -6,7 +6,6 @@ use monitor_client::{
   entities::{
     deployment::ContainerSummary,
     permission::PermissionLevel,
-    resource::AddFilters,
     server::{
       docker_image::ImageSummary, docker_network::DockerNetwork,
       stats::SystemInformation, Server, ServerActionState,
@@ -17,10 +16,7 @@ use monitor_client::{
 };
 use mungos::{
   find::find_collect,
-  mongodb::{
-    bson::{doc, Document},
-    options::FindOptions,
-  },
+  mongodb::{bson::doc, options::FindOptions},
 };
 use periphery_client::api::{self, GetAccountsResponse};
 use resolver_api::{Resolve, ResolveToString};
@@ -42,7 +38,8 @@ impl Resolve<GetServersSummary, User> for State {
     user: User,
   ) -> anyhow::Result<GetServersSummaryResponse> {
     let servers =
-      Server::list_resources_for_user(Document::new(), &user).await?;
+      Server::list_resources_for_user(Default::default(), &user)
+        .await?;
     let mut res = GetServersSummaryResponse::default();
     for server in servers {
       res.total += 1;
@@ -107,9 +104,7 @@ impl Resolve<ListServers, User> for State {
     ListServers { query }: ListServers,
     user: User,
   ) -> anyhow::Result<Vec<ServerListItem>> {
-    let mut filters = Document::new();
-    query.add_filters(&mut filters);
-    Server::list_resources_for_user(filters, &user).await
+    Server::list_resources_for_user(query, &user).await
   }
 }
 

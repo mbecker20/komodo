@@ -48,7 +48,6 @@ enum ReadRequest {
   GetProcedure(GetProcedure),
   GetProcedureActionState(GetProcedureActionState),
   ListProcedures(ListProcedures),
-  ListProceduresByIds(ListProceduresByIds),
 
   // ==== SERVER ====
   GetServersSummary(GetServersSummary),

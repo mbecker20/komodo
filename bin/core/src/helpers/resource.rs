@@ -7,27 +7,33 @@ use monitor_client::{
   entities::{
     alerter::{
       Alerter, AlerterConfig, AlerterInfo, AlerterListItem,
-      AlerterListItemInfo,
+      AlerterListItemInfo, AlerterQuerySpecifics,
     },
     build::{
-      Build, BuildConfig, BuildInfo, BuildListItem, BuildListItemInfo,
+      Build, BuildConfig, BuildInfo, BuildListItem,
+      BuildListItemInfo, BuildQuerySpecifics,
     },
     builder::{
       Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo,
+      BuilderQuerySpecifics,
     },
     deployment::{
       Deployment, DeploymentConfig, DeploymentImage,
       DeploymentListItem, DeploymentListItemInfo,
+      DeploymentQuerySpecifics,
     },
     permission::PermissionLevel,
     procedure::{
       Procedure, ProcedureConfig, ProcedureListItem,
-      ProcedureListItemInfo,
+      ProcedureListItemInfo, ProcedureQuerySpecifics,
     },
-    repo::{Repo, RepoConfig, RepoInfo, RepoListItem},
-    resource::Resource,
+    repo::{
+      Repo, RepoConfig, RepoInfo, RepoListItem, RepoQuerySpecifics,
+    },
+    resource::{AddFilters, Resource, ResourceQuery},
     server::{
       Server, ServerConfig, ServerListItem, ServerListItemInfo,
+      ServerQuerySpecifics,
     },
     update::{ResourceTarget, ResourceTargetVariant},
     user::User,
@@ -65,6 +71,7 @@ pub trait StateResource {
     + Serialize
     + DeserializeOwned
     + 'static;
+  type QuerySpecifics: AddFilters + Default;
 
   fn name() -> &'static str;
 
@@ -139,6 +146,16 @@ pub trait StateResource {
   }
 
   async fn list_resources_for_user(
+    mut query: ResourceQuery<Self::QuerySpecifics>,
+    user: &User,
+  ) -> anyhow::Result<Vec<Self::ListItem>> {
+    validate_resource_query_tags(&mut query).await;
+    let mut filters = Document::new();
+    query.add_filters(&mut filters);
+    Self::query_resources_for_user(filters, user).await
+  }
+
+  async fn query_resources_for_user(
     mut filters: Document,
     user: &User,
   ) -> anyhow::Result<Vec<Self::ListItem>> {
@@ -258,6 +275,7 @@ impl StateResource for Server {
   type ListItem = ServerListItem;
   type Config = ServerConfig;
   type Info = ();
+  type QuerySpecifics = ServerQuerySpecifics;
 
   fn name() -> &'static str {
     "server"
@@ -302,6 +320,7 @@ impl StateResource for Deployment {
   type ListItem = DeploymentListItem;
   type Config = DeploymentConfig;
   type Info = ();
+  type QuerySpecifics = DeploymentQuerySpecifics;
 
   fn name() -> &'static str {
     "deployment"
@@ -359,6 +378,7 @@ impl StateResource for Build {
   type ListItem = BuildListItem;
   type Config = BuildConfig;
   type Info = BuildInfo;
+  type QuerySpecifics = BuildQuerySpecifics;
 
   fn name() -> &'static str {
     "build"
@@ -395,6 +415,7 @@ impl StateResource for Repo {
   type ListItem = RepoListItem;
   type Config = RepoConfig;
   type Info = RepoInfo;
+  type QuerySpecifics = RepoQuerySpecifics;
 
   fn name() -> &'static str {
     "repo"
@@ -428,6 +449,7 @@ impl StateResource for Builder {
   type ListItem = BuilderListItem;
   type Config = BuilderConfig;
   type Info = ();
+  type QuerySpecifics = BuilderQuerySpecifics;
 
   fn name() -> &'static str {
     "builder"
@@ -473,6 +495,7 @@ impl StateResource for Alerter {
   type ListItem = AlerterListItem;
   type Config = AlerterConfig;
   type Info = AlerterInfo;
+  type QuerySpecifics = AlerterQuerySpecifics;
 
   fn name() -> &'static str {
     "alerter"
@@ -513,6 +536,7 @@ impl StateResource for Procedure {
   type ListItem = ProcedureListItem;
   type Config = ProcedureConfig;
   type Info = ();
+  type QuerySpecifics = ProcedureQuerySpecifics;
 
   fn name() -> &'static str {
     "procedure"
@@ -604,4 +628,12 @@ pub async fn get_resource_ids_for_non_admin(
   .map(|p| p.target.extract_variant_id().1.to_string())
   .collect();
   Ok(permissions)
+}
+
+pub async fn validate_resource_query_tags<T: Default>(
+  query: &mut ResourceQuery<T>,
+) {
+  let futures = query.tags.iter().map(|tag| get_tag(tag));
+  let res = join_all(futures).await;
+  query.tags = res.into_iter().flatten().map(|tag| tag.id).collect();
 }

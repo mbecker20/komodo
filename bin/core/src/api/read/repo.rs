@@ -7,12 +7,11 @@ use monitor_client::{
   entities::{
     permission::PermissionLevel,
     repo::{Repo, RepoActionState, RepoListItem},
-    resource::AddFilters,
     update::ResourceTargetVariant,
     user::User,
   },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId, Document};
+use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
@@ -46,9 +45,7 @@ impl Resolve<ListRepos, User> for State {
     ListRepos { query }: ListRepos,
     user: User,
   ) -> anyhow::Result<Vec<RepoListItem>> {
-    let mut filters = Document::new();
-    query.add_filters(&mut filters);
-    Repo::list_resources_for_user(filters, &user).await
+    Repo::list_resources_for_user(query, &user).await
   }
 }
 

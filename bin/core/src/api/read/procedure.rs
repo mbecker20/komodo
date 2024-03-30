@@ -7,15 +7,14 @@ use monitor_client::{
     GetProcedure, GetProcedureActionState,
     GetProcedureActionStateResponse, GetProcedureResponse,
     GetProceduresSummary, GetProceduresSummaryResponse,
-    ListProcedures, ListProceduresByIds, ListProceduresByIdsResponse,
-    ListProceduresResponse,
+    ListProcedures, ListProceduresResponse,
   },
   entities::{
     permission::PermissionLevel, procedure::Procedure,
-    resource::AddFilters, update::ResourceTargetVariant, user::User,
+    update::ResourceTargetVariant, user::User,
   },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId, Document};
+use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
@@ -49,24 +48,7 @@ impl Resolve<ListProcedures, User> for State {
     ListProcedures { query }: ListProcedures,
     user: User,
   ) -> anyhow::Result<ListProceduresResponse> {
-    let mut filters = Document::new();
-    query.add_filters(&mut filters);
-    Procedure::list_resources_for_user(filters, &user).await
-  }
-}
-
-#[async_trait]
-impl Resolve<ListProceduresByIds, User> for State {
-  async fn resolve(
-    &self,
-    ListProceduresByIds { ids }: ListProceduresByIds,
-    user: User,
-  ) -> anyhow::Result<ListProceduresByIdsResponse> {
-    Procedure::list_resources_for_user(
-      doc! { "_id": { "$in": ids } },
-      &user,
-    )
-    .await
+    Procedure::list_resources_for_user(query, &user).await
   }
 }
 
