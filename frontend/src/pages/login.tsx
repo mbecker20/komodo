@@ -1,12 +1,11 @@
 import { Button } from "@ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@ui/card";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
 import { useAuth, useLoginOptions, useUserInvalidate } from "@lib/hooks";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ThemeToggle } from "@ui/theme";
 import { AUTH_TOKEN_STORAGE_KEY, MONITOR_BASE_URL } from "@main";
-import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 type OauthProvider = "Github" | "Google";
@@ -24,7 +23,7 @@ const sanitize_query = (search: URLSearchParams) => {
   location.replace(
     `${location.origin}${location.pathname}${query.length ? "?" + query : ""}`
   );
-}
+};
 
 /// returns whether to show login / loading screen depending on state of exchange token loop
 const useExchangeToken = () => {
@@ -38,14 +37,14 @@ const useExchangeToken = () => {
     onError: (e) => {
       console.log("exchange token for jwt error:", e);
       sanitize_query(search);
-    }
+    },
   });
   if (!exchange_token) return false;
   mutate({ token: exchange_token });
   return isPending;
 };
 
-export const Login2 = () => {
+export const Login = () => {
   // const exchange_token =
   const options = useLoginOptions().data;
   const [creds, set] = useState({ username: "", password: "" });
@@ -78,8 +77,11 @@ export const Login2 = () => {
       </div>
       <div className="flex justify-center items-center container mt-32">
         <Card className="w-full max-w-[500px] place-self-center">
-          <CardHeader className="flex justify-between items-center">
-            <CardTitle className="text-xl">Monitor</CardTitle>
+          <CardHeader className="flex justify-between">
+            <div>
+              <CardTitle className="text-xl">Monitor</CardTitle>
+              <CardDescription>Log In</CardDescription>
+            </div>
             <div className="flex gap-2">
               {(
                 [
