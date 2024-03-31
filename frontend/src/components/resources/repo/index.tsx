@@ -6,6 +6,7 @@ import { DataTable } from "@ui/data-table";
 import { GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
+import { ResourceLink } from "@components/util";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
@@ -14,6 +15,7 @@ export const RepoComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useRepo(id)?.name}</>,
   Description: ({ id }) => <>{id}</>,
   Icon: () => <GitBranch className="w-4 h-4" />,
+  Link: ({ id }) => <ResourceLink type="Repo" id={id} />,
   Info: [],
   Status: () => <></>,
   Actions: () => <></>,
@@ -30,15 +32,7 @@ export const RepoComponents: RequiredResourceComponents = {
           {
             accessorKey: "id",
             header: "Name",
-            cell: ({ row }) => {
-              const id = row.original.id;
-              return (
-                <Link to={`/repos/${id}`} className="flex items-center gap-2">
-                  <RepoComponents.Icon id={id} />
-                  <RepoComponents.Name id={id} />
-                </Link>
-              );
-            },
+            cell: ({ row }) => <RepoComponents.Link id={row.original.id} />,
           },
           {
             header: "Tags",

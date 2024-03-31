@@ -1,5 +1,5 @@
 import { NewResource } from "@components/layouts";
-import { ConfirmButton } from "@components/util";
+import { ConfirmButton, ResourceLink } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
@@ -24,6 +24,7 @@ const useProcedure = (id?: string) =>
 export const ProcedureComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useProcedure(id)?.name}</>,
   Description: ({ id }) => <>{useProcedure(id)?.info.procedure_type}</>,
+  Link: ({ id }) => <ResourceLink type="Procedure" id={id} />,
   Info: [({ id }) => <>{useProcedure(id)?.info.procedure_type}</>],
   Icon: () => <Route className="w-4" />,
   Status: () => <>Procedure</>,

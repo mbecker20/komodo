@@ -1,8 +1,6 @@
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { Types } from "@monitor/client";
-import { Button } from "@ui/button";
 import { DataTable } from "@ui/data-table";
-import { Link } from "react-router-dom";
 import { useRead } from "@lib/hooks";
 import { ResourceComponents } from "..";
 import {
@@ -27,17 +25,9 @@ export const DeploymentTable = ({
       columns={[
         {
           header: "Name",
-          cell: ({ row }) => {
-            const id = row.original.id;
-            return (
-              <Link to={`/deployments/${id}`}>
-                <Button variant="link" className="flex gap-2 items-center p-0">
-                  <ResourceComponents.Deployment.Icon id={id} />
-                  <ResourceComponents.Deployment.Name id={id} />
-                </Button>
-              </Link>
-            );
-          },
+          cell: ({ row }) => (
+            <ResourceComponents.Deployment.Link id={row.original.id} />
+          ),
         },
         {
           header: "Image",
@@ -52,17 +42,7 @@ export const DeploymentTable = ({
             if (build_id) {
               const build = builds?.find((build) => build.id === build_id);
               if (build) {
-                return (
-                  <Link to={`/builds/${build_id}`}>
-                    <Button
-                      variant="link"
-                      className="flex gap-2 items-center p-0"
-                    >
-                      <ResourceComponents.Build.Icon id={build_id} />
-                      <ResourceComponents.Build.Name id={build_id} />
-                    </Button>
-                  </Link>
-                );
+                return <ResourceComponents.Build.Link id={build_id} />;
               } else {
                 return undefined;
               }
@@ -74,17 +54,9 @@ export const DeploymentTable = ({
         },
         {
           header: "Server",
-          cell: ({ row }) => {
-            const id = row.original.info.server_id;
-            return (
-              <Link to={`/servers/${id}`}>
-                <Button variant="link" className="flex items-center gap-2 p-0">
-                  <ResourceComponents.Server.Icon id={id} />
-                  <ResourceComponents.Server.Name id={id} />
-                </Button>
-              </Link>
-            );
-          },
+          cell: ({ row }) => (
+            <ResourceComponents.Server.Link id={row.original.info.server_id} />
+          ),
         },
         {
           header: "State",

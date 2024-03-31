@@ -35,6 +35,7 @@ export const useDeployment = (id?: string) =>
 export const DeploymentComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useDeployment(id)?.name}</>,
   Description: ({ id }) => <>{useDeployment(id)?.info.status}</>,
+  Link: ({ id }) => <ResourceLink type="Deployment" id={id} />,
   Info: [
     ({ id }) => {
       const info = useDeployment(id)?.info;
@@ -62,7 +63,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
     const color = fill_color_class_by_intention(
       deployment_state_intention(state)
     );
-    return <Rocket className={cn("w-4", color)} />;
+    return <Rocket className={cn("w-4 h-4", state && color)} />;
   },
   Status: ({ id }) => {
     const state =

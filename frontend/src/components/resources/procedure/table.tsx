@@ -1,6 +1,5 @@
 import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
-import { Link } from "react-router-dom";
 import { ProcedureComponents } from ".";
 import { TagsWithBadge } from "@components/tags";
 
@@ -13,18 +12,7 @@ export const ProcedureTable = () => {
         {
           accessorKey: "id",
           header: "Name",
-          cell: ({ row }) => {
-            const id = row.original.id;
-            return (
-              <Link
-                to={`/procedures/${id}`}
-                className="flex items-center gap-2"
-              >
-                <ProcedureComponents.Icon id={id} />
-                <ProcedureComponents.Name id={id} />
-              </Link>
-            );
-          },
+          cell: ({ row }) => <ProcedureComponents.Link id={row.original.id} />,
         },
         {
           header: "Type",

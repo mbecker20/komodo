@@ -18,6 +18,7 @@ import { ResourceComponents } from "..";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
+import { ResourceLink } from "@components/util";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -26,6 +27,7 @@ export const AlerterComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
   Icon: () => <AlarmClock className="w-4 h-4" />,
   Description: ({ id }) => <>{useAlerter(id)?.info.alerter_type} alerter</>,
+  Link: ({ id }) => <ResourceLink type="Alerter" id={id} />,
   Info: [],
   Status: () => <></>,
   Page: {

@@ -18,6 +18,7 @@ import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
 import { ServerInfo } from "./info";
 import { ServersChart } from "./dashboard";
+import { ResourceLink } from "@components/util";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -25,6 +26,7 @@ export const useServer = (id?: string) =>
 export const ServerComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
   Description: ({ id }) => <>{useServer(id)?.info.status}</>,
+  Link: ({ id }) => <ResourceLink type="Server" id={id} />,
   Info: [({ id }) => <ServerInfo id={id} />],
   Icon: ({ id }) => {
     const status = useServer(id)?.info.status;

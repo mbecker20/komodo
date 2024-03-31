@@ -1,9 +1,8 @@
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
-import { Link } from "react-router-dom";
-import { ResourceComponents } from "..";
 import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
+import { ResourceComponents } from "..";
 
 export const BuildTable = () => {
   const builds = useRead("ListBuilds", {}).data;
@@ -19,15 +18,9 @@ export const BuildTable = () => {
         {
           accessorKey: "id",
           header: "Name",
-          cell: ({ row }) => {
-            const id = row.original.id;
-            return (
-              <Link to={`/builds/${id}`} className="flex items-center gap-2">
-                <ResourceComponents.Build.Icon id={id} />
-                <ResourceComponents.Build.Name id={id} />
-              </Link>
-            );
-          },
+          cell: ({ row }) => (
+            <ResourceComponents.Build.Link id={row.original.id} />
+          ),
         },
         {
           header: "Repo",

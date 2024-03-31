@@ -18,6 +18,7 @@ import { Cloud, Bot, Factory } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BuilderConfig } from "./config";
+import { ResourceLink } from "@components/util";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
@@ -25,6 +26,7 @@ const useBuilder = (id?: string) =>
 export const BuilderComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>,
   Description: () => <></>,
+  Link: ({ id }) => <ResourceLink type="Builder" id={id} />,
   Info: [
     ({ id }) => (
       <div className="flex items-center gap-2">

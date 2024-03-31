@@ -1,8 +1,8 @@
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
-import { Link } from "react-router-dom";
 import { ServerComponents } from ".";
+import { ResourceComponents } from "..";
 
 export const ServerTable = () => {
   const servers = useRead("ListServers", {}).data;
@@ -19,24 +19,10 @@ export const ServerTable = () => {
         {
           header: "Name",
           accessorKey: "id",
-          cell: ({
-            row: {
-              original: { id },
-            },
-          }) => {
-            return (
-              <Link to={`/servers/${id}`} className="flex gap-2">
-                <ServerComponents.Icon id={id} />
-                <ServerComponents.Name id={id} />
-              </Link>
-            );
+          cell: ({ row }) => {
+            return <ResourceComponents.Server.Link id={row.original.id} />;
           },
         },
-        // {
-        //   header: "Description",
-        //   accessorKey: "description",
-        // },
-
         {
           header: "Deployments",
           cell: ({ row }) => <DeploymentCountOnServer id={row.original.id} />,

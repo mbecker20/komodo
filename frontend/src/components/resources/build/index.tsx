@@ -1,5 +1,5 @@
 import { NewResource } from "@components/layouts";
-import { ConfirmButton } from "@components/util";
+import { ConfirmButton, ResourceLink } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
@@ -26,8 +26,9 @@ const Icon = ({ id }: { id: string }) => {
 export const BuildComponents: RequiredResourceComponents = {
   Table: BuildTable,
   Dashboard: BuildChart,
-  Name: ({ id }: { id: string }) => <>{useBuild(id)?.name}</>,
+  Name: ({ id }) => <>{useBuild(id)?.name}</>,
   Description: ({ id }) => <>{fmt_version(useBuild(id)?.info.version)}</>,
+  Link: ({ id }) => <ResourceLink type="Build" id={id} />,
   Info: [
     ({ id }) => {
       const ts = useBuild(id)?.info.last_built_at;
