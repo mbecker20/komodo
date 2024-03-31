@@ -22,7 +22,7 @@ const NewBuild = () => {
   const [name, setName] = useState("");
   return (
     <NewResource
-      type="Build"
+      entityType="Build"
       onSuccess={() => mutateAsync({ name, config: {} })}
       enabled={!!name}
     >

@@ -29,7 +29,7 @@ const NewBuilder = () => {
 
   return (
     <NewResource
-      type="Builder"
+      entityType="Builder"
       onSuccess={async () =>
         !!type && mutateAsync({ name, config: { type, params: {} } })
       }

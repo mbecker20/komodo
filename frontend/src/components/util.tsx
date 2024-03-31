@@ -7,22 +7,7 @@ import {
   useState,
 } from "react";
 import { Button } from "../ui/button";
-import {
-  Box,
-  Boxes,
-  Check,
-  Copy,
-  FolderTree,
-  Key,
-  Loader2,
-  LogOut,
-  Moon,
-  Settings,
-  SunMedium,
-  Tag,
-  User,
-  UserCircle2,
-} from "lucide-react";
+import { Check, Copy, Loader2, LogOut, Settings, User } from "lucide-react";
 import { Input } from "../ui/input";
 import {
   Dialog,
@@ -33,25 +18,18 @@ import {
   DialogFooter,
 } from "@ui/dialog";
 import { toast, useToast } from "@ui/use-toast";
-import { RESOURCE_TARGETS, cn } from "@lib/utils";
-import {
-  useInvalidate,
-  useRead,
-  useResourceParamType,
-  useWrite,
-} from "@lib/hooks";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { cn } from "@lib/utils";
+import { useInvalidate, useWrite } from "@lib/hooks";
+import { Link, useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { ResourceComponents } from "./resources";
 import { Types } from "@monitor/client";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
+import { UsableResource } from "@types";
+import { ResourceComponents } from "./resources";
 
 export const WithLoading = ({
   children,
@@ -87,26 +65,6 @@ export const ConfigInput = ({
     onChange={({ target }) => onChange(target.value)}
   />
 );
-
-export const ThemeToggle = () => {
-  const [theme, set] = useState(localStorage.getItem("theme"));
-
-  useEffect(() => {
-    localStorage.setItem("theme", theme ?? "dark");
-    if (theme === "dark") document.body.classList.remove("dark");
-    else document.body.classList.add("dark");
-  }, [theme]);
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => set(theme === "dark" ? "light" : "dark")}
-    >
-      <SunMedium className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="w-4 h-4 absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-    </Button>
-  );
-};
 
 export const ActionButton = forwardRef<
   HTMLButtonElement,
@@ -326,145 +284,6 @@ export const ConfirmButton = ({
   );
 };
 
-export const ResourceTypeDropdown = () => {
-  const type = useResourceParamType();
-  const Components = ResourceComponents[type];
-
-  const [icon, title] = type
-    ? [<Components.Icon />, type + "s"]
-    : location.pathname === "/tree"
-    ? [<FolderTree className="w-4 h-4" />, "Tree"]
-    : location.pathname === "/keys"
-    ? [<Key className="w-4 h-4" />, "Api Keys"]
-    : location.pathname === "/tags"
-    ? [<Tag className="w-4 h-4" />, "Tags"]
-    : location.pathname === "/users"
-    ? [<UserCircle2 className="w-4 h-4" />, "Users"]
-    : [<Box className="w-4 h-4" />, "Dashboard"];
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-36 justify-between px-3">
-          <div className="flex items-center gap-2">
-            {icon}
-            {title}
-          </div>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-36" side="bottom">
-        <DropdownMenuGroup>
-          <Link to="/">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <Box className="w-4 h-4" />
-              Dashboard
-            </DropdownMenuItem>
-          </Link>
-
-          <DropdownMenuSeparator />
-
-          <Link to="/resources">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <Boxes className="w-4 h-4" />
-              Resources
-            </DropdownMenuItem>
-          </Link>
-          <Link to="/tree">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <FolderTree className="w-4 h-4" />
-              Tree
-            </DropdownMenuItem>
-          </Link>
-
-          <DropdownMenuSeparator />
-
-          {RESOURCE_TARGETS.map((rt) => {
-            const RTIcon = ResourceComponents[rt].Icon;
-            return (
-              <Link key={rt} to={`/${rt.toLowerCase()}s`}>
-                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                  <RTIcon />
-                  {rt}s
-                </DropdownMenuItem>
-              </Link>
-            );
-          })}
-
-          <DropdownMenuSeparator />
-
-          <Link to="/tags">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <Tag className="w-4 h-4" />
-              Tags
-            </DropdownMenuItem>
-          </Link>
-
-          <DropdownMenuSeparator />
-
-          <Link to="/keys">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <Box className="w-4 h-4" />
-              Api Keys
-            </DropdownMenuItem>
-          </Link>
-          <Link to="/users">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <UserCircle2 className="w-4 h-4" />
-              Users
-            </DropdownMenuItem>
-          </Link>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
-export const ResourcesDropdown = () => {
-  const type = useResourceParamType();
-  const id = useParams().id as string;
-  const list = useRead(`List${type}s`, {}).data;
-
-  const selected = list?.find((i) => i.id === id);
-  const Components = ResourceComponents[type];
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-48 justify-between px-3">
-          <div className="flex items-center gap-2">
-            <Components.Icon id={selected?.id} />
-            {selected ? selected.name : `All ${type}s`}
-          </div>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-48" side="bottom">
-        <DropdownMenuGroup>
-          <Link to={`/${type.toLowerCase()}s`}>
-            <DropdownMenuItem className="flex items-center gap-2">
-              <Components.Icon />
-              All {type}s
-            </DropdownMenuItem>
-          </Link>
-        </DropdownMenuGroup>
-        <DropdownMenuGroup>
-          {!list?.length && (
-            <DropdownMenuItem disabled>No {type}s Found.</DropdownMenuItem>
-          )}
-
-          {list?.map(({ id, name }) => (
-            <Link key={id} to={`/${type.toLowerCase()}s/${id}`}>
-              <DropdownMenuItem className="flex items-center gap-2">
-                <Components.Icon id={id} />
-                {name}
-              </DropdownMenuItem>
-            </Link>
-          ))}
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
 export const Logout = () => (
   <Button
     variant="ghost"
@@ -549,4 +368,22 @@ const alert_level_text_color = (level: Types.SeverityLevel) => {
 
 export const AlertLevel = ({ level }: { level: Types.SeverityLevel }) => {
   return <div className={alert_level_text_color(level)}>{level}</div>;
+};
+
+export const ResourceLink = ({
+  type,
+  id,
+}: {
+  type: UsableResource;
+  id: string;
+}) => {
+  const Components = ResourceComponents[type];
+  return (
+    <Link to={`/${type.toLowerCase()}s/${id}`}>
+      <Button variant="link" className="flex gap-2 items-center p-0">
+        <Components.Icon id={id} />
+        <Components.Name id={id} />
+      </Button>
+    </Link>
+  );
 };

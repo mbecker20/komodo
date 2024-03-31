@@ -29,7 +29,7 @@ const NewAlerter = () => {
 
   return (
     <NewResource
-      type="Alerter"
+      entityType="Alerter"
       onSuccess={async () =>
         !!type && mutateAsync({ name, config: { type, params: {} } })
       }

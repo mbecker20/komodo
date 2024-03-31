@@ -101,10 +101,7 @@ export const DeploymentTable = ({
           cell: ({ row }) => {
             const id = row.original.id;
             return (
-              <Link
-                to={`/deployments/${id}`}
-                className="flex items-center gap-2"
-              >
+              <Link to={`/deployments/${id}`}>
                 <Button variant="link" className="flex gap-2 items-center p-0">
                   <ResourceComponents.Deployment.Icon id={id} />
                   <ResourceComponents.Deployment.Name id={id} />
@@ -214,7 +211,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
     const [name, setName] = useState("");
     return (
       <NewResource
-        type="Deployment"
+        entityType="Deployment"
         onSuccess={() => mutateAsync({ name, config: {} })}
         enabled={!!name}
       >

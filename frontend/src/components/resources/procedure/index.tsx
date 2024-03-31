@@ -95,7 +95,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
     const [type, setType] = useState<Types.ProcedureConfig["type"]>("Sequence");
     return (
       <NewResource
-        type="Procedure"
+        entityType="Procedure"
         onSuccess={() => mutateAsync({ name, config: { type, data: [] } })}
         enabled={!!name}
       >

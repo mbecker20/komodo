@@ -133,7 +133,7 @@ const NewServer = () => {
   const [name, setName] = useState("");
   return (
     <NewResource
-      type="Server"
+      entityType="Server"
       onSuccess={() => mutateAsync({ name, config: {} })}
       enabled={!!name}
     >

@@ -14,12 +14,15 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { UsableResource } from "@types";
+import { useToast } from "@ui/use-toast";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 // ============== RESOLVER ==============
 
-const token = () => ({ jwt: localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ?? "" });
+const token = () => ({
+  jwt: localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) ?? "",
+});
 const client = () => Client(MONITOR_BASE_URL, { type: "jwt", params: token() });
 
 export const useLoginOptions = () =>
@@ -88,11 +91,19 @@ export const useWrite = <
   type: T,
   config?: C
 ) =>
-  useMutation({
-    mutationKey: [type],
-    mutationFn: (params: P) => client().write({ type, params } as R),
-    ...config,
-  });
+  {
+    const { toast } = useToast();
+    return useMutation({
+      mutationKey: [type],
+      mutationFn: (params: P) => client().write({ type, params } as R),
+      ...config,
+      onError: (e, v, c) => {
+        console.log("useWrite error:", e);
+        toast({ title: `Request ${type} Failed`,  });
+        config?.onError && config.onError(e, v, c);
+      },
+    });
+  };
 
 export const useExecute = <
   T extends Types.ExecuteRequest["type"],

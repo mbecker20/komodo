@@ -162,10 +162,12 @@ export const ResourceSelector = ({
   type,
   selected,
   onSelect,
+  disabled,
 }: {
   type: UsableResources;
   selected: string | undefined;
-  onSelect: (id: string) => void;
+  onSelect?: (id: string) => void;
+  disabled?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -178,9 +180,9 @@ export const ResourceSelector = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="secondary" className="flex gap-2">
+        <Button variant="secondary" className="flex gap-2" disabled={disabled}>
           {name ?? `Select ${type}`}
-          <ChevronsUpDown className="w-3 h-3" />
+          {!disabled && <ChevronsUpDown className="w-3 h-3" />}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] max-h-[200px] p-0" sideOffset={12}>
@@ -199,7 +201,7 @@ export const ResourceSelector = ({
             {resources.map((resource) => (
               <CommandItem
                 key={resource.id}
-                onSelect={() => onSelect(resource.id)}
+                onSelect={() => onSelect && onSelect(resource.id)}
                 className="flex items-center justify-between"
               >
                 <div className="p-1">{resource.name}</div>

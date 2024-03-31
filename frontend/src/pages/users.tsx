@@ -1,11 +1,22 @@
 import { Page, Section } from "@components/layouts";
-import { ConfirmButton } from "@components/util";
+import { ConfirmButton, ResourceLink } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { Types } from "@monitor/client";
+import { UsableResource } from "@types";
 import { DataTable } from "@ui/data-table";
+import { Input } from "@ui/input";
 import { Label } from "@ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
 import { Switch } from "@ui/switch";
 import { useToast } from "@ui/use-toast";
 import { UserCheck, UserMinus } from "lucide-react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const UsersPage = () => {
@@ -45,10 +56,16 @@ export const UserPage = () => {
     },
   });
   const enabledClass = user?.enabled ? "text-green-500" : "text-red-500";
+  const avatar = (user?.config.data as any)?.avatar as string | undefined;
   return (
     user && (
       <Page
-        title={user?.username}
+        title={
+          <div className="flex gap-4 items-center">
+            {user?.username}{" "}
+            {avatar && <img src={avatar} alt="" className="w-7 h-7" />}
+          </div>
+        }
         subtitle={
           <div className="text-sm text-muted-foreground flex gap-2">
             <div className={enabledClass}>
@@ -98,19 +115,292 @@ export const UserPage = () => {
           )
         }
       >
-        <PermissionsTable />
+        {!user.admin && <PermissionsTable />}
       </Page>
     )
   );
 };
 
+const useUserPermissions = (user_id: string) => {
+  const permissions = useRead("ListUserPermissions", { user_id }).data;
+  const servers = useRead("ListServers", {}).data;
+  const deployments = useRead("ListDeployments", {}).data;
+  const builds = useRead("ListBuilds", {}).data;
+  const repos = useRead("ListRepos", {}).data;
+  const procedures = useRead("ListProcedures", {}).data;
+  const builders = useRead("ListBuilders", {}).data;
+  const alerters = useRead("ListAlerters", {}).data;
+  const perms: (Types.Permission & { name: string })[] = [];
+  servers?.forEach((server) => {
+    const perm = permissions?.find(
+      (p) => p.target.type === "Server" && p.target.id === server.id
+    );
+    if (perm) {
+      perms.push({ ...perm, name: server.name });
+    } else {
+      perms.push({
+        user_id,
+        name: server.name,
+        level: Types.PermissionLevel.None,
+        target: { type: "Server", id: server.id },
+      });
+    }
+  });
+  deployments?.forEach((deployment) => {
+    const perm = permissions?.find(
+      (p) => p.target.type === "Deployment" && p.target.id === deployment.id
+    );
+    if (perm) {
+      perms.push({ ...perm, name: deployment.name });
+    } else {
+      perms.push({
+        user_id,
+        name: deployment.name,
+        level: Types.PermissionLevel.None,
+        target: { type: "Deployment", id: deployment.id },
+      });
+    }
+  });
+  builds?.forEach((build) => {
+    const perm = permissions?.find(
+      (p) => p.target.type === "Build" && p.target.id === build.id
+    );
+    if (perm) {
+      perms.push({ ...perm, name: build.name });
+    } else {
+      perms.push({
+        user_id,
+        name: build.name,
+        level: Types.PermissionLevel.None,
+        target: { type: "Build", id: build.id },
+      });
+    }
+  });
+  repos?.forEach((repo) => {
+    const perm = permissions?.find(
+      (p) => p.target.type === "Repo" && p.target.id === repo.id
+    );
+    if (perm) {
+      perms.push({ ...perm, name: repo.name });
+    } else {
+      perms.push({
+        user_id,
+        name: repo.name,
+        level: Types.PermissionLevel.None,
+        target: { type: "Repo", id: repo.id },
+      });
+    }
+  });
+  procedures?.forEach((procedure) => {
+    const perm = permissions?.find(
+      (p) => p.target.type === "Procedure" && p.target.id === procedure.id
+    );
+    if (perm) {
+      perms.push({ ...perm, name: procedure.name });
+    } else {
+      perms.push({
+        user_id,
+        name: procedure.name,
+        level: Types.PermissionLevel.None,
+        target: { type: "Procedure", id: procedure.id },
+      });
+    }
+  });
+  builders?.forEach((builder) => {
+    const perm = permissions?.find(
+      (p) => p.target.type === "Builder" && p.target.id === builder.id
+    );
+    if (perm) {
+      perms.push({ ...perm, name: builder.name });
+    } else {
+      perms.push({
+        user_id,
+        name: builder.name,
+        level: Types.PermissionLevel.None,
+        target: { type: "Builder", id: builder.id },
+      });
+    }
+  });
+  alerters?.forEach((alerter) => {
+    const perm = permissions?.find(
+      (p) => p.target.type === "Alerter" && p.target.id === alerter.id
+    );
+    if (perm) {
+      perms.push({ ...perm, name: alerter.name });
+    } else {
+      perms.push({
+        user_id,
+        name: alerter.name,
+        level: Types.PermissionLevel.None,
+        target: { type: "Alerter", id: alerter.id },
+      });
+    }
+  });
+  return perms;
+};
+
 const PermissionsTable = () => {
+  const [showNone, setShowNone] = useState(false);
+  const [search, setSearch] = useState("");
+  const searchSplit = search.toLowerCase().split(" ");
   const inv = useInvalidate();
   const user_id = useParams().id as string;
-  // const permissions = useRead("")
+  const permissions = useUserPermissions(user_id);
+  const { mutate } = useWrite("UpdateUserPermissionsOnTarget", {
+    onSuccess: () => inv(["ListUserPermissions"]),
+  });
   return (
-    <Section title="Permissions">
-      <DataTable data={[]} columns={[]} />
+    <Section
+      title="Permissions"
+      actions={
+        <div className="flex gap-6 items-center">
+          <div
+            className="flex gap-3 items-center"
+            onClick={() => setShowNone(!showNone)}
+          >
+            <Label htmlFor="show-none">Show All Resources</Label>
+            <Switch id="show-none" checked={showNone} />
+          </div>
+          <Input
+            placeholder="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-48"
+          />
+        </div>
+      }
+    >
+      <DataTable
+        data={
+          permissions
+            ?.filter((permission) =>
+              showNone ? true : permission.level !== Types.PermissionLevel.None
+            )
+            .filter((permission) =>
+              searchSplit.every(
+                (search) =>
+                  permission.name.toLowerCase().includes(search) ||
+                  permission.target.type.toLowerCase().includes(search)
+              )
+            ) ?? []
+        }
+        columns={[
+          {
+            header: "Resource",
+            accessorKey: "target.type",
+          },
+          {
+            header: "Target",
+            cell: ({
+              row: {
+                original: { target },
+              },
+            }) => {
+              return (
+                <ResourceLink
+                  type={target.type as UsableResource}
+                  id={target.id}
+                />
+              );
+            },
+          },
+          {
+            header: "Level",
+            cell: ({ row: { original: permission } }) => (
+              <Select
+                value={permission.level}
+                onValueChange={(value) =>
+                  mutate({
+                    ...permission,
+                    user_id,
+                    permission: value as Types.PermissionLevel,
+                  })
+                }
+              >
+                <SelectTrigger className="w-32 capitalize">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="w-32">
+                  {Object.keys(Types.PermissionLevel).map((permission) => (
+                    <SelectItem
+                      value={permission}
+                      key={permission}
+                      className="capitalize"
+                    >
+                      {permission}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ),
+          },
+        ]}
+      />
     </Section>
   );
-}
+};
+
+// const CreatePermission = ({ user_id }: { user_id: string }) => {
+//   const inv = useInvalidate();
+//   const { mutate } = useWrite("UpdateUserPermissionsOnTarget", {
+//     onSuccess: () => inv(["ListUserPermissions", { user_id }]),
+//   });
+//   const [type, setType] = useState<UsableResource>("Server");
+//   const [id, setId] = useState("");
+//   const [permission, setPermission] = useState(Types.PermissionLevel.Read);
+//   return (
+//     <NewResource
+//       entityType="Permission"
+//       onSuccess={async () =>
+//         mutate({ user_id, target: { type, id }, permission })
+//       }
+//       enabled
+//     >
+//       <div className="flex items-center justify-between">
+//         Target Type{" "}
+//         <Select
+//           value={type}
+//           onValueChange={(value) => setType(value as UsableResource)}
+//         >
+//           <SelectTrigger className="w-32 capitalize">
+//             <SelectValue />
+//           </SelectTrigger>
+//           <SelectContent className="w-32">
+//             {RESOURCE_TARGETS.map((type) => (
+//               <SelectItem value={type} key={type} className="capitalize">
+//                 {type}
+//               </SelectItem>
+//             ))}
+//           </SelectContent>
+//         </Select>
+//       </div>
+//       <div className="flex items-center justify-between">
+//         Target <ResourceSelector type={type} selected={id} onSelect={setId} />
+//       </div>
+//       <div className="flex items-center justify-between">
+//         Level{" "}
+//         <Select
+//           value={permission}
+//           onValueChange={(value) =>
+//             setPermission(value as Types.PermissionLevel)
+//           }
+//         >
+//           <SelectTrigger className="w-32 capitalize">
+//             <SelectValue />
+//           </SelectTrigger>
+//           <SelectContent className="w-32">
+//             {Object.keys(Types.PermissionLevel).map((permission) => (
+//               <SelectItem
+//                 value={permission}
+//                 key={permission}
+//                 className="capitalize"
+//               >
+//                 {permission}
+//               </SelectItem>
+//             ))}
+//           </SelectContent>
+//         </Select>
+//       </div>
+//     </NewResource>
+//   );
+// };

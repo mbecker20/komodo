@@ -1,12 +1,7 @@
-import { useResourceParamType } from "@lib/hooks";
 import { Button } from "@ui/button";
-import { ThemeToggle } from "@ui/theme";
 import { PlusCircle } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { Omnibar } from "./omnibar";
-import { WsStatusIndicator } from "@lib/socket";
-import { UsableResource } from "@types";
 import {
   Dialog,
   DialogContent,
@@ -25,37 +20,13 @@ import {
   CardContent,
   CardFooter,
 } from "@ui/card";
-import { Logout, ResourceTypeDropdown, ResourcesDropdown } from "./util";
-import { HeaderUpdates } from "./updates/header";
 import { ResourceTags } from "./tags";
+import { Topbar } from "./topbar";
 
 export const Layout = () => {
-  const type = useResourceParamType();
   return (
     <>
-      <div className="sticky top-0 border-b bg-background z-50 w-full">
-        <div className="container flex items-center justify-between py-4 gap-8">
-          <div className="flex items-center gap-4">
-            <Link to={"/"} className="text-2xl tracking-widest">
-              MONITOR
-            </Link>
-            <div className="flex gap-2">
-              <ResourceTypeDropdown />
-              {type && <ResourcesDropdown />}
-            </div>
-          </div>
-          <div className="flex md:gap-4">
-            <Omnibar />
-            <div className="flex">
-              <WsStatusIndicator />
-              <HeaderUpdates />
-              <ThemeToggle />
-              {/* <UserSettings /> */}
-              <Logout />
-            </div>
-          </div>
-        </div>
-      </div>
+      <Topbar />
       <Outlet />
     </>
   );
@@ -103,10 +74,12 @@ interface SectionProps {
 export const Section = ({ title, icon, actions, children }: SectionProps) => (
   <div className="flex flex-col gap-4">
     <div className="flex items-start justify-between">
-      {(title || icon) && <div className="flex items-center gap-2 text-muted-foreground">
-        {icon}
-        <h2 className="text-xl">{title}</h2>
-      </div>}
+      {(title || icon) && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          {icon}
+          <h2 className="text-xl">{title}</h2>
+        </div>
+      )}
       {actions}
     </div>
     {children}
@@ -114,12 +87,12 @@ export const Section = ({ title, icon, actions, children }: SectionProps) => (
 );
 
 export const NewResource = ({
-  type,
+  entityType,
   children,
   enabled,
   onSuccess,
 }: {
-  type: UsableResource;
+  entityType: String;
   children: ReactNode;
   enabled: boolean;
   onSuccess: () => Promise<unknown>;
@@ -129,13 +102,16 @@ export const NewResource = ({
   return (
     <Dialog open={open} onOpenChange={set}>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="items-center gap-2">
-          New {type} <PlusCircle className="w-4 h-4" />
+        <Button
+          variant="secondary"
+          className="items-center gap-2"
+        >
+          New {entityType} <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New {type}</DialogTitle>
+          <DialogTitle>New {entityType}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-8">{children}</div>
         <DialogFooter>
