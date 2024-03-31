@@ -368,8 +368,4 @@ pub enum Operation {
   // user
   UpdateUserPermissions,
   UpdateUserPermissionsOnTarget,
-
-  // github webhook automation
-  AutoBuild,
-  AutoPull,
 }

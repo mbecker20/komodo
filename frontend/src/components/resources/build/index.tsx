@@ -73,6 +73,10 @@ const BuildTable = () => {
           },
         },
         {
+          header: "Repo",
+          accessorKey: "info.repo"
+        },
+        {
           header: "Version",
           accessorFn: ({ info }) => fmt_version(info.version),
         },
@@ -113,6 +117,7 @@ export const BuildComponents: RequiredResourceComponents = {
       </div>
     );
   },
+  Status: () => <>Build</>,
   Page: {
     Config: ({ id }) => <BuildConfig id={id} />,
   },

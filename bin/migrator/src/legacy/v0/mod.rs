@@ -203,8 +203,8 @@ impl From<Operation> for monitor_client::entities::Operation {
       Operation::ModifyUserPermissions => {
         UpdateUserPermissionsOnTarget
       }
-      Operation::AutoBuild => AutoBuild,
-      Operation::AutoPull => AutoPull,
+      Operation::AutoBuild => RunBuild,
+      Operation::AutoPull => PullRepo,
     }
   }
 }

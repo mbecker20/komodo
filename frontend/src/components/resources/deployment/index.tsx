@@ -189,6 +189,15 @@ export const DeploymentComponents: RequiredResourceComponents = {
   Description,
   Info,
   Icon,
+  Status: ({ id }) => {
+    const state =
+      useDeployment(id)?.info.state ?? Types.DockerContainerState.Unknown;
+    return (
+      <div className={deployment_state_text_color(state)}>
+        {snake_case_to_upper_space_case(state)}
+      </div>
+    );
+  },
   Actions: ({ id }) => (
     <div className="flex gap-4">
       <RedeployContainer id={id} />

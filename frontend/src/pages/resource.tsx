@@ -25,11 +25,12 @@ export const Resource = () => {
       }
       subtitle={
         <div className="text-sm text-muted-foreground flex flex-col gap-2">
-          <div className="flex gap-2">
-            <Components.Icon id={id} />
-            <Components.Description id={id} />
-          </div>
-          <div className="flex gap-8">
+          <div className="flex gap-4 items-center">
+            <div className="flex gap-2 items-center">
+              <Components.Icon id={id} />
+              <Components.Status id={id} />
+            </div>
+            |
             <Components.Info id={id} />
           </div>
         </div>

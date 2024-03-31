@@ -1,15 +1,6 @@
 import { useRead, useResourceParamType } from "@lib/hooks";
 import { ResourceComponents } from "./resources";
-import {
-  Box,
-  Boxes,
-  FolderTree,
-  Key,
-  Moon,
-  SunMedium,
-  Tag,
-  UserCircle2,
-} from "lucide-react";
+import { Box, Boxes, FolderTree, Key, Tag, UserCircle2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,8 +15,8 @@ import { RESOURCE_TARGETS } from "@lib/utils";
 import { Omnibar } from "./omnibar";
 import { WsStatusIndicator } from "@lib/socket";
 import { HeaderUpdates } from "./updates/header";
-import { useEffect, useState } from "react";
 import { Logout } from "./util";
+import { ThemeToggle } from "@ui/theme";
 
 export const Topbar = () => {
   const type = useResourceParamType();
@@ -53,26 +44,6 @@ export const Topbar = () => {
         </div>
       </div>
     </div>
-  );
-};
-
-const ThemeToggle = () => {
-  const [theme, set] = useState(localStorage.getItem("theme"));
-
-  useEffect(() => {
-    localStorage.setItem("theme", theme ?? "dark");
-    if (theme === "dark") document.body.classList.remove("dark");
-    else document.body.classList.add("dark");
-  }, [theme]);
-
-  return (
-    <Button
-      variant="ghost"
-      onClick={() => set(theme === "dark" ? "light" : "dark")}
-    >
-      <SunMedium className="w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-      <Moon className="w-4 h-4 absolute rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-    </Button>
   );
 };
 

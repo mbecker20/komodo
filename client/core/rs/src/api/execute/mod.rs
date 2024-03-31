@@ -1,3 +1,4 @@
+use derive_variants::EnumVariants;
 use resolver_api::HasResponse;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
@@ -17,7 +18,8 @@ pub use server::*;
 pub trait MonitorExecuteRequest: HasResponse {}
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, EnumVariants)]
+#[variant_derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(tag = "type", content = "params")]
 pub enum Execution {
   /// For new executions upon instantiation

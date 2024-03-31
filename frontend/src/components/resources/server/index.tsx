@@ -48,24 +48,27 @@ export const ServerInfo = ({
   return (
     <>
       {showRegion && (
-        <div className="flex items-center gap-2">
-          <MapPin className="w-4 h-4" />
-          {useServer(id)?.info.region}
-        </div>
+        <>
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4" />
+            {useServer(id)?.info.region}
+          </div>
+          |
+        </>
       )}
-      <div className="flex gap-4 text-muted-foreground">
-        <div className="flex gap-2 items-center">
-          <Cpu className="w-4 h-4" />
-          {info?.core_count ?? "N/A"} Core(s)
-        </div>
-        <div className="flex gap-2 items-center">
-          <MemoryStick className="w-4 h-4" />
-          {stats?.mem_total_gb.toFixed(2) ?? "N/A"} GB
-        </div>
-        <div className="flex gap-2 items-center">
-          <Database className="w-4 h-4" />
-          {stats?.disk_total_gb.toFixed(2) ?? "N/A"} GB
-        </div>
+      <div className="flex gap-2 items-center">
+        <Cpu className="w-4 h-4" />
+        {info?.core_count ?? "N/A"} Core(s)
+      </div>
+      |
+      <div className="flex gap-2 items-center">
+        <MemoryStick className="w-4 h-4" />
+        {stats?.mem_total_gb.toFixed(2) ?? "N/A"} GB
+      </div>
+      |
+      <div className="flex gap-2 items-center">
+        <Database className="w-4 h-4" />
+        {stats?.disk_total_gb.toFixed(2) ?? "N/A"} GB
       </div>
     </>
   );
@@ -196,6 +199,14 @@ const ServerTable = () => {
         },
         { header: "Region", accessorKey: "info.region" },
         {
+          header: "State",
+          cell: ({
+            row: {
+              original: { id },
+            },
+          }) => <ServerComponents.Status id={id} />,
+        },
+        {
           header: "Tags",
           cell: ({ row }) => {
             return (
@@ -216,6 +227,20 @@ export const ServerComponents: RequiredResourceComponents = {
   Info: ({ id }) => <ServerInfo id={id} />,
   Actions: () => null,
   Icon: ServerIconComponent,
+  Status: ({ id }) => {
+    const status = useServer(id)?.info.status;
+    const stateClass =
+      status === Types.ServerStatus.Ok
+        ? "text-green-500"
+        : status === Types.ServerStatus.NotOk
+        ? "text-red-500"
+        : "text-blue-500";
+    return (
+      <div className={stateClass}>
+        {status === Types.ServerStatus.NotOk ? "Not Ok" : status}
+      </div>
+    );
+  },
   Page: {
     Stats: ({ id }) => <ServerStats server_id={id} />,
     Deployments: ({ id }) => {

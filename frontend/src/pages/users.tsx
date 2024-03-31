@@ -33,7 +33,19 @@ export const UsersPage = () => {
             header: "Level",
             accessorFn: (user) => (user.admin ? "Admin" : "User"),
           },
-          { header: "Enabled", accessorKey: "enabled" },
+          {
+            header: "Enabled",
+            cell: ({ row }) => {
+              const enabledClass = row.original.enabled
+                ? "text-green-500"
+                : "text-red-500";
+              return (
+                <div className={enabledClass}>
+                  {row.original.enabled ? "Enabled" : "Disabled"}
+                </div>
+              );
+            },
+          },
         ]}
         onRowClick={(user) => nav(`/users/${user._id!.$oid}`)}
       />

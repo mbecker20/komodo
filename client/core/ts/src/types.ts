@@ -141,6 +141,7 @@ export type GetBuildResponse = Build;
 export interface BuildListItemInfo {
 	last_built_at: I64;
 	version: Version;
+	repo: string;
 }
 
 export type BuildListItem = ResourceListItem<BuildListItemInfo>;
@@ -1728,14 +1729,14 @@ export interface AwsBuilderConfig {
 	region: string;
 	instance_type: string;
 	volume_gb: number;
+	/** The port periphery will be running on */
+	port: number;
 	ami_id: string;
 	subnet_id: string;
 	security_group_ids: string[];
 	key_pair_name: string;
 	assign_public_ip: boolean;
 	use_public_ip: boolean;
-	/** The port periphery will be running on */
-	port: number;
 	github_accounts?: string[];
 	docker_accounts?: string[];
 }
