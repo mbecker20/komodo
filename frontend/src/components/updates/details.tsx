@@ -16,9 +16,9 @@ import {
 } from "@ui/card";
 import { ReactNode, useState } from "react";
 import { useRead } from "@lib/hooks";
-import { fmt_duration, fmt_version } from "@lib/utils";
 import { ResourceComponents } from "@components/resources";
 import { Link } from "react-router-dom";
+import { fmt_duration, fmt_version } from "@lib/formatting";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data;

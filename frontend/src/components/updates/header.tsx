@@ -10,8 +10,9 @@ import { Button } from "@ui/button";
 import { Calendar, User } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
 import { ResourceComponents } from "@components/resources";
-import { cn, fmt_date, fmt_version } from "@lib/utils";
+import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
+import { fmt_date, fmt_version } from "@lib/formatting";
 
 export const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
   const Components =

@@ -1,7 +1,6 @@
 import { Page } from "@components/layouts";
 import { ConfirmButton, CopyButton } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { fmt_date } from "@lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { DataTable } from "@ui/data-table";
+import { fmt_date } from "@lib/formatting";
 
 export const Keys = () => {
   const keys = useRead("ListApiKeys", {}).data ?? [];

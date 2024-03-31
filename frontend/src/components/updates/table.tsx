@@ -1,4 +1,4 @@
-import { fmt_date_with_minutes } from "@lib/utils";
+import { fmt_date_with_minutes } from "@lib/formatting";
 import { Types } from "@monitor/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@ui/data-table";
@@ -8,7 +8,7 @@ export const UpdatesTable = ({
   showTarget,
 }: {
   updates: Types.UpdateListItem[];
-	showTarget?: boolean;
+  showTarget?: boolean;
 }) => {
   let data: ColumnDef<Types.UpdateListItem, string>[] = [
     {
@@ -39,13 +39,8 @@ export const UpdatesTable = ({
         header: "Target",
         accessorKey: "target.id",
       },
-      ...data
+      ...data,
     ];
   }
-  return (
-    <DataTable
-      data={updates}
-      columns={data}
-    />
-  );
+  return <DataTable data={updates} columns={data} />;
 };

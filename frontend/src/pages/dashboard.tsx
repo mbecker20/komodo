@@ -5,7 +5,6 @@ import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { ServerComponents } from "@components/resources/server";
 import { AlertLevel } from "@components/util";
-import { fmt_date_with_minutes } from "@lib/utils";
 import { Button } from "@ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DeploymentComponents } from "@components/resources/deployment";
@@ -18,6 +17,7 @@ import { TagsSummary } from "@components/dashboard/tags";
 import { ApiKeysSummary } from "@components/dashboard/api-keys";
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
+import { fmt_date_with_minutes } from "@lib/formatting";
 
 export const Dashboard = () => {
   return (
