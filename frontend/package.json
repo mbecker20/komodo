@@ -27,7 +27,7 @@
     "@tanstack/react-table": "^8.11.6",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
-    "cmdk": "^0.2.0",
+    "cmdk": "^1.0.0",
     "jotai": "^2.6.1",
     "lightweight-charts": "^4.1.1",
     "lucide-react": "^0.309.0",
