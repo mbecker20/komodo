@@ -57,14 +57,22 @@ impl GoogleOauthClient {
       warn!("google oauth is enabled, but 'config.google_oauth.secret' is not configured");
       return None;
     }
+    let scopes = urlencoding::encode(
+      &[
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+      ]
+      .join(" "),
+    )
+    .to_string();
     GoogleOauthClient {
       http: Default::default(),
       client_id: id.clone(),
       client_secret: secret.clone(),
       redirect_uri: format!("{host}/auth/google/callback"),
       user_agent: String::from("monitor"),
-      scopes: Default::default(),
       states: Default::default(),
+      scopes,
     }
     .into()
   }
