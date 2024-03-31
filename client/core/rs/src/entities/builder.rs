@@ -163,16 +163,19 @@ pub struct AwsBuilderConfig {
   #[partial_default(aws_default_volume_gb())]
   pub volume_gb: i32,
 
+  /// The port periphery will be running on
+  #[serde(default = "default_port")]
+  #[builder(default = "default_port()")]
+  #[partial_default(default_port())]
+  pub port: i32,
+
   pub ami_id: String,
   pub subnet_id: String,
   pub security_group_ids: Vec<String>,
   pub key_pair_name: String,
   pub assign_public_ip: bool,
   pub use_public_ip: bool,
-
-  /// The port periphery will be running on
-  #[serde(default = "default_port")]
-  pub port: i32,
+  
   #[serde(default)]
   pub github_accounts: Vec<String>,
   #[serde(default)]
