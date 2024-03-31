@@ -35,6 +35,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@ui/command";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
 
@@ -194,21 +195,24 @@ export const ResourceSelector = ({
             value={input}
             onValueChange={setInput}
           />
-          <CommandEmpty className="flex justify-evenly items-center">
-            {`No ${type}s Found`}
-            <SearchX className="w-3 h-3" />
-          </CommandEmpty>
-          <CommandGroup>
-            {resources.map((resource) => (
-              <CommandItem
-                key={resource.id}
-                onSelect={() => onSelect && onSelect(resource.id)}
-                className="flex items-center justify-between"
-              >
-                <div className="p-1">{resource.name}</div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <CommandList>
+            <CommandEmpty className="flex justify-evenly items-center">
+              {`No ${type}s Found`}
+              <SearchX className="w-3 h-3" />
+            </CommandEmpty>
+            
+            <CommandGroup>
+              {resources.map((resource) => (
+                <CommandItem
+                  key={resource.id}
+                  onSelect={() => onSelect && onSelect(resource.id)}
+                  className="flex items-center justify-between"
+                >
+                  <div className="p-1">{resource.name}</div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

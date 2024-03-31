@@ -19,36 +19,6 @@ import { DeploymentComponents } from "./resources/deployment";
 import { BuildComponents } from "./resources/build";
 import { ServerComponents } from "./resources/server";
 
-const ResourceGroup = ({
-  type,
-  onSelect,
-}: {
-  type: UsableResource;
-  onSelect: (value: string) => void;
-}) => {
-  const data = useRead(`List${type}s`, {}).data;
-  const Components = ResourceComponents[type];
-
-  if (!data || !data.length) return
-
-  return (
-    <CommandGroup heading={`${type}s`}>
-      {data?.map(({ id }) => {
-        return (
-          <CommandItem
-            key={id}
-            className="flex items-center gap-2"
-            onSelect={() => onSelect(`/${type.toLowerCase()}s/${id}`)}
-          >
-            <Components.Icon id={id} />
-            <Components.Name id={id} />
-          </CommandItem>
-        );
-      })}
-    </CommandGroup>
-  );
-};
-
 export const Omnibar = () => {
   const [open, set] = useState(false);
   const navigate = useNavigate();
@@ -88,6 +58,7 @@ export const Omnibar = () => {
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
+          
           <CommandGroup>
             <CommandItem
               className="flex items-center gap-2"
@@ -130,5 +101,35 @@ export const Omnibar = () => {
         </CommandList>
       </CommandDialog>
     </>
+  );
+};
+
+const ResourceGroup = ({
+  type,
+  onSelect,
+}: {
+  type: UsableResource;
+  onSelect: (value: string) => void;
+}) => {
+  const data = useRead(`List${type}s`, {}).data;
+  const Components = ResourceComponents[type];
+
+  if (!data || !data.length) return;
+
+  return (
+    <CommandGroup heading={`${type}s`}>
+      {data?.map(({ id }) => {
+        return (
+          <CommandItem
+            key={id}
+            className="flex items-center gap-2"
+            onSelect={() => onSelect(`/${type.toLowerCase()}s/${id}`)}
+          >
+            <Components.Icon id={id} />
+            <Components.Name id={id} />
+          </CommandItem>
+        );
+      })}
+    </CommandGroup>
   );
 };
