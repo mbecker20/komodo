@@ -2,44 +2,18 @@ import { NewResource } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import { Ban, Hammer, History, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { ResourceComponents } from "..";
-import { BuildChart } from "@components/dashboard/builds-chart";
-import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useToast } from "@ui/use-toast";
 import { BuildConfig } from "./config";
-import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
 import { fill_color_class_by_intention } from "@lib/color";
+import { BuildChart } from "./dashboard";
+import { BuildTable } from "./table";
+import { fmt_version } from "@lib/formatting";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
-
-const NewBuild = () => {
-  const { mutateAsync } = useWrite("CreateBuild");
-  const [name, setName] = useState("");
-  return (
-    <NewResource
-      entityType="Build"
-      onSuccess={() => mutateAsync({ name, config: {} })}
-      enabled={!!name}
-    >
-      <div className="grid md:grid-cols-2">
-        Build Name
-        <Input
-          placeholder="build-name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-    </NewResource>
-  );
-};
-
-const Name = ({ id }: { id: string }) => <>{useBuild(id)?.name}</>;
 
 const Icon = ({ id }: { id: string }) => {
   const building = useRead("GetBuildActionState", { build: id }).data?.building;
@@ -49,75 +23,22 @@ const Icon = ({ id }: { id: string }) => {
   return <Hammer className={className} />;
 };
 
-const BuildTable = () => {
-  const builds = useRead("ListBuilds", {}).data;
-  const tags = useTagsFilter();
-  return (
-    <DataTable
-      data={
-        builds?.filter((build) =>
-          tags.every((tag) => build.tags.includes(tag))
-        ) ?? []
-      }
-      columns={[
-        {
-          accessorKey: "id",
-          header: "Name",
-          cell: ({ row }) => {
-            const id = row.original.id;
-            return (
-              <Link to={`/builds/${id}`} className="flex items-center gap-2">
-                <ResourceComponents.Build.Icon id={id} />
-                <ResourceComponents.Build.Name id={id} />
-              </Link>
-            );
-          },
-        },
-        {
-          header: "Repo",
-          accessorKey: "info.repo",
-        },
-        {
-          header: "Version",
-          accessorFn: ({ info }) => fmt_version(info.version),
-        },
-        {
-          header: "Last Built",
-          accessorFn: ({ info: { last_built_at } }) => {
-            if (last_built_at > 0) {
-              return fmt_date_with_minutes(new Date(last_built_at));
-            } else {
-              return "never";
-            }
-          },
-        },
-        {
-          header: "Tags",
-          cell: ({ row }) => {
-            return (
-              <div className="flex gap-1">
-                <TagsWithBadge tag_ids={row.original.tags} />
-              </div>
-            );
-          },
-        },
-      ]}
-    />
-  );
-};
-
 export const BuildComponents: RequiredResourceComponents = {
-  Name,
+  Table: BuildTable,
+  Dashboard: BuildChart,
+  Name: ({ id }: { id: string }) => <>{useBuild(id)?.name}</>,
   Description: ({ id }) => <>{fmt_version(useBuild(id)?.info.version)}</>,
-  Info: ({ id }) => {
-    const ts = useBuild(id)?.info.last_built_at;
-    return (
-      <div className="flex items-center gap-2">
-        <History className="w-4 h-4" />
-        {ts ? new Date(ts).toLocaleString() : "Never Built"}
-      </div>
-    );
-  },
+  Info: [
+    ({ id }) => {
+      const ts = useBuild(id)?.info.last_built_at;
+      return (
+        <div className="flex items-center gap-2">
+          <History className="w-4 h-4" />
+          {ts ? new Date(ts).toLocaleString() : "Never Built"}
+        </div>
+      );
+    },
+  ],
   Status: () => <>Build</>,
   Page: {
     Config: ({ id }) => <BuildConfig id={id} />,
@@ -176,7 +97,24 @@ export const BuildComponents: RequiredResourceComponents = {
       );
     }
   },
-  Table: BuildTable,
-  New: NewBuild,
-  Dashboard: BuildChart,
+  New: () => {
+    const { mutateAsync } = useWrite("CreateBuild");
+    const [name, setName] = useState("");
+    return (
+      <NewResource
+        entityType="Build"
+        onSuccess={() => mutateAsync({ name, config: {} })}
+        enabled={!!name}
+      >
+        <div className="grid md:grid-cols-2">
+          Build Name
+          <Input
+            placeholder="build-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+      </NewResource>
+    );
+  },
 };

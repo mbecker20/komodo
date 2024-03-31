@@ -1,6 +1,7 @@
 import { Page, Section } from "@components/layouts";
-import { DeploymentTable } from "@components/resources/deployment";
-import { ServerIconComponent, ServerInfo } from "@components/resources/server";
+import { ResourceComponents } from "@components/resources";
+import { DeploymentTable } from "@components/resources/deployment/table";
+import { ServerInfo } from "@components/resources/server/info";
 import { TagsFilter, TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead } from "@lib/hooks";
 import { Button } from "@ui/button";
@@ -45,7 +46,7 @@ const Server = ({ id }: { id: string }) => {
             {server?.id && <ServerInfo id={server.id} showRegion={false} />}
             <Link to={`/servers/${server?.id}`}>
               <Button variant="outline">
-                <ServerIconComponent id={server?.id} />
+                <ResourceComponents.Server.Icon id={server?.id} />
               </Button>
             </Link>
           </div>

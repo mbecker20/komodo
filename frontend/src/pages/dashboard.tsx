@@ -3,21 +3,15 @@ import { Page, Section } from "@components/layouts";
 import { AlertTriangle, Box, FolderTree } from "lucide-react";
 import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
-import { ServerComponents } from "@components/resources/server";
 import { AlertLevel } from "@components/util";
 import { Button } from "@ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { DeploymentComponents } from "@components/resources/deployment";
-import { BuildComponents } from "@components/resources/build";
-import { RepoComponents } from "@components/resources/repo";
-import { BuilderComponents } from "@components/resources/builder";
-import { AlerterComponents } from "@components/resources/alerter";
-import { ProcedureComponents } from "@components/resources/procedure/index";
 import { TagsSummary } from "@components/dashboard/tags";
 import { ApiKeysSummary } from "@components/dashboard/api-keys";
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
 import { fmt_date_with_minutes } from "@lib/formatting";
+import { ResourceComponents } from "@components/resources";
 
 export const Dashboard = () => {
   return (
@@ -57,7 +51,9 @@ const OpenAlerts = () => {
                   case "Server":
                     return (
                       <Link to={`/servers/${row.original.target.id}`}>
-                        <ServerComponents.Name id={row.original.target.id} />
+                        <ResourceComponents.Server.Name
+                          id={row.original.target.id}
+                        />
                       </Link>
                     );
                   default:
@@ -88,11 +84,11 @@ const Resources = () => (
   <Section title="Resources" icon={<Box className="w-4 h-4" />} actions="">
     <div className="flex flex-col lg:flex-row gap-4 w-full">
       <div className="flex flex-col md:flex-row gap-4 w-full">
-        <ServerComponents.Dashboard />
-        <DeploymentComponents.Dashboard />
+        <ResourceComponents.Server.Dashboard />
+        <ResourceComponents.Deployment.Dashboard />
       </div>
       <div className="w-full lg:max-w-[50%]">
-        <BuildComponents.Dashboard />
+        <ResourceComponents.Build.Dashboard />
       </div>
     </div>
     <div className="flex flex-col lg:flex-row gap-4 w-full">
@@ -112,16 +108,16 @@ const Resources = () => (
         </Link>
       </div>
       <div className="flex flex-col md:flex-row gap-4 w-full">
-        <RepoComponents.Dashboard />
-        <BuilderComponents.Dashboard />
+        <ResourceComponents.Repo.Dashboard />
+        <ResourceComponents.Builder.Dashboard />
         {/* <TagsSummary />
         <ApiKeysSummary /> */}
       </div>
     </div>
     <div className="flex flex-col lg:flex-row gap-4 w-full">
       <div className="flex flex-col md:flex-row gap-4 w-full">
-        <AlerterComponents.Dashboard />
-        <ProcedureComponents.Dashboard />
+        <ResourceComponents.Alerter.Dashboard />
+        <ResourceComponents.Procedure.Dashboard />
       </div>
       <div className="flex flex-col md:flex-row gap-4 w-full">
         <TagsSummary />

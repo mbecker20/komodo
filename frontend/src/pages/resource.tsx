@@ -30,8 +30,11 @@ export const Resource = () => {
               <Components.Icon id={id} />
               <Components.Status id={id} />
             </div>
-            |
-            <Components.Info id={id} />
+            {Components.Info.map((Info) => (
+              <>
+                | <Info id={id} />
+              </>
+            ))}
           </div>
         </div>
       }

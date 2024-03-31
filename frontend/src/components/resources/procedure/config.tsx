@@ -100,10 +100,6 @@ const ProcedureConfigInner = ({
           }
           columns={[
             {
-              header: "Stage",
-              cell: ({ row: { index } }) => <>{index + 1}</>,
-            },
-            {
               header: "Enabled",
               cell: ({
                 row: {

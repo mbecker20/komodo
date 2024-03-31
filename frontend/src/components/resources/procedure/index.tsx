@@ -1,11 +1,9 @@
 import { NewResource } from "@components/layouts";
-import { TagsWithBadge } from "@components/tags";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
 import {
   Select,
@@ -18,6 +16,7 @@ import { Loader2, Route } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ProcedureConfig } from "./config";
+import { ProcedureTable } from "./table";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -25,9 +24,9 @@ const useProcedure = (id?: string) =>
 export const ProcedureComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useProcedure(id)?.name}</>,
   Description: ({ id }) => <>{useProcedure(id)?.info.procedure_type}</>,
-  Info: () => <></>,
+  Info: [({ id }) => <>{useProcedure(id)?.info.procedure_type}</>],
   Icon: () => <Route className="w-4" />,
-  Status: () => <></>,
+  Status: () => <>Procedure</>,
   Page: {
     Config: ProcedureConfig,
   },
@@ -50,46 +49,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
       />
     );
   },
-  Table: () => {
-    const procedures = useRead("ListProcedures", {}).data;
-    return (
-      <DataTable
-        data={procedures ?? []}
-        columns={[
-          {
-            accessorKey: "id",
-            header: "Name",
-            cell: ({ row }) => {
-              const id = row.original.id;
-              return (
-                <Link
-                  to={`/procedures/${id}`}
-                  className="flex items-center gap-2"
-                >
-                  <ProcedureComponents.Icon id={id} />
-                  <ProcedureComponents.Name id={id} />
-                </Link>
-              );
-            },
-          },
-          {
-            header: "Type",
-            accessorKey: "info.procedure_type",
-          },
-          {
-            header: "Tags",
-            cell: ({ row }) => {
-              return (
-                <div className="flex gap-1">
-                  <TagsWithBadge tag_ids={row.original.tags} />
-                </div>
-              );
-            },
-          },
-        ]}
-      />
-    );
-  },
+  Table: ProcedureTable,
   New: () => {
     const { mutateAsync } = useWrite("CreateProcedure");
     const [name, setName] = useState("");

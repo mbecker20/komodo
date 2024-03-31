@@ -102,10 +102,7 @@ export const NewResource = ({
   return (
     <Dialog open={open} onOpenChange={set}>
       <DialogTrigger asChild>
-        <Button
-          variant="secondary"
-          className="items-center gap-2"
-        >
+        <Button variant="secondary" className="items-center gap-2">
           New {entityType} <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>
@@ -158,7 +155,9 @@ export const ResourceCard = ({
           <Components.Icon id={id} />
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          <Components.Info id={id} />
+          {Components.Info.map((Info) => (
+            <Info id={id} />
+          ))}
         </CardContent>
         <CardFooter className="flex items-center gap-2">
           <ResourceTags target={{ type, id }} />
@@ -185,7 +184,9 @@ export const ResourceRow = ({
           <CardTitle>
             <Components.Name id={id} />
           </CardTitle>
-          <Components.Info id={id} />
+          {Components.Info.map((Info) => (
+            <Info id={id} />
+          ))}
           <div className="flex items-center gap-2">
             <Components.Icon id={id} />
             <CardDescription>

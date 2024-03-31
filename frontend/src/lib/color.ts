@@ -5,7 +5,8 @@ export type ColorIntention =
   | "Neutral"
   | "Warning"
   | "Critical"
-  | "Unknown";
+  | "Unknown"
+  | "None";
 
 export const hex_color_by_intention = (intention: ColorIntention) => {
   switch (intention) {
@@ -19,6 +20,8 @@ export const hex_color_by_intention = (intention: ColorIntention) => {
       return "#EF0044";
     case "Unknown":
       return "#A855F7";
+    case "None":
+      return "";
   }
 };
 
@@ -34,19 +37,36 @@ export const color_class_by_intention = (intention: ColorIntention) => {
       return "red-500";
     case "Unknown":
       return "purple-500";
+    case "None":
+      return "";
   }
 };
 
-export const text_color_class_by_intention = (intention: ColorIntention) => {
-  return `text-${color_class_by_intention(intention)}`;
-};
-
 export const fill_color_class_by_intention = (intention: ColorIntention) => {
+  if (intention === "None") return "";
   return `fill-${color_class_by_intention(intention)}`;
 };
 
 export const stroke_color_class_by_intention = (intention: ColorIntention) => {
+  if (intention === "None") return "";
   return `stroke-${color_class_by_intention(intention)}`;
+};
+
+export const text_color_class_by_intention = (intention: ColorIntention) => {
+  switch (intention) {
+    case "Good":
+      return "text-green-500";
+    case "Neutral":
+      return "text-blue-500";
+    case "Warning":
+      return "text-orange-500";
+    case "Critical":
+      return "text-red-500";
+    case "Unknown":
+      return "text-purple-500";
+    case "None":
+      return "";
+  }
 };
 
 export const server_status_intention: (
@@ -59,8 +79,8 @@ export const server_status_intention: (
       return "Critical";
     case Types.ServerStatus.Disabled:
       return "Neutral";
-    default:
-      return "Unknown";
+    case undefined:
+      return "None";
   }
 };
 
@@ -68,11 +88,13 @@ export const deployment_state_intention: (
   state?: Types.DockerContainerState
 ) => ColorIntention = (state) => {
   switch (state) {
+    case undefined:
+      return "None";
     case Types.DockerContainerState.Running:
       return "Good";
     case Types.DockerContainerState.NotDeployed:
       return "Neutral";
-    case Types.DockerContainerState.Unknown || undefined:
+    case Types.DockerContainerState.Unknown:
       return "Unknown";
     default:
       return "Critical";
