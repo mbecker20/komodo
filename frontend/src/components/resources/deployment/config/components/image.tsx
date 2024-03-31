@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigItem, ResourceSelector } from "@components/config/util";
+import { fmt_version } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
-import { fmt_version } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Input } from "@ui/input";
 import {

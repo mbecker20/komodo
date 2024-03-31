@@ -1,4 +1,4 @@
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useRead, useWrite } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
@@ -12,7 +12,6 @@ import {
   Rocket,
 } from "lucide-react";
 import { ServerStats } from "./stats";
-import { Config } from "@components/config";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
@@ -23,6 +22,12 @@ import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { DeleteServer, RenameServer } from "./actions";
 import { ServersChart } from "@components/dashboard/servers-chart";
 import { DeploymentTable } from "../deployment";
+import {
+  fill_color_class_by_intention,
+  server_status_intention,
+  text_color_class_by_intention,
+} from "@lib/color";
+import { ServerConfig } from "./config";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -76,57 +81,12 @@ export const ServerInfo = ({
 
 export const ServerIconComponent = ({ id }: { id?: string }) => {
   const status = useServer(id)?.info.status;
-
-  const color = () => {
-    if (status === Types.ServerStatus.Ok) return "fill-green-500";
-    if (status === Types.ServerStatus.NotOk) return "fill-red-500";
-    if (status === Types.ServerStatus.Disabled) return "fill-blue-500";
-  };
-  return <ServerIcon className={cn("w-4 h-4", id && color())} />;
-};
-
-const ServerConfig = ({ id }: { id: string }) => {
-  const invalidate = useInvalidate();
-  const config = useRead("GetServer", { server: id }).data?.config;
-  const [update, set] = useState<Partial<Types.ServerConfig>>({});
-  const { mutate } = useWrite("UpdateServer", {
-    onSuccess: () => {
-      // In case of disabling to resolve unreachable alert
-      invalidate(["ListAlerts"]);
-    },
-  });
-  if (!config) return null;
-
   return (
-    <Config
-      config={config}
-      update={update}
-      set={set}
-      onSave={() => mutate({ id, config: update })}
-      components={{
-        general: {
-          general: {
-            address: true,
-            region: true,
-            enabled: true,
-            auto_prune: true,
-          },
-        },
-        warnings: {
-          cpu: {
-            cpu_warning: true,
-            cpu_critical: true,
-          },
-          memory: {
-            mem_warning: true,
-            mem_critical: true,
-          },
-          disk: {
-            disk_warning: true,
-            disk_critical: true,
-          },
-        },
-      }}
+    <ServerIcon
+      className={cn(
+        "w-4 h-4",
+        id && fill_color_class_by_intention(server_status_intention(status))
+      )}
     />
   );
 };
@@ -229,12 +189,9 @@ export const ServerComponents: RequiredResourceComponents = {
   Icon: ServerIconComponent,
   Status: ({ id }) => {
     const status = useServer(id)?.info.status;
-    const stateClass =
-      status === Types.ServerStatus.Ok
-        ? "text-green-500"
-        : status === Types.ServerStatus.NotOk
-        ? "text-red-500"
-        : "text-blue-500";
+    const stateClass = text_color_class_by_intention(
+      server_status_intention(status)
+    );
     return (
       <div className={stateClass}>
         {status === Types.ServerStatus.NotOk ? "Not Ok" : status}
@@ -253,7 +210,7 @@ export const ServerComponents: RequiredResourceComponents = {
         </Section>
       );
     },
-    Config: ({ id }) => <ServerConfig id={id} />,
+    Config: ServerConfig,
     Danger: ({ id }) => (
       <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
         <RenameServer id={id} />

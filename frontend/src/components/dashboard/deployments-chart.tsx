@@ -9,13 +9,18 @@ import { PieChart } from "react-minimal-pie-chart";
 import { useRead } from "@lib/hooks";
 import { Rocket } from "lucide-react";
 import { Link } from "react-router-dom";
+import { cn } from "@lib/utils";
+import {
+  hex_color_by_intention,
+  text_color_class_by_intention,
+} from "@lib/color";
 
 export const DeploymentsChart = () => {
   const summary = useRead("GetDeploymentsSummary", {}).data;
 
   return (
     <Link to="/deployments" className="w-full">
-      <Card >
+      <Card>
         <CardHeader className="justify-between">
           <div>
             <CardTitle>Deployments</CardTitle>
@@ -26,25 +31,45 @@ export const DeploymentsChart = () => {
         <CardContent className="flex h-[200px] items-center justify-between">
           <div className="flex flex-col gap-2 text-muted-foreground w-full">
             <CardDescription>
-              <span className="text-green-500 font-bold">
+              <span
+                className={cn(
+                  text_color_class_by_intention("Good"),
+                  "font-bold"
+                )}
+              >
                 {summary?.running}{" "}
               </span>
               Running
             </CardDescription>
             <CardDescription>
-              <span className="text-red-500 font-bold">
+              <span
+                className={cn(
+                  text_color_class_by_intention("Critical"),
+                  "font-bold"
+                )}
+              >
                 {summary?.stopped}{" "}
               </span>
               Stopped
             </CardDescription>
             <CardDescription>
-              <span className="text-blue-500 font-bold">
+              <span
+                className={cn(
+                  text_color_class_by_intention("Neutral"),
+                  "font-bold"
+                )}
+              >
                 {summary?.not_deployed}{" "}
               </span>
               Not Deployed
             </CardDescription>
             <CardDescription>
-              <span className="text-purple-500 font-bold">
+              <span
+                className={cn(
+                  text_color_class_by_intention("Unknown"),
+                  "font-bold"
+                )}
+              >
                 {summary?.unknown}{" "}
               </span>
               Unknown
@@ -57,25 +82,25 @@ export const DeploymentsChart = () => {
               lineWidth={30}
               data={[
                 {
-                  color: "#22C55E",
+                  color: hex_color_by_intention("Good"),
                   value: summary?.running ?? 0,
                   title: "running",
                   key: "running",
                 },
                 {
-                  color: "#EF0044",
+                  color: hex_color_by_intention("Critical"),
                   value: summary?.stopped ?? 0,
                   title: "stopped",
                   key: "stopped",
                 },
                 {
-                  color: "#3B82F6",
+                  color: hex_color_by_intention("Neutral"),
                   value: summary?.not_deployed ?? 0,
                   title: "not-deployed",
                   key: "not-deployed",
                 },
                 {
-                  color: "purple",
+                  color: hex_color_by_intention("Unknown"),
                   value: summary?.unknown ?? 0,
                   title: "unknown",
                   key: "unknown",

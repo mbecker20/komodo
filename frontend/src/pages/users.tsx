@@ -1,5 +1,6 @@
 import { Page, Section } from "@components/layouts";
 import { ConfirmButton, ResourceLink } from "@components/util";
+import { text_color_class_by_intention } from "@lib/color";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { UsableResource } from "@types";
@@ -37,8 +38,8 @@ export const UsersPage = () => {
             header: "Enabled",
             cell: ({ row }) => {
               const enabledClass = row.original.enabled
-                ? "text-green-500"
-                : "text-red-500";
+                ? text_color_class_by_intention("Good")
+                : text_color_class_by_intention("Critical");
               return (
                 <div className={enabledClass}>
                   {row.original.enabled ? "Enabled" : "Disabled"}

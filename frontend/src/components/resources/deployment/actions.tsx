@@ -25,7 +25,6 @@ export const RedeployContainer = ({ id }: DeploymentId) => {
   return (
     <ConfirmButton
       title={deployment?.info.status ? "Redeploy" : "Deploy"}
-      //   intent="success"
       icon={<Rocket className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id })}
       disabled={isPending}
@@ -120,7 +119,8 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
   const { data: d } = useRead("GetDeployment", { deployment: id });
   const { mutateAsync, isPending } = useWrite("DeleteDeployment");
 
-  const deleting = useRead("GetDeploymentActionState", { deployment: id }).data?.deleting;
+  const deleting = useRead("GetDeploymentActionState", { deployment: id }).data
+    ?.deleting;
 
   if (!d) return null;
   return (

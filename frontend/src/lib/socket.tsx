@@ -5,11 +5,11 @@ import { toast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
 import { Circle } from "lucide-react";
 import { ReactNode, useCallback, useEffect } from "react";
-import rws from "reconnecting-websocket";
+import Rws from "reconnecting-websocket";
 import { cn } from "@lib/utils";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 
-const rws_atom = atom<rws | null>(null);
+const rws_atom = atom<Rws | null>(null);
 const useWebsocket = () => useAtom(rws_atom);
 
 const on_message = (
@@ -92,7 +92,7 @@ const on_message = (
   }
 };
 
-const on_open = (ws: rws | null) => {
+const on_open = (ws: Rws | null) => {
   const jwt = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
   if (!ws || !jwt) return;
   const msg: Types.WsLoginMessage = { type: "Jwt", params: { jwt } };
@@ -116,7 +116,7 @@ export const WebsocketProvider = ({
   );
 
   useEffect(() => {
-    if (!ws) set(new rws(url));
+    if (!ws) set(new Rws(url));
     return () => {
       ws?.close();
     };

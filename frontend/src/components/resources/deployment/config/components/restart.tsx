@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { keys } from "@lib/utils";
+import { object_keys } from "@lib/utils";
 
 const format_mode = (m: string) => m.split("-").join(" ");
 
@@ -27,7 +27,7 @@ export const RestartModeSelector = ({
         <SelectValue placeholder="Select Type" />
       </SelectTrigger>
       <SelectContent>
-        {keys(Types.RestartMode).map((mode) => (
+        {object_keys(Types.RestartMode).map((mode) => (
           <SelectItem
             key={mode}
             value={Types.RestartMode[mode]}

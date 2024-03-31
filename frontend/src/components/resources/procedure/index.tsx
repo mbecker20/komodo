@@ -27,6 +27,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Description: ({ id }) => <>{useProcedure(id)?.info.procedure_type}</>,
   Info: () => <></>,
   Icon: () => <Route className="w-4" />,
+  Status: () => <></>,
   Page: {
     Config: ProcedureConfig,
   },

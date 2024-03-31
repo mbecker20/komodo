@@ -19,7 +19,7 @@ import {
   SearchX,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { cn, snake_case_to_upper_space_case } from "@lib/utils";
+import { cn } from "@lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +36,7 @@ import {
   CommandInput,
   CommandItem,
 } from "@ui/command";
+import { snake_case_to_upper_space_case } from "@lib/formatting";
 
 export const ConfigItem = ({
   label,
@@ -52,7 +53,7 @@ export const ConfigItem = ({
       className
     )}
   >
-    <div className="capitalize"> {snake_case_to_upper_space_case(label)} </div>
+    <div>{snake_case_to_upper_space_case(label)}</div>
     {children}
   </div>
 );

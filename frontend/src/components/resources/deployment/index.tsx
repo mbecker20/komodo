@@ -2,7 +2,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { AlertTriangle, HardDrive, Rocket, Server } from "lucide-react";
-import { cn, snake_case_to_upper_space_case } from "@lib/utils";
+import { cn } from "@lib/utils";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 
@@ -23,33 +23,27 @@ import { ResourceComponents } from "..";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { DeploymentsChart } from "@components/dashboard/deployments-chart";
 import { Button } from "@ui/button";
+import { snake_case_to_upper_space_case } from "@lib/formatting";
+import {
+  deployment_state_intention,
+  fill_color_class_by_intention,
+  text_color_class_by_intention,
+} from "@lib/color";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
     (d) => d.id === id
   );
 
-const deployment_state_color = (state: Types.DockerContainerState) => {
-  if (state === Types.DockerContainerState.Running) return "green-500";
-  if (state === Types.DockerContainerState.Paused) return "orange-500";
-  if (state === Types.DockerContainerState.NotDeployed) return "blue-500";
-  return "red-500";
-};
-
-const deployment_state_fill_color = (state: Types.DockerContainerState) => {
-  return `fill-${deployment_state_color(state)}`;
-};
-
-const deployment_state_text_color = (state: Types.DockerContainerState) => {
-  return `text-${deployment_state_color(state)}`;
-};
-
 const Icon = ({ id }: { id?: string }) => {
   const state = useDeployment(id)?.info.state;
 
   return (
     <Rocket
-      className={cn("w-4", state && deployment_state_fill_color(state))}
+      className={cn(
+        "w-4",
+        fill_color_class_by_intention(deployment_state_intention(state))
+      )}
     />
   );
 };
@@ -161,7 +155,9 @@ export const DeploymentTable = ({
           header: "State",
           cell: ({ row }) => {
             const state = row.original.info.state;
-            const color = deployment_state_text_color(state);
+            const color = text_color_class_by_intention(
+              deployment_state_intention(state)
+            );
             return (
               <div className={color}>
                 {snake_case_to_upper_space_case(state)}
@@ -192,11 +188,10 @@ export const DeploymentComponents: RequiredResourceComponents = {
   Status: ({ id }) => {
     const state =
       useDeployment(id)?.info.state ?? Types.DockerContainerState.Unknown;
-    return (
-      <div className={deployment_state_text_color(state)}>
-        {snake_case_to_upper_space_case(state)}
-      </div>
+    const color = text_color_class_by_intention(
+      deployment_state_intention(state)
     );
+    return <div className={color}>{snake_case_to_upper_space_case(state)}</div>;
   },
   Actions: ({ id }) => (
     <div className="flex gap-4">

@@ -13,11 +13,11 @@ import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
 import { AlarmClock } from "lucide-react";
 import { useState } from "react";
-import { Config } from "@components/config";
 import { DataTable } from "@ui/data-table";
 import { ResourceComponents } from "..";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import { AlerterConfig } from "./config";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -61,52 +61,6 @@ const NewAlerter = () => {
         </Select>
       </div>
     </NewResource>
-  );
-};
-
-const SlackAlerterConfig = ({ id }: { id: string }) => {
-  const config = useRead("GetAlerter", { alerter: id }).data?.config;
-  const [update, set] = useState<Partial<Types.SlackAlerterConfig>>({});
-  const { mutate } = useWrite("UpdateAlerter");
-  if (!config) return null;
-
-  return (
-    <Config
-      config={config.params}
-      update={update}
-      set={set}
-      onSave={() => mutate({ id, config: { type: "Slack", params: update } })}
-      components={{
-        general: {
-          general: {
-            url: true,
-          },
-        },
-      }}
-    />
-  );
-};
-
-const CustomAlerterConfig = ({ id }: { id: string }) => {
-  const config = useRead("GetAlerter", { alerter: id }).data?.config;
-  const [update, set] = useState<Partial<Types.CustomAlerterConfig>>({});
-  const { mutate } = useWrite("UpdateAlerter");
-  if (!config) return null;
-
-  return (
-    <Config
-      config={config.params}
-      update={update}
-      set={set}
-      onSave={() => mutate({ id, config: { type: "Custom", params: update } })}
-      components={{
-        general: {
-          general: {
-            url: true,
-          },
-        },
-      }}
-    />
   );
 };
 
@@ -157,12 +111,9 @@ export const AlerterComponents: RequiredResourceComponents = {
   Icon: () => <AlarmClock className="w-4 h-4" />,
   Description: ({ id }) => <>{useAlerter(id)?.info.alerter_type} alerter</>,
   Info: ({ id }) => <>{id}</>,
+  Status: () => <></>,
   Page: {
-    Config: ({ id }: { id: string }) => {
-      const config = useRead("GetAlerter", { alerter: id }).data?.config;
-      if (config?.type === "Slack") return <SlackAlerterConfig id={id} />;
-      if (config?.type === "Custom") return <CustomAlerterConfig id={id} />;
-    },
+    Config: AlerterConfig,
   },
   Actions: () => null,
   Table: AlerterTable,

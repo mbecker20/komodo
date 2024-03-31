@@ -1,7 +1,6 @@
 import { NewResource } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
-import { fmt_date_with_minutes, fmt_version } from "@lib/utils";
 import { RequiredResourceComponents } from "@types";
 import { DataTable } from "@ui/data-table";
 import { Input } from "@ui/input";
@@ -13,6 +12,8 @@ import { BuildChart } from "@components/dashboard/builds-chart";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useToast } from "@ui/use-toast";
 import { BuildConfig } from "./config";
+import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
+import { fill_color_class_by_intention } from "@lib/color";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -43,7 +44,7 @@ const Name = ({ id }: { id: string }) => <>{useBuild(id)?.name}</>;
 const Icon = ({ id }: { id: string }) => {
   const building = useRead("GetBuildActionState", { build: id }).data?.building;
   const className = building
-    ? "w-4 h-4 animate-spin fill-green-500"
+    ? "w-4 h-4 animate-spin " + fill_color_class_by_intention("Good")
     : "w-4 h-4";
   return <Hammer className={className} />;
 };
@@ -74,7 +75,7 @@ const BuildTable = () => {
         },
         {
           header: "Repo",
-          accessorKey: "info.repo"
+          accessorKey: "info.repo",
         },
         {
           header: "Version",
