@@ -23,6 +23,7 @@ pub type BuildListItem = ResourceListItem<BuildListItemInfo>;
 pub struct BuildListItemInfo {
   pub last_built_at: I64,
   pub version: Version,
+  pub repo: String,
 }
 
 #[typeshare]

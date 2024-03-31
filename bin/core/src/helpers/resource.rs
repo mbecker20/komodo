@@ -406,6 +406,7 @@ impl StateResource for Build {
       info: BuildListItemInfo {
         last_built_at: build.info.last_built_at,
         version: build.config.version,
+        repo: build.config.repo,
       },
     })
   }
