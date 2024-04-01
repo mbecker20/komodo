@@ -22,7 +22,7 @@ export const EnvVars = ({
       className="flex-col gap-4 items-start"
     >
       <Textarea
-        className="min-h-[300px]"
+        className="min-h-[400px]"
         placeholder="VARIABLE=value"
         value={env}
         onChange={(e) => setEnv(e.target.value)}

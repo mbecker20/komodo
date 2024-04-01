@@ -21,3 +21,10 @@ config.server = "mogh-server"
 config.redeploy_on_build = true
 config.image.type = "Build"
 config.image.params.build = "monitor-frontend-v1"
+
+[[deployment]]
+name = "hello-world"
+tags = ["test"]
+config.server = "mogh-server"
+config.image.type = "Image"
+config.image.params.image = "hello-world"

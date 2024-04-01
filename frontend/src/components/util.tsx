@@ -49,22 +49,22 @@ export const WithLoading = ({
   return <>{children}</>;
 };
 
-export const ConfigInput = ({
-  placeholder,
-  value,
-  onChange,
-}: {
-  placeholder: string;
-  value: string | undefined;
-  onChange: (s: string) => void;
-}) => (
-  <Input
-    placeholder={placeholder}
-    className="max-w-[500px]"
-    value={value}
-    onChange={({ target }) => onChange(target.value)}
-  />
-);
+// export const ConfigInput = ({
+//   placeholder,
+//   value,
+//   onChange,
+// }: {
+//   placeholder: string;
+//   value: string | undefined;
+//   onChange: (s: string) => void;
+// }) => (
+//   <Input
+//     placeholder={placeholder}
+//     className="max-w-[500px]"
+//     value={value}
+//     onChange={({ target }) => onChange(target.value)}
+//   />
+// );
 
 export const ActionButton = forwardRef<
   HTMLButtonElement,

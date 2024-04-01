@@ -31,7 +31,7 @@ export const NetworkModeSelector = ({
         </SelectTrigger>
         <SelectContent>
           {networks?.map((network) => (
-            <SelectItem key={network.Id} value={network.Name ?? ""}>
+            <SelectItem key={network.Id} value={network.Name ?? ""} className="cursor-pointer">
               {network.Name}
             </SelectItem>
           ))}

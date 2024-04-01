@@ -33,7 +33,7 @@ impl Resolve<RunProcedure, User> for State {
     .await?;
 
     let mut update =
-      make_update(&procedure, Operation::StopContainer, &user);
+      make_update(&procedure, Operation::RunProcedure, &user);
     update.in_progress();
     update.push_simple_log(
       "execute procedure",

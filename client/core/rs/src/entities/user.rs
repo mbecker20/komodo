@@ -1,3 +1,5 @@
+use std::sync::OnceLock;
+
 use mongo_indexed::derive::MongoIndexed;
 use mungos::mongodb::bson::{
   doc, serde_helpers::hex_string_as_object_id, Document,
@@ -60,18 +62,40 @@ impl User {
       self.config = UserConfig::default();
     }
   }
+}
 
-  pub fn admin_service_user(id_name: impl Into<String>) -> User {
-    let id_name: String = id_name.into();
+pub fn admin_service_user(user_id: &str) -> Option<User> {
+  match user_id {
+    "Procedure" => procedure_user().to_owned().into(),
+    "Github" => github_user().to_owned().into(),
+    _ => None,
+  }
+}
+
+pub fn procedure_user() -> &'static User {
+  static PROCEDURE_USER: OnceLock<User> = OnceLock::new();
+  PROCEDURE_USER.get_or_init(|| {
+    let id_name = String::from("Procedure");
     User {
       id: id_name.clone(),
       username: id_name,
       admin: true,
-      create_build_permissions: true,
-      create_server_permissions: true,
       ..Default::default()
     }
-  }
+  })
+}
+
+pub fn github_user() -> &'static User {
+  static PROCEDURE_USER: OnceLock<User> = OnceLock::new();
+  PROCEDURE_USER.get_or_init(|| {
+    let id_name = String::from("Github");
+    User {
+      id: id_name.clone(),
+      username: id_name,
+      admin: true,
+      ..Default::default()
+    }
+  })
 }
 
 #[typeshare]

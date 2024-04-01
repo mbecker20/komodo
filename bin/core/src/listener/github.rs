@@ -4,7 +4,7 @@ use hex::ToHex;
 use hmac::{Hmac, Mac};
 use monitor_client::{
   api::execute,
-  entities::{build::Build, repo::Repo, user::User},
+  entities::{build::Build, repo::Repo, user::github_user},
 };
 use resolver_api::Resolve;
 use serde::Deserialize;
@@ -80,7 +80,7 @@ async fn handle_build_webhook(
   State
     .resolve(
       execute::RunBuild { build: build_id },
-      User::admin_service_user("github"),
+      github_user().to_owned(),
     )
     .await?;
   Ok(())
@@ -100,7 +100,7 @@ async fn handle_repo_clone_webhook(
   State
     .resolve(
       execute::CloneRepo { repo: repo_id },
-      User::admin_service_user("github"),
+      github_user().to_owned(),
     )
     .await?;
   Ok(())
@@ -120,7 +120,7 @@ async fn handle_repo_pull_webhook(
   State
     .resolve(
       execute::PullRepo { repo: repo_id },
-      User::admin_service_user("github"),
+      github_user().to_owned(),
     )
     .await?;
   Ok(())

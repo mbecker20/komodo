@@ -8,7 +8,7 @@ use monitor_client::{
     monitor_timestamp,
     procedure::{EnabledExecution, Procedure, ProcedureConfig},
     update::Update,
-    user::User,
+    user::procedure_user,
   },
 };
 use resolver_api::Resolve;
@@ -123,7 +123,7 @@ async fn execute_execution(
   parent_id: &str,
   parent_name: &str,
 ) -> anyhow::Result<()> {
-  let user = User::admin_service_user("procedure");
+  let user = procedure_user().to_owned();
   let update = match execution {
     Execution::None(_) => return Ok(()),
     Execution::RunProcedure(req) => {

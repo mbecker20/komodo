@@ -20,6 +20,14 @@ config.build_path = "."
 config.dockerfile_path = "frontend/Dockerfile"
 config.docker_account = "mbecker2020"
 
+[[build]]
+name = "test-build"
+tags = ["test"]
+config.builder = "mogh-builder"
+config.repo = "mbecker20/docker_build_test"
+config.github_account = "mbecker20"
+config.docker_account = "mbecker2020"
+
 [[builder]]
 name = "mogh-builder"
 description = "the builder for the mogh images"

@@ -32,6 +32,7 @@ export const fmt_duration = (start_ts: number, end_ts: number) => {
 
 /// list_all_items => List All Items
 export function snake_case_to_upper_space_case(snake: string) {
+  if (snake.length === 0) return "";
   return snake
     .split("_")
     .map((item) => item[0].toUpperCase() + item.slice(1))

@@ -62,19 +62,27 @@ export const ConfigItem = ({
 export const ConfigInput = ({
   label,
   value,
+  placeholder,
+  disabled,
   onChange,
+  onBlur,
 }: {
   label: string;
   value: string | number | undefined;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
+  onBlur?: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
 }) => (
   <ConfigItem label={label}>
     <Input
       className="max-w-[75%] lg:max-w-[400px]"
       type={typeof value === "number" ? "number" : undefined}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
-      // disabled={loading}
+      onChange={(e) => onChange && onChange(e.target.value)}
+      onBlur={(e) => onBlur && onBlur(e.target.value)}
+      placeholder={placeholder}
+      disabled={disabled}
     />
   </ConfigItem>
 );
@@ -109,6 +117,7 @@ export const DoubleInput = <
   onRightChange,
   onAdd,
   onRemove,
+  inputClassName,
 }: {
   values: T[] | undefined;
   leftval: L;
@@ -120,18 +129,21 @@ export const DoubleInput = <
   onRightChange: (value: T[R], i: number) => void;
   onAdd: () => void;
   onRemove: (i: number) => void;
+  inputClassName?: string;
 }) => {
   return (
     <div className="flex flex-col gap-4">
       {values?.map((value, i) => (
         <div className="flex items-center justify-between gap-4" key={i}>
           <Input
+            className={inputClassName}
             value={value[leftval] as any}
             placeholder={leftpl}
             onChange={(e) => onLeftChange(e.target.value as T[L], i)}
           />
           :
           <Input
+            className={inputClassName}
             value={value[rightval] as any}
             placeholder={rightpl}
             onChange={(e) => onRightChange(e.target.value as T[R], i)}
@@ -200,7 +212,7 @@ export const ResourceSelector = ({
               {`No ${type}s Found`}
               <SearchX className="w-3 h-3" />
             </CommandEmpty>
-            
+
             <CommandGroup>
               {resources.map((resource) => (
                 <CommandItem
@@ -235,9 +247,11 @@ export const AccountSelector = ({
   selected: string | undefined;
   onSelect: (id: string) => void;
 }) => {
-  const request =
-    type === "Server" ? "GetAvailableAccounts" : "GetBuilderAvailableAccounts";
-  const accounts = useRead(request, { server: id! }, { enabled: !!id }).data;
+  const [request, params] =
+    type === "Server"
+      ? ["GetAvailableAccounts", { server: id! }]
+      : ["GetBuilderAvailableAccounts", { builder: id }];
+  const accounts = useRead(request as any, params, { enabled: !!id }).data;
   return (
     <ConfigItem label={`${account_type} Account`}>
       <Select
@@ -254,7 +268,7 @@ export const AccountSelector = ({
           {type === "Server" && (
             <SelectItem value={" "}>Same as build</SelectItem>
           )}
-          {accounts?.[account_type]?.map((account) => (
+          {(accounts as any)?.[account_type]?.map((account: string) => (
             <SelectItem key={account} value={account}>
               {account}
             </SelectItem>

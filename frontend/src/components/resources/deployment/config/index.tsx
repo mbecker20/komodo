@@ -15,6 +15,10 @@ import { EnvVars } from "./components/environment";
 import { VolumesConfig } from "./components/volumes";
 import { ExtraArgs } from "./components/extra-args";
 import { Config } from "@components/config";
+import {
+  DefaultTerminationSignal,
+  TerminationTimeout,
+} from "./components/term-signal";
 
 export const ServerSelector = ({
   selected,
@@ -53,7 +57,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
       onSave={() => mutate({ id, config: update })}
       components={{
         general: {
-          general: {
+          "": {
             server_id: (value, set) => (
               <ServerSelector selected={value} set={set} />
             ),
@@ -71,9 +75,6 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
             ),
             restart: (value, set) => (
               <RestartModeSelector selected={value} set={set} />
-            ),
-            extra_args: (value, set) => (
-              <ExtraArgs args={value ?? []} set={set} />
             ),
             process_args: (value, set) => (
               <ConfigInput
@@ -96,6 +97,23 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
           },
           volumes: {
             volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
+          },
+          extra_args: {
+            extra_args: (value, set) => (
+              <ExtraArgs args={value ?? []} set={set} />
+            ),
+          },
+          termination: {
+            termination_signal: (value, set) => (
+              <DefaultTerminationSignal arg={value} set={set} />
+            ),
+            termination_timeout: (value, set) => (
+              <TerminationTimeout arg={value} set={set} />
+            ),
+          },
+          settings: {
+            send_alerts: true,
+            redeploy_on_build: true,
           },
         },
         environment: {

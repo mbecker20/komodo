@@ -10,6 +10,7 @@ export const VolumesConfig = ({
 }) => (
   <ConfigItem label="Volumes" className="items-start">
     <DoubleInput
+      inputClassName="w-[300px] max-w-full"
       values={volumes}
       leftval="local"
       leftpl="Local"

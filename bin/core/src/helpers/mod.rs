@@ -8,7 +8,7 @@ use monitor_client::entities::{
   server::{Server, ServerStatus},
   tag::Tag,
   update::{ResourceTarget, Update, UpdateListItem},
-  user::User,
+  user::{admin_service_user, User},
   Operation,
 };
 use mungos::{
@@ -60,6 +60,9 @@ pub fn make_update(
 }
 
 pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
+  if let Some(user) = admin_service_user(user_id) {
+    return Ok(user);
+  }
   find_one_by_id(&db_client().await.users, user_id)
     .await
     .context("failed to query mongo for user")?

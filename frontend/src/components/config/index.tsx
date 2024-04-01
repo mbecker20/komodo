@@ -4,6 +4,7 @@ import {
   ConfirmUpdate,
 } from "@components/config/util";
 import { Section } from "@components/layouts";
+import { snake_case_to_upper_space_case } from "@lib/formatting";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@ui/card";
@@ -122,9 +123,11 @@ export const Config = <T,>({
         <div className="flex flex-col gap-6 min-h-[500px] w-full">
           {Object.entries(components[show]).map(([k, v]) => (
             <Card className="w-full" key={k}>
-              <CardHeader className="border-b">
-                <CardTitle className="capitalize">{k} Settings</CardTitle>
-              </CardHeader>
+              {k && (
+                <CardHeader className="border-b">
+                  <CardTitle>{snake_case_to_upper_space_case(k)}</CardTitle>
+                </CardHeader>
+              )}
               <CardContent className="flex flex-col gap-4 mt-4">
                 <ConfigAgain
                   config={config}

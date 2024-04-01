@@ -93,7 +93,7 @@ export const DeploymentLogs = ({ id }: { id: string }) => {
       >
         {["stdout", "stderr"].map((t) => (
           <TabsContent key={t} className="h-full relative" value={t}>
-            <div className="h-[60vh] overflow-y-auto">
+            <div className="h-[70vh] overflow-y-auto">
               <pre id={t} className="-scroll-mt-24">
                 {logs?.[t as keyof typeof logs] || `no ${t} logs`}
               </pre>

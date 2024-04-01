@@ -31,9 +31,11 @@ export const RestartModeSelector = ({
           <SelectItem
             key={mode}
             value={Types.RestartMode[mode]}
-            className="capitalize"
+            className="capitalize cursor-pointer"
           >
-            {format_mode(Types.RestartMode[mode])}
+            {mode === "NoRestart"
+              ? "Don't Restart"
+              : format_mode(Types.RestartMode[mode])}
           </SelectItem>
         ))}
       </SelectContent>
