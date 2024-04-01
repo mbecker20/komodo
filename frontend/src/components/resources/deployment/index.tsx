@@ -73,13 +73,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
     );
     return <div className={color}>{snake_case_to_upper_space_case(state)}</div>;
   },
-  Actions: ({ id }) => (
-    <div className="flex gap-4">
-      <RedeployContainer id={id} />
-      <StartOrStopContainer id={id} />
-      <RemoveContainer id={id} />
-    </div>
-  ),
+  Actions: [RedeployContainer, StartOrStopContainer, RemoveContainer],
   Page: {
     Logs: ({ id }) => <DeploymentLogs id={id} />,
     Config: ({ id }) => <DeploymentConfig id={id} />,

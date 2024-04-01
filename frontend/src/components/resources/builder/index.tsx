@@ -43,7 +43,7 @@ export const BuilderComponents: RequiredResourceComponents = {
   ],
   Icon: () => <Factory className="w-4 h-4" />,
   Status: () => <>Builder</>,
-  Actions: () => <></>,
+  Actions: [],
   Page: {
     Config: BuilderConfig,
   },

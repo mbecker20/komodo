@@ -45,8 +45,10 @@ const StartContainer = ({ id }: DeploymentId) => {
   const starting = useRead("GetDeploymentActionState", {
     deployment: id,
   }).data?.starting;
+  const pending = isPending || starting;
 
   if (!d) return null;
+  
   return (
     <ActionWithDialog
       name={d.name}
@@ -54,8 +56,8 @@ const StartContainer = ({ id }: DeploymentId) => {
       //   intent="success"
       icon={<Play className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id })}
-      disabled={isPending}
-      loading={starting}
+      disabled={pending}
+      loading={pending}
     />
   );
 };
@@ -66,8 +68,10 @@ const StopContainer = ({ id }: DeploymentId) => {
   const stopping = useRead("GetDeploymentActionState", {
     deployment: id,
   }).data?.stopping;
+  const pending = isPending || stopping;
 
   if (!d) return null;
+
   return (
     <ActionWithDialog
       name={d?.name}
@@ -75,8 +79,8 @@ const StopContainer = ({ id }: DeploymentId) => {
       //   intent="warning"
       icon={<Pause className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id })}
-      disabled={isPending}
-      loading={stopping}
+      disabled={pending}
+      loading={pending}
     />
   );
 };
@@ -104,6 +108,8 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
     deployment: id,
   }).data?.removing;
 
+  const pending = isPending || removing;
+
   if (!deployment) return null;
   if (state === Types.DockerContainerState.NotDeployed) return null;
 
@@ -114,8 +120,8 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
       //   intent="warning"
       icon={<Trash className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id })}
-      disabled={isPending}
-      loading={removing}
+      disabled={pending}
+      loading={pending}
     />
   );
 };
@@ -127,6 +133,8 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
 
   const deleting = useRead("GetDeploymentActionState", { deployment: id }).data
     ?.deleting;
+
+  const pending = isPending || deleting;
 
   if (!d) return null;
   return (
@@ -140,8 +148,8 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
           await mutateAsync({ id });
           nav("/");
         }}
-        disabled={isPending}
-        loading={deleting}
+        disabled={pending}
+        loading={pending}
       />
     </div>
   );

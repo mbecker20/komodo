@@ -33,7 +33,7 @@ export const AlerterComponents: RequiredResourceComponents = {
   Page: {
     Config: AlerterConfig,
   },
-  Actions: () => null,
+  Actions: [],
   Table: () => {
     const alerters = useRead("ListAlerters", {}).data;
     return (

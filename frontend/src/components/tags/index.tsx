@@ -8,8 +8,15 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@ui/command";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "@ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { useAtom } from "jotai";
@@ -171,14 +178,6 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
     onSuccess: () => inv([`ListTags`]),
   });
 
-  // useEffect(() => {
-  //   if (!open && !!resource && !!tags) update({ target, tags });
-  // }, [target, open, resource, tags, update]);
-
-  // useEffect(() => {
-  //   if (resource && !tags) setTags(resource.tags);
-  // }, [resource, tags]);
-
   useEffect(() => {
     if (open) setInput("");
   }, [open]);
@@ -219,32 +218,34 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
               }
             }}
           />
-          <CommandEmpty
-            className="justify-between cursor-pointer hover:bg-accent m-1"
-            onClick={create_tag}
-          >
-            Create Tag
-            <PlusCircle className="w-4" />
-          </CommandEmpty>
-          <CommandGroup>
-            {all_tags
-              ?.filter((tag) => !resource?.tags.includes(tag._id!.$oid))
-              .map((tag) => (
-                <CommandItem
-                  key={tag._id?.$oid}
-                  value={tag.name}
-                  onSelect={() =>
-                    update({
-                      target,
-                      tags: [...(resource?.tags ?? []), tag._id!.$oid],
-                    })
-                  }
-                  className="flex items-center justify-between"
-                >
-                  <div className="p-1">{tag.name}</div>
-                </CommandItem>
-              ))}
-          </CommandGroup>
+          <CommandList>
+            <CommandEmpty
+              className="justify-between cursor-pointer hover:bg-accent m-1"
+              onClick={create_tag}
+            >
+              Create Tag
+              <PlusCircle className="w-4" />
+            </CommandEmpty>
+            <CommandGroup>
+              {all_tags
+                ?.filter((tag) => !resource?.tags.includes(tag._id!.$oid))
+                .map((tag) => (
+                  <CommandItem
+                    key={tag._id?.$oid}
+                    value={tag.name}
+                    onSelect={() =>
+                      update({
+                        target,
+                        tags: [...(resource?.tags ?? []), tag._id!.$oid],
+                      })
+                    }
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="p-1">{tag.name}</div>
+                  </CommandItem>
+                ))}
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

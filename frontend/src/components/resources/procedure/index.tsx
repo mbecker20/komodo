@@ -31,25 +31,27 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Page: {
     Config: ProcedureConfig,
   },
-  Actions: ({ id }) => {
-    const running = useRead("GetProcedureActionState", { procedure: id }).data
-      ?.running;
-    const { mutate, isPending } = useExecute("RunProcedure");
-    return (
-      <ConfirmButton
-        title={running ? "Running" : "Run"}
-        icon={
-          running ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Route className="h-4 w-4" />
-          )
-        }
-        onClick={() => mutate({ procedure: id })}
-        disabled={running || isPending}
-      />
-    );
-  },
+  Actions: [
+    ({ id }) => {
+      const running = useRead("GetProcedureActionState", { procedure: id }).data
+        ?.running;
+      const { mutate, isPending } = useExecute("RunProcedure");
+      return (
+        <ConfirmButton
+          title={running ? "Running" : "Run"}
+          icon={
+            running ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Route className="h-4 w-4" />
+            )
+          }
+          onClick={() => mutate({ procedure: id })}
+          disabled={running || isPending}
+        />
+      );
+    },
+  ],
   Table: ProcedureTable,
   New: () => {
     const { mutateAsync } = useWrite("CreateProcedure");

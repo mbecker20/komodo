@@ -39,7 +39,7 @@ export const Resource = () => {
         </div>
       }
       actions={
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-4 items-center">
           {Components.Actions.map((Action) => (
             <Action id={id} />
           ))}

@@ -205,8 +205,11 @@ export const ResourceSelector = ({
               {resources.map((resource) => (
                 <CommandItem
                   key={resource.id}
-                  onSelect={() => onSelect && onSelect(resource.id)}
-                  className="flex items-center justify-between"
+                  onSelect={() => {
+                    onSelect && onSelect(resource.id);
+                    setOpen(false);
+                  }}
+                  className="flex items-center justify-between cursor-pointer"
                 >
                   <div className="p-1">{resource.name}</div>
                 </CommandItem>

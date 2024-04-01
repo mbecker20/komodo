@@ -105,7 +105,7 @@ export const ActionButton = forwardRef<
     <Button
       size={size}
       variant={variant || "outline"}
-      className={cn("flex items-center justify-between w-[150px]", className)}
+      className={cn("flex items-center justify-between w-[170px]", className)}
       onClick={onClick}
       onBlur={onBlur}
       disabled={disabled}
@@ -166,10 +166,10 @@ export const ActionWithDialog = ({
           <Input value={input} onChange={(e) => setInput(e.target.value)} />
         </div>
         <DialogFooter>
-          <ActionButton
+          <ConfirmButton
             title={title}
             icon={icon}
-            disabled={name !== input}
+            disabled={disabled || name !== input}
             onClick={() => {
               onClick && onClick();
               setOpen(false);

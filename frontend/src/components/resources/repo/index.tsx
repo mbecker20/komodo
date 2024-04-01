@@ -18,7 +18,7 @@ export const RepoComponents: RequiredResourceComponents = {
   Link: ({ id }) => <ResourceLink type="Repo" id={id} />,
   Info: [],
   Status: () => <></>,
-  Actions: () => <></>,
+  Actions: [],
   New: () => <></>,
   Page: {
     Config: RepoConfig,
