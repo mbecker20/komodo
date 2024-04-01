@@ -16,10 +16,11 @@ export interface RequiredResourceComponents {
 
   Name: IdComponent;
   Description: IdComponent;
-  Info: IdComponent[];
   Status: IdComponent;
   Link: IdComponent;
-  Actions: IdComponent;
+  
+  Info: IdComponent[];
+  Actions: IdComponent[];
 
   Table: React.FC;
 

@@ -38,7 +38,13 @@ export const Resource = () => {
           </div>
         </div>
       }
-      actions={<Components.Actions id={id} />}
+      actions={
+        <div className="flex gap-2 items-center">
+          {Components.Actions.map((Action) => (
+            <Action id={id} />
+          ))}
+        </div>
+      }
     >
       <ResourceUpdates type={type} id={id} />
       {/* <ResourcePermissions type={type} id={id} /> */}

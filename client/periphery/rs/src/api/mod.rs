@@ -49,6 +49,12 @@ pub struct GetSecrets {}
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
+#[response(Vec<Log>)]
+pub struct PruneAll {}
+
+//
+
+#[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
 pub struct RunCommand {
   pub command: SystemCommand,

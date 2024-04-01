@@ -1,10 +1,47 @@
-import { ActionButton, ActionWithDialog } from "@components/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import {
+  ActionButton,
+  ActionWithDialog,
+  ConfirmButton,
+} from "@components/util";
+import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { Types } from "@monitor/client";
+import { IdComponent } from "@types";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
-import { Pen, Trash } from "lucide-react";
+import { Loader2, Pen, Scissors, Trash } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+type PruneType = "Images" | "Containers" | "Networks";
+
+const PruneButton = ({ type, id }: { type: PruneType; id: string }) => {
+  const { mutate, isPending } = useExecute(`Prune${type}`);
+  const pruning = useRead("GetServerActionState", { server: id }).data?.[
+    `pruning_${type.toLowerCase()}` as keyof Types.ServerActionState
+  ];
+  const pending = isPending || pruning;
+  return (
+    <ConfirmButton
+      title={`Prune ${type}`}
+      icon={
+        pending ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Scissors className="w-4 h-4" />
+        )
+      }
+      onClick={() => mutate({ server: id })}
+    />
+  );
+};
+
+const PRUNE_TYPES: PruneType[] = ["Images", "Containers"];
+
+export const SERVER_ACTIONS: IdComponent[] = PRUNE_TYPES.map(
+  (type) =>
+    ({ id }) =>
+      <PruneButton type={type} id={id} />
+);
 
 export const DeleteServer = ({ id }: { id: string }) => {
   const nav = useNavigate();

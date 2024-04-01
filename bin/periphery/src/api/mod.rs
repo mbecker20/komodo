@@ -3,14 +3,15 @@ use async_trait::async_trait;
 use monitor_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
   build::*, container::*, git::*, network::*, stats::*, GetAccounts,
-  GetHealth, GetSecrets, GetVersion, GetVersionResponse, RunCommand,
+  GetHealth, GetSecrets, GetVersion, GetVersionResponse, PruneAll,
+  RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
 use serde::{Deserialize, Serialize};
 
 use crate::{
   config::{accounts_response, secrets_response},
-  helpers::run_monitor_command,
+  helpers::{docker, run_monitor_command},
   State,
 };
 
@@ -70,6 +71,7 @@ pub enum PeripheryRequest {
   CreateNetwork(CreateNetwork),
   DeleteNetwork(DeleteNetwork),
   PruneNetworks(PruneNetworks),
+  PruneAll(PruneAll),
 }
 
 //
@@ -142,6 +144,25 @@ impl Resolve<RunCommand> for State {
         format!("cd {path} && {command}")
       };
       run_monitor_command("run command", command).await
+    })
+    .await
+    .context("failure in spawned task")
+  }
+}
+
+#[async_trait]
+impl Resolve<PruneAll> for State {
+  async fn resolve(
+    &self,
+    PruneAll {}: PruneAll,
+    _: (),
+  ) -> anyhow::Result<Vec<Log>> {
+    tokio::spawn(async move {
+      let mut logs = Vec::new();
+      logs.push(docker::prune_images().await);
+      logs.push(docker::container::prune_containers().await);
+      logs.push(docker::network::prune_networks().await);
+      logs
     })
     .await
     .context("failure in spawned task")

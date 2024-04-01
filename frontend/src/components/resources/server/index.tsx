@@ -7,7 +7,7 @@ import { ServerStats } from "./stats";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
-import { DeleteServer, RenameServer } from "./actions";
+import { DeleteServer, RenameServer, SERVER_ACTIONS } from "./actions";
 import {
   fill_color_class_by_intention,
   server_status_intention,
@@ -50,7 +50,7 @@ export const ServerComponents: RequiredResourceComponents = {
       </div>
     );
   },
-  Actions: () => null,
+  Actions: SERVER_ACTIONS,
   Page: {
     Stats: ({ id }) => <ServerStats server_id={id} />,
     Deployments: ({ id }) => {

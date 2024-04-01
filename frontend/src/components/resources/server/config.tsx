@@ -28,6 +28,7 @@ export const ServerConfig = ({ id }: { id: string }) => {
             region: true,
             enabled: true,
             auto_prune: true,
+            send_unreachable_alerts: true,
           },
         },
         warnings: {

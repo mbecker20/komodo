@@ -118,6 +118,57 @@ pub struct GetPeripheryVersionResponse {
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
+#[response(GetDockerNetworksResponse)]
+pub struct GetDockerNetworks {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+}
+
+#[typeshare]
+pub type GetDockerNetworksResponse = Vec<DockerNetwork>;
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetDockerImagesResponse)]
+pub struct GetDockerImages {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+}
+
+#[typeshare]
+pub type GetDockerImagesResponse = Vec<ImageSummary>;
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetDockerContainersResponse)]
+pub struct GetDockerContainers {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub server: String,
+}
+
+#[typeshare]
+pub type GetDockerContainersResponse = Vec<ContainerSummary>;
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetSystemInformationResponse)]
 pub struct GetSystemInformation {
   /// Id or name
@@ -254,23 +305,6 @@ pub type GetSystemComponentsResponse = Vec<SystemComponent>;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetDockerNetworksResponse)]
-pub struct GetDockerNetworks {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetDockerNetworksResponse = Vec<DockerNetwork>;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
 #[response(GetHistoricalServerStatsResponse)]
 pub struct GetHistoricalServerStats {
   /// Id or name
@@ -287,40 +321,6 @@ pub struct GetHistoricalServerStatsResponse {
   pub stats: Vec<SystemStatsRecord>,
   pub next_page: Option<u32>,
 }
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetDockerImagesResponse)]
-pub struct GetDockerImages {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetDockerImagesResponse = Vec<ImageSummary>;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetDockerContainersResponse)]
-pub struct GetDockerContainers {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetDockerContainersResponse = Vec<ContainerSummary>;
 
 //
 

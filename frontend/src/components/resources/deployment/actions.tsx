@@ -3,7 +3,7 @@ import {
   ActionWithDialog,
   ConfirmButton,
 } from "@components/util";
-import { Play, Trash, Pause, Rocket, Pen } from "lucide-react";
+import { Play, Trash, Pause, Rocket, Pen, Loader2 } from "lucide-react";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@ui/input";
@@ -21,14 +21,20 @@ export const RedeployContainer = ({ id }: DeploymentId) => {
   const deployment = deployments?.find((d) => d.id === id);
   const deploying = useRead("GetDeploymentActionState", { deployment: id }).data
     ?.deploying;
-
+  const pending = isPending || deploying;
   return (
     <ConfirmButton
       title={deployment?.info.status ? "Redeploy" : "Deploy"}
-      icon={<Rocket className="h-4 w-4" />}
+      icon={
+        pending ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Rocket className="h-4 w-4" />
+        )
+      }
       onClick={() => mutate({ deployment: id })}
-      disabled={isPending}
-      loading={deploying}
+      disabled={pending}
+      loading={pending}
     />
   );
 };
