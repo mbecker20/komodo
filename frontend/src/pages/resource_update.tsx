@@ -6,7 +6,7 @@ import { useRead, useResourceParamType } from "@lib/hooks";
 import { useParams } from "react-router-dom";
 
 export const ResourceUpdates = () => {
-  const type = useResourceParamType();
+  const type = useResourceParamType()!;
   const id = useParams().id as string;
   const updates = useRead("ListUpdates", {
     query: {

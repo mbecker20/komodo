@@ -1,4 +1,4 @@
-import { ConfigInput, ConfigItem } from "@components/config/util";
+import { ConfigItem } from "@components/config/util";
 import { Types } from "@monitor/client";
 import { Input } from "@ui/input";
 import {
@@ -12,23 +12,23 @@ import {
 import { useToast } from "@ui/use-toast";
 import { useEffect, useState } from "react";
 
-export const TerminationSignals = ({
-  args,
-  set,
-}: {
-  args: Types.TerminationSignalLabel[];
-  set: (input: Partial<Types.DeploymentConfig>) => void;
-}) => {
-  return (
-    <ConfigItem label="Termination Signals">
-      <div>
-        {args.map((arg, i) => {
-          return <></>;
-        })}
-      </div>
-    </ConfigItem>
-  );
-};
+// export const TerminationSignals = ({
+//   args,
+//   set,
+// }: {
+//   args: Types.TerminationSignalLabel[];
+//   set: (input: Partial<Types.DeploymentConfig>) => void;
+// }) => {
+//   return (
+//     <ConfigItem label="Termination Signals">
+//       <div>
+//         {args.map((arg, i) => {
+//           return <></>;
+//         })}
+//       </div>
+//     </ConfigItem>
+//   );
+// };
 
 export const DefaultTerminationSignal = ({
   arg,

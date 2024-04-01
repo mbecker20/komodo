@@ -11,7 +11,7 @@ import { useAtom } from "jotai";
 const viewAtom = atomWithStorage<"cards" | "table">("list-show-as-v0", "table");
 
 export const Resources = () => {
-  const type = useResourceParamType();
+  const type = useResourceParamType()!;
   const Components = ResourceComponents[type];
 
   const tags = useTagsFilter();
