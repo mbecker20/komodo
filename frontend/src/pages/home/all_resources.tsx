@@ -37,7 +37,7 @@ export const AllResources = () => {
         if (!count) return;
 
         return (
-          <Section title={type + "s"} actions={<Components.New />}>
+          <Section key={type} title={type + "s"} actions={<Components.New />}>
             <Components.Table />
           </Section>
         );

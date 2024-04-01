@@ -52,7 +52,10 @@ export const ServerComponents: RequiredResourceComponents = {
   },
   Actions: SERVER_ACTIONS,
   Page: {
-    Stats: ({ id }) => <ServerStats server_id={id} />,
+    Stats: ({ id }) => {
+      const status = useServer(id)?.info.status;
+      return status === "Ok" && <ServerStats server_id={id} />;
+    },
     Deployments: ({ id }) => {
       const deployments = useRead("ListDeployments", {}).data?.filter(
         (deployment) => deployment.info.server_id === id

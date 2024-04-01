@@ -1,24 +1,24 @@
 import { Layout } from "@components/layouts";
 import { useUser } from "@lib/hooks";
-import { Dashboard } from "@pages/dashboard";
 import { Login } from "@pages/login";
 import { Resource } from "@pages/resource";
 import { Resources } from "@pages/resources";
 import { Keys } from "@pages/keys";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import { Tree } from "@pages/tree";
+import { Tree } from "@pages/home/tree";
 import { Tags } from "@pages/tags";
 import { ResourceUpdates } from "@pages/resource_update";
 import { UserPage, UsersPage } from "@pages/users";
-import { AllResources } from "@pages/all_resources";
+import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
+import { Home } from "@pages/home";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
     children: [
-      { path: "", element: <Dashboard /> },
+      { path: "", element: <Home /> },
       { path: "keys", element: <Keys /> },
       { path: "tags", element: <Tags /> },
       { path: "tree", element: <Tree /> },

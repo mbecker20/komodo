@@ -143,9 +143,12 @@ export const useAuth = <
 
 // ============== UTILITY ==============
 
+/**
+ * Actually returns UsableResoure | undefined
+ */
 export const useResourceParamType = () => {
   const type = useParams().type;
-  if (!type) return undefined as unknown as UsableResource;
+  if (!type) return undefined;
   return (type[0].toUpperCase() + type.slice(1, -1)) as UsableResource;
 };
 

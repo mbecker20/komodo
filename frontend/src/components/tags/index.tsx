@@ -54,8 +54,8 @@ export const TagsFilter = () => {
               ?.filter((tag) => !tags.includes(tag._id!.$oid))
               .map((tag) => (
                 <DropdownMenuItem
-                  className="cursor-pointer"
                   key={tag.name}
+                  className="cursor-pointer"
                   onClick={() => setTags([...tags, tag._id!.$oid])}
                 >
                   {tag.name}

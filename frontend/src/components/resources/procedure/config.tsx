@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { Switch } from "@ui/switch";
+import { CommandList } from "cmdk";
 import {
   ArrowDown,
   ArrowUp,
@@ -291,9 +292,8 @@ const ProcedureConfigInner = ({
               header: "Delete",
               cell: ({ row: { index } }) => (
                 <ConfirmButton
-                  title="Delete"
+                  title="Delete Row"
                   icon={<Trash2 className="w-4 h-4" />}
-                  variant="destructive"
                   onClick={() =>
                     setConfig({
                       ...config,
@@ -343,31 +343,33 @@ const ExecutionTypeSelector = ({
             value={search}
             onValueChange={setSearch}
           />
-          <CommandEmpty className="flex justify-evenly items-center">
-            Empty.
-            <SearchX className="w-3 h-3" />
-          </CommandEmpty>
-          <CommandGroup className="overflow-auto">
-            {[
-              "RunProcedure",
-              "RunBuild",
-              "Deploy",
-              "StartContainer",
-              "StopContainer",
-              "StopAllContainers",
-              "RemoveContainer",
-              "CloneRepo",
-              "PullRepo",
-            ].map((type) => (
-              <CommandItem
-                key={type}
-                onSelect={() => onSelect(type as Types.Execution["type"])}
-                className="flex items-center justify-between"
-              >
-                <div className="p-1">{type}</div>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <CommandList>
+            <CommandEmpty className="flex justify-evenly items-center">
+              Empty.
+              <SearchX className="w-3 h-3" />
+            </CommandEmpty>
+            <CommandGroup className="overflow-auto">
+              {[
+                "RunProcedure",
+                "RunBuild",
+                "Deploy",
+                "StartContainer",
+                "StopContainer",
+                "StopAllContainers",
+                "RemoveContainer",
+                "CloneRepo",
+                "PullRepo",
+              ].map((type) => (
+                <CommandItem
+                  key={type}
+                  onSelect={() => onSelect(type as Types.Execution["type"])}
+                  className="flex items-center justify-between"
+                >
+                  <div className="p-1">{type}</div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

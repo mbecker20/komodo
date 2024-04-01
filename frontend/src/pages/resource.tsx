@@ -6,7 +6,7 @@ import { usePushRecentlyViewed, useResourceParamType } from "@lib/hooks";
 import { useParams } from "react-router-dom";
 
 export const Resource = () => {
-  const type = useResourceParamType();
+  const type = useResourceParamType()!;
   const id = useParams().id as string;
   usePushRecentlyViewed({ type, id });
 
@@ -30,9 +30,9 @@ export const Resource = () => {
               <Components.Icon id={id} />
               <Components.Status id={id} />
             </div>
-            {Components.Info.map((Info) => (
+            {Components.Info.map((Info, i) => (
               <>
-                | <Info id={id} />
+                | <Info key={i} id={id} />
               </>
             ))}
           </div>
@@ -40,8 +40,8 @@ export const Resource = () => {
       }
       actions={
         <div className="flex gap-4 items-center">
-          {Components.Actions.map((Action) => (
-            <Action id={id} />
+          {Components.Actions.map((Action, i) => (
+            <Action key={i} id={id} />
           ))}
         </div>
       }
@@ -49,7 +49,7 @@ export const Resource = () => {
       <ResourceUpdates type={type} id={id} />
       {/* <ResourcePermissions type={type} id={id} /> */}
       {Object.entries(Components.Page).map(([section, Component]) => (
-        <Component id={id} key={section} />
+        <Component key={section} id={id} />
       ))}
     </Page>
   );
