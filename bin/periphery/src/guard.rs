@@ -19,15 +19,13 @@ pub async fn guard_request_by_passkey(
   if periphery_config().passkeys.is_empty() {
     return Ok(next.run(req).await);
   }
-  let req_passkey = req.headers().get("authorization");
-  if req_passkey.is_none() {
+  let Some(req_passkey) = req.headers().get("authorization") else {
     return Err((
       StatusCode::UNAUTHORIZED,
       String::from("request was not sent with passkey"),
     ));
-  }
+  };
   let req_passkey = req_passkey
-    .unwrap()
     .to_str()
     .map_err(|e| {
       (

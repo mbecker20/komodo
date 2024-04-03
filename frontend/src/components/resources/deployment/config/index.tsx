@@ -118,7 +118,13 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
         },
         environment: {
           environment: {
-            environment: (vars, set) => <EnvVars vars={vars ?? []} set={set} />,
+            environment: (vars, set) => (
+              <EnvVars
+                vars={vars ?? []}
+                set={set}
+                server={update.server_id || config.server_id}
+              />
+            ),
             skip_secret_interp: true,
           },
         },

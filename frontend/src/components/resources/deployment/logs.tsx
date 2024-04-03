@@ -58,7 +58,6 @@ export const DeploymentLogs = ({ id }: { id: string }) => {
   );
 
   const deployment = useDeployment(id);
-  console.log(deployment);
 
   if (
     deployment?.info.state === Types.DockerContainerState.Unknown ||

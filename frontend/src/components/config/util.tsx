@@ -262,7 +262,7 @@ export const AccountSelector = ({
           className="w-full lg:w-[300px] max-w-[50%]"
           disabled={!id}
         >
-          <SelectValue placeholder="Select Account" />
+          <SelectValue placeholder={type === "Server" ? "Same as build" : "Select Account"} />
         </SelectTrigger>
         <SelectContent>
           {type === "Server" && (
