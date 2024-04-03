@@ -49,7 +49,7 @@ pub struct GetSecrets {}
 //
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
-#[response(Vec<Log>)]
+#[response(Log)]
 pub struct PruneAll {}
 
 //

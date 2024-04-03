@@ -156,15 +156,7 @@ impl Resolve<PruneAll> for State {
     &self,
     PruneAll {}: PruneAll,
     _: (),
-  ) -> anyhow::Result<Vec<Log>> {
-    tokio::spawn(async move {
-      let mut logs = Vec::new();
-      logs.push(docker::prune_images().await);
-      logs.push(docker::container::prune_containers().await);
-      logs.push(docker::network::prune_networks().await);
-      logs
-    })
-    .await
-    .context("failure in spawned task")
+  ) -> anyhow::Result<Log> {
+    Ok(docker::prune_system().await)
   }
 }

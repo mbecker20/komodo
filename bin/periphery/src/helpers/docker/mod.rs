@@ -52,3 +52,8 @@ pub fn parse_extra_args(extra_args: &[String]) -> String {
     args
   }
 }
+
+pub async fn prune_system() -> Log {
+  let command = String::from("docker system prune -a -f");
+  run_monitor_command("prune system", command).await
+}
