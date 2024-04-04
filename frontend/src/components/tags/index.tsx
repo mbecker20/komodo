@@ -10,18 +10,11 @@ import {
   CommandItem,
   CommandList,
 } from "@ui/command";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { MinusCircle, PlusCircle, Tag } from "lucide-react";
+import { MinusCircle, PlusCircle, SearchX, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
@@ -34,6 +27,8 @@ export const useTagsFilter = () => {
 };
 
 export const TagsFilter = () => {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const [tags, setTags] = useAtom(tagsAtom);
   const all_tags = useRead("ListTags", {}).data;
   return (
@@ -42,28 +37,53 @@ export const TagsFilter = () => {
         tag_ids={tags}
         onBadgeClick={(tag_id) => setTags(tags.filter((id) => id !== tag_id))}
       />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
+      <Popover
+        open={open}
+        onOpenChange={(open) => {
+          setSearch("");
+          setOpen(open);
+        }}
+      >
+        <PopoverTrigger asChild>
           <Button variant="outline" className="flex gap-3">
             Filter by Tag <Tag className="w-3 h-3" />
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-36" side="bottom">
-          <DropdownMenuGroup>
-            {all_tags
-              ?.filter((tag) => !tags.includes(tag._id!.$oid))
-              .map((tag) => (
-                <DropdownMenuItem
-                  key={tag.name}
-                  className="cursor-pointer"
-                  onClick={() => setTags([...tags, tag._id!.$oid])}
-                >
-                  {tag.name}
-                </DropdownMenuItem>
-              ))}
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] max-h-[200px] p-0" sideOffset={12}>
+          <Command>
+            <CommandInput
+              placeholder="Search Tags"
+              className="h-9"
+              value={search}
+              onValueChange={setSearch}
+            />
+            <CommandList>
+              <CommandEmpty className="flex justify-evenly items-center">
+                No Tags Found
+                <SearchX className="w-3 h-3" />
+              </CommandEmpty>
+
+              <CommandGroup>
+                {all_tags
+                  ?.filter((tag) => !tags.includes(tag._id!.$oid))
+                  .map((tag) => (
+                    <CommandItem
+                      key={tag.name}
+                      onSelect={() => {
+                        setTags([...tags, tag._id!.$oid]);
+                        setSearch("");
+                        setOpen(false);
+                      }}
+                      className="flex items-center justify-between cursor-pointer"
+                    >
+                      <div className="p-1">{tag.name}</div>
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

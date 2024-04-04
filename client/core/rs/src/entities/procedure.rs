@@ -23,9 +23,6 @@ pub struct ProcedureListItemInfo {
   pub procedure_type: ProcedureConfigVariant,
 }
 
-// #[typeshare(serialized_as = "ProcedureConfig['type']")]
-// pub type _ProcedureConfigVariant = ProcedureConfigVariant;
-
 /// Allows to enable / disabled procedures in the sequence / parallel vec on the fly
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]

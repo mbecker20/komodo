@@ -3,6 +3,7 @@ import {
   AccountSelector,
   ConfigItem,
   ResourceSelector,
+  SystemCommand,
 } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { env_to_text, text_to_env } from "@lib/utils";
@@ -77,7 +78,9 @@ export const BuildConfig = ({ id }: { id: string }) => {
               docker_organizations === undefined ||
               docker_organizations.length === 0
                 ? undefined
-                : (value, set) => <DockerOrganizations value={value} set={set} />,
+                : (value, set) => (
+                    <DockerOrganizations value={value} set={set} />
+                  ),
             use_buildx: true,
             // docker_organization,
             extra_args: (value, set) => (
@@ -85,7 +88,13 @@ export const BuildConfig = ({ id }: { id: string }) => {
             ),
           },
           pre_build: {
-            pre_build: (value, set) => <PreBuild value={value} set={set} />,
+            pre_build: (value, set) => (
+              <SystemCommand
+                label="Pre Build"
+                value={value}
+                set={(value) => set({ pre_build: value })}
+              />
+            ),
           },
         },
         "Build Args": {
@@ -168,43 +177,6 @@ const ExtraArgs = ({
   );
 };
 
-const PreBuild = ({
-  value,
-  set,
-}: {
-  value?: Types.SystemCommand;
-  set: (input: Partial<Types.BuildConfig>) => void;
-}) => {
-  return (
-    <ConfigItem label="Pre Build" className="items-start">
-      <div className="grid gap-2">
-        <div className="flex gap-4 items-center justify-end">
-          Path:
-          <Input
-            placeholder="command working directory"
-            value={value?.path}
-            className="w-[300px]"
-            onChange={(e) =>
-              set({ pre_build: { ...(value || {}), path: e.target.value } })
-            }
-          />
-        </div>
-        <div className="flex gap-4 items-center justify-end">
-          Command:
-          <Input
-            placeholder="shell command"
-            value={value?.command}
-            className="w-[300px]"
-            onChange={(e) =>
-              set({ pre_build: { ...(value || {}), command: e.target.value } })
-            }
-          />
-        </div>
-      </div>
-    </ConfigItem>
-  );
-};
-
 const DockerOrganizations = ({
   value,
   set,
@@ -219,9 +191,7 @@ const DockerOrganizations = ({
         value={value}
         onValueChange={(value) => set({ docker_organization: value })}
       >
-        <SelectTrigger
-          className="w-full lg:w-[300px] max-w-[50%]"
-        >
+        <SelectTrigger className="w-full lg:w-[300px] max-w-[50%]">
           <SelectValue placeholder="Select Organization" />
         </SelectTrigger>
         <SelectContent>

@@ -262,7 +262,9 @@ export const AccountSelector = ({
           className="w-full lg:w-[300px] max-w-[50%]"
           disabled={!id}
         >
-          <SelectValue placeholder={type === "Server" ? "Same as build" : "Select Account"} />
+          <SelectValue
+            placeholder={type === "Server" ? "Same as build" : "Select Account"}
+          />
         </SelectTrigger>
         <SelectContent>
           {type === "Server" && (
@@ -359,5 +361,40 @@ export const ConfirmUpdate = ({ content, onConfirm }: ConfirmUpdateProps) => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+};
+
+export const SystemCommand = ({
+  label,
+  value,
+  set,
+}: {
+  label: string;
+  value?: Types.SystemCommand;
+  set: (value: Types.SystemCommand) => void;
+}) => {
+  return (
+    <ConfigItem label={label} className="items-start">
+      <div className="grid gap-2">
+        <div className="flex gap-4 items-center justify-end">
+          Path:
+          <Input
+            placeholder="command working directory"
+            value={value?.path}
+            className="w-[300px]"
+            onChange={(e) => set({ ...(value || {}), path: e.target.value })}
+          />
+        </div>
+        <div className="flex gap-4 items-center justify-end">
+          Command:
+          <Input
+            placeholder="shell command"
+            value={value?.command}
+            className="w-[300px]"
+            onChange={(e) => set({ ...(value || {}), command: e.target.value })}
+          />
+        </div>
+      </div>
+    </ConfigItem>
   );
 };
