@@ -14,11 +14,11 @@ import { Input } from "@ui/input";
 import { AlarmClock } from "lucide-react";
 import { useState } from "react";
 import { DataTable } from "@ui/data-table";
-import { ResourceComponents } from "..";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
 import { ResourceLink } from "@components/util";
+import { TagsWithBadge } from "@components/tags";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -41,22 +41,23 @@ export const AlerterComponents: RequiredResourceComponents = {
         data={alerters ?? []}
         columns={[
           {
-            accessorKey: "id",
             header: "Name",
+            cell: ({ row }) => <AlerterComponents.Link id={row.original.id} />,
+          },
+          {
+            header: "Type",
+            accessorKey: "info.alerter_type"
+          },
+          {
+            header: "Tags",
             cell: ({ row }) => {
-              const id = row.original.id;
               return (
-                <Link
-                  to={`/alerters/${id}`}
-                  className="flex items-center gap-2"
-                >
-                  <ResourceComponents.Alerter.Icon id={id} />
-                  <ResourceComponents.Alerter.Name id={id} />
-                </Link>
+                <div className="flex gap-1">
+                  <TagsWithBadge tag_ids={row.original.tags} />
+                </div>
               );
             },
           },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
         ]}
       />
     );

@@ -131,8 +131,8 @@ pub struct CustomAlerterConfig {
 #[partial_from]
 pub struct SlackAlerterConfig {
   #[partial_default(String::from(
-        "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
-    ))]
+    "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
+  ))]
   pub url: String,
 }
 
