@@ -36,13 +36,6 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
             security_group_ids: (values, set) => (
               <InputList field="security_group_ids" values={values} set={set} />
             ),
-            docker_accounts: (accounts, set) => (
-              <InputList
-                field="docker_accounts"
-                values={accounts ?? []}
-                set={set}
-              />
-            ),
             github_accounts: (accounts, set) => (
               <InputList
                 field="github_accounts"
@@ -50,6 +43,14 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
                 set={set}
               />
             ),
+            docker_accounts: (accounts, set) => (
+              <InputList
+                field="docker_accounts"
+                values={accounts ?? []}
+                set={set}
+              />
+            ),
+            port: true,
           },
         },
       }}
