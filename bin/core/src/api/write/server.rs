@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
+use async_timing_util::unix_timestamp_ms;
 use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
@@ -120,14 +121,14 @@ impl Resolve<DeleteServer, User> for State {
 
     db_client()
       .await
-      .builds
+      .builders
       .update_many(
-        doc! { "config.builder.params.server_id": &id },
-        doc! { "$set": { "config.builder.params.server_id": "" } },
+        doc! { "config.params.server_id": &id },
+        doc! { "$set": { "config.params.server_id": "" } },
         None,
       )
       .await
-      .context("failed to detach server from builds")?;
+      .context("failed to detach server from builders")?;
 
     db_client()
       .await
@@ -146,6 +147,20 @@ impl Resolve<DeleteServer, User> for State {
       .update_many(
         doc! { "config.server_id": &id },
         doc! { "$set": { "config.server_id": "" } },
+        None,
+      )
+      .await
+      .context("failed to detach server from repos")?;
+
+    db_client()
+      .await
+      .alerts
+      .update_many(
+        doc! { "target.type": "Server", "target.id": &id },
+        doc! { "$set": {
+          "resolved": true,
+          "resolved_ts": unix_timestamp_ms() as i64
+        } },
         None,
       )
       .await
