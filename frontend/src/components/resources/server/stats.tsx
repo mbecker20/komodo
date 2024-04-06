@@ -13,6 +13,8 @@ import { Types } from "@monitor/client";
 import { useServer } from ".";
 import { ServerInfo } from "./info";
 import { DataTable } from "@ui/data-table";
+import { useState } from "react";
+import { Input } from "@ui/input";
 
 export const ServerStats = ({ id }: { id: string }) => {
   const server = useServer(id);
@@ -31,6 +33,7 @@ export const ServerStats = ({ id }: { id: string }) => {
       <div className="flex gap-4">
         <ServerInfo id={id} />
       </div>
+
       <Section title="System Info">
         <DataTable
           data={info && [info]}
@@ -50,6 +53,7 @@ export const ServerStats = ({ id }: { id: string }) => {
           ]}
         />
       </Section>
+
       <Section title="Basic">
         <div className="flex flex-col lg:flex-row gap-4">
           <CPU stats={stats} />
@@ -57,6 +61,19 @@ export const ServerStats = ({ id }: { id: string }) => {
           <DISK stats={stats} />
         </div>
       </Section>
+
+      {/* <Section title="Load">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {["one", "five", "fifteen"].map((minutes) => (
+            <LOAD
+              load={stats?.basic.load_average}
+              minutes={minutes as keyof Types.LoadAverage}
+              core_count={info?.core_count || 0}
+            />
+          ))}
+        </div>
+      </Section> */}
+
       <Section title="Disks">
         <DataTable
           data={stats?.disk.disks}
@@ -81,31 +98,56 @@ export const ServerStats = ({ id }: { id: string }) => {
           ]}
         />
       </Section>
-      {stats?.processes && stats.processes.length > 0 && (
-        <Section title="Processes">
-          <DataTable
-            data={stats.processes}
-            columns={[
-              {
-                header: "Name",
-                accessorKey: "name",
-              },
-              {
-                header: "Cpu",
-                accessorFn: (process) => `${process.cpu_perc.toFixed(2)} %`,
-              },
-              {
-                header: "Memory",
-                accessorFn: (process) =>
-                  process.mem_mb > 1000
-                    ? `${(process.mem_mb / 1024).toFixed(2)} GB`
-                    : `${process.mem_mb.toFixed(2)} MB`,
-              },
-            ]}
-          />
-        </Section>
-      )}
+
+      <Processes stats={stats} />
     </Page>
+  );
+};
+
+const Processes = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
+  const [search, setSearch] = useState("");
+  const searchSplit = search.split(" ");
+
+  if (!stats?.processes || stats.processes.length === 0) return;
+  return (
+    <Section
+      title="Processes"
+      actions={
+        <Input
+          placeholder="Search Processes"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-[300px]"
+        />
+      }
+    >
+      <DataTable
+        data={stats.processes.filter((process) =>
+          searchSplit.every((search) => process.name.includes(search))
+        )}
+        columns={[
+          {
+            header: "Name",
+            accessorKey: "name",
+          },
+          {
+            header: "Exe",
+            accessorKey: "exe",
+          },
+          {
+            header: "Cpu",
+            accessorFn: (process) => `${process.cpu_perc.toFixed(2)} %`,
+          },
+          {
+            header: "Memory",
+            accessorFn: (process) =>
+              process.mem_mb > 1000
+                ? `${(process.mem_mb / 1024).toFixed(2)} GB`
+                : `${process.mem_mb.toFixed(2)} MB`,
+          },
+        ]}
+      />
+    </Section>
   );
 };
 
