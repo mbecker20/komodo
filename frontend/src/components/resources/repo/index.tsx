@@ -10,6 +10,7 @@ import { CopyResource, ResourceLink } from "@components/util";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
+import { CloneRepo, PullRepo } from "./actions";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
@@ -21,7 +22,7 @@ export const RepoComponents: RequiredResourceComponents = {
   Link: ({ id }) => <ResourceLink type="Repo" id={id} />,
   Info: [],
   Status: () => <></>,
-  Actions: [],
+  Actions: [PullRepo, CloneRepo],
   Page: {
     Config: RepoConfig,
     Danger: ({ id }) => (

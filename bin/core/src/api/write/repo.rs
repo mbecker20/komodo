@@ -327,44 +327,31 @@ impl Resolve<UpdateRepo, User> for State {
       update.id = add_update(update.clone()).await?;
 
       if let Some(new_server_id) = config.server_id {
-        if new_server_id != repo.config.server_id {
-          if !repo.config.server_id.is_empty() {
-            let old_server: anyhow::Result<Server> =
-              Server::get_resource(&repo.config.server_id).await;
-            let periphery =
-              old_server.and_then(|server| periphery_client(&server));
-            match periphery {
-              Ok(periphery) => match periphery
-                .request(api::git::DeleteRepo { name: repo.name })
-                .await
-              {
-                Ok(mut log) => {
-                  log.stage = String::from("cleanup previous server");
-                  update.logs.push(log);
-                }
-                Err(e) => update.push_error_log(
-                  "cleanup previous server",
-                  format!(
-                    "failed to cleanup previous server | {e:#?}"
-                  ),
-                ),
-              },
+        if !repo.config.server_id.is_empty()
+          && new_server_id != repo.config.server_id
+        {
+          let old_server: anyhow::Result<Server> =
+            Server::get_resource(&repo.config.server_id).await;
+          let periphery =
+            old_server.and_then(|server| periphery_client(&server));
+          match periphery {
+            Ok(periphery) => match periphery
+              .request(api::git::DeleteRepo { name: repo.name })
+              .await
+            {
+              Ok(mut log) => {
+                log.stage = String::from("cleanup previous server");
+                update.logs.push(log);
+              }
               Err(e) => update.push_error_log(
                 "cleanup previous server",
                 format!("failed to cleanup previous server | {e:#?}"),
               ),
-            }
-          }
-          if !new_server_id.is_empty() {
-            // clone on new server
-            let _ = self
-              .resolve(
-                execute::CloneRepo {
-                  repo: repo.id.clone(),
-                },
-                user,
-              )
-              .await;
+            },
+            Err(e) => update.push_error_log(
+              "cleanup previous server",
+              format!("failed to cleanup previous server | {e:#?}"),
+            ),
           }
         }
       }
