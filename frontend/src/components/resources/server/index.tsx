@@ -2,7 +2,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
-import { ServerIcon, AlertTriangle, Rocket } from "lucide-react";
+import { ServerIcon, AlertTriangle, Rocket, LineChart } from "lucide-react";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
@@ -15,9 +15,10 @@ import {
 import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
-import { ServerInfo } from "./info";
 import { ServersChart } from "./dashboard";
 import { ResourceLink } from "@components/util";
+import { Link } from "react-router-dom";
+import { Button } from "@ui/button";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -26,7 +27,16 @@ export const ServerComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
   Description: ({ id }) => <>{useServer(id)?.info.status}</>,
   Link: ({ id }) => <ResourceLink type="Server" id={id} />,
-  Info: [({ id }) => <ServerInfo id={id} />],
+  Info: [
+    ({ id }) => (
+      <Link to={`/servers/${id}/stats`}>
+        <Button variant="link" className="flex gap-2 items-center p-0">
+          <LineChart className="w-4 h-4" />
+          Stats
+        </Button>
+      </Link>
+    ),
+  ],
   Icon: ({ id }) => {
     const status = useServer(id)?.info.status;
     return (

@@ -12,6 +12,7 @@ import { UserPage, UsersPage } from "@pages/users";
 import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
+import { ResourceStats } from "@pages/resource_stats";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
         children: [
           { path: "", element: <Resources /> },
           { path: ":id", element: <Resource /> },
+          { path: ":id/stats", element: <ResourceStats /> },
           { path: ":id/updates", element: <ResourceUpdates /> },
         ],
       },

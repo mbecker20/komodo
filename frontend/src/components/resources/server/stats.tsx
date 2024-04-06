@@ -1,4 +1,4 @@
-import { Section } from "@components/layouts";
+import { Page } from "@components/layouts";
 import {
   Card,
   CardContent,
@@ -7,29 +7,31 @@ import {
   CardTitle,
 } from "@ui/card";
 import { Progress } from "@ui/progress";
-import { Cpu, Database, LineChart, MemoryStick } from "lucide-react";
+import { Cpu, Database, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
+import { useServer } from ".";
+import { ServerInfo } from "./info";
 
-export const ServerStats = ({ server_id }: { server_id: string }) => {
+export const ServerStats = ({ id }: { id: string }) => {
+  const server = useServer(id);
   const stats = useRead(
     "GetAllSystemStats",
-    { server: server_id },
+    { server: id },
     { refetchInterval: 1000 }
   ).data;
 
   return (
-    <Section
-      title="Server Stats"
-      icon={<LineChart className="w-4 h-4" />}
-      actions=""
-    >
+    <Page title={`${server?.name} Stats`}>
+      <div className="flex gap-4">
+        <ServerInfo id={id} />
+      </div>
       <div className="flex flex-col lg:flex-row gap-4">
         <CPU stats={stats} />
         <RAM stats={stats} />
         <DISK stats={stats} />
       </div>
-    </Section>
+    </Page>
   );
 };
 
