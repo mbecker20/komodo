@@ -1,17 +1,25 @@
 import { Page, Section } from "@components/layouts";
-import { Box, FolderTree } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import { Box, FolderTree, History } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { TagsSummary } from "@components/dashboard/tags";
 import { ApiKeysSummary } from "@components/dashboard/api-keys";
 import { ResourceComponents } from "@components/resources";
 import { OpenAlerts } from "@components/alert";
+import { useUser } from "@lib/hooks";
+import { ResourceLink } from "@components/util";
 
 export const Dashboard = () => {
   return (
     <Page title="">
-      {/* <RecentlyViewed /> */}
       <OpenAlerts />
+      <RecentlyViewed />
       <Resources />
     </Page>
   );
@@ -64,21 +72,31 @@ const Resources = () => (
   </Section>
 );
 
-// const RecentlyViewed = () => (
-//   <Section
-//     title="Recently Viewed"
-//     icon={<History className="w-4 h-4" />}
-//     actions=""
-//   >
-//     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-//       {useRead("GetUser", {})
-//         .data?.recently_viewed?.slice(0, 6)
-//         .map(
-//           (target) =>
-//             target.type !== "System" && (
-//               <ResourceCard target={target} key={target.id} />
-//             )
-//         )}
-//     </div>
-//   </Section>
-// );
+const RecentlyViewed = () => {
+  const nav = useNavigate();
+  const recently_viewed = useUser().data?.recently_viewed;
+  return (
+    <Section
+      title="Recently Viewed"
+      icon={<History className="w-4 h-4" />}
+      actions=""
+    >
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {recently_viewed?.slice(0, 6).map(
+          ({ type, id }) =>
+            type !== "System" && (
+              <Card
+                onClick={() => nav(`/${type.toLowerCase()}s/${id}`)}
+                className="px-3 py-2 h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer"
+              >
+                <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground">
+                  <ResourceLink type={type} id={id} />
+                  {type}
+                </CardContent>
+              </Card>
+            )
+        )}
+      </div>
+    </Section>
+  );
+};

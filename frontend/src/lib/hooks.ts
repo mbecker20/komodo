@@ -163,5 +163,5 @@ export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
     !!type && !!id && push({ resource: { type, id } });
   }, [type, id, push]);
 
-  return push;
+  return () => push({ resource: { type, id } });
 };

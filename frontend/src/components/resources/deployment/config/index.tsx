@@ -83,8 +83,6 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
                 onChange={(process_args) => set({ process_args })}
               />
             ),
-          },
-          network: {
             network: (value, set) => (
               <NetworkModeSelector
                 server_id={update.server_id ?? config.server_id}
@@ -94,16 +92,10 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
             ),
             ports: (value, set) =>
               show_ports && <PortsConfig ports={value ?? []} set={set} />,
-          },
-          volumes: {
             volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
-          },
-          extra_args: {
             extra_args: (value, set) => (
               <ExtraArgs args={value ?? []} set={set} />
             ),
-          },
-          termination: {
             termination_signal: (value, set) => (
               <DefaultTerminationSignal arg={value} set={set} />
             ),

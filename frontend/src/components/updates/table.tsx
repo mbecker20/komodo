@@ -2,6 +2,8 @@ import { fmt_date_with_minutes } from "@lib/formatting";
 import { Types } from "@monitor/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@ui/data-table";
+import { useState } from "react";
+import { UpdateDetailsInner } from "./details";
 
 export const UpdatesTable = ({
   updates,
@@ -42,5 +44,15 @@ export const UpdatesTable = ({
       ...data,
     ];
   }
-  return <DataTable data={updates} columns={data} />;
+  const [id, setId] = useState("");
+  return (
+    <>
+      <DataTable
+        data={updates}
+        columns={data}
+        onRowClick={(row) => setId(row.id)}
+      />
+      <UpdateDetailsInner id={id} open={!!id} setOpen={() => setId("")} />
+    </>
+  );
 };

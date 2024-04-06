@@ -13,7 +13,7 @@ use monitor_client::entities::{
 };
 use mungos::{
   by_id::{find_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, oid::ObjectId, to_bson, to_document},
+  mongodb::bson::{doc, oid::ObjectId, to_document},
 };
 use periphery_client::{api, PeripheryClient};
 use rand::{thread_rng, Rng};
@@ -201,20 +201,26 @@ pub async fn remove_from_recently_viewed(
   resource: impl Into<ResourceTarget>,
 ) -> anyhow::Result<()> {
   let resource: ResourceTarget = resource.into();
-  db_client().await
-      .users
-      .update_many(
-          doc! {},
-          doc! {
-            "$pull": {
-              "recently_viewed":
-                to_bson(&resource).context("failed to convert resource to bson")?
-            }
-          },
-          None
-      )
-      .await
-      .context("failed to remove resource from users recently viewed")?;
+  let (ty, id) = resource.extract_variant_id();
+  db_client()
+    .await
+    .users
+    .update_many(
+      doc! {},
+      doc! {
+        "$pull": {
+          "recently_viewed": {
+            "type": ty.to_string(),
+            "id": id,
+          }
+        }
+      },
+      None,
+    )
+    .await
+    .context(
+      "failed to remove resource from users recently viewed",
+    )?;
   Ok(())
 }
 

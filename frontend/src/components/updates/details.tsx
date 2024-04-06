@@ -35,7 +35,27 @@ export const UpdateDetails = ({
   children: ReactNode;
 }) => {
   const [open, setOpen] = useState(false);
+  return (
+    <UpdateDetailsInner
+      id={id}
+      children={children}
+      open={open}
+      setOpen={setOpen}
+    />
+  );
+};
 
+export const UpdateDetailsInner = ({
+  id,
+  children,
+  open,
+  setOpen,
+}: {
+  id: string;
+  children?: ReactNode;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
   const update = useRead("GetUpdate", { id }).data;
   if (!update) return null;
 
@@ -64,8 +84,13 @@ export const UpdateDetails = ({
               <UpdateUser user_id={update.operator} />
             </div>
             <div className="flex gap-4">
-              <Link to={`/${update.target.type.toLowerCase()}s/${update.target.id}`}>
-                <div className="flex items-center gap-2" onClick={() => setOpen(false)}>
+              <Link
+                to={`/${update.target.type.toLowerCase()}s/${update.target.id}`}
+              >
+                <div
+                  className="flex items-center gap-2"
+                  onClick={() => setOpen(false)}
+                >
                   <Components.Icon id={update.target.id} />
                   <Components.Name id={update.target.id} />
                 </div>
