@@ -26,7 +26,6 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { Types } from "@monitor/client";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 import { UsableResource } from "@types";
 import { ResourceComponents } from "./resources";
@@ -333,24 +332,6 @@ export const CopyButton = ({ content }: { content: string | undefined }) => {
       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
     </Button>
   );
-};
-
-const alert_level_color = (level: Types.SeverityLevel) => {
-  if (level === Types.SeverityLevel.Ok) return "green-500";
-  if (level === Types.SeverityLevel.Warning) return "orange-500";
-  if (level === Types.SeverityLevel.Critical) return "red-500";
-};
-
-// const alert_level_fill_color = (level: Types.SeverityLevel) => {
-//   return `fill-${alert_level_color(level)}`;
-// };
-
-const alert_level_text_color = (level: Types.SeverityLevel) => {
-  return `text-${alert_level_color(level)}`;
-};
-
-export const AlertLevel = ({ level }: { level: Types.SeverityLevel }) => {
-  return <div className={alert_level_text_color(level)}>{level}</div>;
 };
 
 export const ResourceLink = ({

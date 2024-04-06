@@ -1,17 +1,11 @@
-import { useRead } from "@lib/hooks";
 import { Page, Section } from "@components/layouts";
-import { AlertTriangle, Box, FolderTree } from "lucide-react";
-import { DataTable } from "@ui/data-table";
+import { Box, FolderTree } from "lucide-react";
 import { Link } from "react-router-dom";
-import { AlertLevel } from "@components/util";
-import { Button } from "@ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { TagsSummary } from "@components/dashboard/tags";
 import { ApiKeysSummary } from "@components/dashboard/api-keys";
-import { atomWithStorage } from "jotai/utils";
-import { useAtom } from "jotai";
-import { fmt_date_with_minutes } from "@lib/formatting";
 import { ResourceComponents } from "@components/resources";
+import { OpenAlerts } from "@components/alert";
 
 export const Dashboard = () => {
   return (
@@ -20,63 +14,6 @@ export const Dashboard = () => {
       <OpenAlerts />
       <Resources />
     </Page>
-  );
-};
-
-const openAtom = atomWithStorage("show-alerts-v0", true);
-
-const OpenAlerts = () => {
-  const [open, setOpen] = useAtom(openAtom);
-  const alerts = useRead("ListAlerts", { query: { resolved: false } }).data
-    ?.alerts;
-  if (!alerts || alerts.length === 0) return null;
-  return (
-    <Section
-      title="Open Alerts"
-      icon={<AlertTriangle className="w-4 h-4" />}
-      actions={
-        <Button variant="ghost" onClick={() => setOpen(!open)}>
-          {open ? "close" : "open"}
-        </Button>
-      }
-    >
-      {open && (
-        <DataTable
-          data={alerts ?? []}
-          columns={[
-            {
-              header: "Target",
-              cell: ({ row }) => {
-                switch (row.original.target.type) {
-                  case "Server":
-                    return (
-                      <Link to={`/servers/${row.original.target.id}`}>
-                        <ResourceComponents.Server.Name
-                          id={row.original.target.id}
-                        />
-                      </Link>
-                    );
-                  default:
-                    return "Unknown";
-                }
-              },
-            },
-            {
-              header: "Level",
-              cell: ({ row }) => <AlertLevel level={row.original.level} />,
-            },
-            {
-              header: "Alert",
-              accessorKey: "variant",
-            },
-            {
-              header: "Open Since",
-              accessorFn: ({ ts }) => fmt_date_with_minutes(new Date(ts)),
-            },
-          ]}
-        />
-      )}
-    </Section>
   );
 };
 

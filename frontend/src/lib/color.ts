@@ -100,3 +100,13 @@ export const deployment_state_intention: (
       return "Critical";
   }
 };
+
+export const alert_level_intention: (
+  level: Types.SeverityLevel
+) => ColorIntention = (level) => {
+  switch (level) {
+    case Types.SeverityLevel.Ok: return "Good"
+    case Types.SeverityLevel.Warning: return "Warning"
+    case Types.SeverityLevel.Critical: return "Critical"
+  }
+}

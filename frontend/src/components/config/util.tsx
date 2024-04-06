@@ -12,6 +12,7 @@ import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { Switch } from "@ui/switch";
 import {
+  CheckCircle,
   ChevronsUpDown,
   MinusCircle,
   PlusCircle,
@@ -38,6 +39,7 @@ import {
   CommandList,
 } from "@ui/command";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
+import { ConfirmButton } from "@components/util";
 
 export const ConfigItem = ({
   label,
@@ -350,14 +352,14 @@ export const ConfirmUpdate = ({ content, onConfirm }: ConfirmUpdateProps) => {
           <pre className="h-[300px] overflow-auto">{content}</pre>
         </div>
         <DialogFooter>
-          <Button
+          <ConfirmButton
+            title="Update"
+            icon={<CheckCircle className="w-4 h-4" />}
             onClick={() => {
               onConfirm();
               set(false);
             }}
-          >
-            Confirm
-          </Button>
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>
