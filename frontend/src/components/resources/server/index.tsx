@@ -3,7 +3,6 @@ import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { ServerIcon, AlertTriangle, Rocket } from "lucide-react";
-import { ServerStats } from "./stats";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
@@ -52,10 +51,10 @@ export const ServerComponents: RequiredResourceComponents = {
   },
   Actions: SERVER_ACTIONS,
   Page: {
-    Stats: ({ id }) => {
-      const status = useServer(id)?.info.status;
-      return status === "Ok" && <ServerStats server_id={id} />;
-    },
+    // Stats: ({ id }) => {
+    //   const status = useServer(id)?.info.status;
+    //   return status === "Ok" && <ServerStats server_id={id} />;
+    // },
     Deployments: ({ id }) => {
       const deployments = useRead("ListDeployments", {}).data?.filter(
         (deployment) => deployment.info.server_id === id

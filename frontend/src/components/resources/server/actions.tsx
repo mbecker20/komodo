@@ -38,8 +38,7 @@ export const SERVER_ACTIONS: IdComponent[] = [
       server && (
         <ActionWithDialog
           name={server?.name}
-          title="Start"
-          //   intent="success"
+          title="Stop Containers"
           icon={<XOctagon className="w-4 h-4" />}
           onClick={() => mutate({ server: id })}
           disabled={pending}
