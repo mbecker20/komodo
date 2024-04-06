@@ -24,7 +24,7 @@ import {
   text_color_class_by_intention,
 } from "@lib/color";
 import { DeploymentTable } from "./table";
-import { ResourceLink } from "@components/util";
+import { CopyResource, ResourceLink } from "@components/util";
 import { DeploymentsChart } from "./dashboard";
 
 export const useDeployment = (id?: string) =>
@@ -78,7 +78,11 @@ export const DeploymentComponents: RequiredResourceComponents = {
     Logs: ({ id }) => <DeploymentLogs id={id} />,
     Config: ({ id }) => <DeploymentConfig id={id} />,
     Danger: ({ id }) => (
-      <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
+      <Section
+        title="Danger Zone"
+        icon={<AlertTriangle className="w-4 h-4" />}
+        actions={<CopyResource type="Deployment" id={id} />}
+      >
         <RenameDeployment id={id} />
         <DeleteDeployment id={id} />
       </Section>

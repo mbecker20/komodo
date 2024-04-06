@@ -5,6 +5,7 @@ import {
   ResourceSelector,
   SystemCommand,
 } from "@components/config/util";
+import { ActionWithDialog } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { env_to_text, text_to_env } from "@lib/utils";
 import { Types } from "@monitor/client";
@@ -18,8 +19,9 @@ import {
   SelectValue,
 } from "@ui/select";
 import { Textarea } from "@ui/textarea";
-import { MinusCircle, PlusCircle } from "lucide-react";
+import { MinusCircle, PlusCircle, Trash } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const BuildConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuild", { build: id }).data?.config;
@@ -239,5 +241,30 @@ const DockerOrganizations = ({
         </SelectContent>
       </Select>
     </ConfigItem>
+  );
+};
+
+export const DeleteBuild = ({ id }: { id: string }) => {
+  const nav = useNavigate();
+  const build = useRead("GetBuild", { build: id }).data;
+  const { mutateAsync, isPending } = useWrite("DeleteBuild");
+  
+  if (!build) return null;
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="w-full">Delete Build</div>
+      <ActionWithDialog
+        name={build.name}
+        title="Delete"
+        icon={<Trash className="h-4 w-4" />}
+        onClick={async () => {
+          await mutateAsync({ id });
+          nav("/");
+        }}
+        disabled={isPending}
+        loading={isPending}
+      />
+    </div>
   );
 };

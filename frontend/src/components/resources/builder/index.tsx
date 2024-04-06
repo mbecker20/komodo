@@ -1,4 +1,4 @@
-import { NewResource } from "@components/layouts";
+import { NewResource, Section } from "@components/layouts";
 import { useTagsFilter } from "@components/tags";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
@@ -14,11 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Cloud, Bot, Factory } from "lucide-react";
+import { Cloud, Bot, Factory, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BuilderConfig } from "./config";
-import { ResourceLink } from "@components/util";
+import { BuilderConfig, DeleteBuilder } from "./config";
+import { CopyResource, ResourceLink } from "@components/util";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
@@ -46,6 +46,15 @@ export const BuilderComponents: RequiredResourceComponents = {
   Actions: [],
   Page: {
     Config: BuilderConfig,
+    Danger: ({ id }) => (
+      <Section
+        title="Danger Zone"
+        icon={<AlertTriangle className="w-4 h-4" />}
+        actions={<CopyResource type="Builder" id={id} />}
+      >
+        <DeleteBuilder id={id} />
+      </Section>
+    ),
   },
   Table: () => {
     const tags = useTagsFilter();

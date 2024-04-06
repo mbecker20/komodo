@@ -1,5 +1,10 @@
-import { NewResource } from "@components/layouts";
-import { ConfirmButton, ResourceLink } from "@components/util";
+import { NewResource, Section } from "@components/layouts";
+import {
+  ActionWithDialog,
+  ConfirmButton,
+  CopyResource,
+  ResourceLink,
+} from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
@@ -12,9 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Loader2, Route } from "lucide-react";
+import { AlertTriangle, Loader2, Route, Trash } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
 
@@ -30,6 +35,15 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Status: () => <>Procedure</>,
   Page: {
     Config: ProcedureConfig,
+    Danger: ({ id }) => (
+      <Section
+        title="Danger Zone"
+        icon={<AlertTriangle className="w-4 h-4" />}
+        actions={<CopyResource type="Procedure" id={id} />}
+      >
+        <DeleteProcedure id={id} />
+      </Section>
+    ),
   },
   Actions: [
     ({ id }) => {
@@ -105,4 +119,29 @@ export const ProcedureComponents: RequiredResourceComponents = {
       </Link>
     );
   },
+};
+
+const DeleteProcedure = ({ id }: { id: string }) => {
+  const nav = useNavigate();
+  const procedure = useRead("GetProcedure", { procedure: id }).data;
+  const { mutateAsync, isPending } = useWrite("DeleteProcedure");
+
+  if (!procedure) return null;
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="w-full">Delete Procedure</div>
+      <ActionWithDialog
+        name={procedure.name}
+        title="Delete"
+        icon={<Trash className="h-4 w-4" />}
+        onClick={async () => {
+          await mutateAsync({ id });
+          nav("/");
+        }}
+        disabled={isPending}
+        loading={isPending}
+      />
+    </div>
+  );
 };

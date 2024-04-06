@@ -1,5 +1,10 @@
 import { Config } from "@components/config";
-import { ConfigItem, ResourceSelector, SystemCommand } from "@components/config/util";
+import {
+  ConfigItem,
+  ResourceSelector,
+  SystemCommand,
+} from "@components/config/util";
+import { ActionWithDialog } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
@@ -9,7 +14,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
+import { Trash } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const config = useRead("GetRepo", { repo: id }).data?.config;
@@ -95,5 +102,30 @@ const GithubAccount = ({
         </SelectContent>
       </Select>
     </ConfigItem>
+  );
+};
+
+export const DeleteRepo = ({ id }: { id: string }) => {
+  const nav = useNavigate();
+  const repo = useRead("GetRepo", { repo: id }).data;
+  const { mutateAsync, isPending } = useWrite("DeleteRepo");
+
+  if (!repo) return null;
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="w-full">Delete Repo</div>
+      <ActionWithDialog
+        name={repo.name}
+        title="Delete"
+        icon={<Trash className="h-4 w-4" />}
+        onClick={async () => {
+          await mutateAsync({ id });
+          nav("/");
+        }}
+        disabled={isPending}
+        loading={isPending}
+      />
+    </div>
   );
 };

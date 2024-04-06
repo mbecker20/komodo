@@ -1,12 +1,12 @@
-import { NewResource } from "@components/layouts";
-import { ConfirmButton, ResourceLink } from "@components/util";
+import { NewResource, Section } from "@components/layouts";
+import { ConfirmButton, CopyResource, ResourceLink } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
-import { Ban, Hammer, History, Loader2 } from "lucide-react";
+import { AlertTriangle, Ban, Hammer, History, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@ui/use-toast";
-import { BuildConfig } from "./config";
+import { BuildConfig, DeleteBuild } from "./config";
 import { fill_color_class_by_intention } from "@lib/color";
 import { BuildChart } from "./dashboard";
 import { BuildTable } from "./table";
@@ -43,6 +43,15 @@ export const BuildComponents: RequiredResourceComponents = {
   Status: () => <>Build</>,
   Page: {
     Config: ({ id }) => <BuildConfig id={id} />,
+    Danger: ({ id }) => (
+      <Section
+        title="Danger Zone"
+        icon={<AlertTriangle className="w-4 h-4" />}
+        actions={<CopyResource type="Build" id={id} />}
+      >
+        <DeleteBuild id={id} />
+      </Section>
+    ),
   },
   Icon: ({ id }) => {
     if (id) return <Icon id={id} />;

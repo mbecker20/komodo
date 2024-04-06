@@ -3,12 +3,12 @@ import { useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
-import { GitBranch } from "lucide-react";
+import { AlertTriangle, GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
-import { RepoConfig } from "./config";
-import { ResourceLink } from "@components/util";
+import { DeleteRepo, RepoConfig } from "./config";
+import { CopyResource, ResourceLink } from "@components/util";
 import { useState } from "react";
-import { NewResource } from "@components/layouts";
+import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
 
 const useRepo = (id?: string) =>
@@ -24,6 +24,15 @@ export const RepoComponents: RequiredResourceComponents = {
   Actions: [],
   Page: {
     Config: RepoConfig,
+    Danger: ({ id }) => (
+      <Section
+        title="Danger Zone"
+        icon={<AlertTriangle className="w-4 h-4" />}
+        actions={<CopyResource type="Repo" id={id} />}
+      >
+        <DeleteRepo id={id} />
+      </Section>
+    ),
   },
   Table: () => {
     const repos = useRead("ListRepos", {}).data;

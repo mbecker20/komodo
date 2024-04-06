@@ -170,7 +170,7 @@ export const CopyResource = ({
 }: {
   id: string;
   disabled?: boolean;
-  type: "Deployment" | "Build";
+  type: Exclude<UsableResource, "Server">;
 }) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -203,8 +203,8 @@ export const CopyResource = ({
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <DialogFooter>
-          <ActionButton
-            title="Confirm"
+          <ConfirmButton
+            title="Copy"
             icon={<Check className="w-4 h-4" />}
             disabled={!name}
             onClick={() => {

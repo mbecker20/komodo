@@ -1,4 +1,4 @@
-import { NewResource } from "@components/layouts";
+import { NewResource, Section } from "@components/layouts";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
@@ -11,13 +11,13 @@ import {
 } from "@ui/select";
 import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
-import { AlarmClock } from "lucide-react";
+import { AlarmClock, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { AlerterConfig } from "./config";
-import { ResourceLink } from "@components/util";
+import { AlerterConfig, DeleteAlerter } from "./config";
+import { CopyResource, ResourceLink } from "@components/util";
 import { TagsWithBadge } from "@components/tags";
 
 const useAlerter = (id?: string) =>
@@ -32,6 +32,15 @@ export const AlerterComponents: RequiredResourceComponents = {
   Status: () => <></>,
   Page: {
     Config: AlerterConfig,
+    Danger: ({ id }) => (
+      <Section
+        title="Danger Zone"
+        icon={<AlertTriangle className="w-4 h-4" />}
+        actions={<CopyResource type="Alerter" id={id} />}
+      >
+        <DeleteAlerter id={id} />
+      </Section>
+    ),
   },
   Actions: [],
   Table: () => {
@@ -46,7 +55,7 @@ export const AlerterComponents: RequiredResourceComponents = {
           },
           {
             header: "Type",
-            accessorKey: "info.alerter_type"
+            accessorKey: "info.alerter_type",
           },
           {
             header: "Tags",
