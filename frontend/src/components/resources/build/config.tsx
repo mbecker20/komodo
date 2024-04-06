@@ -38,15 +38,50 @@ export const BuildConfig = ({ id }: { id: string }) => {
       components={{
         general: {
           general: {
+            version: (version, set) => {
+              const { major, minor, patch } = version ?? {
+                major: 0,
+                minor: 0,
+                patch: 0,
+              };
+              return (
+                <ConfigItem label="Version">
+                  <div className="flex gap-4 items-center">
+                    <div className="text-xl">
+                      v{major}.{minor}.{patch}
+                    </div>
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        set({
+                          version: { major: major + 1, minor, patch: 0 },
+                        })
+                      }
+                    >
+                      + Major
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() =>
+                        set({
+                          version: { major, minor: minor + 1, patch: 0 },
+                        })
+                      }
+                    >
+                      + Minor
+                    </Button>
+                  </div>
+                </ConfigItem>
+              );
+            },
             builder_id: (id, set) => (
-              <div className="flex justify-between items-center border-b pb-4 min-h-[60px]">
-                <div>Builder</div>
+              <ConfigItem label="Builder">
                 <ResourceSelector
                   type="Builder"
                   selected={id}
                   onSelect={(builder_id) => set({ builder_id })}
                 />
-              </div>
+              </ConfigItem>
             ),
           },
           git: {
