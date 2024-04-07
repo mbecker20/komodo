@@ -101,7 +101,7 @@ const AlertDetailsDialog = ({ id }: { id: string }) => {
           Details
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="w-fit min-w-[30vw] max-w-[90vw]">
         {alert && (
           <>
             <DialogHeader className="flex-row justify-between w-full">

@@ -9,5 +9,5 @@ config.region = "us-east-2"
 name = "testo"
 description = "test server 1"
 tags = ["mogh", "test"]
-config.address = ""
+config.address = "http://locahost:8120"
 config.enabled = false

@@ -1,26 +1,4 @@
 [[build]]
-name = "monitor-core-v1"
-description = "the prod build for monitor"
-tags = ["monitor", "prod", "api"]
-config.builder = "mogh-builder"
-config.repo = "mbecker20/monitor"
-config.branch = "next"
-config.build_path = "."
-config.dockerfile_path = "bin/core/Dockerfile"
-config.docker_account = "mbecker2020"
-
-[[build]]
-name = "monitor-frontend-v1"
-description = "the prod frontend build for monitor"
-tags = ["monitor", "prod", "frontend"]
-config.builder = "mogh-builder"
-config.repo = "mbecker20/monitor"
-config.branch = "next"
-config.build_path = "."
-config.dockerfile_path = "frontend/Dockerfile"
-config.docker_account = "mbecker2020"
-
-[[build]]
 name = "test_logger"
 tags = ["test"]
 config.builder = "mogh-builder"
