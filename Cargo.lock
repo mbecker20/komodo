@@ -36,8 +36,11 @@ version = "1.0.1"
 dependencies = [
  "anyhow",
  "axum",
+ "dotenv",
+ "envy",
  "logger",
  "monitor_client",
+ "serde",
  "termination_signal",
  "tokio",
  "tracing",

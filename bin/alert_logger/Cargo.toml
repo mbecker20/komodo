@@ -18,3 +18,6 @@ tokio.workspace = true
 tracing.workspace = true
 axum.workspace = true
 anyhow.workspace = true
+serde.workspace = true
+dotenv.workspace = true
+envy.workspace = true

@@ -21,13 +21,35 @@ config.dockerfile_path = "frontend/Dockerfile"
 config.docker_account = "mbecker2020"
 
 [[build]]
-name = "test-build"
+name = "test_logger"
 tags = ["test"]
 config.builder = "mogh-builder"
-config.repo = "mbecker20/docker_build_test"
+config.repo = "mbecker20/test_logger"
+config.branch = "master"
 config.github_account = "mbecker20"
 config.docker_account = "mbecker2020"
 
+[[build]]
+name = "alert_logger"
+tags = ["test"]
+config.builder = "mogh-builder"
+config.repo = "mbecker20/monitor"
+config.branch = "next"
+config.build_path = "."
+config.dockerfile_path = "bin/alert_logger/Dockerfile"
+config.docker_account = "mbecker2020"
+
+[[build]]
+name = "update_logger"
+tags = ["test"]
+config.builder = "mogh-builder"
+config.repo = "mbecker20/monitor"
+config.branch = "next"
+config.build_path = "."
+config.dockerfile_path = "bin/update_logger/Dockerfile"
+config.docker_account = "mbecker2020"
+
+# BUILDER
 [[builder]]
 name = "mogh-builder"
 description = "the builder for the mogh images"

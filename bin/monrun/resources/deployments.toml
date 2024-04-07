@@ -28,3 +28,27 @@ tags = ["test"]
 config.server = "mogh-server"
 config.image.type = "Image"
 config.image.params.image = "hello-world"
+
+[[deployment]]
+name = "test_logger"
+tags = ["test"]
+config.server = "mogh-server"
+config.image.type = "Build"
+config.image.params.build = "test_logger"
+
+[[deployment]]
+name = "alert_logger"
+tags = ["test"]
+config.server = "mogh-server"
+config.image.type = "Build"
+config.image.params.build = "alert_logger"
+
+[[deployment]]
+name = "update_logger"
+tags = ["test"]
+config.server = "mogh-server"
+config.image.type = "Build"
+config.image.params.build = "update_logger"
+[[deployment.config.environment]]
+variable = "MONITOR_ADDRESS"
+value = "http://localhost:9001"
