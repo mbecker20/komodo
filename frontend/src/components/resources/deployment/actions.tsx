@@ -8,25 +8,50 @@ import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Types } from "@monitor/client";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+} from "@ui/select";
+import { DockerContainerState } from "@monitor/client/dist/types";
 
 interface DeploymentId {
   id: string;
 }
 
 export const RedeployContainer = ({ id }: DeploymentId) => {
+  const deployment = useRead("GetDeployment", { deployment: id }).data;
+  const [signal, setSignal] = useState<Types.TerminationSignal>();
+
+  useEffect(
+    () => setSignal(deployment?.config.termination_signal),
+    [deployment?.config.termination_signal]
+  );
+
   const { mutate, isPending } = useExecute("Deploy");
+
   const deployments = useRead("ListDeployments", {}).data;
-  const deployment = deployments?.find((d) => d.id === id);
+  const deployment_item = deployments?.find((d) => d.id === id);
+
   const deploying = useRead("GetDeploymentActionState", { deployment: id }).data
     ?.deploying;
+
   const pending = isPending || deploying;
+
   if (!deployment) return null;
+
+  const deployed =
+    deployment_item?.info.state !== DockerContainerState.NotDeployed &&
+    deployment_item?.info.state !== DockerContainerState.Unknown;
+
   return (
     <ActionWithDialog
       name={deployment.name}
-      title={deployment?.info.status ? "Redeploy" : "Deploy"}
+      title={deployed ? "Redeploy" : "Deploy"}
       icon={
         pending ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -34,9 +59,18 @@ export const RedeployContainer = ({ id }: DeploymentId) => {
           <Rocket className="h-4 w-4" />
         )
       }
-      onClick={() => mutate({ deployment: id })}
+      onClick={() => mutate({ deployment: id, stop_signal: signal })}
       disabled={pending}
       loading={pending}
+      additional={
+        deployed && deployment.config.term_signal_labels.length > 1 ? (
+          <TermSignalSelector
+            signals={deployment.config.term_signal_labels}
+            signal={signal}
+            setSignal={setSignal}
+          />
+        ) : undefined
+      }
     />
   );
 };
@@ -63,23 +97,39 @@ const StartContainer = ({ id }: DeploymentId) => {
 };
 
 const StopContainer = ({ id }: DeploymentId) => {
-  const { data: d } = useRead("GetDeployment", { deployment: id });
+  const deployment = useRead("GetDeployment", { deployment: id }).data;
+  const [signal, setSignal] = useState<Types.TerminationSignal>();
+
+  useEffect(
+    () => setSignal(deployment?.config.termination_signal),
+    [deployment?.config.termination_signal]
+  );
+
   const { mutate, isPending } = useExecute("StopContainer");
   const stopping = useRead("GetDeploymentActionState", {
     deployment: id,
   }).data?.stopping;
   const pending = isPending || stopping;
 
-  if (!d) return null;
+  if (!deployment) return null;
 
   return (
     <ActionWithDialog
-      name={d?.name}
+      name={deployment.name}
       title="Stop"
       icon={<Pause className="h-4 w-4" />}
-      onClick={() => mutate({ deployment: id })}
+      onClick={() => mutate({ deployment: id, signal })}
       disabled={pending}
       loading={pending}
+      additional={
+        deployment.config.term_signal_labels.length > 1 ? (
+          <TermSignalSelector
+            signals={deployment.config.term_signal_labels}
+            signal={signal}
+            setSignal={setSignal}
+          />
+        ) : undefined
+      }
     />
   );
 };
@@ -98,6 +148,13 @@ export const StartOrStopContainer = ({ id }: DeploymentId) => {
 
 export const RemoveContainer = ({ id }: DeploymentId) => {
   const deployment = useRead("GetDeployment", { deployment: id }).data;
+  const [signal, setSignal] = useState<Types.TerminationSignal>();
+
+  useEffect(
+    () => setSignal(deployment?.config.termination_signal),
+    [deployment?.config.termination_signal]
+  );
+
   const { mutate, isPending } = useExecute("RemoveContainer");
 
   const deployments = useRead("ListDeployments", {}).data;
@@ -116,12 +173,59 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
     <ActionWithDialog
       name={deployment.name}
       title="Remove"
-      //   intent="warning"
       icon={<Trash className="h-4 w-4" />}
-      onClick={() => mutate({ deployment: id })}
+      onClick={() => mutate({ deployment: id, signal })}
       disabled={pending}
       loading={pending}
+      additional={
+        deployment.config.term_signal_labels.length > 1 ? (
+          <TermSignalSelector
+            signals={deployment.config.term_signal_labels}
+            signal={signal}
+            setSignal={setSignal}
+          />
+        ) : undefined
+      }
     />
+  );
+};
+
+const TermSignalSelector = ({
+  signals,
+  signal,
+  setSignal,
+}: {
+  signals: Types.TerminationSignalLabel[];
+  signal: Types.TerminationSignal | undefined;
+  setSignal: (signal: Types.TerminationSignal) => void;
+}) => {
+  const label = signals.find((s) => s.signal === signal)?.label;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="text-muted-foreground flex justify-end">Termination</div>
+      <div className="text-muted-foreground flex gap-4 items-center justify-end">
+        {label}
+        <Select
+          value={signal}
+          onValueChange={(value) => setSignal(value as Types.TerminationSignal)}
+        >
+          <SelectTrigger className="w-[200px]">{signal}</SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {signals.map(({ signal }) => (
+                <SelectItem
+                  key={signal}
+                  value={signal}
+                  className="cursor-pointer"
+                >
+                  {signal}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
   );
 };
 

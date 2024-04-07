@@ -105,6 +105,7 @@ export const ActionWithDialog = ({
   disabled,
   loading,
   onClick,
+  additional,
 }: {
   name: string;
   title: string;
@@ -112,6 +113,7 @@ export const ActionWithDialog = ({
   disabled?: boolean;
   loading?: boolean;
   onClick?: () => void;
+  additional?: ReactNode;
 }) => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -146,6 +148,7 @@ export const ActionWithDialog = ({
             </span>
           </p>
           <Input value={input} onChange={(e) => setInput(e.target.value)} />
+          {additional}
         </div>
         <DialogFooter>
           <ConfirmButton
