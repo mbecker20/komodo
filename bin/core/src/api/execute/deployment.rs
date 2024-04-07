@@ -114,7 +114,7 @@ impl Resolve<Deploy, User> for State {
       {
         Ok(log) => log,
         Err(e) => {
-          Log::error("deploy container", serialize_error_pretty(e))
+          Log::error("deploy container", serialize_error_pretty(&e))
         }
       };
 
@@ -203,7 +203,7 @@ impl Resolve<StartContainer, User> for State {
       {
         Ok(log) => log,
         Err(e) => {
-          Log::error("start container", serialize_error_pretty(e))
+          Log::error("start container", serialize_error_pretty(&e))
         }
       };
 
@@ -293,7 +293,7 @@ impl Resolve<StopContainer, User> for State {
       {
         Ok(log) => log,
         Err(e) => {
-          Log::error("stop container", serialize_error_pretty(e))
+          Log::error("stop container", serialize_error_pretty(&e))
         }
       };
 
@@ -384,7 +384,7 @@ impl Resolve<StopAllContainers, User> for State {
             "stop container failure",
             format!(
               "failed to stop container {name} ({id})\n\n{}",
-              serialize_error_pretty(e)
+              serialize_error_pretty(&e)
             ),
           );
         }
@@ -481,7 +481,7 @@ impl Resolve<RemoveContainer, User> for State {
       {
         Ok(log) => log,
         Err(e) => {
-          Log::error("stop container", serialize_error_pretty(e))
+          Log::error("stop container", serialize_error_pretty(&e))
         }
       };
 

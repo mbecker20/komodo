@@ -1,6 +1,7 @@
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use serde::{Deserialize, Serialize};
+use serror::Serror;
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
@@ -27,6 +28,8 @@ pub type U64 = u64;
 pub type MongoDocument = mungos::mongodb::bson::Document;
 #[typeshare(serialized_as = "MongoIdObj")]
 pub type MongoId = String;
+#[typeshare(serialized_as = "__Serror")]
+pub type _Serror = Serror;
 
 pub fn all_logs_success(logs: &[update::Log]) -> bool {
   for log in logs {
@@ -80,6 +83,13 @@ pub fn monitor_timestamp() -> i64 {
 pub struct MongoIdObj {
   #[serde(rename = "$oid")]
   pub oid: String,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct __Serror {
+  pub error: String,
+  pub trace: Vec<String>,
 }
 
 #[typeshare]

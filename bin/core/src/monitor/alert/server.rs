@@ -76,11 +76,35 @@ pub async fn alert_servers(
             id: server_status.id.clone(),
             name: server.name.clone(),
             region: optional_string(&server.info.region),
+            err: server_status.err.clone(),
           },
         };
         alerts_to_open
           .push((alert, server.info.send_unreachable_alerts))
       }
+      (ServerStatus::NotOk, Some(alert)) => {
+        // update alert err
+        let mut alert = alert.clone();
+        let (id, name, region) = match alert.data {
+          AlertData::ServerUnreachable {
+            id, name, region, ..
+          } => (id, name, region),
+          data => {
+            error!("got incorrect alert data in ServerStatus handler. got {data:?}");
+            continue;
+          }
+        };
+        alert.data = AlertData::ServerUnreachable {
+          id,
+          name,
+          region,
+          err: server_status.err.clone(),
+        };
+        alerts_to_update
+          .push((alert, server.info.send_unreachable_alerts));
+      }
+
+      // Close an open alert
       (
         ServerStatus::Ok | ServerStatus::Disabled,
         Some(health_alert),

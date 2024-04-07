@@ -90,7 +90,7 @@ impl MonitorClient {
 
           if let Err(e) = res {
             let _ = tx.send(UpdateWsMessage::Error(
-              UpdateWsError::ConnectionError(serialize_error(e)),
+              UpdateWsError::ConnectionError(serialize_error(&e)),
             ));
             break;
           }
@@ -107,7 +107,7 @@ impl MonitorClient {
 
           if let Err(e) = login_send_res {
             let _ = tx.send(UpdateWsMessage::Error(
-              UpdateWsError::LoginError(serialize_error(e)),
+              UpdateWsError::LoginError(serialize_error(&e)),
             ));
             break;
           }
@@ -182,7 +182,7 @@ impl MonitorClient {
               }
               Err(e) => {
                 let _ = tx.send(UpdateWsMessage::Error(
-                  UpdateWsError::MessageError(serialize_error(e)),
+                  UpdateWsError::MessageError(serialize_error(&e)),
                 ));
                 let _ = tx.send(UpdateWsMessage::Disconnected);
                 let _ = ws.close(None).await;

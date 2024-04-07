@@ -252,7 +252,7 @@ impl Resolve<DeleteRepo, User> for State {
           Ok(log) => update.logs.push(log),
           Err(e) => update.logs.push(Log::error(
             "delete repo on periphery",
-            serialize_error_pretty(e),
+            serialize_error_pretty(&e),
           )),
         }
       }

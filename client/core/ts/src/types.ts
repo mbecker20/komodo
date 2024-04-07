@@ -813,6 +813,13 @@ export type U64 = number;
 
 export type MongoDocument = any;
 
+export interface __Serror {
+	error: string;
+	trace: string[];
+}
+
+export type _Serror = __Serror;
+
 export interface ProcedureQuerySpecifics {
 	types: ProcedureConfig["type"][];
 }
@@ -967,6 +974,7 @@ export type AlertData =
 	id: string;
 	name: string;
 	region?: string;
+	err?: _Serror;
 }}
 	| { type: "ServerCpu", data: {
 	id: string;

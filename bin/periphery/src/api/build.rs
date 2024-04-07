@@ -30,11 +30,11 @@ impl Resolve<Build> for State {
         match docker::build::build(&build, docker_token).await {
           Ok(logs) => logs,
           Err(e) => {
-            vec![Log::error("build", serialize_error_pretty(e))]
+            vec![Log::error("build", serialize_error_pretty(&e))]
           }
         }
       }
-      Err(e) => vec![Log::error("build", serialize_error_pretty(e))],
+      Err(e) => vec![Log::error("build", serialize_error_pretty(&e))],
     };
     Ok(log)
   }

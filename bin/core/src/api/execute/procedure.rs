@@ -56,7 +56,7 @@ impl Resolve<RunProcedure, User> for State {
         );
       }
       Err(e) => update
-        .push_error_log("execution error", serialize_error_pretty(e)),
+        .push_error_log("execution error", serialize_error_pretty(&e)),
     }
 
     update.finalize();

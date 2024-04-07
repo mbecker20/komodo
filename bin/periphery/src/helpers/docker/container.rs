@@ -169,7 +169,7 @@ pub async fn deploy(
   )) {
     Ok(token) => token,
     Err(e) => {
-      return Log::error("docker login", serialize_error_pretty(e))
+      return Log::error("docker login", serialize_error_pretty(&e))
     }
   };
 
@@ -179,7 +179,7 @@ pub async fn deploy(
   )
   .await
   {
-    return Log::error("docker login", serialize_error_pretty(e));
+    return Log::error("docker login", serialize_error_pretty(&e));
   }
 
   let image = if let DeploymentImage::Image { image } =

@@ -58,7 +58,7 @@ impl Resolve<PruneDockerContainers, User> for State {
         )) {
         Ok(log) => log,
         Err(e) => {
-          Log::error("prune containers", serialize_error_pretty(e))
+          Log::error("prune containers", serialize_error_pretty(&e))
         }
       };
 
@@ -127,7 +127,7 @@ impl Resolve<PruneDockerNetworks, User> for State {
         )) {
         Ok(log) => log,
         Err(e) => {
-          Log::error("prune networks", serialize_error_pretty(e))
+          Log::error("prune networks", serialize_error_pretty(&e))
         }
       };
 

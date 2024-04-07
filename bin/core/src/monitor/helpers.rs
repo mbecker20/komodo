@@ -8,6 +8,7 @@ use monitor_client::entities::{
     Server, ServerConfig, ServerStatus,
   },
 };
+use serror::Serror;
 
 use crate::helpers::cache::{
   deployment_status_cache, server_status_cache,
@@ -44,6 +45,7 @@ pub async fn insert_server_status(
   status: ServerStatus,
   version: String,
   stats: Option<AllSystemStats>,
+  err: impl Into<Option<Serror>>,
 ) {
   let health = stats.as_ref().map(|s| get_server_health(server, s));
   server_status_cache()
@@ -55,6 +57,7 @@ pub async fn insert_server_status(
         version,
         stats,
         health,
+        err: err.into(),
       }
       .into(),
     )

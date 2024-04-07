@@ -293,7 +293,7 @@ impl Resolve<CreateNetwork, User> for State {
     {
       Ok(log) => update.logs.push(log),
       Err(e) => update
-        .push_error_log("create network", serialize_error_pretty(e)),
+        .push_error_log("create network", serialize_error_pretty(&e)),
     };
 
     update.finalize();
@@ -330,7 +330,7 @@ impl Resolve<DeleteNetwork, User> for State {
     {
       Ok(log) => update.logs.push(log),
       Err(e) => update
-        .push_error_log("delete network", serialize_error_pretty(e)),
+        .push_error_log("delete network", serialize_error_pretty(&e)),
     };
 
     update.finalize();

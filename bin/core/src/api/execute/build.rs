@@ -120,7 +120,7 @@ impl Resolve<RunBuild, User> for State {
         update.logs.push(Log::error(
           "get builder",
           // The unwrap is safe, it is inside a block which checks for .is_err()
-          serialize_error_pretty(builder.err().unwrap()),
+          serialize_error_pretty(&builder.err().unwrap()),
         ));
         update.finalize();
         update_update(update.clone()).await?;
@@ -149,7 +149,7 @@ impl Resolve<RunBuild, User> for State {
       match res {
         Ok(clone_logs) => update.logs.extend(clone_logs),
         Err(e) => {
-          update.push_error_log("clone repo", serialize_error(e));
+          update.push_error_log("clone repo", serialize_error(&e));
         }
       }
 
@@ -174,7 +174,7 @@ impl Resolve<RunBuild, User> for State {
         match res {
           Ok(logs) => update.logs.extend(logs),
           Err(e) => {
-            update.push_error_log("build", serialize_error(e))
+            update.push_error_log("build", serialize_error(&e))
           }
         };
       }
@@ -418,7 +418,7 @@ async fn cleanup_builder_instance(
           format!("terminate instance id {}", instance_id),
         ),
         Err(e) => {
-          Log::error("terminate instance", serialize_error_pretty(e))
+          Log::error("terminate instance", serialize_error_pretty(&e))
         }
       };
       update.logs.push(log);

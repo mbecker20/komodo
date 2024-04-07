@@ -75,7 +75,7 @@ impl Resolve<CloneRepo, User> for State {
       {
         Ok(logs) => logs,
         Err(e) => {
-          vec![Log::error("clone repo", serialize_error_pretty(e))]
+          vec![Log::error("clone repo", serialize_error_pretty(&e))]
         }
       };
 
@@ -176,7 +176,7 @@ impl Resolve<PullRepo, User> for State {
       {
         Ok(logs) => logs,
         Err(e) => {
-          vec![Log::error("pull repo", serialize_error_pretty(e))]
+          vec![Log::error("pull repo", serialize_error_pretty(&e))]
         }
       };
 
