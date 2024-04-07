@@ -73,7 +73,7 @@ export const RepoComponents: RequiredResourceComponents = {
     const repo_count = useRead("ListRepos", {}).data?.length;
     return (
       <Link to="/repos/" className="w-full">
-        <Card>
+        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
           <CardHeader>
             <div className="flex justify-between">
               <div>

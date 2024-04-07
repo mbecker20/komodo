@@ -84,7 +84,7 @@ export const AlerterComponents: RequiredResourceComponents = {
     const alerters_count = useRead("ListAlerters", {}).data?.length;
     return (
       <Link to="/alerters/" className="w-full">
-        <Card>
+        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
           <CardHeader>
             <div className="flex justify-between">
               <div>

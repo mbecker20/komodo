@@ -139,12 +139,22 @@ const StopContainer = ({ id }: DeploymentId) => {
 export const StartOrStopContainer = ({ id }: DeploymentId) => {
   const deployments = useRead("ListDeployments", {}).data;
   const deployment = deployments?.find((d) => d.id === id);
+  const state = deployment?.info.state;
 
-  if (deployment?.info.state === Types.DockerContainerState.NotDeployed)
+  if (
+    state === Types.DockerContainerState.NotDeployed ||
+    state === Types.DockerContainerState.Unknown
+  ) {
     return null;
+  }
 
-  if (deployment?.info.state === Types.DockerContainerState.Running)
+  if (
+    state === Types.DockerContainerState.Running ||
+    state === Types.DockerContainerState.Restarting
+  ) {
     return <StopContainer id={id} />;
+  }
+
   return <StartContainer id={id} />;
 };
 

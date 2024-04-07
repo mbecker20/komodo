@@ -1,8 +1,12 @@
-import { ActionButton, ActionWithDialog, ConfirmButton } from "@components/util";
+import {
+  ActionButton,
+  ActionWithDialog,
+  ConfirmButton,
+} from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
-import { Card, CardContent } from "@ui/card";
+import { Card, CardHeader } from "@ui/card";
 import {
   Command,
   CommandEmpty,
@@ -21,11 +25,19 @@ import {
 } from "@ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { Textarea } from "@ui/textarea";
-import { Check, CheckCircle, ChevronsUpDown, Copy, SearchX, Trash } from "lucide-react";
+import {
+  Check,
+  CheckCircle,
+  ChevronsUpDown,
+  Copy,
+  SearchX,
+  Trash,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ResourceComponents } from ".";
 import { Input } from "@ui/input";
+import { useToast } from "@ui/use-toast";
 
 export const ResourceDescription = ({
   type,
@@ -34,14 +46,21 @@ export const ResourceDescription = ({
   type: UsableResource;
   id: string;
 }) => {
+  const { toast } = useToast();
+  const inv = useInvalidate();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState<string>();
-
-  const { mutate: update_description } = useWrite("UpdateDescription");
 
   const resource = useRead(`Get${type}`, {
     [type.toLowerCase()]: id,
   } as any).data;
+
+  const { mutate: update_description } = useWrite("UpdateDescription", {
+    onSuccess: () => {
+      inv([`Get${type}`]);
+      toast({ title: `Updated description on ${type} ${resource?.name}` });
+    },
+  });
 
   useEffect(
     () => setDescription(resource?.description),
@@ -51,10 +70,10 @@ export const ResourceDescription = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Card>
-          <CardContent className="text-muted-foreground">
-            {resource?.description}
-          </CardContent>
+        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+          <CardHeader className="text-muted-foreground px-4 py-2 overflow-ellipsis">
+            {resource?.description || "Set description"}
+          </CardHeader>
         </Card>
       </DialogTrigger>
       <DialogContent>
@@ -76,7 +95,7 @@ export const ResourceDescription = ({
               });
               setOpen(false);
             }}
-            disabled={description !== undefined}
+            disabled={description === undefined}
           />
         </DialogFooter>
       </DialogContent>

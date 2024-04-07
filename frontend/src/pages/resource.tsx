@@ -1,5 +1,6 @@
 import { Page } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
+import { ResourceDescription } from "@components/resources/common";
 import { AddTags, ResourceTags } from "@components/tags";
 import { ResourceUpdates } from "@components/updates/resource";
 import { usePushRecentlyViewed, useResourceParamType } from "@lib/hooks";
@@ -36,6 +37,7 @@ export const Resource = () => {
               </>
             ))}
           </div>
+          <ResourceDescription type={type} id={id} />
         </div>
       }
       actions={

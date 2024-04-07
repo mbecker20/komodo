@@ -39,7 +39,7 @@ const Resources = () => (
     <div className="flex flex-col lg:flex-row gap-4 w-full">
       <div className="w-full lg:max-w-[50%]">
         <Link to="/tree" className="w-full">
-          <Card>
+          <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
             <CardHeader>
               <div className="flex justify-between">
                 <div>

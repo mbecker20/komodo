@@ -106,7 +106,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
     const procedure_count = useRead("ListProcedures", {}).data?.length;
     return (
       <Link to="/procedures/" className="w-full">
-        <Card>
+        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
           <CardHeader>
             <div className="flex justify-between">
               <div>

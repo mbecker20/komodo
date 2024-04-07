@@ -145,7 +145,7 @@ export const BuilderComponents: RequiredResourceComponents = {
     const builders_count = useRead("ListBuilders", {}).data?.length;
     return (
       <Link to="/builders/" className="w-full">
-        <Card>
+        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
           <CardHeader>
             <div className="flex justify-between">
               <div>

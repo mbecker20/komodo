@@ -8,7 +8,7 @@ export const TagsSummary = () => {
 
   return (
     <Link to="/tags" className="w-full">
-      <Card>
+      <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
         <CardHeader>
           <div className="flex justify-between">
             <div>

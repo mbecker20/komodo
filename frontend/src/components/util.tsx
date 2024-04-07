@@ -116,7 +116,13 @@ export const ActionWithDialog = ({
   const [input, setInput] = useState("");
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        setOpen(open);
+        setInput("");
+      }}
+    >
       <DialogTrigger asChild>
         <ActionButton
           title={title}
