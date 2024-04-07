@@ -4,7 +4,7 @@ import { DataTable } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceComponents } from "..";
 
-export const ServerTable = ({ search }: { search: string | undefined }) => {
+export const ServerTable = ({ search }: { search?: string }) => {
   const servers = useRead("ListServers", {}).data;
   const tags = useTagsFilter();
   const searchSplit = search?.split(" ") || [];

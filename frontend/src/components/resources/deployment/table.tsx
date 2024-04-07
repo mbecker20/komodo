@@ -14,7 +14,7 @@ export const DeploymentTable = ({
   search,
 }: {
   deployments: Types.DeploymentListItem[] | undefined;
-  search: string | undefined;
+  search?: string;
 }) => {
   const tags = useTagsFilter();
   const searchSplit = search?.split(" ") || [];
