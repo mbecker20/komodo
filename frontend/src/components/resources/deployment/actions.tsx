@@ -1,8 +1,4 @@
-import {
-  ActionButton,
-  ActionWithDialog,
-  ConfirmButton,
-} from "@components/util";
+import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { Play, Trash, Pause, Rocket, Pen } from "lucide-react";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { useNavigate } from "react-router-dom";
@@ -288,10 +284,11 @@ export const RenameDeployment = ({ id }: { id: string }) => {
           className="w-96"
           placeholder="Enter new name"
         />
-        <ActionButton
+        <ConfirmButton
           title="Rename"
           icon={<Pen className="w-4 h-4" />}
-          disabled={isPending}
+          loading={isPending}
+          disabled={!name || isPending}
           onClick={() => mutate({ id, name })}
         />
       </div>

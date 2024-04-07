@@ -1,5 +1,4 @@
 import {
-  ActionButton,
   ActionWithDialog,
   ConfirmButton,
 } from "@components/util";
@@ -72,10 +71,11 @@ export const RenameServer = ({ id }: { id: string }) => {
           className="w-96"
           placeholder="Enter new name"
         />
-        <ActionButton
+        <ConfirmButton
           title="Rename"
           icon={<Pen className="w-4 h-4" />}
-          disabled={isPending}
+          disabled={!name || isPending}
+          loading={isPending}
           onClick={() => mutate({ id, name })}
         />
       </div>
