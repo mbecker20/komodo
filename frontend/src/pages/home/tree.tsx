@@ -1,3 +1,4 @@
+import { OpenAlerts } from "@components/alert";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { DeploymentTable } from "@components/resources/deployment/table";
@@ -14,6 +15,7 @@ export const Tree = () => {
   const servers = useRead("ListServers", { query: { tags } }).data;
   return (
     <Page title="Tree" actions={<TagsFilter />}>
+      <OpenAlerts />
       <Section title="">
         <div className="grid gap-6">
           {servers?.map((server) => (

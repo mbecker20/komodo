@@ -3,7 +3,7 @@ import {
   ActionWithDialog,
   ConfirmButton,
 } from "@components/util";
-import { Play, Trash, Pause, Rocket, Pen, Loader2 } from "lucide-react";
+import { Play, Trash, Pause, Rocket, Pen } from "lucide-react";
 import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@ui/input";
@@ -32,7 +32,7 @@ export const RedeployContainer = ({ id }: DeploymentId) => {
     [deployment?.config.termination_signal]
   );
 
-  const { mutate, isPending } = useExecute("Deploy");
+  const { mutate: deploy, isPending } = useExecute("Deploy");
 
   const deployments = useRead("ListDeployments", {}).data;
   const deployment_item = deployments?.find((d) => d.id === id);
@@ -48,31 +48,37 @@ export const RedeployContainer = ({ id }: DeploymentId) => {
     deployment_item?.info.state !== DockerContainerState.NotDeployed &&
     deployment_item?.info.state !== DockerContainerState.Unknown;
 
-  return (
-    <ActionWithDialog
-      name={deployment.name}
-      title={deployed ? "Redeploy" : "Deploy"}
-      icon={
-        pending ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <Rocket className="h-4 w-4" />
-        )
-      }
-      onClick={() => mutate({ deployment: id, stop_signal: signal })}
-      disabled={pending}
-      loading={pending}
-      additional={
-        deployed && deployment.config.term_signal_labels.length > 1 ? (
-          <TermSignalSelector
-            signals={deployment.config.term_signal_labels}
-            signal={signal}
-            setSignal={setSignal}
-          />
-        ) : undefined
-      }
-    />
-  );
+  if (deployed) {
+    return (
+      <ActionWithDialog
+        name={deployment.name}
+        title="Redeploy"
+        icon={<Rocket className="h-4 w-4" />}
+        onClick={() => deploy({ deployment: id, stop_signal: signal })}
+        disabled={pending}
+        loading={pending}
+        additional={
+          deployed && deployment.config.term_signal_labels.length > 1 ? (
+            <TermSignalSelector
+              signals={deployment.config.term_signal_labels}
+              signal={signal}
+              setSignal={setSignal}
+            />
+          ) : undefined
+        }
+      />
+    );
+  } else {
+    return (
+      <ConfirmButton
+        title="Deploy"
+        icon={<Rocket className="h-4 w-4" />}
+        onClick={() => deploy({ deployment: id })}
+        disabled={pending}
+        loading={pending}
+      />
+    );
+  }
 };
 
 const StartContainer = ({ id }: DeploymentId) => {
@@ -87,7 +93,7 @@ const StartContainer = ({ id }: DeploymentId) => {
 
   return (
     <ConfirmButton
-      title={d.name}
+      title="Start"
       icon={<Play className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id })}
       disabled={pending}

@@ -1,3 +1,4 @@
+import { OpenAlerts } from "@components/alert";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { TagsFilter, useTagsFilter } from "@components/tags";
@@ -25,6 +26,7 @@ export const AllResources = () => {
         </div>
       }
     >
+      <OpenAlerts />
       {Object.entries(ResourceComponents).map(([type, Components]) => (
         <TableSection type={type} Components={Components} search={search} />
       ))}
