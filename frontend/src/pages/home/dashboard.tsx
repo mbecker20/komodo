@@ -87,7 +87,7 @@ const RecentlyViewed = () => {
             type !== "System" && (
               <Card
                 onClick={() => nav(`/${type.toLowerCase()}s/${id}`)}
-                className="px-3 py-2 h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer"
+                className="px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer"
               >
                 <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground">
                   <ResourceLink type={type} id={id} />
