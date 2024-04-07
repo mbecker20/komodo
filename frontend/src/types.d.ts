@@ -1,5 +1,4 @@
 import { Types } from "@monitor/client";
-import { ReactNode } from "react";
 
 export type UsableResource = Exclude<Types.ResourceTarget["type"], "System">;
 
@@ -18,11 +17,11 @@ export interface RequiredResourceComponents {
   Description: IdComponent;
   Status: IdComponent;
   Link: IdComponent;
-  
+
   Info: IdComponent[];
   Actions: IdComponent[];
 
-  Table: React.FC;
+  Table: React.FC<{ search?: string }>;
 
   Page: { [section: string]: IdComponent };
 }

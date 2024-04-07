@@ -4,14 +4,18 @@ import { DataTable } from "@ui/data-table";
 import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
 import { ResourceComponents } from "..";
 
-export const BuildTable = () => {
+export const BuildTable = ({ search }: { search?: string }) => {
   const builds = useRead("ListBuilds", {}).data;
   const tags = useTagsFilter();
+  const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
       data={
-        builds?.filter((build) =>
-          tags.every((tag) => build.tags.includes(tag))
+        builds?.filter((resource) =>
+          tags.every((tag) => resource.tags.includes(tag)) &&
+          searchSplit.length > 0
+            ? searchSplit.every((search) => resource.name.includes(search))
+            : true
         ) ?? []
       }
       columns={[

@@ -10,8 +10,8 @@ import { ProcedureComponents } from "./procedure/index";
 export const ResourceComponents: {
   [key in UsableResource]: RequiredResourceComponents;
 } = {
-  Deployment: DeploymentComponents,
   Server: ServerComponents,
+  Deployment: DeploymentComponents,
   Build: BuildComponents,
   Repo: RepoComponents,
   Procedure: ProcedureComponents,

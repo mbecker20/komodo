@@ -62,6 +62,10 @@ impl User {
       self.config = UserConfig::default();
     }
   }
+
+  pub fn is_service_user(user_id: &str) -> bool {
+    matches!(user_id, "Procedure" | "Github")
+  }
 }
 
 pub fn admin_service_user(user_id: &str) -> Option<User> {

@@ -110,10 +110,13 @@ pub trait StateResource {
     permission_level: PermissionLevel,
   ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     let resource = Self::get_resource(id_or_name).await?;
+    if user.admin {
+      return Ok(resource);
+    }
     let permissions =
       Self::get_user_permission_on_resource(&user.id, &resource.id)
         .await?;
-    if user.admin || permissions >= permission_level {
+    if permissions >= permission_level {
       Ok(resource)
     } else {
       Err(anyhow!(

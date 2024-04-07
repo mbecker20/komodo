@@ -9,12 +9,14 @@ export const TagsSummary = () => {
   return (
     <Link to="/tags" className="w-full">
       <Card>
-        <CardHeader className="justify-between">
-          <div>
-            <CardTitle>Tags</CardTitle>
-            <CardDescription>{tags_count} Total</CardDescription>
+        <CardHeader>
+          <div className="flex justify-between">
+            <div>
+              <CardTitle>Tags</CardTitle>
+              <CardDescription>{tags_count} Total</CardDescription>
+            </div>
+            <Tag className="w-4 h-4" />
           </div>
-          <Tag className="w-4 h-4" />
         </CardHeader>
       </Card>
     </Link>

@@ -40,14 +40,16 @@ const Resources = () => (
       <div className="w-full lg:max-w-[50%]">
         <Link to="/tree" className="w-full">
           <Card>
-            <CardHeader className="justify-between">
-              <div>
-                <CardTitle>Tree</CardTitle>
-                <CardDescription>
-                  Visualize your servers / deployments
-                </CardDescription>
+            <CardHeader>
+              <div className="flex justify-between">
+                <div>
+                  <CardTitle>Tree</CardTitle>
+                  <CardDescription>
+                    Visualize your servers / deployments
+                  </CardDescription>
+                </div>
+                <FolderTree className="w-4 h-4" />
               </div>
-              <FolderTree className="w-4 h-4" />
             </CardHeader>
           </Card>
         </Link>

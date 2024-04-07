@@ -1,4 +1,4 @@
-import { TagsWithBadge } from "@components/tags";
+import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
@@ -35,11 +35,20 @@ export const RepoComponents: RequiredResourceComponents = {
       </Section>
     ),
   },
-  Table: () => {
+  Table: ({ search }) => {
+    const tags = useTagsFilter();
     const repos = useRead("ListRepos", {}).data;
+    const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
-        data={repos ?? []}
+        data={
+          repos?.filter((resource) =>
+            tags.every((tag) => resource.tags.includes(tag)) &&
+            searchSplit.length > 0
+              ? searchSplit.every((search) => resource.name.includes(search))
+              : true
+          ) ?? []
+        }
         columns={[
           {
             accessorKey: "id",
@@ -65,12 +74,14 @@ export const RepoComponents: RequiredResourceComponents = {
     return (
       <Link to="/repos/" className="w-full">
         <Card>
-          <CardHeader className="justify-between">
-            <div>
-              <CardTitle>Repos</CardTitle>
-              <CardDescription>{repo_count} Total</CardDescription>
+          <CardHeader>
+            <div className="flex justify-between">
+              <div>
+                <CardTitle>Repos</CardTitle>
+                <CardDescription>{repo_count} Total</CardDescription>
+              </div>
+              <GitBranch className="w-4 h-4" />
             </div>
-            <GitBranch className="w-4 h-4" />
           </CardHeader>
         </Card>
       </Link>

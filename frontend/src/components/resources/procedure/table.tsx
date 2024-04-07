@@ -1,13 +1,22 @@
 import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { ProcedureComponents } from ".";
-import { TagsWithBadge } from "@components/tags";
+import { TagsWithBadge, useTagsFilter } from "@components/tags";
 
-export const ProcedureTable = () => {
+export const ProcedureTable = ({ search }: { search: string | undefined }) => {
+  const tags = useTagsFilter();
   const procedures = useRead("ListProcedures", {}).data;
+  const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
-      data={procedures ?? []}
+      data={
+        procedures?.filter((resource) =>
+          tags.every((tag) => resource.tags.includes(tag)) &&
+          searchSplit.length > 0
+            ? searchSplit.every((search) => resource.name.includes(search))
+            : true
+        ) ?? []
+      }
       columns={[
         {
           accessorKey: "id",

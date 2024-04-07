@@ -11,15 +11,20 @@ import { snake_case_to_upper_space_case } from "@lib/formatting";
 
 export const DeploymentTable = ({
   deployments,
+  search,
 }: {
   deployments: Types.DeploymentListItem[] | undefined;
+  search: string | undefined;
 }) => {
   const tags = useTagsFilter();
+  const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
       data={
-        deployments?.filter((deployment) =>
-          tags.every((tag) => deployment.tags.includes(tag))
+        deployments?.filter((resource) =>
+          tags.every((tag) => resource.tags.includes(tag)) && searchSplit.length > 0
+            ? searchSplit.every((search) => resource.name.includes(search))
+            : true
         ) ?? []
       }
       columns={[
@@ -47,7 +52,7 @@ export const DeploymentTable = ({
                 return undefined;
               }
             } else {
-              const [img, _] = image.split(":");
+              const [img] = image.split(":");
               return img;
             }
           },

@@ -87,7 +87,10 @@ export const ProcedureComponents: RequiredResourceComponents = {
         </div>
         <div className="flex justify-between items-center">
           Procedure Type
-          <Select value={type} onValueChange={setType as any}>
+          <Select
+            value={type}
+            onValueChange={(type) => setType(type as "Sequence" | "Parallel")}
+          >
             <SelectTrigger className="w-32 capitalize">
               <SelectValue />
             </SelectTrigger>
@@ -108,12 +111,14 @@ export const ProcedureComponents: RequiredResourceComponents = {
     return (
       <Link to="/procedures/" className="w-full">
         <Card>
-          <CardHeader className="justify-between">
-            <div>
-              <CardTitle>Procedures</CardTitle>
-              <CardDescription>{procedure_count} Total</CardDescription>
+          <CardHeader>
+            <div className="flex justify-between">
+              <div>
+                <CardTitle>Procedures</CardTitle>
+                <CardDescription>{procedure_count} Total</CardDescription>
+              </div>
+              <Route className="w-4 h-4" />
             </div>
-            <Route className="w-4 h-4" />
           </CardHeader>
         </Card>
       </Link>

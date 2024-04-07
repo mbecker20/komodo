@@ -22,7 +22,7 @@ type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
 const tagsAtom = atomWithStorage<string[]>("tags-v0", []);
 
 export const useTagsFilter = () => {
-  const [tags, _] = useAtom(tagsAtom);
+  const [tags] = useAtom(tagsAtom);
   return tags;
 };
 

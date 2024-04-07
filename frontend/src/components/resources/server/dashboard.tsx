@@ -20,12 +20,14 @@ export const ServersChart = () => {
   return (
     <Link to="/servers/" className="w-full">
       <Card>
-        <CardHeader className="justify-between">
-          <div>
-            <CardTitle>Servers</CardTitle>
-            <CardDescription>{data?.total} Total</CardDescription>
+        <CardHeader>
+          <div className="flex justify-between">
+            <div>
+              <CardTitle>Servers</CardTitle>
+              <CardDescription>{data?.total} Total</CardDescription>
+            </div>
+            <Server className="w-4 h-4" />
           </div>
-          <Server className="w-4 h-4" />
         </CardHeader>
         <CardContent className="flex h-[200px] items-center justify-between">
           <div className="flex flex-col gap-2 text-muted-foreground w-full">

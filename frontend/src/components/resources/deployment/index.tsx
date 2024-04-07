@@ -108,9 +108,9 @@ export const DeploymentComponents: RequiredResourceComponents = {
       </NewResource>
     );
   },
-  Table: () => {
+  Table: ({ search }) => {
     const deployments = useRead("ListDeployments", {}).data;
-    return <DeploymentTable deployments={deployments} />;
+    return <DeploymentTable deployments={deployments} search={search} />;
   },
   Dashboard: DeploymentsChart,
 };

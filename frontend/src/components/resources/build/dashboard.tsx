@@ -21,7 +21,8 @@ export const BuildChart = () => {
   const container_ref = useRef<HTMLDivElement>(null);
   const line_ref = useRef<IChartApi>();
   const series_ref = useRef<ISeriesApi<"Histogram">>();
-  const { data } = useRead("GetBuildMonthlyStats", {});
+  const build_stats = useRead("GetBuildMonthlyStats", {}).data;
+  const summary = useRead("GetBuildsSummary", {}).data;
 
   const handleResize = () =>
     line_ref.current?.applyOptions({
@@ -29,7 +30,7 @@ export const BuildChart = () => {
     });
 
   useEffect(() => {
-    if (!data) return;
+    if (!build_stats) return;
     if (line_ref.current) line_ref.current.remove();
     const init = () => {
       if (!container_ref.current) return;
@@ -52,9 +53,9 @@ export const BuildChart = () => {
       series_ref.current = line_ref.current.addHistogramSeries({
         priceLineVisible: false,
       });
-      const max = data.days.reduce((m, c) => Math.max(m, c.time), 0);
+      const max = build_stats.days.reduce((m, c) => Math.max(m, c.time), 0);
       series_ref.current.setData(
-        data.days.map((d) => ({
+        build_stats.days.map((d) => ({
           time: (d.ts / 1000) as Time,
           value: d.count,
           color:
@@ -71,19 +72,22 @@ export const BuildChart = () => {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [data]);
+  }, [build_stats]);
 
   return (
     <Link to="/builds" className="w-full">
       <Card>
-        <CardHeader className="justify-between">
-          <div>
-            <CardTitle>Builds</CardTitle>
-            <CardDescription>
-              {data?.total_time.toFixed(2)} Hours
-            </CardDescription>
+        <CardHeader>
+          <div className="flex justify-between">
+            <div>
+              <CardTitle>Builds</CardTitle>
+              <CardDescription className="flex gap-2">
+                <div>{summary?.total} Total</div> |{" "}
+                <div>{build_stats?.total_time.toFixed(2)} Hours</div>
+              </CardDescription>
+            </div>
+            <Hammer className="w-4 h-4" />
           </div>
-          <Hammer className="w-4 h-4" />
         </CardHeader>
         <CardContent className="h-[200px]">
           <div className="w-full max-w-full h-full" ref={container_ref} />

@@ -4,15 +4,19 @@ import { DataTable } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceComponents } from "..";
 
-export const ServerTable = () => {
+export const ServerTable = ({ search }: { search: string | undefined }) => {
   const servers = useRead("ListServers", {}).data;
   const tags = useTagsFilter();
+  const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
       // onRowClick={({ id }) => nav(`/servers/${id}`)}
       data={
-        servers?.filter((server) =>
-          tags.every((tag) => server.tags.includes(tag))
+        servers?.filter((resource) =>
+          tags.every((tag) => resource.tags.includes(tag)) &&
+          searchSplit.length > 0
+            ? searchSplit.every((search) => resource.name.includes(search))
+            : true
         ) ?? []
       }
       columns={[

@@ -142,14 +142,17 @@ pub async fn get_tag_check_owner(
 async fn update_list_item(
   update: Update,
 ) -> anyhow::Result<UpdateListItem> {
-  let username =
+  let username = if User::is_service_user(&update.operator) {
+    update.operator.clone()
+  } else {
     find_one_by_id(&db_client().await.users, &update.operator)
       .await
       .context("failed to query mongo for user")?
       .with_context(|| {
         format!("no user found with id {}", update.operator)
       })?
-      .username;
+      .username
+  };
   let update = UpdateListItem {
     id: update.id,
     operation: update.operation,

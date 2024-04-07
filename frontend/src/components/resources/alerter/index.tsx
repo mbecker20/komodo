@@ -18,7 +18,7 @@ import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig, DeleteAlerter } from "./config";
 import { CopyResource, ResourceLink } from "@components/util";
-import { TagsWithBadge } from "@components/tags";
+import { TagsWithBadge, useTagsFilter } from "@components/tags";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -43,11 +43,20 @@ export const AlerterComponents: RequiredResourceComponents = {
     ),
   },
   Actions: [],
-  Table: () => {
+  Table: ({ search }) => {
+    const tags = useTagsFilter();
     const alerters = useRead("ListAlerters", {}).data;
+    const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
-        data={alerters ?? []}
+        data={
+          alerters?.filter((resource) =>
+            tags.every((tag) => resource.tags.includes(tag)) &&
+            searchSplit.length > 0
+              ? searchSplit.every((search) => resource.name.includes(search))
+              : true
+          ) ?? []
+        }
         columns={[
           {
             header: "Name",
@@ -76,12 +85,14 @@ export const AlerterComponents: RequiredResourceComponents = {
     return (
       <Link to="/alerters/" className="w-full">
         <Card>
-          <CardHeader className="justify-between">
-            <div>
-              <CardTitle>Alerters</CardTitle>
-              <CardDescription>{alerters_count} Total</CardDescription>
+          <CardHeader>
+            <div className="flex justify-between">
+              <div>
+                <CardTitle>Alerters</CardTitle>
+                <CardDescription>{alerters_count} Total</CardDescription>
+              </div>
+              <AlarmClock className="w-4 h-4" />
             </div>
-            <AlarmClock className="w-4 h-4" />
           </CardHeader>
         </Card>
       </Link>

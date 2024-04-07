@@ -56,14 +56,18 @@ export const BuilderComponents: RequiredResourceComponents = {
       </Section>
     ),
   },
-  Table: () => {
+  Table: ({ search }) => {
     const tags = useTagsFilter();
     const builders = useRead("ListBuilders", {}).data;
+    const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
         data={
-          builders?.filter((builder) =>
-            tags.every((tag) => builder.tags.includes(tag))
+          builders?.filter((resource) =>
+            tags.every((tag) => resource.tags.includes(tag)) &&
+            searchSplit.length > 0
+              ? searchSplit.every((search) => resource.name.includes(search))
+              : true
           ) ?? []
         }
         columns={[
@@ -142,12 +146,14 @@ export const BuilderComponents: RequiredResourceComponents = {
     return (
       <Link to="/builders/" className="w-full">
         <Card>
-          <CardHeader className="justify-between">
-            <div>
-              <CardTitle>Builders</CardTitle>
-              <CardDescription>{builders_count} Total</CardDescription>
+          <CardHeader>
+            <div className="flex justify-between">
+              <div>
+                <CardTitle>Builders</CardTitle>
+                <CardDescription>{builders_count} Total</CardDescription>
+              </div>
+              <Factory className="w-4 h-4" />
             </div>
-            <Factory className="w-4 h-4" />
           </CardHeader>
         </Card>
       </Link>
