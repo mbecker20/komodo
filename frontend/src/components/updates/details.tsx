@@ -22,10 +22,8 @@ import { fmt_duration, fmt_version } from "@lib/formatting";
 import { version_is_none } from "@lib/utils";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
-  const username = useRead("GetUsername", { user_id }).data;
-  if (user_id === "github") return <>GitHub</>;
-  if (user_id === "auto redeploy") return <>Auto Redeploy</>;
-  return <>{username?.username}</>;
+  const username = useRead("GetUsername", { user_id }).data?.username;
+  return <>{username || user_id}</>;
 };
 
 export const UpdateDetails = ({

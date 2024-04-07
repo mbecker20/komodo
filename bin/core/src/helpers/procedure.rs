@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::{anyhow, Context, Ok};
 use futures::future::join_all;
@@ -52,6 +52,7 @@ pub async fn execute_procedure(
         filter_list_by_enabled(executions),
         &procedure.id,
         &procedure.name,
+        update,
       )
       .await
       .with_context(|| {
@@ -89,6 +90,7 @@ pub async fn execute_procedure(
         filter_list_by_enabled(executions),
         &procedure.id,
         &procedure.name,
+        update,
       )
       .await
       .with_context(|| {
@@ -195,12 +197,27 @@ async fn execute_sequence(
   executions: Vec<Execution>,
   parent_id: &str,
   parent_name: &str,
+  update: &Mutex<Update>,
 ) -> anyhow::Result<()> {
   for execution in executions {
+    let now = Instant::now();
+    add_line_to_update(
+      update,
+      &format!("executing stage: {execution:?}"),
+    )
+    .await;
     let fail_log = format!("failed on {execution:?}");
-    execute_execution(execution, parent_id, parent_name)
+    execute_execution(execution.clone(), parent_id, parent_name)
       .await
       .context(fail_log)?;
+    add_line_to_update(
+      update,
+      &format!(
+        "finished stage in {:?}: {execution:?}",
+        now.elapsed()
+      ),
+    )
+    .await;
   }
   Ok(())
 }
@@ -209,12 +226,29 @@ async fn execute_parallel(
   executions: Vec<Execution>,
   parent_id: &str,
   parent_name: &str,
+  update: &Mutex<Update>,
 ) -> anyhow::Result<()> {
-  let futures = executions.into_iter().map(|execution| async {
+  let futures = executions.into_iter().map(|execution| async move {
+    let now = Instant::now();
+    add_line_to_update(
+      update,
+      &format!("executing stage: {execution:?}"),
+    )
+    .await;
     let fail_log = format!("failed on {execution:?}");
-    execute_execution(execution, parent_id, parent_name)
-      .await
-      .context(fail_log)
+    let res =
+      execute_execution(execution.clone(), parent_id, parent_name)
+        .await
+        .context(fail_log);
+    add_line_to_update(
+      update,
+      &format!(
+        "finished stage in {:?}: {execution:?}",
+        now.elapsed()
+      ),
+    )
+    .await;
+    res
   });
   join_all(futures)
     .await
