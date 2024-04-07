@@ -16,7 +16,7 @@ import {
 } from "@ui/select";
 import { Cloud, Bot, Factory, AlertTriangle } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { BuilderConfig, DeleteBuilder } from "./config";
 import { CopyResource, ResourceLink } from "@components/util";
 
@@ -57,13 +57,11 @@ export const BuilderComponents: RequiredResourceComponents = {
     ),
   },
   Table: ({ search }) => {
-    const nav = useNavigate();
     const tags = useTagsFilter();
     const builders = useRead("ListBuilders", {}).data;
     const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
-        onRowClick={(builder) => nav(`/builders/${builder.id}`)}
         data={
           builders?.filter((resource) =>
             tags.every((tag) => resource.tags.includes(tag)) &&

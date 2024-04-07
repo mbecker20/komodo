@@ -3,16 +3,13 @@ import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceComponents } from "..";
-import { useNavigate } from "react-router-dom";
 
 export const ServerTable = ({ search }: { search: string | undefined }) => {
-  const nav = useNavigate();
   const servers = useRead("ListServers", {}).data;
   const tags = useTagsFilter();
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
-      onRowClick={(server) => nav(`/servers/${server.id}`)}
       data={
         servers?.filter((resource) =>
           tags.every((tag) => resource.tags.includes(tag)) &&

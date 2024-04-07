@@ -2,16 +2,13 @@ import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { ProcedureComponents } from ".";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
-import { useNavigate } from "react-router-dom";
 
 export const ProcedureTable = ({ search }: { search: string | undefined }) => {
-  const nav = useNavigate();
   const tags = useTagsFilter();
   const procedures = useRead("ListProcedures", {}).data;
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
-      onRowClick={(procedure) => nav(`/procedures/${procedure.id}`)}
       data={
         procedures?.filter((resource) =>
           tags.every((tag) => resource.tags.includes(tag)) &&
