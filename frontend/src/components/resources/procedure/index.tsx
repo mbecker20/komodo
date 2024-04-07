@@ -1,5 +1,5 @@
 import { NewResource, Section } from "@components/layouts";
-import { ConfirmButton, CopyResource, ResourceLink } from "@components/util";
+import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
@@ -17,7 +17,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
-import { DeleteResource } from "@components/config/util";
+import { CopyResource, DeleteResource, ResourceLink } from "../common";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);

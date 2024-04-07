@@ -2,7 +2,6 @@ import { Config } from "@components/config";
 import {
   AccountSelector,
   ConfigItem,
-  ResourceSelector,
   SystemCommand,
 } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
@@ -20,6 +19,7 @@ import {
 import { Textarea } from "@ui/textarea";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ResourceSelector } from "../common";
 
 export const BuildConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuild", { build: id }).data?.config;

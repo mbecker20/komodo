@@ -5,7 +5,6 @@ import {
   AccountSelector,
   ConfigInput,
   ConfigItem,
-  ResourceSelector,
 } from "@components/config/util";
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
@@ -20,6 +19,7 @@ import {
   TermSignalLabels,
   TerminationTimeout,
 } from "./components/term-signal";
+import { ResourceSelector } from "@components/resources/common";
 
 export const ServerSelector = ({
   selected,

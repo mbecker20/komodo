@@ -17,9 +17,8 @@ import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
-import { CopyResource, ResourceLink } from "@components/util";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
-import { DeleteResource } from "@components/config/util";
+import { CopyResource, DeleteResource, ResourceLink } from "../common";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);

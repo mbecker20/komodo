@@ -16,10 +16,9 @@ import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
 import { ServersChart } from "./dashboard";
-import { ResourceLink } from "@components/util";
 import { Link } from "react-router-dom";
 import { Button } from "@ui/button";
-import { DeleteResource } from "@components/config/util";
+import { DeleteResource, ResourceLink } from "../common";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);

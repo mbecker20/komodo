@@ -1,5 +1,5 @@
 import { NewResource, Section } from "@components/layouts";
-import { ConfirmButton, CopyResource, ResourceLink } from "@components/util";
+import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
@@ -11,7 +11,7 @@ import { fill_color_class_by_intention } from "@lib/color";
 import { BuildChart } from "./dashboard";
 import { BuildTable } from "./table";
 import { fmt_version } from "@lib/formatting";
-import { DeleteResource } from "@components/config/util";
+import { CopyResource, DeleteResource, ResourceLink } from "../common";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);

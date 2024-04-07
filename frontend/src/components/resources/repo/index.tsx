@@ -6,12 +6,11 @@ import { DataTable } from "@ui/data-table";
 import { AlertTriangle, GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
-import { CopyResource, ResourceLink } from "@components/util";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
 import { CloneRepo, PullRepo } from "./actions";
-import { DeleteResource } from "@components/config/util";
+import { CopyResource, DeleteResource, ResourceLink } from "../common";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);

@@ -1,5 +1,6 @@
 import { Page, Section } from "@components/layouts";
-import { ConfirmButton, ResourceLink } from "@components/util";
+import { ResourceLink } from "@components/resources/common";
+import { ConfirmButton } from "@components/util";
 import { text_color_class_by_intention } from "@lib/color";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";

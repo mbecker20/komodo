@@ -13,7 +13,7 @@ import { ApiKeysSummary } from "@components/dashboard/api-keys";
 import { ResourceComponents } from "@components/resources";
 import { OpenAlerts } from "@components/alert";
 import { useUser } from "@lib/hooks";
-import { ResourceLink } from "@components/util";
+import { ResourceLink } from "@components/resources/common";
 
 export const Dashboard = () => {
   return (

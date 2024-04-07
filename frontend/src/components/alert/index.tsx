@@ -1,6 +1,6 @@
 import { Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
-import { ResourceLink } from "@components/util";
+import { ResourceLink } from "@components/resources/common";
 import {
   alert_level_intention,
   text_color_class_by_intention,

@@ -1,8 +1,9 @@
 import { Config } from "@components/config";
-import { InputList, ResourceSelector } from "@components/config/util";
+import { InputList } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { useState } from "react";
+import { ResourceSelector } from "../common";
 
 export const BuilderConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuilder", { builder: id }).data?.config;

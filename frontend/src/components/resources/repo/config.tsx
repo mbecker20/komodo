@@ -1,7 +1,6 @@
 import { Config } from "@components/config";
 import {
   ConfigItem,
-  ResourceSelector,
   SystemCommand,
 } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
@@ -14,6 +13,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { useState } from "react";
+import { ResourceSelector } from "../common";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const config = useRead("GetRepo", { repo: id }).data?.config;

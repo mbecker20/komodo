@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ConfigItem, ResourceSelector } from "@components/config/util";
+import { ConfigItem } from "@components/config/util";
+import { ResourceSelector } from "@components/resources/common";
 import { fmt_version } from "@lib/formatting";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";

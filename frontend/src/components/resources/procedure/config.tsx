@@ -1,5 +1,4 @@
 import { ConfigLayout } from "@components/config";
-import { ResourceSelector } from "@components/config/util";
 import { ConfirmButton } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
@@ -40,6 +39,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { ResourceSelector } from "../common";
 
 export const ProcedureConfig = ({ id }: { id: string }) => {
   const procedure = useRead("GetProcedure", { procedure: id }).data;

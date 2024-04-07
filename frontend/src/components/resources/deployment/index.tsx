@@ -24,8 +24,8 @@ import {
   text_color_class_by_intention,
 } from "@lib/color";
 import { DeploymentTable } from "./table";
-import { CopyResource, ResourceLink } from "@components/util";
 import { DeploymentsChart } from "./dashboard";
+import { CopyResource, ResourceLink } from "../common";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(

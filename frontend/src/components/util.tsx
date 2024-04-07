@@ -19,16 +19,13 @@ import {
 } from "@ui/dialog";
 import { toast, useToast } from "@ui/use-toast";
 import { cn } from "@lib/utils";
-import { useInvalidate, useWrite } from "@lib/hooks";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
-import { UsableResource } from "@types";
-import { ResourceComponents } from "./resources";
 
 export const WithLoading = ({
   children,
@@ -166,61 +163,6 @@ export const ActionWithDialog = ({
   );
 };
 
-export const CopyResource = ({
-  id,
-  disabled,
-  type,
-}: {
-  id: string;
-  disabled?: boolean;
-  type: Exclude<UsableResource, "Server">;
-}) => {
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-
-  const nav = useNavigate();
-  const inv = useInvalidate();
-  const { mutate } = useWrite(`Copy${type}`, {
-    onSuccess: (res) => {
-      inv([`List${type}s`]);
-      nav(`/${type.toLowerCase()}s/${res._id?.$oid}`);
-    },
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <ActionButton
-          title="Copy"
-          icon={<Copy className="w-4 h-4" />}
-          disabled={disabled}
-          onClick={() => setOpen(true)}
-        />
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Copy {type}</DialogTitle>
-        </DialogHeader>
-        <div className="flex flex-col gap-4 my-4">
-          <p>Provide a name for the newly created {type.toLowerCase()}.</p>
-          <Input value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <DialogFooter>
-          <ConfirmButton
-            title="Copy"
-            icon={<Check className="w-4 h-4" />}
-            disabled={!name}
-            onClick={() => {
-              mutate({ id, name });
-              setOpen(false);
-            }}
-          />
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
 export const ConfirmButton = ({
   variant,
   size,
@@ -334,23 +276,5 @@ export const CopyButton = ({ content }: { content: string | undefined }) => {
     >
       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
     </Button>
-  );
-};
-
-export const ResourceLink = ({
-  type,
-  id,
-}: {
-  type: UsableResource;
-  id: string;
-}) => {
-  const Components = ResourceComponents[type];
-  return (
-    <Link to={`/${type.toLowerCase()}s/${id}`}>
-      <Button variant="link" className="flex gap-2 items-center p-0">
-        <Components.Icon id={id} />
-        <Components.Name id={id} />
-      </Button>
-    </Link>
   );
 };
