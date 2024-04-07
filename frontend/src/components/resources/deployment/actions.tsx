@@ -22,8 +22,10 @@ export const RedeployContainer = ({ id }: DeploymentId) => {
   const deploying = useRead("GetDeploymentActionState", { deployment: id }).data
     ?.deploying;
   const pending = isPending || deploying;
+  if (!deployment) return null;
   return (
-    <ConfirmButton
+    <ActionWithDialog
+      name={deployment.name}
       title={deployment?.info.status ? "Redeploy" : "Deploy"}
       icon={
         pending ? (
@@ -48,12 +50,10 @@ const StartContainer = ({ id }: DeploymentId) => {
   const pending = isPending || starting;
 
   if (!d) return null;
-  
+
   return (
-    <ActionWithDialog
-      name={d.name}
-      title="Start"
-      //   intent="success"
+    <ConfirmButton
+      title={d.name}
       icon={<Play className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id })}
       disabled={pending}
@@ -76,7 +76,6 @@ const StopContainer = ({ id }: DeploymentId) => {
     <ActionWithDialog
       name={d?.name}
       title="Stop"
-      //   intent="warning"
       icon={<Pause className="h-4 w-4" />}
       onClick={() => mutate({ deployment: id })}
       disabled={pending}

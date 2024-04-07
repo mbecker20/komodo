@@ -17,6 +17,7 @@ import { ExtraArgs } from "./components/extra-args";
 import { Config } from "@components/config";
 import {
   DefaultTerminationSignal,
+  TermSignalLabels,
   TerminationTimeout,
 } from "./components/term-signal";
 
@@ -96,12 +97,6 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
             extra_args: (value, set) => (
               <ExtraArgs args={value ?? []} set={set} />
             ),
-            termination_signal: (value, set) => (
-              <DefaultTerminationSignal arg={value} set={set} />
-            ),
-            termination_timeout: (value, set) => (
-              <TerminationTimeout arg={value} set={set} />
-            ),
           },
           settings: {
             send_alerts: true,
@@ -118,6 +113,19 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
               />
             ),
             skip_secret_interp: true,
+          },
+        },
+        termination: {
+          termination: {
+            termination_signal: (value, set) => (
+              <DefaultTerminationSignal arg={value} set={set} />
+            ),
+            termination_timeout: (value, set) => (
+              <TerminationTimeout arg={value} set={set} />
+            ),
+            term_signal_labels: (value, set) => (
+              <TermSignalLabels args={value} set={set} />
+            ),
           },
         },
       }}
