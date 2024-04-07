@@ -14,7 +14,7 @@ import { Input } from "@ui/input";
 import { AlarmClock, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { DataTable } from "@ui/data-table";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig, DeleteAlerter } from "./config";
 import { CopyResource, ResourceLink } from "@components/util";
@@ -44,11 +44,13 @@ export const AlerterComponents: RequiredResourceComponents = {
   },
   Actions: [],
   Table: ({ search }) => {
+    const nav = useNavigate();
     const tags = useTagsFilter();
     const alerters = useRead("ListAlerters", {}).data;
     const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
+        onRowClick={(alerter) => nav(`/alerters/${alerter.id}`)}
         data={
           alerters?.filter((resource) =>
             tags.every((tag) => resource.tags.includes(tag)) &&

@@ -4,7 +4,7 @@ import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
 import { AlertTriangle, GitBranch } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { DeleteRepo, RepoConfig } from "./config";
 import { CopyResource, ResourceLink } from "@components/util";
 import { useState } from "react";
@@ -36,11 +36,13 @@ export const RepoComponents: RequiredResourceComponents = {
     ),
   },
   Table: ({ search }) => {
+    const nav = useNavigate();
     const tags = useTagsFilter();
     const repos = useRead("ListRepos", {}).data;
     const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
+        onRowClick={(repo) => nav(`/repos/${repo.id}`)}
         data={
           repos?.filter((resource) =>
             tags.every((tag) => resource.tags.includes(tag)) &&

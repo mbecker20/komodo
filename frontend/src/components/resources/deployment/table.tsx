@@ -8,6 +8,7 @@ import {
   text_color_class_by_intention,
 } from "@lib/color";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
+import { useNavigate } from "react-router-dom";
 
 export const DeploymentTable = ({
   deployments,
@@ -16,13 +17,16 @@ export const DeploymentTable = ({
   deployments: Types.DeploymentListItem[] | undefined;
   search: string | undefined;
 }) => {
+  const nav = useNavigate();
   const tags = useTagsFilter();
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
+      onRowClick={(deployment) => nav(`/deployments/${deployment.id}`)}
       data={
         deployments?.filter((resource) =>
-          tags.every((tag) => resource.tags.includes(tag)) && searchSplit.length > 0
+          tags.every((tag) => resource.tags.includes(tag)) &&
+          searchSplit.length > 0
             ? searchSplit.every((search) => resource.name.includes(search))
             : true
         ) ?? []

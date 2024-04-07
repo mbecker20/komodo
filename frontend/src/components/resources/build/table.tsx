@@ -3,13 +3,16 @@ import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
 import { ResourceComponents } from "..";
+import { useNavigate } from "react-router-dom";
 
 export const BuildTable = ({ search }: { search?: string }) => {
+  const nav = useNavigate();
   const builds = useRead("ListBuilds", {}).data;
   const tags = useTagsFilter();
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
+      onRowClick={(build) => nav(`/builds/${build.id}`)}
       data={
         builds?.filter((resource) =>
           tags.every((tag) => resource.tags.includes(tag)) &&
