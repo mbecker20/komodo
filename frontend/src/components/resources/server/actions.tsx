@@ -7,9 +7,8 @@ import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { IdComponent } from "@types";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
-import { Pen, Scissors, Trash, XOctagon } from "lucide-react";
+import { Pen, Scissors, XOctagon } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useServer } from ".";
 
 export const SERVER_ACTIONS: IdComponent[] = [
@@ -48,30 +47,6 @@ export const SERVER_ACTIONS: IdComponent[] = [
     );
   },
 ];
-
-export const DeleteServer = ({ id }: { id: string }) => {
-  const nav = useNavigate();
-  const server = useRead("GetServer", { server: id }).data;
-  const { mutateAsync, isPending } = useWrite("DeleteServer");
-
-  if (!server) return null;
-  return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Delete Server</div>
-      <ActionWithDialog
-        name={server.name}
-        title="Delete"
-        icon={<Trash className="h-4 w-4" />}
-        onClick={async () => {
-          await mutateAsync({ id });
-          nav("/");
-        }}
-        disabled={isPending}
-        loading={isPending}
-      />
-    </div>
-  );
-};
 
 export const RenameServer = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();

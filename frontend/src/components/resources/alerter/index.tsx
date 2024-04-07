@@ -16,9 +16,10 @@ import { useState } from "react";
 import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { AlerterConfig, DeleteAlerter } from "./config";
+import { AlerterConfig } from "./config";
 import { CopyResource, ResourceLink } from "@components/util";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
+import { DeleteResource } from "@components/config/util";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -38,7 +39,7 @@ export const AlerterComponents: RequiredResourceComponents = {
         icon={<AlertTriangle className="w-4 h-4" />}
         actions={<CopyResource type="Alerter" id={id} />}
       >
-        <DeleteAlerter id={id} />
+        <DeleteResource type="Alerter" id={id} />
       </Section>
     ),
   },

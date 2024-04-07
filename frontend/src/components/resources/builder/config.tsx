@@ -1,11 +1,8 @@
 import { Config } from "@components/config";
 import { InputList, ResourceSelector } from "@components/config/util";
-import { ActionWithDialog } from "@components/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { Trash } from "lucide-react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 export const BuilderConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuilder", { builder: id }).data?.config;
@@ -90,30 +87,5 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
         },
       }}
     />
-  );
-};
-
-export const DeleteBuilder = ({ id }: { id: string }) => {
-  const nav = useNavigate();
-  const builder = useRead("GetBuilder", { builder: id }).data;
-  const { mutateAsync, isPending } = useWrite("DeleteBuilder");
-
-  if (!builder) return null;
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="w-full">Delete Builder</div>
-      <ActionWithDialog
-        name={builder.name}
-        title="Delete"
-        icon={<Trash className="h-4 w-4" />}
-        onClick={async () => {
-          await mutateAsync({ id });
-          nav("/");
-        }}
-        disabled={isPending}
-        loading={isPending}
-      />
-    </div>
   );
 };

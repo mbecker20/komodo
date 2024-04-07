@@ -6,11 +6,12 @@ import { Input } from "@ui/input";
 import { AlertTriangle, Ban, Hammer, History, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@ui/use-toast";
-import { BuildConfig, DeleteBuild } from "./config";
+import { BuildConfig } from "./config";
 import { fill_color_class_by_intention } from "@lib/color";
 import { BuildChart } from "./dashboard";
 import { BuildTable } from "./table";
 import { fmt_version } from "@lib/formatting";
+import { DeleteResource } from "@components/config/util";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -49,7 +50,7 @@ export const BuildComponents: RequiredResourceComponents = {
         icon={<AlertTriangle className="w-4 h-4" />}
         actions={<CopyResource type="Build" id={id} />}
       >
-        <DeleteBuild id={id} />
+        <DeleteResource type="Build" id={id} />
       </Section>
     ),
   },

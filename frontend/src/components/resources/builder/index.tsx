@@ -17,8 +17,9 @@ import {
 import { Cloud, Bot, Factory, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BuilderConfig, DeleteBuilder } from "./config";
+import { BuilderConfig } from "./config";
 import { CopyResource, ResourceLink } from "@components/util";
+import { DeleteResource } from "@components/config/util";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
@@ -52,7 +53,7 @@ export const BuilderComponents: RequiredResourceComponents = {
         icon={<AlertTriangle className="w-4 h-4" />}
         actions={<CopyResource type="Builder" id={id} />}
       >
-        <DeleteBuilder id={id} />
+        <DeleteResource type="Builder" id={id} />
       </Section>
     ),
   },

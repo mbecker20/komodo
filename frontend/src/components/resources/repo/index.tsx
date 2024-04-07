@@ -5,12 +5,13 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
 import { AlertTriangle, GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
-import { DeleteRepo, RepoConfig } from "./config";
+import { RepoConfig } from "./config";
 import { CopyResource, ResourceLink } from "@components/util";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
 import { CloneRepo, PullRepo } from "./actions";
+import { DeleteResource } from "@components/config/util";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
@@ -31,7 +32,7 @@ export const RepoComponents: RequiredResourceComponents = {
         icon={<AlertTriangle className="w-4 h-4" />}
         actions={<CopyResource type="Repo" id={id} />}
       >
-        <DeleteRepo id={id} />
+        <DeleteResource type="Repo" id={id} />
       </Section>
     ),
   },

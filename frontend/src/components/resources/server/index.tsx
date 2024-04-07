@@ -6,7 +6,7 @@ import { ServerIcon, AlertTriangle, Rocket, LineChart } from "lucide-react";
 import { useState } from "react";
 import { NewResource, Section } from "@components/layouts";
 import { Input } from "@ui/input";
-import { DeleteServer, RenameServer, SERVER_ACTIONS } from "./actions";
+import { RenameServer, SERVER_ACTIONS } from "./actions";
 import {
   fill_color_class_by_intention,
   server_status_intention,
@@ -19,6 +19,7 @@ import { ServersChart } from "./dashboard";
 import { ResourceLink } from "@components/util";
 import { Link } from "react-router-dom";
 import { Button } from "@ui/button";
+import { DeleteResource } from "@components/config/util";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -79,7 +80,7 @@ export const ServerComponents: RequiredResourceComponents = {
     Danger: ({ id }) => (
       <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
         <RenameServer id={id} />
-        <DeleteServer id={id} />
+        <DeleteResource type="Server" id={id} />
       </Section>
     ),
   },

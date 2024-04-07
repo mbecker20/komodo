@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useRead } from "@lib/hooks";
+import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
   Select,
@@ -18,6 +18,7 @@ import {
   PlusCircle,
   Save,
   SearchX,
+  Trash,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { cn } from "@lib/utils";
@@ -39,7 +40,9 @@ import {
   CommandList,
 } from "@ui/command";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
-import { ConfirmButton } from "@components/util";
+import { ActionWithDialog, ConfirmButton } from "@components/util";
+import { UsableResource } from "@types";
+import { useNavigate } from "react-router-dom";
 
 export const ConfigItem = ({
   label,
@@ -398,5 +401,36 @@ export const SystemCommand = ({
         </div>
       </div>
     </ConfigItem>
+  );
+};
+
+export const DeleteResource = ({
+  type,
+  id,
+}: {
+  type: UsableResource;
+  id: string;
+}) => {
+  const nav = useNavigate();
+  const resource = useRead(`Get${type}`, { [type.toLowerCase()]: id } as any).data;
+  const { mutateAsync, isPending } = useWrite(`Delete${type}`);
+
+  if (!resource) return null;
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="w-full">Delete {type}</div>
+      <ActionWithDialog
+        name={resource.name}
+        title="Delete"
+        icon={<Trash className="h-4 w-4" />}
+        onClick={async () => {
+          await mutateAsync({ id });
+          nav(`/${type.toLowerCase()}s`);
+        }}
+        disabled={isPending}
+        loading={isPending}
+      />
+    </div>
   );
 };

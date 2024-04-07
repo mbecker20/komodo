@@ -255,7 +255,7 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
         icon={<Trash className="h-4 w-4" />}
         onClick={async () => {
           await mutateAsync({ id });
-          nav("/");
+          nav("/deployments");
         }}
         disabled={pending}
         loading={pending}
