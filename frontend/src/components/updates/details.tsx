@@ -19,6 +19,7 @@ import { useRead } from "@lib/hooks";
 import { ResourceComponents } from "@components/resources";
 import { Link } from "react-router-dom";
 import { fmt_duration, fmt_version } from "@lib/formatting";
+import { version_is_none } from "@lib/utils";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data;
@@ -76,7 +77,7 @@ export const UpdateDetailsInner = ({
               .split("_")
               .map((s) => s[0].toUpperCase() + s.slice(1))
               .join(" ")}{" "}
-            {fmt_version(update.version)}
+            {!version_is_none(update.version) && fmt_version(update.version)}
           </SheetTitle>
           <SheetDescription className="flex flex-col gap-2">
             <div className="flex items-center gap-2">

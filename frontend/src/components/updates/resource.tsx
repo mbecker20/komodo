@@ -16,6 +16,7 @@ import { Section } from "@components/layouts";
 import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateStatus } from "@monitor/client/dist/types";
 import { fmt_date, fmt_version } from "@lib/formatting";
+import { version_is_none } from "@lib/utils";
 
 const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
   const Icon = () => {
@@ -35,7 +36,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Milestone className="w-4" />
-            {fmt_version(update.version)}
+            {!version_is_none(update.version) && fmt_version(update.version)}
           </div>
         </div>
         <div>
@@ -49,53 +50,6 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
           </div>
         </div>
       </div>
-      {/* <Card>
-        <CardHeader className="items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Icon />
-              {update.operation}
-            </CardTitle>
-            <CardDescription className="flex items-center gap-2">
-              <Milestone className="w-4" />
-              {fmt_version(update.version)}
-            </CardDescription>
-          </div>
-          <div>
-            <CardDescription className="flex items-center gap-2">
-              <User className="w-4" />
-              <UpdateUser user_id={update.operator} />
-            </CardDescription>
-            <CardDescription className="flex items-center gap-2">
-              <Milestone className="w-4" />
-              {fmt_version(update.version)}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <CardContent />
-      </Card> */}
-      {/* <Card className="cursor-pointer hover:translate-y-[-2.5%] hover:bg-accent/50 transition-all">
-        <CardHeader className="justify-between">
-          <div>
-            <CardTitle>{update.operation}</CardTitle>
-            <CardDescription className="flex items-center gap-2">
-              <Milestone className="w-4 h-4" />
-              {fmt_version(update.version)}
-            </CardDescription>
-          </div>
-          <Icon />
-        </CardHeader>
-        <CardContent>
-          <CardDescription className="flex items-center gap-2">
-            <User className="w-4 h-4" />{" "}
-            <UpdateUser user_id={update.operator} />
-          </CardDescription>
-          <CardDescription className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            {fmt_update_date(new Date(update.start_ts))}
-          </CardDescription>
-        </CardContent>
-      </Card> */}
     </UpdateDetails>
   );
 };
@@ -121,7 +75,6 @@ export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
       }
     >
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* {isLoading && <UpdatePlaceHolder />} */}
         {data?.updates.slice(0, 3).map((update) => (
           <UpdateCard update={update} key={update.id} />
         ))}

@@ -52,3 +52,7 @@ function keep_line(line: string) {
   if (line[firstIndex] === "#") return false;
   return true;
 }
+
+export function version_is_none({ major, minor, patch }: Types.Version) {
+  return major === 0 && minor === 0 && patch === 0;
+}

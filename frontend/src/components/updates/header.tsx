@@ -10,7 +10,7 @@ import { Button } from "@ui/button";
 import { Calendar, User } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
 import { ResourceComponents } from "@components/resources";
-import { cn } from "@lib/utils";
+import { cn, version_is_none } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { fmt_date, fmt_version } from "@lib/formatting";
 
@@ -36,7 +36,8 @@ export const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
               <Icon />
               {update.operation.match(/[A-Z][a-z]+|[0-9]+/g)?.join(" ")}
               <div className="text-xs text-muted-foreground">
-                {fmt_version(update.version)}
+                {!version_is_none(update.version) &&
+                  fmt_version(update.version)}
               </div>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
