@@ -252,7 +252,7 @@ export const NewResource = ({ type }: { type: UsableResource }) => {
       <div className="grid md:grid-cols-2">
         {type} Name
         <Input
-          placeholder={`${type} Name`}
+          placeholder={`${type.toLowerCase()}-name`}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
