@@ -22,6 +22,8 @@ pub type RepoListItem = ResourceListItem<RepoInfo>;
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RepoInfo {
   pub last_pulled_at: I64,
+  pub repo: String,
+  pub branch: String,
 }
 
 #[typeshare(serialized_as = "Partial<RepoConfig>")]

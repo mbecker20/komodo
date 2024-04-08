@@ -34,7 +34,6 @@ export const useDeployment = (id?: string) =>
 
 export const DeploymentComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useDeployment(id)?.name}</>,
-  Description: ({ id }) => <>{useDeployment(id)?.info.status}</>,
   Link: ({ id }) => <ResourceLink type="Deployment" id={id} />,
   Info: [
     ({ id }) => {

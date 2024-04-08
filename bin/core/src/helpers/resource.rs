@@ -410,6 +410,7 @@ impl StateResource for Build {
         last_built_at: build.info.last_built_at,
         version: build.config.version,
         repo: build.config.repo,
+        branch: build.config.branch,
       },
     })
   }
@@ -444,6 +445,8 @@ impl StateResource for Repo {
       resource_type: ResourceTargetVariant::Repo,
       info: RepoInfo {
         last_pulled_at: repo.info.last_pulled_at,
+        repo: repo.config.repo,
+        branch: repo.config.branch,
       },
     })
   }

@@ -12,14 +12,7 @@ import {
 } from "@ui/dialog";
 import { Types } from "@monitor/client";
 import { ResourceComponents } from "./resources";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-  CardFooter,
-} from "@ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@ui/card";
 import { ResourceTags } from "./tags";
 import { Topbar } from "./topbar";
 
@@ -92,7 +85,7 @@ export const NewResource = ({
   enabled,
   onSuccess,
 }: {
-  entityType: String;
+  entityType: string;
   children: ReactNode;
   enabled: boolean;
   onSuccess: () => Promise<unknown>;
@@ -148,9 +141,9 @@ export const ResourceCard = ({
             <CardTitle>
               <Components.Name id={id} />
             </CardTitle>
-            <CardDescription>
+            {/* <CardDescription>
               <Components.Description id={id} />
-            </CardDescription>
+            </CardDescription> */}
           </div>
           <Components.Icon id={id} />
         </CardHeader>
@@ -189,9 +182,9 @@ export const ResourceRow = ({
           ))}
           <div className="flex items-center gap-2">
             <Components.Icon id={id} />
-            <CardDescription>
+            {/* <CardDescription>
               <Components.Description id={id} />
-            </CardDescription>
+            </CardDescription> */}
           </div>
         </CardHeader>
       </Card>

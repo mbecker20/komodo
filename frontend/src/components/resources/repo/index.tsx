@@ -3,7 +3,7 @@ import { useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
-import { AlertTriangle, GitBranch } from "lucide-react";
+import { AlertTriangle, FolderGit, GitBranch, History } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
 import { useState } from "react";
@@ -17,11 +17,29 @@ const useRepo = (id?: string) =>
 
 export const RepoComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useRepo(id)?.name}</>,
-  Description: ({ id }) => <>{id}</>,
   Icon: () => <GitBranch className="w-4 h-4" />,
   Link: ({ id }) => <ResourceLink type="Repo" id={id} />,
-  Info: [],
-  Status: () => <></>,
+  Info: [
+    ({ id }) => {
+      const repo = useRepo(id)?.info.repo;
+      return (
+        <div className="flex items-center gap-2">
+          <FolderGit className="w-4 h-4" />
+          {repo}
+        </div>
+      );
+    },
+    ({ id }) => {
+      const ts = useRepo(id)?.info.last_pulled_at;
+      return (
+        <div className="flex items-center gap-2">
+          <History className="w-4 h-4" />
+          {ts ? new Date(ts).toLocaleString() : "Never Pulled"}
+        </div>
+      );
+    },
+  ],
+  Status: () => <>Repo</>,
   Actions: [PullRepo, CloneRepo],
   Page: {
     Config: RepoConfig,
@@ -51,9 +69,16 @@ export const RepoComponents: RequiredResourceComponents = {
         }
         columns={[
           {
-            accessorKey: "id",
             header: "Name",
             cell: ({ row }) => <RepoComponents.Link id={row.original.id} />,
+          },
+          {
+            header: "Repo",
+            accessorKey: "info.repo",
+          },
+          {
+            header: "Branch",
+            accessorKey: "info.branch",
           },
           {
             header: "Tags",

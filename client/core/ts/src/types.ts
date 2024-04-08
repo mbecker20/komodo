@@ -142,6 +142,7 @@ export interface BuildListItemInfo {
 	last_built_at: I64;
 	version: Version;
 	repo: string;
+	branch: string;
 }
 
 export type BuildListItem = ResourceListItem<BuildListItemInfo>;
@@ -366,6 +367,8 @@ export interface RepoConfig {
 
 export interface RepoInfo {
 	last_pulled_at: I64;
+	repo: string;
+	branch: string;
 }
 
 export type Repo = Resource<RepoConfig, RepoInfo>;

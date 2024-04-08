@@ -14,7 +14,6 @@ export interface RequiredResourceComponents {
   Dashboard: React.FC;
 
   Name: IdComponent;
-  Description: IdComponent;
   Status: IdComponent;
   Link: IdComponent;
 

@@ -25,7 +25,6 @@ export const useServer = (id?: string) =>
 
 export const ServerComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
-  Description: ({ id }) => <>{useServer(id)?.info.status}</>,
   Link: ({ id }) => <ResourceLink type="Server" id={id} />,
   Info: [
     ({ id }) => (

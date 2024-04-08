@@ -3,14 +3,13 @@ import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
-import { AlertTriangle, Ban, Hammer, History, Loader2 } from "lucide-react";
+import { AlertTriangle, Ban, FolderGit, Hammer, History, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@ui/use-toast";
 import { BuildConfig } from "./config";
 import { fill_color_class_by_intention } from "@lib/color";
 import { BuildChart } from "./dashboard";
 import { BuildTable } from "./table";
-import { fmt_version } from "@lib/formatting";
 import { CopyResource, DeleteResource, ResourceLink } from "../common";
 
 const useBuild = (id?: string) =>
@@ -28,9 +27,17 @@ export const BuildComponents: RequiredResourceComponents = {
   Table: BuildTable,
   Dashboard: BuildChart,
   Name: ({ id }) => <>{useBuild(id)?.name}</>,
-  Description: ({ id }) => <>{fmt_version(useBuild(id)?.info.version)}</>,
   Link: ({ id }) => <ResourceLink type="Build" id={id} />,
   Info: [
+    ({ id }) => {
+      const repo = useBuild(id)?.info.repo;
+      return (
+        <div className="flex items-center gap-2">
+          <FolderGit className="w-4 h-4" />
+          {repo}
+        </div>
+      );
+    },
     ({ id }) => {
       const ts = useBuild(id)?.info.last_built_at;
       return (

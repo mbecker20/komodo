@@ -24,7 +24,6 @@ const useProcedure = (id?: string) =>
 
 export const ProcedureComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useProcedure(id)?.name}</>,
-  Description: ({ id }) => <>{useProcedure(id)?.info.procedure_type}</>,
   Link: ({ id }) => <ResourceLink type="Procedure" id={id} />,
   Info: [({ id }) => <>{useProcedure(id)?.info.procedure_type}</>],
   Icon: () => <Route className="w-4" />,

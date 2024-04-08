@@ -24,6 +24,7 @@ pub struct BuildListItemInfo {
   pub last_built_at: I64,
   pub version: Version,
   pub repo: String,
+  pub branch: String,
 }
 
 #[typeshare]

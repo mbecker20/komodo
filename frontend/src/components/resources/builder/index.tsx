@@ -25,7 +25,6 @@ const useBuilder = (id?: string) =>
 
 export const BuilderComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>,
-  Description: () => <></>,
   Link: ({ id }) => <ResourceLink type="Builder" id={id} />,
   Info: [
     ({ id }) => (

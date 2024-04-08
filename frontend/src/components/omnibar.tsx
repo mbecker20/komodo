@@ -18,6 +18,7 @@ import { RESOURCE_TARGETS } from "@lib/utils";
 import { DeploymentComponents } from "./resources/deployment";
 import { BuildComponents } from "./resources/build";
 import { ServerComponents } from "./resources/server";
+import { ProcedureComponents } from "./resources/procedure";
 
 export const Omnibar = () => {
   const [open, set] = useState(false);
@@ -58,35 +59,42 @@ export const Omnibar = () => {
         <CommandInput placeholder="Type a command or search..." />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
-          
+
           <CommandGroup>
             <CommandItem
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
               onSelect={() => nav("/")}
             >
               <Home className="w-4 h-4" />
               Home
             </CommandItem>
             <CommandItem
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
               onSelect={() => nav("/deployments")}
             >
               <DeploymentComponents.Icon />
               Deployments
             </CommandItem>
             <CommandItem
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
               onSelect={() => nav("/builds")}
             >
               <BuildComponents.Icon />
               Builds
             </CommandItem>
             <CommandItem
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
               onSelect={() => nav("/servers")}
             >
               <ServerComponents.Icon />
               Servers
+            </CommandItem>
+            <CommandItem
+              className="flex items-center gap-2 cursor-pointer"
+              onSelect={() => nav("/procedures")}
+            >
+              <ProcedureComponents.Icon />
+              Procedures
             </CommandItem>
           </CommandGroup>
 
@@ -109,7 +117,7 @@ const ResourceGroup = ({
   onSelect,
 }: {
   type: UsableResource;
-  onSelect: (value: string) => void;
+  onSelect: (path: string) => void;
 }) => {
   const data = useRead(`List${type}s`, {}).data;
   const Components = ResourceComponents[type];
@@ -122,7 +130,7 @@ const ResourceGroup = ({
         return (
           <CommandItem
             key={id}
-            className="flex items-center gap-2"
+            className="cursor-pointer flex items-center gap-2"
             onSelect={() => onSelect(`/${type.toLowerCase()}s/${id}`)}
           >
             <Components.Icon id={id} />
