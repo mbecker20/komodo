@@ -79,7 +79,7 @@ export const Config = <T,>({
       string,
       {
         [K in keyof Partial<T>]:
-          | true
+          | boolean
           | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
       }
     >
@@ -156,7 +156,7 @@ export const ConfigAgain = <
   update: Partial<T>;
   components: Partial<{
     [K in keyof T extends string ? keyof T : never]:
-      | true
+      | boolean
       | ((value: T[K], set: (value: Partial<T>) => void) => ReactNode);
   }>;
   set: (value: Partial<T>) => void;
@@ -200,6 +200,8 @@ export const ConfigAgain = <
             default:
               return <div>{key.toString()}</div>;
           }
+        } else if (component === false) {
+          return <Fragment key={key.toString()} />;
         }
         return (
           <Fragment key={key.toString()}>{component?.(value, set)}</Fragment>

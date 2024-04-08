@@ -137,7 +137,6 @@ export const WebsocketProvider = ({
     ws?.addEventListener("message", on_message_fn);
     ws?.addEventListener("close", on_close_fn);
     return () => {
-      ws?.close();
       ws?.removeEventListener("open", on_open_fn);
       ws?.removeEventListener("message", on_message_fn);
       ws?.removeEventListener("close", on_close_fn);

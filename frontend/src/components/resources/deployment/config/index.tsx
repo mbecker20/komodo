@@ -100,7 +100,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
           },
           settings: {
             send_alerts: true,
-            redeploy_on_build: true,
+            redeploy_on_build: (update.image?.type || config.image?.type) === "Build",
           },
         },
         environment: {
