@@ -12,6 +12,9 @@ import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 const rws_atom = atom<Rws | null>(null);
 const useWebsocket = () => useAtom(rws_atom);
 
+const ws_connected = atom(false);
+export const useWebsocketConnected = () => useAtom(ws_connected);
+
 const on_message = (
   { data }: MessageEvent,
   invalidate: ReturnType<typeof useInvalidate>
@@ -108,12 +111,19 @@ export const WebsocketProvider = ({
 }) => {
   const invalidate = useInvalidate();
   const [ws, set] = useWebsocket();
+  const setConnected = useWebsocketConnected()[1];
 
-  const on_open_fn = useCallback(() => on_open(ws), [ws]);
+  const on_open_fn = useCallback(() => {
+    on_open(ws);
+    setConnected(true);
+  }, [ws, setConnected]);
   const on_message_fn = useCallback(
     (e: MessageEvent) => on_message(e, invalidate),
     [invalidate]
   );
+  const on_close_fn = useCallback(() => {
+    setConnected(false);
+  }, [setConnected]);
 
   useEffect(() => {
     if (!ws) set(new Rws(url));
@@ -125,18 +135,20 @@ export const WebsocketProvider = ({
   useEffect(() => {
     ws?.addEventListener("open", on_open_fn);
     ws?.addEventListener("message", on_message_fn);
+    ws?.addEventListener("close", on_close_fn);
     return () => {
       ws?.close();
       ws?.removeEventListener("open", on_open_fn);
       ws?.removeEventListener("message", on_message_fn);
+      ws?.removeEventListener("close", on_close_fn);
     };
-  }, [on_message_fn, on_open_fn, ws]);
+  }, [on_message_fn, on_open_fn, on_close_fn, ws]);
 
   return <>{children}</>;
 };
 
 export const WsStatusIndicator = () => {
-  const [ws] = useWebsocket();
+  const [connected] = useWebsocketConnected();
   const onclick = () =>
     toast({ title: "surprise", description: "motherfucker" });
 
@@ -150,7 +162,7 @@ export const WsStatusIndicator = () => {
       <Circle
         className={cn(
           "w-4 h-4 stroke-none",
-          ws ? "fill-green-500" : "fill-red-500"
+          connected ? "fill-green-500" : "fill-red-500"
         )}
       />
     </Button>

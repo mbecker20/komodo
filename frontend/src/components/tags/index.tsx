@@ -239,12 +239,15 @@ export const AddTags = ({ target }: { target: TargetExcludingSystem }) => {
             }}
           />
           <CommandList>
-            <CommandEmpty
-              className="justify-between cursor-pointer hover:bg-accent m-1"
-              onClick={create_tag}
-            >
-              Create Tag
-              <PlusCircle className="w-4" />
+            <CommandEmpty className="m-1">
+              <Button
+                variant="ghost"
+                onClick={create_tag}
+                className="w-full flex items-center justify-between hover:bg-accent"
+              >
+                Create Tag
+                <PlusCircle className="w-4" />
+              </Button>
             </CommandEmpty>
             <CommandGroup>
               {all_tags
