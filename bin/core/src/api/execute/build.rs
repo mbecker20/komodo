@@ -16,7 +16,7 @@ use monitor_client::{
     permission::PermissionLevel,
     server::Server,
     update::{Log, Update},
-    user::User,
+    user::{auto_redeploy_user, User},
     Operation,
   },
 };
@@ -427,7 +427,7 @@ async fn cleanup_builder_instance(
 }
 
 async fn handle_post_build_redeploy(build_id: &str) {
-  let redeploy_deployments = find_collect(
+  let Ok(redeploy_deployments) = find_collect(
     &db_client().await.deployments,
     doc! {
       "config.image.params.build_id": build_id,
@@ -435,17 +435,15 @@ async fn handle_post_build_redeploy(build_id: &str) {
     },
     None,
   )
-  .await;
+  .await
+  else {
+    return;
+  };
 
-  if let Ok(deployments) = redeploy_deployments {
-    let futures =
-      deployments.into_iter().map(|deployment| async move {
-        let request_user = User {
-          id: "auto redeploy".to_string(),
-          username: "auto redeploy".to_string(),
-          admin: true,
-          ..Default::default()
-        };
+  let futures =
+    redeploy_deployments
+      .into_iter()
+      .map(|deployment| async move {
         let state =
           get_deployment_state(&deployment).await.unwrap_or_default();
         if state == DockerContainerState::Running {
@@ -456,7 +454,7 @@ async fn handle_post_build_redeploy(build_id: &str) {
                 stop_signal: None,
                 stop_time: None,
               },
-              request_user,
+              auto_redeploy_user().to_owned(),
             )
             .await;
           Some((deployment.id.clone(), res))
@@ -465,20 +463,19 @@ async fn handle_post_build_redeploy(build_id: &str) {
         }
       });
 
-    let redeploy_results = join_all(futures).await;
+  let redeploy_results = join_all(futures).await;
 
-    let mut redeploys = Vec::<String>::new();
-    let mut redeploy_failures = Vec::<String>::new();
+  let mut redeploys = Vec::<String>::new();
+  let mut redeploy_failures = Vec::<String>::new();
 
-    for res in redeploy_results {
-      if res.is_none() {
-        continue;
-      }
-      let (id, res) = res.unwrap();
-      match res {
-        Ok(_) => redeploys.push(id),
-        Err(e) => redeploy_failures.push(format!("{id}: {e:#?}")),
-      }
+  for res in redeploy_results {
+    if res.is_none() {
+      continue;
+    }
+    let (id, res) = res.unwrap();
+    match res {
+      Ok(_) => redeploys.push(id),
+      Err(e) => redeploy_failures.push(format!("{id}: {e:#?}")),
     }
   }
 }
