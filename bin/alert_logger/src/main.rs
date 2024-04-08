@@ -5,7 +5,7 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::{routing::post, Json, Router};
-use monitor_client::entities::alert::Alert;
+use monitor_client::entities::{alert::Alert, server::stats::SeverityLevel};
 use serde::Deserialize;
 use termination_signal::tokio::immediate_term_handle;
 
@@ -34,7 +34,15 @@ async fn app() -> anyhow::Result<()> {
   let app = Router::new().route(
     "/",
     post(|Json(alert): Json<Alert>| async move {
-      info!("{alert:#?}");
+      if alert.resolved {
+        info!("Alert Resolved!: {alert:?}");
+        return;
+      }
+      match alert.level {
+        SeverityLevel::Ok => info!("{alert:?}"),
+        SeverityLevel::Warning => warn!("{alert:?}"),
+        SeverityLevel::Critical => error!("{alert:?}"),
+      }
     }),
   );
 
