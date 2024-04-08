@@ -108,4 +108,5 @@ pub struct GetCoreInfo {}
 pub struct GetCoreInfoResponse {
   pub title: String,
   pub monitoring_interval: Timelength,
+  pub github_webhook_base_url: String,
 }

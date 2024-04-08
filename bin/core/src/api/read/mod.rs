@@ -181,9 +181,14 @@ impl Resolve<GetCoreInfo, User> for State {
     GetCoreInfo {}: GetCoreInfo,
     _: User,
   ) -> anyhow::Result<GetCoreInfoResponse> {
+    let config = core_config();
     Ok(GetCoreInfoResponse {
-      title: core_config().title.clone(),
-      monitoring_interval: core_config().monitoring_interval,
+      title: config.title.clone(),
+      monitoring_interval: config.monitoring_interval,
+      github_webhook_base_url: config
+        .github_webhook_base_url
+        .clone()
+        .unwrap_or_else(|| config.host.clone()),
     })
   }
 }

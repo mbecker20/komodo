@@ -367,15 +367,19 @@ export interface RepoConfig {
 
 export interface RepoInfo {
 	last_pulled_at: I64;
-	repo: string;
-	branch: string;
 }
 
 export type Repo = Resource<RepoConfig, RepoInfo>;
 
 export type GetRepoResponse = Repo;
 
-export type RepoListItem = ResourceListItem<RepoInfo>;
+export interface RepoListItemInfo {
+	last_pulled_at: I64;
+	repo: string;
+	branch: string;
+}
+
+export type RepoListItem = ResourceListItem<RepoListItemInfo>;
 
 export type ListReposResponse = RepoListItem[];
 
@@ -1210,6 +1214,7 @@ export interface GetCoreInfo {
 export interface GetCoreInfoResponse {
 	title: string;
 	monitoring_interval: Timelength;
+	github_webhook_base_url: string;
 }
 
 export interface ListUserPermissions {
