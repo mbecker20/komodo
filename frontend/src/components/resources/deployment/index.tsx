@@ -1,10 +1,9 @@
-import { useRead, useWrite } from "@lib/hooks";
+import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { AlertTriangle, HardDrive, Rocket } from "lucide-react";
 import { cn } from "@lib/utils";
-import { useState } from "react";
-import { NewResource, Section } from "@components/layouts";
+import { Section } from "@components/layouts";
 
 import { useServer } from "../server";
 import { DeploymentConfig } from "./config";
@@ -15,7 +14,6 @@ import {
   DeleteDeployment,
   RenameDeployment,
 } from "./actions";
-import { Input } from "@ui/input";
 import { DeploymentLogs } from "./logs";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
 import {
@@ -25,7 +23,7 @@ import {
 } from "@lib/color";
 import { DeploymentTable } from "./table";
 import { DeploymentsChart } from "./dashboard";
-import { CopyResource, ResourceLink } from "../common";
+import { CopyResource, NewResource, ResourceLink } from "../common";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
@@ -87,26 +85,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
       </Section>
     ),
   },
-  New: () => {
-    const { mutateAsync } = useWrite("CreateDeployment");
-    const [name, setName] = useState("");
-    return (
-      <NewResource
-        entityType="Deployment"
-        onSuccess={() => mutateAsync({ name, config: {} })}
-        enabled={!!name}
-      >
-        <div className="grid md:grid-cols-2">
-          Deployment Name
-          <Input
-            placeholder="deployment-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-      </NewResource>
-    );
-  },
+  New: () => <NewResource type="Deployment" />,
   Table: ({ search }) => {
     const deployments = useRead("ListDeployments", {}).data;
     return <DeploymentTable deployments={deployments} search={search} />;

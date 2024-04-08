@@ -1,4 +1,4 @@
-import { NewResource, Section } from "@components/layouts";
+import { NewLayout, Section } from "@components/layouts";
 import { useTagsFilter } from "@components/tags";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
@@ -105,7 +105,7 @@ export const BuilderComponents: RequiredResourceComponents = {
     const [type, setType] = useState<Types.BuilderConfig["type"]>();
 
     return (
-      <NewResource
+      <NewLayout
         entityType="Builder"
         onSuccess={async () =>
           !!type && mutateAsync({ name, config: { type, params: {} } })
@@ -137,7 +137,7 @@ export const BuilderComponents: RequiredResourceComponents = {
             </SelectContent>
           </Select>
         </div>
-      </NewResource>
+      </NewLayout>
     );
   },
   Dashboard: () => {

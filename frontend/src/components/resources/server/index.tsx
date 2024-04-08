@@ -1,11 +1,9 @@
-import { useRead, useWrite } from "@lib/hooks";
+import { useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { ServerIcon, AlertTriangle, Rocket, LineChart } from "lucide-react";
-import { useState } from "react";
-import { NewResource, Section } from "@components/layouts";
-import { Input } from "@ui/input";
+import { Section } from "@components/layouts";
 import { RenameServer, SERVER_ACTIONS } from "./actions";
 import {
   fill_color_class_by_intention,
@@ -18,7 +16,7 @@ import { ServerTable } from "./table";
 import { ServersChart } from "./dashboard";
 import { Link } from "react-router-dom";
 import { Button } from "@ui/button";
-import { DeleteResource, ResourceLink } from "../common";
+import { DeleteResource, NewResource, ResourceLink } from "../common";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -82,26 +80,7 @@ export const ServerComponents: RequiredResourceComponents = {
       </Section>
     ),
   },
-  New: () => {
-    const { mutateAsync } = useWrite("CreateServer");
-    const [name, setName] = useState("");
-    return (
-      <NewResource
-        entityType="Server"
-        onSuccess={() => mutateAsync({ name, config: {} })}
-        enabled={!!name}
-      >
-        <div className="grid md:grid-cols-2">
-          Server Name
-          <Input
-            placeholder="server-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-      </NewResource>
-    );
-  },
+  New: () => <NewResource type="Server" />,
   Table: ServerTable,
   Dashboard: ServersChart,
 };

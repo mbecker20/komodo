@@ -1,16 +1,19 @@
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
-import { useRead, useWrite } from "@lib/hooks";
+import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
 import { AlertTriangle, FolderGit, GitBranch, History } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
-import { useState } from "react";
-import { NewResource, Section } from "@components/layouts";
-import { Input } from "@ui/input";
+import { Section } from "@components/layouts";
 import { CloneRepo, PullRepo } from "./actions";
-import { CopyResource, DeleteResource, ResourceLink } from "../common";
+import {
+  CopyResource,
+  DeleteResource,
+  NewResource,
+  ResourceLink,
+} from "../common";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
@@ -112,24 +115,5 @@ export const RepoComponents: RequiredResourceComponents = {
       </Link>
     );
   },
-  New: () => {
-    const { mutateAsync } = useWrite("CreateRepo");
-    const [name, setName] = useState("");
-    return (
-      <NewResource
-        entityType="Repo"
-        onSuccess={() => mutateAsync({ name, config: {} })}
-        enabled={!!name}
-      >
-        <div className="grid md:grid-cols-2">
-          Repo Name
-          <Input
-            placeholder="repo-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-      </NewResource>
-    );
-  },
+  New: () => <NewResource type="Repo" />,
 };

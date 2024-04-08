@@ -1,4 +1,4 @@
-import { NewResource, Section } from "@components/layouts";
+import { NewLayout, Section } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
@@ -67,7 +67,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
     const [name, setName] = useState("");
     const [type, setType] = useState<Types.ProcedureConfig["type"]>("Sequence");
     return (
-      <NewResource
+      <NewLayout
         entityType="Procedure"
         onSuccess={() => mutateAsync({ name, config: { type, data: [] } })}
         enabled={!!name}
@@ -98,7 +98,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
             </SelectContent>
           </Select>
         </div>
-      </NewResource>
+      </NewLayout>
     );
   },
   Dashboard: () => {

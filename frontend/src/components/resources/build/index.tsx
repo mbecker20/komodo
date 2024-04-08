@@ -1,16 +1,26 @@
-import { NewResource, Section } from "@components/layouts";
+import { Section } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
-import { useExecute, useRead, useWrite } from "@lib/hooks";
+import { useExecute, useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
-import { Input } from "@ui/input";
-import { AlertTriangle, Ban, FolderGit, Hammer, History, Loader2 } from "lucide-react";
-import { useState } from "react";
+import {
+  AlertTriangle,
+  Ban,
+  FolderGit,
+  Hammer,
+  History,
+  Loader2,
+} from "lucide-react";
 import { useToast } from "@ui/use-toast";
 import { BuildConfig } from "./config";
 import { fill_color_class_by_intention } from "@lib/color";
 import { BuildChart } from "./dashboard";
 import { BuildTable } from "./table";
-import { CopyResource, DeleteResource, ResourceLink } from "../common";
+import {
+  CopyResource,
+  DeleteResource,
+  NewResource,
+  ResourceLink,
+} from "../common";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -117,24 +127,5 @@ export const BuildComponents: RequiredResourceComponents = {
       }
     },
   ],
-  New: () => {
-    const { mutateAsync } = useWrite("CreateBuild");
-    const [name, setName] = useState("");
-    return (
-      <NewResource
-        entityType="Build"
-        onSuccess={() => mutateAsync({ name, config: {} })}
-        enabled={!!name}
-      >
-        <div className="grid md:grid-cols-2">
-          Build Name
-          <Input
-            placeholder="build-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-      </NewResource>
-    );
-  },
+  New: () => <NewResource type="Build" />,
 };

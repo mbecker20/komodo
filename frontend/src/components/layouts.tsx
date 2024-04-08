@@ -79,7 +79,7 @@ export const Section = ({ title, icon, actions, children }: SectionProps) => (
   </div>
 );
 
-export const NewResource = ({
+export const NewLayout = ({
   entityType,
   children,
   enabled,

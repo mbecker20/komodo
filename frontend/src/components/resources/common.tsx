@@ -38,6 +38,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ResourceComponents } from ".";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
+import { NewLayout } from "@components/layouts";
 
 export const ResourceDescription = ({
   type,
@@ -237,6 +238,27 @@ export const CopyResource = ({
     </Dialog>
   );
 };
+
+export const NewResource = ({ type }: { type: UsableResource }) => {
+  const { mutateAsync } = useWrite(`Create${type}`);
+  const [name, setName] = useState("");
+  return (
+    <NewLayout
+      entityType={type}
+      onSuccess={() => mutateAsync({ name, config: {} })}
+      enabled={!!name}
+    >
+      <div className="grid md:grid-cols-2">
+        {type} Name
+        <Input
+          placeholder={`${type} Name`}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+    </NewLayout>
+  );
+}
 
 export const DeleteResource = ({
   type,

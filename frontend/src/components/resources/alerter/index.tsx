@@ -1,4 +1,4 @@
-import { NewResource, Section } from "@components/layouts";
+import { NewLayout, Section } from "@components/layouts";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
@@ -103,7 +103,7 @@ export const AlerterComponents: RequiredResourceComponents = {
     const [type, setType] = useState<Types.AlerterConfig["type"]>();
 
     return (
-      <NewResource
+      <NewLayout
         entityType="Alerter"
         onSuccess={async () =>
           !!type && mutateAsync({ name, config: { type, params: {} } })
@@ -135,7 +135,7 @@ export const AlerterComponents: RequiredResourceComponents = {
             </SelectContent>
           </Select>
         </div>
-      </NewResource>
+      </NewLayout>
     );
   },
 };
