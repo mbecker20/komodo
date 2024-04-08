@@ -89,6 +89,7 @@ export interface ResourceListItem<Info> {
 }
 
 export interface AlerterListItemInfo {
+	enabled: boolean;
 	is_default: boolean;
 	alerter_type: string;
 }
@@ -1729,10 +1730,12 @@ export interface UpdateServiceUserDescription {
 
 export interface CustomAlerterConfig {
 	url: string;
+	enabled?: boolean;
 }
 
 export interface SlackAlerterConfig {
 	url: string;
+	enabled?: boolean;
 }
 
 export interface ServerBuilderConfig {

@@ -25,6 +25,7 @@ const SlackAlerterConfig = ({ id }: { id: string }) => {
         general: {
           general: {
             url: true,
+            enabled: true,
           },
         },
       }}
@@ -48,6 +49,7 @@ const CustomAlerterConfig = ({ id }: { id: string }) => {
         general: {
           general: {
             url: true,
+            enabled: true,
           },
         },
       }}
