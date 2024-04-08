@@ -20,6 +20,7 @@ pub type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AlerterListItemInfo {
+  pub enabled: bool,
   pub is_default: bool,
   pub alerter_type: String,
 }
@@ -96,6 +97,7 @@ impl AlerterConfig {
         AlerterConfig::Custom(config) => {
           let config = CustomAlerterConfig {
             url: partial.url.unwrap_or(config.url),
+            enabled: partial.enabled.unwrap_or(config.enabled),
           };
           AlerterConfig::Custom(config)
         }
@@ -105,6 +107,7 @@ impl AlerterConfig {
         AlerterConfig::Slack(config) => {
           let config = SlackAlerterConfig {
             url: partial.url.unwrap_or(config.url),
+            enabled: partial.enabled.unwrap_or(config.enabled),
           };
           AlerterConfig::Slack(config)
         }
@@ -122,6 +125,8 @@ impl AlerterConfig {
 pub struct CustomAlerterConfig {
   #[partial_default(String::from("http://localhost:7000"))]
   pub url: String,
+  #[serde(default)]
+  pub enabled: bool,
 }
 
 #[typeshare]
@@ -134,6 +139,8 @@ pub struct SlackAlerterConfig {
     "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
   ))]
   pub url: String,
+  #[serde(default)]
+  pub enabled: bool,
 }
 
 #[typeshare]

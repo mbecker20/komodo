@@ -28,7 +28,8 @@ use monitor_client::{
       ProcedureListItemInfo, ProcedureQuerySpecifics,
     },
     repo::{
-      Repo, RepoConfig, RepoInfo, RepoListItem, RepoListItemInfo, RepoQuerySpecifics
+      Repo, RepoConfig, RepoInfo, RepoListItem, RepoListItemInfo,
+      RepoQuerySpecifics,
     },
     resource::{AddFilters, Resource, ResourceQuery},
     server::{
@@ -519,9 +520,9 @@ impl StateResource for Alerter {
   async fn to_list_item(
     alerter: Alerter,
   ) -> anyhow::Result<AlerterListItem> {
-    let alerter_type = match alerter.config {
-      AlerterConfig::Custom(_) => "custom",
-      AlerterConfig::Slack(_) => "slack",
+    let (alerter_type, enabled) = match alerter.config {
+      AlerterConfig::Custom(config) => ("custom", config.enabled),
+      AlerterConfig::Slack(config) => ("slack", config.enabled),
     };
     Ok(AlerterListItem {
       name: alerter.name,
@@ -534,6 +535,7 @@ impl StateResource for Alerter {
       info: AlerterListItemInfo {
         alerter_type: alerter_type.to_string(),
         is_default: alerter.info.is_default,
+        enabled,
       },
     })
   }

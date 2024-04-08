@@ -6,7 +6,7 @@ use monitor_client::entities::{
   deployment::DockerContainerState,
   server::stats::{SeverityLevel, SystemProcess},
 };
-use mungos::find::find_collect;
+use mungos::{find::find_collect, mongodb::bson::doc};
 use reqwest::StatusCode;
 use slack::types::Block;
 
@@ -17,8 +17,12 @@ pub async fn send_alerts(alerts: &[Alert]) {
     return;
   }
 
-  let alerters =
-    find_collect(&db_client().await.alerters, None, None).await;
+  let alerters = find_collect(
+    &db_client().await.alerters,
+    doc! { "config.params.enabled": true },
+    None,
+  )
+  .await;
 
   if let Err(e) = alerters {
     error!("ERROR sending alerts | failed to get alerters from db | {e:#?}");
@@ -40,12 +44,18 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
 
   let handles = alerters.iter().map(|alerter| async {
     match &alerter.config {
-      AlerterConfig::Slack(SlackAlerterConfig { url }) => {
+      AlerterConfig::Slack(SlackAlerterConfig { url, enabled }) => {
+        if !enabled {
+          return Ok(());
+        }
         send_slack_alert(url, alert)
           .await
           .context("failed to send slack alert")
       }
-      AlerterConfig::Custom(CustomAlerterConfig { url }) => {
+      AlerterConfig::Custom(CustomAlerterConfig { url, enabled }) => {
+        if !enabled {
+          return Ok(());
+        }
         send_custom_alert(url, alert).await.context(format!(
           "failed to send alert to custom alerter at {url}"
         ))
