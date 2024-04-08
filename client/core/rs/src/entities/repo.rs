@@ -13,17 +13,23 @@ use super::{
 };
 
 #[typeshare]
-pub type Repo = Resource<RepoConfig, RepoInfo>;
+pub type RepoListItem = ResourceListItem<RepoListItemInfo>;
 
 #[typeshare]
-pub type RepoListItem = ResourceListItem<RepoInfo>;
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct RepoListItemInfo {
+  pub last_pulled_at: I64,
+  pub repo: String,
+  pub branch: String,
+}
+
+#[typeshare]
+pub type Repo = Resource<RepoConfig, RepoInfo>;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RepoInfo {
   pub last_pulled_at: I64,
-  pub repo: String,
-  pub branch: String,
 }
 
 #[typeshare(serialized_as = "Partial<RepoConfig>")]

@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use monitor_client::{
   api::write::{CreateRepo, UpdateRepo},
   entities::{
-    repo::{PartialRepoConfig, Repo, RepoInfo},
+    repo::{PartialRepoConfig, Repo, RepoListItemInfo},
     resource::{Resource, ResourceListItem},
     update::ResourceTarget,
   },
@@ -13,7 +13,7 @@ use crate::{maps::name_to_repo, monitor_client, sync::ResourceSync};
 
 impl ResourceSync for Repo {
   type PartialConfig = PartialRepoConfig;
-  type ListItemInfo = RepoInfo;
+  type ListItemInfo = RepoListItemInfo;
 
   fn display() -> &'static str {
     "repo"

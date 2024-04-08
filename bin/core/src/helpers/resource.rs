@@ -28,7 +28,7 @@ use monitor_client::{
       ProcedureListItemInfo, ProcedureQuerySpecifics,
     },
     repo::{
-      Repo, RepoConfig, RepoInfo, RepoListItem, RepoQuerySpecifics,
+      Repo, RepoConfig, RepoInfo, RepoListItem, RepoListItemInfo, RepoQuerySpecifics
     },
     resource::{AddFilters, Resource, ResourceQuery},
     server::{
@@ -443,7 +443,7 @@ impl StateResource for Repo {
       id: repo.id,
       tags: repo.tags,
       resource_type: ResourceTargetVariant::Repo,
-      info: RepoInfo {
+      info: RepoListItemInfo {
         last_pulled_at: repo.info.last_pulled_at,
         repo: repo.config.repo,
         branch: repo.config.branch,
