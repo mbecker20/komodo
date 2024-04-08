@@ -1,6 +1,6 @@
-use std::path::PathBuf;
+use std::path::Path;
 
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use async_timing_util::unix_timestamp_ms;
 use monitor_client::entities::{
   monitor_timestamp, to_monitor_name, update::Log, CloneArgs,
@@ -13,7 +13,7 @@ use crate::config::periphery_config;
 use super::{get_github_token, run_monitor_command};
 
 pub async fn pull(
-  mut path: PathBuf,
+  path: &Path,
   branch: &Option<String>,
   on_pull: &Option<SystemCommand>,
 ) -> Vec<Log> {
@@ -21,27 +21,36 @@ pub async fn pull(
     Some(branch) => branch.to_owned(),
     None => "main".to_string(),
   };
+
   let command =
     format!("cd {} && git pull origin {branch}", path.display());
-  let mut logs = Vec::new();
+
   let pull_log = run_monitor_command("git pull", command).await;
+
   if !pull_log.success {
-    logs.push(pull_log);
-    return logs;
+    return vec![pull_log];
   }
-  logs.push(pull_log);
+
+  let commit_hash_log =
+    get_commit_hash_log(path).await.unwrap_or(Log::simple(
+      "latest commit",
+      String::from("failed to get latest commit"),
+    ));
+
+  let mut logs = vec![pull_log, commit_hash_log];
+
   if let Some(on_pull) = on_pull {
     if !on_pull.path.is_empty() && !on_pull.command.is_empty() {
-      path.push(&on_pull.path);
-      let path = path.display().to_string();
+      let path = path.join(&on_pull.path);
       let on_pull_log = run_monitor_command(
         "on pull",
-        format!("cd {path} && {}", on_pull.command),
+        format!("cd {} && {}", path.display(), on_pull.command),
       )
       .await;
       logs.push(on_pull_log);
     }
   }
+
   logs
 }
 
@@ -56,22 +65,24 @@ pub async fn clone(
     on_pull,
     github_account,
   } = clone_args.into();
+
   let access_token = get_github_token(&github_account)?;
-  let repo =
-    repo.as_ref().ok_or(anyhow!("build has no repo attached"))?;
+
+  let repo = repo.as_ref().context("build has no repo attached")?;
   let name = to_monitor_name(&name);
-  let mut repo_dir = periphery_config().repo_dir.clone();
-  repo_dir.push(name);
-  let clone_destination = repo_dir.display().to_string();
+
+  let repo_dir = periphery_config().repo_dir.join(name);
+
   let clone_log =
-    clone_inner(repo, &clone_destination, &branch, access_token)
-      .await;
+    clone_inner(repo, &repo_dir, &branch, access_token).await;
   if !clone_log.success {
     return Ok(vec![clone_log]);
   }
-  let commit_hash_log =
-    get_commit_hash_log(&clone_destination).await?;
+
+  let commit_hash_log = get_commit_hash_log(&repo_dir).await?;
+
   let mut logs = vec![clone_log, commit_hash_log];
+
   if let Some(command) = on_clone {
     if !command.path.is_empty() && !command.command.is_empty() {
       let on_clone_path = repo_dir.join(&command.path);
@@ -107,7 +118,7 @@ pub async fn clone(
 
 async fn clone_inner(
   repo: &str,
-  destination: &str,
+  destination: &Path,
   branch: &Option<String>,
   access_token: Option<String>,
 ) -> Log {
@@ -122,7 +133,8 @@ async fn clone_inner(
   };
   let repo_url =
     format!("https://{access_token_at}github.com/{repo}.git");
-  let command = format!("git clone {repo_url} {destination}{branch}");
+  let command =
+    format!("git clone {repo_url} {}{branch}", destination.display());
   let start_ts = unix_timestamp_ms() as i64;
   let output = async_run_command(&command).await;
   let success = output.success();
@@ -146,9 +158,9 @@ async fn clone_inner(
   }
 }
 
-async fn get_commit_hash_log(repo_dir: &str) -> anyhow::Result<Log> {
+async fn get_commit_hash_log(repo_dir: &Path) -> anyhow::Result<Log> {
   let start_ts = monitor_timestamp();
-  let command = format!("cd {repo_dir} && git rev-parse --short HEAD && git rev-parse HEAD && git log -1 --pretty=%B");
+  let command = format!("cd {} && git rev-parse --short HEAD && git rev-parse HEAD && git log -1 --pretty=%B", repo_dir.display());
   let output = async_run_command(&command).await;
   let mut split = output.stdout.split('\n');
   let (short, _, msg) = (

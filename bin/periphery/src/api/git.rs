@@ -31,7 +31,7 @@ impl Resolve<PullRepo> for State {
     let name = to_monitor_name(&name);
     Ok(
       git::pull(
-        periphery_config().repo_dir.join(name),
+        &periphery_config().repo_dir.join(name),
         &branch,
         &on_pull,
       )
