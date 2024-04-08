@@ -100,8 +100,9 @@ pub async fn alert_servers(
           region,
           err: server_status.err.clone(),
         };
-        alerts_to_update
-          .push((alert, server.info.send_unreachable_alerts));
+
+        // Never send this alert, severity is always 'Critical'
+        alerts_to_update.push((alert, false));
       }
 
       // Close an open alert
@@ -443,27 +444,46 @@ async fn open_alerts(alerts: &[(Alert, SendAlerts)]) {
     return;
   }
 
+  let db = db_client().await;
+
   let open = || async {
-    db_client()
-      .await
+    let ids = db
       .alerts
       .insert_many(alerts.iter().map(|(alert, _)| alert), None)
-      .await?;
-    anyhow::Ok(())
+      .await?
+      .inserted_ids
+      .into_iter()
+      .filter_map(|(index, id)| {
+        alerts.get(index)?.1.then(|| id.as_object_id())
+      })
+      .flatten()
+      .collect::<Vec<_>>();
+    anyhow::Ok(ids)
   };
 
-  let alerts = alerts
-    .iter()
-    .filter(|(_, send)| *send)
-    .map(|(alert, _)| alert)
-    .cloned()
-    .collect::<Vec<_>>();
+  let ids_to_send = match open().await {
+    Ok(ids) => ids,
+    Err(e) => {
+      error!("failed to open alerts on db | {e:?}");
+      return;
+    }
+  };
 
-  let (res, _) = tokio::join!(open(), send_alerts(&alerts));
+  let alerts = match find_collect(
+    &db.alerts,
+    doc! { "_id": { "$in": ids_to_send } },
+    None,
+  )
+  .await
+  {
+    Ok(alerts) => alerts,
+    Err(e) => {
+      error!("failed to pull created alerts from mongo | {e:?}");
+      return;
+    }
+  };
 
-  if let Err(e) = res {
-    error!("failed to create alerts on db | {e:#?}");
-  }
+  send_alerts(&alerts).await
 }
 
 async fn update_alerts(alerts: &[(Alert, SendAlerts)]) {
