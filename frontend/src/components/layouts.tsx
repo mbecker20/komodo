@@ -84,16 +84,24 @@ export const NewLayout = ({
   children,
   enabled,
   onSuccess,
+  onOpenChange,
 }: {
   entityType: string;
   children: ReactNode;
   enabled: boolean;
   onSuccess: () => Promise<unknown>;
+  onOpenChange?: (open: boolean) => void;
 }) => {
   const [open, set] = useState(false);
   const [loading, setLoading] = useState(false);
   return (
-    <Dialog open={open} onOpenChange={set}>
+    <Dialog
+      open={open}
+      onOpenChange={(open) => {
+        set(open);
+        onOpenChange && onOpenChange(open);
+      }}
+    >
       <DialogTrigger asChild>
         <Button variant="secondary" className="items-center gap-2">
           New {entityType} <PlusCircle className="w-4 h-4" />

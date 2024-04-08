@@ -247,6 +247,7 @@ export const NewResource = ({ type }: { type: UsableResource }) => {
       entityType={type}
       onSuccess={() => mutateAsync({ name, config: {} })}
       enabled={!!name}
+      onOpenChange={() => setName("")}
     >
       <div className="grid md:grid-cols-2">
         {type} Name
@@ -258,7 +259,7 @@ export const NewResource = ({ type }: { type: UsableResource }) => {
       </div>
     </NewLayout>
   );
-}
+};
 
 export const DeleteResource = ({
   type,
