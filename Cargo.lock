@@ -2682,22 +2682,23 @@ dependencies = [
 
 [[package]]
 name = "resolver_api"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "684baae9c42f4211b0b50bd2cde688c3c8681e6a1cb0f081bf82728c27ee017d"
+checksum = "9245971c55ef05018019a1da642fce51439df2b4336369144a7bb866e91f79cf"
 dependencies = [
  "anyhow",
  "async-trait",
  "resolver_api_derive",
  "serde",
  "serde_json",
+ "thiserror",
 ]
 
 [[package]]
 name = "resolver_api_derive"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "262ba3c249c4af73f901ca50707a9bc9b63465111310be6253e2179ef86f5df8"
+checksum = "6e0af2b29987c0bff183294b58b5b084f16c8f1b77951c7c72b7c70d66cf91ac"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2945,9 +2946,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.114"
+version = "1.0.115"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5f09b1bd632ef549eaa9f60a1f8de742bdbc698e6cee2095fc84dde5f549ae0"
+checksum = "12dc5c46daa8e9fdf4f5e71b6cf9a53f2487da0e86e55808e2d35539666497dd"
 dependencies = [
  "indexmap 2.2.5",
  "itoa",

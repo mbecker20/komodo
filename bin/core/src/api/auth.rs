@@ -47,14 +47,15 @@ pub fn router() -> Router {
         request.req_type()
       );
       let res = State.resolve_request(request, headers).await;
-      if let Err(e) = &res {
-        info!("/auth request {req_id} | ERROR: {e:?}");
+      if let Err(resolver_api::Error::Serialization(e)) = &res {
+        info!("/auth request {req_id} | serialization error: {e:?}");
       }
-      let res = res?;
+      if let Err(resolver_api::Error::Inner(e)) = &res {
+        info!("/auth request {req_id} | error: {e:#}");
+      }
       let elapsed = timer.elapsed();
       info!("/auth request {req_id} | resolve time: {elapsed:?}");
-      debug!("/auth request {req_id} | RESPONSE: {res}");
-      AppResult::Ok((TypedHeader(ContentType::json()), res))
+      AppResult::Ok((TypedHeader(ContentType::json()), res?))
     }),
   );
 

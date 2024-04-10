@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use anyhow::Context;
 use axum::{middleware, routing::post, Extension, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::write::*, entities::user::User};
@@ -118,8 +119,13 @@ pub fn router() -> Router {
           );
           let res = tokio::spawn(async move {
             let res = State.resolve_request(request, user).await;
-            if let Err(e) = &res {
-              info!("/write request {req_id} ERROR: {e:#}");
+            if let Err(resolver_api::Error::Serialization(e)) = &res {
+              warn!(
+                "/write request {req_id} serialization error: {e:?}"
+              );
+            }
+            if let Err(resolver_api::Error::Inner(e)) = &res {
+              warn!("/write request {req_id} error: {e:#}");
             }
             let elapsed = timer.elapsed();
             info!(
@@ -127,9 +133,10 @@ pub fn router() -> Router {
             );
             res
           })
-          .await;
+          .await
+          .context("failure in spawned task");
           if let Err(e) = &res {
-            info!("/write request {req_id} SPAWN ERROR: {e:#}");
+            warn!("/write request {req_id} spawn error: {e:#}");
           }
           AppResult::Ok((TypedHeader(ContentType::json()), res??))
         },

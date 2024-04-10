@@ -146,15 +146,17 @@ pub fn router() -> Router {
             user.username, user.id
           );
           let res = State.resolve_request(request, user).await;
-          if let Err(e) = &res {
-            warn!("/read request {req_id} ERROR: {e:#}");
+          if let Err(resolver_api::Error::Serialization(e)) = &res {
+            warn!("/read request {req_id} serialization error: {e:?}");
           }
-          let res = res?;
+          if let Err(resolver_api::Error::Inner(e)) = &res {
+            warn!("/read request {req_id} error: {e:#}");
+          }
           let elapsed = timer.elapsed();
           debug!(
             "/read request {req_id} | resolve time: {elapsed:?}"
           );
-          AppResult::Ok((TypedHeader(ContentType::json()), res))
+          AppResult::Ok((TypedHeader(ContentType::json()), res?))
         },
       ),
     )

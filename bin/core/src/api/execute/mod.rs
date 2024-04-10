@@ -63,8 +63,11 @@ pub fn router() -> Router {
           );
           let res = tokio::spawn(async move {
             let res = State.resolve_request(request, user).await;
-            if let Err(e) = &res {
-              info!("/execute request {req_id} ERROR: {e:#}");
+            if let Err(resolver_api::Error::Serialization(e)) = &res {
+              warn!("/execute request {req_id} serialization error: {e:?}");
+            }
+            if let Err(resolver_api::Error::Inner(e)) = &res {
+              warn!("/execute request {req_id} error: {e:#}");
             }
             let elapsed = timer.elapsed();
             info!(
@@ -75,7 +78,7 @@ pub fn router() -> Router {
           .await
           .context("failure in spawned execute task");
           if let Err(e) = &res {
-            info!("/execute request {req_id} SPAWN ERROR: {e:#}",);
+            warn!("/execute request {req_id} spawn error: {e:#}",);
           }
           AppResult::Ok((TypedHeader(ContentType::json()), res??))
         },
