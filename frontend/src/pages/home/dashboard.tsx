@@ -1,13 +1,7 @@
 import { Page, Section } from "@components/layouts";
-import { Box, FolderTree, History } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@ui/card";
+import { Box, History } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@ui/card";
 import { TagsSummary } from "@components/dashboard/tags";
 import { ApiKeysSummary } from "@components/dashboard/api-keys";
 import { ResourceComponents } from "@components/resources";
@@ -25,54 +19,35 @@ export const Dashboard = () => {
   );
 };
 
-const Resources = () => (
-  <Section title="Resources" icon={<Box className="w-4 h-4" />} actions="">
-    <div className="flex flex-col lg:flex-row gap-4 w-full">
-      <div className="flex flex-col md:flex-row gap-4 w-full">
-        <ResourceComponents.Server.Dashboard />
-        <ResourceComponents.Deployment.Dashboard />
+const Resources = () => {
+  return (
+    <Section title="Resources" icon={<Box className="w-4 h-4" />} actions="">
+      <div className="flex flex-col lg:flex-row gap-4 w-full">
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          <ResourceComponents.Server.Dashboard />
+          <ResourceComponents.Deployment.Dashboard />
+        </div>
+        <div className="w-full lg:max-w-[50%]">
+          <ResourceComponents.Build.Dashboard />
+        </div>
       </div>
-      <div className="w-full lg:max-w-[50%]">
-        <ResourceComponents.Build.Dashboard />
-      </div>
-    </div>
-    <div className="flex flex-col lg:flex-row gap-4 w-full">
-      <div className="w-full lg:max-w-[50%]">
-        <Link to="/tree" className="w-full">
-          <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-            <CardHeader>
-              <div className="flex justify-between">
-                <div>
-                  <CardTitle>Tree</CardTitle>
-                  <CardDescription>
-                    Visualize your servers / deployments
-                  </CardDescription>
-                </div>
-                <FolderTree className="w-4 h-4" />
-              </div>
-            </CardHeader>
-          </Card>
-        </Link>
-      </div>
-      <div className="flex flex-col md:flex-row gap-4 w-full">
-        <ResourceComponents.Repo.Dashboard />
-        <ResourceComponents.Builder.Dashboard />
-        {/* <TagsSummary />
-        <ApiKeysSummary /> */}
-      </div>
-    </div>
-    <div className="flex flex-col lg:flex-row gap-4 w-full">
-      <div className="flex flex-col md:flex-row gap-4 w-full">
-        <ResourceComponents.Alerter.Dashboard />
+      <div className="flex flex-col lg:flex-row gap-4 w-full">
         <ResourceComponents.Procedure.Dashboard />
+        <ResourceComponents.Repo.Dashboard />
       </div>
-      <div className="flex flex-col md:flex-row gap-4 w-full">
-        <TagsSummary />
-        <ApiKeysSummary />
+      <div className="flex flex-col lg:flex-row gap-4 w-full">
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          <ResourceComponents.Alerter.Dashboard />
+          <ResourceComponents.Builder.Dashboard />
+        </div>
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          <TagsSummary />
+          <ApiKeysSummary />
+        </div>
       </div>
-    </div>
-  </Section>
-);
+    </Section>
+  );
+};
 
 const RecentlyViewed = () => {
   const nav = useNavigate();
