@@ -1,9 +1,10 @@
 import { Types } from "@monitor/client";
 
 export const fmt_date = (d: Date) => {
-  return `${d.getDate()}/${
-    d.getMonth() + 1
-  } @ ${d.getHours()}:${d.getMinutes()}`;
+  const minutes = d.getMinutes();
+  return `${d.getDate()}/${d.getMonth() + 1} @ ${d.getHours()}:${
+    minutes > 9 ? minutes : "0" + minutes
+  }`;
 };
 
 export const fmt_date_with_minutes = (d: Date) => {
