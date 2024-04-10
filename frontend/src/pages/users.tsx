@@ -2,7 +2,7 @@ import { Page, Section } from "@components/layouts";
 import { ResourceLink } from "@components/resources/common";
 import { ConfirmButton } from "@components/util";
 import { text_color_class_by_intention } from "@lib/color";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useSetTitle, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { UsableResource } from "@types";
 import { DataTable } from "@ui/data-table";
@@ -22,6 +22,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 export const UsersPage = () => {
+  useSetTitle("Users");
   const nav = useNavigate();
   const users = useRead("GetUsers", {}).data;
   return (

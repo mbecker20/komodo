@@ -165,3 +165,13 @@ export const usePushRecentlyViewed = ({ type, id }: Types.ResourceTarget) => {
 
   return () => push({ resource: { type, id } });
 };
+
+export const useSetTitle = (more?: string) => {
+  const info = useRead("GetCoreInfo", {}).data;
+  const title = more ? `${more} | ${info?.title}` : info?.title;
+  useEffect(() => {
+    if (title) {
+      document.title = title;
+    }
+  }, [title]);
+}

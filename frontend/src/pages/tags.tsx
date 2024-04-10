@@ -1,6 +1,6 @@
 import { Page } from "@components/layouts";
 import { ConfirmButton } from "@components/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useSetTitle, useWrite } from "@lib/hooks";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,8 @@ import { UpdateUser } from "@components/updates/details";
 import { DataTable } from "@ui/data-table";
 
 export const Tags = () => {
+  useSetTitle("Tags");
+
   const [search, setSearch] = useState("");
 
   const tags = useRead("ListTags", {}).data;

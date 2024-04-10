@@ -1,7 +1,7 @@
 import { Page, Section, ResourceCard } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { TagsFilter, useTagsFilter } from "@components/tags";
-import { useRead, useResourceParamType } from "@lib/hooks";
+import { useRead, useResourceParamType, useSetTitle } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { Input } from "@ui/input";
 import { useState } from "react";
@@ -12,6 +12,7 @@ const viewAtom = atomWithStorage<"cards" | "table">("list-show-as-v0", "table");
 
 export const Resources = () => {
   const type = useResourceParamType()!;
+  useSetTitle(type + "s");
   const Components = ResourceComponents[type];
 
   const tags = useTagsFilter();

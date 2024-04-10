@@ -14,7 +14,7 @@ import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
 import { ResourceStats } from "@pages/resource_stats";
 
-const router = createBrowserRouter([
+const ROUTER = createBrowserRouter([
   {
     path: "/",
     element: <Layout />,
@@ -51,5 +51,5 @@ export const Router = () => {
   if (!user) return <Login />;
   if (!user.enabled) return <UserDisabled />;
 
-  return <RouterProvider router={router} />;
+  return <RouterProvider router={ROUTER} />;
 };

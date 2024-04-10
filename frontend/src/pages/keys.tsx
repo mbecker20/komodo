@@ -1,6 +1,6 @@
 import { Page } from "@components/layouts";
 import { ConfirmButton, CopyButton } from "@components/util";
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { useInvalidate, useRead, useSetTitle, useWrite } from "@lib/hooks";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,7 @@ import { DataTable } from "@ui/data-table";
 import { fmt_date } from "@lib/formatting";
 
 export const Keys = () => {
+  useSetTitle("Api Keys");
   const keys = useRead("ListApiKeys", {}).data ?? [];
   return (
     <Page title="Api Keys" actions={<CreateKey />}>

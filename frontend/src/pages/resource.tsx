@@ -3,13 +3,15 @@ import { ResourceComponents } from "@components/resources";
 import { ResourceDescription } from "@components/resources/common";
 import { AddTags, ResourceTags } from "@components/tags";
 import { ResourceUpdates } from "@components/updates/resource";
-import { usePushRecentlyViewed, useResourceParamType } from "@lib/hooks";
+import { usePushRecentlyViewed, useRead, useResourceParamType, useSetTitle } from "@lib/hooks";
 import { useParams } from "react-router-dom";
 
 export const Resource = () => {
   const type = useResourceParamType()!;
   const id = useParams().id as string;
   usePushRecentlyViewed({ type, id });
+  const name = useRead(`List${type}s`, {}).data?.find((r) => r.id === id)?.name;
+  useSetTitle(name);
 
   if (!type || !id) return null;
 
