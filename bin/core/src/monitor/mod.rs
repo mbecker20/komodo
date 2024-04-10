@@ -61,8 +61,8 @@ pub fn spawn_monitor_loop() {
           Ok(servers) => servers,
           Err(e) => {
             error!(
-          "failed to get server list (manage status cache) | {e:#?}"
-        );
+              "failed to get server list (manage status cache) | {e:#}"
+            );
             continue;
           }
         };
@@ -85,7 +85,7 @@ pub async fn update_cache_for_server(server: &Server) {
   {
     Ok(deployments) => deployments,
     Err(e) => {
-      error!("failed to get deployments list from mongo (update status cache) | server id: {} | {e:#?}", server.id);
+      error!("failed to get deployments list from mongo (update status cache) | server id: {} | {e:#}", server.id);
       return;
     }
   };
@@ -153,7 +153,7 @@ pub async fn update_cache_for_server(server: &Server) {
     insert_deployments_status_unknown(deployments).await;
     return;
   }
-  
+
   let containers = containers.unwrap();
   let status_cache = deployment_status_cache();
   for deployment in deployments {

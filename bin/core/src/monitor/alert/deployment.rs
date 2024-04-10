@@ -67,7 +67,7 @@ pub async fn alert_deployments(
   let res = db_client().await.alerts.insert_many(alerts, None).await;
   if let Err(e) = res {
     error!(
-      "failed to record deployment status alerts to db | {e:#?}"
+      "failed to record deployment status alerts to db | {e:#}"
     );
   }
 }

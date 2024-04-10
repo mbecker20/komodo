@@ -25,7 +25,7 @@ pub async fn send_alerts(alerts: &[Alert]) {
   .await;
 
   if let Err(e) = alerters {
-    error!("ERROR sending alerts | failed to get alerters from db | {e:#?}");
+    error!("ERROR sending alerts | failed to get alerters from db | {e:#}");
     return;
   }
 
@@ -67,7 +67,7 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
     .await
     .into_iter()
     .filter_map(|res| res.err())
-    .for_each(|e| error!("{e:#?}"));
+    .for_each(|e| error!("{e:#}"));
 }
 
 async fn send_custom_alert(

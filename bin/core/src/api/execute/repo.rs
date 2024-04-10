@@ -93,7 +93,7 @@ impl Resolve<CloneRepo, User> for State {
           .await;
         if let Err(e) = res {
           warn!(
-            "failed to update repo last_pulled_at | repo id: {} | {e:#?}",
+            "failed to update repo last_pulled_at | repo id: {} | {e:#}",
             repo.id
           );
         }
@@ -195,7 +195,7 @@ impl Resolve<PullRepo, User> for State {
           .await;
         if let Err(e) = res {
           warn!(
-            "failed to update repo last_pulled_at | repo id: {} | {e:#?}",
+            "failed to update repo last_pulled_at | repo id: {} | {e:#}",
             repo.id
           );
         }

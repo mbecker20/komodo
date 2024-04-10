@@ -3,7 +3,7 @@ extern crate tracing;
 
 use std::{net::SocketAddr, str::FromStr, time::Instant};
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Json, Router};
 
 use axum_extra::{headers::ContentType, TypedHeader};
@@ -43,19 +43,27 @@ async fn app() -> anyhow::Result<()> {
         let res = tokio::spawn(async move {
           let res = State.resolve_request(request, ()).await;
           if let Err(e) = &res {
-            debug!("request {req_id} ERROR: {e:#?}");
+            debug!("request {req_id} ERROR: {e:#}");
           }
           let elapsed = timer.elapsed();
           info!("request {req_id} | resolve time: {elapsed:?}");
           res
         })
         .await;
-        if let Err(e) = &res {
-          debug!("request {req_id} SPAWN ERROR: {e:#?}");
+        match res {
+          Err(e) => {
+            debug!("request {req_id} spawn error: {e:#}");
+            AppResult::Err(anyhow!("spawn error: {e:#}").into())
+          }
+          Ok(Err(e)) => {
+            debug!("request {req_id} resolver error: {e:#}");
+            AppResult::Err(e.context("resolver error").into())
+          }
+          Ok(Ok(res)) => {
+            debug!("request {req_id} RESPONSE: {res}");
+            AppResult::Ok((TypedHeader(ContentType::json()), res))
+          }
         }
-        let res = res??;
-        debug!("request {req_id} RESPONSE: {res}");
-        AppResult::Ok((TypedHeader(ContentType::json()), res))
       }),
     )
     .layer(middleware::from_fn(guard::guard_request_by_ip))

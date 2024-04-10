@@ -147,7 +147,7 @@ pub fn router() -> Router {
           );
           let res = State.resolve_request(request, user).await;
           if let Err(e) = &res {
-            warn!("/read request {req_id} ERROR: {e:#?}");
+            warn!("/read request {req_id} ERROR: {e:#}");
           }
           let res = res?;
           let elapsed = timer.elapsed();

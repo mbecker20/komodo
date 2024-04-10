@@ -37,7 +37,7 @@ pub async fn record_server_stats(ts: i64) {
     let res =
       db_client().await.stats.insert_many(records, None).await;
     if let Err(e) = res {
-      error!("failed to record server stats | {e:#?}");
+      error!("failed to record server stats | {e:#}");
     }
   }
 }

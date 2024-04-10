@@ -36,7 +36,7 @@ pub async fn alert_servers(
   let alerts = get_open_alerts().await;
 
   if let Err(e) = alerts {
-    error!("{e:#?}");
+    error!("{e:#}");
     return;
   }
 
@@ -502,7 +502,7 @@ async fn update_alerts(alerts: &[(Alert, SendAlerts)]) {
       .filter_map(|update| match update {
         Ok(update) => Some(update),
         Err(e) => {
-          warn!("failed to generate bulk update for alert | {e:#?}");
+          warn!("failed to generate bulk update for alert | {e:#}");
           None
         }
       }).collect::<Vec<_>>();
@@ -529,7 +529,7 @@ async fn update_alerts(alerts: &[(Alert, SendAlerts)]) {
   let (res, _) = tokio::join!(open(), send_alerts(&alerts));
 
   if let Err(e) = res {
-    error!("failed to create alerts on db | {e:#?}");
+    error!("failed to create alerts on db | {e:#}");
   }
 }
 

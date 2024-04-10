@@ -27,7 +27,7 @@ async fn add_line_to_update(update: &Mutex<Update>, line: &str) {
   let update = lock.clone();
   drop(lock);
   if let Err(e) = update_update(update).await {
-    error!("failed to update an update during procedure | {e:#?}");
+    error!("failed to update an update during procedure | {e:#}");
   };
 }
 

@@ -32,7 +32,7 @@ pub fn router() -> Router {
 					tokio::spawn(async move {
 						let res = handle_build_webhook(id.clone(), headers, body).await;
 						if let Err(e) = res {
-							warn!("failed to run build webook for build {id} | {e:#?}");
+							warn!("failed to run build webook for build {id} | {e:#}");
 						}
 					});
 				},
@@ -45,7 +45,7 @@ pub fn router() -> Router {
 					tokio::spawn(async move {
 						let res = handle_repo_clone_webhook(id.clone(), headers, body).await;
 						if let Err(e) = res {
-							warn!("failed to run repo clone webook for repo {id} | {e:#?}");
+							warn!("failed to run repo clone webook for repo {id} | {e:#}");
 						}
 					});
 				},
@@ -58,7 +58,7 @@ pub fn router() -> Router {
 					tokio::spawn(async move {
 						let res = handle_repo_pull_webhook(id.clone(), headers, body).await;
 						if let Err(e) = res {
-							warn!("failed to run repo clone webook for repo {id} | {e:#?}");
+							warn!("failed to run repo clone webook for repo {id} | {e:#}");
 						}
 					});
 				},
