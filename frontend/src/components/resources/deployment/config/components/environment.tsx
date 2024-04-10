@@ -56,22 +56,25 @@ const Secrets = ({
   const secrets = useRead("GetAvailableSecrets", { server }).data;
   const _env = env || "";
   return (
-    <div className="w-full flex gap-4 justify-end items-center">
-      <div className="text-muted-foreground">secrets:</div>
-      {secrets?.map((secret) => (
-        <Button
-          key={secret}
-          onClick={() =>
-            setEnv(
-              _env.slice(0, envRef.current?.selectionStart) +
-                `[[${secret}]]` +
-                _env.slice(envRef.current?.selectionStart, undefined)
-            )
-          }
-        >
-          {secret}
-        </Button>
-      ))}
-    </div>
+    secrets &&
+    secrets.length > 0 && (
+      <div className="w-full flex gap-4 justify-end items-center">
+        <div className="text-muted-foreground">secrets:</div>
+        {secrets?.map((secret) => (
+          <Button
+            key={secret}
+            onClick={() =>
+              setEnv(
+                _env.slice(0, envRef.current?.selectionStart) +
+                  `[[${secret}]]` +
+                  _env.slice(envRef.current?.selectionStart, undefined)
+              )
+            }
+          >
+            {secret}
+          </Button>
+        ))}
+      </div>
+    )
   );
 };

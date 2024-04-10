@@ -16,10 +16,10 @@ async fn app() -> anyhow::Result<()> {
   loop {
     let msg = rx.recv().await;
     if let Err(e) = msg {
-      error!("🚨 recv error | {e:#?}");
+      error!("🚨 recv error | {e:?}");
       break;
     }
-    info!("{msg:#?}")
+    info!("{msg:?}");
   }
 
   Ok(())
