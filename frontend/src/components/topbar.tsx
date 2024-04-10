@@ -43,7 +43,7 @@ import {
 
 export const Topbar = () => {
   return (
-    <div className="sticky top-0 border-b bg-background z-50 w-full">
+    <div className="sticky top-0 border-b z-50 w-full bg-card text-card-foreground shadow">
       <div className="container flex items-center justify-between py-4 gap-8">
         <div className="flex items-center gap-4">
           <Link to={"/"} className="text-2xl tracking-widest">

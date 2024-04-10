@@ -22,17 +22,16 @@
     font-family: Inter;
   }
   pre {
-    @apply bg-accent/50 min-h-full text-xs p-4 whitespace-pre-wrap scroll-m-4 break-all rounded-md;
+    @apply bg-card text-card-foreground border rounded-xl min-h-full text-xs p-4 whitespace-pre-wrap scroll-m-4 break-all;
   }
 }
 
-/*
-  HUE: 0, 220.1
-  SAT: 0.1%, 20.1%, 40.1%, 60.1%, 80.1%
-  LIT: 5.2%, 11.2%, 20.2%, 40.2%, 60.2%, 80.2% 90.2%, 98.2%
-*/
-
 @layer base {
+  /*
+    HUE: 0, 220.1
+    SAT: 0.1%, 20.1%, 40.1%, 60.1%, 80.1%
+    LIT: 5.2%, 11.2%, 20.2%, 40.2%, 60.2%, 80.2% 90.2%, 98.2%
+  */
   :root {
     --background: 220.1 0.1% 98.3%;
     --foreground: 220.1 40.1% 5.2%;
@@ -65,14 +64,19 @@
     --radius: 0.5rem;
   }
 
+    /*
+    HUE: 0, 220.1
+    SAT: 0.1%, 20.1%, 40.1%, 60.1%, 80.1%
+    LIT: 6.2%, 11.2%, 20.2%, 40.2%, 60.2%, 80.2% 90.2%, 98.2%
+  */
   .dark {
-    --background: 220.1 40.1% 5.2%;
+    --background: 220.1 40.1% 6.2%;
     --foreground: 220.1 40.1% 98.2%;
 
-    --card: 220.1 40.1% 5.2%;
+    --card: 220.1 40.1% 8.2%;
     --card-foreground: 220.1 40.1% 98.2%;
 
-    --popover: 220.1 40.1% 5.2%;
+    --popover: 220.1 40.1% 6.2%;
     --popover-foreground: 220.1 40.1% 98.2%;
 
     --primary: 220.1 40.1% 98.2%;
@@ -82,7 +86,7 @@
     --secondary-foreground: 220.1 40.1% 98.2%;
 
     --muted: 220.1 40.1% 20.2%;
-    --muted-foreground: 220.1 20.1% 65.1%;
+    --muted-foreground: 220.1 20.1% 60.2;
 
     --accent: 220.1 40.1% 20.2%;
     --accent-foreground: 220.1 40.1% 98.2%;
@@ -90,8 +94,8 @@
     --destructive: 0 60.1% 30.6%;
     --destructive-foreground: 220.1 40.1% 98.2%;
 
-    --border: 220.1 40.1% 20.2%;
-    --input: 220.1 40.1% 20.2%;
+    --border: 220.1 40.1% 17.2%;
+    --input: 220.1 40.1% 15.2%;
     --ring: 220.1 40.1% 80.2%;
   }
 }

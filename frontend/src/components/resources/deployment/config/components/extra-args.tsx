@@ -25,7 +25,7 @@ export const ExtraArgs = ({
               }}
             />
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() =>
                 set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
               }
@@ -36,7 +36,7 @@ export const ExtraArgs = ({
         ))}
 
         <Button
-          variant="outline"
+          variant="secondary"
           className="flex items-center gap-2 w-[200px] place-self-end"
           onClick={() => set({ extra_args: [...args, ""] })}
         >

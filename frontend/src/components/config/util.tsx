@@ -135,8 +135,7 @@ export const DoubleInput = <
             onChange={(e) => onRightChange(e.target.value as T[R], i)}
           />
           <Button
-            variant="outline"
-            // intent="warning"
+            variant="secondary"
             onClick={() => onRemove(i)}
           >
             <MinusCircle className="w-4 h-4" />
@@ -144,8 +143,7 @@ export const DoubleInput = <
         </div>
       ))}
       <Button
-        variant="outline"
-        // intent="success"
+        variant="secondary"
         className="flex items-center gap-2 w-[200px] place-self-end"
         onClick={onAdd}
       >

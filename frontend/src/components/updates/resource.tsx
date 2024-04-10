@@ -17,6 +17,7 @@ import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateStatus } from "@monitor/client/dist/types";
 import { fmt_date, fmt_version } from "@lib/formatting";
 import { version_is_none } from "@lib/utils";
+import { Card } from "@ui/card";
 
 const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
   const Icon = () => {
@@ -28,7 +29,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
 
   return (
     <UpdateDetails id={update.id}>
-      <div className="p-4 border rounded-md flex justify-between cursor-pointer hover:bg-accent transition-colors text-sm">
+      <Card className="p-4 flex justify-between cursor-pointer hover:bg-accent/50 transition-colors text-sm">
         <div>
           <div className="flex items-center gap-2">
             <Icon />
@@ -49,7 +50,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
             <UpdateUser user_id={update.operator} />
           </div>
         </div>
-      </div>
+      </Card>
     </UpdateDetails>
   );
 };

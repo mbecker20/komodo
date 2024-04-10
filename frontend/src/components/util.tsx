@@ -83,7 +83,7 @@ export const ActionButton = forwardRef<
   ) => (
     <Button
       size={size}
-      variant={variant || "outline"}
+      variant={variant || "secondary"}
       className={cn("flex items-center justify-between w-[170px]", className)}
       onClick={onClick}
       onBlur={onBlur}
