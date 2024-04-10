@@ -27,8 +27,13 @@ export const AlerterComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
   Icon: () => <AlarmClock className="w-4 h-4" />,
   Link: ({ id }) => <ResourceLink type="Alerter" id={id} />,
-  Info: [],
-  Status: () => <></>,
+  Info: [
+    ({ id }) => {
+      const alerter = useAlerter(id);
+      return <div className="capitalize">Type: {alerter?.info.alerter_type}</div>;
+    },
+  ],
+  Status: () => <>Alerter</>,
   Page: {
     Config: AlerterConfig,
     Danger: ({ id }) => (

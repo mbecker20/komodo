@@ -68,11 +68,13 @@ export const Config = <T,>({
   set,
   onSave,
   components,
+  selector,
 }: {
   config: T;
   update: Partial<T>;
   set: React.Dispatch<SetStateAction<Partial<T>>>;
   onSave: () => void;
+  selector?: ReactNode;
   components: Record<
     string,
     Record<
@@ -85,6 +87,7 @@ export const Config = <T,>({
     >
   >;
 }) => {
+  console.log(selector);
   const [show, setShow] = useState(keys(components)[0]);
 
   return (
@@ -93,18 +96,21 @@ export const Config = <T,>({
       onConfirm={onSave}
       onReset={() => set({})}
       selector={
-        <Select value={show} onValueChange={setShow}>
-          <SelectTrigger className="w-32 capitalize lg:hidden">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="w-32">
-            {keys(components).map((key) => (
-              <SelectItem value={key} key={key} className="capitalize">
-                {key}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex gap-4 items-center">
+          {selector}
+          <Select value={show} onValueChange={setShow}>
+            <SelectTrigger className="w-32 capitalize lg:hidden">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="w-32">
+              {keys(components).map((key) => (
+                <SelectItem value={key} key={key} className="capitalize">
+                  {key}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       }
     >
       <div className="flex gap-4">
