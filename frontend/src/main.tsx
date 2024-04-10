@@ -6,10 +6,10 @@ import { Router } from "@router";
 import { WebsocketProvider } from "@lib/socket";
 import { Toaster } from "@ui/toaster";
 
-export const AUTH_TOKEN_STORAGE_KEY = "monitor-auth-token"
+export const AUTH_TOKEN_STORAGE_KEY = "monitor-auth-token";
 
 export const MONITOR_BASE_URL =
-  import.meta.env.VITE_MONITOR_HOST ?? "https://v1.api.monitor.dev";
+  import.meta.env.VITE_MONITOR_HOST ?? location.origin;
 
 export const UPDATE_WS_URL =
   MONITOR_BASE_URL.replace("http", "ws") + "/ws/update";
