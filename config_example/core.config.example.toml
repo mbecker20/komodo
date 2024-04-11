@@ -25,9 +25,9 @@ logging.level = "info"
 ## options: standard, json, none
 logging.stdio = "standard"
 
-## specify a loki endpoint to send tracing logs to
+## specify a opentelemetry otlp endpoint to send traces to
 ## optional, default unassigned
-# logging.loki_url = "http://localhost:3100"
+# logging.otlp_endpoint = "http://localhost:4317"
 
 ## specify how long an issued jwt stays valid. all jwts are invalidated on application restart.
 ## default: 1-day. 
