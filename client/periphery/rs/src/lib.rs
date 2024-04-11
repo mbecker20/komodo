@@ -31,7 +31,11 @@ impl PeripheryClient {
   }
 
   // tracing will skip self, to avoid including passkey in traces
-  #[tracing::instrument(skip(self))]
+  #[tracing::instrument(
+    name = "PeripheryRequest",
+    level = "debug",
+    skip(self)
+  )]
   pub async fn request<T: HasResponse>(
     &self,
     request: T,
