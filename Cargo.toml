@@ -59,7 +59,11 @@ anyhow = "1.0.81"
 thiserror = "1.0.58"
 
 # LOGGING
+opentelemetry_sdk = { version = "0.22.1", features = ["rt-tokio"] }
 tracing-subscriber = { version = "0.3.18", features = ["json"] }
+tracing-opentelemetry = "0.23.0"
+opentelemetry-otlp = "0.15.0"
+opentelemetry = "0.22.0"
 tracing = "0.1.40"
 
 # CONFIG
