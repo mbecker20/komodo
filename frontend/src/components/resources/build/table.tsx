@@ -27,12 +27,12 @@ export const BuildTable = ({ search }: { search?: string }) => {
           ),
         },
         {
-          header: "Repo",
-          accessorKey: "info.repo",
-        },
-        {
           header: "Version",
           accessorFn: ({ info }) => fmt_version(info.version),
+        },
+        {
+          header: "Repo",
+          accessorKey: "info.repo",
         },
         {
           header: "Last Built",
