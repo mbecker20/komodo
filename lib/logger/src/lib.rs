@@ -23,31 +23,42 @@ pub struct LogConfig {
 pub fn init(config: &LogConfig) -> anyhow::Result<()> {
   let log_level: tracing::Level = config.level.into();
 
-  match config.stdio {
-    StdioLogMode::Standard => tracing_subscriber::fmt()
-      .with_max_level(LevelFilter::from(log_level))
-      .init(),
-    StdioLogMode::Json => tracing_subscriber::fmt()
-      .with_max_level(LevelFilter::from(log_level))
-      .json()
-      .init(),
-    StdioLogMode::None => {}
-  }
+  let registry =
+    tracing_subscriber::registry().with(LevelFilter::from(log_level));
 
-  // Create loki subscriber
-  if let Some(loki_url) = &config.loki_url {
-    let (loki_layer, task) = tracing_loki::builder()
-      .label("host", "mine")?
-      .build_url(Url::parse(loki_url)?)?;
-    tokio::spawn(task);
-    tracing_subscriber::registry()
-      .with(LevelFilter::from(log_level))
-      .with(loki_layer)
+  match (config.stdio, &config.loki_url) {
+    (StdioLogMode::Standard, Some(loki_url)) => registry
+      .with(loki_layer(loki_url)?)
+      .with(tracing_subscriber::fmt::layer())
       .try_init()
-      .context("failed to init logger")?;
+      .context("failed to init logger"),
+    (StdioLogMode::Json, Some(loki_url)) => registry
+      .with(loki_layer(loki_url)?)
+      .with(tracing_subscriber::fmt::layer().json())
+      .try_init()
+      .context("failed to init logger"),
+    (StdioLogMode::None, Some(loki_url)) => registry
+      .with(loki_layer(loki_url)?)
+      .try_init()
+      .context("failed to init logger"),
+    (StdioLogMode::Standard, None) => registry
+      .with(tracing_subscriber::fmt::layer())
+      .try_init()
+      .context("failed to init logger"),
+    (StdioLogMode::Json, None) => registry
+      .with(tracing_subscriber::fmt::layer().json())
+      .try_init()
+      .context("failed to init logger"),
+    (StdioLogMode::None, None) => Ok(()),
   }
+}
 
-  Ok(())
+fn loki_layer(loki_url: &str) -> anyhow::Result<tracing_loki::Layer> {
+  let (layer, task) = tracing_loki::builder()
+    .label("host", "mine")?
+    .build_url(Url::parse(loki_url)?)?;
+  tokio::spawn(task);
+  Ok(layer)
 }
 
 #[derive(
