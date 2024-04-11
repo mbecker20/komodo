@@ -149,7 +149,7 @@ export const WebsocketProvider = ({
 export const WsStatusIndicator = () => {
   const [connected] = useWebsocketConnected();
   const onclick = () =>
-    toast({ title: "surprise", description: "motherfucker" });
+    toast({ title: connected ? "Websocket connected" : "Websocket disconnected" });
 
   return (
     <Button
