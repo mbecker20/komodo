@@ -8,7 +8,9 @@ use thiserror::Error;
 use tokio::sync::broadcast;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tokio_util::sync::CancellationToken;
+use tracing::{info, info_span, warn};
 use typeshare::typeshare;
+use uuid::Uuid;
 
 use crate::{entities::update::UpdateListItem, MonitorClient};
 
@@ -73,29 +75,48 @@ impl MonitorClient {
     .to_json_string()?;
 
     tokio::spawn(async move {
+      let master_uuid = Uuid::new_v4();
       loop {
         // OUTER LOOP (LONG RECONNECT)
         if cancel.is_cancelled() {
           break;
         }
+
+        let outer_uuid = Uuid::new_v4();
+        let span = info_span!("Outer Loop");
+        let _ = span.enter();
+
+        info!("Entering inner (connection) loop | outer uuid {outer_uuid} | master uuid {master_uuid}");
+
         loop {
           // INNER LOOP (SHORT RECONNECT)
           if cancel.is_cancelled() {
             break;
           }
 
-          let res = connect_async(&address)
-            .await
-            .context("failed to connect to websocket endpoint");
+          let inner_uuid = Uuid::new_v4();
+          let span = info_span!("Inner Loop");
+          let _ = span.enter();
 
-          if let Err(e) = res {
-            let _ = tx.send(UpdateWsMessage::Error(
-              UpdateWsError::ConnectionError(serialize_error(&e)),
-            ));
-            break;
-          }
+          info!("Connecting to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
 
-          let (mut ws, _) = res.unwrap();
+          let mut ws =
+            match connect_async(&address).await.with_context(|| {
+              format!(
+                "failed to connect to monitor websocket at {address}"
+              )
+            }) {
+              Ok((ws, _)) => ws,
+              Err(e) => {
+                let _ = tx.send(UpdateWsMessage::Error(
+                  UpdateWsError::ConnectionError(serialize_error(&e)),
+                ));
+                warn!("{e:#}");
+                break;
+              }
+            };
+
+          info!("Connected to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
 
           // ==================
           // SEND LOGIN MSG
@@ -109,6 +130,7 @@ impl MonitorClient {
             let _ = tx.send(UpdateWsMessage::Error(
               UpdateWsError::LoginError(serialize_error(&e)),
             ));
+            warn!("breaking inner loop | {e:#} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
             break;
           }
 
@@ -119,9 +141,10 @@ impl MonitorClient {
             Ok(Some(Message::Text(msg))) => {
               if msg != "LOGGED_IN" {
                 let _ = tx.send(UpdateWsMessage::Error(
-                  UpdateWsError::LoginError(msg),
+                  UpdateWsError::LoginError(msg.clone()),
                 ));
                 let _ = ws.close(None).await;
+                warn!("breaking inner loop | got msg {msg} instead of 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
                 break;
               }
             }
@@ -130,6 +153,7 @@ impl MonitorClient {
                 UpdateWsError::LoginError(format!("{msg:#?}")),
               ));
               let _ = ws.close(None).await;
+              warn!("breaking inner loop | got msg {msg} instead of Message::Text 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
               break;
             }
             Ok(None) => {
@@ -139,6 +163,7 @@ impl MonitorClient {
                 )),
               ));
               let _ = ws.close(None).await;
+              warn!("breaking inner loop | got None instead of 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
               break;
             }
             Err(e) => {
@@ -148,11 +173,14 @@ impl MonitorClient {
                 )),
               ));
               let _ = ws.close(None).await;
+              warn!("breaking inner loop | got error msg | {e:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
               break;
             }
           }
 
           let _ = tx.send(UpdateWsMessage::Reconnected);
+
+          info!("logged into websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
 
           // ==================
           // HANLDE MSGS
@@ -166,9 +194,15 @@ impl MonitorClient {
               Ok(Some(Message::Text(msg))) => {
                 match serde_json::from_str::<UpdateListItem>(&msg) {
                   Ok(msg) => {
+                    tracing::debug!(
+                      "got recognized message: {msg:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
+                    );
                     let _ = tx.send(UpdateWsMessage::Update(msg));
                   }
                   Err(_) => {
+                    tracing::warn!(
+                      "got unrecognized message: {msg:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
+                    );
                     let _ = tx.send(UpdateWsMessage::Error(
                       UpdateWsError::MessageUnrecognized(msg),
                     ));
@@ -178,6 +212,9 @@ impl MonitorClient {
               Ok(Some(Message::Close(_))) => {
                 let _ = tx.send(UpdateWsMessage::Disconnected);
                 let _ = ws.close(None).await;
+                tracing::warn!(
+                  "breaking inner loop | got close message | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
+                );
                 break;
               }
               Err(e) => {
@@ -186,6 +223,9 @@ impl MonitorClient {
                 ));
                 let _ = tx.send(UpdateWsMessage::Disconnected);
                 let _ = ws.close(None).await;
+                tracing::warn!(
+                  "breaking inner loop | got error message | {e:#} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
+                );
                 break;
               }
               Ok(_) => {

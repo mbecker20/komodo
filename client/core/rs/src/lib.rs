@@ -25,6 +25,7 @@ pub struct MonitorClient {
 }
 
 impl MonitorClient {
+  #[tracing::instrument(skip_all)]
   pub async fn new(
     address: impl Into<String>,
     key: impl Into<String>,
@@ -40,6 +41,7 @@ impl MonitorClient {
     Ok(client)
   }
 
+  #[tracing::instrument]
   pub async fn new_from_env() -> anyhow::Result<MonitorClient> {
     let MonitorEnv {
       monitor_address,

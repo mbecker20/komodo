@@ -2112,7 +2112,9 @@ dependencies = [
  "tokio",
  "tokio-tungstenite",
  "tokio-util",
+ "tracing",
  "typeshare",
+ "uuid",
 ]
 
 [[package]]
