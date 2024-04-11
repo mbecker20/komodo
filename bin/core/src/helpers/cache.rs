@@ -37,7 +37,12 @@ pub struct Cache<K: PartialEq + Eq + Hash, T: Clone + Default> {
   cache: RwLock<HashMap<K, T>>,
 }
 
-impl<K: PartialEq + Eq + Hash, T: Clone + Default> Cache<K, T> {
+impl<
+    K: PartialEq + Eq + Hash + std::fmt::Debug,
+    T: Clone + Default,
+  > Cache<K, T>
+{
+  #[instrument(level = "debug", skip(self))]
   pub async fn get(&self, key: &K) -> Option<T> {
     self.cache.read().await.get(key).cloned()
   }
@@ -47,6 +52,7 @@ impl<K: PartialEq + Eq + Hash, T: Clone + Default> Cache<K, T> {
   //     cache.entry(key).or_default().clone()
   // }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn get_list(
     &self,
     // filter: Option<impl Fn(&String, &T) -> bool>
@@ -63,15 +69,23 @@ impl<K: PartialEq + Eq + Hash, T: Clone + Default> Cache<K, T> {
     cache.iter().map(|(_, e)| e.clone()).collect()
   }
 
-  pub async fn insert(&self, key: impl Into<K>, val: T) {
+  #[instrument(level = "debug", skip(self))]
+  pub async fn insert<Key>(&self, key: Key, val: T)
+  where
+    T: std::fmt::Debug,
+    Key: Into<K> + std::fmt::Debug,
+  {
     self.cache.write().await.insert(key.into(), val);
   }
 
-  pub async fn update_entry(
+  #[instrument(level = "debug", skip(self, handler))]
+  pub async fn update_entry<Key>(
     &self,
-    key: impl Into<K>,
+    key: Key,
     handler: impl Fn(&mut T),
-  ) {
+  ) where
+    Key: Into<K> + std::fmt::Debug,
+  {
     let mut cache = self.cache.write().await;
     handler(cache.entry(key.into()).or_default());
   }
@@ -80,14 +94,18 @@ impl<K: PartialEq + Eq + Hash, T: Clone + Default> Cache<K, T> {
   //     self.cache.write().await.clear();
   // }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn remove(&self, key: &K) {
     self.cache.write().await.remove(key);
   }
 }
 
-impl<K: PartialEq + Eq + Hash, T: Clone + Default + Busy>
-  Cache<K, T>
+impl<
+    K: PartialEq + Eq + Hash + std::fmt::Debug,
+    T: Clone + Default + Busy,
+  > Cache<K, T>
 {
+  #[instrument(level = "debug", skip(self))]
   pub async fn busy(&self, id: &K) -> bool {
     match self.get(id).await {
       Some(state) => state.busy(),

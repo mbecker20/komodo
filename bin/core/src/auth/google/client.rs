@@ -77,6 +77,7 @@ impl GoogleOauthClient {
     .into()
   }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn get_login_redirect_url(
     &self,
     redirect: Option<String>,
@@ -95,6 +96,7 @@ impl GoogleOauthClient {
     redirect_url
   }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn check_state(&self, state: &str) -> bool {
     let mut contained = false;
     self.states.lock().await.retain(|s| {
@@ -108,6 +110,7 @@ impl GoogleOauthClient {
     contained
   }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn get_access_token(
     &self,
     code: &str,
@@ -128,6 +131,7 @@ impl GoogleOauthClient {
       .context("failed to get google access token using code")
   }
 
+  #[instrument(level = "debug", skip(self))]
   pub fn get_google_user(
     &self,
     id_token: &str,
@@ -138,6 +142,7 @@ impl GoogleOauthClient {
     Ok(t.claims().to_owned())
   }
 
+  #[instrument(level = "debug", skip(self))]
   async fn post<R: DeserializeOwned>(
     &self,
     endpoint: &str,

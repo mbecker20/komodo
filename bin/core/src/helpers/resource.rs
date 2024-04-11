@@ -72,7 +72,7 @@ pub trait StateResource {
     + Serialize
     + DeserializeOwned
     + 'static;
-  type QuerySpecifics: AddFilters + Default;
+  type QuerySpecifics: AddFilters + Default + std::fmt::Debug;
 
   fn name() -> &'static str;
 
@@ -577,6 +577,7 @@ impl StateResource for Procedure {
   }
 }
 
+#[instrument(level = "debug")]
 pub async fn get_user_permission_on_resource(
   user_id: &str,
   resource_variant: ResourceTargetVariant,
@@ -600,9 +601,11 @@ pub async fn get_user_permission_on_resource(
   Ok(permission)
 }
 
-pub async fn delete_all_permissions_on_resource(
-  target: impl Into<ResourceTarget>,
-) {
+#[instrument]
+pub async fn delete_all_permissions_on_resource<T>(target: T)
+where
+  T: Into<ResourceTarget> + std::fmt::Debug,
+{
   let target: ResourceTarget = target.into();
   let (variant, id) = target.extract_variant_id();
   if let Err(e) = db_client()
@@ -618,6 +621,7 @@ pub async fn delete_all_permissions_on_resource(
   }
 }
 
+#[instrument(level = "debug")]
 pub async fn get_resource_ids_for_non_admin(
   user_id: &str,
   resource_type: ResourceTargetVariant,
@@ -639,7 +643,10 @@ pub async fn get_resource_ids_for_non_admin(
   Ok(permissions)
 }
 
-pub async fn validate_resource_query_tags<T: Default>(
+#[instrument(level = "debug")]
+pub async fn validate_resource_query_tags<
+  T: Default + std::fmt::Debug,
+>(
   query: &mut ResourceQuery<T>,
 ) {
   let futures = query.tags.iter().map(|tag| get_tag(tag));

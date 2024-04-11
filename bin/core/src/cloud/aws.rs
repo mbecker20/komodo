@@ -24,6 +24,7 @@ pub struct Ec2Instance {
   pub ip: String,
 }
 
+#[instrument]
 async fn create_ec2_client(region: String) -> Client {
   // There may be a better way to pass these keys to client
   std::env::set_var(
@@ -42,10 +43,14 @@ async fn create_ec2_client(region: String) -> Client {
   Client::new(&config)
 }
 
-pub async fn launch_ec2_instance(
+#[instrument]
+pub async fn launch_ec2_instance<T>(
   name: &str,
-  config: impl Into<LaunchAwsServerConfig>,
-) -> anyhow::Result<Ec2Instance> {
+  config: T,
+) -> anyhow::Result<Ec2Instance>
+where
+  T: Into<LaunchAwsServerConfig> + std::fmt::Debug,
+{
   let LaunchAwsServerConfig {
     region,
     instance_type,
@@ -136,6 +141,7 @@ pub async fn launch_ec2_instance(
   Err(anyhow!("instance not running after polling"))
 }
 
+#[instrument]
 pub async fn terminate_ec2_instance(
   region: String,
   instance_id: &str,
@@ -154,6 +160,7 @@ pub async fn terminate_ec2_instance(
   Ok(res)
 }
 
+#[instrument(level = "debug")]
 async fn get_ec2_instance_status(
   client: &Client,
   instance_id: &str,
@@ -170,6 +177,7 @@ async fn get_ec2_instance_status(
   Ok(status)
 }
 
+#[instrument(level = "debug")]
 async fn get_ec2_instance_state_name(
   client: &Client,
   instance_id: &str,
@@ -188,6 +196,7 @@ async fn get_ec2_instance_state_name(
   Ok(Some(state))
 }
 
+#[instrument(level = "debug")]
 async fn get_ec2_instance_public_ip(
   client: &Client,
   instance_id: &str,

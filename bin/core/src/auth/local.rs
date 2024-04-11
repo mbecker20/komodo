@@ -20,6 +20,7 @@ const BCRYPT_COST: u32 = 10;
 
 #[async_trait]
 impl Resolve<CreateLocalUser, HeaderMap> for State {
+  #[instrument(name = "CreateLocalUser", skip(self))]
   async fn resolve(
     &self,
     CreateLocalUser { username, password }: CreateLocalUser,
@@ -79,6 +80,7 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
 
 #[async_trait]
 impl Resolve<LoginLocalUser, HeaderMap> for State {
+  #[instrument(name = "LoginLocalUser", level = "debug", skip(self))]
   async fn resolve(
     &self,
     LoginLocalUser { username, password }: LoginLocalUser,

@@ -19,6 +19,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<LaunchServer, User> for State {
+  #[instrument(name = "LaunchServer", skip(self))]
   async fn resolve(
     &self,
     LaunchServer { name, config }: LaunchServer,

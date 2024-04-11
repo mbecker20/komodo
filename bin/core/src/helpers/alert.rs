@@ -12,6 +12,7 @@ use slack::types::Block;
 
 use crate::db::db_client;
 
+#[instrument(level = "debug")]
 pub async fn send_alerts(alerts: &[Alert]) {
   if alerts.is_empty() {
     return;
@@ -25,7 +26,9 @@ pub async fn send_alerts(alerts: &[Alert]) {
   .await;
 
   if let Err(e) = alerters {
-    error!("ERROR sending alerts | failed to get alerters from db | {e:#}");
+    error!(
+      "ERROR sending alerts | failed to get alerters from db | {e:#}"
+    );
     return;
   }
 
@@ -37,6 +40,7 @@ pub async fn send_alerts(alerts: &[Alert]) {
   join_all(handles).await;
 }
 
+#[instrument(level = "debug")]
 async fn send_alert(alerters: &[Alerter], alert: &Alert) {
   if alerters.is_empty() {
     return;
@@ -70,6 +74,7 @@ async fn send_alert(alerters: &[Alerter], alert: &Alert) {
     .for_each(|e| error!("{e:#}"));
 }
 
+#[instrument(level = "debug")]
 async fn send_custom_alert(
   url: &str,
   alert: &Alert,
@@ -93,6 +98,7 @@ async fn send_custom_alert(
   Ok(())
 }
 
+#[instrument(level = "debug")]
 async fn send_slack_alert(
   url: &str,
   alert: &Alert,
@@ -189,17 +195,16 @@ async fn send_slack_alert(
     } => {
       let region = fmt_region(region);
       let percentage = 100.0 * used_gb / total_gb;
-      let text =
-                format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿 🚨");
+      let text = format!("{level} | *{name}*{region} disk usage at *{percentage:.1}%* | mount point: *{path:?}* 💿 🚨");
       let blocks = vec![
-                Block::header(level),
-                Block::section(format!(
-                    "*{name}*{region} disk usage at *{percentage:.1}%* 💿 🚨"
-                )),
-                Block::section(format!(
-                    "mount point: {path:?} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
-                )),
-            ];
+        Block::header(level),
+        Block::section(format!(
+          "*{name}*{region} disk usage at *{percentage:.1}%* 💿 🚨"
+        )),
+        Block::section(format!(
+          "mount point: {path:?} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
+        )),
+      ];
       (text, blocks.into())
     }
     AlertData::ServerTemp {
@@ -211,14 +216,13 @@ async fn send_slack_alert(
       ..
     } => {
       let region = fmt_region(region);
-      let text =
-                format!("{level} | *{name}*{region} | {component} | temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨");
+      let text = format!("{level} | *{name}*{region} | {component} | temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨");
       let blocks = vec![
-                Block::header(level),
-                Block::section(format!(
-                    "*{name}*{region} | {component} | temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
-                )),
-            ];
+        Block::header(level),
+        Block::section(format!(
+          "*{name}*{region} | {component} | temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
+        )),
+      ];
       (text, blocks.into())
     }
     AlertData::ContainerStateChange {

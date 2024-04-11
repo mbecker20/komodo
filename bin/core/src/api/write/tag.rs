@@ -28,6 +28,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<CreateTag, User> for State {
+  #[instrument(name = "CreateTag", skip(self))]
   async fn resolve(
     &self,
     CreateTag { name }: CreateTag,
@@ -53,7 +54,7 @@ impl Resolve<CreateTag, User> for State {
       .as_object_id()
       .context("inserted_id is not ObjectId")?
       .to_string();
-    
+
     Ok(tag)
   }
 }
@@ -86,6 +87,7 @@ impl Resolve<RenameTag, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteTag, User> for State {
+  #[instrument(name = "DeleteTag", skip(self))]
   async fn resolve(
     &self,
     DeleteTag { id }: DeleteTag,
@@ -111,6 +113,7 @@ impl Resolve<DeleteTag, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateTagsOnResource, User> for State {
+  #[instrument(name = "UpdateTagsOnResource", skip(self))]
   async fn resolve(
     &self,
     UpdateTagsOnResource { target, tags }: UpdateTagsOnResource,

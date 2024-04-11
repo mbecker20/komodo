@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::State;
 
-#[instrument(name = "periphery_handler")]
+#[instrument(name = "PeripheryHandler")]
 pub async fn handler(
   Json(request): Json<crate::api::PeripheryRequest>,
 ) -> AppResult<(TypedHeader<ContentType>, String)> {

@@ -49,6 +49,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<RunBuild, User> for State {
+  #[instrument(name = "RunBuild", skip(self))]
   async fn resolve(
     &self,
     RunBuild { build }: RunBuild,
@@ -85,6 +86,7 @@ impl Resolve<RunBuild, User> for State {
             id = cancel_recv.recv() => id?
           };
           if incoming_build_id == build_id {
+            info!("build cancel acknowledged");
             update.push_simple_log(
               "cancel acknowledged",
               "the build cancellation has been queud, it may still take some time",
@@ -114,20 +116,23 @@ impl Resolve<RunBuild, User> for State {
 
       // GET BUILDER PERIPHERY
 
-      let builder = get_build_builder(&build, &mut update).await;
-
-      if builder.is_err() {
-        update.logs.push(Log::error(
-          "get builder",
-          // The unwrap is safe, it is inside a block which checks for .is_err()
-          serialize_error_pretty(&builder.err().unwrap()),
-        ));
-        update.finalize();
-        update_update(update.clone()).await?;
-        return Ok(update);
-      }
-
-      let (periphery, cleanup_data) = builder.unwrap();
+      let (periphery, cleanup_data) =
+        match get_build_builder(&build, &mut update).await {
+          Ok(builder) => {
+            info!("got builder for build");
+            builder
+          }
+          Err(e) => {
+            warn!("failed to get builder | {e:#}");
+            update.logs.push(Log::error(
+              "get builder",
+              serialize_error_pretty(&e),
+            ));
+            update.finalize();
+            update_update(update.clone()).await?;
+            return Ok(update);
+          }
+        };
 
       // CLONE REPO
 
@@ -137,9 +142,11 @@ impl Resolve<RunBuild, User> for State {
             args: (&build).into(),
           }) => res,
         _ = cancel.cancelled() => {
+          info!("build cancelled during clone, cleaning up builder");
           update.push_error_log("build cancelled", String::from("user cancelled build during repo clone"));
           cleanup_builder_instance(periphery, cleanup_data, &mut update)
             .await;
+          info!("builder cleaned up");
           update.finalize();
           update_update(update.clone()).await?;
           return Ok(update)
@@ -147,8 +154,12 @@ impl Resolve<RunBuild, User> for State {
       };
 
       match res {
-        Ok(clone_logs) => update.logs.extend(clone_logs),
+        Ok(clone_logs) => {
+          info!("finished repo clone");
+          update.logs.extend(clone_logs);
+        }
         Err(e) => {
+          warn!("failed build at clone repo | {e:#}");
           update.push_error_log("clone repo", serialize_error(&e));
         }
       }
@@ -162,6 +173,7 @@ impl Resolve<RunBuild, User> for State {
               build: build.clone(),
             }) => res.context("failed at call to periphery to build"),
           _ = cancel.cancelled() => {
+            info!("build cancelled during build, cleaning up builder");
             update.push_error_log("build cancelled", String::from("user cancelled build during docker build"));
             cleanup_builder_instance(periphery, cleanup_data, &mut update)
               .await;
@@ -172,8 +184,12 @@ impl Resolve<RunBuild, User> for State {
         };
 
         match res {
-          Ok(logs) => update.logs.extend(logs),
+          Ok(logs) => {
+            info!("finished build");
+            update.logs.extend(logs);
+          }
           Err(e) => {
+            warn!("error in build | {e:#}");
             update.push_error_log("build", serialize_error(&e))
           }
         };
@@ -204,10 +220,13 @@ impl Resolve<RunBuild, User> for State {
       cleanup_builder_instance(periphery, cleanup_data, &mut update)
         .await;
 
+      info!("builder instance cleaned up");
+
       update_update(update.clone()).await?;
 
       if update.success {
         handle_post_build_redeploy(&build.id).await;
+        info!("post build redeploy handled");
       }
 
       Ok(update)
@@ -235,6 +254,7 @@ impl Resolve<RunBuild, User> for State {
 
 #[async_trait]
 impl Resolve<CancelBuild, User> for State {
+  #[instrument(name = "CancelBuild", skip(self))]
   async fn resolve(
     &self,
     CancelBuild { build }: CancelBuild,
@@ -292,19 +312,20 @@ impl Resolve<CancelBuild, User> for State {
 const BUILDER_POLL_RATE_SECS: u64 = 2;
 const BUILDER_POLL_MAX_TRIES: usize = 30;
 
+#[instrument]
 async fn get_build_builder(
   build: &Build,
   update: &mut Update,
 ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
   if build.config.builder_id.is_empty() {
-    return Err(anyhow!(""));
+    return Err(anyhow!("build has not configured a builder"));
   }
   let builder =
     Builder::get_resource(&build.config.builder_id).await?;
   match builder.config {
     BuilderConfig::Server(config) => {
       if config.server_id.is_empty() {
-        return Err(anyhow!("build has not configured a builder"));
+        return Err(anyhow!("builder has not configured a server"));
       }
       let server = Server::get_resource(&config.server_id).await?;
       let periphery = periphery_client(&server)?;
@@ -321,6 +342,7 @@ async fn get_build_builder(
   }
 }
 
+#[instrument]
 async fn get_aws_builder(
   build: &Build,
   config: AwsBuilderConfig,
@@ -335,6 +357,8 @@ async fn get_aws_builder(
   );
   let Ec2Instance { instance_id, ip } =
     launch_ec2_instance(&instance_name, &config).await?;
+
+  info!("ec2 instance launched");
 
   let log = Log {
     stage: "start build instance".to_string(),
@@ -394,6 +418,7 @@ async fn get_aws_builder(
   Err(res.err().unwrap())
 }
 
+#[instrument(skip(periphery))]
 async fn cleanup_builder_instance(
   periphery: PeripheryClient,
   cleanup_data: BuildCleanupData,
@@ -426,6 +451,7 @@ async fn cleanup_builder_instance(
   }
 }
 
+#[instrument]
 async fn handle_post_build_redeploy(build_id: &str) {
   let Ok(redeploy_deployments) = find_collect(
     &db_client().await.deployments,

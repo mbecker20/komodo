@@ -40,13 +40,14 @@ pub fn router() -> Router {
     )
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct CallbackQuery {
   state: Option<String>,
   code: Option<String>,
   error: Option<String>,
 }
 
+#[instrument(name = "GoogleCallback", level = "debug")]
 async fn callback(
   Query(query): Query<CallbackQuery>,
 ) -> anyhow::Result<Redirect> {

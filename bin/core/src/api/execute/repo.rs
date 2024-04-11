@@ -30,6 +30,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<CloneRepo, User> for State {
+  #[instrument(name = "CloneRepo", skip(self))]
   async fn resolve(
     &self,
     CloneRepo { repo }: CloneRepo,
@@ -129,6 +130,7 @@ impl Resolve<CloneRepo, User> for State {
 
 #[async_trait]
 impl Resolve<PullRepo, User> for State {
+  #[instrument(name = "PullRepo", skip(self))]
   async fn resolve(
     &self,
     PullRepo { repo }: PullRepo,

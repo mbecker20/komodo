@@ -37,27 +37,7 @@ pub enum AuthRequest {
 }
 
 pub fn router() -> Router {
-  let mut router = Router::new().route(
-    "/",
-    post(|headers: HeaderMap, Json(request): Json<AuthRequest>| async move {
-      let timer = Instant::now();
-      let req_id = Uuid::new_v4();
-      info!(
-        "/auth request {req_id} | METHOD: {}",
-        request.req_type()
-      );
-      let res = State.resolve_request(request, headers).await;
-      if let Err(resolver_api::Error::Serialization(e)) = &res {
-        info!("/auth request {req_id} | serialization error: {e:?}");
-      }
-      if let Err(resolver_api::Error::Inner(e)) = &res {
-        info!("/auth request {req_id} | error: {e:#}");
-      }
-      let elapsed = timer.elapsed();
-      info!("/auth request {req_id} | resolve time: {elapsed:?}");
-      AppResult::Ok((TypedHeader(ContentType::json()), res?))
-    }),
-  );
+  let mut router = Router::new().route("/", post(handler));
 
   if github_oauth_client().is_some() {
     router = router.nest("/github", github::router())
@@ -68,6 +48,26 @@ pub fn router() -> Router {
   }
 
   router
+}
+
+#[instrument(name = "AuthHandler")]
+async fn handler(
+  headers: HeaderMap,
+  Json(request): Json<AuthRequest>,
+) -> AppResult<(TypedHeader<ContentType>, String)> {
+  let timer = Instant::now();
+  let req_id = Uuid::new_v4();
+  debug!("/auth request {req_id} | METHOD: {}", request.req_type());
+  let res = State.resolve_request(request, headers).await;
+  if let Err(resolver_api::Error::Serialization(e)) = &res {
+    warn!("/auth request {req_id} | serialization error: {e:?}");
+  }
+  if let Err(resolver_api::Error::Inner(e)) = &res {
+    warn!("/auth request {req_id} | error: {e:#}");
+  }
+  let elapsed = timer.elapsed();
+  debug!("/auth request {req_id} | resolve time: {elapsed:?}");
+  AppResult::Ok((TypedHeader(ContentType::json()), res?))
 }
 
 fn login_options_reponse() -> &'static GetLoginOptionsResponse {
@@ -90,6 +90,7 @@ fn login_options_reponse() -> &'static GetLoginOptionsResponse {
 
 #[async_trait]
 impl Resolve<GetLoginOptions, HeaderMap> for State {
+  #[instrument(name = "GetLoginOptions", level = "debug", skip(self))]
   async fn resolve(
     &self,
     _: GetLoginOptions,
@@ -101,6 +102,7 @@ impl Resolve<GetLoginOptions, HeaderMap> for State {
 
 #[async_trait]
 impl Resolve<ExchangeForJwt, HeaderMap> for State {
+  #[instrument(name = "ExchangeForJwt", skip(self))]
   async fn resolve(
     &self,
     ExchangeForJwt { token }: ExchangeForJwt,
@@ -114,6 +116,7 @@ impl Resolve<ExchangeForJwt, HeaderMap> for State {
 
 #[async_trait]
 impl Resolve<GetUser, HeaderMap> for State {
+  #[instrument(name = "GetUser", level = "debug", skip(self))]
   async fn resolve(
     &self,
     GetUser {}: GetUser,

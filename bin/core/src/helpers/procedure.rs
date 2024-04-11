@@ -18,19 +18,7 @@ use crate::state::State;
 
 use super::update_update;
 
-/// ASSUMES FIRST LOG IS ALREADY CREATED
-async fn add_line_to_update(update: &Mutex<Update>, line: &str) {
-  let mut lock = update.lock().await;
-  let log = &mut lock.logs[0];
-  log.stdout.push('\n');
-  log.stdout.push_str(line);
-  let update = lock.clone();
-  drop(lock);
-  if let Err(e) = update_update(update).await {
-    error!("failed to update an update during procedure | {e:#}");
-  };
-}
-
+#[instrument]
 pub async fn execute_procedure(
   procedure: &Procedure,
   update: &Mutex<Update>,
@@ -118,6 +106,7 @@ pub async fn execute_procedure(
   }
 }
 
+#[instrument]
 async fn execute_execution(
   execution: Execution,
 
@@ -193,6 +182,7 @@ async fn execute_execution(
   }
 }
 
+#[instrument]
 async fn execute_sequence(
   executions: Vec<Execution>,
   parent_id: &str,
@@ -222,6 +212,7 @@ async fn execute_sequence(
   Ok(())
 }
 
+#[instrument]
 async fn execute_parallel(
   executions: Vec<Execution>,
   parent_id: &str,
@@ -265,4 +256,18 @@ fn filter_list_by_enabled(
     .filter(|item| item.enabled)
     .map(|item| item.execution.clone())
     .collect()
+}
+
+/// ASSUMES FIRST LOG IS ALREADY CREATED
+#[instrument(level = "debug")]
+async fn add_line_to_update(update: &Mutex<Update>, line: &str) {
+  let mut lock = update.lock().await;
+  let log = &mut lock.logs[0];
+  log.stdout.push('\n');
+  log.stdout.push_str(line);
+  let update = lock.clone();
+  drop(lock);
+  if let Err(e) = update_update(update).await {
+    error!("failed to update an update during procedure | {e:#}");
+  };
 }

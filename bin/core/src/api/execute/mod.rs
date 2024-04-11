@@ -50,39 +50,37 @@ enum ExecuteRequest {
 
 pub fn router() -> Router {
   Router::new()
-    .route(
-      "/",
-      post(
-        |Extension(user): Extension<User>,
-         Json(request): Json<ExecuteRequest>| async move {
-          let timer = Instant::now();
-          let req_id = Uuid::new_v4();
-          info!(
-            "/execute request {req_id} | user: {} ({}) | {request:?}",
-            user.username, user.id
-          );
-          let res = tokio::spawn(async move {
-            let res = State.resolve_request(request, user).await;
-            if let Err(resolver_api::Error::Serialization(e)) = &res {
-              warn!("/execute request {req_id} serialization error: {e:?}");
-            }
-            if let Err(resolver_api::Error::Inner(e)) = &res {
-              warn!("/execute request {req_id} error: {e:#}");
-            }
-            let elapsed = timer.elapsed();
-            info!(
-              "/execute request {req_id} | resolve time: {elapsed:?}"
-            );
-            res
-          })
-          .await
-          .context("failure in spawned execute task");
-          if let Err(e) = &res {
-            warn!("/execute request {req_id} spawn error: {e:#}",);
-          }
-          AppResult::Ok((TypedHeader(ContentType::json()), res??))
-        },
-      ),
-    )
+    .route("/", post(handler))
     .layer(middleware::from_fn(auth_request))
+}
+
+#[instrument(name = "ExecuteHandler")]
+async fn handler(
+  Extension(user): Extension<User>,
+  Json(request): Json<ExecuteRequest>,
+) -> AppResult<(TypedHeader<ContentType>, String)> {
+  let timer = Instant::now();
+  let req_id = Uuid::new_v4();
+  info!(
+    "/execute request {req_id} | user: {} ({}) | {request:?}",
+    user.username, user.id
+  );
+  let res = tokio::spawn(async move {
+    let res = State.resolve_request(request, user).await;
+    if let Err(resolver_api::Error::Serialization(e)) = &res {
+      warn!("/execute request {req_id} serialization error: {e:?}");
+    }
+    if let Err(resolver_api::Error::Inner(e)) = &res {
+      warn!("/execute request {req_id} error: {e:#}");
+    }
+    let elapsed = timer.elapsed();
+    info!("/execute request {req_id} | resolve time: {elapsed:?}");
+    res
+  })
+  .await
+  .context("failure in spawned execute task");
+  if let Err(e) = &res {
+    warn!("/execute request {req_id} spawn error: {e:#}",);
+  }
+  AppResult::Ok((TypedHeader(ContentType::json()), res??))
 }

@@ -42,12 +42,13 @@ pub fn router() -> Router {
     )
 }
 
-#[derive(Deserialize)]
+#[derive(Debug, Deserialize)]
 struct CallbackQuery {
   state: String,
   code: String,
 }
 
+#[instrument(name = "GithubCallback", level = "debug")]
 async fn callback(
   Query(query): Query<CallbackQuery>,
 ) -> anyhow::Result<Redirect> {

@@ -25,6 +25,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<PruneDockerContainers, User> for State {
+  #[instrument(name = "PruneDockerContainers", skip(self))]
   async fn resolve(
     &self,
     PruneDockerContainers { server }: PruneDockerContainers,
@@ -94,6 +95,7 @@ impl Resolve<PruneDockerContainers, User> for State {
 
 #[async_trait]
 impl Resolve<PruneDockerNetworks, User> for State {
+  #[instrument(name = "PruneDockerNetworks", skip(self))]
   async fn resolve(
     &self,
     PruneDockerNetworks { server }: PruneDockerNetworks,
@@ -163,6 +165,7 @@ impl Resolve<PruneDockerNetworks, User> for State {
 
 #[async_trait]
 impl Resolve<PruneDockerImages, User> for State {
+  #[instrument(name = "PruneDockerImages", skip(self))]
   async fn resolve(
     &self,
     PruneDockerImages { server }: PruneDockerImages,

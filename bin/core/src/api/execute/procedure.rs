@@ -20,6 +20,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<RunProcedure, User> for State {
+  #[instrument(name = "RunProcedure", skip(self))]
   async fn resolve(
     &self,
     RunProcedure { procedure }: RunProcedure,
@@ -55,8 +56,10 @@ impl Resolve<RunProcedure, User> for State {
           "the procedure has completed with no errors",
         );
       }
-      Err(e) => update
-        .push_error_log("execution error", serialize_error_pretty(&e)),
+      Err(e) => update.push_error_log(
+        "execution error",
+        serialize_error_pretty(&e),
+      ),
     }
 
     update.finalize();

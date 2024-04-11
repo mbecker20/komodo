@@ -134,33 +134,31 @@ enum ReadRequest {
 
 pub fn router() -> Router {
   Router::new()
-    .route(
-      "/",
-      post(
-        |Extension(user): Extension<User>,
-         Json(request): Json<ReadRequest>| async move {
-          let timer = Instant::now();
-          let req_id = Uuid::new_v4();
-          debug!(
-            "/read request {req_id} | user: {} ({}) | {request:?}",
-            user.username, user.id
-          );
-          let res = State.resolve_request(request, user).await;
-          if let Err(resolver_api::Error::Serialization(e)) = &res {
-            warn!("/read request {req_id} serialization error: {e:?}");
-          }
-          if let Err(resolver_api::Error::Inner(e)) = &res {
-            warn!("/read request {req_id} error: {e:#}");
-          }
-          let elapsed = timer.elapsed();
-          debug!(
-            "/read request {req_id} | resolve time: {elapsed:?}"
-          );
-          AppResult::Ok((TypedHeader(ContentType::json()), res?))
-        },
-      ),
-    )
+    .route("/", post(handler))
     .layer(middleware::from_fn(auth_request))
+}
+
+#[instrument(name = "ReadHandler", level = "debug")]
+async fn handler(
+  Extension(user): Extension<User>,
+  Json(request): Json<ReadRequest>,
+) -> AppResult<(TypedHeader<ContentType>, String)> {
+  let timer = Instant::now();
+  let req_id = Uuid::new_v4();
+  debug!(
+    "/read request {req_id} | user: {} ({}) | {request:?}",
+    user.username, user.id
+  );
+  let res = State.resolve_request(request, user).await;
+  if let Err(resolver_api::Error::Serialization(e)) = &res {
+    warn!("/read request {req_id} serialization error: {e:?}");
+  }
+  if let Err(resolver_api::Error::Inner(e)) = &res {
+    warn!("/read request {req_id} error: {e:#}");
+  }
+  let elapsed = timer.elapsed();
+  debug!("/read request {req_id} | resolve time: {elapsed:?}");
+  AppResult::Ok((TypedHeader(ContentType::json()), res?))
 }
 
 #[async_trait]

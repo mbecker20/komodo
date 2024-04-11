@@ -62,6 +62,7 @@ impl JwtClient {
     Ok(jwt)
   }
 
+  #[instrument(level = "debug", skip_all)]
   pub async fn create_exchange_token(&self, jwt: String) -> String {
     let exchange_token = random_string(40);
     self.exchange_tokens.lock().await.insert(
@@ -74,7 +75,7 @@ impl JwtClient {
     );
     exchange_token
   }
-
+  #[instrument(level = "debug", skip(self))]
   pub async fn redeem_exchange_token(
     &self,
     exchange_token: &str,
@@ -84,7 +85,7 @@ impl JwtClient {
       .lock()
       .await
       .remove(exchange_token)
-      .ok_or(anyhow!("invalid exchange token: unrecognized"))?;
+      .context("invalid exchange token: unrecognized")?;
     if unix_timestamp_ms() < valid_until {
       Ok(jwt)
     } else {

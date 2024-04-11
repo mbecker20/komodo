@@ -25,13 +25,13 @@ mod alert;
 mod helpers;
 mod record;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct History<Curr: Default, Prev> {
   pub curr: Curr,
   pub prev: Option<Prev>,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct CachedServerStatus {
   pub id: String,
   pub status: ServerStatus,
@@ -41,7 +41,7 @@ pub struct CachedServerStatus {
   pub err: Option<serror::Serror>,
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct CachedDeploymentStatus {
   pub id: String,
   pub state: DockerContainerState,
@@ -61,8 +61,8 @@ pub fn spawn_monitor_loop() {
           Ok(servers) => servers,
           Err(e) => {
             error!(
-              "failed to get server list (manage status cache) | {e:#}"
-            );
+            "failed to get server list (manage status cache) | {e:#}"
+          );
             continue;
           }
         };

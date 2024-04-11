@@ -28,6 +28,7 @@ pub struct RedirectQuery {
   pub redirect: Option<String>,
 }
 
+#[instrument(level = "debug")]
 pub async fn auth_request(
   headers: HeaderMap,
   mut req: Request,
@@ -46,6 +47,7 @@ pub fn random_string(length: usize) -> String {
     .collect()
 }
 
+#[instrument(level = "debug")]
 pub async fn get_user_id_from_headers(
   headers: &HeaderMap,
 ) -> anyhow::Result<String> {
@@ -76,6 +78,7 @@ pub async fn get_user_id_from_headers(
   }
 }
 
+#[instrument(level = "debug")]
 pub async fn authenticate_check_enabled(
   headers: &HeaderMap,
 ) -> anyhow::Result<User> {
@@ -88,6 +91,7 @@ pub async fn authenticate_check_enabled(
   }
 }
 
+#[instrument(level = "debug")]
 pub async fn auth_jwt_get_user_id(
   jwt: &str,
 ) -> anyhow::Result<String> {
@@ -101,6 +105,7 @@ pub async fn auth_jwt_get_user_id(
   }
 }
 
+#[instrument(level = "debug")]
 pub async fn auth_jwt_check_enabled(
   jwt: &str,
 ) -> anyhow::Result<User> {
@@ -108,6 +113,7 @@ pub async fn auth_jwt_check_enabled(
   check_enabled(user_id).await
 }
 
+#[instrument(level = "debug")]
 pub async fn auth_api_key_get_user_id(
   key: &str,
   secret: &str,
@@ -133,6 +139,7 @@ pub async fn auth_api_key_get_user_id(
   }
 }
 
+#[instrument(level = "debug")]
 pub async fn auth_api_key_check_enabled(
   key: &str,
   secret: &str,
@@ -141,6 +148,7 @@ pub async fn auth_api_key_check_enabled(
   check_enabled(user_id).await
 }
 
+#[instrument(level = "debug")]
 async fn check_enabled(user_id: String) -> anyhow::Result<User> {
   let user = get_user(&user_id).await?;
   if user.enabled {

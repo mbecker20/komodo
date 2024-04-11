@@ -59,6 +59,7 @@ pub fn make_update(
   }
 }
 
+#[instrument(level = "debug")]
 pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
   if let Some(user) = admin_service_user(user_id) {
     return Ok(user);
@@ -69,6 +70,7 @@ pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
     .with_context(|| format!("no user found with id {user_id}"))
 }
 
+#[instrument(level = "debug")]
 pub async fn get_server_with_status(
   server_id_or_name: &str,
 ) -> anyhow::Result<(Server, ServerStatus)> {
@@ -85,6 +87,7 @@ pub async fn get_server_with_status(
   Ok((server, status))
 }
 
+#[instrument(level = "debug")]
 pub async fn get_deployment_state(
   deployment: &Deployment,
 ) -> anyhow::Result<DockerContainerState> {
@@ -112,6 +115,7 @@ pub async fn get_deployment_state(
 
 // TAG
 
+#[instrument(level = "debug")]
 pub async fn get_tag(id_or_name: &str) -> anyhow::Result<Tag> {
   let query = match ObjectId::from_str(id_or_name) {
     Ok(id) => doc! { "_id": id },
@@ -126,6 +130,7 @@ pub async fn get_tag(id_or_name: &str) -> anyhow::Result<Tag> {
     .with_context(|| format!("no tag found matching {id_or_name}"))
 }
 
+#[instrument(level = "debug")]
 pub async fn get_tag_check_owner(
   id_or_name: &str,
   user: &User,
@@ -138,7 +143,7 @@ pub async fn get_tag_check_owner(
 }
 
 // UPDATE
-
+#[instrument(level = "debug")]
 async fn update_list_item(
   update: Update,
 ) -> anyhow::Result<UpdateListItem> {
@@ -167,11 +172,13 @@ async fn update_list_item(
   Ok(update)
 }
 
+#[instrument(level = "debug")]
 async fn send_update(update: UpdateListItem) -> anyhow::Result<()> {
   update_channel().sender.lock().await.send(update)?;
   Ok(())
 }
 
+#[instrument(level = "debug")]
 pub async fn add_update(
   mut update: Update,
 ) -> anyhow::Result<String> {
@@ -191,6 +198,7 @@ pub async fn add_update(
   Ok(id)
 }
 
+#[instrument(level = "debug")]
 pub async fn update_update(update: Update) -> anyhow::Result<()> {
   update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
       .await
@@ -200,9 +208,13 @@ pub async fn update_update(update: Update) -> anyhow::Result<()> {
   Ok(())
 }
 
-pub async fn remove_from_recently_viewed(
-  resource: impl Into<ResourceTarget>,
-) -> anyhow::Result<()> {
+#[instrument]
+pub async fn remove_from_recently_viewed<T>(
+  resource: T,
+) -> anyhow::Result<()>
+where
+  T: Into<ResourceTarget> + std::fmt::Debug,
+{
   let resource: ResourceTarget = resource.into();
   let (ty, id) = resource.extract_variant_id();
   db_client()
@@ -244,11 +256,14 @@ pub fn periphery_client(
   Ok(client)
 }
 
-pub async fn create_permission(
+#[instrument]
+pub async fn create_permission<T>(
   user: &User,
-  target: impl Into<ResourceTarget>,
+  target: T,
   level: PermissionLevel,
-) {
+) where
+  T: Into<ResourceTarget> + std::fmt::Debug,
+{
   // No need to actually create permissions for admins
   if user.admin {
     return;
@@ -268,6 +283,6 @@ pub async fn create_permission(
     )
     .await
   {
-    warn!("failed to create permission for {target:?} | {e:#}");
+    error!("failed to create permission for {target:?} | {e:#}");
   };
 }

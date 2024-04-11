@@ -67,6 +67,7 @@ impl GithubOauthClient {
     .into()
   }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn get_login_redirect_url(
     &self,
     redirect: Option<String>,
@@ -85,6 +86,7 @@ impl GithubOauthClient {
     redirect_url
   }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn check_state(&self, state: &str) -> bool {
     let mut contained = false;
     self.states.lock().await.retain(|s| {
@@ -98,6 +100,7 @@ impl GithubOauthClient {
     contained
   }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn get_access_token(
     &self,
     code: &str,
@@ -118,6 +121,7 @@ impl GithubOauthClient {
       .context("failed to get github access token using code")
   }
 
+  #[instrument(level = "debug", skip(self))]
   pub async fn get_github_user(
     &self,
     token: &str,
@@ -128,6 +132,7 @@ impl GithubOauthClient {
       .context("failed to get github user using access token")
   }
 
+  #[instrument(level = "debug", skip(self))]
   async fn get<R: DeserializeOwned>(
     &self,
     endpoint: &str,

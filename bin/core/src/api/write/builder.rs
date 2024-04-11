@@ -32,6 +32,7 @@ use crate::{
   state::State,
 };
 
+#[instrument]
 async fn validate_config(
   config: &mut PartialBuilderConfig,
   user: &User,
@@ -55,6 +56,7 @@ async fn validate_config(
 
 #[async_trait]
 impl Resolve<CreateBuilder, User> for State {
+  #[instrument(name = "CreateBuilder", skip(self))]
   async fn resolve(
     &self,
     CreateBuilder { name, mut config }: CreateBuilder,
@@ -115,6 +117,7 @@ impl Resolve<CreateBuilder, User> for State {
 
 #[async_trait]
 impl Resolve<CopyBuilder, User> for State {
+  #[instrument(name = "CopyBuilder", skip(self))]
   async fn resolve(
     &self,
     CopyBuilder { name, id }: CopyBuilder,
@@ -180,6 +183,7 @@ impl Resolve<CopyBuilder, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteBuilder, User> for State {
+  #[instrument(name = "DeleteBuilder", skip(self))]
   async fn resolve(
     &self,
     DeleteBuilder { id }: DeleteBuilder,
@@ -229,6 +233,7 @@ impl Resolve<DeleteBuilder, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateBuilder, User> for State {
+  #[instrument(name = "UpdateBuilder", skip(self))]
   async fn resolve(
     &self,
     UpdateBuilder { id, mut config }: UpdateBuilder,

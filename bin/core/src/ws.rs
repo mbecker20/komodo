@@ -34,6 +34,7 @@ pub fn router() -> Router {
   Router::new().route("/update", get(ws_handler))
 }
 
+#[instrument(level = "debug")]
 async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
   let mut receiver = update_channel().receiver.resubscribe();
   ws.on_upgrade(|socket| async move {
@@ -107,6 +108,7 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
     })
 }
 
+#[instrument(level = "debug")]
 pub async fn ws_login(
   mut socket: WebSocket,
 ) -> Option<(WebSocket, User)> {
@@ -193,6 +195,7 @@ pub async fn ws_login(
   }
 }
 
+#[instrument(level = "debug")]
 async fn user_can_see_update(
   user: &User,
   update_target: &ResourceTarget,
