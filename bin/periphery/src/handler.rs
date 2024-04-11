@@ -15,21 +15,26 @@ pub async fn handler(
   let timer = Instant::now();
   let req_id = Uuid::new_v4();
   info!("request {req_id} | {request:?}");
-  let res = tokio::spawn(async move {
-    let res = State.resolve_request(request, ()).await;
-    if let Err(resolver_api::Error::Serialization(e)) = &res {
-      warn!("request {req_id} serialization error: {e:?}");
-    }
-    if let Err(resolver_api::Error::Inner(e)) = &res {
-      warn!("request {req_id} error: {e:#}");
-    }
-    let elapsed = timer.elapsed();
-    info!("request {req_id} | resolve time: {elapsed:?}");
-    res
-  })
-  .await;
+  let res =
+    tokio::spawn(
+      async move { State.resolve_request(request, ()).await },
+    )
+    .await;
+
+  let elapsed = timer.elapsed();
+  info!("request {req_id} | resolve time: {elapsed:?}");
+
   if let Err(e) = &res {
     warn!("request {req_id} spawn error: {e:#}");
   }
-  AppResult::Ok((TypedHeader(ContentType::json()), res??))
+
+  let res = res?;
+  if let Err(resolver_api::Error::Serialization(e)) = &res {
+    warn!("request {req_id} serialization error: {e:?}");
+  }
+  if let Err(resolver_api::Error::Inner(e)) = &res {
+    warn!("request {req_id} error: {e:#}");
+  }
+
+  AppResult::Ok((TypedHeader(ContentType::json()), res?))
 }

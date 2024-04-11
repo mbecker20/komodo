@@ -66,21 +66,26 @@ async fn handler(
     user.username, user.id
   );
   let res = tokio::spawn(async move {
-    let res = State.resolve_request(request, user).await;
-    if let Err(resolver_api::Error::Serialization(e)) = &res {
-      warn!("/execute request {req_id} serialization error: {e:?}");
-    }
-    if let Err(resolver_api::Error::Inner(e)) = &res {
-      warn!("/execute request {req_id} error: {e:#}");
-    }
-    let elapsed = timer.elapsed();
-    info!("/execute request {req_id} | resolve time: {elapsed:?}");
-    res
+    State.resolve_request(request, user).await
   })
   .await
   .context("failure in spawned execute task");
+
+  let elapsed = timer.elapsed();
+  info!("/execute request {req_id} | resolve time: {elapsed:?}");
+
   if let Err(e) = &res {
     warn!("/execute request {req_id} spawn error: {e:#}",);
   }
-  AppResult::Ok((TypedHeader(ContentType::json()), res??))
+
+  let res = res?;
+
+  if let Err(resolver_api::Error::Serialization(e)) = &res {
+    warn!("/execute request {req_id} serialization error: {e:?}");
+  }
+  if let Err(resolver_api::Error::Inner(e)) = &res {
+    warn!("/execute request {req_id} error: {e:#}");
+  }
+
+  AppResult::Ok((TypedHeader(ContentType::json()), res?))
 }
