@@ -1,88 +1,88 @@
-# this will be the document title on the web page (shows up as text in the browser tab).
-# default: 'monitor'
-title = "monitor"
+## this will be the document title on the web page (shows up as text in the browser tab).
+## default: 'Monitor'
+title = "Monitor"
 
-# required for oauth functionality. this should be the url used to access monitor in browser, potentially behind DNS.
-# eg https://monitor.mogh.tech or http://12.34.56.78:9000. this should match the address configured in your oauth app.
-# no default
-host = "https://monitor.mogh.tech"
+## required for oauth functionality. this should be the url used to access monitor in browser, potentially behind DNS.
+## eg https://monitor.dev or http://12.34.56.78:9000. this should match the address configured in your oauth app.
+## no default
+host = "https://monitor.dev"
 
-# the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
-# default: 9000
+## the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
+## default: 9000
 port = 9000
 
-# required to match a passkey in periphery config. token used to authenticate core requests to periphery
-# no default
+## required to match a passkey in periphery config. token used to authenticate core requests to periphery
+## no default
 passkey = "a_random_passkey"
 
-# specify the log level of the monitor core application
-# default: info
-# options: off, error, warn, info, debug, trace
+## specify the log level of the monitor core application
+## default: info
+## options: off, error, warn, info, debug, trace
 logging.level = "info"
 
-# specify the logging format for stdout / stderr.
-# default: standard
-# options: standard, json, none
+## specify the logging format for stdout / stderr.
+## default: standard
+## options: standard, json, none
 logging.stdio = "standard"
 
-# specify a loki endpoint to send tracing logs to
-# optional, default unassigned
-#logging.loki_url = "http://localhost:3100"
+## specify a loki endpoint to send tracing logs to
+## optional, default unassigned
+# logging.loki_url = "http://localhost:3100"
 
-# specify how long an issued jwt stays valid. all jwts are invalidated on application restart.
-# default: 1-day. 
-# options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
+## specify how long an issued jwt stays valid. all jwts are invalidated on application restart.
+## default: 1-day. 
+## options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
 jwt_valid_for = "1-day"
 
-# controls the granularity of the system stats collection by monitor core
-# default: 15-sec
-# options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
+## controls the granularity of the system stats collection by monitor core
+## default: 15-sec
+## options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
 monitoring_interval = "15-sec"
 
-# number of days to keep stats around, or 0 to disable pruning. 
-# stats older than this number of days are deleted daily
-# default: 0 (pruning disabled)
+## number of days to keep stats around, or 0 to disable pruning. 
+## stats older than this number of days are deleted daily
+## default: 0 (pruning disabled)
 keep_stats_for_days = 0
 
-# token that has to be given to github during repo webhook config as the secret
-# default: empty (none)
+## token that has to be given to github during repo webhook config as the secret
+## default: empty (none)
 github_webhook_secret = "your_random_webhook_secret"
 
-# an alternate base url that is used to recieve github webhook requests
-# if empty or not specified, will use 'host' address as base
-# default: empty (none)
-github_webhook_base_url = "https://monitor-github-webhook.mogh.tech"
+## an alternate base url that is used to recieve github webhook requests
+## if empty or not specified, will use 'host' address as base
+## default: empty (none)
+# github_webhook_base_url = "https://github-webhook.monitor.dev"
 
-# these will be used by the GUI to attach to builds.
-# when attached to build, image will be pushed to repo under the specified organization.
-# if empty, the "docker organization" config option will not be shown.
-# default: empty
-docker_organizations = ["your_docker_org1", "your_docker_org_2"]
+## these will be used by the GUI to attach to builds.
+## when attached to build, image will be pushed to repo under the specified organization.
+## if empty, the "docker organization" config option will not be shown.
+## default: empty
+# docker_organizations = ["your_docker_org1", "your_docker_org_2"]
 
-# allow or deny user login with username / password
-# default: false
-local_auth = true
+## allow or deny user login with username / password
+## default: false
+# local_auth = true
 
-[github_oauth]
-enabled = true # default: false
-id = "your_github_client_id"
-secret = "your_github_client_secret"
+# github_oauth.enabled = true
+# github_oauth.id = "your_github_client_id"
+# github_oauth.secret = "your_github_client_secret"
 
-[google_oauth]
-enabled = true # default: false
-id = "your_google_client_id"
-secret = "your_google_client_secret"
+# google_oauth.enabled = true
+# google_oauth.id = "your_google_client_id"
+# google_oauth.secret = "your_google_client_secret"
 
 [mongo]
-uri = "mongodb://username:password@localhost:27017"
-# ==== or ====
+# uri = "mongodb://username:password@localhost:27017"
+## ==== or ====
 address = "localhost:27017"
-username = "username"
-password = "password"
-# ==== other ====
-db_name = "monitor" # default: monitor. this is the name of the mongo database that monitor will create its collections in.
-app_name = "monitor_core" # default: monitor_core. this is the assigned app_name of the mongo client
+# username = "username"
+# password = "password"
+## ==== other ====
+## default: monitor. this is the name of the mongo database that monitor will create its collections in.
+db_name = "monitor"
+## default: monitor_core. this is the assigned app_name of the mongo client
+app_name = "monitor_core"
 
-[aws]
-access_key_id = "your_aws_key_id"
-secret_access_key = "your_aws_secret_key"
+# [aws]
+# access_key_id = "your_aws_key_id"
+# secret_access_key = "your_aws_secret_key"

@@ -11,7 +11,7 @@ use tower_http::{
   services::{ServeDir, ServeFile},
 };
 
-use crate::config::{core_config, env, Env};
+use crate::config::{core_config, frontend_path};
 
 mod api;
 mod auth;
@@ -36,7 +36,7 @@ async fn app() -> anyhow::Result<()> {
   prune::spawn_prune_loop();
 
   // Setup static frontend services
-  let Env { frontend_path, .. } = env();
+  let frontend_path = frontend_path();
   let frontend_index =
     ServeFile::new(format!("{frontend_path}/index.html"));
   let serve_dir = ServeDir::new(frontend_path)

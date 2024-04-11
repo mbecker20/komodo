@@ -14,6 +14,7 @@ RUN cd frontend && yarn link @monitor/client && yarn && yarn build
 
 # Final Image
 FROM gcr.io/distroless/cc
+COPY ./config_example/core.config.example.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /
 COPY --from=frontend-builder /builder/frontend/dist /frontend
 EXPOSE 9000
