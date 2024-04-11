@@ -18,7 +18,16 @@ passkey = "a_random_passkey"
 # specify the log level of the monitor core application
 # default: info
 # options: off, error, warn, info, debug, trace
-log_level = "info"
+logging.level = "info"
+
+# specify the logging format for stdout / stderr.
+# default: standard
+# options: standard, json, none
+logging.stdio = "standard"
+
+# specify a loki endpoint to send tracing logs to
+# optional, default unassigned
+#logging.loki_url = "http://localhost:3100"
 
 # specify how long an issued jwt stays valid. all jwts are invalidated on application restart.
 # default: 1-day. 
