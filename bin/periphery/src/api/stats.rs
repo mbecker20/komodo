@@ -10,6 +10,11 @@ use crate::{system_stats::stats_client, State};
 
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemInformation> for State {
+  #[instrument(
+    name = "GetSystemInformation",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve_to_string(
     &self,
     _: GetSystemInformation,
@@ -25,6 +30,11 @@ impl ResolveToString<GetSystemInformation> for State {
 
 #[async_trait::async_trait]
 impl ResolveToString<GetAllSystemStats> for State {
+  #[instrument(
+    name = "GetAllSystemStats",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve_to_string(
     &self,
     _: GetAllSystemStats,
@@ -40,6 +50,11 @@ impl ResolveToString<GetAllSystemStats> for State {
 
 #[async_trait::async_trait]
 impl ResolveToString<GetBasicSystemStats> for State {
+  #[instrument(
+    name = "GetBasicSystemStats",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve_to_string(
     &self,
     _: GetBasicSystemStats,
@@ -55,6 +70,7 @@ impl ResolveToString<GetBasicSystemStats> for State {
 
 #[async_trait::async_trait]
 impl ResolveToString<GetCpuUsage> for State {
+  #[instrument(name = "GetCpuUsage", level = "debug", skip(self))]
   async fn resolve_to_string(
     &self,
     _: GetCpuUsage,
@@ -70,6 +86,7 @@ impl ResolveToString<GetCpuUsage> for State {
 
 #[async_trait::async_trait]
 impl ResolveToString<GetDiskUsage> for State {
+  #[instrument(name = "GetDiskUsage", level = "debug", skip(self))]
   async fn resolve_to_string(
     &self,
     _: GetDiskUsage,
@@ -85,6 +102,7 @@ impl ResolveToString<GetDiskUsage> for State {
 
 #[async_trait::async_trait]
 impl ResolveToString<GetNetworkUsage> for State {
+  #[instrument(name = "GetNetworkUsage", level = "debug", skip(self))]
   async fn resolve_to_string(
     &self,
     _: GetNetworkUsage,
@@ -100,6 +118,11 @@ impl ResolveToString<GetNetworkUsage> for State {
 
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemProcesses> for State {
+  #[instrument(
+    name = "GetSystemProcesses",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve_to_string(
     &self,
     _: GetSystemProcesses,
@@ -115,6 +138,11 @@ impl ResolveToString<GetSystemProcesses> for State {
 
 #[async_trait::async_trait]
 impl ResolveToString<GetSystemComponents> for State {
+  #[instrument(
+    name = "GetSystemComponents",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve_to_string(
     &self,
     _: GetSystemComponents,

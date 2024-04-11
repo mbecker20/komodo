@@ -6,6 +6,10 @@ use crate::{config::periphery_config, helpers::git, State};
 
 #[async_trait::async_trait]
 impl Resolve<CloneRepo> for State {
+  #[instrument(
+    name = "CloneRepo",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     CloneRepo { args }: CloneRepo,
@@ -19,6 +23,10 @@ impl Resolve<CloneRepo> for State {
 
 #[async_trait::async_trait]
 impl Resolve<PullRepo> for State {
+  #[instrument(
+    name = "PullRepo",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     PullRepo {
@@ -44,6 +52,10 @@ impl Resolve<PullRepo> for State {
 
 #[async_trait::async_trait]
 impl Resolve<DeleteRepo> for State {
+  #[instrument(
+    name = "DeleteRepo",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     DeleteRepo { name }: DeleteRepo,

@@ -54,9 +54,11 @@ pub async fn pull(
   logs
 }
 
-pub async fn clone(
-  clone_args: impl Into<CloneArgs>,
-) -> anyhow::Result<Vec<Log>> {
+#[instrument]
+pub async fn clone<T>(clone_args: T) -> anyhow::Result<Vec<Log>>
+where
+  T: Into<CloneArgs> + std::fmt::Debug,
+{
   let CloneArgs {
     name,
     repo,
@@ -75,9 +77,13 @@ pub async fn clone(
 
   let clone_log =
     clone_inner(repo, &repo_dir, &branch, access_token).await;
+
   if !clone_log.success {
+    warn!("repo at {repo_dir:?} failed to clone");
     return Ok(vec![clone_log]);
   }
+
+  info!("repo at {repo_dir:?} cloned with clone_inner");
 
   let commit_hash_log = get_commit_hash_log(&repo_dir).await?;
 
@@ -95,6 +101,10 @@ pub async fn clone(
         ),
       )
       .await;
+      info!(
+        "run repo on_clone command | command: {} | cwd: {:?}",
+        command.command, on_clone_path
+      );
       logs.push(on_clone_log);
     }
   }
@@ -110,12 +120,17 @@ pub async fn clone(
         ),
       )
       .await;
+      info!(
+        "run repo on_pull command | command: {} | cwd: {:?}",
+        command.command, on_pull_path
+      );
       logs.push(on_pull_log);
     }
   }
   Ok(logs)
 }
 
+#[instrument]
 async fn clone_inner(
   repo: &str,
   destination: &Path,
@@ -158,6 +173,7 @@ async fn clone_inner(
   }
 }
 
+#[instrument]
 async fn get_commit_hash_log(repo_dir: &Path) -> anyhow::Result<Log> {
   let start_ts = monitor_timestamp();
   let command = format!("cd {} && git rev-parse --short HEAD && git rev-parse HEAD && git log -1 --pretty=%B", repo_dir.display());

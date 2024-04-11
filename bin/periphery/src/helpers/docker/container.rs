@@ -20,11 +20,13 @@ use crate::{
 
 use super::docker_login;
 
+#[instrument(level = "debug")]
 pub async fn container_log(container_name: &str, tail: u64) -> Log {
   let command = format!("docker logs {container_name} --tail {tail}");
   run_monitor_command("get container log", command).await
 }
 
+#[instrument(level = "debug")]
 pub async fn container_log_search(
   container_name: &str,
   search: &str,
@@ -34,6 +36,7 @@ pub async fn container_log_search(
   run_monitor_command("get container log grep", command).await
 }
 
+#[instrument(level = "debug")]
 pub async fn container_stats(
   container_name: Option<String>,
 ) -> anyhow::Result<Vec<DockerContainerStats>> {
@@ -62,17 +65,20 @@ pub async fn container_stats(
   }
 }
 
+#[instrument]
 pub async fn prune_containers() -> Log {
   let command = String::from("docker container prune -f");
   run_monitor_command("prune containers", command).await
 }
 
+#[instrument]
 pub async fn start_container(container_name: &str) -> Log {
   let container_name = to_monitor_name(container_name);
   let command = format!("docker start {container_name}");
   run_monitor_command("docker start", command).await
 }
 
+#[instrument]
 pub async fn stop_container(
   container_name: &str,
   signal: Option<TerminationSignal>,
@@ -97,6 +103,7 @@ pub async fn stop_container(
   }
 }
 
+#[instrument]
 pub async fn stop_and_remove_container(
   container_name: &str,
   signal: Option<TerminationSignal>,
@@ -144,6 +151,7 @@ fn stop_container_command(
   format!("docker stop{signal}{time} {container_name}")
 }
 
+#[instrument]
 pub async fn rename_container(
   curr_name: &str,
   new_name: &str,
@@ -154,11 +162,13 @@ pub async fn rename_container(
   run_monitor_command("docker rename", command).await
 }
 
+#[instrument]
 async fn pull_image(image: &str) -> Log {
   let command = format!("docker pull {image}");
   run_monitor_command("docker pull", command).await
 }
 
+#[instrument]
 pub async fn deploy(
   deployment: &Deployment,
   stop_signal: Option<TerminationSignal>,
@@ -200,14 +210,17 @@ pub async fn deploy(
   };
 
   let _ = pull_image(image).await;
+  debug!("image pulled");
   let _ = stop_and_remove_container(
     &deployment.name,
     stop_signal,
     stop_time,
   )
   .await;
+  debug!("container stopped and removed");
 
   let command = docker_run_command(deployment, image);
+  debug!("docker run command: {command}");
 
   if deployment.config.skip_secret_interp {
     run_monitor_command("docker run", command).await

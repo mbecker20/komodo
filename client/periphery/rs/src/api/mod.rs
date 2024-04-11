@@ -50,7 +50,7 @@ pub struct GetSecrets {}
 
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Log)]
-pub struct PruneAll {}
+pub struct PruneSystem {}
 
 //
 

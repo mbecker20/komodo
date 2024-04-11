@@ -15,6 +15,11 @@ use crate::{
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerList> for State {
+  #[instrument(
+    name = "GetContainerList",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     _: GetContainerList,
@@ -28,6 +33,7 @@ impl Resolve<GetContainerList> for State {
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerLog> for State {
+  #[instrument(name = "GetContainerLog", level = "debug", skip(self))]
   async fn resolve(
     &self,
     req: GetContainerLog,
@@ -41,6 +47,11 @@ impl Resolve<GetContainerLog> for State {
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerLogSearch> for State {
+  #[instrument(
+    name = "GetContainerLogSearch",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     req: GetContainerLogSearch,
@@ -57,6 +68,11 @@ impl Resolve<GetContainerLogSearch> for State {
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerStats> for State {
+  #[instrument(
+    name = "GetContainerStats",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     req: GetContainerStats,
@@ -74,6 +90,11 @@ impl Resolve<GetContainerStats> for State {
 
 #[async_trait::async_trait]
 impl Resolve<GetContainerStatsList> for State {
+  #[instrument(
+    name = "GetContainerStatsList",
+    level = "debug",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     _: GetContainerStatsList,
@@ -87,6 +108,10 @@ impl Resolve<GetContainerStatsList> for State {
 
 #[async_trait::async_trait]
 impl Resolve<StartContainer> for State {
+  #[instrument(
+    name = "StartContainer",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     req: StartContainer,
@@ -100,6 +125,10 @@ impl Resolve<StartContainer> for State {
 
 #[async_trait::async_trait]
 impl Resolve<StopContainer> for State {
+  #[instrument(
+    name = "StopContainer",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     req: StopContainer,
@@ -118,6 +147,10 @@ impl Resolve<StopContainer> for State {
 
 #[async_trait::async_trait]
 impl Resolve<RemoveContainer> for State {
+  #[instrument(
+    name = "RemoveContainer",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     req: RemoveContainer,
@@ -136,6 +169,10 @@ impl Resolve<RemoveContainer> for State {
 
 #[async_trait::async_trait]
 impl Resolve<RenameContainer> for State {
+  #[instrument(
+    name = "RenameContainer",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     req: RenameContainer,
@@ -155,6 +192,10 @@ impl Resolve<RenameContainer> for State {
 
 #[async_trait::async_trait]
 impl Resolve<PruneContainers> for State {
+  #[instrument(
+    name = "PruneContainers",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     _: PruneContainers,
@@ -168,6 +209,10 @@ impl Resolve<PruneContainers> for State {
 
 #[async_trait::async_trait]
 impl Resolve<Deploy> for State {
+  #[instrument(
+    name = "Deploy",
+    skip(self)
+  )]
   async fn resolve(
     &self,
     Deploy {

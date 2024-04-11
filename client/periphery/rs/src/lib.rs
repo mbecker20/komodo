@@ -30,14 +30,19 @@ impl PeripheryClient {
     }
   }
 
+  // tracing will skip self, to avoid including passkey in traces
+  #[tracing::instrument(skip(self))]
   pub async fn request<T: HasResponse>(
     &self,
     request: T,
   ) -> anyhow::Result<T::Response> {
+    tracing::debug!("running health check");
     self.health_check().await?;
+    tracing::debug!("health check passed. running inner request");
     self.request_inner(request, None).await
   }
 
+  #[tracing::instrument(skip(self))]
   pub async fn health_check(&self) -> anyhow::Result<()> {
     self
       .request_inner(api::GetHealth {}, Some(Duration::from_secs(1)))
@@ -45,6 +50,7 @@ impl PeripheryClient {
     Ok(())
   }
 
+  #[tracing::instrument(skip(self))]
   async fn request_inner<T: HasResponse>(
     &self,
     request: T,
@@ -71,14 +77,19 @@ impl PeripheryClient {
       "got response | type: {req_type} | {status} | body: {res:?}",
     );
     if status == StatusCode::OK {
-      res.json().await.context(format!(
-                "failed to parse response to json | type: {req_type} | body: {request:?}"
-            ))
+      tracing::debug!("response ok, deserializing");
+      res.json().await.with_context(|| format!(
+        "failed to parse response to json | type: {req_type} | body: {request:?}"
+      ))
     } else {
+      tracing::debug!("response is non-200");
+
       let text = res
         .text()
         .await
         .context("failed to convert response to text")?;
+
+      tracing::debug!("got response text, deserializing error");
 
       let error = deserialize_error(text)
         .context(format!("request to periphery failed | {status}"));

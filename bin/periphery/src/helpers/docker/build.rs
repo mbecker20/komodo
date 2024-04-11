@@ -10,6 +10,13 @@ use crate::{config::periphery_config, helpers::run_monitor_command};
 
 use super::{docker_login, parse_extra_args};
 
+#[instrument]
+pub async fn prune_images() -> Log {
+  let command = String::from("docker image prune -a -f");
+  run_monitor_command("prune images", command).await
+}
+
+#[instrument]
 pub async fn build(
   Build {
     name,
@@ -63,6 +70,7 @@ pub async fn build(
   if *skip_secret_interp {
     let build_log =
       run_monitor_command("docker build", command).await;
+    info!("finished building docker image");
     logs.push(build_log);
   } else {
     let (command, replacers) = svi::interpolate_variables(

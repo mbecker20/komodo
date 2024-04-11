@@ -18,6 +18,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<Build> for State {
+  #[instrument(name = "Build", skip(self))]
   async fn resolve(
     &self,
     Build { build }: Build,
@@ -44,6 +45,7 @@ impl Resolve<Build> for State {
 
 #[async_trait::async_trait]
 impl Resolve<GetImageList> for State {
+  #[instrument(name = "GetImageList", level = "debug", skip(self))]
   async fn resolve(
     &self,
     _: GetImageList,
@@ -57,11 +59,12 @@ impl Resolve<GetImageList> for State {
 
 #[async_trait]
 impl Resolve<PruneImages> for State {
+  #[instrument(name = "PruneImages", skip(self))]
   async fn resolve(
     &self,
     _: PruneImages,
     _: (),
   ) -> anyhow::Result<Log> {
-    Ok(docker::prune_images().await)
+    Ok(docker::build::prune_images().await)
   }
 }

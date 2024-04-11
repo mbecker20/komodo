@@ -16,6 +16,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<GetNetworkList> for State {
+  #[instrument(name = "GetNetworkList", level = "debug", skip(self))]
   async fn resolve(
     &self,
     _: GetNetworkList,
@@ -29,6 +30,7 @@ impl Resolve<GetNetworkList> for State {
 
 #[async_trait]
 impl Resolve<CreateNetwork> for State {
+  #[instrument(name = "CreateNetwork", skip(self))]
   async fn resolve(
     &self,
     CreateNetwork { name, driver }: CreateNetwork,
@@ -42,6 +44,7 @@ impl Resolve<CreateNetwork> for State {
 
 #[async_trait]
 impl Resolve<DeleteNetwork> for State {
+  #[instrument(name = "DeleteNetwork", skip(self))]
   async fn resolve(
     &self,
     DeleteNetwork { name }: DeleteNetwork,
@@ -55,6 +58,7 @@ impl Resolve<DeleteNetwork> for State {
 
 #[async_trait]
 impl Resolve<PruneNetworks> for State {
+  #[instrument(name = "PruneNetworks", skip(self))]
   async fn resolve(
     &self,
     _: PruneNetworks,

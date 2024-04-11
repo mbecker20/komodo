@@ -1,20 +1,16 @@
 #[macro_use]
 extern crate tracing;
 
-use std::{net::SocketAddr, str::FromStr, time::Instant};
+use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
-use axum::{middleware, routing::post, Json, Router};
-
-use axum_extra::{headers::ContentType, TypedHeader};
-use resolver_api::Resolver;
-use serror::AppResult;
+use axum::{middleware, routing::post, Router};
 use termination_signal::tokio::immediate_term_handle;
-use uuid::Uuid;
 
 mod api;
 mod config;
 mod guard;
+mod handler;
 mod helpers;
 mod system_stats;
 
@@ -34,31 +30,7 @@ async fn app() -> anyhow::Result<()> {
       .context("failed to parse socket addr")?;
 
   let app = Router::new()
-    .route(
-      "/",
-      post(|Json(request): Json<api::PeripheryRequest>| async move {
-        let timer = Instant::now();
-        let req_id = Uuid::new_v4();
-        info!("request {req_id} | {request:?}");
-        let res = tokio::spawn(async move {
-          let res = State.resolve_request(request, ()).await;
-          if let Err(resolver_api::Error::Serialization(e)) = &res {
-            warn!("request {req_id} serialization error: {e:?}");
-          }
-          if let Err(resolver_api::Error::Inner(e)) = &res {
-            warn!("request {req_id} error: {e:#}");
-          }
-          let elapsed = timer.elapsed();
-          info!("request {req_id} | resolve time: {elapsed:?}");
-          res
-        })
-        .await;
-        if let Err(e) = &res {
-          warn!("request {req_id} spawn error: {e:#}");
-        }
-        AppResult::Ok((TypedHeader(ContentType::json()), res??))
-      }),
-    )
+    .route("/", post(handler::handler))
     .layer(middleware::from_fn(guard::guard_request_by_ip))
     .layer(middleware::from_fn(guard::guard_request_by_passkey));
 

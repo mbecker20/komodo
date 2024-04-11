@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use monitor_client::entities::{update::Log, SystemCommand};
 use periphery_client::api::{
   build::*, container::*, git::*, network::*, stats::*, GetAccounts,
-  GetHealth, GetSecrets, GetVersion, GetVersionResponse, PruneAll,
+  GetHealth, GetSecrets, GetVersion, GetVersionResponse, PruneSystem,
   RunCommand,
 };
 use resolver_api::{derive::Resolver, Resolve, ResolveToString};
@@ -71,13 +71,14 @@ pub enum PeripheryRequest {
   CreateNetwork(CreateNetwork),
   DeleteNetwork(DeleteNetwork),
   PruneNetworks(PruneNetworks),
-  PruneAll(PruneAll),
+  PruneAll(PruneSystem),
 }
 
 //
 
 #[async_trait]
 impl ResolveToString<GetHealth> for State {
+  #[instrument(name = "GetHealth", level = "debug", skip(self))]
   async fn resolve_to_string(
     &self,
     _: GetHealth,
@@ -91,6 +92,7 @@ impl ResolveToString<GetHealth> for State {
 
 #[async_trait]
 impl Resolve<GetVersion> for State {
+  #[instrument(name = "GetVersion", level = "debug", skip(self))]
   async fn resolve(
     &self,
     _: GetVersion,
@@ -106,6 +108,7 @@ impl Resolve<GetVersion> for State {
 
 #[async_trait]
 impl ResolveToString<GetAccounts> for State {
+  #[instrument(name = "GetAccounts", level = "debug", skip(self))]
   async fn resolve_to_string(
     &self,
     _: GetAccounts,
@@ -119,6 +122,7 @@ impl ResolveToString<GetAccounts> for State {
 
 #[async_trait]
 impl ResolveToString<GetSecrets> for State {
+  #[instrument(name = "GetSecrets", level = "debug", skip(self))]
   async fn resolve_to_string(
     &self,
     _: GetSecrets,
@@ -130,6 +134,7 @@ impl ResolveToString<GetSecrets> for State {
 
 #[async_trait]
 impl Resolve<RunCommand> for State {
+  #[instrument(name = "RunCommand", skip(self))]
   async fn resolve(
     &self,
     RunCommand {
@@ -151,10 +156,11 @@ impl Resolve<RunCommand> for State {
 }
 
 #[async_trait]
-impl Resolve<PruneAll> for State {
+impl Resolve<PruneSystem> for State {
+  #[instrument(name = "PruneSystem", skip(self))]
   async fn resolve(
     &self,
-    PruneAll {}: PruneAll,
+    PruneSystem {}: PruneSystem,
     _: (),
   ) -> anyhow::Result<Log> {
     Ok(docker::prune_system().await)

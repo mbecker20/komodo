@@ -12,6 +12,7 @@ use serde_json::Value;
 
 use crate::config::periphery_config;
 
+#[instrument(level = "debug")]
 pub async fn guard_request_by_passkey(
   req: Request<Body>,
   next: Next,
@@ -58,6 +59,7 @@ pub async fn guard_request_by_passkey(
   }
 }
 
+#[instrument(level = "debug")]
 pub async fn guard_request_by_ip(
   req: Request<Body>,
   next: Next,
