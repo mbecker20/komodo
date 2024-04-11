@@ -9,6 +9,7 @@ import {
   Hammer,
   History,
   Loader2,
+  Rocket,
 } from "lucide-react";
 import { useToast } from "@ui/use-toast";
 import { BuildConfig } from "./config";
@@ -21,6 +22,7 @@ import {
   NewResource,
   ResourceLink,
 } from "../common";
+import { DeploymentTable } from "../deployment/table";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -60,6 +62,16 @@ export const BuildComponents: RequiredResourceComponents = {
   ],
   Status: () => <>Build</>,
   Page: {
+    Deployments: ({ id }) => {
+      const deployments = useRead("ListDeployments", {}).data?.filter(
+        (deployment) => deployment.info.build_id === id
+      );
+      return (
+        <Section title="Deployments" icon={<Rocket className="w-4 h-4" />}>
+          <DeploymentTable deployments={deployments} />
+        </Section>
+      );
+    },
     Config: ({ id }) => <BuildConfig id={id} />,
     Danger: ({ id }) => (
       <Section
