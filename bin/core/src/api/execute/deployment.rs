@@ -31,7 +31,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<Deploy, User> for State {
-  #[instrument(name = "Deploy", skip(self))]
+  #[instrument(name = "Deploy", skip(self, user))]
   async fn resolve(
     &self,
     Deploy {
@@ -149,7 +149,7 @@ impl Resolve<Deploy, User> for State {
 
 #[async_trait]
 impl Resolve<StartContainer, User> for State {
-  #[instrument(name = "StartContainer", skip(self))]
+  #[instrument(name = "StartContainer", skip(self, user))]
   async fn resolve(
     &self,
     StartContainer { deployment }: StartContainer,
@@ -239,7 +239,7 @@ impl Resolve<StartContainer, User> for State {
 
 #[async_trait]
 impl Resolve<StopContainer, User> for State {
-  #[instrument(name = "StopContainer", skip(self))]
+  #[instrument(name = "StopContainer", skip(self, user))]
   async fn resolve(
     &self,
     StopContainer {
@@ -330,7 +330,7 @@ impl Resolve<StopContainer, User> for State {
 
 #[async_trait]
 impl Resolve<StopAllContainers, User> for State {
-  #[instrument(name = "StopAllContainers", skip(self))]
+  #[instrument(name = "StopAllContainers", skip(self, user))]
   async fn resolve(
     &self,
     StopAllContainers { server }: StopAllContainers,
@@ -420,7 +420,7 @@ impl Resolve<StopAllContainers, User> for State {
 
 #[async_trait]
 impl Resolve<RemoveContainer, User> for State {
-  #[instrument(name = "RemoveContainer", skip(self))]
+  #[instrument(name = "RemoveContainer", skip(self, user))]
   async fn resolve(
     &self,
     RemoveContainer {

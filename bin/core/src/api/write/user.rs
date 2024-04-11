@@ -29,7 +29,7 @@ impl Resolve<PushRecentlyViewed, User> for State {
   #[instrument(
     name = "PushRecentlyViewed",
     level = "debug",
-    skip(self)
+    skip(self, user)
   )]
   async fn resolve(
     &self,
@@ -69,7 +69,7 @@ impl Resolve<SetLastSeenUpdate, User> for State {
   #[instrument(
     name = "SetLastSeenUpdate",
     level = "debug",
-    skip(self)
+    skip(self, user)
   )]
   async fn resolve(
     &self,
@@ -92,7 +92,7 @@ impl Resolve<SetLastSeenUpdate, User> for State {
 
 #[async_trait]
 impl Resolve<CreateServiceUser, User> for State {
-  #[instrument(name = "CreateServiceUser", skip(self))]
+  #[instrument(name = "CreateServiceUser", skip(self, user))]
   async fn resolve(
     &self,
     CreateServiceUser {
@@ -133,7 +133,7 @@ impl Resolve<CreateServiceUser, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateServiceUserDescription, User> for State {
-  #[instrument(name = "UpdateServiceUserDescription", skip(self))]
+  #[instrument(name = "UpdateServiceUserDescription", skip(self, user))]
   async fn resolve(
     &self,
     UpdateServiceUserDescription {

@@ -39,7 +39,7 @@ use crate::{
   state::{action_states, State},
 };
 
-#[instrument]
+#[instrument(skip(user))]
 async fn validate_config(
   config: &mut PartialDeploymentConfig,
   user: &User,
@@ -91,7 +91,7 @@ async fn validate_config(
 
 #[async_trait]
 impl Resolve<CreateDeployment, User> for State {
-  #[instrument(name = "CreateDeployment", skip(self))]
+  #[instrument(name = "CreateDeployment", skip(self, user))]
   async fn resolve(
     &self,
     CreateDeployment { name, mut config }: CreateDeployment,
@@ -147,7 +147,7 @@ impl Resolve<CreateDeployment, User> for State {
 
 #[async_trait]
 impl Resolve<CopyDeployment, User> for State {
-  #[instrument(name = "CopyDeployment", skip(self))]
+  #[instrument(name = "CopyDeployment", skip(self, user))]
   async fn resolve(
     &self,
     CopyDeployment { name, id }: CopyDeployment,
@@ -223,7 +223,7 @@ impl Resolve<CopyDeployment, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteDeployment, User> for State {
-  #[instrument(name = "DeleteDeployment", skip(self))]
+  #[instrument(name = "DeleteDeployment", skip(self, user))]
   async fn resolve(
     &self,
     DeleteDeployment { id }: DeleteDeployment,
@@ -350,7 +350,7 @@ impl Resolve<DeleteDeployment, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateDeployment, User> for State {
-  #[instrument(name = "UpdateDeployment", skip(self))]
+  #[instrument(name = "UpdateDeployment", skip(self, user))]
   async fn resolve(
     &self,
     UpdateDeployment { id, mut config }: UpdateDeployment,
@@ -428,7 +428,7 @@ impl Resolve<UpdateDeployment, User> for State {
 
 #[async_trait]
 impl Resolve<RenameDeployment, User> for State {
-  #[instrument(name = "RenameDeployment", skip(self))]
+  #[instrument(name = "RenameDeployment", skip(self, user))]
   async fn resolve(
     &self,
     RenameDeployment { id, name }: RenameDeployment,

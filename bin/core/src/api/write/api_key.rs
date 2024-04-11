@@ -20,7 +20,7 @@ const BCRYPT_COST: u32 = 10;
 
 #[async_trait]
 impl Resolve<CreateApiKey, User> for State {
-  #[instrument(name = "CreateApiKey", level = "debug", skip(self))]
+  #[instrument(name = "CreateApiKey", level = "debug", skip(self, user))]
   async fn resolve(
     &self,
     CreateApiKey { name, expires }: CreateApiKey,
@@ -53,7 +53,7 @@ impl Resolve<CreateApiKey, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteApiKey, User> for State {
-  #[instrument(name = "DeleteApiKey", level = "debug", skip(self))]
+  #[instrument(name = "DeleteApiKey", level = "debug", skip(self, user))]
   async fn resolve(
     &self,
     DeleteApiKey { key }: DeleteApiKey,
@@ -80,7 +80,7 @@ impl Resolve<DeleteApiKey, User> for State {
 
 #[async_trait]
 impl Resolve<CreateApiKeyForServiceUser, User> for State {
-  #[instrument(name = "CreateApiKeyForServiceUser", skip(self))]
+  #[instrument(name = "CreateApiKeyForServiceUser", skip(self, user))]
   async fn resolve(
     &self,
     CreateApiKeyForServiceUser {
@@ -109,7 +109,7 @@ impl Resolve<CreateApiKeyForServiceUser, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteApiKeyForServiceUser, User> for State {
-  #[instrument(name = "DeleteApiKeyForServiceUser", skip(self))]
+  #[instrument(name = "DeleteApiKeyForServiceUser", skip(self, user))]
   async fn resolve(
     &self,
     DeleteApiKeyForServiceUser { key }: DeleteApiKeyForServiceUser,

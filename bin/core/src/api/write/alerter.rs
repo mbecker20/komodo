@@ -32,7 +32,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<CreateAlerter, User> for State {
-  #[instrument(name = "CreateAlerter", skip(self))]
+  #[instrument(name = "CreateAlerter", skip(self, user))]
   async fn resolve(
     &self,
     CreateAlerter { name, config }: CreateAlerter,
@@ -94,7 +94,7 @@ impl Resolve<CreateAlerter, User> for State {
 
 #[async_trait]
 impl Resolve<CopyAlerter, User> for State {
-  #[instrument(name = "CopyAlerter", skip(self))]
+  #[instrument(name = "CopyAlerter", skip(self, user))]
   async fn resolve(
     &self,
     CopyAlerter { name, id }: CopyAlerter,
@@ -158,7 +158,7 @@ impl Resolve<CopyAlerter, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteAlerter, User> for State {
-  #[instrument(name = "DeleteAlerter", skip(self))]
+  #[instrument(name = "DeleteAlerter", skip(self, user))]
   async fn resolve(
     &self,
     DeleteAlerter { id }: DeleteAlerter,
@@ -197,7 +197,7 @@ impl Resolve<DeleteAlerter, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateAlerter, User> for State {
-  #[instrument(name = "UpdateAlerter", skip(self))]
+  #[instrument(name = "UpdateAlerter", skip(self, user))]
   async fn resolve(
     &self,
     UpdateAlerter { id, config }: UpdateAlerter,

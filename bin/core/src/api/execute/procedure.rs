@@ -20,7 +20,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<RunProcedure, User> for State {
-  #[instrument(name = "RunProcedure", skip(self))]
+  #[instrument(name = "RunProcedure", skip(self, user))]
   async fn resolve(
     &self,
     RunProcedure { procedure }: RunProcedure,

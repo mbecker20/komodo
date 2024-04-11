@@ -27,7 +27,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<UpdateUserPermissions, User> for State {
-  #[instrument(name = "UpdateUserPermissions", skip(self))]
+  #[instrument(name = "UpdateUserPermissions", skip(self, admin))]
   async fn resolve(
     &self,
     UpdateUserPermissions {
@@ -87,7 +87,7 @@ impl Resolve<UpdateUserPermissions, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateUserPermissionsOnTarget, User> for State {
-  #[instrument(name = "UpdateUserPermissionsOnTarget", skip(self))]
+  #[instrument(name = "UpdateUserPermissionsOnTarget", skip(self, admin))]
   async fn resolve(
     &self,
     UpdateUserPermissionsOnTarget {

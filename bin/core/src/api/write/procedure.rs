@@ -36,7 +36,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<CreateProcedure, User> for State {
-  #[instrument(name = "CreateProcedure", skip(self))]
+  #[instrument(name = "CreateProcedure", skip(self, user))]
   async fn resolve(
     &self,
     CreateProcedure { name, mut config }: CreateProcedure,
@@ -232,7 +232,7 @@ async fn validate_procedure_config(
 
 #[async_trait]
 impl Resolve<CopyProcedure, User> for State {
-  #[instrument(name = "CopyProcedure", skip(self))]
+  #[instrument(name = "CopyProcedure", skip(self, user))]
   async fn resolve(
     &self,
     CopyProcedure { name, id }: CopyProcedure,
@@ -299,7 +299,7 @@ impl Resolve<CopyProcedure, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateProcedure, User> for State {
-  #[instrument(name = "UpdateProcedure", skip(self))]
+  #[instrument(name = "UpdateProcedure", skip(self, user))]
   async fn resolve(
     &self,
     UpdateProcedure { id, mut config }: UpdateProcedure,
@@ -350,7 +350,7 @@ impl Resolve<UpdateProcedure, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteProcedure, User> for State {
-  #[instrument(name = "DeleteProcedure", skip(self))]
+  #[instrument(name = "DeleteProcedure", skip(self, user))]
   async fn resolve(
     &self,
     DeleteProcedure { id }: DeleteProcedure,

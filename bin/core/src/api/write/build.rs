@@ -34,7 +34,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<CreateBuild, User> for State {
-  #[instrument(name = "CreateBuild", skip(self))]
+  #[instrument(name = "CreateBuild", skip(self, user))]
   async fn resolve(
     &self,
     CreateBuild { name, mut config }: CreateBuild,
@@ -97,7 +97,7 @@ impl Resolve<CreateBuild, User> for State {
 
 #[async_trait]
 impl Resolve<CopyBuild, User> for State {
-  #[instrument(name = "CopyBuild", skip(self))]
+  #[instrument(name = "CopyBuild", skip(self, user))]
   async fn resolve(
     &self,
     CopyBuild { name, id }: CopyBuild,
@@ -167,7 +167,7 @@ impl Resolve<CopyBuild, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteBuild, User> for State {
-  #[instrument(name = "DeleteBuild", skip(self))]
+  #[instrument(name = "DeleteBuild", skip(self, user))]
   async fn resolve(
     &self,
     DeleteBuild { id }: DeleteBuild,
@@ -221,7 +221,7 @@ impl Resolve<DeleteBuild, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateBuild, User> for State {
-  #[instrument(name = "UpdateBuild", skip(self))]
+  #[instrument(name = "UpdateBuild", skip(self, user))]
   async fn resolve(
     &self,
     UpdateBuild { id, mut config }: UpdateBuild,

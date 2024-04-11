@@ -49,7 +49,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<RunBuild, User> for State {
-  #[instrument(name = "RunBuild", skip(self))]
+  #[instrument(name = "RunBuild", skip(self, user))]
   async fn resolve(
     &self,
     RunBuild { build }: RunBuild,
@@ -254,7 +254,7 @@ impl Resolve<RunBuild, User> for State {
 
 #[async_trait]
 impl Resolve<CancelBuild, User> for State {
-  #[instrument(name = "CancelBuild", skip(self))]
+  #[instrument(name = "CancelBuild", skip(self, user))]
   async fn resolve(
     &self,
     CancelBuild { build }: CancelBuild,

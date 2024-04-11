@@ -14,7 +14,7 @@ use crate::{helpers::resource::StateResource, state::State};
 
 #[async_trait]
 impl Resolve<UpdateDescription, User> for State {
-  #[instrument(name = "UpdateDescription", skip(self))]
+  #[instrument(name = "UpdateDescription", skip(self, user))]
   async fn resolve(
     &self,
     UpdateDescription {

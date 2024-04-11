@@ -54,7 +54,7 @@ pub fn router() -> Router {
     .layer(middleware::from_fn(auth_request))
 }
 
-#[instrument(name = "ExecuteHandler")]
+#[instrument(name = "ExecuteHandler", skip(user))]
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<ExecuteRequest>,
@@ -62,7 +62,7 @@ async fn handler(
   let timer = Instant::now();
   let req_id = Uuid::new_v4();
   info!(
-    "/execute request {req_id} | user: {} ({}) | {request:?}",
+    "/execute request {req_id} | user: {} ({})",
     user.username, user.id
   );
   let res = tokio::spawn(async move {

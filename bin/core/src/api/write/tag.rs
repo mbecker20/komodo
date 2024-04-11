@@ -28,7 +28,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<CreateTag, User> for State {
-  #[instrument(name = "CreateTag", skip(self))]
+  #[instrument(name = "CreateTag", skip(self, user))]
   async fn resolve(
     &self,
     CreateTag { name }: CreateTag,
@@ -87,7 +87,7 @@ impl Resolve<RenameTag, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteTag, User> for State {
-  #[instrument(name = "DeleteTag", skip(self))]
+  #[instrument(name = "DeleteTag", skip(self, user))]
   async fn resolve(
     &self,
     DeleteTag { id }: DeleteTag,
@@ -113,7 +113,7 @@ impl Resolve<DeleteTag, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateTagsOnResource, User> for State {
-  #[instrument(name = "UpdateTagsOnResource", skip(self))]
+  #[instrument(name = "UpdateTagsOnResource", skip(self, user))]
   async fn resolve(
     &self,
     UpdateTagsOnResource { target, tags }: UpdateTagsOnResource,

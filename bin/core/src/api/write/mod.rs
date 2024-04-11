@@ -110,7 +110,7 @@ pub fn router() -> Router {
     .layer(middleware::from_fn(auth_request))
 }
 
-#[instrument(name = "WriteHandler")]
+#[instrument(name = "WriteHandler", skip(user))]
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<WriteRequest>,
@@ -118,7 +118,7 @@ async fn handler(
   let timer = Instant::now();
   let req_id = Uuid::new_v4();
   info!(
-    "/write request {req_id} | user: {} ({}) | {request:?}",
+    "/write request {req_id} | user: {} ({})",
     user.username, user.id
   );
   let res = tokio::spawn(async move {

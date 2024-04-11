@@ -34,7 +34,7 @@ use crate::{
   state::{action_states, State},
 };
 
-#[instrument]
+#[instrument(skip(user))]
 async fn validate_config(
   config: &mut PartialRepoConfig,
   user: &User,
@@ -57,7 +57,7 @@ async fn validate_config(
 
 #[async_trait]
 impl Resolve<CreateRepo, User> for State {
-  #[instrument(name = "CreateRepo", skip(self))]
+  #[instrument(name = "CreateRepo", skip(self, user))]
   async fn resolve(
     &self,
     CreateRepo { name, mut config }: CreateRepo,
@@ -134,7 +134,7 @@ impl Resolve<CreateRepo, User> for State {
 
 #[async_trait]
 impl Resolve<CopyRepo, User> for State {
-  #[instrument(name = "CopyRepo", skip(self))]
+  #[instrument(name = "CopyRepo", skip(self, user))]
   async fn resolve(
     &self,
     CopyRepo { name, id }: CopyRepo,
@@ -198,7 +198,7 @@ impl Resolve<CopyRepo, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteRepo, User> for State {
-  #[instrument(name = "DeleteRepo", skip(self))]
+  #[instrument(name = "DeleteRepo", skip(self, user))]
   async fn resolve(
     &self,
     DeleteRepo { id }: DeleteRepo,
@@ -295,7 +295,7 @@ impl Resolve<DeleteRepo, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateRepo, User> for State {
-  #[instrument(name = "UpdateRepo", skip(self))]
+  #[instrument(name = "UpdateRepo", skip(self, user))]
   async fn resolve(
     &self,
     UpdateRepo { id, mut config }: UpdateRepo,

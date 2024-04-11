@@ -138,7 +138,7 @@ pub fn router() -> Router {
     .layer(middleware::from_fn(auth_request))
 }
 
-#[instrument(name = "ReadHandler", level = "debug")]
+#[instrument(name = "ReadHandler", level = "debug", skip(user))]
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<ReadRequest>,
@@ -146,7 +146,7 @@ async fn handler(
   let timer = Instant::now();
   let req_id = Uuid::new_v4();
   debug!(
-    "/read request {req_id} | user: {} ({}) | {request:?}",
+    "/read request {req_id} | user: {} ({})",
     user.username, user.id
   );
   let res = State.resolve_request(request, user).await;
@@ -163,6 +163,7 @@ async fn handler(
 
 #[async_trait]
 impl Resolve<GetVersion, User> for State {
+  #[instrument(name = "GetVersion", level = "debug", skip(self))]
   async fn resolve(
     &self,
     GetVersion {}: GetVersion,
@@ -176,6 +177,7 @@ impl Resolve<GetVersion, User> for State {
 
 #[async_trait]
 impl Resolve<GetCoreInfo, User> for State {
+  #[instrument(name = "GetCoreInfo", level = "debug", skip(self))]
   async fn resolve(
     &self,
     GetCoreInfo {}: GetCoreInfo,

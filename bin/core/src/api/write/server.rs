@@ -38,7 +38,7 @@ use crate::{
 
 #[async_trait]
 impl Resolve<CreateServer, User> for State {
-  #[instrument(name = "CreateServer", skip(self))]
+  #[instrument(name = "CreateServer", skip(self, user))]
   async fn resolve(
     &self,
     CreateServer { name, config }: CreateServer,
@@ -104,7 +104,7 @@ impl Resolve<CreateServer, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteServer, User> for State {
-  #[instrument(name = "DeleteServer", skip(self))]
+  #[instrument(name = "DeleteServer", skip(self, user))]
   async fn resolve(
     &self,
     DeleteServer { id }: DeleteServer,
@@ -194,7 +194,7 @@ impl Resolve<DeleteServer, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateServer, User> for State {
-  #[instrument(name = "UpdateServer", skip(self))]
+  #[instrument(name = "UpdateServer", skip(self, user))]
   async fn resolve(
     &self,
     UpdateServer { id, config }: UpdateServer,
@@ -242,7 +242,7 @@ impl Resolve<UpdateServer, User> for State {
 
 #[async_trait]
 impl Resolve<RenameServer, User> for State {
-  #[instrument(name = "RenameServer", skip(self))]
+  #[instrument(name = "RenameServer", skip(self, user))]
   async fn resolve(
     &self,
     RenameServer { id, name }: RenameServer,
@@ -272,7 +272,7 @@ impl Resolve<RenameServer, User> for State {
 
 #[async_trait]
 impl Resolve<CreateNetwork, User> for State {
-  #[instrument(name = "CreateNetwork", skip(self))]
+  #[instrument(name = "CreateNetwork", skip(self, user))]
   async fn resolve(
     &self,
     CreateNetwork { server_id, name }: CreateNetwork,
@@ -310,7 +310,7 @@ impl Resolve<CreateNetwork, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteNetwork, User> for State {
-  #[instrument(name = "DeleteNetwork", skip(self))]
+  #[instrument(name = "DeleteNetwork", skip(self, user))]
   async fn resolve(
     &self,
     DeleteNetwork { server_id, name }: DeleteNetwork,
