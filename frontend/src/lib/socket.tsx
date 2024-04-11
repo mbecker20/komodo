@@ -160,7 +160,7 @@ export const WsStatusIndicator = () => {
     >
       <Circle
         className={cn(
-          "w-4 h-4 stroke-none",
+          "w-4 h-4 stroke-none transition-colors",
           connected ? "fill-green-500" : "fill-red-500"
         )}
       />
