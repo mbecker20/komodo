@@ -1,7 +1,6 @@
 use anyhow::Context;
 use serde::{Deserialize, Serialize};
 use tracing::level_filters::LevelFilter;
-use tracing_loki::url::Url;
 use tracing_subscriber::{
   layer::SubscriberExt, util::SubscriberInitExt,
 };
@@ -15,9 +14,6 @@ pub struct LogConfig {
   /// Controls logging to stdout / stderr
   #[serde(default)]
   pub stdio: StdioLogMode,
-
-  /// Send tracing logs to loki
-  pub loki_url: Option<String>,
 }
 
 pub fn init(config: &LogConfig) -> anyhow::Result<()> {
@@ -26,39 +22,17 @@ pub fn init(config: &LogConfig) -> anyhow::Result<()> {
   let registry =
     tracing_subscriber::registry().with(LevelFilter::from(log_level));
 
-  match (config.stdio, &config.loki_url) {
-    (StdioLogMode::Standard, Some(loki_url)) => registry
-      .with(loki_layer(loki_url)?)
+  match config.stdio {
+    StdioLogMode::Standard => registry
       .with(tracing_subscriber::fmt::layer())
       .try_init()
       .context("failed to init logger"),
-    (StdioLogMode::Json, Some(loki_url)) => registry
-      .with(loki_layer(loki_url)?)
+    StdioLogMode::Json => registry
       .with(tracing_subscriber::fmt::layer().json())
       .try_init()
       .context("failed to init logger"),
-    (StdioLogMode::None, Some(loki_url)) => registry
-      .with(loki_layer(loki_url)?)
-      .try_init()
-      .context("failed to init logger"),
-    (StdioLogMode::Standard, None) => registry
-      .with(tracing_subscriber::fmt::layer())
-      .try_init()
-      .context("failed to init logger"),
-    (StdioLogMode::Json, None) => registry
-      .with(tracing_subscriber::fmt::layer().json())
-      .try_init()
-      .context("failed to init logger"),
-    (StdioLogMode::None, None) => Ok(()),
+    StdioLogMode::None => Ok(()),
   }
-}
-
-fn loki_layer(loki_url: &str) -> anyhow::Result<tracing_loki::Layer> {
-  let (layer, task) = tracing_loki::builder()
-    .label("host", "mine")?
-    .build_url(Url::parse(loki_url)?)?;
-  tokio::spawn(task);
-  Ok(layer)
 }
 
 #[derive(

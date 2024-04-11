@@ -49,7 +49,6 @@ pub fn core_config() -> &'static CoreConfig {
     // logging
     monitor_logging_level: Option<logger::LogLevel>,
     monitor_logging_stdio: Option<logger::StdioLogMode>,
-    monitor_logging_loki_url: Option<String>,
 
     monitor_local_auth: Option<bool>,
 
@@ -122,8 +121,6 @@ pub fn core_config() -> &'static CoreConfig {
       env.monitor_logging_level.unwrap_or(config.logging.level);
     config.logging.stdio =
       env.monitor_logging_stdio.unwrap_or(config.logging.stdio);
-    config.logging.loki_url =
-      env.monitor_logging_loki_url.or(config.logging.loki_url);
 
     config.local_auth =
       env.monitor_local_auth.unwrap_or(config.local_auth);

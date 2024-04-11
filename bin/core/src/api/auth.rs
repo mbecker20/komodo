@@ -50,7 +50,7 @@ pub fn router() -> Router {
   router
 }
 
-#[instrument(name = "AuthHandler")]
+#[instrument(name = "AuthHandler", level = "debug", skip(headers))]
 async fn handler(
   headers: HeaderMap,
   Json(request): Json<AuthRequest>,
@@ -60,10 +60,10 @@ async fn handler(
   debug!("/auth request {req_id} | METHOD: {}", request.req_type());
   let res = State.resolve_request(request, headers).await;
   if let Err(resolver_api::Error::Serialization(e)) = &res {
-    warn!("/auth request {req_id} | serialization error: {e:?}");
+    debug!("/auth request {req_id} | serialization error: {e:?}");
   }
   if let Err(resolver_api::Error::Inner(e)) = &res {
-    warn!("/auth request {req_id} | error: {e:#}");
+    debug!("/auth request {req_id} | error: {e:#}");
   }
   let elapsed = timer.elapsed();
   debug!("/auth request {req_id} | resolve time: {elapsed:?}");

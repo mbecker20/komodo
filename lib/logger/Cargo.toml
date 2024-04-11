@@ -12,5 +12,4 @@ tokio.workspace = true
 serde.workspace = true
 anyhow.workspace = true
 tracing.workspace = true
-tracing-loki.workspace = true
 tracing-subscriber.workspace = true
