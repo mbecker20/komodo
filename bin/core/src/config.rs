@@ -14,11 +14,17 @@ pub fn env() -> &'static Env {
 
 #[derive(Deserialize, Debug)]
 pub struct Env {
-  #[serde(default = "default_config_path")]
-  pub config_path: String,
   #[serde(default = "default_frontend_path")]
   pub frontend_path: String,
-  pub port: Option<u16>,
+
+  #[serde(default = "default_config_path")]
+  config_path: String,
+
+  // Config overrides
+  port: Option<u16>,
+  log_level: Option<logger::LogLevel>,
+  stdio_log_mode: Option<logger::StdioLogMode>,
+  loki_url: Option<String>,
 }
 
 fn default_config_path() -> String {
@@ -39,9 +45,16 @@ pub fn core_config() -> &'static CoreConfig {
         .unwrap_or_else(|e| {
           panic!("failed at parsing config at {config_path} | {e:#}")
         });
-    if let Some(port) = env.port {
-      config.port = port;
-    }
+
+    // Overrides
+    config.port = env.port.unwrap_or(config.port);
+    config.logging.level =
+      env.log_level.unwrap_or(config.logging.level);
+    config.logging.stdio =
+      env.stdio_log_mode.unwrap_or(config.logging.stdio);
+    config.logging.loki_url =
+      env.loki_url.clone().or(config.logging.loki_url);
+
     config
   })
 }

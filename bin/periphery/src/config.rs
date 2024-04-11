@@ -15,7 +15,12 @@ struct Env {
   config_paths: Vec<String>,
   #[serde(default)]
   config_keywords: Vec<String>,
+
+  // Overrides
   port: Option<u16>,
+  log_level: Option<logger::LogLevel>,
+  stdio_log_mode: Option<logger::StdioLogMode>,
+  loki_url: Option<String>,
 }
 
 fn default_config_paths() -> Vec<String> {
@@ -64,9 +69,16 @@ pub fn periphery_config() -> &'static PeripheryConfig {
       args.extend_config_arrays,
     )
     .expect("failed at parsing config from paths");
-    if let Some(port) = env.port {
-      config.port = port;
-    }
+
+    // Overrides
+    config.port = env.port.unwrap_or(config.port);
+    config.logging.level =
+      env.log_level.unwrap_or(config.logging.level);
+    config.logging.stdio =
+      env.stdio_log_mode.unwrap_or(config.logging.stdio);
+    config.logging.loki_url =
+      env.loki_url.clone().or(config.logging.loki_url);
+
     config
   })
 }
