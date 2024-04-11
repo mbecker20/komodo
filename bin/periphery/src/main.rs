@@ -21,7 +21,8 @@ async fn app() -> anyhow::Result<()> {
   dotenv::dotenv().ok();
   let config = config::periphery_config();
   logger::init(LogConfig {
-    stdio: true,
+    stdio: logger::StdioLogMode::Standard,
+    level: config.log_level,
     ..Default::default()
   })?;
 

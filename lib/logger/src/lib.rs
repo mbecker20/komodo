@@ -8,67 +8,46 @@ use tracing_subscriber::{
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct LogConfig {
-  /// Whether to log to stdout / stderr with tracing_subscriber::fmt().init(). default: true.
-  #[serde(default = "default_stdio")]
-  pub stdio: bool,
-
   /// The logging level. default: info
   #[serde(default)]
   pub level: LogLevel,
+
+  /// Controls logging to stdout / stderr
+  #[serde(default)]
+  pub stdio: StdioLogMode,
 
   /// Send tracing logs to loki
   pub loki_url: Option<String>,
 }
 
-fn default_stdio() -> bool {
-  true
-}
-
 pub fn init(config: LogConfig) -> anyhow::Result<()> {
   let log_level: tracing::Level = config.level.into();
 
-  match (config.stdio, config.loki_url) {
-    // Both loki and stdio
-    (true, Some(loki_url)) => {
-      let (loki_layer, task) = tracing_loki::builder()
-        .label("host", "mine")?
-        .build_url(Url::parse(&loki_url)?)?;
-      tokio::spawn(task);
-
-      tracing_subscriber::registry()
-        .with(LevelFilter::from(log_level))
-        .with(tracing_subscriber::fmt::Layer::new())
-        .with(loki_layer)
-        .try_init()
-        .context("failed to init logger")
-    }
-
-    // Just stdio
-    (true, None) => tracing_subscriber::registry()
-      .with(LevelFilter::from(log_level))
-      .with(tracing_subscriber::fmt::Layer::new())
-      .try_init()
-      .context("failed to init logger"),
-
-    // Just loki
-    (false, Some(loki_url)) => {
-      let (loki_layer, task) = tracing_loki::builder()
-        .label("host", "mine")?
-        .build_url(Url::parse(&loki_url)?)?;
-      tokio::spawn(task);
-      tracing_subscriber::registry()
-        .with(LevelFilter::from(log_level))
-        .with(loki_layer)
-        .try_init()
-        .context("failed to init logger")
-    }
-
-    // Neither (not recommended)
-    (false, None) => tracing_subscriber::registry()
-      .with(LevelFilter::from(log_level))
-      .try_init()
-      .context("failed to init logger"),
+  match config.stdio {
+    StdioLogMode::Standard => tracing_subscriber::fmt()
+      .with_max_level(LevelFilter::from(log_level))
+      .init(),
+    StdioLogMode::Json => tracing_subscriber::fmt()
+      .with_max_level(LevelFilter::from(log_level))
+      .json()
+      .init(),
+    StdioLogMode::None => {}
   }
+
+  // Create loki subscriber
+  if let Some(loki_url) = config.loki_url {
+    let (loki_layer, task) = tracing_loki::builder()
+      .label("host", "mine")?
+      .build_url(Url::parse(&loki_url)?)?;
+    tokio::spawn(task);
+    tracing_subscriber::registry()
+      .with(LevelFilter::from(log_level))
+      .with(loki_layer)
+      .try_init()
+      .context("failed to init logger")?;
+  }
+
+  Ok(())
 }
 
 #[derive(
@@ -102,4 +81,23 @@ impl From<LogLevel> for tracing::Level {
       LogLevel::Error => tracing::Level::ERROR,
     }
   }
+}
+
+#[derive(
+  Debug,
+  Clone,
+  Copy,
+  Default,
+  PartialEq,
+  Eq,
+  Hash,
+  Serialize,
+  Deserialize,
+)]
+#[serde(rename_all = "lowercase")]
+pub enum StdioLogMode {
+  #[default]
+  Standard,
+  Json,
+  None,
 }

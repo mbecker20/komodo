@@ -9,10 +9,7 @@ mod core;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  logger::init(LogConfig {
-    stdio: true,
-    ..Default::default()
-  })?;
+  logger::init(LogConfig::default())?;
   // periphery::tests().await?;
   core::tests().await?;
 

@@ -24,10 +24,7 @@ fn default_port() -> u16 {
 
 async fn app() -> anyhow::Result<()> {
   dotenv::dotenv().ok();
-  logger::init(LogConfig {
-    stdio: true,
-    ..Default::default()
-  })?;
+  logger::init(LogConfig::default())?;
 
   let Env { port } =
     envy::from_env().context("failed to parse env")?;
