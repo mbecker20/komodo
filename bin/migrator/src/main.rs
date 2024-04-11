@@ -2,6 +2,8 @@
 #[macro_use]
 extern crate tracing;
 
+use logger::LogConfig;
+
 use crate::state::State;
 
 mod legacy;
@@ -10,7 +12,10 @@ mod state;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  logger::init(tracing::Level::INFO);
+  logger::init(LogConfig {
+    stdio: true,
+    ..Default::default()
+  })?;
 
   info!("starting migrator");
 

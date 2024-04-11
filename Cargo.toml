@@ -61,6 +61,7 @@ thiserror = "1.0.58"
 # LOGGING
 tracing = "0.1.40"
 tracing-subscriber = "0.3.18"
+tracing-loki = "0.2.4"
 
 # CONFIG
 clap = { version = "4.5.3", features = ["derive"] }
