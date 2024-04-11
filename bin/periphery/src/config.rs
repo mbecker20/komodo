@@ -3,9 +3,10 @@ use std::{
 };
 
 use clap::Parser;
+use logger::LogConfig;
 use merge_config_files::parse_config_paths;
 use monitor_client::entities::Timelength;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::json;
 
 #[derive(Deserialize)]
@@ -88,7 +89,7 @@ pub fn secrets_response() -> &'static String {
   })
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct PeripheryConfig {
   /// The port periphery will run on
   #[serde(default = "default_periphery_port")]
@@ -105,6 +106,10 @@ pub struct PeripheryConfig {
   /// The rate at which the system stats will be polled to update the cache
   #[serde(default = "default_stats_refresh_interval")]
   pub stats_polling_rate: Timelength,
+
+  /// Logging configuration
+  #[serde(default)]
+  pub logging: LogConfig,
 
   /// Limits which IPv4 addresses are allowed to call the api
   #[serde(default)]

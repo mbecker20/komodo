@@ -5,7 +5,7 @@ use monitor_client::MonitorClient;
 use termination_signal::tokio::immediate_term_handle;
 
 async fn app() -> anyhow::Result<()> {
-  logger::init(Default::default())?;
+  logger::init(&Default::default())?;
 
   info!("v {}", env!("CARGO_PKG_VERSION"));
 

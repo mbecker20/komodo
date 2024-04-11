@@ -20,7 +20,7 @@ pub struct LogConfig {
   pub loki_url: Option<String>,
 }
 
-pub fn init(config: LogConfig) -> anyhow::Result<()> {
+pub fn init(config: &LogConfig) -> anyhow::Result<()> {
   let log_level: tracing::Level = config.level.into();
 
   match config.stdio {
@@ -35,10 +35,10 @@ pub fn init(config: LogConfig) -> anyhow::Result<()> {
   }
 
   // Create loki subscriber
-  if let Some(loki_url) = config.loki_url {
+  if let Some(loki_url) = &config.loki_url {
     let (loki_layer, task) = tracing_loki::builder()
       .label("host", "mine")?
-      .build_url(Url::parse(&loki_url)?)?;
+      .build_url(Url::parse(loki_url)?)?;
     tokio::spawn(task);
     tracing_subscriber::registry()
       .with(LevelFilter::from(log_level))

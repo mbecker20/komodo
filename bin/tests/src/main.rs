@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate tracing;
 
-use logger::LogConfig;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 
 mod core;
@@ -9,7 +8,7 @@ mod core;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  logger::init(LogConfig::default())?;
+  logger::init(&Default::default())?;
   // periphery::tests().await?;
   core::tests().await?;
 

@@ -5,7 +5,6 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::{middleware, routing::post, Router};
-use logger::LogConfig;
 use termination_signal::tokio::immediate_term_handle;
 
 mod api;
@@ -20,11 +19,7 @@ struct State;
 async fn app() -> anyhow::Result<()> {
   dotenv::dotenv().ok();
   let config = config::periphery_config();
-  logger::init(LogConfig {
-    stdio: logger::StdioLogMode::Standard,
-    level: config.log_level,
-    ..Default::default()
-  })?;
+  logger::init(&config.logging)?;
 
   info!("version: v{}", env!("CARGO_PKG_VERSION"));
 

@@ -1,5 +1,6 @@
 use std::sync::OnceLock;
 
+use logger::LogConfig;
 use merge_config_files::parse_config_file;
 use monitor_client::entities::Timelength;
 use serde::Deserialize;
@@ -61,9 +62,9 @@ pub struct CoreConfig {
   /// Sent in auth header with req to periphery
   pub passkey: String,
 
-  /// Configure custom log level: trace | debug | info | warn | error. default: info
+  /// Configure logging
   #[serde(default)]
-  pub log_level: logger::LogLevel,
+  pub logging: LogConfig,
 
   /// Control how long distributed JWT remain valid for. Default is 1-day
   #[serde(default = "default_jwt_valid_for")]

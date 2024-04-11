@@ -5,7 +5,6 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::Router;
-use logger::LogConfig;
 use termination_signal::tokio::immediate_term_handle;
 use tower_http::{
   cors::{Any, CorsLayer},
@@ -29,11 +28,7 @@ mod ws;
 async fn app() -> anyhow::Result<()> {
   dotenv::dotenv().ok();
   let config = core_config();
-  logger::init(LogConfig {
-    stdio: logger::StdioLogMode::Standard,
-    level: config.log_level,
-    ..Default::default()
-  })?;
+  logger::init(&config.logging)?;
   info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
 
   // Spawn monitoring loops

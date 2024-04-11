@@ -5,7 +5,6 @@ use std::{net::SocketAddr, str::FromStr};
 
 use anyhow::Context;
 use axum::{routing::post, Json, Router};
-use logger::LogConfig;
 use monitor_client::entities::{
   alert::Alert, server::stats::SeverityLevel,
 };
@@ -24,7 +23,7 @@ fn default_port() -> u16 {
 
 async fn app() -> anyhow::Result<()> {
   dotenv::dotenv().ok();
-  logger::init(LogConfig::default())?;
+  logger::init(&Default::default())?;
 
   let Env { port } =
     envy::from_env().context("failed to parse env")?;
