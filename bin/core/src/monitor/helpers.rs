@@ -16,6 +16,7 @@ use crate::helpers::cache::{
 
 use super::{CachedDeploymentStatus, CachedServerStatus, History};
 
+#[instrument(level = "debug", skip_all)]
 pub async fn insert_deployments_status_unknown(
   deployments: Vec<Deployment>,
 ) {
@@ -40,6 +41,7 @@ pub async fn insert_deployments_status_unknown(
   }
 }
 
+#[instrument(level = "debug", skip_all)]
 pub async fn insert_server_status(
   server: &Server,
   status: ServerStatus,

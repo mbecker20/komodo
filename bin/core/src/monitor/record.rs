@@ -4,6 +4,7 @@ use monitor_client::entities::server::stats::{
 
 use crate::{db::db_client, helpers::cache::server_status_cache};
 
+#[instrument(level = "debug")]
 pub async fn record_server_stats(ts: i64) {
   let status = server_status_cache().get_list().await;
   let records = status

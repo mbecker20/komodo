@@ -75,6 +75,7 @@ pub fn spawn_monitor_loop() {
   });
 }
 
+#[instrument(level = "debug")]
 pub async fn update_cache_for_server(server: &Server) {
   let deployments = match find_collect(
     &db_client().await.deployments,

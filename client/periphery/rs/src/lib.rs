@@ -42,7 +42,7 @@ impl PeripheryClient {
     self.request_inner(request, None).await
   }
 
-  #[tracing::instrument(skip(self))]
+  #[tracing::instrument(level = "debug", skip(self))]
   pub async fn health_check(&self) -> anyhow::Result<()> {
     self
       .request_inner(api::GetHealth {}, Some(Duration::from_secs(1)))
@@ -50,7 +50,7 @@ impl PeripheryClient {
     Ok(())
   }
 
-  #[tracing::instrument(skip(self))]
+  #[tracing::instrument(level = "debug", skip(self))]
   async fn request_inner<T: HasResponse>(
     &self,
     request: T,
@@ -63,8 +63,8 @@ impl PeripheryClient {
     let mut req = http_client()
       .post(&self.address)
       .json(&json!({
-          "type": req_type,
-          "params": request
+        "type": req_type,
+        "params": request
       }))
       .header("authorization", &self.passkey);
     if let Some(timeout) = timeout {

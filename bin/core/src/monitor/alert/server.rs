@@ -27,6 +27,7 @@ type OpenAlertMap<T = AlertDataVariant> =
 type OpenDiskAlertMap = OpenAlertMap<PathBuf>;
 type OpenTempAlertMap = OpenAlertMap<String>;
 
+#[instrument(level = "debug")]
 pub async fn alert_servers(
   ts: i64,
   mut servers: HashMap<String, ServerListItem>,
@@ -439,6 +440,7 @@ pub async fn alert_servers(
   );
 }
 
+#[instrument(level = "debug")]
 async fn open_alerts(alerts: &[(Alert, SendAlerts)]) {
   if alerts.is_empty() {
     return;
@@ -486,6 +488,7 @@ async fn open_alerts(alerts: &[(Alert, SendAlerts)]) {
   send_alerts(&alerts).await
 }
 
+#[instrument(level = "debug")]
 async fn update_alerts(alerts: &[(Alert, SendAlerts)]) {
   if alerts.is_empty() {
     return;
@@ -533,6 +536,7 @@ async fn update_alerts(alerts: &[(Alert, SendAlerts)]) {
   }
 }
 
+#[instrument(level = "debug")]
 async fn resolve_alerts(alert_ids: &[(String, SendAlerts)]) {
   if alert_ids.is_empty() {
     return;
@@ -598,6 +602,7 @@ async fn resolve_alerts(alert_ids: &[(String, SendAlerts)]) {
   }
 }
 
+#[instrument(level = "debug")]
 async fn get_open_alerts(
 ) -> anyhow::Result<(OpenAlertMap, OpenDiskAlertMap, OpenTempAlertMap)>
 {

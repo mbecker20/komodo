@@ -66,6 +66,7 @@ pub fn router() -> Router {
 		)
 }
 
+#[instrument(skip(headers, body))]
 async fn handle_build_webhook(
   build_id: String,
   headers: HeaderMap,
@@ -86,6 +87,7 @@ async fn handle_build_webhook(
   Ok(())
 }
 
+#[instrument(skip(headers, body))]
 async fn handle_repo_clone_webhook(
   repo_id: String,
   headers: HeaderMap,
@@ -106,6 +108,7 @@ async fn handle_repo_clone_webhook(
   Ok(())
 }
 
+#[instrument(skip(headers, body))]
 async fn handle_repo_pull_webhook(
   repo_id: String,
   headers: HeaderMap,
@@ -126,6 +129,7 @@ async fn handle_repo_pull_webhook(
   Ok(())
 }
 
+#[instrument(skip_all)]
 async fn verify_gh_signature(
   headers: HeaderMap,
   body: &str,

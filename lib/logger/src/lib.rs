@@ -1,12 +1,11 @@
-use std::time::Duration;
-
 use anyhow::Context;
-use opentelemetry_otlp::WithExportConfig;
 use serde::{Deserialize, Serialize};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{
   layer::SubscriberExt, util::SubscriberInitExt,
 };
+
+mod opentelemetry;
 
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct LogConfig {
@@ -18,23 +17,15 @@ pub struct LogConfig {
   #[serde(default)]
   pub stdio: StdioLogMode,
 
-  /// Enable opentelemetry experting
+  /// Enable opentelemetry exporting
   pub otlp_endpoint: Option<String>,
+
+  #[serde(default = "default_opentelemetry_service_name")]
+  pub opentelemetry_service_name: String,
 }
 
-macro_rules! opentelemetry_layer {
-  ($endpoint:expr) => {{
-    let tracer = opentelemetry_otlp::new_pipeline()
-      .tracing()
-      .with_exporter(
-        opentelemetry_otlp::new_exporter()
-          .tonic()
-          .with_endpoint($endpoint)
-          .with_timeout(Duration::from_secs(3)),
-      )
-      .install_batch(opentelemetry_sdk::runtime::Tokio)?;
-    tracing_opentelemetry::layer().with_tracer(tracer)
-  }};
+fn default_opentelemetry_service_name() -> String {
+  String::from("Monitor")
 }
 
 pub fn init(config: &LogConfig) -> anyhow::Result<()> {
@@ -46,16 +37,25 @@ pub fn init(config: &LogConfig) -> anyhow::Result<()> {
   match (config.stdio, &config.otlp_endpoint) {
     (StdioLogMode::Standard, Some(endpoint)) => registry
       .with(tracing_subscriber::fmt::layer())
-      .with(opentelemetry_layer!(endpoint))
+      .with(opentelemetry::layer(
+        endpoint,
+        config.opentelemetry_service_name.clone(),
+      ))
       .try_init()
       .context("failed to init logger"),
     (StdioLogMode::Json, Some(endpoint)) => registry
       .with(tracing_subscriber::fmt::layer().json())
-      .with(opentelemetry_layer!(endpoint))
+      .with(opentelemetry::layer(
+        endpoint,
+        config.opentelemetry_service_name.clone(),
+      ))
       .try_init()
       .context("failed to init logger"),
     (StdioLogMode::None, Some(endpoint)) => registry
-      .with(opentelemetry_layer!(endpoint))
+      .with(opentelemetry::layer(
+        endpoint,
+        config.opentelemetry_service_name.clone(),
+      ))
       .try_init()
       .context("failed to init logger"),
 

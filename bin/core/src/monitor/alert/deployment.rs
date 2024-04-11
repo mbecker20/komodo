@@ -15,6 +15,7 @@ use crate::{
   },
 };
 
+#[instrument(level = "debug")]
 pub async fn alert_deployments(
   ts: i64,
   server_names: HashMap<String, String>,
@@ -66,8 +67,6 @@ pub async fn alert_deployments(
   send_alerts(&alerts).await;
   let res = db_client().await.alerts.insert_many(alerts, None).await;
   if let Err(e) = res {
-    error!(
-      "failed to record deployment status alerts to db | {e:#}"
-    );
+    error!("failed to record deployment status alerts to db | {e:#}");
   }
 }

@@ -13,6 +13,7 @@ use monitor_client::entities::{
 use crate::helpers::resource::StateResource;
 
 // called after cache update
+#[instrument(level = "debug")]
 pub async fn check_alerts(ts: i64) {
   let servers = get_all_servers_map().await;
 
@@ -29,6 +30,7 @@ pub async fn check_alerts(ts: i64) {
   );
 }
 
+#[instrument(level = "debug")]
 async fn get_all_servers_map() -> anyhow::Result<(
   HashMap<String, ServerListItem>,
   HashMap<String, String>,
