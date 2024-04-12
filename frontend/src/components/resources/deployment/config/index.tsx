@@ -19,7 +19,7 @@ import {
   TermSignalLabels,
   TerminationTimeout,
 } from "./components/term-signal";
-import { ResourceSelector } from "@components/resources/common";
+import { LabelsConfig, ResourceSelector } from "@components/resources/common";
 
 export const ServerSelector = ({
   selected,
@@ -94,13 +94,15 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
             ports: (value, set) =>
               show_ports && <PortsConfig ports={value ?? []} set={set} />,
             volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
+            labels: (l, set) => <LabelsConfig labels={l ?? []} set={set} />,
             extra_args: (value, set) => (
               <ExtraArgs args={value ?? []} set={set} />
             ),
           },
           settings: {
             send_alerts: true,
-            redeploy_on_build: (update.image?.type || config.image?.type) === "Build",
+            redeploy_on_build:
+              (update.image?.type || config.image?.type) === "Build",
           },
         },
         environment: {

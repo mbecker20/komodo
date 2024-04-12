@@ -127,6 +127,7 @@ export interface BuildConfig {
 	build_path: string;
 	dockerfile_path: string;
 	build_args?: EnvironmentVar[];
+	labels?: EnvironmentVar[];
 	extra_args?: string[];
 	use_buildx?: boolean;
 }
@@ -228,6 +229,7 @@ export interface DeploymentConfig {
 	ports?: Conversion[];
 	volumes?: Conversion[];
 	environment?: EnvironmentVar[];
+	labels?: EnvironmentVar[];
 	network: string;
 	restart?: RestartMode;
 	process_args?: string;
@@ -515,6 +517,7 @@ export interface ContainerSummary {
 	name: string;
 	id: string;
 	image: string;
+	labels: Record<string, string>;
 	state: DockerContainerState;
 	status?: string;
 }

@@ -19,7 +19,7 @@ import {
 import { Textarea } from "@ui/textarea";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { ResourceSelector } from "../common";
+import { LabelsConfig, ResourceSelector } from "../common";
 
 export const BuildConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuild", { build: id }).data?.config;
@@ -117,7 +117,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
                     <DockerOrganizations value={value} set={set} />
                   ),
             use_buildx: true,
-            // docker_organization,
+            labels: (l, set) => <LabelsConfig labels={l ?? []} set={set} />,
             extra_args: (value, set) => (
               <ExtraArgs args={value ?? []} set={set} />
             ),

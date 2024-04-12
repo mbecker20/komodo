@@ -39,6 +39,8 @@ import { ResourceComponents } from ".";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
+import { Types } from "@monitor/client";
+import { ConfigItem, DoubleInput } from "@components/config/util";
 
 export const ResourceDescription = ({
   type,
@@ -293,3 +295,36 @@ export const DeleteResource = ({
     </div>
   );
 };
+
+export const LabelsConfig = ({
+  labels,
+  set,
+}: {
+  labels: Types.EnvironmentVar[];
+  set: (input: Partial<Types.DeploymentConfig | Types.BuildConfig>) => void;
+}) => (
+  <ConfigItem label="Labels" className="items-start">
+    <DoubleInput
+      values={labels}
+      leftval="variable"
+      leftpl="Key"
+      rightval="value"
+      rightpl="Value"
+      addName="Label"
+      onLeftChange={(variable, i) => {
+        labels[i].variable = variable;
+        set({ labels: [...labels] });
+      }}
+      onRightChange={(value, i) => {
+        labels[i].value = value;
+        set({ labels: [...labels] });
+      }}
+      onAdd={() =>
+        set({ labels: [...(labels ?? []), { variable: "", value: "" }] })
+      }
+      onRemove={(idx) =>
+        set({ labels: [...labels.filter((_, i) => i !== idx)] })
+      }
+    />
+  </ConfigItem>
+);
