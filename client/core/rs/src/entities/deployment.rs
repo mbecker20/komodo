@@ -86,6 +86,10 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub environment: Vec<EnvironmentVar>,
 
+  #[serde(default)]
+  #[builder(default)]
+  pub labels: Vec<EnvironmentVar>,
+
   #[serde(default = "default_network")]
   #[builder(default = "default_network()")]
   #[partial_default(default_network())]

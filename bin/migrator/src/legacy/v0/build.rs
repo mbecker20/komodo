@@ -226,6 +226,7 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
         build_args,
         extra_args,
         use_buildx,
+        labels: Default::default()
       },
     };
     Ok(build)

@@ -96,6 +96,10 @@ pub struct BuildConfig {
 
   #[serde(default)]
   #[builder(default)]
+  pub labels: Vec<EnvironmentVar>,
+
+  #[serde(default)]
+  #[builder(default)]
   pub extra_args: Vec<String>,
 
   #[serde(default)]

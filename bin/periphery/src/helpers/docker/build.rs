@@ -8,7 +8,7 @@ use monitor_client::entities::{
 
 use crate::{config::periphery_config, helpers::run_monitor_command};
 
-use super::{docker_login, parse_extra_args};
+use super::{docker_login, parse_extra_args, parse_labels};
 
 #[instrument]
 pub async fn prune_images() -> Log {
@@ -29,6 +29,7 @@ pub async fn build(
         build_path,
         dockerfile_path,
         build_args,
+        labels,
         extra_args,
         use_buildx,
         ..
@@ -50,6 +51,7 @@ pub async fn build(
     None => "Dockerfile".to_owned(),
   };
   let build_args = parse_build_args(build_args);
+  let labels = parse_labels(labels);
   let extra_args = parse_extra_args(extra_args);
   let buildx = if *use_buildx { " buildx" } else { "" };
   let image_name = get_image_name(
@@ -64,7 +66,7 @@ pub async fn build(
     String::new()
   };
   let command = format!(
-    "cd {} && docker{buildx} build{build_args}{extra_args}{image_tags} -f {dockerfile_path} .{docker_push}",
+    "cd {} && docker{buildx} build{build_args}{extra_args}{labels}{image_tags} -f {dockerfile_path} .{docker_push}",
     build_dir.display()
   );
   if *skip_secret_interp {
@@ -130,13 +132,9 @@ fn image_tags(image_name: &str, version: &Version) -> String {
 }
 
 fn parse_build_args(build_args: &[EnvironmentVar]) -> String {
-  let mut args = build_args
+  build_args
     .iter()
-    .map(|p| format!(" --build-arg {}={}", p.variable, p.value))
-    .collect::<Vec<String>>()
-    .join("");
-  if !args.is_empty() {
-    args.push(' ');
-  }
-  args
+    .map(|p| format!(" --build-arg {}=\"{}\"", p.variable, p.value))
+    .collect::<Vec<_>>()
+    .join("")
 }

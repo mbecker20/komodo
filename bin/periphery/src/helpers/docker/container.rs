@@ -14,7 +14,8 @@ use serror::serialize_error_pretty;
 use crate::{
   config::periphery_config,
   helpers::{
-    docker::parse_extra_args, get_docker_token, run_monitor_command,
+    docker::{parse_extra_args, parse_labels},
+    get_docker_token, run_monitor_command,
   },
 };
 
@@ -255,6 +256,7 @@ pub fn docker_run_command(
         process_args,
         restart,
         environment,
+        labels,
         extra_args,
         ..
       },
@@ -270,9 +272,10 @@ pub fn docker_run_command(
   let network = parse_network(network);
   let restart = parse_restart(restart);
   let environment = parse_environment(environment);
+  let labels = parse_labels(labels);
   let process_args = parse_process_args(process_args);
   let extra_args = parse_extra_args(extra_args);
-  format!("docker run -d --name {name}{container_user}{ports}{volumes}{network}{restart}{environment}{extra_args} {image}{process_args}")
+  format!("docker run -d --name {name}{container_user}{ports}{volumes}{network}{restart}{environment}{labels}{extra_args} {image}{process_args}")
 }
 
 fn parse_container_user(container_user: &String) -> String {
@@ -290,7 +293,7 @@ fn parse_conversions(
   conversions
     .iter()
     .map(|p| format!(" {flag} {}:{}", p.local, p.container))
-    .collect::<Vec<String>>()
+    .collect::<Vec<_>>()
     .join("")
 }
 
@@ -298,7 +301,7 @@ fn parse_environment(environment: &[EnvironmentVar]) -> String {
   environment
     .iter()
     .map(|p| format!(" --env {}=\"{}\"", p.variable, p.value))
-    .collect::<Vec<String>>()
+    .collect::<Vec<_>>()
     .join("")
 }
 

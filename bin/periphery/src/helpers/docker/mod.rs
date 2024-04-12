@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use monitor_client::entities::update::Log;
+use monitor_client::entities::{update::Log, EnvironmentVar};
 use run_command::async_run_command;
 
 use super::run_monitor_command;
@@ -46,6 +46,14 @@ pub fn parse_extra_args(extra_args: &[String]) -> String {
   } else {
     args
   }
+}
+
+pub fn parse_labels(labels: &[EnvironmentVar]) -> String {
+  labels
+    .iter()
+    .map(|p| format!(" --label {}=\"{}\"", p.variable, p.value))
+    .collect::<Vec<_>>()
+    .join("")
 }
 
 #[instrument]
