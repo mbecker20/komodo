@@ -52,6 +52,7 @@ pub enum PeripheryRequest {
   GetSecrets(GetSecrets),
   GetContainerList(GetContainerList),
   GetContainerLog(GetContainerLog),
+  GetContainerLogSearch(GetContainerLogSearch),
   GetContainerStats(GetContainerStats),
   GetContainerStatsList(GetContainerStatsList),
   GetNetworkList(GetNetworkList),
