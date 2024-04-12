@@ -76,6 +76,7 @@ enum ReadRequest {
   GetDeployedVersion(GetDeployedVersion),
   GetDeploymentStats(GetDeploymentStats),
   GetLog(GetLog),
+  SearchLog(SearchLog),
 
   // ==== BUILD ====
   GetBuildsSummary(GetBuildsSummary),

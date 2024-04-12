@@ -33,7 +33,7 @@ pub async fn container_log_search(
   search: &str,
 ) -> Log {
   let command =
-    format!("docker logs {container_name} --tail 1000 | grep {search}");
+    format!("docker logs {container_name} --tail 5000 | grep {search}");
   run_monitor_command("get container log grep", command).await
 }
 

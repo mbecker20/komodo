@@ -71,18 +71,17 @@ github_webhook_secret = "your_random_webhook_secret"
 # google_oauth.id = "your_google_client_id"
 # google_oauth.secret = "your_google_client_secret"
 
-[mongo]
-# uri = "mongodb://username:password@localhost:27017"
+# mongo.uri = "mongodb://username:password@localhost:27017"
 ## ==== or ====
-address = "localhost:27017"
-# username = "username"
-# password = "password"
+mongo.address = "localhost:27017"
+# mongo.username = "username"
+# mongo.password = "password"
 ## ==== other ====
 ## default: monitor. this is the name of the mongo database that monitor will create its collections in.
-db_name = "monitor"
+mongo.db_name = "monitor"
 ## default: monitor_core. this is the assigned app_name of the mongo client
-app_name = "monitor_core"
+mongo.app_name = "monitor_core"
 
-# [aws]
-# access_key_id = "your_aws_key_id"
-# secret_access_key = "your_aws_secret_key"
+## provide aws api keys for ephemeral builders
+# aws.access_key_id = "your_aws_key_id"
+# aws.secret_access_key = "your_aws_secret_key"

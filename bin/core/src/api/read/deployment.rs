@@ -127,6 +127,34 @@ impl Resolve<GetLog, User> for State {
 }
 
 #[async_trait]
+impl Resolve<SearchLog, User> for State {
+  async fn resolve(
+    &self,
+    SearchLog { deployment, search }: SearchLog,
+    user: User,
+  ) -> anyhow::Result<Log> {
+    let Deployment {
+      name,
+      config: DeploymentConfig { server_id, .. },
+      ..
+    } = Deployment::get_resource_check_permissions(
+      &deployment,
+      &user,
+      PermissionLevel::Read,
+    )
+    .await?;
+    if server_id.is_empty() {
+      return Ok(Log::default());
+    }
+    let server = Server::get_resource(&server_id).await?;
+    periphery_client(&server)?
+      .request(api::container::GetContainerLogSearch { name, search })
+      .await
+      .context("failed at call to periphery")
+  }
+}
+
+#[async_trait]
 impl Resolve<GetDeployedVersion, User> for State {
   async fn resolve(
     &self,

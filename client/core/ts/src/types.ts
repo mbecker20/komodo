@@ -278,6 +278,8 @@ export interface Log {
 
 export type GetLogResponse = Log;
 
+export type SearchLogResponse = Log;
+
 export interface DockerContainerStats {
 	name: string;
 	cpu_perc: string;
@@ -1161,6 +1163,12 @@ export interface GetLog {
 	tail: U64;
 }
 
+export interface SearchLog {
+	/** Id or name */
+	deployment: string;
+	search: string;
+}
+
 export interface GetDeployedVersion {
 	/** Id or name */
 	deployment: string;
@@ -1855,6 +1863,7 @@ export type ReadRequest =
 	| { type: "GetDeployedVersion", params: GetDeployedVersion }
 	| { type: "GetDeploymentStats", params: GetDeploymentStats }
 	| { type: "GetLog", params: GetLog }
+	| { type: "SearchLog", params: SearchLog }
 	| { type: "GetBuildsSummary", params: GetBuildsSummary }
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "ListBuilds", params: ListBuilds }

@@ -98,6 +98,24 @@ pub type GetLogResponse = Log;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
+#[response(SearchLogResponse)]
+pub struct SearchLog {
+  /// Id or name
+  #[serde(alias = "id", alias = "name")]
+  pub deployment: String,
+  pub search: String,
+}
+
+#[typeshare]
+pub type SearchLogResponse = Log;
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
 #[response(GetDeployedVersionResponse)]
 pub struct GetDeployedVersion {
   /// Id or name

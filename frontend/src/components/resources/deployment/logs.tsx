@@ -1,4 +1,4 @@
-import { Section } from "@components/layouts";
+ import { Section } from "@components/layouts";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs";
@@ -35,7 +35,7 @@ export const DeploymentLogs = ({ id }: { id: string }) => {
 };
 
 const DeploymentLogsInner = ({ id }: { id: string }) => {
-  const [tail, set] = useState("50");
+  const [tail, set] = useState("100");
   const { data: logs, refetch } = useRead(
     "GetLog",
     { deployment: id, tail: Number(tail) },
@@ -106,7 +106,7 @@ const TailLengthSelector = ({
     </SelectTrigger>
     <SelectContent>
       <SelectGroup>
-        {["50", "100", "500", "1000"].map((length) => (
+        {["100", "500", "1000", "5000"].map((length) => (
           <SelectItem key={length} value={length}>
             {length} lines
           </SelectItem>

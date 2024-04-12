@@ -51,6 +51,7 @@ export type ReadResponses = {
   GetDeployedVersion: Types.GetDeployedVersionResponse;
   GetDeploymentStats: Types.GetDeploymentStatsResponse;
   GetLog: Types.GetLogResponse;
+  SearchLog: Types.SearchLogResponse;
 
   // ==== BUILD ====
   GetBuildsSummary: Types.GetBuildsSummaryResponse;
