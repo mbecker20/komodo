@@ -103,6 +103,8 @@ export const ActionWithDialog = ({
   loading,
   onClick,
   additional,
+  targetClassName,
+  variant,
 }: {
   name: string;
   title: string;
@@ -111,6 +113,16 @@ export const ActionWithDialog = ({
   loading?: boolean;
   onClick?: () => void;
   additional?: ReactNode;
+  targetClassName?: string;
+  variant?:
+    | "link"
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | null
+    | undefined;
 }) => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -125,11 +137,13 @@ export const ActionWithDialog = ({
     >
       <DialogTrigger asChild>
         <ActionButton
+          className={targetClassName}
           title={title}
           icon={icon}
           disabled={disabled}
           onClick={() => setOpen(true)}
           loading={loading}
+          variant={variant}
         />
       </DialogTrigger>
       <DialogContent>

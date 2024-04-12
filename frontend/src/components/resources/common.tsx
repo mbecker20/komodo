@@ -284,6 +284,7 @@ export const DeleteResource = ({
       <ActionWithDialog
         name={resource.name}
         title="Delete"
+        variant="destructive"
         icon={<Trash className="h-4 w-4" />}
         onClick={async () => {
           await mutateAsync({ id });

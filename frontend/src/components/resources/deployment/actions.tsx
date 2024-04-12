@@ -259,6 +259,7 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
         name={d.name}
         title="Delete"
         icon={<Trash className="h-4 w-4" />}
+        variant="destructive"
         onClick={async () => {
           await mutateAsync({ id });
           nav("/deployments");

@@ -52,6 +52,23 @@ export const stroke_color_class_by_intention = (intention: ColorIntention) => {
   return `stroke-${color_class_by_intention(intention)}`;
 };
 
+export const bg_color_class_by_intention = (intention: ColorIntention) => {
+  switch (intention) {
+    case "Good":
+      return "bg-green-500";
+    case "Neutral":
+      return "bg-blue-500";
+    case "Warning":
+      return "bg-orange-500";
+    case "Critical":
+      return "bg-red-500";
+    case "Unknown":
+      return "bg-purple-500";
+    case "None":
+      return "";
+  }
+};
+
 export const text_color_class_by_intention = (intention: ColorIntention) => {
   switch (intention) {
     case "Good":
