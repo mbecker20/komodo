@@ -352,13 +352,15 @@ impl Resolve<StopAllContainers, User> for State {
     )
     .await
     .context("failed to find deployments on server")?;
+  
     let server_id = server.id.clone();
+
     let inner = || async move {
-      let mut update = make_update(
-        ResourceTarget::Server(server.id),
-        Operation::StopAllContainers,
-        &user,
-      );
+      let mut update =
+        make_update(&server, Operation::StopAllContainers, &user);
+      update.in_progress();
+      update.id = add_update(update.clone()).await?;
+
       let futures = deployments.iter().map(|deployment| async {
         (
           self
@@ -393,8 +395,10 @@ impl Resolve<StopAllContainers, User> for State {
           );
         }
       }
+
       update.finalize();
-      add_update(update.clone()).await?;
+      update_update(update.clone()).await?;
+
       Ok(update)
     };
 
