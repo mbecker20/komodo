@@ -26,11 +26,7 @@ const RECENTLY_VIEWED_MAX: usize = 10;
 
 #[async_trait]
 impl Resolve<PushRecentlyViewed, User> for State {
-  #[instrument(
-    name = "PushRecentlyViewed",
-    level = "debug",
-    skip(self, user)
-  )]
+  #[instrument(name = "PushRecentlyViewed", skip(self, user))]
   async fn resolve(
     &self,
     PushRecentlyViewed { resource }: PushRecentlyViewed,
@@ -66,11 +62,7 @@ impl Resolve<PushRecentlyViewed, User> for State {
 
 #[async_trait]
 impl Resolve<SetLastSeenUpdate, User> for State {
-  #[instrument(
-    name = "SetLastSeenUpdate",
-    level = "debug",
-    skip(self, user)
-  )]
+  #[instrument(name = "SetLastSeenUpdate", skip(self, user))]
   async fn resolve(
     &self,
     SetLastSeenUpdate {}: SetLastSeenUpdate,
@@ -133,7 +125,10 @@ impl Resolve<CreateServiceUser, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateServiceUserDescription, User> for State {
-  #[instrument(name = "UpdateServiceUserDescription", skip(self, user))]
+  #[instrument(
+    name = "UpdateServiceUserDescription",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     UpdateServiceUserDescription {
