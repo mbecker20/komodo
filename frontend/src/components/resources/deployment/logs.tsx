@@ -8,10 +8,9 @@ import {
   AlertOctagon,
   RefreshCw,
   ChevronDown,
-  Search,
   X,
 } from "lucide-react";
-import { createRef, useState } from "react";
+import { useState } from "react";
 import { useDeployment } from ".";
 import {
   Select,
@@ -24,6 +23,7 @@ import {
 import sanitizeHtml from "sanitize-html";
 import Convert from "ansi-to-html";
 import { Input } from "@ui/input";
+import { useToast } from "@ui/use-toast";
 
 export const DeploymentLogs = ({ id }: { id: string }) => {
   const state = useDeployment(id)?.info.state;
@@ -38,21 +38,29 @@ export const DeploymentLogs = ({ id }: { id: string }) => {
 };
 
 const DeploymentLogsInner = ({ id }: { id: string }) => {
+  const { toast } = useToast();
   const [tail, set] = useState("100");
-  const searchRef = createRef<HTMLInputElement>();
+  const [terms, setTerms] = useState<string[]>([]);
   const [search, setSearch] = useState("");
 
-  const updateSearch = () =>
-    searchRef.current && setSearch(searchRef.current.value);
-  const clearSearch = () => {
-    if (searchRef.current) {
-      searchRef.current.value = "";
+  const addTerm = () => {
+    if (!search.length) return;
+    if (terms.includes(search)) {
+      toast({ title: "Search term is already present" });
+      setSearch("");
+      return;
     }
+    setTerms([...terms, search]);
     setSearch("");
   };
 
-  const { Log, refetch, stderr } = search
-    ? SearchLogs(id, search)
+  const clearSearch = () => {
+    setSearch("");
+    setTerms([]);
+  };
+
+  const { Log, refetch, stderr } = terms.length
+    ? SearchLogs(id, terms)
     : NoSearchLogs(id, tail);
 
   return (
@@ -62,13 +70,25 @@ const DeploymentLogsInner = ({ id }: { id: string }) => {
         icon={<TerminalSquare className="w-4 h-4" />}
         actions={
           <div className="flex gap-2">
+            {terms.map((term, index) => (
+              <Button
+                key={term}
+                variant="destructive"
+                onClick={() => setTerms(terms.filter((_, i) => i !== index))}
+                className="flex gap-2 items-center py-0 px-2"
+              >
+                {term}
+                <X className="w-4 h-h" />
+              </Button>
+            ))}
             <div className="relative">
               <Input
-                ref={searchRef}
                 placeholder="Search Logs"
-                onBlur={updateSearch}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onBlur={addTerm}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") updateSearch();
+                  if (e.key === "Enter") addTerm();
                 }}
                 className="w-[300px]"
               />
@@ -81,9 +101,6 @@ const DeploymentLogsInner = ({ id }: { id: string }) => {
                 <X className="w-4 h-4" />
               </Button>
             </div>
-            <Button variant="outline" size="icon" onClick={updateSearch}>
-              <Search className="w-4 h-4" />
-            </Button>
             <TabsList>
               <TabsTrigger value="stdout" onClick={to_bottom("stdout")}>
                 stdout
@@ -119,50 +136,59 @@ const NoSearchLogs = (id: string, tail: string) => {
     { refetchInterval: 30000 }
   );
   return {
-    Log: <Log log={log} />,
+    Log: (
+      <>
+        {["stdout", "stderr"].map((stream) => (
+          <TabsContent key={stream} className="h-full relative" value={stream}>
+            <Log log={log} stream={stream as "stdout" | "stderr"} />
+          </TabsContent>
+        ))}
+      </>
+    ),
     refetch,
     stderr: !!log?.stderr,
   };
 };
 
-const SearchLogs = (id: string, search: string) => {
-  const { data: log, refetch } = useRead(
-    "SearchLog",
-    { deployment: id, terms: search.split(" ").filter((term) => term) },
-    { refetchInterval: 30000 }
-  );
+const SearchLogs = (id: string, terms: string[]) => {
+  const { data: log, refetch } = useRead("SearchLog", {
+    deployment: id,
+    terms,
+    combinator: Types.SearchCombinator.And,
+  });
   return {
-    Log: <Log log={log} />,
+    Log: (
+      <div className="h-full relative">
+        <Log log={log} stream="stdout" />
+      </div>
+    ),
     refetch,
     stderr: !!log?.stderr,
   };
 };
 
-const Log = ({ log }: { log: Types.Log | undefined }) => {
+const Log = ({
+  log,
+  stream,
+}: {
+  log: Types.Log | undefined;
+  stream: "stdout" | "stderr";
+}) => {
+  const _log = log?.[stream as keyof typeof log] as string | undefined;
   return (
     <>
-      {["stdout", "stderr"].map((stream) => {
-        const _log = log?.[stream as keyof typeof log] as string | undefined;
-        return (
-          <TabsContent key={stream} className="h-full relative" value={stream}>
-            <div className="h-[70vh] overflow-y-auto">
-              <pre
-                id={stream}
-                dangerouslySetInnerHTML={{
-                  __html: _log ? logToHtml(_log) : `no ${stream} logs`,
-                }}
-                className="-scroll-mt-24"
-              />
-            </div>
-            <Button
-              className="absolute bottom-4 right-4"
-              onClick={to_bottom(stream)}
-            >
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </TabsContent>
-        );
-      })}
+      <div className="h-[70vh] overflow-y-auto">
+        <pre
+          id={stream}
+          dangerouslySetInnerHTML={{
+            __html: _log ? logToHtml(_log) : `no ${stream} logs`,
+          }}
+          className="-scroll-mt-24"
+        />
+      </div>
+      <Button className="absolute bottom-4 right-4" onClick={to_bottom(stream)}>
+        <ChevronDown className="h-4 w-4" />
+      </Button>
     </>
   );
 };
