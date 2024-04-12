@@ -127,9 +127,6 @@ async fn handler(
   .await
   .context("failure in spawned task");
 
-  let elapsed = timer.elapsed();
-  info!("/write request {req_id} | resolve time: {elapsed:?}");
-
   if let Err(e) = &res {
     warn!("/write request {req_id} spawn error: {e:#}");
   }
@@ -142,6 +139,9 @@ async fn handler(
   if let Err(resolver_api::Error::Inner(e)) = &res {
     warn!("/write request {req_id} error: {e:#}");
   }
+
+  let elapsed = timer.elapsed();
+  info!("/write request {req_id} | resolve time: {elapsed:?}");
 
   AppResult::Ok((TypedHeader(ContentType::json()), res?))
 }
