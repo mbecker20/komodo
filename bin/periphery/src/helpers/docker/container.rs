@@ -30,10 +30,12 @@ pub async fn container_log(container_name: &str, tail: u64) -> Log {
 #[instrument(level = "debug")]
 pub async fn container_log_search(
   container_name: &str,
-  search: &str,
+  terms: &[String],
 ) -> Log {
-  let command =
-    format!("docker logs {container_name} --tail 5000 | grep {search}");
+  let command = format!(
+    "docker logs {container_name} --tail 5000 | grep -E '{}'",
+    terms.join("|")
+  );
   run_monitor_command("get container log grep", command).await
 }
 

@@ -103,7 +103,7 @@ pub struct SearchLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
-  pub search: String,
+  pub terms: Vec<String>,
 }
 
 #[typeshare]

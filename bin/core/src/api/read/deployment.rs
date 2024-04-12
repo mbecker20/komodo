@@ -130,7 +130,7 @@ impl Resolve<GetLog, User> for State {
 impl Resolve<SearchLog, User> for State {
   async fn resolve(
     &self,
-    SearchLog { deployment, search }: SearchLog,
+    SearchLog { deployment, terms }: SearchLog,
     user: User,
   ) -> anyhow::Result<Log> {
     let Deployment {
@@ -148,7 +148,7 @@ impl Resolve<SearchLog, User> for State {
     }
     let server = Server::get_resource(&server_id).await?;
     periphery_client(&server)?
-      .request(api::container::GetContainerLogSearch { name, search })
+      .request(api::container::GetContainerLogSearch { name, terms })
       .await
       .context("failed at call to periphery")
   }

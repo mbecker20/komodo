@@ -32,7 +32,7 @@ fn default_tail() -> u64 {
 #[response(Log)]
 pub struct GetContainerLogSearch {
   pub name: String,
-  pub search: String,
+  pub terms: Vec<String>,
 }
 
 //

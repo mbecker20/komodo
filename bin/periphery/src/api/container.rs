@@ -58,7 +58,7 @@ impl Resolve<GetContainerLogSearch> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     Ok(
-      docker::container::container_log_search(&req.name, &req.search)
+      docker::container::container_log_search(&req.name, &req.terms)
         .await,
     )
   }
@@ -108,10 +108,7 @@ impl Resolve<GetContainerStatsList> for State {
 
 #[async_trait::async_trait]
 impl Resolve<StartContainer> for State {
-  #[instrument(
-    name = "StartContainer",
-    skip(self)
-  )]
+  #[instrument(name = "StartContainer", skip(self))]
   async fn resolve(
     &self,
     req: StartContainer,
@@ -125,10 +122,7 @@ impl Resolve<StartContainer> for State {
 
 #[async_trait::async_trait]
 impl Resolve<StopContainer> for State {
-  #[instrument(
-    name = "StopContainer",
-    skip(self)
-  )]
+  #[instrument(name = "StopContainer", skip(self))]
   async fn resolve(
     &self,
     req: StopContainer,
@@ -147,10 +141,7 @@ impl Resolve<StopContainer> for State {
 
 #[async_trait::async_trait]
 impl Resolve<RemoveContainer> for State {
-  #[instrument(
-    name = "RemoveContainer",
-    skip(self)
-  )]
+  #[instrument(name = "RemoveContainer", skip(self))]
   async fn resolve(
     &self,
     req: RemoveContainer,
@@ -169,10 +160,7 @@ impl Resolve<RemoveContainer> for State {
 
 #[async_trait::async_trait]
 impl Resolve<RenameContainer> for State {
-  #[instrument(
-    name = "RenameContainer",
-    skip(self)
-  )]
+  #[instrument(name = "RenameContainer", skip(self))]
   async fn resolve(
     &self,
     req: RenameContainer,
@@ -192,10 +180,7 @@ impl Resolve<RenameContainer> for State {
 
 #[async_trait::async_trait]
 impl Resolve<PruneContainers> for State {
-  #[instrument(
-    name = "PruneContainers",
-    skip(self)
-  )]
+  #[instrument(name = "PruneContainers", skip(self))]
   async fn resolve(
     &self,
     _: PruneContainers,
@@ -209,10 +194,7 @@ impl Resolve<PruneContainers> for State {
 
 #[async_trait::async_trait]
 impl Resolve<Deploy> for State {
-  #[instrument(
-    name = "Deploy",
-    skip(self)
-  )]
+  #[instrument(name = "Deploy", skip(self))]
   async fn resolve(
     &self,
     Deploy {
