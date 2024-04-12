@@ -71,7 +71,7 @@ async fn handler(
   AppResult::Ok((TypedHeader(ContentType::json()), res??))
 }
 
-#[instrument(name = "ExecuteTask")]
+#[instrument(name = "ExecuteRequest", skip(user))]
 async fn task(
   req_id: Uuid,
   request: ExecuteRequest,

@@ -110,7 +110,6 @@ pub fn router() -> Router {
     .layer(middleware::from_fn(auth_request))
 }
 
-#[instrument(name = "WriteHandler", skip(user))]
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<WriteRequest>,
@@ -128,7 +127,7 @@ async fn handler(
   AppResult::Ok((TypedHeader(ContentType::json()), res??))
 }
 
-#[instrument(name = "WriteTask")]
+#[instrument(name = "WriteRequest", skip(user))]
 async fn task(
   req_id: Uuid,
   request: WriteRequest,
