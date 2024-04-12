@@ -11,7 +11,10 @@ use typeshare::typeshare;
 use crate::entities::{MongoId, I64};
 
 use super::{
-  _Serror, deployment::DockerContainerState, server::stats::{SeverityLevel, SystemProcess}, update::ResourceTarget
+  _Serror,
+  deployment::DockerContainerState,
+  server::stats::{SeverityLevel, SystemProcess},
+  update::ResourceTarget,
 };
 
 #[typeshare]
@@ -63,7 +66,7 @@ pub enum AlertData {
     id: String,
     name: String,
     region: Option<String>,
-    err: Option<_Serror>
+    err: Option<_Serror>,
   },
   ServerCpu {
     id: String,
@@ -103,6 +106,9 @@ pub enum AlertData {
     server_name: String,
     from: DockerContainerState,
     to: DockerContainerState,
+  },
+  AwsBuilderTerminationFailed {
+    instance_id: String,
   },
   None {},
 }

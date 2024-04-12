@@ -34,7 +34,10 @@ use tokio_util::sync::CancellationToken;
 
 use crate::{
   cloud::{
-    aws::{launch_ec2_instance, terminate_ec2_instance, Ec2Instance},
+    aws::{
+      launch_ec2_instance, terminate_ec2_instance_with_retry,
+      Ec2Instance,
+    },
     BuildCleanupData,
   },
   config::core_config,
@@ -412,7 +415,11 @@ async fn get_aws_builder(
     tokio::time::sleep(Duration::from_secs(BUILDER_POLL_RATE_SECS))
       .await;
   }
-  let _ = terminate_ec2_instance(config.region, &instance_id).await;
+  tokio::spawn(async move {
+    let _ =
+      terminate_ec2_instance_with_retry(config.region, &instance_id)
+        .await;
+  });
 
   // Unwrap is safe, only way to get here is after check Ok / early return, so it must be err
   Err(res.err().unwrap())
@@ -434,19 +441,16 @@ async fn cleanup_builder_instance(
       instance_id,
       region,
     } => {
-      let res = terminate_ec2_instance(region, &instance_id)
-        .await
-        .context("failed to terminate ec2 instance");
-      let log = match res {
-        Ok(_) => Log::simple(
-          "terminate instance",
-          format!("terminate instance id {}", instance_id),
-        ),
-        Err(e) => {
-          Log::error("terminate instance", serialize_error_pretty(&e))
-        }
-      };
-      update.logs.push(log);
+      let _instance_id = instance_id.clone();
+      tokio::spawn(async move {
+        let _ =
+          terminate_ec2_instance_with_retry(region, &_instance_id)
+            .await;
+      });
+      update.push_simple_log(
+        "terminate instance",
+        format!("termination queued for instance id {instance_id}"),
+      );
     }
   }
 }

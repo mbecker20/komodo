@@ -235,10 +235,20 @@ async fn send_slack_alert(
       let to = fmt_docker_container_state(to);
       let text = format!("📦 container *{name}* is now {to}");
       let blocks = vec![
-        Block::header(format!("📦 container *{name}* is now {to}")),
+        Block::header(text.clone()),
         Block::section(format!(
           "server: {server_name}\nprevious: {from}"
         )),
+      ];
+      (text, blocks.into())
+    }
+    AlertData::AwsBuilderTerminationFailed { instance_id } => {
+      let text = format!(
+        "{level} | Failed to terminated AWS builder instance"
+      );
+      let blocks = vec![
+        Block::header(text.clone()),
+        Block::section(format!("instance id: {instance_id}")),
       ];
       (text, blocks.into())
     }

@@ -184,11 +184,15 @@ impl ResourceTarget {
     };
     (variant, id)
   }
+
+  pub fn system() -> ResourceTarget {
+    Self::System("system".to_string())
+  }
 }
 
 impl Default for ResourceTarget {
   fn default() -> Self {
-    Self::System("system".to_string())
+    ResourceTarget::system()
   }
 }
 

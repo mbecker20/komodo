@@ -12,9 +12,17 @@ use aws_sdk_ec2::{
   },
   Client,
 };
-use monitor_client::api::write::LaunchAwsServerConfig;
+use monitor_client::{
+  api::write::LaunchAwsServerConfig,
+  entities::{
+    alert::{Alert, AlertData, AlertDataVariant},
+    monitor_timestamp,
+    server::stats::SeverityLevel,
+    update::ResourceTarget,
+  },
+};
 
-use crate::config::core_config;
+use crate::{config::core_config, helpers::alert::send_alerts};
 
 const POLL_RATE_SECS: u64 = 2;
 const MAX_POLL_TRIES: usize = 30;
@@ -141,12 +149,54 @@ where
   Err(anyhow!("instance not running after polling"))
 }
 
+const MAX_TERMINATION_TRIES: usize = 5;
+const TERMINATION_WAIT_SECS: u64 = 15;
+
 #[instrument]
-pub async fn terminate_ec2_instance(
+pub async fn terminate_ec2_instance_with_retry(
   region: String,
   instance_id: &str,
 ) -> anyhow::Result<InstanceStateChange> {
   let client = create_ec2_client(region).await;
+  for i in 0..MAX_TERMINATION_TRIES {
+    match terminate_ec2_instance_inner(&client, instance_id).await {
+      Ok(res) => {
+        info!("instance {instance_id} successfully terminated.");
+        return Ok(res);
+      }
+      Err(e) => {
+        if i == MAX_TERMINATION_TRIES - 1 {
+          error!("failed to terminate instance {instance_id}.");
+          let alert = Alert {
+            id: Default::default(),
+            ts: monitor_timestamp(),
+            resolved: false,
+            level: SeverityLevel::Critical,
+            target: ResourceTarget::system(),
+            variant: AlertDataVariant::AwsBuilderTerminationFailed,
+            data: AlertData::AwsBuilderTerminationFailed {
+              instance_id: instance_id.to_string(),
+            },
+            resolved_ts: None,
+          };
+          send_alerts(&[alert]).await;
+          return Err(e);
+        }
+        tokio::time::sleep(Duration::from_secs(
+          TERMINATION_WAIT_SECS,
+        ))
+        .await;
+      }
+    }
+  }
+  unreachable!()
+}
+
+#[instrument]
+async fn terminate_ec2_instance_inner(
+  client: &Client,
+  instance_id: &str,
+) -> anyhow::Result<InstanceStateChange> {
   let res = client
     .terminate_instances()
     .instance_ids(instance_id)
