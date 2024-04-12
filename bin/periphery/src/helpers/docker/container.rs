@@ -42,7 +42,7 @@ pub async fn container_log_search(
     }
   };
   let command =
-    format!("docker logs {container_name} --tail 5000 |& {grep}");
+    format!("docker logs {container_name} --tail 5000 2>&1 | {grep}");
   run_monitor_command("get container log grep", command).await
 }
 
