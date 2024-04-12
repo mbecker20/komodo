@@ -107,7 +107,7 @@ impl Resolve<GetLoginOptions, HeaderMap> for State {
 
 #[async_trait]
 impl Resolve<ExchangeForJwt, HeaderMap> for State {
-  #[instrument(name = "ExchangeForJwt", skip(self))]
+  #[instrument(name = "ExchangeForJwt", level = "debug", skip(self))]
   async fn resolve(
     &self,
     ExchangeForJwt { token }: ExchangeForJwt,

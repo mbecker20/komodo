@@ -25,6 +25,8 @@ const sanitize_query = (search: URLSearchParams) => {
   );
 };
 
+let exchange_token_sent = false;
+
 /// returns whether to show login / loading screen depending on state of exchange token loop
 const useExchangeToken = () => {
   const search = new URLSearchParams(location.search);
@@ -40,7 +42,12 @@ const useExchangeToken = () => {
     },
   });
   if (!exchange_token) return false;
-  mutate({ token: exchange_token });
+  // guard against multiple reqs sent
+  // maybe isPending would do this but not sure about with render loop, this for sure will.
+  if (!exchange_token_sent) {
+    mutate({ token: exchange_token });
+    exchange_token_sent = true;
+  }
   return isPending;
 };
 
