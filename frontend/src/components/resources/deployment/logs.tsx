@@ -1,4 +1,4 @@
- import { Section } from "@components/layouts";
+import { Section } from "@components/layouts";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@ui/tabs";
@@ -8,8 +8,10 @@ import {
   AlertOctagon,
   RefreshCw,
   ChevronDown,
+  Search,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { createRef, useState } from "react";
 import { useDeployment } from ".";
 import {
   Select,
@@ -21,6 +23,7 @@ import {
 } from "@ui/select";
 import sanitizeHtml from "sanitize-html";
 import Convert from "ansi-to-html";
+import { Input } from "@ui/input";
 
 export const DeploymentLogs = ({ id }: { id: string }) => {
   const state = useDeployment(id)?.info.state;
@@ -36,11 +39,22 @@ export const DeploymentLogs = ({ id }: { id: string }) => {
 
 const DeploymentLogsInner = ({ id }: { id: string }) => {
   const [tail, set] = useState("100");
-  const { data: logs, refetch } = useRead(
-    "GetLog",
-    { deployment: id, tail: Number(tail) },
-    { refetchInterval: 30000 }
-  );
+  const searchRef = createRef<HTMLInputElement>();
+  const [search, setSearch] = useState("");
+
+  const updateSearch = () =>
+    searchRef.current && setSearch(searchRef.current.value);
+  const clearSearch = () => {
+    if (searchRef.current) {
+      searchRef.current.value = "";
+    }
+    setSearch("");
+  };
+
+  const { Log, refetch, stderr } = search
+    ? SearchLogs(id, search)
+    : NoSearchLogs(id, tail);
+
   return (
     <Tabs defaultValue="stdout">
       <Section
@@ -48,60 +62,121 @@ const DeploymentLogsInner = ({ id }: { id: string }) => {
         icon={<TerminalSquare className="w-4 h-4" />}
         actions={
           <div className="flex gap-2">
-            <TabsList className="w-fit place-self-end">
+            <div className="relative">
+              <Input
+                ref={searchRef}
+                placeholder="Search Logs"
+                onBlur={updateSearch}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") updateSearch();
+                }}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={clearSearch}
+                className="absolute right-0 top-1/2 -translate-y-1/2"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            <Button variant="outline" size="icon" onClick={updateSearch}>
+              <Search className="w-4 h-4" />
+            </Button>
+            <TabsList>
               <TabsTrigger value="stdout" onClick={to_bottom("stdout")}>
                 stdout
               </TabsTrigger>
               <TabsTrigger value="stderr" onClick={to_bottom("stderr")}>
                 stderr
-                {logs?.stderr && (
+                {stderr && (
                   <AlertOctagon className="w-4 h-4 ml-2 stroke-red-500" />
                 )}
               </TabsTrigger>
             </TabsList>
-            <Button variant="secondary" onClick={() => refetch()}>
+            <Button variant="secondary" size="icon" onClick={() => refetch()}>
               <RefreshCw className="w-4 h-4" />
             </Button>
-            <TailLengthSelector selected={tail} onSelect={set} />
+            <TailLengthSelector
+              selected={tail}
+              onSelect={set}
+              disabled={search.length > 0}
+            />
           </div>
         }
       >
-        {["stdout", "stderr"].map((t) => {
-          const log = logs?.[t as keyof typeof logs] as string | undefined;
-          return (
-            <TabsContent key={t} className="h-full relative" value={t}>
-              <div className="h-[70vh] overflow-y-auto">
-                <pre
-                  id={t}
-                  dangerouslySetInnerHTML={{
-                    __html: log ? logToHtml(log) : `no ${t} logs`,
-                  }}
-                  className="-scroll-mt-24"
-                />
-              </div>
-              <Button
-                className="absolute bottom-4 right-4"
-                onClick={to_bottom(t)}
-              >
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </TabsContent>
-          );
-        })}
+        {Log}
       </Section>
     </Tabs>
+  );
+};
+
+const NoSearchLogs = (id: string, tail: string) => {
+  const { data: log, refetch } = useRead(
+    "GetLog",
+    { deployment: id, tail: Number(tail) },
+    { refetchInterval: 30000 }
+  );
+  return {
+    Log: <Log log={log} />,
+    refetch,
+    stderr: !!log?.stderr,
+  };
+};
+
+const SearchLogs = (id: string, search: string) => {
+  const { data: log, refetch } = useRead(
+    "SearchLog",
+    { deployment: id, terms: search.split(" ").filter((term) => term) },
+    { refetchInterval: 30000 }
+  );
+  return {
+    Log: <Log log={log} />,
+    refetch,
+    stderr: !!log?.stderr,
+  };
+};
+
+const Log = ({ log }: { log: Types.Log | undefined }) => {
+  return (
+    <>
+      {["stdout", "stderr"].map((stream) => {
+        const _log = log?.[stream as keyof typeof log] as string | undefined;
+        return (
+          <TabsContent key={stream} className="h-full relative" value={stream}>
+            <div className="h-[70vh] overflow-y-auto">
+              <pre
+                id={stream}
+                dangerouslySetInnerHTML={{
+                  __html: _log ? logToHtml(_log) : `no ${stream} logs`,
+                }}
+                className="-scroll-mt-24"
+              />
+            </div>
+            <Button
+              className="absolute bottom-4 right-4"
+              onClick={to_bottom(stream)}
+            >
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </TabsContent>
+        );
+      })}
+    </>
   );
 };
 
 const TailLengthSelector = ({
   selected,
   onSelect,
+  disabled,
 }: {
   selected: string;
   onSelect: (value: string) => void;
+  disabled?: boolean;
 }) => (
-  <Select value={selected} onValueChange={onSelect}>
-    <SelectTrigger>
+  <Select value={selected} onValueChange={onSelect} disabled={disabled}>
+    <SelectTrigger className="w-[120px]">
       <SelectValue />
     </SelectTrigger>
     <SelectContent>

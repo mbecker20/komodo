@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use axum::{middleware, routing::post, Extension, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::execute::*, entities::user::User};
@@ -54,38 +54,52 @@ pub fn router() -> Router {
     .layer(middleware::from_fn(auth_request))
 }
 
-#[instrument(name = "ExecuteHandler", skip(user))]
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<ExecuteRequest>,
 ) -> AppResult<(TypedHeader<ContentType>, String)> {
-  let timer = Instant::now();
   let req_id = Uuid::new_v4();
-  info!(
-    "/execute request {req_id} | user: {} ({})",
-    user.username, user.id
-  );
-  let res = tokio::spawn(async move {
-    State.resolve_request(request, user).await
-  })
-  .await
-  .context("failure in spawned execute task");
+
+  let res = tokio::spawn(task(req_id, request, user))
+    .await
+    .context("failure in spawned execute task");
 
   if let Err(e) = &res {
     warn!("/execute request {req_id} spawn error: {e:#}",);
   }
 
-  let res = res?;
+  AppResult::Ok((TypedHeader(ContentType::json()), res??))
+}
 
-  if let Err(resolver_api::Error::Serialization(e)) = &res {
-    warn!("/execute request {req_id} serialization error: {e:?}");
-  }
-  if let Err(resolver_api::Error::Inner(e)) = &res {
+#[instrument(name = "ExecuteTask")]
+async fn task(
+  req_id: Uuid,
+  request: ExecuteRequest,
+  user: User,
+) -> anyhow::Result<String> {
+  info!(
+    "/execute request {req_id} | user: {} ({})",
+    user.username, user.id
+  );
+  let timer = Instant::now();
+
+  let res =
+    State
+      .resolve_request(request, user)
+      .await
+      .map_err(|e| match e {
+        resolver_api::Error::Serialization(e) => {
+          anyhow!("{e:?}").context("response serialization error")
+        }
+        resolver_api::Error::Inner(e) => e,
+      });
+
+  if let Err(e) = &res {
     warn!("/execute request {req_id} error: {e:#}");
   }
 
   let elapsed = timer.elapsed();
   info!("/execute request {req_id} | resolve time: {elapsed:?}");
 
-  AppResult::Ok((TypedHeader(ContentType::json()), res?))
+  res
 }

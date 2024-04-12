@@ -1028,6 +1028,9 @@ export type AlertData =
 	from: DockerContainerState;
 	to: DockerContainerState;
 }}
+	| { type: "AwsBuilderTerminationFailed", data: {
+	instance_id: string;
+}}
 	| { type: "None", data: {
 }};
 
@@ -1166,7 +1169,7 @@ export interface GetLog {
 export interface SearchLog {
 	/** Id or name */
 	deployment: string;
-	search: string;
+	terms: string[];
 }
 
 export interface GetDeployedVersion {

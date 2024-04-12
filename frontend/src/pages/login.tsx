@@ -77,7 +77,7 @@ export const Login = () => {
       </div>
       <div className="flex justify-center items-center container mt-32">
         <Card className="w-full max-w-[500px] place-self-center">
-          <CardHeader className="flex justify-between">
+          <CardHeader className="flex-row justify-between">
             <div>
               <CardTitle className="text-xl">Monitor</CardTitle>
               <CardDescription>Log In</CardDescription>

@@ -2896,9 +2896,9 @@ dependencies = [
 
 [[package]]
 name = "resolver_api"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9245971c55ef05018019a1da642fce51439df2b4336369144a7bb866e91f79cf"
+checksum = "43981e6bc9a85f1072ffd38bcaca5823e3cd7f24bb675fa5e79736a318f1f998"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3251,9 +3251,9 @@ dependencies = [
 
 [[package]]
 name = "serror"
-version = "0.1.9"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d3df9a2b74d806ecbe70d5156f436edca357e458b8d970ce88cab324a599190"
+checksum = "ac699ec20dda9d3630e499777c7822d9811beafbedf3b6305586b7338eb5a50e"
 dependencies = [
  "anyhow",
  "axum 0.7.4",

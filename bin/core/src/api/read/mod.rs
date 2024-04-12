@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use anyhow::anyhow;
 use async_trait::async_trait;
 use axum::{middleware, routing::post, Extension, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
@@ -150,11 +151,17 @@ async fn handler(
     "/read request {req_id} | user: {} ({})",
     user.username, user.id
   );
-  let res = State.resolve_request(request, user).await;
-  if let Err(resolver_api::Error::Serialization(e)) = &res {
-    warn!("/read request {req_id} serialization error: {e:?}");
-  }
-  if let Err(resolver_api::Error::Inner(e)) = &res {
+  let res =
+    State
+      .resolve_request(request, user)
+      .await
+      .map_err(|e| match e {
+        resolver_api::Error::Serialization(e) => {
+          anyhow!("{e:?}").context("response serialization error")
+        }
+        resolver_api::Error::Inner(e) => e,
+      });
+  if let Err(e) = &res {
     warn!("/read request {req_id} error: {e:#}");
   }
   let elapsed = timer.elapsed();

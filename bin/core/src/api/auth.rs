@@ -1,5 +1,6 @@
 use std::{sync::OnceLock, time::Instant};
 
+use anyhow::anyhow;
 use async_trait::async_trait;
 use axum::{http::HeaderMap, routing::post, Json, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
@@ -58,11 +59,15 @@ async fn handler(
   let timer = Instant::now();
   let req_id = Uuid::new_v4();
   debug!("/auth request {req_id} | METHOD: {}", request.req_type());
-  let res = State.resolve_request(request, headers).await;
-  if let Err(resolver_api::Error::Serialization(e)) = &res {
-    debug!("/auth request {req_id} | serialization error: {e:?}");
-  }
-  if let Err(resolver_api::Error::Inner(e)) = &res {
+  let res = State.resolve_request(request, headers).await.map_err(
+    |e| match e {
+      resolver_api::Error::Serialization(e) => {
+        anyhow!("{e:?}").context("response serialization error")
+      }
+      resolver_api::Error::Inner(e) => e,
+    },
+  );
+  if let Err(e) = &res {
     debug!("/auth request {req_id} | error: {e:#}");
   }
   let elapsed = timer.elapsed();
