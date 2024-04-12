@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
@@ -186,6 +188,7 @@ pub struct ContainerSummary {
   pub name: String,
   pub id: String,
   pub image: String,
+  pub labels: HashMap<String, String>,
   pub state: DockerContainerState,
   pub status: Option<String>,
 }

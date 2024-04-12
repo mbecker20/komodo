@@ -55,6 +55,7 @@ impl DockerClient {
             .parse()
             .context("failed to parse container state")?,
           status: s.status,
+          labels: s.labels.unwrap_or_default(),
         };
         Ok::<_, anyhow::Error>(info)
       })
