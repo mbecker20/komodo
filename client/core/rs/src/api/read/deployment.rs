@@ -7,9 +7,7 @@ use crate::entities::{
   deployment::{
     Deployment, DeploymentActionState, DeploymentListItem,
     DeploymentQuery, DockerContainerState, DockerContainerStats,
-  },
-  update::Log,
-  I64, U64,
+  }, update::Log, SearchCombinator, I64, U64
 };
 
 use super::MonitorReadRequest;
@@ -104,6 +102,8 @@ pub struct SearchLog {
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
   pub terms: Vec<String>,
+  #[serde(default)]
+  pub combinator: SearchCombinator,
 }
 
 #[typeshare]

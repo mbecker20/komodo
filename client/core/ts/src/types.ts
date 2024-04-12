@@ -1166,10 +1166,16 @@ export interface GetLog {
 	tail: U64;
 }
 
+export enum SearchCombinator {
+	Or = "Or",
+	And = "And",
+}
+
 export interface SearchLog {
 	/** Id or name */
 	deployment: string;
 	terms: string[];
+	combinator?: SearchCombinator;
 }
 
 export interface GetDeployedVersion {

@@ -379,3 +379,23 @@ pub enum Operation {
   UpdateUserPermissions,
   UpdateUserPermissionsOnTarget,
 }
+
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Default,
+  Display,
+  EnumString,
+  PartialEq,
+  Hash,
+  Eq,
+  Clone,
+  Copy,
+)]
+pub enum SearchCombinator {
+  #[default]
+  Or,
+  And,
+}

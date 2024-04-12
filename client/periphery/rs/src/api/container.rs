@@ -4,6 +4,7 @@ use monitor_client::entities::{
     TerminationSignal,
   },
   update::Log,
+  SearchCombinator,
 };
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
@@ -33,6 +34,8 @@ fn default_tail() -> u64 {
 pub struct GetContainerLogSearch {
   pub name: String,
   pub terms: Vec<String>,
+  #[serde(default)]
+  pub combinator: SearchCombinator,
 }
 
 //

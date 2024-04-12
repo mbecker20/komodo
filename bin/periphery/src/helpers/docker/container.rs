@@ -6,7 +6,7 @@ use monitor_client::entities::{
   },
   optional_string, to_monitor_name,
   update::Log,
-  EnvironmentVar,
+  EnvironmentVar, SearchCombinator,
 };
 use run_command::async_run_command;
 use serror::serialize_error_pretty;
@@ -31,11 +31,18 @@ pub async fn container_log(container_name: &str, tail: u64) -> Log {
 pub async fn container_log_search(
   container_name: &str,
   terms: &[String],
+  combinator: SearchCombinator,
 ) -> Log {
-  let command = format!(
-    "docker logs {container_name} --tail 5000 | grep -E '{}'",
-    terms.join("|")
-  );
+  let grep = match combinator {
+    SearchCombinator::Or => {
+      format!("grep -E '{}'", terms.join("|"))
+    }
+    SearchCombinator::And => {
+      format!("grep -P '^(?=.*{})'", terms.join(")(?=.*"))
+    }
+  };
+  let command =
+    format!("docker logs {container_name} --tail 5000 |& {grep}");
   run_monitor_command("get container log grep", command).await
 }
 

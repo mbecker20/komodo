@@ -58,8 +58,12 @@ impl Resolve<GetContainerLogSearch> for State {
     _: (),
   ) -> anyhow::Result<Log> {
     Ok(
-      docker::container::container_log_search(&req.name, &req.terms)
-        .await,
+      docker::container::container_log_search(
+        &req.name,
+        &req.terms,
+        req.combinator,
+      )
+      .await,
     )
   }
 }

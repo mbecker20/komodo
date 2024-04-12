@@ -70,6 +70,7 @@ const DeploymentLogsInner = ({ id }: { id: string }) => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") updateSearch();
                 }}
+                className="w-[300px]"
               />
               <Button
                 variant="ghost"
