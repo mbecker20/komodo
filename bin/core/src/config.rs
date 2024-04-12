@@ -253,6 +253,48 @@ fn default_monitoring_interval() -> Timelength {
   Timelength::FifteenSeconds
 }
 
+impl CoreConfig {
+  pub fn sanitized(&self) -> CoreConfig {
+    let mut config = self.clone();
+
+    config.passkey = empty_or_redacted(&config.passkey);
+    config.github_webhook_secret =
+      empty_or_redacted(&config.github_webhook_secret);
+
+    config.github_oauth.id =
+      empty_or_redacted(&config.github_oauth.id);
+    config.github_oauth.secret =
+      empty_or_redacted(&config.github_oauth.secret);
+
+    config.google_oauth.id =
+      empty_or_redacted(&config.google_oauth.id);
+    config.google_oauth.secret =
+      empty_or_redacted(&config.google_oauth.secret);
+
+    config.mongo.uri =
+      config.mongo.uri.map(|cur| empty_or_redacted(&cur));
+    config.mongo.username =
+      config.mongo.username.map(|cur| empty_or_redacted(&cur));
+    config.mongo.password =
+      config.mongo.password.map(|cur| empty_or_redacted(&cur));
+
+    config.aws.access_key_id =
+      empty_or_redacted(&config.aws.access_key_id);
+    config.aws.secret_access_key =
+      empty_or_redacted(&config.aws.secret_access_key);
+
+    config
+  }
+}
+
+fn empty_or_redacted(src: &str) -> String {
+  if src.is_empty() {
+    String::new()
+  } else {
+    String::from("##############")
+  }
+}
+
 #[derive(Deserialize, Debug, Clone, Default)]
 pub struct OauthCredentials {
   #[serde(default)]

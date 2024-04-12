@@ -30,6 +30,7 @@ async fn app() -> anyhow::Result<()> {
   let config = core_config();
   logger::init(&config.logging)?;
   info!("monitor core version: v{}", env!("CARGO_PKG_VERSION"));
+  info!("config: {:?}", config.sanitized());
 
   // Spawn monitoring loops
   monitor::spawn_monitor_loop();
