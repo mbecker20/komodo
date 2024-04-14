@@ -2,7 +2,14 @@ import { useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
-import { ServerIcon, AlertTriangle, Rocket, LineChart } from "lucide-react";
+import {
+  ServerIcon,
+  AlertTriangle,
+  Rocket,
+  Cpu,
+  MemoryStick,
+  Database,
+} from "lucide-react";
 import { Section } from "@components/layouts";
 import { RenameServer, SERVER_ACTIONS } from "./actions";
 import {
@@ -15,7 +22,6 @@ import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
 import { ServersChart } from "./dashboard";
 import { Link } from "react-router-dom";
-import { Button } from "@ui/button";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
 
 export const useServer = (id?: string) =>
@@ -25,14 +31,53 @@ export const ServerComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
   Link: ({ id }) => <ResourceLink type="Server" id={id} />,
   Info: [
-    ({ id }) => (
-      <Link to={`/servers/${id}/stats`}>
-        <Button variant="link" className="flex gap-2 items-center p-0">
-          <LineChart className="w-4 h-4" />
-          Stats
-        </Button>
-      </Link>
-    ),
+    ({ id }) => {
+      const server = useServer(id);
+      const core_count =
+        useRead(
+          "GetSystemInformation",
+          { server: id },
+          { enabled: server ? server.info.status !== "Disabled" : false }
+        ).data?.core_count ?? 0;
+      return (
+        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+          <Cpu className="w-4 h-4" />
+          {core_count || "N/A"} Core{core_count > 1 ? "s" : ""}
+        </Link>
+      );
+    },
+    ({ id }) => {
+      const server = useServer(id);
+      const stats = useRead(
+        "GetSystemStats",
+        { server: id },
+        { enabled: server ? server.info.status !== "Disabled" : false }
+      ).data;
+      return (
+        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+          <MemoryStick className="w-4 h-4" />
+          {stats?.mem_total_gb.toFixed(2) ?? "N/A"} GB
+        </Link>
+      );
+    },
+    ({ id }) => {
+      const server = useServer(id);
+      const stats = useRead(
+        "GetSystemStats",
+        { server: id },
+        { enabled: server ? server.info.status !== "Disabled" : false }
+      ).data;
+      const disk_total_gb = stats?.disks.reduce(
+        (acc, curr) => acc + curr.total_gb,
+        0
+      );
+      return (
+        <Link to={`/servers/${id}/stats`} className="flex gap-2 items-center">
+          <Database className="w-4 h-4" />
+          {disk_total_gb?.toFixed(2) ?? "N/A"} GB
+        </Link>
+      );
+    },
   ],
   Icon: ({ id }) => {
     const status = useServer(id)?.info.status;

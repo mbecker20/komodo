@@ -11,7 +11,6 @@ import { Cpu, Database, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { useServer } from ".";
-import { ServerInfo } from "./info";
 import { DataTable } from "@ui/data-table";
 import { useState } from "react";
 import { Input } from "@ui/input";
@@ -31,7 +30,7 @@ export const ServerStats = ({ id }: { id: string }) => {
       titleRight={<div className="text-muted-foreground">Stats</div>}
     >
       <div className="flex gap-4">
-        <ServerInfo id={id} />
+        {/* <ServerInfo id={id} /> */}
       </div>
 
       <Section title="System Info">

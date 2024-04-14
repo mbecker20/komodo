@@ -2,7 +2,7 @@ import { OpenAlerts } from "@components/alert";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { DeploymentTable } from "@components/resources/deployment/table";
-import { ServerInfo } from "@components/resources/server/info";
+import { ServerComponents } from "@components/resources/server";
 import { TagsFilter, TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead } from "@lib/hooks";
 import { Button } from "@ui/button";
@@ -45,7 +45,15 @@ const Server = ({ id }: { id: string }) => {
           <CardTitle>{server?.name}</CardTitle>
           <div className="flex gap-3 justify-between items-center">
             <TagsWithBadge tag_ids={server?.tags} />
-            {server?.id && <ServerInfo id={server.id} showRegion={false} />}
+            {server?.id && (
+              <div className="flex gap-4 items-center">
+                {ServerComponents.Info.map((Info, i) => (
+                  <>
+                    {i !== 0 && "|"} <Info key={i} id={server.id} />
+                  </>
+                ))}
+              </div>
+            )}
             <Link to={`/servers/${server?.id}`}>
               <Button variant="outline">
                 <ResourceComponents.Server.Icon id={server?.id} />

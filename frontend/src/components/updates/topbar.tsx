@@ -34,7 +34,7 @@ export const TopbarUpdates = () => {
           <Bell className="w-4 h-4" />
           <Circle
             className={cn(
-              "absolute top-2 right-2 w-2 h-2 stroke-red-500 fill-red-500 transition-opacity",
+              "absolute top-2 right-2 w-2 h-2 stroke-blue-500 fill-blue-500 transition-opacity",
               unseen_update ? "opacity-1" : "opacity-0"
             )}
           />
