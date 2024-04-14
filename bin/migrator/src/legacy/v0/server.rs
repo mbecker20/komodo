@@ -310,7 +310,6 @@ impl TryFrom<Server> for monitor_client::entities::server::Server {
         send_cpu_alerts: true,
         send_mem_alerts: true,
         send_disk_alerts: true,
-        send_temp_alerts: true,
         region: value.region.unwrap_or_default(),
         cpu_warning: value.cpu_alert,
         cpu_critical: value.cpu_alert,

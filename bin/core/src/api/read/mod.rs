@@ -119,19 +119,9 @@ enum ReadRequest {
 
   // ==== SERVER STATS ====
   #[to_string_resolver]
-  GetAllSystemStats(GetAllSystemStats),
-  #[to_string_resolver]
-  GetBasicSystemStats(GetBasicSystemStats),
-  #[to_string_resolver]
-  GetCpuUsage(GetCpuUsage),
-  #[to_string_resolver]
-  GetDiskUsage(GetDiskUsage),
-  #[to_string_resolver]
-  GetNetworkUsage(GetNetworkUsage),
+  GetSystemStats(GetSystemStats),
   #[to_string_resolver]
   GetSystemProcesses(GetSystemProcesses),
-  #[to_string_resolver]
-  GetSystemComponents(GetSystemComponents),
 }
 
 pub fn router() -> Router {

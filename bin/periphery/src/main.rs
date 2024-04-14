@@ -12,7 +12,7 @@ mod config;
 mod guard;
 mod handler;
 mod helpers;
-mod system_stats;
+mod stats;
 
 struct State;
 
@@ -23,7 +23,7 @@ async fn app() -> anyhow::Result<()> {
 
   info!("version: v{}", env!("CARGO_PKG_VERSION"));
 
-  system_stats::spawn_system_stats_polling_threads();
+  stats::spawn_system_stats_polling_threads();
 
   let socket_addr =
     SocketAddr::from_str(&format!("0.0.0.0:{}", config.port))

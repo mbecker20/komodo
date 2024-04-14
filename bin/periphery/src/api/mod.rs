@@ -26,37 +26,33 @@ mod stats;
 #[resolver_target(State)]
 #[allow(clippy::enum_variant_names, clippy::large_enum_variant)]
 pub enum PeripheryRequest {
-  // GET
   GetVersion(GetVersion),
   #[to_string_resolver]
   GetHealth(GetHealth),
-  #[to_string_resolver]
-  GetSystemInformation(GetSystemInformation),
-  #[to_string_resolver]
-  GetAllSystemStats(GetAllSystemStats),
-  #[to_string_resolver]
-  GetBasicSystemStats(GetBasicSystemStats),
-  #[to_string_resolver]
-  GetCpuUsage(GetCpuUsage),
-  #[to_string_resolver]
-  GetDiskUsage(GetDiskUsage),
-  #[to_string_resolver]
-  GetNetworkUsage(GetNetworkUsage),
-  #[to_string_resolver]
-  GetSystemProcesses(GetSystemProcesses),
-  #[to_string_resolver]
-  GetSystemComponents(GetSystemComponents),
+
+  // Config
   #[to_string_resolver]
   GetAccounts(GetAccounts),
   #[to_string_resolver]
   GetSecrets(GetSecrets),
+
+  // Stats / Info
+  #[to_string_resolver]
+  GetSystemInformation(GetSystemInformation),
+  #[to_string_resolver]
+  GetSystemStats(GetSystemStats),
+  #[to_string_resolver]
+  GetSystemProcesses(GetSystemProcesses),
+
+  // Docker 
   GetContainerList(GetContainerList),
   GetContainerLog(GetContainerLog),
   GetContainerLogSearch(GetContainerLogSearch),
   GetContainerStats(GetContainerStats),
   GetContainerStatsList(GetContainerStatsList),
   GetNetworkList(GetNetworkList),
-  // ACTIONS
+
+  // Actions
   RunCommand(RunCommand),
   CloneRepo(CloneRepo),
   PullRepo(PullRepo),

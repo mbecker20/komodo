@@ -1,5 +1,5 @@
 use monitor_client::entities::server::stats::{
-  BasicSystemStats, SystemStatsRecord,
+  sum_disk_usage, SystemStatsRecord, TotalDiskUsage,
 };
 
 use crate::{db::db_client, helpers::cache::server_status_cache};
@@ -9,29 +9,24 @@ pub async fn record_server_stats(ts: i64) {
   let status = server_status_cache().get_list().await;
   let records = status
     .into_iter()
-    .filter(|status| status.stats.is_some())
-    .map(|status| {
-      let BasicSystemStats {
-        load_average,
-        cpu_perc,
-        cpu_freq_mhz,
-        mem_total_gb,
-        mem_used_gb,
-        disk_total_gb,
-        disk_used_gb,
-        ..
-      } = status.stats.as_ref().unwrap().basic;
-      SystemStatsRecord {
+    .filter_map(|status| {
+      let stats = status.stats.as_ref()?;
+
+      let TotalDiskUsage {
+        used_gb: disk_used_gb,
+        total_gb: disk_total_gb,
+      } = sum_disk_usage(&stats.disks);
+
+      Some(SystemStatsRecord {
         ts,
         sid: status.id.clone(),
-        load_average,
-        cpu_perc,
-        cpu_freq_mhz,
-        mem_total_gb,
-        mem_used_gb,
+        cpu_perc: stats.cpu_perc,
+        mem_total_gb: stats.mem_total_gb,
+        mem_used_gb: stats.mem_used_gb,
         disk_total_gb,
         disk_used_gb,
-      }
+        disks: stats.disks.clone(),
+      })
     })
     .collect::<Vec<_>>();
   if !records.is_empty() {

@@ -26,7 +26,6 @@ pub struct ServerListItemInfo {
   pub send_cpu_alerts: bool,
   pub send_mem_alerts: bool,
   pub send_disk_alerts: bool,
-  pub send_temp_alerts: bool,
 }
 
 #[typeshare(serialized_as = "Partial<ServerConfig>")]
@@ -88,12 +87,6 @@ pub struct ServerConfig {
   #[builder(default = "default_send_alerts()")]
   #[partial_default(default_send_alerts())]
   pub send_disk_alerts: bool,
-
-  /// Whether to send alerts about the servers tempurature status
-  #[serde(default = "default_send_alerts")]
-  #[builder(default = "default_send_alerts()")]
-  #[partial_default(default_send_alerts())]
-  pub send_temp_alerts: bool,
 
   /// An optional region label
   #[serde(default)]

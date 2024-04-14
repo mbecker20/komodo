@@ -9,9 +9,8 @@ use crate::entities::{
     docker_image::ImageSummary,
     docker_network::DockerNetwork,
     stats::{
-      AllSystemStats, BasicSystemStats, CpuUsage, DiskUsage,
-      NetworkUsage, SystemComponent, SystemInformation,
-      SystemProcess, SystemStatsRecord,
+      SystemInformation, SystemProcess, SystemStats,
+      SystemStatsRecord,
     },
     Server, ServerActionState, ServerListItem, ServerQuery,
     ServerStatus,
@@ -186,83 +185,15 @@ pub type GetSystemInformationResponse = SystemInformation;
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetAllSystemStatsResponse)]
-pub struct GetAllSystemStats {
+#[response(GetSystemStatsResponse)]
+pub struct GetSystemStats {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub server: String,
 }
 
 #[typeshare]
-pub type GetAllSystemStatsResponse = AllSystemStats;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetBasicSystemStatsResponse)]
-pub struct GetBasicSystemStats {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetBasicSystemStatsResponse = BasicSystemStats;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetCpuUsageResponse)]
-pub struct GetCpuUsage {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetCpuUsageResponse = CpuUsage;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetDiskUsageResponse)]
-pub struct GetDiskUsage {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetDiskUsageResponse = DiskUsage;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetNetworkUsageResponse)]
-pub struct GetNetworkUsage {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetNetworkUsageResponse = NetworkUsage;
+pub type GetSystemStatsResponse = SystemStats;
 
 //
 
@@ -280,23 +211,6 @@ pub struct GetSystemProcesses {
 
 #[typeshare]
 pub type GetSystemProcessesResponse = Vec<SystemProcess>;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetSystemComponentsResponse)]
-pub struct GetSystemComponents {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub server: String,
-}
-
-#[typeshare]
-pub type GetSystemComponentsResponse = Vec<SystemComponent>;
 
 //
 

@@ -3,7 +3,7 @@ use futures::future::join_all;
 use monitor_client::entities::{
   deployment::{ContainerSummary, DockerContainerState},
   server::{
-    stats::{AllSystemStats, ServerHealth},
+    stats::{ServerHealth, SystemStats},
     Server, ServerStatus,
   },
 };
@@ -36,7 +36,7 @@ pub struct CachedServerStatus {
   pub id: String,
   pub status: ServerStatus,
   pub version: String,
-  pub stats: Option<AllSystemStats>,
+  pub stats: Option<SystemStats>,
   pub health: Option<ServerHealth>,
   pub err: Option<serror::Serror>,
 }
@@ -123,7 +123,7 @@ pub async fn update_cache_for_server(server: &Server) {
   };
 
   let stats = if server.config.stats_monitoring {
-    match periphery.request(api::stats::GetAllSystemStats {}).await {
+    match periphery.request(api::stats::GetSystemStats {}).await {
       Ok(stats) => Some(stats),
       Err(e) => {
         insert_deployments_status_unknown(deployments).await;

@@ -11,10 +11,8 @@ use typeshare::typeshare;
 use crate::entities::{MongoId, I64};
 
 use super::{
-  _Serror,
-  deployment::DockerContainerState,
-  server::stats::{SeverityLevel, SystemProcess},
-  update::ResourceTarget,
+  _Serror, deployment::DockerContainerState,
+  server::stats::SeverityLevel, update::ResourceTarget,
 };
 
 #[typeshare]
@@ -73,7 +71,6 @@ pub enum AlertData {
     name: String,
     region: Option<String>,
     percentage: f64,
-    top_procs: Vec<SystemProcess>,
   },
   ServerMem {
     id: String,
@@ -81,7 +78,6 @@ pub enum AlertData {
     region: Option<String>,
     used_gb: f64,
     total_gb: f64,
-    top_procs: Vec<SystemProcess>,
   },
   ServerDisk {
     id: String,
@@ -90,14 +86,6 @@ pub enum AlertData {
     path: PathBuf,
     used_gb: f64,
     total_gb: f64,
-  },
-  ServerTemp {
-    id: String,
-    name: String,
-    region: Option<String>,
-    component: String,
-    temp: f64,
-    max: f64,
   },
   ContainerStateChange {
     id: String,

@@ -1,5 +1,12 @@
+use std::{
+  collections::HashMap,
+  sync::{Arc, OnceLock},
+};
+
 use anyhow::{anyhow, Context};
-use async_timing_util::{get_timelength_in_ms, unix_timestamp_ms};
+use async_timing_util::{
+  get_timelength_in_ms, unix_timestamp_ms, FIFTEEN_SECONDS_MS,
+};
 use async_trait::async_trait;
 use monitor_client::{
   api::read::*,
@@ -20,6 +27,7 @@ use mungos::{
 };
 use periphery_client::api::{self, GetAccountsResponse};
 use resolver_api::{Resolve, ResolveToString};
+use tokio::sync::Mutex;
 
 use crate::{
   db::db_client,
@@ -174,82 +182,10 @@ impl Resolve<GetSystemInformation, User> for State {
 }
 
 #[async_trait]
-impl ResolveToString<GetAllSystemStats, User> for State {
+impl ResolveToString<GetSystemStats, User> for State {
   async fn resolve_to_string(
     &self,
-    GetAllSystemStats { server }: GetAllSystemStats,
-    user: User,
-  ) -> anyhow::Result<String> {
-    let server = Server::get_resource_check_permissions(
-      &server,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-    let status =
-      server_status_cache().get(&server.id).await.with_context(
-        || format!("did not find status for server at {}", server.id),
-      )?;
-    let stats =
-      status.stats.as_ref().context("server not reachable")?;
-    let stats = serde_json::to_string(&stats)?;
-    Ok(stats)
-  }
-}
-
-#[async_trait]
-impl ResolveToString<GetBasicSystemStats, User> for State {
-  async fn resolve_to_string(
-    &self,
-    GetBasicSystemStats { server }: GetBasicSystemStats,
-    user: User,
-  ) -> anyhow::Result<String> {
-    let server = Server::get_resource_check_permissions(
-      &server,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-    let status =
-      server_status_cache().get(&server.id).await.with_context(
-        || format!("did not find status for server at {}", server.id),
-      )?;
-    let stats =
-      status.stats.as_ref().context("server not reachable")?;
-    let stats = serde_json::to_string(&stats.basic)?;
-    Ok(stats)
-  }
-}
-
-#[async_trait]
-impl ResolveToString<GetCpuUsage, User> for State {
-  async fn resolve_to_string(
-    &self,
-    GetCpuUsage { server }: GetCpuUsage,
-    user: User,
-  ) -> anyhow::Result<String> {
-    let server = Server::get_resource_check_permissions(
-      &server,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-    let status =
-      server_status_cache().get(&server.id).await.with_context(
-        || format!("did not find status for server at {}", server.id),
-      )?;
-    let stats =
-      status.stats.as_ref().context("server not reachable")?;
-    let stats = serde_json::to_string(&stats.cpu)?;
-    Ok(stats)
-  }
-}
-
-#[async_trait]
-impl ResolveToString<GetDiskUsage, User> for State {
-  async fn resolve_to_string(
-    &self,
-    GetDiskUsage { server }: GetDiskUsage,
+    GetSystemStats { server }: GetSystemStats,
     user: User,
   ) -> anyhow::Result<String> {
     let server = Server::get_resource_check_permissions(
@@ -265,34 +201,18 @@ impl ResolveToString<GetDiskUsage, User> for State {
     let stats = status
       .stats
       .as_ref()
-      .ok_or(anyhow!("server not reachable"))?;
-    let stats = serde_json::to_string(&stats.disk)?;
+      .context("server stats not available")?;
+    let stats = serde_json::to_string(&stats)?;
     Ok(stats)
   }
 }
 
-#[async_trait]
-impl ResolveToString<GetNetworkUsage, User> for State {
-  async fn resolve_to_string(
-    &self,
-    GetNetworkUsage { server }: GetNetworkUsage,
-    user: User,
-  ) -> anyhow::Result<String> {
-    let server = Server::get_resource_check_permissions(
-      &server,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-    let status =
-      server_status_cache().get(&server.id).await.with_context(
-        || format!("did not find status for server at {}", server.id),
-      )?;
-    let stats =
-      status.stats.as_ref().context("server not reachable")?;
-    let stats = serde_json::to_string(&stats.network)?;
-    Ok(stats)
-  }
+// This protects the peripheries from spam requests
+const PROCESSES_EXPIRY: u128 = FIFTEEN_SECONDS_MS;
+type ProcessesCache = Mutex<HashMap<String, Arc<(String, u128)>>>;
+fn processes_cache() -> &'static ProcessesCache {
+  static PROCESSES_CACHE: OnceLock<ProcessesCache> = OnceLock::new();
+  PROCESSES_CACHE.get_or_init(Default::default)
 }
 
 #[async_trait]
@@ -308,38 +228,25 @@ impl ResolveToString<GetSystemProcesses, User> for State {
       PermissionLevel::Read,
     )
     .await?;
-    let status =
-      server_status_cache().get(&server.id).await.with_context(
-        || format!("did not find status for server at {}", server.id),
-      )?;
-    let stats =
-      status.stats.as_ref().context("server not reachable")?;
-    let stats = serde_json::to_string(&stats.processes)?;
-    Ok(stats)
-  }
-}
-
-#[async_trait]
-impl ResolveToString<GetSystemComponents, User> for State {
-  async fn resolve_to_string(
-    &self,
-    GetSystemComponents { server }: GetSystemComponents,
-    user: User,
-  ) -> anyhow::Result<String> {
-    let server = Server::get_resource_check_permissions(
-      &server,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-    let status =
-      server_status_cache().get(&server.id).await.with_context(
-        || format!("did not find status for server at {}", server.id),
-      )?;
-    let stats =
-      status.stats.as_ref().context("server not reachable")?;
-    let stats = serde_json::to_string(&stats.components)?;
-    Ok(stats)
+    let mut lock = processes_cache().lock().await;
+    let res = match lock.get(&server.id) {
+      Some(cached) if cached.1 > unix_timestamp_ms() => {
+        cached.0.clone()
+      }
+      _ => {
+        let stats = periphery_client(&server)?
+          .request(api::stats::GetSystemProcesses {})
+          .await?;
+        let res = serde_json::to_string(&stats)?;
+        lock.insert(
+          server.id,
+          (res.clone(), unix_timestamp_ms() + PROCESSES_EXPIRY)
+            .into(),
+        );
+        res
+      }
+    };
+    Ok(res)
   }
 }
 

@@ -314,7 +314,6 @@ impl StateResource for Server {
         send_cpu_alerts: server.config.send_cpu_alerts,
         send_mem_alerts: server.config.send_mem_alerts,
         send_disk_alerts: server.config.send_disk_alerts,
-        send_temp_alerts: server.config.send_temp_alerts,
       },
     })
   }

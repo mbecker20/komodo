@@ -1,6 +1,4 @@
-use std::{
-  cmp::Ordering, collections::HashMap, path::PathBuf, str::FromStr,
-};
+use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use anyhow::Context;
 use mongo_indexed::Indexed;
@@ -25,7 +23,6 @@ type SendAlerts = bool;
 type OpenAlertMap<T = AlertDataVariant> =
   HashMap<ResourceTarget, HashMap<T, Alert>>;
 type OpenDiskAlertMap = OpenAlertMap<PathBuf>;
-type OpenTempAlertMap = OpenAlertMap<String>;
 
 #[instrument(level = "debug")]
 pub async fn alert_servers(
@@ -34,14 +31,13 @@ pub async fn alert_servers(
 ) {
   let server_statuses = server_status_cache().get_list().await;
 
-  let alerts = get_open_alerts().await;
-
-  if let Err(e) = alerts {
-    error!("{e:#}");
-    return;
-  }
-
-  let (alerts, disk_alerts, temp_alerts) = alerts.unwrap();
+  let (alerts, disk_alerts) = match get_open_alerts().await {
+    Ok(alerts) => alerts,
+    Err(e) => {
+      error!("{e:#}");
+      return;
+    }
+  };
 
   let mut alerts_to_open = Vec::<(Alert, SendAlerts)>::new();
   let mut alerts_to_update = Vec::<(Alert, SendAlerts)>::new();
@@ -115,11 +111,9 @@ pub async fn alert_servers(
       _ => {}
     }
 
-    if server_status.health.is_none() {
+    let Some(health) = &server_status.health else {
       continue;
-    }
-
-    let health = server_status.health.as_ref().unwrap();
+    };
 
     // ===================
     // SERVER CPU
@@ -146,23 +140,8 @@ pub async fn alert_servers(
             percentage: server_status
               .stats
               .as_ref()
-              .map(|s| s.basic.cpu_perc as f64)
+              .map(|s| s.cpu_perc as f64)
               .unwrap_or(0.0),
-            top_procs: server_status
-              .stats
-              .as_ref()
-              .map(|s| {
-                let mut procs = s.processes.clone();
-                procs.sort_by(|a, b| {
-                  if a.cpu_perc < b.cpu_perc {
-                    Ordering::Less
-                  } else {
-                    Ordering::Greater
-                  }
-                });
-                procs.into_iter().take(3).collect()
-              })
-              .unwrap_or_default(),
           },
         };
         alerts_to_open.push((alert, server.info.send_cpu_alerts));
@@ -181,23 +160,8 @@ pub async fn alert_servers(
             percentage: server_status
               .stats
               .as_ref()
-              .map(|s| s.basic.cpu_perc as f64)
+              .map(|s| s.cpu_perc as f64)
               .unwrap_or(0.0),
-            top_procs: server_status
-              .stats
-              .as_ref()
-              .map(|s| {
-                let mut procs = s.processes.clone();
-                procs.sort_by(|a, b| {
-                  if a.cpu_perc < b.cpu_perc {
-                    Ordering::Less
-                  } else {
-                    Ordering::Greater
-                  }
-                });
-                procs.into_iter().take(3).collect()
-              })
-              .unwrap_or_default(),
           };
           alerts_to_update.push((alert, server.info.send_cpu_alerts));
         }
@@ -232,28 +196,13 @@ pub async fn alert_servers(
             total_gb: server_status
               .stats
               .as_ref()
-              .map(|s| s.basic.mem_total_gb)
+              .map(|s| s.mem_total_gb)
               .unwrap_or(0.0),
             used_gb: server_status
               .stats
               .as_ref()
-              .map(|s| s.basic.mem_used_gb)
+              .map(|s| s.mem_used_gb)
               .unwrap_or(0.0),
-            top_procs: server_status
-              .stats
-              .as_ref()
-              .map(|s| {
-                let mut procs = s.processes.clone();
-                procs.sort_by(|a, b| {
-                  if a.mem_mb < b.mem_mb {
-                    Ordering::Less
-                  } else {
-                    Ordering::Greater
-                  }
-                });
-                procs.into_iter().take(3).collect()
-              })
-              .unwrap_or_default(),
           },
         };
         alerts_to_open.push((alert, server.info.send_mem_alerts));
@@ -271,28 +220,13 @@ pub async fn alert_servers(
             total_gb: server_status
               .stats
               .as_ref()
-              .map(|s| s.basic.mem_total_gb)
+              .map(|s| s.mem_total_gb)
               .unwrap_or(0.0),
             used_gb: server_status
               .stats
               .as_ref()
-              .map(|s| s.basic.mem_used_gb)
+              .map(|s| s.mem_used_gb)
               .unwrap_or(0.0),
-            top_procs: server_status
-              .stats
-              .as_ref()
-              .map(|s| {
-                let mut procs = s.processes.clone();
-                procs.sort_by(|a, b| {
-                  if a.mem_mb < b.mem_mb {
-                    Ordering::Less
-                  } else {
-                    Ordering::Greater
-                  }
-                });
-                procs.into_iter().take(3).collect()
-              })
-              .unwrap_or_default(),
           };
           alerts_to_update.push((alert, server.info.send_mem_alerts));
         }
@@ -316,8 +250,8 @@ pub async fn alert_servers(
         .cloned();
       match (*health, disk_alert) {
         (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
-          let disk = server_status.stats.as_ref().and_then(|s| {
-            s.disk.disks.iter().find(|disk| disk.mount == *path)
+          let disk = server_status.stats.as_ref().and_then(|stats| {
+            stats.disks.iter().find(|disk| disk.mount == *path)
           });
           let alert = Alert {
             id: Default::default(),
@@ -343,9 +277,10 @@ pub async fn alert_servers(
           Some(mut alert),
         ) => {
           if *health != alert.level {
-            let disk = server_status.stats.as_ref().and_then(|s| {
-              s.disk.disks.iter().find(|disk| disk.mount == *path)
-            });
+            let disk =
+              server_status.stats.as_ref().and_then(|stats| {
+                stats.disks.iter().find(|disk| disk.mount == *path)
+              });
             alert.level = *health;
             alert.data = AlertData::ServerDisk {
               id: server_status.id.clone(),
@@ -361,71 +296,6 @@ pub async fn alert_servers(
         }
         (SeverityLevel::Ok, Some(alert)) => alert_ids_to_close
           .push((alert.id.clone(), server.info.send_disk_alerts)),
-        _ => {}
-      }
-    }
-
-    // ===================
-    // SERVER TEMP
-    // ===================
-
-    let server_temp_alerts = temp_alerts
-      .get(&ResourceTarget::Server(server_status.id.clone()));
-
-    for (component, health) in &health.temps {
-      let temp_alert = server_temp_alerts
-        .as_ref()
-        .and_then(|alerts| alerts.get(component))
-        .cloned();
-      match (*health, temp_alert) {
-        (SeverityLevel::Warning | SeverityLevel::Critical, None) => {
-          let comp = server_status.stats.as_ref().and_then(|s| {
-            s.components.iter().find(|comp| comp.label == *component)
-          });
-          let alert = Alert {
-            id: Default::default(),
-            ts,
-            resolved: false,
-            resolved_ts: None,
-            level: *health,
-            target: ResourceTarget::Server(server_status.id.clone()),
-            variant: AlertDataVariant::ServerTemp,
-            data: AlertData::ServerTemp {
-              id: server_status.id.clone(),
-              name: server.name.clone(),
-              region: optional_string(&server.info.region),
-              component: component.to_owned(),
-              temp: comp.map(|c| c.temp).unwrap_or_default() as f64,
-              max: comp.map(|c| c.max).unwrap_or_default() as f64,
-            },
-          };
-          alerts_to_open.push((alert, server.info.send_temp_alerts));
-        }
-        (
-          SeverityLevel::Warning | SeverityLevel::Critical,
-          Some(mut alert),
-        ) => {
-          if *health != alert.level {
-            let comp = server_status.stats.as_ref().and_then(|s| {
-              s.components
-                .iter()
-                .find(|comp| comp.label == *component)
-            });
-            alert.level = *health;
-            alert.data = AlertData::ServerTemp {
-              id: server_status.id.clone(),
-              name: server.name.clone(),
-              region: optional_string(&server.info.region),
-              component: component.to_owned(),
-              temp: comp.map(|c| c.temp).unwrap_or_default() as f64,
-              max: comp.map(|c| c.max).unwrap_or_default() as f64,
-            };
-            alerts_to_update
-              .push((alert, server.info.send_temp_alerts));
-          }
-        }
-        (SeverityLevel::Ok, Some(alert)) => alert_ids_to_close
-          .push((alert.id.clone(), server.info.send_temp_alerts)),
         _ => {}
       }
     }
@@ -602,8 +472,7 @@ async fn resolve_alerts(alert_ids: &[(String, SendAlerts)]) {
 
 #[instrument(level = "debug")]
 async fn get_open_alerts(
-) -> anyhow::Result<(OpenAlertMap, OpenDiskAlertMap, OpenTempAlertMap)>
-{
+) -> anyhow::Result<(OpenAlertMap, OpenDiskAlertMap)> {
   let alerts = find_collect(
     &db_client().await.alerts,
     doc! { "resolved": false },
@@ -614,17 +483,12 @@ async fn get_open_alerts(
 
   let mut map = OpenAlertMap::new();
   let mut disk_map = OpenDiskAlertMap::new();
-  let mut temp_map = OpenTempAlertMap::new();
 
   for alert in alerts {
     match &alert.data {
       AlertData::ServerDisk { path, .. } => {
         let inner = disk_map.entry(alert.target.clone()).or_default();
         inner.insert(path.to_owned(), alert);
-      }
-      AlertData::ServerTemp { component, .. } => {
-        let inner = temp_map.entry(alert.target.clone()).or_default();
-        inner.insert(component.to_owned(), alert);
       }
       _ => {
         let inner = map.entry(alert.target.clone()).or_default();
@@ -633,5 +497,5 @@ async fn get_open_alerts(
     }
   }
 
-  Ok((map, disk_map, temp_map))
+  Ok((map, disk_map))
 }

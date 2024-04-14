@@ -91,13 +91,8 @@ export type ReadResponses = {
   ListAlerts: Types.ListAlertsResponse;
 
   // ==== SERVER STATS ====
-  GetAllSystemStats: Types.GetAllSystemStatsResponse;
-  GetBasicSystemStats: Types.GetBasicSystemStatsResponse;
-  GetCpuUsage: Types.GetCpuUsageResponse;
-  GetDiskUsage: Types.GetDiskUsageResponse;
-  GetNetworkUsage: Types.GetNetworkUsageResponse;
+  GetSystemStats: Types.GetSystemStatsResponse;
   GetSystemProcesses: Types.GetSystemProcessesResponse;
-  GetSystemComponents: Types.GetSystemComponentsResponse;
 };
 
 export type WriteResponses = {

@@ -6,27 +6,7 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
-use crate::{entities::Timelength, entities::I64};
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
-)]
-#[collection_name(Stats)]
-pub struct SystemStatsRecord {
-  #[index]
-  pub ts: I64,
-  #[index]
-  pub sid: String,
-  // basic stats
-  pub load_average: LoadAverage,
-  pub cpu_perc: f32,
-  pub cpu_freq_mhz: f64,
-  pub mem_used_gb: f64,
-  pub mem_total_gb: f64,
-  pub disk_used_gb: f64,
-  pub disk_total_gb: f64,
-}
+use crate::entities::{Timelength, I64};
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -40,66 +20,36 @@ pub struct SystemInformation {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
-pub struct AllSystemStats {
-  pub basic: BasicSystemStats,
-  pub cpu: CpuUsage,
-  pub disk: DiskUsage,
-  pub network: NetworkUsage,
-  #[serde(default)]
-  pub processes: Vec<SystemProcess>,
-  #[serde(default)]
-  pub components: Vec<SystemComponent>,
-  pub polling_rate: Timelength,
-  pub refresh_ts: I64,
-  pub refresh_list_ts: I64,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
-pub struct BasicSystemStats {
-  pub load_average: LoadAverage,
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
+)]
+#[collection_name(Stats)]
+pub struct SystemStatsRecord {
+  #[index]
+  pub ts: I64,
+  #[index]
+  pub sid: String,
+  // basic stats
   pub cpu_perc: f32,
-  pub cpu_freq_mhz: f64,
   pub mem_used_gb: f64,
   pub mem_total_gb: f64,
   pub disk_used_gb: f64,
   pub disk_total_gb: f64,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone, Copy)]
-pub struct LoadAverage {
-  pub one: f64,
-  pub five: f64,
-  pub fifteen: f64,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
-pub struct CpuUsage {
-  pub cpu_perc: f32,
-  pub cpu_freq_mhz: f64,
-  #[serde(default)]
-  pub cpus: Vec<SingleCpuUsage>,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SingleCpuUsage {
-  pub name: String,
-  pub usage: f32,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
-pub struct DiskUsage {
-  pub used_gb: f64,  // in GB
-  pub total_gb: f64, // in GB
-  pub read_kb: f64,  // in kB
-  pub write_kb: f64, // in kB
-  #[serde(default)]
   pub disks: Vec<SingleDiskUsage>,
+}
+
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct SystemStats {
+  pub cpu_perc: f32,
+  pub mem_used_gb: f64,
+  pub mem_total_gb: f64,
+  pub disks: Vec<SingleDiskUsage>,
+
+  // metadata
+  pub polling_rate: Timelength,
+  pub refresh_ts: I64,
+  pub refresh_list_ts: I64,
 }
 
 #[typeshare]
@@ -110,21 +60,21 @@ pub struct SingleDiskUsage {
   pub total_gb: f64, // in GB
 }
 
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
-pub struct NetworkUsage {
-  pub recieved_kb: f64,
-  pub transmitted_kb: f64,
-  #[serde(default)]
-  pub networks: Vec<SystemNetwork>,
+pub fn sum_disk_usage(disks: &[SingleDiskUsage]) -> TotalDiskUsage {
+  disks
+    .iter()
+    .fold(TotalDiskUsage::default(), |mut total, disk| {
+      total.used_gb += disk.used_gb;
+      total.total_gb += disk.total_gb;
+      total
+    })
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SystemNetwork {
-  pub name: String,
-  pub recieved_kb: f64,    // in kB
-  pub transmitted_kb: f64, // in kB
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct TotalDiskUsage {
+  pub used_gb: f64,  // in GB
+  pub total_gb: f64, // in GB
 }
 
 #[typeshare]
@@ -144,13 +94,11 @@ pub struct SystemProcess {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SystemComponent {
-  pub label: String,
-  pub temp: f32,
-  pub max: f32,
-  #[serde(skip_serializing_if = "Option::is_none")]
-  pub critical: Option<f32>,
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct ServerHealth {
+  pub cpu: SeverityLevel,
+  pub mem: SeverityLevel,
+  pub disks: HashMap<PathBuf, SeverityLevel>,
 }
 
 #[typeshare]
@@ -173,14 +121,4 @@ pub enum SeverityLevel {
   Ok,
   Warning,
   Critical,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-pub struct ServerHealth {
-  pub cpu: SeverityLevel,
-  pub mem: SeverityLevel,
-  pub disk: SeverityLevel,
-  pub disks: HashMap<PathBuf, SeverityLevel>,
-  pub temps: HashMap<String, SeverityLevel>,
 }

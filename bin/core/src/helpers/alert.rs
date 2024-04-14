@@ -4,7 +4,7 @@ use monitor_client::entities::{
   alert::{Alert, AlertData},
   alerter::*,
   deployment::DockerContainerState,
-  server::stats::{SeverityLevel, SystemProcess},
+  server::stats::SeverityLevel,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use reqwest::StatusCode;
@@ -137,23 +137,16 @@ async fn send_slack_alert(
       name,
       region,
       percentage,
-      top_procs,
       ..
     } => {
       let region = fmt_region(region);
       let text = format!("{level} | *{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨");
-      let mut blocks = vec![
+      let blocks = vec![
         Block::header(format!("{level} 🚨")),
         Block::section(format!(
           "*{name}*{region} cpu usage at *{percentage:.1}%* 📈 🚨"
         )),
       ];
-      if alert.level != SeverityLevel::Ok {
-        blocks.push(Block::section(format!(
-          "*top cpu processes*{}",
-          fmt_top_procs(top_procs)
-        )));
-      }
       (text, blocks.into())
     }
     AlertData::ServerMem {
@@ -161,14 +154,13 @@ async fn send_slack_alert(
       region,
       used_gb,
       total_gb,
-      top_procs,
       ..
     } => {
       let region = fmt_region(region);
       let percentage = 100.0 * used_gb / total_gb;
       let text =
                 format!("{level} | *{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨");
-      let mut blocks = vec![
+      let blocks = vec![
         Block::header(level),
         Block::section(format!(
           "*{name}*{region} memory usage at *{percentage:.1}%* 💾 🚨"
@@ -177,12 +169,6 @@ async fn send_slack_alert(
           "using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
         )),
       ];
-      if alert.level != SeverityLevel::Ok {
-        blocks.push(Block::section(format!(
-          "*top mem processes*{}",
-          fmt_top_procs(top_procs)
-        )));
-      }
       (text, blocks.into())
     }
     AlertData::ServerDisk {
@@ -203,24 +189,6 @@ async fn send_slack_alert(
         )),
         Block::section(format!(
           "mount point: {path:?} | using *{used_gb:.1} GiB* / *{total_gb:.1} GiB*"
-        )),
-      ];
-      (text, blocks.into())
-    }
-    AlertData::ServerTemp {
-      name,
-      region,
-      component,
-      temp,
-      max,
-      ..
-    } => {
-      let region = fmt_region(region);
-      let text = format!("{level} | *{name}*{region} | {component} | temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨");
-      let blocks = vec![
-        Block::header(level),
-        Block::section(format!(
-          "*{name}*{region} | {component} | temp at {temp:.0} °C (max: {max:.0} °C) 🌡️ 🚨"
         )),
       ];
       (text, blocks.into())
@@ -266,23 +234,6 @@ fn fmt_region(region: &Option<String>) -> String {
     Some(region) => format!(" ({region})"),
     None => String::new(),
   }
-}
-
-fn fmt_top_procs(top_procs: &[SystemProcess]) -> String {
-  top_procs
-    .iter()
-    .enumerate()
-    .map(|(i, p)| {
-      format!(
-        "\n{}. *{}* | *{:.1}%* CPU | *{:.1} GiB* MEM",
-        i + 1,
-        p.name,
-        p.cpu_perc,
-        p.mem_mb / 1024.0,
-      )
-    })
-    .collect::<Vec<_>>()
-    .join("")
 }
 
 fn fmt_docker_container_state(

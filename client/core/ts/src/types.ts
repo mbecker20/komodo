@@ -428,8 +428,6 @@ export interface ServerConfig {
 	send_mem_alerts: boolean;
 	/** Whether to send alerts about the servers DISK status */
 	send_disk_alerts: boolean;
-	/** Whether to send alerts about the servers tempurature status */
-	send_temp_alerts: boolean;
 	/** An optional region label */
 	region?: string;
 	/** The percentage threshhold which triggers WARNING state for CPU. */
@@ -463,7 +461,6 @@ export interface ServerListItemInfo {
 	send_cpu_alerts: boolean;
 	send_mem_alerts: boolean;
 	send_disk_alerts: boolean;
-	send_temp_alerts: boolean;
 }
 
 export type ServerListItem = ResourceListItem<ServerListItemInfo>;
@@ -568,76 +565,10 @@ export interface SystemInformation {
 
 export type GetSystemInformationResponse = SystemInformation;
 
-export interface LoadAverage {
-	one: number;
-	five: number;
-	fifteen: number;
-}
-
-export interface BasicSystemStats {
-	load_average: LoadAverage;
-	cpu_perc: number;
-	cpu_freq_mhz: number;
-	mem_used_gb: number;
-	mem_total_gb: number;
-	disk_used_gb: number;
-	disk_total_gb: number;
-}
-
-export interface SingleCpuUsage {
-	name: string;
-	usage: number;
-}
-
-export interface CpuUsage {
-	cpu_perc: number;
-	cpu_freq_mhz: number;
-	cpus?: SingleCpuUsage[];
-}
-
 export interface SingleDiskUsage {
 	mount: string;
 	used_gb: number;
 	total_gb: number;
-}
-
-export interface DiskUsage {
-	used_gb: number;
-	total_gb: number;
-	read_kb: number;
-	write_kb: number;
-	disks?: SingleDiskUsage[];
-}
-
-export interface SystemNetwork {
-	name: string;
-	recieved_kb: number;
-	transmitted_kb: number;
-}
-
-export interface NetworkUsage {
-	recieved_kb: number;
-	transmitted_kb: number;
-	networks?: SystemNetwork[];
-}
-
-export interface SystemProcess {
-	pid: number;
-	name: string;
-	exe?: string;
-	cmd: string[];
-	start_time?: number;
-	cpu_perc: number;
-	mem_mb: number;
-	disk_read_kb: number;
-	disk_write_kb: number;
-}
-
-export interface SystemComponent {
-	label: string;
-	temp: number;
-	max: number;
-	critical?: number;
 }
 
 export enum Timelength {
@@ -664,31 +595,31 @@ export enum Timelength {
 	ThirtyDays = "30-day",
 }
 
-export interface AllSystemStats {
-	basic: BasicSystemStats;
-	cpu: CpuUsage;
-	disk: DiskUsage;
-	network: NetworkUsage;
-	processes?: SystemProcess[];
-	components?: SystemComponent[];
+export interface SystemStats {
+	cpu_perc: number;
+	mem_used_gb: number;
+	mem_total_gb: number;
+	disks: SingleDiskUsage[];
 	polling_rate: Timelength;
 	refresh_ts: I64;
 	refresh_list_ts: I64;
 }
 
-export type GetAllSystemStatsResponse = AllSystemStats;
+export type GetSystemStatsResponse = SystemStats;
 
-export type GetBasicSystemStatsResponse = BasicSystemStats;
-
-export type GetCpuUsageResponse = CpuUsage;
-
-export type GetDiskUsageResponse = DiskUsage;
-
-export type GetNetworkUsageResponse = NetworkUsage;
+export interface SystemProcess {
+	pid: number;
+	name: string;
+	exe?: string;
+	cmd: string[];
+	start_time?: number;
+	cpu_perc: number;
+	mem_mb: number;
+	disk_read_kb: number;
+	disk_write_kb: number;
+}
 
 export type GetSystemProcessesResponse = SystemProcess[];
-
-export type GetSystemComponentsResponse = SystemComponent[];
 
 export type GetAvailableSecretsResponse = string[];
 
@@ -1025,7 +956,6 @@ export type AlertData =
 	name: string;
 	region?: string;
 	percentage: number;
-	top_procs: SystemProcess[];
 }}
 	| { type: "ServerMem", data: {
 	id: string;
@@ -1033,7 +963,6 @@ export type AlertData =
 	region?: string;
 	used_gb: number;
 	total_gb: number;
-	top_procs: SystemProcess[];
 }}
 	| { type: "ServerDisk", data: {
 	id: string;
@@ -1042,14 +971,6 @@ export type AlertData =
 	path: string;
 	used_gb: number;
 	total_gb: number;
-}}
-	| { type: "ServerTemp", data: {
-	id: string;
-	name: string;
-	region?: string;
-	component: string;
-	temp: number;
-	max: number;
 }}
 	| { type: "ContainerStateChange", data: {
 	id: string;
@@ -1380,37 +1301,12 @@ export interface GetSystemInformation {
 	server: string;
 }
 
-export interface GetAllSystemStats {
-	/** Id or name */
-	server: string;
-}
-
-export interface GetBasicSystemStats {
-	/** Id or name */
-	server: string;
-}
-
-export interface GetCpuUsage {
-	/** Id or name */
-	server: string;
-}
-
-export interface GetDiskUsage {
-	/** Id or name */
-	server: string;
-}
-
-export interface GetNetworkUsage {
+export interface GetSystemStats {
 	/** Id or name */
 	server: string;
 }
 
 export interface GetSystemProcesses {
-	/** Id or name */
-	server: string;
-}
-
-export interface GetSystemComponents {
 	/** Id or name */
 	server: string;
 }
@@ -1425,13 +1321,12 @@ export interface GetHistoricalServerStats {
 export interface SystemStatsRecord {
 	ts: I64;
 	sid: string;
-	load_average: LoadAverage;
 	cpu_perc: number;
-	cpu_freq_mhz: number;
 	mem_used_gb: number;
 	mem_total_gb: number;
 	disk_used_gb: number;
 	disk_total_gb: number;
+	disks: SingleDiskUsage[];
 }
 
 export interface GetHistoricalServerStatsResponse {
@@ -1840,12 +1735,15 @@ export interface EnabledExecution {
 	enabled: boolean;
 }
 
+export interface TotalDiskUsage {
+	used_gb: number;
+	total_gb: number;
+}
+
 export interface ServerHealth {
 	cpu: SeverityLevel;
 	mem: SeverityLevel;
-	disk: SeverityLevel;
 	disks: Record<string, SeverityLevel>;
-	temps: Record<string, SeverityLevel>;
 }
 
 export type AuthRequest = 
@@ -1927,13 +1825,8 @@ export type ReadRequest =
 	| { type: "GetUpdate", params: GetUpdate }
 	| { type: "ListUpdates", params: ListUpdates }
 	| { type: "ListAlerts", params: ListAlerts }
-	| { type: "GetAllSystemStats", params: GetAllSystemStats }
-	| { type: "GetBasicSystemStats", params: GetBasicSystemStats }
-	| { type: "GetCpuUsage", params: GetCpuUsage }
-	| { type: "GetDiskUsage", params: GetDiskUsage }
-	| { type: "GetNetworkUsage", params: GetNetworkUsage }
-	| { type: "GetSystemProcesses", params: GetSystemProcesses }
-	| { type: "GetSystemComponents", params: GetSystemComponents };
+	| { type: "GetSystemStats", params: GetSystemStats }
+	| { type: "GetSystemProcesses", params: GetSystemProcesses };
 
 export type WriteRequest = 
 	| { type: "CreateApiKey", params: CreateApiKey }
