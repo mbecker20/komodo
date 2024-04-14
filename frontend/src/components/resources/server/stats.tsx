@@ -19,7 +19,7 @@ import { Input } from "@ui/input";
 export const ServerStats = ({ id }: { id: string }) => {
   const server = useServer(id);
   const stats = useRead(
-    "GetAllSystemStats",
+    "GetSystemStats",
     { server: id },
     { refetchInterval: 5000 }
   ).data;
@@ -76,7 +76,7 @@ export const ServerStats = ({ id }: { id: string }) => {
 
       <Section title="Disks">
         <DataTable
-          data={stats?.disk.disks}
+          data={stats?.disks}
           columns={[
             {
               header: "Path",
@@ -99,16 +99,18 @@ export const ServerStats = ({ id }: { id: string }) => {
         />
       </Section>
 
-      <Processes stats={stats} />
+      <Processes id={id} />
     </Page>
   );
 };
 
-const Processes = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
+const Processes = ({ id }: { id: string }) => {
   const [search, setSearch] = useState("");
   const searchSplit = search.split(" ");
 
-  if (!stats?.processes || stats.processes.length === 0) return;
+  const { data: processes } = useRead("GetSystemProcesses", { server: id });
+  if (!processes || processes.length === 0) return;
+
   return (
     <Section
       title="Processes"
@@ -122,7 +124,7 @@ const Processes = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
       }
     >
       <DataTable
-        data={stats.processes.filter((process) =>
+        data={processes.filter((process) =>
           searchSplit.every((search) => process.name.includes(search))
         )}
         columns={[
@@ -151,8 +153,8 @@ const Processes = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
   );
 };
 
-const CPU = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
-  const perc = stats?.cpu.cpu_perc;
+const CPU = ({ stats }: { stats: Types.SystemStats | undefined }) => {
+  const perc = stats?.cpu_perc;
 
   return (
     <Card className="w-full">
@@ -170,9 +172,9 @@ const CPU = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
   );
 };
 
-const RAM = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
-  const used = stats?.basic.mem_used_gb;
-  const total = stats?.basic.mem_total_gb;
+const RAM = ({ stats }: { stats: Types.SystemStats | undefined }) => {
+  const used = stats?.mem_used_gb;
+  const total = stats?.mem_total_gb;
 
   const perc = ((used ?? 0) / (total ?? 0)) * 100;
 
@@ -192,9 +194,9 @@ const RAM = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
   );
 };
 
-const DISK = ({ stats }: { stats: Types.AllSystemStats | undefined }) => {
-  const used = stats?.disk.used_gb;
-  const total = stats?.disk.total_gb;
+const DISK = ({ stats }: { stats: Types.SystemStats | undefined }) => {
+  const used = stats?.disks.reduce((acc, curr) => (acc += curr.used_gb), 0);
+  const total = stats?.disks.reduce((acc, curr) => (acc += curr.total_gb), 0);
 
   const perc = ((used ?? 0) / (total ?? 0)) * 100;
 

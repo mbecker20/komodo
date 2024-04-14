@@ -37,7 +37,6 @@ export const ServerConfig = ({ id }: { id: string }) => {
             send_cpu_alerts: true,
             send_disk_alerts: true,
             send_mem_alerts: true,
-            send_temp_alerts: true,
           },
         },
         warnings: {

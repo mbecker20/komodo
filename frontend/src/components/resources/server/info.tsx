@@ -11,7 +11,7 @@ export const ServerInfo = ({
 }) => {
   const server = useServer(id);
   const stats = useRead(
-    "GetBasicSystemStats",
+    "GetSystemStats",
     { server: id },
     { enabled: server ? server.info.status !== "Disabled" : false }
   ).data;
@@ -20,13 +20,17 @@ export const ServerInfo = ({
     { server: id },
     { enabled: server ? server.info.status !== "Disabled" : false }
   ).data;
+  const disk_total_gb = stats?.disks.reduce(
+    (acc, curr) => acc + curr.total_gb,
+    0
+  );
   return (
     <>
       {showRegion && (
         <>
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            {useServer(id)?.info.region}
+            {server?.info.region}
           </div>
           |
         </>
@@ -43,7 +47,7 @@ export const ServerInfo = ({
       |
       <div className="flex gap-2 items-center">
         <Database className="w-4 h-4" />
-        {stats?.disk_total_gb.toFixed(2) ?? "N/A"} GB
+        {disk_total_gb?.toFixed(2) ?? "N/A"} GB
       </div>
     </>
   );
