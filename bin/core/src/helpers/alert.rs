@@ -12,7 +12,7 @@ use slack::types::Block;
 
 use crate::db::db_client;
 
-#[instrument(level = "debug")]
+#[instrument]
 pub async fn send_alerts(alerts: &[Alert]) {
   if alerts.is_empty() {
     return;

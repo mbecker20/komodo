@@ -48,11 +48,9 @@ pub async fn alert_servers(
   let mut alert_ids_to_close = Vec::<(String, SendAlerts)>::new();
 
   for server_status in server_statuses {
-    let server = servers.remove(&server_status.id);
-    if server.is_none() {
+    let Some(server) = servers.remove(&server_status.id) else {
       continue;
-    }
-    let server = server.unwrap();
+    };
     let server_alerts =
       alerts.get(&ResourceTarget::Server(server_status.id.clone()));
 

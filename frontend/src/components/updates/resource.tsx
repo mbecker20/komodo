@@ -35,10 +35,12 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
             <Icon />
             {update.operation}
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Milestone className="w-4" />
-            {!version_is_none(update.version) && fmt_version(update.version)}
-          </div>
+          {!version_is_none(update.version) && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Milestone className="w-4" />
+              {fmt_version(update.version)}
+            </div>
+          )}
         </div>
         <div>
           <div className="flex items-center gap-2 text-muted-foreground">

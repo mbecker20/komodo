@@ -14,7 +14,44 @@ import { cn, version_is_none } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { fmt_date, fmt_version } from "@lib/formatting";
 
-export const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
+export const TopbarUpdates = () => {
+  const updates = useRead("ListUpdates", {}).data;
+
+  const last_opened = useUser().data?.last_update_view;
+  const unseen_update = updates?.updates.some(
+    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER)
+  );
+
+  const userInvalidate = useUserInvalidate();
+  const { mutate } = useWrite("SetLastSeenUpdate", {
+    onSuccess: userInvalidate,
+  });
+
+  return (
+    <DropdownMenu onOpenChange={(o) => o && mutate({})}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="w-4 h-4" />
+          <Circle
+            className={cn(
+              "absolute top-2 right-2 w-2 h-2 stroke-red-500 fill-red-500 transition-opacity",
+              unseen_update ? "opacity-1" : "opacity-0"
+            )}
+          />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-[100vw] md:w-[500px] h-[500px] overflow-auto">
+        <DropdownMenuGroup>
+          {updates?.updates.map((update) => (
+            <SingleUpdate update={update} key={update.id} />
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
+
+const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
   const Components =
     update.target.type !== "System"
       ? ResourceComponents[update.target.type]
@@ -62,42 +99,5 @@ export const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
         </div>
       </div>
     </UpdateDetails>
-  );
-};
-
-export const HeaderUpdates = () => {
-  const updates = useRead("ListUpdates", {}).data;
-
-  const last_opened = useUser().data?.last_update_view;
-  const unseen_update = updates?.updates.some(
-    (u) => u.start_ts > (last_opened ?? Number.MAX_SAFE_INTEGER)
-  );
-
-  const userInvalidate = useUserInvalidate();
-  const { mutate } = useWrite("SetLastSeenUpdate", {
-    onSuccess: userInvalidate,
-  });
-
-  return (
-    <DropdownMenu onOpenChange={(o) => o && mutate({})}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="w-4 h-4" />
-          <Circle
-            className={cn(
-              "absolute top-2 right-2 w-2 h-2 stroke-red-500 fill-red-500 transition-opacity",
-              unseen_update ? "opacity-1" : "opacity-0"
-            )}
-          />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[100vw] md:w-[500px] h-[500px] overflow-auto">
-        <DropdownMenuGroup>
-          {updates?.updates.map((update) => (
-            <SingleUpdate update={update} key={update.id} />
-          ))}
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 };

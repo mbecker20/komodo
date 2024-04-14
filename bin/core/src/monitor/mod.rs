@@ -122,9 +122,9 @@ pub async fn update_cache_for_server(server: &Server) {
     }
   };
 
-  let stats =
+  let stats = if server.config.stats_monitoring {
     match periphery.request(api::stats::GetAllSystemStats {}).await {
-      Ok(stats) => stats,
+      Ok(stats) => Some(stats),
       Err(e) => {
         insert_deployments_status_unknown(deployments).await;
         insert_server_status(
@@ -137,13 +137,16 @@ pub async fn update_cache_for_server(server: &Server) {
         .await;
         return;
       }
-    };
+    }
+  } else {
+    None
+  };
 
   insert_server_status(
     server,
     ServerStatus::Ok,
     version,
-    stats.into(),
+    stats,
     None,
   )
   .await;

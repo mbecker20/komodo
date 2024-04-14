@@ -306,6 +306,7 @@ impl TryFrom<Server> for monitor_client::entities::server::Server {
         enabled: value.enabled,
         auto_prune: value.auto_prune,
         send_unreachable_alerts: true,
+        stats_monitoring: true,
         send_cpu_alerts: true,
         send_mem_alerts: true,
         send_disk_alerts: true,

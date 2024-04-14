@@ -398,20 +398,51 @@ export interface RepoActionState {
 export type GetRepoActionStateResponse = RepoActionState;
 
 export interface ServerConfig {
+	/**
+	 * The http address of the periphery client.
+	 * Example: http://localhost:8120
+	 */
 	address: string;
+	/**
+	 * Whether a server is enabled.
+	 * If a server is disabled,
+	 * you won't be able to perform any actions on it or see deployment's status.
+	 * default: true
+	 */
 	enabled: boolean;
+	/**
+	 * Whether to monitor any server stats beyond passing health check.
+	 * default: true
+	 */
+	stats_monitoring: boolean;
+	/**
+	 * Whether to trigger 'docker image prune -a -f' every 24 hours.
+	 * default: true
+	 */
 	auto_prune: boolean;
+	/** Whether to send alerts about the servers reachability */
 	send_unreachable_alerts: boolean;
+	/** Whether to send alerts about the servers CPU status */
 	send_cpu_alerts: boolean;
+	/** Whether to send alerts about the servers MEM status */
 	send_mem_alerts: boolean;
+	/** Whether to send alerts about the servers DISK status */
 	send_disk_alerts: boolean;
+	/** Whether to send alerts about the servers tempurature status */
 	send_temp_alerts: boolean;
+	/** An optional region label */
 	region?: string;
+	/** The percentage threshhold which triggers WARNING state for CPU. */
 	cpu_warning: number;
+	/** The percentage threshhold which triggers CRITICAL state for CPU. */
 	cpu_critical: number;
+	/** The percentage threshhold which triggers WARNING state for MEM. */
 	mem_warning: number;
+	/** The percentage threshhold which triggers CRITICAL state for MEM. */
 	mem_critical: number;
+	/** The percentage threshhold which triggers WARNING state for DISK. */
 	disk_warning: number;
+	/** The percentage threshhold which triggers CRITICAL state for DISK. */
 	disk_critical: number;
 }
 

@@ -27,6 +27,7 @@ export const ServerConfig = ({ id }: { id: string }) => {
             address: true,
             region: true,
             enabled: true,
+            stats_monitoring: true,
             auto_prune: true,
           },
         },

@@ -24,7 +24,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { RESOURCE_TARGETS } from "@lib/utils";
 import { Omnibar } from "./omnibar";
 import { WsStatusIndicator } from "@lib/socket";
-import { HeaderUpdates } from "./updates/header";
+import { TopbarUpdates } from "./updates/topbar";
 import { Logout } from "./util";
 import { ThemeToggle } from "@ui/theme";
 import { UsableResource } from "@types";
@@ -58,7 +58,7 @@ export const Topbar = () => {
           <Omnibar />
           <div className="flex">
             <WsStatusIndicator />
-            <HeaderUpdates />
+            <TopbarUpdates />
             <ThemeToggle />
             {/* <UserSettings /> */}
             <Logout />
