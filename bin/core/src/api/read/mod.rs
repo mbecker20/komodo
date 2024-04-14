@@ -59,7 +59,6 @@ enum ReadRequest {
   ListServers(ListServers),
   GetServerStatus(GetServerStatus),
   GetPeripheryVersion(GetPeripheryVersion),
-  GetSystemInformation(GetSystemInformation),
   GetDockerContainers(GetDockerContainers),
   GetDockerImages(GetDockerImages),
   GetDockerNetworks(GetDockerNetworks),
@@ -118,6 +117,8 @@ enum ReadRequest {
   ListAlerts(ListAlerts),
 
   // ==== SERVER STATS ====
+  #[to_string_resolver]
+  GetSystemInformation(GetSystemInformation),
   #[to_string_resolver]
   GetSystemStats(GetSystemStats),
   #[to_string_resolver]

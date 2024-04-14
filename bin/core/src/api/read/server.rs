@@ -15,8 +15,7 @@ use monitor_client::{
     permission::PermissionLevel,
     server::{
       docker_image::ImageSummary, docker_network::DockerNetwork,
-      stats::SystemInformation, Server, ServerActionState,
-      ServerListItem, ServerStatus,
+      Server, ServerActionState, ServerListItem, ServerStatus,
     },
     user::User,
   },
@@ -162,22 +161,48 @@ impl Resolve<GetServerActionState, User> for State {
   }
 }
 
+// This protects the peripheries from spam requests
+const SYSTEM_INFO_EXPIRY: u128 = FIFTEEN_SECONDS_MS;
+type SystemInfoCache = Mutex<HashMap<String, Arc<(String, u128)>>>;
+fn system_info_cache() -> &'static SystemInfoCache {
+  static SYSTEM_INFO_CACHE: OnceLock<SystemInfoCache> =
+    OnceLock::new();
+  SYSTEM_INFO_CACHE.get_or_init(Default::default)
+}
+
 #[async_trait]
-impl Resolve<GetSystemInformation, User> for State {
-  async fn resolve(
+impl ResolveToString<GetSystemInformation, User> for State {
+  async fn resolve_to_string(
     &self,
     GetSystemInformation { server }: GetSystemInformation,
     user: User,
-  ) -> anyhow::Result<SystemInformation> {
+  ) -> anyhow::Result<String> {
     let server = Server::get_resource_check_permissions(
       &server,
       &user,
       PermissionLevel::Read,
     )
     .await?;
-    periphery_client(&server)?
-      .request(api::stats::GetSystemInformation {})
-      .await
+
+    let mut lock = system_info_cache().lock().await;
+    let res = match lock.get(&server.id) {
+      Some(cached) if cached.1 > unix_timestamp_ms() => {
+        cached.0.clone()
+      }
+      _ => {
+        let stats = periphery_client(&server)?
+          .request(api::stats::GetSystemInformation {})
+          .await?;
+        let res = serde_json::to_string(&stats)?;
+        lock.insert(
+          server.id,
+          (res.clone(), unix_timestamp_ms() + SYSTEM_INFO_EXPIRY)
+            .into(),
+        );
+        res
+      }
+    };
+    Ok(res)
   }
 }
 
