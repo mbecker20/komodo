@@ -9,9 +9,7 @@ import { fmt_date_with_minutes } from "@lib/formatting";
 
 export const AlertDetailsDialog = ({ id }: { id: string }) => {
   const [open, set] = useState(false);
-  const alert = useRead("ListAlerts", {}).data?.alerts.find(
-    (alert) => alert._id?.$oid === id
-  );
+  const alert = useRead("GetAlert", { id }).data;
   return (
     <Dialog open={open} onOpenChange={set}>
       <DialogTrigger asChild>
