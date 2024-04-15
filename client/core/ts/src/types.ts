@@ -55,6 +55,67 @@ export interface User {
 
 export type GetUserResponse = User;
 
+export enum SeverityLevel {
+	Ok = "OK",
+	Warning = "WARNING",
+	Critical = "CRITICAL",
+}
+
+export type AlertData = 
+	| { type: "ServerUnreachable", data: {
+	id: string;
+	name: string;
+	region?: string;
+	err?: _Serror;
+}}
+	| { type: "ServerCpu", data: {
+	id: string;
+	name: string;
+	region?: string;
+	percentage: number;
+}}
+	| { type: "ServerMem", data: {
+	id: string;
+	name: string;
+	region?: string;
+	used_gb: number;
+	total_gb: number;
+}}
+	| { type: "ServerDisk", data: {
+	id: string;
+	name: string;
+	region?: string;
+	path: string;
+	used_gb: number;
+	total_gb: number;
+}}
+	| { type: "ContainerStateChange", data: {
+	id: string;
+	name: string;
+	server_id: string;
+	server_name: string;
+	from: DockerContainerState;
+	to: DockerContainerState;
+}}
+	| { type: "AwsBuilderTerminationFailed", data: {
+	instance_id: string;
+}}
+	| { type: "None", data: {
+}};
+
+export interface Alert {
+	_id?: MongoId;
+	ts: I64;
+	resolved: boolean;
+	level: SeverityLevel;
+	target: ResourceTarget;
+	variant: AlertData["type"];
+	data: AlertData;
+	resolved_ts?: I64;
+}
+
+export type GetAlertResponse = Alert;
+
 export interface Resource<Config, Info> {
 	_id?: MongoId;
 	name: string;
@@ -938,68 +999,13 @@ export interface ListAlerts {
 	page?: U64;
 }
 
-export enum SeverityLevel {
-	Ok = "OK",
-	Warning = "WARNING",
-	Critical = "CRITICAL",
-}
-
-export type AlertData = 
-	| { type: "ServerUnreachable", data: {
-	id: string;
-	name: string;
-	region?: string;
-	err?: _Serror;
-}}
-	| { type: "ServerCpu", data: {
-	id: string;
-	name: string;
-	region?: string;
-	percentage: number;
-}}
-	| { type: "ServerMem", data: {
-	id: string;
-	name: string;
-	region?: string;
-	used_gb: number;
-	total_gb: number;
-}}
-	| { type: "ServerDisk", data: {
-	id: string;
-	name: string;
-	region?: string;
-	path: string;
-	used_gb: number;
-	total_gb: number;
-}}
-	| { type: "ContainerStateChange", data: {
-	id: string;
-	name: string;
-	server_id: string;
-	server_name: string;
-	from: DockerContainerState;
-	to: DockerContainerState;
-}}
-	| { type: "AwsBuilderTerminationFailed", data: {
-	instance_id: string;
-}}
-	| { type: "None", data: {
-}};
-
-export interface Alert {
-	_id?: MongoId;
-	ts: I64;
-	resolved: boolean;
-	level: SeverityLevel;
-	target: ResourceTarget;
-	variant: AlertData["type"];
-	data: AlertData;
-	resolved_ts?: I64;
-}
-
 export interface ListAlertsResponse {
 	alerts: Alert[];
 	next_page?: I64;
+}
+
+export interface GetAlert {
+	id: string;
 }
 
 export interface GetAlerter {
@@ -1785,7 +1791,6 @@ export type ReadRequest =
 	| { type: "ListServers", params: ListServers }
 	| { type: "GetServerStatus", params: GetServerStatus }
 	| { type: "GetPeripheryVersion", params: GetPeripheryVersion }
-	| { type: "GetSystemInformation", params: GetSystemInformation }
 	| { type: "GetDockerContainers", params: GetDockerContainers }
 	| { type: "GetDockerImages", params: GetDockerImages }
 	| { type: "GetDockerNetworks", params: GetDockerNetworks }
@@ -1825,6 +1830,8 @@ export type ReadRequest =
 	| { type: "GetUpdate", params: GetUpdate }
 	| { type: "ListUpdates", params: ListUpdates }
 	| { type: "ListAlerts", params: ListAlerts }
+	| { type: "GetAlert", params: GetAlert }
+	| { type: "GetSystemInformation", params: GetSystemInformation }
 	| { type: "GetSystemStats", params: GetSystemStats }
 	| { type: "GetSystemProcesses", params: GetSystemProcesses };
 

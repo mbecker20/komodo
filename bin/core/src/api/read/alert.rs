@@ -1,10 +1,13 @@
 use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
-  api::read::{ListAlerts, ListAlertsResponse},
+  api::read::{
+    GetAlert, GetAlertResponse, ListAlerts, ListAlertsResponse,
+  },
   entities::{deployment::Deployment, server::Server, user::User},
 };
 use mungos::{
+  by_id::find_one_by_id,
   find::find_collect,
   mongodb::{bson::doc, options::FindOptions},
 };
@@ -14,7 +17,7 @@ use crate::{
   db::db_client, helpers::resource::StateResource, state::State,
 };
 
-const NUM_ALERTS_PER_PAGE: u64 = 10;
+const NUM_ALERTS_PER_PAGE: u64 = 20;
 
 #[async_trait]
 impl Resolve<ListAlerts, User> for State {
@@ -58,5 +61,19 @@ impl Resolve<ListAlerts, User> for State {
     let res = ListAlertsResponse { next_page, alerts };
 
     Ok(res)
+  }
+}
+
+#[async_trait]
+impl Resolve<GetAlert, User> for State {
+  async fn resolve(
+    &self,
+    GetAlert { id }: GetAlert,
+    _: User,
+  ) -> anyhow::Result<GetAlertResponse> {
+    find_one_by_id(&db_client().await.alerts, &id)
+      .await
+      .context("failed to query db for alert")?
+      .context("no alert found with given id")
   }
 }

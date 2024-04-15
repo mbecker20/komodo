@@ -71,7 +71,7 @@ export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
       icon={<Bell className="w-4 h-4" />}
       actions={
         <Link to={`/${type.toLowerCase()}s/${id}/updates`}>
-          <Button variant="secondary">
+          <Button variant="secondary" size="icon">
             <ExternalLink className="w-4 h-4" />
           </Button>
         </Link>

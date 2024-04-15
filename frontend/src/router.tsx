@@ -13,6 +13,7 @@ import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
 import { ResourceStats } from "@pages/resource_stats";
+import { Alerts } from "@pages/alerts";
 
 const ROUTER = createBrowserRouter([
   {
@@ -24,6 +25,7 @@ const ROUTER = createBrowserRouter([
       { path: "tags", element: <Tags /> },
       { path: "tree", element: <Tree /> },
       { path: "resources", element: <AllResources /> },
+      { path: "alerts", element: <Alerts /> },
       {
         path: ":type",
         children: [
@@ -31,6 +33,7 @@ const ROUTER = createBrowserRouter([
           { path: ":id", element: <Resource /> },
           { path: ":id/stats", element: <ResourceStats /> },
           { path: ":id/updates", element: <ResourceUpdates /> },
+          { path: ":id/alerts", element: <Alerts /> },
         ],
       },
       {

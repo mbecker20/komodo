@@ -1,6 +1,7 @@
 import { useRead, useResourceParamType } from "@lib/hooks";
 import { ResourceComponents } from "./resources";
 import {
+  AlertTriangle,
   Box,
   Boxes,
   FileQuestion,
@@ -81,6 +82,8 @@ const PrimaryDropdown = () => {
     ? [<Key className="w-4 h-4" />, "Api Keys"]
     : location.pathname === "/tags"
     ? [<Tag className="w-4 h-4" />, "Tags"]
+    : location.pathname === "/alerts"
+    ? [<AlertTriangle className="w-4 h-4" />, "Alerts"]
     : location.pathname === "/users"
     ? [<UserCircle2 className="w-4 h-4" />, "Users"]
     : [<FileQuestion className="w-4 h-4" />, "Unknown"];
@@ -120,6 +123,13 @@ const PrimaryDropdown = () => {
           })}
 
           <DropdownMenuSeparator />
+
+          <Link to="/alerts">
+            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+              <AlertTriangle className="w-4 h-4" />
+              Alerts
+            </DropdownMenuItem>
+          </Link>
 
           <Link to="/tags">
             <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">

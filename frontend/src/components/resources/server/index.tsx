@@ -9,6 +9,7 @@ import {
   Cpu,
   MemoryStick,
   Database,
+  ExternalLink,
 } from "lucide-react";
 import { Section } from "@components/layouts";
 import { RenameServer, SERVER_ACTIONS } from "./actions";
@@ -23,6 +24,8 @@ import { ServerTable } from "./table";
 import { ServersChart } from "./dashboard";
 import { Link } from "react-router-dom";
 import { DeleteResource, NewResource, ResourceLink } from "../common";
+import { AlertsTable } from "@components/alert/table";
+import { Button } from "@ui/button";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -103,18 +106,38 @@ export const ServerComponents: RequiredResourceComponents = {
   },
   Actions: SERVER_ACTIONS,
   Page: {
-    // Stats: ({ id }) => {
-    //   const status = useServer(id)?.info.status;
-    //   return status === "Ok" && <ServerStats server_id={id} />;
-    // },
+    Alerts: ({ id }) => {
+      const alerts = useRead("ListAlerts", {
+        query: { "target.type": "Server", "target.id": id },
+      }).data?.alerts.slice(0, 3);
+      return (
+        (alerts?.length || 0) > 0 && (
+          <Section
+            title="Alerts"
+            icon={<AlertTriangle className="w-4 h-4" />}
+            actions={
+              <Link to={`/servers/${id}/alerts`}>
+                <Button variant="secondary" size="icon">
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+              </Link>
+            }
+          >
+            <AlertsTable alerts={alerts ?? []} />
+          </Section>
+        )
+      );
+    },
     Deployments: ({ id }) => {
       const deployments = useRead("ListDeployments", {}).data?.filter(
         (deployment) => deployment.info.server_id === id
       );
       return (
-        <Section title="Deployments" icon={<Rocket className="w-4 h-4" />}>
-          <DeploymentTable deployments={deployments} />
-        </Section>
+        (deployments?.length || 0) > 0 && (
+          <Section title="Deployments" icon={<Rocket className="w-4 h-4" />}>
+            <DeploymentTable deployments={deployments} />
+          </Section>
+        )
       );
     },
     Config: ServerConfig,

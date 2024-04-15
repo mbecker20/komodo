@@ -89,6 +89,7 @@ export type ReadResponses = {
 
   // ==== ALERT ====
   ListAlerts: Types.ListAlertsResponse;
+  GetAlert: Types.GetAlertResponse;
 
   // ==== SERVER STATS ====
   GetSystemStats: Types.GetSystemStatsResponse;

@@ -27,7 +27,7 @@ export const Resource = () => {
         </div>
       }
       subtitle={
-        <div className="text-sm text-muted-foreground flex flex-col gap-2">
+        <div className="text-sm text-muted-foreground flex flex-col gap-4">
           <div className="flex gap-4 items-center">
             <div className="flex gap-2 items-center">
               <Components.Icon id={id} />
@@ -51,7 +51,6 @@ export const Resource = () => {
       }
     >
       <ResourceUpdates type={type} id={id} />
-      {/* <ResourcePermissions type={type} id={id} /> */}
       {Object.entries(Components.Page).map(([section, Component]) => (
         <Component key={section} id={id} />
       ))}

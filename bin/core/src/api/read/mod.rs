@@ -115,6 +115,7 @@ enum ReadRequest {
 
   // ==== ALERT ====
   ListAlerts(ListAlerts),
+  GetAlert(GetAlert),
 
   // ==== SERVER STATS ====
   #[to_string_resolver]

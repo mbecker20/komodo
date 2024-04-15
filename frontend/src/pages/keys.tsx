@@ -10,7 +10,6 @@ import {
   DialogTrigger,
 } from "@ui/dialog";
 import { Button } from "@ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@ui/card";
 import { useToast } from "@ui/use-toast";
 import { Trash, PlusCircle, Loader2, Check } from "lucide-react";
 import { useState } from "react";
@@ -23,14 +22,12 @@ import {
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
 import { DataTable } from "@ui/data-table";
-import { fmt_date } from "@lib/formatting";
 
 export const Keys = () => {
   useSetTitle("Api Keys");
   const keys = useRead("ListApiKeys", {}).data ?? [];
   return (
     <Page title="Api Keys" actions={<CreateKey />}>
-      {/* <ApiKeysList /> */}
       <DataTable
         data={keys}
         columns={[
@@ -66,33 +63,6 @@ export const Keys = () => {
         ]}
       />
     </Page>
-  );
-};
-
-export const ApiKeysList = () => {
-  const keys = useRead("ListApiKeys", {}).data;
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {keys?.map((key) => (
-        <Card
-          id={key.key}
-          className="h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors"
-        >
-          <CardHeader className="flex-row justify-between items-center">
-            <CardTitle>{key.name}</CardTitle>
-            <DeleteKey api_key={key.key} />
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            <div>created at: {fmt_date(new Date(key.created_at))}</div>
-            <div>
-              expires:{" "}
-              {key.expires === 0 ? "never" : fmt_date(new Date(key.expires))}
-            </div>
-            <div>{key.key}</div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
   );
 };
 

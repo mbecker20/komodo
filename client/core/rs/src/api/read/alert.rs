@@ -9,7 +9,7 @@ use super::MonitorReadRequest;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListAlertsResponse)]
@@ -25,3 +25,18 @@ pub struct ListAlertsResponse {
   pub alerts: Vec<Alert>,
   pub next_page: Option<I64>,
 }
+
+//
+
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetAlertResponse)]
+pub struct GetAlert {
+  pub id: String,
+}
+
+#[typeshare]
+pub type GetAlertResponse = Alert;
