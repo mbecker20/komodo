@@ -25,39 +25,57 @@ pub struct SystemInformation {
 )]
 #[collection_name(Stats)]
 pub struct SystemStatsRecord {
+  /// Unix timestamp in milliseconds
   #[index]
   pub ts: I64,
+  /// Server id
   #[index]
   pub sid: String,
   // basic stats
+  /// Cpu usage percentage
   pub cpu_perc: f32,
+  /// Memory used in GB
   pub mem_used_gb: f64,
+  /// Total memory in GB
   pub mem_total_gb: f64,
+  /// Disk used in GB
   pub disk_used_gb: f64,
+  /// Total disk size in GB
   pub disk_total_gb: f64,
+  /// Breakdown of individual disks, ie their usages, sizes, and mount points
   pub disks: Vec<SingleDiskUsage>,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SystemStats {
+  /// Cpu usage percentage
   pub cpu_perc: f32,
+  /// Memory used in GB
   pub mem_used_gb: f64,
+  /// Total memory in GB
   pub mem_total_gb: f64,
+  /// Breakdown of individual disks, ie their usages, sizes, and mount points
   pub disks: Vec<SingleDiskUsage>,
 
   // metadata
+  /// The rate the system stats are being polled from the system
   pub polling_rate: Timelength,
+  /// Unix timestamp in milliseconds when stats were last polled
   pub refresh_ts: I64,
+  /// Unix timestamp in milliseconds when disk list was last refreshed
   pub refresh_list_ts: I64,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SingleDiskUsage {
+  /// The mount point of the disk
   pub mount: PathBuf,
-  pub used_gb: f64,  // in GB
-  pub total_gb: f64, // in GB
+  /// Used portion of the disk in GB
+  pub used_gb: f64,
+  /// Total size of the disk in GB
+  pub total_gb: f64,
 }
 
 pub fn sum_disk_usage(disks: &[SingleDiskUsage]) -> TotalDiskUsage {
@@ -73,23 +91,36 @@ pub fn sum_disk_usage(disks: &[SingleDiskUsage]) -> TotalDiskUsage {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct TotalDiskUsage {
-  pub used_gb: f64,  // in GB
-  pub total_gb: f64, // in GB
+  /// Used portion in GB
+  pub used_gb: f64,
+  /// Total size in GB
+  pub total_gb: f64,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SystemProcess {
+  /// The process PID
   pub pid: u32,
+  /// The process name
   pub name: String,
+  /// The path to the process executable
   #[serde(default)]
   pub exe: String,
+  /// The command used to start the process
   pub cmd: Vec<String>,
+  /// The time the process was started
   #[serde(default)]
   pub start_time: f64,
+  /// The cpu usage percentage of the process.
+  /// This is in core-percentage, eg 100% is 1 full core, and
+  /// an 8 core machine would max at 800%.
   pub cpu_perc: f32,
+  /// The memory usage of the process in MB
   pub mem_mb: f64,
+  /// Process disk read in KB/s
   pub disk_read_kb: f64,
+  /// Process disk write in KB/s
   pub disk_write_kb: f64,
 }
 

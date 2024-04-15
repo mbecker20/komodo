@@ -10,24 +10,24 @@ use super::I64;
   Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
 )]
 pub struct ApiKey {
-  /// UNIQUE KEY ASSOCIATED WITH SECRET
+  /// Unique key associated with secret
   #[unique_index]
   pub key: String,
 
-  /// HASH OF THE SECRET
+  /// Hash of the secret
   pub secret: String,
 
-  /// USER ASSOCIATED WITH THE API KEY
+  /// User associated with the api key
   #[index]
   pub user_id: String,
 
-  /// NAME ASSOCIATED WITH THE API KEY FOR MANAGEMENT
+  /// Name associated with the api key for management
   pub name: String,
 
-  /// TIMESTAMP OF KEY CREATION
+  /// Timestamp of key creation
   pub created_at: I64,
 
-  /// EXPIRY OF KEY, OR 0 IF NEVER EXPIRES
+  /// Expiry of key, or 0 if never expires
   pub expires: I64,
 }
 

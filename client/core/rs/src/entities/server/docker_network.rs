@@ -8,14 +8,17 @@ use typeshare::typeshare;
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
 )]
 pub struct DockerNetwork {
+  /// The name of the docker network
   #[serde(rename = "Name")]
   #[serde(skip_serializing_if = "Option::is_none")]
   pub name: Option<String>,
 
+  /// The Id of the docker network
   #[serde(rename = "Id")]
   #[serde(skip_serializing_if = "Option::is_none")]
   pub id: Option<String>,
 
+  /// Timestamp network created
   #[serde(rename = "Created")]
   #[serde(skip_serializing_if = "Option::is_none")]
   #[serde(

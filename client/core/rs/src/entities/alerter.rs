@@ -20,8 +20,11 @@ pub type AlerterListItem = ResourceListItem<AlerterListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AlerterListItemInfo {
+  /// Whether alerter is enabled for sending alerts
   pub enabled: bool,
+  /// Whether the alerter is the default
   pub is_default: bool,
+  /// The type of the alerter, eg. Slack, Custom
   pub alerter_type: String,
 }
 
@@ -123,8 +126,10 @@ impl AlerterConfig {
 #[skip_serializing_none]
 #[partial_from]
 pub struct CustomAlerterConfig {
+  /// The http/s endpoint to send the POST to
   #[partial_default(String::from("http://localhost:7000"))]
   pub url: String,
+  /// Whether the alerter is enabled
   #[serde(default)]
   pub enabled: bool,
 }
@@ -135,10 +140,12 @@ pub struct CustomAlerterConfig {
 #[skip_serializing_none]
 #[partial_from]
 pub struct SlackAlerterConfig {
+  /// The slack app url
   #[partial_default(String::from(
     "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX",
   ))]
   pub url: String,
+  /// Whether the alerter is enabled
   #[serde(default)]
   pub enabled: bool,
 }
