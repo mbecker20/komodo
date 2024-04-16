@@ -137,6 +137,7 @@ impl BuilderConfig {
 #[skip_serializing_none]
 #[partial_from]
 pub struct ServerBuilderConfig {
+  /// The server id of the builder
   #[serde(alias = "server")]
   #[partial_attr(serde(alias = "server"))]
   pub server_id: String,
@@ -148,16 +149,19 @@ pub struct ServerBuilderConfig {
 #[skip_serializing_none]
 #[partial_from]
 pub struct AwsBuilderConfig {
+  /// The AWS region to create the instance in
   #[serde(default = "aws_default_region")]
   #[builder(default = "aws_default_region()")]
   #[partial_default(aws_default_region())]
   pub region: String,
 
+  /// The instance type to create for the build
   #[serde(default = "aws_default_instance_type")]
   #[builder(default = "aws_default_instance_type()")]
   #[partial_default(aws_default_instance_type())]
   pub instance_type: String,
 
+  /// The size of the builder volume in gb
   #[serde(default = "aws_default_volume_gb")]
   #[builder(default = "aws_default_volume_gb()")]
   #[partial_default(aws_default_volume_gb())]
@@ -169,15 +173,28 @@ pub struct AwsBuilderConfig {
   #[partial_default(default_port())]
   pub port: i32,
 
+  /// The EC2 ami id to create.
+  /// The ami should have the periphery client configured to start on startup,
+  /// and should have the necessary github / dockerhub accounts configured
   pub ami_id: String,
+  /// The subnet id to create the instance in.
   pub subnet_id: String,
+  /// The security group ids to attach to the instance.
+  /// This should include a security group to allow core inbound access to the periphery port.
   pub security_group_ids: Vec<String>,
+  /// The key pair name to attach to the instance
   pub key_pair_name: String,
+  /// Whether to assign the instance a public IP address.
+  /// Likely needed for the instance to be able to reach the open internet.
   pub assign_public_ip: bool,
+  /// Whether core should use the public IP address to communicate with periphery on the builder.
+  /// If false, core will communicate with the instance using the private IP.
   pub use_public_ip: bool,
-  
+
+  /// Which github accounts (usernames) are available on the AMI
   #[serde(default)]
   pub github_accounts: Vec<String>,
+  /// Which dockerhub accounts (usernames) are available on the AMI
   #[serde(default)]
   pub docker_accounts: Vec<String>,
 }

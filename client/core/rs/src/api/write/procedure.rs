@@ -3,7 +3,9 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::procedure::{Procedure, ProcedureConfig};
+use crate::entities::procedure::{
+  Procedure, _PartialProcedureConfig,
+};
 
 use super::MonitorWriteRequest;
 
@@ -17,7 +19,7 @@ use super::MonitorWriteRequest;
 #[response(CreateProcedureResponse)]
 pub struct CreateProcedure {
   pub name: String,
-  pub config: ProcedureConfig,
+  pub config: _PartialProcedureConfig,
 }
 
 #[typeshare]
@@ -64,7 +66,7 @@ pub type DeleteProcedureResponse = Procedure;
 #[response(UpdateProcedureResponse)]
 pub struct UpdateProcedure {
   pub id: String,
-  pub config: ProcedureConfig,
+  pub config: _PartialProcedureConfig,
 }
 
 #[typeshare]

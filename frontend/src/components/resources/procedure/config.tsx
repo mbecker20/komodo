@@ -52,8 +52,9 @@ const ProcedureConfigInner = ({
 }: {
   procedure: Types.Procedure;
 }) => {
-  const [config, setConfig] = useState<Types.ProcedureConfig>(procedure.config);
+  const [config, setConfig] = useState<Partial<Types.ProcedureConfig>>({});
   const { mutate } = useWrite("UpdateProcedure");
+  const executions = config.executions || procedure.config.executions || [];
   return (
     <ConfigLayout
       config={config as any}
@@ -63,9 +64,9 @@ const ProcedureConfigInner = ({
         <div className="flex gap-2 items-center text-sm">
           Procedure Type:
           <Select
-            value={config.type}
+            value={config.procedure_type}
             onValueChange={(type) =>
-              setConfig({ type: type as any, data: config.data })
+              setConfig({ ...config, procedure_type: type as any })
             }
           >
             <SelectTrigger className="w-32 capitalize">
@@ -84,16 +85,19 @@ const ProcedureConfigInner = ({
     >
       <div className="grid gap-4">
         <div className="text-muted-foreground">
-          {config.type === "Parallel"
+          {config.procedure_type === Types.ProcedureType.Parallel
             ? "Type Parallel: All of these executions will be started at the same time"
             : "Type Sequence: These executions will be started only after the previous one finishes"}
         </div>
         <DataTable
-          data={config.data}
+          data={executions}
           noResults={
             <Button
               onClick={() =>
-                setConfig({ ...config, data: [default_enabled_execution()] })
+                setConfig({
+                  ...config,
+                  executions: [default_enabled_execution()],
+                })
               }
             >
               Create Stage
@@ -114,7 +118,7 @@ const ProcedureConfigInner = ({
                     onClick={() =>
                       setConfig({
                         ...config,
-                        data: config.data.map((item, i) =>
+                        executions: executions.map((item, i) =>
                           i === index ? { ...item, enabled: !enabled } : item
                         ),
                       })
@@ -131,7 +135,7 @@ const ProcedureConfigInner = ({
                   onSelect={(type) =>
                     setConfig({
                       ...config,
-                      data: config.data.map((item, i) =>
+                      executions: executions.map((item, i) =>
                         i === index
                           ? ({
                               ...item,
@@ -164,14 +168,14 @@ const ProcedureConfigInner = ({
                 return (
                   <Component
                     params={params as any}
-                    setParams={(params) =>
+                    setParams={(params: any) =>
                       setConfig({
                         ...config,
-                        data: config.data.map((item, i) =>
+                        executions: executions.map((item, i) =>
                           i === index
                             ? {
                                 ...item,
-                                execution: { type, params: params as any },
+                                execution: { type, params },
                               }
                             : item
                         ),
@@ -201,13 +205,13 @@ const ProcedureConfigInner = ({
                           onClick={() =>
                             setConfig({
                               ...config,
-                              data: config.data.map((item, i) => {
+                              executions: executions.map((item, i) => {
                                 // Make sure its not the first row
                                 if (i === row.index && row.index !== 0) {
-                                  return config.data[row.index - 1];
+                                  return executions[row.index - 1];
                                 } else if (i === row.index - 1) {
                                   // Reverse the entry, moving this row "Up"
-                                  return config.data[row.index];
+                                  return executions[row.index];
                                 } else {
                                   return item;
                                 }
@@ -218,22 +222,22 @@ const ProcedureConfigInner = ({
                           Move Up <ArrowUp className="w-4 h-4" />
                         </DropdownMenuItem>
                       ) : undefined}
-                      {row.index < config.data.length - 1 && (
+                      {row.index < executions.length - 1 && (
                         <DropdownMenuItem
                           className="flex gap-4 justify-between cursor-pointer"
                           onClick={() =>
                             setConfig({
                               ...config,
-                              data: config.data.map((item, i) => {
+                              executions: executions.map((item, i) => {
                                 // The index also cannot be the last index, which cannot be moved down
                                 if (
                                   i === row.index &&
-                                  row.index !== config.data.length - 1
+                                  row.index !== executions.length - 1
                                 ) {
-                                  return config.data[row.index + 1];
+                                  return executions[row.index + 1];
                                 } else if (i === row.index + 1) {
                                   // Move the row "Down"
-                                  return config.data[row.index];
+                                  return executions[row.index];
                                 } else {
                                   return item;
                                 }
@@ -250,10 +254,10 @@ const ProcedureConfigInner = ({
                         onClick={() =>
                           setConfig({
                             ...config,
-                            data: [
-                              ...config.data.slice(0, row.index),
+                            executions: [
+                              ...executions.slice(0, row.index),
                               default_enabled_execution(),
-                              ...config.data.slice(row.index),
+                              ...executions.slice(row.index),
                             ],
                           })
                         }
@@ -269,10 +273,10 @@ const ProcedureConfigInner = ({
                         onClick={() =>
                           setConfig({
                             ...config,
-                            data: [
-                              ...config.data.slice(0, row.index + 1),
+                            executions: [
+                              ...executions.slice(0, row.index + 1),
                               default_enabled_execution(),
-                              ...config.data.slice(row.index + 1),
+                              ...executions.slice(row.index + 1),
                             ],
                           })
                         }
@@ -297,7 +301,7 @@ const ProcedureConfigInner = ({
                   onClick={() =>
                     setConfig({
                       ...config,
-                      data: config.data.filter((_, i) => i !== index),
+                      executions: executions.filter((_, i) => i !== index),
                     })
                   }
                 />

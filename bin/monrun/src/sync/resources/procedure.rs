@@ -6,7 +6,9 @@ use monitor_client::{
     write::{CreateProcedure, UpdateProcedure},
   },
   entities::{
-    procedure::{Procedure, ProcedureConfig, ProcedureListItemInfo},
+    procedure::{
+      PartialProcedureConfig, Procedure, ProcedureListItemInfo,
+    },
     resource::{Resource, ResourceListItem},
     update::ResourceTarget,
   },
@@ -19,7 +21,7 @@ use crate::{
 };
 
 impl ResourceSync for Procedure {
-  type PartialConfig = ProcedureConfig;
+  type PartialConfig = PartialProcedureConfig;
   type ListItemInfo = ProcedureListItemInfo;
 
   fn display() -> &'static str {

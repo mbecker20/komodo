@@ -570,7 +570,7 @@ impl StateResource for Procedure {
       tags: procedure.tags,
       resource_type: ResourceTargetVariant::Procedure,
       info: ProcedureListItemInfo {
-        procedure_type: (&procedure.config).into(),
+        procedure_type: procedure.config.procedure_type,
       },
     })
   }

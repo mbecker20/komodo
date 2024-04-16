@@ -6,7 +6,7 @@ use monitor_client::{
   api::execute::Execution,
   entities::{
     monitor_timestamp,
-    procedure::{EnabledExecution, Procedure, ProcedureConfig},
+    procedure::{EnabledExecution, Procedure, ProcedureType},
     update::Update,
     user::procedure_user,
   },
@@ -25,9 +25,9 @@ pub async fn execute_procedure(
 ) -> anyhow::Result<()> {
   let start_ts = monitor_timestamp();
 
-  use ProcedureConfig::*;
-  match &procedure.config {
-    Sequence(executions) => {
+  use ProcedureType::*;
+  match procedure.config.procedure_type {
+    Sequence => {
       add_line_to_update(
         update,
         &format!(
@@ -37,7 +37,7 @@ pub async fn execute_procedure(
       )
       .await;
       execute_sequence(
-        filter_list_by_enabled(executions),
+        filter_list_by_enabled(&procedure.config.executions),
         &procedure.id,
         &procedure.name,
         update,
@@ -65,7 +65,7 @@ pub async fn execute_procedure(
       .await;
       Ok(())
     }
-    Parallel(executions) => {
+    Parallel => {
       add_line_to_update(
         update,
         &format!(
@@ -75,7 +75,7 @@ pub async fn execute_procedure(
       )
       .await;
       execute_parallel(
-        filter_list_by_enabled(executions),
+        filter_list_by_enabled(&procedure.config.executions),
         &procedure.id,
         &procedure.name,
         update,

@@ -4,8 +4,8 @@ use anyhow::{anyhow, Context};
 use monitor_client::entities::{
   alerter::PartialAlerterConfig, build::PartialBuildConfig,
   builder::PartialBuilderConfig, deployment::PartialDeploymentConfig,
-  procedure::Procedure, repo::PartialRepoConfig, resource::Resource,
-  server::PartialServerConfig,
+  procedure::PartialProcedureConfig, repo::PartialRepoConfig,
+  resource::Resource, server::PartialServerConfig,
 };
 use serde::Deserialize;
 
@@ -25,7 +25,7 @@ pub struct ResourceFile {
   #[serde(default, rename = "alerter")]
   pub alerters: Vec<Resource<PartialAlerterConfig>>,
   #[serde(default, rename = "procedure")]
-  pub procedures: Vec<Procedure>,
+  pub procedures: Vec<Resource<PartialProcedureConfig>>,
 }
 
 pub fn read_resources(path: &Path) -> anyhow::Result<ResourceFile> {

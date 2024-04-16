@@ -63,54 +63,88 @@ export enum SeverityLevel {
 
 export type AlertData = 
 	| { type: "ServerUnreachable", data: {
+	/** The id of the server */
 	id: string;
+	/** The name of the server */
 	name: string;
+	/** The region of the server */
 	region?: string;
+	/** The error data */
 	err?: _Serror;
 }}
 	| { type: "ServerCpu", data: {
+	/** The id of the server */
 	id: string;
+	/** The name of the server */
 	name: string;
+	/** The region of the server */
 	region?: string;
+	/** The cpu usage percentage */
 	percentage: number;
 }}
 	| { type: "ServerMem", data: {
+	/** The id of the server */
 	id: string;
+	/** The name of the server */
 	name: string;
+	/** The region of the server */
 	region?: string;
+	/** The used memory */
 	used_gb: number;
+	/** The total memory */
 	total_gb: number;
 }}
 	| { type: "ServerDisk", data: {
+	/** The id of the server */
 	id: string;
+	/** The name of the server */
 	name: string;
+	/** The region of the server */
 	region?: string;
+	/** The mount path of the disk */
 	path: string;
+	/** The used portion of the disk in GB */
 	used_gb: number;
+	/** The total size of the disk in GB */
 	total_gb: number;
 }}
 	| { type: "ContainerStateChange", data: {
+	/** The id of the deployment */
 	id: string;
+	/** The name of the deployment */
 	name: string;
+	/** The server id of server deployment is on */
 	server_id: string;
+	/** The server name */
 	server_name: string;
+	/** The previous container state */
 	from: DockerContainerState;
+	/** The current container state */
 	to: DockerContainerState;
 }}
 	| { type: "AwsBuilderTerminationFailed", data: {
+	/** The id of the aws instance which failed to terminate */
 	instance_id: string;
 }}
 	| { type: "None", data: {
 }};
 
 export interface Alert {
+	/** The mongo id */
 	_id?: MongoId;
+	/** Unix timestamp in milliseconds the alert was opened */
 	ts: I64;
+	/** Whether the alert is already resolved */
 	resolved: boolean;
+	/** The severity of the alert */
 	level: SeverityLevel;
+	/** The target of the alert */
 	target: ResourceTarget;
+	/** The type of alert, eg ServerUnreachable, ServerMem, ContainerStateChange */
 	variant: AlertData["type"];
+	/** The data attached to the alert */
 	data: AlertData;
+	/** The timestamp of alert resolution */
 	resolved_ts?: I64;
 }
 
@@ -150,8 +184,11 @@ export interface ResourceListItem<Info> {
 }
 
 export interface AlerterListItemInfo {
+	/** Whether alerter is enabled for sending alerts */
 	enabled: boolean;
+	/** Whether the alerter is the default */
 	is_default: boolean;
+	/** The type of the alerter, eg. Slack, Custom */
 	alerter_type: string;
 }
 
@@ -176,20 +213,47 @@ export interface EnvironmentVar {
 }
 
 export interface BuildConfig {
+	/** Which builder is used to build the image. */
 	builder_id?: string;
+	/** Whether to skip secret interpolation in the build_args. */
 	skip_secret_interp?: boolean;
+	/** The current version of the build. */
 	version?: Version;
+	/** The Github repo used as the source of the build. */
 	repo?: string;
+	/** The branch of the repo. */
 	branch: string;
+	/**
+	 * The github account used to clone (used to access private repos).
+	 * Empty string is public clone (only public repos).
+	 */
 	github_account?: string;
+	/**
+	 * The dockerhub account used to push the image to dockerhub.
+	 * Empty string means no dockerhub push (server local build).
+	 */
 	docker_account?: string;
+	/**
+	 * The docker organization which the image should be pushed under.
+	 * Empty string means no organization.
+	 */
 	docker_organization?: string;
+	/** The optional command run after repo clone and before docker build. */
 	pre_build?: SystemCommand;
+	/**
+	 * The path of the docker build context relative to the root of the repo.
+	 * Default: "." (the root of the repo).
+	 */
 	build_path: string;
+	/** The path of the dockerfile relative to the build path. */
 	dockerfile_path: string;
+	/** Docker build arguments */
 	build_args?: EnvironmentVar[];
+	/** Docker labels */
 	labels?: EnvironmentVar[];
+	/** Any extra docker cli arguments to be included in the build command */
 	extra_args?: string[];
+	/** Whether to use buildx to build (eg `docker buildx build ...`) */
 	use_buildx?: boolean;
 }
 
@@ -202,9 +266,13 @@ export type Build = Resource<BuildConfig, BuildInfo>;
 export type GetBuildResponse = Build;
 
 export interface BuildListItemInfo {
+	/** Unix timestamp in milliseconds of last build */
 	last_built_at: I64;
+	/** The current version of the build */
 	version: Version;
+	/** The Github repo used as the source of the build */
 	repo: string;
+	/** The branch of the repo */
 	branch: string;
 }
 
@@ -247,10 +315,16 @@ export type ListBuildersResponse = BuilderListItem[];
 
 export type DeploymentImage = 
 	| { type: "Image", params: {
+	/** The docker image, can be from any registry that works with docker and that the host server can reach. */
 	image?: string;
 }}
 	| { type: "Build", params: {
+	/** The id of the build */
 	build_id?: string;
+	/**
+	 * Use a custom / older version of the image produced by the build.
+	 * if version is 0.0.0, this means `latest` image.
+	 */
 	version?: Version;
 }};
 
@@ -279,23 +353,69 @@ export enum RestartMode {
 }
 
 export interface DeploymentConfig {
+	/** The id of server the deployment is deployed on. */
 	server_id?: string;
+	/** Whether to send ContainerStateChange alerts for this deployment */
 	send_alerts: boolean;
+	/**
+	 * The image which the deployment deploys.
+	 * Can either be a user inputted image, or a Monitor build.
+	 */
 	image?: DeploymentImage;
+	/** Whether to skip secret interpolation into the deployment environment variables. */
 	skip_secret_interp?: boolean;
+	/** Whether to redeploy the deployment whenever the attached build finishes. */
 	redeploy_on_build?: boolean;
+	/**
+	 * Labels attached to various termination signal options.
+	 * Used to specify different shutdown functionality depending on the termination signal.
+	 */
 	term_signal_labels: TerminationSignalLabel[];
+	/** The default termination signal to use to stop the deployment. Defaults to SigTerm (default docker signal). */
 	termination_signal?: TerminationSignal;
+	/** The termination timeout. */
 	termination_timeout: number;
+	/**
+	 * The container port mapping.
+	 * Irrelevant if container network is `host`.
+	 * Maps ports on host to ports on container.
+	 */
 	ports?: Conversion[];
+	/**
+	 * The container volume mapping.
+	 * Maps files / folders on host to files / folders in container.
+	 */
 	volumes?: Conversion[];
+	/** The environment variables passed to the container. */
 	environment?: EnvironmentVar[];
+	/** The docker labels given to the container. */
 	labels?: EnvironmentVar[];
+	/**
+	 * The network attached to the container.
+	 * Default is `host`.
+	 */
 	network: string;
+	/** The restart mode given to the container. */
 	restart?: RestartMode;
+	/**
+	 * This is interpolated at the end of the `docker run` command,
+	 * which means they are either passed to the containers inner process,
+	 * or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
+	 * Empty is no process args.
+	 */
 	process_args?: string;
+	/** The user of the container, or empty string to use the default image user. */
 	container_user?: string;
+	/**
+	 * Extra args which are interpolated into the `docker run` command,
+	 * and affect the container configuration.
+	 */
 	extra_args?: string[];
+	/**
+	 * The docker account the deployment should use to pull the image.
+	 * - If using a custom image, empty string means don't use an account. Only works for public images.
+	 * - If using a monitor build, empty string means to use the same docker account as the build uses.
+	 */
 	docker_account?: string;
 }
 
@@ -366,17 +486,17 @@ export interface DeploymentActionState {
 export type GetDeploymentActionStateResponse = DeploymentActionState;
 
 export interface ApiKey {
-	/** UNIQUE KEY ASSOCIATED WITH SECRET */
+	/** Unique key associated with secret */
 	key: string;
-	/** HASH OF THE SECRET */
+	/** Hash of the secret */
 	secret: string;
-	/** USER ASSOCIATED WITH THE API KEY */
+	/** User associated with the api key */
 	user_id: string;
-	/** NAME ASSOCIATED WITH THE API KEY FOR MANAGEMENT */
+	/** Name associated with the api key for management */
 	name: string;
-	/** TIMESTAMP OF KEY CREATION */
+	/** Timestamp of key creation */
 	created_at: I64;
-	/** EXPIRY OF KEY, OR 0 IF NEVER EXPIRES */
+	/** Expiry of key, or 0 if never expires */
 	expires: I64;
 }
 
@@ -385,31 +505,69 @@ export type ListApiKeysResponse = ApiKey[];
 export type GetUsersResponse = User[];
 
 export enum PermissionLevel {
+	/** No permissions. */
 	None = "None",
+	/** Can see the rousource */
 	Read = "Read",
+	/** Can execute actions on the resource */
 	Execute = "Execute",
+	/** Can update the resource configuration */
 	Write = "Write",
 }
 
 export interface Permission {
+	/** The id of the permission document */
 	_id?: MongoId;
+	/** Attached user */
 	user_id: string;
+	/** The target resource */
 	target: ResourceTarget;
+	/** The permission level */
 	level?: PermissionLevel;
 }
 
 export type ListUserPermissionsResponse = Permission[];
 
-export type ProcedureConfig = 
-	| { type: "Sequence", data: EnabledExecution[] }
-	| { type: "Parallel", data: EnabledExecution[] };
+export enum ProcedureType {
+	Sequence = "Sequence",
+	Parallel = "Parallel",
+}
+
+export type Execution = 
+	/** For new executions upon instantiation */
+	| { type: "None", params: None }
+	| { type: "RunProcedure", params: RunProcedure }
+	| { type: "RunBuild", params: RunBuild }
+	| { type: "Deploy", params: Deploy }
+	| { type: "StartContainer", params: StartContainer }
+	| { type: "StopContainer", params: StopContainer }
+	| { type: "StopAllContainers", params: StopAllContainers }
+	| { type: "RemoveContainer", params: RemoveContainer }
+	| { type: "CloneRepo", params: CloneRepo }
+	| { type: "PullRepo", params: PullRepo }
+	| { type: "PruneDockerNetworks", params: PruneDockerNetworks }
+	| { type: "PruneDockerImages", params: PruneDockerImages }
+	| { type: "PruneDockerContainers", params: PruneDockerContainers };
+
+/** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
+export interface EnabledExecution {
+	/** The execution request to run. */
+	execution: Execution;
+	/** Whether the execution is enabled to run in the procedure. */
+	enabled: boolean;
+}
+
+export interface ProcedureConfig {
+	procedure_type?: ProcedureType;
+	executions?: EnabledExecution[];
+}
 
 export type Procedure = Resource<ProcedureConfig, undefined>;
 
 export type GetProcedureResponse = Procedure;
 
 export interface ProcedureListItemInfo {
-	procedure_type: ProcedureConfig["type"];
+	procedure_type: ProcedureType;
 }
 
 export type ProcedureListItem = ResourceListItem<ProcedureListItemInfo>;
@@ -562,8 +720,11 @@ export interface NetworkContainer {
 }
 
 export interface DockerNetwork {
+	/** The name of the docker network */
 	Name?: string;
+	/** The Id of the docker network */
 	Id?: string;
+	/** Timestamp network created */
 	Created?: string;
 	Scope?: string;
 	Driver?: string;
@@ -579,6 +740,7 @@ export interface DockerNetwork {
 
 export type GetDockerNetworksResponse = DockerNetwork[];
 
+/** Summary of docker image cached on a server */
 export interface ImageSummary {
 	/** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
 	Id: string;
@@ -605,11 +767,17 @@ export interface ImageSummary {
 export type GetDockerImagesResponse = ImageSummary[];
 
 export interface ContainerSummary {
+	/** Name of the container. */
 	name: string;
+	/** Id of the container. */
 	id: string;
+	/** The image the container is based on. */
 	image: string;
+	/** The docker labels on the container. */
 	labels: Record<string, string>;
+	/** The state of the container, like `running` or `not_deployed` */
 	state: DockerContainerState;
+	/** The status string of the docker container. */
 	status?: string;
 }
 
@@ -627,8 +795,11 @@ export interface SystemInformation {
 export type GetSystemInformationResponse = SystemInformation;
 
 export interface SingleDiskUsage {
+	/** The mount point of the disk */
 	mount: string;
+	/** Used portion of the disk in GB */
 	used_gb: number;
+	/** Total size of the disk in GB */
 	total_gb: number;
 }
 
@@ -657,26 +828,46 @@ export enum Timelength {
 }
 
 export interface SystemStats {
+	/** Cpu usage percentage */
 	cpu_perc: number;
+	/** Memory used in GB */
 	mem_used_gb: number;
+	/** Total memory in GB */
 	mem_total_gb: number;
+	/** Breakdown of individual disks, ie their usages, sizes, and mount points */
 	disks: SingleDiskUsage[];
+	/** The rate the system stats are being polled from the system */
 	polling_rate: Timelength;
+	/** Unix timestamp in milliseconds when stats were last polled */
 	refresh_ts: I64;
+	/** Unix timestamp in milliseconds when disk list was last refreshed */
 	refresh_list_ts: I64;
 }
 
 export type GetSystemStatsResponse = SystemStats;
 
 export interface SystemProcess {
+	/** The process PID */
 	pid: number;
+	/** The process name */
 	name: string;
+	/** The path to the process executable */
 	exe?: string;
+	/** The command used to start the process */
 	cmd: string[];
+	/** The time the process was started */
 	start_time?: number;
+	/**
+	 * The cpu usage percentage of the process.
+	 * This is in core-percentage, eg 100% is 1 full core, and
+	 * an 8 core machine would max at 800%.
+	 */
 	cpu_perc: number;
+	/** The memory usage of the process in MB */
 	mem_mb: number;
+	/** Process disk read in KB/s */
 	disk_read_kb: number;
+	/** Process disk write in KB/s */
 	disk_write_kb: number;
 }
 
@@ -856,8 +1047,10 @@ export interface __Serror {
 
 export type _Serror = __Serror;
 
+export type _PartialProcedureConfig = Partial<ProcedureConfig>;
+
 export interface ProcedureQuerySpecifics {
-	types: ProcedureConfig["type"][];
+	types: ProcedureType[];
 }
 
 export type ProcedureQuery = ResourceQuery<ProcedureQuerySpecifics>;
@@ -1325,13 +1518,21 @@ export interface GetHistoricalServerStats {
 }
 
 export interface SystemStatsRecord {
+	/** Unix timestamp in milliseconds */
 	ts: I64;
+	/** Server id */
 	sid: string;
+	/** Cpu usage percentage */
 	cpu_perc: number;
+	/** Memory used in GB */
 	mem_used_gb: number;
+	/** Total memory in GB */
 	mem_total_gb: number;
+	/** Disk used in GB */
 	disk_used_gb: number;
+	/** Total disk size in GB */
 	disk_total_gb: number;
+	/** Breakdown of individual disks, ie their usages, sizes, and mount points */
 	disks: SingleDiskUsage[];
 }
 
@@ -1568,7 +1769,7 @@ export interface UpdateUserPermissions {
 
 export interface CreateProcedure {
 	name: string;
-	config: ProcedureConfig;
+	config: _PartialProcedureConfig;
 }
 
 export interface CopyProcedure {
@@ -1582,7 +1783,7 @@ export interface DeleteProcedure {
 
 export interface UpdateProcedure {
 	id: string;
-	config: ProcedureConfig;
+	config: _PartialProcedureConfig;
 }
 
 export interface CreateRepo {
@@ -1681,32 +1882,61 @@ export interface UpdateServiceUserDescription {
 }
 
 export interface CustomAlerterConfig {
+	/** The http/s endpoint to send the POST to */
 	url: string;
+	/** Whether the alerter is enabled */
 	enabled?: boolean;
 }
 
 export interface SlackAlerterConfig {
+	/** The slack app url */
 	url: string;
+	/** Whether the alerter is enabled */
 	enabled?: boolean;
 }
 
 export interface ServerBuilderConfig {
+	/** The server id of the builder */
 	server_id: string;
 }
 
 export interface AwsBuilderConfig {
+	/** The AWS region to create the instance in */
 	region: string;
+	/** The instance type to create for the build */
 	instance_type: string;
+	/** The size of the builder volume in gb */
 	volume_gb: number;
 	/** The port periphery will be running on */
 	port: number;
+	/**
+	 * The EC2 ami id to create.
+	 * The ami should have the periphery client configured to start on startup,
+	 * and should have the necessary github / dockerhub accounts configured
+	 */
 	ami_id: string;
+	/** The subnet id to create the instance in. */
 	subnet_id: string;
+	/**
+	 * The security group ids to attach to the instance.
+	 * This should include a security group to allow core inbound access to the periphery port.
+	 */
 	security_group_ids: string[];
+	/** The key pair name to attach to the instance */
 	key_pair_name: string;
+	/**
+	 * Whether to assign the instance a public IP address.
+	 * Likely needed for the instance to be able to reach the open internet.
+	 */
 	assign_public_ip: boolean;
+	/**
+	 * Whether core should use the public IP address to communicate with periphery on the builder.
+	 * If false, core will communicate with the instance using the private IP.
+	 */
 	use_public_ip: boolean;
+	/** Which github accounts (usernames) are available on the AMI */
 	github_accounts?: string[];
+	/** Which dockerhub accounts (usernames) are available on the AMI */
 	docker_accounts?: string[];
 }
 
@@ -1719,30 +1949,10 @@ export interface CloneArgs {
 	github_account?: string;
 }
 
-export type Execution = 
-	/** For new executions upon instantiation */
-	| { type: "None", params: None }
-	| { type: "RunProcedure", params: RunProcedure }
-	| { type: "RunBuild", params: RunBuild }
-	| { type: "Deploy", params: Deploy }
-	| { type: "StartContainer", params: StartContainer }
-	| { type: "StopContainer", params: StopContainer }
-	| { type: "StopAllContainers", params: StopAllContainers }
-	| { type: "RemoveContainer", params: RemoveContainer }
-	| { type: "CloneRepo", params: CloneRepo }
-	| { type: "PullRepo", params: PullRepo }
-	| { type: "PruneDockerNetworks", params: PruneDockerNetworks }
-	| { type: "PruneDockerImages", params: PruneDockerImages }
-	| { type: "PruneDockerContainers", params: PruneDockerContainers };
-
-/** Allows to enable / disabled procedures in the sequence / parallel vec on the fly */
-export interface EnabledExecution {
-	execution: Execution;
-	enabled: boolean;
-}
-
 export interface TotalDiskUsage {
+	/** Used portion in GB */
 	used_gb: number;
+	/** Total size in GB */
 	total_gb: number;
 }
 

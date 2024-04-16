@@ -9,7 +9,7 @@ use monitor_client::{
     deployment::Deployment,
     monitor_timestamp,
     permission::PermissionLevel,
-    procedure::{Procedure, ProcedureConfig},
+    procedure::{PartialProcedureConfig, Procedure},
     repo::Repo,
     server::Server,
     update::Log,
@@ -57,7 +57,7 @@ impl Resolve<CreateProcedure, User> for State {
       description: Default::default(),
       tags: Default::default(),
       info: Default::default(),
-      config,
+      config: config.into(),
     };
     let procedure_id = db_client()
       .await
@@ -98,15 +98,14 @@ impl Resolve<CreateProcedure, User> for State {
 
 #[instrument]
 async fn validate_procedure_config(
-  config: &mut ProcedureConfig,
+  config: &mut PartialProcedureConfig,
   user: &User,
   id: Option<&str>,
 ) -> anyhow::Result<()> {
-  let execs = match config {
-    ProcedureConfig::Sequence(execs) => execs,
-    ProcedureConfig::Parallel(execs) => execs,
+  let Some(executions) = &mut config.executions else {
+    return Ok(());
   };
-  for exec in execs {
+  for exec in executions {
     match &mut exec.execution {
       Execution::None(_) => {}
       Execution::RunProcedure(params) => {

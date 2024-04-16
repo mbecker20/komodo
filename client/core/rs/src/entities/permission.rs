@@ -15,6 +15,7 @@ use super::{update::ResourceTarget, MongoId};
 // Only one permission allowed per user / target
 #[unique_doc_index(doc! { "user_id": 1, "target.type": 1, "target.id": 1 })]
 pub struct Permission {
+  /// The id of the permission document
   #[serde(
     default,
     rename = "_id",
@@ -22,9 +23,12 @@ pub struct Permission {
     with = "hex_string_as_object_id"
   )]
   pub id: MongoId,
+  /// Attached user
   #[index]
   pub user_id: String,
+  /// The target resource
   pub target: ResourceTarget,
+  /// The permission level
   #[serde(default)]
   pub level: PermissionLevel,
 }
@@ -47,10 +51,14 @@ pub struct Permission {
   Default,
 )]
 pub enum PermissionLevel {
+  /// No permissions.
   #[default]
   None,
+  /// Can see the rousource
   Read,
+  /// Can execute actions on the resource
   Execute,
+  /// Can update the resource configuration
   Write,
 }
 
