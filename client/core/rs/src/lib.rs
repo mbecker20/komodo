@@ -1,3 +1,12 @@
+//! # Monitor
+//! *A system to build and deploy software accross many servers*
+//! 
+//! This is a client library for the monitor core API.
+//! It contains the definitions for all application [entities]
+//! (eg. [Build][entities::build::Build], [Deployment][entities::deployment::Deployment], [Server][entities::server::Server], etc.),
+//! api requests / responses (eg. [Deploy][api::execute::Deploy], [GetBuild][api::read::GetBuild]),
+//! and usage guides.
+
 use anyhow::Context;
 use api::read::GetVersion;
 use serde::Deserialize;

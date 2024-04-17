@@ -25,6 +25,9 @@ use super::{
 #[doc_index(doc! { "target.type": 1 })]
 #[sparse_doc_index(doc! { "target.id": 1 })]
 pub struct Update {
+  /// The Mongo ID of the update.
+  /// This field is de/serialized from/to JSON as 
+  /// `{ "_id": { "$oid": "..." }, ...(rest of serialized Update) }`
   #[serde(
     default,
     rename = "_id",

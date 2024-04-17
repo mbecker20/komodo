@@ -23,7 +23,9 @@ use super::{
 #[doc_index(doc! { "target.type": 1 })]
 #[doc_index(doc! { "target.id": 1 })]
 pub struct Alert {
-  /// The mongo id
+  /// The Mongo ID of the alert.
+  /// This field is de/serialized from/to JSON as 
+  /// `{ "_id": { "$oid": "..." }, ...(rest of serialized Alert) }`
   #[serde(
     default,
     rename = "_id",

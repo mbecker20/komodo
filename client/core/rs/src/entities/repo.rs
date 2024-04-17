@@ -41,28 +41,37 @@ pub type _PartialRepoConfig = PartialRepoConfig;
 #[skip_serializing_none]
 #[partial_from]
 pub struct RepoConfig {
+  /// The server to clone the repo on.
   #[serde(default, alias = "server")]
   #[partial_attr(serde(alias = "server"))]
   #[builder(default)]
   pub server_id: String,
 
+  /// The github repo to clone.
   #[serde(default)]
   #[builder(default)]
   pub repo: String,
 
+  /// The repo branch.
   #[serde(default = "default_branch")]
   #[builder(default = "default_branch()")]
   #[partial_default(default_branch())]
   pub branch: String,
 
+  /// The github account to use to clone.
+  /// It must be available in the server's periphery config.
   #[serde(default)]
   #[builder(default)]
   pub github_account: String,
 
+  /// Command to be run after the repo is cloned.
+  /// The path is relative to the root of the repo.
   #[serde(default)]
   #[builder(default)]
   pub on_clone: SystemCommand,
 
+  /// Command to be run after the repo is pulled.
+  /// The path is relative to the root of the repo.
   #[serde(default)]
   #[builder(default)]
   pub on_pull: SystemCommand,

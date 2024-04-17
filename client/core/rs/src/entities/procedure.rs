@@ -34,8 +34,10 @@ pub type _PartialProcedureConfig = PartialProcedureConfig;
 #[skip_serializing_none]
 #[partial_from]
 pub struct ProcedureConfig {
+  /// Whether executions in the procedure runs sequentially or in parallel.
   #[serde(default)]
   pub procedure_type: ProcedureType,
+  /// The executions to be run by the procedure.
   #[serde(default)]
   pub executions: Vec<EnabledExecution>,
 }
@@ -54,8 +56,10 @@ pub struct ProcedureConfig {
   IntoStaticStr,
 )]
 pub enum ProcedureType {
+  /// Run the executions one after the other, in order of increasing index.
   #[default]
   Sequence,
+  /// Start all the executions simultaneously.
   Parallel,
 }
 

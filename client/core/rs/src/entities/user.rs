@@ -19,6 +19,9 @@ use super::update::ResourceTarget;
 #[sparse_doc_index(doc! { "config.data.google_id": 1 })]
 #[sparse_doc_index(doc! { "config.data.github_id": 1 })]
 pub struct User {
+  /// The Mongo ID of the User.
+  /// This field is de/serialized from/to JSON as 
+  /// `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
   #[serde(
     default,
     rename = "_id",

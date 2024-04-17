@@ -18,6 +18,9 @@ pub type _PartialTag = PartialTag;
 )]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Tag {
+  /// The Mongo ID of the tag.
+  /// This field is de/serialized from/to JSON as 
+  /// `{ "_id": { "$oid": "..." }, ...(rest of serialized Tag) }`
   #[serde(
     default,
     rename = "_id",

@@ -9,6 +9,7 @@ use super::MonitorExecuteRequest;
 
 //
 
+/// Executes the target build. Response: [Update]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -16,7 +17,7 @@ use super::MonitorExecuteRequest;
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
 pub struct RunBuild {
-  /// Can be id or name
+  /// Can be build id or name
   pub build: String,
 }
 
