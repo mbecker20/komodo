@@ -16,7 +16,7 @@ use tokio::sync::Mutex;
 
 use crate::state::State;
 
-use super::update_update;
+use super::update::update_update;
 
 #[instrument]
 pub async fn execute_procedure(

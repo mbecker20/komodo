@@ -17,8 +17,9 @@ use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
-    add_update, make_update, periphery_client,
-    resource::StateResource, update_update,
+    periphery_client,
+    resource::StateResource,
+    update::{add_update, make_update, update_update},
   },
   state::{action_states, State},
 };

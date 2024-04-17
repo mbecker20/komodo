@@ -11,7 +11,7 @@ use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::Deserialize;
 use serror::AuthError;
 
-use crate::{db::db_client, helpers::get_user};
+use crate::{db::db_client, helpers::query::get_user};
 
 use self::jwt::{jwt_client, JwtClaims};
 

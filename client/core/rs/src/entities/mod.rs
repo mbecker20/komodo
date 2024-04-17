@@ -19,6 +19,7 @@ pub mod server;
 pub mod tag;
 pub mod update;
 pub mod user;
+pub mod user_group;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;

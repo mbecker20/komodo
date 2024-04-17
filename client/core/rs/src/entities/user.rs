@@ -7,9 +7,7 @@ use mungos::mongodb::bson::{
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{MongoId, I64};
-
-use super::update::ResourceTarget;
+use crate::entities::{update::ResourceTarget, MongoId, I64};
 
 #[typeshare]
 #[derive(
@@ -20,7 +18,7 @@ use super::update::ResourceTarget;
 #[sparse_doc_index(doc! { "config.data.github_id": 1 })]
 pub struct User {
   /// The Mongo ID of the User.
-  /// This field is de/serialized from/to JSON as 
+  /// This field is de/serialized from/to JSON as
   /// `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
   #[serde(
     default,

@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use futures::future::join_all;
@@ -54,7 +54,7 @@ use crate::{db::db_client, state::State};
 
 use super::{
   cache::{deployment_status_cache, server_status_cache},
-  get_tag,
+  query::{get_tag, get_user_user_group_ids},
 };
 
 pub trait StateResource {
@@ -582,21 +582,26 @@ pub async fn get_user_permission_on_resource(
   resource_variant: ResourceTargetVariant,
   resource_id: &str,
 ) -> anyhow::Result<PermissionLevel> {
-  let permission = db_client()
-    .await
-    .permissions
-    .find_one(
-      doc! {
-        "user_id": user_id,
-        "target.type": resource_variant.as_ref(),
-        "target.id": resource_id
-      },
-      None,
-    )
-    .await
-    .context("failed to query permissions table")?
-    .map(|permission| permission.level)
-    .unwrap_or_default();
+  let permission = find_collect(
+    &db_client().await.permissions,
+    doc! {
+      "$or": user_target_query(user_id).await?,
+      "target.type": resource_variant.as_ref(),
+      "target.id": resource_id
+    },
+    None,
+  )
+  .await
+  .context("failed to query db for permissions")?
+  .into_iter()
+  // get the max permission user has between personal / any user groups
+  .fold(PermissionLevel::None, |level, permission| {
+    if permission.level > level {
+      permission.level
+    } else {
+      level
+    }
+  });
   Ok(permission)
 }
 
@@ -628,8 +633,8 @@ pub async fn get_resource_ids_for_non_admin(
   let permissions = find_collect(
     &db_client().await.permissions,
     doc! {
-      "user_id": user_id,
-      "target.type": resource_type.as_ref(),
+      "$or": user_target_query(user_id).await?,
+      "resource_target.type": resource_type.as_ref(),
       "level": { "$in": ["Read", "Execute", "Update"] }
     },
     None,
@@ -637,9 +642,29 @@ pub async fn get_resource_ids_for_non_admin(
   .await
   .context("failed to query permissions on db")?
   .into_iter()
-  .map(|p| p.target.extract_variant_id().1.to_string())
-  .collect();
-  Ok(permissions)
+  .map(|p| p.resource_target.extract_variant_id().1.to_string())
+  // collect into hashset first to remove any duplicates
+  .collect::<HashSet<_>>();
+  Ok(permissions.into_iter().collect())
+}
+
+#[instrument(level = "debug")]
+async fn user_target_query(
+  user_id: &str,
+) -> anyhow::Result<Vec<Document>> {
+  let mut user_target_query = vec![
+    doc! { "user_target.type": "User", "user_target.id": user_id },
+  ];
+  let user_groups = get_user_user_group_ids(user_id)
+    .await?
+    .into_iter()
+    .map(|ug_id| {
+      doc! {
+        "user_target.type": "UserGroup", "user_target.id": ug_id,
+      }
+    });
+  user_target_query.extend(user_groups);
+  Ok(user_target_query)
 }
 
 #[instrument(level = "debug")]

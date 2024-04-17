@@ -1,32 +1,25 @@
-use std::{str::FromStr, time::Duration};
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
-  deployment::{Deployment, DockerContainerState},
-  monitor_timestamp,
-  permission::{Permission, PermissionLevel},
-  server::{Server, ServerStatus},
-  tag::Tag,
-  update::{ResourceTarget, Update, UpdateListItem},
-  user::{admin_service_user, User},
-  Operation,
+  permission::{Permission, PermissionLevel, UserTarget},
+  server::Server,
+  update::ResourceTarget,
+  user::User,
 };
-use mungos::{
-  by_id::{find_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, oid::ObjectId, to_document},
-};
-use periphery_client::{api, PeripheryClient};
+use mungos::mongodb::bson::doc;
+use periphery_client::PeripheryClient;
 use rand::{thread_rng, Rng};
 
 use crate::{config::core_config, db::db_client};
-
-use self::{channel::update_channel, resource::StateResource};
 
 pub mod alert;
 pub mod cache;
 pub mod channel;
 pub mod procedure;
+pub mod query;
 pub mod resource;
+pub mod update;
 
 pub fn empty_or_only_spaces(word: &str) -> bool {
   if word.is_empty() {
@@ -42,170 +35,6 @@ pub fn empty_or_only_spaces(word: &str) -> bool {
 
 pub fn random_duration(min_ms: u64, max_ms: u64) -> Duration {
   Duration::from_millis(thread_rng().gen_range(min_ms..max_ms))
-}
-
-pub fn make_update(
-  target: impl Into<ResourceTarget>,
-  operation: Operation,
-  user: &User,
-) -> Update {
-  Update {
-    start_ts: monitor_timestamp(),
-    target: target.into(),
-    operation,
-    operator: user.id.clone(),
-    success: true,
-    ..Default::default()
-  }
-}
-
-#[instrument(level = "debug")]
-pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
-  if let Some(user) = admin_service_user(user_id) {
-    return Ok(user);
-  }
-  find_one_by_id(&db_client().await.users, user_id)
-    .await
-    .context("failed to query mongo for user")?
-    .with_context(|| format!("no user found with id {user_id}"))
-}
-
-#[instrument(level = "debug")]
-pub async fn get_server_with_status(
-  server_id_or_name: &str,
-) -> anyhow::Result<(Server, ServerStatus)> {
-  let server = Server::get_resource(server_id_or_name).await?;
-  if !server.config.enabled {
-    return Ok((server, ServerStatus::Disabled));
-  }
-  let status =
-    match periphery_client(&server)?.request(api::GetHealth {}).await
-    {
-      Ok(_) => ServerStatus::Ok,
-      Err(_) => ServerStatus::NotOk,
-    };
-  Ok((server, status))
-}
-
-#[instrument(level = "debug")]
-pub async fn get_deployment_state(
-  deployment: &Deployment,
-) -> anyhow::Result<DockerContainerState> {
-  if deployment.config.server_id.is_empty() {
-    return Ok(DockerContainerState::NotDeployed);
-  }
-  let (server, status) =
-    get_server_with_status(&deployment.config.server_id).await?;
-  if status != ServerStatus::Ok {
-    return Ok(DockerContainerState::Unknown);
-  }
-  let container = periphery_client(&server)?
-    .request(api::container::GetContainerList {})
-    .await?
-    .into_iter()
-    .find(|container| container.name == deployment.name);
-
-  let state = match container {
-    Some(container) => container.state,
-    None => DockerContainerState::NotDeployed,
-  };
-
-  Ok(state)
-}
-
-// TAG
-
-#[instrument(level = "debug")]
-pub async fn get_tag(id_or_name: &str) -> anyhow::Result<Tag> {
-  let query = match ObjectId::from_str(id_or_name) {
-    Ok(id) => doc! { "_id": id },
-    Err(_) => doc! { "name": id_or_name },
-  };
-  db_client()
-    .await
-    .tags
-    .find_one(query, None)
-    .await
-    .context("failed to query mongo for tag")?
-    .with_context(|| format!("no tag found matching {id_or_name}"))
-}
-
-#[instrument(level = "debug")]
-pub async fn get_tag_check_owner(
-  id_or_name: &str,
-  user: &User,
-) -> anyhow::Result<Tag> {
-  let tag = get_tag(id_or_name).await?;
-  if user.admin || tag.owner == user.id {
-    return Ok(tag);
-  }
-  Err(anyhow!("user must be tag owner or admin"))
-}
-
-// UPDATE
-#[instrument(level = "debug")]
-async fn update_list_item(
-  update: Update,
-) -> anyhow::Result<UpdateListItem> {
-  let username = if User::is_service_user(&update.operator) {
-    update.operator.clone()
-  } else {
-    find_one_by_id(&db_client().await.users, &update.operator)
-      .await
-      .context("failed to query mongo for user")?
-      .with_context(|| {
-        format!("no user found with id {}", update.operator)
-      })?
-      .username
-  };
-  let update = UpdateListItem {
-    id: update.id,
-    operation: update.operation,
-    start_ts: update.start_ts,
-    success: update.success,
-    operator: update.operator,
-    target: update.target,
-    status: update.status,
-    version: update.version,
-    username,
-  };
-  Ok(update)
-}
-
-#[instrument(level = "debug")]
-async fn send_update(update: UpdateListItem) -> anyhow::Result<()> {
-  update_channel().sender.lock().await.send(update)?;
-  Ok(())
-}
-
-#[instrument(level = "debug")]
-pub async fn add_update(
-  mut update: Update,
-) -> anyhow::Result<String> {
-  update.id = db_client()
-    .await
-    .updates
-    .insert_one(&update, None)
-    .await
-    .context("failed to insert update into db")?
-    .inserted_id
-    .as_object_id()
-    .context("inserted_id is not object id")?
-    .to_string();
-  let id = update.id.clone();
-  let update = update_list_item(update).await?;
-  let _ = send_update(update).await;
-  Ok(id)
-}
-
-#[instrument(level = "debug")]
-pub async fn update_update(update: Update) -> anyhow::Result<()> {
-  update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
-      .await
-      .context("failed to update the update on db. the update build process was deleted")?;
-  let update = update_list_item(update).await?;
-  let _ = send_update(update).await;
-  Ok(())
 }
 
 #[instrument]
@@ -275,8 +104,8 @@ pub async fn create_permission<T>(
     .insert_one(
       Permission {
         id: Default::default(),
-        user_id: user.id.clone(),
-        target: target.clone(),
+        user_target: UserTarget::User(user.id.clone()),
+        resource_target: target.clone(),
         level,
       },
       None,

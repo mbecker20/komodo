@@ -43,9 +43,10 @@ use crate::{
   config::core_config,
   db::db_client,
   helpers::{
-    add_update, channel::build_cancel_channel, get_deployment_state,
-    make_update, periphery_client, resource::StateResource,
-    update_update,
+    channel::build_cancel_channel,
+    query::get_deployment_state, periphery_client,
+    resource::StateResource,
+    update::{add_update, make_update, update_update},
   },
   state::{action_states, State},
 };

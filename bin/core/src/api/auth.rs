@@ -19,7 +19,7 @@ use crate::{
     jwt::jwt_client,
   },
   config::core_config,
-  helpers::get_user,
+  helpers::query::get_user,
   state::State,
 };
 

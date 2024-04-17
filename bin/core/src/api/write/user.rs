@@ -20,7 +20,7 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::{db::db_client, helpers::get_user, state::State};
+use crate::{db::db_client, helpers::query::get_user, state::State};
 
 const RECENTLY_VIEWED_MAX: usize = 10;
 

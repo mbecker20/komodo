@@ -21,7 +21,10 @@ use resolver_api::Resolve;
 
 use crate::{
   db::db_client,
-  helpers::{add_update, get_user, make_update},
+  helpers::{
+    query::get_user,
+    update::{add_update, make_update},
+  },
   state::State,
 };
 
@@ -87,7 +90,10 @@ impl Resolve<UpdateUserPermissions, User> for State {
 
 #[async_trait]
 impl Resolve<UpdateUserPermissionsOnTarget, User> for State {
-  #[instrument(name = "UpdateUserPermissionsOnTarget", skip(self, admin))]
+  #[instrument(
+    name = "UpdateUserPermissionsOnTarget",
+    skip(self, admin)
+  )]
   async fn resolve(
     &self,
     UpdateUserPermissionsOnTarget {

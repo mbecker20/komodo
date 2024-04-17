@@ -22,8 +22,9 @@ use serror::serialize_error_pretty;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, get_server_with_status, make_update,
-    periphery_client, resource::StateResource, update_update,
+    query::get_server_with_status, periphery_client,
+    resource::StateResource,
+    update::{add_update, make_update, update_update},
   },
   monitor::update_cache_for_server,
   state::{action_states, State},
@@ -352,7 +353,7 @@ impl Resolve<StopAllContainers, User> for State {
     )
     .await
     .context("failed to find deployments on server")?;
-  
+
     let server_id = server.id.clone();
 
     let inner = || async move {

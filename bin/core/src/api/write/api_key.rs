@@ -12,7 +12,7 @@ use mungos::{by_id::find_one_by_id, mongodb::bson::doc};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::random_string, db::db_client, helpers::get_user, state::State,
+  auth::random_string, db::db_client, helpers::query::get_user, state::State,
 };
 
 const SECRET_LENGTH: usize = 40;

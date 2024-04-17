@@ -12,8 +12,9 @@ use tokio::sync::Mutex;
 
 use crate::{
   helpers::{
-    add_update, make_update, procedure::execute_procedure,
-    resource::StateResource, update_update,
+    procedure::execute_procedure,
+    resource::StateResource,
+    update::{add_update, make_update, update_update},
   },
   state::State,
 };

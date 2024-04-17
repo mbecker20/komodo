@@ -26,10 +26,9 @@ use resolver_api::Resolve;
 use crate::{
   db::db_client,
   helpers::{
-    add_update, create_permission, make_update,
-    remove_from_recently_viewed,
+    create_permission, remove_from_recently_viewed,
     resource::{delete_all_permissions_on_resource, StateResource},
-    update_update,
+    update::{add_update, make_update, update_update},
   },
   state::{action_states, State},
 };

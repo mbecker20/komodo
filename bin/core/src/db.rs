@@ -13,6 +13,7 @@ use monitor_client::entities::{
   tag::Tag,
   update::Update,
   user::User,
+  user_group::UserGroup,
 };
 use mungos::{
   init::MongoBuilder,
@@ -35,6 +36,7 @@ pub async fn db_client() -> &'static DbClient {
 
 pub struct DbClient {
   pub users: Collection<User>,
+  pub user_groups: Collection<UserGroup>,
   pub permissions: Collection<Permission>,
   pub api_keys: Collection<ApiKey>,
   pub tags: Collection<Tag>,
@@ -90,6 +92,7 @@ impl DbClient {
 
     let client = DbClient {
       users: User::collection(&db, true).await?,
+      user_groups: UserGroup::collection(&db, true).await?,
       permissions: Permission::collection(&db, true).await?,
       api_keys: ApiKey::collection(&db, true).await?,
       tags: Tag::collection(&db, true).await?,

@@ -22,7 +22,7 @@ use resolver_api::Resolve;
 
 use crate::{
   db::db_client,
-  helpers::{get_tag, get_tag_check_owner, resource::StateResource},
+  helpers::{query::{get_tag, get_tag_check_owner}, resource::StateResource},
   state::State,
 };
 

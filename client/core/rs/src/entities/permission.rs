@@ -8,8 +8,7 @@ use typeshare::typeshare;
 
 use super::{update::ResourceTarget, MongoId};
 
-
-/// Representation of a User or UserGroups permission on a resource. 
+/// Representation of a User or UserGroups permission on a resource.
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize, MongoIndexed)]
 // To query for all permissions on a target
@@ -27,12 +26,22 @@ pub struct Permission {
   pub id: MongoId,
   /// Attached user
   #[index]
-  pub user_id: String,
+  pub user_target: UserTarget,
   /// The target resource
-  pub target: ResourceTarget,
+  pub resource_target: ResourceTarget,
   /// The permission level
   #[serde(default)]
   pub level: PermissionLevel,
+}
+
+#[typeshare]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", content = "id")]
+pub enum UserTarget {
+  /// User Id
+  User(String),
+  /// UserGroup Id
+  UserGroup(String),
 }
 
 /// The levels of permission that a User or UserGroup can have on a resource.

@@ -13,7 +13,7 @@ use resolver_api::Resolve;
 
 use crate::{
   cloud::aws::launch_ec2_instance,
-  helpers::{add_update, make_update, update_update},
+  helpers::update::{add_update, make_update, update_update},
   state::State,
 };
 
