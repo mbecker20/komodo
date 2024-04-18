@@ -28,6 +28,7 @@ mod server;
 mod tag;
 mod update;
 mod user;
+mod user_group;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -43,6 +44,10 @@ enum ReadRequest {
   GetUsername(GetUsername),
   ListApiKeys(ListApiKeys),
   ListUserPermissions(ListUserPermissions),
+
+  // ==== USER GROUP ====
+  GetUserGroup(GetUserGroup),
+  ListUserGroups(ListUserGroups),
 
   // ==== SEARCH ====
   FindResources(FindResources),

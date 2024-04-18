@@ -193,16 +193,10 @@ impl From<Operation> for monitor_client::entities::Operation {
       Operation::CreateGroup => None,
       Operation::UpdateGroup => None,
       Operation::DeleteGroup => None,
-      Operation::ModifyUserEnabled => UpdateUserPermissions,
-      Operation::ModifyUserCreateServerPermissions => {
-        UpdateUserPermissions
-      }
-      Operation::ModifyUserCreateBuildPermissions => {
-        UpdateUserPermissions
-      }
-      Operation::ModifyUserPermissions => {
-        UpdateUserPermissionsOnTarget
-      }
+      Operation::ModifyUserEnabled => None,
+      Operation::ModifyUserCreateServerPermissions => None,
+      Operation::ModifyUserCreateBuildPermissions => None,
+      Operation::ModifyUserPermissions => None,
       Operation::AutoBuild => RunBuild,
       Operation::AutoPull => PullRepo,
     }

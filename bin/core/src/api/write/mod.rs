@@ -25,6 +25,7 @@ mod repo;
 mod server;
 mod tag;
 mod user;
+mod user_group;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -44,9 +45,16 @@ enum WriteRequest {
   CreateServiceUser(CreateServiceUser),
   UpdateServiceUserDescription(UpdateServiceUserDescription),
 
+  // ==== USER GROUP ====
+  CreateUserGroup(CreateUserGroup),
+  RenameUserGroup(RenameUserGroup),
+  DeleteUserGroup(DeleteUserGroup),
+  AddUserToUserGroup(AddUserToUserGroup),
+  RemoveUserFromUserGroup(RemoveUserFromUserGroup),
+
   // ==== PERMISSIONS ====
-  UpdateUserPerimissions(UpdateUserPermissions),
-  UpdateUserPermissionsOnTarget(UpdateUserPermissionsOnTarget),
+  UpdateUserBasePermissions(UpdateUserBasePermissions),
+  UpdatePermissionOnTarget(UpdatePermissionOnTarget),
 
   // ==== DESCRIPTION ====
   UpdateDescription(UpdateDescription),

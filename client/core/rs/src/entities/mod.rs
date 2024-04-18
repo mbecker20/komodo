@@ -375,10 +375,6 @@ pub enum Operation {
   UpdateProcedure,
   DeleteProcedure,
   RunProcedure,
-
-  // user
-  UpdateUserPermissions,
-  UpdateUserPermissionsOnTarget,
 }
 
 #[typeshare]

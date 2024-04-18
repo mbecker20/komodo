@@ -15,6 +15,7 @@ mod search;
 mod server;
 mod tag;
 mod update;
+mod user_group;
 
 pub use alert::*;
 pub use alerter::*;
@@ -28,6 +29,7 @@ pub use search::*;
 pub use server::*;
 pub use tag::*;
 pub use update::*;
+pub use user_group::*;
 
 use crate::entities::{api_key::ApiKey, user::User, Timelength};
 

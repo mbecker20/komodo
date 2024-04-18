@@ -11,6 +11,7 @@ mod repo;
 mod server;
 mod tags;
 mod user;
+mod user_group;
 
 pub use alerter::*;
 pub use api_key::*;
@@ -25,5 +26,6 @@ pub use repo::*;
 pub use server::*;
 pub use tags::*;
 pub use user::*;
+pub use user_group::*;
 
 pub trait MonitorWriteRequest: resolver_api::HasResponse {}

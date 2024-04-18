@@ -2,13 +2,10 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::{
-    UpdateUserPermissions, UpdateUserPermissionsOnTarget,
+    UpdatePermissionOnTarget, UpdatePermissionOnTargetResponse,
+    UpdateUserBasePermissions, UpdateUserBasePermissionsResponse,
   },
-  entities::{
-    update::{ResourceTarget, Update},
-    user::User,
-    Operation,
-  },
+  entities::{permission::UserTarget, user::User},
 };
 use mungos::{
   by_id::{find_one_by_id, update_one_by_id},
@@ -19,28 +16,21 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::{
-  db::db_client,
-  helpers::{
-    query::get_user,
-    update::{add_update, make_update},
-  },
-  state::State,
-};
+use crate::{db::db_client, helpers::query::get_user, state::State};
 
 #[async_trait]
-impl Resolve<UpdateUserPermissions, User> for State {
-  #[instrument(name = "UpdateUserPermissions", skip(self, admin))]
+impl Resolve<UpdateUserBasePermissions, User> for State {
+  #[instrument(name = "UpdateUserBasePermissions", skip(self, admin))]
   async fn resolve(
     &self,
-    UpdateUserPermissions {
+    UpdateUserBasePermissions {
       user_id,
       enabled,
       create_servers,
       create_builds,
-    }: UpdateUserPermissions,
+    }: UpdateUserBasePermissions,
     admin: User,
-  ) -> anyhow::Result<Update> {
+  ) -> anyhow::Result<UpdateUserBasePermissionsResponse> {
     if !admin.admin {
       return Err(anyhow!("this method is admin only"));
     }
@@ -72,74 +62,69 @@ impl Resolve<UpdateUserPermissions, User> for State {
     )
     .await?;
 
-    let mut update = make_update(
-      ResourceTarget::System("system".to_string()),
-      Operation::UpdateUserPermissions,
-      &admin,
-    );
-    update.push_simple_log("modify user enabled", format!(
-      "update permissions for {} ({})\nenabled: {enabled:?}\ncreate servers: {create_servers:?}\ncreate builds: {create_builds:?}", 
-      user.username,
-      user.id,
-    ));
-    update.finalize();
-    update.id = add_update(update.clone()).await?;
-    Ok(update)
+    Ok(UpdateUserBasePermissionsResponse {})
   }
 }
 
 #[async_trait]
-impl Resolve<UpdateUserPermissionsOnTarget, User> for State {
-  #[instrument(
-    name = "UpdateUserPermissionsOnTarget",
-    skip(self, admin)
-  )]
+impl Resolve<UpdatePermissionOnTarget, User> for State {
+  #[instrument(name = "UpdatePermissionOnTarget", skip(self, admin))]
   async fn resolve(
     &self,
-    UpdateUserPermissionsOnTarget {
-      user_id,
+    UpdatePermissionOnTarget {
+      user_target,
+      resource_target,
       permission,
-      target,
-    }: UpdateUserPermissionsOnTarget,
+    }: UpdatePermissionOnTarget,
     admin: User,
-  ) -> anyhow::Result<Update> {
+  ) -> anyhow::Result<UpdatePermissionOnTargetResponse> {
     if !admin.admin {
       return Err(anyhow!("this method is admin only"));
     }
-    let user = get_user(&user_id).await?;
-    if user.admin {
-      return Err(anyhow!(
-        "cannot use this method to update other admins permissions"
-      ));
+
+    // Some extra checks if user target is an actual User
+    if let UserTarget::User(user_id) = &user_target {
+      let user = get_user(user_id).await?;
+      if user.admin {
+        return Err(anyhow!(
+          "cannot use this method to update other admins permissions"
+        ));
+      }
+      if !user.enabled {
+        return Err(anyhow!("user not enabled"));
+      }
     }
-    if !user.enabled {
-      return Err(anyhow!("user not enabled"));
-    }
-    let (variant, id) = target.extract_variant_id();
-    db_client().await.permissions.update_one(
-      doc! { "user_id": &user.id, "target.type": variant.as_ref(), "target.id": id },
-      doc! {
-        "$set": {
-          "user_id": &user.id,
-          "target.type": variant.as_ref(),
-          "target.id": id,
-          "level": permission.as_ref(),
-        }
-      },
-      UpdateOptions::builder().upsert(true).build()
-    ).await?;
-    let log_text = format!(
-      "user {} given {} permissions on {target:?}",
-      user.username, permission,
-    );
-    let mut update = make_update(
-      target,
-      Operation::UpdateUserPermissionsOnTarget,
-      &admin,
-    );
-    update.push_simple_log("modify permissions", log_text);
-    update.finalize();
-    update.id = add_update(update.clone()).await?;
-    Ok(update)
+
+    let (user_target_variant, user_target_id) =
+      user_target.extract_variant_id();
+    let (resource_variant, resource_id) =
+      resource_target.extract_variant_id();
+    let (user_target_variant, resource_variant) =
+      (user_target_variant.as_ref(), resource_variant.as_ref());
+
+    db_client()
+      .await
+      .permissions
+      .update_one(
+        doc! {
+          "user_target.type": user_target_variant,
+          "user_target.id": &user_target_id,
+          "resource_target.type": resource_variant,
+          "resource_target.id": &resource_id
+        },
+        doc! {
+          "$set": {
+            "user_target.type": user_target_variant,
+            "user_target.id": user_target_id,
+            "resource_target.type": resource_variant,
+            "resource_target.id": resource_id,
+            "level": permission.as_ref(),
+          }
+        },
+        UpdateOptions::builder().upsert(true).build(),
+      )
+      .await?;
+
+    Ok(UpdatePermissionOnTargetResponse {})
   }
 }
