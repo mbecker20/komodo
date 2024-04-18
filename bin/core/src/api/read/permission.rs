@@ -21,7 +21,10 @@ impl Resolve<ListUserPermissions, User> for State {
     }
     find_collect(
       &db_client().await.permissions,
-      doc! { "user_id": user_id },
+      doc! {
+        "user_target.type": "User",
+        "user_target.id": user_id
+      },
       None,
     )
     .await
