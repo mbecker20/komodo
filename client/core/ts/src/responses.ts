@@ -18,6 +18,10 @@ export type ReadResponses = {
   ListApiKeys: Types.ListApiKeysResponse;
   ListUserPermissions: Types.ListUserPermissionsResponse;
 
+  // ==== USER GROUP ====
+  GetUserGroup: Types.GetUserGroupResponse;
+  ListUserGroups: Types.ListUserGroupsResponse;
+
   // ==== SEARCH ====
   FindResources: Types.FindResourcesResponse;
 
@@ -109,9 +113,16 @@ export type WriteResponses = {
   CreateServiceUser: Types.CreateServiceUserResponse;
   UpdateServiceUserDescription: Types.UpdateServiceUserDescription;
 
+  // ==== USER GROUP ====
+  CreateUserGroup: Types.UserGroup;
+  RenameUserGroup: Types.UserGroup;
+  DeleteUserGroup: Types.UserGroup;
+  AddUserToUserGroup: Types.UserGroup;
+  RemoveUserFromUserGroup: Types.UserGroup;
+
   // ==== PERMISSIONS ====
-  UpdateUserPerimissions: Types.Update;
-  UpdateUserPermissionsOnTarget: Types.Update;
+  UpdateUserBasePermissions: Types.UpdateUserBasePermissionsResponse;
+  UpdatePermissionOnTarget: Types.UpdatePermissionOnTargetResponse;
 
   // ==== DESCRIPTION ====
   UpdateDescription: Types.UpdateDescriptionResponse;

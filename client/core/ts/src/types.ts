@@ -41,6 +41,11 @@ export type ResourceTarget =
 	| { type: "Procedure", id: string };
 
 export interface User {
+	/**
+	 * The Mongo ID of the User.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
+	 */
 	_id?: MongoId;
 	username: string;
 	enabled?: boolean;
@@ -130,7 +135,11 @@ export type AlertData =
 }};
 
 export interface Alert {
-	/** The mongo id */
+	/**
+	 * The Mongo ID of the alert.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized Alert) }`
+	 */
 	_id?: MongoId;
 	/** Unix timestamp in milliseconds the alert was opened */
 	ts: I64;
@@ -151,7 +160,13 @@ export interface Alert {
 export type GetAlertResponse = Alert;
 
 export interface Resource<Config, Info> {
+	/**
+	 * The Mongo ID of the resource.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized Resource<T>) }`
+	 */
 	_id?: MongoId;
+	/**  */
 	name: string;
 	description?: string;
 	updated_at?: I64;
@@ -504,6 +519,13 @@ export type ListApiKeysResponse = ApiKey[];
 
 export type GetUsersResponse = User[];
 
+export type UserTarget = 
+	/** User Id */
+	| { type: "User", id: string }
+	/** UserGroup Id */
+	| { type: "UserGroup", id: string };
+
+/** The levels of permission that a User or UserGroup can have on a resource. */
 export enum PermissionLevel {
 	/** No permissions. */
 	None = "None",
@@ -515,13 +537,14 @@ export enum PermissionLevel {
 	Write = "Write",
 }
 
+/** Representation of a User or UserGroups permission on a resource. */
 export interface Permission {
 	/** The id of the permission document */
 	_id?: MongoId;
-	/** Attached user */
-	user_id: string;
+	/** The target User / UserGroup */
+	user_target: UserTarget;
 	/** The target resource */
-	target: ResourceTarget;
+	resource_target: ResourceTarget;
 	/** The permission level */
 	level?: PermissionLevel;
 }
@@ -529,7 +552,9 @@ export interface Permission {
 export type ListUserPermissionsResponse = Permission[];
 
 export enum ProcedureType {
+	/** Run the executions one after the other, in order of increasing index. */
 	Sequence = "Sequence",
+	/** Start all the executions simultaneously. */
 	Parallel = "Parallel",
 }
 
@@ -558,7 +583,9 @@ export interface EnabledExecution {
 }
 
 export interface ProcedureConfig {
+	/** Whether executions in the procedure runs sequentially or in parallel. */
 	procedure_type?: ProcedureType;
+	/** The executions to be run by the procedure. */
 	executions?: EnabledExecution[];
 }
 
@@ -581,11 +608,26 @@ export interface ProcedureActionState {
 export type GetProcedureActionStateResponse = ProcedureActionState;
 
 export interface RepoConfig {
+	/** The server to clone the repo on. */
 	server_id?: string;
+	/** The github repo to clone. */
 	repo?: string;
+	/** The repo branch. */
 	branch: string;
+	/**
+	 * The github account to use to clone.
+	 * It must be available in the server's periphery config.
+	 */
 	github_account?: string;
+	/**
+	 * Command to be run after the repo is cloned.
+	 * The path is relative to the root of the repo.
+	 */
 	on_clone?: SystemCommand;
+	/**
+	 * Command to be run after the repo is pulled.
+	 * The path is relative to the root of the repo.
+	 */
 	on_pull?: SystemCommand;
 }
 
@@ -876,6 +918,11 @@ export type GetSystemProcessesResponse = SystemProcess[];
 export type GetAvailableSecretsResponse = string[];
 
 export interface Tag {
+	/**
+	 * The Mongo ID of the tag.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized Tag) }`
+	 */
 	_id?: MongoId;
 	name: string;
 	owner?: string;
@@ -926,8 +973,6 @@ export enum Operation {
 	UpdateProcedure = "UpdateProcedure",
 	DeleteProcedure = "DeleteProcedure",
 	RunProcedure = "RunProcedure",
-	UpdateUserPermissions = "UpdateUserPermissions",
-	UpdateUserPermissionsOnTarget = "UpdateUserPermissionsOnTarget",
 }
 
 export enum UpdateStatus {
@@ -937,6 +982,11 @@ export enum UpdateStatus {
 }
 
 export interface Update {
+	/**
+	 * The Mongo ID of the update.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized Update) }`
+	 */
 	_id?: MongoId;
 	operation: Operation;
 	start_ts: I64;
@@ -950,6 +1000,23 @@ export interface Update {
 }
 
 export type GetUpdateResponse = Update;
+
+export interface UserGroup {
+	/**
+	 * The Mongo ID of the UserGroup.
+	 * This field is de/serialized from/to JSON as
+	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized User) }`
+	 */
+	_id?: MongoId;
+	name: string;
+	/** User ids */
+	users: string[];
+	updated_at?: I64;
+}
+
+export type GetUserGroupResponse = UserGroup;
+
+export type ListUserGroupsResponse = UserGroup[];
 
 export interface CreateApiKeyResponse {
 	/** X-API-KEY */
@@ -1110,8 +1177,9 @@ export interface ExchangeForJwtResponse {
 export interface GetUser {
 }
 
+/** Executes the target build. Response: [Update] */
 export interface RunBuild {
-	/** Can be id or name */
+	/** Can be build id or name */
 	build: string;
 }
 
@@ -1601,6 +1669,14 @@ export interface ListUpdatesResponse {
 	next_page?: number;
 }
 
+export interface GetUserGroup {
+	/** Name or Id */
+	user_group: string;
+}
+
+export interface ListUserGroups {
+}
+
 export type PartialAlerterConfig = 
 	| { type: "Custom", params: _PartialCustomAlerterConfig }
 	| { type: "Slack", params: _PartialSlackAlerterConfig };
@@ -1754,17 +1830,23 @@ export interface LaunchAwsServerConfig {
 	use_public_ip: boolean;
 }
 
-export interface UpdateUserPermissionsOnTarget {
-	user_id: string;
+export interface UpdatePermissionOnTarget {
+	user_target: UserTarget;
+	resource_target: ResourceTarget;
 	permission: PermissionLevel;
-	target: ResourceTarget;
 }
 
-export interface UpdateUserPermissions {
+export interface UpdatePermissionOnTargetResponse {
+}
+
+export interface UpdateUserBasePermissions {
 	user_id: string;
 	enabled?: boolean;
 	create_servers?: boolean;
 	create_builds?: boolean;
+}
+
+export interface UpdateUserBasePermissionsResponse {
 }
 
 export interface CreateProcedure {
@@ -1881,6 +1963,42 @@ export interface UpdateServiceUserDescription {
 	description: string;
 }
 
+/** Admin only */
+export interface CreateUserGroup {
+	/** The name to assign to the new UserGroup */
+	name: string;
+}
+
+/** Admin only */
+export interface RenameUserGroup {
+	/** The id of the UserGroup */
+	id: string;
+	/** The new name for the UserGroup */
+	name: string;
+}
+
+/** Admin only */
+export interface DeleteUserGroup {
+	/** The id of the UserGroup */
+	id: string;
+}
+
+/** Admin only */
+export interface AddUserToUserGroup {
+	/** The name or id of UserGroup that user should be added to. */
+	user_group: string;
+	/** The id of the user to add */
+	user_id: string;
+}
+
+/** Admin only */
+export interface RemoveUserFromUserGroup {
+	/** The name or id of UserGroup that user should be removed from. */
+	user_group: string;
+	/** The id of the user to remove */
+	user_id: string;
+}
+
 export interface CustomAlerterConfig {
 	/** The http/s endpoint to send the POST to */
 	url: string;
@@ -1991,6 +2109,8 @@ export type ReadRequest =
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "ListApiKeys", params: ListApiKeys }
 	| { type: "ListUserPermissions", params: ListUserPermissions }
+	| { type: "GetUserGroup", params: GetUserGroup }
+	| { type: "ListUserGroups", params: ListUserGroups }
 	| { type: "FindResources", params: FindResources }
 	| { type: "GetProceduresSummary", params: GetProceduresSummary }
 	| { type: "GetProcedure", params: GetProcedure }
@@ -2054,8 +2174,13 @@ export type WriteRequest =
 	| { type: "SetLastSeenUpdate", params: SetLastSeenUpdate }
 	| { type: "CreateServiceUser", params: CreateServiceUser }
 	| { type: "UpdateServiceUserDescription", params: UpdateServiceUserDescription }
-	| { type: "UpdateUserPerimissions", params: UpdateUserPermissions }
-	| { type: "UpdateUserPermissionsOnTarget", params: UpdateUserPermissionsOnTarget }
+	| { type: "CreateUserGroup", params: CreateUserGroup }
+	| { type: "RenameUserGroup", params: RenameUserGroup }
+	| { type: "DeleteUserGroup", params: DeleteUserGroup }
+	| { type: "AddUserToUserGroup", params: AddUserToUserGroup }
+	| { type: "RemoveUserFromUserGroup", params: RemoveUserFromUserGroup }
+	| { type: "UpdateUserBasePermissions", params: UpdateUserBasePermissions }
+	| { type: "UpdatePermissionOnTarget", params: UpdatePermissionOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }
 	| { type: "LaunchServer", params: LaunchServer }
 	| { type: "CreateServer", params: CreateServer }
