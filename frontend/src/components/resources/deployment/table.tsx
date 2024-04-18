@@ -1,7 +1,7 @@
-import { TagsWithBadge, useTagsFilter } from "@components/tags";
+import { TagsWithBadge } from "@components/tags";
 import { Types } from "@monitor/client";
 import { DataTable } from "@ui/data-table";
-import { useRead } from "@lib/hooks";
+import { useRead, useTagsFilter } from "@lib/hooks";
 import { ResourceLink } from "../common";
 import { DeploymentComponents } from ".";
 
@@ -17,11 +17,12 @@ export const DeploymentTable = ({
   return (
     <DataTable
       data={
-        deployments?.filter((resource) =>
-          tags.every((tag) => resource.tags.includes(tag)) &&
-          searchSplit.length > 0
-            ? searchSplit.every((search) => resource.name.includes(search))
-            : true
+        deployments?.filter(
+          (resource) =>
+            tags.every((tag) => resource.tags.includes(tag)) &&
+            (searchSplit.length > 0
+              ? searchSplit.every((search) => resource.name.includes(search))
+              : true)
         ) ?? []
       }
       columns={[

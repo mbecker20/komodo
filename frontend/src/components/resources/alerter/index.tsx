@@ -1,5 +1,5 @@
 import { NewLayout } from "@components/layouts";
-import { useRead, useWrite } from "@lib/hooks";
+import { useRead, useTagsFilter, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
   Select,
@@ -17,7 +17,7 @@ import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
-import { TagsWithBadge, useTagsFilter } from "@components/tags";
+import { TagsWithBadge } from "@components/tags";
 import { DeleteResource, ResourceLink } from "../common";
 
 const useAlerter = (id?: string) =>
@@ -92,11 +92,12 @@ export const AlerterComponents: RequiredResourceComponents = {
     return (
       <DataTable
         data={
-          alerters?.filter((resource) =>
-            tags.every((tag) => resource.tags.includes(tag)) &&
-            searchSplit.length > 0
-              ? searchSplit.every((search) => resource.name.includes(search))
-              : true
+          alerters?.filter(
+            (resource) =>
+              tags.every((tag) => resource.tags.includes(tag)) &&
+              (searchSplit.length > 0
+                ? searchSplit.every((search) => resource.name.includes(search))
+                : true)
           ) ?? []
         }
         columns={[

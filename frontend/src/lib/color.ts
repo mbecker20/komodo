@@ -55,15 +55,15 @@ export const stroke_color_class_by_intention = (intention: ColorIntention) => {
 export const bg_color_class_by_intention = (intention: ColorIntention) => {
   switch (intention) {
     case "Good":
-      return "bg-green-500";
+      return "bg-green-400 dark:bg-green-700";
     case "Neutral":
-      return "bg-blue-500";
+      return "bg-blue-400 dark:bg-blue-700";
     case "Warning":
-      return "bg-orange-500";
+      return "bg-orange-400 dark:bg-orange-700";
     case "Critical":
-      return "bg-red-500";
+      return "bg-red-400 dark:bg-red-700";
     case "Unknown":
-      return "bg-purple-500";
+      return "bg-purple-400 dark:bg-purple-700";
     case "None":
       return "";
   }

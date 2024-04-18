@@ -8,6 +8,7 @@ import { ResourceComponents } from "@components/resources";
 import { OpenAlerts } from "@components/alert";
 import { useUser } from "@lib/hooks";
 import { ResourceLink } from "@components/resources/common";
+import { Fragment } from "react";
 
 export const Dashboard = () => {
   return (
@@ -59,9 +60,9 @@ const RecentlyViewed = () => {
       actions=""
     >
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {recently_viewed?.slice(0, 6).map(
-          ({ type, id }) =>
-            type !== "System" && (
+        {recently_viewed?.slice(0, 6).map(({ type, id }) => (
+          <Fragment key={type + id}>
+            {type !== "System" && (
               <Card
                 onClick={() => nav(`/${type.toLowerCase()}s/${id}`)}
                 className="px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer"
@@ -71,8 +72,9 @@ const RecentlyViewed = () => {
                   {type}
                 </CardContent>
               </Card>
-            )
-        )}
+            )}
+          </Fragment>
+        ))}
       </div>
     </Section>
   );

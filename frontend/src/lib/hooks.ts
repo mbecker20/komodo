@@ -15,6 +15,8 @@ import {
 } from "@tanstack/react-query";
 import { UsableResource } from "@types";
 import { useToast } from "@ui/use-toast";
+import { useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
@@ -175,3 +177,10 @@ export const useSetTitle = (more?: string) => {
     }
   }, [title]);
 }
+
+export const tagsAtom = atomWithStorage<string[]>("tags-v0", []);
+
+export const useTagsFilter = () => {
+  const [tags] = useAtom(tagsAtom);
+  return tags;
+};

@@ -1,5 +1,5 @@
-import { TagsWithBadge, useTagsFilter } from "@components/tags";
-import { useRead } from "@lib/hooks";
+import { TagsWithBadge } from "@components/tags";
+import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceLink } from "../common";
@@ -11,11 +11,12 @@ export const ServerTable = ({ search }: { search?: string }) => {
   return (
     <DataTable
       data={
-        servers?.filter((resource) =>
-          tags.every((tag) => resource.tags.includes(tag)) &&
-          searchSplit.length > 0
-            ? searchSplit.every((search) => resource.name.includes(search))
-            : true
+        servers?.filter(
+          (resource) =>
+            tags.every((tag) => resource.tags.includes(tag)) &&
+            (searchSplit.length > 0
+              ? searchSplit.every((search) => resource.name.includes(search))
+              : true)
         ) ?? []
       }
       columns={[

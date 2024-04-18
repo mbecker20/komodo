@@ -1,6 +1,6 @@
-import { useRead } from "@lib/hooks";
+import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
-import { TagsWithBadge, useTagsFilter } from "@components/tags";
+import { TagsWithBadge } from "@components/tags";
 import { ResourceLink } from "../common";
 
 export const ProcedureTable = ({ search }: { search?: string }) => {
@@ -10,11 +10,12 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
   return (
     <DataTable
       data={
-        procedures?.filter((resource) =>
-          tags.every((tag) => resource.tags.includes(tag)) &&
-          searchSplit.length > 0
-            ? searchSplit.every((search) => resource.name.includes(search))
-            : true
+        procedures?.filter(
+          (resource) =>
+            tags.every((tag) => resource.tags.includes(tag)) &&
+            (searchSplit.length > 0
+              ? searchSplit.every((search) => resource.name.includes(search))
+              : true)
         ) ?? []
       }
       columns={[

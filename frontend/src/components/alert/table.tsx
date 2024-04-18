@@ -1,4 +1,3 @@
-import { fmt_date_with_minutes } from "@lib/formatting";
 import { Types } from "@monitor/client";
 import { DataTable } from "@ui/data-table";
 import { AlertLevel } from ".";
@@ -32,10 +31,6 @@ export const AlertsTable = ({ alerts }: { alerts: Types.Alert[] }) => {
         {
           header: "Alert Type",
           accessorKey: "variant",
-        },
-        {
-          header: "Opened",
-          accessorFn: ({ ts }) => fmt_date_with_minutes(new Date(ts)),
         },
       ]}
     />

@@ -1,5 +1,5 @@
-import { TagsWithBadge, useTagsFilter } from "@components/tags";
-import { useRead } from "@lib/hooks";
+import { TagsWithBadge } from "@components/tags";
+import { useRead, useTagsFilter } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
@@ -41,11 +41,12 @@ export const RepoComponents: RequiredResourceComponents = {
     return (
       <DataTable
         data={
-          repos?.filter((resource) =>
-            tags.every((tag) => resource.tags.includes(tag)) &&
-            searchSplit.length > 0
-              ? searchSplit.every((search) => resource.name.includes(search))
-              : true
+          repos?.filter(
+            (resource) =>
+              tags.every((tag) => resource.tags.includes(tag)) &&
+              (searchSplit.length > 0
+                ? searchSplit.every((search) => resource.name.includes(search))
+                : true)
           ) ?? []
         }
         columns={[

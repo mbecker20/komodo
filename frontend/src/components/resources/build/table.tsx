@@ -1,5 +1,5 @@
-import { TagsWithBadge, useTagsFilter } from "@components/tags";
-import { useRead } from "@lib/hooks";
+import { TagsWithBadge } from "@components/tags";
+import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
 import { ResourceLink } from "../common";
@@ -11,11 +11,12 @@ export const BuildTable = ({ search }: { search?: string }) => {
   return (
     <DataTable
       data={
-        builds?.filter((resource) =>
-          tags.every((tag) => resource.tags.includes(tag)) &&
-          searchSplit.length > 0
-            ? searchSplit.every((search) => resource.name.includes(search))
-            : true
+        builds?.filter(
+          (resource) =>
+            tags.every((tag) => resource.tags.includes(tag)) &&
+            (searchSplit.length > 0
+              ? searchSplit.every((search) => resource.name.includes(search))
+              : true)
         ) ?? []
       }
       columns={[

@@ -1,6 +1,5 @@
 import { NewLayout } from "@components/layouts";
-import { useTagsFilter } from "@components/tags";
-import { useRead, useWrite } from "@lib/hooks";
+import { useRead, useTagsFilter, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
@@ -92,11 +91,12 @@ export const BuilderComponents: RequiredResourceComponents = {
     return (
       <DataTable
         data={
-          builders?.filter((resource) =>
-            tags.every((tag) => resource.tags.includes(tag)) &&
-            searchSplit.length > 0
-              ? searchSplit.every((search) => resource.name.includes(search))
-              : true
+          builders?.filter(
+            (resource) =>
+              tags.every((tag) => resource.tags.includes(tag)) &&
+              (searchSplit.length > 0
+                ? searchSplit.every((search) => resource.name.includes(search))
+                : true)
           ) ?? []
         }
         columns={[

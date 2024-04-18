@@ -1,4 +1,4 @@
-import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { tagsAtom, useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
@@ -14,18 +14,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { useAtom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
 import { MinusCircle, PlusCircle, SearchX, Tag } from "lucide-react";
 import { ReactNode, useEffect, useState } from "react";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
-
-const tagsAtom = atomWithStorage<string[]>("tags-v0", []);
-
-export const useTagsFilter = () => {
-  const [tags] = useAtom(tagsAtom);
-  return tags;
-};
 
 export const TagsFilter = () => {
   const [open, setOpen] = useState(false);
@@ -104,7 +96,7 @@ export const TagsFilterTags = ({
       {tag_ids?.map((tag_id) => (
         <Badge
           key={tag_id}
-          variant="destructive"
+          variant="secondary"
           className="flex gap-1 px-2 py-1.5 cursor-pointer"
           onClick={() => onBadgeClick && onBadgeClick(tag_id)}
         >
@@ -125,12 +117,14 @@ export const ResourceTags = ({
   click_to_delete?: boolean;
   className?: string;
 }) => {
+  const { toast } = useToast();
   const inv = useInvalidate();
   const { type, id } = target;
   const resource = useRead(`List${type}s`, {}).data?.find((d) => d.id === id);
   const { mutate } = useWrite("UpdateTagsOnResource", {
     onSuccess: () => {
       inv([`List${type}s`]);
+      toast({ title: "Removed tag" });
     },
   });
 
