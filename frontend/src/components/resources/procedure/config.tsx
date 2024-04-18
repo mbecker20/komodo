@@ -90,6 +90,7 @@ const ProcedureConfigInner = ({
             : "Type Sequence: These executions will be started only after the previous one finishes"}
         </div>
         <DataTable
+          tableKey="procedure-stages"
           data={executions}
           noResults={
             <Button

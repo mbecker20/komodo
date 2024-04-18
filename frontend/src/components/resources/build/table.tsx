@@ -1,6 +1,6 @@
 import { TagsWithBadge } from "@components/tags";
 import { useRead, useTagsFilter } from "@lib/hooks";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
 import { ResourceLink } from "../common";
 
@@ -10,6 +10,7 @@ export const BuildTable = ({ search }: { search?: string }) => {
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
+      tableKey="builds"
       data={
         builds?.filter(
           (resource) =>
@@ -21,9 +22,13 @@ export const BuildTable = ({ search }: { search?: string }) => {
       }
       columns={[
         {
-          accessorKey: "id",
-          header: "Name",
-          cell: ({ row }) => <ResourceLink type="Build" id={row.original.id} />,
+          accessorKey: "name",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Name" />
+          ),
+          cell: ({ row }) => (
+            <ResourceLink type="Build" id={row.original.id} />
+          ),
         },
         {
           header: "Version",

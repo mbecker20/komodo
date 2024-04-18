@@ -29,6 +29,7 @@ export const Keys = () => {
   return (
     <Page title="Api Keys" actions={<CreateKey />}>
       <DataTable
+        tableKey="api-keys"
         data={keys}
         columns={[
           { header: "Name", accessorKey: "name" },

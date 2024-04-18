@@ -13,7 +13,7 @@ import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
 import { AlarmClock } from "lucide-react";
 import { useState } from "react";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
@@ -91,6 +91,7 @@ export const AlerterComponents: RequiredResourceComponents = {
     const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
+        tableKey="alerters"
         data={
           alerters?.filter(
             (resource) =>
@@ -102,7 +103,10 @@ export const AlerterComponents: RequiredResourceComponents = {
         }
         columns={[
           {
-            header: "Name",
+            accessorKey: "name",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Name" />
+            ),
             cell: ({ row }) => (
               <ResourceLink type="Alerter" id={row.original.id} />
             ),

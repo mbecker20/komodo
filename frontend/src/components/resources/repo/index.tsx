@@ -2,7 +2,7 @@ import { TagsWithBadge } from "@components/tags";
 import { useRead, useTagsFilter } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { FolderGit, GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
@@ -40,6 +40,7 @@ export const RepoComponents: RequiredResourceComponents = {
     const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
+        tableKey="repos"
         data={
           repos?.filter(
             (resource) =>
@@ -51,7 +52,10 @@ export const RepoComponents: RequiredResourceComponents = {
         }
         columns={[
           {
-            header: "Name",
+            accessorKey: "name",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Name" />
+            ),
             cell: ({ row }) => (
               <ResourceLink type="Repo" id={row.original.id} />
             ),

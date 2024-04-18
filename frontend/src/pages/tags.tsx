@@ -40,6 +40,7 @@ export const Tags = () => {
       }
     >
       <DataTable
+        tableKey="tags"
         data={tags?.filter((tag) => tag.name.includes(search)) ?? []}
         columns={[
           {

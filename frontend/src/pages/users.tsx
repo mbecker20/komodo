@@ -28,6 +28,7 @@ export const UsersPage = () => {
   return (
     <Page title="Users">
       <DataTable
+        tableKey="users"
         data={users ?? []}
         columns={[
           { header: "Username", accessorKey: "username" },
@@ -298,6 +299,7 @@ const PermissionsTable = () => {
       }
     >
       <DataTable
+        tableKey="permissions"
         data={
           permissions
             ?.filter((permission) =>

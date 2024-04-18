@@ -8,6 +8,7 @@ import { ResourceLink } from "@components/resources/common";
 export const AlertsTable = ({ alerts }: { alerts: Types.Alert[] }) => {
   return (
     <DataTable
+      tableKey="alerts"
       data={alerts ?? []}
       columns={[
         {

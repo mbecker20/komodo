@@ -48,6 +48,7 @@ export const UpdatesTable = ({
   return (
     <>
       <DataTable
+        tableKey="updates"
         data={updates}
         columns={data}
         onRowClick={(row) => setId(row.id)}

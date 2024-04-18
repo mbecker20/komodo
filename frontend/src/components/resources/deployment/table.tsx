@@ -1,9 +1,11 @@
 import { TagsWithBadge } from "@components/tags";
 import { Types } from "@monitor/client";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { useRead, useTagsFilter } from "@lib/hooks";
 import { ResourceLink } from "../common";
 import { DeploymentComponents } from ".";
+import { HardDrive } from "lucide-react";
+import { useCallback } from "react";
 
 export const DeploymentTable = ({
   deployments,
@@ -14,8 +16,14 @@ export const DeploymentTable = ({
 }) => {
   const tags = useTagsFilter();
   const searchSplit = search?.split(" ") || [];
+  const servers = useRead("ListServers", {}).data;
+  const serverName = useCallback(
+    (id: string) => servers?.find((server) => server.id === id)?.name,
+    [servers]
+  );
   return (
     <DataTable
+      tableKey="deployments"
       data={
         deployments?.filter(
           (resource) =>
@@ -27,13 +35,19 @@ export const DeploymentTable = ({
       }
       columns={[
         {
-          header: "Name",
+          accessorKey: "name",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Name" />
+          ),
           cell: ({ row }) => (
             <ResourceLink type="Deployment" id={row.original.id} />
           ),
         },
         {
-          header: "Image",
+          accessorKey: "info.image",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Image" />
+          ),
           cell: ({
             row: {
               original: {
@@ -43,13 +57,31 @@ export const DeploymentTable = ({
           }) => <Image build_id={build_id} image={image} />,
         },
         {
-          header: "Server",
+          accessorKey: "info.server_id",
+          sortingFn: (a, b) => {
+            const sa = serverName(a.original.info.server_id);
+            const sb = serverName(b.original.info.server_id);
+            
+            if (!sa && !sb) return 0;
+            if (!sa) return -1;
+            if (!sb) return 1;
+
+            if (sa > sb) return 1;
+            else if (sa < sb) return -1;
+            else return 0
+          },
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Server" />
+          ),
           cell: ({ row }) => (
             <ResourceLink type="Server" id={row.original.info.server_id} />
           ),
         },
         {
-          header: "State",
+          accessorKey: "info.state",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="State" />
+          ),
           cell: ({ row }) => (
             <DeploymentComponents.Status.State id={row.original.id} />
           ),
@@ -86,6 +118,11 @@ const Image = ({
     }
   } else {
     const [img] = image.split(":");
-    return img;
+    return (
+      <div className="flex gap-2 items-center">
+        <HardDrive className="w-4 h-4" />
+        {img}
+      </div>
+    );
   }
 };

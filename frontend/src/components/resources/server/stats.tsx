@@ -29,13 +29,12 @@ export const ServerStats = ({ id }: { id: string }) => {
       title={server?.name}
       titleRight={<div className="text-muted-foreground">Stats</div>}
     >
-      <div className="flex gap-4">
-        {/* <ServerInfo id={id} /> */}
-      </div>
+      <div className="flex gap-4">{/* <ServerInfo id={id} /> */}</div>
 
       <Section title="System Info">
         <DataTable
-          data={info && [info]}
+          tableKey="system-info"
+          data={info ? [info] : []}
           columns={[
             {
               header: "Hostname",
@@ -75,7 +74,8 @@ export const ServerStats = ({ id }: { id: string }) => {
 
       <Section title="Disks">
         <DataTable
-          data={stats?.disks}
+          tableKey="server-disks"
+          data={stats?.disks ?? []}
           columns={[
             {
               header: "Path",
@@ -123,6 +123,7 @@ const Processes = ({ id }: { id: string }) => {
       }
     >
       <DataTable
+        tableKey="server-processes"
         data={processes.filter((process) =>
           searchSplit.every((search) => process.name.includes(search))
         )}

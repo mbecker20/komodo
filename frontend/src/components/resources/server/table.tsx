@@ -1,6 +1,6 @@
 import { TagsWithBadge } from "@components/tags";
 import { useRead, useTagsFilter } from "@lib/hooks";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { ServerComponents } from ".";
 import { ResourceLink } from "../common";
 
@@ -10,6 +10,7 @@ export const ServerTable = ({ search }: { search?: string }) => {
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
+      tableKey="servers"
       data={
         servers?.filter(
           (resource) =>
@@ -21,19 +22,29 @@ export const ServerTable = ({ search }: { search?: string }) => {
       }
       columns={[
         {
-          header: "Name",
-          accessorKey: "id",
-          cell: ({ row }) => {
-            return <ResourceLink type="Server" id={row.original.id} />;
-          },
+          accessorKey: "name",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Name" />
+          ),
+          cell: ({ row }) => (
+            <ResourceLink type="Server" id={row.original.id} />
+          ),
         },
         {
           header: "Deployments",
           cell: ({ row }) => <DeploymentCountOnServer id={row.original.id} />,
         },
-        { header: "Region", accessorKey: "info.region" },
         {
-          header: "State",
+          accessorKey: "info.region",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Region" />
+          ),
+        },
+        {
+          accessorKey: "info.status",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Status" />
+          ),
           cell: ({
             row: {
               original: { id },

@@ -3,7 +3,7 @@ import { useRead, useTagsFilter, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { Input } from "@ui/input";
 import {
   Select,
@@ -17,7 +17,7 @@ import { Cloud, Bot, Factory } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BuilderConfig } from "./config";
-import { DeleteResource } from "../common";
+import { DeleteResource, ResourceLink } from "../common";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
@@ -90,6 +90,7 @@ export const BuilderComponents: RequiredResourceComponents = {
     const searchSplit = search?.split(" ") || [];
     return (
       <DataTable
+        tableKey="builders"
         data={
           builders?.filter(
             (resource) =>
@@ -101,20 +102,13 @@ export const BuilderComponents: RequiredResourceComponents = {
         }
         columns={[
           {
-            accessorKey: "id",
-            header: "Name",
-            cell: ({ row }) => {
-              const id = row.original.id;
-              return (
-                <Link
-                  to={`/builders/${id}`}
-                  className="flex items-center gap-2"
-                >
-                  <Factory className="w-4 h-4" />
-                  <BuilderComponents.Name id={id} />
-                </Link>
-              );
-            },
+            accessorKey: "name",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Name" />
+            ),
+            cell: ({ row }) => (
+              <ResourceLink type="Builder" id={row.original.id} />
+            ),
           },
           {
             header: "Provider",

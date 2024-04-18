@@ -1,5 +1,5 @@
 import { useRead, useTagsFilter } from "@lib/hooks";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { TagsWithBadge } from "@components/tags";
 import { ResourceLink } from "../common";
 
@@ -9,6 +9,7 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
+      tableKey="procedures"
       data={
         procedures?.filter(
           (resource) =>
@@ -20,8 +21,10 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
       }
       columns={[
         {
-          accessorKey: "id",
-          header: "Name",
+          accessorKey: "name",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Name" />
+          ),
           cell: ({ row }) => (
             <ResourceLink type="Procedure" id={row.original.id} />
           ),
