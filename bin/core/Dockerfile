@@ -5,7 +5,7 @@ COPY . .
 RUN cargo build -p monitor_core --release
 
 # Build Frontend
-FROM node:20.5-alpine as frontend-builder
+FROM node:20.12-alpine as frontend-builder
 WORKDIR /builder
 COPY ./frontend ./frontend
 COPY ./client/core/ts ./client
