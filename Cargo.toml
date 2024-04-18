@@ -33,29 +33,29 @@ mungos = "0.5.4"
 svi = "0.1.4"
 
 # ASYNC
-tokio = { version = "1.36.0", features = ["full"] }
-reqwest = { version = "0.12.0", features = ["json"] }
+tokio = { version = "1.37.0", features = ["full"] }
+reqwest = { version = "0.12.3", features = ["json"] }
 tokio-util = "0.7.10"
 futures = "0.3.30"
 futures-util = "0.3.30"
-async-trait = "0.1.78"
+async-trait = "0.1.80"
 async-recursion = "1.1.0"
 
 # SERVER
-axum = { version = "0.7.4", features = ["ws", "json"] }
-axum-extra = { version = "0.9.2", features = ["typed-header"] }
+axum = { version = "0.7.5", features = ["ws", "json"] }
+axum-extra = { version = "0.9.3", features = ["typed-header"] }
 tower = { version = "0.4.13", features = ["timeout"] }
 tower-http = { version = "0.5.2", features = ["fs", "cors"] }
 tokio-tungstenite = "0.21.0"
 
 # SER/DE
-serde = { version = "1.0.197", features = ["derive"] }
+serde = { version = "1.0.198", features = ["derive"] }
 strum = { version = "0.26.2", features = ["derive"] }
-serde_json = "1.0.114"
+serde_json = "1.0.116"
 toml = "0.8.12"
 
 # ERROR
-anyhow = "1.0.81"
+anyhow = "1.0.82"
 thiserror = "1.0.58"
 
 # LOGGING
@@ -67,7 +67,7 @@ opentelemetry = "0.22.0"
 tracing = "0.1.40"
 
 # CONFIG
-clap = { version = "4.5.3", features = ["derive"] }
+clap = { version = "4.5.4", features = ["derive"] }
 dotenv = "0.15.0"
 envy = "0.4.2"
 
@@ -82,12 +82,12 @@ bcrypt = "0.15.1"
 hex = "0.4.3"
 
 # SYSTEM
-bollard = "0.16.0"
-sysinfo = "0.30.7"
+bollard = "0.16.1"
+sysinfo = "0.30.10"
 
 # CLOUD
-aws-config = "1.1.8"
-aws-sdk-ec2 = "1.27.0"
+aws-config = "1.1.10"
+aws-sdk-ec2 = "1.32.0"
 
 # MISC
 derive_builder = "0.20.0"
