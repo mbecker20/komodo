@@ -13,6 +13,7 @@ import {
   useSetTitle,
 } from "@lib/hooks";
 import { AlertTriangle, Clapperboard } from "lucide-react";
+import { Fragment } from "react";
 import { useParams } from "react-router-dom";
 
 export const Resource = () => {
@@ -31,19 +32,19 @@ export const Resource = () => {
       title={<Components.Name id={id} />}
       titleRight={
         <div className="flex gap-4 items-center">
-          {Components.Status.map((Status) => (
-            <Status id={id} />
+          {Object.entries(Components.Status).map(([key, Status]) => (
+            <Status key={key} id={id} />
           ))}
         </div>
       }
       subtitle={
         <div className="flex flex-col gap-4">
-          <div className="flex gap-4 items-center">
-            {Components.Info.map((Info, i) => (
-              <>
-                {i === 0 ? "" : "| "}
-                <Info key={i} id={id} />
-              </>
+          <div className="flex gap-4 items-center text-muted-foreground">
+            <Components.Icon id={id} />
+            {Object.entries(Components.Info).map(([key, Info], i) => (
+              <Fragment key={key}>
+                | <Info key={i} id={id} />
+              </Fragment>
             ))}
           </div>
           <ResourceDescription type={type} id={id} />
@@ -52,7 +53,11 @@ export const Resource = () => {
       actions={
         <div className="flex gap-2 items-center">
           <div className="text-muted-foreground">tags:</div>
-          <ResourceTags target={{ id, type }} className="text-sm" click_to_delete />
+          <ResourceTags
+            target={{ id, type }}
+            className="text-sm"
+            click_to_delete
+          />
           <AddTags target={{ id, type }} />
         </div>
       }
@@ -60,16 +65,16 @@ export const Resource = () => {
       {/* Actions and Updates */}
       <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
         <div className="flex gap-4 items-center">
-          {Components.Actions.map((Action, i) => (
-            <Action key={i} id={id} />
+          {Object.entries(Components.Actions).map(([key, Action]) => (
+            <Action key={key} id={id} />
           ))}
         </div>
       </Section>
       <ResourceUpdates type={type} id={id} />
 
       {/* Resource specific */}
-      {Object.entries(Components.Page).map(([section, Component]) => (
-        <Component key={section} id={id} />
+      {Object.entries(Components.Page).map(([key, Component]) => (
+        <Component key={key} id={id} />
       ))}
 
       {/* Config and Danger Zone */}

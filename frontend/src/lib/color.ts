@@ -55,7 +55,7 @@ export const stroke_color_class_by_intention = (intention: ColorIntention) => {
 export const bg_color_class_by_intention = (intention: ColorIntention) => {
   switch (intention) {
     case "Good":
-      return "bg-green-700";
+      return "bg-green-500";
     case "Neutral":
       return "bg-blue-500";
     case "Warning":

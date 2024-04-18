@@ -156,8 +156,8 @@ export const ResourceCard = ({
           <Components.Icon id={id} />
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          {Components.Info.map((Info) => (
-            <Info id={id} />
+          {Object.entries(Components.Info).map(([key, Info]) => (
+            <Info key={key} id={id} />
           ))}
         </CardContent>
         <CardFooter className="flex items-center gap-2">
@@ -185,8 +185,8 @@ export const ResourceRow = ({
           <CardTitle>
             <Components.Name id={id} />
           </CardTitle>
-          {Components.Info.map((Info) => (
-            <Info id={id} />
+          {Object.entries(Components.Info).map(([key, Info]) => (
+            <Info key={key} id={id} />
           ))}
           <div className="flex items-center gap-2">
             <Components.Icon id={id} />

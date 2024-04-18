@@ -38,8 +38,7 @@ export const ServerTable = ({ search }: { search?: string }) => {
               original: { id },
             },
           }) => {
-            const Status = ServerComponents.Status[0];
-            return <Status id={id} />;
+            return <ServerComponents.Status.Status id={id} />;
           },
         },
         {

@@ -134,24 +134,24 @@ export const BuilderComponents: RequiredResourceComponents = {
 
   Icon: () => <Factory className="w-4 h-4" />,
 
-  Status: [],
+  Status: {},
 
-  Info: [
-    ({ id }) => (
+  Info: {
+    Provider: ({ id }) => (
       <div className="flex items-center gap-2">
         <Cloud className="w-4 h-4" />
         {useBuilder(id)?.info.provider}
       </div>
     ),
-    ({ id }) => (
+    InstanceType: ({ id }) => (
       <div className="flex items-center gap-2">
         <Bot className="w-4 h-4" />
         {useBuilder(id)?.info.instance_type ?? "N/A"}
       </div>
     ),
-  ],
+  },
 
-  Actions: [],
+  Actions: {},
 
   Page: {},
 

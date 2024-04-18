@@ -129,18 +129,18 @@ export const AlerterComponents: RequiredResourceComponents = {
 
   Icon: () => <AlarmClock className="w-4 h-4" />,
 
-  Status: [],
+  Status: {},
 
-  Info: [
-    ({ id }) => {
+  Info: {
+    Type: ({ id }) => {
       const alerter = useAlerter(id);
       return (
         <div className="capitalize">Type: {alerter?.info.alerter_type}</div>
       );
     },
-  ],
+  },
 
-  Actions: [],
+  Actions: {},
 
   Page: {},
 

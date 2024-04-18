@@ -27,10 +27,10 @@ export const BuildComponents: RequiredResourceComponents = {
     else return <Hammer className="w-4 h-4" />;
   },
 
-  Status: [],
+  Status: {},
 
-  Info: [
-    ({ id }) => {
+  Info: {
+    Repo: ({ id }) => {
       const repo = useBuild(id)?.info.repo;
       return (
         <div className="flex items-center gap-2">
@@ -39,7 +39,7 @@ export const BuildComponents: RequiredResourceComponents = {
         </div>
       );
     },
-    ({ id }) => {
+    Branch: ({ id }) => {
       const branch = useBuild(id)?.info.branch;
       return (
         <div className="flex items-center gap-2">
@@ -48,9 +48,9 @@ export const BuildComponents: RequiredResourceComponents = {
         </div>
       );
     },
-  ],
+  },
 
-  Actions: [RunBuild],
+  Actions: { RunBuild },
 
   Page: {
     Deployments: ({ id }) => {

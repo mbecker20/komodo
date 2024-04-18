@@ -22,16 +22,16 @@ export interface RequiredResourceComponents {
   Icon: OptionalIdComponent;
 
   /** status metrics, like deployment state / status */
-  Status: IdComponent[];
+  Status: { [status: string]: IdComponent };
 
   /**
    * Some config items shown in header, like deployment server /image
    * or build repo / branch
    */
-  Info: IdComponent[];
+  Info: { [info: string]: IdComponent };
 
   /** Action buttons */
-  Actions: IdComponent[];
+  Actions: { [action: string]: IdComponent };
 
   /** Resource specific sections */
   Page: { [section: string]: IdComponent };

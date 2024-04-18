@@ -49,39 +49,29 @@ export const DeploymentComponents: RequiredResourceComponents = {
     return <Rocket className={cn("w-4 h-4", state && color)} />;
   },
 
-  Status: [
-    ({ id }) => {
+  Status: {
+    State: ({ id }) => {
       const state =
         useDeployment(id)?.info.state ?? Types.DockerContainerState.Unknown;
       const color = bg_color_class_by_intention(
         deployment_state_intention(state)
       );
       return (
-        <Card className={color}>
+        <Card className={cn("w-fit", color)}>
           <CardHeader className="py-0 px-2">
             {snake_case_to_upper_space_case(state)}
           </CardHeader>
         </Card>
       );
     },
-    ({ id }) => {
-      const info = useDeployment(id)?.info;
-      const state = info?.state ?? Types.DockerContainerState.Unknown;
-      const color = bg_color_class_by_intention(
-        deployment_state_intention(state)
-      );
-      return (
-        info?.status && (
-          <Card className={color}>
-            <CardHeader className="py-0 px-2">{info?.status}</CardHeader>
-          </Card>
-        )
-      );
+    Status: ({ id }) => {
+      const status = useDeployment(id)?.info.status;
+      return status && <div>{status}</div>;
     },
-  ],
+  },
 
-  Info: [
-    ({ id }) => {
+  Info: {
+    Image: ({ id }) => {
       const info = useDeployment(id)?.info;
       return info?.build_id ? (
         <ResourceLink type="Build" id={info.build_id} />
@@ -92,7 +82,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
         </div>
       );
     },
-    ({ id }) => {
+    Server: ({ id }) => {
       const info = useDeployment(id)?.info;
       const server = useServer(info?.server_id);
       return server?.id ? (
@@ -101,13 +91,11 @@ export const DeploymentComponents: RequiredResourceComponents = {
         "Unknown Server"
       );
     },
-  ],
-
-  Actions: [DeployContainer, StartOrStopContainer, RemoveContainer],
-
-  Page: {
-    DeploymentLogs,
   },
+
+  Actions: { DeployContainer, StartOrStopContainer, RemoveContainer },
+
+  Page: { DeploymentLogs },
 
   Config: DeploymentConfig,
 

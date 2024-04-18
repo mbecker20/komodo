@@ -4,21 +4,19 @@ import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import {
   ServerIcon,
-  AlertTriangle,
   Rocket,
   Cpu,
   MemoryStick,
   Database,
-  ExternalLink,
   Scissors,
   XOctagon,
 } from "lucide-react";
 import { Section } from "@components/layouts";
 import { RenameServer } from "./actions";
 import {
+  bg_color_class_by_intention,
   fill_color_class_by_intention,
   server_status_intention,
-  text_color_class_by_intention,
 } from "@lib/color";
 import { ServerConfig } from "./config";
 import { DeploymentTable } from "../deployment/table";
@@ -26,9 +24,8 @@ import { ServerTable } from "./table";
 import { ServersChart } from "./dashboard";
 import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
-import { AlertsTable } from "@components/alert/table";
-import { Button } from "@ui/button";
 import { ActionWithDialog, ConfirmButton } from "@components/util";
+import { Card, CardHeader } from "@ui/card";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -54,22 +51,24 @@ export const ServerComponents: RequiredResourceComponents = {
     );
   },
 
-  Status: [
-    ({ id }) => {
+  Status: {
+    Status: ({ id }) => {
       const status = useServer(id)?.info.status;
-      const stateClass = text_color_class_by_intention(
+      const color = bg_color_class_by_intention(
         server_status_intention(status)
       );
       return (
-        <div className={stateClass}>
-          {status === Types.ServerStatus.NotOk ? "Not Ok" : status}
-        </div>
+        <Card className={cn("w-fit", color)}>
+          <CardHeader className="py-0 px-2">
+            {status === Types.ServerStatus.NotOk ? "Not Ok" : status}
+          </CardHeader>
+        </Card>
       );
     },
-  ],
+  },
 
-  Info: [
-    ({ id }) => {
+  Info: {
+    Cpu: ({ id }) => {
       const server = useServer(id);
       const core_count =
         useRead(
@@ -84,7 +83,7 @@ export const ServerComponents: RequiredResourceComponents = {
         </Link>
       );
     },
-    ({ id }) => {
+    Mem: ({ id }) => {
       const server = useServer(id);
       const stats = useRead(
         "GetSystemStats",
@@ -98,7 +97,7 @@ export const ServerComponents: RequiredResourceComponents = {
         </Link>
       );
     },
-    ({ id }) => {
+    Disk: ({ id }) => {
       const server = useServer(id);
       const stats = useRead(
         "GetSystemStats",
@@ -116,10 +115,10 @@ export const ServerComponents: RequiredResourceComponents = {
         </Link>
       );
     },
-  ],
+  },
 
-  Actions: [
-    ({ id }) => {
+  Actions: {
+    Prune: ({ id }) => {
       const { mutate, isPending } = useExecute(`PruneImages`);
       const pruning = useRead("GetServerActionState", { server: id }).data
         ?.pruning_images;
@@ -134,7 +133,7 @@ export const ServerComponents: RequiredResourceComponents = {
         />
       );
     },
-    ({ id }) => {
+    StopAll: ({ id }) => {
       const server = useServer(id);
       const { mutate, isPending } = useExecute(`StopAllContainers`);
       const stopping = useRead("GetServerActionState", { server: id }).data
@@ -153,31 +152,31 @@ export const ServerComponents: RequiredResourceComponents = {
         )
       );
     },
-  ],
+  },
 
   Page: {
-    Alerts: ({ id }) => {
-      const alerts = useRead("ListAlerts", {
-        query: { "target.type": "Server", "target.id": id },
-      }).data?.alerts.slice(0, 3);
-      return (
-        (alerts?.length || 0) > 0 && (
-          <Section
-            title="Alerts"
-            icon={<AlertTriangle className="w-4 h-4" />}
-            actions={
-              <Link to={`/servers/${id}/alerts`}>
-                <Button variant="secondary" size="icon">
-                  <ExternalLink className="w-4 h-4" />
-                </Button>
-              </Link>
-            }
-          >
-            <AlertsTable alerts={alerts ?? []} />
-          </Section>
-        )
-      );
-    },
+    // Alerts: ({ id }) => {
+    //   const alerts = useRead("ListAlerts", {
+    //     query: { "target.type": "Server", "target.id": id },
+    //   }).data?.alerts.slice(0, 3);
+    //   return (
+    //     (alerts?.length || 0) > 0 && (
+    //       <Section
+    //         title="Alerts"
+    //         icon={<AlertTriangle className="w-4 h-4" />}
+    //         actions={
+    //           <Link to={`/servers/${id}/alerts`}>
+    //             <Button variant="secondary" size="icon">
+    //               <ExternalLink className="w-4 h-4" />
+    //             </Button>
+    //           </Link>
+    //         }
+    //       >
+    //         <AlertsTable alerts={alerts ?? []} />
+    //       </Section>
+    //     )
+    //   );
+    // },
     Deployments: ({ id }) => {
       const deployments = useRead("ListDeployments", {}).data?.filter(
         (deployment) => deployment.info.server_id === id

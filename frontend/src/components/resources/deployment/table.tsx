@@ -2,12 +2,8 @@ import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { Types } from "@monitor/client";
 import { DataTable } from "@ui/data-table";
 import { useRead } from "@lib/hooks";
-import {
-  deployment_state_intention,
-  text_color_class_by_intention,
-} from "@lib/color";
-import { snake_case_to_upper_space_case } from "@lib/formatting";
 import { ResourceLink } from "../common";
+import { DeploymentComponents } from ".";
 
 export const DeploymentTable = ({
   deployments,
@@ -53,17 +49,9 @@ export const DeploymentTable = ({
         },
         {
           header: "State",
-          cell: ({ row }) => {
-            const state = row.original.info.state;
-            const color = text_color_class_by_intention(
-              deployment_state_intention(state)
-            );
-            return (
-              <div className={color}>
-                {snake_case_to_upper_space_case(state)}
-              </div>
-            );
-          },
+          cell: ({ row }) => (
+            <DeploymentComponents.Status.State id={row.original.id} />
+          ),
         },
         {
           header: "Tags",

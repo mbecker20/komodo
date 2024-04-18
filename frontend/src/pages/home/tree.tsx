@@ -7,7 +7,7 @@ import { TagsFilter, TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle } from "@ui/card";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Link } from "react-router-dom";
 
 export const Tree = () => {
@@ -47,10 +47,10 @@ const Server = ({ id }: { id: string }) => {
             <TagsWithBadge tag_ids={server?.tags} />
             {server?.id && (
               <div className="flex gap-4 items-center">
-                {ServerComponents.Info.map((Info, i) => (
-                  <>
-                    {i !== 0 && "|"} <Info key={i} id={server.id} />
-                  </>
+                {Object.entries(ServerComponents.Info).map(([key, Info], i) => (
+                  <Fragment key={key}>
+                    {i !== 0 && "|"} <Info id={server.id} />
+                  </Fragment>
                 ))}
               </div>
             )}

@@ -83,7 +83,8 @@ impl Resolve<ListUpdates, User> for State {
         .limit(UPDATES_PER_PAGE)
         .build(),
     )
-    .await?
+    .await
+    .context("failed to pull updates from db")?
     .into_iter()
     .map(|u| UpdateListItem {
       id: u.id,

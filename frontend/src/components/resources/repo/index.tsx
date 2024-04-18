@@ -3,7 +3,7 @@ import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
-import { FolderGit, GitBranch, History } from "lucide-react";
+import { FolderGit, GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
@@ -82,10 +82,10 @@ export const RepoComponents: RequiredResourceComponents = {
 
   Icon: () => <GitBranch className="w-4 h-4" />,
 
-  Status: [],
+  Status: {},
 
-  Info: [
-    ({ id }) => {
+  Info: {
+    Repo: ({ id }) => {
       const repo = useRepo(id)?.info.repo;
       return (
         <div className="flex items-center gap-2">
@@ -94,18 +94,18 @@ export const RepoComponents: RequiredResourceComponents = {
         </div>
       );
     },
-    ({ id }) => {
-      const ts = useRepo(id)?.info.last_pulled_at;
+    Branch: ({ id }) => {
+      const branch = useRepo(id)?.info.branch;
       return (
         <div className="flex items-center gap-2">
-          <History className="w-4 h-4" />
-          {ts ? new Date(ts).toLocaleString() : "Never Pulled"}
+          <FolderGit className="w-4 h-4" />
+          {branch}
         </div>
       );
     },
-  ],
+  },
 
-  Actions: [PullRepo, CloneRepo],
+  Actions: { PullRepo, CloneRepo },
 
   Page: {},
 

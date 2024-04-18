@@ -6,10 +6,7 @@ import { Loader2, Route } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProcedureConfig } from "./config";
 import { ProcedureTable } from "./table";
-import {
-  DeleteResource,
-  NewResource,
-} from "../common";
+import { DeleteResource, NewResource } from "../common";
 
 const useProcedure = (id?: string) =>
   useRead("ListProcedures", {}).data?.find((d) => d.id === id);
@@ -42,12 +39,12 @@ export const ProcedureComponents: RequiredResourceComponents = {
 
   Icon: () => <Route className="w-4" />,
 
-  Status: [],
+  Status: {},
 
-  Info: [({ id }) => <>{useProcedure(id)?.info.procedure_type}</>],
+  Info: { Type: ({ id }) => <>{useProcedure(id)?.info.procedure_type}</> },
 
-  Actions: [
-    ({ id }) => {
+  Actions: {
+    RunProcedure: ({ id }) => {
       const running = useRead("GetProcedureActionState", { procedure: id }).data
         ?.running;
       const { mutate, isPending } = useExecute("RunProcedure");
@@ -66,7 +63,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
         />
       );
     },
-  ],
+  },
 
   Page: {},
 
