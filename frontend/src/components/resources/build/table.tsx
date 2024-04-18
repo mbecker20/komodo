@@ -2,7 +2,7 @@ import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
-import { ResourceComponents } from "..";
+import { ResourceLink } from "../common";
 
 export const BuildTable = ({ search }: { search?: string }) => {
   const builds = useRead("ListBuilds", {}).data;
@@ -22,9 +22,7 @@ export const BuildTable = ({ search }: { search?: string }) => {
         {
           accessorKey: "id",
           header: "Name",
-          cell: ({ row }) => (
-            <ResourceComponents.Build.Link id={row.original.id} />
-          ),
+          cell: ({ row }) => <ResourceLink type="Build" id={row.original.id} />,
         },
         {
           header: "Version",

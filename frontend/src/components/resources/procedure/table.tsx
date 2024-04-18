@@ -1,7 +1,7 @@
 import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
-import { ProcedureComponents } from ".";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
+import { ResourceLink } from "../common";
 
 export const ProcedureTable = ({ search }: { search?: string }) => {
   const tags = useTagsFilter();
@@ -21,7 +21,9 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
         {
           accessorKey: "id",
           header: "Name",
-          cell: ({ row }) => <ProcedureComponents.Link id={row.original.id} />,
+          cell: ({ row }) => (
+            <ResourceLink type="Procedure" id={row.original.id} />
+          ),
         },
         {
           header: "Type",

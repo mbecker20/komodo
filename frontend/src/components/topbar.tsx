@@ -41,6 +41,7 @@ import {
   CommandItem,
   CommandList,
 } from "@ui/command";
+import { ResourceLink } from "./resources/common";
 
 export const Topbar = () => {
   return (
@@ -263,7 +264,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
                     nav(`/${type.toLowerCase()}s/${resource.id}`);
                   }}
                 >
-                  <Components.Link id={resource.id} />
+                  <ResourceLink type={type} id={resource.id} />
                 </CommandItem>
               ))}
             </CommandGroup>

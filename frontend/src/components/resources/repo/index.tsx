@@ -3,59 +3,37 @@ import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { DataTable } from "@ui/data-table";
-import { AlertTriangle, FolderGit, GitBranch, History } from "lucide-react";
+import { FolderGit, GitBranch, History } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
-import { Section } from "@components/layouts";
 import { CloneRepo, PullRepo } from "./actions";
-import {
-  CopyResource,
-  DeleteResource,
-  NewResource,
-  ResourceLink,
-} from "../common";
+import { DeleteResource, NewResource, ResourceLink } from "../common";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
 
 export const RepoComponents: RequiredResourceComponents = {
-  Name: ({ id }: { id: string }) => <>{useRepo(id)?.name}</>,
-  Icon: () => <GitBranch className="w-4 h-4" />,
-  Link: ({ id }) => <ResourceLink type="Repo" id={id} />,
-  Info: [
-    ({ id }) => {
-      const repo = useRepo(id)?.info.repo;
-      return (
-        <div className="flex items-center gap-2">
-          <FolderGit className="w-4 h-4" />
-          {repo}
-        </div>
-      );
-    },
-    ({ id }) => {
-      const ts = useRepo(id)?.info.last_pulled_at;
-      return (
-        <div className="flex items-center gap-2">
-          <History className="w-4 h-4" />
-          {ts ? new Date(ts).toLocaleString() : "Never Pulled"}
-        </div>
-      );
-    },
-  ],
-  Status: () => <>Repo</>,
-  Actions: [PullRepo, CloneRepo],
-  Page: {
-    Config: RepoConfig,
-    Danger: ({ id }) => (
-      <Section
-        title="Danger Zone"
-        icon={<AlertTriangle className="w-4 h-4" />}
-        actions={<CopyResource type="Repo" id={id} />}
-      >
-        <DeleteResource type="Repo" id={id} />
-      </Section>
-    ),
+  Dashboard: () => {
+    const repo_count = useRead("ListRepos", {}).data?.length;
+    return (
+      <Link to="/repos/" className="w-full">
+        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+          <CardHeader>
+            <div className="flex justify-between">
+              <div>
+                <CardTitle>Repos</CardTitle>
+                <CardDescription>{repo_count} Total</CardDescription>
+              </div>
+              <GitBranch className="w-4 h-4" />
+            </div>
+          </CardHeader>
+        </Card>
+      </Link>
+    );
   },
+
+  New: () => <NewResource type="Repo" />,
+
   Table: ({ search }) => {
     const tags = useTagsFilter();
     const repos = useRead("ListRepos", {}).data;
@@ -73,7 +51,9 @@ export const RepoComponents: RequiredResourceComponents = {
         columns={[
           {
             header: "Name",
-            cell: ({ row }) => <RepoComponents.Link id={row.original.id} />,
+            cell: ({ row }) => (
+              <ResourceLink type="Repo" id={row.original.id} />
+            ),
           },
           {
             header: "Repo",
@@ -97,23 +77,39 @@ export const RepoComponents: RequiredResourceComponents = {
       />
     );
   },
-  Dashboard: () => {
-    const repo_count = useRead("ListRepos", {}).data?.length;
-    return (
-      <Link to="/repos/" className="w-full">
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <CardHeader>
-            <div className="flex justify-between">
-              <div>
-                <CardTitle>Repos</CardTitle>
-                <CardDescription>{repo_count} Total</CardDescription>
-              </div>
-              <GitBranch className="w-4 h-4" />
-            </div>
-          </CardHeader>
-        </Card>
-      </Link>
-    );
-  },
-  New: () => <NewResource type="Repo" />,
+
+  Name: ({ id }: { id: string }) => <>{useRepo(id)?.name}</>,
+
+  Icon: () => <GitBranch className="w-4 h-4" />,
+
+  Status: [],
+
+  Info: [
+    ({ id }) => {
+      const repo = useRepo(id)?.info.repo;
+      return (
+        <div className="flex items-center gap-2">
+          <FolderGit className="w-4 h-4" />
+          {repo}
+        </div>
+      );
+    },
+    ({ id }) => {
+      const ts = useRepo(id)?.info.last_pulled_at;
+      return (
+        <div className="flex items-center gap-2">
+          <History className="w-4 h-4" />
+          {ts ? new Date(ts).toLocaleString() : "Never Pulled"}
+        </div>
+      );
+    },
+  ],
+
+  Actions: [PullRepo, CloneRepo],
+
+  Page: {},
+
+  Config: RepoConfig,
+
+  DangerZone: ({ id }) => <DeleteResource type="Repo" id={id} />,
 };

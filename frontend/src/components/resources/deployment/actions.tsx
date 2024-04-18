@@ -19,7 +19,7 @@ interface DeploymentId {
   id: string;
 }
 
-export const RedeployContainer = ({ id }: DeploymentId) => {
+export const DeployContainer = ({ id }: DeploymentId) => {
   const deployment = useRead("GetDeployment", { deployment: id }).data;
   const [signal, setSignal] = useState<Types.TerminationSignal>();
 

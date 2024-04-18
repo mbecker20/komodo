@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useExecute, useRead } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
@@ -10,9 +10,11 @@ import {
   MemoryStick,
   Database,
   ExternalLink,
+  Scissors,
+  XOctagon,
 } from "lucide-react";
 import { Section } from "@components/layouts";
-import { RenameServer, SERVER_ACTIONS } from "./actions";
+import { RenameServer } from "./actions";
 import {
   fill_color_class_by_intention,
   server_status_intention,
@@ -23,16 +25,49 @@ import { DeploymentTable } from "../deployment/table";
 import { ServerTable } from "./table";
 import { ServersChart } from "./dashboard";
 import { Link } from "react-router-dom";
-import { DeleteResource, NewResource, ResourceLink } from "../common";
+import { DeleteResource, NewResource } from "../common";
 import { AlertsTable } from "@components/alert/table";
 import { Button } from "@ui/button";
+import { ActionWithDialog, ConfirmButton } from "@components/util";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
 
 export const ServerComponents: RequiredResourceComponents = {
+  Dashboard: ServersChart,
+
+  New: () => <NewResource type="Server" />,
+
+  Table: ServerTable,
+
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
-  Link: ({ id }) => <ResourceLink type="Server" id={id} />,
+
+  Icon: ({ id }) => {
+    const status = useServer(id)?.info.status;
+    return (
+      <ServerIcon
+        className={cn(
+          "w-4 h-4",
+          id && fill_color_class_by_intention(server_status_intention(status))
+        )}
+      />
+    );
+  },
+
+  Status: [
+    ({ id }) => {
+      const status = useServer(id)?.info.status;
+      const stateClass = text_color_class_by_intention(
+        server_status_intention(status)
+      );
+      return (
+        <div className={stateClass}>
+          {status === Types.ServerStatus.NotOk ? "Not Ok" : status}
+        </div>
+      );
+    },
+  ],
+
   Info: [
     ({ id }) => {
       const server = useServer(id);
@@ -82,29 +117,44 @@ export const ServerComponents: RequiredResourceComponents = {
       );
     },
   ],
-  Icon: ({ id }) => {
-    const status = useServer(id)?.info.status;
-    return (
-      <ServerIcon
-        className={cn(
-          "w-4 h-4",
-          id && fill_color_class_by_intention(server_status_intention(status))
-        )}
-      />
-    );
-  },
-  Status: ({ id }) => {
-    const status = useServer(id)?.info.status;
-    const stateClass = text_color_class_by_intention(
-      server_status_intention(status)
-    );
-    return (
-      <div className={stateClass}>
-        {status === Types.ServerStatus.NotOk ? "Not Ok" : status}
-      </div>
-    );
-  },
-  Actions: SERVER_ACTIONS,
+
+  Actions: [
+    ({ id }) => {
+      const { mutate, isPending } = useExecute(`PruneImages`);
+      const pruning = useRead("GetServerActionState", { server: id }).data
+        ?.pruning_images;
+      const pending = isPending || pruning;
+      return (
+        <ConfirmButton
+          title="Prune Images"
+          icon={<Scissors className="w-4 h-4" />}
+          onClick={() => mutate({ server: id })}
+          loading={pending}
+          disabled={pending}
+        />
+      );
+    },
+    ({ id }) => {
+      const server = useServer(id);
+      const { mutate, isPending } = useExecute(`StopAllContainers`);
+      const stopping = useRead("GetServerActionState", { server: id }).data
+        ?.stopping_containers;
+      const pending = isPending || stopping;
+      return (
+        server && (
+          <ActionWithDialog
+            name={server?.name}
+            title="Stop Containers"
+            icon={<XOctagon className="w-4 h-4" />}
+            onClick={() => mutate({ server: id })}
+            disabled={pending}
+            loading={pending}
+          />
+        )
+      );
+    },
+  ],
+
   Page: {
     Alerts: ({ id }) => {
       const alerts = useRead("ListAlerts", {
@@ -140,15 +190,14 @@ export const ServerComponents: RequiredResourceComponents = {
         )
       );
     },
-    Config: ServerConfig,
-    Danger: ({ id }) => (
-      <Section title="Danger Zone" icon={<AlertTriangle className="w-4 h-4" />}>
-        <RenameServer id={id} />
-        <DeleteResource type="Server" id={id} />
-      </Section>
-    ),
   },
-  New: () => <NewResource type="Server" />,
-  Table: ServerTable,
-  Dashboard: ServersChart,
+
+  Config: ServerConfig,
+
+  DangerZone: ({ id }) => (
+    <>
+      <RenameServer id={id} />
+      <DeleteResource type="Server" id={id} />
+    </>
+  ),
 };

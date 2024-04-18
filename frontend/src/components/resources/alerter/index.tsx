@@ -1,4 +1,4 @@
-import { NewLayout, Section } from "@components/layouts";
+import { NewLayout } from "@components/layouts";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
@@ -11,79 +11,19 @@ import {
 } from "@ui/select";
 import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
-import { AlarmClock, AlertTriangle } from "lucide-react";
+import { AlarmClock } from "lucide-react";
 import { useState } from "react";
 import { DataTable } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
 import { TagsWithBadge, useTagsFilter } from "@components/tags";
-import { CopyResource, DeleteResource, ResourceLink } from "../common";
+import { DeleteResource, ResourceLink } from "../common";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
 
 export const AlerterComponents: RequiredResourceComponents = {
-  Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
-  Icon: () => <AlarmClock className="w-4 h-4" />,
-  Link: ({ id }) => <ResourceLink type="Alerter" id={id} />,
-  Info: [
-    ({ id }) => {
-      const alerter = useAlerter(id);
-      return <div className="capitalize">Type: {alerter?.info.alerter_type}</div>;
-    },
-  ],
-  Status: () => <>Alerter</>,
-  Page: {
-    Config: AlerterConfig,
-    Danger: ({ id }) => (
-      <Section
-        title="Danger Zone"
-        icon={<AlertTriangle className="w-4 h-4" />}
-        actions={<CopyResource type="Alerter" id={id} />}
-      >
-        <DeleteResource type="Alerter" id={id} />
-      </Section>
-    ),
-  },
-  Actions: [],
-  Table: ({ search }) => {
-    const tags = useTagsFilter();
-    const alerters = useRead("ListAlerters", {}).data;
-    const searchSplit = search?.split(" ") || [];
-    return (
-      <DataTable
-        data={
-          alerters?.filter((resource) =>
-            tags.every((tag) => resource.tags.includes(tag)) &&
-            searchSplit.length > 0
-              ? searchSplit.every((search) => resource.name.includes(search))
-              : true
-          ) ?? []
-        }
-        columns={[
-          {
-            header: "Name",
-            cell: ({ row }) => <AlerterComponents.Link id={row.original.id} />,
-          },
-          {
-            header: "Type",
-            accessorKey: "info.alerter_type",
-          },
-          {
-            header: "Tags",
-            cell: ({ row }) => {
-              return (
-                <div className="flex gap-1">
-                  <TagsWithBadge tag_ids={row.original.tags} />
-                </div>
-              );
-            },
-          },
-        ]}
-      />
-    );
-  },
   Dashboard: () => {
     const alerters_count = useRead("ListAlerters", {}).data?.length;
     return (
@@ -102,6 +42,7 @@ export const AlerterComponents: RequiredResourceComponents = {
       </Link>
     );
   },
+
   New: () => {
     const { mutateAsync } = useWrite("CreateAlerter");
     const [name, setName] = useState("");
@@ -143,4 +84,67 @@ export const AlerterComponents: RequiredResourceComponents = {
       </NewLayout>
     );
   },
+
+  Table: ({ search }) => {
+    const tags = useTagsFilter();
+    const alerters = useRead("ListAlerters", {}).data;
+    const searchSplit = search?.split(" ") || [];
+    return (
+      <DataTable
+        data={
+          alerters?.filter((resource) =>
+            tags.every((tag) => resource.tags.includes(tag)) &&
+            searchSplit.length > 0
+              ? searchSplit.every((search) => resource.name.includes(search))
+              : true
+          ) ?? []
+        }
+        columns={[
+          {
+            header: "Name",
+            cell: ({ row }) => (
+              <ResourceLink type="Alerter" id={row.original.id} />
+            ),
+          },
+          {
+            header: "Type",
+            accessorKey: "info.alerter_type",
+          },
+          {
+            header: "Tags",
+            cell: ({ row }) => {
+              return (
+                <div className="flex gap-1">
+                  <TagsWithBadge tag_ids={row.original.tags} />
+                </div>
+              );
+            },
+          },
+        ]}
+      />
+    );
+  },
+
+  Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
+
+  Icon: () => <AlarmClock className="w-4 h-4" />,
+
+  Status: [],
+
+  Info: [
+    ({ id }) => {
+      const alerter = useAlerter(id);
+      return (
+        <div className="capitalize">Type: {alerter?.info.alerter_type}</div>
+      );
+    },
+  ],
+
+  Actions: [],
+
+  Page: {},
+
+  Config: AlerterConfig,
+
+  DangerZone: ({ id }) => <DeleteResource type="Alerter" id={id} />,
 };

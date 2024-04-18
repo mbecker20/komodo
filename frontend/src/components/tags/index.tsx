@@ -1,4 +1,5 @@
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
+import { cn } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { Badge } from "@ui/badge";
 import { Button } from "@ui/button";
@@ -15,7 +16,7 @@ import { useToast } from "@ui/use-toast";
 import { useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { MinusCircle, PlusCircle, SearchX, Tag } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 type TargetExcludingSystem = Exclude<Types.ResourceTarget, { type: "System" }>;
 
@@ -118,9 +119,11 @@ export const TagsFilterTags = ({
 export const ResourceTags = ({
   target,
   click_to_delete,
+  className,
 }: {
   target: TargetExcludingSystem;
   click_to_delete?: boolean;
+  className?: string;
 }) => {
   const inv = useInvalidate();
   const { type, id } = target;
@@ -141,6 +144,8 @@ export const ResourceTags = ({
           tags: resource!.tags.filter((tag) => tag !== tag_id),
         });
       }}
+      className={className}
+      icon={click_to_delete && <MinusCircle className="w-3 h-3" />}
     />
   );
 };
@@ -149,10 +154,12 @@ export const TagsWithBadge = ({
   tag_ids,
   onBadgeClick,
   className,
+  icon,
 }: {
   tag_ids?: string[];
   onBadgeClick?: (tag_id: string) => void;
   className?: string;
+  icon?: ReactNode;
 }) => {
   const all_tags = useRead("ListTags", {}).data;
   const get_name = (tag_id: string) =>
@@ -163,10 +170,11 @@ export const TagsWithBadge = ({
         <Badge
           key={tag_id}
           variant="secondary"
-          className={className ?? "px-1.5 py-0.5 cursor-pointer"}
+          className={cn("gap-2 px-1.5 py-0.5 cursor-pointer", className)}
           onClick={() => onBadgeClick && onBadgeClick(tag_id)}
         >
           {get_name(tag_id)}
+          {icon}
         </Badge>
       ))}
     </>

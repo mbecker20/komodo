@@ -2,12 +2,12 @@ import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { Types } from "@monitor/client";
 import { DataTable } from "@ui/data-table";
 import { useRead } from "@lib/hooks";
-import { ResourceComponents } from "..";
 import {
   deployment_state_intention,
   text_color_class_by_intention,
 } from "@lib/color";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
+import { ResourceLink } from "../common";
 
 export const DeploymentTable = ({
   deployments,
@@ -32,7 +32,7 @@ export const DeploymentTable = ({
         {
           header: "Name",
           cell: ({ row }) => (
-            <ResourceComponents.Deployment.Link id={row.original.id} />
+            <ResourceLink type="Deployment" id={row.original.id} />
           ),
         },
         {
@@ -43,25 +43,12 @@ export const DeploymentTable = ({
                 info: { build_id, image },
               },
             },
-          }) => {
-            const builds = useRead("ListBuilds", {}).data;
-            if (build_id) {
-              const build = builds?.find((build) => build.id === build_id);
-              if (build) {
-                return <ResourceComponents.Build.Link id={build_id} />;
-              } else {
-                return undefined;
-              }
-            } else {
-              const [img] = image.split(":");
-              return img;
-            }
-          },
+          }) => <Image build_id={build_id} image={image} />,
         },
         {
           header: "Server",
           cell: ({ row }) => (
-            <ResourceComponents.Server.Link id={row.original.info.server_id} />
+            <ResourceLink type="Server" id={row.original.info.server_id} />
           ),
         },
         {
@@ -91,4 +78,25 @@ export const DeploymentTable = ({
       ]}
     />
   );
+};
+
+const Image = ({
+  build_id,
+  image,
+}: {
+  build_id: string | undefined;
+  image: string;
+}) => {
+  const builds = useRead("ListBuilds", {}).data;
+  if (build_id) {
+    const build = builds?.find((build) => build.id === build_id);
+    if (build) {
+      return <ResourceLink type="Build" id={build_id} />;
+    } else {
+      return undefined;
+    }
+  } else {
+    const [img] = image.split(":");
+    return img;
+  }
 };

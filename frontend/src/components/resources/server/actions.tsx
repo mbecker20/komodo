@@ -1,51 +1,9 @@
-import {
-  ActionWithDialog,
-  ConfirmButton,
-} from "@components/util";
-import { useExecute, useInvalidate, useRead, useWrite } from "@lib/hooks";
-import { IdComponent } from "@types";
+import { ConfirmButton } from "@components/util";
+import { useInvalidate, useWrite } from "@lib/hooks";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
-import { Pen, Scissors, XOctagon } from "lucide-react";
+import { Pen } from "lucide-react";
 import { useState } from "react";
-import { useServer } from ".";
-
-export const SERVER_ACTIONS: IdComponent[] = [
-  ({ id }) => {
-    const { mutate, isPending } = useExecute(`PruneImages`);
-    const pruning = useRead("GetServerActionState", { server: id }).data
-      ?.pruning_images;
-    const pending = isPending || pruning;
-    return (
-      <ConfirmButton
-        title="Prune Images"
-        icon={<Scissors className="w-4 h-4" />}
-        onClick={() => mutate({ server: id })}
-        loading={pending}
-        disabled={pending}
-      />
-    );
-  },
-  ({ id }) => {
-    const server = useServer(id);
-    const { mutate, isPending } = useExecute(`StopAllContainers`);
-    const stopping = useRead("GetServerActionState", { server: id }).data
-      ?.stopping_containers;
-    const pending = isPending || stopping;
-    return (
-      server && (
-        <ActionWithDialog
-          name={server?.name}
-          title="Stop Containers"
-          icon={<XOctagon className="w-4 h-4" />}
-          onClick={() => mutate({ server: id })}
-          disabled={pending}
-          loading={pending}
-        />
-      )
-    );
-  },
-];
 
 export const RenameServer = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();

@@ -1,4 +1,4 @@
-import { NewLayout, Section } from "@components/layouts";
+import { NewLayout } from "@components/layouts";
 import { useTagsFilter } from "@components/tags";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
@@ -14,47 +14,77 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import { Cloud, Bot, Factory, AlertTriangle } from "lucide-react";
+import { Cloud, Bot, Factory } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BuilderConfig } from "./config";
-import { CopyResource, DeleteResource, ResourceLink } from "../common";
+import { DeleteResource } from "../common";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
 
 export const BuilderComponents: RequiredResourceComponents = {
-  Name: ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>,
-  Link: ({ id }) => <ResourceLink type="Builder" id={id} />,
-  Info: [
-    ({ id }) => (
-      <div className="flex items-center gap-2">
-        <Cloud className="w-4 h-4" />
-        {useBuilder(id)?.info.provider}
-      </div>
-    ),
-    ({ id }) => (
-      <div className="flex items-center gap-2">
-        <Bot className="w-4 h-4" />
-        {useBuilder(id)?.info.instance_type ?? "N/A"}
-      </div>
-    ),
-  ],
-  Icon: () => <Factory className="w-4 h-4" />,
-  Status: () => <>Builder</>,
-  Actions: [],
-  Page: {
-    Config: BuilderConfig,
-    Danger: ({ id }) => (
-      <Section
-        title="Danger Zone"
-        icon={<AlertTriangle className="w-4 h-4" />}
-        actions={<CopyResource type="Builder" id={id} />}
-      >
-        <DeleteResource type="Builder" id={id} />
-      </Section>
-    ),
+  Dashboard: () => {
+    const builders_count = useRead("ListBuilders", {}).data?.length;
+    return (
+      <Link to="/builders/" className="w-full">
+        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+          <CardHeader>
+            <div className="flex justify-between">
+              <div>
+                <CardTitle>Builders</CardTitle>
+                <CardDescription>{builders_count} Total</CardDescription>
+              </div>
+              <Factory className="w-4 h-4" />
+            </div>
+          </CardHeader>
+        </Card>
+      </Link>
+    );
   },
+
+  New: () => {
+    const { mutateAsync } = useWrite("CreateBuilder");
+    const [name, setName] = useState("");
+    const [type, setType] = useState<Types.BuilderConfig["type"]>();
+
+    return (
+      <NewLayout
+        entityType="Builder"
+        onSuccess={async () =>
+          !!type && mutateAsync({ name, config: { type, params: {} } })
+        }
+        enabled={!!name && !!type}
+      >
+        <div className="grid md:grid-cols-2">
+          Name
+          <Input
+            placeholder="builder-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="grid md:grid-cols-2">
+          Builder Type
+          <Select
+            value={type}
+            onValueChange={(value) => setType(value as typeof type)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="Aws">Aws</SelectItem>
+                <SelectItem value="Server">Server</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </NewLayout>
+    );
+  },
+
   Table: ({ search }) => {
     const tags = useTagsFilter();
     const builders = useRead("ListBuilders", {}).data;
@@ -99,63 +129,33 @@ export const BuilderComponents: RequiredResourceComponents = {
       />
     );
   },
-  New: () => {
-    const { mutateAsync } = useWrite("CreateBuilder");
-    const [name, setName] = useState("");
-    const [type, setType] = useState<Types.BuilderConfig["type"]>();
 
-    return (
-      <NewLayout
-        entityType="Builder"
-        onSuccess={async () =>
-          !!type && mutateAsync({ name, config: { type, params: {} } })
-        }
-        enabled={!!name && !!type}
-      >
-        <div className="grid md:grid-cols-2">
-          Name
-          <Input
-            placeholder="builder-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div className="grid md:grid-cols-2">
-          Builder Type
-          <Select
-            value={type}
-            onValueChange={(value) => setType(value as typeof type)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="Aws">Aws</SelectItem>
-                <SelectItem value="Server">Server</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-      </NewLayout>
-    );
-  },
-  Dashboard: () => {
-    const builders_count = useRead("ListBuilders", {}).data?.length;
-    return (
-      <Link to="/builders/" className="w-full">
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <CardHeader>
-            <div className="flex justify-between">
-              <div>
-                <CardTitle>Builders</CardTitle>
-                <CardDescription>{builders_count} Total</CardDescription>
-              </div>
-              <Factory className="w-4 h-4" />
-            </div>
-          </CardHeader>
-        </Card>
-      </Link>
-    );
-  },
+  Name: ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>,
+
+  Icon: () => <Factory className="w-4 h-4" />,
+
+  Status: [],
+
+  Info: [
+    ({ id }) => (
+      <div className="flex items-center gap-2">
+        <Cloud className="w-4 h-4" />
+        {useBuilder(id)?.info.provider}
+      </div>
+    ),
+    ({ id }) => (
+      <div className="flex items-center gap-2">
+        <Bot className="w-4 h-4" />
+        {useBuilder(id)?.info.instance_type ?? "N/A"}
+      </div>
+    ),
+  ],
+
+  Actions: [],
+
+  Page: {},
+
+  Config: BuilderConfig,
+
+  DangerZone: ({ id }) => <DeleteResource type="Builder" id={id} />,
 };

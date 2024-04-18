@@ -2,7 +2,7 @@ import { TagsWithBadge, useTagsFilter } from "@components/tags";
 import { useRead } from "@lib/hooks";
 import { DataTable } from "@ui/data-table";
 import { ServerComponents } from ".";
-import { ResourceComponents } from "..";
+import { ResourceLink } from "../common";
 
 export const ServerTable = ({ search }: { search?: string }) => {
   const servers = useRead("ListServers", {}).data;
@@ -23,7 +23,7 @@ export const ServerTable = ({ search }: { search?: string }) => {
           header: "Name",
           accessorKey: "id",
           cell: ({ row }) => {
-            return <ResourceComponents.Server.Link id={row.original.id} />;
+            return <ResourceLink type="Server" id={row.original.id} />;
           },
         },
         {
@@ -37,7 +37,10 @@ export const ServerTable = ({ search }: { search?: string }) => {
             row: {
               original: { id },
             },
-          }) => <ServerComponents.Status id={id} />,
+          }) => {
+            const Status = ServerComponents.Status[0];
+            return <Status id={id} />;
+          },
         },
         {
           header: "Tags",

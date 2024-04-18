@@ -6,21 +6,39 @@ type IdComponent = React.FC<{ id: string }>;
 type OptionalIdComponent = React.FC<{ id?: string }>;
 
 export interface RequiredResourceComponents {
-  Icon: OptionalIdComponent;
-
-  New: React.FC;
-
-  /// Used on the dashboard
+  /** Summary card for use in dashboard */
   Dashboard: React.FC;
 
-  Name: IdComponent;
-  Status: IdComponent;
-  Link: IdComponent;
+  /** New resource button / dialog */
+  New: React.FC;
 
-  Info: IdComponent[];
-  Actions: IdComponent[];
-
+  /** A table component to view resource list */
   Table: React.FC<{ search?: string }>;
 
+  /** Name of the resource */
+  Name: IdComponent;
+
+  /** Icon for the component */
+  Icon: OptionalIdComponent;
+
+  /** status metrics, like deployment state / status */
+  Status: IdComponent[];
+
+  /**
+   * Some config items shown in header, like deployment server /image
+   * or build repo / branch
+   */
+  Info: IdComponent[];
+
+  /** Action buttons */
+  Actions: IdComponent[];
+
+  /** Resource specific sections */
   Page: { [section: string]: IdComponent };
+
+  /** Config component for resource */
+  Config: IdComponent;
+
+  /** Danger zone for resource, containing eg rename, delete */
+  DangerZone: IdComponent;
 }
