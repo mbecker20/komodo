@@ -63,7 +63,7 @@ export const UserPage = () => {
   const user = useRead("GetUsers", {}).data?.find(
     (user) => user._id?.$oid === user_id
   );
-  const { mutate } = useWrite("UpdateUserPerimissions", {
+  const { mutate } = useWrite("UpdateUserBasePermissions", {
     onSuccess: () => inv(["GetUsers"]),
     onError: (e) => {
       console.log(e);
@@ -148,106 +148,118 @@ const useUserPermissions = (user_id: string) => {
   const perms: (Types.Permission & { name: string })[] = [];
   servers?.forEach((server) => {
     const perm = permissions?.find(
-      (p) => p.target.type === "Server" && p.target.id === server.id
+      (p) =>
+        p.resource_target.type === "Server" &&
+        p.resource_target.id === server.id
     );
     if (perm) {
       perms.push({ ...perm, name: server.name });
     } else {
       perms.push({
-        user_id,
+        user_target: { type: "User", id: user_id },
+        resource_target: { type: "Server", id: server.id },
         name: server.name,
         level: Types.PermissionLevel.None,
-        target: { type: "Server", id: server.id },
       });
     }
   });
   deployments?.forEach((deployment) => {
     const perm = permissions?.find(
-      (p) => p.target.type === "Deployment" && p.target.id === deployment.id
+      (p) =>
+        p.resource_target.type === "Deployment" &&
+        p.resource_target.id === deployment.id
     );
     if (perm) {
       perms.push({ ...perm, name: deployment.name });
     } else {
       perms.push({
-        user_id,
+        user_target: { type: "User", id: user_id },
+        resource_target: { type: "Deployment", id: deployment.id },
         name: deployment.name,
         level: Types.PermissionLevel.None,
-        target: { type: "Deployment", id: deployment.id },
       });
     }
   });
   builds?.forEach((build) => {
     const perm = permissions?.find(
-      (p) => p.target.type === "Build" && p.target.id === build.id
+      (p) =>
+        p.resource_target.type === "Build" && p.resource_target.id === build.id
     );
     if (perm) {
       perms.push({ ...perm, name: build.name });
     } else {
       perms.push({
-        user_id,
+        user_target: { type: "User", id: user_id },
         name: build.name,
         level: Types.PermissionLevel.None,
-        target: { type: "Build", id: build.id },
+        resource_target: { type: "Build", id: build.id },
       });
     }
   });
   repos?.forEach((repo) => {
     const perm = permissions?.find(
-      (p) => p.target.type === "Repo" && p.target.id === repo.id
+      (p) =>
+        p.resource_target.type === "Repo" && p.resource_target.id === repo.id
     );
     if (perm) {
       perms.push({ ...perm, name: repo.name });
     } else {
       perms.push({
-        user_id,
+        user_target: { type: "User", id: user_id },
         name: repo.name,
         level: Types.PermissionLevel.None,
-        target: { type: "Repo", id: repo.id },
+        resource_target: { type: "Repo", id: repo.id },
       });
     }
   });
   procedures?.forEach((procedure) => {
     const perm = permissions?.find(
-      (p) => p.target.type === "Procedure" && p.target.id === procedure.id
+      (p) =>
+        p.resource_target.type === "Procedure" &&
+        p.resource_target.id === procedure.id
     );
     if (perm) {
       perms.push({ ...perm, name: procedure.name });
     } else {
       perms.push({
-        user_id,
+        user_target: { type: "User", id: user_id },
         name: procedure.name,
         level: Types.PermissionLevel.None,
-        target: { type: "Procedure", id: procedure.id },
+        resource_target: { type: "Procedure", id: procedure.id },
       });
     }
   });
   builders?.forEach((builder) => {
     const perm = permissions?.find(
-      (p) => p.target.type === "Builder" && p.target.id === builder.id
+      (p) =>
+        p.resource_target.type === "Builder" &&
+        p.resource_target.id === builder.id
     );
     if (perm) {
       perms.push({ ...perm, name: builder.name });
     } else {
       perms.push({
-        user_id,
+        user_target: { type: "User", id: user_id },
         name: builder.name,
         level: Types.PermissionLevel.None,
-        target: { type: "Builder", id: builder.id },
+        resource_target: { type: "Builder", id: builder.id },
       });
     }
   });
   alerters?.forEach((alerter) => {
     const perm = permissions?.find(
-      (p) => p.target.type === "Alerter" && p.target.id === alerter.id
+      (p) =>
+        p.resource_target.type === "Alerter" &&
+        p.resource_target.id === alerter.id
     );
     if (perm) {
       perms.push({ ...perm, name: alerter.name });
     } else {
       perms.push({
-        user_id,
+        user_target: { type: "User", id: user_id },
         name: alerter.name,
         level: Types.PermissionLevel.None,
-        target: { type: "Alerter", id: alerter.id },
+        resource_target: { type: "Alerter", id: alerter.id },
       });
     }
   });
@@ -261,7 +273,7 @@ const PermissionsTable = () => {
   const inv = useInvalidate();
   const user_id = useParams().id as string;
   const permissions = useUserPermissions(user_id);
-  const { mutate } = useWrite("UpdateUserPermissionsOnTarget", {
+  const { mutate } = useWrite("UpdatePermissionOnTarget", {
     onSuccess: () => inv(["ListUserPermissions"]),
   });
   return (
@@ -295,26 +307,26 @@ const PermissionsTable = () => {
               searchSplit.every(
                 (search) =>
                   permission.name.toLowerCase().includes(search) ||
-                  permission.target.type.toLowerCase().includes(search)
+                  permission.resource_target.type.toLowerCase().includes(search)
               )
             ) ?? []
         }
         columns={[
           {
             header: "Resource",
-            accessorKey: "target.type",
+            accessorKey: "resource_target.type",
           },
           {
             header: "Target",
             cell: ({
               row: {
-                original: { target },
+                original: { resource_target },
               },
             }) => {
               return (
                 <ResourceLink
-                  type={target.type as UsableResource}
-                  id={target.id}
+                  type={resource_target.type as UsableResource}
+                  id={resource_target.id}
                 />
               );
             },
@@ -327,7 +339,7 @@ const PermissionsTable = () => {
                 onValueChange={(value) =>
                   mutate({
                     ...permission,
-                    user_id,
+                    user_target: { type: "User", id: user_id },
                     permission: value as Types.PermissionLevel,
                   })
                 }
