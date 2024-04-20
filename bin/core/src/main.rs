@@ -76,8 +76,8 @@ async fn main() -> anyhow::Result<()> {
   let app = tokio::spawn(app());
 
   tokio::select! {
-      res = app => return res?,
-      _ = term_signal => {},
+    res = app => return res?,
+    _ = term_signal => {},
   }
 
   Ok(())

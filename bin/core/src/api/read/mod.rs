@@ -2,14 +2,14 @@ use std::time::Instant;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use axum::{middleware, routing::post, Extension, Json, Router};
+use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::read::*, entities::user::User};
 use resolver_api::{
   derive::Resolver, Resolve, ResolveToString, Resolver,
 };
 use serde::{Deserialize, Serialize};
-use serror::AppResult;
+use serror::Json;
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -141,7 +141,7 @@ pub fn router() -> Router {
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<ReadRequest>,
-) -> AppResult<(TypedHeader<ContentType>, String)> {
+) -> serror::Result<(TypedHeader<ContentType>, String)> {
   let timer = Instant::now();
   let req_id = Uuid::new_v4();
   debug!(
@@ -163,7 +163,7 @@ async fn handler(
   }
   let elapsed = timer.elapsed();
   debug!("/read request {req_id} | resolve time: {elapsed:?}");
-  AppResult::Ok((TypedHeader(ContentType::json()), res?))
+  Ok((TypedHeader(ContentType::json()), res?))
 }
 
 #[async_trait]

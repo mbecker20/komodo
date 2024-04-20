@@ -1,12 +1,12 @@
 use std::time::Instant;
 
 use anyhow::{anyhow, Context};
-use axum::{middleware, routing::post, Extension, Json, Router};
+use axum::{middleware, routing::post, Extension, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::write::*, entities::user::User};
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
-use serror::AppResult;
+use serror::Json;
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -121,7 +121,7 @@ pub fn router() -> Router {
 async fn handler(
   Extension(user): Extension<User>,
   Json(request): Json<WriteRequest>,
-) -> AppResult<(TypedHeader<ContentType>, String)> {
+) -> serror::Result<(TypedHeader<ContentType>, String)> {
   let req_id = Uuid::new_v4();
 
   let res = tokio::spawn(task(req_id, request, user))
@@ -132,7 +132,7 @@ async fn handler(
     warn!("/write request {req_id} spawn error: {e:#}");
   }
 
-  AppResult::Ok((TypedHeader(ContentType::json()), res??))
+  Ok((TypedHeader(ContentType::json()), res??))
 }
 
 #[instrument(name = "WriteRequest", skip(user))]

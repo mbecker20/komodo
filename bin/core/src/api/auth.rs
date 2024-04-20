@@ -2,12 +2,12 @@ use std::{sync::OnceLock, time::Instant};
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use axum::{http::HeaderMap, routing::post, Json, Router};
+use axum::{http::HeaderMap, routing::post, Router};
 use axum_extra::{headers::ContentType, TypedHeader};
 use monitor_client::{api::auth::*, entities::user::User};
 use resolver_api::{derive::Resolver, Resolve, Resolver};
 use serde::{Deserialize, Serialize};
-use serror::AppResult;
+use serror::Json;
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -55,7 +55,7 @@ pub fn router() -> Router {
 async fn handler(
   headers: HeaderMap,
   Json(request): Json<AuthRequest>,
-) -> AppResult<(TypedHeader<ContentType>, String)> {
+) -> serror::Result<(TypedHeader<ContentType>, String)> {
   let timer = Instant::now();
   let req_id = Uuid::new_v4();
   debug!("/auth request {req_id} | METHOD: {}", request.req_type());
@@ -72,7 +72,7 @@ async fn handler(
   }
   let elapsed = timer.elapsed();
   debug!("/auth request {req_id} | resolve time: {elapsed:?}");
-  AppResult::Ok((TypedHeader(ContentType::json()), res?))
+  Ok((TypedHeader(ContentType::json()), res?))
 }
 
 fn login_options_reponse() -> &'static GetLoginOptionsResponse {

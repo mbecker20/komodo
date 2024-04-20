@@ -537,6 +537,7 @@ checksum = "3a6c9af12842a67734c9a2e355436e5d03b22383ed60cf13cd0c18fbfe3dcbcf"
 dependencies = [
  "async-trait",
  "axum-core 0.4.3",
+ "axum-macros",
  "base64 0.21.5",
  "bytes",
  "futures-util",
@@ -625,6 +626,18 @@ dependencies = [
  "tower-layer",
  "tower-service",
  "tracing",
+]
+
+[[package]]
+name = "axum-macros"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "00c055ee2d014ae5981ce1016374e8213682aa14d9bf40e48ab48b5f3ef20eaa"
+dependencies = [
+ "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.53",
 ]
 
 [[package]]
@@ -3273,9 +3286,9 @@ dependencies = [
 
 [[package]]
 name = "serror"
-version = "0.1.10"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac699ec20dda9d3630e499777c7822d9811beafbedf3b6305586b7338eb5a50e"
+checksum = "c6c430d274ef4964c27e7b338fdfed6d400b18ceac80cba827ddd84055f9eca8"
 dependencies = [
  "anyhow",
  "axum 0.7.5",

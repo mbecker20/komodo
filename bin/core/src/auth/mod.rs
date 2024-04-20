@@ -9,7 +9,6 @@ use monitor_client::entities::{monitor_timestamp, user::User};
 use mungos::mongodb::bson::doc;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::Deserialize;
-use serror::AuthError;
 
 use crate::{db::db_client, helpers::query::get_user};
 
@@ -33,7 +32,7 @@ pub async fn auth_request(
   headers: HeaderMap,
   mut req: Request,
   next: Next,
-) -> Result<Response, AuthError> {
+) -> serror::Result<Response> {
   let user = authenticate_check_enabled(&headers).await?;
   req.extensions_mut().insert(user);
   Ok(next.run(req).await)

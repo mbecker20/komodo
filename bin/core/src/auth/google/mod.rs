@@ -5,8 +5,9 @@ use axum::{
 };
 use monitor_client::entities::user::{User, UserConfig};
 use mungos::mongodb::bson::doc;
+use reqwest::StatusCode;
 use serde::Deserialize;
-use serror::AppError;
+use serror::AddStatusCode;
 
 use crate::{config::core_config, db::db_client};
 
@@ -34,8 +35,7 @@ pub fn router() -> Router {
     .route(
       "/callback",
       get(|query| async {
-        let redirect = callback(query).await?;
-        Result::<_, AppError>::Ok(redirect)
+        callback(query).await.status_code(StatusCode::UNAUTHORIZED)
       }),
     )
 }
@@ -51,6 +51,7 @@ struct CallbackQuery {
 async fn callback(
   Query(query): Query<CallbackQuery>,
 ) -> anyhow::Result<Redirect> {
+  // Safe: the method is only called after the client is_some
   let client = google_oauth_client().as_ref().unwrap();
   if let Some(error) = query.error {
     return Err(anyhow!("auth error from google: {error}"));

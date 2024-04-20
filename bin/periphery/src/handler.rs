@@ -1,17 +1,16 @@
 use std::time::Instant;
 
 use anyhow::{anyhow, Context};
-use axum::Json;
 use axum_extra::{headers::ContentType, TypedHeader};
 use resolver_api::Resolver;
-use serror::AppResult;
+use serror::Json;
 use uuid::Uuid;
 
 use crate::State;
 
 pub async fn handler(
   Json(request): Json<crate::api::PeripheryRequest>,
-) -> AppResult<(TypedHeader<ContentType>, String)> {
+) -> serror::Result<(TypedHeader<ContentType>, String)> {
   let req_id = Uuid::new_v4();
 
   let res = tokio::spawn(task(req_id, request))
@@ -22,10 +21,10 @@ pub async fn handler(
     warn!("request {req_id} spawn error: {e:#}");
   }
 
-  AppResult::Ok((TypedHeader(ContentType::json()), res??))
+  Ok((TypedHeader(ContentType::json()), res??))
 }
 
-#[instrument(name = "PeripheryTask")]
+#[instrument(name = "PeripheryHandler")]
 async fn task(
   req_id: Uuid,
   request: crate::api::PeripheryRequest,
