@@ -31,7 +31,7 @@ let exchange_token_sent = false;
 const useExchangeToken = () => {
   const search = new URLSearchParams(location.search);
   const exchange_token = search.get("token");
-  const { mutate, isPending } = useAuth("ExchangeForJwt", {
+  const { mutate } = useAuth("ExchangeForJwt", {
     onSuccess: ({ jwt }) => {
       localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, jwt);
       sanitize_query(search);
@@ -41,14 +41,20 @@ const useExchangeToken = () => {
       sanitize_query(search);
     },
   });
+
+  // In this case, failed to get user (jwt unset / invalid)
+  // and the exchange token is not in url.
+  // Just show the login.
   if (!exchange_token) return false;
+
   // guard against multiple reqs sent
   // maybe isPending would do this but not sure about with render loop, this for sure will.
   if (!exchange_token_sent) {
     mutate({ token: exchange_token });
     exchange_token_sent = true;
   }
-  return isPending;
+
+  return true;
 };
 
 export const Login = () => {
@@ -69,14 +75,18 @@ export const Login = () => {
   const { mutate: login, isPending: loginPending } = useAuth("LoginLocalUser", {
     onSuccess,
   });
+
+  // Handle exchange token loop to avoid showing login flash
   const exchangeTokenPending = useExchangeToken();
   if (exchangeTokenPending) {
     return (
       <div className="w-screen h-screen flex justify-center items-center">
-        <Loader2 className="w-8 h-7 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
+
+  // Otherwise just standard login
   return (
     <div className="flex flex-col min-h-screen">
       <div className="container flex justify-end items-center h-16">
