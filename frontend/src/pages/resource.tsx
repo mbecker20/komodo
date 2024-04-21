@@ -12,6 +12,7 @@ import {
   useResourceParamType,
   useSetTitle,
 } from "@lib/hooks";
+import { Types } from "@monitor/client";
 import { AlertTriangle, Clapperboard } from "lucide-react";
 import { Fragment } from "react";
 import { useParams } from "react-router-dom";
@@ -22,10 +23,17 @@ export const Resource = () => {
   usePushRecentlyViewed({ type, id });
   const name = useRead(`List${type}s`, {}).data?.find((r) => r.id === id)?.name;
   useSetTitle(name);
+  const perms = useRead("GetPermissionLevel", { target: { type, id } }).data;
 
   if (!type || !id) return null;
 
   const Components = ResourceComponents[type];
+
+  const canExecute = perms
+    ? [Types.PermissionLevel.Execute, Types.PermissionLevel.Write].includes(
+        perms
+      )
+    : false;
 
   return (
     <Page
@@ -63,13 +71,15 @@ export const Resource = () => {
       }
     >
       {/* Actions and Updates */}
-      <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
-        <div className="flex gap-4 items-center">
-          {Object.entries(Components.Actions).map(([key, Action]) => (
-            <Action key={key} id={id} />
-          ))}
-        </div>
-      </Section>
+      {canExecute && (
+        <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
+          <div className="flex gap-4 items-center">
+            {Object.entries(Components.Actions).map(([key, Action]) => (
+              <Action key={key} id={id} />
+            ))}
+          </div>
+        </Section>
+      )}
       <ResourceUpdates type={type} id={id} />
 
       {/* Resource specific */}
