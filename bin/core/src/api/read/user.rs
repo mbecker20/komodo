@@ -2,8 +2,8 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::read::{
-    GetUsername, GetUsernameResponse, GetUsers, ListApiKeys,
-    ListApiKeysResponse,
+    GetUsername, GetUsernameResponse, ListApiKeys,
+    ListApiKeysResponse, ListUsers, ListUsersResponse,
   },
   entities::user::User,
 };
@@ -33,12 +33,12 @@ impl Resolve<GetUsername, User> for State {
 }
 
 #[async_trait]
-impl Resolve<GetUsers, User> for State {
+impl Resolve<ListUsers, User> for State {
   async fn resolve(
     &self,
-    GetUsers {}: GetUsers,
+    ListUsers {}: ListUsers,
     user: User,
-  ) -> anyhow::Result<Vec<User>> {
+  ) -> anyhow::Result<ListUsersResponse> {
     if !user.admin {
       return Err(anyhow!("this route is only accessable by admins"));
     }

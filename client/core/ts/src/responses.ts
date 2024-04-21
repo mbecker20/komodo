@@ -13,7 +13,7 @@ export type ReadResponses = {
   GetCoreInfo: Types.GetCoreInfoResponse;
 
   // ==== USER ====
-  GetUsers: Types.GetUsersResponse;
+  ListUsers: Types.ListUsersResponse;
   GetUsername: Types.GetUsernameResponse;
   ListApiKeys: Types.ListApiKeysResponse;
   ListPermissions: Types.ListPermissionsResponse;

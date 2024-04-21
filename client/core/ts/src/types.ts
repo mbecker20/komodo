@@ -500,25 +500,6 @@ export interface DeploymentActionState {
 
 export type GetDeploymentActionStateResponse = DeploymentActionState;
 
-export interface ApiKey {
-	/** Unique key associated with secret */
-	key: string;
-	/** Hash of the secret */
-	secret: string;
-	/** User associated with the api key */
-	user_id: string;
-	/** Name associated with the api key for management */
-	name: string;
-	/** Timestamp of key creation */
-	created_at: I64;
-	/** Expiry of key, or 0 if never expires */
-	expires: I64;
-}
-
-export type ListApiKeysResponse = ApiKey[];
-
-export type GetUsersResponse = User[];
-
 export type UserTarget = 
 	/** User Id */
 	| { type: "User", id: string }
@@ -1005,6 +986,25 @@ export interface Update {
 
 export type GetUpdateResponse = Update;
 
+export interface ApiKey {
+	/** Unique key associated with secret */
+	key: string;
+	/** Hash of the secret */
+	secret: string;
+	/** User associated with the api key */
+	user_id: string;
+	/** Name associated with the api key for management */
+	name: string;
+	/** Timestamp of key creation */
+	created_at: I64;
+	/** Expiry of key, or 0 if never expires */
+	expires: I64;
+}
+
+export type ListApiKeysResponse = ApiKey[];
+
+export type ListUsersResponse = User[];
+
 export interface UserGroup {
 	/**
 	 * The Mongo ID of the UserGroup.
@@ -1443,20 +1443,6 @@ export interface GetVersionResponse {
 	version: string;
 }
 
-export interface ListApiKeys {
-}
-
-export interface GetUsers {
-}
-
-export interface GetUsername {
-	user_id: string;
-}
-
-export interface GetUsernameResponse {
-	username: string;
-}
-
 export interface GetCoreInfo {
 }
 
@@ -1697,6 +1683,33 @@ export interface UpdateListItem {
 export interface ListUpdatesResponse {
 	updates: UpdateListItem[];
 	next_page?: number;
+}
+
+/**
+ * Gets list of api keys for the calling user.
+ * Response: [ListApiKeysResponse]
+ */
+export interface ListApiKeys {
+}
+
+/**
+ * Gets list of monitor users.
+ * **Admin only.**
+ * Response: [ListUsersResponse]
+ */
+export interface ListUsers {
+}
+
+/**
+ * Gets the username of a specific user.
+ * Response: [GetUsernameResponse]
+ */
+export interface GetUsername {
+	user_id: string;
+}
+
+export interface GetUsernameResponse {
+	username: string;
 }
 
 export interface GetUserGroup {
@@ -2135,7 +2148,7 @@ export type ExecuteRequest =
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
 	| { type: "GetCoreInfo", params: GetCoreInfo }
-	| { type: "GetUsers", params: GetUsers }
+	| { type: "ListUsers", params: ListUsers }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "ListApiKeys", params: ListApiKeys }
 	| { type: "ListPermissions", params: ListPermissions }

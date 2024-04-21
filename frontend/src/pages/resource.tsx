@@ -12,6 +12,7 @@ import {
   useResourceParamType,
   useSetTitle,
 } from "@lib/hooks";
+import { has_minimum_permissions } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { AlertTriangle, Clapperboard } from "lucide-react";
 import { Fragment } from "react";
@@ -29,11 +30,10 @@ export const Resource = () => {
 
   const Components = ResourceComponents[type];
 
-  const canExecute = perms
-    ? [Types.PermissionLevel.Execute, Types.PermissionLevel.Write].includes(
-        perms
-      )
-    : false;
+  const canExecute = has_minimum_permissions(
+    perms,
+    Types.PermissionLevel.Execute
+  );
   const canWrite = perms === Types.PermissionLevel.Write;
 
   return (

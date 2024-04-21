@@ -4,7 +4,7 @@ import { ResourceLink } from "@components/resources/common";
 import { ConfirmButton } from "@components/util";
 import { text_color_class_by_intention } from "@lib/color";
 import { useInvalidate, useRead, useSetTitle, useWrite } from "@lib/hooks";
-import { resource_name } from "@lib/utils";
+import { level_to_number, resource_name } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { UsableResource } from "@types";
 import { DataTable, SortableHeader } from "@ui/data-table";
@@ -26,35 +26,48 @@ import { useNavigate, useParams } from "react-router-dom";
 export const UsersPage = () => {
   useSetTitle("Users");
   const nav = useNavigate();
+  const groups = useRead("ListUserGroups", {}).data;
   const users = useRead("GetUsers", {}).data;
+  const [search, setSearch] = useState("");
   return (
-    <Page title="Users">
-      <DataTable
-        tableKey="users"
-        data={users ?? []}
-        columns={[
-          { header: "Username", accessorKey: "username" },
-          { header: "Type", accessorKey: "config.type" },
-          {
-            header: "Level",
-            accessorFn: (user) => (user.admin ? "Admin" : "User"),
-          },
-          {
-            header: "Enabled",
-            cell: ({ row }) => {
-              const enabledClass = row.original.enabled
-                ? text_color_class_by_intention("Good")
-                : text_color_class_by_intention("Critical");
-              return (
-                <div className={enabledClass}>
-                  {row.original.enabled ? "Enabled" : "Disabled"}
-                </div>
-              );
+    <Page
+      actions={
+        <Input
+          placeholder="Search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-[250px]"
+        />
+      }
+    >
+      <Section title="Users">
+        <DataTable
+          tableKey="users"
+          data={users ?? []}
+          columns={[
+            { header: "Username", accessorKey: "username" },
+            { header: "Type", accessorKey: "config.type" },
+            {
+              header: "Level",
+              accessorFn: (user) => (user.admin ? "Admin" : "User"),
             },
-          },
-        ]}
-        onRowClick={(user) => nav(`/users/${user._id!.$oid}`)}
-      />
+            {
+              header: "Enabled",
+              cell: ({ row }) => {
+                const enabledClass = row.original.enabled
+                  ? text_color_class_by_intention("Good")
+                  : text_color_class_by_intention("Critical");
+                return (
+                  <div className={enabledClass}>
+                    {row.original.enabled ? "Enabled" : "Disabled"}
+                  </div>
+                );
+              },
+            },
+          ]}
+          onRowClick={(user) => nav(`/users/${user._id!.$oid}`)}
+        />
+      </Section>
     </Page>
   );
 };
@@ -323,8 +336,8 @@ const PermissionsTable = ({
           {
             accessorKey: "level",
             sortingFn: (a, b) => {
-              const al = levelToNumber(a.original.level);
-              const bl = levelToNumber(b.original.level);
+              const al = level_to_number(a.original.level);
+              const bl = level_to_number(b.original.level);
               const dif = al - bl;
               return dif === 0 ? 0 : dif / Math.abs(dif);
             },
@@ -363,19 +376,4 @@ const PermissionsTable = ({
       />
     </Section>
   );
-};
-
-const levelToNumber = (level: Types.PermissionLevel | undefined) => {
-  switch (level) {
-    case undefined:
-      return 0;
-    case Types.PermissionLevel.None:
-      return 0;
-    case Types.PermissionLevel.Read:
-      return 1;
-    case Types.PermissionLevel.Execute:
-      return 2;
-    case Types.PermissionLevel.Write:
-      return 3;
-  }
 };

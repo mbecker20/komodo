@@ -60,5 +60,28 @@ export function version_is_none({ major, minor, patch }: Types.Version) {
 
 export function resource_name(type: UsableResource, id: string) {
   const Components = ResourceComponents[type];
-  return Components.name(id)
+  return Components.name(id);
 }
+
+export const level_to_number = (level: Types.PermissionLevel | undefined) => {
+  switch (level) {
+    case undefined:
+      return 0;
+    case Types.PermissionLevel.None:
+      return 0;
+    case Types.PermissionLevel.Read:
+      return 1;
+    case Types.PermissionLevel.Execute:
+      return 2;
+    case Types.PermissionLevel.Write:
+      return 3;
+  }
+};
+
+export const has_minimum_permissions = (
+  level: Types.PermissionLevel | undefined,
+  greater_than: Types.PermissionLevel
+) => {
+  if (!level) return false;
+  return level_to_number(level) >= level_to_number(greater_than);
+};

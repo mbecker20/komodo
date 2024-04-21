@@ -40,7 +40,7 @@ enum ReadRequest {
   GetCoreInfo(GetCoreInfo),
 
   // ==== USER ====
-  GetUsers(GetUsers),
+  ListUsers(ListUsers),
   GetUsername(GetUsername),
   ListApiKeys(ListApiKeys),
   ListPermissions(ListPermissions),
