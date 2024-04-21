@@ -640,7 +640,7 @@ pub async fn get_resource_ids_for_non_admin(
     doc! {
       "$or": user_target_query(user_id).await?,
       "resource_target.type": resource_type.as_ref(),
-      "level": { "$in": ["Read", "Execute", "Update"] }
+      "level": { "$in": ["Read", "Execute", "Write"] }
     },
     None,
   )

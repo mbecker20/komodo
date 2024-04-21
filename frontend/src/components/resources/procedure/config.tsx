@@ -71,12 +71,13 @@ const ProcedureConfigInner = ({
         <div className="flex gap-2 items-center text-sm">
           Procedure Type:
           <Select
-            value={config.procedure_type}
+            value={config.procedure_type || procedure.config.procedure_type}
             onValueChange={(type) =>
               setConfig({ ...config, procedure_type: type as any })
             }
+            disabled={disabled}
           >
-            <SelectTrigger className="w-32 capitalize">
+            <SelectTrigger className="w-32 capitalize" disabled={disabled}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="w-32">
@@ -107,6 +108,7 @@ const ProcedureConfigInner = ({
                   executions: [default_enabled_execution()],
                 })
               }
+              disabled={disabled}
             >
               Create Stage
             </Button>
@@ -131,6 +133,7 @@ const ProcedureConfigInner = ({
                         ),
                       })
                     }
+                    disabled={disabled}
                   />
                 );
               },
@@ -139,6 +142,7 @@ const ProcedureConfigInner = ({
               header: "Execution",
               cell: ({ row: { original, index } }) => (
                 <ExecutionTypeSelector
+                  disabled={disabled}
                   type={original.execution.type}
                   onSelect={(type) =>
                     setConfig({
@@ -175,6 +179,7 @@ const ProcedureConfigInner = ({
                 const Component = TARGET_COMPONENTS[type].Component;
                 return (
                   <Component
+                    disabled={disabled}
                     params={params as any}
                     setParams={(params: any) =>
                       setConfig({
@@ -198,8 +203,12 @@ const ProcedureConfigInner = ({
               cell: ({ row }) => {
                 return (
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                    <DropdownMenuTrigger asChild disabled={disabled}>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0"
+                        disabled={disabled}
+                      >
                         <span className="sr-only">Open menu</span>
                         <DotsHorizontalIcon className="h-4 w-4" />
                       </Button>
@@ -312,6 +321,7 @@ const ProcedureConfigInner = ({
                       executions: executions.filter((_, i) => i !== index),
                     })
                   }
+                  disabled={disabled}
                 />
               ),
             },
@@ -333,16 +343,18 @@ const default_enabled_execution: () => Types.EnabledExecution = () => ({
 const ExecutionTypeSelector = ({
   type,
   onSelect,
+  disabled,
 }: {
   type: Types.Execution["type"];
   onSelect: (type: Types.Execution["type"]) => void;
+  disabled: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="secondary" className="flex gap-2">
+        <Button variant="secondary" className="flex gap-2" disabled={disabled}>
           {type}
           <ChevronsUpDown className="w-3 h-3" />
         </Button>
@@ -396,6 +408,7 @@ type ExecutionConfigComponent<
 > = React.FC<{
   params: P;
   setParams: React.Dispatch<React.SetStateAction<P>>;
+  disabled: boolean;
 }>;
 
 type ExecutionConfigParams<T extends ExecutionType> = Extract<
@@ -417,121 +430,136 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
   },
   CloneRepo: {
     params: { repo: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Repo"
         selected={params.repo}
         onSelect={(repo) => setParams({ repo })}
+        disabled={disabled}
       />
     ),
   },
   Deploy: {
     params: { deployment: "" },
-    Component: ({ params, setParams }) => (
-      <ResourceSelector
-        type="Deployment"
-        selected={params.deployment}
-        onSelect={(deployment) => setParams({ deployment })}
-      />
-    ),
+    Component: ({ params, setParams, disabled }) => {
+      console.log(params.deployment)
+      return (
+        <ResourceSelector
+          type="Deployment"
+          selected={params.deployment}
+          onSelect={(deployment) => setParams({ deployment })}
+          disabled={disabled}
+        />
+      );
+    },
   },
   PruneDockerContainers: {
     params: { server: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Server"
         selected={params.server}
         onSelect={(server) => setParams({ server })}
+        disabled={disabled}
       />
     ),
   },
   PruneDockerImages: {
     params: { server: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Server"
         selected={params.server}
         onSelect={(server) => setParams({ server })}
+        disabled={disabled}
       />
     ),
   },
   PruneDockerNetworks: {
     params: { server: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Server"
         selected={params.server}
         onSelect={(server) => setParams({ server })}
+        disabled={disabled}
       />
     ),
   },
   PullRepo: {
     params: { repo: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Repo"
         selected={params.repo}
         onSelect={(repo) => setParams({ repo })}
+        disabled={disabled}
       />
     ),
   },
   RemoveContainer: {
     params: { deployment: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Deployment"
         selected={params.deployment}
         onSelect={(deployment) => setParams({ deployment })}
+        disabled={disabled}
       />
     ),
   },
   RunBuild: {
     params: { build: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Build"
         selected={params.build}
         onSelect={(build) => setParams({ build })}
+        disabled={disabled}
       />
     ),
   },
   RunProcedure: {
     params: { procedure: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Procedure"
         selected={params.procedure}
         onSelect={(procedure) => setParams({ procedure })}
+        disabled={disabled}
       />
     ),
   },
   StartContainer: {
     params: { deployment: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Deployment"
         selected={params.deployment}
         onSelect={(deployment) => setParams({ deployment })}
+        disabled={disabled}
       />
     ),
   },
   StopAllContainers: {
     params: { server: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Server"
         selected={params.server}
         onSelect={(id) => setParams({ server: id })}
+        disabled={disabled}
       />
     ),
   },
   StopContainer: {
     params: { deployment: "" },
-    Component: ({ params, setParams }) => (
+    Component: ({ params, setParams, disabled }) => (
       <ResourceSelector
         type="Deployment"
         selected={params.deployment}
         onSelect={(id) => setParams({ deployment: id })}
+        disabled={disabled}
       />
     ),
   },

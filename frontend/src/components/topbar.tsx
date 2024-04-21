@@ -74,7 +74,6 @@ export const Topbar = () => {
 const PrimaryDropdown = () => {
   const type = useResourceParamType();
   const Components = type && ResourceComponents[type];
-  console.log(location.pathname.split("/"));
 
   const [icon, title] = Components
     ? [<Components.Icon />, type + "s"]
