@@ -10,7 +10,7 @@ use monitor_client::entities::{
 use mungos::{
   by_id::find_one_by_id,
   find::find_collect,
-  mongodb::bson::{doc, oid::ObjectId},
+  mongodb::bson::{doc, oid::ObjectId, Document},
 };
 
 use crate::db::db_client;
@@ -118,4 +118,23 @@ pub async fn get_user_user_group_ids(
   .map(|ug| ug.id)
   .collect();
   Ok(res)
+}
+
+#[instrument(level = "debug")]
+pub async fn user_target_query(
+  user_id: &str,
+) -> anyhow::Result<Vec<Document>> {
+  let mut user_target_query = vec![
+    doc! { "user_target.type": "User", "user_target.id": user_id },
+  ];
+  let user_groups = get_user_user_group_ids(user_id)
+    .await?
+    .into_iter()
+    .map(|ug_id| {
+      doc! {
+        "user_target.type": "UserGroup", "user_target.id": ug_id,
+      }
+    });
+  user_target_query.extend(user_groups);
+  Ok(user_target_query)
 }

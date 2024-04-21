@@ -50,11 +50,13 @@ use mungos::{
 use resolver_api::Resolve;
 use serde::{de::DeserializeOwned, Serialize};
 
-use crate::{db::db_client, state::State};
+use crate::{
+  db::db_client, helpers::query::user_target_query, state::State,
+};
 
 use super::{
   cache::{deployment_status_cache, server_status_cache},
-  query::{get_tag, get_user_user_group_ids},
+  query::get_tag,
 };
 
 pub trait StateResource {
@@ -649,25 +651,6 @@ pub async fn get_resource_ids_for_non_admin(
   // collect into hashset first to remove any duplicates
   .collect::<HashSet<_>>();
   Ok(permissions.into_iter().collect())
-}
-
-#[instrument(level = "debug")]
-async fn user_target_query(
-  user_id: &str,
-) -> anyhow::Result<Vec<Document>> {
-  let mut user_target_query = vec![
-    doc! { "user_target.type": "User", "user_target.id": user_id },
-  ];
-  let user_groups = get_user_user_group_ids(user_id)
-    .await?
-    .into_iter()
-    .map(|ug_id| {
-      doc! {
-        "user_target.type": "UserGroup", "user_target.id": ug_id,
-      }
-    });
-  user_target_query.extend(user_groups);
-  Ok(user_target_query)
 }
 
 #[instrument(level = "debug")]

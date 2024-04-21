@@ -17,6 +17,7 @@ export type ReadResponses = {
   GetUsername: Types.GetUsernameResponse;
   ListApiKeys: Types.ListApiKeysResponse;
   ListPermissions: Types.ListPermissionsResponse;
+  GetPermissionLevel: Types.GetPermissionLevel;
   ListUserPermissions: Types.ListUserPermissionsResponse;
 
   // ==== USER GROUP ====

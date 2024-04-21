@@ -2,7 +2,8 @@ use anyhow::{anyhow, Context};
 use axum::async_trait;
 use monitor_client::{
   api::read::{
-    ListPermissions, ListPermissionsResponse, ListUserPermissions,
+    GetPermissionLevel, GetPermissionLevelResponse, ListPermissions,
+    ListPermissionsResponse, ListUserPermissions,
     ListUserPermissionsResponse,
   },
   entities::user::User,
@@ -10,7 +11,10 @@ use monitor_client::{
 use mungos::{find::find_collect, mongodb::bson::doc};
 use resolver_api::Resolve;
 
-use crate::{db::db_client, state::State};
+use crate::{
+  db::db_client, helpers::resource::get_user_permission_on_resource,
+  state::State,
+};
 
 #[async_trait]
 impl Resolve<ListPermissions, User> for State {
@@ -29,6 +33,18 @@ impl Resolve<ListPermissions, User> for State {
     )
     .await
     .context("failed to query db for permissions")
+  }
+}
+
+#[async_trait]
+impl Resolve<GetPermissionLevel, User> for State {
+  async fn resolve(
+    &self,
+    GetPermissionLevel { target }: GetPermissionLevel,
+    user: User,
+  ) -> anyhow::Result<GetPermissionLevelResponse> {
+    let (variant, id) = target.extract_variant_id();
+    get_user_permission_on_resource(&user.id, variant, id).await
   }
 }
 

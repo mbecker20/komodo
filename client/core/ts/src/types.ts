@@ -551,6 +551,8 @@ export interface Permission {
 
 export type ListPermissionsResponse = Permission[];
 
+export type GetPermissionLevelResponse = PermissionLevel;
+
 export type ListUserPermissionsResponse = Permission[];
 
 export enum ProcedureType {
@@ -1461,6 +1463,11 @@ export interface GetCoreInfoResponse {
 
 /** List permissions for the calling user. Response: [ListPermissionsResponse] */
 export interface ListPermissions {
+}
+
+/** Gets the calling user's permission level on a specific resource. Response: [PermissionLevel] */
+export interface GetPermissionLevel {
+	target: ResourceTarget;
 }
 
 /** List permissions for a specific user. Admin only. Response: [ListUserPermissionsResponse] */
