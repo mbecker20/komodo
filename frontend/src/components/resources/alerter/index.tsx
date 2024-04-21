@@ -1,5 +1,5 @@
 import { NewLayout } from "@components/layouts";
-import { useRead, useTagsFilter, useWrite } from "@lib/hooks";
+import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
   Select,
@@ -13,12 +13,11 @@ import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
 import { AlarmClock } from "lucide-react";
 import { useState } from "react";
-import { DataTable, SortableHeader } from "@ui/data-table";
 import { Link } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
-import { TagsWithBadge } from "@components/tags";
-import { DeleteResource, ResourceLink } from "../common";
+import { DeleteResource } from "../common";
+import { AlerterTable } from "./table";
 
 const useAlerter = (id?: string) =>
   useRead("ListAlerters", {}).data?.find((d) => d.id === id);
@@ -85,50 +84,7 @@ export const AlerterComponents: RequiredResourceComponents = {
     );
   },
 
-  Table: ({ search }) => {
-    const tags = useTagsFilter();
-    const alerters = useRead("ListAlerters", {}).data;
-    const searchSplit = search?.split(" ") || [];
-    return (
-      <DataTable
-        tableKey="alerters"
-        data={
-          alerters?.filter(
-            (resource) =>
-              tags.every((tag) => resource.tags.includes(tag)) &&
-              (searchSplit.length > 0
-                ? searchSplit.every((search) => resource.name.includes(search))
-                : true)
-          ) ?? []
-        }
-        columns={[
-          {
-            accessorKey: "name",
-            header: ({ column }) => (
-              <SortableHeader column={column} title="Name" />
-            ),
-            cell: ({ row }) => (
-              <ResourceLink type="Alerter" id={row.original.id} />
-            ),
-          },
-          {
-            header: "Type",
-            accessorKey: "info.alerter_type",
-          },
-          {
-            header: "Tags",
-            cell: ({ row }) => {
-              return (
-                <div className="flex gap-1">
-                  <TagsWithBadge tag_ids={row.original.tags} />
-                </div>
-              );
-            },
-          },
-        ]}
-      />
-    );
-  },
+  Table: AlerterTable,
 
   Name: ({ id }: { id: string }) => <>{useAlerter(id)?.name}</>,
   name: (id) => useAlerter(id)?.name,

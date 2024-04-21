@@ -26,20 +26,23 @@ export const BuildTable = ({ search }: { search?: string }) => {
           header: ({ column }) => (
             <SortableHeader column={column} title="Name" />
           ),
-          cell: ({ row }) => (
-            <ResourceLink type="Build" id={row.original.id} />
-          ),
+          cell: ({ row }) => <ResourceLink type="Build" id={row.original.id} />,
         },
         {
           header: "Version",
           accessorFn: ({ info }) => fmt_version(info.version),
         },
         {
-          header: "Repo",
           accessorKey: "info.repo",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Repo" />
+          ),
         },
         {
-          header: "Last Built",
+          accessorKey: "info.last_built_at",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Last Built" />
+          ),
           accessorFn: ({ info: { last_built_at } }) => {
             if (last_built_at > 0) {
               return fmt_date_with_minutes(new Date(last_built_at));

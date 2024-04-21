@@ -1,17 +1,17 @@
 import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { TagsWithBadge } from "@components/tags";
 import { ResourceLink } from "../common";
+import { TagsWithBadge } from "@components/tags";
 
-export const ProcedureTable = ({ search }: { search?: string }) => {
+export const RepoTable = ({ search }: { search?: string }) => {
   const tags = useTagsFilter();
-  const procedures = useRead("ListProcedures", {}).data;
+  const repos = useRead("ListRepos", {}).data;
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
-      tableKey="procedures"
+      tableKey="repos"
       data={
-        procedures?.filter(
+        repos?.filter(
           (resource) =>
             tags.every((tag) => resource.tags.includes(tag)) &&
             (searchSplit.length > 0
@@ -25,14 +25,18 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
           header: ({ column }) => (
             <SortableHeader column={column} title="Name" />
           ),
-          cell: ({ row }) => (
-            <ResourceLink type="Procedure" id={row.original.id} />
+          cell: ({ row }) => <ResourceLink type="Repo" id={row.original.id} />,
+        },
+        {
+          accessorKey: "info.repo",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Repo" />
           ),
         },
         {
-          accessorKey: "info.procedure_type",
+          accessorKey: "info.branch",
           header: ({ column }) => (
-            <SortableHeader column={column} title="Type" />
+            <SortableHeader column={column} title="Branch" />
           ),
         },
         {

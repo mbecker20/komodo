@@ -1,9 +1,8 @@
 import { NewLayout } from "@components/layouts";
-import { useRead, useTagsFilter, useWrite } from "@lib/hooks";
+import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { DataTable, SortableHeader } from "@ui/data-table";
 import { Input } from "@ui/input";
 import {
   Select,
@@ -17,7 +16,8 @@ import { Cloud, Bot, Factory } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BuilderConfig } from "./config";
-import { DeleteResource, ResourceLink } from "../common";
+import { DeleteResource } from "../common";
+import { BuidlerTable } from "./table";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
@@ -84,45 +84,7 @@ export const BuilderComponents: RequiredResourceComponents = {
     );
   },
 
-  Table: ({ search }) => {
-    const tags = useTagsFilter();
-    const builders = useRead("ListBuilders", {}).data;
-    const searchSplit = search?.split(" ") || [];
-    return (
-      <DataTable
-        tableKey="builders"
-        data={
-          builders?.filter(
-            (resource) =>
-              tags.every((tag) => resource.tags.includes(tag)) &&
-              (searchSplit.length > 0
-                ? searchSplit.every((search) => resource.name.includes(search))
-                : true)
-          ) ?? []
-        }
-        columns={[
-          {
-            accessorKey: "name",
-            header: ({ column }) => (
-              <SortableHeader column={column} title="Name" />
-            ),
-            cell: ({ row }) => (
-              <ResourceLink type="Builder" id={row.original.id} />
-            ),
-          },
-          {
-            header: "Provider",
-            accessorKey: "info.provider",
-          },
-          {
-            header: "Instance Type",
-            accessorKey: "info.instance_type",
-          },
-          { header: "Tags", accessorFn: ({ tags }) => tags.join(", ") },
-        ]}
-      />
-    );
-  },
+  Table: BuidlerTable,
 
   Name: ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>,
   name: (id) => useBuilder(id)?.name,

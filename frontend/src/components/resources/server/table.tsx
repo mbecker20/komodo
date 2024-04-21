@@ -31,7 +31,22 @@ export const ServerTable = ({ search }: { search?: string }) => {
           ),
         },
         {
-          header: "Deployments",
+          accessorKey: "id",
+          sortingFn: (a, b) => {
+            const sa = useDeploymentCount(a.original.id);
+            const sb = useDeploymentCount(b.original.id);
+
+            if (!sa && !sb) return 0;
+            if (!sa) return -1;
+            if (!sb) return 1;
+
+            if (sa > sb) return 1;
+            else if (sa < sb) return -1;
+            else return 0;
+          },
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Deployments" />
+          ),
           cell: ({ row }) => <DeploymentCountOnServer id={row.original.id} />,
         },
         {
@@ -69,9 +84,12 @@ export const ServerTable = ({ search }: { search?: string }) => {
 };
 
 const DeploymentCountOnServer = ({ id }: { id: string }) => {
-  const { data } = useRead("ListDeployments", {
-    query: { specific: { server_ids: [id] } },
-  });
+  const count = useDeploymentCount(id);
+  return <>{count ?? 0}</>;
+};
 
-  return <>{data?.length ?? 0}</>;
+const useDeploymentCount = (id: string) => {
+  return useRead("ListDeployments", {}).data?.filter(
+    (d) => d.info.server_id === id
+  ).length;
 };

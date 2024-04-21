@@ -1,17 +1,17 @@
 import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { TagsWithBadge } from "@components/tags";
 import { ResourceLink } from "../common";
+import { TagsWithBadge } from "@components/tags";
 
-export const ProcedureTable = ({ search }: { search?: string }) => {
+export const AlerterTable = ({ search }: { search?: string }) => {
   const tags = useTagsFilter();
-  const procedures = useRead("ListProcedures", {}).data;
+  const alerters = useRead("ListAlerters", {}).data;
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
-      tableKey="procedures"
+      tableKey="alerters"
       data={
-        procedures?.filter(
+        alerters?.filter(
           (resource) =>
             tags.every((tag) => resource.tags.includes(tag)) &&
             (searchSplit.length > 0
@@ -26,11 +26,11 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
             <SortableHeader column={column} title="Name" />
           ),
           cell: ({ row }) => (
-            <ResourceLink type="Procedure" id={row.original.id} />
+            <ResourceLink type="Alerter" id={row.original.id} />
           ),
         },
         {
-          accessorKey: "info.procedure_type",
+          accessorKey: "info.alerter_type",
           header: ({ column }) => (
             <SortableHeader column={column} title="Type" />
           ),

@@ -1,13 +1,12 @@
-import { TagsWithBadge } from "@components/tags";
-import { useRead, useTagsFilter } from "@lib/hooks";
+import { useRead } from "@lib/hooks";
 import { RequiredResourceComponents } from "@types";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
-import { DataTable, SortableHeader } from "@ui/data-table";
 import { FolderGit, GitBranch } from "lucide-react";
 import { Link } from "react-router-dom";
 import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
-import { DeleteResource, NewResource, ResourceLink } from "../common";
+import { DeleteResource, NewResource } from "../common";
+import { RepoTable } from "./table";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
@@ -34,54 +33,7 @@ export const RepoComponents: RequiredResourceComponents = {
 
   New: () => <NewResource type="Repo" />,
 
-  Table: ({ search }) => {
-    const tags = useTagsFilter();
-    const repos = useRead("ListRepos", {}).data;
-    const searchSplit = search?.split(" ") || [];
-    return (
-      <DataTable
-        tableKey="repos"
-        data={
-          repos?.filter(
-            (resource) =>
-              tags.every((tag) => resource.tags.includes(tag)) &&
-              (searchSplit.length > 0
-                ? searchSplit.every((search) => resource.name.includes(search))
-                : true)
-          ) ?? []
-        }
-        columns={[
-          {
-            accessorKey: "name",
-            header: ({ column }) => (
-              <SortableHeader column={column} title="Name" />
-            ),
-            cell: ({ row }) => (
-              <ResourceLink type="Repo" id={row.original.id} />
-            ),
-          },
-          {
-            header: "Repo",
-            accessorKey: "info.repo",
-          },
-          {
-            header: "Branch",
-            accessorKey: "info.branch",
-          },
-          {
-            header: "Tags",
-            cell: ({ row }) => {
-              return (
-                <div className="flex gap-1">
-                  <TagsWithBadge tag_ids={row.original.tags} />
-                </div>
-              );
-            },
-          },
-        ]}
-      />
-    );
-  },
+  Table: RepoTable,
 
   Name: ({ id }: { id: string }) => <>{useRepo(id)?.name}</>,
   name: (id) => useRepo(id)?.name,

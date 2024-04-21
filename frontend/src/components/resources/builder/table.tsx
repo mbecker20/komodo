@@ -1,17 +1,17 @@
 import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { TagsWithBadge } from "@components/tags";
 import { ResourceLink } from "../common";
+import { TagsWithBadge } from "@components/tags";
 
-export const ProcedureTable = ({ search }: { search?: string }) => {
+export const BuidlerTable = ({ search }: { search?: string }) => {
   const tags = useTagsFilter();
-  const procedures = useRead("ListProcedures", {}).data;
+  const builders = useRead("ListBuilders", {}).data;
   const searchSplit = search?.split(" ") || [];
   return (
     <DataTable
-      tableKey="procedures"
+      tableKey="builders"
       data={
-        procedures?.filter(
+        builders?.filter(
           (resource) =>
             tags.every((tag) => resource.tags.includes(tag)) &&
             (searchSplit.length > 0
@@ -26,13 +26,19 @@ export const ProcedureTable = ({ search }: { search?: string }) => {
             <SortableHeader column={column} title="Name" />
           ),
           cell: ({ row }) => (
-            <ResourceLink type="Procedure" id={row.original.id} />
+            <ResourceLink type="Builder" id={row.original.id} />
           ),
         },
         {
-          accessorKey: "info.procedure_type",
+          accessorKey: "info.provider",
           header: ({ column }) => (
-            <SortableHeader column={column} title="Type" />
+            <SortableHeader column={column} title="Provider" />
+          ),
+        },
+        {
+          accessorKey: "info.instance_type",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Instance Type" />
           ),
         },
         {
