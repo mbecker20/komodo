@@ -6,7 +6,7 @@ use monitor_client::{
     ListPermissionsResponse, ListUserPermissions,
     ListUserPermissionsResponse,
   },
-  entities::user::User,
+  entities::{permission::PermissionLevel, user::User},
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
 use resolver_api::Resolve;
@@ -43,6 +43,9 @@ impl Resolve<GetPermissionLevel, User> for State {
     GetPermissionLevel { target }: GetPermissionLevel,
     user: User,
   ) -> anyhow::Result<GetPermissionLevelResponse> {
+    if user.admin {
+      return Ok(PermissionLevel::Write);
+    }
     let (variant, id) = target.extract_variant_id();
     get_user_permission_on_resource(&user.id, variant, id).await
   }
