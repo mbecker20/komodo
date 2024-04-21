@@ -23,6 +23,7 @@ import { DeploymentTable } from "./table";
 import { DeploymentsChart } from "./dashboard";
 import { NewResource, ResourceLink } from "../common";
 import { Card, CardHeader } from "@ui/card";
+import { RunBuild } from "../build/actions";
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
@@ -94,7 +95,16 @@ export const DeploymentComponents: RequiredResourceComponents = {
     },
   },
 
-  Actions: { DeployContainer, StartOrStopContainer, RemoveContainer },
+  Actions: {
+    RunBuild: ({ id }) => {
+      const build_id = useDeployment(id)?.info.build_id;
+      if (!build_id) return null;
+      return <RunBuild id={build_id} />;
+    },
+    DeployContainer,
+    StartOrStopContainer,
+    RemoveContainer,
+  },
 
   Page: { DeploymentLogs },
 

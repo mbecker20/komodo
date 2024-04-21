@@ -58,12 +58,11 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
 };
 
 export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
-  const { data } = useRead("ListUpdates", {
-    query: {
-      "target.type": type,
-      "target.id": id,
-    },
-  });
+  const deployments = useRead("ListDeployments", {}).data;
+
+  const updates = useRead("ListUpdates", {
+    query: getUpdateQuery({ type, id }, deployments),
+  }).data;
 
   return (
     <Section
@@ -78,10 +77,42 @@ export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
       }
     >
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {data?.updates.slice(0, 3).map((update) => (
+        {updates?.updates.slice(0, 3).map((update) => (
           <UpdateCard update={update} key={update.id} />
         ))}
       </div>
     </Section>
   );
+};
+
+const getUpdateQuery = (
+  target: Types.ResourceTarget,
+  deployments: Types.DeploymentListItem[] | undefined
+) => {
+  const build_id =
+    target.type === "Deployment"
+      ? deployments?.find((d) => d.id === target.id)?.info.build_id
+      : undefined;
+  if (build_id) {
+    return {
+      $or: [
+        {
+          "target.type": target.type,
+          "target.id": target.id,
+        },
+        {
+          "target.type": "Build",
+          "target.id": build_id,
+          operation: {
+            $in: [Types.Operation.RunBuild, Types.Operation.CancelBuild],
+          },
+        },
+      ],
+    };
+  } else {
+    return {
+      "target.type": target.type,
+      "target.id": target.id,
+    };
+  }
 };

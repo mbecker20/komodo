@@ -1,10 +1,14 @@
 import { ConfirmButton } from "@components/util";
 import { useExecute, useRead } from "@lib/hooks";
+import { Types } from "@monitor/client";
 import { useToast } from "@ui/use-toast";
 import { Ban, Hammer, Loader2 } from "lucide-react";
 
-export const RunBuild = ({id}: {id: string}) => {
-	const { toast } = useToast();
+export const RunBuild = ({ id }: { id: string }) => {
+  const { toast } = useToast();
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Build", id },
+  }).data;
   const building = useRead("GetBuildActionState", { build: id }).data?.building;
   const { mutate: run_mutate, isPending: runPending } = useExecute("RunBuild", {
     onMutate: () => {
@@ -22,6 +26,15 @@ export const RunBuild = ({id}: {id: string}) => {
       },
     }
   );
+
+  // make sure hidden without perms.
+  // not usually necessary, but this button also used in deployment actions.
+  if (
+    perms !== Types.PermissionLevel.Execute &&
+    perms !== Types.PermissionLevel.Write
+  )
+    return null;
+
   if (building) {
     return (
       <ConfirmButton
@@ -48,4 +61,4 @@ export const RunBuild = ({id}: {id: string}) => {
       />
     );
   }
-}
+};
