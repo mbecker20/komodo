@@ -22,7 +22,8 @@ use serror::serialize_error_pretty;
 use crate::{
   db::db_client,
   helpers::{
-    query::get_server_with_status, periphery_client,
+    periphery_client,
+    query::get_server_with_status,
     resource::StateResource,
     update::{add_update, make_update, update_update},
   },

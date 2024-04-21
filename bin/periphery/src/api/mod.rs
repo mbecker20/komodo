@@ -44,7 +44,7 @@ pub enum PeripheryRequest {
   #[to_string_resolver]
   GetSystemProcesses(GetSystemProcesses),
 
-  // Docker 
+  // Docker
   GetContainerList(GetContainerList),
   GetContainerLog(GetContainerLog),
   GetContainerLogSearch(GetContainerLogSearch),

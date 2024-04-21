@@ -134,7 +134,7 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub container_user: String,
 
-  /// Extra args which are interpolated into the `docker run` command, 
+  /// Extra args which are interpolated into the `docker run` command,
   /// and affect the container configuration.
   #[serde(default)]
   #[builder(default)]

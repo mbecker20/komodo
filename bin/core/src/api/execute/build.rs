@@ -44,7 +44,8 @@ use crate::{
   db::db_client,
   helpers::{
     channel::build_cancel_channel,
-    query::get_deployment_state, periphery_client,
+    periphery_client,
+    query::get_deployment_state,
     resource::StateResource,
     update::{add_update, make_update, update_update},
   },

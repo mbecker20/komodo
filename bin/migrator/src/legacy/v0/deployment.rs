@@ -382,7 +382,7 @@ impl TryFrom<Deployment>
             .docker_run_args
             .docker_account
             .unwrap_or_default(),
-          labels: Default::default()
+          labels: Default::default(),
         },
     };
     Ok(deployment)

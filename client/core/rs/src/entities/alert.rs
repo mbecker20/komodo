@@ -24,7 +24,7 @@ use super::{
 #[doc_index(doc! { "target.id": 1 })]
 pub struct Alert {
   /// The Mongo ID of the alert.
-  /// This field is de/serialized from/to JSON as 
+  /// This field is de/serialized from/to JSON as
   /// `{ "_id": { "$oid": "..." }, ...(rest of serialized Alert) }`
   #[serde(
     default,
@@ -51,7 +51,7 @@ pub struct Alert {
 
   /// The type of alert, eg ServerUnreachable, ServerMem, ContainerStateChange
   pub variant: AlertDataVariant,
-  
+
   /// The data attached to the alert
   pub data: AlertData,
 

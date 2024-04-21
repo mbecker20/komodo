@@ -61,7 +61,7 @@ async fn ws_handler(ws: WebSocketUpgrade) -> impl IntoResponse {
             let _ = ws_sender
               .send(Message::Text(json!({ "type": "INVALID_USER", "msg": serialize_error(&e) }).to_string()))
               .await;
-            let _ = ws_sender.close().await; 
+            let _ = ws_sender.close().await;
             return;
           },
           Ok(None) => {

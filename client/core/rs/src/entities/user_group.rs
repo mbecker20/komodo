@@ -23,12 +23,12 @@ pub struct UserGroup {
   )]
   pub id: MongoId,
 
-	#[unique_index]
-	pub name: String,
+  #[unique_index]
+  pub name: String,
 
-	/// User ids
-	#[index]
-	pub users: Vec<String>,
+  /// User ids
+  #[index]
+  pub users: Vec<String>,
 
   #[serde(default)]
   pub updated_at: I64,

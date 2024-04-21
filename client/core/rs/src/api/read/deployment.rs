@@ -7,7 +7,9 @@ use crate::entities::{
   deployment::{
     Deployment, DeploymentActionState, DeploymentListItem,
     DeploymentQuery, DockerContainerState, DockerContainerStats,
-  }, update::Log, SearchCombinator, I64, U64
+  },
+  update::Log,
+  SearchCombinator, I64, U64,
 };
 
 use super::MonitorReadRequest;

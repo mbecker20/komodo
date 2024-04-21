@@ -12,7 +12,8 @@ use mungos::{by_id::find_one_by_id, mongodb::bson::doc};
 use resolver_api::Resolve;
 
 use crate::{
-  auth::random_string, db::db_client, helpers::query::get_user, state::State,
+  auth::random_string, db::db_client, helpers::query::get_user,
+  state::State,
 };
 
 const SECRET_LENGTH: usize = 40;
@@ -20,7 +21,11 @@ const BCRYPT_COST: u32 = 10;
 
 #[async_trait]
 impl Resolve<CreateApiKey, User> for State {
-  #[instrument(name = "CreateApiKey", level = "debug", skip(self, user))]
+  #[instrument(
+    name = "CreateApiKey",
+    level = "debug",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     CreateApiKey { name, expires }: CreateApiKey,
@@ -53,7 +58,11 @@ impl Resolve<CreateApiKey, User> for State {
 
 #[async_trait]
 impl Resolve<DeleteApiKey, User> for State {
-  #[instrument(name = "DeleteApiKey", level = "debug", skip(self, user))]
+  #[instrument(
+    name = "DeleteApiKey",
+    level = "debug",
+    skip(self, user)
+  )]
   async fn resolve(
     &self,
     DeleteApiKey { key }: DeleteApiKey,

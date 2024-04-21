@@ -8,7 +8,7 @@ use thiserror::Error;
 use tokio::sync::broadcast;
 use tokio_tungstenite::{connect_async, tungstenite::Message};
 use tokio_util::sync::CancellationToken;
-use tracing::{info, info_span, warn};
+use tracing::{info, info_span, warn, Instrument};
 use typeshare::typeshare;
 use uuid::Uuid;
 
@@ -54,6 +54,8 @@ pub enum UpdateWsError {
   MessageUnrecognized(String),
 }
 
+const MAX_SHORT_RETRY_COUNT: usize = 5;
+
 impl MonitorClient {
   pub fn subscribe_to_updates(
     &self,
@@ -83,157 +85,183 @@ impl MonitorClient {
         }
 
         let outer_uuid = Uuid::new_v4();
-        let span = info_span!("Outer Loop");
-        let _ = span.enter();
+        let span = info_span!(
+          "Outer Loop",
+          master_uuid = format!("{master_uuid}"),
+          outer_uuid = format!("{outer_uuid}")
+        );
 
-        info!("Entering inner (connection) loop | outer uuid {outer_uuid} | master uuid {master_uuid}");
-
-        loop {
-          // INNER LOOP (SHORT RECONNECT)
-          if cancel.is_cancelled() {
-            break;
-          }
-
-          let inner_uuid = Uuid::new_v4();
-          let span = info_span!("Inner Loop");
-          let _ = span.enter();
-
-          info!("Connecting to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
-
-          let mut ws =
-            match connect_async(&address).await.with_context(|| {
-              format!(
-                "failed to connect to monitor websocket at {address}"
-              )
-            }) {
-              Ok((ws, _)) => ws,
-              Err(e) => {
-                let _ = tx.send(UpdateWsMessage::Error(
-                  UpdateWsError::ConnectionError(serialize_error(&e)),
-                ));
-                warn!("{e:#}");
-                break;
-              }
-            };
-
-          info!("Connected to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
-
-          // ==================
-          // SEND LOGIN MSG
-          // ==================
-          let login_send_res = ws
-            .send(Message::Text(login_msg.clone()))
-            .await
-            .context("failed to send login message");
-
-          if let Err(e) = login_send_res {
-            let _ = tx.send(UpdateWsMessage::Error(
-              UpdateWsError::LoginError(serialize_error(&e)),
-            ));
-            warn!("breaking inner loop | {e:#} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
-            break;
-          }
-
-          // ==================
-          // HANDLE LOGIN RES
-          // ==================
-          match ws.try_next().await {
-            Ok(Some(Message::Text(msg))) => {
-              if msg != "LOGGED_IN" {
-                let _ = tx.send(UpdateWsMessage::Error(
-                  UpdateWsError::LoginError(msg.clone()),
-                ));
-                let _ = ws.close(None).await;
-                warn!("breaking inner loop | got msg {msg} instead of 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
-                break;
-              }
-            }
-            Ok(Some(msg)) => {
-              let _ = tx.send(UpdateWsMessage::Error(
-                UpdateWsError::LoginError(format!("{msg:#?}")),
-              ));
-              let _ = ws.close(None).await;
-              warn!("breaking inner loop | got msg {msg} instead of Message::Text 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
-              break;
-            }
-            Ok(None) => {
-              let _ = tx.send(UpdateWsMessage::Error(
-                UpdateWsError::LoginError(String::from(
-                  "got None message after login message",
-                )),
-              ));
-              let _ = ws.close(None).await;
-              warn!("breaking inner loop | got None instead of 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
-              break;
-            }
-            Err(e) => {
-              let _ = tx.send(UpdateWsMessage::Error(
-                UpdateWsError::LoginError(format!(
-                  "failed to recieve message | {e:#?}"
-                )),
-              ));
-              let _ = ws.close(None).await;
-              warn!("breaking inner loop | got error msg | {e:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
-              break;
-            }
-          }
-
-          let _ = tx.send(UpdateWsMessage::Reconnected);
-
-          info!("logged into websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
-
-          // ==================
-          // HANLDE MSGS
-          // ==================
+        async {
+          info!("Entering inner (connection) loop | outer uuid {outer_uuid} | master uuid {master_uuid}");
+          let mut retry = 0;
           loop {
-            match ws
-              .try_next()
-              .await
-              .context("failed to recieve message")
-            {
-              Ok(Some(Message::Text(msg))) => {
-                match serde_json::from_str::<UpdateListItem>(&msg) {
-                  Ok(msg) => {
-                    tracing::debug!(
-                      "got recognized message: {msg:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
-                    );
-                    let _ = tx.send(UpdateWsMessage::Update(msg));
-                  }
-                  Err(_) => {
-                    tracing::warn!(
-                      "got unrecognized message: {msg:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
-                    );
+            // INNER LOOP (SHORT RECONNECT)
+            if cancel.is_cancelled() {
+              break;
+            }
+            if retry >= MAX_SHORT_RETRY_COUNT {
+              break;
+            }
+
+            let inner_uuid = Uuid::new_v4();
+            let span = info_span!(
+              "Inner Loop",
+              master_uuid = format!("{master_uuid}"),
+              outer_uuid = format!("{outer_uuid}"),
+              inner_uuid = format!("{inner_uuid}")
+            );
+
+            async {
+              info!("Connecting to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+
+              let mut ws =
+                match connect_async(&address).await.with_context(|| {
+                  format!(
+                    "failed to connect to monitor websocket at {address}"
+                  )
+                }) {
+                  Ok((ws, _)) => ws,
+                  Err(e) => {
                     let _ = tx.send(UpdateWsMessage::Error(
-                      UpdateWsError::MessageUnrecognized(msg),
+                      UpdateWsError::ConnectionError(serialize_error(&e)),
                     ));
+                    warn!("{e:#}");
+                    retry += 1;
+                    return;
+                  }
+                };
+
+              info!("Connected to websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+
+              // ==================
+              // SEND LOGIN MSG
+              // ==================
+              let login_send_res = ws
+                .send(Message::Text(login_msg.clone()))
+                .await
+                .context("failed to send login message");
+
+              if let Err(e) = login_send_res {
+                let _ = tx.send(UpdateWsMessage::Error(
+                  UpdateWsError::LoginError(serialize_error(&e)),
+                ));
+                warn!("breaking inner loop | {e:#} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+                retry += 1;
+                return;
+              }
+
+              // ==================
+              // HANDLE LOGIN RES
+              // ==================
+              match ws.try_next().await {
+                Ok(Some(Message::Text(msg))) => {
+                  if msg != "LOGGED_IN" {
+                    let _ = tx.send(UpdateWsMessage::Error(
+                      UpdateWsError::LoginError(msg.clone()),
+                    ));
+                    let _ = ws.close(None).await;
+                    warn!("breaking inner loop | got msg {msg} instead of 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+                    retry += 1;
+                    return;
+                  }
+                }
+                Ok(Some(msg)) => {
+                  let _ = tx.send(UpdateWsMessage::Error(
+                    UpdateWsError::LoginError(format!("{msg:#?}")),
+                  ));
+                  let _ = ws.close(None).await;
+                  warn!("breaking inner loop | got msg {msg} instead of Message::Text 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+                  retry += 1;
+                  return;
+                }
+                Ok(None) => {
+                  let _ = tx.send(UpdateWsMessage::Error(
+                    UpdateWsError::LoginError(String::from(
+                      "got None message after login message",
+                    )),
+                  ));
+                  let _ = ws.close(None).await;
+                  warn!("breaking inner loop | got None instead of 'LOGGED_IN' | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+                  retry += 1;
+                  return;
+                }
+                Err(e) => {
+                  let _ = tx.send(UpdateWsMessage::Error(
+                    UpdateWsError::LoginError(format!(
+                      "failed to recieve message | {e:#?}"
+                    )),
+                  ));
+                  let _ = ws.close(None).await;
+                  warn!("breaking inner loop | got error msg | {e:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+                  retry += 1;
+                  return;
+                }
+              }
+
+              let _ = tx.send(UpdateWsMessage::Reconnected);
+
+              info!("logged into websocket | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}");
+
+              // If we get to this point (connected / logged in) reset the short retry counter
+              retry = 0;
+
+              // ==================
+              // HANLDE MSGS
+              // ==================
+              loop {
+                match ws
+                  .try_next()
+                  .await
+                  .context("failed to recieve message")
+                {
+                  Ok(Some(Message::Text(msg))) => {
+                    match serde_json::from_str::<UpdateListItem>(&msg) {
+                      Ok(msg) => {
+                        tracing::debug!(
+                          "got recognized message: {msg:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
+                        );
+                        let _ = tx.send(UpdateWsMessage::Update(msg));
+                      }
+                      Err(_) => {
+                        tracing::warn!(
+                          "got unrecognized message: {msg:?} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
+                        );
+                        let _ = tx.send(UpdateWsMessage::Error(
+                          UpdateWsError::MessageUnrecognized(msg),
+                        ));
+                      }
+                    }
+                  }
+                  Ok(Some(Message::Close(_))) => {
+                    let _ = tx.send(UpdateWsMessage::Disconnected);
+                    let _ = ws.close(None).await;
+                    tracing::warn!(
+                      "breaking inner loop | got close message | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
+                    );
+                    break;
+                  }
+                  Err(e) => {
+                    let _ = tx.send(UpdateWsMessage::Error(
+                      UpdateWsError::MessageError(serialize_error(&e)),
+                    ));
+                    let _ = tx.send(UpdateWsMessage::Disconnected);
+                    let _ = ws.close(None).await;
+                    tracing::warn!(
+                      "breaking inner loop | got error message | {e:#} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
+                    );
+                    break;
+                  }
+                  Ok(_) => {
+                    // ignore
                   }
                 }
               }
-              Ok(Some(Message::Close(_))) => {
-                let _ = tx.send(UpdateWsMessage::Disconnected);
-                let _ = ws.close(None).await;
-                tracing::warn!(
-                  "breaking inner loop | got close message | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
-                );
-                break;
-              }
-              Err(e) => {
-                let _ = tx.send(UpdateWsMessage::Error(
-                  UpdateWsError::MessageError(serialize_error(&e)),
-                ));
-                let _ = tx.send(UpdateWsMessage::Disconnected);
-                let _ = ws.close(None).await;
-                tracing::warn!(
-                  "breaking inner loop | got error message | {e:#} | inner uuid {inner_uuid} | outer uuid {outer_uuid} | master uuid {master_uuid}"
-                );
-                break;
-              }
-              Ok(_) => {
-                // ignore
-              }
             }
+              .instrument(span)
+              .await;
           }
-        }
+        }.instrument(span).await;
+
         tokio::time::sleep(Duration::from_secs(retry_cooldown_secs))
           .await;
       }

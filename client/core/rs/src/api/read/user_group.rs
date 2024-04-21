@@ -8,12 +8,14 @@ use crate::entities::user_group::UserGroup;
 use super::MonitorReadRequest;
 
 #[typeshare]
-#[derive(Debug, Clone, Serialize, Deserialize, Request, EmptyTraits)]
+#[derive(
+  Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(GetUserGroupResponse)]
 pub struct GetUserGroup {
-	/// Name or Id
-	pub user_group: String,
+  /// Name or Id
+  pub user_group: String,
 }
 
 #[typeshare]
@@ -22,7 +24,9 @@ pub type GetUserGroupResponse = UserGroup;
 //
 
 #[typeshare]
-#[derive(Debug, Clone, Serialize, Deserialize, Request, EmptyTraits)]
+#[derive(
+  Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
+)]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListUserGroupsResponse)]
 pub struct ListUserGroups {}
