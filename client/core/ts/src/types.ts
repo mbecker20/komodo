@@ -553,7 +553,7 @@ export type ListPermissionsResponse = Permission[];
 
 export type GetPermissionLevelResponse = PermissionLevel;
 
-export type ListUserPermissionsResponse = Permission[];
+export type ListUserTargetPermissionsResponse = Permission[];
 
 export enum ProcedureType {
 	/** Run the executions one after the other, in order of increasing index. */
@@ -1187,6 +1187,11 @@ export interface RunBuild {
 	build: string;
 }
 
+/**
+ * Cancels the target build.
+ * Only does anything if the build is `building` when called.
+ * Response: [Update]
+ */
 export interface CancelBuild {
 	/** Can be id or name */
 	build: string;
@@ -1461,18 +1466,29 @@ export interface GetCoreInfoResponse {
 	github_webhook_base_url: string;
 }
 
-/** List permissions for the calling user. Response: [ListPermissionsResponse] */
+/**
+ * List permissions for the calling user.
+ * Does not include any permissions on UserGroups they may be a part of.
+ * Response: [ListPermissionsResponse]
+ */
 export interface ListPermissions {
 }
 
-/** Gets the calling user's permission level on a specific resource. Response: [PermissionLevel] */
+/**
+ * Gets the calling user's permission level on a specific resource.
+ * Factors in any UserGroup's permissions they may be a part of.
+ * Response: [PermissionLevel]
+ */
 export interface GetPermissionLevel {
 	target: ResourceTarget;
 }
 
-/** List permissions for a specific user. Admin only. Response: [ListUserPermissionsResponse] */
-export interface ListUserPermissions {
-	user_id: string;
+/**
+ * List permissions for a specific user. **Admin only**.
+ * Response: [ListUserTargetPermissionsResponse]
+ */
+export interface ListUserTargetPermissions {
+	user_target: UserTarget;
 }
 
 export interface GetProcedure {
@@ -2124,7 +2140,7 @@ export type ReadRequest =
 	| { type: "ListApiKeys", params: ListApiKeys }
 	| { type: "ListPermissions", params: ListPermissions }
 	| { type: "GetPermissionLevel", params: GetPermissionLevel }
-	| { type: "ListUserPermissions", params: ListUserPermissions }
+	| { type: "ListUserTargetPermissions", params: ListUserTargetPermissions }
 	| { type: "GetUserGroup", params: GetUserGroup }
 	| { type: "ListUserGroups", params: ListUserGroups }
 	| { type: "FindResources", params: FindResources }

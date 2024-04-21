@@ -45,7 +45,7 @@ enum ReadRequest {
   ListApiKeys(ListApiKeys),
   ListPermissions(ListPermissions),
   GetPermissionLevel(GetPermissionLevel),
-  ListUserPermissions(ListUserPermissions),
+  ListUserTargetPermissions(ListUserTargetPermissions),
 
   // ==== USER GROUP ====
   GetUserGroup(GetUserGroup),

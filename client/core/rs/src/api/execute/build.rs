@@ -23,6 +23,9 @@ pub struct RunBuild {
 
 //
 
+/// Cancels the target build.
+/// Only does anything if the build is `building` when called.
+/// Response: [Update]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,

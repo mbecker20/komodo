@@ -4,13 +4,15 @@ use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
 use crate::entities::{
-  permission::{Permission, PermissionLevel},
+  permission::{Permission, PermissionLevel, UserTarget},
   update::ResourceTarget,
 };
 
 use super::MonitorReadRequest;
 
-/// List permissions for the calling user. Response: [ListPermissionsResponse]
+/// List permissions for the calling user.
+/// Does not include any permissions on UserGroups they may be a part of.
+/// Response: [ListPermissionsResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -24,7 +26,9 @@ pub type ListPermissionsResponse = Vec<Permission>;
 
 //
 
-/// Gets the calling user's permission level on a specific resource. Response: [PermissionLevel]
+/// Gets the calling user's permission level on a specific resource.
+/// Factors in any UserGroup's permissions they may be a part of.
+/// Response: [PermissionLevel]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -40,16 +44,17 @@ pub type GetPermissionLevelResponse = PermissionLevel;
 
 //
 
-/// List permissions for a specific user. Admin only. Response: [ListUserPermissionsResponse]
+/// List permissions for a specific user. **Admin only**.
+/// Response: [ListUserTargetPermissionsResponse]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(ListUserPermissionsResponse)]
-pub struct ListUserPermissions {
-  pub user_id: String,
+#[response(ListUserTargetPermissionsResponse)]
+pub struct ListUserTargetPermissions {
+  pub user_target: UserTarget,
 }
 
 #[typeshare]
-pub type ListUserPermissionsResponse = Vec<Permission>;
+pub type ListUserTargetPermissionsResponse = Vec<Permission>;

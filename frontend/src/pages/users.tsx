@@ -133,14 +133,18 @@ export const UserPage = () => {
           )
         }
       >
-        {!user.admin && <PermissionsTable />}
+        {!user.admin && (
+          <PermissionsTable user_target={{ type: "User", id: user_id }} />
+        )}
       </Page>
     )
   );
 };
 
-const useUserPermissions = (user_id: string) => {
-  const permissions = useRead("ListUserPermissions", { user_id }).data;
+const useUserTargetPermissions = (user_target: Types.UserTarget) => {
+  const permissions = useRead("ListUserTargetPermissions", {
+    user_target,
+  }).data;
   const servers = useRead("ListServers", {}).data;
   const deployments = useRead("ListDeployments", {}).data;
   const builds = useRead("ListBuilds", {}).data;
@@ -149,18 +153,18 @@ const useUserPermissions = (user_id: string) => {
   const builders = useRead("ListBuilders", {}).data;
   const alerters = useRead("ListAlerters", {}).data;
   const perms: (Types.Permission & { name: string })[] = [];
-  addPerms(user_id, permissions, "Server", servers, perms);
-  addPerms(user_id, permissions, "Deployment", deployments, perms);
-  addPerms(user_id, permissions, "Build", builds, perms);
-  addPerms(user_id, permissions, "Repo", repos, perms);
-  addPerms(user_id, permissions, "Procedure", procedures, perms);
-  addPerms(user_id, permissions, "Builder", builders, perms);
-  addPerms(user_id, permissions, "Alerter", alerters, perms);
+  addPerms(user_target, permissions, "Server", servers, perms);
+  addPerms(user_target, permissions, "Deployment", deployments, perms);
+  addPerms(user_target, permissions, "Build", builds, perms);
+  addPerms(user_target, permissions, "Repo", repos, perms);
+  addPerms(user_target, permissions, "Procedure", procedures, perms);
+  addPerms(user_target, permissions, "Builder", builders, perms);
+  addPerms(user_target, permissions, "Alerter", alerters, perms);
   return perms;
 };
 
 function addPerms<I>(
-  user_id: string,
+  user_target: Types.UserTarget,
   permissions: Types.Permission[] | undefined,
   resource_type: UsableResource,
   resources: Types.ResourceListItem<I>[] | undefined,
@@ -176,7 +180,7 @@ function addPerms<I>(
       perms.push({ ...perm, name: resource.name });
     } else {
       perms.push({
-        user_target: { type: "User", id: user_id },
+        user_target,
         name: resource.name,
         level: Types.PermissionLevel.None,
         resource_target: { type: resource_type, id: resource.id },
@@ -185,7 +189,11 @@ function addPerms<I>(
   });
 }
 
-const PermissionsTable = () => {
+const PermissionsTable = ({
+  user_target,
+}: {
+  user_target: Types.UserTarget;
+}) => {
   const { toast } = useToast();
   const [showNone, setShowNone] = useState(false);
   const [resourceType, setResourceType] = useState<UsableResource | "All">(
@@ -194,12 +202,11 @@ const PermissionsTable = () => {
   const [search, setSearch] = useState("");
   const searchSplit = search.toLowerCase().split(" ");
   const inv = useInvalidate();
-  const user_id = useParams().id as string;
-  const permissions = useUserPermissions(user_id);
+  const permissions = useUserTargetPermissions(user_target);
   const { mutate } = useWrite("UpdatePermissionOnTarget", {
     onSuccess: () => {
-      toast({ title: "Updated user permission" });
-      inv(["ListUserPermissions"]);
+      toast({ title: "Updated permission" });
+      inv(["ListUserTargetPermissions"]);
     },
   });
   return (
@@ -330,7 +337,7 @@ const PermissionsTable = () => {
                 onValueChange={(value) =>
                   mutate({
                     ...permission,
-                    user_target: { type: "User", id: user_id },
+                    user_target,
                     permission: value as Types.PermissionLevel,
                   })
                 }

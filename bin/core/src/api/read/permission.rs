@@ -3,8 +3,8 @@ use axum::async_trait;
 use monitor_client::{
   api::read::{
     GetPermissionLevel, GetPermissionLevelResponse, ListPermissions,
-    ListPermissionsResponse, ListUserPermissions,
-    ListUserPermissionsResponse,
+    ListPermissionsResponse, ListUserTargetPermissions,
+    ListUserTargetPermissionsResponse,
   },
   entities::{permission::PermissionLevel, user::User},
 };
@@ -52,20 +52,21 @@ impl Resolve<GetPermissionLevel, User> for State {
 }
 
 #[async_trait]
-impl Resolve<ListUserPermissions, User> for State {
+impl Resolve<ListUserTargetPermissions, User> for State {
   async fn resolve(
     &self,
-    ListUserPermissions { user_id }: ListUserPermissions,
+    ListUserTargetPermissions { user_target }: ListUserTargetPermissions,
     user: User,
-  ) -> anyhow::Result<ListUserPermissionsResponse> {
+  ) -> anyhow::Result<ListUserTargetPermissionsResponse> {
     if !user.admin {
       return Err(anyhow!("this method is admin only"));
     }
+    let (variant, id) = user_target.extract_variant_id();
     find_collect(
       &db_client().await.permissions,
       doc! {
-        "user_target.type": "User",
-        "user_target.id": user_id
+        "user_target.type": variant.as_ref(),
+        "user_target.id": id
       },
       None,
     )
