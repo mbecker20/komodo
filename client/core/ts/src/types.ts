@@ -1003,6 +1003,8 @@ export interface ApiKey {
 
 export type ListApiKeysResponse = ApiKey[];
 
+export type ListApiKeysForServiceUserResponse = ApiKey[];
+
 export type ListUsersResponse = User[];
 
 export interface UserGroup {
@@ -1693,6 +1695,16 @@ export interface ListApiKeys {
 }
 
 /**
+ * Gets list of api keys for the user at ID.
+ * **Admin only.**
+ * Will still fail if you call for a user_id that isn't a service user.
+ * Response: [ListApiKeysForServiceUserResponse]
+ */
+export interface ListApiKeysForServiceUser {
+	user_id: string;
+}
+
+/**
  * Gets list of monitor users.
  * **Admin only.**
  * Response: [ListUsersResponse]
@@ -2151,6 +2163,7 @@ export type ReadRequest =
 	| { type: "ListUsers", params: ListUsers }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "ListApiKeys", params: ListApiKeys }
+	| { type: "ListApiKeysForServiceUser", params: ListApiKeysForServiceUser }
 	| { type: "ListPermissions", params: ListPermissions }
 	| { type: "GetPermissionLevel", params: GetPermissionLevel }
 	| { type: "ListUserTargetPermissions", params: ListUserTargetPermissions }

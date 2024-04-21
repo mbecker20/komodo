@@ -22,6 +22,25 @@ pub type ListApiKeysResponse = Vec<ApiKey>;
 
 //
 
+/// Gets list of api keys for the user at ID.
+/// **Admin only.**
+/// Will still fail if you call for a user_id that isn't a service user.
+/// Response: [ListApiKeysForServiceUserResponse]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListApiKeysForServiceUserResponse)]
+pub struct ListApiKeysForServiceUser {
+  pub user_id: String,
+}
+
+#[typeshare]
+pub type ListApiKeysForServiceUserResponse = Vec<ApiKey>;
+
+//
+
 /// Gets list of monitor users.
 /// **Admin only.**
 /// Response: [ListUsersResponse]

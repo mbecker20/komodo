@@ -16,6 +16,7 @@ export type ReadResponses = {
   ListUsers: Types.ListUsersResponse;
   GetUsername: Types.GetUsernameResponse;
   ListApiKeys: Types.ListApiKeysResponse;
+  ListApiKeysForServiceUser: Types.ListApiKeysForServiceUser;
   ListPermissions: Types.ListPermissionsResponse;
   GetPermissionLevel: Types.GetPermissionLevelResponse;
   ListUserTargetPermissions: Types.ListUserTargetPermissionsResponse;
@@ -106,8 +107,8 @@ export type WriteResponses = {
   // ==== API KEY ====
   CreateApiKey: Types.CreateApiKeyResponse;
   DeleteApiKey: Types.DeleteApiKeyResponse;
-  CreateApiKeyForServiceUser: Types.CreateApiKeyForServiceUser;
-  DeleteApiKeyForServiceUser: Types.DeleteApiKeyForServiceUser;
+  CreateApiKeyForServiceUser: Types.CreateApiKeyForServiceUserResponse;
+  DeleteApiKeyForServiceUser: Types.DeleteApiKeyForServiceUserResponse;
 
   // ==== USER ====
   PushRecentlyViewed: Types.PushRecentlyViewedResponse;

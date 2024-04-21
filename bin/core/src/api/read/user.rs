@@ -3,9 +3,10 @@ use async_trait::async_trait;
 use monitor_client::{
   api::read::{
     GetUsername, GetUsernameResponse, ListApiKeys,
+    ListApiKeysForServiceUser, ListApiKeysForServiceUserResponse,
     ListApiKeysResponse, ListUsers, ListUsersResponse,
   },
-  entities::user::User,
+  entities::user::{User, UserConfig},
 };
 use mungos::{
   by_id::find_one_by_id, find::find_collect, mongodb::bson::doc,
@@ -61,6 +62,40 @@ impl Resolve<ListApiKeys, User> for State {
     let api_keys = find_collect(
       &db_client().await.api_keys,
       doc! { "user_id": &user.id },
+      None,
+    )
+    .await
+    .context("failed to query db for api keys")?
+    .into_iter()
+    .map(|mut api_keys| {
+      api_keys.sanitize();
+      api_keys
+    })
+    .collect();
+    Ok(api_keys)
+  }
+}
+
+#[async_trait]
+impl Resolve<ListApiKeysForServiceUser, User> for State {
+  async fn resolve(
+    &self,
+    ListApiKeysForServiceUser { user_id }: ListApiKeysForServiceUser,
+    admin: User,
+  ) -> anyhow::Result<ListApiKeysForServiceUserResponse> {
+    if !admin.admin {
+      return Err(anyhow!("This method is admin only."));
+    }
+    let user = find_one_by_id(&db_client().await.users, &user_id)
+      .await
+      .context("failed to query db for users")?
+      .context("user at id not found")?;
+    let UserConfig::Service { .. } = user.config else {
+      return Err(anyhow!("Given user is not service user"));
+    };
+    let api_keys = find_collect(
+      &db_client().await.api_keys,
+      doc! { "user_id": user_id },
       None,
     )
     .await

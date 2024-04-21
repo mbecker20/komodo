@@ -43,6 +43,7 @@ enum ReadRequest {
   ListUsers(ListUsers),
   GetUsername(GetUsername),
   ListApiKeys(ListApiKeys),
+  ListApiKeysForServiceUser(ListApiKeysForServiceUser),
   ListPermissions(ListPermissions),
   GetPermissionLevel(GetPermissionLevel),
   ListUserTargetPermissions(ListUserTargetPermissions),

@@ -8,7 +8,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/home/tree";
 import { Tags } from "@pages/tags";
 import { ResourceUpdates } from "@pages/resource_update";
-import { UserPage, UsersPage } from "@pages/users";
+import { UserGroupPage, UserPage, UsersPage } from "@pages/users";
 import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
@@ -27,6 +27,14 @@ const ROUTER = createBrowserRouter([
       { path: "resources", element: <AllResources /> },
       { path: "alerts", element: <Alerts /> },
       {
+        path: "users",
+        children: [
+          { path: "", element: <UsersPage /> },
+          { path: ":id", element: <UserPage /> },
+        ],
+      },
+      { path: "user-groups/:id", element: <UserGroupPage /> },
+      {
         path: ":type",
         children: [
           { path: "", element: <Resources /> },
@@ -34,13 +42,6 @@ const ROUTER = createBrowserRouter([
           { path: ":id/stats", element: <ResourceStats /> },
           { path: ":id/updates", element: <ResourceUpdates /> },
           { path: ":id/alerts", element: <Alerts /> },
-        ],
-      },
-      {
-        path: "users",
-        children: [
-          { path: "", element: <UsersPage /> },
-          { path: ":id", element: <UserPage /> },
         ],
       },
     ],

@@ -6,6 +6,7 @@ import {
   Boxes,
   FileQuestion,
   FolderTree,
+  Group,
   Home,
   Key,
   SearchX,
@@ -85,6 +86,8 @@ const PrimaryDropdown = () => {
     ? [<Tag className="w-4 h-4" />, "Tags"]
     : location.pathname === "/alerts"
     ? [<AlertTriangle className="w-4 h-4" />, "Alerts"]
+    : location.pathname.split("/")[1] === "user-groups"
+    ? [<Group className="w-4 h-4" />, "User Groups"]
     : location.pathname === "/users" ||
       location.pathname.split("/")[1] === "users"
     ? [<UserCircle2 className="w-4 h-4" />, "Users"]
@@ -94,11 +97,12 @@ const PrimaryDropdown = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-36 justify-between px-3">
-          <div className="flex items-center gap-2">
-            {icon}
-            {title}
-          </div>
+        <Button
+          variant="ghost"
+          className="flex justify-start items-center gap-2 w-36 px-3"
+        >
+          {icon}
+          {title}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36" side="bottom">
@@ -185,11 +189,12 @@ const SecondaryDropdown = () => {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="w-48 justify-between px-3">
-            <div className="flex items-center gap-2">
-              <Icon />
-              {view}
-            </div>
+          <Button
+            variant="ghost"
+            className="flex justify-start items-center gap-2 w-48 px-3"
+          >
+            <Icon />
+            {view}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-48" side="bottom">
@@ -210,10 +215,12 @@ const SecondaryDropdown = () => {
     );
   }
 
-  const [_, base, user_id] = location.pathname.split("/");
+  const [_, base, id] = location.pathname.split("/");
 
   if (base === "users") {
-    return <UsersDropdown user_id={user_id} />;
+    return <UsersDropdown user_id={id} />;
+  } else if (base === "user-groups") {
+    return <UserGroupDropdown group_id={id} />;
   }
 };
 
@@ -231,11 +238,12 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" className="justify-between w-[300px] px-3">
-          <div className="flex items-center gap-2">
-            <Components.Icon id={selected?.id} />
-            {selected ? selected.name : `All ${type}s`}
-          </div>
+        <Button
+          variant="ghost"
+          className="flex justify-start items-center gap-2 w-48 px-3"
+        >
+          <Components.Icon id={selected?.id} />
+          {selected ? selected.name : `All ${type}s`}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
@@ -283,6 +291,79 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
   );
 };
 
+const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
+  const nav = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
+
+  const groups = useRead("ListUserGroups", {}).data;
+
+  const selected = group_id
+    ? groups?.find((user) => user._id?.$oid === group_id)
+    : undefined;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          className="flex justify-start items-center gap-2 w-48 px-3"
+        >
+          <Group className="w-4 h-4" />
+          {selected ? selected.name : "All User Groups"}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
+        <Command>
+          <CommandInput
+            placeholder="Search User Groups"
+            className="h-9"
+            value={input}
+            onValueChange={setInput}
+          />
+          <CommandList>
+            <CommandEmpty className="flex justify-evenly items-center">
+              No User Groups Found
+              <SearchX className="w-3 h-3" />
+            </CommandEmpty>
+
+            <CommandGroup>
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
+                  nav(`/users`);
+                }}
+              >
+                <Button variant="link" className="flex gap-2 items-center p-0">
+                  <UserCircle2 className="w-4" />
+                  All User Groups
+                </Button>
+              </CommandItem>
+              {groups?.map((group) => (
+                <CommandItem
+                  key={group.name}
+                  onSelect={() => {
+                    setOpen(false);
+                    nav(`/user-groups/${group._id?.$oid}`);
+                  }}
+                >
+                  <Button
+                    variant="link"
+                    className="flex gap-2 items-center p-0"
+                  >
+                    <Group className="w-4 h-4" />
+                    {group.name}
+                  </Button>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
 const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
   const nav = useNavigate();
   const [open, setOpen] = useState(false);
@@ -298,11 +379,9 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" className="justify-between w-[300px] px-3">
-          <div className="flex items-center gap-2">
-            <UserAvatar avatar={avatar} />
-            {selected ? selected.username : "All Users"}
-          </div>
+        <Button variant="ghost" className="flex justify-start items-center gap-2 w-48 px-3">
+          <UserAvatar avatar={avatar} />
+          {selected ? selected.username : "All Users"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
