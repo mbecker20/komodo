@@ -1,12 +1,10 @@
 import { Page, Section } from "@components/layouts";
-import { Box, History } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@ui/card";
-import { TagsSummary } from "@components/dashboard/tags";
-import { ApiKeysSummary } from "@components/dashboard/api-keys";
+import { Box, History, Key, Tag } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { ResourceComponents } from "@components/resources";
 import { OpenAlerts } from "@components/alert";
-import { useUser } from "@lib/hooks";
+import { useRead, useUser } from "@lib/hooks";
 import { ResourceLink } from "@components/resources/common";
 import { Fragment } from "react";
 
@@ -77,5 +75,45 @@ const RecentlyViewed = () => {
         ))}
       </div>
     </Section>
+  );
+};
+
+const TagsSummary = () => {
+  const tags_count = useRead("ListTags", {}).data?.length;
+
+  return (
+    <Link to="/tags" className="w-full">
+      <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+        <CardHeader>
+          <div className="flex justify-between">
+            <div>
+              <CardTitle>Tags</CardTitle>
+              <CardDescription>{tags_count} Total</CardDescription>
+            </div>
+            <Tag className="w-4 h-4" />
+          </div>
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+};
+
+const ApiKeysSummary = () => {
+  const keys_count = useRead("ListApiKeys", {}).data?.length;
+
+  return (
+    <Link to="/keys" className="w-full">
+      <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+        <CardHeader>
+          <div className="flex justify-between">
+            <div>
+              <CardTitle>Api Keys</CardTitle>
+              <CardDescription>{keys_count} Total</CardDescription>
+            </div>
+            <Key className="w-4 h-4" />
+          </div>
+        </CardHeader>
+      </Card>
+    </Link>
   );
 };

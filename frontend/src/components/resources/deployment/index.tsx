@@ -40,6 +40,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
   },
 
   Name: ({ id }) => <>{useDeployment(id)?.name}</>,
+  name: (id) => useDeployment(id)?.name,
 
   Icon: ({ id }) => {
     const state = useDeployment(id)?.info.state;

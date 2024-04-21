@@ -74,6 +74,7 @@ export const Topbar = () => {
 const PrimaryDropdown = () => {
   const type = useResourceParamType();
   const Components = type && ResourceComponents[type];
+  console.log(location.pathname.split("/"));
 
   const [icon, title] = Components
     ? [<Components.Icon />, type + "s"]
@@ -85,7 +86,8 @@ const PrimaryDropdown = () => {
     ? [<Tag className="w-4 h-4" />, "Tags"]
     : location.pathname === "/alerts"
     ? [<AlertTriangle className="w-4 h-4" />, "Alerts"]
-    : location.pathname === "/users"
+    : location.pathname === "/users" ||
+      location.pathname.split("/")[1] === "users"
     ? [<UserCircle2 className="w-4 h-4" />, "Users"]
     : [<FileQuestion className="w-4 h-4" />, "Unknown"];
   // : [<Box className="w-4 h-4" />, "Dashboard"];
@@ -177,36 +179,43 @@ const SecondaryDropdown = () => {
 
   const type = useResourceParamType();
   if (type) return <ResourcesDropdown type={type} />;
-  if (location.pathname !== "/") return;
 
-  const Icon = ICONS[view];
+  if (location.pathname === "/") {
+    const Icon = ICONS[view];
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="w-48 justify-between px-3">
-          <div className="flex items-center gap-2">
-            <Icon />
-            {view}
-          </div>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-48" side="bottom">
-        <DropdownMenuGroup>
-          {Object.entries(ICONS).map(([view, Icon]) => (
-            <DropdownMenuItem
-              key={view}
-              className="flex items-center gap-2"
-              onClick={() => setView(view as HomeView)}
-            >
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="w-48 justify-between px-3">
+            <div className="flex items-center gap-2">
               <Icon />
               {view}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
+            </div>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-48" side="bottom">
+          <DropdownMenuGroup>
+            {Object.entries(ICONS).map(([view, Icon]) => (
+              <DropdownMenuItem
+                key={view}
+                className="flex items-center gap-2"
+                onClick={() => setView(view as HomeView)}
+              >
+                <Icon />
+                {view}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  }
+
+  const [_, base, user_id] = location.pathname.split("/");
+
+  if (base === "users") {
+    return <UsersDropdown user_id={user_id} />;
+  }
 };
 
 const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
@@ -274,3 +283,83 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
     </Popover>
   );
 };
+
+const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
+  const nav = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
+
+  const users = useRead("GetUsers", {}).data;
+
+  const selected = user_id
+    ? users?.find((user) => user._id?.$oid === user_id)
+    : undefined;
+  const avatar = (selected?.config.data as { avatar?: string })?.avatar;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" className="justify-between w-[300px] px-3">
+          <div className="flex items-center gap-2">
+            <UserAvatar avatar={avatar} />
+            {selected ? selected.username : "All Users"}
+          </div>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
+        <Command>
+          <CommandInput
+            placeholder="Search Users"
+            className="h-9"
+            value={input}
+            onValueChange={setInput}
+          />
+          <CommandList>
+            <CommandEmpty className="flex justify-evenly items-center">
+              No Users Found
+              <SearchX className="w-3 h-3" />
+            </CommandEmpty>
+
+            <CommandGroup>
+              <CommandItem
+                onSelect={() => {
+                  setOpen(false);
+                  nav(`/users`);
+                }}
+              >
+                <Button variant="link" className="flex gap-2 items-center p-0">
+                  <UserCircle2 className="w-4" />
+                  All Users
+                </Button>
+              </CommandItem>
+              {users?.map((user) => (
+                <CommandItem
+                  key={user.username}
+                  onSelect={() => {
+                    setOpen(false);
+                    nav(`/users/${user._id?.$oid}`);
+                  }}
+                >
+                  <Button
+                    variant="link"
+                    className="flex gap-2 items-center p-0"
+                  >
+                    <UserAvatar avatar={(user.config.data as any).avatar} />
+                    {user.username}
+                  </Button>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+const UserAvatar = ({ avatar }: { avatar: string | undefined }) =>
+  avatar ? (
+    <img src={avatar} alt="Avatar" className="w-4" />
+  ) : (
+    <UserCircle2 className="w-4" />
+  );

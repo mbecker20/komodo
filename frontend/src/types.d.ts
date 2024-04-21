@@ -17,6 +17,7 @@ export interface RequiredResourceComponents {
 
   /** Name of the resource */
   Name: IdComponent;
+  name: (id: string) => string | undefined;
 
   /** Icon for the component */
   Icon: OptionalIdComponent;

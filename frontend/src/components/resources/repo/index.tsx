@@ -84,6 +84,7 @@ export const RepoComponents: RequiredResourceComponents = {
   },
 
   Name: ({ id }: { id: string }) => <>{useRepo(id)?.name}</>,
+  name: (id) => useRepo(id)?.name,
 
   Icon: () => <GitBranch className="w-4 h-4" />,
 

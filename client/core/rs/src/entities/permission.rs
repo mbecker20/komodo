@@ -20,8 +20,8 @@ use super::{update::ResourceTarget, MongoId};
 #[unique_doc_index(doc! {
   "user_target.type": 1,
   "user_target.id": 1,
-  "target.type": 1,
-  "target.id": 1
+  "resource_target.type": 1,
+  "resource_target.id": 1
 })]
 pub struct Permission {
   /// The id of the permission document

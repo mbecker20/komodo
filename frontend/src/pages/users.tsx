@@ -1,11 +1,13 @@
 import { Page, Section } from "@components/layouts";
+import { ResourceComponents } from "@components/resources";
 import { ResourceLink } from "@components/resources/common";
 import { ConfirmButton } from "@components/util";
 import { text_color_class_by_intention } from "@lib/color";
 import { useInvalidate, useRead, useSetTitle, useWrite } from "@lib/hooks";
+import { resource_name } from "@lib/utils";
 import { Types } from "@monitor/client";
 import { UsableResource } from "@types";
-import { DataTable } from "@ui/data-table";
+import { DataTable, SortableHeader } from "@ui/data-table";
 import { Input } from "@ui/input";
 import { Label } from "@ui/label";
 import {
@@ -282,6 +284,12 @@ const PermissionsTable = () => {
       title="Permissions"
       actions={
         <div className="flex gap-6 items-center">
+          <Input
+            placeholder="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-[300px]"
+          />
           <div
             className="flex gap-3 items-center"
             onClick={() => setShowNone(!showNone)}
@@ -289,37 +297,66 @@ const PermissionsTable = () => {
             <Label htmlFor="show-none">Show All Resources</Label>
             <Switch id="show-none" checked={showNone} />
           </div>
-          <Input
-            placeholder="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-48"
-          />
         </div>
       }
     >
       <DataTable
         tableKey="permissions"
         data={
-          permissions
-            ?.filter((permission) =>
-              showNone ? true : permission.level !== Types.PermissionLevel.None
-            )
-            .filter((permission) =>
+          permissions?.filter(
+            (permission) =>
+              (showNone
+                ? true
+                : permission.level !== Types.PermissionLevel.None) &&
               searchSplit.every(
                 (search) =>
                   permission.name.toLowerCase().includes(search) ||
                   permission.resource_target.type.toLowerCase().includes(search)
               )
-            ) ?? []
+          ) ?? []
         }
         columns={[
           {
-            header: "Resource",
             accessorKey: "resource_target.type",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Resource" />
+            ),
+            cell: ({ row }) => {
+              const Components =
+                ResourceComponents[
+                  row.original.resource_target.type as UsableResource
+                ];
+              return (
+                <div className="flex gap-2 items-center">
+                  <Components.Icon />
+                  {row.original.resource_target.type}
+                </div>
+              );
+            },
           },
           {
-            header: "Target",
+            accessorKey: "resource_target",
+            sortingFn: (a, b) => {
+              const ra = resource_name(
+                a.original.resource_target.type as UsableResource,
+                a.original.resource_target.id
+              );
+              const rb = resource_name(
+                b.original.resource_target.type as UsableResource,
+                b.original.resource_target.id
+              );
+
+              if (!ra && !rb) return 0;
+              if (!ra) return -1;
+              if (!rb) return 1;
+
+              if (ra > rb) return 1;
+              else if (ra < rb) return -1;
+              else return 0;
+            },
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Target" />
+            ),
             cell: ({
               row: {
                 original: { resource_target },
@@ -334,7 +371,10 @@ const PermissionsTable = () => {
             },
           },
           {
-            header: "Level",
+            accessorKey: "level",
+            header: ({ column }) => (
+              <SortableHeader column={column} title="Level" />
+            ),
             cell: ({ row: { original: permission } }) => (
               <Select
                 value={permission.level}

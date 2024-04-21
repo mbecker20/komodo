@@ -1,3 +1,4 @@
+import { ResourceComponents } from "@components/resources";
 import { Types } from "@monitor/client";
 import { UsableResource } from "@types";
 import { type ClassValue, clsx } from "clsx";
@@ -55,4 +56,9 @@ function keep_line(line: string) {
 
 export function version_is_none({ major, minor, patch }: Types.Version) {
   return major === 0 && minor === 0 && patch === 0;
+}
+
+export function resource_name(type: UsableResource, id: string) {
+  const Components = ResourceComponents[type];
+  return Components.name(id)
 }

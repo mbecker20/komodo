@@ -38,6 +38,7 @@ export const ServerComponents: RequiredResourceComponents = {
   Table: ServerTable,
 
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
+  name: (id) => useServer(id)?.name,
 
   Icon: ({ id }) => {
     const status = useServer(id)?.info.status;

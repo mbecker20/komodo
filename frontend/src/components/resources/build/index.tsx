@@ -21,6 +21,7 @@ export const BuildComponents: RequiredResourceComponents = {
   Table: BuildTable,
 
   Name: ({ id }) => <>{useBuild(id)?.name}</>,
+  name: (id) => useBuild(id)?.name,
 
   Icon: ({ id }) => {
     if (id) return <IconStrictId id={id} />;

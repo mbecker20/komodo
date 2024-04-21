@@ -36,6 +36,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
   Table: ProcedureTable,
 
   Name: ({ id }) => <>{useProcedure(id)?.name}</>,
+  name: (id) => useProcedure(id)?.name,
 
   Icon: () => <Route className="w-4" />,
 

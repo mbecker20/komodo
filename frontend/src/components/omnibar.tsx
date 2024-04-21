@@ -1,4 +1,4 @@
-import { useRead } from "@lib/hooks";
+import { useRead, useUser } from "@lib/hooks";
 import { Button } from "@ui/button";
 import {
   CommandDialog,
@@ -9,7 +9,7 @@ import {
   CommandSeparator,
   CommandItem,
 } from "@ui/command";
-import { Home, Search } from "lucide-react";
+import { Home, Search, UserCircle2 } from "lucide-react";
 import { useState, useEffect, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { ResourceComponents } from "./resources";
@@ -21,6 +21,8 @@ import { ServerComponents } from "./resources/server";
 import { ProcedureComponents } from "./resources/procedure";
 
 export const Omnibar = () => {
+  const user = useUser().data;
+
   const [open, set] = useState(false);
   const navigate = useNavigate();
   const nav = (value: string) => {
@@ -70,6 +72,13 @@ export const Omnibar = () => {
             </CommandItem>
             <CommandItem
               className="flex items-center gap-2 cursor-pointer"
+              onSelect={() => nav("/servers")}
+            >
+              <ServerComponents.Icon />
+              Servers
+            </CommandItem>
+            <CommandItem
+              className="flex items-center gap-2 cursor-pointer"
               onSelect={() => nav("/deployments")}
             >
               <DeploymentComponents.Icon />
@@ -84,18 +93,20 @@ export const Omnibar = () => {
             </CommandItem>
             <CommandItem
               className="flex items-center gap-2 cursor-pointer"
-              onSelect={() => nav("/servers")}
-            >
-              <ServerComponents.Icon />
-              Servers
-            </CommandItem>
-            <CommandItem
-              className="flex items-center gap-2 cursor-pointer"
               onSelect={() => nav("/procedures")}
             >
               <ProcedureComponents.Icon />
               Procedures
             </CommandItem>
+            {user?.admin && (
+              <CommandItem
+                className="flex items-center gap-2 cursor-pointer"
+                onSelect={() => nav("/users")}
+              >
+                <UserCircle2 className="w-4 h-4" />
+                Users
+              </CommandItem>
+            )}
           </CommandGroup>
 
           <CommandSeparator />
