@@ -35,6 +35,7 @@ export const EnvVars = ({
         placeholder="VARIABLE=value"
         value={env}
         onChange={(e) => setEnv(e.target.value)}
+        disabled={disabled}
       />
     </ConfigItem>
   );

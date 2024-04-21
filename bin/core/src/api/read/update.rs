@@ -48,6 +48,8 @@ impl Resolve<ListUpdates, User> for State {
         Build::get_resource_ids_for_non_admin(&user.id).await?;
       let repo_ids =
         Repo::get_resource_ids_for_non_admin(&user.id).await?;
+      let procedure_ids =
+        Procedure::get_resource_ids_for_non_admin(&user.id).await?;
       let builder_ids =
         Builder::get_resource_ids_for_non_admin(&user.id).await?;
       let alerter_ids =
@@ -59,6 +61,7 @@ impl Resolve<ListUpdates, User> for State {
           { "target.type": "Deployment", "target.id": { "$in": &deployment_ids } },
           { "target.type": "Build", "target.id": { "$in": &build_ids } },
           { "target.type": "Repo", "target.id": { "$in": &repo_ids } },
+          { "target.type": "Procedure", "target.id": { "$in": &procedure_ids } },
           { "target.type": "Builder", "target.id": { "$in": &builder_ids } },
           { "target.type": "Alerter", "target.id": { "$in": &alerter_ids } },
         ]

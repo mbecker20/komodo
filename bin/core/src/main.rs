@@ -85,13 +85,7 @@ async fn main() -> anyhow::Result<()> {
 
 fn cors() -> anyhow::Result<CorsLayer> {
   let cors = CorsLayer::new()
-    .allow_origin(
-      // core_config()
-      //     .host
-      //     .parse::<HeaderValue>()
-      //     .context("failed to parse host into origin")?,
-      Any,
-    )
+    .allow_origin(Any)
     .allow_methods(Any)
     .allow_headers(Any);
   Ok(cors)

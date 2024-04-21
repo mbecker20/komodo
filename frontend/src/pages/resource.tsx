@@ -34,6 +34,7 @@ export const Resource = () => {
         perms
       )
     : false;
+  const canWrite = perms === Types.PermissionLevel.Write;
 
   return (
     <Page
@@ -89,13 +90,15 @@ export const Resource = () => {
 
       {/* Config and Danger Zone */}
       <Components.Config id={id} />
-      <Section
-        title="Danger Zone"
-        icon={<AlertTriangle className="w-4 h-4" />}
-        actions={type !== "Server" && <CopyResource type={type} id={id} />}
-      >
-        <Components.DangerZone id={id} />
-      </Section>
+      {canWrite && (
+        <Section
+          title="Danger Zone"
+          icon={<AlertTriangle className="w-4 h-4" />}
+          actions={type !== "Server" && <CopyResource type={type} id={id} />}
+        >
+          <Components.DangerZone id={id} />
+        </Section>
+      )}
     </Page>
   );
 };

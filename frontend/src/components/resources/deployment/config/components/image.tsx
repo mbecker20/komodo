@@ -58,12 +58,14 @@ const BuildVersionSelector = ({
 const ImageTypeSelector = ({
   selected,
   onSelect,
+  disabled,
 }: {
   selected: Types.DeploymentImage["type"] | undefined;
   onSelect: (type: Types.DeploymentImage["type"]) => void;
+  disabled: boolean;
 }) => (
-  <Select value={selected || undefined} onValueChange={onSelect}>
-    <SelectTrigger className="max-w-[150px]">
+  <Select value={selected || undefined} onValueChange={onSelect} disabled={disabled}>
+    <SelectTrigger className="max-w-[150px]" disabled={disabled}>
       <SelectValue placeholder="Select Type" />
     </SelectTrigger>
     <SelectContent>
@@ -86,6 +88,7 @@ export const ImageConfig = ({
     <div className="flex gap-4 w-full justify-end">
       <ImageTypeSelector
         selected={image?.type}
+        disabled={disabled}
         onSelect={(type) =>
           set({
             image: {
@@ -146,6 +149,7 @@ export const ImageConfig = ({
           }
           className="w-full lg:w-[300px]"
           placeholder="image name"
+          disabled={disabled}
         />
       )}
     </div>

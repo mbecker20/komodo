@@ -188,6 +188,9 @@ function addPerms<I>(
 const PermissionsTable = () => {
   const { toast } = useToast();
   const [showNone, setShowNone] = useState(false);
+  const [resourceType, setResourceType] = useState<UsableResource | "All">(
+    "All"
+  );
   const [search, setSearch] = useState("");
   const searchSplit = search.toLowerCase().split(" ");
   const inv = useInvalidate();
@@ -210,6 +213,23 @@ const PermissionsTable = () => {
             onChange={(e) => setSearch(e.target.value)}
             className="w-[300px]"
           />
+          <Select
+            value={resourceType}
+            onValueChange={(value) =>
+              setResourceType(value as UsableResource | "All")
+            }
+          >
+            <SelectTrigger className="w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {["All", ...Object.keys(ResourceComponents)].map((type) => (
+                <SelectItem key={type} value={type}>
+                  {type === "All" ? "All" : type + "s"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <div
             className="flex gap-3 items-center"
             onClick={() => setShowNone(!showNone)}
@@ -225,6 +245,9 @@ const PermissionsTable = () => {
         data={
           permissions?.filter(
             (permission) =>
+              (resourceType === "All"
+                ? true
+                : permission.resource_target.type === resourceType) &&
               (showNone
                 ? true
                 : permission.level !== Types.PermissionLevel.None) &&

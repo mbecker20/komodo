@@ -56,26 +56,30 @@ export const BuildConfig = ({ id }: { id: string }) => {
                     <div className="text-xl">
                       v{major}.{minor}.{patch}
                     </div>
-                    <Button
-                      variant="secondary"
-                      onClick={() =>
-                        set({
-                          version: { major: major + 1, minor, patch: 0 },
-                        })
-                      }
-                    >
-                      + Major
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() =>
-                        set({
-                          version: { major, minor: minor + 1, patch: 0 },
-                        })
-                      }
-                    >
-                      + Minor
-                    </Button>
+                    {!disabled && (
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          set({
+                            version: { major: major + 1, minor, patch: 0 },
+                          })
+                        }
+                      >
+                        + Major
+                      </Button>
+                    )}
+                    {!disabled && (
+                      <Button
+                        variant="secondary"
+                        onClick={() =>
+                          set({
+                            version: { major, minor: minor + 1, patch: 0 },
+                          })
+                        }
+                      >
+                        + Minor
+                      </Button>
+                    )}
                   </div>
                 </ConfigItem>
               );
@@ -86,6 +90,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
                   type="Builder"
                   selected={id}
                   onSelect={(builder_id) => set({ builder_id })}
+                  disabled={disabled}
                 />
               </ConfigItem>
             ),
@@ -129,7 +134,9 @@ export const BuildConfig = ({ id }: { id: string }) => {
                     />
                   ),
             use_buildx: true,
-            labels: (l, set) => <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />,
+            labels: (l, set) => (
+              <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
+            ),
             extra_args: (value, set) => (
               <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
             ),
