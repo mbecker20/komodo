@@ -288,7 +288,7 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
 
-  const users = useRead("GetUsers", {}).data;
+  const users = useRead("ListUsers", {}).data;
 
   const selected = user_id
     ? users?.find((user) => user._id?.$oid === user_id)

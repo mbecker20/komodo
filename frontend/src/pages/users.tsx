@@ -27,8 +27,9 @@ export const UsersPage = () => {
   useSetTitle("Users");
   const nav = useNavigate();
   const groups = useRead("ListUserGroups", {}).data;
-  const users = useRead("GetUsers", {}).data;
+  const users = useRead("ListUsers", {}).data;
   const [search, setSearch] = useState("");
+  const searchSplit = search.split(" ");
   return (
     <Page
       actions={
@@ -40,10 +41,35 @@ export const UsersPage = () => {
         />
       }
     >
+      {/* User Groups */}
+      <Section title="User Groups">
+        <DataTable
+          tableKey="user-groups"
+          data={
+            groups?.filter((group) =>
+              searchSplit.every((term) => group.name.includes(term))
+            ) ?? []
+          }
+          columns={[
+            { header: "Name", accessorKey: "name" },
+            {
+              header: "Members",
+              accessorFn: (group) => group.users.length,
+            },
+          ]}
+          onRowClick={(group) => nav(`/user-groups/${group._id!.$oid}`)}
+        />
+      </Section>
+
+      {/* Users */}
       <Section title="Users">
         <DataTable
           tableKey="users"
-          data={users ?? []}
+          data={
+            users?.filter((user) =>
+              searchSplit.every((term) => user.username.includes(term))
+            ) ?? []
+          }
           columns={[
             { header: "Username", accessorKey: "username" },
             { header: "Type", accessorKey: "config.type" },
@@ -76,11 +102,11 @@ export const UserPage = () => {
   const { toast } = useToast();
   const inv = useInvalidate();
   const user_id = useParams().id as string;
-  const user = useRead("GetUsers", {}).data?.find(
+  const user = useRead("ListUsers", {}).data?.find(
     (user) => user._id?.$oid === user_id
   );
   const { mutate } = useWrite("UpdateUserBasePermissions", {
-    onSuccess: () => inv(["GetUsers"]),
+    onSuccess: () => inv(["ListUsers"]),
     onError: (e) => {
       console.log(e);
       toast({ title: "Failed to update user permissions" });
