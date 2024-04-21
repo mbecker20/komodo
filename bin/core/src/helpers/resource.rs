@@ -586,8 +586,8 @@ pub async fn get_user_permission_on_resource(
     &db_client().await.permissions,
     doc! {
       "$or": user_target_query(user_id).await?,
-      "target.type": resource_variant.as_ref(),
-      "target.id": resource_id
+      "resource_target.type": resource_variant.as_ref(),
+      "resource_target.id": resource_id
     },
     None,
   )
@@ -616,7 +616,10 @@ where
     .await
     .permissions
     .delete_many(
-      doc! { "target.type": variant.as_ref(), "target.id": &id },
+      doc! {
+        "resource_target.type": variant.as_ref(),
+        "resource_target.id": &id
+      },
       None,
     )
     .await

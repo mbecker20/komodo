@@ -149,127 +149,44 @@ const useUserPermissions = (user_id: string) => {
   const builders = useRead("ListBuilders", {}).data;
   const alerters = useRead("ListAlerters", {}).data;
   const perms: (Types.Permission & { name: string })[] = [];
-  servers?.forEach((server) => {
-    const perm = permissions?.find(
-      (p) =>
-        p.resource_target.type === "Server" &&
-        p.resource_target.id === server.id
-    );
-    if (perm) {
-      perms.push({ ...perm, name: server.name });
-    } else {
-      perms.push({
-        user_target: { type: "User", id: user_id },
-        resource_target: { type: "Server", id: server.id },
-        name: server.name,
-        level: Types.PermissionLevel.None,
-      });
-    }
-  });
-  deployments?.forEach((deployment) => {
-    const perm = permissions?.find(
-      (p) =>
-        p.resource_target.type === "Deployment" &&
-        p.resource_target.id === deployment.id
-    );
-    if (perm) {
-      perms.push({ ...perm, name: deployment.name });
-    } else {
-      perms.push({
-        user_target: { type: "User", id: user_id },
-        resource_target: { type: "Deployment", id: deployment.id },
-        name: deployment.name,
-        level: Types.PermissionLevel.None,
-      });
-    }
-  });
-  builds?.forEach((build) => {
-    const perm = permissions?.find(
-      (p) =>
-        p.resource_target.type === "Build" && p.resource_target.id === build.id
-    );
-    if (perm) {
-      perms.push({ ...perm, name: build.name });
-    } else {
-      perms.push({
-        user_target: { type: "User", id: user_id },
-        name: build.name,
-        level: Types.PermissionLevel.None,
-        resource_target: { type: "Build", id: build.id },
-      });
-    }
-  });
-  repos?.forEach((repo) => {
-    const perm = permissions?.find(
-      (p) =>
-        p.resource_target.type === "Repo" && p.resource_target.id === repo.id
-    );
-    if (perm) {
-      perms.push({ ...perm, name: repo.name });
-    } else {
-      perms.push({
-        user_target: { type: "User", id: user_id },
-        name: repo.name,
-        level: Types.PermissionLevel.None,
-        resource_target: { type: "Repo", id: repo.id },
-      });
-    }
-  });
-  procedures?.forEach((procedure) => {
-    const perm = permissions?.find(
-      (p) =>
-        p.resource_target.type === "Procedure" &&
-        p.resource_target.id === procedure.id
-    );
-    if (perm) {
-      perms.push({ ...perm, name: procedure.name });
-    } else {
-      perms.push({
-        user_target: { type: "User", id: user_id },
-        name: procedure.name,
-        level: Types.PermissionLevel.None,
-        resource_target: { type: "Procedure", id: procedure.id },
-      });
-    }
-  });
-  builders?.forEach((builder) => {
-    const perm = permissions?.find(
-      (p) =>
-        p.resource_target.type === "Builder" &&
-        p.resource_target.id === builder.id
-    );
-    if (perm) {
-      perms.push({ ...perm, name: builder.name });
-    } else {
-      perms.push({
-        user_target: { type: "User", id: user_id },
-        name: builder.name,
-        level: Types.PermissionLevel.None,
-        resource_target: { type: "Builder", id: builder.id },
-      });
-    }
-  });
-  alerters?.forEach((alerter) => {
-    const perm = permissions?.find(
-      (p) =>
-        p.resource_target.type === "Alerter" &&
-        p.resource_target.id === alerter.id
-    );
-    if (perm) {
-      perms.push({ ...perm, name: alerter.name });
-    } else {
-      perms.push({
-        user_target: { type: "User", id: user_id },
-        name: alerter.name,
-        level: Types.PermissionLevel.None,
-        resource_target: { type: "Alerter", id: alerter.id },
-      });
-    }
-  });
+  addPerms(user_id, permissions, "Server", servers, perms);
+  addPerms(user_id, permissions, "Deployment", deployments, perms);
+  addPerms(user_id, permissions, "Build", builds, perms);
+  addPerms(user_id, permissions, "Repo", repos, perms);
+  addPerms(user_id, permissions, "Procedure", procedures, perms);
+  addPerms(user_id, permissions, "Builder", builders, perms);
+  addPerms(user_id, permissions, "Alerter", alerters, perms);
   return perms;
 };
 
+function addPerms<I>(
+  user_id: string,
+  permissions: Types.Permission[] | undefined,
+  resource_type: UsableResource,
+  resources: Types.ResourceListItem<I>[] | undefined,
+  perms: (Types.Permission & { name: string })[]
+) {
+  resources?.forEach((resource) => {
+    const perm = permissions?.find(
+      (p) =>
+        p.resource_target.type === resource_type &&
+        p.resource_target.id === resource.id
+    );
+    if (perm) {
+      perms.push({ ...perm, name: resource.name });
+    } else {
+      perms.push({
+        user_target: { type: "User", id: user_id },
+        name: resource.name,
+        level: Types.PermissionLevel.None,
+        resource_target: { type: resource_type, id: resource.id },
+      });
+    }
+  });
+}
+
 const PermissionsTable = () => {
+  const { toast } = useToast();
   const [showNone, setShowNone] = useState(false);
   const [search, setSearch] = useState("");
   const searchSplit = search.toLowerCase().split(" ");
@@ -277,7 +194,10 @@ const PermissionsTable = () => {
   const user_id = useParams().id as string;
   const permissions = useUserPermissions(user_id);
   const { mutate } = useWrite("UpdatePermissionOnTarget", {
-    onSuccess: () => inv(["ListUserPermissions"]),
+    onSuccess: () => {
+      toast({ title: "Updated user permission" });
+      inv(["ListUserPermissions"]);
+    },
   });
   return (
     <Section
@@ -372,6 +292,12 @@ const PermissionsTable = () => {
           },
           {
             accessorKey: "level",
+            sortingFn: (a, b) => {
+              const al = levelToNumber(a.original.level);
+              const bl = levelToNumber(b.original.level);
+              const dif = al - bl;
+              return dif === 0 ? 0 : dif / Math.abs(dif);
+            },
             header: ({ column }) => (
               <SortableHeader column={column} title="Level" />
             ),
@@ -407,4 +333,19 @@ const PermissionsTable = () => {
       />
     </Section>
   );
+};
+
+const levelToNumber = (level: Types.PermissionLevel | undefined) => {
+  switch (level) {
+    case undefined:
+      return 0;
+    case Types.PermissionLevel.None:
+      return 0;
+    case Types.PermissionLevel.Read:
+      return 1;
+    case Types.PermissionLevel.Execute:
+      return 2;
+    case Types.PermissionLevel.Write:
+      return 3;
+  }
 };
