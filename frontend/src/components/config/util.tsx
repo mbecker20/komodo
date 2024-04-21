@@ -30,7 +30,7 @@ export const ConfigItem = ({
   children,
   className,
 }: {
-  label: string;
+  label?: string;
   children: ReactNode;
   className?: string;
 }) => (
@@ -40,7 +40,7 @@ export const ConfigItem = ({
       className
     )}
   >
-    <div>{snake_case_to_upper_space_case(label)}</div>
+    {label && <div>{snake_case_to_upper_space_case(label)}</div>}
     {children}
   </div>
 );
@@ -48,17 +48,17 @@ export const ConfigItem = ({
 export const ConfigInput = ({
   label,
   value,
-  placeholder,
   disabled,
+  placeholder,
   onChange,
   onBlur,
 }: {
   label: string;
   value: string | number | undefined;
+  disabled?: boolean;
+  placeholder?: string;
   onChange?: (value: string) => void;
   onBlur?: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
 }) => (
   <ConfigItem label={label}>
     <Input
@@ -76,14 +76,16 @@ export const ConfigInput = ({
 export const ConfigSwitch = ({
   label,
   value,
+  disabled,
   onChange,
 }: {
   label: string;
   value: boolean | undefined;
+  disabled: boolean;
   onChange: (value: boolean) => void;
 }) => (
   <ConfigItem label={label}>
-    <Switch checked={value} onCheckedChange={onChange} />
+    <Switch checked={value} onCheckedChange={onChange} disabled={disabled} />
   </ConfigItem>
 );
 
@@ -93,6 +95,7 @@ export const DoubleInput = <
   L extends T[K] extends string | number | undefined ? K : never,
   R extends T[K] extends string | number | undefined ? K : never
 >({
+  disabled,
   values,
   leftval,
   leftpl,
@@ -105,6 +108,7 @@ export const DoubleInput = <
   onRemove,
   inputClassName,
 }: {
+  disabled: boolean;
   values: T[] | undefined;
   leftval: L;
   leftpl: string;
@@ -126,6 +130,7 @@ export const DoubleInput = <
             value={value[leftval] as any}
             placeholder={leftpl}
             onChange={(e) => onLeftChange(e.target.value as T[L], i)}
+            disabled={disabled}
           />
           :
           <Input
@@ -133,34 +138,38 @@ export const DoubleInput = <
             value={value[rightval] as any}
             placeholder={rightpl}
             onChange={(e) => onRightChange(e.target.value as T[R], i)}
+            disabled={disabled}
           />
-          <Button
-            variant="secondary"
-            onClick={() => onRemove(i)}
-          >
-            <MinusCircle className="w-4 h-4" />
-          </Button>
+          {!disabled && (
+            <Button variant="secondary" onClick={() => onRemove(i)}>
+              <MinusCircle className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       ))}
-      <Button
-        variant="secondary"
-        className="flex items-center gap-2 w-[200px] place-self-end"
-        onClick={onAdd}
-      >
-        <PlusCircle className="w-4 h-4" />
-        Add {addName}
-      </Button>
+      {!disabled && (
+        <Button
+          variant="secondary"
+          className="flex items-center gap-2 w-[200px] place-self-end"
+          onClick={onAdd}
+        >
+          <PlusCircle className="w-4 h-4" />
+          Add {addName}
+        </Button>
+      )}
     </div>
   );
 };
 
 export const AccountSelector = ({
+  disabled,
   id,
   type,
   account_type,
   selected,
   onSelect,
 }: {
+  disabled: boolean;
   id: string | undefined;
   type: "Server" | "Builder";
   account_type: keyof Types.GetBuilderAvailableAccountsResponse;
@@ -177,10 +186,11 @@ export const AccountSelector = ({
       <Select
         value={type === "Builder" ? selected || undefined : selected}
         onValueChange={onSelect}
+        disabled={disabled}
       >
         <SelectTrigger
           className="w-full lg:w-[300px] max-w-[50%]"
-          disabled={!id}
+          disabled={disabled || !id}
         >
           <SelectValue
             placeholder={type === "Server" ? "Same as build" : "Select Account"}
@@ -204,10 +214,12 @@ export const AccountSelector = ({
 export const InputList = <T extends { [key: string]: unknown }>({
   field,
   values,
+  disabled,
   set,
 }: {
   field: keyof T;
   values: string[];
+  disabled: boolean;
   set: (update: Partial<T>) => void;
 }) => (
   <ConfigItem label={field as string} className="items-start">
@@ -221,28 +233,31 @@ export const InputList = <T extends { [key: string]: unknown }>({
               values[i] = e.target.value;
               set({ [field]: [...values] } as Partial<T>);
             }}
+            disabled={disabled}
           />
-          <Button
-            variant="outline"
-            // intent="warning"
-            onClick={() =>
-              set({
-                [field]: [...values.filter((_, idx) => idx !== i)],
-              } as Partial<T>)
-            }
-          >
-            <MinusCircle className="w-4 h-4" />
-          </Button>
+          {!disabled && (
+            <Button
+              variant="outline"
+              onClick={() =>
+                set({
+                  [field]: [...values.filter((_, idx) => idx !== i)],
+                } as Partial<T>)
+              }
+            >
+              <MinusCircle className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       ))}
 
-      <Button
-        variant="outline"
-        // intent="success"
-        onClick={() => set({ [field]: [...values, ""] } as Partial<T>)}
-      >
-        Add {snake_case_to_upper_space_case(field as string).slice(0, -1)}
-      </Button>
+      {!disabled && (
+        <Button
+          variant="outline"
+          onClick={() => set({ [field]: [...values, ""] } as Partial<T>)}
+        >
+          Add {snake_case_to_upper_space_case(field as string).slice(0, -1)}
+        </Button>
+      )}
     </div>
   </ConfigItem>
 );
@@ -250,14 +265,19 @@ export const InputList = <T extends { [key: string]: unknown }>({
 interface ConfirmUpdateProps {
   content: string;
   onConfirm: () => void;
+  disabled: boolean;
 }
 
-export const ConfirmUpdate = ({ content, onConfirm }: ConfirmUpdateProps) => {
+export const ConfirmUpdate = ({
+  content,
+  onConfirm,
+  disabled,
+}: ConfirmUpdateProps) => {
   const [open, set] = useState(false);
   return (
     <Dialog open={open} onOpenChange={set}>
       <DialogTrigger asChild>
-        <Button onClick={() => set(true)}>
+        <Button onClick={() => set(true)} disabled={disabled}>
           <Save className="w-4 h-4" />
         </Button>
       </DialogTrigger>
@@ -287,10 +307,12 @@ export const ConfirmUpdate = ({ content, onConfirm }: ConfirmUpdateProps) => {
 export const SystemCommand = ({
   label,
   value,
+  disabled,
   set,
 }: {
   label: string;
   value?: Types.SystemCommand;
+  disabled: boolean;
   set: (value: Types.SystemCommand) => void;
 }) => {
   return (
@@ -303,6 +325,7 @@ export const SystemCommand = ({
             value={value?.path}
             className="w-[300px]"
             onChange={(e) => set({ ...(value || {}), path: e.target.value })}
+            disabled={disabled}
           />
         </div>
         <div className="flex gap-4 items-center justify-end">
@@ -312,6 +335,7 @@ export const SystemCommand = ({
             value={value?.command}
             className="w-[300px]"
             onChange={(e) => set({ ...(value || {}), command: e.target.value })}
+            disabled={disabled}
           />
         </div>
       </div>

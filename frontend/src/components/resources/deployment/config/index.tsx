@@ -38,6 +38,7 @@ export const ServerSelector = ({
 );
 
 export const DeploymentConfig = ({ id }: { id: string }) => {
+  // const perms = useRead("ListPerm")
   const config = useRead("GetDeployment", { deployment: id }).data?.config;
   const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
   const { mutate } = useWrite("UpdateDeployment");

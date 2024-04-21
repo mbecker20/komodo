@@ -14,10 +14,12 @@ import {
 } from "@ui/select";
 
 const BuildVersionSelector = ({
+  disabled,
   buildId,
   selected,
   onSelect,
 }: {
+  disabled: boolean;
   buildId: string | undefined;
   selected: string | undefined;
   onSelect: (version: string) => void;
@@ -28,8 +30,12 @@ const BuildVersionSelector = ({
     { enabled: !!buildId }
   ).data;
   return (
-    <Select value={selected || undefined} onValueChange={onSelect}>
-      <SelectTrigger className="w-full lg:w-[150px]">
+    <Select
+      value={selected || undefined}
+      onValueChange={onSelect}
+      disabled={disabled}
+    >
+      <SelectTrigger className="w-full lg:w-[150px]" disabled={disabled}>
         <SelectValue placeholder="Select Version" />
       </SelectTrigger>
       <SelectContent>
@@ -70,9 +76,11 @@ const ImageTypeSelector = ({
 export const ImageConfig = ({
   image,
   set,
+  disabled,
 }: {
   image: Types.DeploymentImage | undefined;
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => (
   <ConfigItem label="Image">
     <div className="flex gap-4 w-full justify-end">
@@ -121,6 +129,7 @@ export const ImageConfig = ({
                 },
               })
             }
+            disabled={disabled}
           />
         </div>
       )}

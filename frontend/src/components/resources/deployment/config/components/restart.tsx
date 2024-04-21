@@ -14,16 +14,19 @@ const format_mode = (m: string) => m.split("-").join(" ");
 export const RestartModeSelector = ({
   selected,
   set,
+  disabled,
 }: {
   selected: Types.RestartMode | undefined;
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => (
   <ConfigItem label="Restart Mode">
     <Select
       value={selected || undefined}
       onValueChange={(restart: Types.RestartMode) => set({ restart })}
+      disabled={disabled}
     >
-      <SelectTrigger className="max-w-[150px] capitalize">
+      <SelectTrigger className="max-w-[150px] capitalize" disabled={disabled}>
         <SelectValue placeholder="Select Type" />
       </SelectTrigger>
       <SelectContent>

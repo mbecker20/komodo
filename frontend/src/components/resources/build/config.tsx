@@ -158,7 +158,7 @@ const BuildArgs = ({
   }, [args, set]);
 
   return (
-    <ConfigItem label="Build Args" className="flex-col gap-4 items-start">
+    <ConfigItem className="flex-col gap-4 items-start">
       <Textarea
         className="min-h-[300px]"
         placeholder="VARIABLE=value"

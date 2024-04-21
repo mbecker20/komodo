@@ -9,10 +9,12 @@ import { RefObject, createRef, useEffect, useState } from "react";
 export const EnvVars = ({
   vars,
   set,
+  disabled,
   server,
 }: {
   vars: Types.EnvironmentVar[];
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
   /// eg server id
   server?: string;
 }) => {
@@ -23,11 +25,8 @@ export const EnvVars = ({
   }, [env, set]);
 
   return (
-    <ConfigItem
-      label="Environment Variables"
-      className="flex-col gap-4 items-start"
-    >
-      {server && (
+    <ConfigItem className="flex-col gap-4 items-start">
+      {!disabled && server && (
         <Secrets server={server} env={env} setEnv={setEnv} envRef={ref} />
       )}
       <Textarea
@@ -58,10 +57,11 @@ const Secrets = ({
   return (
     secrets &&
     secrets.length > 0 && (
-      <div className="w-full flex gap-4 justify-end items-center">
+      <div className="flex gap-4 items-center">
         <div className="text-muted-foreground">secrets:</div>
         {secrets?.map((secret) => (
           <Button
+            variant="secondary"
             key={secret}
             onClick={() =>
               setEnv(

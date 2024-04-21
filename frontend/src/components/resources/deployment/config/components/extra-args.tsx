@@ -7,9 +7,11 @@ import { MinusCircle, PlusCircle } from "lucide-react";
 export const ExtraArgs = ({
   args,
   set,
+  disabled,
 }: {
   args: string[];
   set: (update: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => {
   return (
     <ConfigItem label="Extra Args" className="items-start">
@@ -23,25 +25,30 @@ export const ExtraArgs = ({
                 args[i] = e.target.value;
                 set({ extra_args: [...args] });
               }}
+              disabled={disabled}
             />
-            <Button
-              variant="secondary"
-              onClick={() =>
-                set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
-              }
-            >
-              <MinusCircle className="w-4 h-4" />
-            </Button>
+            {!disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
+                }
+              >
+                <MinusCircle className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         ))}
 
-        <Button
-          variant="secondary"
-          className="flex items-center gap-2 w-[200px] place-self-end"
-          onClick={() => set({ extra_args: [...args, ""] })}
-        >
-          <PlusCircle className="w-4 h-4" /> Add Extra Arg
-        </Button>
+        {!disabled && (
+          <Button
+            variant="secondary"
+            className="flex items-center gap-2 w-[200px] place-self-end"
+            onClick={() => set({ extra_args: [...args, ""] })}
+          >
+            <PlusCircle className="w-4 h-4" /> Add Extra Arg
+          </Button>
+        )}
       </div>
     </ConfigItem>
   );

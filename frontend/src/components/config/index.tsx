@@ -26,12 +26,14 @@ export const ConfigLayout = <
 >({
   config,
   children,
+  disabled,
   onConfirm,
   onReset,
   selector,
 }: {
   config: Partial<T>;
   children: ReactNode;
+  disabled: boolean;
   onConfirm: () => void;
   onReset: () => void;
   selector?: ReactNode;
@@ -45,7 +47,7 @@ export const ConfigLayout = <
         <Button
           variant="outline"
           onClick={onReset}
-          disabled={config ? !Object.keys(config).length : true}
+          disabled={disabled || (config ? !Object.keys(config).length : true)}
         >
           <History className="w-4 h-4" />
         </Button>
@@ -53,6 +55,7 @@ export const ConfigLayout = <
           <ConfirmUpdate
             content={JSON.stringify(config, null, 2)}
             onConfirm={onConfirm}
+            disabled={disabled}
           />
         ) : null}
       </div>
@@ -65,6 +68,7 @@ export const ConfigLayout = <
 export const Config = <T,>({
   config,
   update,
+  disabled,
   set,
   onSave,
   components,
@@ -72,6 +76,7 @@ export const Config = <T,>({
 }: {
   config: T;
   update: Partial<T>;
+  disabled: boolean;
   set: React.Dispatch<SetStateAction<Partial<T>>>;
   onSave: () => void;
   selector?: ReactNode;
@@ -93,11 +98,14 @@ export const Config = <T,>({
   return (
     <ConfigLayout
       config={update}
+      disabled={disabled}
       onConfirm={onSave}
       onReset={() => set({})}
       selector={
         <div className="flex gap-4 items-center">
           {selector}
+
+          {/* Add the config page selector when view is small / md (lg:hidden) */}
           <Select value={show} onValueChange={setShow}>
             <SelectTrigger className="w-32 capitalize lg:hidden">
               <SelectValue />
@@ -140,6 +148,7 @@ export const Config = <T,>({
                   update={update}
                   set={(u) => set((p) => ({ ...p, ...u }))}
                   components={v}
+                  disabled={disabled}
                 />
               </CardContent>
             </Card>
@@ -155,11 +164,13 @@ export const ConfigAgain = <
 >({
   config,
   update,
+  disabled,
   components,
   set,
 }: {
   config: T;
   update: Partial<T>;
+  disabled: boolean;
   components: Partial<{
     [K in keyof T extends string ? keyof T : never]:
       | boolean
@@ -181,6 +192,7 @@ export const ConfigAgain = <
                   label={key.toString()}
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
+                  disabled={disabled}
                 />
               );
             case "number":
@@ -192,6 +204,7 @@ export const ConfigAgain = <
                   onChange={(value) =>
                     set({ [key]: Number(value) } as Partial<T>)
                   }
+                  disabled={disabled}
                 />
               );
             case "boolean":
@@ -201,6 +214,7 @@ export const ConfigAgain = <
                   label={key.toString()}
                   value={value}
                   onChange={(value) => set({ [key]: value } as Partial<T>)}
+                  disabled={disabled}
                 />
               );
             default:

@@ -549,6 +549,8 @@ export interface Permission {
 	level?: PermissionLevel;
 }
 
+export type ListPermissionsResponse = Permission[];
+
 export type ListUserPermissionsResponse = Permission[];
 
 export enum ProcedureType {
@@ -1457,6 +1459,11 @@ export interface GetCoreInfoResponse {
 	github_webhook_base_url: string;
 }
 
+/** List permissions for the calling user. Response: [ListPermissionsResponse] */
+export interface ListPermissions {
+}
+
+/** List permissions for a specific user. Admin only. Response: [ListUserPermissionsResponse] */
 export interface ListUserPermissions {
 	user_id: string;
 }
@@ -2108,6 +2115,7 @@ export type ReadRequest =
 	| { type: "GetUsers", params: GetUsers }
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "ListApiKeys", params: ListApiKeys }
+	| { type: "ListPermissions", params: ListPermissions }
 	| { type: "ListUserPermissions", params: ListUserPermissions }
 	| { type: "GetUserGroup", params: GetUserGroup }
 	| { type: "ListUserGroups", params: ListUserGroups }
