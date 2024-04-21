@@ -89,19 +89,26 @@ impl Resolve<ListUpdates, User> for State {
     .await
     .context("failed to pull updates from db")?
     .into_iter()
-    .map(|u| UpdateListItem {
-      id: u.id,
-      operation: u.operation,
-      start_ts: u.start_ts,
-      success: u.success,
-      username: usernames
-        .get(&u.operator)
-        .cloned()
-        .unwrap_or("unknown".to_string()),
-      operator: u.operator,
-      target: u.target,
-      status: u.status,
-      version: u.version,
+    .map(|u| {
+      let username = if User::is_service_user(&u.operator) {
+        u.operator.clone()
+      } else {
+        usernames
+          .get(&u.operator)
+          .cloned()
+          .unwrap_or("unknown".to_string())
+      };
+      UpdateListItem {
+        username,
+        id: u.id,
+        operation: u.operation,
+        start_ts: u.start_ts,
+        success: u.success,
+        operator: u.operator,
+        target: u.target,
+        status: u.status,
+        version: u.version,
+      }
     })
     .collect::<Vec<_>>();
 
