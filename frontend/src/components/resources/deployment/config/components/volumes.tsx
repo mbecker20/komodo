@@ -4,12 +4,15 @@ import { Types } from "@monitor/client";
 export const VolumesConfig = ({
   volumes,
   set,
+  disabled,
 }: {
   volumes: Types.Conversion[];
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => (
   <ConfigItem label="Volumes" className="items-start">
     <DoubleInput
+      disabled={disabled}
       inputClassName="w-[300px] max-w-full"
       values={volumes}
       leftval="local"

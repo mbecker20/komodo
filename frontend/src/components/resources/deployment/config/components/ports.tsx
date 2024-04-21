@@ -4,12 +4,15 @@ import { Types } from "@monitor/client";
 export const PortsConfig = ({
   ports,
   set,
+  disabled,
 }: {
   ports: Types.Conversion[];
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => (
   <ConfigItem label="Ports" className="items-start">
     <DoubleInput
+      disabled={disabled}
       values={ports}
       leftval="local"
       leftpl="Local"

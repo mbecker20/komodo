@@ -52,11 +52,18 @@ const ProcedureConfigInner = ({
 }: {
   procedure: Types.Procedure;
 }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Procedure", id: procedure._id?.$oid! },
+  }).data;
   const [config, setConfig] = useState<Partial<Types.ProcedureConfig>>({});
   const { mutate } = useWrite("UpdateProcedure");
   const executions = config.executions || procedure.config.executions || [];
+
+  const disabled = perms !== Types.PermissionLevel.Write;
+
   return (
     <ConfigLayout
+      disabled={disabled}
       config={config as any}
       onConfirm={() => mutate({ id: procedure._id!.$oid, config })}
       onReset={() => setConfig(procedure.config)}

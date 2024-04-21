@@ -22,6 +22,9 @@ import { useEffect, useState } from "react";
 import { LabelsConfig, ResourceSelector } from "../common";
 
 export const BuildConfig = ({ id }: { id: string }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Build", id },
+  }).data;
   const config = useRead("GetBuild", { build: id }).data?.config;
   const docker_organizations = useRead("ListDockerOrganizations", {}).data;
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
@@ -29,8 +32,11 @@ export const BuildConfig = ({ id }: { id: string }) => {
 
   if (!config) return null;
 
+  const disabled = perms !== Types.PermissionLevel.Write;
+
   return (
     <Config
+      disabled={disabled}
       config={config}
       update={update}
       set={set}
@@ -94,6 +100,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
                 account_type="github"
                 selected={account}
                 onSelect={(github_account) => set({ github_account })}
+                disabled={disabled}
               />
             ),
           },
@@ -107,6 +114,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
                 account_type="docker"
                 selected={account}
                 onSelect={(docker_account) => set({ docker_account })}
+                disabled={disabled}
               />
             ),
             docker_organization:
@@ -114,12 +122,16 @@ export const BuildConfig = ({ id }: { id: string }) => {
               docker_organizations.length === 0
                 ? undefined
                 : (value, set) => (
-                    <DockerOrganizations value={value} set={set} />
+                    <DockerOrganizations
+                      value={value}
+                      set={set}
+                      disabled={disabled}
+                    />
                   ),
             use_buildx: true,
-            labels: (l, set) => <LabelsConfig labels={l ?? []} set={set} />,
+            labels: (l, set) => <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />,
             extra_args: (value, set) => (
-              <ExtraArgs args={value ?? []} set={set} />
+              <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
             ),
           },
           pre_build: {
@@ -128,6 +140,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
                 label="Pre Build"
                 value={value}
                 set={(value) => set({ pre_build: value })}
+                disabled={disabled}
               />
             ),
           },
@@ -135,7 +148,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
         "Build Args": {
           "Build Args": {
             build_args: (vars, set) => (
-              <BuildArgs vars={vars ?? []} set={set} />
+              <BuildArgs vars={vars ?? []} set={set} disabled={disabled} />
             ),
             skip_secret_interp: true,
           },
@@ -148,9 +161,11 @@ export const BuildConfig = ({ id }: { id: string }) => {
 const BuildArgs = ({
   vars,
   set,
+  disabled,
 }: {
   vars: Types.EnvironmentVar[];
   set: (input: Partial<Types.BuildConfig>) => void;
+  disabled: boolean;
 }) => {
   const [args, setArgs] = useState(env_to_text(vars));
   useEffect(() => {
@@ -164,6 +179,7 @@ const BuildArgs = ({
         placeholder="VARIABLE=value"
         value={args}
         onChange={(e) => setArgs(e.target.value)}
+        disabled={disabled}
       />
     </ConfigItem>
   );
@@ -172,9 +188,11 @@ const BuildArgs = ({
 const ExtraArgs = ({
   args,
   set,
+  disabled,
 }: {
   args: string[];
   set: (update: Partial<Types.BuildConfig>) => void;
+  disabled: boolean;
 }) => {
   return (
     <ConfigItem label="Extra Args" className="items-start">
@@ -188,15 +206,18 @@ const ExtraArgs = ({
                 args[i] = e.target.value;
                 set({ extra_args: [...args] });
               }}
+              disabled={disabled}
             />
-            <Button
-              variant="secondary"
-              onClick={() =>
-                set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
-              }
-            >
-              <MinusCircle className="w-4 h-4" />
-            </Button>
+            {!disabled && (
+              <Button
+                variant="secondary"
+                onClick={() =>
+                  set({ extra_args: [...args.filter((_, idx) => idx !== i)] })
+                }
+              >
+                <MinusCircle className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         ))}
 
@@ -215,9 +236,11 @@ const ExtraArgs = ({
 const DockerOrganizations = ({
   value,
   set,
+  disabled,
 }: {
   value?: string;
   set: (input: Partial<Types.BuildConfig>) => void;
+  disabled: boolean;
 }) => {
   const docker_organizations = useRead("ListDockerOrganizations", {}).data;
   return (
@@ -225,8 +248,12 @@ const DockerOrganizations = ({
       <Select
         value={value}
         onValueChange={(value) => set({ docker_organization: value })}
+        disabled={disabled}
       >
-        <SelectTrigger className="w-full lg:w-[300px] max-w-[50%]">
+        <SelectTrigger
+          className="w-full lg:w-[300px] max-w-[50%]"
+          disabled={disabled}
+        >
           <SelectValue placeholder="Select Organization" />
         </SelectTrigger>
         <SelectContent>

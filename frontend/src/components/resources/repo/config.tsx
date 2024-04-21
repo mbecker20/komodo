@@ -1,8 +1,5 @@
 import { Config } from "@components/config";
-import {
-  ConfigItem,
-  SystemCommand,
-} from "@components/config/util";
+import { ConfigItem, SystemCommand } from "@components/config/util";
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import {
@@ -16,12 +13,19 @@ import { useState } from "react";
 import { ResourceSelector } from "../common";
 
 export const RepoConfig = ({ id }: { id: string }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Repo", id },
+  }).data;
   const config = useRead("GetRepo", { repo: id }).data?.config;
   const [update, set] = useState<Partial<Types.RepoConfig>>({});
   const { mutate } = useWrite("UpdateRepo");
   if (!config) return null;
+
+  const disabled = perms !== Types.PermissionLevel.Write;
+
   return (
     <Config
+      disabled={disabled}
       config={config}
       update={update}
       set={set}
@@ -44,7 +48,12 @@ export const RepoConfig = ({ id }: { id: string }) => {
               const server_id = update.server_id || config.server_id;
               if (server_id) {
                 return (
-                  <GithubAccount server={server_id} value={value} set={set} />
+                  <GithubAccount
+                    server={server_id}
+                    value={value}
+                    set={set}
+                    disabled={disabled}
+                  />
                 );
               }
             },
@@ -53,6 +62,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 label="On Clone"
                 value={value}
                 set={(value) => set({ on_clone: value })}
+                disabled={disabled}
               />
             ),
             on_pull: (value, set) => (
@@ -60,6 +70,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 label="On Pull"
                 value={value}
                 set={(value) => set({ on_pull: value })}
+                disabled={disabled}
               />
             ),
           },
@@ -73,10 +84,12 @@ const GithubAccount = ({
   value,
   set,
   server,
+  disabled,
 }: {
   value?: string;
   set: (input: Partial<Types.RepoConfig>) => void;
   server: string;
+  disabled: boolean;
 }) => {
   const accounts = useRead("GetAvailableAccounts", {
     server,
@@ -86,8 +99,12 @@ const GithubAccount = ({
       <Select
         value={value}
         onValueChange={(value) => set({ github_account: value })}
+        disabled={disabled}
       >
-        <SelectTrigger className="w-full lg:w-[300px] max-w-[50%]">
+        <SelectTrigger
+          className="w-full lg:w-[300px] max-w-[50%]"
+          disabled={disabled}
+        >
           <SelectValue placeholder="Select Account" />
         </SelectTrigger>
         <SelectContent>

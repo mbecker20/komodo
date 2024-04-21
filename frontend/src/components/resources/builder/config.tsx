@@ -12,13 +12,19 @@ export const BuilderConfig = ({ id }: { id: string }) => {
 };
 
 const AwsBuilderConfig = ({ id }: { id: string }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Builder", id },
+  }).data;
   const config = useRead("GetBuilder", { builder: id }).data?.config;
   const [update, set] = useState<Partial<Types.AwsBuilderConfig>>({});
   const { mutate } = useWrite("UpdateBuilder");
   if (!config) return null;
 
+  const disabled = perms !== Types.PermissionLevel.Write;
+
   return (
     <Config
+      disabled={disabled}
       config={config.params as Types.AwsBuilderConfig}
       update={update}
       set={set}
@@ -35,13 +41,19 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
             assign_public_ip: true,
             use_public_ip: true,
             security_group_ids: (values, set) => (
-              <InputList field="security_group_ids" values={values} set={set} />
+              <InputList
+                field="security_group_ids"
+                values={values}
+                set={set}
+                disabled={disabled}
+              />
             ),
             github_accounts: (accounts, set) => (
               <InputList
                 field="github_accounts"
                 values={accounts ?? []}
                 set={set}
+                disabled={disabled}
               />
             ),
             docker_accounts: (accounts, set) => (
@@ -49,6 +61,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
                 field="docker_accounts"
                 values={accounts ?? []}
                 set={set}
+                disabled={disabled}
               />
             ),
             port: true,
@@ -60,13 +73,19 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
 };
 
 const ServerBuilderConfig = ({ id }: { id: string }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Builder", id },
+  }).data;
   const config = useRead("GetBuilder", { builder: id }).data?.config;
   const [update, set] = useState<Partial<Types.ServerBuilderConfig>>({});
   const { mutate } = useWrite("UpdateBuilder");
   if (!config) return null;
 
+  const disabled = perms !== Types.PermissionLevel.Write;
+
   return (
     <Config
+      disabled={disabled}
       config={config.params as Types.ServerBuilderConfig}
       update={update}
       set={set}
@@ -81,6 +100,7 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
                   type="Server"
                   selected={id}
                   onSelect={(server_id) => set({ server_id })}
+                  disabled={disabled}
                 />
               </div>
             ),

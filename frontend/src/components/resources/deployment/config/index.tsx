@@ -24,15 +24,18 @@ import { LabelsConfig, ResourceSelector } from "@components/resources/common";
 export const ServerSelector = ({
   selected,
   set,
+  disabled,
 }: {
   selected: string | undefined;
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => (
   <ConfigItem label="Server">
     <ResourceSelector
       type="Server"
       selected={selected}
       onSelect={(server_id) => set({ server_id })}
+      disabled={disabled}
     />
   </ConfigItem>
 );
@@ -66,7 +69,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
         general: {
           "": {
             server_id: (value, set) => (
-              <ServerSelector selected={value} set={set} />
+              <ServerSelector selected={value} set={set} disabled={disabled} />
             ),
           },
           container: {
@@ -107,9 +110,19 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
               />
             ),
             ports: (value, set) =>
-              show_ports && <PortsConfig ports={value ?? []} set={set} />,
-            volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
-            labels: (l, set) => <LabelsConfig labels={l ?? []} set={set} />,
+              show_ports && (
+                <PortsConfig
+                  ports={value ?? []}
+                  set={set}
+                  disabled={disabled}
+                />
+              ),
+            volumes: (v, set) => (
+              <VolumesConfig volumes={v ?? []} set={set} disabled={disabled} />
+            ),
+            labels: (l, set) => (
+              <LabelsConfig labels={l ?? []} set={set} disabled={disabled} />
+            ),
             extra_args: (value, set) => (
               <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
             ),

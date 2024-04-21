@@ -300,12 +300,15 @@ export const DeleteResource = ({
 export const LabelsConfig = ({
   labels,
   set,
+  disabled,
 }: {
   labels: Types.EnvironmentVar[];
   set: (input: Partial<Types.DeploymentConfig | Types.BuildConfig>) => void;
+  disabled: boolean;
 }) => (
   <ConfigItem label="Labels" className="items-start">
     <DoubleInput
+      disabled={disabled}
       values={labels}
       leftval="variable"
       leftpl="Key"

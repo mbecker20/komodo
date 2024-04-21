@@ -11,6 +11,9 @@ import {
 import { useEffect, useState } from "react";
 
 export const AlerterConfig = ({ id }: { id: string }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Alerter", id },
+  }).data;
   const config = useRead("GetAlerter", { alerter: id }).data?.config;
   const [type, setType] = useState<Types.AlerterConfig["type"]>();
   useEffect(() => config?.type && setType(config.type), [config?.type]);
@@ -20,8 +23,11 @@ export const AlerterConfig = ({ id }: { id: string }) => {
   const { mutate } = useWrite("UpdateAlerter");
   if (!config) return null;
 
+  const disabled = perms !== Types.PermissionLevel.Write;
+
   return (
     <Config
+      disabled={disabled}
       config={config.params}
       update={update}
       set={setConfig}

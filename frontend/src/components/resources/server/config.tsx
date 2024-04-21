@@ -4,6 +4,9 @@ import { Types } from "@monitor/client";
 import { useState } from "react";
 
 export const ServerConfig = ({ id }: { id: string }) => {
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Server", id },
+  }).data;
   const invalidate = useInvalidate();
   const config = useRead("GetServer", { server: id }).data?.config;
   const [update, set] = useState<Partial<Types.ServerConfig>>({});
@@ -15,8 +18,11 @@ export const ServerConfig = ({ id }: { id: string }) => {
   });
   if (!config) return null;
 
+  const disabled = perms !== Types.PermissionLevel.Write;
+
   return (
     <Config
+      disabled={disabled}
       config={config}
       update={update}
       set={set}
