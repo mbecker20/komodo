@@ -38,7 +38,9 @@ export const ServerSelector = ({
 );
 
 export const DeploymentConfig = ({ id }: { id: string }) => {
-  // const perms = useRead("ListPerm")
+  const perms = useRead("GetPermissionLevel", {
+    target: { type: "Deployment", id },
+  }).data;
   const config = useRead("GetDeployment", { deployment: id }).data?.config;
   const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
   const { mutate } = useWrite("UpdateDeployment");
@@ -51,8 +53,11 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
     ? config.network !== "host"
     : false;
 
+  const disabled = perms !== Types.PermissionLevel.Write;
+
   return (
     <Config
+      disabled={disabled}
       config={config}
       update={update}
       set={set}
@@ -65,7 +70,9 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
             ),
           },
           container: {
-            image: (value, set) => <ImageConfig image={value} set={set} />,
+            image: (value, set) => (
+              <ImageConfig image={value} set={set} disabled={disabled} />
+            ),
             docker_account: (value, set) => (
               <AccountSelector
                 id={update.server_id ?? config.server_id}
@@ -73,16 +80,22 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
                 type="Server"
                 selected={value}
                 onSelect={(docker_account) => set({ docker_account })}
+                disabled={disabled}
               />
             ),
             restart: (value, set) => (
-              <RestartModeSelector selected={value} set={set} />
+              <RestartModeSelector
+                selected={value}
+                set={set}
+                disabled={disabled}
+              />
             ),
             process_args: (value, set) => (
               <ConfigInput
                 label="Process Args"
                 value={value}
                 onChange={(process_args) => set({ process_args })}
+                disabled={disabled}
               />
             ),
             network: (value, set) => (
@@ -90,6 +103,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
                 server_id={update.server_id ?? config.server_id}
                 selected={value}
                 onSelect={(network) => set({ network })}
+                disabled={disabled}
               />
             ),
             ports: (value, set) =>
@@ -97,7 +111,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
             volumes: (v, set) => <VolumesConfig volumes={v ?? []} set={set} />,
             labels: (l, set) => <LabelsConfig labels={l ?? []} set={set} />,
             extra_args: (value, set) => (
-              <ExtraArgs args={value ?? []} set={set} />
+              <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
             ),
           },
           settings: {
@@ -113,6 +127,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
                 vars={vars ?? []}
                 set={set}
                 server={update.server_id || config.server_id}
+                disabled={disabled}
               />
             ),
             skip_secret_interp: true,
@@ -121,13 +136,17 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
         termination: {
           termination: {
             termination_signal: (value, set) => (
-              <DefaultTerminationSignal arg={value} set={set} />
+              <DefaultTerminationSignal
+                arg={value}
+                set={set}
+                disabled={disabled}
+              />
             ),
             termination_timeout: (value, set) => (
-              <TerminationTimeout arg={value} set={set} />
+              <TerminationTimeout arg={value} set={set} disabled={disabled} />
             ),
             term_signal_labels: (value, set) => (
-              <TermSignalLabels args={value} set={set} />
+              <TermSignalLabels args={value} set={set} disabled={disabled} />
             ),
           },
         },

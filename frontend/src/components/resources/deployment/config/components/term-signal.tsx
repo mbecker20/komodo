@@ -17,9 +17,11 @@ import { useEffect, useState } from "react";
 export const DefaultTerminationSignal = ({
   arg,
   set,
+  disabled,
 }: {
   arg?: Types.TerminationSignal;
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => {
   return (
     <ConfigItem label="Default Termination Signal">
@@ -28,8 +30,9 @@ export const DefaultTerminationSignal = ({
         onValueChange={(value) =>
           set({ termination_signal: value as Types.TerminationSignal })
         }
+        disabled={disabled}
       >
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger className="w-[200px]" disabled={disabled}>
           <SelectValue placeholder="Select Type" />
         </SelectTrigger>
         <SelectContent>
@@ -55,9 +58,11 @@ export const DefaultTerminationSignal = ({
 export const TerminationTimeout = ({
   arg,
   set,
+  disabled,
 }: {
   arg: number;
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => {
   const { toast } = useToast();
   const [input, setInput] = useState(arg.toString());
@@ -81,6 +86,7 @@ export const TerminationTimeout = ({
               setInput(arg.toString());
             }
           }}
+          disabled={disabled}
         />
         seconds
       </div>
@@ -91,9 +97,11 @@ export const TerminationTimeout = ({
 export const TermSignalLabels = ({
   args,
   set,
+  disabled,
 }: {
   args: Types.TerminationSignalLabel[];
   set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
 }) => {
   const signals = Object.values(Types.TerminationSignal)
     .filter((signal) => args.every((arg) => arg.signal !== signal))
@@ -113,6 +121,7 @@ export const TermSignalLabels = ({
                   ),
                 })
               }
+              disabled={disabled}
             />
 
             <Select
@@ -126,8 +135,9 @@ export const TermSignalLabels = ({
                   ),
                 })
               }
+              disabled={disabled}
             >
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="w-[200px]" disabled={disabled}>
                 {label.signal}
               </SelectTrigger>
               <SelectContent>
@@ -145,21 +155,23 @@ export const TermSignalLabels = ({
               </SelectContent>
             </Select>
 
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() =>
-                set({
-                  term_signal_labels: args.filter((_, index) => i !== index),
-                })
-              }
-              className="p-2"
-            >
-              <MinusCircle className="w-4 h-4" />
-            </Button>
+            {!disabled && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() =>
+                  set({
+                    term_signal_labels: args.filter((_, index) => i !== index),
+                  })
+                }
+                className="p-2"
+              >
+                <MinusCircle className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         ))}
-        {signals.length > 0 && (
+        {!disabled && signals.length > 0 && (
           <Button
             className="justify-self-end p-2"
             variant="outline"

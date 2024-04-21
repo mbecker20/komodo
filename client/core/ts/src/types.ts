@@ -2123,6 +2123,7 @@ export type ReadRequest =
 	| { type: "GetUsername", params: GetUsername }
 	| { type: "ListApiKeys", params: ListApiKeys }
 	| { type: "ListPermissions", params: ListPermissions }
+	| { type: "GetPermissionLevel", params: GetPermissionLevel }
 	| { type: "ListUserPermissions", params: ListUserPermissions }
 	| { type: "GetUserGroup", params: GetUserGroup }
 	| { type: "ListUserGroups", params: ListUserGroups }

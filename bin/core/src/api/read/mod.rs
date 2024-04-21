@@ -44,6 +44,7 @@ enum ReadRequest {
   GetUsername(GetUsername),
   ListApiKeys(ListApiKeys),
   ListPermissions(ListPermissions),
+  GetPermissionLevel(GetPermissionLevel),
   ListUserPermissions(ListUserPermissions),
 
   // ==== USER GROUP ====
