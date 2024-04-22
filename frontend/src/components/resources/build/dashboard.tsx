@@ -16,6 +16,7 @@ import {
 } from "@ui/card";
 import { Hammer } from "lucide-react";
 import { Link } from "react-router-dom";
+import { convertTsMsToLocalUnixTsInSecs } from "@lib/utils";
 
 export const BuildChart = () => {
   const container_ref = useRef<HTMLDivElement>(null);
@@ -34,6 +35,8 @@ export const BuildChart = () => {
     if (line_ref.current) line_ref.current.remove();
     const init = () => {
       if (!container_ref.current) return;
+
+      // INIT LINE
       line_ref.current = createChart(container_ref.current, {
         width: container_ref.current.clientWidth,
         height: container_ref.current.clientHeight,
@@ -50,13 +53,15 @@ export const BuildChart = () => {
         handleScroll: false,
       });
       line_ref.current.timeScale().fitContent();
+
+      // INIT SERIES
       series_ref.current = line_ref.current.addHistogramSeries({
         priceLineVisible: false,
       });
       const max = build_stats.days.reduce((m, c) => Math.max(m, c.time), 0);
       series_ref.current.setData(
         build_stats.days.map((d) => ({
-          time: (d.ts / 1000) as Time,
+          time: convertTsMsToLocalUnixTsInSecs(d.ts) as Time,
           value: d.count,
           color:
             d.time > max * 0.7
@@ -67,6 +72,8 @@ export const BuildChart = () => {
         })) ?? []
       );
     };
+
+    // Run the effect
     init();
     window.addEventListener("resize", handleResize);
     return () => {

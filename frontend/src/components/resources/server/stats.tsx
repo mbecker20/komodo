@@ -10,12 +10,25 @@ import { Progress } from "@ui/progress";
 import { Cpu, Database, MemoryStick } from "lucide-react";
 import { useRead } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { useServer } from ".";
+import { ServerComponents, useServer } from ".";
 import { DataTable } from "@ui/data-table";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Input } from "@ui/input";
+import { ResourceDescription } from "../common";
+import { AddTags, ResourceTags } from "@components/tags";
+import { StatChart } from "./stat-chart";
+import { useStatsInterval } from "./hooks";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
 
 export const ServerStats = ({ id }: { id: string }) => {
+  const [interval, setInterval] = useStatsInterval();
+
   const server = useServer(id);
   const stats = useRead(
     "GetSystemStats",
@@ -24,17 +37,58 @@ export const ServerStats = ({ id }: { id: string }) => {
   ).data;
   const info = useRead("GetSystemInformation", { server: id }).data;
 
+  const disk_used = stats?.disks.reduce(
+    (acc, curr) => (acc += curr.used_gb),
+    0
+  );
+  const disk_total = stats?.disks.reduce(
+    (acc, curr) => (acc += curr.total_gb),
+    0
+  );
+
   return (
     <Page
       title={server?.name}
-      titleRight={<div className="text-muted-foreground">Stats</div>}
+      titleRight={
+        <div className="flex gap-4 items-center">
+          {Object.entries(ServerComponents.Status).map(([key, Status]) => (
+            <Status key={key} id={id} />
+          ))}
+        </div>
+      }
+      subtitle={
+        <div className="flex flex-col gap-4">
+          <div className="flex gap-4 items-center text-muted-foreground">
+            <ServerComponents.Icon id={id} />
+            {Object.entries(ServerComponents.Info).map(([key, Info], i) => (
+              <Fragment key={key}>
+                | <Info key={i} id={id} />
+              </Fragment>
+            ))}
+          </div>
+          <ResourceDescription type="Server" id={id} />
+        </div>
+      }
+      actions={
+        <div className="flex gap-2 items-center">
+          <div className="text-muted-foreground">tags:</div>
+          <ResourceTags
+            target={{ id, type: "Server" }}
+            className="text-sm"
+            click_to_delete
+          />
+          <AddTags target={{ id, type: "Server" }} />
+        </div>
+      }
     >
-      <div className="flex gap-4">{/* <ServerInfo id={id} /> */}</div>
-
       <Section title="System Info">
         <DataTable
           tableKey="system-info"
-          data={info ? [info] : []}
+          data={
+            info
+              ? [{ ...info, mem_total: stats?.mem_total_gb, disk_total }]
+              : []
+          }
           columns={[
             {
               header: "Hostname",
@@ -48,11 +102,24 @@ export const ServerStats = ({ id }: { id: string }) => {
               header: "Kernel",
               accessorKey: "kernel",
             },
+            {
+              header: "Core Count",
+              accessorFn: ({ core_count }) =>
+                `${core_count} Core${(core_count || 0) > 1 ? "s" : ""}`,
+            },
+            {
+              header: "Total Memory",
+              accessorFn: ({ mem_total }) => `${mem_total?.toFixed(2)} GB`,
+            },
+            {
+              header: "Total Disk Size",
+              accessorFn: ({ disk_total }) => `${disk_total?.toFixed(2)} GB`,
+            },
           ]}
         />
       </Section>
 
-      <Section title="Basic">
+      <Section title="Current">
         <div className="flex flex-col lg:flex-row gap-4">
           <CPU stats={stats} />
           <RAM stats={stats} />
@@ -60,19 +127,61 @@ export const ServerStats = ({ id }: { id: string }) => {
         </div>
       </Section>
 
-      {/* <Section title="Load">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {["one", "five", "fifteen"].map((minutes) => (
-            <LOAD
-              load={stats?.basic.load_average}
-              minutes={minutes as keyof Types.LoadAverage}
-              core_count={info?.core_count || 0}
-            />
-          ))}
+      <Section
+        title="Historical"
+        actions={
+          <div className="flex gap-2 items-center">
+            <div className="text-muted-foreground">Interval:</div>
+            <Select
+              value={interval}
+              onValueChange={(interval) =>
+                setInterval(interval as Types.Timelength)
+              }
+            >
+              <SelectTrigger className="w-[150px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[
+                  Types.Timelength.FifteenSeconds,
+                  Types.Timelength.ThirtySeconds,
+                  Types.Timelength.OneMinute,
+                  Types.Timelength.FiveMinutes,
+                  Types.Timelength.FifteenMinutes,
+                  Types.Timelength.ThirtyMinutes,
+                  Types.Timelength.OneHour,
+                  Types.Timelength.SixHours,
+                  Types.Timelength.OneDay,
+                ].map((timelength) => (
+                  <SelectItem value={timelength}>{timelength}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        }
+      >
+        <div className="flex flex-col gap-8">
+          <StatChart server_id={id} type="cpu" className="w-full h-[250px]" />
+          <StatChart server_id={id} type="mem" className="w-full h-[250px]" />
+          <StatChart server_id={id} type="disk" className="w-full h-[250px]" />
         </div>
-      </Section> */}
+      </Section>
 
-      <Section title="Disks">
+      <Section
+        title="Disks"
+        actions={
+          <div className="flex gap-4 items-center">
+            <div className="flex gap-2 items-center">
+              <div className="text-muted-foreground">Used:</div>
+              {disk_used?.toFixed(2)} GB
+            </div>
+            <div className="flex gap-2 items-center">
+              <div className="text-muted-foreground">Total:</div>
+              {disk_total?.toFixed(2)} GB
+            </div>
+          </div>
+        }
+      >
         <DataTable
           tableKey="server-disks"
           data={stats?.disks ?? []}

@@ -10,6 +10,7 @@ import {
   Database,
   Scissors,
   XOctagon,
+  AreaChart,
 } from "lucide-react";
 import { Section } from "@components/layouts";
 import { RenameServer } from "./actions";
@@ -26,6 +27,7 @@ import { Link } from "react-router-dom";
 import { DeleteResource, NewResource } from "../common";
 import { ActionWithDialog, ConfirmButton } from "@components/util";
 import { Card, CardHeader } from "@ui/card";
+import { Button } from "@ui/button";
 
 export const useServer = (id?: string) =>
   useRead("ListServers", {}).data?.find((d) => d.id === id);
@@ -66,6 +68,12 @@ export const ServerComponents: RequiredResourceComponents = {
         </Card>
       );
     },
+    Stats: ({id}) => <Link to={`/servers/${id}/stats`}>
+      <Button variant="link" className="flex gap-2 items-center p-0">
+        <AreaChart className="w-4 h-4" />
+        Stats
+      </Button>
+    </Link>
   },
 
   Info: {

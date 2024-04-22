@@ -85,3 +85,8 @@ export const has_minimum_permissions = (
   if (!level) return false;
   return level_to_number(level) >= level_to_number(greater_than);
 };
+
+const tzOffset = new Date().getTimezoneOffset() * 60;
+
+export const convertTsMsToLocalUnixTsInSecs = (ts: number) =>
+  ts / 1000 - tzOffset;
