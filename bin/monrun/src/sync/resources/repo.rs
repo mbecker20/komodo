@@ -9,7 +9,9 @@ use monitor_client::{
   },
 };
 
-use crate::{maps::name_to_repo, monitor_client, sync::ResourceSync};
+use crate::{maps::name_to_repo, monitor_client};
+
+use super::ResourceSync;
 
 impl ResourceSync for Repo {
   type PartialConfig = PartialRepoConfig;

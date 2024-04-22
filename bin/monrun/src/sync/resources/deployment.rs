@@ -11,9 +11,9 @@ use monitor_client::{
   },
 };
 
-use crate::{
-  maps::name_to_deployment, monitor_client, sync::ResourceSync,
-};
+use crate::{maps::name_to_deployment, monitor_client};
+
+use super::ResourceSync;
 
 impl ResourceSync for Deployment {
   type PartialConfig = PartialDeploymentConfig;

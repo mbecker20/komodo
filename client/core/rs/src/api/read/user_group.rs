@@ -25,7 +25,7 @@ pub type GetUserGroupResponse = UserGroup;
 
 #[typeshare]
 #[derive(
-  Debug, Clone, Serialize, Deserialize, Request, EmptyTraits,
+  Debug, Clone, Default, Serialize, Deserialize, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListUserGroupsResponse)]

@@ -35,6 +35,7 @@ enum Command {
     #[arg(default_value_t = String::from("./resources"))]
     path: String,
   },
+  
   /// Runs execution files
   Exec {
     /// The path of the exec file

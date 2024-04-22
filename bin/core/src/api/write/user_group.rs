@@ -86,14 +86,18 @@ impl Resolve<DeleteUserGroup, User> for State {
     if !admin.admin {
       return Err(anyhow!("This call is admin-only"));
     }
+
     let db = db_client().await;
+
     let ug = find_one_by_id(&db.user_groups, &id)
       .await
       .context("failed to query db for UserGroups")?
       .context("no UserGroup found with given id")?;
+
     delete_one_by_id(&db.user_groups, &id, None)
       .await
       .context("failed to delete UserGroup from db")?;
+
     db.permissions
       .delete_many(doc! {
         "user_target.type": "UserGroup",
@@ -101,6 +105,7 @@ impl Resolve<DeleteUserGroup, User> for State {
       }, None)
       .await
       .context("failed to clean up UserGroups permissions. User Group has been deleted")?;
+
     Ok(ug)
   }
 }
@@ -109,24 +114,34 @@ impl Resolve<DeleteUserGroup, User> for State {
 impl Resolve<AddUserToUserGroup, User> for State {
   async fn resolve(
     &self,
-    AddUserToUserGroup {
-      user_group,
-      user_id,
-    }: AddUserToUserGroup,
+    AddUserToUserGroup { user_group, user }: AddUserToUserGroup,
     admin: User,
   ) -> anyhow::Result<UserGroup> {
     if !admin.admin {
       return Err(anyhow!("This call is admin-only"));
     }
+
+    let db = db_client().await;
+
+    let filter = match ObjectId::from_str(&user) {
+      Ok(id) => doc! { "_id": id },
+      Err(_) => doc! { "username": &user },
+    };
+    let user = db
+      .users
+      .find_one(filter, None)
+      .await
+      .context("failed to query mongo for users")?
+      .context("no matching user found")?;
+
     let filter = match ObjectId::from_str(&user_group) {
       Ok(id) => doc! { "_id": id },
       Err(_) => doc! { "name": &user_group },
     };
-    let db = db_client().await;
     db.user_groups
       .update_one(
         filter.clone(),
-        doc! { "$push": { "users": user_id } },
+        doc! { "$push": { "users": &user.id } },
         None,
       )
       .await
@@ -145,22 +160,35 @@ impl Resolve<RemoveUserFromUserGroup, User> for State {
     &self,
     RemoveUserFromUserGroup {
       user_group,
-      user_id,
+      user,
     }: RemoveUserFromUserGroup,
     admin: User,
   ) -> anyhow::Result<UserGroup> {
     if !admin.admin {
       return Err(anyhow!("This call is admin-only"));
     }
+
+    let db = db_client().await;
+
+    let filter = match ObjectId::from_str(&user) {
+      Ok(id) => doc! { "_id": id },
+      Err(_) => doc! { "username": &user },
+    };
+    let user = db
+      .users
+      .find_one(filter, None)
+      .await
+      .context("failed to query mongo for users")?
+      .context("no matching user found")?;
+
     let filter = match ObjectId::from_str(&user_group) {
       Ok(id) => doc! { "_id": id },
       Err(_) => doc! { "name": &user_group },
     };
-    let db = db_client().await;
     db.user_groups
       .update_one(
         filter.clone(),
-        doc! { "$pull": { "users": user_id } },
+        doc! { "$pull": { "users": &user.id } },
         None,
       )
       .await

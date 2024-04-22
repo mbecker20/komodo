@@ -6,10 +6,7 @@ use monitor_client::api::execute;
 use serde::Deserialize;
 use strum::Display;
 
-use crate::{
-  maps::{name_to_build, name_to_deployment, names_to_ids},
-  monitor_client,
-};
+use crate::monitor_client;
 
 pub async fn run_execution(path: &Path) -> anyhow::Result<()> {
   let ExecutionFile { name, stages } = crate::parse_toml_file(path)?;
@@ -64,12 +61,6 @@ pub async fn run_stages(stages: Vec<Stage>) -> anyhow::Result<()> {
   } in stages
   {
     info!("running {action} stage: {name}... ⏳");
-    let targets = match action {
-      ExecutionType::Build => {
-        names_to_ids(&targets, name_to_build())?
-      }
-      _ => names_to_ids(&targets, name_to_deployment())?,
-    };
     match action {
       ExecutionType::Build => {
         trigger_builds_in_parallel(&targets).await?;
@@ -93,19 +84,19 @@ pub async fn run_stages(stages: Vec<Stage>) -> anyhow::Result<()> {
 }
 
 async fn redeploy_deployments_in_parallel(
-  deployment_ids: &[&String],
+  deployments: &[String],
 ) -> anyhow::Result<()> {
-  let futes = deployment_ids.iter().map(|id| async move {
+  let futes = deployments.iter().map(|deployment| async move {
     monitor_client()
-      .execute(execute::Deploy { deployment: id.to_string(), stop_signal: None, stop_time: None })
+      .execute(execute::Deploy { deployment: deployment.to_string(), stop_signal: None, stop_time: None })
       .await
-      .with_context(|| format!("failed to deploy {id}"))
+      .with_context(|| format!("failed to deploy {deployment}"))
       .and_then(|update| {
         if update.success {
           Ok(())
         } else {
           Err(anyhow!(
-            "failed to deploy {id}. operation unsuccessful, see monitor update"
+            "failed to deploy {deployment}. operation unsuccessful, see monitor update"
           ))
         }
       })
@@ -114,19 +105,19 @@ async fn redeploy_deployments_in_parallel(
 }
 
 async fn start_containers_in_parallel(
-  deployment_ids: &[&String],
+  deployments: &[String],
 ) -> anyhow::Result<()> {
-  let futes = deployment_ids.iter().map(|id| async move {
+  let futes = deployments.iter().map(|deployment| async move {
     monitor_client()
-    .execute(execute::StartContainer { deployment: id.to_string() })
+    .execute(execute::StartContainer { deployment: deployment.to_string() })
       .await
-      .with_context(|| format!("failed to start container {id}"))
+      .with_context(|| format!("failed to start container {deployment}"))
       .and_then(|update| {
         if update.success {
           Ok(())
         } else {
           Err(anyhow!(
-            "failed to start container {id}. operation unsuccessful, see monitor update"
+            "failed to start container {deployment}. operation unsuccessful, see monitor update"
           ))
         }
       })
@@ -135,19 +126,19 @@ async fn start_containers_in_parallel(
 }
 
 async fn stop_containers_in_parallel(
-  deployment_ids: &[&String],
+  deployments: &[String],
 ) -> anyhow::Result<()> {
-  let futes = deployment_ids.iter().map(|id| async move {
+  let futes = deployments.iter().map(|deployment| async move {
     monitor_client()
-      .execute(execute::StopContainer { deployment: id.to_string(), signal: None, time: None })
+      .execute(execute::StopContainer { deployment: deployment.to_string(), signal: None, time: None })
       .await
-      .with_context(|| format!("failed to stop container {id}"))
+      .with_context(|| format!("failed to stop container {deployment}"))
       .and_then(|update| {
         if update.success {
           Ok(())
         } else {
           Err(anyhow!(
-            "failed to stop container {id}. operation unsuccessful, see monitor update"
+            "failed to stop container {deployment}. operation unsuccessful, see monitor update"
           ))
         }
       })
@@ -156,19 +147,19 @@ async fn stop_containers_in_parallel(
 }
 
 async fn destroy_containers_in_parallel(
-  deployment_ids: &[&String],
+  deployments: &[String],
 ) -> anyhow::Result<()> {
-  let futes = deployment_ids.iter().map(|id| async move {
+  let futes = deployments.iter().map(|deployment| async move {
     monitor_client()
-      .execute(execute::RemoveContainer { deployment: id.to_string(), signal: None, time: None })
+      .execute(execute::RemoveContainer { deployment: deployment.to_string(), signal: None, time: None })
       .await
-      .with_context(|| format!("failed to destroy container {id}"))
+      .with_context(|| format!("failed to destroy container {deployment}"))
       .and_then(|update| {
         if update.success {
           Ok(())
         } else {
           Err(anyhow!(
-            "failed to destroy container {id}. operation unsuccessful, see monitor update"
+            "failed to destroy container {deployment}. operation unsuccessful, see monitor update"
           ))
         }
       })
@@ -177,19 +168,19 @@ async fn destroy_containers_in_parallel(
 }
 
 async fn trigger_builds_in_parallel(
-  build_ids: &[&String],
+  builds: &[String],
 ) -> anyhow::Result<()> {
-  let futes = build_ids.iter().map(|id| async move {
+  let futes = builds.iter().map(|build| async move {
     monitor_client()
-      .execute(execute::RunBuild { build: id.to_string() })
+      .execute(execute::RunBuild { build: build.to_string() })
       .await
-      .with_context(|| format!("failed to build {id}"))
+      .with_context(|| format!("failed to build {build}"))
       .and_then(|update| {
         if update.success {
           Ok(())
         } else {
           Err(anyhow!(
-            "failed to build {id}. operation unsuccessful, see monitor update"
+            "failed to build {build}. operation unsuccessful, see monitor update"
           ))
         }
       })

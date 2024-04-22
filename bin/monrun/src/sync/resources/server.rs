@@ -9,9 +9,9 @@ use monitor_client::{
   },
 };
 
-use crate::{
-  maps::name_to_server, monitor_client, sync::ResourceSync,
-};
+use crate::{maps::name_to_server, monitor_client};
+
+use super::ResourceSync;
 
 impl ResourceSync for Server {
   type ListItemInfo = ServerListItemInfo;

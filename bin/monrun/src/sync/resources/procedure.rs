@@ -1,10 +1,7 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::{
-    read::ListTags,
-    write::{CreateProcedure, UpdateProcedure},
-  },
+  api::write::{CreateProcedure, UpdateProcedure},
   entities::{
     procedure::{
       PartialProcedureConfig, Procedure, ProcedureListItemInfo,
@@ -14,11 +11,9 @@ use monitor_client::{
   },
 };
 
-use crate::{
-  maps::name_to_procedure,
-  monitor_client,
-  sync::{ResourceSync, ToCreate, ToUpdate},
-};
+use crate::{maps::name_to_procedure, monitor_client};
+
+use super::{ResourceSync, ToCreate, ToUpdate};
 
 impl ResourceSync for Procedure {
   type PartialConfig = PartialProcedureConfig;
@@ -67,14 +62,6 @@ impl ResourceSync for Procedure {
     mut to_update: ToUpdate<Self::PartialConfig>,
     mut to_create: ToCreate<Self::PartialConfig>,
   ) {
-    let mut tag_name_to_id = monitor_client()
-      .read(ListTags::default())
-      .await
-      .expect("failed to ListTags mid run")
-      .into_iter()
-      .map(|tag| (tag.name, tag.id))
-      .collect::<HashMap<_, _>>();
-
     if to_update.is_empty() && to_create.is_empty() {
       return;
     }
@@ -96,13 +83,7 @@ impl ResourceSync for Procedure {
             );
           }
         }
-        Self::update_tags(
-          id.clone(),
-          &name,
-          &tags,
-          &mut tag_name_to_id,
-        )
-        .await;
+        Self::update_tags(id.clone(), &name, tags).await;
         Self::update_description(id.clone(), description).await;
         info!("{} {name} updated", Self::display());
         // have to clone out so to_update is mutable
@@ -127,13 +108,7 @@ impl ResourceSync for Procedure {
             continue;
           }
         };
-        Self::update_tags(
-          id.clone(),
-          &name,
-          &tags,
-          &mut tag_name_to_id,
-        )
-        .await;
+        Self::update_tags(id.clone(), &name, tags).await;
         Self::update_description(id, description).await;
         info!("{} {name} created", Self::display());
         to_pull.push(name);

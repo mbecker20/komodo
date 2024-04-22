@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
@@ -16,7 +16,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::update_one_by_id,
-  mongodb::bson::{doc, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_bson},
 };
 use resolver_api::Resolve;
 
@@ -95,6 +95,9 @@ impl Resolve<CreateServiceUser, User> for State {
   ) -> anyhow::Result<CreateServiceUserResponse> {
     if !user.admin {
       return Err(anyhow!("user not admin"));
+    }
+    if ObjectId::from_str(&username).is_ok() {
+      return Err(anyhow!("username cannot be valid ObjectId"));
     }
     let config = UserConfig::Service { description };
     let mut user = User {

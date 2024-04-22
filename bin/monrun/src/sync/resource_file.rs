@@ -6,6 +6,7 @@ use monitor_client::entities::{
   builder::PartialBuilderConfig, deployment::PartialDeploymentConfig,
   procedure::PartialProcedureConfig, repo::PartialRepoConfig,
   resource::Resource, server::PartialServerConfig,
+  user_group::UserGroup,
 };
 use serde::Deserialize;
 
@@ -14,18 +15,27 @@ use serde::Deserialize;
 pub struct ResourceFile {
   #[serde(default, rename = "server")]
   pub servers: Vec<Resource<PartialServerConfig>>,
+
   #[serde(default, rename = "build")]
   pub builds: Vec<Resource<PartialBuildConfig>>,
+
   #[serde(default, rename = "deployment")]
   pub deployments: Vec<Resource<PartialDeploymentConfig>>,
+
   #[serde(default, rename = "builder")]
   pub builders: Vec<Resource<PartialBuilderConfig>>,
+
   #[serde(default, rename = "repo")]
   pub repos: Vec<Resource<PartialRepoConfig>>,
+
   #[serde(default, rename = "alerter")]
   pub alerters: Vec<Resource<PartialAlerterConfig>>,
+
   #[serde(default, rename = "procedure")]
   pub procedures: Vec<Resource<PartialProcedureConfig>>,
+
+  #[serde(default, rename = "user_group")]
+  pub user_groups: Vec<UserGroup>,
 }
 
 pub fn read_resources(path: &Path) -> anyhow::Result<ResourceFile> {
@@ -63,6 +73,7 @@ fn read_resources_recursive(
     resources.repos.extend(more.repos);
     resources.alerters.extend(more.alerters);
     resources.procedures.extend(more.procedures);
+    resources.user_groups.extend(more.user_groups);
     Ok(())
   } else if res.is_dir() {
     let directory = fs::read_dir(path)

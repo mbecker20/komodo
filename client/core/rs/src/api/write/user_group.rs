@@ -55,8 +55,8 @@ pub struct DeleteUserGroup {
 pub struct AddUserToUserGroup {
   /// The name or id of UserGroup that user should be added to.
   pub user_group: String,
-  /// The id of the user to add
-  pub user_id: String,
+  /// The id or username of the user to add
+  pub user: String,
 }
 
 /// Admin only
@@ -69,6 +69,6 @@ pub struct AddUserToUserGroup {
 pub struct RemoveUserFromUserGroup {
   /// The name or id of UserGroup that user should be removed from.
   pub user_group: String,
-  /// The id of the user to remove
-  pub user_id: String,
+  /// The id or username of the user to remove
+  pub user: String,
 }

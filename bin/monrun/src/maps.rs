@@ -1,32 +1,16 @@
 use std::{collections::HashMap, sync::OnceLock};
 
-use anyhow::Context;
 use monitor_client::{
   api::read,
   entities::{
     alerter::AlerterListItem, build::BuildListItem,
     builder::BuilderListItem, deployment::DeploymentListItem,
     procedure::ProcedureListItem, repo::RepoListItem,
-    resource::ResourceListItem, server::ServerListItem,
+    server::ServerListItem, user_group::UserGroup,
   },
 };
 
 use crate::monitor_client;
-
-pub fn names_to_ids<T>(
-  names: &[String],
-  map: &'static HashMap<String, ResourceListItem<T>>,
-) -> anyhow::Result<Vec<&'static String>> {
-  names
-    .iter()
-    .map(|name| {
-      map
-        .get(name)
-        .with_context(|| format!("no item found with name {name}"))
-        .map(|item| &item.id)
-    })
-    .collect::<anyhow::Result<_>>()
-}
 
 pub fn name_to_build() -> &'static HashMap<String, BuildListItem> {
   static NAME_TO_BUILD: OnceLock<HashMap<String, BuildListItem>> =
@@ -128,6 +112,20 @@ pub fn name_to_procedure(
     .expect("failed to get procedures from monitor")
     .into_iter()
     .map(|procedure| (procedure.name.clone(), procedure))
+    .collect()
+  })
+}
+
+pub fn name_to_user_group() -> &'static HashMap<String, UserGroup> {
+  static NAME_TO_USER_GROUP: OnceLock<HashMap<String, UserGroup>> =
+    OnceLock::new();
+  NAME_TO_USER_GROUP.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListUserGroups::default()),
+    )
+    .expect("failed to get procedures from monitor")
+    .into_iter()
+    .map(|user_group| (user_group.name.clone(), user_group))
     .collect()
   })
 }

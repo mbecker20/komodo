@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use async_trait::async_trait;
@@ -9,7 +11,7 @@ use monitor_client::{
   },
   entities::user::{User, UserConfig},
 };
-use mungos::mongodb::bson::doc;
+use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{config::core_config, db::db_client, state::State};
@@ -32,6 +34,10 @@ impl Resolve<CreateLocalUser, HeaderMap> for State {
 
     if username.is_empty() {
       return Err(anyhow!("username cannot be empty string"));
+    }
+
+    if ObjectId::from_str(&username).is_ok() {
+      return Err(anyhow!("username cannot be valid ObjectId"));
     }
 
     let password = bcrypt::hash(password, BCRYPT_COST)

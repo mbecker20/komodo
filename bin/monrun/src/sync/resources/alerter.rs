@@ -9,9 +9,9 @@ use monitor_client::{
   },
 };
 
-use crate::{
-  maps::name_to_alerter, monitor_client, sync::ResourceSync,
-};
+use crate::{maps::name_to_alerter, monitor_client};
+
+use super::ResourceSync;
 
 impl ResourceSync for Alerter {
   type PartialConfig = PartialAlerterConfig;
