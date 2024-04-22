@@ -122,6 +122,7 @@ export type WriteResponses = {
   DeleteUserGroup: Types.UserGroup;
   AddUserToUserGroup: Types.UserGroup;
   RemoveUserFromUserGroup: Types.UserGroup;
+  SetUsersInUserGroup: Types.UserGroup;
 
   // ==== PERMISSIONS ====
   UpdateUserBasePermissions: Types.UpdateUserBasePermissionsResponse;

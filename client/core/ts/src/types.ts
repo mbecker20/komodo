@@ -60,13 +60,19 @@ export interface User {
 
 export type GetUserResponse = User;
 
+/** Severity level of problem. */
 export enum SeverityLevel {
+	/** No problem. */
 	Ok = "OK",
+	/** Problem is imminent. */
 	Warning = "WARNING",
+	/** Problem fully realized. */
 	Critical = "CRITICAL",
 }
 
+/** The variants of data related to the alert. */
 export type AlertData = 
+	/** A server could not be reached. */
 	| { type: "ServerUnreachable", data: {
 	/** The id of the server */
 	id: string;
@@ -77,6 +83,7 @@ export type AlertData =
 	/** The error data */
 	err?: _Serror;
 }}
+	/** A server has high CPU usage. */
 	| { type: "ServerCpu", data: {
 	/** The id of the server */
 	id: string;
@@ -87,6 +94,7 @@ export type AlertData =
 	/** The cpu usage percentage */
 	percentage: number;
 }}
+	/** A server has high memory usage. */
 	| { type: "ServerMem", data: {
 	/** The id of the server */
 	id: string;
@@ -99,6 +107,7 @@ export type AlertData =
 	/** The total memory */
 	total_gb: number;
 }}
+	/** A server has high disk usage. */
 	| { type: "ServerDisk", data: {
 	/** The id of the server */
 	id: string;
@@ -113,6 +122,7 @@ export type AlertData =
 	/** The total size of the disk in GB */
 	total_gb: number;
 }}
+	/** A container's state has changed unexpectedly. */
 	| { type: "ContainerStateChange", data: {
 	/** The id of the deployment */
 	id: string;
@@ -127,6 +137,7 @@ export type AlertData =
 	/** The current container state */
 	to: DockerContainerState;
 }}
+	/** An AWS builder failed to terminate. */
 	| { type: "AwsBuilderTerminationFailed", data: {
 	/** The id of the aws instance which failed to terminate */
 	instance_id: string;
@@ -134,6 +145,7 @@ export type AlertData =
 	| { type: "None", data: {
 }};
 
+/** Representation of an alert in the system. */
 export interface Alert {
 	/**
 	 * The Mongo ID of the alert.
@@ -177,7 +189,9 @@ export interface Resource<Config, Info> {
 }
 
 export type AlerterConfig = 
+	/** Send alert serialized to JSON to an http endpoint. */
 	| { type: "Custom", params: CustomAlerterConfig }
+	/** Send alert to a slack app */
 	| { type: "Slack", params: SlackAlerterConfig };
 
 export interface AlerterInfo {
@@ -227,6 +241,7 @@ export interface EnvironmentVar {
 	value: string;
 }
 
+/** The build configuration. */
 export interface BuildConfig {
 	/** Which builder is used to build the image. */
 	builder_id?: string;
@@ -312,7 +327,9 @@ export type GetBuildVersionsResponse = BuildVersionResponseItem[];
 export type ListDockerOrganizationsResponse = string[];
 
 export type BuilderConfig = 
+	/** Use a connected server an image builder. */
 	| { type: "Server", params: ServerBuilderConfig }
+	/** Use EC2 instances spawned on demand as an image builder. */
 	| { type: "Aws", params: AwsBuilderConfig };
 
 export type Builder = Resource<BuilderConfig, undefined>;
@@ -329,10 +346,12 @@ export type BuilderListItem = ResourceListItem<BuilderListItemInfo>;
 export type ListBuildersResponse = BuilderListItem[];
 
 export type DeploymentImage = 
+	/** Deploy any external image. */
 	| { type: "Image", params: {
 	/** The docker image, can be from any registry that works with docker and that the host server can reach. */
 	image?: string;
 }}
+	/** Deploy a monitor build. */
 	| { type: "Build", params: {
 	/** The id of the build */
 	build_id?: string;
@@ -356,7 +375,9 @@ export interface TerminationSignalLabel {
 }
 
 export interface Conversion {
+	/** reference on the server. */
 	local: string;
+	/** reference in the container. */
 	container: string;
 }
 
@@ -370,7 +391,7 @@ export enum RestartMode {
 export interface DeploymentConfig {
 	/** The id of server the deployment is deployed on. */
 	server_id?: string;
-	/** Whether to send ContainerStateChange alerts for this deployment */
+	/** Whether to send ContainerStateChange alerts for this deployment. */
 	send_alerts: boolean;
 	/**
 	 * The image which the deployment deploys.
@@ -451,10 +472,15 @@ export enum DockerContainerState {
 }
 
 export interface DeploymentListItemInfo {
+	/** The state of the docker container. */
 	state: DockerContainerState;
+	/** The status of the docker container (eg. up 12 hours, exited 5 minutes ago.) */
 	status?: string;
+	/** The image attached to the deployment. */
 	image: string;
+	/** The server that deployment sits on. */
 	server_id: string;
+	/** An attached monitor build, if it exists. */
 	build_id?: string;
 }
 
@@ -643,6 +669,7 @@ export interface RepoActionState {
 
 export type GetRepoActionStateResponse = RepoActionState;
 
+/** Server configuration. */
 export interface ServerConfig {
 	/**
 	 * The http address of the periphery client.
@@ -695,17 +722,26 @@ export type Server = Resource<ServerConfig, undefined>;
 export type GetServerResponse = Server;
 
 export enum ServerStatus {
+	/** Server is unreachable. */
 	NotOk = "NotOk",
+	/** Server health check passing. */
 	Ok = "Ok",
+	/** Server is disabled. */
 	Disabled = "Disabled",
 }
 
 export interface ServerListItemInfo {
+	/** The server's status. */
 	status: ServerStatus;
+	/** Region of the server. */
 	region: string;
+	/** Whether server is configured to send unreachable alerts. */
 	send_unreachable_alerts: boolean;
+	/** Whether server is configured to send cpu alerts. */
 	send_cpu_alerts: boolean;
+	/** Whether server is configured to send mem alerts. */
 	send_mem_alerts: boolean;
+	/** Whether server is configured to send disk alerts. */
 	send_disk_alerts: boolean;
 }
 
@@ -713,15 +749,21 @@ export type ServerListItem = ResourceListItem<ServerListItemInfo>;
 
 export type ListServersResponse = ServerListItem[];
 
+/** Current pending actions on the server. */
 export interface ServerActionState {
+	/** Server currently pruning networks */
 	pruning_networks: boolean;
+	/** Server currently pruning containers */
 	pruning_containers: boolean;
+	/** Server currently pruning images */
 	pruning_images: boolean;
+	/** Server currently stopping all containers. */
 	stopping_containers: boolean;
 }
 
 export type GetServerActionStateResponse = ServerActionState;
 
+/** Ipam Configuration. */
 export interface IpamConfig {
 	Subnet?: string;
 	IPRange?: string;
@@ -729,6 +771,7 @@ export interface IpamConfig {
 	AuxiliaryAddresses?: Record<string, string>;
 }
 
+/** Ipam related information */
 export interface Ipam {
 	/** Name of the IPAM driver to use. */
 	Driver?: string;
@@ -738,6 +781,7 @@ export interface Ipam {
 	Options?: Record<string, string>;
 }
 
+/** A container on a network. */
 export interface NetworkContainer {
 	Name?: string;
 	EndpointID?: string;
@@ -746,6 +790,7 @@ export interface NetworkContainer {
 	IPv6Address?: string;
 }
 
+/** Summary of a docker network on a server. */
 export interface DockerNetwork {
 	/** The name of the docker network */
 	Name?: string;
@@ -767,7 +812,7 @@ export interface DockerNetwork {
 
 export type GetDockerNetworksResponse = DockerNetwork[];
 
-/** Summary of docker image cached on a server */
+/** Summary of a docker image cached on a server */
 export interface ImageSummary {
 	/** ID is the content-addressable ID of an image.  This identifier is a content-addressable digest calculated from the image's configuration (which includes the digests of layers used by the image).  Note that this digest differs from the `RepoDigests` below, which holds digests of image manifests that reference the image. */
 	Id: string;
@@ -793,6 +838,7 @@ export interface ImageSummary {
 
 export type GetDockerImagesResponse = ImageSummary[];
 
+/** A summary of a docker container on a server. */
 export interface ContainerSummary {
 	/** Name of the container. */
 	name: string;
@@ -810,17 +856,25 @@ export interface ContainerSummary {
 
 export type GetDockerContainersResponse = ContainerSummary[];
 
+/** System information of a server */
 export interface SystemInformation {
+	/** The system name */
 	name?: string;
+	/** The system long os version */
 	os?: string;
+	/** System's kernel version */
 	kernel?: string;
+	/** Physical core count */
 	core_count?: number;
+	/** System hostname based off DNS */
 	host_name?: string;
+	/** The CPU's brand */
 	cpu_brand: string;
 }
 
 export type GetSystemInformationResponse = SystemInformation;
 
+/** Info for a single disk mounted on the system. */
 export interface SingleDiskUsage {
 	/** The mount point of the disk */
 	mount: string;
@@ -854,6 +908,7 @@ export enum Timelength {
 	ThirtyDays = "30-day",
 }
 
+/** Realtime system stats data. */
 export interface SystemStats {
 	/** Cpu usage percentage */
 	cpu_perc: number;
@@ -873,6 +928,7 @@ export interface SystemStats {
 
 export type GetSystemStatsResponse = SystemStats;
 
+/** Information about a process on the system. */
 export interface SystemProcess {
 	/** The process PID */
 	pid: number;
@@ -986,6 +1042,7 @@ export interface Update {
 
 export type GetUpdateResponse = Update;
 
+/** An api key used to authenticate requests via request headers. */
 export interface ApiKey {
 	/** Unique key associated with secret */
 	key: string;
@@ -1141,6 +1198,7 @@ export type _PartialServerConfig = Partial<ServerConfig>;
 export interface ServerQuerySpecifics {
 }
 
+/** Server-specific query */
 export type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
 
 export type _PartialTag = Partial<Tag>;
@@ -1603,6 +1661,7 @@ export interface GetHistoricalServerStats {
 	page?: number;
 }
 
+/** System stats stored on the database. */
 export interface SystemStatsRecord {
 	/** Unix timestamp in milliseconds */
 	ts: I64;
@@ -1802,6 +1861,7 @@ export interface UpdateBuild {
 	config: _PartialBuildConfig;
 }
 
+/** Partial representation of [BuilderConfig] */
 export type PartialBuilderConfig = 
 	| { type: "Server", params: _PartialServerBuilderConfig }
 	| { type: "Aws", params: _PartialAwsBuilderConfig };
@@ -2018,13 +2078,13 @@ export interface UpdateServiceUserDescription {
 	description: string;
 }
 
-/** Admin only */
+/** **Admin only.** Response: [UserGroup] */
 export interface CreateUserGroup {
 	/** The name to assign to the new UserGroup */
 	name: string;
 }
 
-/** Admin only */
+/** **Admin only.** Response: [UserGroup] */
 export interface RenameUserGroup {
 	/** The id of the UserGroup */
 	id: string;
@@ -2032,28 +2092,35 @@ export interface RenameUserGroup {
 	name: string;
 }
 
-/** Admin only */
+/** **Admin only.** Response: [UserGroup] */
 export interface DeleteUserGroup {
 	/** The id of the UserGroup */
 	id: string;
 }
 
-/** Admin only */
+/** **Admin only.** Response: [UserGroup] */
 export interface AddUserToUserGroup {
 	/** The name or id of UserGroup that user should be added to. */
 	user_group: string;
-	/** The id of the user to add */
-	user_id: string;
+	/** The id or username of the user to add */
+	user: string;
 }
 
-/** Admin only */
+/** **Admin only.** Response: [UserGroup] */
 export interface RemoveUserFromUserGroup {
 	/** The name or id of UserGroup that user should be removed from. */
 	user_group: string;
-	/** The id of the user to remove */
-	user_id: string;
+	/** The id or username of the user to remove */
+	user: string;
 }
 
+/** **Admin only.** Response: [UserGroup] */
+export interface SetUsersInUserGroup {
+	user_group: string;
+	users: string[];
+}
+
+/** Configuration for a custom alerter. */
 export interface CustomAlerterConfig {
 	/** The http/s endpoint to send the POST to */
 	url: string;
@@ -2061,6 +2128,7 @@ export interface CustomAlerterConfig {
 	enabled?: boolean;
 }
 
+/** Configuration for a slack alerter. */
 export interface SlackAlerterConfig {
 	/** The slack app url */
 	url: string;
@@ -2068,11 +2136,13 @@ export interface SlackAlerterConfig {
 	enabled?: boolean;
 }
 
+/** Configuration for a monitor server builder. */
 export interface ServerBuilderConfig {
 	/** The server id of the builder */
 	server_id: string;
 }
 
+/** Configuration for an AWS builder. */
 export interface AwsBuilderConfig {
 	/** The AWS region to create the instance in */
 	region: string;
@@ -2085,7 +2155,7 @@ export interface AwsBuilderConfig {
 	/**
 	 * The EC2 ami id to create.
 	 * The ami should have the periphery client configured to start on startup,
-	 * and should have the necessary github / dockerhub accounts configured
+	 * and should have the necessary github / dockerhub accounts configured.
 	 */
 	ami_id: string;
 	/** The subnet id to create the instance in. */
@@ -2122,6 +2192,7 @@ export interface CloneArgs {
 	github_account?: string;
 }
 
+/** Info for the all system disks combined. */
 export interface TotalDiskUsage {
 	/** Used portion in GB */
 	used_gb: number;
@@ -2129,6 +2200,7 @@ export interface TotalDiskUsage {
 	total_gb: number;
 }
 
+/** Summary of the health of the server. */
 export interface ServerHealth {
 	cpu: SeverityLevel;
 	mem: SeverityLevel;
@@ -2237,6 +2309,7 @@ export type WriteRequest =
 	| { type: "DeleteUserGroup", params: DeleteUserGroup }
 	| { type: "AddUserToUserGroup", params: AddUserToUserGroup }
 	| { type: "RemoveUserFromUserGroup", params: RemoveUserFromUserGroup }
+	| { type: "SetUsersInUserGroup", params: SetUsersInUserGroup }
 	| { type: "UpdateUserBasePermissions", params: UpdateUserBasePermissions }
 	| { type: "UpdatePermissionOnTarget", params: UpdatePermissionOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }

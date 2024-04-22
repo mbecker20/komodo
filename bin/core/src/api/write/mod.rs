@@ -51,6 +51,7 @@ enum WriteRequest {
   DeleteUserGroup(DeleteUserGroup),
   AddUserToUserGroup(AddUserToUserGroup),
   RemoveUserFromUserGroup(RemoveUserFromUserGroup),
+  SetUsersInUserGroup(SetUsersInUserGroup),
 
   // ==== PERMISSIONS ====
   UpdateUserBasePermissions(UpdateUserBasePermissions),
