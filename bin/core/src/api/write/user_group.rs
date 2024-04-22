@@ -141,7 +141,7 @@ impl Resolve<AddUserToUserGroup, User> for State {
     db.user_groups
       .update_one(
         filter.clone(),
-        doc! { "$push": { "users": &user.id } },
+        doc! { "$addToSet": { "users": &user.id } },
         None,
       )
       .await
