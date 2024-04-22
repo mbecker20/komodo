@@ -16,7 +16,7 @@ export type ReadResponses = {
   ListUsers: Types.ListUsersResponse;
   GetUsername: Types.GetUsernameResponse;
   ListApiKeys: Types.ListApiKeysResponse;
-  ListApiKeysForServiceUser: Types.ListApiKeysForServiceUser;
+  ListApiKeysForServiceUser: Types.ListApiKeysForServiceUserResponse;
   ListPermissions: Types.ListPermissionsResponse;
   GetPermissionLevel: Types.GetPermissionLevelResponse;
   ListUserTargetPermissions: Types.ListUserTargetPermissionsResponse;

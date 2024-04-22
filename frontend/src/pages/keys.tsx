@@ -21,47 +21,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@ui/dropdown-menu";
-import { DataTable } from "@ui/data-table";
+import { KeysTable } from "@components/keys/table";
 
 export const Keys = () => {
   useSetTitle("Api Keys");
   const keys = useRead("ListApiKeys", {}).data ?? [];
   return (
     <Page title="Api Keys" actions={<CreateKey />}>
-      <DataTable
-        tableKey="api-keys"
-        data={keys}
-        columns={[
-          { header: "Name", accessorKey: "name" },
-          {
-            header: "Key",
-            cell: ({
-              row: {
-                original: { key },
-              },
-            }) => {
-              return (
-                <div className="flex items-center gap-2">
-                  <Input className="w-40" value={key} disabled />
-                  <CopyButton content={key} />
-                </div>
-              );
-            },
-          },
-          {
-            header: "Expires",
-            accessorFn: ({ expires }) =>
-              expires
-                ? "In " +
-                  ((expires - Date.now()) / ONE_DAY_MS).toFixed() +
-                  " Days"
-                : "Never",
-          },
-          {
-            header: "Delete",
-            cell: ({ row }) => <DeleteKey api_key={row.original.key} />,
-          },
-        ]}
+      <KeysTable
+        keys={keys}
+        DeleteKey={DeleteKey}
+
       />
     </Page>
   );
@@ -102,7 +72,7 @@ const CreateKey = () => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button className="items-center gap-2">
+        <Button variant="secondary" className="items-center gap-2">
           New Api Key <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>

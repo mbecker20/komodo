@@ -6,12 +6,12 @@ import {
   Boxes,
   FileQuestion,
   FolderTree,
-  Group,
   Home,
   Key,
   SearchX,
   Tag,
   UserCircle2,
+  Users,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -87,7 +87,7 @@ const PrimaryDropdown = () => {
     : location.pathname === "/alerts"
     ? [<AlertTriangle className="w-4 h-4" />, "Alerts"]
     : location.pathname.split("/")[1] === "user-groups"
-    ? [<Group className="w-4 h-4" />, "User Groups"]
+    ? [<Users className="w-4 h-4" />, "User Groups"]
     : location.pathname === "/users" ||
       location.pathname.split("/")[1] === "users"
     ? [<UserCircle2 className="w-4 h-4" />, "Users"]
@@ -309,7 +309,7 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
           variant="ghost"
           className="flex justify-start items-center gap-2 w-48 px-3"
         >
-          <Group className="w-4 h-4" />
+          <Users className="w-4 h-4" />
           {selected ? selected.name : "All User Groups"}
         </Button>
       </PopoverTrigger>
@@ -351,7 +351,7 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
                     variant="link"
                     className="flex gap-2 items-center p-0"
                   >
-                    <Group className="w-4 h-4" />
+                    <Users className="w-4 h-4" />
                     {group.name}
                   </Button>
                 </CommandItem>
@@ -379,7 +379,10 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" className="flex justify-start items-center gap-2 w-48 px-3">
+        <Button
+          variant="ghost"
+          className="flex justify-start items-center gap-2 w-48 px-3"
+        >
           <UserAvatar avatar={avatar} />
           {selected ? selected.username : "All Users"}
         </Button>

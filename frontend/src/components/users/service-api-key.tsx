@@ -57,7 +57,7 @@ export const CreateKeyForServiceUser = ({ user_id }: { user_id: string }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button className="items-center gap-2">
+        <Button variant="secondary" className="items-center gap-2">
           New Api Key <PlusCircle className="w-4 h-4" />
         </Button>
       </DialogTrigger>

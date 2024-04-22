@@ -8,12 +8,14 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/home/tree";
 import { Tags } from "@pages/tags";
 import { ResourceUpdates } from "@pages/resource_update";
-import { UserGroupPage, UserPage, UsersPage } from "@pages/users";
+import { UsersPage } from "@pages/users";
 import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
 import { Home } from "@pages/home";
 import { ResourceStats } from "@pages/resource_stats";
 import { Alerts } from "@pages/alerts";
+import { UserPage } from "@pages/user";
+import { UserGroupPage } from "@pages/user-group";
 
 const ROUTER = createBrowserRouter([
   {

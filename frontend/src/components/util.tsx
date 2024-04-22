@@ -220,10 +220,14 @@ export const ConfirmButton = ({
       onClick={
         confirmed
           ? (e) => {
+              e.stopPropagation();
               onClick && onClick(e);
               set(false);
             }
-          : () => set(true)
+          : (e) => {
+              e.stopPropagation();
+              set(true);
+            }
       }
       onBlur={() => set(false)}
       loading={loading}
