@@ -83,7 +83,7 @@ export const UserGroupPage = () => {
             ) ?? []
           }
           onUserRemove={(user_id) =>
-            removeMutate({ user_group: group_id, user_id })
+            removeMutate({ user_group: group_id, user: user_id })
           }
         />
       </Section>
@@ -149,7 +149,7 @@ const AddUserToGroup = ({ group_id }: { group_id: string }) => {
                   key={user.username}
                   onSelect={() => {
                     setOpen(false);
-                    addUser({ user_group: group_id, user_id: user._id?.$oid! });
+                    addUser({ user_group: group_id, user: user._id?.$oid! });
                   }}
                 >
                   <Button
