@@ -1,16 +1,17 @@
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use axum::async_trait;
 use monitor_client::{
   api::write::{
     AddUserToUserGroup, CreateUserGroup, DeleteUserGroup,
-    RemoveUserFromUserGroup, RenameUserGroup,
+    RemoveUserFromUserGroup, RenameUserGroup, SetUsersInUserGroup,
   },
   entities::{monitor_timestamp, user::User, user_group::UserGroup},
 };
 use mungos::{
   by_id::{delete_one_by_id, find_one_by_id, update_one_by_id},
+  find::find_collect,
   mongodb::bson::{doc, oid::ObjectId},
 };
 use resolver_api::Resolve;
@@ -189,6 +190,55 @@ impl Resolve<RemoveUserFromUserGroup, User> for State {
       .update_one(
         filter.clone(),
         doc! { "$pull": { "users": &user.id } },
+        None,
+      )
+      .await
+      .context("failed to add user to group on db")?;
+    db.user_groups
+      .find_one(filter, None)
+      .await
+      .context("failed to query db for UserGroups")?
+      .context("no user group with given id")
+  }
+}
+
+#[async_trait]
+impl Resolve<SetUsersInUserGroup, User> for State {
+  async fn resolve(
+    &self,
+    SetUsersInUserGroup { user_group, users }: SetUsersInUserGroup,
+    admin: User,
+  ) -> anyhow::Result<UserGroup> {
+    if !admin.admin {
+      return Err(anyhow!("This call is admin-only"));
+    }
+
+    let db = db_client().await;
+
+    let all_users = find_collect(&db.users, None, None)
+      .await
+      .context("failed to query db for users")?
+      .into_iter()
+      .map(|u| (u.username, u.id))
+      .collect::<HashMap<_, _>>();
+
+    // Make sure all users are user ids
+    let users = users
+      .into_iter()
+      .filter_map(|user| match ObjectId::from_str(&user) {
+        Ok(_) => Some(user),
+        Err(_) => all_users.get(&user).cloned(),
+      })
+      .collect::<Vec<_>>();
+
+    let filter = match ObjectId::from_str(&user_group) {
+      Ok(id) => doc! { "_id": id },
+      Err(_) => doc! { "name": &user_group },
+    };
+    db.user_groups
+      .update_one(
+        filter.clone(),
+        doc! { "$set": { "users": users } },
         None,
       )
       .await

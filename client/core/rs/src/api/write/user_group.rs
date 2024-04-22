@@ -7,7 +7,7 @@ use crate::entities::user_group::UserGroup;
 
 use super::MonitorWriteRequest;
 
-/// Admin only
+/// **Admin only.** Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -19,7 +19,9 @@ pub struct CreateUserGroup {
   pub name: String,
 }
 
-/// Admin only
+//
+
+/// **Admin only.** Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -33,7 +35,9 @@ pub struct RenameUserGroup {
   pub name: String,
 }
 
-/// Admin only
+//
+
+/// **Admin only.** Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -45,7 +49,9 @@ pub struct DeleteUserGroup {
   pub id: String,
 }
 
-/// Admin only
+//
+
+/// **Admin only.** Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -59,7 +65,9 @@ pub struct AddUserToUserGroup {
   pub user: String,
 }
 
-/// Admin only
+//
+
+/// **Admin only.** Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -71,4 +79,18 @@ pub struct RemoveUserFromUserGroup {
   pub user_group: String,
   /// The id or username of the user to remove
   pub user: String,
+}
+
+//
+
+/// **Admin only.** Response: [UserGroup]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorWriteRequest)]
+#[response(UserGroup)]
+pub struct SetUsersInUserGroup {
+  pub user_group: String,
+  pub users: Vec<String>,
 }
