@@ -41,34 +41,30 @@ pub fn init(config: &LogConfig) -> anyhow::Result<()> {
         endpoint,
         config.opentelemetry_service_name.clone(),
       ))
-      .try_init()
-      .context("failed to init logger"),
+      .try_init(),
     (StdioLogMode::Json, Some(endpoint)) => registry
       .with(tracing_subscriber::fmt::layer().json())
       .with(opentelemetry::layer(
         endpoint,
         config.opentelemetry_service_name.clone(),
       ))
-      .try_init()
-      .context("failed to init logger"),
+      .try_init(),
     (StdioLogMode::None, Some(endpoint)) => registry
       .with(opentelemetry::layer(
         endpoint,
         config.opentelemetry_service_name.clone(),
       ))
-      .try_init()
-      .context("failed to init logger"),
+      .try_init(),
 
-    (StdioLogMode::Standard, None) => registry
-      .with(tracing_subscriber::fmt::layer())
-      .try_init()
-      .context("failed to init logger"),
+    (StdioLogMode::Standard, None) => {
+      registry.with(tracing_subscriber::fmt::layer()).try_init()
+    }
     (StdioLogMode::Json, None) => registry
       .with(tracing_subscriber::fmt::layer().json())
-      .try_init()
-      .context("failed to init logger"),
+      .try_init(),
     (StdioLogMode::None, None) => Ok(()),
   }
+  .context("failed to init logger")
 }
 
 #[derive(
