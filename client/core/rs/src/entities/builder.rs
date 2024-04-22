@@ -38,7 +38,10 @@ pub struct BuilderListItemInfo {
 )]
 #[serde(tag = "type", content = "params")]
 pub enum BuilderConfig {
+  /// Use a connected server an image builder.
   Server(ServerBuilderConfig),
+
+  /// Use EC2 instances spawned on demand as an image builder.
   Aws(AwsBuilderConfig),
 }
 
@@ -48,6 +51,7 @@ pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
 #[typeshare(serialized_as = "Partial<AwsBuilderConfig>")]
 pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
 
+/// Partial representation of [BuilderConfig]
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
@@ -131,6 +135,7 @@ impl BuilderConfig {
   }
 }
 
+/// Configuration for a monitor server builder.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -143,6 +148,7 @@ pub struct ServerBuilderConfig {
   pub server_id: String,
 }
 
+/// Configuration for an AWS builder.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -175,7 +181,7 @@ pub struct AwsBuilderConfig {
 
   /// The EC2 ami id to create.
   /// The ami should have the periphery client configured to start on startup,
-  /// and should have the necessary github / dockerhub accounts configured
+  /// and should have the necessary github / dockerhub accounts configured.
   pub ami_id: String,
   /// The subnet id to create the instance in.
   pub subnet_id: String,

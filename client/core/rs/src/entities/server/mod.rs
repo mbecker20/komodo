@@ -20,17 +20,24 @@ pub type ServerListItem = ResourceListItem<ServerListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ServerListItemInfo {
+  /// The server's status.
   pub status: ServerStatus,
+  /// Region of the server.
   pub region: String,
+  /// Whether server is configured to send unreachable alerts.
   pub send_unreachable_alerts: bool,
+  /// Whether server is configured to send cpu alerts.
   pub send_cpu_alerts: bool,
+  /// Whether server is configured to send mem alerts.
   pub send_mem_alerts: bool,
+  /// Whether server is configured to send disk alerts.
   pub send_disk_alerts: bool,
 }
 
 #[typeshare(serialized_as = "Partial<ServerConfig>")]
 pub type _PartialServerConfig = PartialServerConfig;
 
+/// Server configuration.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -176,12 +183,17 @@ fn default_disk_critical() -> f64 {
   95.0
 }
 
+/// Current pending actions on the server.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct ServerActionState {
+  /// Server currently pruning networks
   pub pruning_networks: bool,
+  /// Server currently pruning containers
   pub pruning_containers: bool,
+  /// Server currently pruning images
   pub pruning_images: bool,
+  /// Server currently stopping all containers.
   pub stopping_containers: bool,
 }
 
@@ -198,12 +210,16 @@ pub struct ServerActionState {
   Default,
 )]
 pub enum ServerStatus {
+  /// Server is unreachable.
   #[default]
   NotOk,
+  /// Server health check passing.
   Ok,
+  /// Server is disabled.
   Disabled,
 }
 
+/// Server-specific query
 #[typeshare]
 pub type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
 

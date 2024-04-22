@@ -15,6 +15,7 @@ use super::{
   server::stats::SeverityLevel, update::ResourceTarget,
 };
 
+/// Representation of an alert in the system.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
@@ -59,6 +60,7 @@ pub struct Alert {
   pub resolved_ts: Option<I64>,
 }
 
+/// The variants of data related to the alert.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
@@ -73,6 +75,7 @@ pub struct Alert {
 )]
 #[serde(tag = "type", content = "data")]
 pub enum AlertData {
+  /// A server could not be reached.
   ServerUnreachable {
     /// The id of the server
     id: String,
@@ -83,6 +86,8 @@ pub enum AlertData {
     /// The error data
     err: Option<_Serror>,
   },
+
+  /// A server has high CPU usage.
   ServerCpu {
     /// The id of the server
     id: String,
@@ -93,6 +98,8 @@ pub enum AlertData {
     /// The cpu usage percentage
     percentage: f64,
   },
+
+  /// A server has high memory usage.
   ServerMem {
     /// The id of the server
     id: String,
@@ -105,6 +112,8 @@ pub enum AlertData {
     /// The total memory
     total_gb: f64,
   },
+
+  /// A server has high disk usage.
   ServerDisk {
     /// The id of the server
     id: String,
@@ -119,6 +128,8 @@ pub enum AlertData {
     /// The total size of the disk in GB
     total_gb: f64,
   },
+
+  /// A container's state has changed unexpectedly.
   ContainerStateChange {
     /// The id of the deployment
     id: String,
@@ -133,6 +144,8 @@ pub enum AlertData {
     /// The current container state
     to: DockerContainerState,
   },
+
+  /// An AWS builder failed to terminate.
   AwsBuilderTerminationFailed {
     /// The id of the aws instance which failed to terminate
     instance_id: String,

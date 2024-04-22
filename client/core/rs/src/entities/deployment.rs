@@ -24,10 +24,15 @@ pub type DeploymentListItem =
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DeploymentListItemInfo {
+  /// The state of the docker container.
   pub state: DockerContainerState,
+  /// The status of the docker container (eg. up 12 hours, exited 5 minutes ago.)
   pub status: Option<String>,
+  /// The image attached to the deployment.
   pub image: String,
+  /// The server that deployment sits on.
   pub server_id: String,
+  /// An attached monitor build, if it exists.
   pub build_id: Option<String>,
 }
 
@@ -46,7 +51,7 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub server_id: String,
 
-  /// Whether to send ContainerStateChange alerts for this deployment
+  /// Whether to send ContainerStateChange alerts for this deployment.
   #[serde(default = "default_send_alerts")]
   #[builder(default = "default_send_alerts()")]
   #[partial_default(default_send_alerts())]
@@ -183,11 +188,14 @@ fn default_network() -> String {
 )]
 #[serde(tag = "type", content = "params")]
 pub enum DeploymentImage {
+  /// Deploy any external image.
   Image {
     /// The docker image, can be from any registry that works with docker and that the host server can reach.
     #[serde(default)]
     image: String,
   },
+
+  /// Deploy a monitor build.
   Build {
     /// The id of the build
     #[serde(default, alias = "build")]
@@ -212,10 +220,13 @@ impl Default for DeploymentImage {
   Serialize, Deserialize, Debug, Clone, Default, PartialEq,
 )]
 pub struct Conversion {
+  /// reference on the server.
   pub local: String,
+  /// reference in the container.
   pub container: String,
 }
 
+/// A summary of a docker container on a server.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ContainerSummary {

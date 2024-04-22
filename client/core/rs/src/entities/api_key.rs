@@ -5,6 +5,7 @@ use typeshare::typeshare;
 
 use super::I64;
 
+/// An api key used to authenticate requests via request headers.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,

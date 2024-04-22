@@ -8,17 +8,25 @@ use typeshare::typeshare;
 
 use crate::entities::{Timelength, I64};
 
+/// System information of a server
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct SystemInformation {
+  /// The system name
   pub name: Option<String>,
+  /// The system long os version
   pub os: Option<String>,
+  /// System's kernel version
   pub kernel: Option<String>,
+  /// Physical core count
   pub core_count: Option<u32>,
+  /// System hostname based off DNS
   pub host_name: Option<String>,
+  /// The CPU's brand
   pub cpu_brand: String,
 }
 
+/// System stats stored on the database.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
@@ -46,6 +54,7 @@ pub struct SystemStatsRecord {
   pub disks: Vec<SingleDiskUsage>,
 }
 
+/// Realtime system stats data.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SystemStats {
@@ -67,6 +76,7 @@ pub struct SystemStats {
   pub refresh_list_ts: I64,
 }
 
+/// Info for a single disk mounted on the system.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SingleDiskUsage {
@@ -88,6 +98,7 @@ pub fn sum_disk_usage(disks: &[SingleDiskUsage]) -> TotalDiskUsage {
     })
 }
 
+/// Info for the all system disks combined.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct TotalDiskUsage {
@@ -97,6 +108,7 @@ pub struct TotalDiskUsage {
   pub total_gb: f64,
 }
 
+/// Information about a process on the system.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SystemProcess {
@@ -124,6 +136,7 @@ pub struct SystemProcess {
   pub disk_write_kb: f64,
 }
 
+/// Summary of the health of the server.
 #[typeshare]
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct ServerHealth {
@@ -132,6 +145,7 @@ pub struct ServerHealth {
   pub disks: HashMap<PathBuf, SeverityLevel>,
 }
 
+/// Severity level of problem.
 #[typeshare]
 #[derive(
   Serialize,
@@ -148,8 +162,11 @@ pub struct ServerHealth {
 #[serde(rename_all = "UPPERCASE")]
 #[strum(serialize_all = "UPPERCASE")]
 pub enum SeverityLevel {
+  /// No problem.
   #[default]
   Ok,
+  /// Problem is imminent.
   Warning,
+  /// Problem fully realized.
   Critical,
 }

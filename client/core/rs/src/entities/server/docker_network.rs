@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use typeshare::typeshare;
 
+/// Summary of a docker network on a server.
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
@@ -107,6 +108,7 @@ impl From<bollard::service::Network> for DockerNetwork {
   }
 }
 
+/// Ipam related information
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
@@ -140,6 +142,7 @@ impl From<bollard::service::Ipam> for Ipam {
   }
 }
 
+/// Ipam Configuration.
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,
@@ -173,6 +176,7 @@ impl From<bollard::service::IpamConfig> for IpamConfig {
   }
 }
 
+/// A container on a network.
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,

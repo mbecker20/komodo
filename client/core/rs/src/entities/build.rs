@@ -40,6 +40,7 @@ pub struct BuildInfo {
 #[typeshare(serialized_as = "Partial<BuildConfig>")]
 pub type _PartialBuildConfig = PartialBuildConfig;
 
+/// The build configuration.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]

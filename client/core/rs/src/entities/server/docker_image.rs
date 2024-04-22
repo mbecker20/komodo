@@ -7,7 +7,7 @@ use typeshare::typeshare;
 
 use crate::entities::I64;
 
-/// Summary of docker image cached on a server
+/// Summary of a docker image cached on a server
 #[typeshare]
 #[derive(
   Debug, Clone, Default, PartialEq, Serialize, Deserialize,

@@ -49,7 +49,10 @@ pub struct AlerterInfo {
 )]
 #[serde(tag = "type", content = "params")]
 pub enum AlerterConfig {
+  /// Send alert serialized to JSON to an http endpoint.
   Custom(CustomAlerterConfig),
+
+  /// Send alert to a slack app
   Slack(SlackAlerterConfig),
 }
 
@@ -120,6 +123,7 @@ impl AlerterConfig {
   }
 }
 
+/// Configuration for a custom alerter.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
@@ -134,6 +138,7 @@ pub struct CustomAlerterConfig {
   pub enabled: bool,
 }
 
+/// Configuration for a slack alerter.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
