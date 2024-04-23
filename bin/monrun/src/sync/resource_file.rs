@@ -6,9 +6,10 @@ use monitor_client::entities::{
   builder::PartialBuilderConfig, deployment::PartialDeploymentConfig,
   procedure::PartialProcedureConfig, repo::PartialRepoConfig,
   resource::Resource, server::PartialServerConfig,
-  user_group::UserGroup,
 };
 use serde::Deserialize;
+
+use super::user_group::UserGroupToml;
 
 /// Specifies resources to sync on monitor
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -35,7 +36,7 @@ pub struct ResourceFile {
   pub procedures: Vec<Resource<PartialProcedureConfig>>,
 
   #[serde(default, rename = "user_group")]
-  pub user_groups: Vec<UserGroup>,
+  pub user_groups: Vec<UserGroupToml>,
 }
 
 pub fn read_resources(path: &Path) -> anyhow::Result<ResourceFile> {

@@ -20,7 +20,7 @@ pub mod server;
 
 type ToUpdate<T> = Vec<(String, Resource<T>)>;
 type ToCreate<T> = Vec<Resource<T>>;
-type UpdatesResult<T> = (ToUpdate<T>, ToCreate<T>);
+type UpdatesResult<T> = (ToCreate<T>, ToUpdate<T>);
 
 pub trait ResourceSync {
   type PartialConfig: Clone + Send + 'static;
@@ -45,7 +45,7 @@ pub trait ResourceSync {
 
   fn get_updates(
     resources: Vec<Resource<Self::PartialConfig>>,
-  ) -> anyhow::Result<UpdatesResult<Self::PartialConfig>> {
+  ) -> UpdatesResult<Self::PartialConfig> {
     let map = Self::name_to_resource();
 
     // (name, partial config)
@@ -88,12 +88,12 @@ pub trait ResourceSync {
       );
     }
 
-    Ok((to_update, to_create))
+    (to_create, to_update)
   }
 
   async fn run_updates(
-    to_update: ToUpdate<Self::PartialConfig>,
     to_create: ToCreate<Self::PartialConfig>,
+    to_update: ToUpdate<Self::PartialConfig>,
   ) {
     let log_after = !to_update.is_empty() || !to_create.is_empty();
 

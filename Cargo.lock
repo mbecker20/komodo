@@ -2014,7 +2014,6 @@ dependencies = [
  "opentelemetry-otlp",
  "opentelemetry_sdk",
  "serde",
- "tokio",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",

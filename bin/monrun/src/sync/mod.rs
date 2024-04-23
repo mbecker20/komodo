@@ -19,40 +19,44 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
 
   println!("{resources:#?}");
 
-  let (server_updates, server_creates) =
-    Server::get_updates(resources.servers)?;
-  let (deployment_updates, deployment_creates) =
-    Deployment::get_updates(resources.deployments)?;
-  let (build_updates, build_creates) =
-    Build::get_updates(resources.builds)?;
-  let (builder_updates, builder_creates) =
-    Builder::get_updates(resources.builders)?;
-  let (alerter_updates, alerter_creates) =
-    Alerter::get_updates(resources.alerters)?;
-  let (repo_updates, repo_creates) =
-    Repo::get_updates(resources.repos)?;
-  let (procedure_updates, procedure_creates) =
-    Procedure::get_updates(resources.procedures)?;
+  let (server_creates, server_updates) =
+    Server::get_updates(resources.servers);
+  let (deployment_creates, deployment_updates) =
+    Deployment::get_updates(resources.deployments);
+  let (build_creates, build_updates) =
+    Build::get_updates(resources.builds);
+  let (builder_creates, builder_updates) =
+    Builder::get_updates(resources.builders);
+  let (alerter_creates, alerter_updates) =
+    Alerter::get_updates(resources.alerters);
+  let (repo_creates, repo_updates) =
+    Repo::get_updates(resources.repos);
+  let (procedure_creates, procedure_updates) =
+    Procedure::get_updates(resources.procedures);
+  let (user_group_creates, user_group_updates) =
+    user_group::get_updates(resources.user_groups);
 
   wait_for_enter("CONTINUE")?;
 
   // No deps
-  Server::run_updates(server_updates, server_creates).await;
-  Alerter::run_updates(alerter_updates, alerter_creates).await;
+  Server::run_updates(server_creates, server_updates).await;
+  Alerter::run_updates(alerter_creates, alerter_updates).await;
 
   // Dependant on server
-  Builder::run_updates(builder_updates, builder_creates).await;
-  Repo::run_updates(repo_updates, repo_creates).await;
+  Builder::run_updates(builder_creates, builder_updates).await;
+  Repo::run_updates(repo_creates, repo_updates).await;
 
   // Dependant on builder
-  Build::run_updates(build_updates, build_creates).await;
+  Build::run_updates(build_creates, build_updates).await;
 
   // Dependant on server / builder
-  Deployment::run_updates(deployment_updates, deployment_creates)
+  Deployment::run_updates(deployment_creates, deployment_updates)
     .await;
 
   // Dependant on everything
-  Procedure::run_updates(procedure_updates, procedure_creates).await;
+  Procedure::run_updates(procedure_creates, procedure_updates).await;
+  user_group::run_updates(user_group_creates, user_group_updates)
+    .await;
 
   Ok(())
 }

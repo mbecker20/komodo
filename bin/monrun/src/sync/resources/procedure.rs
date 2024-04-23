@@ -59,8 +59,8 @@ impl ResourceSync for Procedure {
   }
 
   async fn run_updates(
-    mut to_update: ToUpdate<Self::PartialConfig>,
     mut to_create: ToCreate<Self::PartialConfig>,
+    mut to_update: ToUpdate<Self::PartialConfig>,
   ) {
     if to_update.is_empty() && to_create.is_empty() {
       return;
