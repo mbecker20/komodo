@@ -1,10 +1,16 @@
 import { Page, Section } from "@components/layouts";
 import { Box, History, Key, Tag } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@ui/card";
 import { ResourceComponents } from "@components/resources";
 import { OpenAlerts } from "@components/alert";
-import { useRead, useUser } from "@lib/hooks";
+import { useCheckResourceExists, useRead, useUser } from "@lib/hooks";
 import { ResourceLink } from "@components/resources/common";
 import { Fragment } from "react";
 
@@ -51,6 +57,7 @@ const Resources = () => {
 const RecentlyViewed = () => {
   const nav = useNavigate();
   const recently_viewed = useUser().data?.recently_viewed;
+  const checkResourceExists = useCheckResourceExists();
   return (
     <Section
       title="Recently Viewed"
@@ -58,21 +65,24 @@ const RecentlyViewed = () => {
       actions=""
     >
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {recently_viewed?.slice(0, 6).map(({ type, id }) => (
-          <Fragment key={type + id}>
-            {type !== "System" && (
-              <Card
-                onClick={() => nav(`/${type.toLowerCase()}s/${id}`)}
-                className="px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer"
-              >
-                <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground">
-                  <ResourceLink type={type} id={id} />
-                  {type}
-                </CardContent>
-              </Card>
-            )}
-          </Fragment>
-        ))}
+        {recently_viewed
+          ?.filter(checkResourceExists)
+          .slice(0, 6)
+          .map(({ type, id }) => (
+            <Fragment key={type + id}>
+              {type !== "System" && (
+                <Card
+                  onClick={() => nav(`/${type.toLowerCase()}s/${id}`)}
+                  className="px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer"
+                >
+                  <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground">
+                    <ResourceLink type={type} id={id} />
+                    {type}
+                  </CardContent>
+                </Card>
+              )}
+            </Fragment>
+          ))}
       </div>
     </Section>
   );

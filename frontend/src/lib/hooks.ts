@@ -92,20 +92,19 @@ export const useWrite = <
 >(
   type: T,
   config?: C
-) =>
-  {
-    const { toast } = useToast();
-    return useMutation({
-      mutationKey: [type],
-      mutationFn: (params: P) => client().write({ type, params } as R),
-      ...config,
-      onError: (e, v, c) => {
-        console.log("useWrite error:", e);
-        toast({ title: `Request ${type} Failed`,  });
-        config?.onError && config.onError(e, v, c);
-      },
-    });
-  };
+) => {
+  const { toast } = useToast();
+  return useMutation({
+    mutationKey: [type],
+    mutationFn: (params: P) => client().write({ type, params } as R),
+    ...config,
+    onError: (e, v, c) => {
+      console.log("useWrite error:", e);
+      toast({ title: `Request ${type} Failed` });
+      config?.onError && config.onError(e, v, c);
+    },
+  });
+};
 
 export const useExecute = <
   T extends Types.ExecuteRequest["type"],
@@ -176,11 +175,46 @@ export const useSetTitle = (more?: string) => {
       document.title = title;
     }
   }, [title]);
-}
+};
 
 export const tagsAtom = atomWithStorage<string[]>("tags-v0", []);
 
 export const useTagsFilter = () => {
   const [tags] = useAtom(tagsAtom);
   return tags;
+};
+
+/** returns function that takes a resource target and checks if it exists */
+export const useCheckResourceExists = () => {
+  const servers = useRead("ListServers", {}).data;
+  const deployments = useRead("ListDeployments", {}).data;
+  const builds = useRead("ListBuilds", {}).data;
+  const repos = useRead("ListRepos", {}).data;
+  const procedures = useRead("ListProcedures", {}).data;
+  const builders = useRead("ListBuilders", {}).data;
+  const alerters = useRead("ListAlerters", {}).data;
+  return (target: Types.ResourceTarget) => {
+    switch (target.type) {
+      case "Server":
+        return servers?.some((resource) => resource.id === target.id) || false;
+      case "Deployment":
+        return (
+          deployments?.some((resource) => resource.id === target.id) || false
+        );
+      case "Build":
+        return builds?.some((resource) => resource.id === target.id) || false;
+      case "Repo":
+        return repos?.some((resource) => resource.id === target.id) || false;
+      case "Procedure":
+        return (
+          procedures?.some((resource) => resource.id === target.id) || false
+        );
+      case "Builder":
+        return builders?.some((resource) => resource.id === target.id) || false;
+      case "Alerter":
+        return alerters?.some((resource) => resource.id === target.id) || false;
+      default:
+        return false;
+    }
+  };
 };
