@@ -2,11 +2,11 @@ import {
   ActionButton,
   ActionWithDialog,
   ConfirmButton,
+  TextUpdateMenu,
 } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
 import { UsableResource } from "@types";
 import { Button } from "@ui/button";
-import { Card, CardHeader } from "@ui/card";
 import {
   Command,
   CommandEmpty,
@@ -24,16 +24,8 @@ import {
   DialogTrigger,
 } from "@ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
-import { Textarea } from "@ui/textarea";
-import {
-  Check,
-  CheckCircle,
-  ChevronsUpDown,
-  Copy,
-  SearchX,
-  Trash,
-} from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check, ChevronsUpDown, Copy, SearchX, Trash } from "lucide-react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ResourceComponents } from ".";
 import { Input } from "@ui/input";
@@ -51,8 +43,6 @@ export const ResourceDescription = ({
 }) => {
   const { toast } = useToast();
   const inv = useInvalidate();
-  const [open, setOpen] = useState(false);
-  const [description, setDescription] = useState<string>();
 
   const resource = useRead(`Get${type}`, {
     [type.toLowerCase()]: id,
@@ -65,44 +55,18 @@ export const ResourceDescription = ({
     },
   });
 
-  useEffect(
-    () => setDescription(resource?.description),
-    [resource?.description]
-  );
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
-          <CardHeader className="text-muted-foreground px-4 py-2 overflow-ellipsis">
-            {resource?.description || "Set description"}
-          </CardHeader>
-        </Card>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Update Description</DialogTitle>
-        </DialogHeader>
-        <Textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <DialogFooter>
-          <ConfirmButton
-            title="Update"
-            icon={<CheckCircle className="w-4 h-4" />}
-            onClick={() => {
-              update_description({
-                target: { type, id },
-                description: description!,
-              });
-              setOpen(false);
-            }}
-            disabled={description === undefined}
-          />
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <TextUpdateMenu
+      title="Update Description"
+      value={resource?.description}
+      onUpdate={(description) =>
+        update_description({
+          target: { type, id },
+          description,
+        })
+      }
+      triggerClassName="text-muted-foreground w-[300px]"
+    />
   );
 };
 

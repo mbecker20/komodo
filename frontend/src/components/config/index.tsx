@@ -92,7 +92,6 @@ export const Config = <T,>({
     >
   >;
 }) => {
-  console.log(selector);
   const [show, setShow] = useState(keys(components)[0]);
 
   return (

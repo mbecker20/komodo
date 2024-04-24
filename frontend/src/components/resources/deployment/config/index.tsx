@@ -1,11 +1,7 @@
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { useState } from "react";
-import {
-  AccountSelector,
-  ConfigInput,
-  ConfigItem,
-} from "@components/config/util";
+import { AccountSelector, ConfigItem } from "@components/config/util";
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
 import { NetworkModeSelector } from "./components/network";
@@ -20,6 +16,7 @@ import {
   TerminationTimeout,
 } from "./components/term-signal";
 import { LabelsConfig, ResourceSelector } from "@components/resources/common";
+import { TextUpdateMenu } from "@components/util";
 
 export const ServerSelector = ({
   selected,
@@ -94,12 +91,14 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
               />
             ),
             process_args: (value, set) => (
-              <ConfigInput
-                label="Process Args"
-                value={value}
-                onChange={(process_args) => set({ process_args })}
-                disabled={disabled}
-              />
+              <ConfigItem label="Process Args">
+                <TextUpdateMenu
+                  title="Update Process Args"
+                  value={value}
+                  onUpdate={(process_args) => set({ process_args })}
+                  triggerClassName="max-w-[400px]"
+                />
+              </ConfigItem>
             ),
             network: (value, set) => (
               <NetworkModeSelector

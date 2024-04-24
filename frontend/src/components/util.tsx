@@ -7,7 +7,14 @@ import {
   useState,
 } from "react";
 import { Button } from "../ui/button";
-import { Check, Copy, Loader2, LogOut, Settings, User } from "lucide-react";
+import {
+  Check,
+  CheckCircle,
+  Copy,
+  Loader2,
+  LogOut,
+  Settings,
+} from "lucide-react";
 import { Input } from "../ui/input";
 import {
   Dialog,
@@ -20,12 +27,9 @@ import {
 import { toast, useToast } from "@ui/use-toast";
 import { cn } from "@lib/utils";
 import { Link } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@ui/dropdown-menu";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
+import { Textarea } from "@ui/textarea";
+import { Card } from "@ui/card";
 
 export const WithLoading = ({
   children,
@@ -256,22 +260,6 @@ export const UserSettings = () => (
   </Link>
 );
 
-export const UserDropdown = () => {
-  // const user = useRead("GetUser", {}).data;
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <User className="w-4 h-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <Logout />
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
-
 export const CopyButton = ({ content }: { content: string | undefined }) => {
   const { toast } = useToast();
   const [copied, set] = useState(false);
@@ -300,5 +288,78 @@ export const CopyButton = ({ content }: { content: string | undefined }) => {
     >
       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
     </Button>
+  );
+};
+
+export const TextUpdateMenu = ({
+  title,
+  value = "",
+  triggerClassName,
+  onUpdate,
+  placeholder,
+  confirmButton,
+}: {
+  title: string;
+  value: string | undefined;
+  onUpdate: (value: string) => void;
+  triggerClassName?: string;
+  placeholder?: string;
+  confirmButton?: boolean;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [_value, setValue] = useState(value);
+  useEffect(() => setValue(value), [value]);
+  const onClick = () => {
+    onUpdate(_value);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+          <div
+            className={cn(
+              "text-sm text-nowrap overflow-hidden overflow-ellipsis",
+              triggerClassName
+            )}
+          >
+            {value}
+          </div>
+        </Card>
+      </DialogTrigger>
+      <DialogContent className="min-w-[60vw]">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <Textarea
+          value={_value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder={placeholder}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") onClick();
+          }}
+          className="min-h-[200px]"
+        />
+        <DialogFooter>
+          {confirmButton ? (
+            <ConfirmButton
+              title="Update"
+              icon={<CheckCircle className="w-4 h-4" />}
+              onClick={onClick}
+            />
+          ) : (
+            <Button
+              variant="secondary"
+              onClick={onClick}
+              className="flex items-center gap-2"
+            >
+              <CheckCircle className="w-4 h-4" />
+              Update
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
