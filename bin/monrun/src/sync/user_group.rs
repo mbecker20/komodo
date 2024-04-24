@@ -18,7 +18,7 @@ pub struct UserGroupToml {
   #[serde(default)]
   pub users: Vec<String>,
 
-  #[serde(default)]
+  #[serde(default, alias = "permission")]
   pub permissions: Vec<PermissionToml>,
 }
 
