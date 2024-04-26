@@ -15,7 +15,7 @@ RUN cd frontend && yarn link @monitor/client && yarn && yarn build
 # Final Image
 # FROM gcr.io/distroless/cc
 FROM debian:bullseye-slim
-RUN apt install -y libssl-dev ca-certificates
+RUN apt install -y ca-certificates
 COPY ./config_example/core.config.example.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /
 COPY --from=frontend-builder /builder/frontend/dist /frontend
