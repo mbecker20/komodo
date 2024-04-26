@@ -10,7 +10,7 @@ import {
   ChevronDown,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDeployment } from ".";
 import {
   Select,
@@ -102,10 +102,8 @@ const DeploymentLogsInner = ({ id }: { id: string }) => {
               </Button>
             </div>
             <TabsList>
-              <TabsTrigger value="stdout" onClick={to_bottom("stdout")}>
-                stdout
-              </TabsTrigger>
-              <TabsTrigger value="stderr" onClick={to_bottom("stderr")}>
+              <TabsTrigger value="stdout">stdout</TabsTrigger>
+              <TabsTrigger value="stderr">
                 stderr
                 {stderr && (
                   <AlertOctagon className="w-4 h-4 ml-2 stroke-red-500" />
@@ -175,18 +173,24 @@ const Log = ({
   stream: "stdout" | "stderr";
 }) => {
   const _log = log?.[stream as keyof typeof log] as string | undefined;
+  const ref = useRef<HTMLDivElement>(null);
+  const scroll = () =>
+    ref.current?.scroll({
+      top: ref.current.scrollHeight,
+      behavior: "smooth",
+    });
+  useEffect(scroll, []);
   return (
     <>
-      <div className="h-[70vh] overflow-y-auto">
+      <div ref={ref} className="h-[70vh] overflow-y-auto">
         <pre
-          id={stream}
           dangerouslySetInnerHTML={{
             __html: _log ? logToHtml(_log) : `no ${stream} logs`,
           }}
           className="-scroll-mt-24"
         />
       </div>
-      <Button className="absolute bottom-4 right-4" onClick={to_bottom(stream)}>
+      <Button className="absolute bottom-4 right-4" onClick={scroll}>
         <ChevronDown className="h-4 w-4" />
       </Button>
     </>
@@ -217,11 +221,6 @@ const TailLengthSelector = ({
     </SelectContent>
   </Select>
 );
-
-const to_bottom = (id: string) => () =>
-  document
-    .getElementById(id)
-    ?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
 
 const convert = new Convert();
 /**

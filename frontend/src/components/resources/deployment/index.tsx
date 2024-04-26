@@ -12,7 +12,7 @@ import {
   DeleteDeployment,
   RenameDeployment,
 } from "./actions";
-import { DeploymentLogs } from "./logs";
+import { DeploymentLogs } from "./log";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
 import {
   bg_color_class_by_intention,

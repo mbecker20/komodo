@@ -260,13 +260,19 @@ export const UserSettings = () => (
   </Link>
 );
 
-export const CopyButton = ({ content }: { content: string | undefined }) => {
+export const CopyButton = ({
+  content,
+  className,
+}: {
+  content: string | undefined;
+  className?: string;
+}) => {
   const { toast } = useToast();
   const [copied, set] = useState(false);
 
   useEffect(() => {
     if (copied) {
-      toast({ title: `Copied "${content}"` });
+      toast({ title: "Copied selection" });
       const timeout = setTimeout(() => set(false), 3000);
       return () => {
         clearTimeout(timeout);
@@ -276,7 +282,7 @@ export const CopyButton = ({ content }: { content: string | undefined }) => {
 
   return (
     <Button
-      className="shrink-0"
+      className={cn("shrink-0", className)}
       size="icon"
       variant="outline"
       onClick={() => {

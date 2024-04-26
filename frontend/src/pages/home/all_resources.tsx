@@ -1,4 +1,5 @@
 import { OpenAlerts } from "@components/alert";
+import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { TagsFilter } from "@components/tags";
@@ -14,7 +15,8 @@ export const AllResources = () => {
       title="Resources"
       actions={
         <div className="grid gap-4 justify-items-end">
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+            <ExportButton />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
