@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use monitor_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
-    resource::{Resource, ResourceListItem},
+    resource::ResourceListItem, toml::ResourceToml,
     update::ResourceTarget,
   },
 };
@@ -18,8 +18,8 @@ pub mod procedure;
 pub mod repo;
 pub mod server;
 
-type ToUpdate<T> = Vec<(String, Resource<T>)>;
-type ToCreate<T> = Vec<Resource<T>>;
+type ToUpdate<T> = Vec<(String, ResourceToml<T>)>;
+type ToCreate<T> = Vec<ResourceToml<T>>;
 type UpdatesResult<T> = (ToCreate<T>, ToUpdate<T>);
 
 pub trait ResourceSync {
@@ -35,23 +35,21 @@ pub trait ResourceSync {
 
   /// Returns created id
   async fn create(
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<String>;
 
   async fn update(
     id: String,
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()>;
 
   fn get_updates(
-    resources: Vec<Resource<Self::PartialConfig>>,
+    resources: Vec<ResourceToml<Self::PartialConfig>>,
   ) -> UpdatesResult<Self::PartialConfig> {
     let map = Self::name_to_resource();
 
-    // (name, partial config)
-    let mut to_update =
-      Vec::<(String, Resource<Self::PartialConfig>)>::new();
-    let mut to_create = Vec::<Resource<Self::PartialConfig>>::new();
+    let mut to_create = ToCreate::<Self::PartialConfig>::new();
+    let mut to_update = ToUpdate::<Self::PartialConfig>::new();
 
     for resource in resources {
       match map.get(&resource.name).map(|s| s.id.clone()) {

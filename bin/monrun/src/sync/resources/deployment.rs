@@ -6,7 +6,8 @@ use monitor_client::{
     deployment::{
       Deployment, DeploymentListItemInfo, PartialDeploymentConfig,
     },
-    resource::{Resource, ResourceListItem},
+    resource::ResourceListItem,
+    toml::ResourceToml,
     update::ResourceTarget,
   },
 };
@@ -34,7 +35,7 @@ impl ResourceSync for Deployment {
   }
 
   async fn create(
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(write::CreateDeployment {
@@ -47,7 +48,7 @@ impl ResourceSync for Deployment {
 
   async fn update(
     id: String,
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(write::UpdateDeployment {

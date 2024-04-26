@@ -18,7 +18,9 @@ use monitor_client::{
     repo::Repo,
     resource::Resource,
     server::Server,
-    toml::{PermissionToml, ResourcesToml, UserGroupToml},
+    toml::{
+      PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
+    },
     update::ResourceTarget,
     user::User,
   },
@@ -248,12 +250,11 @@ impl Resolve<ExportResourcesToToml, User> for State {
 fn convert_resource<Config, Info: Default, PartialConfig>(
   resource: Resource<Config, Info>,
   tag_names: &HashMap<String, String>,
-) -> Resource<PartialConfig, ()>
+) -> ResourceToml<PartialConfig>
 where
   Config: Into<PartialConfig>,
 {
-  Resource {
-    id: Default::default(),
+  ResourceToml {
     name: resource.name,
     tags: resource
       .tags
@@ -262,7 +263,6 @@ where
       .collect(),
     description: resource.description,
     config: resource.config.into(),
-    info: (),
     updated_at: 0,
   }
 }

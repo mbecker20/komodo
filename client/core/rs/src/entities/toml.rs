@@ -4,8 +4,8 @@ use super::{
   alerter::PartialAlerterConfig, build::PartialBuildConfig,
   builder::PartialBuilderConfig, deployment::PartialDeploymentConfig,
   permission::PermissionLevel, procedure::PartialProcedureConfig,
-  repo::PartialRepoConfig, resource::Resource,
-  server::PartialServerConfig, update::ResourceTarget,
+  repo::PartialRepoConfig, server::PartialServerConfig,
+  update::ResourceTarget,
 };
 
 /// Specifies resources to sync on monitor
@@ -16,49 +16,49 @@ pub struct ResourcesToml {
     rename = "server",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub servers: Vec<Resource<PartialServerConfig>>,
+  pub servers: Vec<ResourceToml<PartialServerConfig>>,
 
   #[serde(
     default,
     rename = "build",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub builds: Vec<Resource<PartialBuildConfig>>,
+  pub builds: Vec<ResourceToml<PartialBuildConfig>>,
 
   #[serde(
     default,
     rename = "deployment",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub deployments: Vec<Resource<PartialDeploymentConfig>>,
+  pub deployments: Vec<ResourceToml<PartialDeploymentConfig>>,
 
   #[serde(
     default,
     rename = "builder",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub builders: Vec<Resource<PartialBuilderConfig>>,
+  pub builders: Vec<ResourceToml<PartialBuilderConfig>>,
 
   #[serde(
     default,
     rename = "repo",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub repos: Vec<Resource<PartialRepoConfig>>,
+  pub repos: Vec<ResourceToml<PartialRepoConfig>>,
 
   #[serde(
     default,
     rename = "alerter",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub alerters: Vec<Resource<PartialAlerterConfig>>,
+  pub alerters: Vec<ResourceToml<PartialAlerterConfig>>,
 
   #[serde(
     default,
     rename = "procedure",
     skip_serializing_if = "Vec::is_empty"
   )]
-  pub procedures: Vec<Resource<PartialProcedureConfig>>,
+  pub procedures: Vec<ResourceToml<PartialProcedureConfig>>,
 
   #[serde(
     default,
@@ -66,6 +66,24 @@ pub struct ResourcesToml {
     skip_serializing_if = "Vec::is_empty"
   )]
   pub user_groups: Vec<UserGroupToml>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceToml<PartialConfig> {
+  ///
+  pub name: String,
+
+  #[serde(default)]
+  pub description: String,
+
+  #[serde(default)]
+  pub updated_at: i64,
+
+  /// Tag ids or names
+  #[serde(default)]
+  pub tags: Vec<String>,
+
+  pub config: PartialConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

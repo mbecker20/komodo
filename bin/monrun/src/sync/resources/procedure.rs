@@ -6,7 +6,8 @@ use monitor_client::{
     procedure::{
       PartialProcedureConfig, Procedure, ProcedureListItemInfo,
     },
-    resource::{Resource, ResourceListItem},
+    resource::ResourceListItem,
+    toml::ResourceToml,
     update::ResourceTarget,
   },
 };
@@ -34,7 +35,7 @@ impl ResourceSync for Procedure {
   }
 
   async fn create(
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(CreateProcedure {
@@ -47,7 +48,7 @@ impl ResourceSync for Procedure {
 
   async fn update(
     id: String,
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(UpdateProcedure {

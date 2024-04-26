@@ -4,7 +4,8 @@ use monitor_client::{
   api::write::{CreateRepo, UpdateRepo},
   entities::{
     repo::{PartialRepoConfig, Repo, RepoListItemInfo},
-    resource::{Resource, ResourceListItem},
+    resource::ResourceListItem,
+    toml::ResourceToml,
     update::ResourceTarget,
   },
 };
@@ -32,7 +33,7 @@ impl ResourceSync for Repo {
   }
 
   async fn create(
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(CreateRepo {
@@ -45,7 +46,7 @@ impl ResourceSync for Repo {
 
   async fn update(
     id: String,
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(UpdateRepo {

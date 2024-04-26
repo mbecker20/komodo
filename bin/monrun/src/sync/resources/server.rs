@@ -3,8 +3,9 @@ use std::collections::HashMap;
 use monitor_client::{
   api::write::{CreateServer, UpdateServer},
   entities::{
-    resource::{Resource, ResourceListItem},
+    resource::ResourceListItem,
     server::{PartialServerConfig, Server, ServerListItemInfo},
+    toml::ResourceToml,
     update::ResourceTarget,
   },
 };
@@ -32,7 +33,7 @@ impl ResourceSync for Server {
   }
 
   async fn create(
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(CreateServer {
@@ -45,7 +46,7 @@ impl ResourceSync for Server {
 
   async fn update(
     id: String,
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(UpdateServer {

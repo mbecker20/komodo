@@ -4,7 +4,8 @@ use monitor_client::{
   api::write::{CreateBuild, UpdateBuild},
   entities::{
     build::{Build, BuildListItemInfo, PartialBuildConfig},
-    resource::{Resource, ResourceListItem},
+    resource::ResourceListItem,
+    toml::ResourceToml,
     update::ResourceTarget,
   },
 };
@@ -32,7 +33,7 @@ impl ResourceSync for Build {
   }
 
   async fn create(
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<String> {
     monitor_client()
       .write(CreateBuild {
@@ -45,7 +46,7 @@ impl ResourceSync for Build {
 
   async fn update(
     id: String,
-    resource: Resource<Self::PartialConfig>,
+    resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()> {
     monitor_client()
       .write(UpdateBuild {
