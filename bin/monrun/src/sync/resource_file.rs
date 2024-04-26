@@ -1,53 +1,17 @@
 use std::{fs, path::Path};
 
 use anyhow::{anyhow, Context};
-use monitor_client::entities::{
-  alerter::PartialAlerterConfig, build::PartialBuildConfig,
-  builder::PartialBuilderConfig, deployment::PartialDeploymentConfig,
-  procedure::PartialProcedureConfig, repo::PartialRepoConfig,
-  resource::Resource, server::PartialServerConfig,
-};
-use serde::Deserialize;
+use monitor_client::entities::toml::ResourcesToml;
 
-use super::user_group::UserGroupToml;
-
-/// Specifies resources to sync on monitor
-#[derive(Debug, Clone, Default, Deserialize)]
-pub struct ResourceFile {
-  #[serde(default, rename = "server")]
-  pub servers: Vec<Resource<PartialServerConfig>>,
-
-  #[serde(default, rename = "build")]
-  pub builds: Vec<Resource<PartialBuildConfig>>,
-
-  #[serde(default, rename = "deployment")]
-  pub deployments: Vec<Resource<PartialDeploymentConfig>>,
-
-  #[serde(default, rename = "builder")]
-  pub builders: Vec<Resource<PartialBuilderConfig>>,
-
-  #[serde(default, rename = "repo")]
-  pub repos: Vec<Resource<PartialRepoConfig>>,
-
-  #[serde(default, rename = "alerter")]
-  pub alerters: Vec<Resource<PartialAlerterConfig>>,
-
-  #[serde(default, rename = "procedure")]
-  pub procedures: Vec<Resource<PartialProcedureConfig>>,
-
-  #[serde(default, rename = "user_group")]
-  pub user_groups: Vec<UserGroupToml>,
-}
-
-pub fn read_resources(path: &Path) -> anyhow::Result<ResourceFile> {
-  let mut res = ResourceFile::default();
+pub fn read_resources(path: &Path) -> anyhow::Result<ResourcesToml> {
+  let mut res = ResourcesToml::default();
   read_resources_recursive(path, &mut res)?;
   Ok(res)
 }
 
 fn read_resources_recursive(
   path: &Path,
-  resources: &mut ResourceFile,
+  resources: &mut ResourcesToml,
 ) -> anyhow::Result<()> {
   let res =
     fs::metadata(path).context("failed to get path metadata")?;
@@ -59,7 +23,7 @@ fn read_resources_recursive(
     {
       return Ok(());
     }
-    let more = match crate::parse_toml_file::<ResourceFile>(path) {
+    let more = match crate::parse_toml_file::<ResourcesToml>(path) {
       Ok(res) => res,
       Err(e) => {
         warn!("failed to parse {:?}. skipping file | {e:#}", path);

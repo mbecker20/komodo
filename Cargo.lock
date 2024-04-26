@@ -2278,6 +2278,7 @@ dependencies = [
  "termination_signal",
  "tokio",
  "tokio-util",
+ "toml",
  "tower",
  "tower-http",
  "tracing",

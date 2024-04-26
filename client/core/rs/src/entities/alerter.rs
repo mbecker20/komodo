@@ -93,6 +93,19 @@ impl From<PartialAlerterConfig> for AlerterConfig {
   }
 }
 
+impl From<AlerterConfig> for PartialAlerterConfig {
+  fn from(value: AlerterConfig) -> Self {
+    match value {
+      AlerterConfig::Custom(config) => {
+        PartialAlerterConfig::Custom(config.into())
+      }
+      AlerterConfig::Slack(config) => {
+        PartialAlerterConfig::Slack(config.into())
+      }
+    }
+  }
+}
+
 impl AlerterConfig {
   pub fn merge_partial(
     self,

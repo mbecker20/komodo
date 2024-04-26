@@ -3,30 +3,12 @@ use monitor_client::{
     CreateUserGroup, SetUsersInUserGroup, UpdatePermissionOnTarget,
   },
   entities::{
-    permission::{PermissionLevel, UserTarget},
-    update::ResourceTarget,
+    permission::UserTarget,
+    toml::{PermissionToml, UserGroupToml},
   },
 };
-use serde::Deserialize;
 
 use crate::{maps::name_to_user_group, monitor_client};
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct UserGroupToml {
-  pub name: String,
-
-  #[serde(default)]
-  pub users: Vec<String>,
-
-  #[serde(default, alias = "permission")]
-  pub permissions: Vec<PermissionToml>,
-}
-
-#[derive(Debug, Clone, Deserialize)]
-pub struct PermissionToml {
-  pub target: ResourceTarget,
-  pub level: PermissionLevel,
-}
 
 pub fn get_updates(
   user_groups: Vec<UserGroupToml>,

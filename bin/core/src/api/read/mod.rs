@@ -26,6 +26,7 @@ mod repo;
 mod search;
 mod server;
 mod tag;
+mod toml;
 mod update;
 mod user;
 mod user_group;

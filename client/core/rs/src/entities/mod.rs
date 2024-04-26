@@ -17,6 +17,7 @@ pub mod repo;
 pub mod resource;
 pub mod server;
 pub mod tag;
+pub mod toml;
 pub mod update;
 pub mod user;
 pub mod user_group;

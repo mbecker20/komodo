@@ -82,6 +82,19 @@ impl From<PartialBuilderConfig> for BuilderConfig {
   }
 }
 
+impl From<BuilderConfig> for PartialBuilderConfig {
+  fn from(value: BuilderConfig) -> Self {
+    match value {
+      BuilderConfig::Server(config) => {
+        PartialBuilderConfig::Server(config.into())
+      }
+      BuilderConfig::Aws(config) => {
+        PartialBuilderConfig::Aws(config.into())
+      }
+    }
+  }
+}
+
 impl BuilderConfig {
   pub fn merge_partial(
     self,
