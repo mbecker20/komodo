@@ -1,5 +1,5 @@
 # Build Core
-FROM rust:1.77.0-bullseye as core-builder
+FROM rust:1.77.2-bullseye as core-builder
 WORKDIR /builder
 COPY . .
 RUN cargo build -p monitor_core --release
@@ -13,7 +13,8 @@ RUN cd client && yarn && yarn build && yarn link
 RUN cd frontend && yarn link @monitor/client && yarn && yarn build
 
 # Final Image
-FROM gcr.io/distroless/cc
+# FROM gcr.io/distroless/cc
+FROM debian:bullseye-slim
 COPY ./config_example/core.config.example.toml /config/config.toml
 COPY --from=core-builder /builder/target/release/core /
 COPY --from=frontend-builder /builder/frontend/dist /frontend
