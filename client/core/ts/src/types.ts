@@ -973,6 +973,14 @@ export type GetTagResponse = Tag;
 
 export type ListTagsResponse = Tag[];
 
+export interface TomlResponse {
+	toml: string;
+}
+
+export type ExportAllResourcesToTomlResponse = TomlResponse;
+
+export type ExportResourcesToTomlResponse = TomlResponse;
+
 export enum Operation {
 	None = "None",
 	LaunchServer = "LaunchServer",
@@ -1720,6 +1728,16 @@ export interface ListTags {
 	query?: MongoDocument;
 }
 
+export interface ExportAllResourcesToToml {
+}
+
+export interface ExportResourcesToToml {
+	/** The targets to include in the export. */
+	targets: ResourceTarget[];
+	/** The user group names or ids to include in the export. */
+	user_groups: string[];
+}
+
 export interface GetUpdate {
 	id: string;
 }
@@ -2285,6 +2303,8 @@ export type ReadRequest =
 	| { type: "GetAlertersSummary", params: GetAlertersSummary }
 	| { type: "GetAlerter", params: GetAlerter }
 	| { type: "ListAlerters", params: ListAlerters }
+	| { type: "ExportAllResourcesToToml", params: ExportAllResourcesToToml }
+	| { type: "ExportResourcesToToml", params: ExportResourcesToToml }
 	| { type: "GetTag", params: GetTag }
 	| { type: "ListTags", params: ListTags }
 	| { type: "GetUpdate", params: GetUpdate }

@@ -114,6 +114,10 @@ enum ReadRequest {
   GetAlerter(GetAlerter),
   ListAlerters(ListAlerters),
 
+  // ==== TOML ====
+  ExportAllResourcesToToml(ExportAllResourcesToToml),
+  ExportResourcesToToml(ExportResourcesToToml),
+
   // ==== TAG ====
   GetTag(GetTag),
   ListTags(ListTags),

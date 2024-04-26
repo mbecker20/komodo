@@ -86,6 +86,10 @@ export type ReadResponses = {
   GetAlerter: Types.GetAlerterResponse;
   ListAlerters: Types.ListAlertersResponse;
 
+  // ==== TOML ====
+  ExportAllResourcesToToml: Types.ExportAllResourcesToTomlResponse;
+  ExportResourcesToToml: Types.ExportResourcesToTomlResponse;
+
   // ==== TAG ====
   GetTag: Types.GetTagResponse;
   ListTags: Types.ListTagsResponse;
