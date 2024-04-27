@@ -10,7 +10,7 @@ use mungos::{find::find_collect, mongodb::bson::doc};
 use reqwest::StatusCode;
 use slack::types::Block;
 
-use crate::db::db_client;
+use crate::state::db_client;
 
 #[instrument]
 pub async fn send_alerts(alerts: &[Alert]) {

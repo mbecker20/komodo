@@ -7,7 +7,7 @@ use crate::entities::{alert::Alert, MongoDocument, I64, U64};
 
 use super::MonitorReadRequest;
 
-/// Get a paginated list of alerts sorted by timestamp descending. 
+/// Get a paginated list of alerts sorted by timestamp descending.
 /// Response: [ListAlertsResponse].
 #[typeshare]
 #[derive(
@@ -20,17 +20,17 @@ pub struct ListAlerts {
   ///
   /// ## Example JSON
   /// ```
-  /// { 
+  /// {
   ///   "resolved": "false",
   ///   "level": "CRITICAL",
   ///   "$or": [
-  ///     { 
+  ///     {
   ///       "target": {
   ///         "type": "Server",
   ///         "id": "6608bf89cb2a12b257ab6c09"
   ///       }
   ///     },
-  ///     { 
+  ///     {
   ///       "target": {
   ///         "type": "Server",
   ///         "id": "660a5f60b74f90d5dae45fa3"

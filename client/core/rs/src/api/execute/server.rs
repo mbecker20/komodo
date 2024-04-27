@@ -10,7 +10,7 @@ use super::MonitorExecuteRequest;
 //
 
 /// Prunes the docker networks on the target server. Response: [Update].
-/// 
+///
 /// 1. Runs `docker network prune -f`.
 #[typeshare]
 #[derive(
@@ -26,7 +26,7 @@ pub struct PruneDockerNetworks {
 //
 
 /// Prunes the docker images on the target server. Response: [Update].
-/// 
+///
 /// 1. Runs `docker image prune -a -f`.
 #[typeshare]
 #[derive(
@@ -42,7 +42,7 @@ pub struct PruneDockerImages {
 //
 
 /// Prunes the docker containers on the target server. Response: [Update].
-/// 
+///
 /// 1. Runs `docker container prune -f`.
 #[typeshare]
 #[derive(

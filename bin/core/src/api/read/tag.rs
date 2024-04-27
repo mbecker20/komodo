@@ -7,7 +7,10 @@ use monitor_client::{
 use mungos::find::find_collect;
 use resolver_api::Resolve;
 
-use crate::{db::db_client, helpers::query::get_tag, state::State};
+use crate::{
+  helpers::query::get_tag,
+  state::{db_client, State},
+};
 
 #[async_trait]
 impl Resolve<GetTag, User> for State {

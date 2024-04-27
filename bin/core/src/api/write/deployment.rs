@@ -15,20 +15,19 @@ use monitor_client::{
     permission::PermissionLevel,
     server::Server,
     to_monitor_name,
-    update::{Log, ResourceTarget, Update, UpdateStatus},
+    update::{Log, Update, UpdateStatus},
     user::User,
     Operation,
   },
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, oid::ObjectId, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_document},
 };
 use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::{
     create_permission, empty_or_only_spaces, periphery_client,
     query::get_deployment_state,
@@ -36,7 +35,7 @@ use crate::{
     resource::{delete_all_permissions_on_resource, StateResource},
     update::{add_update, make_update, update_update},
   },
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[instrument(skip(user))]
@@ -229,10 +228,6 @@ impl Resolve<DeleteDeployment, User> for State {
     DeleteDeployment { id }: DeleteDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
-    if action_states().deployment.busy(&id).await {
-      return Err(anyhow!("deployment busy"));
-    }
-
     let deployment = Deployment::get_resource_check_permissions(
       &id,
       &user,
@@ -240,111 +235,102 @@ impl Resolve<DeleteDeployment, User> for State {
     )
     .await?;
 
-    let inner = || async move {
-      let state = get_deployment_state(&deployment)
-        .await
-        .context("failed to get container state")?;
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
 
-      let mut update =
-        make_update(&deployment, Operation::DeleteDeployment, &user);
-      update.in_progress();
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.deleting = true).await?;
 
-      update.id = add_update(update.clone()).await?;
+    let state = get_deployment_state(&deployment)
+      .await
+      .context("failed to get container state")?;
 
-      if !matches!(
-        state,
-        DockerContainerState::NotDeployed
-          | DockerContainerState::Unknown
-      ) {
-        // container needs to be destroyed
-        let server =
-          Server::get_resource(&deployment.config.server_id).await;
-        if let Err(e) = server {
-          update.logs.push(Log::error(
-            "remove container",
-            format!(
-              "failed to retrieve server at {} from db | {e:#?}",
-              deployment.config.server_id
-            ),
-          ));
-        } else if let Ok(server) = server {
-          match periphery_client(&server) {
-            Ok(periphery) => match periphery
-              .request(api::container::RemoveContainer {
-                name: deployment.name.clone(),
-                signal: deployment.config.termination_signal.into(),
-                time: deployment.config.termination_timeout.into(),
-              })
-              .await
-            {
-              Ok(log) => update.logs.push(log),
-              Err(e) => update.push_error_log(
-                "remove container",
-                format!(
-                  "failed to remove container on periphery | {e:#?}"
-                ),
-              ),
-            },
+    let mut update =
+      make_update(&deployment, Operation::DeleteDeployment, &user);
+    update.in_progress();
+
+    update.id = add_update(update.clone()).await?;
+
+    if !matches!(
+      state,
+      DockerContainerState::NotDeployed
+        | DockerContainerState::Unknown
+    ) {
+      // container needs to be destroyed
+      let server =
+        Server::get_resource(&deployment.config.server_id).await;
+      if let Err(e) = server {
+        update.logs.push(Log::error(
+          "remove container",
+          format!(
+            "failed to retrieve server at {} from db | {e:#?}",
+            deployment.config.server_id
+          ),
+        ));
+      } else if let Ok(server) = server {
+        match periphery_client(&server) {
+          Ok(periphery) => match periphery
+            .request(api::container::RemoveContainer {
+              name: deployment.name.clone(),
+              signal: deployment.config.termination_signal.into(),
+              time: deployment.config.termination_timeout.into(),
+            })
+            .await
+          {
+            Ok(log) => update.logs.push(log),
             Err(e) => update.push_error_log(
               "remove container",
               format!(
                 "failed to remove container on periphery | {e:#?}"
               ),
             ),
-          };
-        }
+          },
+          Err(e) => update.push_error_log(
+            "remove container",
+            format!(
+              "failed to remove container on periphery | {e:#?}"
+            ),
+          ),
+        };
       }
+    }
 
-      let res = delete_one_by_id(
-        &db_client().await.deployments,
-        &deployment.id,
-        None,
-      )
-      .await
-      .context("failed to delete deployment from mongo");
+    let res = delete_one_by_id(
+      &db_client().await.deployments,
+      &deployment.id,
+      None,
+    )
+    .await
+    .context("failed to delete deployment from mongo");
 
-      let log = match res {
-        Ok(_) => Log::simple(
-          "delete deployment",
-          format!("deleted deployment {}", deployment.name),
-        ),
-        Err(e) => Log::error(
-          "delete deployment",
-          format!("failed to delete deployment\n{e:#?}"),
-        ),
-      };
-
-      delete_all_permissions_on_resource(&deployment).await;
-
-      update.logs.push(log);
-      update.end_ts = Some(monitor_timestamp());
-      update.status = UpdateStatus::Complete;
-      update.success = all_logs_success(&update.logs);
-
-      update_update(update).await?;
-
-      remove_from_recently_viewed(&deployment).await?;
-
-      Ok(deployment)
+    let log = match res {
+      Ok(_) => Log::simple(
+        "delete deployment",
+        format!("deleted deployment {}", deployment.name),
+      ),
+      Err(e) => Log::error(
+        "delete deployment",
+        format!("failed to delete deployment\n{e:#?}"),
+      ),
     };
 
-    action_states()
-      .deployment
-      .update_entry(id.clone(), |entry| {
-        entry.deleting = true;
-      })
-      .await;
+    delete_all_permissions_on_resource(&deployment).await;
 
-    let res = inner().await;
+    update.logs.push(log);
+    update.end_ts = Some(monitor_timestamp());
+    update.status = UpdateStatus::Complete;
+    update.success = all_logs_success(&update.logs);
 
-    action_states()
-      .deployment
-      .update_entry(id, |entry| {
-        entry.deleting = false;
-      })
-      .await;
+    update_update(update).await?;
 
-    res
+    remove_from_recently_viewed(&deployment).await?;
+
+    Ok(deployment)
   }
 }
 
@@ -356,7 +342,14 @@ impl Resolve<UpdateDeployment, User> for State {
     UpdateDeployment { id, mut config }: UpdateDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
-    if action_states().deployment.busy(&id).await {
+    if action_states()
+      .deployment
+      .get(&id)
+      .await
+      .unwrap_or_default()
+      .busy()
+      .await
+    {
       return Err(anyhow!("deployment busy"));
     }
 
@@ -367,62 +360,37 @@ impl Resolve<UpdateDeployment, User> for State {
     )
     .await?;
 
-    let inner = || async move {
-      let start_ts = monitor_timestamp();
+    let mut update =
+      make_update(&deployment, Operation::UpdateDeployment, &user);
 
-      validate_config(&mut config, &user).await?;
+    validate_config(&mut config, &user).await?;
 
-      update_one_by_id(
-        &db_client().await.deployments,
-        &id,
-        mungos::update::Update::FlattenSet(
-          doc! { "config": to_bson(&config)? },
-        ),
-        None,
-      )
-      .await
-      .context("failed to update server on mongo")?;
+    let config_doc = to_document(&config)
+      .context("failed to serialize config to bson")?;
+    update_one_by_id(
+      &db_client().await.deployments,
+      &id,
+      mungos::update::Update::FlattenSet(
+        doc! { "config": config_doc },
+      ),
+      None,
+    )
+    .await
+    .context("failed to update server on mongo")?;
 
-      let update = Update {
-        operation: Operation::UpdateDeployment,
-        target: ResourceTarget::Deployment(id.clone()),
-        start_ts,
-        end_ts: Some(monitor_timestamp()),
-        status: UpdateStatus::Complete,
-        logs: vec![Log::simple(
-          "deployment update",
-          serde_json::to_string_pretty(&config).unwrap(),
-        )],
-        operator: user.id.clone(),
-        success: true,
-        ..Default::default()
-      };
+    update.push_simple_log(
+      "deployment update",
+      serde_json::to_string_pretty(&config)
+        .context("failed to serialize config to json")?,
+    );
+    update.finalize();
 
-      add_update(update).await?;
+    add_update(update).await?;
 
-      let deployment: Deployment =
-        Deployment::get_resource(&id).await?;
+    let deployment: Deployment =
+      Deployment::get_resource(&id).await?;
 
-      anyhow::Ok(deployment)
-    };
-
-    action_states()
-      .deployment
-      .update_entry(deployment.id.clone(), |entry| {
-        entry.updating = true;
-      })
-      .await;
-
-    let res = inner().await;
-
-    action_states()
-      .deployment
-      .update_entry(deployment.id, |entry| {
-        entry.updating = false;
-      })
-      .await;
-
-    res
+    Ok(deployment)
   }
 }
 
@@ -434,11 +402,6 @@ impl Resolve<RenameDeployment, User> for State {
     RenameDeployment { id, name }: RenameDeployment,
     user: User,
   ) -> anyhow::Result<Update> {
-    let name = to_monitor_name(&name);
-    if action_states().deployment.busy(&id).await {
-      return Err(anyhow!("deployment busy"));
-    }
-
     let deployment = Deployment::get_resource_check_permissions(
       &id,
       &user,
@@ -446,74 +409,65 @@ impl Resolve<RenameDeployment, User> for State {
     )
     .await?;
 
-    let inner = || async {
-      let name = to_monitor_name(&name);
-
-      let container_state = get_deployment_state(&deployment).await?;
-
-      if container_state == DockerContainerState::Unknown {
-        return Err(anyhow!(
-          "cannot rename deployment when container status is unknown"
-        ));
-      }
-
-      let mut update =
-        make_update(&deployment, Operation::RenameDeployment, &user);
-
-      update_one_by_id(
-        &db_client().await.deployments,
-        &deployment.id,
-        mungos::update::Update::Set(
-          doc! { "name": &name, "updated_at": monitor_timestamp() },
-        ),
-        None,
-      )
-      .await
-      .context("failed to update deployment name on db")?;
-
-      if container_state != DockerContainerState::NotDeployed {
-        let server =
-          Server::get_resource(&deployment.config.server_id).await?;
-        let log = periphery_client(&server)?
-          .request(api::container::RenameContainer {
-            curr_name: deployment.name.clone(),
-            new_name: name.clone(),
-          })
-          .await
-          .context("failed to rename container on server")?;
-        update.logs.push(log);
-      }
-
-      update.push_simple_log(
-        "rename deployment",
-        format!(
-          "renamed deployment from {} to {}",
-          deployment.name, name
-        ),
-      );
-      update.finalize();
-
-      add_update(update.clone()).await?;
-
-      Ok(update)
-    };
-
-    action_states()
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
       .deployment
-      .update_entry(id.clone(), |entry| {
-        entry.renaming = true;
-      })
+      .get_or_insert_default(&deployment.id)
       .await;
 
-    let res = inner().await;
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.renaming = true).await?;
 
-    action_states()
-      .deployment
-      .update_entry(id, |entry| {
-        entry.renaming = false;
-      })
-      .await;
+    let name = to_monitor_name(&name);
 
-    res
+    let container_state = get_deployment_state(&deployment).await?;
+
+    if container_state == DockerContainerState::Unknown {
+      return Err(anyhow!(
+        "cannot rename deployment when container status is unknown"
+      ));
+    }
+
+    let mut update =
+      make_update(&deployment, Operation::RenameDeployment, &user);
+
+    update_one_by_id(
+      &db_client().await.deployments,
+      &deployment.id,
+      mungos::update::Update::Set(
+        doc! { "name": &name, "updated_at": monitor_timestamp() },
+      ),
+      None,
+    )
+    .await
+    .context("failed to update deployment name on db")?;
+
+    if container_state != DockerContainerState::NotDeployed {
+      let server =
+        Server::get_resource(&deployment.config.server_id).await?;
+      let log = periphery_client(&server)?
+        .request(api::container::RenameContainer {
+          curr_name: deployment.name.clone(),
+          new_name: name.clone(),
+        })
+        .await
+        .context("failed to rename container on server")?;
+      update.logs.push(log);
+    }
+
+    update.push_simple_log(
+      "rename deployment",
+      format!(
+        "renamed deployment from {} to {}",
+        deployment.name, name
+      ),
+    );
+    update.finalize();
+
+    add_update(update.clone()).await?;
+
+    Ok(update)
   }
 }

@@ -41,7 +41,6 @@ use crate::{
     BuildCleanupData,
   },
   config::core_config,
-  db::db_client,
   helpers::{
     channel::build_cancel_channel,
     periphery_client,
@@ -49,7 +48,7 @@ use crate::{
     resource::StateResource,
     update::{add_update, make_update, update_update},
   },
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[async_trait]
@@ -67,9 +66,14 @@ impl Resolve<RunBuild, User> for State {
     )
     .await?;
 
-    if action_states().build.busy(&build.id).await {
-      return Err(anyhow!("build busy"));
-    }
+    // get the action state for the build (or insert default).
+    let action_state =
+      action_states().build.get_or_insert_default(&build.id).await;
+
+    // This will set action state back to default when dropped.
+    // Will also check to ensure build not already busy before updating.
+    let _action_guard =
+      action_state.update(|state| state.building = true).await?;
 
     build.config.version.increment();
 
@@ -114,44 +118,71 @@ impl Resolve<RunBuild, User> for State {
       }
     });
 
-    let build_id = build.id.clone();
+    update.id = add_update(update.clone()).await?;
 
-    let inner = || async move {
-      update.id = add_update(update.clone()).await?;
+    // GET BUILDER PERIPHERY
 
-      // GET BUILDER PERIPHERY
+    let (periphery, cleanup_data) =
+      match get_build_builder(&build, &mut update).await {
+        Ok(builder) => {
+          info!("got builder for build");
+          builder
+        }
+        Err(e) => {
+          warn!("failed to get builder | {e:#}");
+          update.logs.push(Log::error(
+            "get builder",
+            serialize_error_pretty(&e),
+          ));
+          update.finalize();
+          update_update(update.clone()).await?;
+          return Ok(update);
+        }
+      };
 
-      let (periphery, cleanup_data) =
-        match get_build_builder(&build, &mut update).await {
-          Ok(builder) => {
-            info!("got builder for build");
-            builder
-          }
-          Err(e) => {
-            warn!("failed to get builder | {e:#}");
-            update.logs.push(Log::error(
-              "get builder",
-              serialize_error_pretty(&e),
-            ));
-            update.finalize();
-            update_update(update.clone()).await?;
-            return Ok(update);
-          }
-        };
+    // CLONE REPO
 
-      // CLONE REPO
+    let res = tokio::select! {
+      res = periphery
+        .request(api::git::CloneRepo {
+          args: (&build).into(),
+        }) => res,
+      _ = cancel.cancelled() => {
+        info!("build cancelled during clone, cleaning up builder");
+        update.push_error_log("build cancelled", String::from("user cancelled build during repo clone"));
+        cleanup_builder_instance(periphery, cleanup_data, &mut update)
+          .await;
+        info!("builder cleaned up");
+        update.finalize();
+        update_update(update.clone()).await?;
+        return Ok(update)
+      },
+    };
 
+    match res {
+      Ok(clone_logs) => {
+        info!("finished repo clone");
+        update.logs.extend(clone_logs);
+      }
+      Err(e) => {
+        warn!("failed build at clone repo | {e:#}");
+        update.push_error_log("clone repo", serialize_error(&e));
+      }
+    }
+
+    update_update(update.clone()).await?;
+
+    if all_logs_success(&update.logs) {
       let res = tokio::select! {
         res = periphery
-          .request(api::git::CloneRepo {
-            args: (&build).into(),
-          }) => res,
+          .request(api::build::Build {
+            build: build.clone(),
+          }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
-          info!("build cancelled during clone, cleaning up builder");
-          update.push_error_log("build cancelled", String::from("user cancelled build during repo clone"));
+          info!("build cancelled during build, cleaning up builder");
+          update.push_error_log("build cancelled", String::from("user cancelled build during docker build"));
           cleanup_builder_instance(periphery, cleanup_data, &mut update)
             .await;
-          info!("builder cleaned up");
           update.finalize();
           update_update(update.clone()).await?;
           return Ok(update)
@@ -159,101 +190,52 @@ impl Resolve<RunBuild, User> for State {
       };
 
       match res {
-        Ok(clone_logs) => {
-          info!("finished repo clone");
-          update.logs.extend(clone_logs);
+        Ok(logs) => {
+          info!("finished build");
+          update.logs.extend(logs);
         }
         Err(e) => {
-          warn!("failed build at clone repo | {e:#}");
-          update.push_error_log("clone repo", serialize_error(&e));
+          warn!("error in build | {e:#}");
+          update.push_error_log("build", serialize_error(&e))
         }
-      }
+      };
+    }
 
-      update_update(update.clone()).await?;
+    update.finalize();
 
-      if all_logs_success(&update.logs) {
-        let res = tokio::select! {
-          res = periphery
-            .request(api::build::Build {
-              build: build.clone(),
-            }) => res.context("failed at call to periphery to build"),
-          _ = cancel.cancelled() => {
-            info!("build cancelled during build, cleaning up builder");
-            update.push_error_log("build cancelled", String::from("user cancelled build during docker build"));
-            cleanup_builder_instance(periphery, cleanup_data, &mut update)
-              .await;
-            update.finalize();
-            update_update(update.clone()).await?;
-            return Ok(update)
+    if update.success {
+      let _ = db_client()
+        .await
+        .builds
+        .update_one(
+          doc! { "_id": ObjectId::from_str(&build.id)? },
+          doc! {
+            "$set": {
+              "config.version": to_bson(&build.config.version)
+                .context("failed at converting version to bson")?,
+              "info.last_built_at": monitor_timestamp(),
+            }
           },
-        };
-
-        match res {
-          Ok(logs) => {
-            info!("finished build");
-            update.logs.extend(logs);
-          }
-          Err(e) => {
-            warn!("error in build | {e:#}");
-            update.push_error_log("build", serialize_error(&e))
-          }
-        };
-      }
-
-      update.finalize();
-
-      if update.success {
-        let _ = db_client()
-          .await
-          .builds
-          .update_one(
-            doc! { "_id": ObjectId::from_str(&build.id)? },
-            doc! {
-              "$set": {
-                "config.version": to_bson(&build.config.version)
-                  .context("failed at converting version to bson")?,
-                "info.last_built_at": monitor_timestamp(),
-              }
-            },
-            None,
-          )
-          .await;
-      }
-
-      cancel.cancel();
-
-      cleanup_builder_instance(periphery, cleanup_data, &mut update)
+          None,
+        )
         .await;
+    }
 
-      info!("builder instance cleaned up");
+    cancel.cancel();
 
-      update_update(update.clone()).await?;
-
-      if update.success {
-        handle_post_build_redeploy(&build.id).await;
-        info!("post build redeploy handled");
-      }
-
-      Ok(update)
-    };
-
-    action_states()
-      .build
-      .update_entry(&build_id, |entry| {
-        entry.building = true;
-      })
+    cleanup_builder_instance(periphery, cleanup_data, &mut update)
       .await;
 
-    let res = inner().await;
+    info!("builder instance cleaned up");
 
-    action_states()
-      .build
-      .update_entry(build_id, |entry| {
-        entry.building = false;
-      })
-      .await;
+    update_update(update.clone()).await?;
 
-    res
+    if update.success {
+      handle_post_build_redeploy(&build.id).await;
+      info!("post build redeploy handled");
+    }
+
+    Ok(update)
   }
 }
 

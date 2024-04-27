@@ -20,7 +20,6 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
-  db::db_client,
   helpers::{
     periphery_client,
     query::get_server_with_status,
@@ -28,7 +27,7 @@ use crate::{
     update::{add_update, make_update, update_update},
   },
   monitor::update_cache_for_server,
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[async_trait]
@@ -50,11 +49,16 @@ impl Resolve<Deploy, User> for State {
     )
     .await?;
 
-    let deployment_id = deployment.id.clone();
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
 
-    if action_states().deployment.busy(&deployment.id).await {
-      return Err(anyhow!("deployment busy"));
-    }
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.deploying = true).await?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -70,82 +74,57 @@ impl Resolve<Deploy, User> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let inner = || async move {
-      let start_ts = monitor_timestamp();
-
-      let version = match deployment.config.image {
-        DeploymentImage::Build { build_id, version } => {
-          let build = Build::get_resource(&build_id).await?;
-          let image_name = get_image_name(&build);
-          let version = if version.is_none() {
-            build.config.version
-          } else {
-            version
-          };
-          deployment.config.image = DeploymentImage::Image {
-            image: format!("{image_name}:{}", version.to_string()),
-          };
-          if deployment.config.docker_account.is_empty() {
-            deployment.config.docker_account =
-              build.config.docker_account;
-          }
+    let version = match deployment.config.image {
+      DeploymentImage::Build { build_id, version } => {
+        let build = Build::get_resource(&build_id).await?;
+        let image_name = get_image_name(&build);
+        let version = if version.is_none() {
+          build.config.version
+        } else {
           version
+        };
+        deployment.config.image = DeploymentImage::Image {
+          image: format!("{image_name}:{}", version.to_string()),
+        };
+        if deployment.config.docker_account.is_empty() {
+          deployment.config.docker_account =
+            build.config.docker_account;
         }
-        DeploymentImage::Image { .. } => Version::default(),
-      };
-
-      let mut update = Update {
-        target: ResourceTarget::Deployment(deployment.id.clone()),
-        operation: Operation::DeployContainer,
-        start_ts,
-        status: UpdateStatus::InProgress,
-        success: true,
-        operator: user.id.clone(),
-        version,
-        ..Default::default()
-      };
-
-      update.id = add_update(update.clone()).await?;
-
-      let log = match periphery
-        .request(api::container::Deploy {
-          deployment,
-          stop_signal,
-          stop_time,
-        })
-        .await
-      {
-        Ok(log) => log,
-        Err(e) => {
-          Log::error("deploy container", serialize_error_pretty(&e))
-        }
-      };
-
-      update.logs.push(log);
-      update.finalize();
-      update_cache_for_server(&server).await;
-      update_update(update.clone()).await?;
-
-      Ok(update)
+        version
+      }
+      DeploymentImage::Image { .. } => Version::default(),
     };
 
-    action_states()
-      .deployment
-      .update_entry(deployment_id.to_string(), |entry| {
-        entry.deploying = true;
+    let mut update =
+      make_update(&deployment, Operation::DeployContainer, &user);
+    update.in_progress();
+    update.version = version;
+
+    update.id = add_update(update.clone()).await?;
+
+    match periphery
+      .request(api::container::Deploy {
+        deployment,
+        stop_signal,
+        stop_time,
       })
-      .await;
+      .await
+    {
+      Ok(log) => update.logs.push(log),
+      Err(e) => {
+        update.push_error_log(
+          "deploy container",
+          serialize_error_pretty(&e),
+        );
+      }
+    };
 
-    let res = inner().await;
+    update_cache_for_server(&server).await;
 
-    action_states()
-      .deployment
-      .update_entry(deployment_id, |entry| {
-        entry.deploying = false;
-      })
-      .await;
+    update.finalize();
+    update_update(update.clone()).await?;
 
-    res
+    Ok(update)
   }
 }
 
@@ -164,11 +143,16 @@ impl Resolve<StartContainer, User> for State {
     )
     .await?;
 
-    let deployment_id = deployment.id.clone();
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
 
-    if action_states().deployment.busy(&deployment_id).await {
-      return Err(anyhow!("deployment busy"));
-    }
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.starting = true).await?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -184,58 +168,38 @@ impl Resolve<StartContainer, User> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let inner = || async move {
-      let start_ts = monitor_timestamp();
+    let start_ts = monitor_timestamp();
 
-      let mut update = Update {
-        target: ResourceTarget::Deployment(deployment.id.clone()),
-        operation: Operation::StartContainer,
-        start_ts,
-        status: UpdateStatus::InProgress,
-        success: true,
-        operator: user.id.clone(),
-        ..Default::default()
-      };
-
-      update.id = add_update(update.clone()).await?;
-
-      let log = match periphery
-        .request(api::container::StartContainer {
-          name: deployment.name.clone(),
-        })
-        .await
-      {
-        Ok(log) => log,
-        Err(e) => {
-          Log::error("start container", serialize_error_pretty(&e))
-        }
-      };
-
-      update.logs.push(log);
-      update.finalize();
-      update_cache_for_server(&server).await;
-      update_update(update.clone()).await?;
-
-      Ok(update)
+    let mut update = Update {
+      target: ResourceTarget::Deployment(deployment.id.clone()),
+      operation: Operation::StartContainer,
+      start_ts,
+      status: UpdateStatus::InProgress,
+      success: true,
+      operator: user.id.clone(),
+      ..Default::default()
     };
 
-    action_states()
-      .deployment
-      .update_entry(deployment_id.to_string(), |entry| {
-        entry.starting = true;
+    update.id = add_update(update.clone()).await?;
+
+    let log = match periphery
+      .request(api::container::StartContainer {
+        name: deployment.name.clone(),
       })
-      .await;
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => {
+        Log::error("start container", serialize_error_pretty(&e))
+      }
+    };
 
-    let res = inner().await;
+    update.logs.push(log);
+    update.finalize();
+    update_cache_for_server(&server).await;
+    update_update(update.clone()).await?;
 
-    action_states()
-      .deployment
-      .update_entry(deployment_id, |entry| {
-        entry.starting = false;
-      })
-      .await;
-
-    res
+    Ok(update)
   }
 }
 
@@ -258,11 +222,16 @@ impl Resolve<StopContainer, User> for State {
     )
     .await?;
 
-    let deployment_id = deployment.id.clone();
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
 
-    if action_states().deployment.busy(&deployment_id).await {
-      return Err(anyhow!("deployment busy"));
-    }
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.stopping = true).await?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -278,55 +247,35 @@ impl Resolve<StopContainer, User> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let inner = || async move {
-      let mut update =
-        make_update(&deployment, Operation::StopContainer, &user);
+    let mut update =
+      make_update(&deployment, Operation::StopContainer, &user);
 
-      update.id = add_update(update.clone()).await?;
+    update.id = add_update(update.clone()).await?;
 
-      let log = match periphery
-        .request(api::container::StopContainer {
-          name: deployment.name.clone(),
-          signal: signal
-            .unwrap_or(deployment.config.termination_signal)
-            .into(),
-          time: time
-            .unwrap_or(deployment.config.termination_timeout)
-            .into(),
-        })
-        .await
-      {
-        Ok(log) => log,
-        Err(e) => {
-          Log::error("stop container", serialize_error_pretty(&e))
-        }
-      };
-
-      update.logs.push(log);
-      update.finalize();
-      update_cache_for_server(&server).await;
-      update_update(update.clone()).await?;
-
-      Ok(update)
+    let log = match periphery
+      .request(api::container::StopContainer {
+        name: deployment.name.clone(),
+        signal: signal
+          .unwrap_or(deployment.config.termination_signal)
+          .into(),
+        time: time
+          .unwrap_or(deployment.config.termination_timeout)
+          .into(),
+      })
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => {
+        Log::error("stop container", serialize_error_pretty(&e))
+      }
     };
 
-    action_states()
-      .deployment
-      .update_entry(deployment_id.to_string(), |entry| {
-        entry.stopping = true;
-      })
-      .await;
+    update.logs.push(log);
+    update.finalize();
+    update_cache_for_server(&server).await;
+    update_update(update.clone()).await?;
 
-    let res = inner().await;
-
-    action_states()
-      .deployment
-      .update_entry(deployment_id, |entry| {
-        entry.stopping = false;
-      })
-      .await;
-
-    res
+    Ok(update)
   }
 }
 
@@ -345,6 +294,18 @@ impl Resolve<StopAllContainers, User> for State {
       ));
     }
 
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
+
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard = action_state
+      .update(|state| state.stopping_containers = true)
+      .await?;
+
     let deployments = find_collect(
       &db_client().await.deployments,
       doc! {
@@ -355,72 +316,50 @@ impl Resolve<StopAllContainers, User> for State {
     .await
     .context("failed to find deployments on server")?;
 
-    let server_id = server.id.clone();
+    let mut update =
+      make_update(&server, Operation::StopAllContainers, &user);
+    update.in_progress();
+    update.id = add_update(update.clone()).await?;
 
-    let inner = || async move {
-      let mut update =
-        make_update(&server, Operation::StopAllContainers, &user);
-      update.in_progress();
-      update.id = add_update(update.clone()).await?;
-
-      let futures = deployments.iter().map(|deployment| async {
-        (
-          self
-            .resolve(
-              StopContainer {
-                deployment: deployment.id.clone(),
-                signal: None,
-                time: None,
-              },
-              user.clone(),
-            )
-            .await,
-          deployment.name.clone(),
-          deployment.id.clone(),
-        )
-      });
-      let results = join_all(futures).await;
-      let deployment_names = deployments
-        .iter()
-        .map(|d| format!("{} ({})", d.name, d.id))
-        .collect::<Vec<_>>()
-        .join("\n");
-      update.push_simple_log("stopping containers", deployment_names);
-      for (res, name, id) in results {
-        if let Err(e) = res {
-          update.push_error_log(
-            "stop container failure",
-            format!(
-              "failed to stop container {name} ({id})\n\n{}",
-              serialize_error_pretty(&e)
-            ),
-          );
-        }
+    let futures = deployments.iter().map(|deployment| async {
+      (
+        self
+          .resolve(
+            StopContainer {
+              deployment: deployment.id.clone(),
+              signal: None,
+              time: None,
+            },
+            user.clone(),
+          )
+          .await,
+        deployment.name.clone(),
+        deployment.id.clone(),
+      )
+    });
+    let results = join_all(futures).await;
+    let deployment_names = deployments
+      .iter()
+      .map(|d| format!("{} ({})", d.name, d.id))
+      .collect::<Vec<_>>()
+      .join("\n");
+    update.push_simple_log("stopping containers", deployment_names);
+    for (res, name, id) in results {
+      if let Err(e) = res {
+        update.push_error_log(
+          "stop container failure",
+          format!(
+            "failed to stop container {name} ({id})\n\n{}",
+            serialize_error_pretty(&e)
+          ),
+        );
       }
+    }
 
-      update.finalize();
-      update_update(update.clone()).await?;
+    update.finalize();
+    update_update(update.clone()).await?;
 
-      Ok(update)
-    };
-
-    action_states()
-      .server
-      .update_entry(server_id.to_string(), |entry| {
-        entry.stopping_containers = true;
-      })
-      .await;
-
-    let res = inner().await;
-
-    action_states()
-      .server
-      .update_entry(server_id, |entry| {
-        entry.stopping_containers = false;
-      })
-      .await;
-
-    res
+    Ok(update)
   }
 }
 
@@ -443,9 +382,16 @@ impl Resolve<RemoveContainer, User> for State {
     )
     .await?;
 
-    if action_states().deployment.busy(&deployment.id).await {
-      return Err(anyhow!("deployment busy"));
-    }
+    // get the action state for the deployment (or insert default).
+    let action_state = action_states()
+      .deployment
+      .get_or_insert_default(&deployment.id)
+      .await;
+
+    // Will check to ensure deployment not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard =
+      action_state.update(|state| state.removing = true).await?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -461,65 +407,43 @@ impl Resolve<RemoveContainer, User> for State {
 
     let periphery = periphery_client(&server)?;
 
-    let deployment_id = deployment.id.clone();
+    let start_ts = monitor_timestamp();
 
-    let inner = || async move {
-      let start_ts = monitor_timestamp();
-
-      let mut update = Update {
-        target: ResourceTarget::Deployment(deployment.id.clone()),
-        operation: Operation::RemoveContainer,
-        start_ts,
-        status: UpdateStatus::InProgress,
-        success: true,
-        operator: user.id.clone(),
-        ..Default::default()
-      };
-
-      update.id = add_update(update.clone()).await?;
-
-      let log = match periphery
-        .request(api::container::RemoveContainer {
-          name: deployment.name.clone(),
-          signal: signal
-            .unwrap_or(deployment.config.termination_signal)
-            .into(),
-          time: time
-            .unwrap_or(deployment.config.termination_timeout)
-            .into(),
-        })
-        .await
-      {
-        Ok(log) => log,
-        Err(e) => {
-          Log::error("stop container", serialize_error_pretty(&e))
-        }
-      };
-
-      update.logs.push(log);
-      update.finalize();
-      update_cache_for_server(&server).await;
-      update_update(update.clone()).await?;
-
-      Ok(update)
+    let mut update = Update {
+      target: ResourceTarget::Deployment(deployment.id.clone()),
+      operation: Operation::RemoveContainer,
+      start_ts,
+      status: UpdateStatus::InProgress,
+      success: true,
+      operator: user.id.clone(),
+      ..Default::default()
     };
 
-    action_states()
-      .deployment
-      .update_entry(deployment_id.to_string(), |entry| {
-        entry.removing = true;
+    update.id = add_update(update.clone()).await?;
+
+    let log = match periphery
+      .request(api::container::RemoveContainer {
+        name: deployment.name.clone(),
+        signal: signal
+          .unwrap_or(deployment.config.termination_signal)
+          .into(),
+        time: time
+          .unwrap_or(deployment.config.termination_timeout)
+          .into(),
       })
-      .await;
+      .await
+    {
+      Ok(log) => log,
+      Err(e) => {
+        Log::error("stop container", serialize_error_pretty(&e))
+      }
+    };
 
-    let res = inner().await;
+    update.logs.push(log);
+    update.finalize();
+    update_cache_for_server(&server).await;
+    update_update(update.clone()).await?;
 
-    action_states()
-      .deployment
-      .update_entry(deployment_id, |entry| {
-        entry.removing = false;
-      })
-      .await;
-
-    res
+    Ok(update)
   }
 }

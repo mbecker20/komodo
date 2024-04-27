@@ -29,11 +29,10 @@ use mungos::find::find_collect;
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::{
     query::get_user_user_group_ids, resource::StateResource,
   },
-  state::State,
+  state::{db_client, State},
 };
 
 #[async_trait]

@@ -14,9 +14,7 @@ use monitor_client::{
 use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
-use crate::{config::core_config, db::db_client, state::State};
-
-use super::jwt::jwt_client;
+use crate::{config::core_config, state::{db_client, jwt_client}, state::State};
 
 const BCRYPT_COST: u32 = 10;
 

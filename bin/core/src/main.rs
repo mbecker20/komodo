@@ -21,7 +21,6 @@ mod db;
 mod helpers;
 mod listener;
 mod monitor;
-mod prune;
 mod state;
 mod ws;
 
@@ -34,7 +33,7 @@ async fn app() -> anyhow::Result<()> {
 
   // Spawn monitoring loops
   monitor::spawn_monitor_loop();
-  prune::spawn_prune_loop();
+  helpers::prune::spawn_prune_loop();
 
   // Setup static frontend services
   let frontend_path = frontend_path();

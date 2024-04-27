@@ -88,7 +88,7 @@ fn default_branch() -> String {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct RepoActionState {
   pub cloning: bool,
   pub pulling: bool,

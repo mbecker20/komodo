@@ -9,9 +9,7 @@ use monitor_client::entities::{
 };
 use serror::Serror;
 
-use crate::helpers::cache::{
-  deployment_status_cache, server_status_cache,
-};
+use crate::state::{deployment_status_cache, server_status_cache};
 
 use super::{CachedDeploymentStatus, CachedServerStatus, History};
 

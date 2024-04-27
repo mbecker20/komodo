@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context};
+use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
   api::execute::*,
@@ -39,58 +39,46 @@ impl Resolve<PruneDockerContainers, User> for State {
     )
     .await?;
 
-    if action_states().server.busy(&server.id).await {
-      return Err(anyhow!("server busy"));
-    }
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
+
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard = action_state
+      .update(|state| state.stopping_containers = true)
+      .await?;
 
     let periphery = periphery_client(&server)?;
 
-    let inner = || async {
-      let mut update =
-        make_update(&server, Operation::PruneContainersServer, &user);
-      update.in_progress();
-      update.id = add_update(update.clone()).await?;
+    let mut update =
+      make_update(&server, Operation::PruneContainersServer, &user);
+    update.in_progress();
+    update.id = add_update(update.clone()).await?;
 
-      let log = match periphery
-        .request(api::container::PruneContainers {})
-        .await
-        .context(format!(
-          "failed to prune containers on server {}",
-          server.name
-        )) {
-        Ok(log) => log,
-        Err(e) => {
-          Log::error("prune containers", serialize_error_pretty(&e))
-        }
-      };
-
-      update.success = log.success;
-      update.status = UpdateStatus::Complete;
-      update.end_ts = Some(monitor_timestamp());
-      update.logs.push(log);
-
-      update_update(update.clone()).await?;
-
-      Ok(update)
+    let log = match periphery
+      .request(api::container::PruneContainers {})
+      .await
+      .context(format!(
+        "failed to prune containers on server {}",
+        server.name
+      )) {
+      Ok(log) => log,
+      Err(e) => {
+        Log::error("prune containers", serialize_error_pretty(&e))
+      }
     };
 
-    action_states()
-      .server
-      .update_entry(server.id.to_string(), |entry| {
-        entry.pruning_containers = true;
-      })
-      .await;
+    update.success = log.success;
+    update.status = UpdateStatus::Complete;
+    update.end_ts = Some(monitor_timestamp());
+    update.logs.push(log);
 
-    let res = inner().await;
+    update_update(update.clone()).await?;
 
-    action_states()
-      .server
-      .update_entry(server.id, |entry| {
-        entry.pruning_containers = false;
-      })
-      .await;
-
-    res
+    Ok(update)
   }
 }
 
@@ -109,58 +97,46 @@ impl Resolve<PruneDockerNetworks, User> for State {
     )
     .await?;
 
-    if action_states().server.busy(&server.id).await {
-      return Err(anyhow!("server busy"));
-    }
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
+
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard = action_state
+      .update(|state| state.stopping_containers = true)
+      .await?;
 
     let periphery = periphery_client(&server)?;
 
-    let inner = || async {
-      let mut update =
-        make_update(&server, Operation::PruneNetworksServer, &user);
-      update.in_progress();
-      update.id = add_update(update.clone()).await?;
+    let mut update =
+      make_update(&server, Operation::PruneNetworksServer, &user);
+    update.in_progress();
+    update.id = add_update(update.clone()).await?;
 
-      let log = match periphery
-        .request(api::network::PruneNetworks {})
-        .await
-        .context(format!(
-          "failed to prune networks on server {}",
-          server.name
-        )) {
-        Ok(log) => log,
-        Err(e) => {
-          Log::error("prune networks", serialize_error_pretty(&e))
-        }
-      };
-
-      update.success = log.success;
-      update.status = UpdateStatus::Complete;
-      update.end_ts = Some(monitor_timestamp());
-      update.logs.push(log);
-
-      update_update(update.clone()).await?;
-
-      Ok(update)
+    let log = match periphery
+      .request(api::network::PruneNetworks {})
+      .await
+      .context(format!(
+        "failed to prune networks on server {}",
+        server.name
+      )) {
+      Ok(log) => log,
+      Err(e) => {
+        Log::error("prune networks", serialize_error_pretty(&e))
+      }
     };
 
-    action_states()
-      .server
-      .update_entry(server.id.clone(), |entry| {
-        entry.pruning_networks = true;
-      })
-      .await;
+    update.success = log.success;
+    update.status = UpdateStatus::Complete;
+    update.end_ts = Some(monitor_timestamp());
+    update.logs.push(log);
 
-    let res = inner().await;
+    update_update(update.clone()).await?;
 
-    action_states()
-      .server
-      .update_entry(server.id, |entry| {
-        entry.pruning_networks = false;
-      })
-      .await;
-
-    res
+    Ok(update)
   }
 }
 
@@ -179,55 +155,43 @@ impl Resolve<PruneDockerImages, User> for State {
     )
     .await?;
 
-    if action_states().server.busy(&server.id).await {
-      return Err(anyhow!("server busy"));
-    }
+    // get the action state for the server (or insert default).
+    let action_state = action_states()
+      .server
+      .get_or_insert_default(&server.id)
+      .await;
+
+    // Will check to ensure server not already busy before updating, and return Err if so.
+    // The returned guard will set the action state back to default when dropped.
+    let _action_guard = action_state
+      .update(|state| state.stopping_containers = true)
+      .await?;
 
     let periphery = periphery_client(&server)?;
 
-    let inner = || async {
-      let mut update =
-        make_update(&server, Operation::PruneImagesServer, &user);
-      update.in_progress();
-      update.id = add_update(update.clone()).await?;
+    let mut update =
+      make_update(&server, Operation::PruneImagesServer, &user);
+    update.in_progress();
+    update.id = add_update(update.clone()).await?;
 
-      let log =
-        match periphery.request(api::build::PruneImages {}).await {
-          Ok(log) => log,
-          Err(e) => Log::error(
-            "prune images",
-            format!(
-              "failed to prune images on server {} | {e:#?}",
-              server.name
-            ),
+    let log =
+      match periphery.request(api::build::PruneImages {}).await {
+        Ok(log) => log,
+        Err(e) => Log::error(
+          "prune images",
+          format!(
+            "failed to prune images on server {} | {e:#?}",
+            server.name
           ),
-        };
+        ),
+      };
 
-      update.logs.push(log);
+    update.logs.push(log);
 
-      update.finalize();
+    update.finalize();
 
-      update_update(update.clone()).await?;
+    update_update(update.clone()).await?;
 
-      Ok(update)
-    };
-
-    action_states()
-      .server
-      .update_entry(&server.id, |entry| {
-        entry.pruning_images = true;
-      })
-      .await;
-
-    let res = inner().await;
-
-    action_states()
-      .server
-      .update_entry(server.id, |entry| {
-        entry.pruning_images = false;
-      })
-      .await;
-
-    res
+    Ok(update)
   }
 }

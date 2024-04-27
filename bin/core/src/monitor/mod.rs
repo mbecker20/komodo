@@ -12,9 +12,9 @@ use periphery_client::api;
 use serror::Serror;
 
 use crate::{
-  db::db_client,
-  helpers::{cache::deployment_status_cache, periphery_client},
+  helpers::periphery_client,
   monitor::{alert::check_alerts, record::record_server_stats},
+  state::{db_client, deployment_status_cache},
 };
 
 use self::helpers::{

@@ -22,14 +22,13 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::{
     create_permission, empty_or_only_spaces,
     remove_from_recently_viewed,
     resource::{delete_all_permissions_on_resource, StateResource},
     update::{add_update, make_update, update_update},
   },
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[async_trait]
@@ -173,7 +172,14 @@ impl Resolve<DeleteBuild, User> for State {
     DeleteBuild { id }: DeleteBuild,
     user: User,
   ) -> anyhow::Result<Build> {
-    if action_states().build.busy(&id).await {
+    if action_states()
+      .build
+      .get(&id)
+      .await
+      .unwrap_or_default()
+      .busy()
+      .await
+    {
       return Err(anyhow!("build busy"));
     }
 
@@ -227,7 +233,14 @@ impl Resolve<UpdateBuild, User> for State {
     UpdateBuild { id, mut config }: UpdateBuild,
     user: User,
   ) -> anyhow::Result<Build> {
-    if action_states().build.busy(&id).await {
+    if action_states()
+      .build
+      .get(&id)
+      .await
+      .unwrap_or_default()
+      .busy()
+      .await
+    {
       return Err(anyhow!("build busy"));
     }
 
@@ -238,68 +251,47 @@ impl Resolve<UpdateBuild, User> for State {
     )
     .await?;
 
-    let inner = || async move {
-      if let Some(builder_id) = &config.builder_id {
-        let builder = Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
+    if let Some(builder_id) = &config.builder_id {
+      let builder = Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
           .await
           .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
-        config.builder_id = Some(builder.id)
-      }
+      config.builder_id = Some(builder.id)
+    }
 
-      if let Some(build_args) = &mut config.build_args {
-        build_args.retain(|v| {
-          !empty_or_only_spaces(&v.variable)
-            && !empty_or_only_spaces(&v.value)
-        })
-      }
-      if let Some(extra_args) = &mut config.extra_args {
-        extra_args.retain(|v| !empty_or_only_spaces(v))
-      }
-
-      update_one_by_id(
-        &db_client().await.builds,
-        &build.id,
-        mungos::update::Update::FlattenSet(
-          doc! { "config": to_bson(&config)? },
-        ),
-        None,
-      )
-      .await
-      .context("failed to update build on database")?;
-
-      let mut update =
-        make_update(&build, Operation::UpdateBuild, &user);
-
-      update.push_simple_log(
-        "build update",
-        serde_json::to_string_pretty(&config)?,
-      );
-
-      update.finalize();
-
-      add_update(update).await?;
-
-      let build = Build::get_resource(&build.id).await?;
-
-      anyhow::Ok(build)
-    };
-
-    action_states()
-      .build
-      .update_entry(id.clone(), |entry| {
-        entry.updating = true;
+    if let Some(build_args) = &mut config.build_args {
+      build_args.retain(|v| {
+        !empty_or_only_spaces(&v.variable)
+          && !empty_or_only_spaces(&v.value)
       })
-      .await;
+    }
+    if let Some(extra_args) = &mut config.extra_args {
+      extra_args.retain(|v| !empty_or_only_spaces(v))
+    }
 
-    let res = inner().await;
+    update_one_by_id(
+      &db_client().await.builds,
+      &build.id,
+      mungos::update::Update::FlattenSet(
+        doc! { "config": to_bson(&config)? },
+      ),
+      None,
+    )
+    .await
+    .context("failed to update build on database")?;
 
-    action_states()
-      .build
-      .update_entry(id, |entry| {
-        entry.updating = false;
-      })
-      .await;
+    let mut update =
+      make_update(&build, Operation::UpdateBuild, &user);
 
-    res
+    update.push_simple_log(
+      "build update",
+      serde_json::to_string_pretty(&config)?,
+    );
+
+    update.finalize();
+
+    add_update(update).await?;
+
+    let build = Build::get_resource(&build.id).await?;
+    Ok(build)
   }
 }

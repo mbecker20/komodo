@@ -11,11 +11,14 @@ use reqwest::StatusCode;
 use serde::Deserialize;
 use serror::AddStatusCode;
 
-use crate::{config::core_config, db::db_client};
+use crate::{
+  config::core_config,
+  state::{db_client, jwt_client},
+};
 
 use self::client::github_oauth_client;
 
-use super::{jwt::jwt_client, RedirectQuery, STATE_PREFIX_LENGTH};
+use super::{RedirectQuery, STATE_PREFIX_LENGTH};
 
 pub mod client;
 

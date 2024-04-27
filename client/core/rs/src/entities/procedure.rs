@@ -74,7 +74,7 @@ pub struct EnabledExecution {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct ProcedureActionState {
   pub running: bool,
 }

@@ -28,13 +28,11 @@ use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::{
-    cache::deployment_status_cache,
     periphery_client,
     resource::{get_resource_ids_for_non_admin, StateResource},
   },
-  state::{action_states, State},
+  state::{action_states, db_client, deployment_status_cache, State},
 };
 
 #[async_trait]
@@ -270,7 +268,9 @@ impl Resolve<GetDeploymentActionState, User> for State {
       .deployment
       .get(&deployment.id)
       .await
-      .unwrap_or_default();
+      .unwrap_or_default()
+      .get()
+      .await;
     Ok(action_state)
   }
 }

@@ -51,13 +51,12 @@ use resolver_api::Resolve;
 use serde::{de::DeserializeOwned, Serialize};
 
 use crate::{
-  db::db_client, helpers::query::user_target_query, state::State,
+  helpers::query::user_target_query,
+  state::State,
+  state::{db_client, deployment_status_cache, server_status_cache},
 };
 
-use super::{
-  cache::{deployment_status_cache, server_status_cache},
-  query::get_tag,
-};
+use super::query::get_tag;
 
 pub trait StateResource {
   type ListItem: Serialize + Send;

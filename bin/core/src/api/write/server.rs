@@ -23,15 +23,13 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
-  db::db_client,
   helpers::{
-    cache::server_status_cache,
     create_permission, periphery_client, remove_from_recently_viewed,
     resource::{delete_all_permissions_on_resource, StateResource},
     update::{add_update, make_update, update_update},
   },
   monitor::update_cache_for_server,
-  state::{action_states, State},
+  state::{action_states, db_client, server_status_cache, State},
 };
 
 #[async_trait]
@@ -108,7 +106,14 @@ impl Resolve<DeleteServer, User> for State {
     DeleteServer { id }: DeleteServer,
     user: User,
   ) -> anyhow::Result<Server> {
-    if action_states().server.busy(&id).await {
+    if action_states()
+      .server
+      .get(&id)
+      .await
+      .unwrap_or_default()
+      .busy()
+      .await
+    {
       return Err(anyhow!("server busy"));
     }
 
@@ -198,9 +203,17 @@ impl Resolve<UpdateServer, User> for State {
     UpdateServer { id, config }: UpdateServer,
     user: User,
   ) -> anyhow::Result<Server> {
-    if action_states().server.busy(&id).await {
+    if action_states()
+      .server
+      .get(&id)
+      .await
+      .unwrap_or_default()
+      .busy()
+      .await
+    {
       return Err(anyhow!("server busy"));
     }
+
     let server = Server::get_resource_check_permissions(
       &id,
       &user,

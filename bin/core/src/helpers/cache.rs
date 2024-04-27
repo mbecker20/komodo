@@ -1,36 +1,7 @@
-use std::{
-  collections::HashMap,
-  hash::Hash,
-  sync::{Arc, OnceLock},
-};
+use std::{collections::HashMap, hash::Hash};
 
-use monitor_client::{
-  busy::Busy, entities::deployment::DockerContainerState,
-};
+use monitor_client::busy::Busy;
 use tokio::sync::RwLock;
-
-use crate::monitor::{
-  CachedDeploymentStatus, CachedServerStatus, History,
-};
-
-pub type DeploymentStatusCache = Cache<
-  String,
-  Arc<History<CachedDeploymentStatus, DockerContainerState>>,
->;
-
-pub fn deployment_status_cache() -> &'static DeploymentStatusCache {
-  static DEPLOYMENT_STATUS_CACHE: OnceLock<DeploymentStatusCache> =
-    OnceLock::new();
-  DEPLOYMENT_STATUS_CACHE.get_or_init(Default::default)
-}
-
-pub type ServerStatusCache = Cache<String, Arc<CachedServerStatus>>;
-
-pub fn server_status_cache() -> &'static ServerStatusCache {
-  static SERVER_STATUS_CACHE: OnceLock<ServerStatusCache> =
-    OnceLock::new();
-  SERVER_STATUS_CACHE.get_or_init(Default::default)
-}
 
 #[derive(Default)]
 pub struct Cache<K: PartialEq + Eq + Hash, T: Clone + Default> {
@@ -38,7 +9,7 @@ pub struct Cache<K: PartialEq + Eq + Hash, T: Clone + Default> {
 }
 
 impl<
-    K: PartialEq + Eq + Hash + std::fmt::Debug,
+    K: PartialEq + Eq + Hash + std::fmt::Debug + Clone,
     T: Clone + Default,
   > Cache<K, T>
 {
@@ -47,25 +18,22 @@ impl<
     self.cache.read().await.get(key).cloned()
   }
 
-  // pub async fn get_or_default(&self, key: String) -> T {
-  //     let mut cache = self.cache.write().await;
-  //     cache.entry(key).or_default().clone()
-  // }
+  #[instrument(level = "debug", skip(self))]
+  pub async fn get_or_insert_default(&self, key: &K) -> T {
+    let mut lock = self.cache.write().await;
+    match lock.get(key).cloned() {
+      Some(item) => item,
+      None => {
+        let item: T = Default::default();
+        lock.insert(key.clone(), item.clone());
+        item
+      }
+    }
+  }
 
   #[instrument(level = "debug", skip(self))]
-  pub async fn get_list(
-    &self,
-    // filter: Option<impl Fn(&String, &T) -> bool>
-  ) -> Vec<T> {
+  pub async fn get_list(&self) -> Vec<T> {
     let cache = self.cache.read().await;
-    // match filter {
-    //     Some(filter) => cache
-    //         .iter()
-    //         .filter(|(k, v)| filter(k, v))
-    //         .map(|(_, e)| e.clone())
-    //         .collect(),
-    //     None => cache.iter().map(|(_, e)| e.clone()).collect(),
-    // }
     cache.iter().map(|(_, e)| e.clone()).collect()
   }
 
@@ -90,9 +58,10 @@ impl<
     handler(cache.entry(key.into()).or_default());
   }
 
-  // pub async fn clear(&self) {
-  //     self.cache.write().await.clear();
-  // }
+  #[instrument(level = "debug", skip(self))]
+  pub async fn clear(&self) {
+    self.cache.write().await.clear();
+  }
 
   #[instrument(level = "debug", skip(self))]
   pub async fn remove(&self, key: &K) {
@@ -101,7 +70,7 @@ impl<
 }
 
 impl<
-    K: PartialEq + Eq + Hash + std::fmt::Debug,
+    K: PartialEq + Eq + Hash + std::fmt::Debug + Clone,
     T: Clone + Default + Busy,
   > Cache<K, T>
 {

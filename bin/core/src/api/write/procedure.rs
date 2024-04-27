@@ -24,13 +24,12 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::{
     create_permission, remove_from_recently_viewed,
     resource::{delete_all_permissions_on_resource, StateResource},
     update::{add_update, make_update, update_update},
   },
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[async_trait]
@@ -355,7 +354,14 @@ impl Resolve<DeleteProcedure, User> for State {
     user: User,
   ) -> anyhow::Result<DeleteProcedureResponse> {
     // needs to pull its id from all container procedures
-    if action_states().procedure.busy(&id).await {
+    if action_states()
+      .procedure
+      .get(&id)
+      .await
+      .unwrap_or_default()
+      .busy()
+      .await
+    {
       return Err(anyhow!("procedure busy"));
     }
 

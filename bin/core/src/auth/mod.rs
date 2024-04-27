@@ -10,9 +10,12 @@ use mungos::mongodb::bson::doc;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use serde::Deserialize;
 
-use crate::{db::db_client, helpers::query::get_user};
+use crate::{
+  helpers::query::get_user,
+  state::{db_client, jwt_client},
+};
 
-use self::jwt::{jwt_client, JwtClaims};
+use self::jwt::JwtClaims;
 
 pub mod github;
 pub mod google;

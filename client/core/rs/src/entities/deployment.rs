@@ -369,13 +369,12 @@ pub struct TerminationSignalLabel {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct DeploymentActionState {
   pub deploying: bool,
   pub stopping: bool,
   pub starting: bool,
   pub removing: bool,
-  pub updating: bool,
   pub renaming: bool,
   pub deleting: bool,
 }
@@ -385,7 +384,7 @@ pub type DeploymentQuery = ResourceQuery<DeploymentQuerySpecifics>;
 
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Default, DefaultBuilder,
+  Debug, Clone, Default, Serialize, Deserialize, DefaultBuilder,
 )]
 pub struct DeploymentQuerySpecifics {
   #[serde(default)]

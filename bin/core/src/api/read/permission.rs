@@ -12,8 +12,8 @@ use mungos::{find::find_collect, mongodb::bson::doc};
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client, helpers::resource::get_user_permission_on_resource,
-  state::State,
+  helpers::resource::get_user_permission_on_resource,
+  state::{db_client, State},
 };
 
 #[async_trait]

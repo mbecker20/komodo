@@ -8,11 +8,9 @@ use monitor_client::entities::{
 };
 
 use crate::{
-  db::db_client,
-  helpers::{
-    alert::send_alerts, cache::deployment_status_cache,
-    resource::StateResource,
-  },
+  helpers::{alert::send_alerts, resource::StateResource},
+  monitor::deployment_status_cache,
+  state::db_client,
 };
 
 #[instrument(level = "debug")]

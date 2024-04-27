@@ -16,11 +16,10 @@ use crate::{
     get_user_id_from_headers,
     github::{self, client::github_oauth_client},
     google::{self, client::google_oauth_client},
-    jwt::jwt_client,
   },
   config::core_config,
   helpers::query::get_user,
-  state::State,
+  state::{jwt_client, State},
 };
 
 #[typeshare]

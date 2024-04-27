@@ -3,7 +3,7 @@ use async_timing_util::{
 };
 use mungos::mongodb::bson::doc;
 
-use crate::{config::core_config, db::db_client};
+use crate::{config::core_config, state::db_client};
 
 pub fn spawn_prune_loop() {
   tokio::spawn(async move {
@@ -33,7 +33,7 @@ async fn prune_stats() -> anyhow::Result<()> {
     .stats
     .delete_many(
       doc! {
-          "ts": { "$lt": delete_before_ts }
+        "ts": { "$lt": delete_before_ts }
       },
       None,
     )
@@ -54,7 +54,7 @@ async fn prune_alerts() -> anyhow::Result<()> {
     .alerts
     .delete_many(
       doc! {
-          "ts": { "$lt": delete_before_ts }
+        "ts": { "$lt": delete_before_ts }
       },
       None,
     )

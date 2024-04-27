@@ -16,7 +16,7 @@ use mungos::{
 };
 use resolver_api::Resolve;
 
-use crate::{db::db_client, state::State};
+use crate::state::{db_client, State};
 
 #[async_trait]
 impl Resolve<CreateUserGroup, User> for State {

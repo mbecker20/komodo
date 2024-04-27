@@ -185,7 +185,7 @@ fn default_disk_critical() -> f64 {
 
 /// Current pending actions on the server.
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
 pub struct ServerActionState {
   /// Server currently pruning networks
   pub pruning_networks: bool,

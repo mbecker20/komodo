@@ -2,7 +2,7 @@ use monitor_client::entities::server::stats::{
   sum_disk_usage, SystemStatsRecord, TotalDiskUsage,
 };
 
-use crate::{db::db_client, helpers::cache::server_status_cache};
+use crate::state::{db_client, server_status_cache};
 
 #[instrument(level = "debug")]
 pub async fn record_server_stats(ts: i64) {

@@ -10,7 +10,7 @@ use mungos::{
   mongodb::bson::to_document,
 };
 
-use crate::db::db_client;
+use crate::state::db_client;
 
 use super::channel::update_channel;
 

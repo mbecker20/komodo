@@ -29,12 +29,8 @@ use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  db::db_client,
-  helpers::{
-    cache::server_status_cache, periphery_client,
-    resource::StateResource,
-  },
-  state::{action_states, State},
+  helpers::{periphery_client, resource::StateResource},
+  state::{action_states, db_client, server_status_cache, State},
 };
 
 #[async_trait]
@@ -156,7 +152,9 @@ impl Resolve<GetServerActionState, User> for State {
       .server
       .get(&server.id)
       .await
-      .unwrap_or_default();
+      .unwrap_or_default()
+      .get()
+      .await;
     Ok(action_state)
   }
 }

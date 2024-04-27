@@ -24,13 +24,12 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
-  db::db_client,
   helpers::{
     create_permission, periphery_client, remove_from_recently_viewed,
     resource::{delete_all_permissions_on_resource, StateResource},
     update::{add_update, make_update, update_update},
   },
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[instrument(skip(user))]
@@ -210,6 +209,15 @@ impl Resolve<DeleteRepo, User> for State {
     )
     .await?;
 
+    // get the action state for the repo (or insert default).
+    let action_state =
+      action_states().repo.get_or_insert_default(&repo.id).await;
+
+    // This will set action state back to default when dropped.
+    // Will also check to ensure repo not already busy before updating.
+    let _action_guard =
+      action_state.update(|state| state.deleting = true).await?;
+
     let periphery = if repo.config.server_id.is_empty() {
       None
     } else {
@@ -219,76 +227,51 @@ impl Resolve<DeleteRepo, User> for State {
       Some(periphery)
     };
 
-    let inner = || async move {
-      let mut update =
-        make_update(&repo, Operation::DeleteRepo, &user);
-      update.in_progress();
-      update.id = add_update(update.clone()).await?;
+    let mut update = make_update(&repo, Operation::DeleteRepo, &user);
+    update.in_progress();
+    update.id = add_update(update.clone()).await?;
 
-      let res =
-        delete_one_by_id(&db_client().await.repos, &repo.id, None)
-          .await
-          .context("failed to delete repo from database");
+    let res =
+      delete_one_by_id(&db_client().await.repos, &repo.id, None)
+        .await
+        .context("failed to delete repo from database");
 
-      delete_all_permissions_on_resource(&repo).await;
+    delete_all_permissions_on_resource(&repo).await;
 
-      let log = match res {
-        Ok(_) => Log::simple(
-          "delete repo",
-          format!("deleted repo {}", repo.name),
-        ),
-        Err(e) => Log::error(
-          "delete repo",
-          format!("failed to delete repo\n{e:#?}"),
-        ),
-      };
-
-      update.logs.push(log);
-
-      if let Some(periphery) = periphery {
-        match periphery
-          .request(api::git::DeleteRepo {
-            name: repo.name.clone(),
-          })
-          .await
-        {
-          Ok(log) => update.logs.push(log),
-          Err(e) => update.logs.push(Log::error(
-            "delete repo on periphery",
-            serialize_error_pretty(&e),
-          )),
-        }
-      }
-
-      update.finalize();
-      update_update(update).await?;
-
-      remove_from_recently_viewed(&repo).await?;
-
-      Ok(repo)
+    let log = match res {
+      Ok(_) => Log::simple(
+        "delete repo",
+        format!("deleted repo {}", repo.name),
+      ),
+      Err(e) => Log::error(
+        "delete repo",
+        format!("failed to delete repo\n{e:#?}"),
+      ),
     };
 
-    if action_states().repo.busy(&id).await {
-      return Err(anyhow!("repo busy"));
+    update.logs.push(log);
+
+    if let Some(periphery) = periphery {
+      match periphery
+        .request(api::git::DeleteRepo {
+          name: repo.name.clone(),
+        })
+        .await
+      {
+        Ok(log) => update.logs.push(log),
+        Err(e) => update.logs.push(Log::error(
+          "delete repo on periphery",
+          serialize_error_pretty(&e),
+        )),
+      }
     }
 
-    action_states()
-      .repo
-      .update_entry(id.clone(), |entry| {
-        entry.deleting = true;
-      })
-      .await;
+    update.finalize();
+    update_update(update).await?;
 
-    let res = inner().await;
+    remove_from_recently_viewed(&repo).await?;
 
-    action_states()
-      .repo
-      .update_entry(id, |entry| {
-        entry.deleting = false;
-      })
-      .await;
-
-    res
+    Ok(repo)
   }
 }
 
@@ -309,83 +292,67 @@ impl Resolve<UpdateRepo, User> for State {
     )
     .await?;
 
-    let inner = || async move {
-      update_one_by_id(
-        &db_client().await.repos,
-        &repo.id,
-        mungos::update::Update::FlattenSet(
-          doc! { "config": to_bson(&config)? },
-        ),
-        None,
-      )
-      .await
-      .context("failed to update repo on database")?;
+    // get the action state for the repo (or insert default).
+    let action_state =
+      action_states().repo.get_or_insert_default(&repo.id).await;
 
-      let mut update =
-        make_update(&repo, Operation::UpdateRepo, &user);
-      update.in_progress();
-      update.push_simple_log(
-        "repo update",
-        serde_json::to_string_pretty(&config).unwrap(),
-      );
-      update.id = add_update(update.clone()).await?;
+    // This will set action state back to default when dropped.
+    // Will also check to ensure repo not already busy before updating.
+    let _action_guard =
+      action_state.update(|state| state.updating = true).await?;
 
-      if let Some(new_server_id) = config.server_id {
-        if !repo.config.server_id.is_empty()
-          && new_server_id != repo.config.server_id
-        {
-          let old_server: anyhow::Result<Server> =
-            Server::get_resource(&repo.config.server_id).await;
-          let periphery =
-            old_server.and_then(|server| periphery_client(&server));
-          match periphery {
-            Ok(periphery) => match periphery
-              .request(api::git::DeleteRepo { name: repo.name })
-              .await
-            {
-              Ok(mut log) => {
-                log.stage = String::from("cleanup previous server");
-                update.logs.push(log);
-              }
-              Err(e) => update.push_error_log(
-                "cleanup previous server",
-                format!("failed to cleanup previous server | {e:#?}"),
-              ),
-            },
+    update_one_by_id(
+      &db_client().await.repos,
+      &repo.id,
+      mungos::update::Update::FlattenSet(
+        doc! { "config": to_bson(&config)? },
+      ),
+      None,
+    )
+    .await
+    .context("failed to update repo on database")?;
+
+    let mut update = make_update(&repo, Operation::UpdateRepo, &user);
+    update.in_progress();
+    update.push_simple_log(
+      "repo update",
+      serde_json::to_string_pretty(&config).unwrap(),
+    );
+    update.id = add_update(update.clone()).await?;
+
+    if let Some(new_server_id) = config.server_id {
+      if !repo.config.server_id.is_empty()
+        && new_server_id != repo.config.server_id
+      {
+        let old_server: anyhow::Result<Server> =
+          Server::get_resource(&repo.config.server_id).await;
+        let periphery =
+          old_server.and_then(|server| periphery_client(&server));
+        match periphery {
+          Ok(periphery) => match periphery
+            .request(api::git::DeleteRepo { name: repo.name })
+            .await
+          {
+            Ok(mut log) => {
+              log.stage = String::from("cleanup previous server");
+              update.logs.push(log);
+            }
             Err(e) => update.push_error_log(
               "cleanup previous server",
               format!("failed to cleanup previous server | {e:#?}"),
             ),
-          }
+          },
+          Err(e) => update.push_error_log(
+            "cleanup previous server",
+            format!("failed to cleanup previous server | {e:#?}"),
+          ),
         }
       }
-
-      update.finalize();
-      update_update(update).await?;
-
-      Repo::get_resource(&repo.id).await
-    };
-
-    if action_states().repo.busy(&id).await {
-      return Err(anyhow!("repo busy"));
     }
 
-    action_states()
-      .repo
-      .update_entry(id.clone(), |entry| {
-        entry.updating = true;
-      })
-      .await;
+    update.finalize();
+    update_update(update).await?;
 
-    let res = inner().await;
-
-    action_states()
-      .repo
-      .update_entry(id, |entry| {
-        entry.updating = false;
-      })
-      .await;
-
-    res
+    Repo::get_resource(&repo.id).await
   }
 }

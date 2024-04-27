@@ -13,7 +13,7 @@ use mungos::{
   mongodb::bson::{doc, oid::ObjectId, Document},
 };
 
-use crate::db::db_client;
+use crate::state::db_client;
 
 use super::resource::StateResource;
 

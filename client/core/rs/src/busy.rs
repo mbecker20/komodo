@@ -22,7 +22,6 @@ impl Busy for DeploymentActionState {
       || self.removing
       || self.starting
       || self.stopping
-      || self.updating
       || self.renaming
       || self.deleting
   }
@@ -30,7 +29,7 @@ impl Busy for DeploymentActionState {
 
 impl Busy for BuildActionState {
   fn busy(&self) -> bool {
-    self.building || self.updating
+    self.building
   }
 }
 

@@ -15,11 +15,10 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::resource::{
     get_resource_ids_for_non_admin, StateResource,
   },
-  state::State,
+  state::{State, db_client},
 };
 
 #[async_trait]

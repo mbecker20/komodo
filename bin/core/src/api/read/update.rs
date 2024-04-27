@@ -25,7 +25,8 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client, helpers::resource::StateResource, state::State,
+  helpers::resource::StateResource,
+  state::{db_client, State},
 };
 
 const UPDATES_PER_PAGE: i64 = 20;

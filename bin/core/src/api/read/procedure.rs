@@ -18,11 +18,10 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::resource::{
     get_resource_ids_for_non_admin, StateResource,
   },
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[async_trait]
@@ -105,7 +104,9 @@ impl Resolve<GetProcedureActionState, User> for State {
       .procedure
       .get(&procedure.id)
       .await
-      .unwrap_or_default();
+      .unwrap_or_default()
+      .get()
+      .await;
     Ok(action_state)
   }
 }

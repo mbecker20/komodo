@@ -15,11 +15,10 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::resource::{
     get_resource_ids_for_non_admin, StateResource,
   },
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[async_trait]
@@ -62,8 +61,13 @@ impl Resolve<GetRepoActionState, User> for State {
       PermissionLevel::Read,
     )
     .await?;
-    let action_state =
-      action_states().repo.get(&repo.id).await.unwrap_or_default();
+    let action_state = action_states()
+      .repo
+      .get(&repo.id)
+      .await
+      .unwrap_or_default()
+      .get()
+      .await;
     Ok(action_state)
   }
 }

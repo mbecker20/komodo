@@ -150,10 +150,9 @@ fn default_dockerfile_path() -> String {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct BuildActionState {
   pub building: bool,
-  pub updating: bool,
 }
 
 #[typeshare]

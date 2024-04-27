@@ -16,7 +16,7 @@ use crate::{
     resource::StateResource,
     update::{add_update, make_update, update_update},
   },
-  state::State,
+  state::{action_states, State},
 };
 
 #[async_trait]
@@ -33,6 +33,17 @@ impl Resolve<RunProcedure, User> for State {
       PermissionLevel::Execute,
     )
     .await?;
+
+    // get the action state for the procedure (or insert default).
+    let action_state = action_states()
+      .procedure
+      .get_or_insert_default(&procedure.id)
+      .await;
+
+    // This will set action state back to default when dropped.
+    // Will also check to ensure procedure not already busy before updating.
+    let _action_guard =
+      action_state.update(|state| state.running = true).await?;
 
     let mut update =
       make_update(&procedure, Operation::RunProcedure, &user);

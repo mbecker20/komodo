@@ -19,20 +19,8 @@ use mungos::{
   init::MongoBuilder,
   mongodb::{Collection, Database},
 };
-use tokio::sync::OnceCell;
 
-use crate::config::{core_config, MongoConfig};
-
-pub async fn db_client() -> &'static DbClient {
-  static DB_CLIENT: OnceCell<DbClient> = OnceCell::const_new();
-  DB_CLIENT
-    .get_or_init(|| async {
-      DbClient::new(&core_config().mongo)
-        .await
-        .expect("failed to initialize mongo client")
-    })
-    .await
-}
+use crate::config::MongoConfig;
 
 pub struct DbClient {
   pub users: Collection<User>,

@@ -1,4 +1,4 @@
-use std::{collections::HashMap, sync::OnceLock};
+use std::collections::HashMap;
 
 use anyhow::{anyhow, Context};
 use async_timing_util::{
@@ -11,16 +11,11 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tokio::sync::Mutex;
 
-use crate::config::{core_config, CoreConfig};
+use crate::config::CoreConfig;
 
 use super::random_string;
 
 type ExchangeTokenMap = Mutex<HashMap<String, (String, u128)>>;
-
-pub fn jwt_client() -> &'static JwtClient {
-  static JWT_CLIENT: OnceLock<JwtClient> = OnceLock::new();
-  JWT_CLIENT.get_or_init(|| JwtClient::new(core_config()))
-}
 
 #[derive(Serialize, Deserialize)]
 pub struct JwtClaims {

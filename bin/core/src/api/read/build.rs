@@ -25,11 +25,10 @@ use resolver_api::{Resolve, ResolveToString};
 
 use crate::{
   config::core_config,
-  db::db_client,
   helpers::resource::{
     get_resource_ids_for_non_admin, StateResource,
   },
-  state::{action_states, State},
+  state::{action_states, db_client, State},
 };
 
 #[async_trait]
@@ -76,7 +75,9 @@ impl Resolve<GetBuildActionState, User> for State {
       .build
       .get(&build.id)
       .await
-      .unwrap_or_default();
+      .unwrap_or_default()
+      .get()
+      .await;
     Ok(action_state)
   }
 }

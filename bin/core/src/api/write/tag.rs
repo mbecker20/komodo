@@ -21,12 +21,11 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  db::db_client,
   helpers::{
     query::{get_tag, get_tag_check_owner},
     resource::StateResource,
   },
-  state::State,
+  state::{db_client, State},
 };
 
 #[async_trait]
