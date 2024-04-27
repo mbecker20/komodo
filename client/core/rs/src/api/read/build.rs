@@ -14,6 +14,7 @@ use super::MonitorReadRequest;
 
 //
 
+/// Get a specific build. Response: [Build].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -31,6 +32,7 @@ pub type GetBuildResponse = Build;
 
 //
 
+/// List builds matching optional query. Response: [ListBuildsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
@@ -47,6 +49,7 @@ pub type ListBuildsResponse = Vec<BuildListItem>;
 
 //
 
+/// Get current action state for the build. Response: [BuildActionState].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -64,6 +67,8 @@ pub type GetBuildActionStateResponse = BuildActionState;
 
 //
 
+/// Gets a summary of data relating to all builds.
+/// Response: [GetBuildsSummaryResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
