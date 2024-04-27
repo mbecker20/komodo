@@ -15,15 +15,18 @@ pub use procedure::*;
 pub use repo::*;
 pub use server::*;
 
+use crate::entities::NoData;
+
 pub trait MonitorExecuteRequest: HasResponse {}
 
+/// A wrapper for all monitor exections.
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize, EnumVariants)]
 #[variant_derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(tag = "type", content = "params")]
 pub enum Execution {
   /// For new executions upon instantiation
-  None(None),
+  None(NoData),
 
   // PROCEDURE
   RunProcedure(RunProcedure),
@@ -47,7 +50,3 @@ pub enum Execution {
   PruneDockerImages(PruneDockerImages),
   PruneDockerContainers(PruneDockerContainers),
 }
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct None {}

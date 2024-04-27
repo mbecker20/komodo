@@ -11,6 +11,7 @@ use super::MonitorReadRequest;
 
 //
 
+/// Get a specific alerter. Response: [Alerter].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -28,6 +29,7 @@ pub type GetAlerterResponse = Alerter;
 
 //
 
+/// List alerters matching optional query. Response: [ListAlertersResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
@@ -35,6 +37,7 @@ pub type GetAlerterResponse = Alerter;
 #[empty_traits(MonitorReadRequest)]
 #[response(ListAlertersResponse)]
 pub struct ListAlerters {
+  /// Structured query to filter alerters.
   #[serde(default)]
   pub query: AlerterQuery,
 }
@@ -44,6 +47,8 @@ pub type ListAlertersResponse = Vec<AlerterListItem>;
 
 //
 
+/// Gets a summary of data relating to all alerters.
+/// Response: [GetAlertersSummaryResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -52,6 +57,7 @@ pub type ListAlertersResponse = Vec<AlerterListItem>;
 #[response(GetAlertersSummaryResponse)]
 pub struct GetAlertersSummary {}
 
+/// Response for [GetAlertersSummary].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetAlertersSummaryResponse {

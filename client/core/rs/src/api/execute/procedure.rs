@@ -7,6 +7,7 @@ use crate::entities::update::Update;
 
 use super::MonitorExecuteRequest;
 
+/// Runs the target procedure. Response: [Update]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,

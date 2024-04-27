@@ -33,6 +33,11 @@ pub type MongoId = String;
 #[typeshare(serialized_as = "__Serror")]
 pub type _Serror = Serror;
 
+/// Represents an empty json object: `{}`
+#[typeshare]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct NoData {}
+
 pub fn all_logs_success(logs: &[update::Log]) -> bool {
   for log in logs {
     if !log.success {
