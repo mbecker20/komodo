@@ -5,50 +5,88 @@ use crate::entities::{
   Timelength,
 };
 
+/// # Monitor Core Environment Variables
+///
+/// You can override any fields of the [CoreConfig] by passing the associated
+/// environment variable. The variables should be passed in the traditional `UPPER_SNAKE_CASE` format,
+/// although the lower case format can still be parsed.
+///
+/// *Note.* The monitor core docker image includes the default core configuration found in
+/// the `mbecker20/monitor/config_example` folder of the repo. To configigure the core api,
+/// you can either mount your own custom configuration file to `/config/config.toml` inside the container,
+/// or simply override whichever fields you need using the environment.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Env {
+  /// Specify a custom config path for the core config toml.
+  /// Default: `/config/config.toml`
   #[serde(default = "default_config_path")]
   pub monitor_config_path: String,
 
+  /// Override `title`
   pub monitor_title: Option<String>,
+  /// Override `host`
   pub monitor_host: Option<String>,
+  /// Override `port`
   pub monitor_port: Option<u16>,
+  /// Override `passkey`
   pub monitor_passkey: Option<String>,
+  /// Override `jwt_valid_for`
   pub monitor_jwt_valid_for: Option<Timelength>,
+  /// Override `monitoring_interval`
   pub monitor_monitoring_interval: Option<Timelength>,
+  /// Override `keep_stats_for_days`
   pub monitor_keep_stats_for_days: Option<u64>,
+  /// Override `keep_alerts_for_days`
   pub monitor_keep_alerts_for_days: Option<u64>,
+  /// Override `github_webhook_secret`
   pub monitor_github_webhook_secret: Option<String>,
+  /// Override `github_webhook_base_url`
   pub monitor_github_webhook_base_url: Option<String>,
+  /// Override `docker_organizations`
   pub monitor_docker_organizations: Option<Vec<String>>,
 
-  // logging
+  /// Override `logging.level`
   pub monitor_logging_level: Option<LogLevel>,
+  /// Override `logging.stdio`
   pub monitor_logging_stdio: Option<StdioLogMode>,
+  /// Override `logging.otlp_endpoint`
   pub monitor_logging_otlp_endpoint: Option<String>,
+  /// Override `logging.opentelemetry_service_name`
+  pub monitor_logging_opentelemetry_service_name: Option<String>,
 
+  /// Override `local_auth`
   pub monitor_local_auth: Option<bool>,
 
-  // github
+  /// Override `github_oauth.enabled`
   pub monitor_github_oauth_enabled: Option<bool>,
+  /// Override `github_oauth.id`
   pub monitor_github_oauth_id: Option<String>,
+  /// Override `github_oauth.secret`
   pub monitor_github_oauth_secret: Option<String>,
 
-  // google
+  /// Override `google_oauth.enabled`
   pub monitor_google_oauth_enabled: Option<bool>,
+  /// Override `google_oauth.id`
   pub monitor_google_oauth_id: Option<String>,
+  /// Override `google_oauth.secret`
   pub monitor_google_oauth_secret: Option<String>,
 
-  // mongo
+  /// Override `mongo.uri`
   pub monitor_mongo_uri: Option<String>,
+  /// Override `mongo.address`
   pub monitor_mongo_address: Option<String>,
+  /// Override `mongo.username`
   pub monitor_mongo_username: Option<String>,
+  /// Override `mongo.password`
   pub monitor_mongo_password: Option<String>,
+  /// Override `mongo.app_name`
   pub monitor_mongo_app_name: Option<String>,
+  /// Override `mongo.db_name`
   pub monitor_mongo_db_name: Option<String>,
 
-  // aws
+  /// Override `aws.access_key_id`
   pub monitor_aws_access_key_id: Option<String>,
+  /// Override `aws.secret_access_key`
   pub monitor_aws_secret_access_key: Option<String>,
 }
 
@@ -62,43 +100,56 @@ pub struct CoreConfig {
   pub title: String,
 
   /// The host to use with oauth redirect url, whatever host
-  /// the user hits to access monitor. eg `https://monitor.mogh.tech`
+  /// the user hits to access monitor. eg `https://monitor.mogh.tech`.
+  /// Only used if oauth used without user specifying redirect url themselves.
   #[serde(default)]
   pub host: String,
 
-  /// Port the core web server runs on
+  /// Port the core web server runs on.
+  /// Default: 9000.
   #[serde(default = "default_core_port")]
   pub port: u16,
 
-  /// Sent in auth header with req to periphery
+  /// Sent in auth header with req to periphery.
+  /// Should be some secure hash, maybe 20-40 chars.
   pub passkey: String,
 
-  /// Control how long distributed JWT remain valid for. Default is 1-day
+  /// Control how long distributed JWT remain valid for.
+  /// Default: `1-day`.
   #[serde(default = "default_jwt_valid_for")]
   pub jwt_valid_for: Timelength,
 
-  /// interval at which to collect server stats and send any alerts
+  /// Interval at which to collect server stats and send any alerts.
+  /// Default: `15-sec`
   #[serde(default = "default_monitoring_interval")]
   pub monitoring_interval: Timelength,
 
   /// Number of days to keep stats, or 0 to disable pruning. stats older than this number of days are deleted on a daily cycle
-  /// Default is 0 (no pruning)
+  /// Default: 0 (no pruning).
   #[serde(default)]
   pub keep_stats_for_days: u64,
 
   /// Number of days to keep alerts, or 0 to disable pruning. alerts older than this number of days are deleted on a daily cycle
-  /// Default is 0 (no pruning)
+  /// Default: 0 (no pruning).
   #[serde(default)]
   pub keep_alerts_for_days: u64,
 
-  /// used to verify validity from github webhooks
+  /// Used to verify validity from github webhooks.
+  /// Should be some secure hash maybe 20-40 chars.
+  /// It needs to be given to github when configuring the webhook.
   #[serde(default)]
   pub github_webhook_secret: String,
 
-  /// used to form the frontend listener url, if None will use 'host'.
+  /// Used to form the frontend listener url, if None will use 'host'.
+  ///
+  /// This can be used if core sits on an internal network which is
+  /// unreachable directly from the open internet.
+  /// A reverse proxy in a public network (with its own DNS)
+  /// can forward webhooks to the internal monitor
   pub github_webhook_base_url: Option<String>,
 
-  /// allowed docker orgs used with monitor. first in this list will be default for build
+  /// allowed docker orgs used with monitor. first in this list will be default for build.
+  /// Default: none.
   #[serde(default)]
   pub docker_organizations: Vec<String>,
 
@@ -110,14 +161,21 @@ pub struct CoreConfig {
   #[serde(default)]
   pub local_auth: bool,
 
+  /// Configure github oauth
   #[serde(default)]
   pub github_oauth: OauthCredentials,
 
+  /// Configure google oauth
   #[serde(default)]
   pub google_oauth: OauthCredentials,
 
+  /// Configure core mongo connection.
+  ///
+  /// An easy deployment method is to use Mongo Atlas to provide
+  /// a reliable database.
   pub mongo: MongoConfig,
 
+  /// Configure AWS credentials to use with AWS builds / server launches.
   #[serde(default)]
   pub aws: AwsCredentials,
 }

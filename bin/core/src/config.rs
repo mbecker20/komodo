@@ -73,6 +73,9 @@ pub fn core_config() -> &'static CoreConfig {
     config.logging.otlp_endpoint = env
       .monitor_logging_otlp_endpoint
       .or(config.logging.otlp_endpoint);
+    config.logging.opentelemetry_service_name = env
+      .monitor_logging_opentelemetry_service_name
+      .unwrap_or(config.logging.opentelemetry_service_name);
 
     config.local_auth =
       env.monitor_local_auth.unwrap_or(config.local_auth);
