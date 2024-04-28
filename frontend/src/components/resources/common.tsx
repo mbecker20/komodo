@@ -58,6 +58,7 @@ export const ResourceDescription = ({
   return (
     <TextUpdateMenu
       title="Update Description"
+      placeholder="Set Description"
       value={resource?.description}
       onUpdate={(description) =>
         update_description({
