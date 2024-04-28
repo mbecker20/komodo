@@ -42,8 +42,7 @@ pub type _PartialDeploymentConfig = PartialDeploymentConfig;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
-#[skip_serializing_none]
-#[partial_from]
+#[partial(skip_serializing_none, from)]
 pub struct DeploymentConfig {
   /// The id of server the deployment is deployed on.
   #[serde(default, alias = "server")]

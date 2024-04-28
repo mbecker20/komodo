@@ -2612,18 +2612,18 @@ checksum = "ffa94c2e5674923c67d7f3dfce1279507b191e10eb064881b46ed3e1256e5ca6"
 
 [[package]]
 name = "partial_derive2"
-version = "0.2.2"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2eecafa276875fa10fbbcbcc2c93d08e9e302627600afe99a2b000dfa68e478d"
+checksum = "60f625e69130070a54ae0e744233b691f016b5661ebfc76f20df6824c2cf99c8"
 dependencies = [
  "partial_derive2_derive",
 ]
 
 [[package]]
 name = "partial_derive2_derive"
-version = "0.2.2"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a543253c8df8d6377ba82d06c5de2d96bf336ade75588ca537d3de083ce2b5c"
+checksum = "237bdfa8eeb4df4ce350e23b077443f238e05d87f7682f55b7436e3d6ef16fd6"
 dependencies = [
  "proc-macro2",
  "quote",

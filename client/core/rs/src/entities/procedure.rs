@@ -31,8 +31,7 @@ pub type _PartialProcedureConfig = PartialProcedureConfig;
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Partial)]
 #[partial_derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[skip_serializing_none]
-#[partial_from]
+#[partial(skip_serializing_none, from)]
 pub struct ProcedureConfig {
   /// Whether executions in the procedure runs sequentially or in parallel.
   #[serde(default)]
