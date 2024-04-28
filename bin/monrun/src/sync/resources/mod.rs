@@ -52,11 +52,11 @@ pub trait ResourceSync {
     id: String,
   ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>>;
 
-  /// Diffs the two partials.
-  /// Removes all fields from update that haven't changed.
+  /// Diffs the declared toml (partial) against the full existing config.
+  /// Removes all fields from toml (partial) that haven't changed.
   async fn minimize_update(
-    _original: Self::FullConfig,
-    _update: Self::PartialConfig,
+    original: Self::FullConfig,
+    update: Self::PartialConfig,
   ) -> anyhow::Result<Self::PartialConfig>;
 
   async fn get_updates(
