@@ -4,7 +4,9 @@ use monitor_client::{
   api::write::{CreateServer, UpdateServer},
   entities::{
     resource::ResourceListItem,
-    server::{PartialServerConfig, Server, ServerListItemInfo},
+    server::{
+      PartialServerConfig, Server, ServerConfig, ServerListItemInfo,
+    },
     toml::ResourceToml,
     update::ResourceTarget,
   },
@@ -16,6 +18,7 @@ use super::ResourceSync;
 
 impl ResourceSync for Server {
   type ListItemInfo = ServerListItemInfo;
+  type FullConfig = ServerConfig;
   type PartialConfig = PartialServerConfig;
 
   fn display() -> &'static str {

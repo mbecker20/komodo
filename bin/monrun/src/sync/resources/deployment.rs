@@ -4,7 +4,8 @@ use monitor_client::{
   api::write,
   entities::{
     deployment::{
-      Deployment, DeploymentListItemInfo, PartialDeploymentConfig,
+      Deployment, DeploymentConfig, DeploymentListItemInfo,
+      PartialDeploymentConfig,
     },
     resource::ResourceListItem,
     toml::ResourceToml,
@@ -18,6 +19,7 @@ use super::ResourceSync;
 
 impl ResourceSync for Deployment {
   type PartialConfig = PartialDeploymentConfig;
+  type FullConfig = DeploymentConfig;
   type ListItemInfo = DeploymentListItemInfo;
 
   fn display() -> &'static str {

@@ -24,6 +24,7 @@ type UpdatesResult<T> = (ToCreate<T>, ToUpdate<T>);
 
 pub trait ResourceSync {
   type PartialConfig: Clone + Send + 'static;
+  type FullConfig: Clone + Send + 'static;
   type ListItemInfo: 'static;
 
   fn display() -> &'static str;
@@ -33,15 +34,25 @@ pub trait ResourceSync {
   fn name_to_resource(
   ) -> &'static HashMap<String, ResourceListItem<Self::ListItemInfo>>;
 
-  /// Returns created id
+  /// Creates the resource and returns created id.
   async fn create(
     resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<String>;
 
+  /// Updates the resource at id with the partial config.
   async fn update(
     id: String,
     resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()>;
+
+  /// Diffs the two partials.
+  /// Removes all fields from update that haven't changed.
+  fn minimize_update(
+    _original: &Self::FullConfig,
+    _update: &mut Self::PartialConfig,
+  ) {
+    unreachable!()
+  }
 
   fn get_updates(
     resources: Vec<ResourceToml<Self::PartialConfig>>,

@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use monitor_client::{
   api::write::{CreateAlerter, UpdateAlerter},
   entities::{
-    alerter::{Alerter, AlerterListItemInfo, PartialAlerterConfig},
+    alerter::{
+      Alerter, AlerterConfig, AlerterListItemInfo,
+      PartialAlerterConfig,
+    },
     resource::ResourceListItem,
     toml::ResourceToml,
     update::ResourceTarget,
@@ -16,6 +19,7 @@ use super::ResourceSync;
 
 impl ResourceSync for Alerter {
   type PartialConfig = PartialAlerterConfig;
+  type FullConfig = AlerterConfig;
   type ListItemInfo = AlerterListItemInfo;
 
   fn display() -> &'static str {
@@ -55,5 +59,11 @@ impl ResourceSync for Alerter {
       })
       .await?;
     Ok(())
+  }
+
+  fn minimize_update(
+    _original: &Self::FullConfig,
+    _update: &mut Self::PartialConfig,
+  ) {
   }
 }

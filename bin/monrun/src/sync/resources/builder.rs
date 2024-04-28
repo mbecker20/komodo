@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use monitor_client::{
   api::write::{CreateBuilder, UpdateBuilder},
   entities::{
-    builder::{Builder, BuilderListItemInfo, PartialBuilderConfig},
+    builder::{
+      Builder, BuilderConfig, BuilderListItemInfo,
+      PartialBuilderConfig,
+    },
     resource::ResourceListItem,
     toml::ResourceToml,
     update::ResourceTarget,
@@ -16,6 +19,7 @@ use super::ResourceSync;
 
 impl ResourceSync for Builder {
   type PartialConfig = PartialBuilderConfig;
+  type FullConfig = BuilderConfig;
   type ListItemInfo = BuilderListItemInfo;
 
   fn display() -> &'static str {

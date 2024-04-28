@@ -4,7 +4,8 @@ use monitor_client::{
   api::write::{CreateProcedure, UpdateProcedure},
   entities::{
     procedure::{
-      PartialProcedureConfig, Procedure, ProcedureListItemInfo,
+      PartialProcedureConfig, Procedure, ProcedureConfig,
+      ProcedureListItemInfo,
     },
     resource::ResourceListItem,
     toml::ResourceToml,
@@ -18,6 +19,7 @@ use super::{ResourceSync, ToCreate, ToUpdate};
 
 impl ResourceSync for Procedure {
   type PartialConfig = PartialProcedureConfig;
+  type FullConfig = ProcedureConfig;
   type ListItemInfo = ProcedureListItemInfo;
 
   fn display() -> &'static str {
