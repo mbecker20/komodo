@@ -5,8 +5,9 @@ use typeshare::typeshare;
 
 use crate::entities::{
   deployment::{
-    Deployment, DeploymentActionState, DeploymentListItem,
-    DeploymentQuery, DockerContainerState, DockerContainerStats,
+    ContainerSummary, Deployment, DeploymentActionState,
+    DeploymentListItem, DeploymentQuery, DockerContainerState,
+    DockerContainerStats,
   },
   update::Log,
   SearchCombinator, I64, U64,
@@ -16,6 +17,7 @@ use super::MonitorReadRequest;
 
 //
 
+/// Get a specific deployment by name or id. Response: [Deployment].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -33,6 +35,8 @@ pub type GetDeploymentResponse = Deployment;
 
 //
 
+/// List deployments matching optional query.
+/// Response: [ListDeploymentsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
@@ -40,6 +44,7 @@ pub type GetDeploymentResponse = Deployment;
 #[empty_traits(MonitorReadRequest)]
 #[response(ListDeploymentsResponse)]
 pub struct ListDeployments {
+  /// optional structured query to filter deployments.
   #[serde(default)]
   pub query: DeploymentQuery,
 }
@@ -49,27 +54,38 @@ pub type ListDeploymentsResponse = Vec<DeploymentListItem>;
 
 //
 
+/// Get the container, including image / status, of the target deployment.
+/// Response: [GetDeploymentContainerResponse].
+///
+/// Note. This does not hit the server directly. The status comes from an
+/// in memory cache on the core, which hits the server periodically
+/// to keep it up to date.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
-#[response(GetDeploymentStatusResponse)]
-pub struct GetDeploymentStatus {
+#[response(GetDeploymentContainerResponse)]
+pub struct GetDeploymentContainer {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
 }
 
+/// Response for [GetDeploymentStatus].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetDeploymentStatusResponse {
+pub struct GetDeploymentContainerResponse {
   pub state: DockerContainerState,
-  pub status: Option<String>,
+  pub container: Option<ContainerSummary>,
 }
 
 //
 
+/// Get the deployment log's tail, split by stdout/stderr.
+/// Response: [Log].
+///
+/// Note. This call will hit the underlying server directly for most up to date log.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -80,6 +96,9 @@ pub struct GetLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
+  /// The number of lines of the log tail to include.
+  /// Default: 100.
+  /// Max: 5000.
   #[serde(default = "default_tail")]
   pub tail: U64,
 }
@@ -93,6 +112,8 @@ pub type GetLogResponse = Log;
 
 //
 
+/// Search the deployment log's tail using `grep`. All lines go to stdout.
+/// Response: [Log].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -103,33 +124,18 @@ pub struct SearchLog {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub deployment: String,
+  /// The terms to search for.
   pub terms: Vec<String>,
+  /// When searching for multiple terms, can use `AND` or `OR` combinator.
+  ///
+  /// - `AND`: Only include lines with **all** terms present in that line.
+  /// - `OR`: Include lines that have one or more matches in the terms.
   #[serde(default)]
   pub combinator: SearchCombinator,
 }
 
 #[typeshare]
 pub type SearchLogResponse = Log;
-
-//
-
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetDeployedVersionResponse)]
-pub struct GetDeployedVersion {
-  /// Id or name
-  #[serde(alias = "id", alias = "name")]
-  pub deployment: String,
-}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetDeployedVersionResponse {
-  pub version: String,
-}
 
 //
 

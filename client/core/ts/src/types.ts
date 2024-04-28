@@ -60,6 +60,12 @@ export interface User {
 
 export type GetUserResponse = User;
 
+/** Represents an empty json object: `{}` */
+export interface NoData {
+}
+
+export type CancelBuildResponse = NoData;
+
 /** Severity level of problem. */
 export enum SeverityLevel {
 	/** No problem. */
@@ -312,7 +318,6 @@ export type ListBuildsResponse = BuildListItem[];
 
 export interface BuildActionState {
 	building: boolean;
-	updating: boolean;
 }
 
 export type GetBuildActionStateResponse = BuildActionState;
@@ -519,7 +524,6 @@ export interface DeploymentActionState {
 	stopping: boolean;
 	starting: boolean;
 	removing: boolean;
-	updating: boolean;
 	renaming: boolean;
 	deleting: boolean;
 }
@@ -569,9 +573,10 @@ export enum ProcedureType {
 	Parallel = "Parallel",
 }
 
+/** A wrapper for all monitor exections. */
 export type Execution = 
 	/** For new executions upon instantiation */
-	| { type: "None", params: None }
+	| { type: "None", params: NoData }
 	| { type: "RunProcedure", params: RunProcedure }
 	| { type: "RunBuild", params: RunBuild }
 	| { type: "Deploy", params: Deploy }
@@ -1249,7 +1254,14 @@ export interface ExchangeForJwtResponse {
 export interface GetUser {
 }
 
-/** Executes the target build. Response: [Update] */
+/**
+ * Executes the target build. Response: [Update].
+ * 
+ * 1. Get a handle to the builder. If using AWS builder, this means starting a builder ec2 instance.
+ * 2. Clone the repo on the builder. If an `on_clone` commmand is given, it will be executed.
+ * 3. Execute `docker build {...params}`, where params are determined using the builds configuration.
+ * 4. If a dockerhub account is attached, the build will be pushed to that account.
+ */
 export interface RunBuild {
 	/** Can be build id or name */
 	build: string;
@@ -1265,125 +1277,255 @@ export interface CancelBuild {
 	build: string;
 }
 
-export interface CancelBuildResponse {
-}
-
+/**
+ * Deploys the container for the target deployment. Response: [Update].
+ * 
+ * 1. Pulls the image onto the target server.
+ * 2. If the container is already running,
+ * it will be stopped and removed using `docker container rm ${container_name}`.
+ * 3. The container will be run using `docker run {...params}`,
+ * where params are determined by the deployment's configuration.
+ */
 export interface Deploy {
 	/** Name or id */
 	deployment: string;
+	/** Override the default termination signal specified in the deployment. */
 	stop_signal?: TerminationSignal;
+	/** Override the default termination max time. */
 	stop_time?: number;
 }
 
+/**
+ * Starts the container for the target deployment. Response: [Update]
+ * 
+ * 1. Runs `docker start ${container_name}`.
+ */
 export interface StartContainer {
 	/** Name or id */
 	deployment: string;
 }
 
+/**
+ * Stops the container for the target deployment. Response: [Update]
+ * 
+ * 1. Runs `docker stop ${container_name}`.
+ */
 export interface StopContainer {
 	/** Name or id */
 	deployment: string;
+	/** Override the default termination signal specified in the deployment. */
 	signal?: TerminationSignal;
+	/** Override the default termination max time. */
 	time?: number;
 }
 
+/**
+ * Stops all deployments on the target server. Response: [Update]
+ * 
+ * 1. Runs [StopContainer] on all deployments on the server concurrently.
+ */
 export interface StopAllContainers {
 	/** Name or id */
 	server: string;
 }
 
+/**
+ * Stops and removes the container for the target deployment.
+ * Reponse: [Update].
+ * 
+ * 1. The container is stopped and removed using `docker container rm ${container_name}`.
+ */
 export interface RemoveContainer {
-	/** Name or id */
+	/** Name or id. */
 	deployment: string;
+	/** Override the default termination signal specified in the deployment. */
 	signal?: TerminationSignal;
+	/** Override the default termination max time. */
 	time?: number;
 }
 
-export interface None {
-}
-
+/** Runs the target procedure. Response: [Update] */
 export interface RunProcedure {
 	/** Id or name */
 	procedure: string;
 }
 
+/**
+ * Clones the target repo. Response: [Update].
+ * 
+ * 1. Clones the repo on the target server using `git clone https://{$token?}@github.com/${repo} -b ${branch}`.
+ * The token will only be used if a github account is specified,
+ * and must be declared in the periphery configuration on the target server.
+ * 2. If `on_clone` and `on_pull` are specified, they will be executed.
+ * `on_clone` will be executed before `on_pull`.
+ */
 export interface CloneRepo {
 	/** Id or name */
 	repo: string;
 }
 
+/**
+ * Pulls the target repo. Response: [Update].
+ * 
+ * 1. Pulls the repo on the target server using `git pull`.
+ * 2. If `on_pull` is specified, it will be executed after the pull is complete.
+ */
 export interface PullRepo {
 	/** Id or name */
 	repo: string;
 }
 
+/**
+ * Prunes the docker networks on the target server. Response: [Update].
+ * 
+ * 1. Runs `docker network prune -f`.
+ */
 export interface PruneDockerNetworks {
 	/** Id or name */
 	server: string;
 }
 
+/**
+ * Prunes the docker images on the target server. Response: [Update].
+ * 
+ * 1. Runs `docker image prune -a -f`.
+ */
 export interface PruneDockerImages {
 	/** Id or name */
 	server: string;
 }
 
+/**
+ * Prunes the docker containers on the target server. Response: [Update].
+ * 
+ * 1. Runs `docker container prune -f`.
+ */
 export interface PruneDockerContainers {
 	/** Id or name */
 	server: string;
 }
 
+/**
+ * Get a paginated list of alerts sorted by timestamp descending.
+ * Response: [ListAlertsResponse].
+ */
 export interface ListAlerts {
+	/**
+	 * Pass a custom mongo query to filter the alerts.
+	 * 
+	 * ## Example JSON
+	 * ```
+	 * {
+	 * "resolved": "false",
+	 * "level": "CRITICAL",
+	 * "$or": [
+	 * {
+	 * "target": {
+	 * "type": "Server",
+	 * "id": "6608bf89cb2a12b257ab6c09"
+	 * }
+	 * },
+	 * {
+	 * "target": {
+	 * "type": "Server",
+	 * "id": "660a5f60b74f90d5dae45fa3"
+	 * }
+	 * }
+	 * ]
+	 * }
+	 * ```
+	 * This will filter to only include open alerts that have CRITICAL level on those two servers.
+	 */
 	query?: MongoDocument;
+	/**
+	 * Retrieve older results by incrementing the page.
+	 * `page: 0` is default, and returns the most recent results.
+	 */
 	page?: U64;
 }
 
+/** Response for [ListAlerts]. */
 export interface ListAlertsResponse {
 	alerts: Alert[];
+	/**
+	 * If more alerts exist, the next page will be given here.
+	 * Otherwise it will be `null`
+	 */
 	next_page?: I64;
 }
 
+/** Get an alert: Response: [Alert]. */
 export interface GetAlert {
 	id: string;
 }
 
+/** Get a specific alerter. Response: [Alerter]. */
 export interface GetAlerter {
 	/** Id or name */
 	alerter: string;
 }
 
+/** List alerters matching optional query. Response: [ListAlertersResponse]. */
 export interface ListAlerters {
+	/** Structured query to filter alerters. */
 	query?: AlerterQuery;
 }
 
+/**
+ * Gets a summary of data relating to all alerters.
+ * Response: [GetAlertersSummaryResponse].
+ */
 export interface GetAlertersSummary {
 }
 
+/** Response for [GetAlertersSummary]. */
 export interface GetAlertersSummaryResponse {
 	total: number;
 }
 
+/** Get a specific build. Response: [Build]. */
 export interface GetBuild {
 	/** Id or name */
 	build: string;
 }
 
+/** List builds matching optional query. Response: [ListBuildsResponse]. */
 export interface ListBuilds {
+	/** optional structured query to filter builds. */
 	query?: BuildQuery;
 }
 
+/** Get current action state for the build. Response: [BuildActionState]. */
 export interface GetBuildActionState {
 	/** Id or name */
 	build: string;
 }
 
+/**
+ * Gets a summary of data relating to all builds.
+ * Response: [GetBuildsSummaryResponse].
+ */
 export interface GetBuildsSummary {
 }
 
+/** Response for [GetBuildsSummary]. */
 export interface GetBuildsSummaryResponse {
+	/** The total number of builds in monitor. */
 	total: number;
 }
 
+/**
+ * Gets summary and timeseries breakdown of the last months build count / time for charting.
+ * Response: [GetBuildMonthlyStatsResponse].
+ * 
+ * Note. This method is paginated. One page is 30 days of data.
+ * Query for older pages by incrementing the page, starting at 0.
+ */
 export interface GetBuildMonthlyStats {
+	/**
+	 * Query for older data by incrementing the page.
+	 * `page: 0` is the default, and will return the most recent data.
+	 */
 	page?: number;
 }
 
@@ -1393,72 +1535,127 @@ export interface BuildStatsDay {
 	ts: number;
 }
 
+/** Response for [GetBuildMonthlyStats]. */
 export interface GetBuildMonthlyStatsResponse {
 	total_time: number;
 	total_count: number;
 	days: BuildStatsDay[];
 }
 
+/**
+ * Paginated endpoint for versions of the build that were built in the past and available for deployment,
+ * sorted by most recent first.
+ * Response: [GetBuildVersionsResponse].
+ */
 export interface GetBuildVersions {
 	/** Id or name */
 	build: string;
+	/** The page of data. Default is 0, which corrensponds to the most recent versions. */
 	page?: number;
+	/** Filter to only include versions matching this major version. */
 	major?: number;
+	/** Filter to only include versions matching this minor version. */
 	minor?: number;
+	/** Filter to only include versions matching this patch version. */
 	patch?: number;
 }
 
+/**
+ * List the available docker organizations which can be attached to builds.
+ * Response: [ListDockerOrganizationsResponse].
+ */
 export interface ListDockerOrganizations {
 }
 
+/** Get a specific builder by id or name. Response: [Builder]. */
 export interface GetBuilder {
 	/** Id or name */
 	builder: string;
 }
 
+/** List builders matching structured query. Response: [ListBuildersResponse]. */
 export interface ListBuilders {
 	query?: BuilderQuery;
 }
 
+/**
+ * Gets a summary of data relating to all builders.
+ * Response: [GetBuildersSummaryResponse].
+ */
 export interface GetBuildersSummary {
 }
 
+/** Response for [GetBuildersSummary]. */
 export interface GetBuildersSummaryResponse {
+	/** The total number of builders. */
 	total: number;
 }
 
+/**
+ * Get the docker / github accounts which are available for use on the builder.
+ * Response: [GetBuilderAvailableAccountsResponse].
+ * 
+ * Note. Builds using this builder can only use the docker / github accounts available in this response.
+ */
 export interface GetBuilderAvailableAccounts {
 	/** Id or name */
 	builder: string;
 }
 
+/** The response for [GetBuilderAvailableAccounts]. */
 export interface GetBuilderAvailableAccountsResponse {
 	github: string[];
 	docker: string[];
 }
 
+/** Get a specific deployment by name or id. Response: [Deployment]. */
 export interface GetDeployment {
 	/** Id or name */
 	deployment: string;
 }
 
+/**
+ * List deployments matching optional query.
+ * Response: [ListDeploymentsResponse].
+ */
 export interface ListDeployments {
+	/** optional structured query to filter deployments. */
 	query?: DeploymentQuery;
 }
 
-export interface GetDeploymentStatus {
+/**
+ * Get the container, including image / status, of the target deployment.
+ * Response: [GetDeploymentContainerResponse].
+ * 
+ * Note. This does not hit the server directly. The status comes from an
+ * in memory cache on the core, which hits the server periodically
+ * to keep it up to date.
+ */
+export interface GetDeploymentContainer {
 	/** Id or name */
 	deployment: string;
 }
 
-export interface GetDeploymentStatusResponse {
+/** Response for [GetDeploymentStatus]. */
+export interface GetDeploymentContainerResponse {
 	state: DockerContainerState;
-	status?: string;
+	container?: ContainerSummary;
 }
 
+/**
+ * Get the deployment log's tail, split by stdout/stderr.
+ * Response: [Log].
+ * 
+ * Note. This call will hit the underlying server directly for most up to date log.
+ */
 export interface GetLog {
 	/** Id or name */
 	deployment: string;
+	/**
+	 * The number of lines of the log tail to include.
+	 * Default: 100.
+	 * Max: 5000.
+	 */
 	tail: U64;
 }
 
@@ -1467,20 +1664,22 @@ export enum SearchCombinator {
 	And = "And",
 }
 
+/**
+ * Search the deployment log's tail using `grep`. All lines go to stdout.
+ * Response: [Log].
+ */
 export interface SearchLog {
 	/** Id or name */
 	deployment: string;
+	/** The terms to search for. */
 	terms: string[];
+	/**
+	 * When searching for multiple terms, can use `AND` or `OR` combinator.
+	 * 
+	 * - `AND`: Only include lines with **all** terms present in that line.
+	 * - `OR`: Include lines that have one or more matches in the terms.
+	 */
 	combinator?: SearchCombinator;
-}
-
-export interface GetDeployedVersion {
-	/** Id or name */
-	deployment: string;
-}
-
-export interface GetDeployedVersionResponse {
-	version: string;
 }
 
 export interface GetDeploymentStats {
@@ -2279,9 +2478,8 @@ export type ReadRequest =
 	| { type: "GetDeploymentsSummary", params: GetDeploymentsSummary }
 	| { type: "GetDeployment", params: GetDeployment }
 	| { type: "ListDeployments", params: ListDeployments }
-	| { type: "GetDeploymentStatus", params: GetDeploymentStatus }
+	| { type: "GetDeploymentContainer", params: GetDeploymentContainer }
 	| { type: "GetDeploymentActionState", params: GetDeploymentActionState }
-	| { type: "GetDeployedVersion", params: GetDeployedVersion }
 	| { type: "GetDeploymentStats", params: GetDeploymentStats }
 	| { type: "GetLog", params: GetLog }
 	| { type: "SearchLog", params: SearchLog }

@@ -11,6 +11,7 @@ use super::MonitorReadRequest;
 
 //
 
+/// Get a specific builder by id or name. Response: [Builder].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -28,6 +29,7 @@ pub type GetBuilderResponse = Builder;
 
 //
 
+/// List builders matching structured query. Response: [ListBuildersResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
@@ -44,6 +46,8 @@ pub type ListBuildersResponse = Vec<BuilderListItem>;
 
 //
 
+/// Gets a summary of data relating to all builders.
+/// Response: [GetBuildersSummaryResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -52,14 +56,20 @@ pub type ListBuildersResponse = Vec<BuilderListItem>;
 #[response(GetBuildersSummaryResponse)]
 pub struct GetBuildersSummary {}
 
+/// Response for [GetBuildersSummary].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetBuildersSummaryResponse {
+  /// The total number of builders.
   pub total: u32,
 }
 
 //
 
+/// Get the docker / github accounts which are available for use on the builder.
+/// Response: [GetBuilderAvailableAccountsResponse].
+///
+/// Note. Builds using this builder can only use the docker / github accounts available in this response.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -72,6 +82,7 @@ pub struct GetBuilderAvailableAccounts {
   pub builder: String,
 }
 
+/// The response for [GetBuilderAvailableAccounts].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetBuilderAvailableAccountsResponse {

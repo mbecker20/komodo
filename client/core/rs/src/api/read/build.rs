@@ -40,6 +40,7 @@ pub type GetBuildResponse = Build;
 #[empty_traits(MonitorReadRequest)]
 #[response(ListBuildsResponse)]
 pub struct ListBuilds {
+  /// optional structured query to filter builds.
   #[serde(default)]
   pub query: BuildQuery,
 }
@@ -77,14 +78,21 @@ pub type GetBuildActionStateResponse = BuildActionState;
 #[response(GetBuildsSummaryResponse)]
 pub struct GetBuildsSummary {}
 
+/// Response for [GetBuildsSummary].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetBuildsSummaryResponse {
+  /// The total number of builds in monitor.
   pub total: u32,
 }
 
 //
 
+/// Gets summary and timeseries breakdown of the last months build count / time for charting.
+/// Response: [GetBuildMonthlyStatsResponse].
+///
+/// Note. This method is paginated. One page is 30 days of data.
+/// Query for older pages by incrementing the page, starting at 0.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -92,10 +100,13 @@ pub struct GetBuildsSummaryResponse {
 #[empty_traits(MonitorReadRequest)]
 #[response(GetBuildMonthlyStatsResponse)]
 pub struct GetBuildMonthlyStats {
+  /// Query for older data by incrementing the page.
+  /// `page: 0` is the default, and will return the most recent data.
   #[serde(default)]
   pub page: u32,
 }
 
+/// Response for [GetBuildMonthlyStats].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetBuildMonthlyStatsResponse {
@@ -139,6 +150,9 @@ impl GetBuildMonthlyStatsResponse {
 
 //
 
+/// Paginated endpoint for versions of the build that were built in the past and available for deployment,
+/// sorted by most recent first.
+/// Response: [GetBuildVersionsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
@@ -149,10 +163,14 @@ pub struct GetBuildVersions {
   /// Id or name
   #[serde(alias = "id", alias = "name")]
   pub build: String,
+  /// The page of data. Default is 0, which corrensponds to the most recent versions.
   #[serde(default)]
   pub page: u32,
+  /// Filter to only include versions matching this major version.
   pub major: Option<i32>,
+  /// Filter to only include versions matching this minor version.
   pub minor: Option<i32>,
+  /// Filter to only include versions matching this patch version.
   pub patch: Option<i32>,
 }
 
@@ -168,6 +186,8 @@ pub struct BuildVersionResponseItem {
 
 //
 
+/// List the available docker organizations which can be attached to builds.
+/// Response: [ListDockerOrganizationsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,

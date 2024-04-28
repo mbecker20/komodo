@@ -7,22 +7,17 @@ use monitor_client::{
   entities::{
     deployment::{
       Deployment, DeploymentActionState, DeploymentConfig,
-      DeploymentImage, DeploymentListItem, DockerContainerState,
-      DockerContainerStats,
+      DeploymentListItem, DockerContainerState, DockerContainerStats,
     },
     permission::PermissionLevel,
     server::Server,
-    update::{Log, ResourceTargetVariant, UpdateStatus},
+    update::{Log, ResourceTargetVariant},
     user::User,
-    Operation,
   },
 };
 use mungos::{
   find::find_collect,
-  mongodb::{
-    bson::{doc, oid::ObjectId},
-    options::FindOneOptions,
-  },
+  mongodb::bson::{doc, oid::ObjectId},
 };
 use periphery_client::api;
 use resolver_api::Resolve;
@@ -63,12 +58,12 @@ impl Resolve<ListDeployments, User> for State {
 }
 
 #[async_trait]
-impl Resolve<GetDeploymentStatus, User> for State {
+impl Resolve<GetDeploymentContainer, User> for State {
   async fn resolve(
     &self,
-    GetDeploymentStatus { deployment }: GetDeploymentStatus,
+    GetDeploymentContainer { deployment }: GetDeploymentContainer,
     user: User,
-  ) -> anyhow::Result<GetDeploymentStatusResponse> {
+  ) -> anyhow::Result<GetDeploymentContainerResponse> {
     let deployment = Deployment::get_resource_check_permissions(
       &deployment,
       &user,
@@ -79,13 +74,9 @@ impl Resolve<GetDeploymentStatus, User> for State {
       .get(&deployment.id)
       .await
       .unwrap_or_default();
-    let response = GetDeploymentStatusResponse {
-      status: status
-        .curr
-        .container
-        .as_ref()
-        .and_then(|c| c.status.clone()),
+    let response = GetDeploymentContainerResponse {
       state: status.curr.state,
+      container: status.curr.container.clone(),
     };
     Ok(response)
   }
@@ -157,69 +148,6 @@ impl Resolve<SearchLog, User> for State {
       })
       .await
       .context("failed at call to periphery")
-  }
-}
-
-#[async_trait]
-impl Resolve<GetDeployedVersion, User> for State {
-  async fn resolve(
-    &self,
-    GetDeployedVersion { deployment }: GetDeployedVersion,
-    user: User,
-  ) -> anyhow::Result<GetDeployedVersionResponse> {
-    let Deployment {
-      id,
-      config: DeploymentConfig { image, .. },
-      ..
-    } = Deployment::get_resource_check_permissions(
-      &deployment,
-      &user,
-      PermissionLevel::Read,
-    )
-    .await?;
-    let version = match image {
-      DeploymentImage::Build { .. } => {
-        let latest_deploy_update = db_client()
-          .await
-          .updates
-          .find_one(
-            doc! {
-                "target": {
-                    "type": "Deployment",
-                    "id": id
-                },
-                "operation": Operation::DeployContainer.to_string(),
-                "status": UpdateStatus::Complete.to_string(),
-                "success": true,
-            },
-            FindOneOptions::builder()
-              .sort(doc! { "_id": -1 })
-              .build(),
-          )
-          .await
-          .context(
-            "failed at query to get latest deploy update from mongo",
-          )?;
-        if let Some(update) = latest_deploy_update {
-          if !update.version.is_none() {
-            update.version.to_string()
-          } else {
-            "unknown".to_string()
-          }
-        } else {
-          "unknown".to_string()
-        }
-      }
-      DeploymentImage::Image { image } => {
-        let split = image.split(':').collect::<Vec<&str>>();
-        if let Some(version) = split.get(1) {
-          version.to_string()
-        } else {
-          "unknown".to_string()
-        }
-      }
-    };
-    Ok(GetDeployedVersionResponse { version })
   }
 }
 

@@ -53,9 +53,8 @@ export type ReadResponses = {
   GetDeploymentsSummary: Types.GetDeploymentsSummaryResponse;
   GetDeployment: Types.GetDeploymentResponse;
   ListDeployments: Types.ListDeploymentsResponse;
-  GetDeploymentStatus: Types.GetDeploymentStatusResponse;
+  GetDeploymentContainer: Types.GetDeploymentContainerResponse;
   GetDeploymentActionState: Types.GetDeploymentActionStateResponse;
-  GetDeployedVersion: Types.GetDeployedVersionResponse;
   GetDeploymentStats: Types.GetDeploymentStatsResponse;
   GetLog: Types.GetLogResponse;
   SearchLog: Types.SearchLogResponse;
