@@ -177,7 +177,8 @@ pub struct CoreConfig {
   #[serde(default = "default_title")]
   pub title: String,
 
-  /// The host to use with oauth redirect url, whatever host the user hits to access monitor. eg 'https://monitor.mogh.tech'
+  /// The host to use with oauth redirect url, whatever host
+  /// the user hits to access monitor. eg `https://monitor.mogh.tech`
   #[serde(default)]
   pub host: String,
 

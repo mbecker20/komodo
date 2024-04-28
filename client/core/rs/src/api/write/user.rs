@@ -3,12 +3,14 @@ use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 use typeshare::typeshare;
 
-use crate::entities::{update::ResourceTarget, user::User};
+use crate::entities::{update::ResourceTarget, user::User, NoData};
 
 use super::MonitorWriteRequest;
 
 //
 
+/// Push a resource to the front of the users 10 most recently viewed resources.
+/// Response: [NoData].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -16,15 +18,18 @@ use super::MonitorWriteRequest;
 #[empty_traits(MonitorWriteRequest)]
 #[response(PushRecentlyViewedResponse)]
 pub struct PushRecentlyViewed {
+  /// The target to push.
   pub resource: ResourceTarget,
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct PushRecentlyViewedResponse {}
+pub type PushRecentlyViewedResponse = NoData;
 
 //
 
+/// Set the time the user last opened the UI updates.
+/// Used for unseen notification dot.
+/// Response: [NoData]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -34,12 +39,12 @@ pub struct PushRecentlyViewedResponse {}
 pub struct SetLastSeenUpdate {}
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct SetLastSeenUpdateResponse {}
+pub type SetLastSeenUpdateResponse = NoData;
 
 //
 
-/// ADMIN ONLY
+/// **Admin only.** Create a service user.
+/// Response: [User].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -47,7 +52,9 @@ pub struct SetLastSeenUpdateResponse {}
 #[empty_traits(MonitorWriteRequest)]
 #[response(CreateServiceUserResponse)]
 pub struct CreateServiceUser {
+  /// The username for the service user.
   pub username: String,
+  /// A description for the service user.
   pub description: String,
 }
 
@@ -56,7 +63,8 @@ pub type CreateServiceUserResponse = User;
 
 //
 
-/// ADMIN ONLY
+/// **Admin only.** Update a service user's description.
+/// Response: [User].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -64,7 +72,9 @@ pub type CreateServiceUserResponse = User;
 #[empty_traits(MonitorWriteRequest)]
 #[response(UpdateServiceUserDescriptionResponse)]
 pub struct UpdateServiceUserDescription {
+  /// The service user's username
   pub username: String,
+  /// A new description for the service user.
   pub description: String,
 }
 

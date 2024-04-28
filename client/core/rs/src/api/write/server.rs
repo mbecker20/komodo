@@ -45,7 +45,7 @@ pub struct DeleteServer {
 
 /// Update the server at the given id, and return the updated server.
 /// Response: [Server].
-/// 
+///
 /// Note. This method updates only the fields which are set in the [_PartialServerConfig],
 /// effectively merging diffs into the final document.
 /// This is helpful when multiple users are using
@@ -82,6 +82,8 @@ pub struct RenameServer {
 
 //
 
+/// Create a docker network on the server.
+/// Respone: [Update]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -89,12 +91,16 @@ pub struct RenameServer {
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct CreateNetwork {
-  pub server_id: String,
+  /// Id or name
+  pub server: String,
+  /// The name of the network to create.
   pub name: String,
 }
 
 //
 
+/// Delete a docker network.
+/// Response: [Update]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -102,6 +108,8 @@ pub struct CreateNetwork {
 #[empty_traits(MonitorWriteRequest)]
 #[response(Update)]
 pub struct DeleteNetwork {
-  pub server_id: String,
+  /// Id or name.
+  pub server: String,
+  /// The name of the network to delete.
   pub name: String,
 }

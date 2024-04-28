@@ -7,7 +7,7 @@ use crate::entities::user_group::UserGroup;
 
 use super::MonitorWriteRequest;
 
-/// **Admin only.** Response: [UserGroup]
+/// **Admin only.** Create a user group. Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -21,7 +21,7 @@ pub struct CreateUserGroup {
 
 //
 
-/// **Admin only.** Response: [UserGroup]
+/// **Admin only.** Rename a user group. Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -37,7 +37,7 @@ pub struct RenameUserGroup {
 
 //
 
-/// **Admin only.** Response: [UserGroup]
+/// **Admin only.** Delete a user group. Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -51,7 +51,7 @@ pub struct DeleteUserGroup {
 
 //
 
-/// **Admin only.** Response: [UserGroup]
+/// **Admin only.** Add a user to a user group. Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -67,7 +67,7 @@ pub struct AddUserToUserGroup {
 
 //
 
-/// **Admin only.** Response: [UserGroup]
+/// **Admin only.** Remove a user from a user group. Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -83,7 +83,8 @@ pub struct RemoveUserFromUserGroup {
 
 //
 
-/// **Admin only.** Response: [UserGroup]
+/// **Admin only.** Completely override the user in the group.
+/// Response: [UserGroup]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -91,6 +92,8 @@ pub struct RemoveUserFromUserGroup {
 #[empty_traits(MonitorWriteRequest)]
 #[response(UserGroup)]
 pub struct SetUsersInUserGroup {
+  /// Id or name.
   pub user_group: String,
+  /// The user ids or usernames to hard set as the group's users.
   pub users: Vec<String>,
 }

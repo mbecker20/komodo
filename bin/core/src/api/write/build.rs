@@ -39,6 +39,11 @@ impl Resolve<CreateBuild, User> for State {
     CreateBuild { name, mut config }: CreateBuild,
     user: User,
   ) -> anyhow::Result<Build> {
+    if !user.admin && !user.create_build_permissions {
+      return Err(anyhow!(
+        "User does not have create build permissions."
+      ));
+    }
     let name = to_monitor_name(&name);
     if ObjectId::from_str(&name).is_ok() {
       return Err(anyhow!("valid ObjectIds cannot be used as names"));
@@ -102,6 +107,11 @@ impl Resolve<CopyBuild, User> for State {
     CopyBuild { name, id }: CopyBuild,
     user: User,
   ) -> anyhow::Result<Build> {
+    if !user.admin && !user.create_build_permissions {
+      return Err(anyhow!(
+        "User does not have create build permissions."
+      ));
+    }
     let name = to_monitor_name(&name);
     let Build {
       config,

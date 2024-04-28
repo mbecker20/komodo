@@ -4,8 +4,9 @@ use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use futures::future::join_all;
 use monitor_client::{
-  api::execute::{
-    CancelBuild, CancelBuildResponse, Deploy, RunBuild,
+  api::{
+    execute::{CancelBuild, CancelBuildResponse, Deploy, RunBuild},
+    write::LaunchAwsServerConfig,
   },
   entities::{
     all_logs_success,
@@ -342,8 +343,11 @@ async fn get_aws_builder(
     build.name,
     build.config.version.to_string()
   );
-  let Ec2Instance { instance_id, ip } =
-    launch_ec2_instance(&instance_name, &config).await?;
+  let Ec2Instance { instance_id, ip } = launch_ec2_instance(
+    &instance_name,
+    LaunchAwsServerConfig::from_builder_config(&config),
+  )
+  .await?;
 
   info!("ec2 instance launched");
 

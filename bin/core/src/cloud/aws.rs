@@ -52,13 +52,10 @@ async fn create_ec2_client(region: String) -> Client {
 }
 
 #[instrument]
-pub async fn launch_ec2_instance<T>(
+pub async fn launch_ec2_instance(
   name: &str,
-  config: T,
-) -> anyhow::Result<Ec2Instance>
-where
-  T: Into<LaunchAwsServerConfig> + std::fmt::Debug,
-{
+  config: LaunchAwsServerConfig,
+) -> anyhow::Result<Ec2Instance> {
   let LaunchAwsServerConfig {
     region,
     instance_type,
@@ -69,7 +66,7 @@ where
     key_pair_name,
     assign_public_ip,
     use_public_ip,
-  } = config.into();
+  } = config;
   let instance_type = handle_unknown_instance_type(
     InstanceType::from(instance_type.as_str()),
   )?;

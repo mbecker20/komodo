@@ -286,11 +286,11 @@ impl Resolve<CreateNetwork, User> for State {
   #[instrument(name = "CreateNetwork", skip(self, user))]
   async fn resolve(
     &self,
-    CreateNetwork { server_id, name }: CreateNetwork,
+    CreateNetwork { server, name }: CreateNetwork,
     user: User,
   ) -> anyhow::Result<Update> {
     let server = Server::get_resource_check_permissions(
-      &server_id,
+      &server,
       &user,
       PermissionLevel::Write,
     )
@@ -324,11 +324,11 @@ impl Resolve<DeleteNetwork, User> for State {
   #[instrument(name = "DeleteNetwork", skip(self, user))]
   async fn resolve(
     &self,
-    DeleteNetwork { server_id, name }: DeleteNetwork,
+    DeleteNetwork { server, name }: DeleteNetwork,
     user: User,
   ) -> anyhow::Result<Update> {
     let server = Server::get_resource_check_permissions(
-      &server_id,
+      &server,
       &user,
       PermissionLevel::Write,
     )
