@@ -140,7 +140,7 @@ impl AlerterConfig {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[partial(skip_serializing_none, from)]
+#[partial(skip_serializing_none, from, diff)]
 pub struct CustomAlerterConfig {
   /// The http/s endpoint to send the POST to
   #[partial_default(String::from("http://localhost:7000"))]
@@ -154,7 +154,7 @@ pub struct CustomAlerterConfig {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[partial(skip_serializing_none, from)]
+#[partial(skip_serializing_none, from, diff)]
 pub struct SlackAlerterConfig {
   /// The slack app url
   #[partial_default(String::from(

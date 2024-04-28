@@ -152,7 +152,7 @@ impl BuilderConfig {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[partial(skip_serializing_none, from)]
+#[partial(skip_serializing_none, from, diff)]
 pub struct ServerBuilderConfig {
   /// The server id of the builder
   #[serde(alias = "server")]
@@ -164,7 +164,7 @@ pub struct ServerBuilderConfig {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[partial(skip_serializing_none, from)]
+#[partial(skip_serializing_none, from, diff)]
 pub struct AwsBuilderConfig {
   /// The AWS region to create the instance in
   #[serde(default = "aws_default_region")]

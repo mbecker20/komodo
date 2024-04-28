@@ -14,7 +14,13 @@ use super::MonitorExecuteRequest;
 /// 1. Runs `docker network prune -f`.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
@@ -30,7 +36,13 @@ pub struct PruneDockerNetworks {
 /// 1. Runs `docker image prune -a -f`.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
@@ -46,7 +58,13 @@ pub struct PruneDockerImages {
 /// 1. Runs `docker container prune -f`.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]

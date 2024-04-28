@@ -42,7 +42,7 @@ pub type _PartialDeploymentConfig = PartialDeploymentConfig;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone)]
-#[partial(skip_serializing_none, from)]
+#[partial(skip_serializing_none, from, diff)]
 pub struct DeploymentConfig {
   /// The id of server the deployment is deployed on.
   #[serde(default, alias = "server")]
@@ -175,13 +175,17 @@ fn default_network() -> String {
 }
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, PartialEq, EnumVariants,
+)]
 #[variant_derive(
   Serialize,
   Deserialize,
   Debug,
   Clone,
   Copy,
+  PartialEq,
+  Eq,
   Display,
   EnumString
 )]

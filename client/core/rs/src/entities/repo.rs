@@ -38,7 +38,7 @@ pub type _PartialRepoConfig = PartialRepoConfig;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[partial(skip_serializing_none, from)]
+#[partial(skip_serializing_none, from, diff)]
 pub struct RepoConfig {
   /// The server to clone the repo on.
   #[serde(default, alias = "server")]

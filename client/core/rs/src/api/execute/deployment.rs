@@ -18,7 +18,13 @@ use super::MonitorExecuteRequest;
 /// where params are determined by the deployment's configuration.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
@@ -38,7 +44,13 @@ pub struct Deploy {
 /// 1. Runs `docker start ${container_name}`.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
@@ -54,7 +66,13 @@ pub struct StartContainer {
 /// 1. Runs `docker stop ${container_name}`.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
@@ -72,7 +90,13 @@ pub struct StopContainer {
 /// 1. Runs [StopContainer] on all deployments on the server concurrently.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
@@ -89,7 +113,13 @@ pub struct StopAllContainers {
 /// 1. The container is stopped and removed using `docker container rm ${container_name}`.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]

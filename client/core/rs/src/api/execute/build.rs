@@ -17,7 +17,13 @@ use super::MonitorExecuteRequest;
 /// 4. If a dockerhub account is attached, the build will be pushed to that account.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]

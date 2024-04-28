@@ -21,7 +21,9 @@ pub trait MonitorExecuteRequest: HasResponse {}
 
 /// A wrapper for all monitor exections.
 #[typeshare]
-#[derive(Debug, Clone, Serialize, Deserialize, EnumVariants)]
+#[derive(
+  Debug, Clone, PartialEq, Serialize, Deserialize, EnumVariants,
+)]
 #[variant_derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(tag = "type", content = "params")]
 pub enum Execution {

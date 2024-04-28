@@ -35,7 +35,7 @@ pub type _Serror = Serror;
 
 /// Represents an empty json object: `{}`
 #[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 pub struct NoData {}
 
 pub fn all_logs_success(logs: &[update::Log]) -> bool {

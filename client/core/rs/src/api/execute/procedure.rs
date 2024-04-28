@@ -10,7 +10,13 @@ use super::MonitorExecuteRequest;
 /// Runs the target procedure. Response: [Update]
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]

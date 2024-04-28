@@ -18,7 +18,13 @@ use super::MonitorExecuteRequest;
 /// `on_clone` will be executed before `on_pull`.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]
@@ -35,7 +41,13 @@ pub struct CloneRepo {
 /// 2. If `on_pull` is specified, it will be executed after the pull is complete.
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  PartialEq,
+  Request,
+  EmptyTraits,
 )]
 #[empty_traits(MonitorExecuteRequest)]
 #[response(Update)]

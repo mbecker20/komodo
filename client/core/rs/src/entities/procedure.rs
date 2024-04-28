@@ -31,7 +31,7 @@ pub type _PartialProcedureConfig = PartialProcedureConfig;
 #[typeshare]
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Partial)]
 #[partial_derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[partial(skip_serializing_none, from)]
+#[partial(skip_serializing_none, from, diff)]
 pub struct ProcedureConfig {
   /// Whether executions in the procedure runs sequentially or in parallel.
   #[serde(default)]
@@ -47,6 +47,7 @@ pub struct ProcedureConfig {
   Clone,
   Copy,
   Default,
+  PartialEq,
   Serialize,
   Deserialize,
   Display,
@@ -64,7 +65,7 @@ pub enum ProcedureType {
 
 /// Allows to enable / disabled procedures in the sequence / parallel vec on the fly
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct EnabledExecution {
   /// The execution request to run.
   pub execution: Execution,
