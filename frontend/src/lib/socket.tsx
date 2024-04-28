@@ -36,7 +36,7 @@ const on_message = (
       ["GetDeployment"],
       ["GetLog"],
       ["GetDeploymentActionState"],
-      ["GetDeploymentStatus"],
+      ["GetDeploymentContainer"],
       ["GetDeploymentsSummary"]
     );
   }
