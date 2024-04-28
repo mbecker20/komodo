@@ -152,11 +152,13 @@ impl Log {
   Debug,
   Clone,
   Copy,
+  PartialEq,
+  Eq,
+  PartialOrd,
+  Ord,
   Display,
   EnumString,
   AsRefStr,
-  PartialEq,
-  Eq
 )]
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {

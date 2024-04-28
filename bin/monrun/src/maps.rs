@@ -6,7 +6,7 @@ use monitor_client::{
     alerter::AlerterListItem, build::BuildListItem,
     builder::BuilderListItem, deployment::DeploymentListItem,
     procedure::ProcedureListItem, repo::RepoListItem,
-    server::ServerListItem, user_group::UserGroup,
+    server::ServerListItem, user::User, user_group::UserGroup,
   },
 };
 
@@ -144,6 +144,20 @@ pub fn name_to_alerter() -> &'static HashMap<String, AlerterListItem>
   })
 }
 
+pub fn id_to_alerter() -> &'static HashMap<String, AlerterListItem> {
+  static ID_TO_ALERTER: OnceLock<HashMap<String, AlerterListItem>> =
+    OnceLock::new();
+  ID_TO_ALERTER.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListAlerters::default()),
+    )
+    .expect("failed to get alerters from monitor")
+    .into_iter()
+    .map(|alerter| (alerter.id.clone(), alerter))
+    .collect()
+  })
+}
+
 pub fn name_to_repo() -> &'static HashMap<String, RepoListItem> {
   static NAME_TO_ALERTER: OnceLock<HashMap<String, RepoListItem>> =
     OnceLock::new();
@@ -214,6 +228,20 @@ pub fn name_to_user_group() -> &'static HashMap<String, UserGroup> {
     .expect("failed to get procedures from monitor")
     .into_iter()
     .map(|user_group| (user_group.name.clone(), user_group))
+    .collect()
+  })
+}
+
+pub fn id_to_user() -> &'static HashMap<String, User> {
+  static ID_TO_USER: OnceLock<HashMap<String, User>> =
+    OnceLock::new();
+  ID_TO_USER.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListUsers::default()),
+    )
+    .expect("failed to get procedures from monitor")
+    .into_iter()
+    .map(|user| (user.id.clone(), user))
     .collect()
   })
 }

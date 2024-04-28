@@ -47,7 +47,7 @@ pub type ListApiKeysForServiceUserResponse = Vec<ApiKey>;
 /// Response: [ListUsersResponse]
 #[typeshare]
 #[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+  Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
 )]
 #[empty_traits(MonitorReadRequest)]
 #[response(ListUsersResponse)]

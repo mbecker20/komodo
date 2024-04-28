@@ -1,26 +1,124 @@
+use std::cmp::Ordering;
+
+use anyhow::Context;
 use monitor_client::{
-  api::write::{
-    CreateUserGroup, SetUsersInUserGroup, UpdatePermissionOnTarget,
+  api::{
+    read::ListUserTargetPermissions,
+    write::{
+      CreateUserGroup, SetUsersInUserGroup, UpdatePermissionOnTarget,
+    },
   },
   entities::{
     permission::UserTarget,
     toml::{PermissionToml, UserGroupToml},
+    update::ResourceTarget,
   },
 };
 
-use crate::{maps::name_to_user_group, monitor_client};
+use crate::{
+  maps::{
+    id_to_alerter, id_to_build, id_to_builder, id_to_deployment,
+    id_to_procedure, id_to_repo, id_to_server, id_to_user,
+    name_to_user_group,
+  },
+  monitor_client,
+};
 
-pub fn get_updates(
+pub async fn get_updates(
   user_groups: Vec<UserGroupToml>,
-) -> (Vec<UserGroupToml>, Vec<UserGroupToml>) {
+) -> anyhow::Result<(Vec<UserGroupToml>, Vec<UserGroupToml>)> {
   let map = name_to_user_group();
 
   let mut to_create = Vec::<UserGroupToml>::new();
   let mut to_update = Vec::<UserGroupToml>::new();
 
-  for user_group in user_groups {
+  for mut user_group in user_groups {
     match map.get(&user_group.name).cloned() {
-      Some(_) => to_update.push(user_group),
+      Some(original) => {
+        // replace the user ids with usernames
+        let mut users = original
+          .users
+          .into_iter()
+          .filter_map(|user_id| {
+            id_to_user().get(&user_id).map(|u| u.username.clone())
+          })
+          .collect::<Vec<_>>();
+
+        let mut permissions = monitor_client()
+          .read(ListUserTargetPermissions {
+            user_target: UserTarget::UserGroup(original.id),
+          })
+          .await
+          .context("failed to query for UserGroup permissions")?
+          .into_iter()
+          .map(|mut p| {
+            // replace the ids with names
+            match &mut p.resource_target {
+              ResourceTarget::System(_) => {}
+              ResourceTarget::Build(id) => {
+                *id = id_to_build()
+                  .get(id)
+                  .map(|b| b.name.clone())
+                  .unwrap_or_default()
+              }
+              ResourceTarget::Builder(id) => {
+                *id = id_to_builder()
+                  .get(id)
+                  .map(|b| b.name.clone())
+                  .unwrap_or_default()
+              }
+              ResourceTarget::Deployment(id) => {
+                *id = id_to_deployment()
+                  .get(id)
+                  .map(|b| b.name.clone())
+                  .unwrap_or_default()
+              }
+              ResourceTarget::Server(id) => {
+                *id = id_to_server()
+                  .get(id)
+                  .map(|b| b.name.clone())
+                  .unwrap_or_default()
+              }
+              ResourceTarget::Repo(id) => {
+                *id = id_to_repo()
+                  .get(id)
+                  .map(|b| b.name.clone())
+                  .unwrap_or_default()
+              }
+              ResourceTarget::Alerter(id) => {
+                *id = id_to_alerter()
+                  .get(id)
+                  .map(|b| b.name.clone())
+                  .unwrap_or_default()
+              }
+              ResourceTarget::Procedure(id) => {
+                *id = id_to_procedure()
+                  .get(id)
+                  .map(|b| b.name.clone())
+                  .unwrap_or_default()
+              }
+            }
+            PermissionToml {
+              target: p.resource_target,
+              level: p.level,
+            }
+          })
+          .collect::<Vec<_>>();
+
+        users.sort();
+        user_group.users.sort();
+
+        user_group.permissions.sort_by(sort_permissions);
+        permissions.sort_by(sort_permissions);
+
+        // only push update after failed diff
+        if user_group.users != users
+          || user_group.permissions != permissions
+        {
+          // no update from users
+          to_update.push(user_group);
+        }
+      }
       None => to_create.push(user_group),
     }
   }
@@ -47,7 +145,23 @@ pub fn get_updates(
     );
   }
 
-  (to_create, to_update)
+  Ok((to_create, to_update))
+}
+
+/// order permissions in deterministic way
+fn sort_permissions(
+  a: &PermissionToml,
+  b: &PermissionToml,
+) -> Ordering {
+  let (a_t, a_id) = a.target.extract_variant_id();
+  let (b_t, b_id) = b.target.extract_variant_id();
+  match (a_t.cmp(&b_t), a_id.cmp(b_id)) {
+    (Ordering::Greater, _) => Ordering::Greater,
+    (Ordering::Less, _) => Ordering::Less,
+    (_, Ordering::Greater) => Ordering::Greater,
+    (_, Ordering::Less) => Ordering::Less,
+    _ => Ordering::Equal,
+  }
 }
 
 pub async fn run_updates(

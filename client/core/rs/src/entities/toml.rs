@@ -97,7 +97,7 @@ pub struct UserGroupToml {
   pub permissions: Vec<PermissionToml>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PermissionToml {
   pub target: ResourceTarget,
   pub level: PermissionLevel,

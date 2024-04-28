@@ -34,7 +34,7 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
   let (procedure_creates, procedure_updates) =
     Procedure::get_updates(resources.procedures).await?;
   let (user_group_creates, user_group_updates) =
-    user_group::get_updates(resources.user_groups);
+    user_group::get_updates(resources.user_groups).await?;
 
   wait_for_enter("CONTINUE")?;
 
