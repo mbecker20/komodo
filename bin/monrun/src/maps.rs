@@ -26,6 +26,20 @@ pub fn name_to_build() -> &'static HashMap<String, BuildListItem> {
   })
 }
 
+pub fn id_to_build() -> &'static HashMap<String, BuildListItem> {
+  static ID_TO_BUILD: OnceLock<HashMap<String, BuildListItem>> =
+    OnceLock::new();
+  ID_TO_BUILD.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListBuilds::default()),
+    )
+    .expect("failed to get builds from monitor")
+    .into_iter()
+    .map(|build| (build.id.clone(), build))
+    .collect()
+  })
+}
+
 pub fn name_to_deployment(
 ) -> &'static HashMap<String, DeploymentListItem> {
   static NAME_TO_DEPLOYMENT: OnceLock<
@@ -38,6 +52,22 @@ pub fn name_to_deployment(
     .expect("failed to get deployments from monitor")
     .into_iter()
     .map(|deployment| (deployment.name.clone(), deployment))
+    .collect()
+  })
+}
+
+pub fn id_to_deployment(
+) -> &'static HashMap<String, DeploymentListItem> {
+  static ID_TO_DEPLOYMENT: OnceLock<
+    HashMap<String, DeploymentListItem>,
+  > = OnceLock::new();
+  ID_TO_DEPLOYMENT.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListDeployments::default()),
+    )
+    .expect("failed to get deployments from monitor")
+    .into_iter()
+    .map(|deployment| (deployment.id.clone(), deployment))
     .collect()
   })
 }
@@ -56,6 +86,20 @@ pub fn name_to_server() -> &'static HashMap<String, ServerListItem> {
   })
 }
 
+pub fn id_to_server() -> &'static HashMap<String, ServerListItem> {
+  static ID_TO_SERVER: OnceLock<HashMap<String, ServerListItem>> =
+    OnceLock::new();
+  ID_TO_SERVER.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListServers::default()),
+    )
+    .expect("failed to get servers from monitor")
+    .into_iter()
+    .map(|server| (server.id.clone(), server))
+    .collect()
+  })
+}
+
 pub fn name_to_builder() -> &'static HashMap<String, BuilderListItem>
 {
   static NAME_TO_BUILDER: OnceLock<HashMap<String, BuilderListItem>> =
@@ -67,6 +111,20 @@ pub fn name_to_builder() -> &'static HashMap<String, BuilderListItem>
     .expect("failed to get builders from monitor")
     .into_iter()
     .map(|builder| (builder.name.clone(), builder))
+    .collect()
+  })
+}
+
+pub fn id_to_builder() -> &'static HashMap<String, BuilderListItem> {
+  static ID_TO_BUILDER: OnceLock<HashMap<String, BuilderListItem>> =
+    OnceLock::new();
+  ID_TO_BUILDER.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListBuilders::default()),
+    )
+    .expect("failed to get builders from monitor")
+    .into_iter()
+    .map(|builder| (builder.id.clone(), builder))
     .collect()
   })
 }
@@ -100,6 +158,20 @@ pub fn name_to_repo() -> &'static HashMap<String, RepoListItem> {
   })
 }
 
+pub fn id_to_repo() -> &'static HashMap<String, RepoListItem> {
+  static ID_TO_ALERTER: OnceLock<HashMap<String, RepoListItem>> =
+    OnceLock::new();
+  ID_TO_ALERTER.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListRepos::default()),
+    )
+    .expect("failed to get repos from monitor")
+    .into_iter()
+    .map(|repo| (repo.id.clone(), repo))
+    .collect()
+  })
+}
+
 pub fn name_to_procedure(
 ) -> &'static HashMap<String, ProcedureListItem> {
   static NAME_TO_PROCEDURE: OnceLock<
@@ -112,6 +184,22 @@ pub fn name_to_procedure(
     .expect("failed to get procedures from monitor")
     .into_iter()
     .map(|procedure| (procedure.name.clone(), procedure))
+    .collect()
+  })
+}
+
+pub fn id_to_procedure() -> &'static HashMap<String, ProcedureListItem>
+{
+  static ID_TO_PROCEDURE: OnceLock<
+    HashMap<String, ProcedureListItem>,
+  > = OnceLock::new();
+  ID_TO_PROCEDURE.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListProcedures::default()),
+    )
+    .expect("failed to get procedures from monitor")
+    .into_iter()
+    .map(|procedure| (procedure.id.clone(), procedure))
     .collect()
   })
 }

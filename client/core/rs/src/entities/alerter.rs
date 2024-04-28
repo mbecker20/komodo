@@ -2,7 +2,7 @@ use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
 use mungos::mongodb::bson::{doc, Document};
-use partial_derive2::Partial;
+use partial_derive2::{MaybeNone, Partial, PartialDiff};
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
@@ -56,6 +56,28 @@ pub enum AlerterConfig {
   Slack(SlackAlerterConfig),
 }
 
+impl PartialDiff<PartialAlerterConfig> for AlerterConfig {
+  fn partial_diff(
+    &self,
+    partial: PartialAlerterConfig,
+  ) -> PartialAlerterConfig {
+    match self {
+      AlerterConfig::Custom(original) => match partial {
+        PartialAlerterConfig::Custom(partial) => {
+          PartialAlerterConfig::Custom(original.partial_diff(partial))
+        }
+        slack => slack,
+      },
+      AlerterConfig::Slack(original) => match partial {
+        PartialAlerterConfig::Slack(partial) => {
+          PartialAlerterConfig::Slack(original.partial_diff(partial))
+        }
+        custom => custom,
+      },
+    }
+  }
+}
+
 #[typeshare(serialized_as = "Partial<CustomAlerterConfig>")]
 pub type _PartialCustomAlerterConfig = PartialCustomAlerterConfig;
 
@@ -78,6 +100,15 @@ pub type _PartialSlackAlerterConfig = PartialSlackAlerterConfig;
 pub enum PartialAlerterConfig {
   Custom(_PartialCustomAlerterConfig),
   Slack(_PartialSlackAlerterConfig),
+}
+
+impl MaybeNone for PartialAlerterConfig {
+  fn is_none(&self) -> bool {
+    match self {
+      PartialAlerterConfig::Custom(config) => config.is_none(),
+      PartialAlerterConfig::Slack(config) => config.is_none(),
+    }
+  }
 }
 
 impl From<PartialAlerterConfig> for AlerterConfig {

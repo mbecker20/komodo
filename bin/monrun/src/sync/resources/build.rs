@@ -1,24 +1,33 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateBuild, UpdateBuild},
+  api::{
+    read::GetBuild,
+    write::{CreateBuild, UpdateBuild},
+  },
   entities::{
     build::{
-      Build, BuildConfig, BuildListItemInfo, PartialBuildConfig,
+      Build, BuildConfig, BuildInfo, BuildListItemInfo,
+      PartialBuildConfig,
     },
-    resource::ResourceListItem,
+    resource::{Resource, ResourceListItem},
     toml::ResourceToml,
     update::ResourceTarget,
   },
 };
+use partial_derive2::PartialDiff;
 
-use crate::{maps::name_to_build, monitor_client};
+use crate::{
+  maps::{id_to_builder, name_to_build},
+  monitor_client,
+};
 
 use super::ResourceSync;
 
 impl ResourceSync for Build {
   type PartialConfig = PartialBuildConfig;
   type FullConfig = BuildConfig;
+  type FullInfo = BuildInfo;
   type ListItemInfo = BuildListItemInfo;
 
   fn display() -> &'static str {
@@ -58,5 +67,24 @@ impl ResourceSync for Build {
       })
       .await?;
     Ok(())
+  }
+
+  async fn get(
+    id: String,
+  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+    monitor_client().read(GetBuild { build: id }).await
+  }
+
+  async fn minimize_update(
+    mut original: Self::FullConfig,
+    update: Self::PartialConfig,
+  ) -> anyhow::Result<Self::PartialConfig> {
+    // need to replace the builder id with name
+    original.builder_id = id_to_builder()
+      .get(&original.builder_id)
+      .map(|b| b.name.clone())
+      .unwrap_or_default();
+
+    Ok(original.partial_diff(update))
   }
 }

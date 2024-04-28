@@ -41,7 +41,7 @@ pub type _PartialServerConfig = PartialServerConfig;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
-#[partial(skip_serializing_none, from)]
+#[partial(skip_serializing_none, from, diff)]
 pub struct ServerConfig {
   /// The http address of the periphery client.
   /// Example: http://localhost:8120

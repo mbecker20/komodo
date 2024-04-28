@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateServer, UpdateServer},
+  api::{
+    read::GetServer,
+    write::{CreateServer, UpdateServer},
+  },
   entities::{
-    resource::ResourceListItem,
+    resource::{Resource, ResourceListItem},
     server::{
       PartialServerConfig, Server, ServerConfig, ServerListItemInfo,
     },
@@ -11,6 +14,7 @@ use monitor_client::{
     update::ResourceTarget,
   },
 };
+use partial_derive2::PartialDiff;
 
 use crate::{maps::name_to_server, monitor_client};
 
@@ -19,6 +23,7 @@ use super::ResourceSync;
 impl ResourceSync for Server {
   type ListItemInfo = ServerListItemInfo;
   type FullConfig = ServerConfig;
+  type FullInfo = ();
   type PartialConfig = PartialServerConfig;
 
   fn display() -> &'static str {
@@ -58,5 +63,18 @@ impl ResourceSync for Server {
       })
       .await?;
     Ok(())
+  }
+
+  async fn get(
+    id: String,
+  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+    monitor_client().read(GetServer { server: id }).await
+  }
+
+  async fn minimize_update(
+    original: Self::FullConfig,
+    update: Self::PartialConfig,
+  ) -> anyhow::Result<Self::PartialConfig> {
+    Ok(original.partial_diff(update))
   }
 }

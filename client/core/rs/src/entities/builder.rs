@@ -1,6 +1,6 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use partial_derive2::Partial;
+use partial_derive2::{MaybeNone, Partial, PartialDiff};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
@@ -45,6 +45,28 @@ pub enum BuilderConfig {
   Aws(AwsBuilderConfig),
 }
 
+impl PartialDiff<PartialBuilderConfig> for BuilderConfig {
+  fn partial_diff(
+    &self,
+    partial: PartialBuilderConfig,
+  ) -> PartialBuilderConfig {
+    match self {
+      BuilderConfig::Server(original) => match partial {
+        PartialBuilderConfig::Server(partial) => {
+          PartialBuilderConfig::Server(original.partial_diff(partial))
+        }
+        aws => aws,
+      },
+      BuilderConfig::Aws(original) => match partial {
+        PartialBuilderConfig::Aws(partial) => {
+          PartialBuilderConfig::Aws(original.partial_diff(partial))
+        }
+        server => server,
+      },
+    }
+  }
+}
+
 #[typeshare(serialized_as = "Partial<ServerBuilderConfig>")]
 pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
 
@@ -67,6 +89,15 @@ pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
 pub enum PartialBuilderConfig {
   Server(_PartialServerBuilderConfig),
   Aws(_PartialAwsBuilderConfig),
+}
+
+impl MaybeNone for PartialBuilderConfig {
+  fn is_none(&self) -> bool {
+    match self {
+      PartialBuilderConfig::Server(config) => config.is_none(),
+      PartialBuilderConfig::Aws(config) => config.is_none(),
+    }
+  }
 }
 
 impl From<PartialBuilderConfig> for BuilderConfig {

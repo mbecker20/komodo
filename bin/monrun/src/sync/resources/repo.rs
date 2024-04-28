@@ -1,22 +1,32 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateRepo, UpdateRepo},
+  api::{
+    read::GetRepo,
+    write::{CreateRepo, UpdateRepo},
+  },
   entities::{
-    repo::{PartialRepoConfig, Repo, RepoConfig, RepoListItemInfo},
-    resource::ResourceListItem,
+    repo::{
+      PartialRepoConfig, Repo, RepoConfig, RepoInfo, RepoListItemInfo,
+    },
+    resource::{Resource, ResourceListItem},
     toml::ResourceToml,
     update::ResourceTarget,
   },
 };
+use partial_derive2::PartialDiff;
 
-use crate::{maps::name_to_repo, monitor_client};
+use crate::{
+  maps::{id_to_server, name_to_repo},
+  monitor_client,
+};
 
 use super::ResourceSync;
 
 impl ResourceSync for Repo {
   type PartialConfig = PartialRepoConfig;
   type FullConfig = RepoConfig;
+  type FullInfo = RepoInfo;
   type ListItemInfo = RepoListItemInfo;
 
   fn display() -> &'static str {
@@ -56,5 +66,24 @@ impl ResourceSync for Repo {
       })
       .await?;
     Ok(())
+  }
+
+  async fn get(
+    id: String,
+  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+    monitor_client().read(GetRepo { repo: id }).await
+  }
+
+  async fn minimize_update(
+    mut original: Self::FullConfig,
+    update: Self::PartialConfig,
+  ) -> anyhow::Result<Self::PartialConfig> {
+    // Need to replace server id with name
+    original.server_id = id_to_server()
+      .get(&original.server_id)
+      .map(|s| s.name.clone())
+      .unwrap_or_default();
+
+    Ok(original.partial_diff(update))
   }
 }

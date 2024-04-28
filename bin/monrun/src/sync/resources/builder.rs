@@ -1,25 +1,33 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateBuilder, UpdateBuilder},
+  api::{
+    read::GetBuilder,
+    write::{CreateBuilder, UpdateBuilder},
+  },
   entities::{
     builder::{
       Builder, BuilderConfig, BuilderListItemInfo,
       PartialBuilderConfig,
     },
-    resource::ResourceListItem,
+    resource::{Resource, ResourceListItem},
     toml::ResourceToml,
     update::ResourceTarget,
   },
 };
+use partial_derive2::PartialDiff;
 
-use crate::{maps::name_to_builder, monitor_client};
+use crate::{
+  maps::{id_to_server, name_to_builder},
+  monitor_client,
+};
 
 use super::ResourceSync;
 
 impl ResourceSync for Builder {
   type PartialConfig = PartialBuilderConfig;
   type FullConfig = BuilderConfig;
+  type FullInfo = ();
   type ListItemInfo = BuilderListItemInfo;
 
   fn display() -> &'static str {
@@ -59,5 +67,26 @@ impl ResourceSync for Builder {
       })
       .await?;
     Ok(())
+  }
+
+  async fn get(
+    id: String,
+  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+    monitor_client().read(GetBuilder { builder: id }).await
+  }
+
+  async fn minimize_update(
+    mut original: Self::FullConfig,
+    update: Self::PartialConfig,
+  ) -> anyhow::Result<Self::PartialConfig> {
+    // need to replace server builder id with name
+    if let BuilderConfig::Server(config) = &mut original {
+      config.server_id = id_to_server()
+        .get(&config.server_id)
+        .map(|s| s.name.clone())
+        .unwrap_or_default();
+    }
+
+    Ok(original.partial_diff(update))
   }
 }

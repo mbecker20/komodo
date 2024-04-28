@@ -3,10 +3,12 @@ use std::collections::HashMap;
 use monitor_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
-    resource::ResourceListItem, toml::ResourceToml,
+    resource::{Resource, ResourceListItem},
+    toml::ResourceToml,
     update::ResourceTarget,
   },
 };
+use partial_derive2::MaybeNone;
 
 use crate::monitor_client;
 
@@ -23,8 +25,9 @@ type ToCreate<T> = Vec<ResourceToml<T>>;
 type UpdatesResult<T> = (ToCreate<T>, ToUpdate<T>);
 
 pub trait ResourceSync {
-  type PartialConfig: Clone + Send + 'static;
+  type PartialConfig: Clone + Send + MaybeNone + 'static;
   type FullConfig: Clone + Send + 'static;
+  type FullInfo: Default;
   type ListItemInfo: 'static;
 
   fn display() -> &'static str;
@@ -45,27 +48,39 @@ pub trait ResourceSync {
     resource: ResourceToml<Self::PartialConfig>,
   ) -> anyhow::Result<()>;
 
+  async fn get(
+    id: String,
+  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>>;
+
   /// Diffs the two partials.
   /// Removes all fields from update that haven't changed.
-  fn minimize_update(
-    _original: &Self::FullConfig,
-    _update: &mut Self::PartialConfig,
-  ) {
-    unreachable!()
-  }
+  async fn minimize_update(
+    _original: Self::FullConfig,
+    _update: Self::PartialConfig,
+  ) -> anyhow::Result<Self::PartialConfig>;
 
-  fn get_updates(
+  async fn get_updates(
     resources: Vec<ResourceToml<Self::PartialConfig>>,
-  ) -> UpdatesResult<Self::PartialConfig> {
+  ) -> anyhow::Result<UpdatesResult<Self::PartialConfig>> {
     let map = Self::name_to_resource();
 
     let mut to_create = ToCreate::<Self::PartialConfig>::new();
     let mut to_update = ToUpdate::<Self::PartialConfig>::new();
 
-    for resource in resources {
+    for mut resource in resources {
       match map.get(&resource.name).map(|s| s.id.clone()) {
         Some(id) => {
-          to_update.push((id, resource));
+          // Get the full original config for the resource.
+          let original = Self::get(id.clone()).await?.config;
+
+          // Minimizes updates through diffing.
+          resource.config =
+            Self::minimize_update(original, resource.config).await?;
+
+          // Only try to update if there are any fields to update.
+          if !resource.config.is_none() {
+            to_update.push((id, resource));
+          }
         }
         None => {
           to_create.push(resource);
@@ -97,7 +112,7 @@ pub trait ResourceSync {
       );
     }
 
-    (to_create, to_update)
+    Ok((to_create, to_update))
   }
 
   async fn run_updates(

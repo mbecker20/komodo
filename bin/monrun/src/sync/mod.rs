@@ -20,19 +20,19 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
   println!("{resources:#?}");
 
   let (server_creates, server_updates) =
-    Server::get_updates(resources.servers);
+    Server::get_updates(resources.servers).await?;
   let (deployment_creates, deployment_updates) =
-    Deployment::get_updates(resources.deployments);
+    Deployment::get_updates(resources.deployments).await?;
   let (build_creates, build_updates) =
-    Build::get_updates(resources.builds);
+    Build::get_updates(resources.builds).await?;
   let (builder_creates, builder_updates) =
-    Builder::get_updates(resources.builders);
+    Builder::get_updates(resources.builders).await?;
   let (alerter_creates, alerter_updates) =
-    Alerter::get_updates(resources.alerters);
+    Alerter::get_updates(resources.alerters).await?;
   let (repo_creates, repo_updates) =
-    Repo::get_updates(resources.repos);
+    Repo::get_updates(resources.repos).await?;
   let (procedure_creates, procedure_updates) =
-    Procedure::get_updates(resources.procedures);
+    Procedure::get_updates(resources.procedures).await?;
   let (user_group_creates, user_group_updates) =
     user_group::get_updates(resources.user_groups);
 

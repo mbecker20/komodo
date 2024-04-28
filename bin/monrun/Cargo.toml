@@ -10,6 +10,8 @@ license.workspace = true
 [dependencies]
 # local client
 monitor_client.workspace = true
+# mogh
+partial_derive2.workspace = true
 # external
 anyhow.workspace = true
 tokio.workspace = true

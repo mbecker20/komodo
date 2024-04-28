@@ -1,25 +1,37 @@
 use std::collections::HashMap;
 
 use monitor_client::{
-  api::write::{CreateProcedure, UpdateProcedure},
+  api::{
+    execute::Execution,
+    read::GetProcedure,
+    write::{CreateProcedure, UpdateProcedure},
+  },
   entities::{
     procedure::{
       PartialProcedureConfig, Procedure, ProcedureConfig,
       ProcedureListItemInfo,
     },
-    resource::ResourceListItem,
+    resource::{Resource, ResourceListItem},
     toml::ResourceToml,
     update::ResourceTarget,
   },
 };
+use partial_derive2::PartialDiff;
 
-use crate::{maps::name_to_procedure, monitor_client};
+use crate::{
+  maps::{
+    id_to_build, id_to_deployment, id_to_procedure, id_to_repo,
+    id_to_server, name_to_procedure,
+  },
+  monitor_client,
+};
 
 use super::{ResourceSync, ToCreate, ToUpdate};
 
 impl ResourceSync for Procedure {
   type PartialConfig = PartialProcedureConfig;
   type FullConfig = ProcedureConfig;
+  type FullInfo = ();
   type ListItemInfo = ProcedureListItemInfo;
 
   fn display() -> &'static str {
@@ -127,5 +139,96 @@ impl ResourceSync for Procedure {
       }
     }
     warn!("procedure sync loop exited after max iterations");
+  }
+
+  async fn get(
+    id: String,
+  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+    monitor_client().read(GetProcedure { procedure: id }).await
+  }
+
+  async fn minimize_update(
+    mut original: Self::FullConfig,
+    update: Self::PartialConfig,
+  ) -> anyhow::Result<Self::PartialConfig> {
+    for execution in &mut original.executions {
+      match &mut execution.execution {
+        Execution::None(_) => {}
+        Execution::RunProcedure(config) => {
+          config.procedure = id_to_procedure()
+            .get(&config.procedure)
+            .map(|p| p.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::RunBuild(config) => {
+          config.build = id_to_build()
+            .get(&config.build)
+            .map(|b| b.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::Deploy(config) => {
+          config.deployment = id_to_deployment()
+            .get(&config.deployment)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::StartContainer(config) => {
+          config.deployment = id_to_deployment()
+            .get(&config.deployment)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::StopContainer(config) => {
+          config.deployment = id_to_deployment()
+            .get(&config.deployment)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::RemoveContainer(config) => {
+          config.deployment = id_to_deployment()
+            .get(&config.deployment)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::CloneRepo(config) => {
+          config.repo = id_to_repo()
+            .get(&config.repo)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::PullRepo(config) => {
+          config.repo = id_to_repo()
+            .get(&config.repo)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::StopAllContainers(config) => {
+          config.server = id_to_server()
+            .get(&config.server)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::PruneDockerNetworks(config) => {
+          config.server = id_to_server()
+            .get(&config.server)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::PruneDockerImages(config) => {
+          config.server = id_to_server()
+            .get(&config.server)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+        Execution::PruneDockerContainers(config) => {
+          config.server = id_to_server()
+            .get(&config.server)
+            .map(|d| d.name.clone())
+            .unwrap_or_default();
+        }
+      }
+    }
+
+    Ok(original.partial_diff(update))
   }
 }
