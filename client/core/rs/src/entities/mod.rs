@@ -10,6 +10,7 @@ pub mod alerter;
 pub mod api_key;
 pub mod build;
 pub mod builder;
+pub mod config;
 pub mod deployment;
 pub mod permission;
 pub mod procedure;
@@ -21,6 +22,7 @@ pub mod toml;
 pub mod update;
 pub mod user;
 pub mod user_group;
+pub mod logger;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;

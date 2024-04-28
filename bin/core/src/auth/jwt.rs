@@ -6,12 +6,11 @@ use async_timing_util::{
 };
 use hmac::{Hmac, Mac};
 use jwt::SignWithKey;
+use monitor_client::entities::config::core::CoreConfig;
 use mungos::mongodb::bson::doc;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use tokio::sync::Mutex;
-
-use crate::config::CoreConfig;
 
 use super::random_string;
 

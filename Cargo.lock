@@ -2010,10 +2010,10 @@ name = "logger"
 version = "1.0.1"
 dependencies = [
  "anyhow",
+ "monitor_client",
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
- "serde",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",

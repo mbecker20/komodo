@@ -1,13 +1,16 @@
 use std::sync::OnceLock;
 
 use anyhow::{anyhow, Context};
+use monitor_client::entities::config::core::{
+  CoreConfig, OauthCredentials,
+};
 use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tokio::sync::Mutex;
 
 use crate::{
   auth::{random_string, STATE_PREFIX_LENGTH},
-  config::{core_config, CoreConfig, OauthCredentials},
+  config::core_config,
 };
 
 pub fn github_oauth_client() -> &'static Option<GithubOauthClient> {

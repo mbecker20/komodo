@@ -5,6 +5,7 @@ use monitor_client::entities::{
   api_key::ApiKey,
   build::Build,
   builder::Builder,
+  config::core::MongoConfig,
   deployment::Deployment,
   permission::Permission,
   procedure::Procedure,
@@ -19,8 +20,6 @@ use mungos::{
   init::MongoBuilder,
   mongodb::{Collection, Database},
 };
-
-use crate::config::MongoConfig;
 
 pub struct DbClient {
   pub users: Collection<User>,
