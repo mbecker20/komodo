@@ -76,8 +76,7 @@ impl Resolve<GetBuildActionState, User> for State {
       .get(&build.id)
       .await
       .unwrap_or_default()
-      .get()
-      .await;
+      .get()?;
     Ok(action_state)
   }
 }

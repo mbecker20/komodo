@@ -187,8 +187,7 @@ impl Resolve<DeleteBuild, User> for State {
       .get(&id)
       .await
       .unwrap_or_default()
-      .busy()
-      .await
+      .busy()?
     {
       return Err(anyhow!("build busy"));
     }
@@ -248,8 +247,7 @@ impl Resolve<UpdateBuild, User> for State {
       .get(&id)
       .await
       .unwrap_or_default()
-      .busy()
-      .await
+      .busy()?
     {
       return Err(anyhow!("build busy"));
     }

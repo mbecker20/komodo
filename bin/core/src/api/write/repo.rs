@@ -216,7 +216,7 @@ impl Resolve<DeleteRepo, User> for State {
     // This will set action state back to default when dropped.
     // Will also check to ensure repo not already busy before updating.
     let _action_guard =
-      action_state.update(|state| state.deleting = true).await?;
+      action_state.update(|state| state.deleting = true)?;
 
     let periphery = if repo.config.server_id.is_empty() {
       None
@@ -299,7 +299,7 @@ impl Resolve<UpdateRepo, User> for State {
     // This will set action state back to default when dropped.
     // Will also check to ensure repo not already busy before updating.
     let _action_guard =
-      action_state.update(|state| state.updating = true).await?;
+      action_state.update(|state| state.updating = true)?;
 
     update_one_by_id(
       &db_client().await.repos,

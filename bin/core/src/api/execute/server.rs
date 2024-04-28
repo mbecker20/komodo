@@ -47,9 +47,8 @@ impl Resolve<PruneDockerContainers, User> for State {
 
     // Will check to ensure server not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
-    let _action_guard = action_state
-      .update(|state| state.stopping_containers = true)
-      .await?;
+    let _action_guard =
+      action_state.update(|state| state.pruning_containers = true)?;
 
     let periphery = periphery_client(&server)?;
 
@@ -105,9 +104,8 @@ impl Resolve<PruneDockerNetworks, User> for State {
 
     // Will check to ensure server not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
-    let _action_guard = action_state
-      .update(|state| state.stopping_containers = true)
-      .await?;
+    let _action_guard =
+      action_state.update(|state| state.pruning_networks = true)?;
 
     let periphery = periphery_client(&server)?;
 
@@ -163,9 +161,8 @@ impl Resolve<PruneDockerImages, User> for State {
 
     // Will check to ensure server not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
-    let _action_guard = action_state
-      .update(|state| state.stopping_containers = true)
-      .await?;
+    let _action_guard =
+      action_state.update(|state| state.pruning_images = true)?;
 
     let periphery = periphery_client(&server)?;
 

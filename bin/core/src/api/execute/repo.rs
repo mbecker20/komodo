@@ -50,7 +50,7 @@ impl Resolve<CloneRepo, User> for State {
     // This will set action state back to default when dropped.
     // Will also check to ensure repo not already busy before updating.
     let _action_guard =
-      action_state.update(|state| state.cloning = true).await?;
+      action_state.update(|state| state.cloning = true)?;
 
     if repo.config.server_id.is_empty() {
       return Err(anyhow!("repo has no server attached"));
@@ -133,7 +133,7 @@ impl Resolve<PullRepo, User> for State {
     // This will set action state back to default when dropped.
     // Will also check to ensure repo not already busy before updating.
     let _action_guard =
-      action_state.update(|state| state.pulling = true).await?;
+      action_state.update(|state| state.pulling = true)?;
 
     if repo.config.server_id.is_empty() {
       return Err(anyhow!("repo has no server attached"));

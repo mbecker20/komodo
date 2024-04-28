@@ -105,8 +105,7 @@ impl Resolve<GetProcedureActionState, User> for State {
       .get(&procedure.id)
       .await
       .unwrap_or_default()
-      .get()
-      .await;
+      .get()?;
     Ok(action_state)
   }
 }

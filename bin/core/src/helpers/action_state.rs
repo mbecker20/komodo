@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use anyhow::anyhow;
 use monitor_client::{
@@ -9,7 +9,6 @@ use monitor_client::{
     server::ServerActionState,
   },
 };
-use tokio::sync::Mutex;
 
 use super::cache::Cache;
 
@@ -26,25 +25,43 @@ pub struct ActionStates {
 
 /// Need to be able to check "busy" with write lock acquired.
 #[derive(Default)]
-pub struct ActionState<States: Default>(Mutex<States>);
+pub struct ActionState<States: Default + Send + 'static>(
+  Mutex<States>,
+);
 
-impl<States: Default + Busy + Copy> ActionState<States> {
-  pub async fn get(&self) -> States {
-    *self.0.lock().await
+impl<States: Default + Busy + Copy + Send + 'static>
+  ActionState<States>
+{
+  pub fn get(&self) -> anyhow::Result<States> {
+    Ok(
+      *self
+        .0
+        .lock()
+        .map_err(|e| anyhow!("action state lock poisoned | {e:?}"))?,
+    )
   }
 
-  pub async fn busy(&self) -> bool {
-    self.0.lock().await.busy()
+  pub fn busy(&self) -> anyhow::Result<bool> {
+    Ok(
+      self
+        .0
+        .lock()
+        .map_err(|e| anyhow!("action state lock poisoned | {e:?}"))?
+        .busy(),
+    )
   }
 
   /// Will acquire lock, check busy, and if not will
   /// run the provided update function on the states.
   /// Returns a guard that returns the states to default (not busy) when dropped.
-  pub async fn update(
+  pub fn update(
     &self,
     handler: impl Fn(&mut States),
   ) -> anyhow::Result<UpdateGuard<States>> {
-    let mut lock = self.0.lock().await;
+    let mut lock = self
+      .0
+      .lock()
+      .map_err(|e| anyhow!("action state lock poisoned | {e:?}"))?;
     if lock.busy() {
       return Err(anyhow!("resource is busy"));
     }
@@ -57,11 +74,21 @@ impl<States: Default + Busy + Copy> ActionState<States> {
 /// The inner mutex guard must already be dropped BEFORE this is dropped,
 /// which is guaranteed as the inner guard is dropped by all public methods before
 /// user could drop UpdateGuard.
-pub struct UpdateGuard<'a, States: Default>(&'a Mutex<States>);
+pub struct UpdateGuard<'a, States: Default + Send + 'static>(
+  &'a Mutex<States>,
+);
 
-impl<'a, States: Default> Drop for UpdateGuard<'a, States> {
+impl<'a, States: Default + Send + 'static> Drop
+  for UpdateGuard<'a, States>
+{
   fn drop(&mut self) {
-    let mut lock = self.0.blocking_lock();
-    *lock = Default::default();
+    let mut lock = match self.0.lock() {
+      Ok(lock) => lock,
+      Err(e) => {
+        error!("CRITICAL: an action state lock is poisoned | {e:?}");
+        return;
+      }
+    };
+    *lock = States::default();
   }
 }

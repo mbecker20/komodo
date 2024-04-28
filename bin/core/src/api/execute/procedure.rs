@@ -43,7 +43,7 @@ impl Resolve<RunProcedure, User> for State {
     // This will set action state back to default when dropped.
     // Will also check to ensure procedure not already busy before updating.
     let _action_guard =
-      action_state.update(|state| state.running = true).await?;
+      action_state.update(|state| state.running = true)?;
 
     let mut update =
       make_update(&procedure, Operation::RunProcedure, &user);

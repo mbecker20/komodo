@@ -197,8 +197,7 @@ impl Resolve<GetDeploymentActionState, User> for State {
       .get(&deployment.id)
       .await
       .unwrap_or_default()
-      .get()
-      .await;
+      .get()?;
     Ok(action_state)
   }
 }

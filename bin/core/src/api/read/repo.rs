@@ -66,8 +66,7 @@ impl Resolve<GetRepoActionState, User> for State {
       .get(&repo.id)
       .await
       .unwrap_or_default()
-      .get()
-      .await;
+      .get()?;
     Ok(action_state)
   }
 }

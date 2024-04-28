@@ -12,6 +12,11 @@ mod execution;
 mod maps;
 mod sync;
 
+fn cli_args() -> &'static CliArgs {
+  static CLI_ARGS: OnceLock<CliArgs> = OnceLock::new();
+  CLI_ARGS.get_or_init(CliArgs::parse)
+}
+
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct CliArgs {
@@ -19,11 +24,8 @@ struct CliArgs {
   command: Command,
   #[arg(long, default_value_t = String::from("./creds.toml"))]
   creds: String,
-}
-
-fn cli_args() -> &'static CliArgs {
-  static CLI_ARGS: OnceLock<CliArgs> = OnceLock::new();
-  CLI_ARGS.get_or_init(CliArgs::parse)
+  #[arg(long, default_value_t = false)]
+  verbose: bool,
 }
 
 #[derive(Debug, Clone, Subcommand)]

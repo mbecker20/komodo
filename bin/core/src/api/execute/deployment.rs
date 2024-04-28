@@ -58,7 +58,7 @@ impl Resolve<Deploy, User> for State {
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
-      action_state.update(|state| state.deploying = true).await?;
+      action_state.update(|state| state.deploying = true)?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -152,7 +152,7 @@ impl Resolve<StartContainer, User> for State {
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
-      action_state.update(|state| state.starting = true).await?;
+      action_state.update(|state| state.starting = true)?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -231,7 +231,7 @@ impl Resolve<StopContainer, User> for State {
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
-      action_state.update(|state| state.stopping = true).await?;
+      action_state.update(|state| state.stopping = true)?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));
@@ -303,8 +303,7 @@ impl Resolve<StopAllContainers, User> for State {
     // Will check to ensure server not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard = action_state
-      .update(|state| state.stopping_containers = true)
-      .await?;
+      .update(|state| state.stopping_containers = true)?;
 
     let deployments = find_collect(
       &db_client().await.deployments,
@@ -391,7 +390,7 @@ impl Resolve<RemoveContainer, User> for State {
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
-      action_state.update(|state| state.removing = true).await?;
+      action_state.update(|state| state.removing = true)?;
 
     if deployment.config.server_id.is_empty() {
       return Err(anyhow!("deployment has no server configured"));

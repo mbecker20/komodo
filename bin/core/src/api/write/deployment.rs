@@ -244,7 +244,7 @@ impl Resolve<DeleteDeployment, User> for State {
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
-      action_state.update(|state| state.deleting = true).await?;
+      action_state.update(|state| state.deleting = true)?;
 
     let state = get_deployment_state(&deployment)
       .await
@@ -347,8 +347,7 @@ impl Resolve<UpdateDeployment, User> for State {
       .get(&id)
       .await
       .unwrap_or_default()
-      .busy()
-      .await
+      .busy()?
     {
       return Err(anyhow!("deployment busy"));
     }
@@ -418,7 +417,7 @@ impl Resolve<RenameDeployment, User> for State {
     // Will check to ensure deployment not already busy before updating, and return Err if so.
     // The returned guard will set the action state back to default when dropped.
     let _action_guard =
-      action_state.update(|state| state.renaming = true).await?;
+      action_state.update(|state| state.renaming = true)?;
 
     let name = to_monitor_name(&name);
 

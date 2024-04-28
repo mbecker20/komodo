@@ -359,8 +359,7 @@ impl Resolve<DeleteProcedure, User> for State {
       .get(&id)
       .await
       .unwrap_or_default()
-      .busy()
-      .await
+      .busy()?
     {
       return Err(anyhow!("procedure busy"));
     }

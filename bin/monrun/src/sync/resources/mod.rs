@@ -10,7 +10,7 @@ use monitor_client::{
 };
 use partial_derive2::MaybeNone;
 
-use crate::monitor_client;
+use crate::{cli_args, monitor_client};
 
 pub mod alerter;
 pub mod build;
@@ -25,7 +25,11 @@ type ToCreate<T> = Vec<ResourceToml<T>>;
 type UpdatesResult<T> = (ToCreate<T>, ToUpdate<T>);
 
 pub trait ResourceSync {
-  type PartialConfig: Clone + Send + MaybeNone + 'static;
+  type PartialConfig: std::fmt::Debug
+    + Clone
+    + Send
+    + MaybeNone
+    + 'static;
   type FullConfig: Clone + Send + 'static;
   type FullInfo: Default;
   type ListItemInfo: 'static;
@@ -88,28 +92,41 @@ pub trait ResourceSync {
       }
     }
 
+    let verbose = cli_args().verbose;
+
     if !to_create.is_empty() {
-      println!(
-        "\n{} TO CREATE: {}",
-        Self::display(),
-        to_create
-          .iter()
-          .map(|item| item.name.as_str())
-          .collect::<Vec<_>>()
-          .join(", ")
-      );
+      if verbose {
+        println!("\n{} TO CREATE:\n{to_create:#?}", Self::display(),);
+      } else {
+        println!(
+          "\n{} TO CREATE: {:#?}",
+          Self::display(),
+          to_create
+            .iter()
+            .map(|item| item.name.as_str())
+            .collect::<Vec<_>>()
+        );
+      }
     }
 
     if !to_update.is_empty() {
-      println!(
-        "\n{} TO UPDATE: {}",
-        Self::display(),
-        to_update
-          .iter()
-          .map(|(_, item)| item.name.as_str())
-          .collect::<Vec<_>>()
-          .join(", ")
-      );
+      if verbose {
+        println!(
+          "\n{} TO UPDATE:\n{:#?}",
+          Self::display(),
+          to_update.iter().map(|(_, r)| r).collect::<Vec<_>>()
+        );
+      } else {
+        println!(
+          "\n{} TO UPDATE: {}",
+          Self::display(),
+          to_update
+            .iter()
+            .map(|(_, item)| item.name.as_str())
+            .collect::<Vec<_>>()
+            .join(", ")
+        );
+      }
     }
 
     Ok((to_create, to_update))

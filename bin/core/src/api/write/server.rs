@@ -111,8 +111,7 @@ impl Resolve<DeleteServer, User> for State {
       .get(&id)
       .await
       .unwrap_or_default()
-      .busy()
-      .await
+      .busy()?
     {
       return Err(anyhow!("server busy"));
     }
@@ -208,8 +207,7 @@ impl Resolve<UpdateServer, User> for State {
       .get(&id)
       .await
       .unwrap_or_default()
-      .busy()
-      .await
+      .busy()?
     {
       return Err(anyhow!("server busy"));
     }

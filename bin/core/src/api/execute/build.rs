@@ -74,7 +74,7 @@ impl Resolve<RunBuild, User> for State {
     // This will set action state back to default when dropped.
     // Will also check to ensure build not already busy before updating.
     let _action_guard =
-      action_state.update(|state| state.building = true).await?;
+      action_state.update(|state| state.building = true)?;
 
     build.config.version.increment();
 

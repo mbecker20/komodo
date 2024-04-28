@@ -153,8 +153,7 @@ impl Resolve<GetServerActionState, User> for State {
       .get(&server.id)
       .await
       .unwrap_or_default()
-      .get()
-      .await;
+      .get()?;
     Ok(action_state)
   }
 }
