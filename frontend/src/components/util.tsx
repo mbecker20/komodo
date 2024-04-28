@@ -327,14 +327,15 @@ export const TextUpdateMenu = ({
           <div
             className={cn(
               "text-sm text-nowrap overflow-hidden overflow-ellipsis",
+              !value && "text-muted-foreground",
               triggerClassName
             )}
           >
-            {value}
+            {value || placeholder}
           </div>
         </Card>
       </DialogTrigger>
-      <DialogContent className="min-w-[60vw]">
+      <DialogContent className="min-w-[50vw]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>

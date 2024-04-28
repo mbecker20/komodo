@@ -17,7 +17,7 @@ import { Input } from "@ui/input";
 import { ResourceDescription } from "../common";
 import { AddTags, ResourceTags } from "@components/tags";
 import { StatChart } from "./stat-chart";
-import { useStatsInterval } from "./hooks";
+import { useStatsGranularity } from "./hooks";
 import {
   Select,
   SelectContent,
@@ -27,7 +27,7 @@ import {
 } from "@ui/select";
 
 export const ServerStats = ({ id }: { id: string }) => {
-  const [interval, setInterval] = useStatsInterval();
+  const [interval, setInterval] = useStatsGranularity();
 
   const server = useServer(id);
   const stats = useRead(

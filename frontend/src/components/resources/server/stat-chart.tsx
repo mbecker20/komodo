@@ -10,7 +10,7 @@ import {
   createChart,
 } from "lightweight-charts";
 import { useEffect, useRef } from "react";
-import { useStatsInterval } from "./hooks";
+import { useStatsGranularity } from "./hooks";
 import { Loader2 } from "lucide-react";
 
 type StatType = "cpu" | "mem" | "disk";
@@ -24,11 +24,11 @@ export const StatChart = ({
   type: StatType;
   className?: string;
 }) => {
-  const [interval] = useStatsInterval();
+  const [granularity] = useStatsGranularity();
 
   const { data, isPending } = useRead("GetHistoricalServerStats", {
     server: server_id,
-    interval,
+    granularity,
   });
 
   const stats = data?.stats

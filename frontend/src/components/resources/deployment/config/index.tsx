@@ -94,9 +94,10 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
               <ConfigItem label="Process Args">
                 <TextUpdateMenu
                   title="Update Process Args"
+                  placeholder="Set Process Args"
                   value={value}
                   onUpdate={(process_args) => set({ process_args })}
-                  triggerClassName="max-w-[400px]"
+                  triggerClassName="min-w-[300px] max-w-[400px]"
                 />
               </ConfigItem>
             ),
