@@ -59,7 +59,7 @@ pub struct DeleteBuild {
 
 /// Update the build at the given id, and return the updated build.
 /// Response: [Build].
-/// 
+///
 /// Note. This method updates only the fields which are set in the [_PartialBuildConfig],
 /// effectively merging diffs into the final document.
 /// This is helpful when multiple users are using

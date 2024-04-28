@@ -70,7 +70,7 @@ pub type DeleteProcedureResponse = Procedure;
 
 /// Update the procedure at the given id, and return the updated procedure.
 /// Response: [Procedure].
-/// 
+///
 /// Note. This method updates only the fields which are set in the [_PartialProcedureConfig],
 /// effectively merging diffs into the final document.
 /// This is helpful when multiple users are using

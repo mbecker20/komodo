@@ -62,7 +62,7 @@ pub struct DeleteDeployment {
 
 /// Update the deployment at the given id, and return the updated deployment.
 /// Response: [Deployment].
-/// 
+///
 /// Note. This method updates only the fields which are set in the [_PartialDeploymentConfig],
 /// effectively merging diffs into the final document.
 /// This is helpful when multiple users are using
@@ -82,7 +82,7 @@ pub struct UpdateDeployment {
 //
 
 /// Rename the deployment at id to the given name. Response: [Update].
-/// 
+///
 /// Note. If a container is created for the deployment, it will be renamed using
 /// `docker rename ...`.
 #[typeshare]

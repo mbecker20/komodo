@@ -28,7 +28,7 @@ use crate::{
     resource::{delete_all_permissions_on_resource, StateResource},
     update::{add_update, make_update},
   },
-  state::{State, db_client},
+  state::{db_client, State},
 };
 
 #[instrument(skip(user))]

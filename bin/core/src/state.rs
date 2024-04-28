@@ -4,7 +4,11 @@ use monitor_client::entities::deployment::DockerContainerState;
 use tokio::sync::OnceCell;
 
 use crate::{
-  auth::jwt::JwtClient, config::core_config, db::DbClient, helpers::{action_state::ActionStates, cache::Cache}, monitor::{CachedDeploymentStatus, CachedServerStatus, History}
+  auth::jwt::JwtClient,
+  config::core_config,
+  db::DbClient,
+  helpers::{action_state::ActionStates, cache::Cache},
+  monitor::{CachedDeploymentStatus, CachedServerStatus, History},
 };
 
 pub struct State;

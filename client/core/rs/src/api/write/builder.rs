@@ -59,7 +59,7 @@ pub struct DeleteBuilder {
 
 /// Update the builder at the given id, and return the updated builder.
 /// Response: [Builder].
-/// 
+///
 /// Note. This method updates only the fields which are set in the [PartialBuilderConfig],
 /// effectively merging diffs into the final document.
 /// This is helpful when multiple users are using

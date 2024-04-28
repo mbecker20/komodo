@@ -9,7 +9,10 @@ use reqwest::StatusCode;
 use serde::Deserialize;
 use serror::AddStatusCode;
 
-use crate::{config::core_config, state::{db_client, jwt_client}};
+use crate::{
+  config::core_config,
+  state::{db_client, jwt_client},
+};
 
 use self::client::google_oauth_client;
 

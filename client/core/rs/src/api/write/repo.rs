@@ -59,10 +59,10 @@ pub struct DeleteRepo {
 
 /// Update the repo at the given id, and return the updated repo.
 /// Response: [Repo].
-/// 
+///
 /// Note. If the attached server for the repo changes,
 /// the repo will be deleted / cleaned up on the old server.
-/// 
+///
 /// Note. This method updates only the fields which are set in the [_PartialRepoConfig],
 /// effectively merging diffs into the final document.
 /// This is helpful when multiple users are using

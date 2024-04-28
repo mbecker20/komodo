@@ -9,6 +9,7 @@ use monitor_client::{
 use resolver_api::Resolve;
 use serde::Deserialize;
 use sha2::Sha256;
+use tracing::Instrument;
 
 use crate::{
   config::core_config,
@@ -23,6 +24,12 @@ struct Id {
   id: String,
 }
 
+#[derive(Deserialize)]
+struct IdBranch {
+  id: String,
+  branch: String,
+}
+
 pub fn router() -> Router {
   Router::new()
 		.route(
@@ -30,10 +37,15 @@ pub fn router() -> Router {
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
 					tokio::spawn(async move {
-						let res = handle_build_webhook(id.clone(), headers, body).await;
-						if let Err(e) = res {
-							warn!("failed to run build webook for build {id} | {e:#}");
-						}
+            let span = info_span!("build_webhook", id);
+            async {
+              let res = handle_build_webhook(id.clone(), headers, body).await;
+              if let Err(e) = res {
+                warn!("failed to run build webook for build {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
 					});
 				},
 			),
@@ -43,10 +55,15 @@ pub fn router() -> Router {
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
 					tokio::spawn(async move {
-						let res = handle_repo_clone_webhook(id.clone(), headers, body).await;
-						if let Err(e) = res {
-							warn!("failed to run repo clone webook for repo {id} | {e:#}");
-						}
+						let span = info_span!("repo_clone_webhook", id);
+            async {
+              let res = handle_repo_clone_webhook(id.clone(), headers, body).await;
+              if let Err(e) = res {
+                warn!("failed to run repo clone webook for repo {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
 					});
 				},
 			)
@@ -56,17 +73,44 @@ pub fn router() -> Router {
 			post(
 				|Path(Id { id }), headers: HeaderMap, body: String| async move {
 					tokio::spawn(async move {
-						let res = handle_repo_pull_webhook(id.clone(), headers, body).await;
-						if let Err(e) = res {
-							warn!("failed to run repo clone webook for repo {id} | {e:#}");
-						}
+            let span = info_span!("repo_pull_webhook", id);
+            async {
+              let res = handle_repo_pull_webhook(id.clone(), headers, body).await;
+              if let Err(e) = res {
+                warn!("failed to run repo pull webook for repo {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
+					});
+				},
+			)
+		)
+    .route(
+			"/procedure/:id/:branch", 
+			post(
+				|Path(IdBranch { id, branch }), headers: HeaderMap, body: String| async move {
+					tokio::spawn(async move {
+            let span = info_span!("procedure_webhook", id, branch);
+            async {
+              let res = handle_procedure_webhook(
+                id.clone(),
+                branch,
+                headers,
+                body
+              ).await;
+              if let Err(e) = res {
+                warn!("failed to run procedure webook for procedure {id} | {e:#}");
+              }
+            }
+              .instrument(span)
+              .await
 					});
 				},
 			)
 		)
 }
 
-#[instrument(skip(headers, body))]
 async fn handle_build_webhook(
   build_id: String,
   headers: HeaderMap,
@@ -87,7 +131,6 @@ async fn handle_build_webhook(
   Ok(())
 }
 
-#[instrument(skip(headers, body))]
 async fn handle_repo_clone_webhook(
   repo_id: String,
   headers: HeaderMap,
@@ -108,7 +151,6 @@ async fn handle_repo_clone_webhook(
   Ok(())
 }
 
-#[instrument(skip(headers, body))]
 async fn handle_repo_pull_webhook(
   repo_id: String,
   headers: HeaderMap,
@@ -123,6 +165,28 @@ async fn handle_repo_pull_webhook(
   State
     .resolve(
       execute::PullRepo { repo: repo_id },
+      github_user().to_owned(),
+    )
+    .await?;
+  Ok(())
+}
+
+async fn handle_procedure_webhook(
+  procedure_id: String,
+  target_branch: String,
+  headers: HeaderMap,
+  body: String,
+) -> anyhow::Result<()> {
+  verify_gh_signature(headers, &body).await?;
+  let request_branch = extract_branch(&body)?;
+  if request_branch != target_branch {
+    return Err(anyhow!("request branch does not match expected"));
+  }
+  State
+    .resolve(
+      execute::RunProcedure {
+        procedure: procedure_id,
+      },
       github_user().to_owned(),
     )
     .await?;

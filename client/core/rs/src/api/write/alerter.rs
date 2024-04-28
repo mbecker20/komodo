@@ -58,7 +58,7 @@ pub struct DeleteAlerter {
 //
 
 /// Update the alerter at the given id, and return the updated alerter. Response: [Alerter].
-/// 
+///
 /// Note. This method updates only the fields which are set in the [PartialAlerterConfig],
 /// effectively merging diffs into the final document. This is helpful when multiple users are using
 /// the same resources concurrently by ensuring no unintentional

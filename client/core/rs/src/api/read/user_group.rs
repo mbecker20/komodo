@@ -26,7 +26,7 @@ pub type GetUserGroupResponse = UserGroup;
 //
 
 /// List all user groups which user can see. Response: [ListUserGroupsResponse].
-/// 
+///
 /// Admins can see all user groups,
 /// and users can see user groups to which they belong.
 #[typeshare]

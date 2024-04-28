@@ -158,7 +158,7 @@ impl Log {
   Ord,
   Display,
   EnumString,
-  AsRefStr,
+  AsRefStr
 )]
 #[serde(tag = "type", content = "id")]
 pub enum ResourceTarget {

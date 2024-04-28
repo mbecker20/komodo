@@ -18,7 +18,7 @@ use crate::{
   helpers::resource::{
     get_resource_ids_for_non_admin, StateResource,
   },
-  state::{State, db_client},
+  state::{db_client, State},
 };
 
 #[async_trait]
