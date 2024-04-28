@@ -7,6 +7,7 @@ use crate::entities::update::ResourceTarget;
 
 use super::MonitorReadRequest;
 
+/// Response containing pretty formatted toml contents.
 #[typeshare]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TomlResponse {
@@ -15,6 +16,9 @@ pub struct TomlResponse {
 
 //
 
+/// Get pretty formatted monrun sync toml for all resources
+/// which the user has permissions to view.
+/// Response: [TomlResponse].
 #[typeshare]
 #[derive(
   Debug, Clone, Default, Serialize, Deserialize, Request, EmptyTraits,
@@ -28,6 +32,8 @@ pub type ExportAllResourcesToTomlResponse = TomlResponse;
 
 //
 
+/// Get pretty formatted monrun sync toml for specific resources and user groups.
+/// Response: [TomlResponse].
 #[typeshare]
 #[derive(
   Debug, Clone, Default, Serialize, Deserialize, Request, EmptyTraits,

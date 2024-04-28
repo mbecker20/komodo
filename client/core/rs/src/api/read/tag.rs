@@ -9,6 +9,7 @@ use super::MonitorReadRequest;
 
 //
 
+/// Get data for a specific tag. Response [Tag].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -26,6 +27,8 @@ pub type GetTagResponse = Tag;
 
 //
 
+/// List data for tags matching optional mongo query.
+/// Response: [ListTagsResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,

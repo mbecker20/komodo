@@ -281,7 +281,7 @@ impl Resolve<GetHistoricalServerStats, User> for State {
     &self,
     GetHistoricalServerStats {
       server,
-      interval,
+      granularity,
       page,
     }: GetHistoricalServerStats,
     user: User,
@@ -292,17 +292,17 @@ impl Resolve<GetHistoricalServerStats, User> for State {
       PermissionLevel::Read,
     )
     .await?;
-    let interval =
-      get_timelength_in_ms(interval.to_string().parse().unwrap())
+    let granularity =
+      get_timelength_in_ms(granularity.to_string().parse().unwrap())
         as i64;
     let mut ts_vec = Vec::<i64>::new();
     let curr_ts = unix_timestamp_ms() as i64;
     let mut curr_ts = curr_ts
-      - curr_ts % interval
-      - interval * STATS_PER_PAGE * page as i64;
+      - curr_ts % granularity
+      - granularity * STATS_PER_PAGE * page as i64;
     for _ in 0..STATS_PER_PAGE {
       ts_vec.push(curr_ts);
-      curr_ts -= interval;
+      curr_ts -= granularity;
     }
 
     let stats = find_collect(

@@ -11,6 +11,7 @@ use super::MonitorReadRequest;
 
 //
 
+/// Get a specific repo. Response: [Repo].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -28,6 +29,7 @@ pub type GetRepoResponse = Repo;
 
 //
 
+/// List repos matching optional query. Response: [ListReposResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
@@ -35,6 +37,7 @@ pub type GetRepoResponse = Repo;
 #[empty_traits(MonitorReadRequest)]
 #[response(Vec<RepoListItem>)]
 pub struct ListRepos {
+  /// optional structured query to filter repos.
   #[serde(default)]
   pub query: RepoQuery,
 }
@@ -44,6 +47,7 @@ pub type ListReposResponse = Vec<RepoListItem>;
 
 //
 
+/// Get current action state for the repo. Response: [RepoActionState].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -61,6 +65,8 @@ pub type GetRepoActionStateResponse = RepoActionState;
 
 //
 
+/// Gets a summary of data relating to all builds.
+/// Response: [GetBuildsSummaryResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -69,6 +75,7 @@ pub type GetRepoActionStateResponse = RepoActionState;
 #[response(GetReposSummaryResponse)]
 pub struct GetReposSummary {}
 
+/// Response for [GetReposSummary]
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetReposSummaryResponse {

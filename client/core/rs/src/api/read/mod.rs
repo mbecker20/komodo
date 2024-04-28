@@ -41,6 +41,8 @@ pub trait MonitorReadRequest: HasResponse {}
 
 //
 
+/// Get the version of the core api.
+/// Response: [GetVersionResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -49,14 +51,18 @@ pub trait MonitorReadRequest: HasResponse {}
 #[response(GetVersionResponse)]
 pub struct GetVersion {}
 
+/// Response for [GetVersion].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetVersionResponse {
+  /// The version of the core api.
   pub version: String,
 }
 
 //
 
+/// Get info about the core api.
+/// Response: [GetCoreInfoResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -65,10 +71,14 @@ pub struct GetVersionResponse {
 #[response(GetCoreInfoResponse)]
 pub struct GetCoreInfo {}
 
+/// Response for [GetCoreInfo].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetCoreInfoResponse {
+  /// The title assigned to this core api.
   pub title: String,
+  /// The monitoring interval of this core api.
   pub monitoring_interval: Timelength,
+  /// The github webhook base url to use with github webhooks.
   pub github_webhook_base_url: String,
 }

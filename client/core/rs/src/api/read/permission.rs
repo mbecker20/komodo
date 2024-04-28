@@ -53,6 +53,7 @@ pub type GetPermissionLevelResponse = PermissionLevel;
 #[empty_traits(MonitorReadRequest)]
 #[response(ListUserTargetPermissionsResponse)]
 pub struct ListUserTargetPermissions {
+  /// Specify either a user or a user group.
   pub user_target: UserTarget,
 }
 

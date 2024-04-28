@@ -11,6 +11,7 @@ use super::MonitorReadRequest;
 
 //
 
+/// Get a specific procedure. Response: [Procedure].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -28,6 +29,7 @@ pub type GetProcedureResponse = Procedure;
 
 //
 
+/// List procedures matching optional query. Response: [ListProceduresResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Default, Request, EmptyTraits,
@@ -35,6 +37,7 @@ pub type GetProcedureResponse = Procedure;
 #[empty_traits(MonitorReadRequest)]
 #[response(ListProceduresResponse)]
 pub struct ListProcedures {
+  /// optional structured query to filter procedures.
   #[serde(default)]
   pub query: ProcedureQuery,
 }
@@ -44,22 +47,7 @@ pub type ListProceduresResponse = Vec<ProcedureListItem>;
 
 //
 
-#[typeshare]
-#[derive(
-  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
-)]
-#[empty_traits(MonitorReadRequest)]
-#[response(GetProceduresSummaryResponse)]
-pub struct GetProceduresSummary {}
-
-#[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct GetProceduresSummaryResponse {
-  pub total: u32,
-}
-
-//
-
+/// Get current action state for the procedure. Response: [ProcedureActionState].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -74,5 +62,24 @@ pub struct GetProcedureActionState {
 
 #[typeshare]
 pub type GetProcedureActionStateResponse = ProcedureActionState;
+
+//
+
+/// Gets a summary of data relating to all procedures.
+/// Response: [GetProceduresSummaryResponse].
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(GetProceduresSummaryResponse)]
+pub struct GetProceduresSummary {}
+
+/// Response for [GetProceduresSummary].
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetProceduresSummaryResponse {
+  pub total: u32,
+}
 
 //

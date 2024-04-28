@@ -114,6 +114,8 @@ pub type GetLogResponse = Log;
 
 /// Search the deployment log's tail using `grep`. All lines go to stdout.
 /// Response: [Log].
+///
+/// Note. This call will hit the underlying server directly for most up to date log.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -139,6 +141,10 @@ pub type SearchLogResponse = Log;
 
 //
 
+/// Get the deployment container's stats using `docker stats`.
+/// Response: [DockerContainerStats].
+///
+/// Note. This call will hit the underlying server directly for most up to date stats.
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -156,6 +162,8 @@ pub type GetDeploymentStatsResponse = DockerContainerStats;
 
 //
 
+/// Get current action state for the deployment.
+/// Response: [DeploymentActionState].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -173,6 +181,8 @@ pub type GetDeploymentActionStateResponse = DeploymentActionState;
 
 //
 
+/// Gets a summary of data relating to all deployments.
+/// Response: [GetDeploymentsSummaryResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
@@ -181,6 +191,7 @@ pub type GetDeploymentActionStateResponse = DeploymentActionState;
 #[response(GetDeploymentsSummaryResponse)]
 pub struct GetDeploymentsSummary {}
 
+/// Response for [GetDeploymentsSummary].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct GetDeploymentsSummaryResponse {

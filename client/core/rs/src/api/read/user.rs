@@ -33,6 +33,7 @@ pub type ListApiKeysResponse = Vec<ApiKey>;
 #[empty_traits(MonitorReadRequest)]
 #[response(ListApiKeysForServiceUserResponse)]
 pub struct ListApiKeysForServiceUser {
+  /// The id of the user.
   pub user_id: String,
 }
 
@@ -66,11 +67,14 @@ pub type ListUsersResponse = Vec<User>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetUsernameResponse)]
 pub struct GetUsername {
+  /// The id of the user.
   pub user_id: String,
 }
 
+/// Response for [GetUsername].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetUsernameResponse {
+  /// The username of the user.
   pub username: String,
 }
