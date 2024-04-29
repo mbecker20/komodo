@@ -72,7 +72,7 @@ pub struct GetDeploymentContainer {
   pub deployment: String,
 }
 
-/// Response for [GetDeploymentStatus].
+/// Response for [GetDeploymentContainer].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetDeploymentContainerResponse {

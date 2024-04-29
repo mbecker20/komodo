@@ -125,6 +125,58 @@ fn default_config_paths() -> Vec<String> {
 /// The periphery agent initializes it's configuration by reading the environment,
 /// parsing the [PeripheryConfig] schema from the files specified by cli args (and falling back to `env.config_paths`),
 /// and then applying any config field overrides specified in the environment.
+/// 
+/// ## Example TOML
+/// ```toml
+/// ## optional. 8120 is default
+/// port = 8120
+/// 
+/// ## optional. /repos is default.
+/// repo_dir = "/repos"
+/// 
+/// ## optional. 5-sec is default. 
+/// ## can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min.
+/// ## controls granularity of system stats recorded
+/// stats_polling_rate = "5-sec"
+/// 
+/// ## optional. default is empty, which will not block any request by ip.
+/// allowed_ips = ["127.0.0.1"]
+/// 
+/// ## optional. default is empty, which will not require any passkey to be passed by core.
+/// passkeys = ["abcdefghijk"]
+/// 
+/// ## specify the log level of the monitor core application
+/// ## default: info
+/// ## options: off, error, warn, info, debug, trace
+/// logging.level = "info"
+/// 
+/// ## specify the logging format for stdout / stderr.
+/// ## default: standard
+/// ## options: standard, json, none
+/// logging.stdio = "standard"
+/// 
+/// ## specify an otlp endpoint to send traces to
+/// ## optional, default unassigned
+/// # logging.otlp_endpoint = "http://localhost:4317"
+/// 
+/// ## specify the service name to send with otlp traces.
+/// ## optional, default 'Monitor'.
+/// # logging.opentelemetry_service_name = "Monitor"
+/// 
+/// ## optional. can inject these values into your deployments configuration.
+/// [secrets]
+/// secret_variable = "secret_value"
+/// 
+/// ## optional. can use these accounts with deployments / builds.
+/// [github_accounts]
+/// github_username1 = "github_token1"
+/// github_username2 = "github_token2"
+/// 
+/// ## optional. can use these accounts with deployments / builds.
+/// [docker_accounts]
+/// docker_username1 = "docker_token1"
+/// docker_username2 = "docker_token2"
+/// ```
 #[derive(Deserialize, Debug, Clone)]
 pub struct PeripheryConfig {
   /// The port periphery will run on.

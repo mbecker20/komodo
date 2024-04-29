@@ -1,3 +1,14 @@
+//! # Configuring the Core API
+//! 
+//! Monitor core is configured by parsing base configuration file ([CoreConfig]), and overriding
+//! any fields given in the file with ones provided on the environment ([Env]).
+//! 
+//! The recommended method for running monitor core is via the docker image. This image has a default
+//! configuration file provided in the image, meaning any custom configuration can be provided
+//! on the environment alone. However, if a custom configuration file is prefered, it can be mounted
+//! into the image at `/config/config.toml`.
+//! 
+
 use serde::{Deserialize, Serialize};
 
 use crate::entities::{
@@ -12,7 +23,7 @@ use crate::entities::{
 /// although the lower case format can still be parsed.
 ///
 /// *Note.* The monitor core docker image includes the default core configuration found in
-/// the `mbecker20/monitor/config_example` folder of the repo. To configigure the core api,
+/// the `mbecker20/monitor/config_example` folder of the repo. To configure the core api,
 /// you can either mount your own custom configuration file to `/config/config.toml` inside the container,
 /// or simply override whichever fields you need using the environment.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -100,12 +111,113 @@ fn default_config_path() -> String {
 /// parsing the [CoreConfig] schema from the file path specified by `env.monitor_config_path`,
 /// and then applying any config field overrides specified in the environment.
 /// 
-/// *Note.* The monitor core docker image includes the default core configuration found in
-/// the `mbecker20/monitor/config_example` folder of the repo. To configigure the core api,
-/// you can either mount your own custom configuration file to `/config/config.toml` inside the container,
-/// or simply override whichever fields you need using the environment.
+/// *Note.* The monitor core docker image includes the default core configuration found below.
+/// To configure the core api, you can either mount your own custom configuration file
+/// to `/config/config.toml` inside the container, or simply override whichever fields
+/// you need using the environment.
+/// 
+/// ## Example TOML
+/// ```toml
+/// ## this will be the document title on the web page (shows up as text in the browser tab).
+/// ## default: 'Monitor'
+/// title = "Monitor"
+///
+/// ## required for oauth functionality. this should be the url used to access monitor in browser, 
+/// ## potentially behind DNS.
+/// ## eg https://monitor.dev or http://12.34.56.78:9000. 
+/// ## this should match the address configured in your oauth app.
+/// ## no default
+/// host = "https://monitor.dev"
+///
+/// ## the port the core system will run on. if running core in docker container,
+/// ## leave as this port as 9000 and use port bind eg. -p 9001:9000
+/// ## default: 9000
+/// port = 9000
+///
+/// ## required to match a passkey in periphery config.
+/// ## token used to authenticate core requests to periphery
+/// ## no default
+/// passkey = "a_random_passkey"
+///
+/// ## specify the log level of the monitor core application
+/// ## default: info
+/// ## options: off, error, warn, info, debug, trace
+/// logging.level = "info"
+///
+/// ## specify the logging format for stdout / stderr.
+/// ## default: standard
+/// ## options: standard, json, none
+/// logging.stdio = "standard"
+///
+/// ## specify a opentelemetry otlp endpoint to send traces to
+/// ## optional, default unassigned
+/// # logging.otlp_endpoint = "http://localhost:4317"
+///
+/// ## specify how long an issued jwt stays valid.
+/// ## all jwts are invalidated on application restart.
+/// ## default: 1-day. 
+/// ## options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
+/// jwt_valid_for = "1-day"
+///
+/// ## controls the granularity of the system stats collection by monitor core
+/// ## default: 15-sec
+/// ## options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
+/// monitoring_interval = "15-sec"
+///
+/// ## number of days to keep stats around, or 0 to disable pruning. 
+/// ## stats older than this number of days are deleted daily
+/// ## default: 0 (pruning disabled)
+/// keep_stats_for_days = 0
+///
+/// ## token that has to be given to github during repo webhook config as the secret
+/// ## default: empty (none)
+/// github_webhook_secret = "your_random_webhook_secret"
+///
+/// ## an alternate base url that is used to recieve github webhook requests
+/// ## if empty or not specified, will use 'host' address as base
+/// ## default: empty (none)
+/// # github_webhook_base_url = "https://github-webhook.monitor.dev"
+///
+/// ## these will be used by the GUI to attach to builds.
+/// ## when attached to build, image will be pushed to repo under the specified organization.
+/// ## if empty, the "docker organization" config option will not be shown.
+/// ## default: empty
+/// # docker_organizations = ["your_docker_org1", "your_docker_org_2"]
+///
+/// ## allow or deny user login with username / password
+/// ## default: false
+/// # local_auth = true
+///
+/// ## Use to configure github oauth
+/// # github_oauth.enabled = true
+/// # github_oauth.id = "your_github_client_id"
+/// # github_oauth.secret = "your_github_client_secret"
+///
+/// ## Use to configure google oauth
+/// # google_oauth.enabled = true
+/// # google_oauth.id = "your_google_client_id"
+/// # google_oauth.secret = "your_google_client_secret"
+///
+/// ## MUST comment back in some way to configure mongo.
+/// # mongo.uri = "mongodb://username:password@localhost:27017"
+/// ## ==== or ====
+/// mongo.address = "localhost:27017"
+/// # mongo.username = "username"
+/// # mongo.password = "password"
+/// ## ==== other ====
+/// ## default: monitor. this is the name of the mongo database that monitor will create its collections in.
+/// mongo.db_name = "monitor"
+/// ## default: monitor_core. this is the assigned app_name of the mongo client
+/// mongo.app_name = "monitor_core"
+///
+/// ## provide aws api keys for ephemeral builders
+/// # aws.access_key_id = "your_aws_key_id"
+/// # aws.secret_access_key = "your_aws_secret_key"
+/// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreConfig {
+  /// The title of this monitor deployment. Will be used in the browser page title.
+  /// Default: 'Monitor'
   #[serde(default = "default_title")]
   pub title: String,
 
@@ -248,24 +360,39 @@ fn empty_or_redacted(src: &str) -> String {
   }
 }
 
+/// Generic Oauth credentials
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct OauthCredentials {
+  /// Whether this oauth method is available for usage.
   #[serde(default)]
   pub enabled: bool,
+  /// The Oauth client id.
   #[serde(default)]
   pub id: String,
+  /// The Oauth client secret.
   #[serde(default)]
   pub secret: String,
 }
 
+/// Provide mongo connection information.
+/// Must provide ONE of:
+/// 1. `uri`
+/// 2. `address` + `username` + `password`
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MongoConfig {
+  /// Full mongo uri string, eg. `mongodb://username:password@your.mongo.int:27017`
   pub uri: Option<String>,
+  /// Just the address part of the uri, eg `your.mongo.int:27017`
   pub address: Option<String>,
+  /// Mongo user username
   pub username: Option<String>,
+  /// Mongo user password
   pub password: Option<String>,
+  /// Mongo app name. default: `monitor_core`
   #[serde(default = "default_core_mongo_app_name")]
   pub app_name: String,
+  /// Mongo db name. Which mongo database to create the collections in.
+  /// Default: `monitor`.
   #[serde(default = "default_core_mongo_db_name")]
   pub db_name: String,
 }
@@ -291,8 +418,11 @@ impl Default for MongoConfig {
   }
 }
 
+/// Provide AWS credentials for monitor to use.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct AwsCredentials {
+  /// The aws ACCESS_KEY_ID
   pub access_key_id: String,
+  /// The aws SECRET_ACCESS_KEY
   pub secret_access_key: String,
 }

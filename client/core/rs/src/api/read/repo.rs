@@ -65,8 +65,8 @@ pub type GetRepoActionStateResponse = RepoActionState;
 
 //
 
-/// Gets a summary of data relating to all builds.
-/// Response: [GetBuildsSummaryResponse].
+/// Gets a summary of data relating to all repos.
+/// Response: [GetReposSummaryResponse].
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
