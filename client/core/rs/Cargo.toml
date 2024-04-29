@@ -35,3 +35,4 @@ strum.workspace = true
 derive_builder.workspace = true
 tracing.workspace = true
 uuid.workspace = true
+clap.workspace = true

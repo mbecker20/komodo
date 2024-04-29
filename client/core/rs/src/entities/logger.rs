@@ -54,6 +54,19 @@ impl From<LogLevel> for tracing::Level {
   }
 }
 
+impl From<tracing::Level> for LogLevel {
+  fn from(value: tracing::Level) -> Self {
+    match value.as_str() {
+      "trace" => LogLevel::Trace,
+      "debug" => LogLevel::Debug,
+      "info" => LogLevel::Info,
+      "warn" => LogLevel::Warn,
+      "error" => LogLevel::Error,
+      _ => LogLevel::Info,
+    }
+  }
+}
+
 #[derive(
   Debug,
   Clone,

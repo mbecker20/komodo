@@ -1,5 +1,20 @@
+//! # Configuring the periphery agent
+//!
+//! The periphery configuration is passed in three ways:
+//! 1. Command line args ([CliArgs])
+//! 2. Environment Variables ([Env])
+//! 3. Configuration File ([PeripheryConfig])
+//!
+//! The final configuration is built by combining parameters
+//! passed through the different methods. The priority of the args is
+//! strictly hierarchical, meaning params passed with [CliArgs] have top priority,
+//! followed by those passed in the environment, followed by those passed in
+//! the configuration file.
+//!
+
 use std::{collections::HashMap, net::IpAddr, path::PathBuf};
 
+use clap::Parser;
 use serde::Deserialize;
 
 use crate::entities::{
@@ -7,38 +22,123 @@ use crate::entities::{
   Timelength,
 };
 
+/// # Periphery Command Line Arguments.
+///
+/// This structure represents the periphery command line arguments used to
+/// configure the periphery agent. A help manual for the periphery binary
+/// can be printed using `/path/to/periphery --help`.
+#[derive(Parser)]
+#[command(author, about, version)]
+pub struct CliArgs {
+  /// Sets the path of a config file or directory to use.
+  /// Can use multiple times
+  #[arg(short, long)]
+  pub config_path: Option<Vec<String>>,
+
+  /// Sets the keywords to match directory periphery config file names on.
+  /// Can use multiple times.
+  #[arg(long)]
+  pub config_keyword: Option<Vec<String>>,
+
+  /// Merges nested configs, eg. secrets, docker_accounts, github_accounts.
+  /// Will override the equivalent env configuration.
+  #[arg(long)]
+  pub merge_nested_config: Option<bool>,
+
+  /// Extends config arrays, eg. allowed_ips, passkeys.
+  /// Will override the equivalent env configuration.
+  #[arg(long)]
+  pub extend_config_arrays: Option<bool>,
+
+  /// Configure the logging level: error, warn, info, debug, trace.
+  /// If passed, will override any other log_level set.
+  #[arg(long)]
+  pub log_level: Option<tracing::Level>,
+}
+
+/// # Periphery Environment Variables
+///
+/// The variables should be passed in the traditional `UPPER_SNAKE_CASE` format,
+/// although the lower case format can still be parsed. If equivalent paramater is passed
+/// in [CliArgs], the value passed to the environment will be ignored in favor of the cli arg.
 #[derive(Deserialize)]
 pub struct Env {
+  /// Specify the config paths (files or folders) used to build up the
+  /// final [PeripheryConfig].
+  /// Default: `~/.config/monitor/periphery.config.toml`.
+  ///
+  /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default = "default_config_paths")]
-  pub config_paths: Vec<String>,
+  pub monitor_config_paths: Vec<String>,
+  /// If specifying folders, use this to narrow down which
+  /// files will be matched to parse into the final [PeripheryConfig].
+  /// Only files inside the folders which have names containing all keywords
+  /// provided to `config_keywords` will be included.
+  ///
+  /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
   #[serde(default)]
-  pub config_keywords: Vec<String>,
+  pub monitor_config_keywords: Vec<String>,
 
-  // Overrides
-  pub port: Option<u16>,
-  pub log_level: Option<LogLevel>,
-  pub stdio_log_mode: Option<StdioLogMode>,
+  /// Will merge nested config object (eg. secrets, github_accounts) across multiple
+  /// config files. Default: `false`
+  ///
+  /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
+  #[serde(default)]
+  pub monitor_merge_nested_config: bool,
+
+  /// Will extend config arrays (eg. `allowed_ips`, `passkeys`) across multiple config files.
+  /// Default: `false`
+  ///
+  /// Note. This is overridden if the equivalent arg is passed in [CliArgs].
+  #[serde(default)]
+  pub monitor_extend_config_arrays: bool,
+
+  /// Override `port`
+  pub monitor_port: Option<u16>,
+  /// Override `repo_dir`
+  pub monitor_repo_dir: Option<PathBuf>,
+  /// Override `stats_polling_rate`
+  pub monitor_stats_polling_rate: Option<Timelength>,
+
+  // LOGGING
+  /// Override `logging.level`
+  pub monitor_logging_level: Option<LogLevel>,
+  /// Override `logging.stdio`
+  pub monitor_logging_stdio: Option<StdioLogMode>,
+  /// Override `logging.otlp_endpoint`
+  pub monitor_logging_otlp_endpoint: Option<String>,
+  /// Override `logging.opentelemetry_service_name`
+  pub monitor_logging_opentelemetry_service_name: Option<String>,
+
+  /// Override `allowed_ips`
+  pub monitor_allowed_ips: Option<Vec<IpAddr>>,
+  /// Override `passkeys`
+  pub monitor_passkeys: Option<Vec<String>>,
 }
 
 fn default_config_paths() -> Vec<String> {
   vec!["~/.config/monitor/periphery.config.toml".to_string()]
 }
 
+/// # Periphery Configuration File
+///
+/// The periphery agent initializes it's configuration by reading the environment,
+/// parsing the [PeripheryConfig] schema from the files specified by cli args (and falling back to `env.config_paths`),
+/// and then applying any config field overrides specified in the environment.
 #[derive(Deserialize, Debug, Clone)]
 pub struct PeripheryConfig {
-  /// The port periphery will run on
+  /// The port periphery will run on.
+  /// Default: `8120`
   #[serde(default = "default_periphery_port")]
   pub port: u16,
 
-  /// Configure the logging level: error, warn, info, debug, trace
-  #[serde(default)]
-  pub log_level: LogLevel,
-
-  /// The system directory where monitor managed repos will be cloned
+  /// The system directory where monitor managed repos will be cloned.
+  /// Default: `/repos`
   #[serde(default = "default_repo_dir")]
   pub repo_dir: PathBuf,
 
-  /// The rate at which the system stats will be polled to update the cache
+  /// The rate at which the system stats will be polled to update the cache.
+  /// Default: `5-sec`
   #[serde(default = "default_stats_refresh_interval")]
   pub stats_polling_rate: Timelength,
 
@@ -46,23 +146,32 @@ pub struct PeripheryConfig {
   #[serde(default)]
   pub logging: LogConfig,
 
-  /// Limits which IPv4 addresses are allowed to call the api
+  /// Limits which IPv4 addresses are allowed to call the api.
+  /// Default: none
+  ///
+  /// Note: this should be configured to increase security.
   #[serde(default)]
   pub allowed_ips: Vec<IpAddr>,
 
-  /// Limits the accepted passkeys
+  /// Limits the accepted passkeys.
+  /// Default: none
+  ///
+  /// Note: this should be configured to increase security.
   #[serde(default)]
   pub passkeys: Vec<String>,
 
   /// Mapping on local periphery secrets. These can be interpolated into eg. Deployment environment variables.
+  /// Default: none
   #[serde(default)]
   pub secrets: HashMap<String, String>,
 
-  /// Mapping of github usernames to access tokens
+  /// Mapping of github usernames to access tokens.
+  /// Default: none
   #[serde(default)]
   pub github_accounts: HashMap<String, String>,
 
-  /// Mapping of docker usernames to access tokens
+  /// Mapping of docker usernames to access tokens.
+  /// Default: none
   #[serde(default)]
   pub docker_accounts: HashMap<String, String>,
 }

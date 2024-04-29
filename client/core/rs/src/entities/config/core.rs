@@ -94,6 +94,16 @@ fn default_config_path() -> String {
   "/config/config.toml".to_string()
 }
 
+/// # Core Configuration File
+/// 
+/// The Core API initializes it's configuration by reading the environment,
+/// parsing the [CoreConfig] schema from the file path specified by `env.monitor_config_path`,
+/// and then applying any config field overrides specified in the environment.
+/// 
+/// *Note.* The monitor core docker image includes the default core configuration found in
+/// the `mbecker20/monitor/config_example` folder of the repo. To configigure the core api,
+/// you can either mount your own custom configuration file to `/config/config.toml` inside the container,
+/// or simply override whichever fields you need using the environment.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreConfig {
   #[serde(default = "default_title")]

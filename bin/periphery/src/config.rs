@@ -2,35 +2,11 @@ use std::sync::OnceLock;
 
 use clap::Parser;
 use merge_config_files::parse_config_paths;
-use monitor_client::entities::config::periphery::{
-  Env, PeripheryConfig,
+use monitor_client::entities::{
+  config::periphery::{CliArgs, Env, PeripheryConfig},
+  logger::LogLevel,
 };
 use serde_json::json;
-
-#[derive(Parser)]
-#[command(author, about, version)]
-struct CliArgs {
-  /// Sets the path of a config file or directory to use. can use multiple times
-  #[arg(short, long)]
-  pub config_path: Option<Vec<String>>,
-
-  /// Sets the keywords to match directory periphery config file names on.
-  /// can use multiple times. default "periphery" and "config"
-  #[arg(long)]
-  pub config_keyword: Option<Vec<String>>,
-
-  /// Merges nested configs, eg. secrets, docker_accounts, github_accounts
-  #[arg(long)]
-  pub merge_nested_config: bool,
-
-  /// Extends config arrays, eg. allowed_ips, passkeys
-  #[arg(long)]
-  pub extend_config_arrays: bool,
-
-  /// Configure the logging level: error, warn, info, debug, trace
-  #[arg(long, default_value_t = tracing::Level::INFO)]
-  pub log_level: tracing::Level,
-}
 
 pub fn periphery_config() -> &'static PeripheryConfig {
   static PERIPHERY_CONFIG: OnceLock<PeripheryConfig> =
@@ -39,23 +15,43 @@ pub fn periphery_config() -> &'static PeripheryConfig {
     let env: Env = envy::from_env()
       .expect("failed to parse periphery environment");
     let args = CliArgs::parse();
-    let config_paths = args.config_path.unwrap_or(env.config_paths);
-    let match_keywords =
-      args.config_keyword.unwrap_or(env.config_keywords);
     let mut config = parse_config_paths::<PeripheryConfig>(
-      config_paths,
-      match_keywords,
-      args.merge_nested_config,
-      args.extend_config_arrays,
+      args.config_path.unwrap_or(env.monitor_config_paths),
+      args.config_keyword.unwrap_or(env.monitor_config_keywords),
+      args
+        .merge_nested_config
+        .unwrap_or(env.monitor_merge_nested_config),
+      args
+        .extend_config_arrays
+        .unwrap_or(env.monitor_extend_config_arrays),
     )
     .expect("failed at parsing config from paths");
 
     // Overrides
-    config.port = env.port.unwrap_or(config.port);
-    config.logging.level =
-      env.log_level.unwrap_or(config.logging.level);
+    config.port = env.monitor_port.unwrap_or(config.port);
+    config.repo_dir = env.monitor_repo_dir.unwrap_or(config.repo_dir);
+    config.stats_polling_rate = env
+      .monitor_stats_polling_rate
+      .unwrap_or(config.stats_polling_rate);
+
+    // logging
+    config.logging.level = args
+      .log_level
+      .map(LogLevel::from)
+      .or(env.monitor_logging_level)
+      .unwrap_or(config.logging.level);
     config.logging.stdio =
-      env.stdio_log_mode.unwrap_or(config.logging.stdio);
+      env.monitor_logging_stdio.unwrap_or(config.logging.stdio);
+    config.logging.otlp_endpoint = env
+      .monitor_logging_otlp_endpoint
+      .or(config.logging.otlp_endpoint);
+    config.logging.opentelemetry_service_name = env
+      .monitor_logging_opentelemetry_service_name
+      .unwrap_or(config.logging.opentelemetry_service_name);
+
+    config.allowed_ips =
+      env.monitor_allowed_ips.unwrap_or(config.allowed_ips);
+    config.passkeys = env.monitor_passkeys.unwrap_or(config.passkeys);
 
     config
   })
