@@ -3,16 +3,19 @@ use std::collections::HashMap;
 use anyhow::Context;
 use axum::async_trait;
 use monitor_client::{
-  api::read::{
-    ExportAllResourcesToToml, ExportAllResourcesToTomlResponse,
-    ExportResourcesToToml, ExportResourcesToTomlResponse,
-    GetUserGroup, ListUserTargetPermissions,
+  api::{
+    execute::Execution,
+    read::{
+      ExportAllResourcesToToml, ExportAllResourcesToTomlResponse,
+      ExportResourcesToToml, ExportResourcesToTomlResponse,
+      GetUserGroup, ListUserTargetPermissions,
+    },
   },
   entities::{
     alerter::Alerter,
     build::Build,
-    builder::Builder,
-    deployment::Deployment,
+    builder::{Builder, BuilderConfig},
+    deployment::{Deployment, DeploymentImage},
     permission::{PermissionLevel, UserTarget},
     procedure::Procedure,
     repo::Repo,
@@ -121,12 +124,9 @@ impl Resolve<ExportResourcesToToml, User> for State {
     user: User,
   ) -> anyhow::Result<ExportResourcesToTomlResponse> {
     let mut res = ResourcesToml::default();
-    let tag_names = find_collect(&db_client().await.tags, None, None)
+    let names = ResourceNames::new()
       .await
-      .context("failed to get all tags")?
-      .into_iter()
-      .map(|t| (t.id, t.name))
-      .collect::<HashMap<_, _>>();
+      .context("failed to init resource name maps")?;
     for target in targets {
       match target {
         ResourceTarget::Alerter(id) => {
@@ -136,37 +136,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          res.alerters.push(convert_resource(alerter, &tag_names))
-        }
-        ResourceTarget::Build(id) => {
-          let build = Build::get_resource_check_permissions(
-            &id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
-          res.builds.push(convert_resource(build, &tag_names))
-        }
-        ResourceTarget::Builder(id) => {
-          let builder = Builder::get_resource_check_permissions(
-            &id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
-          res.builders.push(convert_resource(builder, &tag_names))
-        }
-        ResourceTarget::Deployment(id) => {
-          let deployment =
-            Deployment::get_resource_check_permissions(
-              &id,
-              &user,
-              PermissionLevel::Read,
-            )
-            .await?;
-          res
-            .deployments
-            .push(convert_resource(deployment, &tag_names))
+          res.alerters.push(convert_resource(alerter, &names.tags))
         }
         ResourceTarget::Server(id) => {
           let server = Server::get_resource_check_permissions(
@@ -175,75 +145,286 @@ impl Resolve<ExportResourcesToToml, User> for State {
             PermissionLevel::Read,
           )
           .await?;
-          res.servers.push(convert_resource(server, &tag_names))
+          res.servers.push(convert_resource(server, &names.tags))
+        }
+        ResourceTarget::Builder(id) => {
+          let mut builder = Builder::get_resource_check_permissions(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+          // replace server id of builder
+          if let BuilderConfig::Server(config) = &mut builder.config {
+            config.server_id.clone_from(
+              names.servers.get(&id).unwrap_or(&String::new()),
+            )
+          }
+          res.builders.push(convert_resource(builder, &names.tags))
+        }
+        ResourceTarget::Build(id) => {
+          let mut build = Build::get_resource_check_permissions(
+            &id,
+            &user,
+            PermissionLevel::Read,
+          )
+          .await?;
+          // replace builder id of build
+          build.config.builder_id.clone_from(
+            names
+              .builders
+              .get(&build.config.builder_id)
+              .unwrap_or(&String::new()),
+          );
+          res.builds.push(convert_resource(build, &names.tags))
+        }
+        ResourceTarget::Deployment(id) => {
+          let mut deployment =
+            Deployment::get_resource_check_permissions(
+              &id,
+              &user,
+              PermissionLevel::Read,
+            )
+            .await?;
+          // replace deployment server with name
+          deployment.config.server_id.clone_from(
+            names
+              .servers
+              .get(&deployment.config.server_id)
+              .unwrap_or(&String::new()),
+          );
+          // replace deployment build id with name
+          if let DeploymentImage::Build { build_id, .. } =
+            &mut deployment.config.image
+          {
+            build_id.clone_from(
+              names.builds.get(build_id).unwrap_or(&String::new()),
+            );
+          }
+          res
+            .deployments
+            .push(convert_resource(deployment, &names.tags))
         }
         ResourceTarget::Repo(id) => {
-          let repo = Repo::get_resource_check_permissions(
+          let mut repo = Repo::get_resource_check_permissions(
             &id,
             &user,
             PermissionLevel::Read,
           )
           .await?;
-          res.repos.push(convert_resource(repo, &tag_names))
+          // replace repo server with name
+          repo.config.server_id.clone_from(
+            names
+              .servers
+              .get(&repo.config.server_id)
+              .unwrap_or(&String::new()),
+          );
+          res.repos.push(convert_resource(repo, &names.tags))
         }
         ResourceTarget::Procedure(id) => {
-          let procedure = Procedure::get_resource_check_permissions(
-            &id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
-          res.procedures.push(convert_resource(procedure, &tag_names))
+          add_procedure(&id, &mut res, &user, &names)
+            .await
+            .with_context(|| {
+              format!("failed to add procedure {id}")
+            })?;
         }
         ResourceTarget::System(_) => continue,
       };
     }
 
-    let db = db_client().await;
-
-    let usernames = find_collect(&db.users, None, None)
-      .await?
-      .into_iter()
-      .map(|user| (user.id, user.username))
-      .collect::<HashMap<_, _>>();
-
-    for user_group in user_groups {
-      let ug = self
-        .resolve(GetUserGroup { user_group }, user.clone())
-        .await?;
-      // this method is admin only, but we already know user can see user group if above does not return Err
-      let permissions = self
-        .resolve(
-          ListUserTargetPermissions {
-            user_target: UserTarget::UserGroup(ug.id),
-          },
-          User {
-            admin: true,
-            ..Default::default()
-          },
-        )
-        .await?
-        .into_iter()
-        .map(|permission| PermissionToml {
-          target: permission.resource_target,
-          level: permission.level,
-        })
-        .collect();
-      res.user_groups.push(UserGroupToml {
-        name: ug.name,
-        users: ug
-          .users
-          .into_iter()
-          .filter_map(|user_id| usernames.get(&user_id).cloned())
-          .collect(),
-        permissions,
-      });
-    }
+    add_user_groups(user_groups, &mut res, &user)
+      .await
+      .context("failed to add user groups")?;
 
     let toml = toml::to_string_pretty(&res)
       .context("failed to serialize resources to toml")?;
+
     Ok(ExportResourcesToTomlResponse { toml })
   }
+}
+
+async fn add_procedure(
+  id: &str,
+  res: &mut ResourcesToml,
+  user: &User,
+  names: &ResourceNames,
+) -> anyhow::Result<()> {
+  let mut procedure = Procedure::get_resource_check_permissions(
+    id,
+    user,
+    PermissionLevel::Read,
+  )
+  .await?;
+  for execution in &mut procedure.config.executions {
+    match &mut execution.execution {
+      Execution::RunProcedure(exec) => exec.procedure.clone_from(
+        names
+          .procedures
+          .get(&exec.procedure)
+          .unwrap_or(&String::new()),
+      ),
+      Execution::RunBuild(exec) => exec.build.clone_from(
+        names.builds.get(&exec.build).unwrap_or(&String::new()),
+      ),
+      Execution::Deploy(exec) => exec.deployment.clone_from(
+        names
+          .deployments
+          .get(&exec.deployment)
+          .unwrap_or(&String::new()),
+      ),
+      Execution::StartContainer(exec) => exec.deployment.clone_from(
+        names
+          .deployments
+          .get(&exec.deployment)
+          .unwrap_or(&String::new()),
+      ),
+      Execution::StopContainer(exec) => exec.deployment.clone_from(
+        names
+          .deployments
+          .get(&exec.deployment)
+          .unwrap_or(&String::new()),
+      ),
+      Execution::RemoveContainer(exec) => exec.deployment.clone_from(
+        names
+          .deployments
+          .get(&exec.deployment)
+          .unwrap_or(&String::new()),
+      ),
+      Execution::CloneRepo(exec) => exec.repo.clone_from(
+        names.repos.get(&exec.repo).unwrap_or(&String::new()),
+      ),
+      Execution::PullRepo(exec) => exec.repo.clone_from(
+        names.repos.get(&exec.repo).unwrap_or(&String::new()),
+      ),
+      Execution::StopAllContainers(exec) => exec.server.clone_from(
+        names.servers.get(&exec.server).unwrap_or(&String::new()),
+      ),
+      Execution::PruneDockerNetworks(exec) => exec.server.clone_from(
+        names.servers.get(&exec.server).unwrap_or(&String::new()),
+      ),
+      Execution::PruneDockerImages(exec) => exec.server.clone_from(
+        names.servers.get(&exec.server).unwrap_or(&String::new()),
+      ),
+      Execution::PruneDockerContainers(exec) => {
+        exec.server.clone_from(
+          names.servers.get(&exec.server).unwrap_or(&String::new()),
+        )
+      }
+      Execution::None(_) => continue,
+    }
+  }
+  res
+    .procedures
+    .push(convert_resource(procedure, &names.tags));
+  Ok(())
+}
+
+struct ResourceNames {
+  tags: HashMap<String, String>,
+  servers: HashMap<String, String>,
+  builders: HashMap<String, String>,
+  builds: HashMap<String, String>,
+  repos: HashMap<String, String>,
+  deployments: HashMap<String, String>,
+  procedures: HashMap<String, String>,
+}
+
+impl ResourceNames {
+  async fn new() -> anyhow::Result<ResourceNames> {
+    let db = db_client().await;
+    Ok(ResourceNames {
+      tags: find_collect(&db.tags, None, None)
+        .await
+        .context("failed to get all tags")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      servers: find_collect(&db.servers, None, None)
+        .await
+        .context("failed to get all servers")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      builders: find_collect(&db.builders, None, None)
+        .await
+        .context("failed to get all builders")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      builds: find_collect(&db.builds, None, None)
+        .await
+        .context("failed to get all builds")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      repos: find_collect(&db.repos, None, None)
+        .await
+        .context("failed to get all repos")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      deployments: find_collect(&db.deployments, None, None)
+        .await
+        .context("failed to get all deployments")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+      procedures: find_collect(&db.procedures, None, None)
+        .await
+        .context("failed to get all procedures")?
+        .into_iter()
+        .map(|t| (t.id, t.name))
+        .collect::<HashMap<_, _>>(),
+    })
+  }
+}
+
+async fn add_user_groups(
+  user_groups: Vec<String>,
+  res: &mut ResourcesToml,
+  user: &User,
+) -> anyhow::Result<()> {
+  let db = db_client().await;
+
+  let usernames = find_collect(&db.users, None, None)
+    .await?
+    .into_iter()
+    .map(|user| (user.id, user.username))
+    .collect::<HashMap<_, _>>();
+
+  for user_group in user_groups {
+    let ug = State
+      .resolve(GetUserGroup { user_group }, user.clone())
+      .await?;
+    // this method is admin only, but we already know user can see user group if above does not return Err
+    let permissions = State
+      .resolve(
+        ListUserTargetPermissions {
+          user_target: UserTarget::UserGroup(ug.id),
+        },
+        User {
+          admin: true,
+          ..Default::default()
+        },
+      )
+      .await?
+      .into_iter()
+      .map(|permission| PermissionToml {
+        target: permission.resource_target,
+        level: permission.level,
+      })
+      .collect();
+    res.user_groups.push(UserGroupToml {
+      name: ug.name,
+      users: ug
+        .users
+        .into_iter()
+        .filter_map(|user_id| usernames.get(&user_id).cloned())
+        .collect(),
+      permissions,
+    });
+  }
+  Ok(())
 }
 
 fn convert_resource<Config, Info: Default, PartialConfig>(
