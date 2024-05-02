@@ -373,10 +373,6 @@ impl TryFrom<Deployment>
             .docker_run_args
             .post_image
             .unwrap_or_default(),
-          container_user: value
-            .docker_run_args
-            .container_user
-            .unwrap_or_default(),
           extra_args: value.docker_run_args.extra_args,
           docker_account: value
             .docker_run_args

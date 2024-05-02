@@ -261,7 +261,6 @@ pub fn docker_run_command(
         volumes,
         ports,
         network,
-        container_user,
         process_args,
         restart,
         environment,
@@ -274,7 +273,6 @@ pub fn docker_run_command(
   image: &str,
 ) -> String {
   let name = to_monitor_name(name);
-  let container_user = parse_container_user(container_user);
   let ports = parse_conversions(ports, "-p");
   let volumes = volumes.to_owned();
   let volumes = parse_conversions(&volumes, "-v");
@@ -284,15 +282,7 @@ pub fn docker_run_command(
   let labels = parse_labels(labels);
   let process_args = parse_process_args(process_args);
   let extra_args = parse_extra_args(extra_args);
-  format!("docker run -d --name {name}{container_user}{ports}{volumes}{network}{restart}{environment}{labels}{extra_args} {image}{process_args}")
-}
-
-fn parse_container_user(container_user: &String) -> String {
-  if container_user.is_empty() {
-    String::new()
-  } else {
-    format!(" -u {container_user}")
-  }
+  format!("docker run -d --name {name}{ports}{volumes}{network}{restart}{environment}{labels}{extra_args} {image}{process_args}")
 }
 
 fn parse_conversions(

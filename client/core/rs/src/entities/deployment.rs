@@ -133,11 +133,6 @@ pub struct DeploymentConfig {
   #[builder(default)]
   pub process_args: String,
 
-  /// The user of the container, or empty string to use the default image user.
-  #[serde(default)]
-  #[builder(default)]
-  pub container_user: String,
-
   /// Extra args which are interpolated into the `docker run` command,
   /// and affect the container configuration.
   #[serde(default)]
