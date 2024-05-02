@@ -25,7 +25,7 @@ export const ExportButton = ({}: {
           <FileDown className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="min-w-[50vw]">
+      <DialogContent className="min-w-[600px]">
         <DialogHeader>
           <DialogTitle>Export to toml</DialogTitle>
         </DialogHeader>
@@ -48,10 +48,10 @@ const ExportPre = ({
   content: string | undefined;
 }) => {
   return (
-    <div className="relative flex justify-center">
+    <div className="relative flex justify-center w-full">
       {loading && <Loader2 className="w-8 h-8 animate-spin" />}
-      <div className="overflow-y-scroll max-h-[80vh]">
-        <pre className="h-fit">{content}</pre>
+      <div className="overflow-y-scroll max-h-[80vh] w-full">
+        <pre className="h-fit w-full">{content}</pre>
       </div>
       <CopyButton content={content} className="absolute top-4 right-4" />
     </div>
