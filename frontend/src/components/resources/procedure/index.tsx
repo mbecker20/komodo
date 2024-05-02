@@ -46,8 +46,11 @@ export const ProcedureComponents: RequiredResourceComponents = {
 
   Actions: {
     RunProcedure: ({ id }) => {
-      const running = useRead("GetProcedureActionState", { procedure: id }).data
-        ?.running;
+      const running = useRead(
+        "GetProcedureActionState",
+        { procedure: id },
+        { refetchInterval: 5000 }
+      ).data?.running;
       const { mutate, isPending } = useExecute("RunProcedure");
       return (
         <ConfirmButton

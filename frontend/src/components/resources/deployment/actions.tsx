@@ -30,11 +30,18 @@ export const DeployContainer = ({ id }: DeploymentId) => {
 
   const { mutate: deploy, isPending } = useExecute("Deploy");
 
-  const deployments = useRead("ListDeployments", {}).data;
+  const deployments = useRead(
+    "ListDeployments",
+    {},
+    { refetchInterval: 5000 }
+  ).data;
   const deployment_item = deployments?.find((d) => d.id === id);
 
-  const deploying = useRead("GetDeploymentActionState", { deployment: id }).data
-    ?.deploying;
+  const deploying = useRead(
+    "GetDeploymentActionState",
+    { deployment: id },
+    { refetchInterval: 5000 }
+  ).data?.deploying;
 
   const pending = isPending || deploying;
 
@@ -80,9 +87,13 @@ export const DeployContainer = ({ id }: DeploymentId) => {
 const StartContainer = ({ id }: DeploymentId) => {
   const { data: d } = useRead("GetDeployment", { deployment: id });
   const { mutate, isPending } = useExecute("StartContainer");
-  const starting = useRead("GetDeploymentActionState", {
-    deployment: id,
-  }).data?.starting;
+  const starting = useRead(
+    "GetDeploymentActionState",
+    {
+      deployment: id,
+    },
+    { refetchInterval: 5000 }
+  ).data?.starting;
   const pending = isPending || starting;
 
   if (!d) return null;
@@ -108,9 +119,13 @@ const StopContainer = ({ id }: DeploymentId) => {
   );
 
   const { mutate, isPending } = useExecute("StopContainer");
-  const stopping = useRead("GetDeploymentActionState", {
-    deployment: id,
-  }).data?.stopping;
+  const stopping = useRead(
+    "GetDeploymentActionState",
+    {
+      deployment: id,
+    },
+    { refetchInterval: 5000 }
+  ).data?.stopping;
   const pending = isPending || stopping;
 
   if (!deployment) return null;
@@ -137,7 +152,11 @@ const StopContainer = ({ id }: DeploymentId) => {
 };
 
 export const StartOrStopContainer = ({ id }: DeploymentId) => {
-  const deployments = useRead("ListDeployments", {}).data;
+  const deployments = useRead(
+    "ListDeployments",
+    {},
+    { refetchInterval: 5000 }
+  ).data;
   const deployment = deployments?.find((d) => d.id === id);
   const state = deployment?.info.state;
 
@@ -172,9 +191,13 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
   const deployments = useRead("ListDeployments", {}).data;
   const state = deployments?.find((d) => d.id === id)?.info.state;
 
-  const removing = useRead("GetDeploymentActionState", {
-    deployment: id,
-  }).data?.removing;
+  const removing = useRead(
+    "GetDeploymentActionState",
+    {
+      deployment: id,
+    },
+    { refetchInterval: 5000 }
+  ).data?.removing;
 
   const pending = isPending || removing;
 
@@ -246,8 +269,11 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
   const { data: d } = useRead("GetDeployment", { deployment: id });
   const { mutateAsync, isPending } = useWrite("DeleteDeployment");
 
-  const deleting = useRead("GetDeploymentActionState", { deployment: id }).data
-    ?.deleting;
+  const deleting = useRead(
+    "GetDeploymentActionState",
+    { deployment: id },
+    { refetchInterval: 5000 }
+  ).data?.deleting;
 
   const pending = isPending || deleting;
 

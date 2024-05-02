@@ -20,7 +20,9 @@ import { DeleteResource } from "../common";
 import { AlerterTable } from "./table";
 
 const useAlerter = (id?: string) =>
-  useRead("ListAlerters", {}).data?.find((d) => d.id === id);
+  useRead("ListAlerters", {}).data?.find(
+    (d) => d.id === id
+  );
 
 export const AlerterComponents: RequiredResourceComponents = {
   Dashboard: () => {

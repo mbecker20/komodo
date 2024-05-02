@@ -30,7 +30,9 @@ import { Card, CardHeader } from "@ui/card";
 import { Button } from "@ui/button";
 
 export const useServer = (id?: string) =>
-  useRead("ListServers", {}).data?.find((d) => d.id === id);
+  useRead("ListServers", {}, { refetchInterval: 5000 }).data?.find(
+    (d) => d.id === id
+  );
 
 export const ServerComponents: RequiredResourceComponents = {
   Dashboard: ServersChart,
@@ -145,8 +147,11 @@ export const ServerComponents: RequiredResourceComponents = {
     StopAll: ({ id }) => {
       const server = useServer(id);
       const { mutate, isPending } = useExecute(`StopAllContainers`);
-      const stopping = useRead("GetServerActionState", { server: id }).data
-        ?.stopping_containers;
+      const stopping = useRead(
+        "GetServerActionState",
+        { server: id },
+        { refetchInterval: 5000 }
+      ).data?.stopping_containers;
       const pending = isPending || stopping;
       return (
         server && (

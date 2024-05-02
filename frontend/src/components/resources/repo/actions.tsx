@@ -4,7 +4,11 @@ import { ArrowDownToDot, ArrowDownToLine, Loader2 } from "lucide-react";
 
 export const CloneRepo = ({ id }: { id: string }) => {
   const { mutate, isPending } = useExecute("CloneRepo");
-  const cloning = useRead("GetRepoActionState", { repo: id }).data?.cloning;
+  const cloning = useRead(
+    "GetRepoActionState",
+    { repo: id },
+    { refetchInterval: 5000 }
+  ).data?.cloning;
   const pending = isPending || cloning;
   return (
     <ConfirmButton
@@ -25,7 +29,11 @@ export const CloneRepo = ({ id }: { id: string }) => {
 
 export const PullRepo = ({ id }: { id: string }) => {
   const { mutate, isPending } = useExecute("PullRepo");
-  const pulling = useRead("GetRepoActionState", { repo: id }).data?.pulling;
+  const pulling = useRead(
+    "GetRepoActionState",
+    { repo: id },
+    { refetchInterval: 5000 }
+  ).data?.pulling;
   const pending = isPending || pulling;
   return (
     <ConfirmButton

@@ -9,7 +9,11 @@ export const RunBuild = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Build", id },
   }).data;
-  const building = useRead("GetBuildActionState", { build: id }).data?.building;
+  const building = useRead(
+    "GetBuildActionState",
+    { build: id },
+    { refetchInterval: 5000 }
+  ).data?.building;
   const { mutate: run_mutate, isPending: runPending } = useExecute("RunBuild", {
     onMutate: () => {
       toast({ title: "Run Build Sent" });
