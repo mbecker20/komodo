@@ -230,7 +230,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
   const list = useRead(`List${type}s`, {}).data;
 
   const [open, setOpen] = useState(false);
-  const [input, setInput] = useState("");
+  const [search, setSearch] = useState("");
 
   const selected = list?.find((i) => i.id === id);
   const Components = ResourceComponents[type];
@@ -251,8 +251,8 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
           <CommandInput
             placeholder={`Search ${type}s`}
             className="h-9"
-            value={input}
-            onValueChange={setInput}
+            value={search}
+            onValueChange={setSearch}
           />
           <CommandList>
             <CommandEmpty className="flex justify-evenly items-center">
