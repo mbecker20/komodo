@@ -150,33 +150,22 @@ pub trait StateResource {
     .await
   }
 
-  async fn list_resources_for_user(
+  async fn list_resource_list_items_for_user(
     mut query: ResourceQuery<Self::QuerySpecifics>,
     user: &User,
   ) -> anyhow::Result<Vec<Self::ListItem>> {
     validate_resource_query_tags(&mut query).await;
     let mut filters = Document::new();
     query.add_filters(&mut filters);
-    Self::query_resources_for_user(filters, user).await
+    Self::query_resource_list_items_for_user(filters, user).await
   }
 
-  async fn query_resources_for_user(
-    mut filters: Document,
+  async fn query_resource_list_items_for_user(
+    filters: Document,
     user: &User,
   ) -> anyhow::Result<Vec<Self::ListItem>> {
-    if !user.admin {
-      let ids = Self::get_resource_ids_for_non_admin(&user.id)
-        .await?
-        .into_iter()
-        .flat_map(|id| ObjectId::from_str(&id))
-        .collect::<Vec<_>>();
-      filters.insert("_id", doc! { "$in": ids });
-    }
-    let list = find_collect(Self::coll().await, filters, None)
-      .await
-      .with_context(|| {
-        format!("failed to pull {}s from mongo", Self::name())
-      })?
+    let list = Self::query_resources_for_user(filters, user)
+      .await?
       .into_iter()
       .map(|resource| Self::to_list_item(resource));
 
@@ -190,6 +179,35 @@ pub trait StateResource {
       ))?;
 
     Ok(list)
+  }
+
+  async fn list_resources_for_user(
+    mut query: ResourceQuery<Self::QuerySpecifics>,
+    user: &User,
+  ) -> anyhow::Result<Vec<Resource<Self::Config, Self::Info>>> {
+    validate_resource_query_tags(&mut query).await;
+    let mut filters = Document::new();
+    query.add_filters(&mut filters);
+    Self::query_resources_for_user(filters, user).await
+  }
+
+  async fn query_resources_for_user(
+    mut filters: Document,
+    user: &User,
+  ) -> anyhow::Result<Vec<Resource<Self::Config, Self::Info>>> {
+    if !user.admin {
+      let ids = Self::get_resource_ids_for_non_admin(&user.id)
+        .await?
+        .into_iter()
+        .flat_map(|id| ObjectId::from_str(&id))
+        .collect::<Vec<_>>();
+      filters.insert("_id", doc! { "$in": ids });
+    }
+    find_collect(Self::coll().await, filters, None)
+      .await
+      .with_context(|| {
+        format!("failed to pull {}s from mongo", Self::name())
+      })
   }
 
   async fn update_description(

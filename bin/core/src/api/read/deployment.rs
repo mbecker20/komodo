@@ -1,4 +1,4 @@
-use std::{cmp, str::FromStr};
+use std::{cmp, collections::HashSet, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
@@ -53,7 +53,7 @@ impl Resolve<ListDeployments, User> for State {
     ListDeployments { query }: ListDeployments,
     user: User,
   ) -> anyhow::Result<Vec<DeploymentListItem>> {
-    Deployment::list_resources_for_user(query, &user).await
+    Deployment::list_resource_list_items_for_user(query, &user).await
   }
 }
 
@@ -252,5 +252,30 @@ impl Resolve<GetDeploymentsSummary, User> for State {
       }
     }
     Ok(res)
+  }
+}
+
+#[async_trait]
+impl Resolve<ListCommonExtraArgs, User> for State {
+  async fn resolve(
+    &self,
+    ListCommonExtraArgs { query }: ListCommonExtraArgs,
+    user: User,
+  ) -> anyhow::Result<ListCommonExtraArgsResponse> {
+    let deployments =
+      Deployment::list_resources_for_user(query, &user)
+        .await
+        .context("failed to get resources matching query")?;
+
+    // first collect with guaranteed uniqueness
+    let mut res = HashSet::<String>::new();
+
+    for deployment in deployments {
+      for extra_arg in deployment.config.extra_args {
+        res.insert(extra_arg);
+      }
+    }
+
+    Ok(res.into_iter().collect())
   }
 }

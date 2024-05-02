@@ -33,29 +33,31 @@ impl Resolve<FindResources, User> for State {
     for resource_type in resource_types {
       match resource_type {
         Server => {
-          res.servers = server::Server::query_resources_for_user(
-            query.clone(),
-            &user,
-          )
-          .await?;
+          res.servers =
+            server::Server::query_resource_list_items_for_user(
+              query.clone(),
+              &user,
+            )
+            .await?;
         }
         Deployment => {
           res.deployments =
-            deployment::Deployment::query_resources_for_user(
+            deployment::Deployment::query_resource_list_items_for_user(
               query.clone(),
               &user,
             )
             .await?;
         }
         Build => {
-          res.builds = build::Build::query_resources_for_user(
-            query.clone(),
-            &user,
-          )
-          .await?;
+          res.builds =
+            build::Build::query_resource_list_items_for_user(
+              query.clone(),
+              &user,
+            )
+            .await?;
         }
         Repo => {
-          res.repos = repo::Repo::query_resources_for_user(
+          res.repos = repo::Repo::query_resource_list_items_for_user(
             query.clone(),
             &user,
           )
@@ -63,7 +65,7 @@ impl Resolve<FindResources, User> for State {
         }
         Procedure => {
           res.procedures =
-            procedure::Procedure::query_resources_for_user(
+            procedure::Procedure::query_resource_list_items_for_user(
               query.clone(),
               &user,
             )

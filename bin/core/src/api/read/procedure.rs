@@ -47,7 +47,7 @@ impl Resolve<ListProcedures, User> for State {
     ListProcedures { query }: ListProcedures,
     user: User,
   ) -> anyhow::Result<ListProceduresResponse> {
-    Procedure::list_resources_for_user(query, &user).await
+    Procedure::list_resource_list_items_for_user(query, &user).await
   }
 }
 

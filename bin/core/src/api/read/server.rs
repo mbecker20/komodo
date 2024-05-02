@@ -40,9 +40,11 @@ impl Resolve<GetServersSummary, User> for State {
     GetServersSummary {}: GetServersSummary,
     user: User,
   ) -> anyhow::Result<GetServersSummaryResponse> {
-    let servers =
-      Server::list_resources_for_user(Default::default(), &user)
-        .await?;
+    let servers = Server::list_resource_list_items_for_user(
+      Default::default(),
+      &user,
+    )
+    .await?;
     let mut res = GetServersSummaryResponse::default();
     for server in servers {
       res.total += 1;
@@ -107,7 +109,7 @@ impl Resolve<ListServers, User> for State {
     ListServers { query }: ListServers,
     user: User,
   ) -> anyhow::Result<Vec<ServerListItem>> {
-    Server::list_resources_for_user(query, &user).await
+    Server::list_resource_list_items_for_user(query, &user).await
   }
 }
 

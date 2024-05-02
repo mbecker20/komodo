@@ -44,7 +44,7 @@ impl Resolve<ListRepos, User> for State {
     ListRepos { query }: ListRepos,
     user: User,
   ) -> anyhow::Result<Vec<RepoListItem>> {
-    Repo::list_resources_for_user(query, &user).await
+    Repo::list_resource_list_items_for_user(query, &user).await
   }
 }
 

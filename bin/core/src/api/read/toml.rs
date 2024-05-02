@@ -48,46 +48,67 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
     let mut targets = Vec::<ResourceTarget>::new();
 
     targets.extend(
-      Alerter::list_resources_for_user(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Alerter(resource.id)),
+      Alerter::list_resource_list_items_for_user(
+        Default::default(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Alerter(resource.id)),
     );
     targets.extend(
-      Builder::list_resources_for_user(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Builder(resource.id)),
+      Builder::list_resource_list_items_for_user(
+        Default::default(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Builder(resource.id)),
     );
     targets.extend(
-      Server::list_resources_for_user(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Server(resource.id)),
+      Server::list_resource_list_items_for_user(
+        Default::default(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Server(resource.id)),
     );
     targets.extend(
-      Deployment::list_resources_for_user(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Deployment(resource.id)),
+      Deployment::list_resource_list_items_for_user(
+        Default::default(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Deployment(resource.id)),
     );
     targets.extend(
-      Build::list_resources_for_user(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Build(resource.id)),
+      Build::list_resource_list_items_for_user(
+        Default::default(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Build(resource.id)),
     );
     targets.extend(
-      Repo::list_resources_for_user(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Repo(resource.id)),
+      Repo::list_resource_list_items_for_user(
+        Default::default(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Repo(resource.id)),
     );
     targets.extend(
-      Procedure::list_resources_for_user(Default::default(), &user)
-        .await?
-        .into_iter()
-        .map(|resource| ResourceTarget::Procedure(resource.id)),
+      Procedure::list_resource_list_items_for_user(
+        Default::default(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::Procedure(resource.id)),
     );
 
     let user_groups = if user.admin {

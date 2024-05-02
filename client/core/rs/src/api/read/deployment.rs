@@ -201,3 +201,22 @@ pub struct GetDeploymentsSummaryResponse {
   pub not_deployed: I64,
   pub unknown: I64,
 }
+
+//
+
+/// Gets a list of existing values used as extra args across other deployments.
+/// Useful to offer suggestions. Response: [ListCommonExtraArgsResponse]
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,
+)]
+#[empty_traits(MonitorReadRequest)]
+#[response(ListCommonExtraArgsResponse)]
+pub struct ListCommonExtraArgs {
+  /// optional structured query to filter deployments.
+  #[serde(default)]
+  pub query: DeploymentQuery,
+}
+
+#[typeshare]
+pub type ListCommonExtraArgsResponse = Vec<String>;

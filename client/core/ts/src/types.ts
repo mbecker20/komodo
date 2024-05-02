@@ -460,8 +460,6 @@ export interface DeploymentConfig {
 	 * Empty is no process args.
 	 */
 	process_args?: string;
-	/** The user of the container, or empty string to use the default image user. */
-	container_user?: string;
 	/**
 	 * Extra args which are interpolated into the `docker run` command,
 	 * and affect the container configuration.
@@ -544,6 +542,8 @@ export interface DeploymentActionState {
 }
 
 export type GetDeploymentActionStateResponse = DeploymentActionState;
+
+export type ListCommonExtraArgsResponse = string[];
 
 export type UserTarget = 
 	/** User Id */
@@ -1698,7 +1698,7 @@ export interface GetDeploymentContainer {
 	deployment: string;
 }
 
-/** Response for [GetDeploymentStatus]. */
+/** Response for [GetDeploymentContainer]. */
 export interface GetDeploymentContainerResponse {
 	state: DockerContainerState;
 	container?: ContainerSummary;
@@ -1780,6 +1780,15 @@ export interface GetDeploymentsSummaryResponse {
 	stopped: I64;
 	not_deployed: I64;
 	unknown: I64;
+}
+
+/**
+ * Gets a list of existing values used as extra args across other deployments.
+ * Useful to offer suggestions. Response: [ListCommonExtraArgsResponse]
+ */
+export interface ListCommonExtraArgs {
+	/** optional structured query to filter deployments. */
+	query?: DeploymentQuery;
 }
 
 /**
@@ -1887,8 +1896,8 @@ export interface GetRepoActionState {
 }
 
 /**
- * Gets a summary of data relating to all builds.
- * Response: [GetBuildsSummaryResponse].
+ * Gets a summary of data relating to all repos.
+ * Response: [GetReposSummaryResponse].
  */
 export interface GetReposSummary {
 }
@@ -3014,6 +3023,7 @@ export type ReadRequest =
 	| { type: "GetDeploymentStats", params: GetDeploymentStats }
 	| { type: "GetLog", params: GetLog }
 	| { type: "SearchLog", params: SearchLog }
+	| { type: "ListCommonExtraArgs", params: ListCommonExtraArgs }
 	| { type: "GetBuildsSummary", params: GetBuildsSummary }
 	| { type: "GetBuild", params: GetBuild }
 	| { type: "ListBuilds", params: ListBuilds }

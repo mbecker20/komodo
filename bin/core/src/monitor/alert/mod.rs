@@ -35,7 +35,7 @@ async fn get_all_servers_map() -> anyhow::Result<(
   HashMap<String, ServerListItem>,
   HashMap<String, String>,
 )> {
-  let servers = Server::list_resources_for_user(
+  let servers = Server::list_resource_list_items_for_user(
     ResourceQuery::default(),
     &User {
       admin: true,

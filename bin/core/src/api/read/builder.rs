@@ -44,7 +44,7 @@ impl Resolve<ListBuilders, User> for State {
     ListBuilders { query }: ListBuilders,
     user: User,
   ) -> anyhow::Result<Vec<BuilderListItem>> {
-    Builder::list_resources_for_user(query, &user).await
+    Builder::list_resource_list_items_for_user(query, &user).await
   }
 }
 

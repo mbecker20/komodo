@@ -44,7 +44,7 @@ impl Resolve<ListAlerters, User> for State {
     ListAlerters { query }: ListAlerters,
     user: User,
   ) -> anyhow::Result<Vec<AlerterListItem>> {
-    Alerter::list_resources_for_user(query, &user).await
+    Alerter::list_resource_list_items_for_user(query, &user).await
   }
 }
 
