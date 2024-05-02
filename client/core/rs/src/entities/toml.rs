@@ -76,9 +76,6 @@ pub struct ResourceToml<PartialConfig> {
   #[serde(default)]
   pub description: String,
 
-  #[serde(default)]
-  pub updated_at: i64,
-
   /// Tag ids or names
   #[serde(default)]
   pub tags: Vec<String>,

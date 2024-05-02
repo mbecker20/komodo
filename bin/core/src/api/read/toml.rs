@@ -443,6 +443,5 @@ where
       .collect(),
     description: resource.description,
     config: resource.config.into(),
-    updated_at: 0,
   }
 }
