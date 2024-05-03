@@ -101,6 +101,8 @@ pub struct PruneContainers {}
 #[response(Log)]
 pub struct Deploy {
   pub deployment: Deployment,
+  /// Override docker token with one sent from core.
+  pub docker_token: Option<String>,
   pub stop_signal: Option<TerminationSignal>,
   pub stop_time: Option<i32>,
 }

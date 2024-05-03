@@ -77,6 +77,7 @@ impl Resolve<CloneRepo, User> for State {
     let logs = match periphery
       .request(api::git::CloneRepo {
         args: (&repo).into(),
+        github_token: None,
       })
       .await
     {

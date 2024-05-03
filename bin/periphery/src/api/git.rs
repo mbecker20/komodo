@@ -9,10 +9,10 @@ impl Resolve<CloneRepo> for State {
   #[instrument(name = "CloneRepo", skip(self))]
   async fn resolve(
     &self,
-    CloneRepo { args }: CloneRepo,
+    CloneRepo { args, github_token }: CloneRepo,
     _: (),
   ) -> anyhow::Result<Vec<Log>> {
-    git::clone(args).await
+    git::clone(args, github_token).await
   }
 }
 

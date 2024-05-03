@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Context};
+use anyhow::anyhow;
 use monitor_client::entities::{
   deployment::{ContainerSummary, DockerContainerStats},
   update::Log,
@@ -203,25 +203,23 @@ impl Resolve<Deploy> for State {
     &self,
     Deploy {
       deployment,
+      docker_token,
       stop_signal,
       stop_time,
     }: Deploy,
     _: (),
   ) -> anyhow::Result<Log> {
-    let log = tokio::spawn(async move {
-      docker::container::deploy(
-        &deployment,
-        stop_signal
-          .unwrap_or(deployment.config.termination_signal)
-          .into(),
-        stop_time
-          .unwrap_or(deployment.config.termination_timeout)
-          .into(),
-      )
-      .await
-    })
-    .await
-    .context("failed at spawn thread for deploy")?;
-    Ok(log)
+    let res = docker::container::deploy(
+      &deployment,
+      stop_signal
+        .unwrap_or(deployment.config.termination_signal)
+        .into(),
+      stop_time
+        .unwrap_or(deployment.config.termination_timeout)
+        .into(),
+      docker_token,
+    )
+    .await;
+    Ok(res)
   }
 }

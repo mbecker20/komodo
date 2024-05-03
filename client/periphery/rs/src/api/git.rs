@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 #[response(Vec<Log>)]
 pub struct CloneRepo {
   pub args: CloneArgs,
+  /// Override github token with one sent from core.
+  pub github_token: Option<String>,
 }
 
 //

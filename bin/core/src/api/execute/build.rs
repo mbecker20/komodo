@@ -147,6 +147,7 @@ impl Resolve<RunBuild, User> for State {
       res = periphery
         .request(api::git::CloneRepo {
           args: (&build).into(),
+          github_token: None,
         }) => res,
       _ = cancel.cancelled() => {
         info!("build cancelled during clone, cleaning up builder");
@@ -178,6 +179,7 @@ impl Resolve<RunBuild, User> for State {
         res = periphery
           .request(api::build::Build {
             build: build.clone(),
+            docker_token: None,
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
           info!("build cancelled during build, cleaning up builder");

@@ -8,6 +8,8 @@ use serde::{Deserialize, Serialize};
 #[response(BuildResponse)]
 pub struct Build {
   pub build: monitor_client::entities::build::Build,
+  /// Override docker token with one sent from core.
+  pub docker_token: Option<String>,
 }
 
 pub type BuildResponse = Vec<Log>;

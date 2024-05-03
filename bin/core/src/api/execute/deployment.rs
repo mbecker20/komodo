@@ -107,6 +107,7 @@ impl Resolve<Deploy, User> for State {
         deployment,
         stop_signal,
         stop_time,
+        docker_token: None,
       })
       .await
     {

@@ -178,21 +178,26 @@ async fn pull_image(image: &str) -> Log {
   run_monitor_command("docker pull", command).await
 }
 
-#[instrument]
+#[instrument(skip(docker_token))]
 pub async fn deploy(
   deployment: &Deployment,
   stop_signal: Option<TerminationSignal>,
   stop_time: Option<i32>,
+  docker_token: Option<String>,
 ) -> Log {
-  let docker_token = match get_docker_token(&optional_string(
-    &deployment.config.docker_account,
-  )) {
-    Ok(token) => token,
-    Err(e) => {
+  let docker_token = match (
+    docker_token,
+    get_docker_token(&optional_string(
+      &deployment.config.docker_account,
+    )),
+  ) {
+    (Some(token), _) => Some(token),
+    (None, Ok(token)) => token,
+    (None, Err(e)) => {
       return Log::error("docker login", serialize_error_pretty(&e))
     }
   };
-
+  
   if let Err(e) = docker_login(
     &optional_string(&deployment.config.docker_account),
     &docker_token,

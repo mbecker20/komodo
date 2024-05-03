@@ -5,8 +5,12 @@ use monitor_client::entities::{
   update::Log,
   EnvironmentVar, Version,
 };
+use serror::serialize_error_pretty;
 
-use crate::{config::periphery_config, helpers::run_monitor_command};
+use crate::{
+  config::periphery_config,
+  helpers::{get_docker_token, run_monitor_command},
+};
 
 use super::{docker_login, parse_extra_args, parse_labels};
 
@@ -16,7 +20,7 @@ pub async fn prune_images() -> Log {
   run_monitor_command("prune images", command).await
 }
 
-#[instrument]
+#[instrument(skip(docker_token))]
 pub async fn build(
   Build {
     name,
@@ -39,6 +43,17 @@ pub async fn build(
   docker_token: Option<String>,
 ) -> anyhow::Result<Vec<Log>> {
   let mut logs = Vec::new();
+  let docker_token = match (
+    docker_token,
+    get_docker_token(&optional_string(docker_account)),
+  ) {
+    (Some(docker_token), _) => Some(docker_token),
+    (None, Ok(docker_token)) => docker_token,
+    (None, Err(e)) => {
+      logs.push(Log::error("build", serialize_error_pretty(&e)));
+      return Ok(logs);
+    }
+  };
   let name = to_monitor_name(name);
   let using_account =
     docker_login(&optional_string(docker_account), &docker_token)
