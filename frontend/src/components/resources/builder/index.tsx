@@ -16,11 +16,24 @@ import { Cloud, Bot, Factory } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BuilderConfig } from "./config";
-import { DeleteResource } from "../common";
+import { DeleteResource, ResourceLink } from "../common";
 import { BuidlerTable } from "./table";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
+
+export const BuilderInstanceType = ({ id }: { id: string }) => {
+  let info = useBuilder(id)?.info;
+  if (info?.builder_type === "Server") {
+    return (
+      info.instance_type && (
+        <ResourceLink type="Server" id={info.instance_type} />
+      )
+    );
+  } else {
+    return <>{info?.instance_type}</>;
+  }
+};
 
 export const BuilderComponents: RequiredResourceComponents = {
   Dashboard: () => {
@@ -97,13 +110,13 @@ export const BuilderComponents: RequiredResourceComponents = {
     Provider: ({ id }) => (
       <div className="flex items-center gap-2">
         <Cloud className="w-4 h-4" />
-        {useBuilder(id)?.info.provider}
+        {useBuilder(id)?.info.builder_type}
       </div>
     ),
     InstanceType: ({ id }) => (
       <div className="flex items-center gap-2">
         <Bot className="w-4 h-4" />
-        {useBuilder(id)?.info.instance_type ?? "N/A"}
+        <BuilderInstanceType id={id} />
       </div>
     ),
   },

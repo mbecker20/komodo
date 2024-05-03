@@ -6,16 +6,16 @@ use monitor_client::{
   api::write::CreateTag,
   entities::{
     alerter::{
-      Alerter, AlerterConfig, AlerterInfo, AlerterListItem,
-      AlerterListItemInfo, AlerterQuerySpecifics,
+      Alerter, AlerterConfig, AlerterConfigVariant, AlerterInfo,
+      AlerterListItem, AlerterListItemInfo, AlerterQuerySpecifics,
     },
     build::{
       Build, BuildConfig, BuildInfo, BuildListItem,
       BuildListItemInfo, BuildQuerySpecifics,
     },
     builder::{
-      Builder, BuilderConfig, BuilderListItem, BuilderListItemInfo,
-      BuilderQuerySpecifics,
+      Builder, BuilderConfig, BuilderConfigVariant, BuilderListItem,
+      BuilderListItemInfo, BuilderQuerySpecifics,
     },
     deployment::{
       Deployment, DeploymentConfig, DeploymentImage,
@@ -492,13 +492,15 @@ impl StateResource for Builder {
   async fn to_list_item(
     builder: Builder,
   ) -> anyhow::Result<BuilderListItem> {
-    let (provider, instance_type) = match builder.config {
-      BuilderConfig::Server(config) => {
-        ("server".to_string(), Some(config.server_id))
-      }
-      BuilderConfig::Aws(config) => {
-        ("aws ec2".to_string(), Some(config.instance_type))
-      }
+    let (builder_type, instance_type) = match builder.config {
+      BuilderConfig::Server(config) => (
+        BuilderConfigVariant::Server.to_string(),
+        Some(config.server_id),
+      ),
+      BuilderConfig::Aws(config) => (
+        BuilderConfigVariant::Aws.to_string(),
+        Some(config.instance_type),
+      ),
     };
 
     Ok(BuilderListItem {
@@ -510,7 +512,7 @@ impl StateResource for Builder {
       tags: builder.tags,
       resource_type: ResourceTargetVariant::Builder,
       info: BuilderListItemInfo {
-        provider,
+        builder_type,
         instance_type,
       },
     })
@@ -539,8 +541,12 @@ impl StateResource for Alerter {
     alerter: Alerter,
   ) -> anyhow::Result<AlerterListItem> {
     let (alerter_type, enabled) = match alerter.config {
-      AlerterConfig::Custom(config) => ("custom", config.enabled),
-      AlerterConfig::Slack(config) => ("slack", config.enabled),
+      AlerterConfig::Custom(config) => {
+        (AlerterConfigVariant::Custom.to_string(), config.enabled)
+      }
+      AlerterConfig::Slack(config) => {
+        (AlerterConfigVariant::Slack.to_string(), config.enabled)
+      }
     };
     Ok(AlerterListItem {
       name: alerter.name,

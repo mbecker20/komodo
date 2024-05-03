@@ -2,6 +2,7 @@ import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TagsWithBadge } from "@components/tags";
+import { BuilderInstanceType } from ".";
 
 export const BuidlerTable = ({ search }: { search?: string }) => {
   const tags = useTagsFilter();
@@ -40,6 +41,9 @@ export const BuidlerTable = ({ search }: { search?: string }) => {
           header: ({ column }) => (
             <SortableHeader column={column} title="Instance Type" />
           ),
+          cell: ({ row }) => {
+            <BuilderInstanceType id={row.original.id} />;
+          },
         },
         {
           header: "Tags",

@@ -21,7 +21,7 @@ pub type _PartialBuilderConfig = PartialBuilderConfig;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BuilderListItemInfo {
-  pub provider: String,
+  pub builder_type: String,
   pub instance_type: Option<String>,
 }
 

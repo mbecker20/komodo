@@ -357,7 +357,7 @@ export type Builder = Resource<BuilderConfig, undefined>;
 export type GetBuilderResponse = Builder;
 
 export interface BuilderListItemInfo {
-	provider: string;
+	builder_type: string;
 	instance_type?: string;
 }
 

@@ -12,17 +12,18 @@ pub mod build;
 pub mod builder;
 pub mod config;
 pub mod deployment;
+pub mod logger;
 pub mod permission;
 pub mod procedure;
 pub mod repo;
 pub mod resource;
 pub mod server;
+pub mod server_template;
 pub mod tag;
 pub mod toml;
 pub mod update;
 pub mod user;
 pub mod user_group;
-pub mod logger;
 
 #[typeshare(serialized_as = "number")]
 pub type I64 = i64;
