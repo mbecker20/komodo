@@ -144,12 +144,10 @@ export const useAuth = <
 
 // ============== UTILITY ==============
 
-/**
- * Actually returns UsableResoure | undefined
- */
 export const useResourceParamType = () => {
   const type = useParams().type;
   if (!type) return undefined;
+  if (type === "server-templates") return "ServerTemplate";
   return (type[0].toUpperCase() + type.slice(1, -1)) as UsableResource;
 };
 

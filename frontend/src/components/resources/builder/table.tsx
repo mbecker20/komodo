@@ -4,7 +4,7 @@ import { ResourceLink } from "../common";
 import { TagsWithBadge } from "@components/tags";
 import { BuilderInstanceType } from ".";
 
-export const BuidlerTable = ({ search }: { search?: string }) => {
+export const BuilderTable = ({ search }: { search?: string }) => {
   const tags = useTagsFilter();
   const builders = useRead("ListBuilders", {}).data;
   const searchSplit = search?.split(" ") || [];
@@ -31,7 +31,7 @@ export const BuidlerTable = ({ search }: { search?: string }) => {
           ),
         },
         {
-          accessorKey: "info.provider",
+          accessorKey: "info.builder_type",
           header: ({ column }) => (
             <SortableHeader column={column} title="Provider" />
           ),

@@ -17,7 +17,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BuilderConfig } from "./config";
 import { DeleteResource, ResourceLink } from "../common";
-import { BuidlerTable } from "./table";
+import { BuilderTable } from "./table";
 
 const useBuilder = (id?: string) =>
   useRead("ListBuilders", {}).data?.find((d) => d.id === id);
@@ -97,7 +97,7 @@ export const BuilderComponents: RequiredResourceComponents = {
     );
   },
 
-  Table: BuidlerTable,
+  Table: BuilderTable,
 
   Name: ({ id }: { id: string }) => <>{useBuilder(id)?.name}</>,
   name: (id) => useBuilder(id)?.name,
