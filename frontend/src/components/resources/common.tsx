@@ -44,8 +44,11 @@ export const ResourceDescription = ({
   const { toast } = useToast();
   const inv = useInvalidate();
 
+  const key =
+    type === "ServerTemplate" ? "server_template" : type.toLowerCase();
+
   const resource = useRead(`Get${type}`, {
-    [type.toLowerCase()]: id,
+    [key]: id,
   } as any).data;
 
   const { mutate: update_description } = useWrite("UpdateDescription", {
@@ -209,6 +212,8 @@ export const CopyResource = ({
 export const NewResource = ({ type }: { type: UsableResource }) => {
   const { mutateAsync } = useWrite(`Create${type}`);
   const [name, setName] = useState("");
+  const type_display =
+    type === "ServerTemplate" ? "server-template" : type.toLowerCase();
   return (
     <NewLayout
       entityType={type}
@@ -219,7 +224,7 @@ export const NewResource = ({ type }: { type: UsableResource }) => {
       <div className="grid md:grid-cols-2">
         {type} Name
         <Input
-          placeholder={`${type.toLowerCase()}-name`}
+          placeholder={`${type_display}-name`}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -236,8 +241,10 @@ export const DeleteResource = ({
   id: string;
 }) => {
   const nav = useNavigate();
+  const key =
+    type === "ServerTemplate" ? "server_template" : type.toLowerCase();
   const resource = useRead(`Get${type}`, {
-    [type.toLowerCase()]: id,
+    [key]: id,
   } as any).data;
   const { mutateAsync, isPending } = useWrite(`Delete${type}`);
 

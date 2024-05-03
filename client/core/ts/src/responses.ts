@@ -34,6 +34,11 @@ export type ReadResponses = {
   GetProcedureActionState: Types.GetProcedureActionStateResponse;
   ListProcedures: Types.ListProceduresResponse;
 
+  // ==== SERVER TEMPLATE ====
+  GetServerTemplate: Types.GetServerTemplateResponse;
+  ListServerTemplates: Types.ListServerTemplatesResponse;
+  GetServerTemplateSummary: Types.GetServerTemplatesSummaryResponse;
+
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;
   GetServer: Types.GetServerResponse;
@@ -163,6 +168,12 @@ export type WriteResponses = {
   DeleteBuilder: Types.Builder;
   UpdateBuilder: Types.Builder;
 
+  // ==== SERVER TEMPLATE ====
+  CreateServerTemplate: Types.ServerTemplate;
+  CopyServerTemplate: Types.ServerTemplate;
+  DeleteServerTemplate: Types.ServerTemplate;
+  UpdateServerTemplate: Types.ServerTemplate;
+
   // ==== REPO ====
   CreateRepo: Types.Repo;
   CopyRepo: Types.Repo;
@@ -211,4 +222,7 @@ export type ExecuteResponses = {
 
   // ==== PROCEDURE ====
   RunProcedure: Types.Update;
+
+  // ==== SERVER TEMPLATE ====
+  LaunchServer: Types.Update;
 };

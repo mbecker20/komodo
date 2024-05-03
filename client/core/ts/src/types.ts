@@ -53,7 +53,8 @@ export type ResourceTarget =
 	| { type: "Server", id: string }
 	| { type: "Repo", id: string }
 	| { type: "Alerter", id: string }
-	| { type: "Procedure", id: string };
+	| { type: "Procedure", id: string }
+	| { type: "ServerTemplate", id: string };
 
 export interface User {
 	/**
@@ -978,6 +979,25 @@ export type GetSystemProcessesResponse = SystemProcess[];
 
 export type GetAvailableSecretsResponse = string[];
 
+export type ServerTemplateConfig = 
+	/** Template to launch an AWS EC2 instance */
+	| { type: "Aws", params: AwsServerTemplateConfig };
+
+export type ServerTemplate = Resource<ServerTemplateConfig, undefined>;
+
+export type GetServerTemplateResponse = ServerTemplate;
+
+export interface ServerTemplateListItemInfo {
+	/** The cloud provider */
+	provider: string;
+	/** The instance type, eg c5.2xlarge on for Aws templates */
+	instance_type?: string;
+}
+
+export type ServerTemplateListItem = ResourceListItem<ServerTemplateListItemInfo>;
+
+export type ListServerTemplatesResponse = ServerTemplateListItem[];
+
 export interface Tag {
 	/**
 	 * The Mongo ID of the tag.
@@ -1004,7 +1024,6 @@ export type ExportResourcesToTomlResponse = TomlResponse;
 
 export enum Operation {
 	None = "None",
-	LaunchServer = "LaunchServer",
 	CreateServer = "CreateServer",
 	UpdateServer = "UpdateServer",
 	DeleteServer = "DeleteServer",
@@ -1043,6 +1062,10 @@ export enum Operation {
 	UpdateProcedure = "UpdateProcedure",
 	DeleteProcedure = "DeleteProcedure",
 	RunProcedure = "RunProcedure",
+	CreateServerTemplate = "CreateServerTemplate",
+	UpdateServerTemplate = "UpdateServerTemplate",
+	DeleteServerTemplate = "DeleteServerTemplate",
+	LaunchServer = "LaunchServer",
 }
 
 export enum UpdateStatus {
@@ -1248,6 +1271,14 @@ export interface ServerQuerySpecifics {
 
 /** Server-specific query */
 export type ServerQuery = ResourceQuery<ServerQuerySpecifics>;
+
+export type _PartialAwsServerTemplateConfig = Partial<AwsServerTemplateConfig>;
+
+export interface ServerTemplateQuerySpecifics {
+	types: ServerTemplateConfig["type"][];
+}
+
+export type ServerTemplateQuery = ResourceQuery<ServerTemplateQuerySpecifics>;
 
 export type _PartialTag = Partial<Tag>;
 
@@ -1465,6 +1496,17 @@ export interface PruneDockerImages {
 export interface PruneDockerContainers {
 	/** Id or name */
 	server: string;
+}
+
+/**
+ * Launch an EC2 instance with the specified config.
+ * Response: [Update].
+ */
+export interface LaunchServer {
+	/** The name of the created server. */
+	name: string;
+	/** The server template used to define the config. */
+	server_template: string;
 }
 
 /**
@@ -2122,6 +2164,30 @@ export interface GetAvailableSecrets {
 	server: string;
 }
 
+/** Get a specific server template by id or name. Response: [ServerTemplate]. */
+export interface GetServerTemplate {
+	/** Id or name */
+	server_template: string;
+}
+
+/** List server templates matching structured query. Response: [ListServerTemplatesResponse]. */
+export interface ListServerTemplates {
+	query?: ServerTemplateQuery;
+}
+
+/**
+ * Gets a summary of data relating to all server templates.
+ * Response: [GetServerTemplatesSummaryResponse].
+ */
+export interface GetServerTemplatesSummary {
+}
+
+/** Response for [GetServerTemplatesSummary]. */
+export interface GetServerTemplatesSummaryResponse {
+	/** The total number of server templates. */
+	total: number;
+}
+
 /** Get data for a specific tag. Response [Tag]. */
 export interface GetTag {
 	/** Id or name */
@@ -2413,7 +2479,7 @@ export interface CreateBuilder {
 
 /**
  * Creates a new builder with given `name` and the configuration
- * of the builder at the given `id`
+ * of the builder at the given `id`. Response: [Builder]
  */
 export interface CopyBuilder {
 	/** The name of the new builder. */
@@ -2513,11 +2579,6 @@ export interface UpdateDescription {
 	description: string;
 }
 
-/** The cloud specific config. */
-export type LaunchServerConfig = 
-	/** Launch a server on AWS. */
-	| { type: "Aws", params: LaunchAwsServerConfig };
-
 /**
  * Launch an EC2 instance with the specified config.
  * Response: [Update].
@@ -2525,53 +2586,8 @@ export type LaunchServerConfig =
 export interface LaunchServer {
 	/** The name of the created server. */
 	name: string;
-	/** The configuration used to launch the server. */
-	config: LaunchServerConfig;
-}
-
-/**
- * For information on AWS volumes, see
- * `<https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volume-types.html>`.
- */
-export interface AwsVolume {
-	/** The device name (for example, `/dev/sda1` or `xvdh`). */
-	device_name: string;
-	/** The size of the volume in GB */
-	size_gb: number;
-	/** The type of volume, eg gp2, gp3, io1 */
-	volume_type?: string;
-	/** The iops of the volume, or AWS default. */
-	iops?: number;
-	/** The throughput of the volume, or AWS default. */
-	throughput?: number;
-}
-
-/** Aws EC2 instance config. */
-export interface LaunchAwsServerConfig {
-	/** The aws region to launch the server in, eg. us-east-1 */
-	region: string;
-	/** The instance type to launch, eg. c5.2xlarge */
-	instance_type: string;
-	/** Specify the EBS volumes to attach. */
-	volumes: AwsVolume[];
-	/** Specify the ami id to use. Must be set up to start the periphery binary on startup. */
-	ami_id: string;
-	/** The subnet to assign to the instance. */
-	subnet_id: string;
-	/** The security groups to give to the instance. */
-	security_group_ids: string[];
-	/** The key pair name to give to the instance in case SSH access required. */
-	key_pair_name: string;
-	/**
-	 * Assign a public ip to the instance. Depending on how your network is
-	 * setup, this may be required for the instance to reach the public internet.
-	 */
-	assign_public_ip: boolean;
-	/**
-	 * Use the instances public ip as the address for the server.
-	 * Could be used when build instances are created in another non-interconnected network to the core api.
-	 */
-	use_public_ip: boolean;
+	/** The server template used to define the config. */
+	server_template: string;
 }
 
 /**
@@ -2757,6 +2773,54 @@ export interface DeleteNetwork {
 	name: string;
 }
 
+export type PartialServerTemplateConfig = 
+	| { type: "Aws", params: _PartialAwsServerTemplateConfig };
+
+/** Create a server template. Response: [ServerTemplate]. */
+export interface CreateServerTemplate {
+	/** The name given to newly created server template. */
+	name: string;
+	/** Optional partial config to initialize the server template with. */
+	config: PartialServerTemplateConfig;
+}
+
+/**
+ * Creates a new server template with given `name` and the configuration
+ * of the server template at the given `id`. Response: [ServerTemplate]
+ */
+export interface CopyServerTemplate {
+	/** The name of the new server template. */
+	name: string;
+	/** The id of the server template to copy. */
+	id: string;
+}
+
+/**
+ * Deletes the server template at the given id, and returns the deleted server template.
+ * Response: [ServerTemplate]
+ */
+export interface DeleteServerTemplate {
+	/** The id of the server template to delete. */
+	id: string;
+}
+
+/**
+ * Update the server template at the given id, and return the updated server template.
+ * Response: [ServerTemplate].
+ * 
+ * Note. This method updates only the fields which are set in the [PartialServerTemplateConfig],
+ * effectively merging diffs into the final document.
+ * This is helpful when multiple users are using
+ * the same resources concurrently by ensuring no unintentional
+ * field changes occur from out of date local state.
+ */
+export interface UpdateServerTemplate {
+	/** The id of the server template to update. */
+	id: string;
+	/** The partial config update to apply. */
+	config: PartialServerTemplateConfig;
+}
+
 /** Create a tag. Response: [Tag]. */
 export interface CreateTag {
 	/** The name of the tag. */
@@ -2907,7 +2971,10 @@ export interface AwsBuilderConfig {
 	instance_type: string;
 	/** The size of the builder volume in gb */
 	volume_gb: number;
-	/** The port periphery will be running on */
+	/**
+	 * The port periphery will be running on.
+	 * Default: `8120`
+	 */
 	port: number;
 	/**
 	 * The EC2 ami id to create.
@@ -2964,6 +3031,56 @@ export interface ServerHealth {
 	disks: Record<string, SeverityLevel>;
 }
 
+/**
+ * For information on AWS volumes, see
+ * `<https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volume-types.html>`.
+ */
+export interface AwsVolume {
+	/** The device name (for example, `/dev/sda1` or `xvdh`). */
+	device_name: string;
+	/** The size of the volume in GB */
+	size_gb: number;
+	/** The type of volume, eg gp2, gp3, io1 */
+	volume_type?: string;
+	/** The iops of the volume, or AWS default. */
+	iops?: number;
+	/** The throughput of the volume, or AWS default. */
+	throughput?: number;
+}
+
+/** Aws EC2 instance config. */
+export interface AwsServerTemplateConfig {
+	/** The aws region to launch the server in, eg. us-east-1 */
+	region: string;
+	/** The instance type to launch, eg. c5.2xlarge */
+	instance_type: string;
+	/** Specify the EBS volumes to attach. */
+	volumes: AwsVolume[];
+	/** Specify the ami id to use. Must be set up to start the periphery binary on startup. */
+	ami_id: string;
+	/** The subnet to assign to the instance. */
+	subnet_id: string;
+	/** The security groups to give to the instance. */
+	security_group_ids: string[];
+	/** The key pair name to give to the instance in case SSH access required. */
+	key_pair_name: string;
+	/**
+	 * Assign a public ip to the instance. Depending on how your network is
+	 * setup, this may be required for the instance to reach the public internet.
+	 */
+	assign_public_ip: boolean;
+	/**
+	 * Use the instances public ip as the address for the server.
+	 * Could be used when build instances are created in another non-interconnected network to the core api.
+	 */
+	use_public_ip: boolean;
+	/**
+	 * The port periphery will be running on in AMI.
+	 * Default: `8120`
+	 */
+	port: number;
+}
+
 export type AuthRequest = 
 	| { type: "GetLoginOptions", params: GetLoginOptions }
 	| { type: "CreateLocalUser", params: CreateLocalUser }
@@ -2984,7 +3101,8 @@ export type ExecuteRequest =
 	| { type: "CancelBuild", params: CancelBuild }
 	| { type: "CloneRepo", params: CloneRepo }
 	| { type: "PullRepo", params: PullRepo }
-	| { type: "RunProcedure", params: RunProcedure };
+	| { type: "RunProcedure", params: RunProcedure }
+	| { type: "LaunchServer", params: LaunchServer };
 
 export type ReadRequest = 
 	| { type: "GetVersion", params: GetVersion }
@@ -3003,6 +3121,9 @@ export type ReadRequest =
 	| { type: "GetProcedure", params: GetProcedure }
 	| { type: "GetProcedureActionState", params: GetProcedureActionState }
 	| { type: "ListProcedures", params: ListProcedures }
+	| { type: "GetServerTemplate", params: GetServerTemplate }
+	| { type: "ListServerTemplates", params: ListServerTemplates }
+	| { type: "GetServerTemplateSummary", params: GetServerTemplatesSummary }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }
@@ -3072,7 +3193,6 @@ export type WriteRequest =
 	| { type: "UpdateUserBasePermissions", params: UpdateUserBasePermissions }
 	| { type: "UpdatePermissionOnTarget", params: UpdatePermissionOnTarget }
 	| { type: "UpdateDescription", params: UpdateDescription }
-	| { type: "LaunchServer", params: LaunchServer }
 	| { type: "CreateServer", params: CreateServer }
 	| { type: "DeleteServer", params: DeleteServer }
 	| { type: "UpdateServer", params: UpdateServer }
@@ -3092,6 +3212,10 @@ export type WriteRequest =
 	| { type: "CopyBuilder", params: CopyBuilder }
 	| { type: "DeleteBuilder", params: DeleteBuilder }
 	| { type: "UpdateBuilder", params: UpdateBuilder }
+	| { type: "CreateServerTemplate", params: CreateServerTemplate }
+	| { type: "CopyServerTemplate", params: CopyServerTemplate }
+	| { type: "DeleteServerTemplate", params: DeleteServerTemplate }
+	| { type: "UpdateServerTemplate", params: UpdateServerTemplate }
 	| { type: "CreateRepo", params: CreateRepo }
 	| { type: "CopyRepo", params: CopyRepo }
 	| { type: "DeleteRepo", params: DeleteRepo }
