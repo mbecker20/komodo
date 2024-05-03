@@ -8,12 +8,14 @@ mod deployment;
 mod procedure;
 mod repo;
 mod server;
+mod server_template;
 
 pub use build::*;
 pub use deployment::*;
 pub use procedure::*;
 pub use repo::*;
 pub use server::*;
+pub use server_template::*;
 
 use crate::entities::NoData;
 

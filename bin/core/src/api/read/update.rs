@@ -13,6 +13,7 @@ use monitor_client::{
     procedure::Procedure,
     repo::Repo,
     server::Server,
+    server_template::ServerTemplate,
     update::{ResourceTarget, Update, UpdateListItem},
     user::User,
   },
@@ -193,6 +194,14 @@ impl Resolve<GetUpdate, User> for State {
       }
       ResourceTarget::Procedure(id) => {
         Procedure::get_resource_check_permissions(
+          id,
+          &user,
+          PermissionLevel::Read,
+        )
+        .await?;
+      }
+      ResourceTarget::ServerTemplate(id) => {
+        ServerTemplate::get_resource_check_permissions(
           id,
           &user,
           PermissionLevel::Read,

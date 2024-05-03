@@ -17,7 +17,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::update_one_by_id,
-  mongodb::bson::{doc, oid::ObjectId, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_document},
 };
 use resolver_api::Resolve;
 
@@ -261,8 +261,8 @@ impl Resolve<UpdateBuild, User> for State {
 
     if let Some(builder_id) = &config.builder_id {
       let builder = Builder::get_resource_check_permissions(builder_id, &user, PermissionLevel::Read)
-          .await
-          .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
+        .await
+        .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
       config.builder_id = Some(builder.id)
     }
 
@@ -276,11 +276,14 @@ impl Resolve<UpdateBuild, User> for State {
       extra_args.retain(|v| !empty_or_only_spaces(v))
     }
 
+    let config_doc = to_document(&config)
+      .context("failed to serialize config to bson document")?;
+
     update_one_by_id(
       &db_client().await.builds,
       &build.id,
       mungos::update::Update::FlattenSet(
-        doc! { "config": to_bson(&config)? },
+        doc! { "config": config_doc },
       ),
       None,
     )
@@ -292,7 +295,8 @@ impl Resolve<UpdateBuild, User> for State {
 
     update.push_simple_log(
       "build update",
-      serde_json::to_string_pretty(&config)?,
+      serde_json::to_string_pretty(&config)
+        .context("failed to serialize config to json")?,
     );
 
     update.finalize();

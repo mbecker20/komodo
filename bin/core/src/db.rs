@@ -11,6 +11,7 @@ use monitor_client::entities::{
   procedure::Procedure,
   repo::Repo,
   server::{stats::SystemStatsRecord, Server},
+  server_template::ServerTemplate,
   tag::Tag,
   update::Update,
   user::User,
@@ -38,6 +39,7 @@ pub struct DbClient {
   pub repos: Collection<Repo>,
   pub procedures: Collection<Procedure>,
   pub alerters: Collection<Alerter>,
+  pub server_templates: Collection<ServerTemplate>,
   //
   pub db: Database,
 }
@@ -93,6 +95,8 @@ impl DbClient {
       repos: resource_collection(&db, "Repo").await?,
       alerters: resource_collection(&db, "Alerter").await?,
       procedures: resource_collection(&db, "Procedure").await?,
+      server_templates: resource_collection(&db, "ServerTemplate")
+        .await?,
       db,
     };
     Ok(client)

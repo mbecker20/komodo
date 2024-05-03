@@ -10,7 +10,8 @@ use monitor_client::{
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, permission::PermissionLevel,
-    procedure::Procedure, repo::Repo, server::Server, tag::Tag,
+    procedure::Procedure, repo::Repo, server::Server,
+    server_template::ServerTemplate, tag::Tag,
     update::ResourceTarget, user::User,
   },
 };
@@ -185,6 +186,16 @@ impl Resolve<UpdateTagsOnResource, User> for State {
         )
         .await?;
         Procedure::update_tags_on_resource(&id, tags, user).await?
+      }
+      ResourceTarget::ServerTemplate(id) => {
+        ServerTemplate::get_resource_check_permissions(
+          &id,
+          &user,
+          PermissionLevel::Write,
+        )
+        .await?;
+        ServerTemplate::update_tags_on_resource(&id, tags, user)
+          .await?
       }
     };
     Ok(UpdateTagsOnResourceResponse {})

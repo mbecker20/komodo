@@ -67,12 +67,6 @@ impl PartialDiff<PartialBuilderConfig> for BuilderConfig {
   }
 }
 
-#[typeshare(serialized_as = "Partial<ServerBuilderConfig>")]
-pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
-
-#[typeshare(serialized_as = "Partial<AwsBuilderConfig>")]
-pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
-
 /// Partial representation of [BuilderConfig]
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
@@ -179,6 +173,9 @@ impl BuilderConfig {
   }
 }
 
+#[typeshare(serialized_as = "Partial<ServerBuilderConfig>")]
+pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
+
 /// Configuration for a monitor server builder.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
@@ -190,6 +187,9 @@ pub struct ServerBuilderConfig {
   #[partial_attr(serde(alias = "server"))]
   pub server_id: String,
 }
+
+#[typeshare(serialized_as = "Partial<AwsBuilderConfig>")]
+pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
 
 /// Configuration for an AWS builder.
 #[typeshare]
@@ -215,7 +215,8 @@ pub struct AwsBuilderConfig {
   #[partial_default(aws_default_volume_gb())]
   pub volume_gb: i32,
 
-  /// The port periphery will be running on
+  /// The port periphery will be running on.
+  /// Default: `8120`
   #[serde(default = "default_port")]
   #[builder(default = "default_port()")]
   #[partial_default(default_port())]

@@ -12,14 +12,12 @@ use aws_sdk_ec2::{
   },
   Client,
 };
-use monitor_client::{
-  api::write::LaunchAwsServerConfig,
-  entities::{
-    alert::{Alert, AlertData, AlertDataVariant},
-    monitor_timestamp,
-    server::stats::SeverityLevel,
-    update::ResourceTarget,
-  },
+use monitor_client::entities::{
+  alert::{Alert, AlertData, AlertDataVariant},
+  monitor_timestamp,
+  server::stats::SeverityLevel,
+  server_template::AwsServerTemplateConfig,
+  update::ResourceTarget,
 };
 
 use crate::{config::core_config, helpers::alert::send_alerts};
@@ -54,9 +52,9 @@ async fn create_ec2_client(region: String) -> Client {
 #[instrument]
 pub async fn launch_ec2_instance(
   name: &str,
-  config: LaunchAwsServerConfig,
+  config: AwsServerTemplateConfig,
 ) -> anyhow::Result<Ec2Instance> {
-  let LaunchAwsServerConfig {
+  let AwsServerTemplateConfig {
     region,
     instance_type,
     volumes,
@@ -66,6 +64,7 @@ pub async fn launch_ec2_instance(
     key_pair_name,
     assign_public_ip,
     use_public_ip,
+    port: _,
   } = config;
   let instance_type = handle_unknown_instance_type(
     InstanceType::from(instance_type.as_str()),

@@ -6,7 +6,8 @@ use monitor_client::{
     alerter::AlerterListItem, build::BuildListItem,
     builder::BuilderListItem, deployment::DeploymentListItem,
     procedure::ProcedureListItem, repo::RepoListItem,
-    server::ServerListItem, user::User, user_group::UserGroup,
+    server::ServerListItem, server_template::ServerTemplateListItem,
+    user::User, user_group::UserGroup,
   },
 };
 
@@ -210,6 +211,22 @@ pub fn id_to_procedure() -> &'static HashMap<String, ProcedureListItem>
   ID_TO_PROCEDURE.get_or_init(|| {
     futures::executor::block_on(
       monitor_client().read(read::ListProcedures::default()),
+    )
+    .expect("failed to get procedures from monitor")
+    .into_iter()
+    .map(|procedure| (procedure.id.clone(), procedure))
+    .collect()
+  })
+}
+
+pub fn id_to_server_template(
+) -> &'static HashMap<String, ServerTemplateListItem> {
+  static ID_TO_SERVER_TEMPLATE: OnceLock<
+    HashMap<String, ServerTemplateListItem>,
+  > = OnceLock::new();
+  ID_TO_SERVER_TEMPLATE.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListServerTemplates::default()),
     )
     .expect("failed to get procedures from monitor")
     .into_iter()

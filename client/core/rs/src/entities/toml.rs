@@ -5,12 +5,21 @@ use super::{
   builder::PartialBuilderConfig, deployment::PartialDeploymentConfig,
   permission::PermissionLevel, procedure::PartialProcedureConfig,
   repo::PartialRepoConfig, server::PartialServerConfig,
+  server_template::PartialServerTemplateConfig,
   update::ResourceTarget,
 };
 
 /// Specifies resources to sync on monitor
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct ResourcesToml {
+  #[serde(
+    default,
+    rename = "server_template",
+    skip_serializing_if = "Vec::is_empty"
+  )]
+  pub server_templates:
+    Vec<ResourceToml<PartialServerTemplateConfig>>,
+
   #[serde(
     default,
     rename = "server",

@@ -36,6 +36,11 @@ use monitor_client::{
       Server, ServerConfig, ServerListItem, ServerListItemInfo,
       ServerQuerySpecifics,
     },
+    server_template::{
+      ServerTemplate, ServerTemplateConfig,
+      ServerTemplateConfigVariant, ServerTemplateListItem,
+      ServerTemplateListItemInfo, ServerTemplateQuerySpecifics,
+    },
     update::{ResourceTarget, ResourceTargetVariant},
     user::User,
   },
@@ -596,6 +601,50 @@ impl StateResource for Procedure {
       resource_type: ResourceTargetVariant::Procedure,
       info: ProcedureListItemInfo {
         procedure_type: procedure.config.procedure_type,
+      },
+    })
+  }
+}
+
+impl StateResource for ServerTemplate {
+  type ListItem = ServerTemplateListItem;
+  type Config = ServerTemplateConfig;
+  type Info = ();
+  type QuerySpecifics = ServerTemplateQuerySpecifics;
+
+  fn name() -> &'static str {
+    "server_template"
+  }
+
+  fn resource_target_variant() -> ResourceTargetVariant {
+    ResourceTargetVariant::Alerter
+  }
+
+  async fn coll() -> &'static Collection<ServerTemplate> {
+    &db_client().await.server_templates
+  }
+
+  async fn to_list_item(
+    server_template: ServerTemplate,
+  ) -> anyhow::Result<ServerTemplateListItem> {
+    let (template_type, instance_type) = match server_template.config
+    {
+      ServerTemplateConfig::Aws(config) => (
+        ServerTemplateConfigVariant::Aws.to_string(),
+        Some(config.instance_type),
+      ),
+    };
+    Ok(ServerTemplateListItem {
+      name: server_template.name,
+      created_at: ObjectId::from_str(&server_template.id)?
+        .timestamp()
+        .timestamp_millis(),
+      id: server_template.id,
+      tags: server_template.tags,
+      resource_type: ResourceTargetVariant::ServerTemplate,
+      info: ServerTemplateListItemInfo {
+        provider: template_type.to_string(),
+        instance_type,
       },
     })
   }

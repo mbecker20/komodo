@@ -5,7 +5,8 @@ use monitor_client::{
   entities::{
     alerter::Alerter, build::Build, builder::Builder,
     deployment::Deployment, procedure::Procedure, repo::Repo,
-    server::Server, update::ResourceTarget, user::User,
+    server::Server, server_template::ServerTemplate,
+    update::ResourceTarget, user::User,
   },
 };
 use resolver_api::Resolve;
@@ -50,6 +51,10 @@ impl Resolve<UpdateDescription, User> for State {
       }
       ResourceTarget::Procedure(id) => {
         Procedure::update_description(&id, &description, &user)
+          .await?;
+      }
+      ResourceTarget::ServerTemplate(id) => {
+        ServerTemplate::update_description(&id, &description, &user)
           .await?;
       }
     }

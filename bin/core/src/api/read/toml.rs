@@ -21,6 +21,7 @@ use monitor_client::{
     repo::Repo,
     resource::Resource,
     server::Server,
+    server_template::ServerTemplate,
     toml::{
       PermissionToml, ResourceToml, ResourcesToml, UserGroupToml,
     },
@@ -158,6 +159,18 @@ impl Resolve<ExportResourcesToToml, User> for State {
           )
           .await?;
           res.alerters.push(convert_resource(alerter, &names.tags))
+        }
+        ResourceTarget::ServerTemplate(id) => {
+          let template =
+            ServerTemplate::get_resource_check_permissions(
+              &id,
+              &user,
+              PermissionLevel::Read,
+            )
+            .await?;
+          res
+            .server_templates
+            .push(convert_resource(template, &names.tags))
         }
         ResourceTarget::Server(id) => {
           let server = Server::get_resource_check_permissions(

@@ -26,7 +26,7 @@ pub struct CreateBuilder {
 //
 
 /// Creates a new builder with given `name` and the configuration
-/// of the builder at the given `id`
+/// of the builder at the given `id`. Response: [Builder]
 #[typeshare]
 #[derive(
   Serialize, Deserialize, Debug, Clone, Request, EmptyTraits,

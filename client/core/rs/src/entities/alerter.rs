@@ -78,12 +78,6 @@ impl PartialDiff<PartialAlerterConfig> for AlerterConfig {
   }
 }
 
-#[typeshare(serialized_as = "Partial<CustomAlerterConfig>")]
-pub type _PartialCustomAlerterConfig = PartialCustomAlerterConfig;
-
-#[typeshare(serialized_as = "Partial<SlackAlerterConfig>")]
-pub type _PartialSlackAlerterConfig = PartialSlackAlerterConfig;
-
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
@@ -167,6 +161,9 @@ impl AlerterConfig {
   }
 }
 
+#[typeshare(serialized_as = "Partial<CustomAlerterConfig>")]
+pub type _PartialCustomAlerterConfig = PartialCustomAlerterConfig;
+
 /// Configuration for a custom alerter.
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
@@ -180,6 +177,9 @@ pub struct CustomAlerterConfig {
   #[serde(default)]
   pub enabled: bool,
 }
+
+#[typeshare(serialized_as = "Partial<SlackAlerterConfig>")]
+pub type _PartialSlackAlerterConfig = PartialSlackAlerterConfig;
 
 /// Configuration for a slack alerter.
 #[typeshare]

@@ -18,7 +18,7 @@ use monitor_client::{
 };
 use mungos::{
   by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, oid::ObjectId, to_bson},
+  mongodb::bson::{doc, oid::ObjectId, to_document},
 };
 use resolver_api::Resolve;
 
@@ -195,6 +195,7 @@ impl Resolve<DeleteBuilder, User> for State {
     )
     .await?;
 
+    // remove the builder from any attached builds
     db_client()
       .await
       .builds
@@ -253,7 +254,8 @@ impl Resolve<UpdateBuilder, User> for State {
       start_ts: monitor_timestamp(),
       logs: vec![Log::simple(
         "builder update",
-        serde_json::to_string_pretty(&config).unwrap(),
+        serde_json::to_string_pretty(&config)
+          .context("failed to serialize config update")?,
       )],
       operator: user.id.clone(),
       ..Default::default()
@@ -265,7 +267,7 @@ impl Resolve<UpdateBuilder, User> for State {
       &db_client().await.builders,
       &id,
       mungos::update::Update::FlattenSet(
-        doc! { "config": to_bson(&config)? },
+        doc! { "config": to_document(&config)? },
       ),
       None,
     )

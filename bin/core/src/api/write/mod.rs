@@ -18,11 +18,11 @@ mod build;
 mod builder;
 mod deployment;
 mod description;
-mod launch;
 mod permissions;
 mod procedure;
 mod repo;
 mod server;
+mod server_template;
 mod tag;
 mod user;
 mod user_group;
@@ -61,7 +61,6 @@ enum WriteRequest {
   UpdateDescription(UpdateDescription),
 
   // ==== SERVER ====
-  LaunchServer(LaunchServer),
   CreateServer(CreateServer),
   DeleteServer(DeleteServer),
   UpdateServer(UpdateServer),
@@ -87,6 +86,12 @@ enum WriteRequest {
   CopyBuilder(CopyBuilder),
   DeleteBuilder(DeleteBuilder),
   UpdateBuilder(UpdateBuilder),
+
+  // ==== SERVER TEMPLATE ====
+  CreateServerTemplate(CreateServerTemplate),
+  CopyServerTemplate(CopyServerTemplate),
+  DeleteServerTemplate(DeleteServerTemplate),
+  UpdateServerTemplate(UpdateServerTemplate),
 
   // ==== REPO ====
   CreateRepo(CreateRepo),

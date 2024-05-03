@@ -17,6 +17,7 @@ mod deployment;
 mod procedure;
 mod repo;
 mod server;
+mod server_template;
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Resolver)]
@@ -46,6 +47,9 @@ enum ExecuteRequest {
 
   // ==== PROCEDURE ====
   RunProcedure(RunProcedure),
+
+  // ==== SERVER TEMPLATE ====
+  LaunchServer(LaunchServer),
 }
 
 pub fn router() -> Router {

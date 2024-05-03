@@ -335,7 +335,6 @@ pub enum Operation {
   None,
 
   // server
-  LaunchServer,
   CreateServer,
   UpdateServer,
   DeleteServer,
@@ -386,6 +385,12 @@ pub enum Operation {
   UpdateProcedure,
   DeleteProcedure,
   RunProcedure,
+
+  // server template
+  CreateServerTemplate,
+  UpdateServerTemplate,
+  DeleteServerTemplate,
+  LaunchServer,
 }
 
 #[typeshare]

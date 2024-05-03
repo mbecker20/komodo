@@ -25,6 +25,7 @@ mod procedure;
 mod repo;
 mod search;
 mod server;
+mod server_template;
 mod tag;
 mod toml;
 mod update;
@@ -61,6 +62,11 @@ enum ReadRequest {
   GetProcedure(GetProcedure),
   GetProcedureActionState(GetProcedureActionState),
   ListProcedures(ListProcedures),
+
+  // ==== SERVER TEMPLATE ====
+  GetServerTemplate(GetServerTemplate),
+  ListServerTemplates(ListServerTemplates),
+  GetServerTemplateSummary(GetServerTemplatesSummary),
 
   // ==== SERVER ====
   GetServersSummary(GetServersSummary),
