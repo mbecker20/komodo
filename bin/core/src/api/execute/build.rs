@@ -141,13 +141,20 @@ impl Resolve<RunBuild, User> for State {
         }
       };
 
+    let core_config = core_config();
+
     // CLONE REPO
+
+    let github_token = core_config
+      .github_accounts
+      .get(&build.config.github_account)
+      .cloned();
 
     let res = tokio::select! {
       res = periphery
         .request(api::git::CloneRepo {
           args: (&build).into(),
-          github_token: None,
+          github_token,
         }) => res,
       _ = cancel.cancelled() => {
         info!("build cancelled during clone, cleaning up builder");
@@ -175,11 +182,16 @@ impl Resolve<RunBuild, User> for State {
     update_update(update.clone()).await?;
 
     if all_logs_success(&update.logs) {
+      let docker_token = core_config
+        .docker_accounts
+        .get(&build.config.docker_account)
+        .cloned();
+
       let res = tokio::select! {
         res = periphery
           .request(api::build::Build {
             build: build.clone(),
-            docker_token: None,
+            docker_token,
           }) => res.context("failed at call to periphery to build"),
         _ = cancel.cancelled() => {
           info!("build cancelled during build, cleaning up builder");

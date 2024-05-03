@@ -20,6 +20,7 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
+  config::core_config,
   helpers::{
     periphery_client,
     resource::StateResource,
@@ -74,10 +75,15 @@ impl Resolve<CloneRepo, User> for State {
 
     update.id = add_update(update.clone()).await?;
 
+    let github_token = core_config()
+      .github_accounts
+      .get(&repo.config.github_account)
+      .cloned();
+
     let logs = match periphery
       .request(api::git::CloneRepo {
         args: (&repo).into(),
-        github_token: None,
+        github_token,
       })
       .await
     {

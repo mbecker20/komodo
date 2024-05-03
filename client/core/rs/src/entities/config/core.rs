@@ -9,6 +9,8 @@
 //! into the image at `/config/config.toml`.
 //! 
 
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::entities::{
@@ -213,6 +215,16 @@ fn default_config_path() -> String {
 /// ## provide aws api keys for ephemeral builders
 /// # aws.access_key_id = "your_aws_key_id"
 /// # aws.secret_access_key = "your_aws_secret_key"
+/// 
+/// ## provide core-based github accounts
+/// [github_accounts]
+/// # github_username_1 = "github_token_1"
+/// # github_username_2 = "github_token_2"
+/// 
+/// ## provide core-based docker accounts
+/// [docker_accounts]
+/// # docker_username_1 = "docker_token_1"
+/// # docker_username_2 = "docker_token_2"
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoreConfig {
@@ -300,6 +312,18 @@ pub struct CoreConfig {
   /// Configure AWS credentials to use with AWS builds / server launches.
   #[serde(default)]
   pub aws: AwsCredentials,
+  
+  /// Configure core-based github accounts. These will be preferentially attached to build / repo clone
+  /// requests if they contain a matching github account. Otherwise, the periphery will have to have the
+  /// account configured.
+  #[serde(default)]
+  pub github_accounts: HashMap<String, String>,
+
+  /// Configure core-based docker accounts. These will be preferentially attached to build / deploy
+  /// requests if they contain a matching docker account. Otherwise, the periphery will have to have the
+  /// account configured.
+  #[serde(default)]
+  pub docker_accounts: HashMap<String, String>,
 }
 
 fn default_title() -> String {

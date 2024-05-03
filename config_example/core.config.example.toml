@@ -85,3 +85,13 @@ mongo.app_name = "monitor_core"
 ## provide aws api keys for ephemeral builders
 # aws.access_key_id = "your_aws_key_id"
 # aws.secret_access_key = "your_aws_secret_key"
+
+## provide core-based github accounts
+[github_accounts]
+# github_username_1 = "github_token_1"
+# github_username_2 = "github_token_2"
+
+## provide core-based docker accounts
+[docker_accounts]
+# docker_username_1 = "docker_token_1"
+# docker_username_2 = "docker_token_2"

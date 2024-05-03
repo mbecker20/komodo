@@ -20,6 +20,7 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
+  config::core_config,
   helpers::{
     periphery_client,
     query::get_server_with_status,
@@ -102,12 +103,17 @@ impl Resolve<Deploy, User> for State {
 
     update.id = add_update(update.clone()).await?;
 
+    let docker_token = core_config()
+      .docker_accounts
+      .get(&deployment.config.docker_account)
+      .cloned();
+
     match periphery
       .request(api::container::Deploy {
         deployment,
         stop_signal,
         stop_time,
-        docker_token: None,
+        docker_token,
       })
       .await
     {
