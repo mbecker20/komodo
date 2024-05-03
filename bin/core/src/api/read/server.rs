@@ -1,5 +1,5 @@
 use std::{
-  collections::HashMap,
+  collections::{HashMap, HashSet},
   sync::{Arc, OnceLock},
 };
 
@@ -29,8 +29,7 @@ use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  helpers::{periphery_client, resource::StateResource},
-  state::{action_states, db_client, server_status_cache, State},
+  config::core_config, helpers::{periphery_client, resource::StateResource}, state::{action_states, db_client, server_status_cache, State}
 };
 
 #[async_trait]
@@ -400,11 +399,29 @@ impl Resolve<GetAvailableAccounts, User> for State {
       PermissionLevel::Read,
     )
     .await?;
+  
     let GetAccountsResponse { github, docker } =
       periphery_client(&server)?
         .request(api::GetAccounts {})
         .await
         .context("failed to get accounts from periphery")?;
+
+    let mut github_set = HashSet::<String>::new();
+    
+    github_set.extend(core_config().github_accounts.keys().cloned());
+    github_set.extend(github);
+    
+    let mut github = github_set.into_iter().collect::<Vec<_>>();
+    github.sort();
+
+    let mut docker_set = HashSet::<String>::new();
+
+    docker_set.extend(core_config().docker_accounts.keys().cloned());
+    docker_set.extend(docker);
+
+    let mut docker = docker_set.into_iter().collect::<Vec<_>>();
+    docker.sort();
+
     let res = GetAvailableAccountsResponse { github, docker };
     Ok(res)
   }

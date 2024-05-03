@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use anyhow::Context;
 use async_trait::async_trait;
@@ -15,6 +15,7 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
+  config::core_config,
   helpers::resource::{
     get_resource_ids_for_non_admin, StateResource,
   },
@@ -97,12 +98,9 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
       PermissionLevel::Read,
     )
     .await?;
-    match builder.config {
+    let (github, docker) = match builder.config {
       BuilderConfig::Aws(config) => {
-        Ok(GetBuilderAvailableAccountsResponse {
-          github: config.github_accounts,
-          docker: config.docker_accounts,
-        })
+        (config.github_accounts, config.docker_accounts)
       }
       BuilderConfig::Server(config) => {
         let res = self
@@ -113,11 +111,26 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
             user,
           )
           .await?;
-        Ok(GetBuilderAvailableAccountsResponse {
-          github: res.github,
-          docker: res.docker,
-        })
+        (res.github, res.docker)
       }
-    }
+    };
+
+    let mut github_set = HashSet::<String>::new();
+
+    github_set.extend(core_config().github_accounts.keys().cloned());
+    github_set.extend(github);
+
+    let mut github = github_set.into_iter().collect::<Vec<_>>();
+    github.sort();
+
+    let mut docker_set = HashSet::<String>::new();
+
+    docker_set.extend(core_config().docker_accounts.keys().cloned());
+    docker_set.extend(docker);
+
+    let mut docker = docker_set.into_iter().collect::<Vec<_>>();
+    docker.sort();
+
+    Ok(GetBuilderAvailableAccountsResponse { github, docker })
   }
 }
