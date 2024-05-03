@@ -1,73 +1,97 @@
-# optional. this will be the document title on the web page (shows up as text in the browser tab). default is 'monitor'
-title = "monitor"
+## this will be the document title on the web page (shows up as text in the browser tab).
+## default: 'Monitor'
+title = "Monitor"
 
-# this should be the url used to access monitor in browser, potentially behind DNS, eg https://monitor.mogh.tech or http://12.34.56.78:9000
-host = "https://monitor.mogh.tech"
+## required for oauth functionality. this should be the url used to access monitor in browser, potentially behind DNS.
+## eg https://monitor.dev or http://12.34.56.78:9000. this should match the address configured in your oauth app.
+## no default
+host = "https://monitor.dev"
 
-# the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
+## the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
+## default: 9000
 port = 9000
 
-# daily utc offset in hours to send daily update. eg 8:00 eastern time is 13:00 UTC, so offset should be 13. default of 0 runs at UTC midnight.
-daily_offset_hours = 13
+## required to match a passkey in periphery config. token used to authenticate core requests to periphery
+## no default
+passkey = "a_random_passkey"
 
-# secret used to generate the jwt. should be some randomly generated hash.
-jwt_secret = "your_jwt_secret"
+## specify the log level of the monitor core application
+## default: info
+## options: off, error, warn, info, debug, trace
+logging.level = "info"
 
-# can be 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
-jwt_valid_for = "1-wk"
+## specify the logging format for stdout / stderr.
+## default: standard
+## options: standard, json, none
+logging.stdio = "standard"
 
-# webhook url given by slack app that monitor will send alerts and a daily update to
-slack_url = "your_slack_app_webhook_url"
+## specify a opentelemetry otlp endpoint to send traces to
+## optional, default unassigned
+# logging.otlp_endpoint = "http://localhost:4317"
 
-# token that has to be given to github during repo webhook config as the secret
+## specify how long an issued jwt stays valid. all jwts are invalidated on application restart.
+## default: 1-day. 
+## options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
+jwt_valid_for = "1-day"
+
+## controls the granularity of the system stats collection by monitor core
+## default: 15-sec
+## options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
+monitoring_interval = "15-sec"
+
+## number of days to keep stats around, or 0 to disable pruning. 
+## stats older than this number of days are deleted daily
+## default: 0 (pruning disabled)
+keep_stats_for_days = 0
+
+## token that has to be given to github during repo webhook config as the secret
+## default: empty (none)
 github_webhook_secret = "your_random_webhook_secret"
 
-# optional. an alternate base url that is used to recieve github webhook requests. if not provided, will use 'host' address as base
-github_webhook_base_url = "https://monitor-github-webhook.mogh.tech"
+## an alternate base url that is used to recieve github webhook requests
+## if empty or not specified, will use 'host' address as base
+## default: empty (none)
+# github_webhook_base_url = "https://github-webhook.monitor.dev"
 
-# token used to authenticate core requests to periphery
-passkey = "your_random_passkey"
+## these will be used by the GUI to attach to builds.
+## when attached to build, image will be pushed to repo under the specified organization.
+## if empty, the "docker organization" config option will not be shown.
+## default: empty
+# docker_organizations = ["your_docker_org1", "your_docker_org_2"]
 
-# controls the granularity of the system stats collection by monitor core
-# can be 15-sec, 30-sec, 1-min, 2-min, 5-min
-monitoring_interval = "1-min"
+## allow or deny user login with username / password
+## default: false
+# local_auth = true
 
-# number of days to keep stats around, or 0 to disable pruning. stats older than this number of days are deleted daily
-keep_stats_for_days = 14
+# github_oauth.enabled = true
+# github_oauth.id = "your_github_client_id"
+# github_oauth.secret = "your_github_client_secret"
 
-# these will be used by the GUI to attach to builds. New build docker orgs will default to first org (or none if empty).
-# when attached to build, image will be pushed to repo under the specified organization
-docker_organizations = ["your_docker_org1", "your_docker_org_2"]
+# google_oauth.enabled = true
+# google_oauth.id = "your_google_client_id"
+# google_oauth.secret = "your_google_client_secret"
 
-# allow or deny user login with username / password
-local_auth = true
+# mongo.uri = "mongodb://username:password@localhost:27017"
+## ==== or ====
+mongo.address = "localhost:27017"
+# mongo.username = "username"
+# mongo.password = "password"
+## ==== other ====
+## default: monitor. this is the name of the mongo database that monitor will create its collections in.
+mongo.db_name = "monitor"
+## default: monitor_core. this is the assigned app_name of the mongo client
+mongo.app_name = "monitor_core"
 
-[github_oauth]
-enabled = true
-id = "your_github_client_id"
-secret = "your_github_client_secret"
+## provide aws api keys for ephemeral builders
+# aws.access_key_id = "your_aws_key_id"
+# aws.secret_access_key = "your_aws_secret_key"
 
-[google_oauth]
-enabled = true
-id = "your_google_client_id"
-secret = "your_google_client_secret"
+## provide core-based github accounts
+[github_accounts]
+# github_username_1 = "github_token_1"
+# github_username_2 = "github_token_2"
 
-[mongo]
-uri = "your_mongo_uri"
-app_name = "monitor_core"
-db_name = "monitor" # this is the name of the mongo database that monitor will create its collections in.
-
-[aws]
-access_key_id = "your_aws_key_id"
-secret_access_key = "your_aws_secret_key"
-default_region = "us-east-1"
-default_ami_name = "your_ami_name" # must be defined below in [aws.available_ami_accounts]
-default_instance_type = "m5.2xlarge"
-default_volume_gb = 8
-default_subnet_id = "your_default_subnet_id"
-default_security_group_ids = ["sg_id_1", "sg_id_2"]
-default_key_pair_name = "your_default_key_pair_name"
-default_assign_public_ip = false
-
-[aws.available_ami_accounts]
-your_ami_name = { ami_id = "ami-1234567890", github = ["github_username"], docker = ["docker_username"] }
+## provide core-based docker accounts
+[docker_accounts]
+# docker_username_1 = "docker_token_1"
+# docker_username_2 = "docker_token_2"

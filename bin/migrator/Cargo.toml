@@ -1,0 +1,25 @@
+[package]
+name = "migrator"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+monitor_client.workspace = true
+# db_client.workspace = true
+logger.workspace = true
+#
+termination_signal.workspace = true
+mungos.workspace = true
+mongo_indexed.workspace = true
+#
+tokio.workspace = true
+anyhow.workspace = true
+dotenv.workspace = true
+envy.workspace = true
+serde.workspace = true
+tracing.workspace = true
+chrono = "0.4"

@@ -24,14 +24,14 @@
 			"label": "start dev",
 			"dependsOn": [
 				"run core",
-				"yarn: start frontend"
+				"start frontend"
 			],
 			"problemMatcher": []
 		},
 		{
 			"type": "shell",
 			"command": "yarn start",
-			"label": "yarn: start frontend",
+			"label": "start frontend",
 			"options": {
 				"cwd": "${workspaceFolder}/frontend"
 			},
@@ -44,7 +44,7 @@
 			"command": "run",
 			"label": "run core",
 			"options": {
-				"cwd": "${workspaceFolder}/core"
+				"cwd": "${workspaceFolder}/bin/core"
 			},
 			"presentation": {
 				"group": "start"
@@ -55,24 +55,7 @@
 			"command": "run",
 			"label": "run periphery",
 			"options": {
-				"cwd": "${workspaceFolder}/periphery"
-			}
-		},
-		{
-			"type": "shell",
-			"command": "cargo install --path . && if pgrep periphery; then pkill periphery; fi && periphery --daemon --config-path ~/.monitor/local.periphery.config.toml",
-			"label": "run periphery daemon",
-			"options": {
-				"cwd": "${workspaceFolder}/periphery"
-			},
-			"problemMatcher": []
-		},
-		{
-			"type": "cargo",
-			"command": "run",
-			"label": "run cli",
-			"options": {
-				"cwd": "${workspaceFolder}/cli"
+				"cwd": "${workspaceFolder}/bin/periphery"
 			}
 		},
 		{
@@ -80,14 +63,14 @@
 			"command": "run",
 			"label": "run tests",
 			"options": {
-				"cwd": "${workspaceFolder}/tests"
+				"cwd": "${workspaceFolder}/bin/tests"
 			}
 		},
 		{
 			"type": "cargo",
 			"command": "publish",
 			"args": ["--allow-dirty"],
-			"label": "publish monitor types",
+			"label": "publish types",
 			"options": {
 				"cwd": "${workspaceFolder}/lib/types"
 			}
@@ -95,68 +78,14 @@
 		{
 			"type": "cargo",
 			"command": "publish",
-			"label": "publish monitor client",
+			"label": "publish rs client",
 			"options": {
-				"cwd": "${workspaceFolder}/lib/monitor_client"
+				"cwd": "${workspaceFolder}/lib/rs_client"
 			}
 		},
 		{
 			"type": "shell",
-			"command": "docker compose up -d",
-			"label": "docker compose up",
-			"options": {
-				"cwd": "${workspaceFolder}/tests"
-			},
-			"problemMatcher": []
-		},
-		{
-			"type": "shell",
-			"command": "docker compose down",
-			"label": "docker compose down",
-			"options": {
-				"cwd": "${workspaceFolder}/tests"
-			},
-			"problemMatcher": []
-		},
-		{
-			"type": "shell",
-			"command": "docker compose build",
-			"label": "docker compose build",
-			"options": {
-				"cwd": "${workspaceFolder}/tests"
-			},
-			"problemMatcher": []
-		},
-		{
-			"type": "shell",
-			"command": "docker compose down && docker compose up -d",
-			"label": "docker compose restart",
-			"options": {
-				"cwd": "${workspaceFolder}/tests"
-			},
-			"problemMatcher": []
-		},
-		{
-			"type": "shell",
-			"command": "docker compose build && docker compose down && docker compose up -d",
-			"label": "docker compose build and restart",
-			"options": {
-				"cwd": "${workspaceFolder}/tests"
-			},
-			"problemMatcher": []
-		},
-		{
-			"type": "shell",
-			"command": "docker compose build periphery",
-			"label": "docker compose build periphery",
-			"options": {
-				"cwd": "${workspaceFolder}/tests"
-			},
-			"problemMatcher": []
-		},
-		{
-			"type": "shell",
-			"command": "typeshare ./lib/types --lang=typescript --output-file=./frontend/src/types.ts && typeshare ./core --lang=typescript --output-file=./frontend/src/util/client_types.ts",
+			"command": "node ./client/ts/generate_types.mjs",
 			"label": "generate typescript types",
 			"problemMatcher": []
 		}

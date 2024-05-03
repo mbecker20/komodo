@@ -1,0 +1,38 @@
+[package]
+name = "monitor_client"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# mogh
+serror.workspace = true
+resolver_api.workspace = true
+derive_empty_traits.workspace = true
+partial_derive2.workspace = true
+derive_variants.workspace = true
+derive_default_builder.workspace = true
+mungos.workspace = true
+mongo_indexed.workspace = true
+async_timing_util.workspace = true
+# external
+bollard.workspace = true
+reqwest.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+envy.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+tokio-tungstenite.workspace = true
+futures.workspace = true
+typeshare.workspace = true
+strum.workspace = true
+derive_builder.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+clap.workspace = true

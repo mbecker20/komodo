@@ -1,0 +1,172 @@
+use std::{collections::HashMap, path::PathBuf};
+
+use mongo_indexed::derive::MongoIndexed;
+use mungos::mongodb::bson::Document;
+use serde::{Deserialize, Serialize};
+use strum::{Display, EnumString};
+use typeshare::typeshare;
+
+use crate::entities::{Timelength, I64};
+
+/// System information of a server
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
+pub struct SystemInformation {
+  /// The system name
+  pub name: Option<String>,
+  /// The system long os version
+  pub os: Option<String>,
+  /// System's kernel version
+  pub kernel: Option<String>,
+  /// Physical core count
+  pub core_count: Option<u32>,
+  /// System hostname based off DNS
+  pub host_name: Option<String>,
+  /// The CPU's brand
+  pub cpu_brand: String,
+}
+
+/// System stats stored on the database.
+#[typeshare]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, MongoIndexed,
+)]
+#[collection_name(Stats)]
+pub struct SystemStatsRecord {
+  /// Unix timestamp in milliseconds
+  #[index]
+  pub ts: I64,
+  /// Server id
+  #[index]
+  pub sid: String,
+  // basic stats
+  /// Cpu usage percentage
+  pub cpu_perc: f32,
+  /// Memory used in GB
+  pub mem_used_gb: f64,
+  /// Total memory in GB
+  pub mem_total_gb: f64,
+  /// Disk used in GB
+  pub disk_used_gb: f64,
+  /// Total disk size in GB
+  pub disk_total_gb: f64,
+  /// Breakdown of individual disks, ie their usages, sizes, and mount points
+  pub disks: Vec<SingleDiskUsage>,
+}
+
+/// Realtime system stats data.
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct SystemStats {
+  /// Cpu usage percentage
+  pub cpu_perc: f32,
+  /// Memory used in GB
+  pub mem_used_gb: f64,
+  /// Total memory in GB
+  pub mem_total_gb: f64,
+  /// Breakdown of individual disks, ie their usages, sizes, and mount points
+  pub disks: Vec<SingleDiskUsage>,
+
+  // metadata
+  /// The rate the system stats are being polled from the system
+  pub polling_rate: Timelength,
+  /// Unix timestamp in milliseconds when stats were last polled
+  pub refresh_ts: I64,
+  /// Unix timestamp in milliseconds when disk list was last refreshed
+  pub refresh_list_ts: I64,
+}
+
+/// Info for a single disk mounted on the system.
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SingleDiskUsage {
+  /// The mount point of the disk
+  pub mount: PathBuf,
+  /// Used portion of the disk in GB
+  pub used_gb: f64,
+  /// Total size of the disk in GB
+  pub total_gb: f64,
+}
+
+pub fn sum_disk_usage(disks: &[SingleDiskUsage]) -> TotalDiskUsage {
+  disks
+    .iter()
+    .fold(TotalDiskUsage::default(), |mut total, disk| {
+      total.used_gb += disk.used_gb;
+      total.total_gb += disk.total_gb;
+      total
+    })
+}
+
+/// Info for the all system disks combined.
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct TotalDiskUsage {
+  /// Used portion in GB
+  pub used_gb: f64,
+  /// Total size in GB
+  pub total_gb: f64,
+}
+
+/// Information about a process on the system.
+#[typeshare]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct SystemProcess {
+  /// The process PID
+  pub pid: u32,
+  /// The process name
+  pub name: String,
+  /// The path to the process executable
+  #[serde(default)]
+  pub exe: String,
+  /// The command used to start the process
+  pub cmd: Vec<String>,
+  /// The time the process was started
+  #[serde(default)]
+  pub start_time: f64,
+  /// The cpu usage percentage of the process.
+  /// This is in core-percentage, eg 100% is 1 full core, and
+  /// an 8 core machine would max at 800%.
+  pub cpu_perc: f32,
+  /// The memory usage of the process in MB
+  pub mem_mb: f64,
+  /// Process disk read in KB/s
+  pub disk_read_kb: f64,
+  /// Process disk write in KB/s
+  pub disk_write_kb: f64,
+}
+
+/// Summary of the health of the server.
+#[typeshare]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+pub struct ServerHealth {
+  pub cpu: SeverityLevel,
+  pub mem: SeverityLevel,
+  pub disks: HashMap<PathBuf, SeverityLevel>,
+}
+
+/// Severity level of problem.
+#[typeshare]
+#[derive(
+  Serialize,
+  Deserialize,
+  Debug,
+  Clone,
+  Copy,
+  Default,
+  Display,
+  EnumString,
+  PartialEq,
+  Eq,
+)]
+#[serde(rename_all = "UPPERCASE")]
+#[strum(serialize_all = "UPPERCASE")]
+pub enum SeverityLevel {
+  /// No problem.
+  #[default]
+  Ok,
+  /// Problem is imminent.
+  Warning,
+  /// Problem fully realized.
+  Critical,
+}

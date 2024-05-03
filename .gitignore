@@ -1,12 +1,9 @@
 target
 /frontend/build
 node_modules
+/lib/ts_client/build
 dist
 .env
 .env.development
-
-repos
-config.json
-config.toml
-secrets.json
-secrets.toml
+creds.toml
+core.config.toml

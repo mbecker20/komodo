@@ -1,0 +1,57 @@
+[package]
+name = "monitor_core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "core"
+path = "src/main.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# local
+monitor_client.workspace = true
+periphery_client.workspace = true
+logger.workspace = true
+# mogh
+async_timing_util.workspace = true
+merge_config_files.workspace = true
+parse_csl.workspace = true
+termination_signal.workspace = true
+resolver_api.workspace = true
+mungos.workspace = true
+mongo_indexed.workspace = true
+slack.workspace = true
+serror.workspace = true
+# external
+tokio.workspace = true
+tokio-util.workspace = true
+axum.workspace = true
+axum-extra.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+uuid.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+dotenv.workspace = true
+envy.workspace = true
+reqwest.workspace = true
+urlencoding.workspace = true
+rand.workspace = true
+jwt.workspace = true
+hmac.workspace = true
+sha2.workspace = true
+bcrypt.workspace = true
+hex.workspace = true
+async-trait.workspace = true
+async-recursion.workspace = true
+futures.workspace = true
+aws-config.workspace = true
+aws-sdk-ec2.workspace = true
+typeshare.workspace = true

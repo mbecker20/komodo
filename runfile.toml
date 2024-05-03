@@ -1,0 +1,23 @@
+[gen-ts-types]
+description = "generates typescript types for the ts client"
+path = "."
+cmd = "node ./client/core/ts/generate_types.mjs"
+
+[build-ts-client]
+path = "client/core/ts"
+cmd = "yarn build"
+
+[start-frontend]
+path = "frontend"
+cmd = "yarn dev"
+
+[build-frontend]
+path = "frontend"
+cmd = "yarn build"
+
+[monrun-sync]
+path = "bin/monrun"
+cmd = "cargo run -- sync"
+
+[doc-dev-server]
+cmd = "cargo watch -s 'cargo doc --no-deps -p monitor_client' & http --quiet target/doc"

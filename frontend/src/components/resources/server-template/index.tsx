@@ -1,0 +1,123 @@
+import { useRead, useWrite } from "@lib/hooks";
+import { RequiredResourceComponents } from "@types";
+import { DeleteResource } from "../common";
+import { Bot, Cloud, ServerCog } from "lucide-react";
+import { ServerTemplateConfig } from "./config";
+import { Link } from "react-router-dom";
+import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
+import { useState } from "react";
+import { Types } from "@monitor/client";
+import { NewLayout } from "@components/layouts";
+import { Input } from "@ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@ui/select";
+import { ServerTemplateTable } from "./table";
+
+const useServerTemplate = (id?: string) =>
+  useRead("ListServerTemplates", {}).data?.find((d) => d.id === id);
+
+export const ServerTemplateComponents: RequiredResourceComponents = {
+  Dashboard: () => {
+    const count = useRead("ListServerTemplates", {}).data?.length;
+    return (
+      <Link to="/server-templates/" className="w-full">
+        <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+          <CardHeader>
+            <div className="flex justify-between">
+              <div>
+                <CardTitle>Server Templates</CardTitle>
+                <CardDescription>{count} Total</CardDescription>
+              </div>
+              <ServerCog className="w-4 h-4" />
+            </div>
+          </CardHeader>
+        </Card>
+      </Link>
+    );
+  },
+
+  New: () => {
+    const { mutateAsync } = useWrite("CreateServerTemplate");
+    const [name, setName] = useState("");
+    const [type, setType] = useState<Types.ServerTemplateConfig["type"]>("Aws");
+
+    return (
+      <NewLayout
+        entityType="Server Template"
+        onSuccess={async () =>
+          !!type && mutateAsync({ name, config: { type, params: {} } })
+        }
+        enabled={!!name && !!type}
+      >
+        <div className="grid md:grid-cols-2">
+          Name
+          <Input
+            placeholder="server-template-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+        <div className="grid md:grid-cols-2">
+          Cloud Provider
+          <Select
+            value={type}
+            onValueChange={(value) => setType(value as typeof type)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="Aws">Aws</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </NewLayout>
+    );
+  },
+
+  Table: ServerTemplateTable,
+
+  Name: ({ id }) => <>{useServerTemplate(id)?.name}</>,
+  name: (id) => useServerTemplate(id)?.name,
+
+  Icon: () => <ServerCog className="w-4 h-4" />,
+
+  Status: {},
+
+  Info: {
+    Provider: ({ id }) => {
+      const provider = useServerTemplate(id)?.info.provider;
+      return (
+        <div className="flex items-center gap-2">
+          <Cloud className="w-4 h-4" />
+          {provider}
+        </div>
+      );
+    },
+    InstanceType: ({ id }) => {
+      const instanceType = useServerTemplate(id)?.info.instance_type;
+      return (
+        <div className="flex items-center gap-2">
+          <Bot className="w-4 h-4" />
+          {instanceType}
+        </div>
+      );
+    },
+  },
+
+  Actions: {},
+
+  Page: {},
+
+  Config: ServerTemplateConfig,
+
+  DangerZone: ({ id }) => <DeleteResource type="ServerTemplate" id={id} />,
+};

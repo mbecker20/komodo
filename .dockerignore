@@ -1,4 +1,8 @@
 /target
-/config_example
-config.*
-.env
+readme.md
+typeshare.toml
+LICENSE
+*.code-workspace
+
+*/node_modules
+*/dist
