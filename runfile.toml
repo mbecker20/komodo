@@ -21,3 +21,7 @@ cmd = "cargo run -- sync"
 
 [doc-dev-server]
 cmd = "cargo watch -s 'cargo doc --no-deps -p monitor_client' & http --quiet target/doc"
+
+[docsite-start]
+path = "docsite"
+cmd = "yarn start"
