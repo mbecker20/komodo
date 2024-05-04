@@ -115,6 +115,7 @@ pub struct GetBuildMonthlyStatsResponse {
   pub days: Vec<BuildStatsDay>,
 }
 
+/// Item in [GetBuildMonthlyStatsResponse]
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct BuildStatsDay {

@@ -82,7 +82,7 @@ pub struct GetBuilderAvailableAccounts {
   pub builder: String,
 }
 
-/// The response for [GetBuilderAvailableAccounts].
+/// Response for [GetBuilderAvailableAccounts].
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetBuilderAvailableAccountsResponse {

@@ -36,6 +36,7 @@ pub type ListPermissionsResponse = Vec<Permission>;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetPermissionLevelResponse)]
 pub struct GetPermissionLevel {
+  /// The target to get user permission on.
   pub target: ResourceTarget,
 }
 

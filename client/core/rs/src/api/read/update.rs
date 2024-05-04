@@ -19,6 +19,7 @@ use super::MonitorReadRequest;
 #[empty_traits(MonitorReadRequest)]
 #[response(GetUpdateResponse)]
 pub struct GetUpdate {
+  /// The update id.
   pub id: String,
 }
 
