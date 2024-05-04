@@ -1,6 +1,6 @@
 ## this will be the document title on the web page (shows up as text in the browser tab).
 ## default: 'Monitor'
-title = "Monitor"
+# title = "Monitor-02"
 
 ## required for oauth functionality. this should be the url used to access monitor in browser, potentially behind DNS.
 ## eg https://monitor.dev or http://12.34.56.78:9000. this should match the address configured in your oauth app.
@@ -9,7 +9,7 @@ host = "https://monitor.dev"
 
 ## the port the core system will run on. if running core in docker container, leave as this port as 9000 and use port bind eg. -p 9001:9000
 ## default: 9000
-port = 9000
+# port = 9001
 
 ## required to match a passkey in periphery config. token used to authenticate core requests to periphery
 ## no default
@@ -18,35 +18,39 @@ passkey = "a_random_passkey"
 ## specify the log level of the monitor core application
 ## default: info
 ## options: off, error, warn, info, debug, trace
-logging.level = "info"
+# logging.level = "info"
 
 ## specify the logging format for stdout / stderr.
 ## default: standard
 ## options: standard, json, none
-logging.stdio = "standard"
+# logging.stdio = "standard"
 
 ## specify a opentelemetry otlp endpoint to send traces to
 ## optional, default unassigned
 # logging.otlp_endpoint = "http://localhost:4317"
 
+## Set the opentelemetry service name attached to the telemetry this core will send.
+## Default: "Monitor"
+# logging.opentelemetry_service_name = "Monitor-02"
+
 ## specify how long an issued jwt stays valid. all jwts are invalidated on application restart.
 ## default: 1-day. 
 ## options: 1-hr, 12-hr, 1-day, 3-day, 1-wk, 2-wk, 30-day
-jwt_valid_for = "1-day"
+# jwt_valid_for = "3-day"
 
 ## controls the granularity of the system stats collection by monitor core
 ## default: 15-sec
 ## options: 5-sec, 15-sec, 30-sec, 1-min, 2-min, 5-min, 15-min
-monitoring_interval = "15-sec"
+# monitoring_interval = "5-sec"
 
 ## number of days to keep stats around, or 0 to disable pruning. 
 ## stats older than this number of days are deleted daily
 ## default: 0 (pruning disabled)
-keep_stats_for_days = 0
+# keep_stats_for_days = 14
 
 ## token that has to be given to github during repo webhook config as the secret
 ## default: empty (none)
-github_webhook_secret = "your_random_webhook_secret"
+# github_webhook_secret = "your_random_webhook_secret"
 
 ## an alternate base url that is used to recieve github webhook requests
 ## if empty or not specified, will use 'host' address as base
@@ -78,20 +82,20 @@ mongo.address = "localhost:27017"
 # mongo.password = "password"
 ## ==== other ====
 ## default: monitor. this is the name of the mongo database that monitor will create its collections in.
-mongo.db_name = "monitor"
+# mongo.db_name = "monitor"
 ## default: monitor_core. this is the assigned app_name of the mongo client
-mongo.app_name = "monitor_core"
+# mongo.app_name = "monitor_core"
 
 ## provide aws api keys for ephemeral builders
 # aws.access_key_id = "your_aws_key_id"
 # aws.secret_access_key = "your_aws_secret_key"
 
 ## provide core-based github accounts
-[github_accounts]
+# [github_accounts]
 # github_username_1 = "github_token_1"
 # github_username_2 = "github_token_2"
 
 ## provide core-based docker accounts
-[docker_accounts]
+# [docker_accounts]
 # docker_username_1 = "docker_token_1"
 # docker_username_2 = "docker_token_2"

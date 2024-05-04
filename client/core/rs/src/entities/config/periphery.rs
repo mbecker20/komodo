@@ -233,7 +233,7 @@ fn default_periphery_port() -> u16 {
 }
 
 fn default_repo_dir() -> PathBuf {
-  "/repos".parse().unwrap()
+  "/etc/monitor/repos".parse().unwrap()
 }
 
 fn default_stats_refresh_interval() -> Timelength {

@@ -1,8 +1,8 @@
 ## optional. 8120 is default
 # port = 8120
 
-## optional. /repos is default. no reason to change if running the docker container, just mount your desired repo dir to /repos in the container
-# repo_dir = "/repos"
+## optional. /etc/monitor/repos is default.
+# repo_dir = "/home/ubuntu/monitor/repos"
 
 ## optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
 # stats_polling_rate = "1-sec"
@@ -23,9 +23,13 @@
 ## options: standard, json, none
 # logging.stdio = "json"
 
-## specify a loki endpoint to send tracing logs to
+## specify a opentelemetry otlp endpoint to send traces to
 ## optional, default unassigned
-# logging.loki_url = "http://localhost:3100"
+# logging.otlp_endpoint = "http://localhost:4317"
+
+## Set the opentelemetry service name attached to the telemetry this periphery will send.
+## Default: "Monitor"
+# logging.opentelemetry_service_name = "Monitor-02"
 
 ## optional. can inject these values into your deployments configuration.
 # [secrets]
