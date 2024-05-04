@@ -28,7 +28,7 @@ def load_paths():
 			# binary location
 			"/usr/local/bin",
 			# config location
-	 		"/etc/monitor"
+	 		"/etc/monitor",
 			# service file location
 	 		"/etc/systemd/system",
 		]
