@@ -1,42 +1,42 @@
-# optional. 8120 is default
+## optional. 8120 is default
 port = 8120
 
-# optional. /repos is default. no reason to change if running the docker container, just mount your desired repo dir to /repos in the container
+## optional. /repos is default. no reason to change if running the docker container, just mount your desired repo dir to /repos in the container
 repo_dir = "/repos"
 
-# optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
+## optional. 5-sec is default. can use 1-sec, 5-sec, 10-sec, 30-sec, 1-min. controls granularity of system stats recorded
 stats_polling_rate = "5-sec"
 
-# optional. default is empty, which will not block any request by ip.
+## optional. default is empty, which will not block any request by ip.
 allowed_ips = ["127.0.0.1"]
 
-# optional. default is empty, which will not require any passkey to be passed by core.
+## optional. default is empty, which will not require any passkey to be passed by core.
 passkeys = ["abcdefghijk"]
 
-# specify the log level of the monitor core application
-# default: info
-# options: off, error, warn, info, debug, trace
+## specify the log level of the monitor core application
+## default: info
+## options: off, error, warn, info, debug, trace
 logging.level = "info"
 
-# specify the logging format for stdout / stderr.
-# default: standard
-# options: standard, json, none
+## specify the logging format for stdout / stderr.
+## default: standard
+## options: standard, json, none
 logging.stdio = "standard"
 
-# specify a loki endpoint to send tracing logs to
-# optional, default unassigned
-#logging.loki_url = "http://localhost:3100"
+## specify a loki endpoint to send tracing logs to
+## optional, default unassigned
+# logging.loki_url = "http://localhost:3100"
 
 # optional. can inject these values into your deployments configuration.
 [secrets]
-secret_variable = "secret_value"
+# secret_variable = "secret_value"
 
 # optional.
 [github_accounts]
-github_username1 = "github_token1"
-github_username2 = "github_token2"
+# github_username1 = "github_token1"
+# github_username2 = "github_token2"
 
 # optional.
 [docker_accounts]
-docker_username1 = "docker_token1"
-docker_username2 = "docker_token2"
+# docker_username1 = "docker_token1"
+# docker_username2 = "docker_token2"
