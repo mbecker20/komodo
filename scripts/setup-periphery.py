@@ -44,7 +44,7 @@ def copy_binary(user_install, bin_dir, version):
 	if not os.path.isdir(bin_dir):
 		os.makedirs(bin_dir)
 
-	print(os.popen(f'curl --location https://github.com/mbecker20/monitor/releases/download/{version}/periphery > {bin_dir}/periphery').read())
+	print(os.popen(f'curl -sSL https://github.com/mbecker20/monitor/releases/download/{version}/periphery > {bin_dir}/periphery').read())
 	os.popen(f'chmod +x {bin_dir}/periphery')
 
 def copy_config(config_dir):
@@ -61,7 +61,7 @@ def copy_config(config_dir):
 	if not os.path.isdir(config_dir):
 		os.makedirs(config_dir)
 
-	print(os.popen(f'curl https://raw.githubusercontent.com/mbecker20/monitor/main/config_example/periphery.config.example.toml > {config_dir}/periphery.config.toml').read())
+	print(os.popen(f'curl -sSL https://raw.githubusercontent.com/mbecker20/monitor/main/config_example/periphery.config.example.toml > {config_dir}/periphery.config.toml').read())
 
 def copy_service_file(bin_dir, config_dir, service_dir):
 	service_file = f'{service_dir}/periphery.service'
