@@ -1,13 +1,32 @@
-# monitor 🦎
+# Monitor 🦎
 
-a tool to build and deploy software across many servers. [docs](https://mbecker20.github.io/monitor)
+A tool to build and deploy software across many servers. [docs](https://mbecker20.github.io/monitor)
 
-## screenshots
+## Screenshots
 
-![desktop-deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/desktop-deployment.png)
+### Dashboard
 
-![home-servers](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/home-servers.png)
+![Dashboard](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Dashboard.png)
+![Search](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Search.png)
+![ExportToToml](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ExportToToml.png)
 
-![search-menu](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/search-menu.png)
+### Deployments
 
-![mobile-deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/mobile-deployment.png)
+![Deployments](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Deployments.png)
+![Deployment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Deployment.png)
+![LogSearchTerms](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/LogSearchTerms.png)
+![DeploymentConfig](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/DeploymentConfig.png)
+![DeploymentEnvironment](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/DeploymentEnvironment.png)
+
+### Builds
+
+![Build](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Build.png)
+![BuildConfig](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/BuildConfig.png)
+![Update](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Update.png)
+
+### Servers
+
+![Server](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/Server.png)
+![ServerStatsHeader](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ServerStatsHeader.png)
+![ServerStatsGraphs](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ServerStatsGraphs.png)
+![ServerStatsMore](https://raw.githubusercontent.com/mbecker20/monitor/main/screenshots/ServerStatsMore.png)
