@@ -2,6 +2,8 @@
 
 A tool to build and deploy software across many servers. [docs](https://mbecker20.github.io/monitor)
 
+Docs for periphery setup script can be found in [scripts](https://github.com/mbecker20/monitor/tree/main/scripts).
+
 ## Screenshots
 
 ### Dashboard
