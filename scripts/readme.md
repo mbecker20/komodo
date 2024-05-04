@@ -2,11 +2,14 @@
 
 There's two ways to install periphery: `System` and `User`
 
-## System (requires sudo)
+## System (requires root)
+
+Note. Run this after switching to root user (eg `sudo su -`).
 
 ```sh
 curl https://raw.githubusercontent.com/mbecker20/monitor/main/scripts/setup-periphery.py | python3
 ```
+
 Will install to paths:
 - periphery (binary) -> `/usr/local/bin/periphery`
 - periphery.service -> `/etc/systemd/system/periphery.service`
