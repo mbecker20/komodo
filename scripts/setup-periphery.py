@@ -92,6 +92,10 @@ def copy_service_file(bin_dir, config_dir, service_dir):
 	))
 	
 def main():
+	print("=====================")
+	print(" PERIPHERY INSTALLER ")
+	print("=====================")
+
 	version = load_version()
 	[user_install, bin_dir, config_dir, service_dir] = load_paths()
  
