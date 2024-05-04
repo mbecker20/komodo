@@ -61,7 +61,7 @@ export const AlertDetailsDialog = ({ id }: { id: string }) => {
                     level: <AlertLevel level={alert.level} />
                   </div>
                 </div>
-                <pre>{JSON.stringify(alert.data.data, undefined, 2)}</pre>
+                <pre className="text-lg">{JSON.stringify(alert.data.data, undefined, 2)}</pre>
               </div>
             </DialogDescription>
           </>
