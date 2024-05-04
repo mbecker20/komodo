@@ -83,7 +83,9 @@ pub type DeleteProcedureResponse = Procedure;
 #[empty_traits(MonitorWriteRequest)]
 #[response(UpdateProcedureResponse)]
 pub struct UpdateProcedure {
+  /// The id of the procedure to update.
   pub id: String,
+  /// The partial config update.
   pub config: _PartialProcedureConfig,
 }
 

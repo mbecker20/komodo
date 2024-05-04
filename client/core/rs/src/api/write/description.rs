@@ -16,7 +16,9 @@ use super::MonitorWriteRequest;
 #[empty_traits(MonitorWriteRequest)]
 #[response(UpdateDescriptionResponse)]
 pub struct UpdateDescription {
+  /// The target resource to set description for.
   pub target: ResourceTarget,
+  /// The new description.
   pub description: String,
 }
 

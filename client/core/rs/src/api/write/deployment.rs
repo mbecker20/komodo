@@ -75,7 +75,9 @@ pub struct DeleteDeployment {
 #[empty_traits(MonitorWriteRequest)]
 #[response(Deployment)]
 pub struct UpdateDeployment {
+  /// The deployment id to update.
   pub id: String,
+  /// The partial config update.
   pub config: _PartialDeploymentConfig,
 }
 
