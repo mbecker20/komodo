@@ -220,9 +220,8 @@ export const NewResource = ({ type }: { type: UsableResource }) => {
     <NewLayout
       entityType={type}
       onSuccess={async () => {
-        const res = await mutateAsync({ name, config: {} });
-        nav(``);
-        return res;
+        const id = (await mutateAsync({ name, config: {} }))._id?.$oid!;
+        nav(`/${usableResourcePath(type)}/${id}`);
       }}
       enabled={!!name}
       onOpenChange={() => setName("")}

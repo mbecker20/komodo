@@ -3,7 +3,7 @@ import { RequiredResourceComponents } from "@types";
 import { DeleteResource } from "../common";
 import { Bot, Cloud, ServerCog } from "lucide-react";
 import { ServerTemplateConfig } from "./config";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { useState } from "react";
 import { Types } from "@monitor/client";
@@ -43,6 +43,7 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
   },
 
   New: () => {
+    const nav = useNavigate();
     const { mutateAsync } = useWrite("CreateServerTemplate");
     const [name, setName] = useState("");
     const [type, setType] = useState<Types.ServerTemplateConfig["type"]>("Aws");
@@ -50,9 +51,11 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
     return (
       <NewLayout
         entityType="Server Template"
-        onSuccess={async () =>
-          !!type && mutateAsync({ name, config: { type, params: {} } })
-        }
+        onSuccess={async () => {
+          if (!type) return
+          const id = (await mutateAsync({ name, config: { type, params: {} } }))._id?.$oid!;
+          nav(`/server-templates/${id}`);
+        }}
         enabled={!!name && !!type}
       >
         <div className="grid md:grid-cols-2">

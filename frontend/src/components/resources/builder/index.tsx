@@ -14,7 +14,7 @@ import {
 } from "@ui/select";
 import { Cloud, Bot, Factory } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { BuilderConfig } from "./config";
 import { DeleteResource, ResourceLink } from "../common";
 import { BuilderTable } from "./table";
@@ -56,6 +56,7 @@ export const BuilderComponents: RequiredResourceComponents = {
   },
 
   New: () => {
+    const nav = useNavigate();
     const { mutateAsync } = useWrite("CreateBuilder");
     const [name, setName] = useState("");
     const [type, setType] = useState<Types.BuilderConfig["type"]>();
@@ -63,9 +64,11 @@ export const BuilderComponents: RequiredResourceComponents = {
     return (
       <NewLayout
         entityType="Builder"
-        onSuccess={async () =>
-          !!type && mutateAsync({ name, config: { type, params: {} } })
-        }
+        onSuccess={async () => {
+          if (!type) return
+          const id = (await mutateAsync({ name, config: { type, params: {} } }))._id?.$oid!;
+          nav(`/builders/${id}`);
+        }}
         enabled={!!name && !!type}
       >
         <div className="grid md:grid-cols-2">

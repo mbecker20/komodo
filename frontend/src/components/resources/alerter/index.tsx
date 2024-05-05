@@ -13,16 +13,14 @@ import { RequiredResourceComponents } from "@types";
 import { Input } from "@ui/input";
 import { AlarmClock } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardDescription, CardHeader, CardTitle } from "@ui/card";
 import { AlerterConfig } from "./config";
 import { DeleteResource } from "../common";
 import { AlerterTable } from "./table";
 
 const useAlerter = (id?: string) =>
-  useRead("ListAlerters", {}).data?.find(
-    (d) => d.id === id
-  );
+  useRead("ListAlerters", {}).data?.find((d) => d.id === id);
 
 export const AlerterComponents: RequiredResourceComponents = {
   Dashboard: () => {
@@ -45,6 +43,7 @@ export const AlerterComponents: RequiredResourceComponents = {
   },
 
   New: () => {
+    const nav = useNavigate();
     const { mutateAsync } = useWrite("CreateAlerter");
     const [name, setName] = useState("");
     const [type, setType] = useState<Types.AlerterConfig["type"]>();
@@ -52,9 +51,12 @@ export const AlerterComponents: RequiredResourceComponents = {
     return (
       <NewLayout
         entityType="Alerter"
-        onSuccess={async () =>
-          !!type && mutateAsync({ name, config: { type, params: {} } })
-        }
+        onSuccess={async () => {
+          if (!type) return;
+          const id = (await mutateAsync({ name, config: { type, params: {} } }))
+            ._id?.$oid!;
+          nav(`/alerters/${id}`);
+        }}
         enabled={!!name && !!type}
       >
         <div className="grid md:grid-cols-2">
