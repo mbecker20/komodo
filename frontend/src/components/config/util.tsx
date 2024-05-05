@@ -168,6 +168,7 @@ export const AccountSelector = ({
   account_type,
   selected,
   onSelect,
+  placeholder,
 }: {
   disabled: boolean;
   id: string | undefined;
@@ -175,6 +176,7 @@ export const AccountSelector = ({
   account_type: keyof Types.GetBuilderAvailableAccountsResponse;
   selected: string | undefined;
   onSelect: (id: string) => void;
+  placeholder: string;
 }) => {
   const [request, params] =
     type === "Server"
@@ -194,13 +196,11 @@ export const AccountSelector = ({
           className="w-full lg:w-[300px] max-w-[50%]"
           disabled={disabled || !id}
         >
-          <SelectValue
-            placeholder={type === "Server" ? "Same as build" : "Select Account"}
-          />
+          <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={"Empty"}>
-            {type === "Server" ? "Same as build" : "None"}
+            {placeholder}
           </SelectItem>
           {(accounts as any)?.[account_type]?.map((account: string) => (
             <SelectItem key={account} value={account}>

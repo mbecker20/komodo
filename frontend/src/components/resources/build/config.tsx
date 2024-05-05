@@ -108,6 +108,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
                 selected={account}
                 onSelect={(github_account) => set({ github_account })}
                 disabled={disabled}
+                placeholder="None"
               />
             ),
           },
@@ -122,6 +123,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
                 selected={account}
                 onSelect={(docker_account) => set({ docker_account })}
                 disabled={disabled}
+                placeholder="None"
               />
             ),
             docker_organization:

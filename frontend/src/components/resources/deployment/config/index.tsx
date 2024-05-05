@@ -83,6 +83,11 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
                 selected={value}
                 onSelect={(docker_account) => set({ docker_account })}
                 disabled={disabled}
+                placeholder={
+                  (update.image?.type || config.image?.type) === "Build"
+                    ? "Same as build"
+                    : "None"
+                }
               />
             ),
             restart: (value, set) => (
