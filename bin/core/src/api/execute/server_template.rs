@@ -11,6 +11,7 @@ use monitor_client::{
   },
 };
 use resolver_api::Resolve;
+use serror::serialize_error_pretty;
 
 use crate::{
   cloud::aws::launch_ec2_instance,
@@ -38,6 +39,7 @@ impl Resolve<LaunchServer, User> for State {
       PermissionLevel::Execute,
     )
     .await?;
+
     let mut update =
       make_update(&template, Operation::LaunchServer, &user);
     update.in_progress();
@@ -46,7 +48,8 @@ impl Resolve<LaunchServer, User> for State {
       format!("{:#?}", template.config),
     );
     update.id = add_update(update.clone()).await?;
-    match template.config {
+
+    let config = match template.config {
       ServerTemplateConfig::Aws(config) => {
         let region = config.region.clone();
         let instance = launch_ec2_instance(&name, config).await;
@@ -67,22 +70,32 @@ impl Resolve<LaunchServer, User> for State {
             instance.ip
           ),
         );
-        let _ = self
-          .resolve(
-            CreateServer {
-              name,
-              config: PartialServerConfig {
-                address: format!("http://{}:8120", instance.ip)
-                  .into(),
-                region: region.into(),
-                ..Default::default()
-              },
-            },
-            user,
-          )
-          .await;
+        PartialServerConfig {
+          address: format!("http://{}:8120", instance.ip).into(),
+          region: region.into(),
+          ..Default::default()
+        }
       }
-    }
+    };
+
+    match self.resolve(CreateServer { name, config }, user).await {
+      Ok(server) => {
+        update.push_simple_log(
+          "create server",
+          format!("created server {} ({})", server.name, server.id),
+        );
+      }
+      Err(e) => {
+        update.push_error_log(
+          "create server",
+          format!(
+            "failed to create server\n\n{}",
+            serialize_error_pretty(&e)
+          ),
+        );
+      }
+    };
+    
     update.finalize();
     update_update(update.clone()).await?;
     Ok(update)
