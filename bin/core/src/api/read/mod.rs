@@ -66,7 +66,7 @@ enum ReadRequest {
   // ==== SERVER TEMPLATE ====
   GetServerTemplate(GetServerTemplate),
   ListServerTemplates(ListServerTemplates),
-  GetServerTemplateSummary(GetServerTemplatesSummary),
+  GetServerTemplatesSummary(GetServerTemplatesSummary),
 
   // ==== SERVER ====
   GetServersSummary(GetServersSummary),

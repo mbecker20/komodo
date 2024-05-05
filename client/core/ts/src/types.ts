@@ -1633,6 +1633,7 @@ export interface GetBuildMonthlyStats {
 	page?: number;
 }
 
+/** Item in [GetBuildMonthlyStatsResponse] */
 export interface BuildStatsDay {
 	time: number;
 	count: number;
@@ -1706,7 +1707,7 @@ export interface GetBuilderAvailableAccounts {
 	builder: string;
 }
 
-/** The response for [GetBuilderAvailableAccounts]. */
+/** Response for [GetBuilderAvailableAccounts]. */
 export interface GetBuilderAvailableAccountsResponse {
 	github: string[];
 	docker: string[];
@@ -1877,6 +1878,7 @@ export interface ListPermissions {
  * Response: [PermissionLevel]
  */
 export interface GetPermissionLevel {
+	/** The target to get user permission on. */
 	target: ResourceTarget;
 }
 
@@ -2226,6 +2228,7 @@ export interface ExportResourcesToToml {
  * Response: [Update].
  */
 export interface GetUpdate {
+	/** The update id. */
 	id: string;
 }
 
@@ -2553,7 +2556,9 @@ export interface DeleteDeployment {
  * field changes occur from out of date local state.
  */
 export interface UpdateDeployment {
+	/** The deployment id to update. */
 	id: string;
+	/** The partial config update. */
 	config: _PartialDeploymentConfig;
 }
 
@@ -2575,19 +2580,10 @@ export interface RenameDeployment {
  * Response: [NoData].
  */
 export interface UpdateDescription {
+	/** The target resource to set description for. */
 	target: ResourceTarget;
+	/** The new description. */
 	description: string;
-}
-
-/**
- * Launch an EC2 instance with the specified config.
- * Response: [Update].
- */
-export interface LaunchServer {
-	/** The name of the created server. */
-	name: string;
-	/** The server template used to define the config. */
-	server_template: string;
 }
 
 /**
@@ -2657,7 +2653,9 @@ export interface DeleteProcedure {
  * field changes occur from out of date local state.
  */
 export interface UpdateProcedure {
+	/** The id of the procedure to update. */
 	id: string;
+	/** The partial config update. */
 	config: _PartialProcedureConfig;
 }
 
@@ -3123,7 +3121,7 @@ export type ReadRequest =
 	| { type: "ListProcedures", params: ListProcedures }
 	| { type: "GetServerTemplate", params: GetServerTemplate }
 	| { type: "ListServerTemplates", params: ListServerTemplates }
-	| { type: "GetServerTemplateSummary", params: GetServerTemplatesSummary }
+	| { type: "GetServerTemplatesSummary", params: GetServerTemplatesSummary }
 	| { type: "GetServersSummary", params: GetServersSummary }
 	| { type: "GetServer", params: GetServer }
 	| { type: "ListServers", params: ListServers }

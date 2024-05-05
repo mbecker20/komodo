@@ -37,7 +37,7 @@ export type ReadResponses = {
   // ==== SERVER TEMPLATE ====
   GetServerTemplate: Types.GetServerTemplateResponse;
   ListServerTemplates: Types.ListServerTemplatesResponse;
-  GetServerTemplateSummary: Types.GetServerTemplatesSummaryResponse;
+  GetServerTemplatesSummary: Types.GetServerTemplatesSummaryResponse;
 
   // ==== SERVER ====
   GetServersSummary: Types.GetServersSummaryResponse;
