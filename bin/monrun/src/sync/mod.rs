@@ -3,7 +3,7 @@ use std::path::Path;
 use monitor_client::entities::{
   alerter::Alerter, build::Build, builder::Builder,
   deployment::Deployment, procedure::Procedure, repo::Repo,
-  server::Server,
+  server::Server, server_template::ServerTemplate,
 };
 
 use crate::{sync::resources::ResourceSync, wait_for_enter};
@@ -19,6 +19,8 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
 
   println!("{resources:#?}");
 
+  let (server_template_creates, server_template_updates) =
+    ServerTemplate::get_updates(resources.server_templates).await?;
   let (server_creates, server_updates) =
     Server::get_updates(resources.servers).await?;
   let (deployment_creates, deployment_updates) =
@@ -39,6 +41,11 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
   wait_for_enter("CONTINUE")?;
 
   // No deps
+  ServerTemplate::run_updates(
+    server_template_creates,
+    server_template_updates,
+  )
+  .await;
   Server::run_updates(server_creates, server_updates).await;
   Alerter::run_updates(alerter_creates, alerter_updates).await;
 

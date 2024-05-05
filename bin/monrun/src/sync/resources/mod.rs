@@ -19,6 +19,7 @@ pub mod deployment;
 pub mod procedure;
 pub mod repo;
 pub mod server;
+pub mod server_template;
 
 type ToUpdate<T> = Vec<(String, ResourceToml<T>)>;
 type ToCreate<T> = Vec<ResourceToml<T>>;

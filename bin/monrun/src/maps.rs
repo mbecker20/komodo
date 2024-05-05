@@ -219,6 +219,22 @@ pub fn id_to_procedure() -> &'static HashMap<String, ProcedureListItem>
   })
 }
 
+pub fn name_to_server_template(
+) -> &'static HashMap<String, ServerTemplateListItem> {
+  static NAME_TO_SERVER_TEMPLATE: OnceLock<
+    HashMap<String, ServerTemplateListItem>,
+  > = OnceLock::new();
+  NAME_TO_SERVER_TEMPLATE.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListServerTemplates::default()),
+    )
+    .expect("failed to get server templates from monitor")
+    .into_iter()
+    .map(|procedure| (procedure.name.clone(), procedure))
+    .collect()
+  })
+}
+
 pub fn id_to_server_template(
 ) -> &'static HashMap<String, ServerTemplateListItem> {
   static ID_TO_SERVER_TEMPLATE: OnceLock<
@@ -228,7 +244,7 @@ pub fn id_to_server_template(
     futures::executor::block_on(
       monitor_client().read(read::ListServerTemplates::default()),
     )
-    .expect("failed to get procedures from monitor")
+    .expect("failed to get server templates from monitor")
     .into_iter()
     .map(|procedure| (procedure.id.clone(), procedure))
     .collect()

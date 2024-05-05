@@ -111,6 +111,15 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .into_iter()
       .map(|resource| ResourceTarget::Procedure(resource.id)),
     );
+    targets.extend(
+      ServerTemplate::list_resource_list_items_for_user(
+        Default::default(),
+        &user,
+      )
+      .await?
+      .into_iter()
+      .map(|resource| ResourceTarget::ServerTemplate(resource.id)),
+    );
 
     let user_groups = if user.admin {
       find_collect(&db_client().await.user_groups, None, None)
