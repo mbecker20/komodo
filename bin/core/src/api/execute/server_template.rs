@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Context};
 use axum::async_trait;
 use monitor_client::{
   api::{execute::LaunchServer, write::CreateServer},
@@ -10,6 +11,7 @@ use monitor_client::{
     Operation,
   },
 };
+use mungos::mongodb::bson::doc;
 use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
@@ -19,7 +21,7 @@ use crate::{
     resource::StateResource,
     update::{add_update, make_update, update_update},
   },
-  state::State,
+  state::{db_client, State},
 };
 
 #[async_trait]
@@ -33,6 +35,23 @@ impl Resolve<LaunchServer, User> for State {
     }: LaunchServer,
     user: User,
   ) -> anyhow::Result<Update> {
+    // validate name isn't already taken by another server
+    if db_client()
+      .await
+      .servers
+      .find_one(
+        doc! {
+          "name": &name
+        },
+        None,
+      )
+      .await
+      .context("failed to query db for servers")?
+      .is_some()
+    {
+      return Err(anyhow!("name is already taken"));
+    }
+
     let template = ServerTemplate::get_resource_check_permissions(
       &server_template,
       &user,
@@ -95,7 +114,7 @@ impl Resolve<LaunchServer, User> for State {
         );
       }
     };
-    
+
     update.finalize();
     update_update(update.clone()).await?;
     Ok(update)
