@@ -143,7 +143,7 @@ impl ServerConfig {
 }
 
 fn default_enabled() -> bool {
-  true
+  false
 }
 
 fn default_stats_monitoring() -> bool {
