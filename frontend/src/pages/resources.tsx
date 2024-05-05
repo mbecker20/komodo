@@ -7,13 +7,14 @@ import { useState } from "react";
 
 export const Resources = () => {
   const type = useResourceParamType()!;
-  useSetTitle(type + "s");
+  const name = type === "ServerTemplate" ? "Server Template" : type;
+  useSetTitle(name + "s");
   const Components = ResourceComponents[type];
   const [search, set] = useState("");
 
   return (
     <Page
-      title={`${type}s`}
+      title={`${name}s`}
       actions={
         <div className="grid gap-4 justify-items-end">
           <div className="flex gap-4">

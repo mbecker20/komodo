@@ -116,13 +116,14 @@ const PrimaryDropdown = () => {
 
           <DropdownMenuSeparator />
 
-          {RESOURCE_TARGETS.map((rt) => {
-            const RTIcon = ResourceComponents[rt].Icon;
+          {RESOURCE_TARGETS.map((type) => {
+            const RTIcon = ResourceComponents[type].Icon;
+            const name = type === "ServerTemplate" ? "Template" : type;
             return (
-              <Link key={rt} to={`/${usableResourcePath(rt)}`}>
+              <Link key={type} to={`/${usableResourcePath(type)}`}>
                 <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
                   <RTIcon />
-                  {rt}s
+                  {name}s
                 </DropdownMenuItem>
               </Link>
             );

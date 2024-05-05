@@ -93,6 +93,14 @@ const on_message = (
   if (update.target.type === "Alerter") {
     invalidate(["ListAlerters"], ["GetAlerter"], ["GetAlertersSummary"]);
   }
+
+  if (update.target.type === "ServerTemplate") {
+    invalidate(
+      ["ListServerTemplates"],
+      ["GetServerTemplate"],
+      ["GetServerTemplatesSummary"]
+    );
+  }
 };
 
 const on_open = (ws: Rws | null) => {
@@ -149,7 +157,9 @@ export const WebsocketProvider = ({
 export const WsStatusIndicator = () => {
   const [connected] = useWebsocketConnected();
   const onclick = () =>
-    toast({ title: connected ? "Websocket connected" : "Websocket disconnected" });
+    toast({
+      title: connected ? "Websocket connected" : "Websocket disconnected",
+    });
 
   return (
     <Button

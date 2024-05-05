@@ -19,6 +19,7 @@ export const RESOURCE_TARGETS: UsableResource[] = [
   "Repo",
   "Builder",
   "Alerter",
+  "ServerTemplate"
 ];
 
 export function env_to_text(envVars: Types.EnvironmentVar[] | undefined) {
