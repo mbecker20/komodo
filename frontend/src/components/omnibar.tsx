@@ -14,7 +14,7 @@ import { useState, useEffect, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { ResourceComponents } from "./resources";
 import { UsableResource } from "@types";
-import { RESOURCE_TARGETS } from "@lib/utils";
+import { RESOURCE_TARGETS, usableResourcePath } from "@lib/utils";
 import { DeploymentComponents } from "./resources/deployment";
 import { BuildComponents } from "./resources/build";
 import { ServerComponents } from "./resources/server";
@@ -142,7 +142,7 @@ const ResourceGroup = ({
           <CommandItem
             key={id}
             className="cursor-pointer flex items-center gap-2"
-            onSelect={() => onSelect(`/${type.toLowerCase()}s/${id}`)}
+            onSelect={() => onSelect(`/${usableResourcePath(type)}/${id}`)}
           >
             <Components.Icon id={id} />
             <Components.Name id={id} />

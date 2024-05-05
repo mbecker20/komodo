@@ -23,7 +23,7 @@ import {
 } from "@ui/dropdown-menu";
 import { Button } from "@ui/button";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { RESOURCE_TARGETS } from "@lib/utils";
+import { RESOURCE_TARGETS, usableResourcePath } from "@lib/utils";
 import { Omnibar } from "./omnibar";
 import { WsStatusIndicator } from "@lib/socket";
 import { TopbarUpdates } from "./updates/topbar";
@@ -119,7 +119,7 @@ const PrimaryDropdown = () => {
           {RESOURCE_TARGETS.map((rt) => {
             const RTIcon = ResourceComponents[rt].Icon;
             return (
-              <Link key={rt} to={`/${rt.toLowerCase()}s`}>
+              <Link key={rt} to={`/${usableResourcePath(rt)}`}>
                 <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
                   <RTIcon />
                   {rt}s
@@ -264,7 +264,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
               <CommandItem
                 onSelect={() => {
                   setOpen(false);
-                  nav(`/${type.toLowerCase()}s`);
+                  nav(`/${usableResourcePath(type)}`);
                 }}
               >
                 <Button variant="link" className="flex gap-2 items-center p-0">
@@ -277,7 +277,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
                   key={resource.id}
                   onSelect={() => {
                     setOpen(false);
-                    nav(`/${type.toLowerCase()}s/${resource.id}`);
+                    nav(`/${usableResourcePath(type)}/${resource.id}`);
                   }}
                 >
                   <ResourceLink type={type} id={resource.id} />

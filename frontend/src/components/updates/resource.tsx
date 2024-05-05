@@ -16,8 +16,9 @@ import { Section } from "@components/layouts";
 import { UpdateDetails, UpdateUser } from "./details";
 import { UpdateStatus } from "@monitor/client/dist/types";
 import { fmt_date, fmt_version } from "@lib/formatting";
-import { version_is_none } from "@lib/utils";
+import { usableResourcePath, version_is_none } from "@lib/utils";
 import { Card } from "@ui/card";
+import { UsableResource } from "@types";
 
 const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
   const Icon = () => {
@@ -69,7 +70,7 @@ export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
       title="Updates"
       icon={<Bell className="w-4 h-4" />}
       actions={
-        <Link to={`/${type.toLowerCase()}s/${id}/updates`}>
+        <Link to={`/${usableResourcePath(type as UsableResource)}/${id}/updates`}>
           <Button variant="secondary" size="icon">
             <ExternalLink className="w-4 h-4" />
           </Button>

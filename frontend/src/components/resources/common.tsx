@@ -33,6 +33,7 @@ import { useToast } from "@ui/use-toast";
 import { NewLayout } from "@components/layouts";
 import { Types } from "@monitor/client";
 import { ConfigItem, DoubleInput } from "@components/config/util";
+import { usableResourcePath } from "@lib/utils";
 
 export const ResourceDescription = ({
   type,
@@ -145,7 +146,7 @@ export const ResourceLink = ({
 }) => {
   const Components = ResourceComponents[type];
   return (
-    <Link to={`/${type.toLowerCase()}s/${id}`}>
+    <Link to={`/${usableResourcePath(type)}/${id}`}>
       <Button variant="link" className="flex gap-2 items-center p-0">
         <Components.Icon id={id} />
         <Components.Name id={id} />
@@ -171,7 +172,7 @@ export const CopyResource = ({
   const { mutate } = useWrite(`Copy${type}`, {
     onSuccess: (res) => {
       inv([`List${type}s`]);
-      nav(`/${type.toLowerCase()}s/${res._id?.$oid}`);
+      nav(`/${usableResourcePath(type)}/${res._id?.$oid}`);
     },
   });
 
@@ -190,7 +191,7 @@ export const CopyResource = ({
           <DialogTitle>Copy {type}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4 my-4">
-          <p>Provide a name for the newly created {type.toLowerCase()}.</p>
+          <p>Provide a name for the newly created {type}.</p>
           <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <DialogFooter>
@@ -210,6 +211,7 @@ export const CopyResource = ({
 };
 
 export const NewResource = ({ type }: { type: UsableResource }) => {
+  const nav = useNavigate();
   const { mutateAsync } = useWrite(`Create${type}`);
   const [name, setName] = useState("");
   const type_display =
@@ -217,7 +219,11 @@ export const NewResource = ({ type }: { type: UsableResource }) => {
   return (
     <NewLayout
       entityType={type}
-      onSuccess={() => mutateAsync({ name, config: {} })}
+      onSuccess={async () => {
+        const res = await mutateAsync({ name, config: {} });
+        nav(``);
+        return res;
+      }}
       enabled={!!name}
       onOpenChange={() => setName("")}
     >
@@ -260,7 +266,7 @@ export const DeleteResource = ({
         icon={<Trash className="h-4 w-4" />}
         onClick={async () => {
           await mutateAsync({ id });
-          nav(`/${type.toLowerCase()}s`);
+          nav(`/${usableResourcePath(type)}`);
         }}
         disabled={isPending}
         loading={isPending}

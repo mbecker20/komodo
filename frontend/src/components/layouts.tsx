@@ -15,6 +15,7 @@ import { ResourceComponents } from "./resources";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@ui/card";
 import { ResourceTags } from "./tags";
 import { Topbar } from "./topbar";
+import { usableResourcePath } from "@lib/utils";
 
 export const Layout = () => {
   return (
@@ -140,7 +141,7 @@ export const ResourceCard = ({
 
   return (
     <Link
-      to={`/${type.toLowerCase()}s/${id}`}
+      to={`/${usableResourcePath(type)}/${id}`}
       className="group hover:translate-y-[-2.5%] focus:translate-y-[-2.5%] transition-transform"
     >
       <Card className="h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors">
@@ -177,7 +178,7 @@ export const ResourceRow = ({
 
   return (
     <Link
-      to={`/${type.toLowerCase()}s/${id}`}
+      to={`/${usableResourcePath(type)}/${id}`}
       className="group hover:translate-y-[-2.5%] focus:translate-y-[-2.5%] transition-transform"
     >
       <Card className="h-full hover:bg-accent/50 group-focus:bg-accent/50 transition-colors">

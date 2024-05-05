@@ -90,3 +90,8 @@ const tzOffset = new Date().getTimezoneOffset() * 60;
 
 export const convertTsMsToLocalUnixTsInSecs = (ts: number) =>
   ts / 1000 - tzOffset;
+
+export const usableResourcePath = (resource: UsableResource) => {
+  if (resource === "ServerTemplate") return "server-templates"
+  return `${resource.toLowerCase()}s`
+}

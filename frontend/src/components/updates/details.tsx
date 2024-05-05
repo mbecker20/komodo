@@ -19,7 +19,8 @@ import { useRead } from "@lib/hooks";
 import { ResourceComponents } from "@components/resources";
 import { Link } from "react-router-dom";
 import { fmt_duration, fmt_version } from "@lib/formatting";
-import { version_is_none } from "@lib/utils";
+import { usableResourcePath, version_is_none } from "@lib/utils";
+import { UsableResource } from "@types";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data?.username;
@@ -84,7 +85,9 @@ export const UpdateDetailsInner = ({
             </div>
             <div className="flex gap-4">
               <Link
-                to={`/${update.target.type.toLowerCase()}s/${update.target.id}`}
+                to={`/${usableResourcePath(update.target.type as UsableResource)}/${
+                  update.target.id
+                }`}
               >
                 <div
                   className="flex items-center gap-2"
