@@ -185,7 +185,9 @@ export const AccountSelector = ({
     <ConfigItem label={`${account_type} Account`}>
       <Select
         value={type === "Builder" ? selected || undefined : selected}
-        onValueChange={onSelect}
+        onValueChange={(value) => {
+          onSelect(value === "Empty" ? "" : value);
+        }}
         disabled={disabled}
       >
         <SelectTrigger
@@ -197,9 +199,9 @@ export const AccountSelector = ({
           />
         </SelectTrigger>
         <SelectContent>
-          {type === "Server" && (
-            <SelectItem value={" "}>Same as build</SelectItem>
-          )}
+          <SelectItem value={"Empty"}>
+            {type === "Server" ? "Same as build" : "None"}
+          </SelectItem>
           {(accounts as any)?.[account_type]?.map((account: string) => (
             <SelectItem key={account} value={account}>
               {account}
