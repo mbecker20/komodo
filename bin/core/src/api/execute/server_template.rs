@@ -40,6 +40,7 @@ impl Resolve<LaunchServer, User> for State {
     .await?;
     let mut update =
       make_update(&template, Operation::LaunchServer, &user);
+    update.in_progress();
     update.push_simple_log(
       "launching server",
       format!("{:#?}", template.config),

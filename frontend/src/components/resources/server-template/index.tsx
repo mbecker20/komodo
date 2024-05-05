@@ -18,8 +18,9 @@ import {
   SelectValue,
 } from "@ui/select";
 import { ServerTemplateTable } from "./table";
+import { LaunchServer } from "./actions";
 
-const useServerTemplate = (id?: string) =>
+export const useServerTemplate = (id?: string) =>
   useRead("ListServerTemplates", {}).data?.find((d) => d.id === id);
 
 export const ServerTemplateComponents: RequiredResourceComponents = {
@@ -52,8 +53,9 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
       <NewLayout
         entityType="Server Template"
         onSuccess={async () => {
-          if (!type) return
-          const id = (await mutateAsync({ name, config: { type, params: {} } }))._id?.$oid!;
+          if (!type) return;
+          const id = (await mutateAsync({ name, config: { type, params: {} } }))
+            ._id?.$oid!;
           nav(`/server-templates/${id}`);
         }}
         enabled={!!name && !!type}
@@ -116,7 +118,9 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
     },
   },
 
-  Actions: {},
+  Actions: {
+    LaunchServer,
+  },
 
   Page: {},
 
