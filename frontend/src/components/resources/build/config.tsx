@@ -28,7 +28,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
   const config = useRead("GetBuild", { build: id }).data?.config;
   const docker_organizations = useRead("ListDockerOrganizations", {}).data;
   const [update, set] = useState<Partial<Types.BuildConfig>>({});
-  const { mutate } = useWrite("UpdateBuild");
+  const { mutateAsync } = useWrite("UpdateBuild");
 
   if (!config) return null;
 
@@ -40,7 +40,9 @@ export const BuildConfig = ({ id }: { id: string }) => {
       config={config}
       update={update}
       set={set}
-      onSave={() => mutate({ id, config: update })}
+      onSave={async () => {
+        await mutateAsync({ id, config: update });
+      }}
       components={{
         general: {
           general: {

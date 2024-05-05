@@ -17,7 +17,7 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
   const config = useRead("GetServerTemplate", { server_template: id }).data
     ?.config;
   const [update, set] = useState<Partial<Types.AwsServerTemplateConfig>>({});
-  const { mutate } = useWrite("UpdateServerTemplate");
+  const { mutateAsync } = useWrite("UpdateServerTemplate");
   if (!config) return null;
 
   const disabled = perms !== Types.PermissionLevel.Write;
@@ -28,7 +28,9 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
       config={config.params as Types.AwsServerTemplateConfig}
       update={update}
       set={set}
-      onSave={() => mutate({ id, config: { type: "Aws", params: update } })}
+      onSave={async () => {
+        await mutateAsync({ id, config: { type: "Aws", params: update } });
+      }}
       components={{
         general: {
           general: {

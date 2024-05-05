@@ -20,7 +20,7 @@ export const AlerterConfig = ({ id }: { id: string }) => {
   const [update, setConfig] = useState<
     Partial<Types.SlackAlerterConfig | Types.CustomAlerterConfig>
   >({});
-  const { mutate } = useWrite("UpdateAlerter");
+  const { mutateAsync } = useWrite("UpdateAlerter");
   if (!config) return null;
 
   const disabled = perms !== Types.PermissionLevel.Write;
@@ -31,7 +31,10 @@ export const AlerterConfig = ({ id }: { id: string }) => {
       config={config.params}
       update={update}
       set={setConfig}
-      onSave={() => type && mutate({ id, config: { type, params: update } })}
+      onSave={async () => {
+        if (!type) return;
+        await mutateAsync({ id, config: { type, params: update } });
+      }}
       components={{
         general: {
           general: {

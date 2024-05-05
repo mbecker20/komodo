@@ -18,7 +18,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
   }).data;
   const config = useRead("GetRepo", { repo: id }).data?.config;
   const [update, set] = useState<Partial<Types.RepoConfig>>({});
-  const { mutate } = useWrite("UpdateRepo");
+  const { mutateAsync } = useWrite("UpdateRepo");
   if (!config) return null;
 
   const disabled = perms !== Types.PermissionLevel.Write;
@@ -29,7 +29,9 @@ export const RepoConfig = ({ id }: { id: string }) => {
       config={config}
       update={update}
       set={set}
-      onSave={() => mutate({ id, config: update })}
+      onSave={async () => {
+        await mutateAsync({ id, config: update });
+      }}
       components={{
         general: {
           general: {

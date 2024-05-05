@@ -17,7 +17,7 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
   }).data;
   const config = useRead("GetBuilder", { builder: id }).data?.config;
   const [update, set] = useState<Partial<Types.AwsBuilderConfig>>({});
-  const { mutate } = useWrite("UpdateBuilder");
+  const { mutateAsync } = useWrite("UpdateBuilder");
   if (!config) return null;
 
   const disabled = perms !== Types.PermissionLevel.Write;
@@ -28,7 +28,9 @@ const AwsBuilderConfig = ({ id }: { id: string }) => {
       config={config.params as Types.AwsBuilderConfig}
       update={update}
       set={set}
-      onSave={() => mutate({ id, config: { type: "Aws", params: update } })}
+      onSave={async () => {
+        await mutateAsync({ id, config: { type: "Aws", params: update } });
+      }}
       components={{
         general: {
           general: {
@@ -78,7 +80,7 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
   }).data;
   const config = useRead("GetBuilder", { builder: id }).data?.config;
   const [update, set] = useState<Partial<Types.ServerBuilderConfig>>({});
-  const { mutate } = useWrite("UpdateBuilder");
+  const { mutateAsync } = useWrite("UpdateBuilder");
   if (!config) return null;
 
   const disabled = perms !== Types.PermissionLevel.Write;
@@ -89,7 +91,9 @@ const ServerBuilderConfig = ({ id }: { id: string }) => {
       config={config.params as Types.ServerBuilderConfig}
       update={update}
       set={set}
-      onSave={() => mutate({ id, config: { type: "Server", params: update } })}
+      onSave={async () => {
+        await mutateAsync({ id, config: { type: "Server", params: update } });
+      }}
       components={{
         general: {
           general: {

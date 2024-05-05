@@ -78,7 +78,7 @@ export const Config = <T,>({
   update: Partial<T>;
   disabled: boolean;
   set: React.Dispatch<SetStateAction<Partial<T>>>;
-  onSave: () => void;
+  onSave: () => Promise<void>;
   selector?: ReactNode;
   components: Record<
     string,
@@ -98,7 +98,10 @@ export const Config = <T,>({
     <ConfigLayout
       config={update}
       disabled={disabled}
-      onConfirm={onSave}
+      onConfirm={async () => {
+        await onSave();
+        set({});
+      }}
       onReset={() => set({})}
       selector={
         <div className="flex gap-4 items-center">

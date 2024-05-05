@@ -10,7 +10,7 @@ export const ServerConfig = ({ id }: { id: string }) => {
   const invalidate = useInvalidate();
   const config = useRead("GetServer", { server: id }).data?.config;
   const [update, set] = useState<Partial<Types.ServerConfig>>({});
-  const { mutate } = useWrite("UpdateServer", {
+  const { mutateAsync } = useWrite("UpdateServer", {
     onSuccess: () => {
       // In case of disabling to resolve unreachable alert
       invalidate(["ListAlerts"]);
@@ -26,7 +26,9 @@ export const ServerConfig = ({ id }: { id: string }) => {
       config={config}
       update={update}
       set={set}
-      onSave={() => mutate({ id, config: update })}
+      onSave={async () => {
+        await mutateAsync({ id, config: update });
+      }}
       components={{
         general: {
           general: {

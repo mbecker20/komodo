@@ -43,7 +43,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
   }).data;
   const config = useRead("GetDeployment", { deployment: id }).data?.config;
   const [update, set] = useState<Partial<Types.DeploymentConfig>>({});
-  const { mutate } = useWrite("UpdateDeployment");
+  const { mutateAsync } = useWrite("UpdateDeployment");
 
   if (!config) return null;
 
@@ -61,7 +61,9 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
       config={config}
       update={update}
       set={set}
-      onSave={() => mutate({ id, config: update })}
+      onSave={async () => {
+        await mutateAsync({ id, config: update });
+      }}
       components={{
         general: {
           "": {

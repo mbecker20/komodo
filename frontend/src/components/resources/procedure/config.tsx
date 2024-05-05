@@ -56,7 +56,7 @@ const ProcedureConfigInner = ({
     target: { type: "Procedure", id: procedure._id?.$oid! },
   }).data;
   const [config, setConfig] = useState<Partial<Types.ProcedureConfig>>({});
-  const { mutate } = useWrite("UpdateProcedure");
+  const { mutateAsync } = useWrite("UpdateProcedure");
   const executions = config.executions || procedure.config.executions || [];
 
   const disabled = perms !== Types.PermissionLevel.Write;
@@ -65,7 +65,10 @@ const ProcedureConfigInner = ({
     <ConfigLayout
       disabled={disabled}
       config={config as any}
-      onConfirm={() => mutate({ id: procedure._id!.$oid, config })}
+      onConfirm={async () => {
+        await mutateAsync({ id: procedure._id!.$oid, config });
+        setConfig({});
+      }}
       onReset={() => setConfig(procedure.config)}
       selector={
         <div className="flex gap-2 items-center text-sm">
@@ -442,7 +445,7 @@ const TARGET_COMPONENTS: ExecutionConfigs = {
   Deploy: {
     params: { deployment: "" },
     Component: ({ params, setParams, disabled }) => {
-      console.log(params.deployment)
+      console.log(params.deployment);
       return (
         <ResourceSelector
           type="Deployment"
