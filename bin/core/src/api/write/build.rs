@@ -114,7 +114,7 @@ impl Resolve<CopyBuild, User> for State {
     }
     let name = to_monitor_name(&name);
     let Build {
-      config,
+      mut config,
       description,
       tags,
       ..
@@ -128,6 +128,8 @@ impl Resolve<CopyBuild, User> for State {
       .await
       .context("cannot create build using this builder. user must have at least read permissions on the builder.")?;
     let start_ts = monitor_timestamp();
+    // Set version back to default for the new name
+    config.version = Default::default();
     let build = Build {
       id: Default::default(),
       name,
