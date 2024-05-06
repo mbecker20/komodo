@@ -3029,6 +3029,13 @@ export interface ServerHealth {
 	disks: Record<string, SeverityLevel>;
 }
 
+export enum AwsVolumeType {
+	Gp2 = "gp2",
+	Gp3 = "gp3",
+	Io1 = "io1",
+	Io2 = "io2",
+}
+
 /**
  * For information on AWS volumes, see
  * `<https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volume-types.html>`.
@@ -3038,12 +3045,12 @@ export interface AwsVolume {
 	device_name: string;
 	/** The size of the volume in GB */
 	size_gb: number;
-	/** The type of volume, eg gp2, gp3, io1 */
-	volume_type?: string;
-	/** The iops of the volume, or AWS default. */
-	iops?: number;
-	/** The throughput of the volume, or AWS default. */
-	throughput?: number;
+	/** The type of volume. Options: gp2, gp3, io1, io2. */
+	volume_type: AwsVolumeType;
+	/** The iops of the volume, or 0 for AWS default. */
+	iops: number;
+	/** The throughput of the volume, or 0 for AWS default. */
+	throughput: number;
 }
 
 /** Aws EC2 instance config. */
@@ -3052,14 +3059,10 @@ export interface AwsServerTemplateConfig {
 	region: string;
 	/** The instance type to launch, eg. c5.2xlarge */
 	instance_type: string;
-	/** Specify the EBS volumes to attach. */
-	volumes: AwsVolume[];
 	/** Specify the ami id to use. Must be set up to start the periphery binary on startup. */
 	ami_id: string;
 	/** The subnet to assign to the instance. */
 	subnet_id: string;
-	/** The security groups to give to the instance. */
-	security_group_ids: string[];
 	/** The key pair name to give to the instance in case SSH access required. */
 	key_pair_name: string;
 	/**
@@ -3077,6 +3080,12 @@ export interface AwsServerTemplateConfig {
 	 * Default: `8120`
 	 */
 	port: number;
+	/** The user data to deploy the instance with. */
+	user_data?: string;
+	/** The security groups to give to the instance. */
+	security_group_ids?: string[];
+	/** Specify the EBS volumes to attach. */
+	volumes: AwsVolume[];
 }
 
 export type AuthRequest = 
