@@ -11,7 +11,7 @@ use monitor_client::{
 };
 use partial_derive2::MaybeNone;
 
-use crate::{cli_args, monitor_client};
+use crate::{cli_args, maps::id_to_tag, monitor_client};
 
 pub mod alerter;
 pub mod build;
@@ -84,11 +84,19 @@ pub trait ResourceSync {
             Self::minimize_update(original.config, resource.config)
               .await?;
 
+          let original_tags = original
+            .tags
+            .iter()
+            .filter_map(|id| {
+              id_to_tag().get(id).map(|t| t.name.clone())
+            })
+            .collect::<Vec<_>>();
+
           // Only try to update if there are any fields to update,
           // or a change to tags / description
           if !resource.config.is_none()
             || resource.description != original.description
-            || resource.tags != original.tags
+            || resource.tags != original_tags
           {
             to_update.push((id, resource));
           }

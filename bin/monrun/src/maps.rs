@@ -7,7 +7,7 @@ use monitor_client::{
     builder::BuilderListItem, deployment::DeploymentListItem,
     procedure::ProcedureListItem, repo::RepoListItem,
     server::ServerListItem, server_template::ServerTemplateListItem,
-    user::User, user_group::UserGroup,
+    tag::Tag, user::User, user_group::UserGroup,
   },
 };
 
@@ -258,7 +258,7 @@ pub fn name_to_user_group() -> &'static HashMap<String, UserGroup> {
     futures::executor::block_on(
       monitor_client().read(read::ListUserGroups::default()),
     )
-    .expect("failed to get procedures from monitor")
+    .expect("failed to get user groups from monitor")
     .into_iter()
     .map(|user_group| (user_group.name.clone(), user_group))
     .collect()
@@ -272,9 +272,22 @@ pub fn id_to_user() -> &'static HashMap<String, User> {
     futures::executor::block_on(
       monitor_client().read(read::ListUsers::default()),
     )
-    .expect("failed to get procedures from monitor")
+    .expect("failed to get users from monitor")
     .into_iter()
     .map(|user| (user.id.clone(), user))
+    .collect()
+  })
+}
+
+pub fn id_to_tag() -> &'static HashMap<String, Tag> {
+  static ID_TO_TAG: OnceLock<HashMap<String, Tag>> = OnceLock::new();
+  ID_TO_TAG.get_or_init(|| {
+    futures::executor::block_on(
+      monitor_client().read(read::ListTags::default()),
+    )
+    .expect("failed to get tags from monitor")
+    .into_iter()
+    .map(|tag| (tag.id.clone(), tag))
     .collect()
   })
 }

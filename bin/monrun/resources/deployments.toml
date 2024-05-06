@@ -1,6 +1,6 @@
 [[deployment]]
 name = "monitor-proxy"
-description = ""
+description = "An NGINX proxy for mogh.tech"
 tags = ["monitor"]
 
 [deployment.config]
