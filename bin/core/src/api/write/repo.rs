@@ -3,7 +3,7 @@ use std::str::FromStr;
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
-  api::{execute, write::*},
+  api::write::*,
   entities::{
     monitor_timestamp,
     permission::PermissionLevel,
@@ -112,19 +112,6 @@ impl Resolve<CreateRepo, User> for State {
     };
 
     add_update(update).await?;
-
-    if !repo.config.repo.is_empty()
-      && !repo.config.server_id.is_empty()
-    {
-      let _ = self
-        .resolve(
-          execute::CloneRepo {
-            repo: repo.id.clone(),
-          },
-          user,
-        )
-        .await;
-    }
 
     Ok(repo)
   }
