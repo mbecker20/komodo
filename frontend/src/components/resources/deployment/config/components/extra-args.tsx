@@ -76,7 +76,10 @@ const AddExtraArgMenu = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="secondary" className="flex gap-2">
+        <Button
+          variant="secondary"
+          className="flex items-center gap-2 w-[200px]"
+        >
           <PlusCircle className="w-4 h-4" /> Add Extra Arg
         </Button>
       </PopoverTrigger>
