@@ -71,7 +71,7 @@ export const BuilderComponents: RequiredResourceComponents = {
         }}
         enabled={!!name && !!type}
       >
-        <div className="grid md:grid-cols-2">
+        <div className="grid md:grid-cols-2 items-center">
           Name
           <Input
             placeholder="builder-name"
@@ -79,7 +79,7 @@ export const BuilderComponents: RequiredResourceComponents = {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-        <div className="grid md:grid-cols-2">
+        <div className="grid md:grid-cols-2 items-center">
           Builder Type
           <Select
             value={type}

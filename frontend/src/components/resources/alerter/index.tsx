@@ -59,7 +59,7 @@ export const AlerterComponents: RequiredResourceComponents = {
         }}
         enabled={!!name && !!type}
       >
-        <div className="grid md:grid-cols-2">
+        <div className="grid md:grid-cols-2 items-center">
           Name
           <Input
             placeholder="alerter-name"
@@ -67,7 +67,7 @@ export const AlerterComponents: RequiredResourceComponents = {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-        <div className="grid md:grid-cols-2">
+        <div className="grid md:grid-cols-2 items-center">
           Alerter Type
           <Select
             value={type}

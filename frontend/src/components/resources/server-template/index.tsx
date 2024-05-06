@@ -60,7 +60,7 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
         }}
         enabled={!!name && !!type}
       >
-        <div className="grid md:grid-cols-2">
+        <div className="grid md:grid-cols-2 items-center">
           Name
           <Input
             placeholder="server-template-name"
@@ -68,7 +68,7 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
             onChange={(e) => setName(e.target.value)}
           />
         </div>
-        <div className="grid md:grid-cols-2">
+        <div className="grid md:grid-cols-2 items-center">
           Cloud Provider
           <Select
             value={type}
