@@ -22,9 +22,16 @@ pub mod repo;
 pub mod server;
 pub mod server_template;
 
-type ToUpdate<T> = Vec<(String, ResourceToml<T>)>;
+type ToUpdate<T> = Vec<ToUpdateItem<T>>;
 type ToCreate<T> = Vec<ResourceToml<T>>;
 type UpdatesResult<T> = (ToCreate<T>, ToUpdate<T>);
+
+pub struct ToUpdateItem<T> {
+  pub id: String,
+  pub resource: ResourceToml<T>,
+  pub update_description: bool,
+  pub update_tags: bool,
+}
 
 pub trait ResourceSync {
   type PartialConfig: std::fmt::Debug
@@ -92,13 +99,21 @@ pub trait ResourceSync {
             })
             .collect::<Vec<_>>();
 
+          let update = ToUpdateItem {
+            id,
+            update_description: resource.description
+              != original.description,
+            update_tags: resource.tags != original_tags,
+            resource,
+          };
+
           // Only try to update if there are any fields to update,
           // or a change to tags / description
-          if !resource.config.is_none()
-            || resource.description != original.description
-            || resource.tags != original_tags
+          if !update.resource.config.is_none()
+            || update.update_description
+            || update.update_tags
           {
-            to_update.push((id, resource));
+            to_update.push(update);
           }
         }
         None => {
@@ -140,18 +155,21 @@ pub trait ResourceSync {
           "\n{}s {}: {:#?}",
           Self::display(),
           "TO UPDATE".blue(),
-          to_update.iter().map(|(_, item)| item.name.as_str())
+          to_update
+            .iter()
+            .map(|update| update.resource.name.as_str())
+            .collect::<Vec<_>>()
         );
       } else {
         println!(
           "\n{}",
           to_update
             .iter()
-            .map(|(_, r)| format!(
-              "{}: {}: {}: {r:#?}",
+            .map(|ToUpdateItem { resource, .. }| format!(
+              "{}: {}: {}: {resource:#?}",
               "UPDATE".blue(),
               Self::display(),
-              r.name.bold().green(),
+              resource.name.bold().green(),
             ))
             .collect::<Vec<_>>()
             .join("\n\n")
@@ -183,20 +201,42 @@ pub trait ResourceSync {
         }
       };
       Self::update_tags(id.clone(), &name, tags).await;
-      Self::update_description(id, description).await;
+      Self::update_description(id, &name, description).await;
       info!("{} {name} created", Self::display());
     }
 
-    for (id, resource) in to_update {
+    for ToUpdateItem {
+      id,
+      resource,
+      update_description,
+      update_tags,
+    } in to_update
+    {
       // Update resource
       let name = resource.name.clone();
       let tags = resource.tags.clone();
       let description = resource.description.clone();
-      if let Err(e) = Self::update(id.clone(), resource).await {
-        warn!("failed to update {} {name} | {e:#}", Self::display());
+
+      if update_description {
+        Self::update_description(id.clone(), &name, description)
+          .await;
       }
-      Self::update_tags(id.clone(), &name, tags).await;
-      Self::update_description(id, description).await;
+
+      if update_tags {
+        Self::update_tags(id.clone(), &name, tags).await;
+      }
+
+      if !resource.config.is_none() {
+        if let Err(e) = Self::update(id, resource).await {
+          warn!(
+            "failed to update config on {} {name} | {e:#}",
+            Self::display()
+          );
+        } else {
+          info!("updated {} {name} config", Self::display());
+        }
+      }
+
       info!("{} {name} updated", Self::display());
     }
 
@@ -208,27 +248,29 @@ pub trait ResourceSync {
     }
   }
 
-  async fn update_tags(
-    resource_id: String,
-    resource_name: &str,
-    tags: Vec<String>,
-  ) {
+  async fn update_tags(id: String, name: &str, tags: Vec<String>) {
     // Update tags
     if let Err(e) = monitor_client()
       .write(UpdateTagsOnResource {
-        target: Self::resource_target(resource_id),
+        target: Self::resource_target(id),
         tags,
       })
       .await
     {
       warn!(
-        "failed to update tags on {} {resource_name} | {e:#}",
+        "failed to update tags on {} {name} | {e:#}",
         Self::display(),
       );
+    } else {
+      info!("updated {} {name} tags", Self::display());
     }
   }
 
-  async fn update_description(id: String, description: String) {
+  async fn update_description(
+    id: String,
+    name: &str,
+    description: String,
+  ) {
     if let Err(e) = monitor_client()
       .write(UpdateDescription {
         target: Self::resource_target(id.clone()),
@@ -237,6 +279,8 @@ pub trait ResourceSync {
       .await
     {
       warn!("failed to update resource {id} description | {e:#}");
+    } else {
+      info!("updated {} {name} description", Self::display());
     }
   }
 }

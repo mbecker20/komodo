@@ -16,7 +16,7 @@ use monitor_client::{
     update::ResourceTarget,
   },
 };
-use partial_derive2::PartialDiff;
+use partial_derive2::{MaybeNone, PartialDiff};
 
 use crate::{
   maps::{
@@ -24,6 +24,7 @@ use crate::{
     id_to_server, name_to_procedure,
   },
   monitor_client,
+  sync::resources::ToUpdateItem,
 };
 
 use super::{ResourceSync, ToCreate, ToUpdate};
@@ -83,28 +84,43 @@ impl ResourceSync for Procedure {
 
     for i in 0..10 {
       let mut to_pull = Vec::new();
-      for (id, resource) in &to_update {
+      for ToUpdateItem {
+        id,
+        resource,
+        update_description,
+        update_tags,
+      } in &to_update
+      {
         // Update resource
         let name = resource.name.clone();
         let tags = resource.tags.clone();
         let description = resource.description.clone();
-        if let Err(e) =
-          Self::update(id.clone(), resource.clone()).await
-        {
-          if i == 9 {
-            warn!(
-              "failed to update {} {name} | {e:#}",
-              Self::display()
-            );
+        if *update_description {
+          Self::update_description(id.clone(), &name, description)
+            .await;
+        }
+        if *update_tags {
+          Self::update_tags(id.clone(), &name, tags).await;
+        }
+        if !resource.config.is_none() {
+          if let Err(e) =
+            Self::update(id.clone(), resource.clone()).await
+          {
+            if i == 9 {
+              warn!(
+                "failed to update {} {name} | {e:#}",
+                Self::display()
+              );
+            }
           }
         }
-        Self::update_tags(id.clone(), &name, tags).await;
-        Self::update_description(id.clone(), description).await;
+
         info!("{} {name} updated", Self::display());
         // have to clone out so to_update is mutable
         to_pull.push(id.clone());
       }
-      to_update.retain(|(id, _)| !to_pull.contains(id));
+      //
+      to_update.retain(|resource| !to_pull.contains(&resource.id));
 
       let mut to_pull = Vec::new();
       for resource in &to_create {
@@ -124,7 +140,7 @@ impl ResourceSync for Procedure {
           }
         };
         Self::update_tags(id.clone(), &name, tags).await;
-        Self::update_description(id, description).await;
+        Self::update_description(id, &name, description).await;
         info!("{} {name} created", Self::display());
         to_pull.push(name);
       }
