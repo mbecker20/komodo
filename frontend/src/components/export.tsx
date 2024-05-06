@@ -12,7 +12,10 @@ import { FileDown, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { CopyButton } from "./util";
 
-export const ExportButton = ({}: {
+export const ExportButton = ({
+  target,
+  user_group,
+}: {
   target?: Types.ResourceTarget;
   user_group?: string;
 }) => {
@@ -21,21 +24,39 @@ export const ExportButton = ({}: {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="flex gap-2 items-center">
-          Export
+          Toml
           <FileDown className="w-4 h-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Export to toml</DialogTitle>
+          <DialogTitle>Export to Toml</DialogTitle>
         </DialogHeader>
-        <ExportLoader />
+        {target || user_group ? (
+          <ExportTargetLoader target={target} user_group={user_group} />
+        ) : (
+          <ExportAllLoader />
+        )}
       </DialogContent>
     </Dialog>
   );
 };
 
-const ExportLoader = () => {
+const ExportTargetLoader = ({
+  user_group,
+  target,
+}: {
+  user_group?: string;
+  target?: Types.ResourceTarget;
+}) => {
+  const { data, isPending } = useRead("ExportResourcesToToml", {
+    targets: target ? [target] : [],
+    user_groups: user_group ? [user_group] : [],
+  });
+  return <ExportPre loading={isPending} content={data?.toml} />;
+};
+
+const ExportAllLoader = () => {
   const { data, isPending } = useRead("ExportAllResourcesToToml", {});
   return <ExportPre loading={isPending} content={data?.toml} />;
 };

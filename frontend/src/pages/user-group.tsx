@@ -1,3 +1,4 @@
+import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { PermissionsTable } from "@components/users/permissions-table";
 import { UserTable } from "@components/users/table";
@@ -15,7 +16,7 @@ import { Input } from "@ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { useToast } from "@ui/use-toast";
 import { PlusCircle, Save, SearchX, UserCircle2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 
 export const UserGroupPage = () => {
@@ -26,10 +27,7 @@ export const UserGroupPage = () => {
     (group) => group._id?.$oid === group_id
   );
   const users = useRead("ListUsers", {}).data;
-  const [name, setName] = useState<string>();
-  useEffect(() => {
-    if (group) setName(group.name);
-  }, [group?.name]);
+  const [name, setName] = useState("");
   const renameMutate = useWrite("RenameUserGroup", {
     onSuccess: () => {
       inv(["ListUserGroups"]);
@@ -52,25 +50,7 @@ export const UserGroupPage = () => {
   }).mutate;
   if (!group) return null;
   return (
-    <Page
-      title={
-        <div className="flex gap-4 items-center">
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") rename();
-            }}
-            className="text-3xl h-fit p-2"
-          />
-          {name !== group.name && (
-            <Button size="icon" onClick={rename}>
-              <Save className="w-4 h-4" />
-            </Button>
-          )}
-        </div>
-      }
-    >
+    <Page title={group.name} actions={<ExportButton user_group={group_id} />}>
       <Section
         title="Users"
         icon={<UserCircle2 className="w-4 h-4" />}
@@ -88,6 +68,23 @@ export const UserGroupPage = () => {
         />
       </Section>
       <PermissionsTable user_target={{ type: "UserGroup", id: group_id }} />
+      <div className="flex justify-end w-full">
+        <div className="flex items-center gap-2">
+          <h2 className="text-muted-foreground">Rename</h2>
+          <Input
+            placeholder="Enter new name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") rename();
+            }}
+            className="w-[300px]"
+          />
+          <Button variant="secondary" onClick={rename}>
+            <Save className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
     </Page>
   );
 };

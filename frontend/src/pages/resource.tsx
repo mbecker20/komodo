@@ -1,3 +1,4 @@
+import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import {
@@ -55,6 +56,7 @@ export const Resource = () => {
                 | <Info key={i} id={id} />
               </Fragment>
             ))}
+            | <ExportButton target={{ type, id }} />
           </div>
           <ResourceDescription type={type} id={id} />
         </div>
