@@ -2,6 +2,7 @@ import {
   ActionButton,
   ActionWithDialog,
   ConfirmButton,
+  CopyButton,
   TextUpdateMenu,
 } from "@components/util";
 import { useInvalidate, useRead, useWrite } from "@lib/hooks";
@@ -309,3 +310,18 @@ export const LabelsConfig = ({
     />
   </ConfigItem>
 );
+
+export const CopyGithubWebhook = ({
+  path,
+}: {
+  path: string;
+}) => {
+  const base_url = useRead("GetCoreInfo", {}).data?.github_webhook_base_url;
+  const url = base_url + "/listener/github" + path;
+  return (
+    <div className="flex gap-2 items-center">
+      <Input className="w-[400px] max-w-[70vw]" value={url} disabled />
+      <CopyButton content={url} />
+    </div>
+  );
+};

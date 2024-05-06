@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { useState } from "react";
-import { ResourceSelector } from "../common";
+import { CopyGithubWebhook, ResourceSelector } from "../common";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -74,6 +74,18 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 set={(value) => set({ on_pull: value })}
                 disabled={disabled}
               />
+            ),
+          },
+          github_webhooks: {
+            ["clone" as any]: () => (
+              <ConfigItem label="Clone">
+                <CopyGithubWebhook path={`/repo/${id}/clone`} />
+              </ConfigItem>
+            ),
+            ["pull" as any]: () => (
+              <ConfigItem label="Pull">
+                <CopyGithubWebhook path={`/repo/${id}/pull`} />
+              </ConfigItem>
             ),
           },
         },

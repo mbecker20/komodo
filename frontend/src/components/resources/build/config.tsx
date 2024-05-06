@@ -19,7 +19,7 @@ import {
 import { Textarea } from "@ui/textarea";
 import { MinusCircle, PlusCircle } from "lucide-react";
 import { useEffect, useState } from "react";
-import { LabelsConfig, ResourceSelector } from "../common";
+import { CopyGithubWebhook, LabelsConfig, ResourceSelector } from "../common";
 
 export const BuildConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -153,6 +153,13 @@ export const BuildConfig = ({ id }: { id: string }) => {
                 set={(value) => set({ pre_build: value })}
                 disabled={disabled}
               />
+            ),
+          },
+          github_webhooks: {
+            ["build" as any]: () => (
+              <ConfigItem label="Build">
+                <CopyGithubWebhook path={`/build/${id}`} />
+              </ConfigItem>
             ),
           },
         },
