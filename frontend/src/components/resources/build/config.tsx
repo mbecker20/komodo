@@ -155,7 +155,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
               />
             ),
           },
-          github_webhooks: {
+          github_webhook: {
             ["build" as any]: () => (
               <ConfigItem label="Build">
                 <CopyGithubWebhook path={`/build/${id}`} />
