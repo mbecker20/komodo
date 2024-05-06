@@ -1,0 +1,18 @@
+[[repo]]
+name = "monitor-dev-frontend"
+description = "Used as frontend for monitor-core-dev"
+tags = ["monitor", "dev"]
+
+[repo.config]
+server_id = "monitor-01"
+repo = "mbecker20/monitor"
+branch = "main"
+github_account = ""
+
+[repo.config.on_clone]
+path = ""
+command = ""
+
+[repo.config.on_pull]
+path = "frontend"
+command = "sh on_pull.sh"

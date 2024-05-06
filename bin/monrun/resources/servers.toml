@@ -1,13 +1,51 @@
 [[server]]
-name = "mogh-server"
-description = "main mogh server"
-tags = ["mogh", "prod"]
-config.address = "http://localhost:8001"
-config.region = "us-east-2"
+name = "monitor-01"
+description = ""
+tags = ["monitor"]
 
-[[server]]
-name = "testo"
-description = "test server 1"
-tags = ["mogh", "test"]
-config.address = "http://locahost:8120"
-config.enabled = false
+[server.config]
+address = "http://localhost:8120"
+enabled = true
+stats_monitoring = true
+auto_prune = true
+send_unreachable_alerts = true
+send_cpu_alerts = true
+send_mem_alerts = true
+send_disk_alerts = true
+region = "us-east-2"
+
+## TEMPLATE
+
+[[server_template]]
+name = "mogh-template"
+description = ""
+tags = []
+
+[server_template.config]
+type = "Aws"
+
+[server_template.config.params]
+region = "us-east-2"
+instance_type = "t3.medium"
+ami_id = "ami-0005a05fa63a080ab"
+subnet_id = "subnet-02ae5ad480eacc4bc"
+key_pair_name = "mogh-key"
+assign_public_ip = true
+use_public_ip = false
+port = 8120
+user_data = ""
+security_group_ids = ["sg-049d98c819f9ace58", "sg-006c0ca638af8eb44"]
+
+[[server_template.config.params.volumes]]
+device_name = "/dev/sda1"
+size_gb = 20
+volume_type = "gp2"
+iops = 0
+throughput = 0
+
+[[server_template.config.params.volumes]]
+device_name = "/dev/sdb"
+size_gb = 10
+volume_type = "gp3"
+iops = 0
+throughput = 0

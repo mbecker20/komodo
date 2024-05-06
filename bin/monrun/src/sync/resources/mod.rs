@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use colored::Colorize;
 use monitor_client::{
   api::write::{UpdateDescription, UpdateTagsOnResource},
   entities::{
@@ -93,39 +94,46 @@ pub trait ResourceSync {
       }
     }
 
-    let verbose = cli_args().verbose;
+    let quiet = cli_args().quiet;
 
     if !to_create.is_empty() {
-      if verbose {
-        println!("\n{} TO CREATE:\n{to_create:#?}", Self::display(),);
-      } else {
+      if quiet {
         println!(
-          "\n{} TO CREATE: {:#?}",
+          "\n{} {}: {:#?}",
           Self::display(),
+          "TO CREATE".green(),
           to_create
             .iter()
             .map(|item| item.name.as_str())
             .collect::<Vec<_>>()
         );
+      } else {
+        println!(
+          "\n{} {}:\n{to_create:#?}",
+          Self::display(),
+          "TO CREATE".green()
+        );
       }
     }
 
     if !to_update.is_empty() {
-      if verbose {
+      if quiet {
         println!(
-          "\n{} TO UPDATE:\n{:#?}",
+          "\n{} {}: {}",
           Self::display(),
-          to_update.iter().map(|(_, r)| r).collect::<Vec<_>>()
-        );
-      } else {
-        println!(
-          "\n{} TO UPDATE: {}",
-          Self::display(),
+          "TO UPDATE".blue(),
           to_update
             .iter()
             .map(|(_, item)| item.name.as_str())
             .collect::<Vec<_>>()
             .join(", ")
+        );
+      } else {
+        println!(
+          "\n{} {}:\n{:#?}",
+          Self::display(),
+          "TO UPDATE".blue(),
+          to_update.iter().map(|(_, r)| r).collect::<Vec<_>>()
         );
       }
     }

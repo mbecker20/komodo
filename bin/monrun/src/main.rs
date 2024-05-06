@@ -5,6 +5,7 @@ use std::{io::Read, path::PathBuf, str::FromStr, sync::OnceLock};
 
 use anyhow::Context;
 use clap::{Parser, Subcommand};
+use colored::Colorize;
 use monitor_client::{api::read, MonitorClient};
 use serde::{de::DeserializeOwned, Deserialize};
 
@@ -20,12 +21,15 @@ fn cli_args() -> &'static CliArgs {
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct CliArgs {
+  /// Sync or Exec
   #[command(subcommand)]
   command: Command,
+  /// The path to a creds file.
   #[arg(long, default_value_t = String::from("./creds.toml"))]
   creds: String,
+  /// Log less (just resource names).
   #[arg(long, default_value_t = false)]
-  verbose: bool,
+  quiet: bool,
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -90,7 +94,7 @@ fn parse_toml_file<T: DeserializeOwned>(
 }
 
 fn wait_for_enter(message: &str) -> anyhow::Result<()> {
-  println!("\nPress ENTER to {message}\n");
+  println!("\nPress {} to {}\n", "ENTER".green(), message.bold());
   let buffer = &mut [0u8];
   std::io::stdin()
     .read_exact(buffer)

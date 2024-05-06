@@ -13,6 +13,7 @@ monitor_client.workspace = true
 # mogh
 partial_derive2.workspace = true
 # external
+colored.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
 serde.workspace = true

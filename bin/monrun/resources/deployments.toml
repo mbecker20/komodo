@@ -1,51 +1,168 @@
 [[deployment]]
-name = "hello-world"
-tags = ["test"]
-config.server = "mogh-server"
-config.image.type = "Image"
-config.image.params.image = "hello-world"
+name = "monitor-proxy"
+description = ""
+tags = ["monitor"]
+
+[deployment.config]
+server_id = "monitor-01"
+network = "host"
+restart = "on-failure"
+
+[deployment.config.image]
+type = "Image"
+
+[deployment.config.image.params]
+image = "jc21/nginx-proxy-manager"
+
+[[deployment.config.volumes]]
+local = "/data/nginx/data"
+container = "/data"
+
+[[deployment.config.volumes]]
+local = "/data/nginx/letsencrypt"
+container = "/etc/letsencrypt"
 
 [[deployment]]
-name = "test_logger"
-tags = ["test"]
-config.server = "mogh-server"
-config.image.type = "Build"
-config.image.params.build = "test_logger"
+name = "monitor-mongo"
+description = ""
+tags = ["monitor"]
+
+[deployment.config]
+server_id = "monitor-01"
+network = "host"
+restart = "no"
+
+[deployment.config.image]
+type = "Image"
+params.image = "mongo"
 
 [[deployment]]
-name = "alert_logger"
-tags = ["test"]
-config.server = "mogh-server"
-config.image.type = "Build"
-config.image.params.build = "alert_logger"
+name = "monitor-core"
+description = ""
+tags = ["monitor"]
 
-[[deployment]]
-name = "update_logger"
-tags = ["test", "logging"]
-config.server = "mogh-server"
-config.image.type = "Build"
-config.image.params.build = "update_logger"
-[[deployment.config.environment]]
-variable = "MONITOR_ADDRESS"
-value = "http://localhost:9001"
+[deployment.config]
+server_id = "monitor-01"
+network = "host"
+restart = "no"
 
-[[deployment]]
-name = "vector"
-tags = ["logging"]
-config.server = "mogh-server"
-config.image.type = "Image"
-config.image.params.image = "timberio/vector"
-
-[[deployment]]
-name = "loki"
-tags = ["logging"]
-config.server = "mogh-server"
-config.image.type = "Image"
-config.image.params.image = "grafana/loki"
+[deployment.config.image]
+type = "Image"
+params.image = "mbecker2020/monitor_core"
 
 [[deployment]]
 name = "grafana"
-tags = ["frontend"]
-config.server = "mogh-server"
-config.image.type = "Image"
-config.image.params.image = "grafana/grafana"
+description = ""
+tags = ["logging"]
+
+[deployment.config]
+server_id = "monitor-01"
+network = "host"
+restart = "unless-stopped"
+extra_args = ["--user root"]
+
+[deployment.config.image]
+type = "Image"
+params.image = "grafana/grafana"
+
+[[deployment.config.volumes]]
+local = "/data/grafana"
+container = "/var/lib/grafana"
+
+[[deployment.config.environment]]
+variable = "GF_SERVER_HTTP_PORT"
+value = "3080"
+
+[[deployment]]
+name = "loki"
+description = ""
+tags = ["logging"]
+
+[deployment.config]
+server_id = "monitor-01"
+network = "host"
+restart = "unless-stopped"
+extra_args = ["--user root"]
+
+[deployment.config.image]
+type = "Image"
+params.image = "grafana/loki"
+
+[[deployment.config.volumes]]
+local = "/data/loki"
+container = "/loki"
+
+[[deployment]]
+name = "tempo"
+description = ""
+tags = ["logging"]
+
+[deployment.config]
+server_id = "monitor-01"
+network = "host"
+restart = "unless-stopped"
+process_args = "-server.http-listen-port=3200 -server.grpc-listen-port=9096 --storage.trace.backend=local --storage.trace.local.path=/tmp/tempo/traces --storage.trace.wal.path=/tmp/tempo/wal"
+extra_args = ["--user root"]
+
+[deployment.config.image]
+type = "Image"
+params.image = "grafana/tempo"
+
+[[deployment.config.volumes]]
+local = "/data/tempo"
+container = "/tmp/tempo"
+
+[[deployment]]
+name = "vector"
+description = ""
+tags = ["logging"]
+
+[deployment.config]
+server_id = "monitor-01"
+network = "host"
+restart = "unless-stopped"
+process_args = "--config /etc/vector/*.toml"
+extra_args = ["--user root"]
+
+[deployment.config.image]
+type = "Image"
+params.image = "timberio/vector:latest-debian"
+
+[[deployment.config.volumes]]
+local = "/home/ubuntu/.config/vector"
+container = "/etc/vector"
+
+[[deployment.config.volumes]]
+local = "/data/vector"
+container = "/var/lib/vector"
+
+[[deployment.config.volumes]]
+local = "/var/run/docker.sock"
+container = "/var/run/docker.sock"
+
+[[deployment]]
+name = "monitor-core-dev"
+description = ""
+tags = ["monitor", "dev"]
+
+[deployment.config]
+server_id = "monitor-01"
+redeploy_on_build = true
+network = "host"
+restart = "no"
+
+[deployment.config.image]
+type = "Build"
+params.build_id = "monitor_core"
+
+[[deployment.config.volumes]]
+local = "/home/ubuntu/.config/monitor/dev.core.config.toml"
+container = "/config/config.toml"
+
+[[deployment.config.volumes]]
+local = "/etc/monitor/repos/monitor-dev-frontend/frontend/dist"
+container = "/frontend"
+
+[[deployment.config.labels]]
+variable = "vector"
+value = "rust"

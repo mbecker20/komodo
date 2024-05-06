@@ -17,8 +17,6 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
 
   let resources = resource_file::read_resources(path)?;
 
-  println!("{resources:#?}");
-
   let (server_template_creates, server_template_updates) =
     ServerTemplate::get_updates(resources.server_templates).await?;
   let (server_creates, server_updates) =

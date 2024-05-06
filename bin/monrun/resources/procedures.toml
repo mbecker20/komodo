@@ -1,1 +1,8 @@
+[[procedure]]
+name = "test-procedure"
+description = ""
+tags = []
 
+[procedure.config]
+procedure_type = "Sequence"
+executions = []

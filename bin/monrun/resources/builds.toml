@@ -1,46 +1,49 @@
 [[build]]
-name = "test_logger"
-tags = ["test"]
-config.builder = "mogh-builder"
-config.repo = "mbecker20/test_logger"
-config.branch = "master"
-config.github_account = "mbecker20"
-config.docker_account = "mbecker2020"
+name = "monitor_core"
+description = "Public monitor core build"
+tags = ["monitor"]
+
+[build.config]
+builder_id = "mogh-builder"
+repo = "mbecker20/monitor"
+branch = "main"
+docker_account = "mbecker2020"
+build_path = "."
+dockerfile_path = "bin/core/Dockerfile"
 
 [[build]]
-name = "alert_logger"
-tags = ["test"]
-config.builder = "mogh-builder"
-config.repo = "mbecker20/monitor"
-config.branch = "next"
-config.build_path = "."
-config.dockerfile_path = "bin/alert_logger/Dockerfile"
-config.docker_account = "mbecker2020"
+name = "monitor_core_dev"
+description = ""
+tags = ["monitor", "dev"]
 
-[[build]]
-name = "update_logger"
-tags = ["test"]
-config.builder = "mogh-builder"
-config.repo = "mbecker20/monitor"
-config.branch = "next"
-config.build_path = "."
-config.dockerfile_path = "bin/update_logger/Dockerfile"
-config.docker_account = "mbecker2020"
+[build.config]
+builder_id = "mogh-builder"
+repo = "mbecker20/monitor"
+branch = "main"
+docker_account = "mbecker2020"
+build_path = "."
+dockerfile_path = "bin/core/Dockerfile"
 
-# BUILDER
+## BUILDER
+
 [[builder]]
 name = "mogh-builder"
-description = "the builder for the mogh images"
-config.type = "Aws"
-config.params.region = "us-east-2"
-config.params.instance_type = "c5.2xlarge"
-config.params.volume_gb = 20
-config.params.ami_id = "ami-01c8bdba63708cde6"
-config.params.subnet_id = "subnet-02ae5ad480eacc4bc"
-config.params.key_pair_name = "mogh-key"
-config.params.assign_public_ip = true
-config.params.use_public_ip = false
-config.params.port = 8000
-config.params.security_group_ids = ["sg-049d98c819f9ace58", "sg-006c0ca638af8eb44"]
-config.params.github_accounts = ["mbecker20"]
-config.params.docker_accounts = ["mbecker2020"]
+description = ""
+tags = []
+
+[builder.config]
+type = "Aws"
+
+[builder.config.params]
+region = "us-east-2"
+instance_type = "c5.2xlarge"
+volume_gb = 20
+port = 8120
+ami_id = "ami-0005a05fa63a080ab"
+subnet_id = "subnet-02ae5ad480eacc4bc"
+security_group_ids = ["sg-049d98c819f9ace58", "sg-006c0ca638af8eb44"]
+key_pair_name = "mogh-key"
+assign_public_ip = true
+use_public_ip = false
+github_accounts = []
+docker_accounts = []
