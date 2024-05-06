@@ -64,6 +64,7 @@ pub async fn launch_ec2_instance(
     key_pair_name,
     assign_public_ip,
     use_public_ip,
+    user_data,
     port: _,
   } = config;
   let instance_type = handle_unknown_instance_type(
@@ -90,23 +91,25 @@ pub async fn launch_ec2_instance(
         .build(),
     )
     .min_count(1)
-    .max_count(1);
+    .max_count(1)
+    .user_data(user_data);
 
   for volume in volumes {
-    let mut ebs = EbsBlockDevice::builder()
+    let ebs = EbsBlockDevice::builder()
       .volume_size(volume.size_gb)
-      .set_iops(volume.iops)
-      .set_throughput(volume.throughput);
-    if let Some(volume_type) = &volume.volume_type {
-      ebs = ebs.volume_type(
-        VolumeType::from_str(volume_type)
+      .volume_type(
+        VolumeType::from_str(volume.volume_type.as_ref())
           .context("invalid volume type")?,
-      );
-    }
+      )
+      .set_iops((volume.iops != 0).then_some(volume.iops))
+      .set_throughput(
+        (volume.throughput != 0).then_some(volume.throughput),
+      )
+      .build();
     req = req.block_device_mappings(
       BlockDeviceMapping::builder()
-        .set_device_name(volume.device_name.clone().into())
-        .set_ebs(ebs.build().into())
+        .set_device_name(volume.device_name.into())
+        .set_ebs(ebs.into())
         .build(),
     )
   }

@@ -141,6 +141,7 @@ impl ServerTemplateConfig {
               .use_public_ip
               .unwrap_or(config.use_public_ip),
             port: partial.port.unwrap_or(config.port),
+            user_data: partial.user_data.unwrap_or(config.user_data),
           };
           ServerTemplateConfig::Aws(config)
         }
@@ -160,24 +161,32 @@ pub type _PartialAwsServerTemplateConfig =
 #[partial(skip_serializing_none, from, diff)]
 pub struct AwsServerTemplateConfig {
   /// The aws region to launch the server in, eg. us-east-1
+  #[serde(default = "default_region")]
+  #[builder(default = "default_region()")]
+  #[partial_default(default_region())]
   pub region: String,
   /// The instance type to launch, eg. c5.2xlarge
+  #[serde(default = "default_instance_type")]
+  #[builder(default = "default_instance_type()")]
+  #[partial_default(default_instance_type())]
   pub instance_type: String,
-  /// Specify the EBS volumes to attach.
-  pub volumes: Vec<AwsVolume>,
   /// Specify the ami id to use. Must be set up to start the periphery binary on startup.
   pub ami_id: String,
   /// The subnet to assign to the instance.
   pub subnet_id: String,
-  /// The security groups to give to the instance.
-  pub security_group_ids: Vec<String>,
   /// The key pair name to give to the instance in case SSH access required.
   pub key_pair_name: String,
   /// Assign a public ip to the instance. Depending on how your network is
   /// setup, this may be required for the instance to reach the public internet.
+  #[serde(default = "default_assign_public_ip")]
+  #[builder(default = "default_assign_public_ip()")]
+  #[partial_default(default_assign_public_ip())]
   pub assign_public_ip: bool,
   /// Use the instances public ip as the address for the server.
   /// Could be used when build instances are created in another non-interconnected network to the core api.
+  #[serde(default = "default_use_public_ip")]
+  #[builder(default = "default_use_public_ip()")]
+  #[partial_default(default_use_public_ip())]
   pub use_public_ip: bool,
   /// The port periphery will be running on in AMI.
   /// Default: `8120`
@@ -185,6 +194,45 @@ pub struct AwsServerTemplateConfig {
   #[builder(default = "default_port()")]
   #[partial_default(default_port())]
   pub port: i32,
+  /// The user data to deploy the instance with.
+  #[serde(default)]
+  #[builder(default)]
+  pub user_data: String,
+  /// The security groups to give to the instance.
+  #[serde(default)]
+  #[builder(default)]
+  pub security_group_ids: Vec<String>,
+  /// Specify the EBS volumes to attach.
+  #[serde(default = "default_volumes")]
+  #[builder(default = "default_volumes()")]
+  #[partial_default(default_volumes())]
+  pub volumes: Vec<AwsVolume>,
+}
+
+fn default_region() -> String {
+  String::from("us-east-1")
+}
+
+fn default_instance_type() -> String {
+  String::from("t3.small")
+}
+
+fn default_assign_public_ip() -> bool {
+  true
+}
+
+fn default_use_public_ip() -> bool {
+  false
+}
+
+fn default_volumes() -> Vec<AwsVolume> {
+  vec![AwsVolume {
+    device_name: "/dev/sda1".to_string(),
+    size_gb: 20,
+    volume_type: AwsVolumeType::Gp2,
+    iops: 0,
+    throughput: 0,
+  }]
 }
 
 fn default_port() -> i32 {
@@ -200,12 +248,35 @@ pub struct AwsVolume {
   pub device_name: String,
   /// The size of the volume in GB
   pub size_gb: i32,
-  /// The type of volume, eg gp2, gp3, io1
-  pub volume_type: Option<String>,
-  /// The iops of the volume, or AWS default.
-  pub iops: Option<i32>,
-  /// The throughput of the volume, or AWS default.
-  pub throughput: Option<i32>,
+  /// The type of volume. Options: gp2, gp3, io1, io2.
+  pub volume_type: AwsVolumeType,
+  /// The iops of the volume, or 0 for AWS default.
+  pub iops: i32,
+  /// The throughput of the volume, or 0 for AWS default.
+  pub throughput: i32,
+}
+
+#[typeshare]
+#[derive(
+  Debug,
+  Clone,
+  Copy,
+  Default,
+  PartialEq,
+  Eq,
+  Serialize,
+  Deserialize,
+  Display,
+  AsRefStr,
+)]
+#[serde(rename_all = "lowercase")]
+#[strum(serialize_all = "lowercase")]
+pub enum AwsVolumeType {
+  #[default]
+  Gp2,
+  Gp3,
+  Io1,
+  Io2,
 }
 
 impl AwsServerTemplateConfig {
@@ -214,11 +285,11 @@ impl AwsServerTemplateConfig {
       region: value.region.clone(),
       instance_type: value.instance_type.clone(),
       volumes: vec![AwsVolume {
-        size_gb: value.volume_gb,
         device_name: "/dev/sda1".to_string(),
-        volume_type: None,
-        iops: None,
-        throughput: None,
+        size_gb: value.volume_gb,
+        volume_type: AwsVolumeType::Gp2,
+        iops: 0,
+        throughput: 0,
       }],
       ami_id: value.ami_id.clone(),
       subnet_id: value.subnet_id.clone(),
@@ -227,6 +298,7 @@ impl AwsServerTemplateConfig {
       assign_public_ip: value.assign_public_ip,
       use_public_ip: value.use_public_ip,
       port: value.port,
+      user_data: Default::default(),
     }
   }
 }
