@@ -36,6 +36,29 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
   let (user_group_creates, user_group_updates) =
     user_group::get_updates(resources.user_groups).await?;
 
+  if server_template_creates.is_empty()
+    && server_template_updates.is_empty()
+    && server_creates.is_empty()
+    && server_updates.is_empty()
+    && deployment_creates.is_empty()
+    && deployment_updates.is_empty()
+    && build_creates.is_empty()
+    && build_updates.is_empty()
+    && builder_creates.is_empty()
+    && builder_updates.is_empty()
+    && alerter_creates.is_empty()
+    && alerter_updates.is_empty()
+    && repo_creates.is_empty()
+    && repo_updates.is_empty()
+    && procedure_creates.is_empty()
+    && procedure_updates.is_empty()
+    && user_group_creates.is_empty()
+    && user_group_updates.is_empty()
+  {
+    println!("\nNothing to do. Exiting.");
+    return Ok(());
+  }
+
   wait_for_enter("CONTINUE")?;
 
   // No deps

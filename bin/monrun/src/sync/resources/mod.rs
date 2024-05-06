@@ -77,14 +77,19 @@ pub trait ResourceSync {
       match map.get(&resource.name).map(|s| s.id.clone()) {
         Some(id) => {
           // Get the full original config for the resource.
-          let original = Self::get(id.clone()).await?.config;
+          let original = Self::get(id.clone()).await?;
 
           // Minimizes updates through diffing.
           resource.config =
-            Self::minimize_update(original, resource.config).await?;
+            Self::minimize_update(original.config, resource.config)
+              .await?;
 
-          // Only try to update if there are any fields to update.
-          if !resource.config.is_none() {
+          // Only try to update if there are any fields to update,
+          // or a change to tags / description
+          if !resource.config.is_none()
+            || resource.description != original.description
+            || resource.tags != original.tags
+          {
             to_update.push((id, resource));
           }
         }
@@ -99,19 +104,24 @@ pub trait ResourceSync {
     if !to_create.is_empty() {
       if quiet {
         println!(
-          "\n{} {}: {:#?}",
+          "\n{}s {}: {:#?}",
           Self::display(),
           "TO CREATE".green(),
-          to_create
-            .iter()
-            .map(|item| item.name.as_str())
-            .collect::<Vec<_>>()
+          to_create.iter().map(|item| item.name.as_str())
         );
       } else {
         println!(
-          "\n{} {}:\n{to_create:#?}",
-          Self::display(),
-          "TO CREATE".green()
+          "\n{}",
+          to_create
+            .iter()
+            .map(|r| format!(
+              "{}: {}: {}: {r:#?}",
+              "CREATE".green(),
+              Self::display(),
+              r.name.bold().green(),
+            ))
+            .collect::<Vec<_>>()
+            .join("\n\n")
         );
       }
     }
@@ -119,21 +129,24 @@ pub trait ResourceSync {
     if !to_update.is_empty() {
       if quiet {
         println!(
-          "\n{} {}: {}",
+          "\n{}s {}: {:#?}",
           Self::display(),
           "TO UPDATE".blue(),
-          to_update
-            .iter()
-            .map(|(_, item)| item.name.as_str())
-            .collect::<Vec<_>>()
-            .join(", ")
+          to_update.iter().map(|(_, item)| item.name.as_str())
         );
       } else {
         println!(
-          "\n{} {}:\n{:#?}",
-          Self::display(),
-          "TO UPDATE".blue(),
-          to_update.iter().map(|(_, r)| r).collect::<Vec<_>>()
+          "\n{}",
+          to_update
+            .iter()
+            .map(|(_, r)| format!(
+              "{}: {}: {}: {r:#?}",
+              "UPDATE".blue(),
+              Self::display(),
+              r.name.bold().green(),
+            ))
+            .collect::<Vec<_>>()
+            .join("\n\n")
         );
       }
     }
