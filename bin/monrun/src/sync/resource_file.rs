@@ -31,6 +31,7 @@ fn read_resources_recursive(
       }
     };
     info!("adding resources from {path:?}");
+    resources.server_templates.extend(more.server_templates);
     resources.servers.extend(more.servers);
     resources.builds.extend(more.builds);
     resources.deployments.extend(more.deployments);
