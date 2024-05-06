@@ -1,3 +1,4 @@
+## MONITOR PROXY
 [[deployment]]
 name = "monitor-proxy"
 description = "An NGINX proxy for mogh.tech"
@@ -22,6 +23,7 @@ container = "/data"
 local = "/data/nginx/letsencrypt"
 container = "/etc/letsencrypt"
 
+## MONITOR MONGO
 [[deployment]]
 name = "monitor-mongo"
 description = ""
@@ -36,6 +38,7 @@ restart = "no"
 type = "Image"
 params.image = "mongo"
 
+## MONITOR CORE
 [[deployment]]
 name = "monitor-core"
 description = ""
@@ -50,6 +53,7 @@ restart = "no"
 type = "Image"
 params.image = "mbecker2020/monitor_core"
 
+## GRAFANA
 [[deployment]]
 name = "grafana"
 description = ""
@@ -73,6 +77,11 @@ container = "/var/lib/grafana"
 variable = "GF_SERVER_HTTP_PORT"
 value = "3080"
 
+[[deployment.config.labels]]
+variable = "vector"
+value = "key-value"
+
+## LOKI
 [[deployment]]
 name = "loki"
 description = ""
@@ -112,6 +121,11 @@ params.image = "grafana/tempo"
 local = "/data/tempo"
 container = "/tmp/tempo"
 
+[[deployment.config.labels]]
+variable = "vector"
+value = "key-value"
+
+## VECTOR
 [[deployment]]
 name = "vector"
 description = ""
@@ -140,6 +154,11 @@ container = "/var/lib/vector"
 local = "/var/run/docker.sock"
 container = "/var/run/docker.sock"
 
+[[deployment.config.labels]]
+variable = "vector"
+value = "key-value"
+
+## MONITOR CORE DEV
 [[deployment]]
 name = "monitor-core-dev"
 description = ""
