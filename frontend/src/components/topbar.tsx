@@ -77,7 +77,10 @@ const PrimaryDropdown = () => {
   const Components = type && ResourceComponents[type];
 
   const [icon, title] = Components
-    ? [<Components.Icon />, type + "s"]
+    ? [
+        <Components.Icon />,
+        (type === "ServerTemplate" ? "Template" : type) + "s",
+      ]
     : location.pathname === "/"
     ? [<Home className="w-4 h-4" />, "Home"]
     : location.pathname === "/keys"
