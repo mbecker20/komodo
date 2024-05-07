@@ -24,10 +24,10 @@ use crate::{
   helpers::{
     periphery_client,
     query::get_server_with_status,
-    resource::StateResource,
     update::{add_update, make_update, update_update},
   },
   monitor::update_cache_for_server,
+  resource,
   state::{action_states, db_client, State},
 };
 
@@ -43,12 +43,13 @@ impl Resolve<Deploy, User> for State {
     }: Deploy,
     user: User,
   ) -> anyhow::Result<Update> {
-    let mut deployment = Deployment::get_resource_check_permissions(
-      &deployment,
-      &user,
-      PermissionLevel::Execute,
-    )
-    .await?;
+    let mut deployment =
+      resource::get_check_permissions::<Deployment>(
+        &deployment,
+        &user,
+        PermissionLevel::Execute,
+      )
+      .await?;
 
     // get the action state for the deployment (or insert default).
     let action_state = action_states()
@@ -77,7 +78,7 @@ impl Resolve<Deploy, User> for State {
 
     let version = match deployment.config.image {
       DeploymentImage::Build { build_id, version } => {
-        let build = Build::get_resource(&build_id).await?;
+        let build = resource::get::<Build>(&build_id).await?;
         let image_name = get_image_name(&build);
         let version = if version.is_none() {
           build.config.version
@@ -143,7 +144,7 @@ impl Resolve<StartContainer, User> for State {
     StartContainer { deployment }: StartContainer,
     user: User,
   ) -> anyhow::Result<Update> {
-    let deployment = Deployment::get_resource_check_permissions(
+    let deployment = resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Execute,
@@ -222,7 +223,7 @@ impl Resolve<StopContainer, User> for State {
     }: StopContainer,
     user: User,
   ) -> anyhow::Result<Update> {
-    let deployment = Deployment::get_resource_check_permissions(
+    let deployment = resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Execute,
@@ -381,7 +382,7 @@ impl Resolve<RemoveContainer, User> for State {
     }: RemoveContainer,
     user: User,
   ) -> anyhow::Result<Update> {
-    let deployment = Deployment::get_resource_check_permissions(
+    let deployment = resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Execute,

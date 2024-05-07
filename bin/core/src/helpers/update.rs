@@ -30,6 +30,36 @@ pub fn make_update(
 }
 
 #[instrument(level = "debug")]
+pub async fn add_update(
+  mut update: Update,
+) -> anyhow::Result<String> {
+  update.id = db_client()
+    .await
+    .updates
+    .insert_one(&update, None)
+    .await
+    .context("failed to insert update into db")?
+    .inserted_id
+    .as_object_id()
+    .context("inserted_id is not object id")?
+    .to_string();
+  let id = update.id.clone();
+  let update = update_list_item(update).await?;
+  let _ = send_update(update).await;
+  Ok(id)
+}
+
+#[instrument(level = "debug")]
+pub async fn update_update(update: Update) -> anyhow::Result<()> {
+  update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
+      .await
+      .context("failed to update the update on db. the update build process was deleted")?;
+  let update = update_list_item(update).await?;
+  let _ = send_update(update).await;
+  Ok(())
+}
+
+#[instrument(level = "debug")]
 async fn update_list_item(
   update: Update,
 ) -> anyhow::Result<UpdateListItem> {
@@ -61,35 +91,5 @@ async fn update_list_item(
 #[instrument(level = "debug")]
 async fn send_update(update: UpdateListItem) -> anyhow::Result<()> {
   update_channel().sender.lock().await.send(update)?;
-  Ok(())
-}
-
-#[instrument(level = "debug")]
-pub async fn add_update(
-  mut update: Update,
-) -> anyhow::Result<String> {
-  update.id = db_client()
-    .await
-    .updates
-    .insert_one(&update, None)
-    .await
-    .context("failed to insert update into db")?
-    .inserted_id
-    .as_object_id()
-    .context("inserted_id is not object id")?
-    .to_string();
-  let id = update.id.clone();
-  let update = update_list_item(update).await?;
-  let _ = send_update(update).await;
-  Ok(id)
-}
-
-#[instrument(level = "debug")]
-pub async fn update_update(update: Update) -> anyhow::Result<()> {
-  update_one_by_id(&db_client().await.updates, &update.id, mungos::update::Update::Set(to_document(&update)?), None)
-      .await
-      .context("failed to update the update on db. the update build process was deleted")?;
-  let update = update_list_item(update).await?;
-  let _ = send_update(update).await;
   Ok(())
 }

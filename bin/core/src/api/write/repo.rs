@@ -1,119 +1,21 @@
-use std::str::FromStr;
-
-use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
-  entities::{
-    monitor_timestamp,
-    permission::PermissionLevel,
-    repo::{PartialRepoConfig, Repo},
-    server::Server,
-    to_monitor_name,
-    update::{Log, ResourceTarget, Update},
-    user::User,
-    Operation,
-  },
+  entities::{permission::PermissionLevel, repo::Repo, user::User},
 };
-use mungos::{
-  by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, oid::ObjectId, to_bson},
-};
-use periphery_client::api;
 use resolver_api::Resolve;
-use serror::serialize_error_pretty;
 
-use crate::{
-  helpers::{
-    create_permission, periphery_client, remove_from_recently_viewed,
-    resource::{delete_all_permissions_on_resource, StateResource},
-    update::{add_update, make_update, update_update},
-  },
-  state::{action_states, db_client, State},
-};
-
-#[instrument(skip(user))]
-async fn validate_config(
-  config: &mut PartialRepoConfig,
-  user: &User,
-) -> anyhow::Result<()> {
-  match &config.server_id {
-    Some(server_id) if !server_id.is_empty() => {
-      let server = Server::get_resource_check_permissions(
-          server_id,
-          user,
-          PermissionLevel::Write,
-        )
-        .await
-        .context("cannot create repo on this server. user must have update permissions on the server.")?;
-      config.server_id = Some(server.id);
-    }
-    _ => {}
-  }
-  Ok(())
-}
+use crate::{resource, state::State};
 
 #[async_trait]
 impl Resolve<CreateRepo, User> for State {
   #[instrument(name = "CreateRepo", skip(self, user))]
   async fn resolve(
     &self,
-    CreateRepo { name, mut config }: CreateRepo,
+    CreateRepo { name, config }: CreateRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
-    let name = to_monitor_name(&name);
-    if ObjectId::from_str(&name).is_ok() {
-      return Err(anyhow!("valid ObjectIds cannot be used as names"));
-    }
-    validate_config(&mut config, &user).await?;
-    let start_ts = monitor_timestamp();
-    let repo = Repo {
-      id: Default::default(),
-      name,
-      updated_at: start_ts,
-      description: Default::default(),
-      tags: Default::default(),
-      config: config.into(),
-      info: Default::default(),
-    };
-    let repo_id = db_client()
-      .await
-      .repos
-      .insert_one(repo, None)
-      .await
-      .context("failed to add repo to db")?
-      .inserted_id
-      .as_object_id()
-      .context("inserted_id is not ObjectId")?
-      .to_string();
-
-    let repo = Repo::get_resource(&repo_id).await?;
-
-    create_permission(&user, &repo, PermissionLevel::Write).await;
-
-    let update = Update {
-      target: ResourceTarget::Repo(repo_id),
-      operation: Operation::CreateRepo,
-      start_ts,
-      end_ts: Some(monitor_timestamp()),
-      operator: user.id.clone(),
-      success: true,
-      logs: vec![
-        Log::simple(
-          "create repo",
-          format!(
-            "created repo\nid: {}\nname: {}",
-            repo.id, repo.name
-          ),
-        ),
-        Log::simple("config", format!("{:#?}", repo.config)),
-      ],
-      ..Default::default()
-    };
-
-    add_update(update).await?;
-
-    Ok(repo)
+    resource::create::<Repo>(&name, config, &user).await
   }
 }
 
@@ -125,59 +27,14 @@ impl Resolve<CopyRepo, User> for State {
     CopyRepo { name, id }: CopyRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
-    let Repo {
-      config,
-      description,
-      tags,
-      ..
-    } = Repo::get_resource_check_permissions(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-    if !config.server_id.is_empty() {
-      Server::get_resource_check_permissions(
-          &config.server_id,
-          &user,
-          PermissionLevel::Write,
-        )
-        .await
-        .context("cannot create repo on this server. user must have update permissions on the server.")?;
-    }
-    let start_ts = monitor_timestamp();
-    let repo = Repo {
-      id: Default::default(),
-      name,
-      updated_at: start_ts,
-      description,
-      tags,
-      config,
-      info: Default::default(),
-    };
-    let repo_id = db_client()
-      .await
-      .repos
-      .insert_one(repo, None)
-      .await
-      .context("failed to add repo to db")?
-      .inserted_id
-      .as_object_id()
-      .context("inserted_id is not ObjectId")?
-      .to_string();
-    let repo = Repo::get_resource(&repo_id).await?;
-    create_permission(&user, &repo, PermissionLevel::Write).await;
-    let mut update = make_update(&repo, Operation::CreateRepo, &user);
-    update.push_simple_log(
-      "create repo",
-      format!("created repo\nid: {}\nname: {}", repo.id, repo.name),
-    );
-    update.push_simple_log("config", format!("{:#?}", repo.config));
-    update.finalize();
-
-    add_update(update).await?;
-
-    Ok(repo)
+    let Repo { config, .. } =
+      resource::get_check_permissions::<Repo>(
+        &id,
+        &user,
+        PermissionLevel::Write,
+      )
+      .await?;
+    resource::create::<Repo>(&name, config.into(), &user).await
   }
 }
 
@@ -189,76 +46,7 @@ impl Resolve<DeleteRepo, User> for State {
     DeleteRepo { id }: DeleteRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
-    let repo = Repo::get_resource_check_permissions(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-
-    // get the action state for the repo (or insert default).
-    let action_state =
-      action_states().repo.get_or_insert_default(&repo.id).await;
-
-    // This will set action state back to default when dropped.
-    // Will also check to ensure repo not already busy before updating.
-    let _action_guard =
-      action_state.update(|state| state.deleting = true)?;
-
-    let periphery = if repo.config.server_id.is_empty() {
-      None
-    } else {
-      let server =
-        Server::get_resource(&repo.config.server_id).await?;
-      let periphery = periphery_client(&server)?;
-      Some(periphery)
-    };
-
-    let mut update = make_update(&repo, Operation::DeleteRepo, &user);
-    update.in_progress();
-    update.id = add_update(update.clone()).await?;
-
-    let res =
-      delete_one_by_id(&db_client().await.repos, &repo.id, None)
-        .await
-        .context("failed to delete repo from database");
-
-    delete_all_permissions_on_resource(&repo).await;
-
-    let log = match res {
-      Ok(_) => Log::simple(
-        "delete repo",
-        format!("deleted repo {}", repo.name),
-      ),
-      Err(e) => Log::error(
-        "delete repo",
-        format!("failed to delete repo\n{e:#?}"),
-      ),
-    };
-
-    update.logs.push(log);
-
-    if let Some(periphery) = periphery {
-      match periphery
-        .request(api::git::DeleteRepo {
-          name: repo.name.clone(),
-        })
-        .await
-      {
-        Ok(log) => update.logs.push(log),
-        Err(e) => update.logs.push(Log::error(
-          "delete repo on periphery",
-          serialize_error_pretty(&e),
-        )),
-      }
-    }
-
-    update.finalize();
-    update_update(update).await?;
-
-    remove_from_recently_viewed(&repo).await?;
-
-    Ok(repo)
+    resource::delete::<Repo>(&id, &user).await
   }
 }
 
@@ -267,79 +55,9 @@ impl Resolve<UpdateRepo, User> for State {
   #[instrument(name = "UpdateRepo", skip(self, user))]
   async fn resolve(
     &self,
-    UpdateRepo { id, mut config }: UpdateRepo,
+    UpdateRepo { id, config }: UpdateRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
-    validate_config(&mut config, &user).await?;
-
-    let repo = Repo::get_resource_check_permissions(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-
-    // get the action state for the repo (or insert default).
-    let action_state =
-      action_states().repo.get_or_insert_default(&repo.id).await;
-
-    // This will set action state back to default when dropped.
-    // Will also check to ensure repo not already busy before updating.
-    let _action_guard =
-      action_state.update(|state| state.updating = true)?;
-
-    update_one_by_id(
-      &db_client().await.repos,
-      &repo.id,
-      mungos::update::Update::FlattenSet(
-        doc! { "config": to_bson(&config)? },
-      ),
-      None,
-    )
-    .await
-    .context("failed to update repo on database")?;
-
-    let mut update = make_update(&repo, Operation::UpdateRepo, &user);
-    update.in_progress();
-    update.push_simple_log(
-      "repo update",
-      serde_json::to_string_pretty(&config).unwrap(),
-    );
-    update.id = add_update(update.clone()).await?;
-
-    if let Some(new_server_id) = config.server_id {
-      if !repo.config.server_id.is_empty()
-        && new_server_id != repo.config.server_id
-      {
-        let old_server: anyhow::Result<Server> =
-          Server::get_resource(&repo.config.server_id).await;
-        let periphery =
-          old_server.and_then(|server| periphery_client(&server));
-        match periphery {
-          Ok(periphery) => match periphery
-            .request(api::git::DeleteRepo { name: repo.name })
-            .await
-          {
-            Ok(mut log) => {
-              log.stage = String::from("cleanup previous server");
-              update.logs.push(log);
-            }
-            Err(e) => update.push_error_log(
-              "cleanup previous server",
-              format!("failed to cleanup previous server | {e:#?}"),
-            ),
-          },
-          Err(e) => update.push_error_log(
-            "cleanup previous server",
-            format!("failed to cleanup previous server | {e:#?}"),
-          ),
-        }
-      }
-    }
-
-    update.finalize();
-    update_update(update).await?;
-
-    Repo::get_resource(&repo.id).await
+    resource::update::<Repo>(&id, config, &user).await
   }
 }

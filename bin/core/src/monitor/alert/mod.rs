@@ -10,7 +10,7 @@ use monitor_client::entities::{
   user::User,
 };
 
-use crate::helpers::resource::StateResource;
+use crate::resource;
 
 // called after cache update
 #[instrument(level = "debug")]
@@ -35,7 +35,7 @@ async fn get_all_servers_map() -> anyhow::Result<(
   HashMap<String, ServerListItem>,
   HashMap<String, String>,
 )> {
-  let servers = Server::list_resource_list_items_for_user(
+  let servers = resource::list_for_user::<Server>(
     ResourceQuery::default(),
     &User {
       admin: true,

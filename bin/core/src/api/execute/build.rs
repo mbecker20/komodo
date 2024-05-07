@@ -46,9 +46,9 @@ use crate::{
     channel::build_cancel_channel,
     periphery_client,
     query::get_deployment_state,
-    resource::StateResource,
     update::{add_update, make_update, update_update},
   },
+  resource,
   state::{action_states, db_client, State},
 };
 
@@ -60,7 +60,7 @@ impl Resolve<RunBuild, User> for State {
     RunBuild { build }: RunBuild,
     user: User,
   ) -> anyhow::Result<Update> {
-    let mut build = Build::get_resource_check_permissions(
+    let mut build = resource::get_check_permissions::<Build>(
       &build,
       &user,
       PermissionLevel::Execute,
@@ -262,7 +262,7 @@ impl Resolve<CancelBuild, User> for State {
     CancelBuild { build }: CancelBuild,
     user: User,
   ) -> anyhow::Result<CancelBuildResponse> {
-    let build = Build::get_resource_check_permissions(
+    let build = resource::get_check_permissions::<Build>(
       &build,
       &user,
       PermissionLevel::Execute,
@@ -323,13 +323,13 @@ async fn get_build_builder(
     return Err(anyhow!("build has not configured a builder"));
   }
   let builder =
-    Builder::get_resource(&build.config.builder_id).await?;
+    resource::get::<Builder>(&build.config.builder_id).await?;
   match builder.config {
     BuilderConfig::Server(config) => {
       if config.server_id.is_empty() {
         return Err(anyhow!("builder has not configured a server"));
       }
-      let server = Server::get_resource(&config.server_id).await?;
+      let server = resource::get::<Server>(&config.server_id).await?;
       let periphery = periphery_client(&server)?;
       Ok((
         periphery,

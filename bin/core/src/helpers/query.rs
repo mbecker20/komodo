@@ -1,10 +1,12 @@
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
   deployment::{Deployment, DockerContainerState},
+  permission::PermissionLevel,
   server::{Server, ServerStatus},
   tag::Tag,
+  update::ResourceTargetVariant,
   user::{admin_service_user, User},
 };
 use mungos::{
@@ -13,9 +15,7 @@ use mungos::{
   mongodb::bson::{doc, oid::ObjectId, Document},
 };
 
-use crate::state::db_client;
-
-use super::resource::StateResource;
+use crate::{resource, state::db_client};
 
 #[instrument(level = "debug")]
 pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
@@ -32,7 +32,7 @@ pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
 pub async fn get_server_with_status(
   server_id_or_name: &str,
 ) -> anyhow::Result<(Server, ServerStatus)> {
-  let server = Server::get_resource(server_id_or_name).await?;
+  let server = resource::get::<Server>(server_id_or_name).await?;
   if !server.config.enabled {
     return Ok((server, ServerStatus::Disabled));
   }
@@ -71,8 +71,6 @@ pub async fn get_deployment_state(
 
   Ok(state)
 }
-
-// TAG
 
 #[instrument(level = "debug")]
 pub async fn get_tag(id_or_name: &str) -> anyhow::Result<Tag> {
@@ -120,6 +118,9 @@ pub async fn get_user_user_group_ids(
   Ok(res)
 }
 
+/// Returns Vec of all queries on permissions that match against the user
+/// or any user groups that the user is a part of.
+/// Result used with Mongodb '$or'.
 #[instrument(level = "debug")]
 pub async fn user_target_query(
   user_id: &str,
@@ -137,4 +138,63 @@ pub async fn user_target_query(
     });
   user_target_query.extend(user_groups);
   Ok(user_target_query)
+}
+
+#[instrument(level = "debug")]
+pub async fn get_user_permission_on_resource(
+  user_id: &str,
+  resource_variant: ResourceTargetVariant,
+  resource_id: &str,
+) -> anyhow::Result<PermissionLevel> {
+  let permission = find_collect(
+    &db_client().await.permissions,
+    doc! {
+      "$or": user_target_query(user_id).await?,
+      "resource_target.type": resource_variant.as_ref(),
+      "resource_target.id": resource_id
+    },
+    None,
+  )
+  .await
+  .context("failed to query db for permissions")?
+  .into_iter()
+  // get the max permission user has between personal / any user groups
+  .fold(PermissionLevel::None, |level, permission| {
+    if permission.level > level {
+      permission.level
+    } else {
+      level
+    }
+  });
+  Ok(permission)
+}
+
+#[instrument(level = "debug")]
+pub async fn get_resource_ids_for_non_admin(
+  user_id: &str,
+  resource_type: ResourceTargetVariant,
+) -> anyhow::Result<Vec<String>> {
+  let permissions = find_collect(
+    &db_client().await.permissions,
+    doc! {
+      "$or": user_target_query(user_id).await?,
+      "resource_target.type": resource_type.as_ref(),
+      "level": { "$in": ["Read", "Execute", "Write"] }
+    },
+    None,
+  )
+  .await
+  .context("failed to query permissions on db")?
+  .into_iter()
+  .map(|p| p.resource_target.extract_variant_id().1.to_string())
+  // collect into hashset first to remove any duplicates
+  .collect::<HashSet<_>>();
+  Ok(permissions.into_iter().collect())
+}
+
+pub fn id_or_name_filter(id_or_name: &str) -> Document {
+  match ObjectId::from_str(id_or_name) {
+    Ok(id) => doc! { "_id": id },
+    Err(_) => doc! { "name": id_or_name },
+  }
 }

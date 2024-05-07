@@ -14,7 +14,9 @@ use monitor_client::{
     repo::Repo,
     server::Server,
     server_template::ServerTemplate,
-    update::{ResourceTarget, Update, UpdateListItem},
+    update::{
+      ResourceTarget, ResourceTargetVariant, Update, UpdateListItem,
+    },
     user::User,
   },
 };
@@ -26,7 +28,8 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::resource::StateResource,
+  helpers::query::get_resource_ids_for_non_admin,
+  resource,
   state::{db_client, State},
 };
 
@@ -42,20 +45,47 @@ impl Resolve<ListUpdates, User> for State {
     let query = if user.admin {
       query
     } else {
-      let server_ids =
-        Server::get_resource_ids_for_non_admin(&user.id).await?;
-      let deployment_ids =
-        Deployment::get_resource_ids_for_non_admin(&user.id).await?;
-      let build_ids =
-        Build::get_resource_ids_for_non_admin(&user.id).await?;
-      let repo_ids =
-        Repo::get_resource_ids_for_non_admin(&user.id).await?;
-      let procedure_ids =
-        Procedure::get_resource_ids_for_non_admin(&user.id).await?;
-      let builder_ids =
-        Builder::get_resource_ids_for_non_admin(&user.id).await?;
-      let alerter_ids =
-        Alerter::get_resource_ids_for_non_admin(&user.id).await?;
+      let server_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Server,
+      )
+      .await?;
+      let deployment_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Deployment,
+      )
+      .await?;
+      let build_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Build,
+      )
+      .await?;
+      let repo_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Repo,
+      )
+      .await?;
+      let procedure_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Procedure,
+      )
+      .await?;
+      let builder_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Builder,
+      )
+      .await?;
+      let alerter_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Alerter,
+      )
+      .await?;
+      let server_template_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::ServerTemplate,
+      )
+      .await?;
+
       let mut query = query.unwrap_or_default();
       query.extend(doc! {
         "$or": [
@@ -66,6 +96,7 @@ impl Resolve<ListUpdates, User> for State {
           { "target.type": "Procedure", "target.id": { "$in": &procedure_ids } },
           { "target.type": "Builder", "target.id": { "$in": &builder_ids } },
           { "target.type": "Alerter", "target.id": { "$in": &alerter_ids } },
+          { "target.type": "ServerTemplate", "target.id": { "$in": &server_template_ids } },
         ]
       });
       query.into()
@@ -145,7 +176,7 @@ impl Resolve<GetUpdate, User> for State {
         ))
       }
       ResourceTarget::Server(id) => {
-        Server::get_resource_check_permissions(
+        resource::get_check_permissions::<Server>(
           id,
           &user,
           PermissionLevel::Read,
@@ -153,7 +184,7 @@ impl Resolve<GetUpdate, User> for State {
         .await?;
       }
       ResourceTarget::Deployment(id) => {
-        Deployment::get_resource_check_permissions(
+        resource::get_check_permissions::<Deployment>(
           id,
           &user,
           PermissionLevel::Read,
@@ -161,7 +192,7 @@ impl Resolve<GetUpdate, User> for State {
         .await?;
       }
       ResourceTarget::Build(id) => {
-        Build::get_resource_check_permissions(
+        resource::get_check_permissions::<Build>(
           id,
           &user,
           PermissionLevel::Read,
@@ -169,7 +200,7 @@ impl Resolve<GetUpdate, User> for State {
         .await?;
       }
       ResourceTarget::Repo(id) => {
-        Repo::get_resource_check_permissions(
+        resource::get_check_permissions::<Repo>(
           id,
           &user,
           PermissionLevel::Read,
@@ -177,7 +208,7 @@ impl Resolve<GetUpdate, User> for State {
         .await?;
       }
       ResourceTarget::Builder(id) => {
-        Builder::get_resource_check_permissions(
+        resource::get_check_permissions::<Builder>(
           id,
           &user,
           PermissionLevel::Read,
@@ -185,7 +216,7 @@ impl Resolve<GetUpdate, User> for State {
         .await?;
       }
       ResourceTarget::Alerter(id) => {
-        Alerter::get_resource_check_permissions(
+        resource::get_check_permissions::<Alerter>(
           id,
           &user,
           PermissionLevel::Read,
@@ -193,7 +224,7 @@ impl Resolve<GetUpdate, User> for State {
         .await?;
       }
       ResourceTarget::Procedure(id) => {
-        Procedure::get_resource_check_permissions(
+        resource::get_check_permissions::<Procedure>(
           id,
           &user,
           PermissionLevel::Read,
@@ -201,7 +232,7 @@ impl Resolve<GetUpdate, User> for State {
         .await?;
       }
       ResourceTarget::ServerTemplate(id) => {
-        ServerTemplate::get_resource_check_permissions(
+        resource::get_check_permissions::<ServerTemplate>(
           id,
           &user,
           PermissionLevel::Read,

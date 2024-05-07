@@ -1,7 +1,4 @@
-use std::str::FromStr;
-
-use anyhow::{anyhow, Context};
-use async_timing_util::unix_timestamp_ms;
+use anyhow::Context;
 use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
@@ -9,27 +6,23 @@ use monitor_client::{
     monitor_timestamp,
     permission::PermissionLevel,
     server::Server,
-    update::{Log, ResourceTarget, Update, UpdateStatus},
+    update::{Update, UpdateStatus},
     user::User,
     Operation,
   },
 };
-use mungos::{
-  by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, oid::ObjectId, to_bson},
-};
+use mungos::{by_id::update_one_by_id, mongodb::bson::doc};
 use periphery_client::api;
 use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
   helpers::{
-    create_permission, periphery_client, remove_from_recently_viewed,
-    resource::{delete_all_permissions_on_resource, StateResource},
+    periphery_client,
     update::{add_update, make_update, update_update},
   },
-  monitor::update_cache_for_server,
-  state::{action_states, db_client, server_status_cache, State},
+  resource,
+  state::{db_client, State},
 };
 
 #[async_trait]
@@ -40,61 +33,7 @@ impl Resolve<CreateServer, User> for State {
     CreateServer { name, config }: CreateServer,
     user: User,
   ) -> anyhow::Result<Server> {
-    if !user.admin && !user.create_server_permissions {
-      return Err(anyhow!(
-        "user does not have create server permissions"
-      ));
-    }
-    if ObjectId::from_str(&name).is_ok() {
-      return Err(anyhow!("valid ObjectIds cannot be used as names"));
-    }
-    let start_ts = monitor_timestamp();
-    let server = Server {
-      id: Default::default(),
-      name,
-      updated_at: start_ts,
-      description: Default::default(),
-      tags: Default::default(),
-      config: config.into(),
-      info: (),
-    };
-    let server_id = db_client()
-      .await
-      .servers
-      .insert_one(&server, None)
-      .await
-      .context("failed to add server to db")?
-      .inserted_id
-      .as_object_id()
-      .context("inserted_id is not ObjectId")?
-      .to_string();
-    let server = Server::get_resource(&server_id).await?;
-    create_permission(&user, &server, PermissionLevel::Write).await;
-    let update = Update {
-      target: ResourceTarget::Server(server_id),
-      operation: Operation::CreateServer,
-      start_ts,
-      end_ts: Some(monitor_timestamp()),
-      operator: user.id.clone(),
-      success: true,
-      logs: vec![
-        Log::simple(
-          "create server",
-          format!(
-            "created server\nid: {}\nname: {}",
-            server.id, server.name
-          ),
-        ),
-        Log::simple("config", format!("{:#?}", server.config)),
-      ],
-      ..Default::default()
-    };
-
-    add_update(update).await?;
-
-    update_cache_for_server(&server).await;
-
-    Ok(server)
+    resource::create::<Server>(&name, config, &user).await
   }
 }
 
@@ -106,91 +45,7 @@ impl Resolve<DeleteServer, User> for State {
     DeleteServer { id }: DeleteServer,
     user: User,
   ) -> anyhow::Result<Server> {
-    if action_states()
-      .server
-      .get(&id)
-      .await
-      .unwrap_or_default()
-      .busy()?
-    {
-      return Err(anyhow!("server busy"));
-    }
-
-    let server = Server::get_resource_check_permissions(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-
-    db_client()
-      .await
-      .builders
-      .update_many(
-        doc! { "config.params.server_id": &id },
-        doc! { "$set": { "config.params.server_id": "" } },
-        None,
-      )
-      .await
-      .context("failed to detach server from builders")?;
-
-    db_client()
-      .await
-      .deployments
-      .update_many(
-        doc! { "config.server_id": &id },
-        doc! { "$set": { "config.server_id": "" } },
-        None,
-      )
-      .await
-      .context("failed to detach server from deployments")?;
-
-    db_client()
-      .await
-      .repos
-      .update_many(
-        doc! { "config.server_id": &id },
-        doc! { "$set": { "config.server_id": "" } },
-        None,
-      )
-      .await
-      .context("failed to detach server from repos")?;
-
-    db_client()
-      .await
-      .alerts
-      .update_many(
-        doc! { "target.type": "Server", "target.id": &id },
-        doc! { "$set": {
-          "resolved": true,
-          "resolved_ts": unix_timestamp_ms() as i64
-        } },
-        None,
-      )
-      .await
-      .context("failed to detach server from repos")?;
-
-    delete_one_by_id(&db_client().await.servers, &id, None)
-      .await
-      .context("failed to delete server from mongo")?;
-
-    delete_all_permissions_on_resource(&server).await;
-
-    let mut update =
-      make_update(&server, Operation::DeleteServer, &user);
-    update.push_simple_log(
-      "delete server",
-      format!("deleted server {}", server.name),
-    );
-
-    update.finalize();
-    add_update(update).await?;
-
-    server_status_cache().remove(&id).await;
-
-    remove_from_recently_viewed(&server).await?;
-
-    Ok(server)
+    resource::delete::<Server>(&id, &user).await
   }
 }
 
@@ -202,50 +57,7 @@ impl Resolve<UpdateServer, User> for State {
     UpdateServer { id, config }: UpdateServer,
     user: User,
   ) -> anyhow::Result<Server> {
-    if action_states()
-      .server
-      .get(&id)
-      .await
-      .unwrap_or_default()
-      .busy()?
-    {
-      return Err(anyhow!("server busy"));
-    }
-
-    let server = Server::get_resource_check_permissions(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-    let mut update =
-      make_update(&server, Operation::UpdateServer, &user);
-
-    update_one_by_id(
-      &db_client().await.servers,
-      &id,
-      mungos::update::Update::FlattenSet(
-        doc! { "config": to_bson(&config)? },
-      ),
-      None,
-    )
-    .await
-    .context("failed to update server on mongo")?;
-
-    update.push_simple_log(
-      "server update",
-      serde_json::to_string_pretty(&config)?,
-    );
-
-    let new_server = Server::get_resource(&id).await?;
-
-    update_cache_for_server(&new_server).await;
-
-    update.finalize();
-
-    add_update(update).await?;
-
-    Ok(new_server)
+    resource::update::<Server>(&id, config, &user).await
   }
 }
 
@@ -257,7 +69,7 @@ impl Resolve<RenameServer, User> for State {
     RenameServer { id, name }: RenameServer,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &id,
       &user,
       PermissionLevel::Write,
@@ -287,7 +99,7 @@ impl Resolve<CreateNetwork, User> for State {
     CreateNetwork { server, name }: CreateNetwork,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Write,
@@ -325,7 +137,7 @@ impl Resolve<DeleteNetwork, User> for State {
     DeleteNetwork { server, name }: DeleteNetwork,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Write,

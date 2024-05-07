@@ -20,8 +20,9 @@ pub mod channel;
 pub mod procedure;
 pub mod prune;
 pub mod query;
-pub mod resource;
 pub mod update;
+
+// pub mod resource;
 
 pub fn empty_or_only_spaces(word: &str) -> bool {
   if word.is_empty() {
@@ -40,15 +41,13 @@ pub fn random_duration(min_ms: u64, max_ms: u64) -> Duration {
 }
 
 #[instrument]
-pub async fn remove_from_recently_viewed<T>(
-  resource: T,
-) -> anyhow::Result<()>
+pub async fn remove_from_recently_viewed<T>(resource: T)
 where
   T: Into<ResourceTarget> + std::fmt::Debug,
 {
   let resource: ResourceTarget = resource.into();
   let (ty, id) = resource.extract_variant_id();
-  db_client()
+  if let Err(e) = db_client()
     .await
     .users
     .update_many(
@@ -64,10 +63,10 @@ where
       None,
     )
     .await
-    .context(
-      "failed to remove resource from users recently viewed",
-    )?;
-  Ok(())
+    .context("failed to remove resource from users recently viewed")
+  {
+    warn!("{e:#}");
+  }
 }
 
 //

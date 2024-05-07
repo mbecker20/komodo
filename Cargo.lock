@@ -2277,6 +2277,7 @@ dependencies = [
  "monitor_client",
  "mungos",
  "parse_csl",
+ "partial_derive2",
  "periphery_client",
  "rand",
  "reqwest 0.12.3",

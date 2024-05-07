@@ -11,7 +11,7 @@ use monitor_client::{
 };
 use resolver_api::Resolve;
 
-use crate::{helpers::resource::StateResource, state::State};
+use crate::{resource, state::State};
 
 #[async_trait]
 impl Resolve<UpdateDescription, User> for State {
@@ -31,31 +31,68 @@ impl Resolve<UpdateDescription, User> for State {
         ))
       }
       ResourceTarget::Server(id) => {
-        Server::update_description(&id, &description, &user).await?;
+        resource::update_description::<Server>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
       }
       ResourceTarget::Deployment(id) => {
-        Deployment::update_description(&id, &description, &user)
-          .await?;
+        resource::update_description::<Deployment>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
       }
       ResourceTarget::Build(id) => {
-        Build::update_description(&id, &description, &user).await?;
+        resource::update_description::<Build>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
       }
       ResourceTarget::Repo(id) => {
-        Repo::update_description(&id, &description, &user).await?;
+        resource::update_description::<Repo>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
       }
       ResourceTarget::Builder(id) => {
-        Builder::update_description(&id, &description, &user).await?;
+        resource::update_description::<Builder>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
       }
       ResourceTarget::Alerter(id) => {
-        Alerter::update_description(&id, &description, &user).await?;
+        resource::update_description::<Alerter>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
       }
       ResourceTarget::Procedure(id) => {
-        Procedure::update_description(&id, &description, &user)
-          .await?;
+        resource::update_description::<Procedure>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
       }
       ResourceTarget::ServerTemplate(id) => {
-        ServerTemplate::update_description(&id, &description, &user)
-          .await?;
+        resource::update_description::<ServerTemplate>(
+          &id,
+          &description,
+          &user,
+        )
+        .await?;
       }
     }
     Ok(UpdateDescriptionResponse {})

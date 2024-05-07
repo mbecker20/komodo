@@ -13,10 +13,8 @@ use tokio::sync::Mutex;
 use crate::{
   helpers::{
     procedure::execute_procedure,
-    resource::StateResource,
     update::{add_update, make_update, update_update},
-  },
-  state::{action_states, State},
+  }, resource, state::{action_states, State}
 };
 
 #[async_trait]
@@ -27,7 +25,7 @@ impl Resolve<RunProcedure, User> for State {
     RunProcedure { procedure }: RunProcedure,
     user: User,
   ) -> anyhow::Result<Update> {
-    let procedure = Procedure::get_resource_check_permissions(
+    let procedure = resource::get_check_permissions::<Procedure>(
       &procedure,
       &user,
       PermissionLevel::Execute,

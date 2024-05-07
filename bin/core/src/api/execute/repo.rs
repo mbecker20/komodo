@@ -23,9 +23,9 @@ use crate::{
   config::core_config,
   helpers::{
     periphery_client,
-    resource::StateResource,
     update::{add_update, update_update},
   },
+  resource,
   state::{action_states, db_client, State},
 };
 
@@ -37,7 +37,7 @@ impl Resolve<CloneRepo, User> for State {
     CloneRepo { repo }: CloneRepo,
     user: User,
   ) -> anyhow::Result<Update> {
-    let repo = Repo::get_resource_check_permissions(
+    let repo = resource::get_check_permissions::<Repo>(
       &repo,
       &user,
       PermissionLevel::Execute,
@@ -57,7 +57,8 @@ impl Resolve<CloneRepo, User> for State {
       return Err(anyhow!("repo has no server attached"));
     }
 
-    let server = Server::get_resource(&repo.config.server_id).await?;
+    let server =
+      resource::get::<Server>(&repo.config.server_id).await?;
 
     let periphery = periphery_client(&server)?;
 
@@ -126,10 +127,10 @@ impl Resolve<PullRepo, User> for State {
     PullRepo { repo }: PullRepo,
     user: User,
   ) -> anyhow::Result<Update> {
-    let repo = Repo::get_resource_check_permissions(
+    let repo = resource::get_check_permissions::<Repo>(
       &repo,
       &user,
-      PermissionLevel::Write,
+      PermissionLevel::Execute,
     )
     .await?;
 
@@ -146,7 +147,8 @@ impl Resolve<PullRepo, User> for State {
       return Err(anyhow!("repo has no server attached"));
     }
 
-    let server = Server::get_resource(&repo.config.server_id).await?;
+    let server =
+      resource::get::<Server>(&repo.config.server_id).await?;
 
     let periphery = periphery_client(&server)?;
 

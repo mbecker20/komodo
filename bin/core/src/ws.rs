@@ -25,8 +25,7 @@ use crate::{
   auth::{auth_api_key_check_enabled, auth_jwt_check_enabled},
   db::DbClient,
   helpers::{
-    channel::update_channel,
-    resource::get_user_permission_on_resource,
+    channel::update_channel, query::get_user_permission_on_resource,
   },
   state::db_client,
 };

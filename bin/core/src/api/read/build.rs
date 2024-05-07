@@ -25,9 +25,8 @@ use resolver_api::{Resolve, ResolveToString};
 
 use crate::{
   config::core_config,
-  helpers::resource::{
-    get_resource_ids_for_non_admin, StateResource,
-  },
+  helpers::query::get_resource_ids_for_non_admin,
+  resource,
   state::{action_states, db_client, State},
 };
 
@@ -38,7 +37,7 @@ impl Resolve<GetBuild, User> for State {
     GetBuild { build }: GetBuild,
     user: User,
   ) -> anyhow::Result<Build> {
-    Build::get_resource_check_permissions(
+    resource::get_check_permissions::<Build>(
       &build,
       &user,
       PermissionLevel::Read,
@@ -54,7 +53,7 @@ impl Resolve<ListBuilds, User> for State {
     ListBuilds { query }: ListBuilds,
     user: User,
   ) -> anyhow::Result<Vec<BuildListItem>> {
-    Build::list_resource_list_items_for_user(query, &user).await
+    resource::list_for_user::<Build>(query, &user).await
   }
 }
 
@@ -65,7 +64,7 @@ impl Resolve<GetBuildActionState, User> for State {
     GetBuildActionState { build }: GetBuildActionState,
     user: User,
   ) -> anyhow::Result<BuildActionState> {
-    let build = Build::get_resource_check_permissions(
+    let build = resource::get_check_permissions::<Build>(
       &build,
       &user,
       PermissionLevel::Read,
@@ -196,7 +195,7 @@ impl Resolve<GetBuildVersions, User> for State {
     }: GetBuildVersions,
     user: User,
   ) -> anyhow::Result<Vec<BuildVersionResponseItem>> {
-    let build = Build::get_resource_check_permissions(
+    let build = resource::get_check_permissions::<Build>(
       &build,
       &user,
       PermissionLevel::Read,

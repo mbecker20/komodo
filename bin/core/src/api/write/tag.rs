@@ -22,10 +22,8 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{
-    query::{get_tag, get_tag_check_owner},
-    resource::StateResource,
-  },
+  helpers::query::{get_tag, get_tag_check_owner},
+  resource,
   state::{db_client, State},
 };
 
@@ -99,13 +97,14 @@ impl Resolve<DeleteTag, User> for State {
     let tag = get_tag_check_owner(&id, &user).await?;
 
     tokio::try_join!(
-      Server::remove_tag_from_resources(&id,),
-      Deployment::remove_tag_from_resources(&id,),
-      Build::remove_tag_from_resources(&id,),
-      Repo::remove_tag_from_resources(&id,),
-      Builder::remove_tag_from_resources(&id,),
-      Alerter::remove_tag_from_resources(&id,),
-      Procedure::remove_tag_from_resources(&id,),
+      resource::remove_tag_from_all::<Server>(&id),
+      resource::remove_tag_from_all::<Deployment>(&id),
+      resource::remove_tag_from_all::<Build>(&id),
+      resource::remove_tag_from_all::<Repo>(&id),
+      resource::remove_tag_from_all::<Builder>(&id),
+      resource::remove_tag_from_all::<Alerter>(&id),
+      resource::remove_tag_from_all::<Procedure>(&id),
+      resource::remove_tag_from_all::<ServerTemplate>(&id),
     )?;
 
     delete_one_by_id(&db_client().await.tags, &id, None).await?;
@@ -125,76 +124,76 @@ impl Resolve<UpdateTagsOnResource, User> for State {
     match target {
       ResourceTarget::System(_) => return Err(anyhow!("")),
       ResourceTarget::Build(id) => {
-        Build::get_resource_check_permissions(
+        resource::get_check_permissions::<Build>(
           &id,
           &user,
           PermissionLevel::Write,
         )
         .await?;
-        Build::update_tags_on_resource(&id, tags, user).await?;
+        resource::update_tags::<Build>(&id, tags, user).await?;
       }
       ResourceTarget::Builder(id) => {
-        Builder::get_resource_check_permissions(
+        resource::get_check_permissions::<Builder>(
           &id,
           &user,
           PermissionLevel::Write,
         )
         .await?;
-        Builder::update_tags_on_resource(&id, tags, user).await?
+        resource::update_tags::<Builder>(&id, tags, user).await?
       }
       ResourceTarget::Deployment(id) => {
-        Deployment::get_resource_check_permissions(
+        resource::get_check_permissions::<Deployment>(
           &id,
           &user,
           PermissionLevel::Write,
         )
         .await?;
-        Deployment::update_tags_on_resource(&id, tags, user).await?
+        resource::update_tags::<Deployment>(&id, tags, user).await?
       }
       ResourceTarget::Server(id) => {
-        Server::get_resource_check_permissions(
+        resource::get_check_permissions::<Server>(
           &id,
           &user,
           PermissionLevel::Write,
         )
         .await?;
-        Server::update_tags_on_resource(&id, tags, user).await?
+        resource::update_tags::<Server>(&id, tags, user).await?
       }
       ResourceTarget::Repo(id) => {
-        Repo::get_resource_check_permissions(
+        resource::get_check_permissions::<Repo>(
           &id,
           &user,
           PermissionLevel::Write,
         )
         .await?;
-        Repo::update_tags_on_resource(&id, tags, user).await?
+        resource::update_tags::<Repo>(&id, tags, user).await?
       }
       ResourceTarget::Alerter(id) => {
-        Alerter::get_resource_check_permissions(
+        resource::get_check_permissions::<Alerter>(
           &id,
           &user,
           PermissionLevel::Write,
         )
         .await?;
-        Alerter::update_tags_on_resource(&id, tags, user).await?
+        resource::update_tags::<Alerter>(&id, tags, user).await?
       }
       ResourceTarget::Procedure(id) => {
-        Procedure::get_resource_check_permissions(
+        resource::get_check_permissions::<Procedure>(
           &id,
           &user,
           PermissionLevel::Write,
         )
         .await?;
-        Procedure::update_tags_on_resource(&id, tags, user).await?
+        resource::update_tags::<Procedure>(&id, tags, user).await?
       }
       ResourceTarget::ServerTemplate(id) => {
-        ServerTemplate::get_resource_check_permissions(
+        resource::get_check_permissions::<ServerTemplate>(
           &id,
           &user,
           PermissionLevel::Write,
         )
         .await?;
-        ServerTemplate::update_tags_on_resource(&id, tags, user)
+        resource::update_tags::<ServerTemplate>(&id, tags, user)
           .await?
       }
     };

@@ -24,9 +24,9 @@ use resolver_api::Resolve;
 
 use crate::{
   helpers::{
-    periphery_client,
-    resource::{get_resource_ids_for_non_admin, StateResource},
+    periphery_client, query::get_resource_ids_for_non_admin,
   },
+  resource,
   state::{action_states, db_client, deployment_status_cache, State},
 };
 
@@ -37,7 +37,7 @@ impl Resolve<GetDeployment, User> for State {
     GetDeployment { deployment }: GetDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
-    Deployment::get_resource_check_permissions(
+    resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Read,
@@ -53,7 +53,7 @@ impl Resolve<ListDeployments, User> for State {
     ListDeployments { query }: ListDeployments,
     user: User,
   ) -> anyhow::Result<Vec<DeploymentListItem>> {
-    Deployment::list_resource_list_items_for_user(query, &user).await
+    resource::list_for_user::<Deployment>(query, &user).await
   }
 }
 
@@ -64,7 +64,7 @@ impl Resolve<GetDeploymentContainer, User> for State {
     GetDeploymentContainer { deployment }: GetDeploymentContainer,
     user: User,
   ) -> anyhow::Result<GetDeploymentContainerResponse> {
-    let deployment = Deployment::get_resource_check_permissions(
+    let deployment = resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Read,
@@ -95,7 +95,7 @@ impl Resolve<GetLog, User> for State {
       name,
       config: DeploymentConfig { server_id, .. },
       ..
-    } = Deployment::get_resource_check_permissions(
+    } = resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Read,
@@ -104,7 +104,7 @@ impl Resolve<GetLog, User> for State {
     if server_id.is_empty() {
       return Ok(Log::default());
     }
-    let server = Server::get_resource(&server_id).await?;
+    let server = resource::get::<Server>(&server_id).await?;
     periphery_client(&server)?
       .request(api::container::GetContainerLog {
         name,
@@ -130,7 +130,7 @@ impl Resolve<SearchLog, User> for State {
       name,
       config: DeploymentConfig { server_id, .. },
       ..
-    } = Deployment::get_resource_check_permissions(
+    } = resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Read,
@@ -139,7 +139,7 @@ impl Resolve<SearchLog, User> for State {
     if server_id.is_empty() {
       return Ok(Log::default());
     }
-    let server = Server::get_resource(&server_id).await?;
+    let server = resource::get::<Server>(&server_id).await?;
     periphery_client(&server)?
       .request(api::container::GetContainerLogSearch {
         name,
@@ -162,7 +162,7 @@ impl Resolve<GetDeploymentStats, User> for State {
       name,
       config: DeploymentConfig { server_id, .. },
       ..
-    } = Deployment::get_resource_check_permissions(
+    } = resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Read,
@@ -171,7 +171,7 @@ impl Resolve<GetDeploymentStats, User> for State {
     if server_id.is_empty() {
       return Err(anyhow!("deployment has no server attached"));
     }
-    let server = Server::get_resource(&server_id).await?;
+    let server = resource::get::<Server>(&server_id).await?;
     periphery_client(&server)?
       .request(api::container::GetContainerStats { name })
       .await
@@ -186,7 +186,7 @@ impl Resolve<GetDeploymentActionState, User> for State {
     GetDeploymentActionState { deployment }: GetDeploymentActionState,
     user: User,
   ) -> anyhow::Result<DeploymentActionState> {
-    let deployment = Deployment::get_resource_check_permissions(
+    let deployment = resource::get_check_permissions::<Deployment>(
       &deployment,
       &user,
       PermissionLevel::Read,
@@ -263,7 +263,7 @@ impl Resolve<ListCommonExtraArgs, User> for State {
     user: User,
   ) -> anyhow::Result<ListCommonExtraArgsResponse> {
     let deployments =
-      Deployment::list_resources_for_user(query, &user)
+      resource::list_full_for_user::<Deployment>(query, &user)
         .await
         .context("failed to get resources matching query")?;
 

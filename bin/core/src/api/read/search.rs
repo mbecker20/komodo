@@ -2,17 +2,22 @@ use async_trait::async_trait;
 use monitor_client::{
   api::read::{FindResources, FindResourcesResponse},
   entities::{
-    build, deployment, procedure, repo, server,
-    update::ResourceTargetVariant::{self, *},
+    build::Build, deployment::Deployment, procedure::Procedure,
+    repo::Repo, server::Server, update::ResourceTargetVariant,
     user::User,
   },
 };
 use resolver_api::Resolve;
 
-use crate::{helpers::resource::StateResource, state::State};
+use crate::{resource, state::State};
 
-const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 5] =
-  [Server, Build, Deployment, Repo, Procedure];
+const FIND_RESOURCE_TYPES: [ResourceTargetVariant; 5] = [
+  ResourceTargetVariant::Server,
+  ResourceTargetVariant::Build,
+  ResourceTargetVariant::Deployment,
+  ResourceTargetVariant::Repo,
+  ResourceTargetVariant::Procedure,
+];
 
 #[async_trait]
 impl Resolve<FindResources, User> for State {
@@ -27,49 +32,50 @@ impl Resolve<FindResources, User> for State {
     } else {
       resources
         .into_iter()
-        .filter(|r| !matches!(r, System | Builder | Alerter))
+        .filter(|r| {
+          !matches!(
+            r,
+            ResourceTargetVariant::System
+              | ResourceTargetVariant::Builder
+              | ResourceTargetVariant::Alerter
+          )
+        })
         .collect()
     };
     for resource_type in resource_types {
       match resource_type {
-        Server => {
-          res.servers =
-            server::Server::query_resource_list_items_for_user(
-              query.clone(),
-              &user,
-            )
-            .await?;
+        ResourceTargetVariant::Server => {
+          res.servers = resource::list_for_user_using_document::<
+            Server,
+          >(query.clone(), &user)
+          .await?;
         }
-        Deployment => {
-          res.deployments =
-            deployment::Deployment::query_resource_list_items_for_user(
-              query.clone(),
-              &user,
-            )
-            .await?;
+        ResourceTargetVariant::Deployment => {
+          res.deployments = resource::list_for_user_using_document::<
+            Deployment,
+          >(query.clone(), &user)
+          .await?;
         }
-        Build => {
+        ResourceTargetVariant::Build => {
           res.builds =
-            build::Build::query_resource_list_items_for_user(
+            resource::list_for_user_using_document::<Build>(
               query.clone(),
               &user,
             )
             .await?;
         }
-        Repo => {
-          res.repos = repo::Repo::query_resource_list_items_for_user(
+        ResourceTargetVariant::Repo => {
+          res.repos = resource::list_for_user_using_document::<Repo>(
             query.clone(),
             &user,
           )
           .await?;
         }
-        Procedure => {
-          res.procedures =
-            procedure::Procedure::query_resource_list_items_for_user(
-              query.clone(),
-              &user,
-            )
-            .await?;
+        ResourceTargetVariant::Procedure => {
+          res.procedures = resource::list_for_user_using_document::<
+            Procedure,
+          >(query.clone(), &user)
+          .await?;
         }
         _ => {}
       }

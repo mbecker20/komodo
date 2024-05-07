@@ -8,9 +8,8 @@ use monitor_client::entities::{
 };
 
 use crate::{
-  helpers::{alert::send_alerts, resource::StateResource},
-  monitor::deployment_status_cache,
-  state::db_client,
+  helpers::alert::send_alerts, monitor::deployment_status_cache,
+  resource, state::db_client,
 };
 
 #[instrument(level = "debug")]
@@ -26,7 +25,7 @@ pub async fn alert_deployments(
     let prev = v.prev.as_ref().unwrap().to_owned();
     if v.curr.state != prev {
       // send alert
-      let d = Deployment::get_resource(&v.curr.id).await;
+      let d = resource::get::<Deployment>(&v.curr.id).await;
       if let Err(e) = d {
         error!("failed to get deployment from db | {e:#?}");
         continue;

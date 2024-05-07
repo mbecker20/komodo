@@ -12,7 +12,7 @@ use mungos::{find::find_collect, mongodb::bson::doc};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::resource::get_user_permission_on_resource,
+  helpers::query::get_user_permission_on_resource,
   state::{db_client, State},
 };
 

@@ -33,9 +33,8 @@ use mungos::find::find_collect;
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::{
-    query::get_user_user_group_ids, resource::StateResource,
-  },
+  helpers::query::get_user_user_group_ids,
+  resource,
   state::{db_client, State},
 };
 
@@ -49,34 +48,25 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
     let mut targets = Vec::<ResourceTarget>::new();
 
     targets.extend(
-      Alerter::list_resource_list_items_for_user(
-        Default::default(),
-        &user,
-      )
-      .await?
-      .into_iter()
-      .map(|resource| ResourceTarget::Alerter(resource.id)),
+      resource::list_for_user::<Alerter>(Default::default(), &user)
+        .await?
+        .into_iter()
+        .map(|resource| ResourceTarget::Alerter(resource.id)),
     );
     targets.extend(
-      Builder::list_resource_list_items_for_user(
-        Default::default(),
-        &user,
-      )
-      .await?
-      .into_iter()
-      .map(|resource| ResourceTarget::Builder(resource.id)),
+      resource::list_for_user::<Builder>(Default::default(), &user)
+        .await?
+        .into_iter()
+        .map(|resource| ResourceTarget::Builder(resource.id)),
     );
     targets.extend(
-      Server::list_resource_list_items_for_user(
-        Default::default(),
-        &user,
-      )
-      .await?
-      .into_iter()
-      .map(|resource| ResourceTarget::Server(resource.id)),
+      resource::list_for_user::<Server>(Default::default(), &user)
+        .await?
+        .into_iter()
+        .map(|resource| ResourceTarget::Server(resource.id)),
     );
     targets.extend(
-      Deployment::list_resource_list_items_for_user(
+      resource::list_for_user::<Deployment>(
         Default::default(),
         &user,
       )
@@ -85,34 +75,25 @@ impl Resolve<ExportAllResourcesToToml, User> for State {
       .map(|resource| ResourceTarget::Deployment(resource.id)),
     );
     targets.extend(
-      Build::list_resource_list_items_for_user(
-        Default::default(),
-        &user,
-      )
-      .await?
-      .into_iter()
-      .map(|resource| ResourceTarget::Build(resource.id)),
+      resource::list_for_user::<Build>(Default::default(), &user)
+        .await?
+        .into_iter()
+        .map(|resource| ResourceTarget::Build(resource.id)),
     );
     targets.extend(
-      Repo::list_resource_list_items_for_user(
-        Default::default(),
-        &user,
-      )
-      .await?
-      .into_iter()
-      .map(|resource| ResourceTarget::Repo(resource.id)),
+      resource::list_for_user::<Repo>(Default::default(), &user)
+        .await?
+        .into_iter()
+        .map(|resource| ResourceTarget::Repo(resource.id)),
     );
     targets.extend(
-      Procedure::list_resource_list_items_for_user(
-        Default::default(),
-        &user,
-      )
-      .await?
-      .into_iter()
-      .map(|resource| ResourceTarget::Procedure(resource.id)),
+      resource::list_for_user::<Procedure>(Default::default(), &user)
+        .await?
+        .into_iter()
+        .map(|resource| ResourceTarget::Procedure(resource.id)),
     );
     targets.extend(
-      ServerTemplate::list_resource_list_items_for_user(
+      resource::list_for_user::<ServerTemplate>(
         Default::default(),
         &user,
       )
@@ -161,7 +142,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
     for target in targets {
       match target {
         ResourceTarget::Alerter(id) => {
-          let alerter = Alerter::get_resource_check_permissions(
+          let alerter = resource::get_check_permissions::<Alerter>(
             &id,
             &user,
             PermissionLevel::Read,
@@ -170,19 +151,18 @@ impl Resolve<ExportResourcesToToml, User> for State {
           res.alerters.push(convert_resource(alerter, &names.tags))
         }
         ResourceTarget::ServerTemplate(id) => {
-          let template =
-            ServerTemplate::get_resource_check_permissions(
-              &id,
-              &user,
-              PermissionLevel::Read,
-            )
-            .await?;
+          let template = resource::get_check_permissions::<
+            ServerTemplate,
+          >(
+            &id, &user, PermissionLevel::Read
+          )
+          .await?;
           res
             .server_templates
             .push(convert_resource(template, &names.tags))
         }
         ResourceTarget::Server(id) => {
-          let server = Server::get_resource_check_permissions(
+          let server = resource::get_check_permissions::<Server>(
             &id,
             &user,
             PermissionLevel::Read,
@@ -191,12 +171,13 @@ impl Resolve<ExportResourcesToToml, User> for State {
           res.servers.push(convert_resource(server, &names.tags))
         }
         ResourceTarget::Builder(id) => {
-          let mut builder = Builder::get_resource_check_permissions(
-            &id,
-            &user,
-            PermissionLevel::Read,
-          )
-          .await?;
+          let mut builder =
+            resource::get_check_permissions::<Builder>(
+              &id,
+              &user,
+              PermissionLevel::Read,
+            )
+            .await?;
           // replace server id of builder
           if let BuilderConfig::Server(config) = &mut builder.config {
             config.server_id.clone_from(
@@ -206,7 +187,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
           res.builders.push(convert_resource(builder, &names.tags))
         }
         ResourceTarget::Build(id) => {
-          let mut build = Build::get_resource_check_permissions(
+          let mut build = resource::get_check_permissions::<Build>(
             &id,
             &user,
             PermissionLevel::Read,
@@ -222,13 +203,12 @@ impl Resolve<ExportResourcesToToml, User> for State {
           res.builds.push(convert_resource(build, &names.tags))
         }
         ResourceTarget::Deployment(id) => {
-          let mut deployment =
-            Deployment::get_resource_check_permissions(
-              &id,
-              &user,
-              PermissionLevel::Read,
-            )
-            .await?;
+          let mut deployment = resource::get_check_permissions::<
+            Deployment,
+          >(
+            &id, &user, PermissionLevel::Read
+          )
+          .await?;
           // replace deployment server with name
           deployment.config.server_id.clone_from(
             names
@@ -249,7 +229,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
             .push(convert_resource(deployment, &names.tags))
         }
         ResourceTarget::Repo(id) => {
-          let mut repo = Repo::get_resource_check_permissions(
+          let mut repo = resource::get_check_permissions::<Repo>(
             &id,
             &user,
             PermissionLevel::Read,
@@ -292,7 +272,7 @@ async fn add_procedure(
   user: &User,
   names: &ResourceNames,
 ) -> anyhow::Result<()> {
-  let mut procedure = Procedure::get_resource_check_permissions(
+  let mut procedure = resource::get_check_permissions::<Procedure>(
     id,
     user,
     PermissionLevel::Read,

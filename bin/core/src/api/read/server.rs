@@ -29,7 +29,10 @@ use resolver_api::{Resolve, ResolveToString};
 use tokio::sync::Mutex;
 
 use crate::{
-  config::core_config, helpers::{periphery_client, resource::StateResource}, state::{action_states, db_client, server_status_cache, State}
+  config::core_config,
+  helpers::periphery_client,
+  resource,
+  state::{action_states, db_client, server_status_cache, State},
 };
 
 #[async_trait]
@@ -39,11 +42,9 @@ impl Resolve<GetServersSummary, User> for State {
     GetServersSummary {}: GetServersSummary,
     user: User,
   ) -> anyhow::Result<GetServersSummaryResponse> {
-    let servers = Server::list_resource_list_items_for_user(
-      Default::default(),
-      &user,
-    )
-    .await?;
+    let servers =
+      resource::list_for_user::<Server>(Default::default(), &user)
+        .await?;
     let mut res = GetServersSummaryResponse::default();
     for server in servers {
       res.total += 1;
@@ -70,7 +71,7 @@ impl Resolve<GetPeripheryVersion, User> for State {
     req: GetPeripheryVersion,
     user: User,
   ) -> anyhow::Result<GetPeripheryVersionResponse> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &req.server,
       &user,
       PermissionLevel::Read,
@@ -92,7 +93,7 @@ impl Resolve<GetServer, User> for State {
     req: GetServer,
     user: User,
   ) -> anyhow::Result<Server> {
-    Server::get_resource_check_permissions(
+    resource::get_check_permissions::<Server>(
       &req.server,
       &user,
       PermissionLevel::Read,
@@ -108,7 +109,7 @@ impl Resolve<ListServers, User> for State {
     ListServers { query }: ListServers,
     user: User,
   ) -> anyhow::Result<Vec<ServerListItem>> {
-    Server::list_resource_list_items_for_user(query, &user).await
+    resource::list_for_user::<Server>(query, &user).await
   }
 }
 
@@ -119,7 +120,7 @@ impl Resolve<GetServerStatus, User> for State {
     GetServerStatus { server }: GetServerStatus,
     user: User,
   ) -> anyhow::Result<GetServerStatusResponse> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -143,7 +144,7 @@ impl Resolve<GetServerActionState, User> for State {
     GetServerActionState { server }: GetServerActionState,
     user: User,
   ) -> anyhow::Result<ServerActionState> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -175,7 +176,7 @@ impl ResolveToString<GetSystemInformation, User> for State {
     GetSystemInformation { server }: GetSystemInformation,
     user: User,
   ) -> anyhow::Result<String> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -211,7 +212,7 @@ impl ResolveToString<GetSystemStats, User> for State {
     GetSystemStats { server }: GetSystemStats,
     user: User,
   ) -> anyhow::Result<String> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -245,7 +246,7 @@ impl ResolveToString<GetSystemProcesses, User> for State {
     GetSystemProcesses { server }: GetSystemProcesses,
     user: User,
   ) -> anyhow::Result<String> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -286,7 +287,7 @@ impl Resolve<GetHistoricalServerStats, User> for State {
     }: GetHistoricalServerStats,
     user: User,
   ) -> anyhow::Result<GetHistoricalServerStatsResponse> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -336,7 +337,7 @@ impl Resolve<GetDockerImages, User> for State {
     GetDockerImages { server }: GetDockerImages,
     user: User,
   ) -> anyhow::Result<Vec<ImageSummary>> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -355,7 +356,7 @@ impl Resolve<GetDockerNetworks, User> for State {
     GetDockerNetworks { server }: GetDockerNetworks,
     user: User,
   ) -> anyhow::Result<Vec<DockerNetwork>> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -374,7 +375,7 @@ impl Resolve<GetDockerContainers, User> for State {
     GetDockerContainers { server }: GetDockerContainers,
     user: User,
   ) -> anyhow::Result<Vec<ContainerSummary>> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
@@ -393,13 +394,13 @@ impl Resolve<GetAvailableAccounts, User> for State {
     GetAvailableAccounts { server }: GetAvailableAccounts,
     user: User,
   ) -> anyhow::Result<GetAvailableAccountsResponse> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,
     )
     .await?;
-  
+
     let GetAccountsResponse { github, docker } =
       periphery_client(&server)?
         .request(api::GetAccounts {})
@@ -407,10 +408,10 @@ impl Resolve<GetAvailableAccounts, User> for State {
         .context("failed to get accounts from periphery")?;
 
     let mut github_set = HashSet::<String>::new();
-    
+
     github_set.extend(core_config().github_accounts.keys().cloned());
     github_set.extend(github);
-    
+
     let mut github = github_set.into_iter().collect::<Vec<_>>();
     github.sort();
 
@@ -434,7 +435,7 @@ impl Resolve<GetAvailableSecrets, User> for State {
     GetAvailableSecrets { server }: GetAvailableSecrets,
     user: User,
   ) -> anyhow::Result<GetAvailableSecretsResponse> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Read,

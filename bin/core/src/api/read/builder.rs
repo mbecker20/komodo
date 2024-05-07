@@ -16,9 +16,8 @@ use resolver_api::Resolve;
 
 use crate::{
   config::core_config,
-  helpers::resource::{
-    get_resource_ids_for_non_admin, StateResource,
-  },
+  helpers::query::get_resource_ids_for_non_admin,
+  resource,
   state::{db_client, State},
 };
 
@@ -29,7 +28,7 @@ impl Resolve<GetBuilder, User> for State {
     GetBuilder { builder }: GetBuilder,
     user: User,
   ) -> anyhow::Result<Builder> {
-    Builder::get_resource_check_permissions(
+    resource::get_check_permissions::<Builder>(
       &builder,
       &user,
       PermissionLevel::Read,
@@ -45,7 +44,7 @@ impl Resolve<ListBuilders, User> for State {
     ListBuilders { query }: ListBuilders,
     user: User,
   ) -> anyhow::Result<Vec<BuilderListItem>> {
-    Builder::list_resource_list_items_for_user(query, &user).await
+    resource::list_for_user::<Builder>(query, &user).await
   }
 }
 
@@ -92,7 +91,7 @@ impl Resolve<GetBuilderAvailableAccounts, User> for State {
     GetBuilderAvailableAccounts { builder }: GetBuilderAvailableAccounts,
     user: User,
   ) -> anyhow::Result<GetBuilderAvailableAccountsResponse> {
-    let builder = Builder::get_resource_check_permissions(
+    let builder = resource::get_check_permissions::<Builder>(
       &builder,
       &user,
       PermissionLevel::Read,

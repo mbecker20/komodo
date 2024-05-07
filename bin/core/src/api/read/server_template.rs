@@ -17,10 +17,7 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::resource::{
-    get_resource_ids_for_non_admin, StateResource,
-  },
-  state::{db_client, State},
+  helpers::query::get_resource_ids_for_non_admin, resource, state::{db_client, State}
 };
 
 #[async_trait]
@@ -30,7 +27,7 @@ impl Resolve<GetServerTemplate, User> for State {
     GetServerTemplate { server_template }: GetServerTemplate,
     user: User,
   ) -> anyhow::Result<GetServerTemplateResponse> {
-    ServerTemplate::get_resource_check_permissions(
+    resource::get_check_permissions::<ServerTemplate>(
       &server_template,
       &user,
       PermissionLevel::Read,
@@ -46,8 +43,7 @@ impl Resolve<ListServerTemplates, User> for State {
     ListServerTemplates { query }: ListServerTemplates,
     user: User,
   ) -> anyhow::Result<ListServerTemplatesResponse> {
-    ServerTemplate::list_resource_list_items_for_user(query, &user)
-      .await
+    resource::list_for_user::<ServerTemplate>(query, &user).await
   }
 }
 

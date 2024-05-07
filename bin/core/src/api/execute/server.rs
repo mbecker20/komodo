@@ -18,9 +18,9 @@ use serror::serialize_error_pretty;
 use crate::{
   helpers::{
     periphery_client,
-    resource::StateResource,
     update::{add_update, make_update, update_update},
   },
+  resource,
   state::{action_states, State},
 };
 
@@ -32,7 +32,7 @@ impl Resolve<PruneDockerContainers, User> for State {
     PruneDockerContainers { server }: PruneDockerContainers,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Execute,
@@ -89,7 +89,7 @@ impl Resolve<PruneDockerNetworks, User> for State {
     PruneDockerNetworks { server }: PruneDockerNetworks,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Execute,
@@ -146,7 +146,7 @@ impl Resolve<PruneDockerImages, User> for State {
     PruneDockerImages { server }: PruneDockerImages,
     user: User,
   ) -> anyhow::Result<Update> {
-    let server = Server::get_resource_check_permissions(
+    let server = resource::get_check_permissions::<Server>(
       &server,
       &user,
       PermissionLevel::Execute,

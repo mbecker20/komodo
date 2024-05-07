@@ -15,9 +15,8 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::resource::{
-    get_resource_ids_for_non_admin, StateResource,
-  },
+  helpers::query::get_resource_ids_for_non_admin,
+  resource,
   state::{action_states, db_client, State},
 };
 
@@ -28,7 +27,7 @@ impl Resolve<GetRepo, User> for State {
     GetRepo { repo }: GetRepo,
     user: User,
   ) -> anyhow::Result<Repo> {
-    Repo::get_resource_check_permissions(
+    resource::get_check_permissions::<Repo>(
       &repo,
       &user,
       PermissionLevel::Read,
@@ -44,7 +43,7 @@ impl Resolve<ListRepos, User> for State {
     ListRepos { query }: ListRepos,
     user: User,
   ) -> anyhow::Result<Vec<RepoListItem>> {
-    Repo::list_resource_list_items_for_user(query, &user).await
+    resource::list_for_user::<Repo>(query, &user).await
   }
 }
 
@@ -55,7 +54,7 @@ impl Resolve<GetRepoActionState, User> for State {
     GetRepoActionState { repo }: GetRepoActionState,
     user: User,
   ) -> anyhow::Result<RepoActionState> {
-    let repo = Repo::get_resource_check_permissions(
+    let repo = resource::get_check_permissions::<Repo>(
       &repo,
       &user,
       PermissionLevel::Read,

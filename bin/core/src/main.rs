@@ -21,6 +21,7 @@ mod db;
 mod helpers;
 mod listener;
 mod monitor;
+mod resource;
 mod state;
 mod ws;
 

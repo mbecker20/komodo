@@ -1,146 +1,41 @@
-use std::str::FromStr;
-
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
   entities::{
-    all_logs_success,
-    build::Build,
-    deployment::{
-      Deployment, DeploymentImage, DockerContainerState,
-      PartialDeploymentConfig,
-    },
+    deployment::{Deployment, DockerContainerState},
     monitor_timestamp,
     permission::PermissionLevel,
     server::Server,
     to_monitor_name,
-    update::{Log, Update, UpdateStatus},
+    update::Update,
     user::User,
     Operation,
   },
 };
-use mungos::{
-  by_id::{delete_one_by_id, update_one_by_id},
-  mongodb::bson::{doc, oid::ObjectId, to_document},
-};
+use mungos::{by_id::update_one_by_id, mongodb::bson::doc};
 use periphery_client::api;
 use resolver_api::Resolve;
 
 use crate::{
   helpers::{
-    create_permission, empty_or_only_spaces, periphery_client,
+    periphery_client,
     query::get_deployment_state,
-    remove_from_recently_viewed,
-    resource::{delete_all_permissions_on_resource, StateResource},
-    update::{add_update, make_update, update_update},
+    update::{add_update, make_update},
   },
+  resource,
   state::{action_states, db_client, State},
 };
-
-#[instrument(skip(user))]
-async fn validate_config(
-  config: &mut PartialDeploymentConfig,
-  user: &User,
-) -> anyhow::Result<()> {
-  if let Some(server_id) = &config.server_id {
-    if !server_id.is_empty() {
-      let server = Server::get_resource_check_permissions(server_id, user, PermissionLevel::Write)
-          .await
-          .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
-      config.server_id = Some(server.id);
-    }
-  }
-  if let Some(DeploymentImage::Build { build_id, version }) =
-    &config.image
-  {
-    if !build_id.is_empty() {
-      let build = Build::get_resource_check_permissions(build_id, user, PermissionLevel::Read)
-          .await
-          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
-      config.image = Some(DeploymentImage::Build {
-        build_id: build.id,
-        version: version.clone(),
-      });
-    }
-  }
-  if let Some(volumes) = &mut config.volumes {
-    volumes.retain(|v| {
-      !empty_or_only_spaces(&v.local)
-        && !empty_or_only_spaces(&v.container)
-    })
-  }
-  if let Some(ports) = &mut config.ports {
-    ports.retain(|v| {
-      !empty_or_only_spaces(&v.local)
-        && !empty_or_only_spaces(&v.container)
-    })
-  }
-  if let Some(environment) = &mut config.environment {
-    environment.retain(|v| {
-      !empty_or_only_spaces(&v.variable)
-        && !empty_or_only_spaces(&v.value)
-    })
-  }
-  if let Some(extra_args) = &mut config.extra_args {
-    extra_args.retain(|v| !empty_or_only_spaces(v))
-  }
-  Ok(())
-}
 
 #[async_trait]
 impl Resolve<CreateDeployment, User> for State {
   #[instrument(name = "CreateDeployment", skip(self, user))]
   async fn resolve(
     &self,
-    CreateDeployment { name, mut config }: CreateDeployment,
+    CreateDeployment { name, config }: CreateDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
-    let name = to_monitor_name(&name);
-    if ObjectId::from_str(&name).is_ok() {
-      return Err(anyhow!("valid ObjectIds cannot be used as names"));
-    }
-    validate_config(&mut config, &user).await?;
-    let start_ts = monitor_timestamp();
-    let deployment = Deployment {
-      id: Default::default(),
-      name,
-      updated_at: start_ts,
-      description: Default::default(),
-      tags: Default::default(),
-      config: config.into(),
-      info: (),
-    };
-    let deployment_id = db_client()
-      .await
-      .deployments
-      .insert_one(&deployment, None)
-      .await
-      .context("failed to add deployment to db")?
-      .inserted_id
-      .as_object_id()
-      .context("inserted_id is not ObjectId")?
-      .to_string();
-    let deployment = Deployment::get_resource(&deployment_id).await?;
-    create_permission(&user, &deployment, PermissionLevel::Write)
-      .await;
-
-    let mut update =
-      make_update(&deployment, Operation::CreateDeployment, &user);
-    update.push_simple_log(
-      "create deployment",
-      format!(
-        "created deployment\nid: {}\nname: {}",
-        deployment.id, deployment.name
-      ),
-    );
-    update
-      .push_simple_log("config", format!("{:#?}", deployment.config));
-    update.finalize();
-
-    add_update(update).await?;
-
-    Ok(deployment)
+    resource::create::<Deployment>(&name, config, &user).await
   }
 }
 
@@ -152,71 +47,14 @@ impl Resolve<CopyDeployment, User> for State {
     CopyDeployment { name, id }: CopyDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
-    let name = to_monitor_name(&name);
-    let Deployment {
-      config,
-      description,
-      tags,
-      ..
-    } = Deployment::get_resource_check_permissions(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-    if !config.server_id.is_empty() {
-      Server::get_resource_check_permissions(&config.server_id, &user, PermissionLevel::Write)
-        .await
-        .context("cannot create deployment on this server. user must have update permissions on the server to perform this action.")?;
-    }
-    if let DeploymentImage::Build { build_id, .. } = &config.image {
-      if !build_id.is_empty() {
-        Build::get_resource_check_permissions(build_id, &user, PermissionLevel::Read)
-          .await
-          .context("cannot create deployment with this build attached. user must have at least read permissions on the build to perform this action.")?;
-      }
-    }
-    let start_ts = monitor_timestamp();
-    let deployment = Deployment {
-      id: Default::default(),
-      name,
-      updated_at: start_ts,
-      description,
-      tags,
-      config,
-      info: (),
-    };
-    let deployment_id = db_client()
-      .await
-      .deployments
-      .insert_one(&deployment, None)
-      .await
-      .context("failed to add deployment to db")?
-      .inserted_id
-      .as_object_id()
-      .context("inserted_id is not ObjectId")?
-      .to_string();
-    let deployment = Deployment::get_resource(&deployment_id).await?;
-
-    create_permission(&user, &deployment, PermissionLevel::Write)
-      .await;
-
-    let mut update =
-      make_update(&deployment, Operation::CreateDeployment, &user);
-    update.push_simple_log(
-      "create deployment",
-      format!(
-        "created deployment\nid: {}\nname: {}",
-        deployment.id, deployment.name
-      ),
-    );
-    update
-      .push_simple_log("config", format!("{:#?}", deployment.config));
-    update.finalize();
-
-    add_update(update).await?;
-
-    Ok(deployment)
+    let Deployment { config, .. } =
+      resource::get_check_permissions::<Deployment>(
+        &id,
+        &user,
+        PermissionLevel::Write,
+      )
+      .await?;
+    resource::create::<Deployment>(&name, config.into(), &user).await
   }
 }
 
@@ -228,109 +66,7 @@ impl Resolve<DeleteDeployment, User> for State {
     DeleteDeployment { id }: DeleteDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
-    let deployment = Deployment::get_resource_check_permissions(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-
-    // get the action state for the deployment (or insert default).
-    let action_state = action_states()
-      .deployment
-      .get_or_insert_default(&deployment.id)
-      .await;
-
-    // Will check to ensure deployment not already busy before updating, and return Err if so.
-    // The returned guard will set the action state back to default when dropped.
-    let _action_guard =
-      action_state.update(|state| state.deleting = true)?;
-
-    let state = get_deployment_state(&deployment)
-      .await
-      .context("failed to get container state")?;
-
-    let mut update =
-      make_update(&deployment, Operation::DeleteDeployment, &user);
-    update.in_progress();
-
-    update.id = add_update(update.clone()).await?;
-
-    if !matches!(
-      state,
-      DockerContainerState::NotDeployed
-        | DockerContainerState::Unknown
-    ) {
-      // container needs to be destroyed
-      let server =
-        Server::get_resource(&deployment.config.server_id).await;
-      if let Err(e) = server {
-        update.logs.push(Log::error(
-          "remove container",
-          format!(
-            "failed to retrieve server at {} from db | {e:#?}",
-            deployment.config.server_id
-          ),
-        ));
-      } else if let Ok(server) = server {
-        match periphery_client(&server) {
-          Ok(periphery) => match periphery
-            .request(api::container::RemoveContainer {
-              name: deployment.name.clone(),
-              signal: deployment.config.termination_signal.into(),
-              time: deployment.config.termination_timeout.into(),
-            })
-            .await
-          {
-            Ok(log) => update.logs.push(log),
-            Err(e) => update.push_error_log(
-              "remove container",
-              format!(
-                "failed to remove container on periphery | {e:#?}"
-              ),
-            ),
-          },
-          Err(e) => update.push_error_log(
-            "remove container",
-            format!(
-              "failed to remove container on periphery | {e:#?}"
-            ),
-          ),
-        };
-      }
-    }
-
-    let res = delete_one_by_id(
-      &db_client().await.deployments,
-      &deployment.id,
-      None,
-    )
-    .await
-    .context("failed to delete deployment from mongo");
-
-    let log = match res {
-      Ok(_) => Log::simple(
-        "delete deployment",
-        format!("deleted deployment {}", deployment.name),
-      ),
-      Err(e) => Log::error(
-        "delete deployment",
-        format!("failed to delete deployment\n{e:#?}"),
-      ),
-    };
-
-    delete_all_permissions_on_resource(&deployment).await;
-
-    update.logs.push(log);
-    update.end_ts = Some(monitor_timestamp());
-    update.status = UpdateStatus::Complete;
-    update.success = all_logs_success(&update.logs);
-
-    update_update(update).await?;
-
-    remove_from_recently_viewed(&deployment).await?;
-
-    Ok(deployment)
+    resource::delete::<Deployment>(&id, &user).await
   }
 }
 
@@ -339,57 +75,10 @@ impl Resolve<UpdateDeployment, User> for State {
   #[instrument(name = "UpdateDeployment", skip(self, user))]
   async fn resolve(
     &self,
-    UpdateDeployment { id, mut config }: UpdateDeployment,
+    UpdateDeployment { id, config }: UpdateDeployment,
     user: User,
   ) -> anyhow::Result<Deployment> {
-    if action_states()
-      .deployment
-      .get(&id)
-      .await
-      .unwrap_or_default()
-      .busy()?
-    {
-      return Err(anyhow!("deployment busy"));
-    }
-
-    let deployment = Deployment::get_resource_check_permissions(
-      &id,
-      &user,
-      PermissionLevel::Write,
-    )
-    .await?;
-
-    let mut update =
-      make_update(&deployment, Operation::UpdateDeployment, &user);
-
-    validate_config(&mut config, &user).await?;
-
-    let config_doc = to_document(&config)
-      .context("failed to serialize config to bson")?;
-    update_one_by_id(
-      &db_client().await.deployments,
-      &id,
-      mungos::update::Update::FlattenSet(
-        doc! { "config": config_doc },
-      ),
-      None,
-    )
-    .await
-    .context("failed to update server on mongo")?;
-
-    update.push_simple_log(
-      "deployment update",
-      serde_json::to_string_pretty(&config)
-        .context("failed to serialize config to json")?,
-    );
-    update.finalize();
-
-    add_update(update).await?;
-
-    let deployment: Deployment =
-      Deployment::get_resource(&id).await?;
-
-    Ok(deployment)
+    resource::update::<Deployment>(&id, config, &user).await
   }
 }
 
@@ -401,7 +90,7 @@ impl Resolve<RenameDeployment, User> for State {
     RenameDeployment { id, name }: RenameDeployment,
     user: User,
   ) -> anyhow::Result<Update> {
-    let deployment = Deployment::get_resource_check_permissions(
+    let deployment = resource::get_check_permissions::<Deployment>(
       &id,
       &user,
       PermissionLevel::Write,
@@ -445,7 +134,7 @@ impl Resolve<RenameDeployment, User> for State {
 
     if container_state != DockerContainerState::NotDeployed {
       let server =
-        Server::get_resource(&deployment.config.server_id).await?;
+        resource::get::<Server>(&deployment.config.server_id).await?;
       let log = periphery_client(&server)?
         .request(api::container::RenameContainer {
           curr_name: deployment.name.clone(),

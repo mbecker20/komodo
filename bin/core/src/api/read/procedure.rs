@@ -18,9 +18,8 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::resource::{
-    get_resource_ids_for_non_admin, StateResource,
-  },
+  helpers::query::get_resource_ids_for_non_admin,
+  resource,
   state::{action_states, db_client, State},
 };
 
@@ -31,7 +30,7 @@ impl Resolve<GetProcedure, User> for State {
     GetProcedure { procedure }: GetProcedure,
     user: User,
   ) -> anyhow::Result<GetProcedureResponse> {
-    Procedure::get_resource_check_permissions(
+    resource::get_check_permissions::<Procedure>(
       &procedure,
       &user,
       PermissionLevel::Read,
@@ -47,7 +46,7 @@ impl Resolve<ListProcedures, User> for State {
     ListProcedures { query }: ListProcedures,
     user: User,
   ) -> anyhow::Result<ListProceduresResponse> {
-    Procedure::list_resource_list_items_for_user(query, &user).await
+    resource::list_for_user::<Procedure>(query, &user).await
   }
 }
 
@@ -94,7 +93,7 @@ impl Resolve<GetProcedureActionState, User> for State {
     GetProcedureActionState { procedure }: GetProcedureActionState,
     user: User,
   ) -> anyhow::Result<GetProcedureActionStateResponse> {
-    let procedure = Procedure::get_resource_check_permissions(
+    let procedure = resource::get_check_permissions::<Procedure>(
       &procedure,
       &user,
       PermissionLevel::Read,

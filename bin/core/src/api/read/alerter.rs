@@ -15,9 +15,8 @@ use mungos::mongodb::bson::{doc, oid::ObjectId};
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::resource::{
-    get_resource_ids_for_non_admin, StateResource,
-  },
+  helpers::query::get_resource_ids_for_non_admin,
+  resource,
   state::{db_client, State},
 };
 
@@ -28,7 +27,7 @@ impl Resolve<GetAlerter, User> for State {
     GetAlerter { alerter }: GetAlerter,
     user: User,
   ) -> anyhow::Result<Alerter> {
-    Alerter::get_resource_check_permissions(
+    resource::get_check_permissions::<Alerter>(
       &alerter,
       &user,
       PermissionLevel::Read,
@@ -44,7 +43,7 @@ impl Resolve<ListAlerters, User> for State {
     ListAlerters { query }: ListAlerters,
     user: User,
   ) -> anyhow::Result<Vec<AlerterListItem>> {
-    Alerter::list_resource_list_items_for_user(query, &user).await
+    resource::list_for_user::<Alerter>(query, &user).await
   }
 }
 

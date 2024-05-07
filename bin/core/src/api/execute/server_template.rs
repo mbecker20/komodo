@@ -16,12 +16,7 @@ use resolver_api::Resolve;
 use serror::serialize_error_pretty;
 
 use crate::{
-  cloud::aws::launch_ec2_instance,
-  helpers::{
-    resource::StateResource,
-    update::{add_update, make_update, update_update},
-  },
-  state::{db_client, State},
+  cloud::aws::launch_ec2_instance, helpers::update::{add_update, make_update, update_update}, resource, state::{db_client, State}
 };
 
 #[async_trait]
@@ -52,7 +47,7 @@ impl Resolve<LaunchServer, User> for State {
       return Err(anyhow!("name is already taken"));
     }
 
-    let template = ServerTemplate::get_resource_check_permissions(
+    let template = resource::get_check_permissions::<ServerTemplate>(
       &server_template,
       &user,
       PermissionLevel::Execute,

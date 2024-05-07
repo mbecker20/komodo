@@ -4,7 +4,7 @@ use monitor_client::{
   api::read::{
     GetAlert, GetAlertResponse, ListAlerts, ListAlertsResponse,
   },
-  entities::{deployment::Deployment, server::Server, user::User},
+  entities::{update::ResourceTargetVariant, user::User},
 };
 use mungos::{
   by_id::find_one_by_id,
@@ -14,7 +14,7 @@ use mungos::{
 use resolver_api::Resolve;
 
 use crate::{
-  helpers::resource::StateResource,
+  helpers::query::get_resource_ids_for_non_admin,
   state::{db_client, State},
 };
 
@@ -29,10 +29,16 @@ impl Resolve<ListAlerts, User> for State {
   ) -> anyhow::Result<ListAlertsResponse> {
     let mut query = query.unwrap_or_default();
     if !user.admin {
-      let server_ids =
-        Server::get_resource_ids_for_non_admin(&user.id).await?;
-      let deployment_ids =
-        Deployment::get_resource_ids_for_non_admin(&user.id).await?;
+      let server_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Server,
+      )
+      .await?;
+      let deployment_ids = get_resource_ids_for_non_admin(
+        &user.id,
+        ResourceTargetVariant::Deployment,
+      )
+      .await?;
       query.extend(doc! {
         "$or": [
           { "target.type": "Server", "target.id": { "$in": &server_ids } },

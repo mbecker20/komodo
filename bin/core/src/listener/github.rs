@@ -16,7 +16,8 @@ use tracing::Instrument;
 
 use crate::{
   config::core_config,
-  helpers::{cache::Cache, random_duration, resource::StateResource},
+  helpers::{cache::Cache, random_duration},
+  resource,
   state::State,
 };
 
@@ -127,7 +128,7 @@ async fn handle_build_webhook(
 
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
-  let build = Build::get_resource(&build_id).await?;
+  let build = resource::get::<Build>(&build_id).await?;
   if request_branch != build.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
@@ -153,7 +154,7 @@ async fn handle_repo_clone_webhook(
 
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
-  let repo = Repo::get_resource(&repo_id).await?;
+  let repo = resource::get::<Repo>(&repo_id).await?;
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
@@ -179,7 +180,7 @@ async fn handle_repo_pull_webhook(
 
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
-  let repo = Repo::get_resource(&repo_id).await?;
+  let repo = resource::get::<Repo>(&repo_id).await?;
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
@@ -201,7 +202,8 @@ async fn handle_procedure_webhook(
   // Acquire and hold lock to make a task queue for
   // subsequent listener calls on same resource.
   // It would fail if we let it go through from action state busy.
-  let lock = procedure_locks().get_or_insert_default(&procedure_id).await;
+  let lock =
+    procedure_locks().get_or_insert_default(&procedure_id).await;
   let _lock = lock.lock().await;
 
   verify_gh_signature(headers, &body).await?;
