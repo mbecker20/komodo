@@ -73,8 +73,8 @@ export const Resource = () => {
         </div>
       }
     >
-      {/* Actions and Updates */}
-      {canExecute && (
+      {/* Actions */}
+      {canExecute && Object.keys(Components.Actions).length > 0 && (
         <Section title="Actions" icon={<Clapperboard className="w-4 h-4" />}>
           <div className="flex gap-4 items-center">
             {Object.entries(Components.Actions).map(([key, Action]) => (
@@ -83,6 +83,8 @@ export const Resource = () => {
           </div>
         </Section>
       )}
+
+      {/* Updates */}
       <ResourceUpdates type={type} id={id} />
 
       {/* Resource specific */}
