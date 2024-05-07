@@ -539,7 +539,6 @@ export interface DeploymentActionState {
 	starting: boolean;
 	removing: boolean;
 	renaming: boolean;
-	deleting: boolean;
 }
 
 export type GetDeploymentActionStateResponse = DeploymentActionState;
@@ -684,8 +683,6 @@ export type ListReposResponse = RepoListItem[];
 export interface RepoActionState {
 	cloning: boolean;
 	pulling: boolean;
-	updating: boolean;
-	deleting: boolean;
 }
 
 export type GetRepoActionStateResponse = RepoActionState;

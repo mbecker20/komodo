@@ -91,8 +91,6 @@ fn default_branch() -> String {
 pub struct RepoActionState {
   pub cloning: bool,
   pub pulling: bool,
-  pub updating: bool,
-  pub deleting: bool,
 }
 
 #[typeshare]

@@ -269,14 +269,6 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
   const { data: d } = useRead("GetDeployment", { deployment: id });
   const { mutateAsync, isPending } = useWrite("DeleteDeployment");
 
-  const deleting = useRead(
-    "GetDeploymentActionState",
-    { deployment: id },
-    { refetchInterval: 5000 }
-  ).data?.deleting;
-
-  const pending = isPending || deleting;
-
   if (!d) return null;
   return (
     <div className="flex items-center justify-between">
@@ -290,8 +282,8 @@ export const DeleteDeployment = ({ id }: { id: string }) => {
           await mutateAsync({ id });
           nav("/deployments");
         }}
-        disabled={pending}
-        loading={pending}
+        disabled={isPending}
+        loading={isPending}
       />
     </div>
   );

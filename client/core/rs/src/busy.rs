@@ -23,7 +23,6 @@ impl Busy for DeploymentActionState {
       || self.starting
       || self.stopping
       || self.renaming
-      || self.deleting
   }
 }
 
@@ -35,7 +34,7 @@ impl Busy for BuildActionState {
 
 impl Busy for RepoActionState {
   fn busy(&self) -> bool {
-    self.cloning || self.pulling || self.updating || self.deleting
+    self.cloning || self.pulling
   }
 }
 

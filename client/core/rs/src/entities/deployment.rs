@@ -374,7 +374,6 @@ pub struct DeploymentActionState {
   pub starting: bool,
   pub removing: bool,
   pub renaming: bool,
-  pub deleting: bool,
 }
 
 #[typeshare]
