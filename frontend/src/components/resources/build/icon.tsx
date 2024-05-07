@@ -9,7 +9,7 @@ export const IconStrictId = ({ id }: { id: string }) => {
     { refetchInterval: 5000 }
   ).data?.building;
   const className = building
-    ? "w-4 h-4 animate-spin " + fill_color_class_by_intention("Good")
+    ? "w-4 h-4 " + fill_color_class_by_intention("Good")
     : "w-4 h-4";
   return <Hammer className={className} />;
 };
