@@ -10,6 +10,7 @@ use typeshare::typeshare;
 use super::{
   builder::AwsBuilderConfig,
   resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
+  MergePartial,
 };
 
 #[typeshare]
@@ -112,8 +113,9 @@ impl From<ServerTemplateConfig> for PartialServerTemplateConfig {
   }
 }
 
-impl ServerTemplateConfig {
-  pub fn merge_partial(
+impl MergePartial for ServerTemplateConfig {
+  type Partial = PartialServerTemplateConfig;
+  fn merge_partial(
     self,
     partial: PartialServerTemplateConfig,
   ) -> ServerTemplateConfig {

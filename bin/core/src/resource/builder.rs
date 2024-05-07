@@ -12,10 +12,10 @@ use monitor_client::entities::{
   server::Server,
   update::{ResourceTargetVariant, Update},
   user::User,
-  Operation,
+  MergePartial, Operation,
 };
 use mungos::mongodb::{
-  bson::{doc, oid::ObjectId},
+  bson::{doc, oid::ObjectId, to_document, Document},
   Collection,
 };
 
@@ -101,11 +101,19 @@ impl super::MonitorResource for Builder {
   }
 
   async fn validate_update_config(
-    _original: Resource<Self::Config, Self::Info>,
+    _id: &str,
     config: &mut Self::PartialConfig,
     user: &User,
   ) -> anyhow::Result<()> {
     validate_config(config, user).await
+  }
+
+  fn update_document(
+    original: Resource<Self::Config, Self::Info>,
+    config: Self::PartialConfig,
+  ) -> Result<Document, mungos::mongodb::bson::ser::Error> {
+    let config = original.config.merge_partial(config);
+    to_document(&config)
   }
 
   async fn post_update(

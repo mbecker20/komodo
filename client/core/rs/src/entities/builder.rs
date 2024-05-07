@@ -5,8 +5,9 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
 
-use super::resource::{
-  AddFilters, Resource, ResourceListItem, ResourceQuery,
+use super::{
+  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
+  MergePartial,
 };
 
 #[typeshare]
@@ -120,8 +121,9 @@ impl From<BuilderConfig> for PartialBuilderConfig {
   }
 }
 
-impl BuilderConfig {
-  pub fn merge_partial(
+impl MergePartial for BuilderConfig {
+  type Partial = PartialBuilderConfig;
+  fn merge_partial(
     self,
     partial: PartialBuilderConfig,
   ) -> BuilderConfig {

@@ -43,6 +43,11 @@ pub type _Serror = Serror;
 )]
 pub struct NoData {}
 
+pub trait MergePartial: Sized {
+  type Partial;
+  fn merge_partial(self, partial: Self::Partial) -> Self;
+}
+
 pub fn all_logs_success(logs: &[update::Log]) -> bool {
   for log in logs {
     if !log.success {

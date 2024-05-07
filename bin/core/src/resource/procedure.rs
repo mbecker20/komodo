@@ -97,11 +97,11 @@ impl super::MonitorResource for Procedure {
   }
 
   async fn validate_update_config(
-    original: Resource<Self::Config, Self::Info>,
+    id: &str,
     config: &mut Self::PartialConfig,
     user: &User,
   ) -> anyhow::Result<()> {
-    validate_config(config, user, Some(&original.id)).await
+    validate_config(config, user, Some(id)).await
   }
 
   async fn post_update(

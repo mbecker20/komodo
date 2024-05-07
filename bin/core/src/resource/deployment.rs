@@ -124,7 +124,7 @@ impl super::MonitorResource for Deployment {
   }
 
   async fn validate_update_config(
-    _original: Resource<Self::Config, Self::Info>,
+    _id: &str,
     config: &mut Self::PartialConfig,
     user: &User,
   ) -> anyhow::Result<()> {

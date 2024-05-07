@@ -22,6 +22,7 @@ use mungos::{
     Collection,
   },
 };
+use partial_derive2::{MaybeNone, PartialDiff};
 use resolver_api::Resolve;
 use serde::{de::DeserializeOwned, Serialize};
 use serror::serialize_error_pretty;
@@ -55,8 +56,9 @@ pub trait MonitorResource {
     + Unpin
     + Serialize
     + DeserializeOwned
+    + PartialDiff<Self::PartialConfig>
     + 'static;
-  type PartialConfig: Serialize + Into<Self::Config>;
+  type PartialConfig: Into<Self::Config> + Serialize + MaybeNone;
   type Info: Send
     + Sync
     + Unpin
@@ -107,10 +109,18 @@ pub trait MonitorResource {
   fn update_operation() -> Operation;
 
   async fn validate_update_config(
-    current: Resource<Self::Config, Self::Info>,
+    id: &str,
     config: &mut Self::PartialConfig,
     user: &User,
   ) -> anyhow::Result<()>;
+
+  /// Should be overridden for enum configs, eg Alerter, Builder, ...
+  fn update_document(
+    _original: Resource<Self::Config, Self::Info>,
+    config: Self::PartialConfig,
+  ) -> Result<Document, mungos::mongodb::bson::ser::Error> {
+    to_document(&config)
+  }
 
   /// Run any required task after resource updated in database but
   /// before the request resolves.
@@ -339,11 +349,23 @@ pub async fn update<T: MonitorResource>(
     return Err(anyhow!("{} busy", T::resource_type()));
   }
 
+  T::validate_update_config(&resource.id, &mut config, user).await?;
+
+  // This minimizes the update against the existing config
+  let config = resource.config.partial_diff(config);
+
+  if config.is_none() {
+    return Err(anyhow!(
+      "Partial update has no changes to database state"
+    ));
+  }
+
+  let config_for_log = serde_json::to_string_pretty(&config)
+    .context("failed to serialize config to json")?;
+
   let id = resource.id.clone();
 
-  T::validate_update_config(resource, &mut config, user).await?;
-
-  let config_doc = to_document(&config)
+  let config_doc = T::update_document(resource, config)
     .context("failed to serialize config to bson document")?;
 
   update_one_by_id(
@@ -361,11 +383,7 @@ pub async fn update<T: MonitorResource>(
     user,
   );
 
-  update.push_simple_log(
-    "update config",
-    serde_json::to_string_pretty(&config)
-      .context("failed to serialize config to json")?,
-  );
+  update.push_simple_log("update config", config_for_log);
 
   let updated = get::<T>(id_or_name).await?;
 

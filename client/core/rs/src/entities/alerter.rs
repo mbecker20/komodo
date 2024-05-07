@@ -7,8 +7,9 @@ use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
 
-use super::resource::{
-  AddFilters, Resource, ResourceListItem, ResourceQuery,
+use super::{
+  resource::{AddFilters, Resource, ResourceListItem, ResourceQuery},
+  MergePartial,
 };
 
 #[typeshare]
@@ -131,8 +132,9 @@ impl From<AlerterConfig> for PartialAlerterConfig {
   }
 }
 
-impl AlerterConfig {
-  pub fn merge_partial(
+impl MergePartial for AlerterConfig {
+  type Partial = PartialAlerterConfig;
+  fn merge_partial(
     self,
     partial: PartialAlerterConfig,
   ) -> AlerterConfig {

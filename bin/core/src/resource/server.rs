@@ -104,7 +104,7 @@ impl super::MonitorResource for Server {
   }
 
   async fn validate_update_config(
-    _original: Server,
+    _id: &str,
     _config: &mut Self::PartialConfig,
     _user: &User,
   ) -> anyhow::Result<()> {

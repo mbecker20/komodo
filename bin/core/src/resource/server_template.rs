@@ -10,9 +10,12 @@ use monitor_client::entities::{
   },
   update::{ResourceTargetVariant, Update},
   user::User,
-  Operation,
+  MergePartial, Operation,
 };
-use mungos::mongodb::{bson::oid::ObjectId, Collection};
+use mungos::mongodb::{
+  bson::{oid::ObjectId, to_document, Document},
+  Collection,
+};
 
 use crate::state::db_client;
 
@@ -73,7 +76,7 @@ impl super::MonitorResource for ServerTemplate {
 
   async fn validate_create_config(
     _config: &mut Self::PartialConfig,
-		_user: &User,
+    _user: &User,
   ) -> anyhow::Result<()> {
     Ok(())
   }
@@ -92,11 +95,19 @@ impl super::MonitorResource for ServerTemplate {
   }
 
   async fn validate_update_config(
-    _original: Resource<Self::Config, Self::Info>,
+    _id: &str,
     _config: &mut Self::PartialConfig,
-		_user: &User,
+    _user: &User,
   ) -> anyhow::Result<()> {
     Ok(())
+  }
+
+  fn update_document(
+    original: Resource<Self::Config, Self::Info>,
+    config: Self::PartialConfig,
+  ) -> Result<Document, mungos::mongodb::bson::ser::Error> {
+    let config = original.config.merge_partial(config);
+    to_document(&config)
   }
 
   async fn post_update(
