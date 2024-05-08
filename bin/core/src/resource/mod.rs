@@ -22,7 +22,7 @@ use mungos::{
     Collection,
   },
 };
-use partial_derive2::{MaybeNone, PartialDiff};
+use partial_derive2::{Diff, MaybeNone, PartialDiff};
 use resolver_api::Resolve;
 use serde::{de::DeserializeOwned, Serialize};
 use serror::serialize_error_pretty;
@@ -56,9 +56,10 @@ pub trait MonitorResource {
     + Unpin
     + Serialize
     + DeserializeOwned
-    + PartialDiff<Self::PartialConfig>
+    + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
   type PartialConfig: Into<Self::Config> + Serialize + MaybeNone;
+  type ConfigDiff: Into<Self::PartialConfig> + Serialize + Diff;
   type Info: Send
     + Sync
     + Unpin
@@ -352,7 +353,8 @@ pub async fn update<T: MonitorResource>(
   T::validate_update_config(&resource.id, &mut config, user).await?;
 
   // This minimizes the update against the existing config
-  let config = resource.config.partial_diff(config);
+  let diff = resource.config.partial_diff(config);
+  let config: T::PartialConfig = diff.into();
 
   if config.is_none() {
     return Err(anyhow!(

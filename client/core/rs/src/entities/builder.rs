@@ -1,6 +1,6 @@
 use derive_builder::Builder;
 use derive_variants::EnumVariants;
-use partial_derive2::{MaybeNone, Partial, PartialDiff};
+use partial_derive2::{Diff, MaybeNone, Partial, PartialDiff};
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 use typeshare::typeshare;
@@ -46,28 +46,6 @@ pub enum BuilderConfig {
   Aws(AwsBuilderConfig),
 }
 
-impl PartialDiff<PartialBuilderConfig> for BuilderConfig {
-  fn partial_diff(
-    &self,
-    partial: PartialBuilderConfig,
-  ) -> PartialBuilderConfig {
-    match self {
-      BuilderConfig::Server(original) => match partial {
-        PartialBuilderConfig::Server(partial) => {
-          PartialBuilderConfig::Server(original.partial_diff(partial))
-        }
-        aws => aws,
-      },
-      BuilderConfig::Aws(original) => match partial {
-        PartialBuilderConfig::Aws(partial) => {
-          PartialBuilderConfig::Aws(original.partial_diff(partial))
-        }
-        server => server,
-      },
-    }
-  }
-}
-
 /// Partial representation of [BuilderConfig]
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
@@ -84,6 +62,71 @@ impl PartialDiff<PartialBuilderConfig> for BuilderConfig {
 pub enum PartialBuilderConfig {
   Server(_PartialServerBuilderConfig),
   Aws(_PartialAwsBuilderConfig),
+}
+
+#[allow(clippy::large_enum_variant)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum BuilderConfigDiff {
+  Server(ServerBuilderConfigDiff),
+  Aws(AwsBuilderConfigDiff),
+}
+
+impl From<BuilderConfigDiff> for PartialBuilderConfig {
+  fn from(value: BuilderConfigDiff) -> Self {
+    match value {
+      BuilderConfigDiff::Server(diff) => {
+        PartialBuilderConfig::Server(diff.into())
+      }
+      BuilderConfigDiff::Aws(diff) => {
+        PartialBuilderConfig::Aws(diff.into())
+      }
+    }
+  }
+}
+
+impl Diff for BuilderConfigDiff {
+  fn iter_field_diffs(
+    &self,
+  ) -> impl Iterator<Item = partial_derive2::FieldDiff> {
+    match self {
+      BuilderConfigDiff::Server(diff) => {
+        diff.iter_field_diffs().collect::<Vec<_>>().into_iter()
+      }
+      BuilderConfigDiff::Aws(diff) => {
+        diff.iter_field_diffs().collect::<Vec<_>>().into_iter()
+      }
+    }
+  }
+}
+
+impl PartialDiff<PartialBuilderConfig, BuilderConfigDiff>
+  for BuilderConfig
+{
+  fn partial_diff(
+    &self,
+    partial: PartialBuilderConfig,
+  ) -> BuilderConfigDiff {
+    match self {
+      BuilderConfig::Server(original) => match partial {
+        PartialBuilderConfig::Server(partial) => {
+          BuilderConfigDiff::Server(original.partial_diff(partial))
+        }
+        PartialBuilderConfig::Aws(partial) => {
+          let default = AwsBuilderConfig::default();
+          BuilderConfigDiff::Aws(default.partial_diff(partial))
+        }
+      },
+      BuilderConfig::Aws(original) => match partial {
+        PartialBuilderConfig::Aws(partial) => {
+          BuilderConfigDiff::Aws(original.partial_diff(partial))
+        }
+        PartialBuilderConfig::Server(partial) => {
+          let default = ServerBuilderConfig::default();
+          BuilderConfigDiff::Server(default.partial_diff(partial))
+        }
+      },
+    }
+  }
 }
 
 impl MaybeNone for PartialBuilderConfig {
@@ -180,7 +223,9 @@ pub type _PartialServerBuilderConfig = PartialServerBuilderConfig;
 
 /// Configuration for a monitor server builder.
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
+#[derive(
+  Serialize, Deserialize, Debug, Clone, Default, Builder, Partial,
+)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct ServerBuilderConfig {
@@ -195,7 +240,7 @@ pub type _PartialAwsBuilderConfig = PartialAwsBuilderConfig;
 
 /// Configuration for an AWS builder.
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone, Builder, Partial)]
+#[derive(Debug, Clone, Serialize, Deserialize, Builder, Partial)]
 #[partial_derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct AwsBuilderConfig {
@@ -248,6 +293,25 @@ pub struct AwsBuilderConfig {
   /// Which dockerhub accounts (usernames) are available on the AMI
   #[serde(default)]
   pub docker_accounts: Vec<String>,
+}
+
+impl Default for AwsBuilderConfig {
+  fn default() -> Self {
+    Self {
+      region: aws_default_region(),
+      instance_type: aws_default_instance_type(),
+      volume_gb: aws_default_volume_gb(),
+      port: default_port(),
+      ami_id: Default::default(),
+      subnet_id: Default::default(),
+      security_group_ids: Default::default(),
+      key_pair_name: Default::default(),
+      assign_public_ip: false,
+      use_public_ip: false,
+      github_accounts: Default::default(),
+      docker_accounts: Default::default(),
+    }
+  }
 }
 
 impl AwsBuilderConfig {

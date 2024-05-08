@@ -87,6 +87,6 @@ impl ResourceSync for Builder {
         .unwrap_or_default();
     }
 
-    Ok(original.partial_diff(update))
+    Ok(original.partial_diff(update).into())
   }
 }

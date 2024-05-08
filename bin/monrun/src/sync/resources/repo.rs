@@ -84,6 +84,6 @@ impl ResourceSync for Repo {
       .map(|s| s.name.clone())
       .unwrap_or_default();
 
-    Ok(original.partial_diff(update))
+    Ok(original.partial_diff(update).into())
   }
 }

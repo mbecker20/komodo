@@ -4,8 +4,7 @@ use anyhow::Context;
 use monitor_client::entities::{
   permission::PermissionLevel,
   repo::{
-    PartialRepoConfig, Repo, RepoConfig, RepoInfo, RepoListItem,
-    RepoListItemInfo, RepoQuerySpecifics,
+    PartialRepoConfig, Repo, RepoConfig, RepoConfigDiff, RepoInfo, RepoListItem, RepoListItemInfo, RepoQuerySpecifics
   },
   resource::Resource,
   server::Server,
@@ -27,6 +26,7 @@ use super::get_check_permissions;
 impl super::MonitorResource for Repo {
   type Config = RepoConfig;
   type PartialConfig = PartialRepoConfig;
+  type ConfigDiff = RepoConfigDiff;
   type Info = RepoInfo;
   type ListItem = RepoListItem;
   type QuerySpecifics = RepoQuerySpecifics;

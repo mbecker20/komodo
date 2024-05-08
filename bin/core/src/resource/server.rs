@@ -5,8 +5,8 @@ use monitor_client::entities::{
   monitor_timestamp,
   resource::Resource,
   server::{
-    PartialServerConfig, Server, ServerConfig, ServerListItem,
-    ServerListItemInfo, ServerQuerySpecifics,
+    PartialServerConfig, Server, ServerConfig, ServerConfigDiff,
+    ServerListItem, ServerListItemInfo, ServerQuerySpecifics,
   },
   update::{ResourceTargetVariant, Update},
   user::User,
@@ -25,6 +25,7 @@ use crate::{
 impl super::MonitorResource for Server {
   type Config = ServerConfig;
   type PartialConfig = PartialServerConfig;
+  type ConfigDiff = ServerConfigDiff;
   type Info = ();
   type ListItem = ServerListItem;
   type QuerySpecifics = ServerQuerySpecifics;

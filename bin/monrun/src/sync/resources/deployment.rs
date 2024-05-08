@@ -97,6 +97,6 @@ impl ResourceSync for Deployment {
       };
     }
 
-    Ok(original.partial_diff(update))
+    Ok(original.partial_diff(update).into())
   }
 }

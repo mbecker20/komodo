@@ -245,6 +245,6 @@ impl ResourceSync for Procedure {
       }
     }
 
-    Ok(original.partial_diff(update))
+    Ok(original.partial_diff(update).into())
   }
 }

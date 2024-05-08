@@ -75,6 +75,6 @@ impl ResourceSync for Server {
     original: Self::FullConfig,
     update: Self::PartialConfig,
   ) -> anyhow::Result<Self::PartialConfig> {
-    Ok(original.partial_diff(update))
+    Ok(original.partial_diff(update).into())
   }
 }

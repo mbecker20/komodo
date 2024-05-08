@@ -8,9 +8,7 @@ use monitor_client::{
     deployment::Deployment,
     permission::PermissionLevel,
     procedure::{
-      PartialProcedureConfig, Procedure, ProcedureConfig,
-      ProcedureListItem, ProcedureListItemInfo,
-      ProcedureQuerySpecifics,
+      PartialProcedureConfig, Procedure, ProcedureConfig, ProcedureConfigDiff, ProcedureListItem, ProcedureListItemInfo, ProcedureQuerySpecifics
     },
     repo::Repo,
     resource::Resource,
@@ -27,6 +25,7 @@ use crate::state::{action_states, db_client};
 impl super::MonitorResource for Procedure {
   type Config = ProcedureConfig;
   type PartialConfig = PartialProcedureConfig;
+  type ConfigDiff = ProcedureConfigDiff;
   type Info = ();
   type ListItem = ProcedureListItem;
   type QuerySpecifics = ProcedureQuerySpecifics;

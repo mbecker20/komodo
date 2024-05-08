@@ -2,7 +2,7 @@ use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use derive_variants::EnumVariants;
 use mungos::mongodb::bson::{doc, Document};
-use partial_derive2::{MaybeNone, Partial, PartialDiff};
+use partial_derive2::{Diff, MaybeNone, Partial, PartialDiff};
 use serde::{Deserialize, Serialize};
 use strum::{AsRefStr, Display, EnumString};
 use typeshare::typeshare;
@@ -47,25 +47,6 @@ pub enum ServerTemplateConfig {
   Aws(AwsServerTemplateConfig),
 }
 
-impl PartialDiff<PartialServerTemplateConfig>
-  for ServerTemplateConfig
-{
-  fn partial_diff(
-    &self,
-    partial: PartialServerTemplateConfig,
-  ) -> PartialServerTemplateConfig {
-    match self {
-      ServerTemplateConfig::Aws(original) => match partial {
-        PartialServerTemplateConfig::Aws(partial) => {
-          PartialServerTemplateConfig::Aws(
-            original.partial_diff(partial),
-          )
-        }
-      },
-    }
-  }
-}
-
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, EnumVariants)]
 #[variant_derive(
@@ -81,6 +62,51 @@ impl PartialDiff<PartialServerTemplateConfig>
 #[serde(tag = "type", content = "params")]
 pub enum PartialServerTemplateConfig {
   Aws(_PartialAwsServerTemplateConfig),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ServerTemplateConfigDiff {
+  Aws(AwsServerTemplateConfigDiff),
+}
+
+impl From<ServerTemplateConfigDiff> for PartialServerTemplateConfig {
+  fn from(value: ServerTemplateConfigDiff) -> Self {
+    match value {
+      ServerTemplateConfigDiff::Aws(diff) => {
+        PartialServerTemplateConfig::Aws(diff.into())
+      }
+    }
+  }
+}
+
+impl Diff for ServerTemplateConfigDiff {
+  fn iter_field_diffs(
+    &self,
+  ) -> impl Iterator<Item = partial_derive2::FieldDiff> {
+    match self {
+      ServerTemplateConfigDiff::Aws(diff) => diff.iter_field_diffs(),
+    }
+  }
+}
+
+impl
+  PartialDiff<PartialServerTemplateConfig, ServerTemplateConfigDiff>
+  for ServerTemplateConfig
+{
+  fn partial_diff(
+    &self,
+    partial: PartialServerTemplateConfig,
+  ) -> ServerTemplateConfigDiff {
+    match self {
+      ServerTemplateConfig::Aws(original) => match partial {
+        PartialServerTemplateConfig::Aws(partial) => {
+          ServerTemplateConfigDiff::Aws(
+            original.partial_diff(partial),
+          )
+        }
+      },
+    }
+  }
 }
 
 impl MaybeNone for PartialServerTemplateConfig {

@@ -3,8 +3,7 @@ use std::str::FromStr;
 use anyhow::Context;
 use monitor_client::entities::{
   build::{
-    Build, BuildConfig, BuildInfo, BuildListItem, BuildListItemInfo,
-    BuildQuerySpecifics, PartialBuildConfig,
+    Build, BuildConfig, BuildConfigDiff, BuildInfo, BuildListItem, BuildListItemInfo, BuildQuerySpecifics, PartialBuildConfig
   },
   builder::Builder,
   permission::PermissionLevel,
@@ -23,6 +22,7 @@ use crate::{
 impl super::MonitorResource for Build {
   type Config = BuildConfig;
   type PartialConfig = PartialBuildConfig;
+  type ConfigDiff = BuildConfigDiff;
   type Info = BuildInfo;
   type ListItem = BuildListItem;
   type QuerySpecifics = BuildQuerySpecifics;

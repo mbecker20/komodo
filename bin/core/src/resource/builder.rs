@@ -3,9 +3,7 @@ use std::str::FromStr;
 use anyhow::Context;
 use monitor_client::entities::{
   builder::{
-    Builder, BuilderConfig, BuilderConfigVariant, BuilderListItem,
-    BuilderListItemInfo, BuilderQuerySpecifics, PartialBuilderConfig,
-    PartialServerBuilderConfig,
+    Builder, BuilderConfig, BuilderConfigDiff, BuilderConfigVariant, BuilderListItem, BuilderListItemInfo, BuilderQuerySpecifics, PartialBuilderConfig, PartialServerBuilderConfig
   },
   permission::PermissionLevel,
   resource::Resource,
@@ -24,6 +22,7 @@ use crate::state::db_client;
 impl super::MonitorResource for Builder {
   type Config = BuilderConfig;
   type PartialConfig = PartialBuilderConfig;
+  type ConfigDiff = BuilderConfigDiff;
   type Info = ();
   type ListItem = BuilderListItem;
   type QuerySpecifics = BuilderQuerySpecifics;

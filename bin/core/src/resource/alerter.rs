@@ -2,9 +2,7 @@ use std::str::FromStr;
 
 use monitor_client::entities::{
   alerter::{
-    Alerter, AlerterConfig, AlerterConfigVariant, AlerterInfo,
-    AlerterListItem, AlerterListItemInfo, AlerterQuerySpecifics,
-    PartialAlerterConfig,
+    Alerter, AlerterConfig, AlerterConfigDiff, AlerterConfigVariant, AlerterInfo, AlerterListItem, AlerterListItemInfo, AlerterQuerySpecifics, PartialAlerterConfig
   },
   resource::Resource,
   update::{ResourceTargetVariant, Update},
@@ -21,6 +19,7 @@ use crate::state::db_client;
 impl super::MonitorResource for Alerter {
   type Config = AlerterConfig;
   type PartialConfig = PartialAlerterConfig;
+  type ConfigDiff = AlerterConfigDiff;
   type Info = AlerterInfo;
   type ListItem = AlerterListItem;
   type QuerySpecifics = AlerterQuerySpecifics;

@@ -3,10 +3,7 @@ use std::str::FromStr;
 use monitor_client::entities::{
   resource::Resource,
   server_template::{
-    PartialServerTemplateConfig, ServerTemplate,
-    ServerTemplateConfig, ServerTemplateConfigVariant,
-    ServerTemplateListItem, ServerTemplateListItemInfo,
-    ServerTemplateQuerySpecifics,
+    PartialServerTemplateConfig, ServerTemplate, ServerTemplateConfig, ServerTemplateConfigDiff, ServerTemplateConfigVariant, ServerTemplateListItem, ServerTemplateListItemInfo, ServerTemplateQuerySpecifics
   },
   update::{ResourceTargetVariant, Update},
   user::User,
@@ -22,6 +19,7 @@ use crate::state::db_client;
 impl super::MonitorResource for ServerTemplate {
   type Config = ServerTemplateConfig;
   type PartialConfig = PartialServerTemplateConfig;
+  type ConfigDiff = ServerTemplateConfigDiff;
   type Info = ();
   type ListItem = ServerTemplateListItem;
   type QuerySpecifics = ServerTemplateQuerySpecifics;

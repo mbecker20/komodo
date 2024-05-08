@@ -4,10 +4,7 @@ use anyhow::Context;
 use monitor_client::entities::{
   build::Build,
   deployment::{
-    Deployment, DeploymentConfig, DeploymentImage,
-    DeploymentListItem, DeploymentListItemInfo,
-    DeploymentQuerySpecifics, DockerContainerState,
-    PartialDeploymentConfig,
+    Deployment, DeploymentConfig, DeploymentConfigDiff, DeploymentImage, DeploymentListItem, DeploymentListItemInfo, DeploymentQuerySpecifics, DockerContainerState, PartialDeploymentConfig
   },
   permission::PermissionLevel,
   resource::Resource,
@@ -32,6 +29,7 @@ use super::get_check_permissions;
 impl super::MonitorResource for Deployment {
   type Config = DeploymentConfig;
   type PartialConfig = PartialDeploymentConfig;
+  type ConfigDiff = DeploymentConfigDiff;
   type Info = ();
   type ListItem = DeploymentListItem;
   type QuerySpecifics = DeploymentQuerySpecifics;
