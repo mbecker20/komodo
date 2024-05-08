@@ -1,8 +1,8 @@
-use std::str::FromStr;
-
 use monitor_client::entities::{
   alerter::{
-    Alerter, AlerterConfig, AlerterConfigDiff, AlerterConfigVariant, AlerterInfo, AlerterListItem, AlerterListItemInfo, AlerterQuerySpecifics, PartialAlerterConfig
+    Alerter, AlerterConfig, AlerterConfigDiff, AlerterConfigVariant,
+    AlerterInfo, AlerterListItem, AlerterListItemInfo,
+    AlerterQuerySpecifics, PartialAlerterConfig,
   },
   resource::Resource,
   update::{ResourceTargetVariant, Update},
@@ -10,7 +10,7 @@ use monitor_client::entities::{
   MergePartial, Operation,
 };
 use mungos::mongodb::{
-  bson::{oid::ObjectId, to_document, Document},
+  bson::{to_document, Document},
   Collection,
 };
 
@@ -46,9 +46,6 @@ impl super::MonitorResource for Alerter {
     };
     Ok(AlerterListItem {
       name: alerter.name,
-      created_at: ObjectId::from_str(&alerter.id)?
-        .timestamp()
-        .timestamp_millis(),
       id: alerter.id,
       tags: alerter.tags,
       resource_type: ResourceTargetVariant::Alerter,

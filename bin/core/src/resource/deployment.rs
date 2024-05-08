@@ -1,10 +1,11 @@
-use std::str::FromStr;
-
 use anyhow::Context;
 use monitor_client::entities::{
   build::Build,
   deployment::{
-    Deployment, DeploymentConfig, DeploymentConfigDiff, DeploymentImage, DeploymentListItem, DeploymentListItemInfo, DeploymentQuerySpecifics, DockerContainerState, PartialDeploymentConfig
+    Deployment, DeploymentConfig, DeploymentConfigDiff,
+    DeploymentImage, DeploymentListItem, DeploymentListItemInfo,
+    DeploymentQuerySpecifics, DockerContainerState,
+    PartialDeploymentConfig,
   },
   permission::PermissionLevel,
   resource::Resource,
@@ -13,7 +14,7 @@ use monitor_client::entities::{
   user::User,
   Operation,
 };
-use mungos::mongodb::{bson::oid::ObjectId, Collection};
+use mungos::mongodb::Collection;
 use periphery_client::api::container::RemoveContainer;
 
 use crate::{
@@ -61,9 +62,6 @@ impl super::MonitorResource for Deployment {
     };
     Ok(DeploymentListItem {
       name: deployment.name,
-      created_at: ObjectId::from_str(&deployment.id)?
-        .timestamp()
-        .timestamp_millis(),
       id: deployment.id,
       tags: deployment.tags,
       resource_type: ResourceTargetVariant::Deployment,

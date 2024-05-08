@@ -74,9 +74,12 @@ pub struct Version {
   pub patch: i32,
 }
 
-impl ToString for Version {
-  fn to_string(&self) -> String {
-    format!("{}.{}.{}", self.major, self.minor, self.patch)
+impl std::fmt::Display for Version {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.write_str(&format!(
+      "{}.{}.{}",
+      self.major, self.minor, self.patch
+    ))
   }
 }
 

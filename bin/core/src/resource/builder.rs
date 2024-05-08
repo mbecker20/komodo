@@ -1,9 +1,9 @@
-use std::str::FromStr;
-
 use anyhow::Context;
 use monitor_client::entities::{
   builder::{
-    Builder, BuilderConfig, BuilderConfigDiff, BuilderConfigVariant, BuilderListItem, BuilderListItemInfo, BuilderQuerySpecifics, PartialBuilderConfig, PartialServerBuilderConfig
+    Builder, BuilderConfig, BuilderConfigDiff, BuilderConfigVariant,
+    BuilderListItem, BuilderListItemInfo, BuilderQuerySpecifics,
+    PartialBuilderConfig, PartialServerBuilderConfig,
   },
   permission::PermissionLevel,
   resource::Resource,
@@ -13,7 +13,7 @@ use monitor_client::entities::{
   MergePartial, Operation,
 };
 use mungos::mongodb::{
-  bson::{doc, oid::ObjectId, to_document, Document},
+  bson::{doc, to_document, Document},
   Collection,
 };
 
@@ -52,9 +52,6 @@ impl super::MonitorResource for Builder {
 
     Ok(BuilderListItem {
       name: builder.name,
-      created_at: ObjectId::from_str(&builder.id)?
-        .timestamp()
-        .timestamp_millis(),
       id: builder.id,
       tags: builder.tags,
       resource_type: ResourceTargetVariant::Builder,

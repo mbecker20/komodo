@@ -86,7 +86,7 @@ impl Resolve<Deploy, User> for State {
           version
         };
         deployment.config.image = DeploymentImage::Image {
-          image: format!("{image_name}:{}", version.to_string()),
+          image: format!("{image_name}:{version}"),
         };
         if deployment.config.docker_account.is_empty() {
           deployment.config.docker_account =

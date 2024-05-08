@@ -131,7 +131,7 @@ fn get_version_image_name(
   image_name: &str,
   version: &Version,
 ) -> String {
-  format!("{image_name}:{}", version.to_string())
+  format!("{image_name}:{version}")
 }
 
 fn get_latest_image_name(image_name: &str) -> String {

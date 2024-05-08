@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anyhow::Context;
 use monitor_client::entities::{
   monitor_timestamp,
@@ -12,10 +10,7 @@ use monitor_client::entities::{
   user::User,
   Operation,
 };
-use mungos::mongodb::{
-  bson::{doc, oid::ObjectId},
-  Collection,
-};
+use mungos::mongodb::{bson::doc, Collection};
 
 use crate::{
   monitor::update_cache_for_server,
@@ -45,9 +40,6 @@ impl super::MonitorResource for Server {
     let status = server_status_cache().get(&server.id).await;
     Ok(ServerListItem {
       name: server.name,
-      created_at: ObjectId::from_str(&server.id)?
-        .timestamp()
-        .timestamp_millis(),
       id: server.id,
       tags: server.tags,
       resource_type: ResourceTargetVariant::Server,

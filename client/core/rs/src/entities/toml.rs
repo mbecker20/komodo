@@ -79,9 +79,10 @@ pub struct ResourcesToml {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResourceToml<PartialConfig> {
-  ///
+  /// The resource name. Required
   pub name: String,
 
+  /// The resource description.
   #[serde(default)]
   pub description: String,
 
@@ -89,16 +90,20 @@ pub struct ResourceToml<PartialConfig> {
   #[serde(default)]
   pub tags: Vec<String>,
 
+  /// Resource specific configuration
   pub config: PartialConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserGroupToml {
+  /// User group name
   pub name: String,
 
+  /// Users in the group
   #[serde(default)]
   pub users: Vec<String>,
 
+  /// Permissions given to the group
   #[serde(default, rename = "permission")]
   pub permissions: Vec<PermissionToml>,
 }

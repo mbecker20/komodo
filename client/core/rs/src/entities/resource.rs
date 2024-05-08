@@ -28,13 +28,16 @@ pub struct Resource<Config, Info: Default = ()> {
   #[builder(setter(skip))]
   pub id: MongoId,
 
-  ///
+  /// The resource name.
+  /// This is guaranteed unique among others of the same resource type.
   pub name: String,
 
+  /// A description for the resource
   #[serde(default)]
   #[builder(default)]
   pub description: String,
 
+  /// When description last updated
   #[serde(default)]
   #[builder(setter(skip))]
   pub updated_at: I64,
@@ -44,23 +47,28 @@ pub struct Resource<Config, Info: Default = ()> {
   #[builder(default)]
   pub tags: Vec<String>,
 
+  /// Resource-specific information (not user configurable).
   #[serde(default)]
   #[builder(setter(skip))]
   pub info: Info,
 
+  /// Resource-specific configuration.
   pub config: Config,
 }
 
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ResourceListItem<Info> {
+  /// The resource id
   pub id: String,
+  /// The resource type, ie `Server` or `Deployment`
   #[serde(rename = "type")]
   pub resource_type: ResourceTargetVariant,
+  /// The resource name
   pub name: String,
-  pub created_at: I64,
   /// Tag Ids
   pub tags: Vec<String>,
+  /// Resource specific info
   pub info: Info,
 }
 

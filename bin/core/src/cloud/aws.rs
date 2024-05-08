@@ -42,7 +42,7 @@ async fn create_ec2_client(region: String) -> Client {
     &core_config().aws.secret_access_key,
   );
   let region = Region::new(region);
-  let config = aws_config::defaults(BehaviorVersion::v2023_11_09())
+  let config = aws_config::defaults(BehaviorVersion::v2024_03_28())
     .region(region)
     .load()
     .await;

@@ -1,9 +1,8 @@
-use std::str::FromStr;
-
 use anyhow::Context;
 use monitor_client::entities::{
   build::{
-    Build, BuildConfig, BuildConfigDiff, BuildInfo, BuildListItem, BuildListItemInfo, BuildQuerySpecifics, PartialBuildConfig
+    Build, BuildConfig, BuildConfigDiff, BuildInfo, BuildListItem,
+    BuildListItemInfo, BuildQuerySpecifics, PartialBuildConfig,
   },
   builder::Builder,
   permission::PermissionLevel,
@@ -12,7 +11,7 @@ use monitor_client::entities::{
   user::User,
   Operation,
 };
-use mungos::mongodb::{bson::oid::ObjectId, Collection};
+use mungos::mongodb::Collection;
 
 use crate::{
   helpers::empty_or_only_spaces,
@@ -41,9 +40,6 @@ impl super::MonitorResource for Build {
   ) -> anyhow::Result<Self::ListItem> {
     Ok(BuildListItem {
       name: build.name,
-      created_at: ObjectId::from_str(&build.id)?
-        .timestamp()
-        .timestamp_millis(),
       id: build.id,
       tags: build.tags,
       resource_type: ResourceTargetVariant::Build,

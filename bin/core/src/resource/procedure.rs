@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anyhow::anyhow;
 use monitor_client::{
   api::execute::Execution,
@@ -8,7 +6,9 @@ use monitor_client::{
     deployment::Deployment,
     permission::PermissionLevel,
     procedure::{
-      PartialProcedureConfig, Procedure, ProcedureConfig, ProcedureConfigDiff, ProcedureListItem, ProcedureListItemInfo, ProcedureQuerySpecifics
+      PartialProcedureConfig, Procedure, ProcedureConfig,
+      ProcedureConfigDiff, ProcedureListItem, ProcedureListItemInfo,
+      ProcedureQuerySpecifics,
     },
     repo::Repo,
     resource::Resource,
@@ -18,7 +18,7 @@ use monitor_client::{
     Operation,
   },
 };
-use mungos::mongodb::{bson::oid::ObjectId, Collection};
+use mungos::mongodb::Collection;
 
 use crate::state::{action_states, db_client};
 
@@ -44,9 +44,6 @@ impl super::MonitorResource for Procedure {
   ) -> anyhow::Result<Self::ListItem> {
     Ok(ProcedureListItem {
       name: procedure.name,
-      created_at: ObjectId::from_str(&procedure.id)?
-        .timestamp()
-        .timestamp_millis(),
       id: procedure.id,
       tags: procedure.tags,
       resource_type: ResourceTargetVariant::Procedure,

@@ -1,10 +1,9 @@
-use std::str::FromStr;
-
 use anyhow::Context;
 use monitor_client::entities::{
   permission::PermissionLevel,
   repo::{
-    PartialRepoConfig, Repo, RepoConfig, RepoConfigDiff, RepoInfo, RepoListItem, RepoListItemInfo, RepoQuerySpecifics
+    PartialRepoConfig, Repo, RepoConfig, RepoConfigDiff, RepoInfo,
+    RepoListItem, RepoListItemInfo, RepoQuerySpecifics,
   },
   resource::Resource,
   server::Server,
@@ -12,7 +11,7 @@ use monitor_client::entities::{
   user::User,
   Operation,
 };
-use mungos::mongodb::{bson::oid::ObjectId, Collection};
+use mungos::mongodb::Collection;
 use periphery_client::api::git::DeleteRepo;
 use serror::serialize_error_pretty;
 
@@ -45,9 +44,6 @@ impl super::MonitorResource for Repo {
   ) -> anyhow::Result<Self::ListItem> {
     Ok(RepoListItem {
       name: repo.name,
-      created_at: ObjectId::from_str(&repo.id)?
-        .timestamp()
-        .timestamp_millis(),
       id: repo.id,
       tags: repo.tags,
       resource_type: ResourceTargetVariant::Repo,

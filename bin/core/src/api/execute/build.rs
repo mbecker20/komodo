@@ -355,7 +355,7 @@ async fn get_aws_builder(
   let instance_name = format!(
     "BUILDER-{}-v{}",
     build.name,
-    build.config.version.to_string()
+    build.config.version
   );
   let Ec2Instance { instance_id, ip } = launch_ec2_instance(
     &instance_name,

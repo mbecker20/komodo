@@ -1,16 +1,17 @@
-use std::str::FromStr;
-
 use monitor_client::entities::{
   resource::Resource,
   server_template::{
-    PartialServerTemplateConfig, ServerTemplate, ServerTemplateConfig, ServerTemplateConfigDiff, ServerTemplateConfigVariant, ServerTemplateListItem, ServerTemplateListItemInfo, ServerTemplateQuerySpecifics
+    PartialServerTemplateConfig, ServerTemplate,
+    ServerTemplateConfig, ServerTemplateConfigDiff,
+    ServerTemplateConfigVariant, ServerTemplateListItem,
+    ServerTemplateListItemInfo, ServerTemplateQuerySpecifics,
   },
   update::{ResourceTargetVariant, Update},
   user::User,
   MergePartial, Operation,
 };
 use mungos::mongodb::{
-  bson::{oid::ObjectId, to_document, Document},
+  bson::{to_document, Document},
   Collection,
 };
 
@@ -45,9 +46,6 @@ impl super::MonitorResource for ServerTemplate {
     };
     Ok(ServerTemplateListItem {
       name: server_template.name,
-      created_at: ObjectId::from_str(&server_template.id)?
-        .timestamp()
-        .timestamp_millis(),
       id: server_template.id,
       tags: server_template.tags,
       resource_type: ResourceTargetVariant::ServerTemplate,
