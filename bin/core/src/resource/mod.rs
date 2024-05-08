@@ -22,7 +22,7 @@ use mungos::{
     Collection,
   },
 };
-use partial_derive2::{Diff, MaybeNone, PartialDiff};
+use partial_derive2::{Diff, FieldDiff, MaybeNone, PartialDiff};
 use resolver_api::Resolve;
 use serde::{de::DeserializeOwned, Serialize};
 use serror::serialize_error_pretty;
@@ -352,8 +352,18 @@ pub async fn update<T: MonitorResource>(
 
   T::validate_update_config(&resource.id, &mut config, user).await?;
 
-  // This minimizes the update against the existing config
+  // Gets a diff object.
   let diff = resource.config.partial_diff(config);
+
+  let mut diff_log = String::from("diff");
+
+  for FieldDiff { field, from, to } in diff.iter_field_diffs() {
+    diff_log.push_str(&format!(
+      "\n\nfield: '{field}'\nfrom: '{from}'\nto: '{to}'"
+    ));
+  }
+
+  // This minimizes the update against the existing config
   let config: T::PartialConfig = diff.into();
 
   if config.is_none() {
@@ -361,9 +371,6 @@ pub async fn update<T: MonitorResource>(
       "Partial update has no changes to database state"
     ));
   }
-
-  let config_for_log = serde_json::to_string_pretty(&config)
-    .context("failed to serialize config to json")?;
 
   let id = resource.id.clone();
 
@@ -385,7 +392,7 @@ pub async fn update<T: MonitorResource>(
     user,
   );
 
-  update.push_simple_log("update config", config_for_log);
+  update.push_simple_log("update config", diff_log);
 
   let updated = get::<T>(id_or_name).await?;
 
