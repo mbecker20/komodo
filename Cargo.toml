@@ -10,7 +10,6 @@ license = "GPL-3.0-or-later"
 
 [workspace.dependencies]
 # LOCAL
-monitor_macros = { path = "lib/macros" }
 monitor_client = { path = "client/core/rs" }
 periphery_client = { path = "client/periphery/rs" }
 logger = { path = "lib/logger" }
