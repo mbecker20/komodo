@@ -128,10 +128,10 @@ pub struct DeploymentConfig {
   /// This is interpolated at the end of the `docker run` command,
   /// which means they are either passed to the containers inner process,
   /// or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
-  /// Empty is no process args.
+  /// Empty is no command.
   #[serde(default)]
   #[builder(default)]
-  pub process_args: String,
+  pub command: String,
 
   /// Extra args which are interpolated into the `docker run` command,
   /// and affect the container configuration.

@@ -97,13 +97,13 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
                 disabled={disabled}
               />
             ),
-            process_args: (value, set) => (
-              <ConfigItem label="Process Args">
+            command: (value, set) => (
+              <ConfigItem label="Command">
                 <TextUpdateMenu
-                  title="Update Process Args"
-                  placeholder="Set Process Args"
+                  title="Update Command"
+                  placeholder="Set Command"
                   value={value}
-                  onUpdate={(process_args) => set({ process_args })}
+                  onUpdate={(command) => set({ command })}
                   triggerClassName="min-w-[300px] max-w-[400px]"
                 />
               </ConfigItem>

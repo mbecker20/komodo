@@ -6,4 +6,6 @@ Building on a machine running production software is usually not a great idea, a
 
 ### AWS builder
 
-You can choose to build on AWS on the "builder" tab on the build's page. From here you can select preconfigured AMIs to use as a base to build the image. These must be configured in the monitor core configuration along with other information like defaults to use, AWS credentials, etc. This is explained on the [core setup page](https://github.com/mbecker20/monitor/blob/main/docs/setup.md). 
+Builders are now monitor resources, and are managed via the core API / can be updated using the UI.
+To use this feature, you need an ec2 AMI with docker and monitor periphery configured to run on system start.
+Once you create your builder and add the necessary configuration, it will be available to attach to builds.

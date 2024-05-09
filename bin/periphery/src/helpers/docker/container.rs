@@ -197,7 +197,7 @@ pub async fn deploy(
       return Log::error("docker login", serialize_error_pretty(&e))
     }
   };
-  
+
   if let Err(e) = docker_login(
     &optional_string(&deployment.config.docker_account),
     &docker_token,
@@ -266,7 +266,7 @@ pub fn docker_run_command(
         volumes,
         ports,
         network,
-        process_args,
+        command,
         restart,
         environment,
         labels,
@@ -285,9 +285,9 @@ pub fn docker_run_command(
   let restart = parse_restart(restart);
   let environment = parse_environment(environment);
   let labels = parse_labels(labels);
-  let process_args = parse_process_args(process_args);
+  let command = parse_command(command);
   let extra_args = parse_extra_args(extra_args);
-  format!("docker run -d --name {name}{ports}{volumes}{network}{restart}{environment}{labels}{extra_args} {image}{process_args}")
+  format!("docker run -d --name {name}{ports}{volumes}{network}{restart}{environment}{labels}{extra_args} {image}{command}")
 }
 
 fn parse_conversions(
@@ -321,10 +321,10 @@ fn parse_restart(restart: &RestartMode) -> String {
   format!(" --restart {restart}")
 }
 
-fn parse_process_args(process_args: &String) -> String {
-  if process_args.is_empty() {
+fn parse_command(command: &str) -> String {
+  if command.is_empty() {
     String::new()
   } else {
-    format!(" {process_args}")
+    format!(" {command}")
   }
 }

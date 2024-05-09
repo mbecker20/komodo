@@ -12,7 +12,7 @@ There are 4 levels of permissions a user can have on a resource:
 
  3. **Execute**. This level will allow the user to execute actions on the resource, like send a build command or trigger a redeploy. The user will still be blocked from updating configuration on the resource.
 
- 4. **Update**. The user has full access to the resource, they can execute any actions, update the configuration, and delete the resource.
+ 4. **Write**. The user has full access to the resource, they can execute any actions, update the configuration, and delete the resource.
 
 ## Administration
 

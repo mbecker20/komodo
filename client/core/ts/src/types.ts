@@ -200,13 +200,20 @@ export interface Resource<Config, Info> {
 	 * `{ "_id": { "$oid": "..." }, ...(rest of serialized Resource<T>) }`
 	 */
 	_id?: MongoId;
-	/**  */
+	/**
+	 * The resource name.
+	 * This is guaranteed unique among others of the same resource type.
+	 */
 	name: string;
+	/** A description for the resource */
 	description?: string;
+	/** When description last updated */
 	updated_at?: I64;
 	/** Tag Ids */
 	tags?: string[];
+	/** Resource-specific information (not user configurable). */
 	info?: Info;
+	/** Resource-specific configuration. */
 	config: Config;
 }
 
@@ -225,12 +232,15 @@ export type Alerter = Resource<AlerterConfig, AlerterInfo>;
 export type GetAlerterResponse = Alerter;
 
 export interface ResourceListItem<Info> {
+	/** The resource id */
 	id: string;
+	/** The resource type, ie `Server` or `Deployment` */
 	type: ResourceTarget["type"];
+	/** The resource name */
 	name: string;
-	created_at: I64;
 	/** Tag Ids */
 	tags: string[];
+	/** Resource specific info */
 	info: Info;
 }
 
@@ -458,9 +468,9 @@ export interface DeploymentConfig {
 	 * This is interpolated at the end of the `docker run` command,
 	 * which means they are either passed to the containers inner process,
 	 * or replaces the container command, depending on use of ENTRYPOINT or CMD in dockerfile.
-	 * Empty is no process args.
+	 * Empty is no command.
 	 */
-	process_args?: string;
+	command?: string;
 	/**
 	 * Extra args which are interpolated into the `docker run` command,
 	 * and affect the container configuration.

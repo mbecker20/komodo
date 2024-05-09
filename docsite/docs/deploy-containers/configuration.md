@@ -12,7 +12,7 @@ By default, monitor will deploy the latest available version of the build, or yo
 Also by default, monitor will use the same docker account that is attached to the build in order to pull the image on the periphery server. If that account is not available on the server, you can specify another available account to use instead, this account just needs to have read access to the docker repository.
 
 ### using a custom image
-You can also manually specify an image name, like ```mongo``` or ```mbecker2020/random_image:0.1.1```.
+You can also manually specify an image name, like `mongo` or `mbecker2020/random_image:0.1.1`.
 
 If the image repository is private, you can select an available docker account to use to pull the image.
 
@@ -20,7 +20,7 @@ If the image repository is private, you can select an available docker account t
 
 One feature of docker is that it allows for the creation of [virtual networks between containers](https://docs.docker.com/network/). Monitor allows you to specify a docker virtual network to connect the container to, or to use the host system networking to bypass the docker virtual network.
 
-The default selection is ```host```, which bypasses the docker virtual network layer.
+The default selection is `host`, which bypasses the docker virtual network layer.
 
 If you do select select a network other than host, you can specify port bindings with the GUI. For example, if you are running mongo (which defaults to port 27017), you could use the mapping:
 
@@ -28,9 +28,9 @@ If you do select select a network other than host, you can specify port bindings
 27018 : 27017
 ```
 
-In this case, you would access mongo from outside of the container on port ```27018```.
+In this case, you would access mongo from outside of the container on port `27018`.
 
-Note that this is not the only affect of using a network other than ```host```. For example, containers running on different networks can not communicate, and ones on the same network can not reach other containers on ```localhost``` even when they are running on the same system. This behavior can be a bit confusing if you are not familiar with it, and it can be bypassed entirely by just using ```host``` network.
+Note that this is not the only affect of using a network other than `host`. For example, containers running on different networks can not communicate, and ones on the same network can not reach other containers on `localhost` even when they are running on the same system. This behavior can be a bit confusing if you are not familiar with it, and it can be bypassed entirely by just using `host` network.
 
 ## configuring restart behavior
 
@@ -38,7 +38,8 @@ Docker, like systemd, has a couple options for handling when a container exits. 
 
 ## configuring environment variables
 
-Monitor enables you to easily manage environment variables passed to the container. In the GUI, click the 'edit' button on the 'environment' card, this will bring up the environment menu.
+Monitor enables you to easily manage environment variables passed to the container. 
+In the GUI, navigate to the environment tab of the configuration on the deployment page.
 
 You pass environment variables just as you would with a ```.env``` file:
 
@@ -72,12 +73,12 @@ Not all features of docker are mapped directly by monitor, only the most common.
 --log-opt max-file=3
 ```
 
-## post image
+## command
 
-Sometimes you need to specify some flags to be passed directly to the application. What is put here is inserted into the docker run command after the image. For example, to pass the ```--quiet``` flag to MongoDB, the docker run command would be:
+Sometimes you need to override the default command in the image, or specify some flags to be passed directly to the application. What is put here is inserted into the docker run command after the image. For example, to pass the `--quiet` flag to MongoDB, the docker run command would be:
 
 ```
 docker run -d --name mongo-db mongo:6.0.3 --quiet
 ```
 
-In order to achieve this with monitor, just pass ```--quiet``` to 'post image'.
+In order to achieve this with monitor, just pass `--quiet` to 'command'.

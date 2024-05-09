@@ -18,9 +18,9 @@ The one exception is the Dockerfile path, which is given relative to the build d
 
 There are 3 kinds of paths to pass:
 
- 1. to specify the root of the repo, use ```.``` as the path
- 2. to specify a folder in the repo, pass it with **no** preceding ```/```. For example, ```example_folder``` or ```folder1/folder2```
- 3. to specify an absolute path on the servers filesystem, use a preceding slash, eg. ```/home/ubuntu/example```. This way should only be used if absolutely necessary, like when passing host paths when configuring docker volumes.
+ 1. to specify the root of the repo, use `.` as the path
+ 2. to specify a folder in the repo, pass it with **no** preceding `/`. For example, `example_folder` or `folder1/folder2`
+ 3. to specify an absolute path on the servers filesystem, use a preceding slash, eg. `/home/ubuntu/example`. This way should only be used if absolutely necessary, like when passing host paths when configuring docker volumes.
 
 ### implementation
 
@@ -28,4 +28,4 @@ relative file paths are joined with the path of the repo on the system using a R
 
 ## Docker Volume Paths
 
-These are passed directly to the Docker CLI using ```--volume /path/on/system:/path/in/container```. So for these, the same rules apply as when using Docker on the command line. Paths here should be given as absolute, don't use ```~``` or even ```$HOME```.
+These are passed directly to the Docker CLI using `--volume /path/on/system:/path/in/container`. So for these, the same rules apply as when using Docker on the command line. Paths here should be given as absolute, don't use `~` or even `$HOME`.

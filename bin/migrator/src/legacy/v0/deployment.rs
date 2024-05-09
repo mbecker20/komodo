@@ -369,7 +369,7 @@ impl TryFrom<Deployment>
             .collect(),
           network: value.docker_run_args.network,
           restart: value.docker_run_args.restart.into(),
-          process_args: value
+          command: value
             .docker_run_args
             .post_image
             .unwrap_or_default(),

@@ -104,7 +104,7 @@ tags = ["logging"]
 server_id = "monitor-01"
 network = "host"
 restart = "unless-stopped"
-process_args = "-server.http-listen-port=3200 -server.grpc-listen-port=9096 --storage.trace.backend=local --storage.trace.local.path=/tmp/tempo/traces --storage.trace.wal.path=/tmp/tempo/wal"
+command = "-server.http-listen-port=3200 -server.grpc-listen-port=9096 --storage.trace.backend=local --storage.trace.local.path=/tmp/tempo/traces --storage.trace.wal.path=/tmp/tempo/wal"
 extra_args = ["--user root"]
 
 [deployment.config.image]
@@ -129,7 +129,7 @@ tags = ["logging"]
 server_id = "monitor-01"
 network = "host"
 restart = "unless-stopped"
-process_args = "--config /etc/vector/*.toml"
+command = "--config /etc/vector/*.toml"
 extra_args = ["--user root"]
 
 [deployment.config.image]
