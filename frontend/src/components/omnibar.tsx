@@ -19,6 +19,7 @@ import { DeploymentComponents } from "./resources/deployment";
 import { BuildComponents } from "./resources/build";
 import { ServerComponents } from "./resources/server";
 import { ProcedureComponents } from "./resources/procedure";
+import { RepoComponents } from "./resources/repo";
 
 export const Omnibar = () => {
   const user = useUser().data;
@@ -90,6 +91,13 @@ export const Omnibar = () => {
             >
               <BuildComponents.Icon />
               Builds
+            </CommandItem>
+            <CommandItem
+              className="flex items-center gap-2 cursor-pointer"
+              onSelect={() => nav("/repos")}
+            >
+              <RepoComponents.Icon />
+              Repos
             </CommandItem>
             <CommandItem
               className="flex items-center gap-2 cursor-pointer"
