@@ -8,8 +8,7 @@ use monitor_client::{
   },
   entities::{
     procedure::{
-      PartialProcedureConfig, Procedure, ProcedureConfig,
-      ProcedureListItemInfo,
+      PartialProcedureConfig, Procedure, ProcedureConfig, ProcedureConfigDiff, ProcedureListItemInfo
     },
     resource::{Resource, ResourceListItem},
     toml::ResourceToml,
@@ -30,9 +29,10 @@ use crate::{
 use super::{ResourceSync, ToCreate, ToUpdate};
 
 impl ResourceSync for Procedure {
+  type Config = ProcedureConfig;
+  type Info = ();
   type PartialConfig = PartialProcedureConfig;
-  type FullConfig = ProcedureConfig;
-  type FullInfo = ();
+  type ConfigDiff = ProcedureConfigDiff;
   type ListItemInfo = ProcedureListItemInfo;
 
   fn display() -> &'static str {
@@ -159,14 +159,14 @@ impl ResourceSync for Procedure {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     monitor_client().read(GetProcedure { procedure: id }).await
   }
 
-  async fn minimize_update(
-    mut original: Self::FullConfig,
+  async fn get_diff(
+    mut original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig> {
+  ) -> anyhow::Result<Self::ConfigDiff> {
     for execution in &mut original.executions {
       match &mut execution.execution {
         Execution::None(_) => {}
@@ -245,6 +245,6 @@ impl ResourceSync for Procedure {
       }
     }
 
-    Ok(original.partial_diff(update).into())
+    Ok(original.partial_diff(update))
   }
 }

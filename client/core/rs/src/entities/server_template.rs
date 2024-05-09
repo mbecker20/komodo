@@ -109,10 +109,10 @@ impl
   }
 }
 
-impl MaybeNone for PartialServerTemplateConfig {
+impl MaybeNone for ServerTemplateConfigDiff {
   fn is_none(&self) -> bool {
     match self {
-      PartialServerTemplateConfig::Aws(config) => config.is_none(),
+      ServerTemplateConfigDiff::Aws(config) => config.is_none(),
     }
   }
 }

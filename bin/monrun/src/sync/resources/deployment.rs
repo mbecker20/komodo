@@ -4,8 +4,9 @@ use monitor_client::{
   api::{read::GetDeployment, write},
   entities::{
     deployment::{
-      Deployment, DeploymentConfig, DeploymentImage,
-      DeploymentListItemInfo, PartialDeploymentConfig,
+      Deployment, DeploymentConfig, DeploymentConfigDiff,
+      DeploymentImage, DeploymentListItemInfo,
+      PartialDeploymentConfig,
     },
     resource::{Resource, ResourceListItem},
     toml::ResourceToml,
@@ -22,9 +23,10 @@ use crate::{
 use super::ResourceSync;
 
 impl ResourceSync for Deployment {
+  type Config = DeploymentConfig;
+  type Info = ();
   type PartialConfig = PartialDeploymentConfig;
-  type FullConfig = DeploymentConfig;
-  type FullInfo = ();
+  type ConfigDiff = DeploymentConfigDiff;
   type ListItemInfo = DeploymentListItemInfo;
 
   fn display() -> &'static str {
@@ -68,16 +70,16 @@ impl ResourceSync for Deployment {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     monitor_client()
       .read(GetDeployment { deployment: id })
       .await
   }
 
-  async fn minimize_update(
-    mut original: Self::FullConfig,
+  async fn get_diff(
+    mut original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig> {
+  ) -> anyhow::Result<Self::ConfigDiff> {
     // need to replace the server id with name
     original.server_id = id_to_server()
       .get(&original.server_id)
@@ -97,6 +99,6 @@ impl ResourceSync for Deployment {
       };
     }
 
-    Ok(original.partial_diff(update).into())
+    Ok(original.partial_diff(update))
   }
 }

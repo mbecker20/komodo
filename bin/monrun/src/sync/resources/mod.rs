@@ -9,7 +9,7 @@ use monitor_client::{
     update::ResourceTarget,
   },
 };
-use partial_derive2::MaybeNone;
+use partial_derive2::{Diff, FieldDiff, MaybeNone, PartialDiff};
 
 use crate::{cli_args, maps::id_to_tag, monitor_client};
 
@@ -34,13 +34,17 @@ pub struct ToUpdateItem<T> {
 }
 
 pub trait ResourceSync {
+  type Config: Clone
+    + Send
+    + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
+    + 'static;
+  type Info: Default;
   type PartialConfig: std::fmt::Debug
     + Clone
     + Send
-    + MaybeNone
+    + From<Self::ConfigDiff>
     + 'static;
-  type FullConfig: Clone + Send + 'static;
-  type FullInfo: Default;
+  type ConfigDiff: Diff + MaybeNone;
   type ListItemInfo: 'static;
 
   fn display() -> &'static str;
@@ -63,14 +67,14 @@ pub trait ResourceSync {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>>;
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>>;
 
   /// Diffs the declared toml (partial) against the full existing config.
   /// Removes all fields from toml (partial) that haven't changed.
-  async fn minimize_update(
-    original: Self::FullConfig,
+  async fn get_diff(
+    original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig>;
+  ) -> anyhow::Result<Self::ConfigDiff>;
 
   async fn get_updates(
     resources: Vec<ResourceToml<Self::PartialConfig>>,
@@ -80,16 +84,16 @@ pub trait ResourceSync {
     let mut to_create = ToCreate::<Self::PartialConfig>::new();
     let mut to_update = ToUpdate::<Self::PartialConfig>::new();
 
+    let quiet = cli_args().quiet;
+
     for mut resource in resources {
       match map.get(&resource.name).map(|s| s.id.clone()) {
         Some(id) => {
           // Get the full original config for the resource.
           let original = Self::get(id.clone()).await?;
 
-          // Minimizes updates through diffing.
-          resource.config =
-            Self::minimize_update(original.config, resource.config)
-              .await?;
+          let diff =
+            Self::get_diff(original.config, resource.config).await?;
 
           let original_tags = original
             .tags
@@ -99,6 +103,38 @@ pub trait ResourceSync {
             })
             .collect::<Vec<_>>();
 
+          // Only proceed if there are any fields to update,
+          // or a change to tags / description
+          if diff.is_none()
+            && resource.description == original.description
+            && resource.tags == original_tags
+          {
+            continue;
+          }
+
+          if !quiet {
+            println!(
+              "{}: {}: {}\n{}",
+              "UPDATE".blue(),
+              Self::display(),
+              resource.name,
+              diff
+                .iter_field_diffs()
+                .map(|FieldDiff { field, from, to }| format!(
+                  "{}: {field}\n{}: {}\n{}: {to}",
+                  "field".dimmed(),
+                  "from".dimmed(),
+                  from.dimmed(),
+                  "to".dimmed(),
+                ))
+                .collect::<Vec<_>>()
+                .join("\n")
+            );
+          }
+
+          // Minimizes updates through diffing.
+          resource.config = diff.into();
+
           let update = ToUpdateItem {
             id,
             update_description: resource.description
@@ -107,74 +143,41 @@ pub trait ResourceSync {
             resource,
           };
 
-          // Only try to update if there are any fields to update,
-          // or a change to tags / description
-          if !update.resource.config.is_none()
-            || update.update_description
-            || update.update_tags
-          {
-            to_update.push(update);
-          }
+          to_update.push(update);
         }
         None => {
+          if !quiet {
+            println!(
+              "{}: {}: {}: {resource:#?}",
+              "CREATE".green(),
+              Self::display(),
+              resource.name.bold().green(),
+            )
+          }
           to_create.push(resource);
         }
       }
     }
 
-    let quiet = cli_args().quiet;
-
-    if !to_create.is_empty() {
-      if quiet {
-        println!(
-          "\n{}s {}: {:#?}",
-          Self::display(),
-          "TO CREATE".green(),
-          to_create.iter().map(|item| item.name.as_str())
-        );
-      } else {
-        println!(
-          "\n{}",
-          to_create
-            .iter()
-            .map(|r| format!(
-              "{}: {}: {}: {r:#?}",
-              "CREATE".green(),
-              Self::display(),
-              r.name.bold().green(),
-            ))
-            .collect::<Vec<_>>()
-            .join("\n\n")
-        );
-      }
+    if quiet && !to_create.is_empty() {
+      println!(
+        "\n{}s {}: {:#?}",
+        Self::display(),
+        "TO CREATE".green(),
+        to_create.iter().map(|item| item.name.as_str())
+      );
     }
 
-    if !to_update.is_empty() {
-      if quiet {
-        println!(
-          "\n{}s {}: {:#?}",
-          Self::display(),
-          "TO UPDATE".blue(),
-          to_update
-            .iter()
-            .map(|update| update.resource.name.as_str())
-            .collect::<Vec<_>>()
-        );
-      } else {
-        println!(
-          "\n{}",
-          to_update
-            .iter()
-            .map(|ToUpdateItem { resource, .. }| format!(
-              "{}: {}: {}: {resource:#?}",
-              "UPDATE".blue(),
-              Self::display(),
-              resource.name.bold().green(),
-            ))
-            .collect::<Vec<_>>()
-            .join("\n\n")
-        );
-      }
+    if quiet && !to_update.is_empty() {
+      println!(
+        "\n{}s {}: {:#?}",
+        Self::display(),
+        "TO UPDATE".blue(),
+        to_update
+          .iter()
+          .map(|update| update.resource.name.as_str())
+          .collect::<Vec<_>>()
+      );
     }
 
     Ok((to_create, to_update))
@@ -226,15 +229,13 @@ pub trait ResourceSync {
         Self::update_tags(id.clone(), &name, tags).await;
       }
 
-      if !resource.config.is_none() {
-        if let Err(e) = Self::update(id, resource).await {
-          warn!(
-            "failed to update config on {} {name} | {e:#}",
-            Self::display()
-          );
-        } else {
-          info!("updated {} {name} config", Self::display());
-        }
+      if let Err(e) = Self::update(id, resource).await {
+        warn!(
+          "failed to update config on {} {name} | {e:#}",
+          Self::display()
+        );
+      } else {
+        info!("updated {} {name} config", Self::display());
       }
 
       info!("{} {name} updated", Self::display());

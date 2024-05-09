@@ -7,7 +7,8 @@ use monitor_client::{
   },
   entities::{
     repo::{
-      PartialRepoConfig, Repo, RepoConfig, RepoInfo, RepoListItemInfo,
+      PartialRepoConfig, Repo, RepoConfig, RepoConfigDiff, RepoInfo,
+      RepoListItemInfo,
     },
     resource::{Resource, ResourceListItem},
     toml::ResourceToml,
@@ -24,9 +25,10 @@ use crate::{
 use super::ResourceSync;
 
 impl ResourceSync for Repo {
+  type Config = RepoConfig;
+  type Info = RepoInfo;
   type PartialConfig = PartialRepoConfig;
-  type FullConfig = RepoConfig;
-  type FullInfo = RepoInfo;
+  type ConfigDiff = RepoConfigDiff;
   type ListItemInfo = RepoListItemInfo;
 
   fn display() -> &'static str {
@@ -70,20 +72,20 @@ impl ResourceSync for Repo {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     monitor_client().read(GetRepo { repo: id }).await
   }
 
-  async fn minimize_update(
-    mut original: Self::FullConfig,
+  async fn get_diff(
+    mut original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig> {
+  ) -> anyhow::Result<Self::ConfigDiff> {
     // Need to replace server id with name
     original.server_id = id_to_server()
       .get(&original.server_id)
       .map(|s| s.name.clone())
       .unwrap_or_default();
 
-    Ok(original.partial_diff(update).into())
+    Ok(original.partial_diff(update))
   }
 }

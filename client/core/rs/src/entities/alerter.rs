@@ -145,11 +145,11 @@ impl PartialDiff<PartialAlerterConfig, AlerterConfigDiff>
   }
 }
 
-impl MaybeNone for PartialAlerterConfig {
+impl MaybeNone for AlerterConfigDiff {
   fn is_none(&self) -> bool {
     match self {
-      PartialAlerterConfig::Custom(config) => config.is_none(),
-      PartialAlerterConfig::Slack(config) => config.is_none(),
+      AlerterConfigDiff::Custom(config) => config.is_none(),
+      AlerterConfigDiff::Slack(config) => config.is_none(),
     }
   }
 }

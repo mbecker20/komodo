@@ -7,8 +7,7 @@ use monitor_client::{
   },
   entities::{
     alerter::{
-      Alerter, AlerterConfig, AlerterInfo, AlerterListItemInfo,
-      PartialAlerterConfig,
+      Alerter, AlerterConfig, AlerterConfigDiff, AlerterInfo, AlerterListItemInfo, PartialAlerterConfig
     },
     resource::{Resource, ResourceListItem},
     toml::ResourceToml,
@@ -22,9 +21,10 @@ use crate::{maps::name_to_alerter, monitor_client};
 use super::ResourceSync;
 
 impl ResourceSync for Alerter {
+  type Config = AlerterConfig;
+  type Info = AlerterInfo;
   type PartialConfig = PartialAlerterConfig;
-  type FullConfig = AlerterConfig;
-  type FullInfo = AlerterInfo;
+  type ConfigDiff = AlerterConfigDiff;
   type ListItemInfo = AlerterListItemInfo;
 
   fn display() -> &'static str {
@@ -68,14 +68,14 @@ impl ResourceSync for Alerter {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     monitor_client().read(GetAlerter { alerter: id }).await
   }
 
-  async fn minimize_update(
-    original: Self::FullConfig,
+  async fn get_diff(
+    original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig> {
-    Ok(original.partial_diff(update).into())
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    Ok(original.partial_diff(update))
   }
 }

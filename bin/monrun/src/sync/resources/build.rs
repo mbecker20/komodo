@@ -7,8 +7,8 @@ use monitor_client::{
   },
   entities::{
     build::{
-      Build, BuildConfig, BuildInfo, BuildListItemInfo,
-      PartialBuildConfig,
+      Build, BuildConfig, BuildConfigDiff, BuildInfo,
+      BuildListItemInfo, PartialBuildConfig,
     },
     resource::{Resource, ResourceListItem},
     toml::ResourceToml,
@@ -25,9 +25,10 @@ use crate::{
 use super::ResourceSync;
 
 impl ResourceSync for Build {
+  type Config = BuildConfig;
+  type Info = BuildInfo;
   type PartialConfig = PartialBuildConfig;
-  type FullConfig = BuildConfig;
-  type FullInfo = BuildInfo;
+  type ConfigDiff = BuildConfigDiff;
   type ListItemInfo = BuildListItemInfo;
 
   fn display() -> &'static str {
@@ -71,20 +72,20 @@ impl ResourceSync for Build {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     monitor_client().read(GetBuild { build: id }).await
   }
 
-  async fn minimize_update(
-    mut original: Self::FullConfig,
+  async fn get_diff(
+    mut original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig> {
+  ) -> anyhow::Result<Self::ConfigDiff> {
     // need to replace the builder id with name
     original.builder_id = id_to_builder()
       .get(&original.builder_id)
       .map(|b| b.name.clone())
       .unwrap_or_default();
 
-    Ok(original.partial_diff(update).into())
+    Ok(original.partial_diff(update))
   }
 }

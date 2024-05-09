@@ -8,7 +8,8 @@ use monitor_client::{
   entities::{
     resource::{Resource, ResourceListItem},
     server::{
-      PartialServerConfig, Server, ServerConfig, ServerListItemInfo,
+      PartialServerConfig, Server, ServerConfig, ServerConfigDiff,
+      ServerListItemInfo,
     },
     toml::ResourceToml,
     update::ResourceTarget,
@@ -21,10 +22,11 @@ use crate::{maps::name_to_server, monitor_client};
 use super::ResourceSync;
 
 impl ResourceSync for Server {
-  type ListItemInfo = ServerListItemInfo;
-  type FullConfig = ServerConfig;
-  type FullInfo = ();
+  type Config = ServerConfig;
+  type Info = ();
   type PartialConfig = PartialServerConfig;
+  type ConfigDiff = ServerConfigDiff;
+  type ListItemInfo = ServerListItemInfo;
 
   fn display() -> &'static str {
     "server"
@@ -67,14 +69,14 @@ impl ResourceSync for Server {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     monitor_client().read(GetServer { server: id }).await
   }
 
-  async fn minimize_update(
-    original: Self::FullConfig,
+  async fn get_diff(
+    original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig> {
-    Ok(original.partial_diff(update).into())
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    Ok(original.partial_diff(update))
   }
 }

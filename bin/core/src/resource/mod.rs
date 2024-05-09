@@ -58,8 +58,11 @@ pub trait MonitorResource {
     + DeserializeOwned
     + PartialDiff<Self::PartialConfig, Self::ConfigDiff>
     + 'static;
-  type PartialConfig: Into<Self::Config> + Serialize + MaybeNone;
-  type ConfigDiff: Into<Self::PartialConfig> + Serialize + Diff;
+  type PartialConfig: Into<Self::Config> + Serialize;
+  type ConfigDiff: Into<Self::PartialConfig>
+    + Serialize
+    + Diff
+    + MaybeNone;
   type Info: Send
     + Sync
     + Unpin
@@ -271,18 +274,23 @@ pub async fn create<T: MonitorResource>(
   mut config: T::PartialConfig,
   user: &User,
 ) -> anyhow::Result<Resource<T::Config, T::Info>> {
-  let name = to_monitor_name(name);
   if !T::user_can_create(user) {
     return Err(anyhow!(
       "User does not have permissions to create {}",
       T::resource_type()
     ));
   }
+
+  let name = to_monitor_name(name);
+
   if ObjectId::from_str(&name).is_ok() {
     return Err(anyhow!("valid ObjectIds cannot be used as names"));
   }
+
   let start_ts = monitor_timestamp();
+
   T::validate_create_config(&mut config, user).await?;
+
   let resource = Resource::<T::Config, T::Info> {
     id: Default::default(),
     name,
@@ -292,6 +300,7 @@ pub async fn create<T: MonitorResource>(
     config: config.into(),
     info: T::default_info().await?,
   };
+
   let resource_id = T::coll()
     .await
     .insert_one(&resource, None)
@@ -303,10 +312,13 @@ pub async fn create<T: MonitorResource>(
     .as_object_id()
     .context("inserted_id is not ObjectId")?
     .to_string();
+
   let resource = get::<T>(&resource_id).await?;
   let target = resource_target::<T>(resource_id);
+
   create_permission(user, target.clone(), PermissionLevel::Write)
     .await;
+
   let mut update = make_update(target, T::create_operation(), user);
   update.start_ts = start_ts;
   update.push_simple_log(
@@ -323,7 +335,9 @@ pub async fn create<T: MonitorResource>(
     serde_json::to_string_pretty(&resource.config)
       .context("failed to serialize resource config to JSON")?,
   );
+
   T::post_create(&resource, &mut update).await?;
+
   update.finalize();
   add_update(update).await?;
 
@@ -355,6 +369,10 @@ pub async fn update<T: MonitorResource>(
   // Gets a diff object.
   let diff = resource.config.partial_diff(config);
 
+  if diff.is_none() {
+    return Err(anyhow!("update has no changes"));
+  }
+
   let mut diff_log = String::from("diff");
 
   for FieldDiff { field, from, to } in diff.iter_field_diffs() {
@@ -365,12 +383,6 @@ pub async fn update<T: MonitorResource>(
 
   // This minimizes the update against the existing config
   let config: T::PartialConfig = diff.into();
-
-  if config.is_none() {
-    return Err(anyhow!(
-      "Partial update has no changes to database state"
-    ));
-  }
 
   let id = resource.id.clone();
 

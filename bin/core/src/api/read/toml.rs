@@ -259,7 +259,7 @@ impl Resolve<ExportResourcesToToml, User> for State {
       .await
       .context("failed to add user groups")?;
 
-    let toml = toml::to_string_pretty(&res)
+    let toml = toml::to_string(&res)
       .context("failed to serialize resources to toml")?;
 
     Ok(ExportResourcesToTomlResponse { toml })

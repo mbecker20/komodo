@@ -7,7 +7,7 @@ use monitor_client::{
   },
   entities::{
     builder::{
-      Builder, BuilderConfig, BuilderListItemInfo,
+      Builder, BuilderConfig, BuilderConfigDiff, BuilderListItemInfo,
       PartialBuilderConfig,
     },
     resource::{Resource, ResourceListItem},
@@ -25,9 +25,10 @@ use crate::{
 use super::ResourceSync;
 
 impl ResourceSync for Builder {
+  type Config = BuilderConfig;
+  type Info = ();
   type PartialConfig = PartialBuilderConfig;
-  type FullConfig = BuilderConfig;
-  type FullInfo = ();
+  type ConfigDiff = BuilderConfigDiff;
   type ListItemInfo = BuilderListItemInfo;
 
   fn display() -> &'static str {
@@ -71,14 +72,14 @@ impl ResourceSync for Builder {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     monitor_client().read(GetBuilder { builder: id }).await
   }
 
-  async fn minimize_update(
-    mut original: Self::FullConfig,
+  async fn get_diff(
+    mut original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig> {
+  ) -> anyhow::Result<Self::ConfigDiff> {
     // need to replace server builder id with name
     if let BuilderConfig::Server(config) = &mut original {
       config.server_id = id_to_server()
@@ -87,6 +88,6 @@ impl ResourceSync for Builder {
         .unwrap_or_default();
     }
 
-    Ok(original.partial_diff(update).into())
+    Ok(original.partial_diff(update))
   }
 }

@@ -129,11 +129,11 @@ impl PartialDiff<PartialBuilderConfig, BuilderConfigDiff>
   }
 }
 
-impl MaybeNone for PartialBuilderConfig {
+impl MaybeNone for BuilderConfigDiff {
   fn is_none(&self) -> bool {
     match self {
-      PartialBuilderConfig::Server(config) => config.is_none(),
-      PartialBuilderConfig::Aws(config) => config.is_none(),
+      BuilderConfigDiff::Server(config) => config.is_none(),
+      BuilderConfigDiff::Aws(config) => config.is_none(),
     }
   }
 }

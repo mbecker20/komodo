@@ -3,17 +3,11 @@
 name = "monitor-proxy"
 description = "An NGINX proxy for mogh.tech"
 tags = ["monitor"]
-
-[deployment.config]
-server_id = "monitor-01"
-network = "host"
-restart = "on-failure"
-
-[deployment.config.image]
-type = "Image"
-
-[deployment.config.image.params]
-image = "jc21/nginx-proxy-manager"
+deployment.config.server_id = "monitor-01"
+deployment.config.network = "host"
+deployment.config.restart = "on-failure"
+deployment.config.image.type = "Image"
+deployment.config.image.params.image = "jc21/nginx-proxy-manager"
 
 [[deployment.config.volumes]]
 local = "/data/nginx/data"

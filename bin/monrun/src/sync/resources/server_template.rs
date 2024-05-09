@@ -8,8 +8,7 @@ use monitor_client::{
   entities::{
     resource::{Resource, ResourceListItem},
     server_template::{
-      PartialServerTemplateConfig, ServerTemplate,
-      ServerTemplateConfig, ServerTemplateListItemInfo,
+      PartialServerTemplateConfig, ServerTemplate, ServerTemplateConfig, ServerTemplateConfigDiff, ServerTemplateListItemInfo
     },
     toml::ResourceToml,
     update::ResourceTarget,
@@ -22,9 +21,10 @@ use crate::{maps::name_to_server_template, monitor_client};
 use super::ResourceSync;
 
 impl ResourceSync for ServerTemplate {
+  type Config = ServerTemplateConfig;
+  type Info = ();
   type PartialConfig = PartialServerTemplateConfig;
-  type FullConfig = ServerTemplateConfig;
-  type FullInfo = ();
+  type ConfigDiff = ServerTemplateConfigDiff;
   type ListItemInfo = ServerTemplateListItemInfo;
 
   fn display() -> &'static str {
@@ -68,7 +68,7 @@ impl ResourceSync for ServerTemplate {
 
   async fn get(
     id: String,
-  ) -> anyhow::Result<Resource<Self::FullConfig, Self::FullInfo>> {
+  ) -> anyhow::Result<Resource<Self::Config, Self::Info>> {
     monitor_client()
       .read(GetServerTemplate {
         server_template: id,
@@ -76,10 +76,10 @@ impl ResourceSync for ServerTemplate {
       .await
   }
 
-  async fn minimize_update(
-    original: Self::FullConfig,
+  async fn get_diff(
+    original: Self::Config,
     update: Self::PartialConfig,
-  ) -> anyhow::Result<Self::PartialConfig> {
-    Ok(original.partial_diff(update).into())
+  ) -> anyhow::Result<Self::ConfigDiff> {
+    Ok(original.partial_diff(update))
   }
 }
