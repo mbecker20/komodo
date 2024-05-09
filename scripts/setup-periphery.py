@@ -1,12 +1,19 @@
 import sys
 import os
+import json
+import urllib.request
 
 def load_version():
-	version = "v1.0.0"
+	version = ""
 	for arg in sys.argv:
 		if arg.count("--version") > 0:
 			version = arg.split("=")[1]
+	if len(version) == 0:
+		version = load_latest_version()
 	return version
+
+def load_latest_version():
+	return json.load(urllib.request.urlopen("https://api.github.com/repos/mbecker20/monitor/releases/latest"))["tag_name"]
 
 def load_paths():
 	# Checks if setup.py is passed --user arg
