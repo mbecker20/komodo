@@ -114,23 +114,45 @@ pub trait ResourceSync {
 
           if !quiet {
             println!(
-              "\n{}: {}: '{}'\n-------------------\n{}",
+              "\n{}: {}: '{}'\n-------------------",
               "UPDATE".blue(),
               Self::display(),
               resource.name.bold(),
-              diff
-                .iter_field_diffs()
-                .map(|FieldDiff { field, from, to }| format!(
+            );
+            let mut lines = Vec::<String>::new();
+            if resource.description != original.description {
+              lines.push(format!(
+                "{}: 'description'\n{}:  {}\n{}:    {}",
+                "field".dimmed(),
+                "from".dimmed(),
+                original.description.red(),
+                "to".dimmed(),
+                resource.description.green()
+              ))
+            }
+            if resource.tags != original_tags {
+              let from = format!("{:?}", original_tags).red();
+              let to = format!("{:?}", resource.tags).green();
+              lines.push(format!(
+                "{}: 'tags'\n{}:  {from}\n{}:    {to}",
+                "field".dimmed(),
+                "from".dimmed(),
+                "to".dimmed(),
+              ));
+            }
+            lines.extend(diff.iter_field_diffs().map(
+              |FieldDiff { field, from, to }| {
+                format!(
                   "{}: '{field}'\n{}:  {}\n{}:    {}",
                   "field".dimmed(),
                   "from".dimmed(),
                   from.red(),
                   "to".dimmed(),
                   to.green()
-                ))
-                .collect::<Vec<_>>()
-                .join("\n-------------------\n")
-            );
+                )
+              },
+            ));
+            println!("{}", lines.join("\n-------------------\n"));
           }
 
           // Minimizes updates through diffing.
