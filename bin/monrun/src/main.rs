@@ -93,8 +93,8 @@ fn parse_toml_file<T: DeserializeOwned>(
   toml::from_str(&contents).context("failed to parse toml contents")
 }
 
-fn wait_for_enter(message: &str) -> anyhow::Result<()> {
-  println!("\nPress {} to {}\n", "ENTER".green(), message.bold());
+fn wait_for_enter(press_enter_to: &str) -> anyhow::Result<()> {
+  println!("\nPress {} to {}\n", "ENTER".green(), press_enter_to.bold());
   let buffer = &mut [0u8];
   std::io::stdin()
     .read_exact(buffer)

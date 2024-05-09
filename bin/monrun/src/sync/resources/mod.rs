@@ -114,21 +114,22 @@ pub trait ResourceSync {
 
           if !quiet {
             println!(
-              "{}: {}: {}\n{}",
+              "\n{}: {}: '{}'\n-------------------\n{}",
               "UPDATE".blue(),
               Self::display(),
-              resource.name,
+              resource.name.bold(),
               diff
                 .iter_field_diffs()
                 .map(|FieldDiff { field, from, to }| format!(
-                  "{}: {field}\n{}: {}\n{}: {to}",
+                  "{}: '{field}'\n{}:  {}\n{}:    {}",
                   "field".dimmed(),
                   "from".dimmed(),
-                  from.dimmed(),
+                  from.red(),
                   "to".dimmed(),
+                  to.green()
                 ))
                 .collect::<Vec<_>>()
-                .join("\n")
+                .join("\n-------------------\n")
             );
           }
 

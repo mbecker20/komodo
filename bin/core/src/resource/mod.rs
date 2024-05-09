@@ -377,7 +377,7 @@ pub async fn update<T: MonitorResource>(
 
   for FieldDiff { field, from, to } in diff.iter_field_diffs() {
     diff_log.push_str(&format!(
-      "\n\nfield: '{field}'\nfrom: '{from}'\nto: '{to}'"
+      "\n\nfield: '{field}'\nfrom:  {from}\nto:    {to}"
     ));
   }
 

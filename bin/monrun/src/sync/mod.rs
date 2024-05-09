@@ -17,6 +17,8 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
 
   let resources = resource_file::read_resources(path)?;
 
+  info!("computing sync actions...");
+
   let (server_template_creates, server_template_updates) =
     ServerTemplate::get_updates(resources.server_templates).await?;
   let (server_creates, server_updates) =
@@ -55,11 +57,11 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
     && user_group_creates.is_empty()
     && user_group_updates.is_empty()
   {
-    println!("\nNothing to do. Exiting.");
+    info!("nothing to do. exiting.");
     return Ok(());
   }
 
-  wait_for_enter("CONTINUE")?;
+  wait_for_enter("run sync")?;
 
   // No deps
   ServerTemplate::run_updates(
