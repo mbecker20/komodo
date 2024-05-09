@@ -106,6 +106,7 @@ def main():
 	version = load_version()
 	[user_install, bin_dir, config_dir, service_dir] = load_paths()
  
+	print(f'version: {version}')
 	print(f'user install: {user_install}')
 	print(f'bin dir: {bin_dir}')
 	print(f'config dir: {config_dir}')
