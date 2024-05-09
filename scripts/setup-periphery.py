@@ -51,11 +51,15 @@ def copy_binary(user_install, bin_dir, version):
 	if not os.path.isdir(bin_dir):
 		os.makedirs(bin_dir)
 
+	# delete binary if it already exists
 	bin_path = f'{bin_dir}/periphery'
 	if os.path.isfile(bin_path):
 		os.remove(bin_path)
 
+	# download the binary to bin path
 	print(os.popen(f'curl -sSL https://github.com/mbecker20/monitor/releases/download/{version}/periphery > {bin_path}').read())
+
+	# add executable permissions
 	os.popen(f'chmod +x {bin_path}')
 
 def copy_config(config_dir):
