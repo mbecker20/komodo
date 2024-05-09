@@ -11,6 +11,7 @@ import {
   Scissors,
   XOctagon,
   AreaChart,
+  Milestone,
 } from "lucide-react";
 import { Section } from "@components/layouts";
 import { RenameServer } from "./actions";
@@ -70,19 +71,27 @@ export const ServerComponents: RequiredResourceComponents = {
         </Card>
       );
     },
-    Stats: ({id}) => <Link to={`/servers/${id}/stats`}>
-      <Button variant="link" className="flex gap-2 items-center p-0">
-        <AreaChart className="w-4 h-4" />
-        Stats
-      </Button>
-    </Link>
+    Stats: ({ id }) => (
+      <Link to={`/servers/${id}/stats`}>
+        <Button variant="link" className="flex gap-2 items-center p-0">
+          <AreaChart className="w-4 h-4" />
+          Stats
+        </Button>
+      </Link>
+    ),
+    Version: ({ id }) => {
+      const version = useRead("GetPeripheryVersion", { server: id }).data
+        ?.version;
+      return (
+        <div className="flex items-center gap-2">
+          <Milestone className="w-4 h-4" />
+          {version}
+        </div>
+      );
+    },
   },
 
   Info: {
-    Version: ({id}) => {
-      const version = useRead("GetPeripheryVersion", { server: id }).data?.version
-      return <>{version}</>
-    },
     Cpu: ({ id }) => {
       const server = useServer(id);
       const core_count =
