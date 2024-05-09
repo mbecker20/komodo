@@ -35,6 +35,19 @@
 //! - [execute]: Run actions on monitor resources, eg [execute::RunBuild].
 //! - [write]: Requests which alter data, like create / update / delete resources.
 //!
+//! ## Errors
+//!
+//! Request errors will be returned with a JSON body containing information about the error.
+//! They will have the following common format:
+//! ```
+//! {
+//!   "error": "top level error message",
+//!   "trace": [
+//!     "first traceback message",
+//!     "second traceback message"
+//!   ]
+//! }
+//! ```
 
 pub mod auth;
 pub mod execute;

@@ -4,8 +4,28 @@
 //! This is a client library for the monitor core API.
 //! It contains the definitions for all application [entities]
 //! (eg. [Build][entities::build::Build], [Deployment][entities::deployment::Deployment], [Server][entities::server::Server], etc.),
-//! api requests / responses (eg. [Deploy][api::execute::Deploy], [GetBuild][api::read::GetBuild]),
-//! and usage guides.
+//! api requests / responses (eg. [Deploy][api::execute::Deploy], [GetBuild][api::read::GetBuild]), and usage guides.
+//! 
+//! ## Configuration
+//! 
+//! The client includes a convenenience method to parse the monitor url and credentials from the environment:
+//! - MONITOR_ADDRESS
+//! - MONITOR_API_KEY
+//! - MONITOR_API_SECRET
+//! 
+//! ## Example
+//! ```
+//! dotenv::dotenv().ok();
+//! 
+//! let client = MonitorClient::new_from_env()?;
+//! 
+//! // Get all the deployments
+//! let deployments = client.read(ListDeployments::default()).await?;
+//! 
+//! println!("{deployments:#?}");
+//! 
+//! let update = client.execute
+//! ```
 
 use anyhow::Context;
 use api::read::GetVersion;
