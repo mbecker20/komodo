@@ -79,6 +79,10 @@ export const ServerComponents: RequiredResourceComponents = {
   },
 
   Info: {
+    Version: ({id}) => {
+      const version = useRead("GetPeripheryVersion", { server: id }).data?.version
+      return <>{version}</>
+    },
     Cpu: ({ id }) => {
       const server = useServer(id);
       const core_count =
