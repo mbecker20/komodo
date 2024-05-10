@@ -38,7 +38,7 @@ enum Command {
   Sync {
     /// The path of the resource folder / file
     /// Folder paths will recursively incorporate all the resources it finds under the folder
-    #[arg(default_value_t = String::from("./resources"))]
+    #[arg(default_value_t = default_path())]
     path: String,
   },
 
@@ -47,6 +47,12 @@ enum Command {
     /// The path of the exec file
     path: PathBuf,
   },
+}
+
+fn default_path() -> String {
+  let home = std::env::var("HOME")
+    .expect("no HOME env var. cannot get default config path.");
+  format!("{home}/.config/monitor/creds.toml")
 }
 
 #[derive(Debug, Deserialize)]
@@ -94,7 +100,11 @@ fn parse_toml_file<T: DeserializeOwned>(
 }
 
 fn wait_for_enter(press_enter_to: &str) -> anyhow::Result<()> {
-  println!("\nPress {} to {}\n", "ENTER".green(), press_enter_to.bold());
+  println!(
+    "\nPress {} to {}\n",
+    "ENTER".green(),
+    press_enter_to.bold()
+  );
   let buffer = &mut [0u8];
   std::io::stdin()
     .read_exact(buffer)
