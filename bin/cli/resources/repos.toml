@@ -16,3 +16,22 @@ command = ""
 [repo.config.on_pull]
 path = "frontend"
 command = "sh on_pull.sh"
+
+[[repo]]
+name = "monitor-periphery"
+description = ""
+tags = ["monitor"]
+
+[repo.config]
+server_id = "monitor-01"
+repo = "mbecker20/monitor"
+branch = "main"
+github_account = ""
+
+[repo.config.on_clone]
+path = ""
+command = ""
+
+[repo.config.on_pull]
+path = "."
+command = "/root/.cargo/bin/cargo build -p monitor_periphery --release"
