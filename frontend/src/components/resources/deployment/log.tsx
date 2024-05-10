@@ -20,10 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@ui/select";
-import sanitizeHtml from "sanitize-html";
-import Convert from "ansi-to-html";
 import { Input } from "@ui/input";
 import { useToast } from "@ui/use-toast";
+import { logToHtml } from "@lib/utils";
 
 export const DeploymentLogs = ({ id }: { id: string }) => {
   const state = useDeployment(id)?.info.state;
@@ -221,20 +220,3 @@ const TailLengthSelector = ({
     </SelectContent>
   </Select>
 );
-
-const convert = new Convert();
-/**
- * Converts the ansi colors in log to html.
- * sanitizes incoming log first for any eg. script tags.
- * @param log incoming log string
- */
-const logToHtml = (log: string) => {
-  if (!log) return "No log.";
-  const sanitized = sanitizeHtml(log, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.filter(
-      (tag) => tag !== "script"
-    ),
-    allowedAttributes: sanitizeHtml.defaults.allowedAttributes,
-  });
-  return convert.toHtml(sanitized);
-};

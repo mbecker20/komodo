@@ -116,17 +116,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "25bdb32cbbdce2b519a9cd7df3a678443100e265d5e25ca763b7572a5104f5f3"
 
 [[package]]
-name = "async-recursion"
-version = "1.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b43422f69d8ff38f95f1b2bb76517c91589a924d1559a0e935d7c8ce0274c11"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.53",
-]
-
-[[package]]
 name = "async-stream"
 version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2275,7 +2264,6 @@ name = "monitor_core"
 version = "1.1.0"
 dependencies = [
  "anyhow",
- "async-recursion",
  "async-trait",
  "async_timing_util",
  "aws-config",
@@ -2283,6 +2271,7 @@ dependencies = [
  "axum 0.7.5",
  "axum-extra",
  "bcrypt",
+ "colored",
  "dotenv",
  "envy",
  "futures",

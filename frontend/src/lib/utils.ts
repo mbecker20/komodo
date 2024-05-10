@@ -1,7 +1,9 @@
 import { ResourceComponents } from "@components/resources";
 import { Types } from "@monitor/client";
 import { UsableResource } from "@types";
+import Convert from "ansi-to-html";
 import { type ClassValue, clsx } from "clsx";
+import sanitizeHtml from "sanitize-html";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -96,3 +98,20 @@ export const usableResourcePath = (resource: UsableResource) => {
   if (resource === "ServerTemplate") return "server-templates"
   return `${resource.toLowerCase()}s`
 }
+
+const convert = new Convert();
+/**
+ * Converts the ansi colors in log to html.
+ * sanitizes incoming log first for any eg. script tags.
+ * @param log incoming log string
+ */
+export const logToHtml = (log: string) => {
+  if (!log) return "No log.";
+  const sanitized = sanitizeHtml(log, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.filter(
+      (tag) => tag !== "script"
+    ),
+    allowedAttributes: sanitizeHtml.defaults.allowedAttributes,
+  });
+  return convert.toHtml(sanitized);
+};

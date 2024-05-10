@@ -38,7 +38,6 @@ tokio-util = "0.7.11"
 futures = "0.3.30"
 futures-util = "0.3.30"
 async-trait = "0.1.80"
-async-recursion = "1.1.1"
 
 # SERVER
 axum = { version = "0.7.5", features = ["ws", "json"] }

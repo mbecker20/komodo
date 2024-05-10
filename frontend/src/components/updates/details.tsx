@@ -19,7 +19,7 @@ import { useRead } from "@lib/hooks";
 import { ResourceComponents } from "@components/resources";
 import { Link } from "react-router-dom";
 import { fmt_duration, fmt_version } from "@lib/formatting";
-import { usableResourcePath, version_is_none } from "@lib/utils";
+import { logToHtml, usableResourcePath, version_is_none } from "@lib/utils";
 import { UsableResource } from "@types";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
@@ -85,9 +85,9 @@ export const UpdateDetailsInner = ({
             </div>
             <div className="flex gap-4">
               <Link
-                to={`/${usableResourcePath(update.target.type as UsableResource)}/${
-                  update.target.id
-                }`}
+                to={`/${usableResourcePath(
+                  update.target.type as UsableResource
+                )}/${update.target.id}`}
               >
                 <div
                   className="flex items-center gap-2"
@@ -146,17 +146,23 @@ export const UpdateDetailsInner = ({
                 {log.stdout && (
                   <div>
                     <CardDescription>stdout</CardDescription>
-                    <pre className="max-h-[500px] overflow-y-auto">
-                      {log.stdout}
-                    </pre>
+                    <pre
+                      dangerouslySetInnerHTML={{
+                        __html: logToHtml(log.stdout),
+                      }}
+                      className="max-h-[500px] overflow-y-auto"
+                    />
                   </div>
                 )}
                 {log.stderr && (
                   <div>
-                    <CardDescription>stdout</CardDescription>
-                    <pre className="max-h-[500px] overflow-y-auto">
-                      {log.stderr}
-                    </pre>
+                    <CardDescription>stderr</CardDescription>
+                    <pre
+                      dangerouslySetInnerHTML={{
+                        __html: logToHtml(log.stderr),
+                      }}
+                      className="max-h-[500px] overflow-y-auto"
+                    />
                   </div>
                 )}
               </CardContent>

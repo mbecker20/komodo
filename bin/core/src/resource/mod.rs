@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
+use colored::Colorize;
 use futures::future::join_all;
 use monitor_client::{
   api::write::CreateTag,
@@ -377,7 +378,12 @@ pub async fn update<T: MonitorResource>(
 
   for FieldDiff { field, from, to } in diff.iter_field_diffs() {
     diff_log.push_str(&format!(
-      "\n\nfield: '{field}'\nfrom:  {from}\nto:    {to}"
+      "\n\n{}: '{field}'\n{}:  {}\n{}:    {}",
+      "field".dimmed(),
+      "from".dimmed(),
+      from.red(),
+      "to".dimmed(),
+      to.green()
     ));
   }
 
