@@ -40,7 +40,6 @@ typeshare.workspace = true
 tracing.workspace = true
 reqwest.workspace = true
 futures.workspace = true
-colored.workspace = true
 anyhow.workspace = true
 dotenv.workspace = true
 bcrypt.workspace = true

@@ -2271,7 +2271,6 @@ dependencies = [
  "axum 0.7.5",
  "axum-extra",
  "bcrypt",
- "colored",
  "dotenv",
  "envy",
  "futures",
