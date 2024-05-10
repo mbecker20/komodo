@@ -99,6 +99,15 @@ export const usableResourcePath = (resource: UsableResource) => {
   return `${resource.toLowerCase()}s`
 }
 
+export const sanitizeOnlySpan = (log: string) => {
+  return sanitizeHtml(log, {
+    allowedTags: ["span"],
+    allowedAttributes: {
+      "span": ["class"]
+    },
+  });
+}
+
 const convert = new Convert();
 /**
  * Converts the ansi colors in log to html.

@@ -322,7 +322,7 @@ export const SystemCommand = ({
 }) => {
   return (
     <ConfigItem label={label} className="items-start">
-      <div className="grid gap-4 grid-cols-[auto_1fr] grid-rows-1 items-center">
+      <div className="grid gap-y-4 gap-x-8 grid-cols-[auto_1fr] grid-rows-1 items-center">
         Path:
         <Input
           placeholder="Command working directory"

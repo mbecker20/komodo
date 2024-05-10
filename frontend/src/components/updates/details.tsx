@@ -19,7 +19,7 @@ import { useRead } from "@lib/hooks";
 import { ResourceComponents } from "@components/resources";
 import { Link } from "react-router-dom";
 import { fmt_duration, fmt_version } from "@lib/formatting";
-import { logToHtml, usableResourcePath, version_is_none } from "@lib/utils";
+import { sanitizeOnlySpan, usableResourcePath, version_is_none } from "@lib/utils";
 import { UsableResource } from "@types";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
@@ -148,7 +148,7 @@ export const UpdateDetailsInner = ({
                     <CardDescription>stdout</CardDescription>
                     <pre
                       dangerouslySetInnerHTML={{
-                        __html: logToHtml(log.stdout),
+                        __html: sanitizeOnlySpan(log.stdout),
                       }}
                       className="max-h-[500px] overflow-y-auto"
                     />
@@ -159,7 +159,7 @@ export const UpdateDetailsInner = ({
                     <CardDescription>stderr</CardDescription>
                     <pre
                       dangerouslySetInnerHTML={{
-                        __html: logToHtml(log.stderr),
+                        __html: sanitizeOnlySpan(log.stderr),
                       }}
                       className="max-h-[500px] overflow-y-auto"
                     />
