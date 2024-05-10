@@ -89,5 +89,5 @@ aws-sdk-ec2 = "1.40.0"
 
 # MISC
 derive_builder = "0.20.0"
-colored = "2.1.0"
 typeshare = "1.0.3"
+colored = "2.1.0"

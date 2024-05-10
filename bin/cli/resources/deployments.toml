@@ -173,7 +173,7 @@ local = "/home/ubuntu/.config/monitor/dev.core.config.toml"
 container = "/config/config.toml"
 
 [[deployment.config.volumes]]
-local = "/etc/monitor/repos/monitor-dev-frontend/frontend/dist"
+local = "/data/repos/monitor-dev-frontend/frontend/dist"
 container = "/frontend"
 
 [[deployment.config.labels]]

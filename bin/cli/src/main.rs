@@ -25,11 +25,17 @@ struct CliArgs {
   #[command(subcommand)]
   command: Command,
   /// The path to a creds file.
-  #[arg(long, default_value_t = String::from("./creds.toml"))]
+  #[arg(long, default_value_t = default_creds())]
   creds: String,
   /// Log less (just resource names).
   #[arg(long, default_value_t = false)]
   quiet: bool,
+}
+
+fn default_creds() -> String {
+  let home = std::env::var("HOME")
+    .expect("no HOME env var. cannot get default config path.");
+  format!("{home}/.config/monitor/creds.toml")
 }
 
 #[derive(Debug, Clone, Subcommand)]
@@ -38,7 +44,7 @@ enum Command {
   Sync {
     /// The path of the resource folder / file
     /// Folder paths will recursively incorporate all the resources it finds under the folder
-    #[arg(default_value_t = default_path())]
+    #[arg(default_value_t = String::from("./resources"))]
     path: String,
   },
 
@@ -47,12 +53,6 @@ enum Command {
     /// The path of the exec file
     path: PathBuf,
   },
-}
-
-fn default_path() -> String {
-  let home = std::env::var("HOME")
-    .expect("no HOME env var. cannot get default config path.");
-  format!("{home}/.config/monitor/creds.toml")
 }
 
 #[derive(Debug, Deserialize)]
