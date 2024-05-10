@@ -7,7 +7,7 @@ import { Keys } from "@pages/keys";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Tree } from "@pages/home/tree";
 import { Tags } from "@pages/tags";
-import { ResourceUpdates } from "@pages/resource_update";
+import { Updates } from "@pages/updates";
 import { UsersPage } from "@pages/users";
 import { AllResources } from "@pages/home/all_resources";
 import { UserDisabled } from "@pages/user_disabled";
@@ -28,6 +28,7 @@ const ROUTER = createBrowserRouter([
       { path: "tree", element: <Tree /> },
       { path: "resources", element: <AllResources /> },
       { path: "alerts", element: <Alerts /> },
+      { path: "updates", element: <Updates /> },
       {
         path: "users",
         children: [
@@ -42,7 +43,7 @@ const ROUTER = createBrowserRouter([
           { path: "", element: <Resources /> },
           { path: ":id", element: <Resource /> },
           { path: ":id/stats", element: <ResourceStats /> },
-          { path: ":id/updates", element: <ResourceUpdates /> },
+          { path: ":id/updates", element: <Updates /> },
           { path: ":id/alerts", element: <Alerts /> },
         ],
       },

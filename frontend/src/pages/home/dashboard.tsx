@@ -14,11 +14,13 @@ import { useCheckResourceExists, useRead, useUser } from "@lib/hooks";
 import { ResourceLink } from "@components/resources/common";
 import { Fragment } from "react";
 import { usableResourcePath } from "@lib/utils";
+import { AllUpdates } from "@components/updates/resource";
 
 export const Dashboard = () => {
   return (
     <Page title="">
       <OpenAlerts />
+      <AllUpdates />
       <RecentlyViewed />
       <Resources />
     </Page>

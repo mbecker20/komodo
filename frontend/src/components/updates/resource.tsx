@@ -58,6 +58,33 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
   );
 };
 
+export const AllUpdates = () => {
+
+  const updates = useRead("ListUpdates", {}).data;
+
+  return (
+    <Section
+      title="Updates"
+      icon={<Bell className="w-4 h-4" />}
+      actions={
+        <Link
+          to="/updates"
+        >
+          <Button variant="secondary" size="icon">
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+        </Link>
+      }
+    >
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {updates?.updates.slice(0, 3).map((update) => (
+          <UpdateCard update={update} key={update.id} />
+        ))}
+      </div>
+    </Section>
+  );
+};
+
 export const ResourceUpdates = ({ type, id }: Types.ResourceTarget) => {
   const deployments = useRead("ListDeployments", {}).data;
 
