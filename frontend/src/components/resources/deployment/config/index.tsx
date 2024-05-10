@@ -15,27 +15,8 @@ import {
   TermSignalLabels,
   TerminationTimeout,
 } from "./components/term-signal";
-import { LabelsConfig, ResourceSelector } from "@components/resources/common";
+import { LabelsConfig, ServerSelector } from "@components/resources/common";
 import { TextUpdateMenu } from "@components/util";
-
-export const ServerSelector = ({
-  selected,
-  set,
-  disabled,
-}: {
-  selected: string | undefined;
-  set: (input: Partial<Types.DeploymentConfig>) => void;
-  disabled: boolean;
-}) => (
-  <ConfigItem label="Server">
-    <ResourceSelector
-      type="Server"
-      selected={selected}
-      onSelect={(server_id) => set({ server_id })}
-      disabled={disabled}
-    />
-  </ConfigItem>
-);
 
 export const DeploymentConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -97,17 +78,6 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
                 disabled={disabled}
               />
             ),
-            command: (value, set) => (
-              <ConfigItem label="Command">
-                <TextUpdateMenu
-                  title="Update Command"
-                  placeholder="Set Command"
-                  value={value}
-                  onUpdate={(command) => set({ command })}
-                  triggerClassName="min-w-[300px] max-w-[400px]"
-                />
-              </ConfigItem>
-            ),
             network: (value, set) => (
               <NetworkModeSelector
                 server_id={update.server_id ?? config.server_id}
@@ -132,6 +102,17 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
             ),
             extra_args: (value, set) => (
               <ExtraArgs args={value ?? []} set={set} disabled={disabled} />
+            ),
+            command: (value, set) => (
+              <ConfigItem label="Command">
+                <TextUpdateMenu
+                  title="Update Command"
+                  placeholder="Set custom command"
+                  value={value}
+                  onUpdate={(command) => set({ command })}
+                  triggerClassName="min-w-[300px] max-w-[400px]"
+                />
+              </ConfigItem>
             ),
           },
           settings: {

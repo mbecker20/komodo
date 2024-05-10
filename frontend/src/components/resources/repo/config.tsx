@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@ui/select";
 import { useState } from "react";
-import { CopyGithubWebhook, ResourceSelector } from "../common";
+import { CopyGithubWebhook, ServerSelector } from "../common";
 
 export const RepoConfig = ({ id }: { id: string }) => {
   const perms = useRead("GetPermissionLevel", {
@@ -34,16 +34,12 @@ export const RepoConfig = ({ id }: { id: string }) => {
       }}
       components={{
         general: {
-          general: {
-            server_id: (selected, set) => (
-              <ConfigItem label="Server">
-                <ResourceSelector
-                  type="Server"
-                  selected={selected}
-                  onSelect={(server_id) => set({ server_id })}
-                />
-              </ConfigItem>
+          "": {
+            server_id: (value, set) => (
+              <ServerSelector selected={value} set={set} disabled={disabled} />
             ),
+          },
+          general: {
             repo: true,
             branch: true,
             github_account: (value, set) => {

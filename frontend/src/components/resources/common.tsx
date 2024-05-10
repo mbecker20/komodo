@@ -325,3 +325,22 @@ export const CopyGithubWebhook = ({
     </div>
   );
 };
+
+export const ServerSelector = ({
+  selected,
+  set,
+  disabled,
+}: {
+  selected: string | undefined;
+  set: (input: Partial<Types.DeploymentConfig>) => void;
+  disabled: boolean;
+}) => (
+  <ConfigItem label="Server">
+    <ResourceSelector
+      type="Server"
+      selected={selected}
+      onSelect={(server_id) => set({ server_id })}
+      disabled={disabled}
+    />
+  </ConfigItem>
+);

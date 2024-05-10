@@ -23,7 +23,7 @@ import {
   DialogTrigger,
 } from "@ui/dialog";
 import { snake_case_to_upper_space_case } from "@lib/formatting";
-import { ConfirmButton } from "@components/util";
+import { ConfirmButton, TextUpdateMenu } from "@components/util";
 
 export const ConfigItem = ({
   label,
@@ -34,15 +34,18 @@ export const ConfigItem = ({
   children: ReactNode;
   className?: string;
 }) => (
-  <div
-    className={cn(
-      "flex justify-between items-center border-b pb-2 min-h-[60px] last:border-none last:pb-0",
-      className
-    )}
-  >
-    {label && <div>{snake_case_to_upper_space_case(label)}</div>}
-    {children}
-  </div>
+  <>
+    <div
+      className={cn(
+        "flex justify-between items-center min-h-[60px]",
+        className
+      )}
+    >
+      {label && <div>{snake_case_to_upper_space_case(label)}</div>}
+      {children}
+    </div>
+    <div className="w-full h-0 border-b last:hidden" />
+  </>
 );
 
 export const ConfigInput = ({
@@ -319,27 +322,23 @@ export const SystemCommand = ({
 }) => {
   return (
     <ConfigItem label={label} className="items-start">
-      <div className="grid gap-2">
-        <div className="flex gap-4 items-center justify-end">
-          Path:
-          <Input
-            placeholder="command working directory"
-            value={value?.path}
-            className="w-[300px]"
-            onChange={(e) => set({ ...(value || {}), path: e.target.value })}
-            disabled={disabled}
-          />
-        </div>
-        <div className="flex gap-4 items-center justify-end">
-          Command:
-          <Input
-            placeholder="shell command"
-            value={value?.command}
-            className="w-[300px]"
-            onChange={(e) => set({ ...(value || {}), command: e.target.value })}
-            disabled={disabled}
-          />
-        </div>
+      <div className="grid gap-4 grid-cols-[auto_1fr] grid-rows-1 items-center">
+        Path:
+        <Input
+          placeholder="Command working directory"
+          value={value?.path}
+          className="w-full"
+          onChange={(e) => set({ ...(value || {}), path: e.target.value })}
+          disabled={disabled}
+        />
+        Command:
+        <TextUpdateMenu
+          title="Update Command"
+          placeholder="Set shell command"
+          value={value?.command}
+          onUpdate={(command) => set({ ...(value || {}), command })}
+          triggerClassName="w-[300px]"
+        />
       </div>
     </ConfigItem>
   );
