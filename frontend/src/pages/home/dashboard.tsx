@@ -13,7 +13,7 @@ import { OpenAlerts } from "@components/alert";
 import { useCheckResourceExists, useRead, useUser } from "@lib/hooks";
 import { ResourceLink } from "@components/resources/common";
 import { Fragment } from "react";
-import { usableResourcePath } from "@lib/utils";
+import { cn, usableResourcePath } from "@lib/utils";
 import { AllUpdates } from "@components/updates/resource";
 
 export const Dashboard = () => {
@@ -67,18 +67,21 @@ const RecentlyViewed = () => {
       icon={<History className="w-4 h-4" />}
       actions=""
     >
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4">
         {recently_viewed
           ?.filter(checkResourceExists)
-          .slice(0, 6)
-          .map(({ type, id }) => (
+          .slice(0, 8)
+          .map(({ type, id }, i) => (
             <Fragment key={type + id}>
               {type !== "System" && (
                 <Card
                   onClick={() => nav(`/${usableResourcePath(type)}/${id}`)}
-                  className="px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer"
+                  className={cn(
+                    "px-3 py-2 h-fit hover:bg-accent/50 group-focus:bg-accent/50 transition-colors cursor-pointer",
+                    i > 5 && "hidden 2xl:flex"
+                  )}
                 >
-                  <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground">
+                  <CardContent className="flex items-center justify-between gap-4 px-3 py-2 text-sm text-muted-foreground w-full">
                     <ResourceLink type={type} id={id} />
                     {type}
                   </CardContent>
