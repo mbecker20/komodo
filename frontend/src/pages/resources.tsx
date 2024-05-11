@@ -1,4 +1,4 @@
-import { Page, Section } from "@components/layouts";
+import { Page } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { TagsFilter } from "@components/tags";
 import { useResourceParamType, useSetTitle } from "@lib/hooks";
@@ -30,9 +30,7 @@ export const Resources = () => {
         </div>
       }
     >
-      <Section title="">
-        <Components.Table />
-      </Section>
+      <Components.Table />
     </Page>
   );
 };

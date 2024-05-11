@@ -49,7 +49,7 @@ export const Page = ({
   actions,
   children,
 }: PageProps) => (
-  <div className="flex flex-col gap-12 container py-8">
+  <div className="flex flex-col gap-10 container py-8">
     {(title || subtitle || actions) && (
       <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 lg:items-start justify-between">
         <div className="flex flex-col gap-4">
