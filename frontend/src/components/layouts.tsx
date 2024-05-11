@@ -16,12 +16,20 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@ui/card";
 import { ResourceTags } from "./tags";
 import { Topbar } from "./topbar";
 import { usableResourcePath } from "@lib/utils";
+import { Sidebar } from "./sidebar";
 
 export const Layout = () => {
   return (
     <>
       <Topbar />
-      <Outlet />
+      <div className="flex gap-2">
+        <Sidebar />
+        <div className="w-full h-[calc(100vh-70px)] overflow-y-auto">
+          <div className="pb-24">
+            <Outlet />
+          </div>
+        </div>
+      </div>
     </>
   );
 };

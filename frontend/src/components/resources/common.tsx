@@ -284,7 +284,10 @@ export const LabelsConfig = ({
   set: (input: Partial<Types.DeploymentConfig | Types.BuildConfig>) => void;
   disabled: boolean;
 }) => (
-  <ConfigItem label="Labels" className="items-start">
+  <ConfigItem
+    label="Labels"
+    className={labels.length > 0 ? "items-start" : undefined}
+  >
     <DoubleInput
       disabled={disabled}
       values={labels}

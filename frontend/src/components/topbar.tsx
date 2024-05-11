@@ -1,4 +1,4 @@
-import { useRead, useResourceParamType } from "@lib/hooks";
+import { useRead, useResourceParamType, useUser } from "@lib/hooks";
 import { ResourceComponents } from "./resources";
 import {
   AlertTriangle,
@@ -34,7 +34,7 @@ import { UsableResource } from "@types";
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import {
   Command,
   CommandEmpty,
@@ -47,10 +47,10 @@ import { ResourceLink } from "./resources/common";
 
 export const Topbar = () => {
   return (
-    <div className="sticky top-0 border-b z-50 w-full bg-card text-card-foreground shadow">
+    <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
       <div className="container flex items-center justify-between py-4 gap-8">
         <div className="flex items-center gap-4">
-          <Link to={"/"} className="text-2xl tracking-widest">
+          <Link to={"/"} className="text-2xl tracking-widest mx-6">
             MONITOR
           </Link>
           <div className="flex gap-2">
@@ -74,6 +74,8 @@ export const Topbar = () => {
 };
 
 const PrimaryDropdown = () => {
+  const user = useUser().data;
+
   const type = useResourceParamType();
   const Components = type && ResourceComponents[type];
 
@@ -102,7 +104,7 @@ const PrimaryDropdown = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild className="lg:hidden">
         <Button
           variant="ghost"
           className="flex justify-start items-center gap-2 w-36 px-3"
@@ -113,12 +115,11 @@ const PrimaryDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-36" side="bottom">
         <DropdownMenuGroup>
-          <Link to="/">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <Home className="w-4 h-4" />
-              Home
-            </DropdownMenuItem>
-          </Link>
+          <DropdownLinkItem
+            label="Home"
+            icon={<Home className="w-4 h-4" />}
+            to="/"
+          />
 
           <DropdownMenuSeparator />
 
@@ -126,55 +127,72 @@ const PrimaryDropdown = () => {
             const RTIcon = ResourceComponents[type].Icon;
             const name = type === "ServerTemplate" ? "Template" : type;
             return (
-              <Link key={type} to={`/${usableResourcePath(type)}`}>
-                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                  <RTIcon />
-                  {name}s
-                </DropdownMenuItem>
-              </Link>
+              <DropdownLinkItem
+                key={type}
+                label={`${name}s`}
+                icon={<RTIcon />}
+                to={`/${usableResourcePath(type)}`}
+              />
             );
           })}
 
           <DropdownMenuSeparator />
 
-          <Link to="/alerts">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <AlertTriangle className="w-4 h-4" />
-              Alerts
-            </DropdownMenuItem>
-          </Link>
+          <DropdownLinkItem
+            label="Alerts"
+            icon={<AlertTriangle className="w-4 h-4" />}
+            to="/alerts"
+          />
 
-          <Link to="/updates">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <Bell className="w-4 h-4" />
-              Updates
-            </DropdownMenuItem>
-          </Link>
+          <DropdownLinkItem
+            label="Updates"
+            icon={<Bell className="w-4 h-4" />}
+            to="/updates"
+          />
 
-          <Link to="/tags">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <Tag className="w-4 h-4" />
-              Tags
-            </DropdownMenuItem>
-          </Link>
+          <DropdownLinkItem
+            label="Tags"
+            icon={<Tag className="w-4 h-4" />}
+            to="/tags"
+          />
 
           <DropdownMenuSeparator />
 
-          <Link to="/keys">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <Box className="w-4 h-4" />
-              Api Keys
-            </DropdownMenuItem>
-          </Link>
-          <Link to="/users">
-            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-              <UserCircle2 className="w-4 h-4" />
-              Users
-            </DropdownMenuItem>
-          </Link>
+          <DropdownLinkItem
+            label="Api Keys"
+            icon={<Box className="w-4 h-4" />}
+            to="/keys"
+          />
+
+          {user?.admin && (
+            <DropdownLinkItem
+              label="Users"
+              icon={<UserCircle2 className="w-4 h-4" />}
+              to="/users"
+            />
+          )}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+};
+
+const DropdownLinkItem = ({
+  label,
+  icon,
+  to,
+}: {
+  label: string;
+  icon: ReactNode;
+  to: string;
+}) => {
+  return (
+    <Link to={to}>
+      <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+        {icon}
+        {label}
+      </DropdownMenuItem>
+    </Link>
   );
 };
 
@@ -260,7 +278,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
           {selected ? selected.name : `All ${type}s`}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] max-h-[400px] p-0" sideOffset={12}>
+      <PopoverContent className="w-[300px] max-h-[400px] p-0" align="start">
         <Command>
           <CommandInput
             placeholder={`Search ${type}s`}

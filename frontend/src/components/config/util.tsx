@@ -227,7 +227,10 @@ export const InputList = <T extends { [key: string]: unknown }>({
   disabled: boolean;
   set: (update: Partial<T>) => void;
 }) => (
-  <ConfigItem label={field as string} className="items-start">
+  <ConfigItem
+    label={field as string}
+    className={values.length > 0 ? "items-start" : undefined}
+  >
     <div className="flex flex-col gap-4 w-full max-w-[400px]">
       {values.map((arg, i) => (
         <div className="w-full flex gap-4" key={i}>
@@ -242,7 +245,7 @@ export const InputList = <T extends { [key: string]: unknown }>({
           />
           {!disabled && (
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() =>
                 set({
                   [field]: [...values.filter((_, idx) => idx !== i)],
@@ -257,7 +260,7 @@ export const InputList = <T extends { [key: string]: unknown }>({
 
       {!disabled && (
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => set({ [field]: [...values, ""] } as Partial<T>)}
         >
           Add {snake_case_to_upper_space_case(field as string).slice(0, -1)}

@@ -144,7 +144,7 @@ export const Config = <T,>({
                   <CardTitle>{snake_case_to_upper_space_case(k)}</CardTitle>
                 </CardHeader>
               )}
-              <CardContent className="flex flex-col gap-4 mt-4">
+              <CardContent className="flex flex-col gap-2 mt-4">
                 <ConfigAgain
                   config={config}
                   update={update}

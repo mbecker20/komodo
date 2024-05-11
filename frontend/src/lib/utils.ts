@@ -14,11 +14,11 @@ export const object_keys = <T extends object>(o: T): (keyof T)[] =>
   Object.keys(o) as (keyof T)[];
 
 export const RESOURCE_TARGETS: UsableResource[] = [
-  "Deployment",
   "Server",
+  "Deployment",
   "Build",
-  "Procedure",
   "Repo",
+  "Procedure",
   "Builder",
   "Alerter",
   "ServerTemplate"

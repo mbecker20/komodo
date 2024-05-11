@@ -10,7 +10,10 @@ export const VolumesConfig = ({
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
 }) => (
-  <ConfigItem label="Volumes" className="items-start">
+  <ConfigItem
+    label="Volumes"
+    className={volumes.length > 0 ? "items-start" : undefined}
+  >
     <DoubleInput
       disabled={disabled}
       inputClassName="w-[300px] max-w-full"

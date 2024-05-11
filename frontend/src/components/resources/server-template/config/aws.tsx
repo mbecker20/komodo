@@ -66,7 +66,10 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
             ),
             volumes: (volumes, set) => {
               return (
-                <ConfigItem label="EBS Volumes" className="items-start">
+                <ConfigItem
+                  label="EBS Volumes"
+                  className={volumes.length > 0 ? "items-start" : undefined}
+                >
                   <div className="flex flex-col gap-4 w-full max-w-[400px]">
                     {volumes.map((_, index) => (
                       <div
@@ -81,7 +84,7 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
                         />
                         {!disabled && (
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             disabled={disabled}
                             onClick={() =>
                               set({
@@ -96,7 +99,7 @@ export const AwsServerTemplateConfig = ({ id }: { id: string }) => {
                     ))}
                     {!disabled && (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={() =>
                           set({
                             volumes: [...volumes, newVolume(volumes.length)],

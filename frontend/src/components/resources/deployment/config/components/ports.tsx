@@ -10,7 +10,10 @@ export const PortsConfig = ({
   set: (input: Partial<Types.DeploymentConfig>) => void;
   disabled: boolean;
 }) => (
-  <ConfigItem label="Ports" className="items-start">
+  <ConfigItem
+    label="Ports"
+    className={ports.length > 0 ? "items-start" : undefined}
+  >
     <DoubleInput
       disabled={disabled}
       values={ports}

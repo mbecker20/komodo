@@ -25,7 +25,10 @@ export const ExtraArgs = ({
   disabled: boolean;
 }) => {
   return (
-    <ConfigItem label="Extra Args" className="items-start">
+    <ConfigItem
+      label="Extra Args"
+      className={args.length > 0 ? "items-start" : undefined}
+    >
       <div className="flex flex-col gap-4 w-full max-w-[400px]">
         {args.map((arg, i) => (
           <div className="w-full flex gap-4" key={i}>
