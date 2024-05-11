@@ -23,6 +23,13 @@ import { sanitizeOnlySpan, usableResourcePath, version_is_none } from "@lib/util
 import { UsableResource } from "@types";
 
 export const UpdateUser = ({ user_id }: { user_id: string }) => {
+  if (user_id === "Procedure") return <>{user_id}</>;
+  if (user_id === "Github") return <>{user_id}</>;
+  if (user_id === "Auto Redeploy") return <>{user_id}</>;
+  return <RealUpdateUser user_id={user_id} />;
+};
+
+const RealUpdateUser = ({ user_id }: { user_id: string }) => {
   const username = useRead("GetUsername", { user_id }).data?.username;
   return <>{username || user_id}</>;
 };
