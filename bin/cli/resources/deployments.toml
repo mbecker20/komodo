@@ -206,7 +206,7 @@ redeploy_on_build = true
 network = "host"
 restart = "unless-stopped"
 image.type = "Build"
-image.params.build = "monitor_frontend"
+image.params.build = "monitor_frontend_dev"
 
 [[deployment.config.environment]]
 variable = "PORT"
