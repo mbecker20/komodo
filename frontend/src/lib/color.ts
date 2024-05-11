@@ -118,6 +118,42 @@ export const deployment_state_intention: (
   }
 };
 
+export const build_status_intention = (status?: Types.BuildStatus) => {
+  switch (status) {
+    case undefined:
+      return "None";
+    case Types.BuildStatus.Unknown:
+      return "Unknown";
+    case Types.BuildStatus.Ok:
+      return "Good";
+    case Types.BuildStatus.Building:
+      return "Warning";
+    case Types.BuildStatus.Failed:
+      return "Critical";
+    default:
+      return "None";
+  }
+}
+
+export const repo_status_intention = (status?: Types.RepoStatus) => {
+  switch (status) {
+    case undefined:
+      return "None";
+    case Types.RepoStatus.Unknown:
+      return "Unknown";
+    case Types.RepoStatus.Ok:
+      return "Good";
+    case Types.RepoStatus.Cloning:
+      return "Warning";
+    case Types.RepoStatus.Pulling:
+      return "Warning";
+    case Types.RepoStatus.Failed:
+      return "Critical";
+    default:
+      return "None";
+  }
+};
+
 export const alert_level_intention: (
   level: Types.SeverityLevel
 ) => ColorIntention = (level) => {

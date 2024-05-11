@@ -2,8 +2,10 @@ use std::{collections::HashSet, str::FromStr};
 
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
+  build::BuildStatus,
   deployment::{Deployment, DockerContainerState},
   permission::PermissionLevel,
+  repo::RepoStatus,
   server::{Server, ServerStatus},
   tag::Tag,
   update::ResourceTargetVariant,
@@ -15,7 +17,10 @@ use mungos::{
   mongodb::bson::{doc, oid::ObjectId, Document},
 };
 
-use crate::{resource, state::db_client};
+use crate::{
+  resource,
+  state::{action_states, db_client},
+};
 
 #[instrument(level = "debug")]
 pub async fn get_user(user_id: &str) -> anyhow::Result<User> {
@@ -197,4 +202,99 @@ pub fn id_or_name_filter(id_or_name: &str) -> Document {
     Ok(id) => doc! { "_id": id },
     Err(_) => doc! { "name": id_or_name },
   }
+}
+
+pub async fn get_build_status(id: &String) -> BuildStatus {
+  async {
+    if action_states()
+      .build
+      .get(id)
+      .await
+      .map(|s| s.get().map(|s| s.building))
+      .transpose()?
+      .unwrap_or_default()
+    {
+      return Ok(BuildStatus::Building);
+    }
+    let status = db_client()
+      .await
+      .updates
+      .find_one(
+        doc! {
+          "target.type": "Build",
+          "target.id": id,
+          "operation": "RunBuild"
+        },
+        None,
+      )
+      .await?
+      .map(|u| {
+        if u.success {
+          BuildStatus::Ok
+        } else {
+          BuildStatus::Failed
+        }
+      })
+      .unwrap_or(BuildStatus::Ok);
+    anyhow::Ok(status)
+  }
+  .await
+  .inspect_err(|e| {
+    warn!("failed to get build status for {id} | {e:#}")
+  })
+  .unwrap_or(BuildStatus::Unknown)
+}
+
+pub async fn get_repo_status(id: &String) -> RepoStatus {
+  async {
+    if let Some(status) = action_states()
+      .repo
+      .get(id)
+      .await
+      .map(|s| {
+        s.get().map(|s| {
+          if s.cloning {
+            Some(RepoStatus::Cloning)
+          } else if s.pulling {
+            Some(RepoStatus::Pulling)
+          } else {
+            None
+          }
+        })
+      })
+      .transpose()?
+      .flatten()
+    {
+      return Ok(status);
+    }
+    let status = db_client()
+      .await
+      .updates
+      .find_one(
+        doc! {
+          "target.type": "Repo",
+          "target.id": id,
+          "$or": [
+            { "operation": "CloneRepo" },
+            { "operation": "PullRepo" },
+          ],
+        },
+        None,
+      )
+      .await?
+      .map(|u| {
+        if u.success {
+          RepoStatus::Ok
+        } else {
+          RepoStatus::Failed
+        }
+      })
+      .unwrap_or(RepoStatus::Ok);
+    anyhow::Ok(status)
+  }
+  .await
+  .inspect_err(|e| {
+    warn!("failed to get repo status for {id} | {e:#}")
+  })
+  .unwrap_or(RepoStatus::Unknown)
 }

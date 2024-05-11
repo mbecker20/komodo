@@ -3,6 +3,7 @@ use derive_default_builder::DefaultBuilder;
 use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
+use strum::Display;
 use typeshare::typeshare;
 
 use crate::entities::I64;
@@ -18,9 +19,32 @@ pub type RepoListItem = ResourceListItem<RepoListItemInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RepoListItemInfo {
+  /// Repo last cloned / pulled timestamp in ms.
   pub last_pulled_at: I64,
+  /// The configured github repo
   pub repo: String,
+  /// The configured branch
   pub branch: String,
+  /// The repo status
+  pub status: RepoStatus,
+}
+
+#[typeshare]
+#[derive(
+  Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
+)]
+pub enum RepoStatus {
+  /// Last clone / pull successful (or never cloned)
+  Ok,
+  /// Last clone / pull failed
+  Failed,
+  /// Currently cloning
+  Cloning,
+  /// Currently pullling
+  Pulling,
+  /// Other case
+  #[default]
+  Unknown,
 }
 
 #[typeshare]
@@ -29,6 +53,7 @@ pub type Repo = Resource<RepoConfig, RepoInfo>;
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct RepoInfo {
+  /// When repo was last pulled
   pub last_pulled_at: I64,
 }
 

@@ -3,6 +3,7 @@ use derive_default_builder::DefaultBuilder;
 use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
 use serde::{Deserialize, Serialize};
+use strum::Display;
 use typeshare::typeshare;
 
 use crate::entities::I64;
@@ -19,7 +20,7 @@ pub type Build = Resource<BuildConfig, BuildInfo>;
 pub type BuildListItem = ResourceListItem<BuildListItemInfo>;
 
 #[typeshare]
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BuildListItemInfo {
   /// Unix timestamp in milliseconds of last build
   pub last_built_at: I64,
@@ -29,6 +30,24 @@ pub struct BuildListItemInfo {
   pub repo: String,
   /// The branch of the repo
   pub branch: String,
+  /// Status for the build
+  pub status: BuildStatus,
+}
+
+#[typeshare]
+#[derive(
+  Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
+)]
+pub enum BuildStatus {
+  /// Last build successful (or never built)
+  Ok,
+  /// Last build failed
+  Failed,
+  /// Currently building
+  Building,
+  /// Other case
+  #[default]
+  Unknown,
 }
 
 #[typeshare]

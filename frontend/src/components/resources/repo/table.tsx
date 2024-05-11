@@ -2,6 +2,7 @@ import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TagsWithBadge } from "@components/tags";
+import { RepoComponents } from ".";
 
 export const RepoTable = ({ search }: { search?: string }) => {
   const tags = useTagsFilter();
@@ -37,6 +38,15 @@ export const RepoTable = ({ search }: { search?: string }) => {
           accessorKey: "info.branch",
           header: ({ column }) => (
             <SortableHeader column={column} title="Branch" />
+          ),
+        },
+        {
+          accessorKey: "info.status",
+          header: ({ column }) => (
+            <SortableHeader column={column} title="Status" />
+          ),
+          cell: ({ row }) => (
+            <RepoComponents.Status.Status id={row.original.id} />
           ),
         },
         {

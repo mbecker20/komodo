@@ -1,8 +1,9 @@
 import { TagsWithBadge } from "@components/tags";
 import { useRead, useTagsFilter } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { fmt_date_with_minutes, fmt_version } from "@lib/formatting";
+import { fmt_version } from "@lib/formatting";
 import { ResourceLink } from "../common";
+import { BuildComponents } from ".";
 
 export const BuildTable = ({ search }: { search?: string }) => {
   const builds = useRead("ListBuilds", {}).data;
@@ -39,17 +40,13 @@ export const BuildTable = ({ search }: { search?: string }) => {
           ),
         },
         {
-          accessorKey: "info.last_built_at",
+          accessorKey: "info.status",
           header: ({ column }) => (
-            <SortableHeader column={column} title="Last Built" />
+            <SortableHeader column={column} title="Status" />
           ),
-          accessorFn: ({ info: { last_built_at } }) => {
-            if (last_built_at > 0) {
-              return fmt_date_with_minutes(new Date(last_built_at));
-            } else {
-              return "never";
-            }
-          },
+          cell: ({ row }) => (
+            <BuildComponents.Status.Status id={row.original.id} />
+          ),
         },
         {
           header: "Tags",

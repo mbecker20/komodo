@@ -7,6 +7,8 @@ import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource } from "../common";
 import { RepoTable } from "./table";
+import { bg_color_class_by_intention, repo_status_intention } from "@lib/color";
+import { cn } from "@lib/utils";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
@@ -40,7 +42,17 @@ export const RepoComponents: RequiredResourceComponents = {
 
   Icon: () => <GitBranch className="w-4 h-4" />,
 
-  Status: {},
+  Status: {
+    Status: ({ id }) => {
+      let status = useRepo(id)?.info.status;
+      const color = bg_color_class_by_intention(repo_status_intention(status));
+      return (
+        <Card className={cn("w-fit", color)}>
+          <CardHeader className="py-0 px-2">{status}</CardHeader>
+        </Card>
+      );
+    },
+  },
 
   Info: {
     Repo: ({ id }) => {

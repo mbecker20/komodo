@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anyhow::anyhow;
 use async_trait::async_trait;
 use monitor_client::{
@@ -14,7 +12,7 @@ use monitor_client::{
     Operation,
   },
 };
-use mungos::mongodb::bson::{doc, oid::ObjectId};
+use mungos::mongodb::bson::doc;
 use periphery_client::api;
 use resolver_api::Resolve;
 use serror::serialize_error_pretty;
@@ -98,20 +96,7 @@ impl Resolve<CloneRepo, User> for State {
     update.finalize();
 
     if update.success {
-      let res = db_client().await
-          .repos
-          .update_one(
-            doc! { "_id": ObjectId::from_str(&repo.id)? },
-            doc! { "$set": { "info.last_pulled_at": monitor_timestamp() } },
-            None,
-          )
-          .await;
-      if let Err(e) = res {
-        warn!(
-            "failed to update repo last_pulled_at | repo id: {} | {e:#}",
-            repo.id
-          );
-      }
+      update_last_pulled(&repo.name).await;
     }
 
     update_update(update.clone()).await?;
@@ -168,7 +153,7 @@ impl Resolve<PullRepo, User> for State {
 
     let logs = match periphery
       .request(api::git::PullRepo {
-        name: repo.name,
+        name: repo.name.clone(),
         branch: optional_string(&repo.config.branch),
         on_pull: repo.config.on_pull.into_option(),
       })
@@ -185,23 +170,27 @@ impl Resolve<PullRepo, User> for State {
     update.finalize();
 
     if update.success {
-      let res = db_client().await
-          .repos
-          .update_one(
-            doc! { "_id": ObjectId::from_str(&repo.id)? },
-            doc! { "$set": { "info.last_pulled_at": monitor_timestamp() } },
-            None,
-          )
-          .await;
-      if let Err(e) = res {
-        warn!(
-            "failed to update repo last_pulled_at | repo id: {} | {e:#}",
-            repo.id
-          );
-      }
+      update_last_pulled(&repo.name).await;
     }
 
     update_update(update.clone()).await?;
     Ok(update)
+  }
+}
+
+async fn update_last_pulled(repo_name: &str) {
+  let res = db_client()
+    .await
+    .repos
+    .update_one(
+      doc! { "name": repo_name },
+      doc! { "$set": { "info.last_pulled_at": monitor_timestamp() } },
+      None,
+    )
+    .await;
+  if let Err(e) = res {
+    warn!(
+      "failed to update repo last_pulled_at | repo: {repo_name} | {e:#}",
+    );
   }
 }

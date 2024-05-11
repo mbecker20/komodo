@@ -14,7 +14,7 @@ use monitor_client::entities::{
 use mungos::mongodb::Collection;
 
 use crate::{
-  helpers::empty_or_only_spaces,
+  helpers::{empty_or_only_spaces, query::get_build_status},
   state::{action_states, db_client},
 };
 
@@ -38,6 +38,7 @@ impl super::MonitorResource for Build {
   async fn to_list_item(
     build: Resource<Self::Config, Self::Info>,
   ) -> anyhow::Result<Self::ListItem> {
+    let status = get_build_status(&build.id).await;
     Ok(BuildListItem {
       name: build.name,
       id: build.id,
@@ -48,6 +49,7 @@ impl super::MonitorResource for Build {
         version: build.config.version,
         repo: build.config.repo,
         branch: build.config.branch,
+        status,
       },
     })
   }

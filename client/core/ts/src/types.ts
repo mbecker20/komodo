@@ -329,6 +329,17 @@ export type Build = Resource<BuildConfig, BuildInfo>;
 
 export type GetBuildResponse = Build;
 
+export enum BuildStatus {
+	/** Last build successful (or never built) */
+	Ok = "Ok",
+	/** Last build failed */
+	Failed = "Failed",
+	/** Currently building */
+	Building = "Building",
+	/** Other case */
+	Unknown = "Unknown",
+}
+
 export interface BuildListItemInfo {
 	/** Unix timestamp in milliseconds of last build */
 	last_built_at: I64;
@@ -338,6 +349,8 @@ export interface BuildListItemInfo {
 	repo: string;
 	/** The branch of the repo */
 	branch: string;
+	/** Status for the build */
+	status: BuildStatus;
 }
 
 export type BuildListItem = ResourceListItem<BuildListItemInfo>;
@@ -679,6 +692,7 @@ export interface RepoConfig {
 }
 
 export interface RepoInfo {
+	/** When repo was last pulled */
 	last_pulled_at: I64;
 }
 
@@ -686,10 +700,28 @@ export type Repo = Resource<RepoConfig, RepoInfo>;
 
 export type GetRepoResponse = Repo;
 
+export enum RepoStatus {
+	/** Last clone / pull successful (or never cloned) */
+	Ok = "Ok",
+	/** Last clone / pull failed */
+	Failed = "Failed",
+	/** Currently cloning */
+	Cloning = "Cloning",
+	/** Currently pullling */
+	Pulling = "Pulling",
+	/** Other case */
+	Unknown = "Unknown",
+}
+
 export interface RepoListItemInfo {
+	/** Repo last cloned / pulled timestamp in ms. */
 	last_pulled_at: I64;
+	/** The configured github repo */
 	repo: string;
+	/** The configured branch */
 	branch: string;
+	/** The repo status */
+	status: RepoStatus;
 }
 
 export type RepoListItem = ResourceListItem<RepoListItemInfo>;

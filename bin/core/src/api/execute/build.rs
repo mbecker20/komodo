@@ -1,4 +1,4 @@
-use std::{str::FromStr, time::Duration};
+use std::time::Duration;
 
 use anyhow::{anyhow, Context};
 use async_trait::async_trait;
@@ -23,7 +23,7 @@ use monitor_client::{
 };
 use mungos::{
   find::find_collect,
-  mongodb::bson::{doc, oid::ObjectId, to_bson},
+  mongodb::bson::{doc, to_bson},
 };
 use periphery_client::{
   api::{self, GetVersionResponse},
@@ -223,7 +223,7 @@ impl Resolve<RunBuild, User> for State {
         .await
         .builds
         .update_one(
-          doc! { "_id": ObjectId::from_str(&build.id)? },
+          doc! { "name": &build.name },
           doc! {
             "$set": {
               "config.version": to_bson(&build.config.version)
@@ -352,11 +352,8 @@ async fn get_aws_builder(
 ) -> anyhow::Result<(PeripheryClient, BuildCleanupData)> {
   let start_create_ts = monitor_timestamp();
 
-  let instance_name = format!(
-    "BUILDER-{}-v{}",
-    build.name,
-    build.config.version
-  );
+  let instance_name =
+    format!("BUILDER-{}-v{}", build.name, build.config.version);
   let Ec2Instance { instance_id, ip } = launch_ec2_instance(
     &instance_name,
     AwsServerTemplateConfig::from_builder_config(&config),

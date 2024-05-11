@@ -9,6 +9,9 @@ import { DeleteResource, NewResource } from "../common";
 import { DeploymentTable } from "../deployment/table";
 import { RunBuild } from "./actions";
 import { IconStrictId } from "./icon";
+import { bg_color_class_by_intention, build_status_intention } from "@lib/color";
+import { Card, CardHeader } from "@ui/card";
+import { cn } from "@lib/utils";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
@@ -28,7 +31,21 @@ export const BuildComponents: RequiredResourceComponents = {
     else return <Hammer className="w-4 h-4" />;
   },
 
-  Status: {},
+  Status: {
+    Status: ({ id }) => {
+      let status = useBuild(id)?.info.status;
+      const color = bg_color_class_by_intention(
+        build_status_intention(status)
+      );
+      return (
+        <Card className={cn("w-fit", color)}>
+          <CardHeader className="py-0 px-2">
+            {status}
+          </CardHeader>
+        </Card>
+      );
+    },
+  },
 
   Info: {
     Repo: ({ id }) => {
