@@ -323,7 +323,7 @@ export const CopyGithubWebhook = ({
   const url = base_url + "/listener/github" + path;
   return (
     <div className="flex gap-2 items-center">
-      <Input className="w-[400px] max-w-[70vw]" value={url} disabled />
+      <Input className="w-[400px] max-w-[70vw]" value={url} readOnly />
       <CopyButton content={url} />
     </div>
   );
