@@ -179,3 +179,35 @@ container = "/frontend"
 [[deployment.config.labels]]
 variable = "vector"
 value = "rust"
+
+## MONITOR FRONTEND
+[[deployment]]
+name = "monitor-frontend"
+description = ""
+tags = ["monitor", "frontend"]
+
+[deployment.config]
+server_id = "monitor-01"
+redeploy_on_build = true
+network = "host"
+restart = "unless-stopped"
+image.type = "Build"
+image.params.build = "monitor_frontend"
+
+## MONITOR DEV FRONTEND
+[[deployment]]
+name = "monitor-dev-frontend"
+description = ""
+tags = ["monitor", "dev", "frontend"]
+
+[deployment.config]
+server_id = "monitor-01"
+redeploy_on_build = true
+network = "host"
+restart = "unless-stopped"
+image.type = "Build"
+image.params.build = "monitor_frontend"
+
+[[deployment.config.environment]]
+variable = "PORT"
+value = "4175"

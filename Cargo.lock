@@ -2220,6 +2220,7 @@ dependencies = [
  "monitor_client",
  "partial_derive2",
  "serde",
+ "serde_json",
  "strum 0.26.2",
  "tokio",
  "toml",

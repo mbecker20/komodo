@@ -18,6 +18,10 @@ monitor_client.workspace = true
 # mogh
 partial_derive2.workspace = true
 # external
+tracing-subscriber.workspace = true
+serde_json.workspace = true
+futures.workspace = true
+tracing.workspace = true
 colored.workspace = true
 anyhow.workspace = true
 tokio.workspace = true
@@ -25,6 +29,3 @@ serde.workspace = true
 strum.workspace = true
 toml.workspace = true
 clap.workspace = true
-futures.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true

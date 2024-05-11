@@ -10,6 +10,7 @@ use monitor_client::{
   },
 };
 use partial_derive2::{Diff, FieldDiff, MaybeNone, PartialDiff};
+use serde::Serialize;
 
 use crate::{cli_args, maps::id_to_tag, monitor_client};
 
@@ -43,6 +44,7 @@ pub trait ResourceSync {
     + Clone
     + Send
     + From<Self::ConfigDiff>
+    + Serialize
     + 'static;
   type ConfigDiff: Diff + MaybeNone;
   type ListItemInfo: 'static;
@@ -171,10 +173,16 @@ pub trait ResourceSync {
         None => {
           if !quiet {
             println!(
-              "{}: {}: {}: {resource:#?}",
+              "\n{}: {}: {}\n{}: {}\n{}: {:?}\n{}: {}",
               "CREATE".green(),
               Self::display(),
               resource.name.bold().green(),
+              "description".dimmed(),
+              resource.description,
+              "tags".dimmed(),
+              resource.tags,
+              "config".dimmed(),
+              serde_json::to_string_pretty(&resource.config)?
             )
           }
           to_create.push(resource);

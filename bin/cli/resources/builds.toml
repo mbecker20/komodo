@@ -24,6 +24,40 @@ docker_account = "mbecker2020"
 build_path = "."
 dockerfile_path = "bin/core/Dockerfile"
 
+[[build]]
+name = "monitor_frontend"
+description = "standalone hosted frontend for monitor.mogh.tech"
+tags = ["monitor", "frontend"]
+
+[build.config]
+builder_id = "mogh-builder"
+repo = "mbecker20/monitor"
+branch = "main"
+docker_account = "mbecker2020"
+build_path = "."
+dockerfile_path = "frontend/Dockerfile"
+
+[[build.config.build_args]]
+variable = "VITE_MONITOR_HOST"
+value = "https://monitor.api.mogh.tech"
+
+[[build]]
+name = "monitor_frontend_dev"
+description = "standalone hosted frontend for monitor-dev.mogh.tech"
+tags = ["monitor", "frontend"]
+
+[build.config]
+builder_id = "mogh-builder"
+repo = "mbecker20/monitor"
+branch = "main"
+docker_account = "mbecker2020"
+build_path = "."
+dockerfile_path = "frontend/Dockerfile"
+
+[[build.config.build_args]]
+variable = "VITE_MONITOR_HOST"
+value = "https://monitor-dev.api.mogh.tech"
+
 ## BUILDER
 
 [[builder]]
