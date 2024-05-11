@@ -83,6 +83,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
                 <CopyGithubWebhook path={`/repo/${id}/pull`} />
               </ConfigItem>
             ),
+            webhook_enabled: true,
           },
         },
       }}

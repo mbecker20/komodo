@@ -1,3 +1,4 @@
+use derive_builder::Builder;
 use derive_default_builder::DefaultBuilder;
 use mungos::mongodb::bson::{doc, Document};
 use partial_derive2::Partial;
@@ -29,16 +30,28 @@ pub type Procedure = Resource<ProcedureConfig, ()>;
 pub type _PartialProcedureConfig = PartialProcedureConfig;
 
 #[typeshare]
-#[derive(Debug, Clone, Default, Serialize, Deserialize, Partial)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, Partial, Builder)]
 #[partial_derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[partial(skip_serializing_none, from, diff)]
 pub struct ProcedureConfig {
   /// Whether executions in the procedure runs sequentially or in parallel.
   #[serde(default)]
+  #[builder(default)]
   pub procedure_type: ProcedureType,
   /// The executions to be run by the procedure.
   #[serde(default)]
+  #[builder(default)]
   pub executions: Vec<EnabledExecution>,
+
+  /// Whether incoming webhooks actually trigger action.
+  #[serde(default = "default_webhook_enabled")]
+  #[builder(default = "default_webhook_enabled()")]
+  #[partial_default(default_webhook_enabled())]
+  pub webhook_enabled: bool,
+}
+
+fn default_webhook_enabled() -> bool {
+  true
 }
 
 #[typeshare]

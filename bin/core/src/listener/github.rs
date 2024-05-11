@@ -6,7 +6,9 @@ use hex::ToHex;
 use hmac::{Hmac, Mac};
 use monitor_client::{
   api::execute,
-  entities::{build::Build, repo::Repo, user::github_user},
+  entities::{
+    build::Build, procedure::Procedure, repo::Repo, user::github_user,
+  },
 };
 use resolver_api::Resolve;
 use serde::Deserialize;
@@ -129,6 +131,9 @@ async fn handle_build_webhook(
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
   let build = resource::get::<Build>(&build_id).await?;
+  if !build.config.webhook_enabled {
+    return Err(anyhow!("build does not have webhook enabled"));
+  }
   if request_branch != build.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
@@ -155,6 +160,9 @@ async fn handle_repo_clone_webhook(
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
   let repo = resource::get::<Repo>(&repo_id).await?;
+  if !repo.config.webhook_enabled {
+    return Err(anyhow!("repo does not have webhook enabled"));
+  }
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
@@ -181,6 +189,9 @@ async fn handle_repo_pull_webhook(
   verify_gh_signature(headers, &body).await?;
   let request_branch = extract_branch(&body)?;
   let repo = resource::get::<Repo>(&repo_id).await?;
+  if !repo.config.webhook_enabled {
+    return Err(anyhow!("repo does not have webhook enabled"));
+  }
   if request_branch != repo.config.branch {
     return Err(anyhow!("request branch does not match expected"));
   }
@@ -210,6 +221,10 @@ async fn handle_procedure_webhook(
   let request_branch = extract_branch(&body)?;
   if request_branch != target_branch {
     return Err(anyhow!("request branch does not match expected"));
+  }
+  let procedure = resource::get::<Procedure>(&procedure_id).await?;
+  if !procedure.config.webhook_enabled {
+    return Err(anyhow!("procedure does not have webhook enabled"));
   }
   State
     .resolve(

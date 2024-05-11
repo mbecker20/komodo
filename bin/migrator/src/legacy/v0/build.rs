@@ -230,6 +230,7 @@ impl TryFrom<Build> for monitor_client::entities::build::Build {
         extra_args,
         use_buildx,
         labels: Default::default(),
+        webhook_enabled: true,
       },
     };
     Ok(build)

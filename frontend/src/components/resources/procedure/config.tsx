@@ -210,6 +210,57 @@ const ProcedureConfigInner = ({
               {
                 header: "Modify",
                 cell: ({ row }) => {
+                  const on_move_up = () =>
+                    setConfig({
+                      ...config,
+                      executions: executions.map((item, i) => {
+                        // Make sure its not the first row
+                        if (i === row.index && row.index !== 0) {
+                          return executions[row.index - 1];
+                        } else if (i === row.index - 1) {
+                          // Reverse the entry, moving this row "Up"
+                          return executions[row.index];
+                        } else {
+                          return item;
+                        }
+                      }),
+                    });
+                  const on_move_down = () =>
+                    setConfig({
+                      ...config,
+                      executions: executions.map((item, i) => {
+                        // The index also cannot be the last index, which cannot be moved down
+                        if (
+                          i === row.index &&
+                          row.index !== executions.length - 1
+                        ) {
+                          return executions[row.index + 1];
+                        } else if (i === row.index + 1) {
+                          // Move the row "Down"
+                          return executions[row.index];
+                        } else {
+                          return item;
+                        }
+                      }),
+                    });
+                  const on_insert_above = () =>
+                    setConfig({
+                      ...config,
+                      executions: [
+                        ...executions.slice(0, row.index),
+                        default_enabled_execution(),
+                        ...executions.slice(row.index),
+                      ],
+                    });
+                  const on_insert_below = () =>
+                    setConfig({
+                      ...config,
+                      executions: [
+                        ...executions.slice(0, row.index + 1),
+                        default_enabled_execution(),
+                        ...executions.slice(row.index + 1),
+                      ],
+                    });
                   return (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild disabled={disabled}>
@@ -228,22 +279,7 @@ const ProcedureConfigInner = ({
                         {row.index ? (
                           <DropdownMenuItem
                             className="flex gap-4 justify-between cursor-pointer"
-                            onClick={() =>
-                              setConfig({
-                                ...config,
-                                executions: executions.map((item, i) => {
-                                  // Make sure its not the first row
-                                  if (i === row.index && row.index !== 0) {
-                                    return executions[row.index - 1];
-                                  } else if (i === row.index - 1) {
-                                    // Reverse the entry, moving this row "Up"
-                                    return executions[row.index];
-                                  } else {
-                                    return item;
-                                  }
-                                }),
-                              })
-                            }
+                            onClick={on_move_up}
                           >
                             Move Up <ArrowUp className="w-4 h-4" />
                           </DropdownMenuItem>
@@ -251,25 +287,7 @@ const ProcedureConfigInner = ({
                         {row.index < executions.length - 1 && (
                           <DropdownMenuItem
                             className="flex gap-4 justify-between cursor-pointer"
-                            onClick={() =>
-                              setConfig({
-                                ...config,
-                                executions: executions.map((item, i) => {
-                                  // The index also cannot be the last index, which cannot be moved down
-                                  if (
-                                    i === row.index &&
-                                    row.index !== executions.length - 1
-                                  ) {
-                                    return executions[row.index + 1];
-                                  } else if (i === row.index + 1) {
-                                    // Move the row "Down"
-                                    return executions[row.index];
-                                  } else {
-                                    return item;
-                                  }
-                                }),
-                              })
-                            }
+                            onClick={on_move_down}
                           >
                             Move Down <ArrowDown className="w-4 h-4" />
                           </DropdownMenuItem>
@@ -277,16 +295,7 @@ const ProcedureConfigInner = ({
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="flex gap-4 justify-between cursor-pointer"
-                          onClick={() =>
-                            setConfig({
-                              ...config,
-                              executions: [
-                                ...executions.slice(0, row.index),
-                                default_enabled_execution(),
-                                ...executions.slice(row.index),
-                              ],
-                            })
-                          }
+                          onClick={on_insert_above}
                         >
                           Insert Above{" "}
                           <div className="flex">
@@ -296,16 +305,7 @@ const ProcedureConfigInner = ({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="flex gap-4 justify-between cursor-pointer"
-                          onClick={() =>
-                            setConfig({
-                              ...config,
-                              executions: [
-                                ...executions.slice(0, row.index + 1),
-                                default_enabled_execution(),
-                                ...executions.slice(row.index + 1),
-                              ],
-                            })
-                          }
+                          onClick={on_insert_below}
                         >
                           Insert Below{" "}
                           <div className="flex">
@@ -356,6 +356,18 @@ const ProcedureConfigInner = ({
                 <CopyGithubWebhook
                   path={`/procedure/${procedure._id?.$oid!}/${branch}`}
                 />
+                <div className="flex items-center justify-end gap-4 w-full">
+                  <div className="text-muted-foreground">
+                    Enabled:
+                  </div>
+                  <Switch
+                    checked={procedure.config.webhook_enabled}
+                    onCheckedChange={(webhook_enabled) =>
+                      setConfig({ ...config, webhook_enabled })
+                    }
+                    disabled={disabled}
+                  />
+                </div>
               </div>
             </ConfigItem>
           </CardHeader>

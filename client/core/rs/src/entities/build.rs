@@ -128,6 +128,12 @@ pub struct BuildConfig {
   #[serde(default)]
   #[builder(default)]
   pub use_buildx: bool,
+
+  /// Whether incoming webhooks actually trigger action.
+  #[serde(default = "default_webhook_enabled")]
+  #[builder(default = "default_webhook_enabled()")]
+  #[partial_default(default_webhook_enabled())]
+  pub webhook_enabled: bool,
 }
 
 impl BuildConfig {
@@ -146,6 +152,10 @@ fn default_build_path() -> String {
 
 fn default_dockerfile_path() -> String {
   String::from("Dockerfile")
+}
+
+fn default_webhook_enabled() -> bool {
+  true
 }
 
 #[typeshare]

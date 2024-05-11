@@ -74,6 +74,12 @@ pub struct RepoConfig {
   #[serde(default)]
   #[builder(default)]
   pub on_pull: SystemCommand,
+
+  /// Whether incoming webhooks actually trigger action.
+  #[serde(default = "default_webhook_enabled")]
+  #[builder(default = "default_webhook_enabled()")]
+  #[partial_default(default_webhook_enabled())]
+  pub webhook_enabled: bool,
 }
 
 impl RepoConfig {
@@ -84,6 +90,10 @@ impl RepoConfig {
 
 fn default_branch() -> String {
   String::from("main")
+}
+
+fn default_webhook_enabled() -> bool {
+  true
 }
 
 #[typeshare]
