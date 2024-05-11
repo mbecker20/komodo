@@ -5,11 +5,10 @@ import { toast } from "@ui/use-toast";
 import { atom, useAtom } from "jotai";
 import { Circle } from "lucide-react";
 import { ReactNode, useCallback, useEffect } from "react";
-import Rws from "reconnecting-websocket";
 import { cn } from "@lib/utils";
 import { AUTH_TOKEN_STORAGE_KEY } from "@main";
 
-const rws_atom = atom<Rws | null>(null);
+const rws_atom = atom<WebSocket | null>(null);
 const useWebsocket = () => useAtom(rws_atom);
 
 const ws_connected = atom(false);
@@ -103,13 +102,6 @@ const on_message = (
   }
 };
 
-const on_open = (ws: Rws | null) => {
-  const jwt = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
-  if (!ws || !jwt) return;
-  const msg: Types.WsLoginMessage = { type: "Jwt", params: { jwt } };
-  if (jwt && ws) ws.send(JSON.stringify(msg));
-};
-
 export const WebsocketProvider = ({
   url,
   children,
@@ -118,38 +110,28 @@ export const WebsocketProvider = ({
   children: ReactNode;
 }) => {
   const invalidate = useInvalidate();
-  const [ws, set] = useWebsocket();
-  const setConnected = useWebsocketConnected()[1];
+  const [_, set] = useWebsocket();
+  const [connected, setConnected] = useWebsocketConnected();
 
-  const on_open_fn = useCallback(() => {
-    on_open(ws);
-    setConnected(true);
-  }, [ws, setConnected]);
   const on_message_fn = useCallback(
     (e: MessageEvent) => on_message(e, invalidate),
     [invalidate]
   );
-  const on_close_fn = useCallback(() => {
-    setConnected(false);
-  }, [setConnected]);
 
   useEffect(() => {
-    if (!ws) set(new Rws(url));
-    return () => {
-      ws?.close();
-    };
-  }, [set, url, ws]);
-
-  useEffect(() => {
-    ws?.addEventListener("open", on_open_fn);
-    ws?.addEventListener("message", on_message_fn);
-    ws?.addEventListener("close", on_close_fn);
-    return () => {
-      ws?.removeEventListener("open", on_open_fn);
-      ws?.removeEventListener("message", on_message_fn);
-      ws?.removeEventListener("close", on_close_fn);
-    };
-  }, [on_message_fn, on_open_fn, on_close_fn, ws]);
+    if (!connected) {
+      const ws = make_websocket(
+        url,
+        () => setConnected(true),
+        on_message_fn,
+        () => {
+          console.log("ws closed");
+          setConnected(false);
+        }
+      );
+      set(ws);
+    }
+  }, [set, url, connected]);
 
   return <>{children}</>;
 };
@@ -176,4 +158,35 @@ export const WsStatusIndicator = () => {
       />
     </Button>
   );
+};
+
+const make_websocket = (
+  url: string,
+  on_open: () => void,
+  on_message: (e: MessageEvent) => void,
+  on_close: () => void
+) => {
+  console.log("init websocket");
+  const ws = new WebSocket(url);
+
+  ws.addEventListener("open", on_open);
+  ws.addEventListener("message", on_message);
+  ws.addEventListener("close", on_close);
+
+  const _on_open = () => {
+    const jwt = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY);
+    if (!ws || !jwt) return;
+    const msg: Types.WsLoginMessage = { type: "Jwt", params: { jwt } };
+    if (jwt && ws) ws.send(JSON.stringify(msg));
+    on_open();
+  };
+
+  ws?.addEventListener("open", _on_open);
+  ws?.addEventListener("message", on_message);
+  ws?.addEventListener("close", on_close);
+
+  // force close every 30s to trigger reconnect and keep fresh
+  setTimeout(() => ws.close(), 30_000);
+
+  return ws
 };
