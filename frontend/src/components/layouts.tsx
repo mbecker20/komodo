@@ -37,6 +37,7 @@ export const Layout = () => {
 interface PageProps {
   title?: ReactNode;
   titleRight?: ReactNode;
+  titleOther?: ReactNode;
   children?: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
@@ -45,6 +46,7 @@ interface PageProps {
 export const Page = ({
   title,
   titleRight,
+  titleOther,
   subtitle,
   actions,
   children,
@@ -62,26 +64,28 @@ export const Page = ({
         {actions}
       </div>
     )}
+    {titleOther}
     {children}
   </div>
 );
 
 interface SectionProps {
   title?: ReactNode;
-  children?: ReactNode;
   icon?: ReactNode;
+  titleOther?: ReactNode;
+  children?: ReactNode;
   actions?: ReactNode;
 }
 
-export const Section = ({ title, icon, actions, children }: SectionProps) => (
+export const Section = ({ title, icon, titleOther, actions, children }: SectionProps) => (
   <div className="flex flex-col gap-4">
     <div className="flex items-start justify-between">
-      {(title || icon) && (
+      {(title || icon) ? (
         <div className="flex items-center gap-2 text-muted-foreground">
           {icon}
-          <h2 className="text-xl">{title}</h2>
+          {title && <h2 className="text-xl">{title}</h2>}
         </div>
-      )}
+      ) : titleOther}
       {actions}
     </div>
     {children}

@@ -4,7 +4,6 @@ import { RequiredResourceComponents } from "@types";
 import { HardDrive, Rocket } from "lucide-react";
 import { cn } from "@lib/utils";
 import { useServer } from "../server";
-import { DeploymentConfig } from "./config";
 import {
   DeployContainer,
   StartOrStopContainer,
@@ -24,11 +23,72 @@ import { DeploymentsChart } from "./dashboard";
 import { NewResource, ResourceLink } from "../common";
 import { Card, CardHeader } from "@ui/card";
 import { RunBuild } from "../build/actions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ui/tabs";
+import { DeploymentConfig } from "./config";
+import { atomWithStorage } from "jotai/utils";
+import { useAtom } from "jotai";
+
+const configOrLog = atomWithStorage("config-or-log-v1", "Config");
 
 export const useDeployment = (id?: string) =>
   useRead("ListDeployments", {}, { refetchInterval: 5000 }).data?.find(
     (d) => d.id === id
   );
+
+const ConfigOrLog = ({ id }: { id: string }) => {
+  const [view, setView] = useAtom(configOrLog);
+  const state = useDeployment(id)?.info.state;
+  const logsDisabled =
+    state === undefined ||
+    state === Types.DockerContainerState.Unknown ||
+    state === Types.DockerContainerState.NotDeployed;
+  return (
+    <Tabs
+      value={logsDisabled ? "Config" : view}
+      onValueChange={setView}
+      className="grid gap-4"
+    >
+      <TabsContent value="Config">
+        <DeploymentConfig
+          id={id}
+          titleOther={
+            <TabsList className="justify-start w-fit">
+              <TabsTrigger value="Config" className="w-[70px]">
+                Config
+              </TabsTrigger>
+              <TabsTrigger
+                value="Log"
+                className="w-[70px]"
+                disabled={logsDisabled}
+              >
+                Log
+              </TabsTrigger>
+            </TabsList>
+          }
+        />
+      </TabsContent>
+      <TabsContent value="Log">
+        <DeploymentLogs
+          id={id}
+          titleOther={
+            <TabsList className="justify-start w-fit">
+              <TabsTrigger value="Config" className="w-[70px]">
+                Config
+              </TabsTrigger>
+              <TabsTrigger
+                value="Log"
+                className="w-[70px]"
+                disabled={logsDisabled}
+              >
+                Log
+              </TabsTrigger>
+            </TabsList>
+          }
+        />
+      </TabsContent>
+    </Tabs>
+  );
+};
 
 export const DeploymentComponents: RequiredResourceComponents = {
   Dashboard: DeploymentsChart,
@@ -106,9 +166,9 @@ export const DeploymentComponents: RequiredResourceComponents = {
     RemoveContainer,
   },
 
-  Page: { DeploymentLogs },
+  Page: {},
 
-  Config: DeploymentConfig,
+  Config: ConfigOrLog,
 
   DangerZone: ({ id }) => (
     <>

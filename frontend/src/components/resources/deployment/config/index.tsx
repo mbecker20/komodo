@@ -1,6 +1,6 @@
 import { useRead, useWrite } from "@lib/hooks";
 import { Types } from "@monitor/client";
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { AccountSelector, ConfigItem } from "@components/config/util";
 import { ImageConfig } from "./components/image";
 import { RestartModeSelector } from "./components/restart";
@@ -18,7 +18,7 @@ import {
 import { LabelsConfig, ServerSelector } from "@components/resources/common";
 import { TextUpdateMenu } from "@components/util";
 
-export const DeploymentConfig = ({ id }: { id: string }) => {
+export const DeploymentConfig = ({ id, titleOther }: { id: string; titleOther: ReactNode }) => {
   const perms = useRead("GetPermissionLevel", {
     target: { type: "Deployment", id },
   }).data;
@@ -38,6 +38,7 @@ export const DeploymentConfig = ({ id }: { id: string }) => {
 
   return (
     <Config
+      titleOther={titleOther}
       disabled={disabled}
       config={config}
       update={update}

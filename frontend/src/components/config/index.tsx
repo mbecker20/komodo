@@ -30,6 +30,7 @@ export const ConfigLayout = <
   onConfirm,
   onReset,
   selector,
+  titleOther,
 }: {
   config: Partial<T>;
   children: ReactNode;
@@ -37,33 +38,38 @@ export const ConfigLayout = <
   onConfirm: () => void;
   onReset: () => void;
   selector?: ReactNode;
-}) => (
-  <Section
-    title="Config"
-    icon={<Settings className="w-4 h-4" />}
-    actions={
-      <div className="flex gap-2">
-        {selector}
-        <Button
-          variant="outline"
-          onClick={onReset}
-          disabled={disabled || (config ? !Object.keys(config).length : true)}
-        >
-          <History className="w-4 h-4" />
-        </Button>
-        {Object.keys(config).length ? (
-          <ConfirmUpdate
-            content={JSON.stringify(config, null, 2)}
-            onConfirm={onConfirm}
-            disabled={disabled}
-          />
-        ) : null}
-      </div>
-    }
-  >
-    {children}
-  </Section>
-);
+  titleOther?: ReactNode;
+}) => {
+  const titleProps = titleOther
+    ? { titleOther }
+    : { title: "Config", icon: <Settings className="w-4 h-4" /> };
+  return (
+    <Section
+      {...titleProps}
+      actions={
+        <div className="flex gap-2">
+          {selector}
+          <Button
+            variant="outline"
+            onClick={onReset}
+            disabled={disabled || (config ? !Object.keys(config).length : true)}
+          >
+            <History className="w-4 h-4" />
+          </Button>
+          {Object.keys(config).length ? (
+            <ConfirmUpdate
+              content={JSON.stringify(config, null, 2)}
+              onConfirm={onConfirm}
+              disabled={disabled}
+            />
+          ) : null}
+        </div>
+      }
+    >
+      {children}
+    </Section>
+  );
+};
 
 export const Config = <T,>({
   config,
@@ -73,6 +79,7 @@ export const Config = <T,>({
   onSave,
   components,
   selector,
+  titleOther,
 }: {
   config: T;
   update: Partial<T>;
@@ -80,6 +87,7 @@ export const Config = <T,>({
   set: React.Dispatch<SetStateAction<Partial<T>>>;
   onSave: () => Promise<void>;
   selector?: ReactNode;
+  titleOther?: ReactNode;
   components: Record<
     string,
     Record<
@@ -96,6 +104,7 @@ export const Config = <T,>({
 
   return (
     <ConfigLayout
+      titleOther={titleOther}
       config={update}
       disabled={disabled}
       onConfirm={async () => {
