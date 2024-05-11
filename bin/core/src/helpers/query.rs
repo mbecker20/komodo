@@ -14,7 +14,10 @@ use monitor_client::entities::{
 use mungos::{
   by_id::find_one_by_id,
   find::find_collect,
-  mongodb::bson::{doc, oid::ObjectId, Document},
+  mongodb::{
+    bson::{doc, oid::ObjectId, Document},
+    options::FindOneOptions,
+  },
 };
 
 use crate::{
@@ -225,7 +228,9 @@ pub async fn get_build_status(id: &String) -> BuildStatus {
           "target.id": id,
           "operation": "RunBuild"
         },
-        None,
+        FindOneOptions::builder()
+          .sort(doc! { "start_ts": -1 })
+          .build(),
       )
       .await?
       .map(|u| {
@@ -279,7 +284,9 @@ pub async fn get_repo_status(id: &String) -> RepoStatus {
             { "operation": "PullRepo" },
           ],
         },
-        None,
+        FindOneOptions::builder()
+          .sort(doc! { "start_ts": -1 })
+          .build(),
       )
       .await?
       .map(|u| {
