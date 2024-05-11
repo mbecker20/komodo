@@ -50,7 +50,7 @@ export const Topbar = () => {
     <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
       <div className="w-full flex items-center justify-between p-4 gap-8">
         <div className="flex items-center gap-4">
-          <Link to={"/"} className="text-2xl tracking-widest mx-6">
+          <Link to={"/"} className="text-2xl tracking-widest mx-8">
             MONITOR
           </Link>
           <div className="flex gap-2">
