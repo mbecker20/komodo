@@ -1,5 +1,8 @@
 #!/bin/sh
 
+## Unlink any previous yarn links
+yarn unlink --all
+
 ## Install, build, and setup yarn link on client.
 yarn build-client
 
