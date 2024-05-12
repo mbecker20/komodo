@@ -59,7 +59,7 @@ export const bg_color_class_by_intention = (intention: ColorIntention) => {
     case "Neutral":
       return "bg-blue-400 dark:bg-blue-700";
     case "Warning":
-      return "bg-orange-400 dark:bg-orange-700";
+      return "bg-orange-400 dark:bg-orange-500";
     case "Critical":
       return "bg-red-400 dark:bg-red-700";
     case "Unknown":
