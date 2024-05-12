@@ -11,7 +11,7 @@ use monitor_client::{
     all_logs_success,
     build::Build,
     builder::{AwsBuilderConfig, Builder, BuilderConfig},
-    deployment::DockerContainerState,
+    deployment::DeploymentState,
     monitor_timestamp,
     permission::PermissionLevel,
     server::Server,
@@ -475,7 +475,7 @@ async fn handle_post_build_redeploy(build_id: &str) {
       .map(|deployment| async move {
         let state =
           get_deployment_state(&deployment).await.unwrap_or_default();
-        if state == DockerContainerState::Running {
+        if state == DeploymentState::Running {
           let res = State
             .resolve(
               Deploy {

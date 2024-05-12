@@ -1,7 +1,7 @@
 use async_timing_util::{wait_until_timelength, Timelength};
 use futures::future::join_all;
 use monitor_client::entities::{
-  deployment::{ContainerSummary, DockerContainerState},
+  deployment::{ContainerSummary, DeploymentState},
   server::{
     stats::{ServerHealth, SystemStats},
     Server, ServerState,
@@ -44,7 +44,7 @@ pub struct CachedServerStatus {
 #[derive(Default, Clone, Debug)]
 pub struct CachedDeploymentStatus {
   pub id: String,
-  pub state: DockerContainerState,
+  pub state: DeploymentState,
   pub container: Option<ContainerSummary>,
 }
 
@@ -164,7 +164,7 @@ pub async fn update_cache_for_server(server: &Server) {
     let state = container
       .as_ref()
       .map(|c| c.state)
-      .unwrap_or(DockerContainerState::NotDeployed);
+      .unwrap_or(DeploymentState::NotDeployed);
     status_cache
       .insert(
         deployment.id.clone(),

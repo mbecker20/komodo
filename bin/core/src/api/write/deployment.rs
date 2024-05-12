@@ -3,7 +3,7 @@ use async_trait::async_trait;
 use monitor_client::{
   api::write::*,
   entities::{
-    deployment::{Deployment, DockerContainerState},
+    deployment::{Deployment, DeploymentState},
     monitor_timestamp,
     permission::PermissionLevel,
     server::Server,
@@ -112,7 +112,7 @@ impl Resolve<RenameDeployment, User> for State {
 
     let container_state = get_deployment_state(&deployment).await?;
 
-    if container_state == DockerContainerState::Unknown {
+    if container_state == DeploymentState::Unknown {
       return Err(anyhow!(
         "cannot rename deployment when container status is unknown"
       ));
@@ -132,7 +132,7 @@ impl Resolve<RenameDeployment, User> for State {
     .await
     .context("failed to update deployment name on db")?;
 
-    if container_state != DockerContainerState::NotDeployed {
+    if container_state != DeploymentState::NotDeployed {
       let server =
         resource::get::<Server>(&deployment.config.server_id).await?;
       let log = periphery_client(&server)?

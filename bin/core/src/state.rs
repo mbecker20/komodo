@@ -1,6 +1,6 @@
 use std::sync::{Arc, OnceLock};
 
-use monitor_client::entities::deployment::DockerContainerState;
+use monitor_client::entities::deployment::DeploymentState;
 use tokio::sync::OnceCell;
 
 use crate::{
@@ -36,7 +36,7 @@ pub fn action_states() -> &'static ActionStates {
 
 pub type DeploymentStatusCache = Cache<
   String,
-  Arc<History<CachedDeploymentStatus, DockerContainerState>>,
+  Arc<History<CachedDeploymentStatus, DeploymentState>>,
 >;
 
 pub fn deployment_status_cache() -> &'static DeploymentStatusCache {

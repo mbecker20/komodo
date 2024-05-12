@@ -4,7 +4,7 @@ use monitor_client::entities::{
   deployment::{
     Deployment, DeploymentConfig, DeploymentConfigDiff,
     DeploymentImage, DeploymentListItem, DeploymentListItemInfo,
-    DeploymentQuerySpecifics, DockerContainerState,
+    DeploymentQuerySpecifics, DeploymentState,
     PartialDeploymentConfig,
   },
   permission::PermissionLevel,
@@ -149,8 +149,8 @@ impl super::MonitorResource for Deployment {
       .context("failed to get container state")?;
     if !matches!(
       state,
-      DockerContainerState::NotDeployed
-        | DockerContainerState::Unknown
+      DeploymentState::NotDeployed
+        | DeploymentState::Unknown
     ) {
       // container needs to be destroyed
       let server =

@@ -6,7 +6,7 @@ use typeshare::typeshare;
 use crate::entities::{
   deployment::{
     ContainerSummary, Deployment, DeploymentActionState,
-    DeploymentListItem, DeploymentQuery, DockerContainerState,
+    DeploymentListItem, DeploymentQuery, DeploymentState,
     DockerContainerStats,
   },
   update::Log,
@@ -76,7 +76,7 @@ pub struct GetDeploymentContainer {
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GetDeploymentContainerResponse {
-  pub state: DockerContainerState,
+  pub state: DeploymentState,
   pub container: Option<ContainerSummary>,
 }
 

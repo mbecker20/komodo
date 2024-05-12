@@ -3,7 +3,7 @@ use futures::future::join_all;
 use monitor_client::entities::{
   alert::{Alert, AlertData},
   alerter::*,
-  deployment::DockerContainerState,
+  deployment::DeploymentState,
   server::stats::SeverityLevel,
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
@@ -236,14 +236,12 @@ fn fmt_region(region: &Option<String>) -> String {
   }
 }
 
-fn fmt_docker_container_state(
-  state: &DockerContainerState,
-) -> String {
+fn fmt_docker_container_state(state: &DeploymentState) -> String {
   match state {
-    DockerContainerState::Running => String::from("Running ▶️"),
-    DockerContainerState::Exited => String::from("Exited 🛑"),
-    DockerContainerState::Restarting => String::from("Restarting 🔄"),
-    DockerContainerState::NotDeployed => String::from("Not Deployed"),
+    DeploymentState::Running => String::from("Running ▶️"),
+    DeploymentState::Exited => String::from("Exited 🛑"),
+    DeploymentState::Restarting => String::from("Restarting 🔄"),
+    DeploymentState::NotDeployed => String::from("Not Deployed"),
     _ => state.to_string(),
   }
 }

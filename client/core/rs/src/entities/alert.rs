@@ -11,8 +11,8 @@ use typeshare::typeshare;
 use crate::entities::{MongoId, I64};
 
 use super::{
-  _Serror, deployment::DockerContainerState,
-  server::stats::SeverityLevel, update::ResourceTarget,
+  _Serror, deployment::DeploymentState, server::stats::SeverityLevel,
+  update::ResourceTarget,
 };
 
 /// Representation of an alert in the system.
@@ -140,9 +140,9 @@ pub enum AlertData {
     /// The server name
     server_name: String,
     /// The previous container state
-    from: DockerContainerState,
+    from: DeploymentState,
     /// The current container state
-    to: DockerContainerState,
+    to: DeploymentState,
   },
 
   /// An AWS builder failed to terminate.

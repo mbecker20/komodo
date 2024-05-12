@@ -27,8 +27,8 @@ export const DeploymentLogs = ({ id, titleOther }: { id: string; titleOther: Rea
   const state = useDeployment(id)?.info.state;
   if (
     state === undefined ||
-    state === Types.DockerContainerState.Unknown ||
-    state === Types.DockerContainerState.NotDeployed
+    state === Types.DeploymentState.Unknown ||
+    state === Types.DeploymentState.NotDeployed
   ) {
     return null;
   }

@@ -102,16 +102,16 @@ export const server_state_intention: (
 };
 
 export const deployment_state_intention: (
-  state?: Types.DockerContainerState
+  state?: Types.DeploymentState
 ) => ColorIntention = (state) => {
   switch (state) {
     case undefined:
       return "None";
-    case Types.DockerContainerState.Running:
+    case Types.DeploymentState.Running:
       return "Good";
-    case Types.DockerContainerState.NotDeployed:
+    case Types.DeploymentState.NotDeployed:
       return "Neutral";
-    case Types.DockerContainerState.Unknown:
+    case Types.DeploymentState.Unknown:
       return "Unknown";
     default:
       return "Critical";
@@ -133,7 +133,7 @@ export const build_state_intention = (status?: Types.BuildState) => {
     default:
       return "None";
   }
-}
+};
 
 export const repo_state_intention = (state?: Types.RepoState) => {
   switch (state) {
@@ -158,8 +158,11 @@ export const alert_level_intention: (
   level: Types.SeverityLevel
 ) => ColorIntention = (level) => {
   switch (level) {
-    case Types.SeverityLevel.Ok: return "Good"
-    case Types.SeverityLevel.Warning: return "Warning"
-    case Types.SeverityLevel.Critical: return "Critical"
+    case Types.SeverityLevel.Ok:
+      return "Good";
+    case Types.SeverityLevel.Warning:
+      return "Warning";
+    case Types.SeverityLevel.Critical:
+      return "Critical";
   }
-}
+};

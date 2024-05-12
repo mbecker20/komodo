@@ -7,7 +7,7 @@ use monitor_client::{
   entities::{
     deployment::{
       Deployment, DeploymentActionState, DeploymentConfig,
-      DeploymentListItem, DockerContainerState, DockerContainerStats,
+      DeploymentListItem, DeploymentState, DockerContainerStats,
     },
     permission::PermissionLevel,
     server::Server,
@@ -237,13 +237,13 @@ impl Resolve<GetDeploymentsSummary, User> for State {
       let status =
         status_cache.get(&deployment.id).await.unwrap_or_default();
       match status.curr.state {
-        DockerContainerState::Running => {
+        DeploymentState::Running => {
           res.running += 1;
         }
-        DockerContainerState::Unknown => {
+        DeploymentState::Unknown => {
           res.unknown += 1;
         }
-        DockerContainerState::NotDeployed => {
+        DeploymentState::NotDeployed => {
           res.not_deployed += 1;
         }
         _ => {

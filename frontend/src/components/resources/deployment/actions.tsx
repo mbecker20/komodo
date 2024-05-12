@@ -13,7 +13,6 @@ import {
   SelectItem,
   SelectTrigger,
 } from "@ui/select";
-import { DockerContainerState } from "@monitor/client/dist/types";
 
 interface DeploymentId {
   id: string;
@@ -48,8 +47,8 @@ export const DeployContainer = ({ id }: DeploymentId) => {
   if (!deployment) return null;
 
   const deployed =
-    deployment_item?.info.state !== DockerContainerState.NotDeployed &&
-    deployment_item?.info.state !== DockerContainerState.Unknown;
+    deployment_item?.info.state !== Types.DeploymentState.NotDeployed &&
+    deployment_item?.info.state !== Types.DeploymentState.Unknown;
 
   if (deployed) {
     return (
@@ -161,15 +160,15 @@ export const StartOrStopContainer = ({ id }: DeploymentId) => {
   const state = deployment?.info.state;
 
   if (
-    state === Types.DockerContainerState.NotDeployed ||
-    state === Types.DockerContainerState.Unknown
+    state === Types.DeploymentState.NotDeployed ||
+    state === Types.DeploymentState.Unknown
   ) {
     return null;
   }
 
   if (
-    state === Types.DockerContainerState.Running ||
-    state === Types.DockerContainerState.Restarting
+    state === Types.DeploymentState.Running ||
+    state === Types.DeploymentState.Restarting
   ) {
     return <StopContainer id={id} />;
   }
@@ -202,7 +201,7 @@ export const RemoveContainer = ({ id }: DeploymentId) => {
   const pending = isPending || removing;
 
   if (!deployment) return null;
-  if (state === Types.DockerContainerState.NotDeployed) return null;
+  if (state === Types.DeploymentState.NotDeployed) return null;
 
   return (
     <ActionWithDialog

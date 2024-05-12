@@ -3,7 +3,7 @@ use std::{collections::HashSet, str::FromStr};
 use anyhow::{anyhow, Context};
 use monitor_client::entities::{
   build::BuildState,
-  deployment::{Deployment, DockerContainerState},
+  deployment::{Deployment, DeploymentState},
   permission::PermissionLevel,
   repo::RepoState,
   server::{Server, ServerState},
@@ -57,14 +57,14 @@ pub async fn get_server_with_status(
 #[instrument(level = "debug")]
 pub async fn get_deployment_state(
   deployment: &Deployment,
-) -> anyhow::Result<DockerContainerState> {
+) -> anyhow::Result<DeploymentState> {
   if deployment.config.server_id.is_empty() {
-    return Ok(DockerContainerState::NotDeployed);
+    return Ok(DeploymentState::NotDeployed);
   }
   let (server, status) =
     get_server_with_status(&deployment.config.server_id).await?;
   if status != ServerState::Ok {
-    return Ok(DockerContainerState::Unknown);
+    return Ok(DeploymentState::Unknown);
   }
   let container = super::periphery_client(&server)?
     .request(periphery_client::api::container::GetContainerList {})
@@ -74,7 +74,7 @@ pub async fn get_deployment_state(
 
   let state = match container {
     Some(container) => container.state,
-    None => DockerContainerState::NotDeployed,
+    None => DeploymentState::NotDeployed,
   };
 
   Ok(state)

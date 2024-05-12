@@ -40,8 +40,8 @@ const ConfigOrLog = ({ id }: { id: string }) => {
   const state = useDeployment(id)?.info.state;
   const logsDisabled =
     state === undefined ||
-    state === Types.DockerContainerState.Unknown ||
-    state === Types.DockerContainerState.NotDeployed;
+    state === Types.DeploymentState.Unknown ||
+    state === Types.DeploymentState.NotDeployed;
   return (
     <Tabs
       value={logsDisabled ? "Config" : view}
@@ -117,7 +117,7 @@ export const DeploymentComponents: RequiredResourceComponents = {
   Status: {
     State: ({ id }) => {
       const state =
-        useDeployment(id)?.info.state ?? Types.DockerContainerState.Unknown;
+        useDeployment(id)?.info.state ?? Types.DeploymentState.Unknown;
       const color = bg_color_class_by_intention(
         deployment_state_intention(state)
       );

@@ -155,9 +155,9 @@ export type AlertData =
 	/** The server name */
 	server_name: string;
 	/** The previous container state */
-	from: DockerContainerState;
+	from: DeploymentState;
 	/** The current container state */
-	to: DockerContainerState;
+	to: DeploymentState;
 }}
 	/** An AWS builder failed to terminate. */
 	| { type: "AwsBuilderTerminationFailed", data: {
@@ -503,7 +503,15 @@ export type Deployment = Resource<DeploymentConfig, undefined>;
 
 export type GetDeploymentResponse = Deployment;
 
-export enum DockerContainerState {
+/**
+ * Variants de/serialized from/to snake_case.
+ * 
+ * Eg.
+ * - NotDeployed -> not_deployed
+ * - Restarting -> restarting
+ * - Running -> running.
+ */
+export enum DeploymentState {
 	Unknown = "unknown",
 	NotDeployed = "not_deployed",
 	Created = "created",
@@ -516,8 +524,8 @@ export enum DockerContainerState {
 }
 
 export interface DeploymentListItemInfo {
-	/** The state of the docker container. */
-	state: DockerContainerState;
+	/** The state of the deployment / underlying docker container. */
+	state: DeploymentState;
 	/** The status of the docker container (eg. up 12 hours, exited 5 minutes ago.) */
 	status?: string;
 	/** The image attached to the deployment. */
@@ -917,7 +925,7 @@ export interface ContainerSummary {
 	/** The docker labels on the container. */
 	labels: Record<string, string>;
 	/** The state of the container, like `running` or `not_deployed` */
-	state: DockerContainerState;
+	state: DeploymentState;
 	/** The status string of the docker container. */
 	status?: string;
 }
@@ -1791,7 +1799,7 @@ export interface GetDeploymentContainer {
 
 /** Response for [GetDeploymentContainer]. */
 export interface GetDeploymentContainerResponse {
-	state: DockerContainerState;
+	state: DeploymentState;
 	container?: ContainerSummary;
 }
 

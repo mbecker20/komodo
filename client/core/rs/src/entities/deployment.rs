@@ -24,8 +24,8 @@ pub type DeploymentListItem =
 #[typeshare]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DeploymentListItemInfo {
-  /// The state of the docker container.
-  pub state: DockerContainerState,
+  /// The state of the deployment / underlying docker container.
+  pub state: DeploymentState,
   /// The status of the docker container (eg. up 12 hours, exited 5 minutes ago.)
   pub status: Option<String>,
   /// The image attached to the deployment.
@@ -237,7 +237,7 @@ pub struct ContainerSummary {
   /// The docker labels on the container.
   pub labels: HashMap<String, String>,
   /// The state of the container, like `running` or `not_deployed`
-  pub state: DockerContainerState,
+  pub state: DeploymentState,
   /// The status string of the docker container.
   pub status: Option<String>,
 }
@@ -261,6 +261,12 @@ pub struct DockerContainerStats {
   pub pids: String,
 }
 
+/// Variants de/serialized from/to snake_case.
+///
+/// Eg.
+/// - NotDeployed -> not_deployed
+/// - Restarting -> restarting
+/// - Running -> running.
 #[typeshare]
 #[derive(
   Serialize,
@@ -277,7 +283,7 @@ pub struct DockerContainerStats {
 )]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
-pub enum DockerContainerState {
+pub enum DeploymentState {
   #[default]
   Unknown,
   NotDeployed,

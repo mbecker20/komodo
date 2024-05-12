@@ -1,5 +1,5 @@
 use monitor_client::entities::{
-  deployment::{Deployment, DockerContainerState},
+  deployment::{Deployment, DeploymentState},
   server::{
     stats::{
       ServerHealth, SeverityLevel, SingleDiskUsage, SystemStats,
@@ -27,7 +27,7 @@ pub async fn insert_deployments_status_unknown(
         History {
           curr: CachedDeploymentStatus {
             id: deployment.id,
-            state: DockerContainerState::Unknown,
+            state: DeploymentState::Unknown,
             container: None,
           },
           prev,
