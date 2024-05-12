@@ -42,6 +42,7 @@ export const RepoConfig = ({ id }: { id: string }) => {
           general: {
             repo: true,
             branch: true,
+            commit: true,
             github_account: (value, set) => {
               const server_id = update.server_id || config.server_id;
               if (server_id) {

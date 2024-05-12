@@ -100,6 +100,7 @@ export const BuildConfig = ({ id }: { id: string }) => {
           git: {
             repo: true,
             branch: true,
+            commit: true,
             github_account: (account, set) => (
               <AccountSelector
                 id={update.builder_id ?? config.builder_id ?? undefined}
