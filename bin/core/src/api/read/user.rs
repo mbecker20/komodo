@@ -27,8 +27,15 @@ impl Resolve<GetUsername, User> for State {
       .context("failed at mongo query for user")?
       .context("no user found with id")?;
 
+    let avatar = match user.config {
+      UserConfig::Github { avatar, .. } => Some(avatar),
+      UserConfig::Google { avatar, .. } => Some(avatar),
+      _ => None,
+    };
+
     Ok(GetUsernameResponse {
       username: user.username,
+      avatar,
     })
   }
 }

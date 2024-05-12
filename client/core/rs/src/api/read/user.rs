@@ -77,4 +77,6 @@ pub struct GetUsername {
 pub struct GetUsernameResponse {
   /// The username of the user.
   pub username: String,
+  /// An optional icon for the user.
+  pub avatar: Option<String>,
 }
