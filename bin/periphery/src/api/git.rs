@@ -1,8 +1,29 @@
+use anyhow::anyhow;
 use monitor_client::entities::{to_monitor_name, update::Log};
-use periphery_client::api::git::{CloneRepo, DeleteRepo, PullRepo};
+use periphery_client::api::git::{
+  CloneRepo, DeleteRepo, GetLatestCommit, GetLatestCommitResponse,
+  PullRepo,
+};
 use resolver_api::Resolve;
 
 use crate::{config::periphery_config, helpers::git, State};
+
+#[async_trait::async_trait]
+impl Resolve<GetLatestCommit, ()> for State {
+  async fn resolve(
+    &self,
+    GetLatestCommit { name }: GetLatestCommit,
+    _: (),
+  ) -> anyhow::Result<GetLatestCommitResponse> {
+    let repo_path = periphery_config().repo_dir.join(name);
+    if !repo_path.is_dir() {
+      return Err(anyhow!(
+        "repo path is not directory. is it cloned?"
+      ));
+    }
+    git::get_commit_hash_info(&repo_path).await
+  }
+}
 
 #[async_trait::async_trait]
 impl Resolve<CloneRepo> for State {

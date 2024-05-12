@@ -4,6 +4,18 @@ use monitor_client::entities::{
 use resolver_api::derive::Request;
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize, Request)]
+#[response(GetLatestCommitResponse)]
+pub struct GetLatestCommit {
+  pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetLatestCommitResponse {
+  pub hash: String,
+  pub message: String,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, Request)]
 #[response(Vec<Log>)]
 pub struct CloneRepo {

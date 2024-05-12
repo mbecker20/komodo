@@ -6,6 +6,7 @@ use monitor_client::entities::{
   monitor_timestamp, to_monitor_name, update::Log, CloneArgs,
   SystemCommand,
 };
+use periphery_client::api::git::GetLatestCommitResponse;
 use run_command::async_run_command;
 
 use crate::config::periphery_config;
@@ -179,6 +180,26 @@ async fn clone_inner(
     start_ts,
     end_ts: unix_timestamp_ms() as i64,
   }
+}
+
+pub async fn get_commit_hash_info(
+  repo_dir: &Path,
+) -> anyhow::Result<GetLatestCommitResponse> {
+  let command = format!("cd {} && git rev-parse --short HEAD && git rev-parse HEAD && git log -1 --pretty=%B", repo_dir.display());
+  let output = async_run_command(&command).await;
+  let mut split = output.stdout.split('\n');
+  let (hash, _, message) = (
+    split
+      .next()
+      .context("failed to get short commit hash")?
+      .to_string(),
+    split.next().context("failed to get long commit hash")?,
+    split
+      .next()
+      .context("failed to get commit message")?
+      .to_string(),
+  );
+  Ok(GetLatestCommitResponse { hash, message })
 }
 
 #[instrument]
