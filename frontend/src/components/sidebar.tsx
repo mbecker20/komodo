@@ -22,7 +22,7 @@ export const Sidebar = () => {
   console.log(view);
   return (
     <Card className="h-fit m-4 hidden lg:flex">
-      <CardContent className="h-fit grid gap-2 px-6 py-4">
+      <CardContent className="h-fit grid gap-1 px-6 py-4">
         <SidebarLink
           label="Dashboard"
           to="/"
