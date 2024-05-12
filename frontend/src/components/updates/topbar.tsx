@@ -7,7 +7,7 @@ import {
 } from "@ui/dropdown-menu";
 import { Bell, Check, Circle, Loader2, X } from "lucide-react";
 import { Button } from "@ui/button";
-import { Calendar, User } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { UpdateDetails, UpdateUser } from "./details";
 import { ResourceComponents } from "@components/resources";
 import { cn, version_is_none } from "@lib/utils";
@@ -91,10 +91,7 @@ const SingleUpdate = ({ update }: { update: Types.UpdateListItem }) => {
                   : fmt_date(new Date(update.start_ts))}
               </div>
             </div>
-            <div className="flex items-center gap-2 h-[20px]">
-              <User className="w-4 h-4" />
-              <UpdateUser user_id={update.operator} />
-            </div>
+            <UpdateUser user_id={update.operator} iconSize={4} defaultAvatar />
           </div>
         </div>
       </div>

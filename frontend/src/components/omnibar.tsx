@@ -69,7 +69,7 @@ export const OmniDialog = ({
   return (
     <CommandDialog open={open} onOpenChange={setOpen} manualFilter>
       <CommandInput
-        placeholder="Type a command or search..."
+        placeholder="Search for resources..."
         value={search}
         onValueChange={setSearch}
       />

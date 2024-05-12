@@ -47,7 +47,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
             <Calendar className="w-4" />
             {fmt_date(new Date(update.start_ts))}
           </div>
-          <UpdateUser user_id={update.operator} />
+          <UpdateUser user_id={update.operator} muted />
         </div>
       </Card>
     </UpdateDetails>

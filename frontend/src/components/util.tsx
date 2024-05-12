@@ -380,7 +380,7 @@ export const UserAvatar = ({
   size?: number;
 }) =>
   avatar ? (
-    <img src={avatar} alt="Avatar" className={`w-${size}`} />
+    <img src={avatar} alt="Avatar" className={`w-${size} h-${size}`} />
   ) : (
-    <User className={`w-${size}`} />
+    <User className={`w-${size} h-${size}`} />
   );

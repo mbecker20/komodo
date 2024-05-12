@@ -31,9 +31,15 @@ import { UserAvatar } from "@components/util";
 export const UpdateUser = ({
   user_id,
   className,
+  iconSize = 4,
+  defaultAvatar,
+  muted,
 }: {
   user_id: string;
   className?: string;
+  iconSize?: number;
+  defaultAvatar?: boolean;
+  muted?: boolean;
 }) => {
   if (
     user_id === "Procedure" ||
@@ -41,28 +47,58 @@ export const UpdateUser = ({
     user_id === "Auto Redeploy"
   ) {
     return (
-      <div className={cn("flex items-center gap-2 text-nowrap", className)}>
-        <User className="w-4" />
+      <div
+        className={cn(
+          "flex items-center gap-2 text-nowrap",
+          muted && "text-muted-foreground",
+          className
+        )}
+      >
+        <User className={`w-${iconSize} h-${iconSize}`} />
         {user_id}
       </div>
     );
   }
-  return <RealUpdateUser user_id={user_id} />;
+  return (
+    <RealUpdateUser
+      user_id={user_id}
+      className={className}
+      iconSize={iconSize}
+      defaultAvatar={defaultAvatar}
+      muted={muted}
+    />
+  );
 };
 
 const RealUpdateUser = ({
   user_id,
   className,
+  iconSize = 4,
+  defaultAvatar,
+  muted,
 }: {
   user_id: string;
   className?: string;
+  iconSize?: number;
+  defaultAvatar?: boolean;
+  muted?: boolean;
 }) => {
   const res = useRead("GetUsername", { user_id }).data;
   const username = res?.username;
   const avatar = res?.avatar;
   return (
-    <div className={cn("flex gap-2 text-nowrap", className)}>
-      <UserAvatar avatar={avatar} />
+    <div
+      className={cn(
+        "flex items-center gap-2 text-nowrap",
+        muted && "text-muted-foreground",
+        className
+      )}
+    >
+      {defaultAvatar ? (
+        <User className={`w-${iconSize} h-${iconSize}`} />
+      ) : (
+        <UserAvatar avatar={avatar} size={iconSize} />
+      )}
       {username || user_id}
     </div>
   );

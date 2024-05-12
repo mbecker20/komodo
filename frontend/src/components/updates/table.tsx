@@ -3,7 +3,7 @@ import { Types } from "@monitor/client";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@ui/data-table";
 import { useState } from "react";
-import { UpdateDetailsInner } from "./details";
+import { UpdateDetailsInner, UpdateUser } from "./details";
 
 export const UpdatesTable = ({
   updates,
@@ -31,7 +31,8 @@ export const UpdatesTable = ({
     },
     {
       header: "Operator",
-      accessorKey: "username",
+      accessorKey: "operator",
+      cell: ({ row }) => <UpdateUser user_id={row.original.operator} />,
     },
   ];
   // attach the target column on front
