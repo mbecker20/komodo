@@ -9,7 +9,7 @@ use monitor_client::entities::{
 
 use crate::{sync::resources::ResourceSync, wait_for_enter};
 
-mod resource_file;
+mod file;
 mod resources;
 mod user_group;
 
@@ -19,7 +19,7 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
     path.display().to_string().blue().bold()
   );
 
-  let resources = resource_file::read_resources(path)?;
+  let resources = file::read_resources(path)?;
 
   info!("computing sync actions...");
 

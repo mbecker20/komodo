@@ -33,7 +33,7 @@ fn read_resources_recursive(
     };
     info!(
       "{} from {}",
-      "adding resources".green(),
+      "adding resources".green().bold(),
       path.display().to_string().blue().bold()
     );
     resources.server_templates.extend(more.server_templates);

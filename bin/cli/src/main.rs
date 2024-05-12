@@ -75,7 +75,7 @@ fn monitor_client() -> &'static MonitorClient {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-  tracing_subscriber::fmt::init();
+  tracing_subscriber::fmt().with_target(false).init();
 
   let version =
     monitor_client().read(read::GetVersion {}).await?.version;
