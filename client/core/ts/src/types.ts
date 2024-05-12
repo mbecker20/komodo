@@ -962,6 +962,8 @@ export type GetSystemInformationResponse = SystemInformation;
 export interface SingleDiskUsage {
 	/** The mount point of the disk */
 	mount: string;
+	/** Detected file system */
+	file_system: string;
 	/** Used portion of the disk in GB */
 	used_gb: number;
 	/** Total size of the disk in GB */
@@ -2369,6 +2371,8 @@ export interface GetUsername {
 export interface GetUsernameResponse {
 	/** The username of the user. */
 	username: string;
+	/** An optional icon for the user. */
+	avatar?: string;
 }
 
 /**

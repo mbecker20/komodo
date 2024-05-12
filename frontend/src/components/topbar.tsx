@@ -28,7 +28,7 @@ import { RESOURCE_TARGETS, usableResourcePath } from "@lib/utils";
 import { OmniSearch, OmniDialog } from "./omnibar";
 import { WsStatusIndicator } from "@lib/socket";
 import { TopbarUpdates } from "./updates/topbar";
-import { Logout } from "./util";
+import { Logout, UserAvatar } from "./util";
 import { ThemeToggle } from "@ui/theme";
 import { UsableResource } from "@types";
 import { useAtom } from "jotai";
@@ -476,10 +476,3 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
     </Popover>
   );
 };
-
-const UserAvatar = ({ avatar }: { avatar: string | undefined }) =>
-  avatar ? (
-    <img src={avatar} alt="Avatar" className="w-4" />
-  ) : (
-    <UserCircle2 className="w-4" />
-  );

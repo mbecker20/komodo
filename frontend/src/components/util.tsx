@@ -14,6 +14,7 @@ import {
   Loader2,
   LogOut,
   Settings,
+  User,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import {
@@ -370,3 +371,16 @@ export const TextUpdateMenu = ({
     </Dialog>
   );
 };
+
+export const UserAvatar = ({
+  avatar,
+  size = 4,
+}: {
+  avatar: string | undefined;
+  size?: number;
+}) =>
+  avatar ? (
+    <img src={avatar} alt="Avatar" className={`w-${size}`} />
+  ) : (
+    <User className={`w-${size}`} />
+  );

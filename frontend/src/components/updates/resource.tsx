@@ -3,7 +3,6 @@ import { Button } from "@ui/button";
 import {
   Bell,
   ExternalLink,
-  User,
   Calendar,
   Check,
   X,
@@ -48,10 +47,7 @@ const UpdateCard = ({ update }: { update: Types.UpdateListItem }) => {
             <Calendar className="w-4" />
             {fmt_date(new Date(update.start_ts))}
           </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <User className="w-4" />
-            <UpdateUser user_id={update.operator} />
-          </div>
+          <UpdateUser user_id={update.operator} />
         </div>
       </Card>
     </UpdateDetails>
