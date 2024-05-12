@@ -27,6 +27,10 @@ pub struct RepoListItemInfo {
   pub branch: String,
   /// The repo state
   pub state: RepoState,
+  /// If the repo is cloned, will be the latest short commit hash.
+  pub latest_hash: Option<String>,
+  /// If the repo is cloned, will be the latest commit message.
+  pub latest_message: Option<String>,
 }
 
 #[typeshare]
@@ -34,6 +38,9 @@ pub struct RepoListItemInfo {
   Debug, Clone, Copy, Default, Serialize, Deserialize, Display,
 )]
 pub enum RepoState {
+  /// Unknown case
+  #[default]
+  Unknown,
   /// Last clone / pull successful (or never cloned)
   Ok,
   /// Last clone / pull failed
@@ -42,9 +49,6 @@ pub enum RepoState {
   Cloning,
   /// Currently pullling
   Pulling,
-  /// Other case
-  #[default]
-  Unknown,
 }
 
 #[typeshare]
@@ -81,6 +85,11 @@ pub struct RepoConfig {
   #[builder(default = "default_branch()")]
   #[partial_default(default_branch())]
   pub branch: String,
+
+  /// Optionally set a specific commit hash.
+  #[serde(default)]
+  #[builder(default)]
+  pub commit: String,
 
   /// The github account to use to clone.
   /// It must be available in the server's periphery config.

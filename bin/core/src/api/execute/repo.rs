@@ -155,6 +155,7 @@ impl Resolve<PullRepo, User> for State {
       .request(api::git::PullRepo {
         name: repo.name.clone(),
         branch: optional_string(&repo.config.branch),
+        commit: optional_string(&repo.config.commit),
         on_pull: repo.config.on_pull.into_option(),
       })
       .await

@@ -92,6 +92,11 @@ pub struct BuildConfig {
   #[partial_default(default_branch())]
   pub branch: String,
 
+  /// Optionally set a specific commit hash.
+  #[serde(default)]
+  #[builder(default)]
+  pub commit: String,
+
   /// The github account used to clone (used to access private repos).
   /// Empty string is public clone (only public repos).
   #[serde(default)]

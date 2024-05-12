@@ -1,6 +1,8 @@
 use std::sync::{Arc, OnceLock};
 
-use monitor_client::entities::deployment::DeploymentState;
+use monitor_client::entities::{
+  build::BuildState, deployment::DeploymentState, repo::RepoState,
+};
 use tokio::sync::OnceCell;
 
 use crate::{
@@ -8,7 +10,10 @@ use crate::{
   config::core_config,
   db::DbClient,
   helpers::{action_state::ActionStates, cache::Cache},
-  monitor::{CachedDeploymentStatus, CachedServerStatus, History},
+  monitor::{
+    CachedDeploymentStatus, CachedRepoStatus, CachedServerStatus,
+    History,
+  },
 };
 
 pub struct State;
@@ -51,4 +56,27 @@ pub fn server_status_cache() -> &'static ServerStatusCache {
   static SERVER_STATUS_CACHE: OnceLock<ServerStatusCache> =
     OnceLock::new();
   SERVER_STATUS_CACHE.get_or_init(Default::default)
+}
+
+pub type RepoStatusCache = Cache<String, Arc<CachedRepoStatus>>;
+
+pub fn repo_status_cache() -> &'static RepoStatusCache {
+  static REPO_STATUS_CACHE: OnceLock<RepoStatusCache> =
+    OnceLock::new();
+  REPO_STATUS_CACHE.get_or_init(Default::default)
+}
+
+pub type BuildStateCache = Cache<String, BuildState>;
+
+pub fn build_state_cache() -> &'static BuildStateCache {
+  static BUILD_STATE_CACHE: OnceLock<BuildStateCache> =
+    OnceLock::new();
+  BUILD_STATE_CACHE.get_or_init(Default::default)
+}
+
+pub type RepoStateCache = Cache<String, RepoState>;
+
+pub fn repo_state_cache() -> &'static RepoStateCache {
+  static REPO_STATE_CACHE: OnceLock<RepoStateCache> = OnceLock::new();
+  REPO_STATE_CACHE.get_or_init(Default::default)
 }

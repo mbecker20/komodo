@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use anyhow::{anyhow, Context};
 use async_timing_util::unix_timestamp_ms;
 use serde::{Deserialize, Serialize};
@@ -209,6 +211,7 @@ pub struct CloneArgs {
   pub name: String,
   pub repo: Option<String>,
   pub branch: Option<String>,
+  pub commit: Option<String>,
   pub on_clone: Option<SystemCommand>,
   pub on_pull: Option<SystemCommand>,
   pub github_account: Option<String>,
@@ -220,6 +223,7 @@ impl From<&self::build::Build> for CloneArgs {
       name: build.name.clone(),
       repo: optional_string(&build.config.repo),
       branch: optional_string(&build.config.branch),
+      commit: optional_string(&build.config.commit),
       on_clone: build.config.pre_build.clone().into_option(),
       on_pull: None,
       github_account: optional_string(&build.config.github_account),
@@ -233,6 +237,7 @@ impl From<&self::repo::Repo> for CloneArgs {
       name: repo.name.clone(),
       repo: optional_string(&repo.config.repo),
       branch: optional_string(&repo.config.branch),
+      commit: optional_string(&repo.config.commit),
       on_clone: repo.config.on_clone.clone().into_option(),
       on_pull: repo.config.on_pull.clone().into_option(),
       github_account: optional_string(&repo.config.github_account),
@@ -321,6 +326,16 @@ pub enum Timelength {
   #[serde(rename = "30-day")]
   #[strum(serialize = "30-day")]
   ThirtyDays,
+}
+
+impl TryInto<async_timing_util::Timelength> for Timelength {
+  type Error = anyhow::Error;
+  fn try_into(
+    self,
+  ) -> Result<async_timing_util::Timelength, Self::Error> {
+    async_timing_util::Timelength::from_str(&self.to_string())
+      .context("failed to parse timelength?")
+  }
 }
 
 #[typeshare]

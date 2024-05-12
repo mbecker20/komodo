@@ -33,7 +33,7 @@ async fn app() -> anyhow::Result<()> {
   info!("config: {:?}", config.sanitized());
 
   // Spawn monitoring loops
-  monitor::spawn_monitor_loop();
+  monitor::spawn_monitor_loop()?;
   helpers::prune::spawn_prune_loop();
 
   // Setup static frontend services

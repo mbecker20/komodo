@@ -1,5 +1,6 @@
 use monitor_client::entities::{
   deployment::{Deployment, DeploymentState},
+  repo::Repo,
   server::{
     stats::{
       ServerHealth, SeverityLevel, SingleDiskUsage, SystemStats,
@@ -9,9 +10,14 @@ use monitor_client::entities::{
 };
 use serror::Serror;
 
-use crate::state::{deployment_status_cache, server_status_cache};
+use crate::state::{
+  deployment_status_cache, repo_status_cache, server_status_cache,
+};
 
-use super::{CachedDeploymentStatus, CachedServerStatus, History};
+use super::{
+  CachedDeploymentStatus, CachedRepoStatus, CachedServerStatus,
+  History,
+};
 
 #[instrument(level = "debug", skip_all)]
 pub async fn insert_deployments_status_unknown(
@@ -31,6 +37,24 @@ pub async fn insert_deployments_status_unknown(
             container: None,
           },
           prev,
+        }
+        .into(),
+      )
+      .await;
+  }
+}
+
+#[instrument(level = "debug", skip_all)]
+pub async fn insert_repos_status_unknown(repos: Vec<Repo>) {
+  let status_cache = repo_status_cache();
+  for repo in repos {
+    status_cache
+      .insert(
+        repo.id.clone(),
+        CachedRepoStatus {
+          id: repo.id,
+          latest_hash: None,
+          latest_message: None,
         }
         .into(),
       )

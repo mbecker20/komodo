@@ -14,8 +14,8 @@ use monitor_client::entities::{
 use mungos::mongodb::Collection;
 
 use crate::{
-  helpers::{empty_or_only_spaces, query::get_build_state},
-  state::{action_states, db_client},
+  helpers::empty_or_only_spaces,
+  state::{action_states, build_state_cache, db_client},
 };
 
 impl super::MonitorResource for Build {
@@ -38,7 +38,8 @@ impl super::MonitorResource for Build {
   async fn to_list_item(
     build: Resource<Self::Config, Self::Info>,
   ) -> anyhow::Result<Self::ListItem> {
-    let state = get_build_state(&build.id).await;
+    let state =
+      build_state_cache().get(&build.id).await.unwrap_or_default();
     Ok(BuildListItem {
       name: build.name,
       id: build.id,
@@ -150,4 +151,8 @@ async fn validate_config(
     extra_args.retain(|v| !empty_or_only_spaces(v))
   }
   Ok(())
+}
+
+pub fn spawn_build_state_management() {
+  
 }

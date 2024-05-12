@@ -1,4 +1,4 @@
-use async_timing_util::{wait_until_timelength, Timelength};
+use async_timing_util::wait_until_timelength;
 use futures::future::join_all;
 use monitor_client::entities::{
   deployment::{ContainerSummary, DeploymentState},
@@ -8,17 +8,19 @@ use monitor_client::entities::{
   },
 };
 use mungos::{find::find_collect, mongodb::bson::doc};
-use periphery_client::api;
+use periphery_client::api::{self, git::GetLatestCommit};
 use serror::Serror;
 
 use crate::{
+  config::core_config,
   helpers::periphery_client,
   monitor::{alert::check_alerts, record::record_server_stats},
-  state::{db_client, deployment_status_cache},
+  state::{db_client, deployment_status_cache, repo_status_cache},
 };
 
 use self::helpers::{
-  insert_deployments_status_unknown, insert_server_status,
+  insert_deployments_status_unknown, insert_repos_status_unknown,
+  insert_server_status,
 };
 
 mod alert;
@@ -48,12 +50,20 @@ pub struct CachedDeploymentStatus {
   pub container: Option<ContainerSummary>,
 }
 
-pub fn spawn_monitor_loop() {
+#[derive(Default, Clone, Debug)]
+pub struct CachedRepoStatus {
+  pub id: String,
+  pub latest_hash: Option<String>,
+  pub latest_message: Option<String>,
+}
+
+pub fn spawn_monitor_loop() -> anyhow::Result<()> {
+  let interval: async_timing_util::Timelength =
+    core_config().monitoring_interval.try_into()?;
   tokio::spawn(async move {
     loop {
-      let ts = (wait_until_timelength(Timelength::FiveSeconds, 500)
-        .await
-        - 500) as i64;
+      let ts =
+        (wait_until_timelength(interval, 500).await - 500) as i64;
       let servers =
         match find_collect(&db_client().await.servers, None, None)
           .await
@@ -73,6 +83,7 @@ pub fn spawn_monitor_loop() {
       tokio::join!(check_alerts(ts), record_server_stats(ts));
     }
   });
+  Ok(())
 }
 
 #[instrument(level = "debug")]
@@ -87,12 +98,28 @@ pub async fn update_cache_for_server(server: &Server) {
     Ok(deployments) => deployments,
     Err(e) => {
       error!("failed to get deployments list from mongo (update status cache) | server id: {} | {e:#}", server.id);
-      return;
+      Vec::new()
     }
   };
 
+  let repos = match find_collect(
+    &db_client().await.repos,
+    doc! { "config.server_id": &server.id },
+    None,
+  )
+  .await
+  {
+    Ok(repos) => repos,
+    Err(e) => {
+      error!("failed to get repos list from mongo (update status cache) | server id: {} | {e:#}", server.id);
+      Vec::new()
+    }
+  };
+
+  // Handle server disabled
   if !server.config.enabled {
     insert_deployments_status_unknown(deployments).await;
+    insert_repos_status_unknown(repos).await;
     insert_server_status(
       server,
       ServerState::Disabled,
@@ -103,13 +130,19 @@ pub async fn update_cache_for_server(server: &Server) {
     .await;
     return;
   }
-  // already handle server disabled case above, so using unwrap here
-  let periphery = periphery_client(server).unwrap();
+
+  let Ok(periphery) = periphery_client(server) else {
+    error!(
+      "somehow periphery not ok to create. should not be reached."
+    );
+    return;
+  };
 
   let version = match periphery.request(api::GetVersion {}).await {
     Ok(version) => version.version,
     Err(e) => {
       insert_deployments_status_unknown(deployments).await;
+      insert_repos_status_unknown(repos).await;
       insert_server_status(
         server,
         ServerState::NotOk,
@@ -127,6 +160,7 @@ pub async fn update_cache_for_server(server: &Server) {
       Ok(stats) => Some(stats),
       Err(e) => {
         insert_deployments_status_unknown(deployments).await;
+        insert_repos_status_unknown(repos).await;
         insert_server_status(
           server,
           ServerState::NotOk,
@@ -145,36 +179,61 @@ pub async fn update_cache_for_server(server: &Server) {
   insert_server_status(server, ServerState::Ok, version, stats, None)
     .await;
 
-  let containers =
-    periphery.request(api::container::GetContainerList {}).await;
-  if containers.is_err() {
-    insert_deployments_status_unknown(deployments).await;
-    return;
-  }
+  match periphery.request(api::container::GetContainerList {}).await {
+    Ok(containers) => {
+      let status_cache = deployment_status_cache();
+      for deployment in deployments {
+        let container = containers
+          .iter()
+          .find(|c| c.name == deployment.name)
+          .cloned();
+        let prev = status_cache
+          .get(&deployment.id)
+          .await
+          .map(|s| s.curr.state);
+        let state = container
+          .as_ref()
+          .map(|c| c.state)
+          .unwrap_or(DeploymentState::NotDeployed);
+        status_cache
+          .insert(
+            deployment.id.clone(),
+            History {
+              curr: CachedDeploymentStatus {
+                id: deployment.id,
+                state,
+                container,
+              },
+              prev,
+            }
+            .into(),
+          )
+          .await;
+      }
+    }
+    Err(e) => {
+      warn!("could not get containers list | {e:#}");
+      insert_deployments_status_unknown(deployments).await;
+    }
+  };
 
-  let containers = containers.unwrap();
-  let status_cache = deployment_status_cache();
-  for deployment in deployments {
-    let container = containers
-      .iter()
-      .find(|c| c.name == deployment.name)
-      .cloned();
-    let prev =
-      status_cache.get(&deployment.id).await.map(|s| s.curr.state);
-    let state = container
-      .as_ref()
-      .map(|c| c.state)
-      .unwrap_or(DeploymentState::NotDeployed);
+  let status_cache = repo_status_cache();
+  for repo in repos {
+    let (latest_hash, latest_message) = periphery
+      .request(GetLatestCommit {
+        name: repo.name.clone(),
+      })
+      .await
+      .map(|r| (r.hash, r.message))
+      .ok()
+      .unzip();
     status_cache
       .insert(
-        deployment.id.clone(),
-        History {
-          curr: CachedDeploymentStatus {
-            id: deployment.id,
-            state,
-            container,
-          },
-          prev,
+        repo.id.clone(),
+        CachedRepoStatus {
+          id: repo.id,
+          latest_hash,
+          latest_message,
         }
         .into(),
       )

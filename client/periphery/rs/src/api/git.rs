@@ -31,6 +31,7 @@ pub struct CloneRepo {
 pub struct PullRepo {
   pub name: String,
   pub branch: Option<String>,
+  pub commit: Option<String>,
   pub on_pull: Option<SystemCommand>,
 }
 

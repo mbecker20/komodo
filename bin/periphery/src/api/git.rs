@@ -47,6 +47,7 @@ impl Resolve<PullRepo> for State {
     PullRepo {
       name,
       branch,
+      commit,
       on_pull,
     }: PullRepo,
     _: (),
@@ -56,6 +57,7 @@ impl Resolve<PullRepo> for State {
       git::pull(
         &periphery_config().repo_dir.join(name),
         &branch,
+        &commit,
         &on_pull,
       )
       .await,
