@@ -30,7 +30,7 @@ export const DeploymentsChart = () => {
             <Rocket className="w-4 h-4" />
           </div>
         </CardHeader>
-        <CardContent className="flex h-[200px] items-center justify-between">
+        <CardContent className="hidden xl:flex h-[200px] items-center justify-between">
           <div className="flex flex-col gap-2 text-muted-foreground w-full">
             <CardDescription>
               <span

@@ -25,7 +25,7 @@ import {
 import { Button } from "@ui/button";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { RESOURCE_TARGETS, usableResourcePath } from "@lib/utils";
-import { Omnibar } from "./omnibar";
+import { OmniSearch, OmniDialog } from "./omnibar";
 import { WsStatusIndicator } from "@lib/socket";
 import { TopbarUpdates } from "./updates/topbar";
 import { Logout } from "./util";
@@ -34,7 +34,7 @@ import { UsableResource } from "@types";
 import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   Command,
   CommandEmpty,
@@ -46,11 +46,26 @@ import {
 import { ResourceLink } from "./resources/common";
 
 export const Topbar = () => {
+  const [omniOpen, setOmniOpen] = useState(false);
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      // This will ignore Shift + S if it is sent from input / textarea
+      const target = e.target as any;
+      if (target.matches("input") || target.matches("textarea")) return;
+
+      if (e.shiftKey && e.key === "S") {
+        e.preventDefault();
+        setOmniOpen(true);
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  });
   return (
     <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
-      <div className="w-full flex items-center justify-between p-4 gap-8">
-        <div className="flex items-center gap-4">
-          <Link to={"/"} className="text-2xl tracking-widest mx-8">
+      <div className="w-full p-4 grid grid-cols-2">
+        <div className="flex items-center gap-4 justify-self-start w-fit">
+          <Link to={"/"} className="text-2xl tracking-widest lg:mx-8">
             MONITOR
           </Link>
           <div className="flex gap-2">
@@ -58,16 +73,14 @@ export const Topbar = () => {
             <SecondaryDropdown />
           </div>
         </div>
-        <div className="flex md:gap-4">
-          <Omnibar />
-          <div className="flex">
-            <WsStatusIndicator />
-            <TopbarUpdates />
-            <ThemeToggle />
-            {/* <UserSettings /> */}
-            <Logout />
-          </div>
+        <div className="flex md:gap-2 justify-self-end items-center">
+          <OmniSearch setOpen={setOmniOpen} />
+          <WsStatusIndicator />
+          <TopbarUpdates />
+          <ThemeToggle />
+          <Logout />
         </div>
+        <OmniDialog open={omniOpen} setOpen={setOmniOpen} />
       </div>
     </div>
   );
@@ -113,7 +126,7 @@ const PrimaryDropdown = () => {
           {title}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-36" side="bottom">
+      <DropdownMenuContent className="w-36" side="bottom" align="start">
         <DropdownMenuGroup>
           <DropdownLinkItem
             label="Home"
@@ -223,13 +236,13 @@ const SecondaryDropdown = () => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="flex justify-start items-center gap-2 w-48 px-3"
+            className="hidden sm:flex justify-start items-center gap-2 w-48 px-3"
           >
             <Icon />
             {view}
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-48" side="bottom">
+        <DropdownMenuContent className="w-48" side="bottom" align="start">
           <DropdownMenuGroup>
             {Object.entries(ICONS).map(([view, Icon]) => (
               <DropdownMenuItem
@@ -272,7 +285,7 @@ const ResourcesDropdown = ({ type }: { type: UsableResource }) => {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="flex justify-start items-center gap-2 w-48 px-3"
+          className="hidden sm:flex justify-start items-center gap-2 w-48 px-3"
         >
           <Components.Icon id={selected?.id} />
           {selected ? selected.name : `All ${type}s`}
@@ -339,7 +352,7 @@ const UserGroupDropdown = ({ group_id }: { group_id: string | undefined }) => {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="flex justify-start items-center gap-2 w-48 px-3"
+          className="hidden sm:flex justify-start items-center gap-2 w-48 px-3"
         >
           <Users className="w-4 h-4" />
           {selected ? selected.name : "All User Groups"}
@@ -413,7 +426,7 @@ const UsersDropdown = ({ user_id }: { user_id: string | undefined }) => {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="flex justify-start items-center gap-2 w-48 px-3"
+          className="hidden sm:flex justify-start items-center gap-2 w-48 px-3"
         >
           <UserAvatar avatar={avatar} />
           {selected ? selected.username : "All Users"}

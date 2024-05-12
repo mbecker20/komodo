@@ -96,7 +96,7 @@ export const BuildChart = () => {
             <Hammer className="w-4 h-4" />
           </div>
         </CardHeader>
-        <CardContent className="h-[200px]">
+        <CardContent className="hidden xl:flex h-[200px]">
           <div className="w-full max-w-full h-full" ref={container_ref} />
         </CardContent>
       </Card>
