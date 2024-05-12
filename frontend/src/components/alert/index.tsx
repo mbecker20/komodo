@@ -3,11 +3,10 @@ import {
   alert_level_intention,
   text_color_class_by_intention,
 } from "@lib/color";
-import { useRead } from "@lib/hooks";
+import { useRead, atomWithStorage } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { Button } from "@ui/button";
 import { useAtom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
 import { AlertTriangle } from "lucide-react";
 import { AlertsTable } from "./table";
 

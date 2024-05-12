@@ -1,4 +1,4 @@
-import { homeViewAtom } from "@components/topbar";
+import { homeViewAtom } from "@main";
 import { useAtom } from "jotai";
 import { Dashboard } from "./dashboard";
 import { AllResources } from "./all_resources";

@@ -31,7 +31,6 @@ import { TopbarUpdates } from "./updates/topbar";
 import { Logout } from "./util";
 import { ThemeToggle } from "@ui/theme";
 import { UsableResource } from "@types";
-import { atomWithStorage } from "jotai/utils";
 import { useAtom } from "jotai";
 import { Popover, PopoverContent, PopoverTrigger } from "@ui/popover";
 import { ReactNode, useEffect, useState } from "react";
@@ -44,11 +43,12 @@ import {
   CommandList,
 } from "@ui/command";
 import { ResourceLink } from "./resources/common";
+import { HomeView, homeViewAtom } from "@main";
 
 export const Topbar = () => {
   const [omniOpen, setOmniOpen] = useState(false);
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
+    const keydown = (e: KeyboardEvent) => {
       // This will ignore Shift + S if it is sent from input / textarea
       const target = e.target as any;
       if (target.matches("input") || target.matches("textarea")) return;
@@ -58,8 +58,8 @@ export const Topbar = () => {
         setOmniOpen(true);
       }
     };
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener("keydown", keydown);
+    return () => document.removeEventListener("keydown", keydown);
   });
   return (
     <div className="sticky top-0 h-[70px] border-b z-50 w-full bg-card text-card-foreground shadow flex items-center">
@@ -209,17 +209,10 @@ const DropdownLinkItem = ({
   );
 };
 
-export type HomeView = "Dashboard" | "Tree" | "Resources";
-
-export const homeViewAtom = atomWithStorage<HomeView>(
-  "home-view-v1",
-  "Dashboard"
-);
-
 const ICONS = {
   Dashboard: () => <Box className="w-4 h-4" />,
-  Tree: () => <FolderTree className="w-4 h-4" />,
   Resources: () => <Boxes className="w-4 h-4" />,
+  Tree: () => <FolderTree className="w-4 h-4" />,
 };
 
 const SecondaryDropdown = () => {
@@ -236,7 +229,7 @@ const SecondaryDropdown = () => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className="hidden sm:flex justify-start items-center gap-2 w-48 px-3"
+            className="hidden sm:flex lg:hidden justify-start items-center gap-2 w-48 px-3"
           >
             <Icon />
             {view}

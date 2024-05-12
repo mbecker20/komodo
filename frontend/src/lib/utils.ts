@@ -21,7 +21,7 @@ export const RESOURCE_TARGETS: UsableResource[] = [
   "Procedure",
   "Builder",
   "Alerter",
-  "ServerTemplate"
+  "ServerTemplate",
 ];
 
 export function env_to_text(envVars: Types.EnvironmentVar[] | undefined) {
@@ -95,18 +95,18 @@ export const convertTsMsToLocalUnixTsInSecs = (ts: number) =>
   ts / 1000 - tzOffset;
 
 export const usableResourcePath = (resource: UsableResource) => {
-  if (resource === "ServerTemplate") return "server-templates"
-  return `${resource.toLowerCase()}s`
-}
+  if (resource === "ServerTemplate") return "server-templates";
+  return `${resource.toLowerCase()}s`;
+};
 
 export const sanitizeOnlySpan = (log: string) => {
   return sanitizeHtml(log, {
     allowedTags: ["span"],
     allowedAttributes: {
-      "span": ["class"]
+      span: ["class"],
     },
   });
-}
+};
 
 const convert = new Convert();
 /**

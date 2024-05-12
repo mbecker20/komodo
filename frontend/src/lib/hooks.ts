@@ -15,8 +15,7 @@ import {
 } from "@tanstack/react-query";
 import { UsableResource } from "@types";
 import { useToast } from "@ui/use-toast";
-import { useAtom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atom, useAtom } from "jotai";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 
@@ -175,6 +174,19 @@ export const useSetTitle = (more?: string) => {
   }, [title]);
 };
 
+export const atomWithStorage = <T>(key: string, init: T) => {
+  const stored = localStorage.getItem(key);
+  const inner = atom(stored ? JSON.parse(stored) : init);
+
+  return atom(
+    (get) => get(inner),
+    (_, set, newValue) => {
+      set(inner, newValue);
+      localStorage.setItem(key, JSON.stringify(newValue));
+    }
+  );
+};
+
 export const tagsAtom = atomWithStorage<string[]>("tags-v0", []);
 
 export const useTagsFilter = () => {
@@ -219,15 +231,17 @@ export const useCheckResourceExists = () => {
 
 export const useFilterResources = <Info>(
   resources?: Types.ResourceListItem<Info>[],
-  search?: string,
+  search?: string
 ) => {
   const tags = useTagsFilter();
   const searchSplit = search?.split(" ") || [];
-  return resources?.filter(
-    (resource) =>
-      tags.every((tag) => resource.tags.includes(tag)) &&
-      (searchSplit.length > 0
-        ? searchSplit.every((search) => resource.name.includes(search))
-        : true)
-  ) ?? [];
+  return (
+    resources?.filter(
+      (resource) =>
+        tags.every((tag) => resource.tags.includes(tag)) &&
+        (searchSplit.length > 0
+          ? searchSplit.every((search) => resource.name.includes(search))
+          : true)
+    ) ?? []
+  );
 };

@@ -1,7 +1,7 @@
 import { Button } from "@ui/button";
 import { PlusCircle } from "lucide-react";
-import { ReactNode, useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import { ReactNode, useEffect, useState } from "react";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,21 @@ import { usableResourcePath } from "@lib/utils";
 import { Sidebar } from "./sidebar";
 
 export const Layout = () => {
+  const nav = useNavigate();
+  useEffect(() => {
+    const keydown = (e: KeyboardEvent) => {
+      // This will ignore Shift + S if it is sent from input / textarea
+      const target = e.target as any;
+      if (target.matches("input") || target.matches("textarea")) return;
+
+      if (e.shiftKey && e.key === "H") {
+        e.preventDefault();
+        nav("/");
+      }
+    };
+    document.addEventListener("keydown", keydown);
+    return () => document.removeEventListener("keydown", keydown);
+  });
   return (
     <>
       <Topbar />

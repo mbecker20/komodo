@@ -1,6 +1,6 @@
+import { atomWithStorage } from "@lib/hooks";
 import { Types } from "@monitor/client";
 import { useAtom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
 
 const statsGranularityAtom = atomWithStorage(
   "stats-granularity-v0",
