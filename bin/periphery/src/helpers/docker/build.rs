@@ -127,22 +127,10 @@ fn get_image_name(
   }
 }
 
-fn get_version_image_name(
-  image_name: &str,
-  version: &Version,
-) -> String {
-  format!("{image_name}:{version}")
-}
-
-fn get_latest_image_name(image_name: &str) -> String {
-  format!("{image_name}:latest")
-}
-
 fn image_tags(image_name: &str, version: &Version) -> String {
+  let Version { major, minor, .. } = version;
   format!(
-    " -t {} -t {}",
-    get_version_image_name(image_name, version),
-    get_latest_image_name(image_name)
+    " -t {image_name}:latest -t {image_name}:{version} -t {image_name}:{major}.{minor} -t {image_name}:{major}",
   )
 }
 
