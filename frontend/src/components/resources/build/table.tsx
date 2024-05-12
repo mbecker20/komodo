@@ -1,5 +1,5 @@
 import { TagsWithBadge } from "@components/tags";
-import { useRead, useTagsFilter } from "@lib/hooks";
+import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { fmt_version } from "@lib/formatting";
 import { ResourceLink } from "../common";
@@ -7,20 +7,11 @@ import { BuildComponents } from ".";
 
 export const BuildTable = ({ search }: { search?: string }) => {
   const builds = useRead("ListBuilds", {}).data;
-  const tags = useTagsFilter();
-  const searchSplit = search?.split(" ") || [];
+  const filtered = useFilterResources(builds, search)
   return (
     <DataTable
       tableKey="builds"
-      data={
-        builds?.filter(
-          (resource) =>
-            tags.every((tag) => resource.tags.includes(tag)) &&
-            (searchSplit.length > 0
-              ? searchSplit.every((search) => resource.name.includes(search))
-              : true)
-        ) ?? []
-      }
+      data={filtered}
       columns={[
         {
           accessorKey: "name",

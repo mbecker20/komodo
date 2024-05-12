@@ -18,19 +18,19 @@ export const Resources = () => {
       actions={
         <div className="grid gap-4 justify-items-end">
           <div className="flex gap-4">
-            <Input
-              value={search}
-              onChange={(e) => set(e.target.value)}
-              placeholder="search..."
-              className="w-96"
-            />
+            <TagsFilter />
             <Components.New />
           </div>
-          <TagsFilter />
+          <Input
+            value={search}
+            onChange={(e) => set(e.target.value)}
+            placeholder="search..."
+            className="w-96"
+          />
         </div>
       }
     >
-      <Components.Table />
+      <Components.Table search={search} />
     </Page>
   );
 };

@@ -1,25 +1,16 @@
-import { useRead, useTagsFilter } from "@lib/hooks";
+import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { ResourceLink } from "../common";
 import { TagsWithBadge } from "@components/tags";
 import { RepoComponents } from ".";
 
 export const RepoTable = ({ search }: { search?: string }) => {
-  const tags = useTagsFilter();
   const repos = useRead("ListRepos", {}).data;
-  const searchSplit = search?.split(" ") || [];
+  const filtered = useFilterResources(repos, search);
   return (
     <DataTable
       tableKey="repos"
-      data={
-        repos?.filter(
-          (resource) =>
-            tags.every((tag) => resource.tags.includes(tag)) &&
-            (searchSplit.length > 0
-              ? searchSplit.every((search) => resource.name.includes(search))
-              : true)
-        ) ?? []
-      }
+      data={filtered}
       columns={[
         {
           accessorKey: "name",

@@ -1,24 +1,15 @@
-import { useRead, useTagsFilter } from "@lib/hooks";
+import { useFilterResources, useRead } from "@lib/hooks";
 import { DataTable, SortableHeader } from "@ui/data-table";
 import { TagsWithBadge } from "@components/tags";
 import { ResourceLink } from "../common";
 
 export const ProcedureTable = ({ search }: { search?: string }) => {
-  const tags = useTagsFilter();
   const procedures = useRead("ListProcedures", {}).data;
-  const searchSplit = search?.split(" ") || [];
+  const filtered = useFilterResources(procedures, search);
   return (
     <DataTable
       tableKey="procedures"
-      data={
-        procedures?.filter(
-          (resource) =>
-            tags.every((tag) => resource.tags.includes(tag)) &&
-            (searchSplit.length > 0
-              ? searchSplit.every((search) => resource.name.includes(search))
-              : true)
-        ) ?? []
-      }
+      data={filtered}
       columns={[
         {
           accessorKey: "name",

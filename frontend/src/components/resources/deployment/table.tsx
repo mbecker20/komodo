@@ -1,7 +1,7 @@
 import { TagsWithBadge } from "@components/tags";
 import { Types } from "@monitor/client";
 import { DataTable, SortableHeader } from "@ui/data-table";
-import { useRead, useTagsFilter } from "@lib/hooks";
+import { useFilterResources, useRead } from "@lib/hooks";
 import { ResourceLink } from "../common";
 import { DeploymentComponents } from ".";
 import { HardDrive } from "lucide-react";
@@ -14,25 +14,16 @@ export const DeploymentTable = ({
   deployments: Types.DeploymentListItem[] | undefined;
   search?: string;
 }) => {
-  const tags = useTagsFilter();
-  const searchSplit = search?.split(" ") || [];
   const servers = useRead("ListServers", {}).data;
   const serverName = useCallback(
     (id: string) => servers?.find((server) => server.id === id)?.name,
     [servers]
   );
+  const filtered = useFilterResources(deployments, search);
   return (
     <DataTable
       tableKey="deployments"
-      data={
-        deployments?.filter(
-          (resource) =>
-            tags.every((tag) => resource.tags.includes(tag)) &&
-            (searchSplit.length > 0
-              ? searchSplit.every((search) => resource.name.includes(search))
-              : true)
-        ) ?? []
-      }
+      data={filtered}
       columns={[
         {
           accessorKey: "name",
@@ -61,14 +52,14 @@ export const DeploymentTable = ({
           sortingFn: (a, b) => {
             const sa = serverName(a.original.info.server_id);
             const sb = serverName(b.original.info.server_id);
-            
+
             if (!sa && !sb) return 0;
             if (!sa) return -1;
             if (!sb) return 1;
 
             if (sa > sb) return 1;
             else if (sa < sb) return -1;
-            else return 0
+            else return 0;
           },
           header: ({ column }) => (
             <SortableHeader column={column} title="Server" />
