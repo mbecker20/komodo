@@ -1,6 +1,6 @@
 # Monitor CLI
 
-Monitor CLI is a command line tool to sync monitor resources and execute file defined procedures.
+Monitor CLI is a tool to sync monitor resources and execute file defined procedures.
 
 ## Usage
 

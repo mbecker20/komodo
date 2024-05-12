@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "alert_logger"
+name = "alerter"
 version = "1.2.0"
 dependencies = [
  "anyhow",
@@ -2335,19 +2335,6 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
-]
-
-[[package]]
-name = "monitor_sync"
-version = "1.2.0"
-dependencies = [
- "anyhow",
- "clap",
- "dotenv",
- "merge_config_files",
- "monitor_client",
- "serde",
- "tokio",
 ]
 
 [[package]]

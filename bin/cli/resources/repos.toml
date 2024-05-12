@@ -34,4 +34,4 @@ command = ""
 
 [repo.config.on_pull]
 path = "."
-command = "/root/.cargo/bin/cargo build -p monitor_periphery --release"
+command = "/root/.cargo/bin/cargo build -p monitor_periphery --release && cp ./target/release/periphery /home/ubuntu/periphery"

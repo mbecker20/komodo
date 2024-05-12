@@ -79,7 +79,7 @@ async fn main() -> anyhow::Result<()> {
 
   let version =
     monitor_client().read(read::GetVersion {}).await?.version;
-  info!("monitor version: {version}");
+  info!("monitor version: {}", version.to_string().blue().bold());
 
   match &cli_args().command {
     Command::Exec { path } => execution::run_execution(path).await?,

@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use colored::Colorize;
 use monitor_client::entities::{
   alerter::Alerter, build::Build, builder::Builder,
   deployment::Deployment, procedure::Procedure, repo::Repo,
@@ -13,7 +14,10 @@ mod resources;
 mod user_group;
 
 pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
-  info!("path: {path:?}");
+  info!(
+    "resources path: {}",
+    path.display().to_string().blue().bold()
+  );
 
   let resources = resource_file::read_resources(path)?;
 
@@ -57,7 +61,7 @@ pub async fn run_sync(path: &Path) -> anyhow::Result<()> {
     && user_group_creates.is_empty()
     && user_group_updates.is_empty()
   {
-    info!("nothing to do. exiting.");
+    info!("{}. exiting.", "nothing to do".green().bold());
     return Ok(());
   }
 

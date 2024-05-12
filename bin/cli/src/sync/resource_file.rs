@@ -1,6 +1,7 @@
 use std::{fs, path::Path};
 
 use anyhow::{anyhow, Context};
+use colored::Colorize;
 use monitor_client::entities::toml::ResourcesToml;
 
 pub fn read_resources(path: &Path) -> anyhow::Result<ResourcesToml> {
@@ -30,7 +31,11 @@ fn read_resources_recursive(
         return Ok(());
       }
     };
-    info!("adding resources from {path:?}");
+    info!(
+      "{} from {}",
+      "adding resources".green(),
+      path.display().to_string().blue().bold()
+    );
     resources.server_templates.extend(more.server_templates);
     resources.servers.extend(more.servers);
     resources.builds.extend(more.builds);

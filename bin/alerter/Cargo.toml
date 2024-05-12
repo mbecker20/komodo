@@ -1,5 +1,5 @@
 [package]
-name = "alert_logger"
+name = "alerter"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
