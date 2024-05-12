@@ -218,8 +218,6 @@ pub trait ResourceSync {
     to_create: ToCreate<Self::PartialConfig>,
     to_update: ToUpdate<Self::PartialConfig>,
   ) {
-    let log_after = !to_update.is_empty() || !to_create.is_empty();
-
     for resource in to_create {
       let name = resource.name.clone();
       let tags = resource.tags.clone();
@@ -236,7 +234,12 @@ pub trait ResourceSync {
       };
       Self::update_tags(id.clone(), &name, tags).await;
       Self::update_description(id, &name, description).await;
-      info!("{} {name} created", Self::display());
+      info!(
+        "{} {} '{}'",
+        "created".green().bold(),
+        Self::display(),
+        name.bold(),
+      );
     }
 
     for ToUpdateItem {
@@ -266,17 +269,13 @@ pub trait ResourceSync {
           Self::display()
         );
       } else {
-        info!("updated {} {name} config", Self::display());
+        info!(
+          "{} {} '{}' configuration",
+          "updated".blue().bold(),
+          Self::display(),
+          name.bold(),
+        );
       }
-
-      info!("{} {name} updated", Self::display());
-    }
-
-    if log_after {
-      info!(
-        "============ {}s synced ✅ ============",
-        Self::display()
-      );
     }
   }
 
@@ -294,7 +293,12 @@ pub trait ResourceSync {
         Self::display(),
       );
     } else {
-      info!("updated {} {name} tags", Self::display());
+      info!(
+        "{} {} '{}' tags",
+        "updated".blue().bold(),
+        Self::display(),
+        name.bold(),
+      );
     }
   }
 
@@ -312,7 +316,12 @@ pub trait ResourceSync {
     {
       warn!("failed to update resource {id} description | {e:#}");
     } else {
-      info!("updated {} {name} description", Self::display());
+      info!(
+        "{} {} '{}' description",
+        "updated".blue().bold(),
+        Self::display(),
+        name.bold(),
+      );
     }
   }
 }

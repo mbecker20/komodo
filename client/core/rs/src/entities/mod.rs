@@ -156,7 +156,7 @@ pub struct Version {
 
 impl std::fmt::Display for Version {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    f.write_str(&format!(
+    f.write_fmt(format_args!(
       "{}.{}.{}",
       self.major, self.minor, self.patch
     ))
