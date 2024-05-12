@@ -8,13 +8,22 @@ import { BuildTable } from "./table";
 import { DeleteResource, NewResource } from "../common";
 import { DeploymentTable } from "../deployment/table";
 import { RunBuild } from "./actions";
-import { IconStrictId } from "./icon";
-import { bg_color_class_by_intention, build_status_intention } from "@lib/color";
+import {
+  bg_color_class_by_intention,
+  build_status_intention,
+  fill_color_class_by_intention,
+} from "@lib/color";
 import { Card, CardHeader } from "@ui/card";
 import { cn } from "@lib/utils";
 
 const useBuild = (id?: string) =>
   useRead("ListBuilds", {}).data?.find((d) => d.id === id);
+
+const BuildIcon = ({ id, size }: { id?: string; size: number }) => {
+  const status = useBuild(id)?.info.status;
+  const color = fill_color_class_by_intention(build_status_intention(status));
+  return <Hammer className={cn(`w-${size} h-${size}`, status && color)} />;
+};
 
 export const BuildComponents: RequiredResourceComponents = {
   Dashboard: BuildChart,
@@ -26,22 +35,16 @@ export const BuildComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useBuild(id)?.name}</>,
   name: (id) => useBuild(id)?.name,
 
-  Icon: ({ id }) => {
-    if (id) return <IconStrictId id={id} />;
-    else return <Hammer className="w-4 h-4" />;
-  },
+  Icon: ({ id }) => <BuildIcon id={id} size={4} />,
+  BigIcon: ({ id }) => <BuildIcon id={id} size={8} />,
 
   Status: {
     Status: ({ id }) => {
       let status = useBuild(id)?.info.status;
-      const color = bg_color_class_by_intention(
-        build_status_intention(status)
-      );
+      const color = bg_color_class_by_intention(build_status_intention(status));
       return (
         <Card className={cn("w-fit", color)}>
-          <CardHeader className="py-0 px-2">
-            {status}
-          </CardHeader>
+          <CardHeader className="py-0 px-2">{status}</CardHeader>
         </Card>
       );
     },

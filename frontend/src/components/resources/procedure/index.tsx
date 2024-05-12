@@ -39,6 +39,7 @@ export const ProcedureComponents: RequiredResourceComponents = {
   name: (id) => useProcedure(id)?.name,
 
   Icon: () => <Route className="w-4" />,
+  BigIcon: () => <Route className="w-8" />,
 
   Status: {},
 

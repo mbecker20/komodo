@@ -106,6 +106,7 @@ export const BuilderComponents: RequiredResourceComponents = {
   name: (id) => useBuilder(id)?.name,
 
   Icon: () => <Factory className="w-4 h-4" />,
+  BigIcon: () => <Factory className="w-8 h-8" />,
 
   Status: {},
 

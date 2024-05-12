@@ -7,11 +7,19 @@ import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource } from "../common";
 import { RepoTable } from "./table";
-import { bg_color_class_by_intention, repo_status_intention } from "@lib/color";
+import { bg_color_class_by_intention, fill_color_class_by_intention, repo_status_intention } from "@lib/color";
 import { cn } from "@lib/utils";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
+
+const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
+  const status = useRepo(id)?.info.status;
+  const color = fill_color_class_by_intention(
+    repo_status_intention(status)
+  );
+  return <GitBranch className={cn(`w-${size} h-${size}`, status && color)} />;
+};
 
 export const RepoComponents: RequiredResourceComponents = {
   Dashboard: () => {
@@ -40,7 +48,8 @@ export const RepoComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useRepo(id)?.name}</>,
   name: (id) => useRepo(id)?.name,
 
-  Icon: () => <GitBranch className="w-4 h-4" />,
+  Icon: ({ id }) => <RepoIcon id={id} size={4} />,
+  BigIcon: ({ id }) => <RepoIcon id={id} size={8} />,
 
   Status: {
     Status: ({ id }) => {

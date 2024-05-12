@@ -94,6 +94,7 @@ export const ServerTemplateComponents: RequiredResourceComponents = {
   name: (id) => useServerTemplate(id)?.name,
 
   Icon: () => <ServerCog className="w-4 h-4" />,
+  BigIcon: () => <ServerCog className="w-8 h-8" />,
 
   Status: {},
 

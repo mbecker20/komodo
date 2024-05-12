@@ -35,6 +35,18 @@ export const useServer = (id?: string) =>
     (d) => d.id === id
   );
 
+const _ServerIcon = ({ id, size }: { id?: string; size: number }) => {
+  const status = useServer(id)?.info.status;
+  return (
+    <ServerIcon
+      className={cn(
+        `w-${size} h-${size}`,
+        id && fill_color_class_by_intention(server_status_intention(status))
+      )}
+    />
+  );
+};
+
 export const ServerComponents: RequiredResourceComponents = {
   Dashboard: ServersChart,
 
@@ -45,17 +57,8 @@ export const ServerComponents: RequiredResourceComponents = {
   Name: ({ id }: { id: string }) => <>{useServer(id)?.name}</>,
   name: (id) => useServer(id)?.name,
 
-  Icon: ({ id }) => {
-    const status = useServer(id)?.info.status;
-    return (
-      <ServerIcon
-        className={cn(
-          "w-4 h-4",
-          id && fill_color_class_by_intention(server_status_intention(status))
-        )}
-      />
-    );
-  },
+  Icon: ({ id }) => <_ServerIcon id={id} size={4} />,
+  BigIcon: ({ id }) => <_ServerIcon id={id} size={8} />,
 
   Status: {
     Status: ({ id }) => {
@@ -84,8 +87,7 @@ export const ServerComponents: RequiredResourceComponents = {
         ?.version;
       return (
         <div className="flex items-center gap-2">
-          <Milestone className="w-4 h-4" />
-          v{version}
+          <Milestone className="w-4 h-4" />v{version}
         </div>
       );
     },

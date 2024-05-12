@@ -36,6 +36,7 @@ export const Layout = () => {
 
 interface PageProps {
   title?: ReactNode;
+  icon?: ReactNode;
   titleRight?: ReactNode;
   titleOther?: ReactNode;
   children?: ReactNode;
@@ -45,6 +46,7 @@ interface PageProps {
 
 export const Page = ({
   title,
+  icon,
   titleRight,
   titleOther,
   subtitle,
@@ -52,10 +54,11 @@ export const Page = ({
   children,
 }: PageProps) => (
   <div className="flex flex-col gap-10 container py-8">
-    {(title || subtitle || actions) && (
+    {(title || icon || subtitle || actions) && (
       <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 lg:items-start justify-between">
         <div className="flex flex-col gap-4">
           <div className="flex gap-4 items-center">
+            {icon}
             <h1 className="text-4xl">{title}</h1>
             {titleRight}
           </div>

@@ -90,6 +90,14 @@ const ConfigOrLog = ({ id }: { id: string }) => {
   );
 };
 
+const DeploymentIcon = ({ id, size }: { id?: string; size: number }) => {
+  const state = useDeployment(id)?.info.state;
+  const color = fill_color_class_by_intention(
+    deployment_state_intention(state)
+  );
+  return <Rocket className={cn(`w-${size} h-${size}`, state && color)} />;
+};
+
 export const DeploymentComponents: RequiredResourceComponents = {
   Dashboard: DeploymentsChart,
 
@@ -103,13 +111,8 @@ export const DeploymentComponents: RequiredResourceComponents = {
   Name: ({ id }) => <>{useDeployment(id)?.name}</>,
   name: (id) => useDeployment(id)?.name,
 
-  Icon: ({ id }) => {
-    const state = useDeployment(id)?.info.state;
-    const color = fill_color_class_by_intention(
-      deployment_state_intention(state)
-    );
-    return <Rocket className={cn("w-4 h-4", state && color)} />;
-  },
+  Icon: ({ id }) => <DeploymentIcon id={id} size={4} />,
+  BigIcon: ({ id }) => <DeploymentIcon id={id} size={8} />,
 
   Status: {
     State: ({ id }) => {

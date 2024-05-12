@@ -15,6 +15,7 @@ export const Resources = () => {
   return (
     <Page
       title={`${name}s`}
+      icon={<Components.BigIcon />}
       actions={
         <div className="grid gap-4 justify-items-end">
           <div className="flex gap-4">

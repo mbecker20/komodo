@@ -40,6 +40,7 @@ export const Resource = () => {
   return (
     <Page
       title={<Components.Name id={id} />}
+      icon={<Components.BigIcon id={id} />}
       titleRight={
         <div className="flex gap-4 items-center">
           {Object.entries(Components.Status).map(([key, Status]) => (
@@ -50,10 +51,9 @@ export const Resource = () => {
       subtitle={
         <div className="flex flex-col gap-4">
           <div className="flex gap-4 items-center text-muted-foreground">
-            <Components.Icon id={id} />
             {Object.entries(Components.Info).map(([key, Info], i) => (
               <Fragment key={key}>
-                | <Info key={i} id={id} />
+                {i !== 0 && "| "}<Info key={i} id={id} />
               </Fragment>
             ))}
             | <ExportButton target={{ type, id }} />
