@@ -12,17 +12,16 @@ export const AllResources = () => {
   const [search, setSearch] = useState("");
   return (
     <Page
-      title="Resources"
-      actions={
-        <div className="grid gap-4 justify-items-end">
+      titleOther={
+        <div className="flex items-center justify-between">
           <div className="flex gap-4 items-center">
-            <ExportButton />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="search..."
-              className="w-96"
+              className="w-[200px] lg:w-[300px]"
             />
+            <ExportButton />
           </div>
           <TagsFilter />
         </div>

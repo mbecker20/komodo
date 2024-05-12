@@ -1,4 +1,5 @@
 import { OpenAlerts } from "@components/alert";
+import { ExportButton } from "@components/export";
 import { Page, Section } from "@components/layouts";
 import { ResourceComponents } from "@components/resources";
 import { DeploymentTable } from "@components/resources/deployment/table";
@@ -7,16 +8,36 @@ import { TagsFilter, TagsWithBadge } from "@components/tags";
 import { useRead, useTagsFilter } from "@lib/hooks";
 import { Button } from "@ui/button";
 import { Card, CardHeader, CardTitle } from "@ui/card";
+import { Input } from "@ui/input";
+import { atom, useAtom } from "jotai";
 import { Fragment, useState } from "react";
 import { Link } from "react-router-dom";
 
+const searchAtom = atom("");
+
 export const Tree = () => {
+  const [search, setSearch] = useAtom(searchAtom);
   const tags = useTagsFilter();
   const servers = useRead("ListServers", { query: { tags } }).data;
   return (
-    <Page title="Tree" actions={<TagsFilter />}>
+    <Page
+      titleOther={
+        <div className="flex items-center justify-between">
+          <div className="flex gap-4 items-center">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="search..."
+              className="w-[200px] lg:w-[300px]"
+            />
+            <ExportButton />
+          </div>
+          <TagsFilter />
+        </div>
+      }
+    >
       <OpenAlerts />
-      <Section title="">
+      <Section>
         <div className="grid gap-6">
           {servers?.map((server) => (
             <Server key={server.id} id={server.id} />
@@ -28,6 +49,7 @@ export const Tree = () => {
 };
 
 const Server = ({ id }: { id: string }) => {
+  const [search] = useAtom(searchAtom);
   const [open, setOpen] = useState(true);
   const server = useRead("ListServers", {}).data?.find(
     (server) => server.id === id
@@ -62,7 +84,7 @@ const Server = ({ id }: { id: string }) => {
           </div>
         </CardHeader>
       </Card>
-      {open && <DeploymentTable deployments={deployments} />}
+      {open && <DeploymentTable deployments={deployments} search={search} />}
     </div>
   );
 };
