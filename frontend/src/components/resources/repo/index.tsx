@@ -7,17 +7,20 @@ import { RepoConfig } from "./config";
 import { CloneRepo, PullRepo } from "./actions";
 import { DeleteResource, NewResource } from "../common";
 import { RepoTable } from "./table";
-import { bg_color_class_by_intention, fill_color_class_by_intention, repo_state_intention } from "@lib/color";
+import {
+  bg_color_class_by_intention,
+  fill_color_class_by_intention,
+  repo_state_intention,
+} from "@lib/color";
 import { cn } from "@lib/utils";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 
 const useRepo = (id?: string) =>
   useRead("ListRepos", {}).data?.find((d) => d.id === id);
 
 const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useRepo(id)?.info.state;
-  const color = fill_color_class_by_intention(
-    repo_state_intention(state)
-  );
+  const color = fill_color_class_by_intention(repo_state_intention(state));
   return <GitBranch className={cn(`w-${size} h-${size}`, state && color)} />;
 };
 
@@ -61,14 +64,30 @@ export const RepoComponents: RequiredResourceComponents = {
         </Card>
       );
     },
-    Status: ({id}) => {
+    Status: ({ id }) => {
       const info = useRepo(id)?.info;
-      if (info?.latest_hash) {
-        return <>{info.latest_hash}</>;
+      if (info?.latest_hash && info?.latest_message) {
+        return (
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <Card className="px-3 py-2 hover:bg-accent/50 transition-colors cursor-pointer">
+                <div className="text-muted-foreground text-sm text-nowrap overflow-hidden overflow-ellipsis">
+                  {info.latest_hash}
+                </div>
+              </Card>
+            </HoverCardTrigger>
+            <HoverCardContent align="start">
+              <div className="grid">
+                <div className="text-muted-foreground">commit message:</div>
+                {info.latest_message}
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+        );
       } else {
-        return <>{"not cloned"}</>
+        return <div className="text-muted-foreground">{"Not cloned"}</div>;
       }
-    }
+    },
   },
 
   Info: {
