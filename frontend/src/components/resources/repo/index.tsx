@@ -15,8 +15,10 @@ import {
 import { cn } from "@lib/utils";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@ui/hover-card";
 
-const useRepo = (id?: string) =>
-  useRead("ListRepos", {}).data?.find((d) => d.id === id);
+export const useRepo = (id?: string) =>
+  useRead("ListRepos", {}, { refetchInterval: 5000 }).data?.find(
+    (d) => d.id === id
+  );
 
 const RepoIcon = ({ id, size }: { id?: string; size: number }) => {
   const state = useRepo(id)?.info.state;
